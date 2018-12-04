@@ -1007,7 +1007,7 @@ void AXObjectCacheImpl::HandleActiveDescendantChanged(Node* node) {
 // as this may require a different subclass of AXObject.
 // Role changes are disallowed by the spec but we must handle it gracefully, see
 // https://www.w3.org/TR/wai-aria-1.1/#h-roles for more information.
-void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
+void AXObjectCacheImpl::HandleRoleChange(Node* node) {
   if (!node)
     return;  // Virtual AOM node.
 
@@ -1036,6 +1036,25 @@ void AXObjectCacheImpl::HandlePossibleRoleChange(Node* node) {
   }
 }
 
+void AXObjectCacheImpl::HandleRoleChangeIfNotEditable(Node* node) {
+  if (!node)
+    return;
+
+  // Do not invalidate object if the role doesn't actually change when it's a
+  // text control, otherwise unique id will change on platform side, and confuse
+  // some screen readers as user edits.
+  // TODO(aleventhal) Ideally the text control check would be removed, and
+  // HandleRoleChange() and only ever invalidate when the role actually changes.
+  // For example:
+  // if (obj->RoleValue() == obj->ComputeAccessibilityRole()) return;
+  // However, doing that would require waiting for layout to complete, as
+  // ComputeAccessibilityRole() looks at layout objects.
+  if (AXObject* obj = Get(node)) {
+    if (!obj->IsTextControl())
+      HandleRoleChange(node);
+  }
+}
+
 void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
                                                Element* element) {
   if (!element)
@@ -1048,9 +1067,10 @@ void AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
     return;
   }
 
-  if (attr_name == kRoleAttr || attr_name == kTypeAttr ||
-      attr_name == kSizeAttr || attr_name == kAriaHaspopupAttr)
-    HandlePossibleRoleChange(element);
+  if (attr_name == kRoleAttr || attr_name == kTypeAttr)
+    HandleRoleChange(element);
+  else if (attr_name == kSizeAttr || attr_name == kAriaHaspopupAttr)
+    HandleRoleChangeIfNotEditable(element);  // Role won't change on edits.
   else if (attr_name == kAltAttr || attr_name == kTitleAttr)
     TextChanged(element);
   else if (attr_name == kForAttr && IsHTMLLabelElement(*element))
