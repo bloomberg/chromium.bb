@@ -101,7 +101,7 @@ Result AddUniqueUrlsSync(
 
   std::map<std::string, int64_t> existing_items =
       GetAllUrlsAndIdsFromNamespaceSync(db, name_space);
-
+  std::set<std::string> added_urls;
   int added_row_count = 0;
   base::Time now = OfflineClock()->Now();
   // Insert rows in reverse order to ensure that the beginning of the list has
@@ -109,7 +109,12 @@ Result AddUniqueUrlsSync(
   for (auto candidate_iter = candidate_prefetch_urls.rbegin();
        candidate_iter != candidate_prefetch_urls.rend(); ++candidate_iter) {
     const PrefetchURL& prefetch_url = *candidate_iter;
-    auto existing_iter = existing_items.find(prefetch_url.url.spec());
+    const std::string url_spec = prefetch_url.url.spec();
+    // Don't add the same URL more than once.
+    if (!added_urls.insert(url_spec).second)
+      continue;
+
+    auto existing_iter = existing_items.find(url_spec);
     if (existing_iter != existing_items.end()) {
       // An existing item is still being suggested so update its timestamps (and
       // therefore priority).
