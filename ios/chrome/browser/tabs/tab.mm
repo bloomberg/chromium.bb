@@ -337,8 +337,6 @@ NSString* const kTabUrlKey = @"url";
 
 - (void)webState:(web::WebState*)webState
     didLoadPageWithSuccess:(BOOL)loadSuccess {
-  DCHECK(self.webState && !self.webState->IsLoading());
-
   if (loadSuccess) {
     scoped_refptr<net::HttpResponseHeaders> headers =
         _webStateImpl->GetHttpResponseHeaders();
