@@ -4190,20 +4190,19 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
 
   if (!pars->update_parameters) {
     // inherit parameters from a previous reference frame
-    RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
     int film_grain_params_ref_idx = aom_rb_read_literal(rb, 3);
-    int buf_idx = cm->ref_frame_map[film_grain_params_ref_idx];
-    if (buf_idx == INVALID_IDX) {
+    RefCntBuffer *const buf = cm->ref_frame_map[film_grain_params_ref_idx];
+    if (buf == NULL) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Invalid Film grain reference idx");
     }
-    if (!frame_bufs[buf_idx].film_grain_params_present) {
+    if (!buf->film_grain_params_present) {
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Film grain reference parameters not available");
     }
     uint16_t random_seed = pars->random_seed;
-    *pars = frame_bufs[buf_idx].film_grain_params;  // inherit paramaters
-    pars->random_seed = random_seed;                // with new random seed
+    *pars = buf->film_grain_params;   // inherit paramaters
+    pars->random_seed = random_seed;  // with new random seed
     return;
   }
 
@@ -4663,22 +4662,20 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 }
 
 // Release the references to the frame buffers in cm->ref_frame_map and reset
-// all elements of cm->ref_frame_map to -1.
+// all elements of cm->ref_frame_map to NULL.
 static void reset_ref_frame_map(AV1_COMMON *const cm) {
   BufferPool *const pool = cm->buffer_pool;
-  RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
   for (int i = 0; i < REF_FRAMES; i++) {
-    decrease_ref_count(cm->ref_frame_map[i], frame_bufs, pool);
+    decrease_ref_count(cm->ref_frame_map[i], pool);
+    cm->ref_frame_map[i] = NULL;
   }
-  memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
 }
 
 // Generate next_ref_frame_map.
 static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
-  RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
   lock_buffer_pool(pool);
   // cm->next_ref_frame_map holds references to frame buffers. After storing a
@@ -4687,19 +4684,19 @@ static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   int ref_index = 0;
   for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
     if (mask & 1) {
-      cm->next_ref_frame_map[ref_index] = cm->new_fb_idx;
+      cm->next_ref_frame_map[ref_index] = cm->cur_frame;
     } else {
       cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
     }
-    if (cm->next_ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->next_ref_frame_map[ref_index]].ref_count;
+    if (cm->next_ref_frame_map[ref_index] != NULL)
+      ++cm->next_ref_frame_map[ref_index]->ref_count;
     ++ref_index;
   }
 
   for (; ref_index < REF_FRAMES; ++ref_index) {
     cm->next_ref_frame_map[ref_index] = cm->ref_frame_map[ref_index];
-    if (cm->next_ref_frame_map[ref_index] >= 0)
-      ++frame_bufs[cm->next_ref_frame_map[ref_index]].ref_count;
+    if (cm->next_ref_frame_map[ref_index] != NULL)
+      ++cm->next_ref_frame_map[ref_index]->ref_count;
   }
   unlock_buffer_pool(pool);
   pbi->hold_ref_buf = 1;
@@ -4708,8 +4705,6 @@ static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
 static void show_existing_frame_reset(AV1Decoder *const pbi,
                                       int existing_frame_idx) {
   AV1_COMMON *const cm = &pbi->common;
-  BufferPool *const pool = cm->buffer_pool;
-  RefCntBuffer *const frame_bufs = pool->frame_bufs;
 
   assert(cm->show_existing_frame);
 
@@ -4747,8 +4742,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   generate_next_ref_frame_map(pbi);
 
   // Reload the adapted CDFs from when we originally coded this keyframe
-  *cm->fc =
-      frame_bufs[cm->next_ref_frame_map[existing_frame_idx]].frame_context;
+  *cm->fc = cm->next_ref_frame_map[existing_frame_idx]->frame_context;
 }
 
 static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
@@ -4763,9 +4757,9 @@ static INLINE void reset_frame_buffers(AV1_COMMON *cm) {
   reset_ref_frame_map(cm);
   assert(cm->cur_frame->ref_count == 1);
   for (i = 0; i < FRAME_BUFFERS; ++i) {
-    // Reset all unreferenced frame buffers. We can also reset cm->new_fb_idx
-    // because we are the sole owner of cm->new_fb_idx.
-    if (frame_bufs[i].ref_count > 0 && i != cm->new_fb_idx) {
+    // Reset all unreferenced frame buffers. We can also reset cm->cur_frame
+    // because we are the sole owner of cm->cur_frame.
+    if (frame_bufs[i].ref_count > 0 && &frame_bufs[i] != cm->cur_frame) {
       continue;
     }
     frame_bufs[i].order_hint = 0;
@@ -4814,7 +4808,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       }
       // Show an existing frame directly.
       const int existing_frame_idx = aom_rb_read_literal(rb, 3);
-      const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
+      RefCntBuffer *const frame_to_show = cm->ref_frame_map[existing_frame_idx];
       if (seq_params->decoder_model_info_present_flag &&
           cm->timing_info.equal_picture_interval == 0) {
         av1_read_temporal_point_info(cm, rb);
@@ -4830,11 +4824,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                              "Reference buffer frame ID mismatch");
       }
       lock_buffer_pool(pool);
-      if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
+      if (frame_to_show == NULL || frame_to_show->ref_count < 1) {
         unlock_buffer_pool(pool);
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Buffer %d does not contain a decoded frame",
-                           frame_to_show);
+                           "Buffer does not contain a decoded frame");
       }
       // cm->cur_frame should be the buffer referenced by the return value
       // of the get_free_fb() call in av1_receive_compressed_data(), and
@@ -4845,22 +4838,20 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       // decrease_ref_count(). If cm->cur_frame->raw_frame_buffer
       // has already been allocated, it will not be released by ref_cnt_fb()!
       assert(!cm->cur_frame->raw_frame_buffer.data);
-      assign_frame_buffer(frame_bufs, &cm->new_fb_idx, frame_to_show);
-      cm->cur_frame = &cm->buffer_pool->frame_bufs[cm->new_fb_idx];
-      cm->reset_decoder_state =
-          frame_bufs[frame_to_show].frame_type == KEY_FRAME;
+      assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
+      cm->reset_decoder_state = frame_to_show->frame_type == KEY_FRAME;
       unlock_buffer_pool(pool);
 
       cm->lf.filter_level[0] = 0;
       cm->lf.filter_level[1] = 0;
       cm->show_frame = 1;
 
-      if (!frame_bufs[frame_to_show].showable_frame) {
+      if (!frame_to_show->showable_frame) {
         aom_merge_corrupted_flag(&xd->corrupted, 1);
       }
-      if (cm->reset_decoder_state) frame_bufs[frame_to_show].showable_frame = 0;
+      if (cm->reset_decoder_state) frame_to_show->showable_frame = 0;
 
-      cm->film_grain_params = frame_bufs[frame_to_show].film_grain_params;
+      cm->film_grain_params = frame_to_show->film_grain_params;
 
       if (cm->reset_decoder_state) {
         show_existing_frame_reset(pbi, existing_frame_idx);
@@ -5047,40 +5038,39 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         // Read order hint from bit stream
         unsigned int order_hint = aom_rb_read_literal(
             rb, seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
-        // Get buffer index
-        int buf_idx = cm->ref_frame_map[ref_idx];
-        assert(buf_idx < FRAME_BUFFERS);
-        if (buf_idx == -1 || order_hint != frame_bufs[buf_idx].order_hint) {
-          if (buf_idx >= 0) {
+        // Get buffer
+        RefCntBuffer *buf = cm->ref_frame_map[ref_idx];
+        if (buf == NULL || order_hint != buf->order_hint) {
+          if (buf != NULL) {
             lock_buffer_pool(pool);
-            decrease_ref_count(buf_idx, frame_bufs, pool);
+            decrease_ref_count(buf, pool);
             unlock_buffer_pool(pool);
           }
           // If no corresponding buffer exists, allocate a new buffer with all
           // pixels set to neutral grey.
-          buf_idx = get_free_fb(cm);
+          int buf_idx = get_free_fb(cm);
           if (buf_idx == INVALID_IDX) {
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Unable to find free frame buffer");
           }
+          buf = &frame_bufs[buf_idx];
           lock_buffer_pool(pool);
           if (aom_realloc_frame_buffer(
-                  &frame_bufs[buf_idx].buf, seq_params->max_frame_width,
+                  &buf->buf, seq_params->max_frame_width,
                   seq_params->max_frame_height, seq_params->subsampling_x,
                   seq_params->subsampling_y, seq_params->use_highbitdepth,
                   AOM_BORDER_IN_PIXELS, cm->byte_alignment,
-                  &pool->frame_bufs[buf_idx].raw_frame_buffer, pool->get_fb_cb,
-                  pool->cb_priv)) {
-            decrease_ref_count(buf_idx, frame_bufs, pool);
+                  &buf->raw_frame_buffer, pool->get_fb_cb, pool->cb_priv)) {
+            decrease_ref_count(buf, pool);
             unlock_buffer_pool(pool);
             aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                                "Failed to allocate frame buffer");
           }
           unlock_buffer_pool(pool);
-          set_planes_to_neutral_grey(seq_params, &frame_bufs[buf_idx].buf, 0);
+          set_planes_to_neutral_grey(seq_params, &buf->buf, 0);
 
-          cm->ref_frame_map[ref_idx] = buf_idx;
-          frame_bufs[buf_idx].order_hint = order_hint;
+          cm->ref_frame_map[ref_idx] = buf;
+          buf->order_hint = order_hint;
         }
       }
     }
@@ -5112,22 +5102,22 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (frame_refs_short_signaling) {
         // == LAST_FRAME ==
         const int lst_ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
-        const int lst_idx = cm->ref_frame_map[lst_ref];
+        const RefCntBuffer *const lst_buf = cm->ref_frame_map[lst_ref];
 
         // == GOLDEN_FRAME ==
         const int gld_ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
-        const int gld_idx = cm->ref_frame_map[gld_ref];
+        const RefCntBuffer *const gld_buf = cm->ref_frame_map[gld_ref];
 
         // Most of the time, streams start with a keyframe. In that case,
         // ref_frame_map will have been filled in at that point and will not
-        // contain any -1's. However, streams are explicitly allowed to start
+        // contain any NULLs. However, streams are explicitly allowed to start
         // with an intra-only frame, so long as they don't then signal a
         // reference to a slot that hasn't been set yet. That's what we are
         // checking here.
-        if (lst_idx == -1)
+        if (lst_buf == NULL)
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Inter frame requests nonexistent reference");
-        if (gld_idx == -1)
+        if (gld_buf == NULL)
           aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Inter frame requests nonexistent reference");
 
@@ -5138,7 +5128,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         int ref = 0;
         if (!frame_refs_short_signaling) {
           ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
-          const int idx = cm->ref_frame_map[ref];
+          RefCntBuffer *const buf = cm->ref_frame_map[ref];
 
           // Most of the time, streams start with a keyframe. In that case,
           // ref_frame_map will have been filled in at that point and will not
@@ -5146,12 +5136,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           // with an intra-only frame, so long as they don't then signal a
           // reference to a slot that hasn't been set yet. That's what we are
           // checking here.
-          if (idx == -1)
+          if (buf == NULL)
             aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                                "Inter frame requests nonexistent reference");
 
           RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
-          ref_frame->buf = &frame_bufs[idx];
+          ref_frame->buf = buf;
           ref_frame->map_idx = ref;
         } else {
           ref = cm->current_frame.frame_refs[i].map_idx;

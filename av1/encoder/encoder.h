@@ -616,14 +616,15 @@ typedef struct AV1_COMP {
   int previous_index;
 
   unsigned int row_mt;
-  int scaled_ref_idx[INTER_REFS_PER_FRAME];
+  RefCntBuffer *scaled_ref_buf[INTER_REFS_PER_FRAME];
 
   // For encoder, we have a two-level mapping from reference frame type to the
   // corresponding buffer in the buffer pool:
   // * 'remapped_ref_idx[i - 1]' maps reference type ‘i’ (range: LAST_FRAME ...
   // EXTREF_FRAME) to a remapped index ‘j’ (in range: 0 ... REF_FRAMES - 1)
-  // * Later, 'cm->ref_frame_map[j]' maps the remapped index ‘j’ to actual index
-  //   of the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
+  // * Later, 'cm->ref_frame_map[j]' maps the remapped index ‘j’ to a pointer to
+  // the reference counted buffer structure RefCntBuffer, taken from the buffer
+  // pool cm->buffer_pool->frame_bufs.
   //
   // LAST_FRAME,                        ...,      EXTREF_FRAME
   //      |                                           |
@@ -637,7 +638,7 @@ typedef struct AV1_COMP {
   // have a remapped index for the same.
   int remapped_ref_idx[REF_FRAMES];
 
-  int last_show_frame_buf_idx;  // last show frame buffer index
+  RefCntBuffer *last_show_frame_buf;  // last show frame buffer
 
   // refresh_*_frame are boolean flags. If 'refresh_xyz_frame' is true, then
   // after the current frame is encoded, the XYZ reference frame gets refreshed
@@ -921,11 +922,11 @@ static INLINE int get_ref_frame_map_idx(const AV1_COMP *cpi,
              : INVALID_IDX;
 }
 
-static INLINE int get_ref_frame_buf_idx(const AV1_COMP *cpi,
-                                        MV_REFERENCE_FRAME ref_frame) {
+static INLINE RefCntBuffer *get_ref_frame_buf(const AV1_COMP *cpi,
+                                              MV_REFERENCE_FRAME ref_frame) {
   const AV1_COMMON *const cm = &cpi->common;
   const int map_idx = get_ref_frame_map_idx(cpi, ref_frame);
-  return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : INVALID_IDX;
+  return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
 }
 
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
@@ -935,28 +936,22 @@ static INLINE int av1_use_hash_me(const AV1_COMMON *const cm) {
 
 static INLINE hash_table *av1_get_ref_frame_hash_map(
     const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
-  return buf_idx != INVALID_IDX
-             ? &cm->buffer_pool->frame_bufs[buf_idx].hash_table
-             : NULL;
+  RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+  return buf != NULL ? &buf->hash_table : NULL;
 }
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
     const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
-  return buf_idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[buf_idx].buf
-                                : NULL;
+  RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+  return buf != NULL ? &buf->buf : NULL;
 }
 
 static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
-  AV1_COMMON *const cm = &cpi->common;
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
-    if (buf_idx == INVALID_IDX) continue;
-    if (frame_buf == &cm->buffer_pool->frame_bufs[buf_idx]) break;
+    const RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+    if (buf == NULL) continue;
+    if (frame_buf == buf) break;
   }
   return (ref_frame <= ALTREF_FRAME);
 }

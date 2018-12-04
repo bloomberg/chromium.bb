@@ -572,8 +572,8 @@ enum ATTRIBUTE_PACKED {
 #define REF_FRAMES_LOG2 3
 
 // REF_FRAMES for the cm->ref_frame_map array, 1 scratch frame for the new
-// frame in cm->new_fb_idx, INTER_REFS_PER_FRAME for scaled references on the
-// encoder in the cpi->scaled_ref_idx array.
+// frame in cm->cur_frame, INTER_REFS_PER_FRAME for scaled references on the
+// encoder in the cpi->scaled_ref_buf array.
 #define FRAME_BUFFERS (REF_FRAMES + 1 + INTER_REFS_PER_FRAME)
 
 #define FWD_RF_OFFSET(ref) (ref - LAST_FRAME)

@@ -1354,9 +1354,9 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
 }
 
 typedef struct {
-  int map_idx;   // frame map index
-  int buf_idx;   // frame buffer index
-  int sort_idx;  // index based on the offset to be used for sorting
+  int map_idx;        // frame map index
+  RefCntBuffer *buf;  // frame buffer
+  int sort_idx;       // index based on the offset to be used for sorting
 } REF_FRAME_INFO;
 
 static int compare_ref_frame_info(const void *arg_a, const void *arg_b) {
@@ -1374,18 +1374,12 @@ static void set_ref_frame_info(AV1_COMMON *const cm, int frame_idx,
                                REF_FRAME_INFO *ref_info) {
   assert(frame_idx >= 0 && frame_idx < INTER_REFS_PER_FRAME);
 
-  const int buf_idx = ref_info->buf_idx;
-
-  cm->current_frame.frame_refs[frame_idx].buf =
-      &cm->buffer_pool->frame_bufs[buf_idx];
+  cm->current_frame.frame_refs[frame_idx].buf = ref_info->buf;
   cm->current_frame.frame_refs[frame_idx].map_idx = ref_info->map_idx;
 }
 
 void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
                         int gld_map_idx) {
-  BufferPool *const pool = cm->buffer_pool;
-  RefCntBuffer *const frame_bufs = pool->frame_bufs;
-
   int lst_frame_sort_idx = -1;
   int gld_frame_sort_idx = -1;
 
@@ -1404,15 +1398,14 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     ref_frame_info[i].map_idx = map_idx;
     ref_frame_info[i].sort_idx = -1;
 
-    const int buf_idx = cm->ref_frame_map[map_idx];
-    ref_frame_info[i].buf_idx = buf_idx;
+    RefCntBuffer *const buf = cm->ref_frame_map[map_idx];
+    ref_frame_info[i].buf = buf;
 
-    assert(buf_idx < FRAME_BUFFERS);
-    if (buf_idx < 0) continue;
+    if (buf == NULL) continue;
     // TODO(zoeliu@google.com): To verify the checking on ref_count.
-    if (frame_bufs[buf_idx].ref_count <= 0) continue;
+    if (buf->ref_count <= 0) continue;
 
-    const int offset = (int)frame_bufs[buf_idx].order_hint;
+    const int offset = (int)buf->order_hint;
     ref_frame_info[i].sort_idx =
         (offset == -1) ? -1
                        : cur_frame_sort_idx +

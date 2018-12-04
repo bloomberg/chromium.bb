@@ -44,7 +44,7 @@ struct aom_codec_alg_priv {
   int img_avail;
   int flushed;
   int invert_tile_order;
-  int last_show_frame;  // Index of last output frame.
+  RefCntBuffer *last_show_frame;  // Last output frame buffer
   int byte_alignment;
   int skip_loop_filter;
   int skip_film_grain;
@@ -317,7 +317,6 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
     AV1_COMMON *const cm = &frame_worker_data->pbi->common;
     BufferPool *const pool = cm->buffer_pool;
 
-    cm->new_fb_idx = INVALID_IDX;
     cm->cur_frame = NULL;
     cm->byte_alignment = ctx->byte_alignment;
     cm->skip_loop_filter = ctx->skip_loop_filter;
@@ -366,7 +365,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   int i;
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 
-  ctx->last_show_frame = -1;
+  ctx->last_show_frame = NULL;
   ctx->next_output_worker_id = 0;
   ctx->need_resync = 1;
   ctx->num_frame_workers = 1;
@@ -527,7 +526,7 @@ static aom_codec_err_t decoder_inspect(aom_codec_alg_priv_t *ctx,
 
   data2->idx = -1;
   for (int i = 0; i < REF_FRAMES; ++i)
-    if (cm->ref_frame_map[i] == cm->new_fb_idx) data2->idx = i;
+    if (cm->ref_frame_map[i] == cm->cur_frame) data2->idx = i;
   data2->buf = data;
   data2->show_existing = cm->show_existing_frame;
   return res;
@@ -549,7 +548,6 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   // arguments are invalid.
   if (ctx->frame_workers) {
     BufferPool *const pool = ctx->buffer_pool;
-    RefCntBuffer *const frame_bufs = pool->frame_bufs;
     lock_buffer_pool(pool);
     for (int i = 0; i < ctx->num_frame_workers; ++i) {
       AVxWorker *const worker = &ctx->frame_workers[i];
@@ -557,7 +555,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       struct AV1Decoder *pbi = frame_worker_data->pbi;
       for (size_t j = 0; j < pbi->num_output_frames; j++) {
-        decrease_ref_count(pbi->output_frame_index[j], frame_bufs, pool);
+        decrease_ref_count(pbi->output_frames[j], pool);
       }
       pbi->num_output_frames = 0;
     }
@@ -694,7 +692,6 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       AV1Decoder *const pbi = frame_worker_data->pbi;
       AV1_COMMON *const cm = &pbi->common;
-      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
       ctx->next_output_worker_id =
           (ctx->next_output_worker_id + 1) % ctx->num_frame_workers;
       // Wait for the frame from worker thread.
@@ -707,8 +704,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
         aom_film_grain_t *grain_params;
         if (av1_get_raw_frame(frame_worker_data->pbi, *index, &sd,
                               &grain_params) == 0) {
-          const int buf_idx = pbi->output_frame_index[*index];
-          ctx->last_show_frame = buf_idx;
+          RefCntBuffer *const output_frame_buf = pbi->output_frames[*index];
+          ctx->last_show_frame = output_frame_buf;
           if (ctx->need_resync) return NULL;
           yuvconfig2image(&ctx->img, sd, frame_worker_data->user_priv);
 
@@ -759,7 +756,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
             ctx->img.d_w = AOMMIN(tile_width, cm->mi_cols - mi_col) * MI_SIZE;
           }
 
-          ctx->img.fb_priv = frame_bufs[buf_idx].raw_frame_buffer.priv;
+          ctx->img.fb_priv = output_frame_buf->raw_frame_buffer.priv;
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
@@ -940,11 +937,10 @@ static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       AV1Decoder *const pbi = frame_worker_data->pbi;
-      RefCntBuffer *const frame_bufs = pbi->common.buffer_pool->frame_bufs;
       if (pbi->seen_frame_header && pbi->num_output_frames == 0)
         return AOM_CODEC_ERROR;
-      if (ctx->last_show_frame >= 0)
-        *corrupted = frame_bufs[ctx->last_show_frame].buf.corrupted;
+      if (ctx->last_show_frame != NULL)
+        *corrupted = ctx->last_show_frame->buf.corrupted;
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;

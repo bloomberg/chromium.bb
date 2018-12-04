@@ -2543,14 +2543,13 @@ static void write_film_grain_params(AV1_COMP *cpi,
   else
     pars->update_parameters = 1;
   if (!pars->update_parameters) {
-    RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-    int ref_frame, ref_idx, buf_idx;
+    int ref_frame, ref_idx;
     for (ref_frame = LAST_FRAME; ref_frame < REF_FRAMES; ref_frame++) {
       ref_idx = get_ref_frame_map_idx(cpi, ref_frame);
       assert(ref_idx != INVALID_IDX);
-      buf_idx = cm->ref_frame_map[ref_idx];
-      if (frame_bufs[buf_idx].film_grain_params_present &&
-          memcmp(pars, &frame_bufs[buf_idx].film_grain_params, sizeof(*pars))) {
+      const RefCntBuffer *const buf = cm->ref_frame_map[ref_idx];
+      if (buf->film_grain_params_present &&
+          memcmp(pars, &buf->film_grain_params, sizeof(*pars))) {
         break;
       }
     }
@@ -2830,18 +2829,20 @@ static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
 
   // Check whether all references are distinct frames.
-  int buf_markers[FRAME_BUFFERS] = { 0 };
-  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
-    if (buf_idx != INVALID_IDX) {
-      assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
-      buf_markers[buf_idx] = 1;
-    }
-  }
-
+  const RefCntBuffer *seen_bufs[FRAME_BUFFERS] = { NULL };
   int num_refs = 0;
-  for (int buf_idx = 0; buf_idx < FRAME_BUFFERS; ++buf_idx) {
-    num_refs += buf_markers[buf_idx];
+  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    const RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+    if (buf != NULL) {
+      int seen = 0;
+      for (int i = 0; i < num_refs; i++) {
+        if (seen_bufs[i] == buf) {
+          seen = 1;
+          break;
+        }
+      }
+      if (!seen) seen_bufs[num_refs++] = buf;
+    }
   }
 
   // We only turn on frame_refs_short_signaling when all references are
@@ -2884,10 +2885,9 @@ static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   printf("\nFrame=%d: \n", cm->current_frame.frame_number);
   printf("***frame_refs_short_signaling=%d\n", frame_refs_short_signaling);
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    printf("enc_ref(map_idx=%d, buf_idx=%d)=%d, vs. "
+    printf("enc_ref(map_idx=%d)=%d, vs. "
         "dec_ref(map_idx=%d)=%d\n",
-        get_ref_frame_map_idx(cpi, ref_frame),
-        get_ref_frame_buf_idx(cpi, ref_frame), ref_frame,
+        get_ref_frame_map_idx(cpi, ref_frame), ref_frame,
         cm->current_frame.frame_refs[ref_frame - LAST_FRAME].map_idx,
         ref_frame);
   }
@@ -2917,16 +2917,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
   if (!seq_params->reduced_still_picture_hdr) {
     if (encode_show_existing_frame(cm)) {
-      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-      const int frame_to_show = cm->ref_frame_map[cpi->existing_fb_idx_to_show];
+      RefCntBuffer *const frame_to_show =
+          cm->ref_frame_map[cpi->existing_fb_idx_to_show];
 
-      if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
+      if (frame_to_show == NULL || frame_to_show->ref_count < 1) {
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Buffer %d does not contain a reconstructed frame",
-                           frame_to_show);
+                           "Buffer does not contain a reconstructed frame");
       }
-      assign_frame_buffer(frame_bufs, &cm->new_fb_idx, frame_to_show);
-      cm->cur_frame = &frame_bufs[cm->new_fb_idx];
+      assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
 
       aom_wb_write_bit(wb, 1);  // show_existing_frame
       aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
@@ -2941,8 +2939,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_literal(wb, display_frame_id, frame_id_len);
       }
 
-      if (cm->reset_decoder_state &&
-          frame_bufs[frame_to_show].frame_type != KEY_FRAME) {
+      if (cm->reset_decoder_state && frame_to_show->frame_type != KEY_FRAME) {
         aom_internal_error(
             &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
             "show_existing_frame to reset state on KEY_FRAME only");
@@ -3096,15 +3093,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     // Write all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode &&
         seq_params->order_hint_info.enable_order_hint) {
-      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Get buffer index
-        const int buf_idx = cm->ref_frame_map[ref_idx];
-        assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
+        const RefCntBuffer *buf = cm->ref_frame_map[ref_idx];
+        assert(buf != NULL);
 
         // Write order hint to bit stream
         aom_wb_write_literal(
-            wb, frame_bufs[buf_idx].order_hint,
+            wb, buf->order_hint,
             seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
       }
     }

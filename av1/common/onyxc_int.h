@@ -125,8 +125,8 @@ typedef enum {
 typedef struct RefCntBuffer {
   // For a RefCntBuffer, the following are reference-holding variables:
   // - cm->ref_frame_map[]
-  // - cm->new_fb_idx
-  // - cm->scaled_ref_idx[] (encoder only)
+  // - cm->cur_frame
+  // - cm->scaled_ref_buf[] (encoder only)
   // - cm->next_ref_frame_map[] (decoder only)
   // - pbi->output_frame_index[] (decoder only)
   // With that definition, 'ref_count' is the number of reference-holding
@@ -347,20 +347,16 @@ typedef struct AV1Common {
   // TODO(hkuang): Combine this with cur_buf in macroblockd.
   RefCntBuffer *cur_frame;
 
-  // For decoder, ref_frame_map[i] maps reference type 'i' to actual index of
+  // For decoder, ref_frame_map[i] maps reference type 'i' to a pointer to
   // the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
   // For encoder, ref_frame_map[j] (where j = remapped_ref_idx[i]) maps
   // remapped reference index 'j' (that is, original reference type 'i') to
-  // actual index of the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
-  int ref_frame_map[REF_FRAMES];
+  // a pointer to the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
+  RefCntBuffer *ref_frame_map[REF_FRAMES];
 
   // Prepare ref_frame_map for the next frame.
   // Only used in frame parallel decode.
-  int next_ref_frame_map[REF_FRAMES];
-
-  // Index to the 'new' frame (i.e. the frame currently being encoded or
-  // decoded) in the buffer pool 'cm->buffer_pool'.
-  int new_fb_idx;
+  RefCntBuffer *next_ref_frame_map[REF_FRAMES];
 
   int show_frame;
   int showable_frame;  // frame can be used as show existing frame in future
@@ -582,9 +578,8 @@ static void unlock_buffer_pool(BufferPool *const pool) {
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame(AV1_COMMON *cm, int index) {
   if (index < 0 || index >= REF_FRAMES) return NULL;
-  if (cm->ref_frame_map[index] < 0) return NULL;
-  assert(cm->ref_frame_map[index] < FRAME_BUFFERS);
-  return &cm->buffer_pool->frame_bufs[cm->ref_frame_map[index]].buf;
+  if (cm->ref_frame_map[index] == NULL) return NULL;
+  return &cm->ref_frame_map[index]->buf;
 }
 
 static INLINE int get_free_fb(AV1_COMMON *cm) {
@@ -620,20 +615,20 @@ static INLINE int get_free_fb(AV1_COMMON *cm) {
   return i;
 }
 
-// Modify 'idx_ptr' to reference the buffer at 'new_idx', and update the ref
+// Modify 'lhs_ptr' to reference the buffer at 'rhs_ptr', and update the ref
 // counts accordingly.
-static INLINE void assign_frame_buffer(RefCntBuffer *bufs, int *idx_ptr,
-                                       int new_idx) {
-  const int old_idx = *idx_ptr;
-  if (old_idx >= 0) {
-    assert(bufs[old_idx].ref_count > 0);
-    // One less reference to the buffer at 'old_idx', so decrease ref count.
-    --bufs[old_idx].ref_count;
+static INLINE void assign_frame_buffer_p(RefCntBuffer **lhs_ptr,
+                                       RefCntBuffer *rhs_ptr) {
+  RefCntBuffer *const old_ptr = *lhs_ptr;
+  if (old_ptr != NULL) {
+    assert(old_ptr->ref_count > 0);
+    // One less reference to the buffer at 'old_ptr', so decrease ref count.
+    --old_ptr->ref_count;
   }
 
-  *idx_ptr = new_idx;
-  // One more reference to the buffer at 'new_idx', so increase ref count.
-  ++bufs[new_idx].ref_count;
+  *lhs_ptr = rhs_ptr;
+  // One more reference to the buffer at 'rhs_ptr', so increase ref count.
+  ++rhs_ptr->ref_count;
 }
 
 static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
