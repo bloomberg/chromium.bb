@@ -305,8 +305,16 @@ const base::Feature kNewRemotePlaybackPipeline{
     "NewRemotePlaybackPipeline", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use the new RTC hardware decode path via RTCVideoDecoderAdapter.
-const base::Feature kRTCVideoDecoderAdapter{"RTCVideoDecoderAdapter",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRTCVideoDecoderAdapter {
+  "RTCVideoDecoderAdapter",
+#if defined(OS_CHROMEOS)
+      // TODO(posciak): Enable once the feature is verified on CrOS.
+      // https://crbug.com/902968.
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // CanPlayThrough issued according to standard.
 const base::Feature kSpecCompliantCanPlayThrough{
