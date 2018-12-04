@@ -50,6 +50,64 @@ public class DiscardableReferencePoolTest {
         Assert.assertNull(weakReference.get());
     }
 
+    @Test
+    public void testRemoveAfterDrainDoesNotThrow() {
+        DiscardableReferencePool pool = new DiscardableReferencePool();
+
+        Object object = new Object();
+        WeakReference<Object> weakReference = new WeakReference<>(object);
+
+        DiscardableReference<Object> discardableReference = pool.put(object);
+        Assert.assertEquals(object, discardableReference.get());
+
+        // Release the strong reference.
+        object = null;
+
+        pool.drain();
+
+        // Shouldn't throw any exception.
+        pool.remove(discardableReference);
+
+        // The discardable reference should be null now.
+        Assert.assertNull(discardableReference.get());
+
+        // The object is not (strongly) reachable anymore, so the weak reference may or may not be
+        // null (it could be if a GC has happened since the pool was drained).
+        // After an explicit GC call it definitely should be null.
+        Runtime.getRuntime().gc();
+
+        Assert.assertNull(weakReference.get());
+    }
+
+    @Test
+    public void testDrainAfterRemoveDoesNotThrow() {
+        DiscardableReferencePool pool = new DiscardableReferencePool();
+
+        Object object = new Object();
+        WeakReference<Object> weakReference = new WeakReference<>(object);
+
+        DiscardableReference<Object> discardableReference = pool.put(object);
+        Assert.assertEquals(object, discardableReference.get());
+
+        // Release the strong reference.
+        object = null;
+
+        pool.remove(discardableReference);
+
+        // Shouldn't throw any exception.
+        pool.drain();
+
+        // The discardable reference should be null now.
+        Assert.assertNull(discardableReference.get());
+
+        // The object is not (strongly) reachable anymore, so the weak reference may or may not be
+        // null (it could be if a GC has happened since the pool was drained).
+        // After an explicit GC call it definitely should be null.
+        Runtime.getRuntime().gc();
+
+        Assert.assertNull(weakReference.get());
+    }
+
     /**
      * Tests that dropping the (last) discardable reference to an object allows it to be regularly
      * garbage collected.
