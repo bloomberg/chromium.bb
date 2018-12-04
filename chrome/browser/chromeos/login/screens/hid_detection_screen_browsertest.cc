@@ -4,13 +4,11 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chromeos/chromeos_switches.h"
 #include "services/device/public/cpp/hid/fake_input_service_linux.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/input_service.mojom.h"
@@ -18,9 +16,10 @@
 
 namespace chromeos {
 
-class HIDDetectionScreenTest : public InProcessBrowserTest {
+class HIDDetectionScreenTest : public WizardInProcessBrowserTest {
  public:
-  HIDDetectionScreenTest() {
+  HIDDetectionScreenTest()
+      : WizardInProcessBrowserTest(OobeScreen::SCREEN_OOBE_HID_DETECTION) {
     fake_input_service_manager_ =
         std::make_unique<device::FakeInputServiceLinux>();
 
@@ -35,14 +34,9 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
         device::mojom::InputDeviceManager>(device::mojom::kServiceName);
   }
 
-  // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendArg(switches::kLoginManager);
-  }
-
+ protected:
   void SetUpOnMainThread() override {
-    ShowLoginWizard(OobeScreen::SCREEN_OOBE_HID_DETECTION);
+    WizardInProcessBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(WizardController::default_controller());
 
     hid_detection_screen_ = static_cast<HIDDetectionScreen*>(
@@ -54,6 +48,10 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
     ASSERT_TRUE(hid_detection_screen_->view_);
 
     hid_detection_screen()->SetAdapterInitialPoweredForTesting(false);
+  }
+
+  void TearDownOnMainThread() override {
+    WizardInProcessBrowserTest::TearDownOnMainThread();
   }
 
   HIDDetectionScreen* hid_detection_screen() { return hid_detection_screen_; }

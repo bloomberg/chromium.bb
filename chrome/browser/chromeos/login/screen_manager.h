@@ -31,6 +31,7 @@ class ScreenManager {
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeResumeTest;
+  friend class WizardInProcessBrowserTest;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerOobeConfigurationTest;
 
