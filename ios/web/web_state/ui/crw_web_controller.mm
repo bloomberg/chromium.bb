@@ -590,7 +590,7 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 // Update the appropriate parts of the model and broadcast to the embedder. This
 // may be called multiple times and thus must be idempotent.
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
-                  forNavigation:(WKNavigation*)navigation;
+                     forContext:(web::NavigationContextImpl*)context;
 // Called after URL is finished loading and _loadPhase is set to PAGE_LOADED.
 // |context| contains information about the navigation associated with the URL.
 // It is nil if currentURL is invalid.
@@ -2032,7 +2032,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self.nativeController reload];
     navigationContext->SetHasCommitted(true);
     _webStateImpl->OnNavigationFinished(navigationContext.get());
-    [self loadCompleteWithSuccess:YES forNavigation:nil];
+    [self loadCompleteWithSuccess:YES forContext:nullptr];
   } else {
     web::NavigationItem* transientItem =
         self.navigationManagerImpl->GetTransientItem();
@@ -2130,11 +2130,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
   web::NavigationContextImpl* context =
       [_navigationStates contextForNavigation:navigation];
   BOOL success = !context || !context->GetError();
-  [self loadCompleteWithSuccess:success forNavigation:navigation];
+  [self loadCompleteWithSuccess:success forContext:context];
 }
 
 - (void)loadCompleteWithSuccess:(BOOL)loadSuccess
-                  forNavigation:(WKNavigation*)navigation {
+                     forContext:(web::NavigationContextImpl*)context {
   // The webView may have been torn down (or replaced by a native view). Be
   // safe and do nothing if that's happened.
   if (_loadPhase != web::PAGE_LOADING)
@@ -2147,8 +2147,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self optOutScrollsToTopForSubviews];
 
   // Perform post-load-finished updates.
-  const web::NavigationContextImpl* context =
-      [_navigationStates contextForNavigation:navigation];
   [self didFinishWithURL:currentURL loadSuccess:loadSuccess context:context];
 
   // Execute the pending LoadCompleteActions.
@@ -3125,7 +3123,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (provisionalLoad) {
     _webStateImpl->OnNavigationFinished(navigationContext);
   }
-  [self loadCompleteWithSuccess:NO forNavigation:navigation];
+  [self loadCompleteWithSuccess:NO forContext:navigationContext];
 }
 
 - (void)handleCancelledError:(NSError*)error
