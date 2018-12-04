@@ -113,6 +113,11 @@ class ASH_EXPORT LoginDataDispatcher {
         const std::string& locale,
         const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts);
 
+    // Called when conditions for showing full management disclosure message
+    // are changed.
+    virtual void OnPublicSessionShowFullManagementDisclosureChanged(
+        bool show_full_management_disclosure);
+
     // Called when the pairing status of detachable base changes - e.g. when the
     // base is attached or detached.
     virtual void OnDetachableBasePairingStatusChanged(
@@ -155,6 +160,8 @@ class ASH_EXPORT LoginDataDispatcher {
       const AccountId& account_id,
       const std::string& locale,
       const std::vector<mojom::InputMethodItemPtr>& keyboard_layouts);
+  void SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure);
   void SetDetachableBasePairingStatus(
       DetachableBasePairingStatus pairing_status);
 

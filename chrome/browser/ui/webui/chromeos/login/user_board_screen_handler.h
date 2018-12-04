@@ -44,6 +44,8 @@ class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
                                std::unique_ptr<base::ListValue> locales,
                                const std::string& default_locale,
                                bool multiple_recommended_locales) override;
+  void SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure) override;
   void ShowBannerMessage(const base::string16& message,
                          bool is_warning) override;
   void ShowUserPodCustomIcon(

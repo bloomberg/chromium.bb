@@ -18,6 +18,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -74,6 +75,7 @@ constexpr int kNonEmptyHeight = 1;
 
 constexpr char kMonitoringWarningClassName[] = "MonitoringWarning";
 constexpr int kSpacingBetweenMonitoringWarningIconAndLabelDp = 8;
+constexpr int kMonitoringWarningIconSizeDp = 20;
 
 views::Label* CreateLabel(const base::string16& text, SkColor color) {
   auto* label = new views::Label(text);
@@ -187,17 +189,43 @@ class MonitoringWarningView : public NonAccessibleView {
         views::BoxLayout::kHorizontal, gfx::Insets(),
         kSpacingBetweenMonitoringWarningIconAndLabelDp));
 
+    image_ = new views::ImageView();
+    image_->SetImage(gfx::CreateVectorIcon(
+        vector_icons::kWarningIcon, kMonitoringWarningIconSizeDp, SK_ColorRED));
+    image_->SetPreferredSize(
+        gfx::Size(kMonitoringWarningIconSizeDp, kMonitoringWarningIconSizeDp));
+    AddChildView(image_);
+
     const base::string16 label_text = l10n_util::GetStringUTF16(
         IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
-    views::Label* label = CreateLabel(label_text, SK_ColorWHITE);
-    label->SetMultiLine(true);
-    label->SetLineHeight(kTextLineHeightDp);
-    AddChildView(label);
+    label_ = CreateLabel(label_text, SK_ColorWHITE);
+    label_->SetMultiLine(true);
+    label_->SetLineHeight(kTextLineHeightDp);
+    AddChildView(label_);
+  }
+
+  enum class WarningType { kSoftWarning, kFullWarning };
+
+  void SetWarningType(WarningType warning_type) {
+    base::string16 label_text;
+    if (warning_type == WarningType::kFullWarning) {
+      label_text = l10n_util::GetStringUTF16(
+          IDS_ASH_LOGIN_MANAGED_SESSION_MONITORING_WARNING);
+      image_->SetVisible(true);
+    } else if (warning_type == WarningType::kSoftWarning) {
+      label_text = l10n_util::GetStringUTF16(
+          IDS_ASH_LOGIN_PUBLIC_ACCOUNT_MONITORING_WARNING);
+      image_->SetVisible(false);
+    }
+    label_->SetText(label_text);
   }
 
   ~MonitoringWarningView() override = default;
 
  private:
+  views::ImageView* image_;
+  views::Label* label_;
+
   DISALLOW_COPY_AND_ASSIGN(MonitoringWarningView);
 };
 
@@ -220,8 +248,8 @@ class RightPaneView : public NonAccessibleView,
         views::BoxLayout::kVertical, gfx::Insets(), kSpacingBetweenLabelsDp));
     AddChildView(labels_view_);
 
-    auto* top_container = new MonitoringWarningView();
-    labels_view_->AddChildView(top_container);
+    monitoring_warning_view_ = new MonitoringWarningView();
+    labels_view_->AddChildView(monitoring_warning_view_);
 
     const base::string16 link = l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE);
     size_t offset;
@@ -407,6 +435,13 @@ class RightPaneView : public NonAccessibleView,
     Layout();
   }
 
+  void SetShowFullManagementDisclosure(bool show_full_management_disclosure) {
+    monitoring_warning_view_->SetWarningType(
+        show_full_management_disclosure
+            ? MonitoringWarningView::WarningType::kFullWarning
+            : MonitoringWarningView::WarningType::kSoftWarning);
+  }
+
   void OnLanguageSelected(LoginMenuView::Item item) {
     language_changed_by_user_ = true;
     selected_language_item_ = item;
@@ -497,6 +532,7 @@ class RightPaneView : public NonAccessibleView,
   SelectionButtonView* keyboard_selection_ = nullptr;
   ArrowButtonView* submit_button_ = nullptr;
   views::StyledLabel* learn_more_label_ = nullptr;
+  MonitoringWarningView* monitoring_warning_view_ = nullptr;
 
   std::unique_ptr<LoginBubble> language_menu_;
   std::unique_ptr<LoginBubble> keyboard_menu_;
@@ -674,6 +710,11 @@ void LoginExpandedPublicAccountView::ShowWarningDialog() {
 
 void LoginExpandedPublicAccountView::OnWarningDialogClosed() {
   warning_dialog_ = nullptr;
+}
+
+void LoginExpandedPublicAccountView::SetShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {
+  right_pane_->SetShowFullManagementDisclosure(show_full_management_disclosure);
 }
 
 void LoginExpandedPublicAccountView::OnPaint(gfx::Canvas* canvas) {
