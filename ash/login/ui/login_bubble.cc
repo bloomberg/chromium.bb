@@ -36,6 +36,7 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_properties.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -325,11 +326,24 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       remove_user_button_->SetAccessibleName(remove_user_label_->text());
       container->AddChildView(remove_user_button_);
     }
+  }
 
-    // The user menu is focusable so that the we can detect when to refocus the
-    // lock window from tab navigation, otherwise focus will be trapped inside
-    // of the bubble.
-    SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  void RequestFocus() override {
+    // This view has no actual interesting contents to focus, so immediately
+    // forward to the button.
+    if (remove_user_button_)
+      remove_user_button_->RequestFocus();
+  }
+
+  void AddedToWidget() override {
+    LoginBaseBubbleView::AddedToWidget();
+    // Set up focus traversable parent so that keyboard focus can continue in
+    // the lock window, otherwise focus will be trapped inside the bubble.
+    if (GetAnchorView()) {
+      GetWidget()->SetFocusTraversableParent(
+          anchor_widget()->GetFocusTraversable());
+      GetWidget()->SetFocusTraversableParentView(GetAnchorView());
+    }
   }
 
   ~LoginUserMenuView() override = default;
@@ -345,16 +359,6 @@ class LoginUserMenuView : public LoginBaseBubbleView,
     // the margin width here. Margin height is accounted for by the layout code.
     size.Enlarge(kUserMenuMarginWidth, 0);
     return size;
-  }
-  void OnFocus() override {
-    // This view has no actual interesting contents to focus, so immediately
-    // forward to the button.
-    remove_user_button_->RequestFocus();
-  }
-  void AboutToRequestFocusFromTabTraversal(bool reverse) override {
-    // Redirect the focus event to the lock screen.
-    Shell::Get()->focus_cycler()->FocusWidget(LockScreen::Get()->window());
-    LockScreen::Get()->window()->GetFocusManager()->AdvanceFocus(reverse);
   }
 
   // views::ButtonListener:
@@ -488,6 +492,7 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
       this, username, email, type, is_owner, anchor_view, bubble_opener,
       show_remove_user, std::move(on_remove_user_warning_shown),
       std::move(on_remove_user_requested));
+  // Prevent focus from going into |bubble_view_|.
   bool had_focus = bubble_view_->GetBubbleOpener() &&
                    bubble_view_->GetBubbleOpener()->HasFocus();
   Show();
