@@ -287,7 +287,7 @@ bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
 
   // Many effects (e.g. filters, clip-paths) can make a clip rect not tight.
   mapping_rect.ClearIsTight();
-  return true;
+  return !mapping_rect.Rect().IsEmpty();
 }
 
 FloatClipRect GeometryMapper::LocalToAncestorClipRect(
