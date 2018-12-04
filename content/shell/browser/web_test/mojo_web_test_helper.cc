@@ -8,18 +8,18 @@
 
 namespace content {
 
-MojoLayoutTestHelper::MojoLayoutTestHelper() {}
+MojoWebTestHelper::MojoWebTestHelper() {}
 
-MojoLayoutTestHelper::~MojoLayoutTestHelper() {}
+MojoWebTestHelper::~MojoWebTestHelper() {}
 
 // static
-void MojoLayoutTestHelper::Create(mojom::MojoLayoutTestHelperRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<MojoLayoutTestHelper>(),
+void MojoWebTestHelper::Create(mojom::MojoLayoutTestHelperRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<MojoWebTestHelper>(),
                           std::move(request));
 }
 
-void MojoLayoutTestHelper::Reverse(const std::string& message,
-                                   ReverseCallback callback) {
+void MojoWebTestHelper::Reverse(const std::string& message,
+                                ReverseCallback callback) {
   std::move(callback).Run(std::string(message.rbegin(), message.rend()));
 }
 

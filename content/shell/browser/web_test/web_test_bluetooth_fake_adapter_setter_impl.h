@@ -10,11 +10,11 @@
 
 namespace content {
 
-class LayoutTestBluetoothFakeAdapterSetterImpl
+class WebTestBluetoothFakeAdapterSetterImpl
     : public mojom::LayoutTestBluetoothFakeAdapterSetter {
  public:
-  LayoutTestBluetoothFakeAdapterSetterImpl();
-  ~LayoutTestBluetoothFakeAdapterSetterImpl() override;
+  WebTestBluetoothFakeAdapterSetterImpl();
+  ~WebTestBluetoothFakeAdapterSetterImpl() override;
 
   static void Create(
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
@@ -22,7 +22,7 @@ class LayoutTestBluetoothFakeAdapterSetterImpl
  private:
   void Set(const std::string& adapter_name, SetCallback callback) override;
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestBluetoothFakeAdapterSetterImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebTestBluetoothFakeAdapterSetterImpl);
 };
 
 }  // namespace content

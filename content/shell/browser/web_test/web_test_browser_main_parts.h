@@ -16,10 +16,10 @@ namespace content {
 
 class ShellPluginServiceFilter;
 
-class LayoutTestBrowserMainParts : public ShellBrowserMainParts {
+class WebTestBrowserMainParts : public ShellBrowserMainParts {
  public:
-  explicit LayoutTestBrowserMainParts(const MainFunctionParams& parameters);
-  ~LayoutTestBrowserMainParts() override;
+  explicit WebTestBrowserMainParts(const MainFunctionParams& parameters);
+  ~WebTestBrowserMainParts() override;
 
  private:
   void InitializeBrowserContexts() override;
@@ -29,7 +29,7 @@ class LayoutTestBrowserMainParts : public ShellBrowserMainParts {
   std::unique_ptr<ShellPluginServiceFilter> plugin_service_filter_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestBrowserMainParts);
+  DISALLOW_COPY_AND_ASSIGN(WebTestBrowserMainParts);
 };
 
 }  // namespace content
