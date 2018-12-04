@@ -217,18 +217,11 @@ bool IsCrostiniAllowedForProfileImpl(Profile* profile) {
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     return false;
   }
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user->IsAffiliated() &&
-      !crostini::IsUnaffiliatedCrostiniAllowedByPolicy()) {
-    return false;
-  }
   if (!crostini::CrostiniManager::IsDevKvmPresent()) {
     // Hardware is physically incapable, no matter what the user wants.
     return false;
   }
   return virtual_machines::AreVirtualMachinesAllowedByVersionAndChannel() &&
-         virtual_machines::AreVirtualMachinesAllowedByPolicy() &&
          base::FeatureList::IsEnabled(features::kCrostini);
 }
 
@@ -241,8 +234,16 @@ void SetCrostiniUIAllowedForTesting(bool enabled) {
 }
 
 bool IsCrostiniAllowedForProfile(Profile* profile) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user->IsAffiliated() && !IsUnaffiliatedCrostiniAllowedByPolicy()) {
+    return false;
+  }
   if (!profile->GetPrefs()->GetBoolean(
           crostini::prefs::kUserCrostiniAllowedByPolicy)) {
+    return false;
+  }
+  if (!virtual_machines::AreVirtualMachinesAllowedByPolicy()) {
     return false;
   }
   return IsCrostiniAllowedForProfileImpl(profile);
