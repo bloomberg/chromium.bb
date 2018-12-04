@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
 
@@ -210,10 +211,11 @@ void CSSFontVariationSettingsInterpolationType::ApplyStandardPropertyValue(
   scoped_refptr<FontVariationSettings> settings =
       FontVariationSettings::Create();
   wtf_size_t length = numbers.length();
+  // Do clampTo here, which follows the same logic as ConsumeFontVariationTag.
   for (wtf_size_t i = 0; i < length; ++i) {
     settings->Append(FontVariationAxis(
         tags[i],
-        static_cast<float>(ToInterpolableNumber(numbers.Get(i))->Value())));
+        clampTo<float>(ToInterpolableNumber(numbers.Get(i))->Value())));
   }
   state.GetFontBuilder().SetVariationSettings(settings);
 }
