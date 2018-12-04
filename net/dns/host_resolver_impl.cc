@@ -152,16 +152,6 @@ bool ContainsIcannNameCollisionIp(const AddressList& addr_list) {
   return false;
 }
 
-void UmaAsyncDnsResolveStatus(DnsResolveStatus result) {
-  UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ResolveStatus",
-                            result,
-                            RESOLVE_STATUS_MAX);
-}
-
-bool ResemblesNetBIOSName(const std::string& hostname) {
-  return (hostname.size() < 16) && (hostname.find('.') == std::string::npos);
-}
-
 // True if |hostname| ends with either ".local" or ".local.".
 bool ResemblesMulticastDNSName(const std::string& hostname) {
   DCHECK(!hostname.empty());
@@ -175,38 +165,6 @@ bool ResemblesMulticastDNSName(const std::string& hostname) {
   return hostname.size() > kSuffixLenTrimmed &&
       !hostname.compare(hostname.size() - kSuffixLenTrimmed, kSuffixLenTrimmed,
                         kSuffix, kSuffixLenTrimmed);
-}
-
-// A macro to simplify code and readability.
-#define DNS_HISTOGRAM_BY_PRIORITY(basename, priority, time)        \
-  do {                                                             \
-    switch (priority) {                                            \
-      case HIGHEST:                                                \
-        UMA_HISTOGRAM_LONG_TIMES_100(basename ".HIGHEST", time);   \
-        break;                                                     \
-      case MEDIUM:                                                 \
-        UMA_HISTOGRAM_LONG_TIMES_100(basename ".MEDIUM", time);    \
-        break;                                                     \
-      case LOW:                                                    \
-        UMA_HISTOGRAM_LONG_TIMES_100(basename ".LOW", time);       \
-        break;                                                     \
-      case LOWEST:                                                 \
-        UMA_HISTOGRAM_LONG_TIMES_100(basename ".LOWEST", time);    \
-        break;                                                     \
-      case IDLE:                                                   \
-        UMA_HISTOGRAM_LONG_TIMES_100(basename ".IDLE", time);      \
-        break;                                                     \
-      case THROTTLED:                                              \
-        UMA_HISTOGRAM_LONG_TIMES_100(basename ".THROTTLED", time); \
-        break;                                                     \
-    }                                                              \
-    UMA_HISTOGRAM_LONG_TIMES_100(basename, time);                  \
-  } while (0)
-
-void RecordTTL(base::TimeDelta ttl) {
-  UMA_HISTOGRAM_CUSTOM_TIMES("AsyncDNS.TTL", ttl,
-                             base::TimeDelta::FromSeconds(1),
-                             base::TimeDelta::FromDays(1), 100);
 }
 
 bool ConfigureAsyncDnsNoFallbackFieldTrial() {
@@ -1146,23 +1104,10 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
                              int net_error,
                              const DnsResponse* response) {
     DCHECK(transaction);
-    base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
     if (net_error != OK && !(net_error == ERR_NAME_NOT_RESOLVED && response &&
                              response->IsValid())) {
-      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionFailure", duration);
       OnFailure(net_error, DnsResponse::DNS_PARSE_OK, base::nullopt);
       return;
-    }
-
-    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionSuccess", duration);
-    switch (transaction->GetType()) {
-      case dns_protocol::kTypeA:
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionSuccess_A", duration);
-        break;
-      case dns_protocol::kTypeAAAA:
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TransactionSuccess_AAAA",
-                                     duration);
-        break;
     }
 
     DnsResponse::Result parse_result = DnsResponse::DNS_PARSE_RESULT_MAX;
@@ -1241,8 +1186,6 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     base::TimeDelta ttl;
     DnsResponse::Result parse_result =
         response->ParseToAddressList(&addresses, &ttl);
-    UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ParseToAddressList", parse_result,
-                              DnsResponse::DNS_PARSE_RESULT_MAX);
 
     if (parse_result != DnsResponse::DNS_PARSE_OK) {
       *out_results = HostCache::Entry(ERR_DNS_MALFORMED_RESPONSE, AddressList(),
@@ -1264,15 +1207,10 @@ class HostResolverImpl::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     results.set_addresses(addr_list);
 
     if (!success) {
-      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.SortFailure",
-                                   tick_clock_->NowTicks() - sort_start_time);
       OnFailure(ERR_DNS_SORT_ERROR, DnsResponse::DNS_PARSE_OK,
                 results.GetOptionalTtl());
       return;
     }
-
-    UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.SortSuccess",
-                                 tick_clock_->NowTicks() - sort_start_time);
 
     // AddressSorter prunes unusable destinations.
     if (addr_list.empty() &&
@@ -1650,21 +1588,8 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     if (dns_task_error_ != OK) {
       // This ProcTask was a fallback resolution after a failed DnsTask.
-      base::TimeDelta duration = tick_clock_->NowTicks() - start_time;
       if (net_error == OK) {
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.FallbackSuccess", duration);
-        if ((dns_task_error_ == ERR_NAME_NOT_RESOLVED) &&
-            ResemblesNetBIOSName(key_.hostname)) {
-          UmaAsyncDnsResolveStatus(RESOLVE_STATUS_SUSPECT_NETBIOS);
-        } else {
-          UmaAsyncDnsResolveStatus(RESOLVE_STATUS_PROC_SUCCESS);
-        }
-        base::UmaHistogramSparse("Net.DNS.DnsTask.Errors",
-                                 std::abs(dns_task_error_));
         resolver_->OnFallbackResolve(dns_task_error_);
-      } else {
-        UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.FallbackFail", duration);
-        UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
       }
     }
 
@@ -1757,7 +1682,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       KillDnsTask();
       StartProcTask();
     } else {
-      UmaAsyncDnsResolveStatus(RESOLVE_STATUS_FAIL);
       base::TimeDelta ttl = failure_results.has_ttl()
                                 ? failure_results.ttl()
                                 : base::TimeDelta::FromSeconds(0);
@@ -1778,9 +1702,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     }
 
     UMA_HISTOGRAM_LONG_TIMES_100("Net.DNS.DnsTask.SuccessTime", duration);
-
-    UmaAsyncDnsResolveStatus(RESOLVE_STATUS_DNS_SUCCESS);
-    RecordTTL(results.ttl());
 
     resolver_->OnDnsTaskResolve();
 
@@ -1969,13 +1890,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                                       results.error());
 
     DCHECK(!requests_.empty());
-
-    if (results.error() == OK || results.error() == ERR_ICANN_NAME_COLLISION) {
-      // Record this histogram here, when we know the system has a valid DNS
-      // configuration.
-      UMA_HISTOGRAM_BOOLEAN("AsyncDNS.HaveDnsConfig",
-                            resolver_->received_dns_config_);
-    }
 
     bool did_complete = (results.error() != ERR_NETWORK_CHANGED) &&
                         (results.error() != ERR_HOST_RESOLVER_QUEUE_TOO_LARGE);
@@ -2176,8 +2090,6 @@ void HostResolverImpl::SetDnsClient(std::unique_ptr<DnsClient> dns_client) {
       num_dns_failures_ < kMaximumDnsFailures) {
     dns_client_->SetConfig(GetBaseDnsConfig(false));
     num_dns_failures_ = 0;
-    if (dns_client_->GetConfig())
-      UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
   }
 
   AbortDnsTasks(ERR_NETWORK_CHANGED, false /* fallback_only */);
@@ -2592,11 +2504,6 @@ base::Optional<HostCache::Entry> HostResolverImpl::ServeFromCache(
   if (!cache_entry)
     return base::nullopt;
 
-  if (cache_entry->error() == OK) {
-    if (cache_entry->has_ttl())
-      RecordTTL(cache_entry->ttl());
-  }
-
   return *cache_entry;
 }
 
@@ -2973,8 +2880,6 @@ void HostResolverImpl::UpdateDNSConfig(bool config_changed) {
     DCHECK(config_changed || !dns_client_->GetConfig() ||
            dns_client_->GetConfig()->Equals(dns_config));
     dns_client_->SetConfig(dns_config);
-    if (dns_client_->GetConfig())
-      UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", true);
   }
   use_proctask_by_default_ = false;
 
@@ -3031,10 +2936,6 @@ void HostResolverImpl::OnFallbackResolve(int dns_task_error) {
 
   // Fallback all fallback-allowed DnsTasks to ProcTasks.
   AbortDnsTasks(ERR_FAILED, true /* fallback_only */);
-
-  UMA_HISTOGRAM_BOOLEAN("AsyncDNS.DnsClientEnabled", false);
-  base::UmaHistogramSparse("AsyncDNS.DnsClientDisabledReason",
-                           std::abs(dns_task_error));
 }
 
 MDnsClient* HostResolverImpl::GetOrCreateMdnsClient() {

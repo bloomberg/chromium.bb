@@ -840,14 +840,11 @@ class DnsTransactionTestWithMockTime : public DnsTransactionTestBase,
 };
 
 TEST_F(DnsTransactionTest, Lookup) {
-  base::HistogramTester histograms;
   AddAsyncQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype,
                            kT0ResponseDatagram, arraysize(kT0ResponseDatagram));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
-  histograms.ExpectUniqueSample("AsyncDNS.Rcode", dns_protocol::kRcodeNOERROR,
-                                1);
 }
 
 TEST_F(DnsTransactionTest, LookupWithEDNSOption) {
@@ -890,7 +887,6 @@ TEST_F(DnsTransactionTest, LookupWithMultipleEDNSOptions) {
 // Concurrent lookup tests assume that DnsTransaction::Start immediately
 // consumes a socket from ClientSocketFactory.
 TEST_F(DnsTransactionTest, ConcurrentLookup) {
-  base::HistogramTester histograms;
   AddAsyncQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype,
                            kT0ResponseDatagram, arraysize(kT0ResponseDatagram));
   AddAsyncQueryAndResponse(1 /* id */, kT1HostName, kT1Qtype,
@@ -905,8 +901,6 @@ TEST_F(DnsTransactionTest, ConcurrentLookup) {
 
   EXPECT_TRUE(helper0.has_completed());
   EXPECT_TRUE(helper1.has_completed());
-  histograms.ExpectUniqueSample("AsyncDNS.Rcode", dns_protocol::kRcodeNOERROR,
-                                2);
 }
 
 TEST_F(DnsTransactionTest, CancelLookup) {
@@ -1028,25 +1022,19 @@ TEST_F(DnsTransactionTest, MismatchedResponseNxdomain) {
 }
 
 TEST_F(DnsTransactionTest, ServerFail) {
-  base::HistogramTester histograms;
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype, dns_protocol::kRcodeSERVFAIL);
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_SERVER_FAILED);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
   ASSERT_NE(helper0.response(), nullptr);
   EXPECT_EQ(helper0.response()->rcode(), dns_protocol::kRcodeSERVFAIL);
-  histograms.ExpectUniqueSample("AsyncDNS.Rcode", dns_protocol::kRcodeSERVFAIL,
-                                1);
 }
 
 TEST_F(DnsTransactionTest, NoDomain) {
-  base::HistogramTester histograms;
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype, dns_protocol::kRcodeNXDOMAIN);
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_NAME_NOT_RESOLVED);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
-  histograms.ExpectUniqueSample("AsyncDNS.Rcode", dns_protocol::kRcodeNXDOMAIN,
-                                1);
 }
 
 TEST_F(DnsTransactionTestWithMockTime, Timeout) {
@@ -1889,7 +1877,6 @@ TEST_F(DnsTransactionTest, HttpsPostLookupWithLog) {
 }
 
 TEST_F(DnsTransactionTest, TCPLookup) {
-  base::HistogramTester histograms;
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
   AddQueryAndResponse(0 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
@@ -1897,12 +1884,9 @@ TEST_F(DnsTransactionTest, TCPLookup) {
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
-  histograms.ExpectUniqueSample("AsyncDNS.Rcode", dns_protocol::kRcodeNOERROR,
-                                2);
 }
 
 TEST_F(DnsTransactionTest, TCPFailure) {
-  base::HistogramTester histograms;
   AddAsyncQueryAndRcode(kT0HostName, kT0Qtype,
                         dns_protocol::kRcodeNOERROR | dns_protocol::kFlagTC);
   AddQueryAndRcode(kT0HostName, kT0Qtype, dns_protocol::kRcodeSERVFAIL, ASYNC,
@@ -1912,11 +1896,6 @@ TEST_F(DnsTransactionTest, TCPFailure) {
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
   ASSERT_NE(helper0.response(), nullptr);
   EXPECT_EQ(helper0.response()->rcode(), dns_protocol::kRcodeSERVFAIL);
-  histograms.ExpectBucketCount("AsyncDNS.Rcode", dns_protocol::kRcodeNOERROR,
-                               1);
-  histograms.ExpectBucketCount("AsyncDNS.Rcode", dns_protocol::kRcodeSERVFAIL,
-                               1);
-  histograms.ExpectTotalCount("AsyncDNS.Rcode", 2);
 }
 
 TEST_F(DnsTransactionTest, TCPMalformed) {

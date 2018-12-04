@@ -249,14 +249,8 @@ class DnsUDPAttempt : public DnsAttempt {
     if (rv == ERR_IO_PENDING)
       return rv;
 
-    if (rv == OK) {
+    if (rv == OK)
       DCHECK_EQ(STATE_NONE, next_state_);
-      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.UDPAttemptSuccess",
-                                   base::TimeTicks::Now() - start_time_);
-    } else {
-      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.UDPAttemptFail",
-                                   base::TimeTicks::Now() - start_time_);
-    }
     return rv;
   }
 
@@ -633,14 +627,8 @@ class DnsTCPAttempt : public DnsAttempt {
     } while (rv != ERR_IO_PENDING && next_state_ != STATE_NONE);
 
     set_result(rv);
-    if (rv == OK) {
+    if (rv == OK)
       DCHECK_EQ(STATE_NONE, next_state_);
-      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TCPAttemptSuccess",
-                                   base::TimeTicks::Now() - start_time_);
-    } else if (rv != ERR_IO_PENDING) {
-      UMA_HISTOGRAM_LONG_TIMES_100("AsyncDNS.TCPAttemptFail",
-                                   base::TimeTicks::Now() - start_time_);
-    }
     return rv;
   }
 
@@ -852,8 +840,6 @@ class DnsTransactionImpl : public DnsTransaction,
     AttemptResult result(PrepareSearch(), NULL);
     if (result.rv == OK) {
       qnames_initial_size_ = qnames_.size();
-      if (qtype_ == dns_protocol::kTypeA)
-        UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.SuffixSearchStart", qnames_.size());
       result = ProcessAttemptResult(StartQuery());
     }
 
@@ -947,17 +933,6 @@ class DnsTransactionImpl : public DnsTransaction,
     CHECK(result.rv != OK || response != NULL);
 
     timer_.Stop();
-    RecordLostPacketsIfAny();
-    if (result.rv == OK)
-      UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.AttemptCountSuccess", attempts_count_);
-    else
-      UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.AttemptCountFail", attempts_count_);
-
-    if (response && qtype_ == dns_protocol::kTypeA) {
-      UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.SuffixSearchRemain", qnames_.size());
-      UMA_HISTOGRAM_COUNTS_1M("AsyncDNS.SuffixSearchDone",
-                              qnames_initial_size_ - qnames_.size());
-    }
 
     net_log_.EndEventWithNetErrorCode(NetLogEventType::DNS_TRANSACTION,
                                       result.rv);
@@ -1084,8 +1059,6 @@ class DnsTransactionImpl : public DnsTransaction,
     std::unique_ptr<DnsQuery> query =
         previous_attempt->GetQuery()->CloneWithNewId(id);
 
-    RecordLostPacketsIfAny();
-
     // Cancel all attempts that have not received a response, no point waiting
     // on them.
     ClearAttempts(nullptr);
@@ -1122,7 +1095,6 @@ class DnsTransactionImpl : public DnsTransaction,
     first_server_index_ = session_->config().nameservers.empty()
                               ? 0
                               : session_->NextFirstServerIndex();
-    RecordLostPacketsIfAny();
     attempts_.clear();
     had_tcp_attempt_ = false;
     return MakeAttempt();
@@ -1150,41 +1122,11 @@ class DnsTransactionImpl : public DnsTransaction,
       DoCallback(result);
   }
 
-  // Record packet loss for any incomplete attempts.
-  void RecordLostPacketsIfAny() {
-    // Loop through attempts until we find first that is completed
-    size_t first_completed = 0;
-    for (first_completed = 0; first_completed < attempts_.size();
-         ++first_completed) {
-      if (attempts_[first_completed]->is_completed())
-        break;
-    }
-    // If there were no completed attempts, then we must be offline, so don't
-    // record any attempts as lost packets.
-    if (first_completed == attempts_.size())
-      return;
-
-    size_t num_servers = session_->config().nameservers.size() +
-                         session_->config().dns_over_https_servers.size();
-    std::vector<int> server_attempts(num_servers);
-    for (size_t i = 0; i < first_completed; ++i) {
-      unsigned server_index = attempts_[i]->server_index();
-      int server_attempt = server_attempts[server_index]++;
-      // Don't record lost packet unless attempt is in pending state.
-      if (!attempts_[i]->is_pending())
-        continue;
-      session_->RecordLostPacket(server_index, server_attempt);
-    }
-  }
-
   void LogResponse(const DnsAttempt* attempt) {
     if (attempt && attempt->GetResponse()) {
       net_log_.AddEvent(NetLogEventType::DNS_TRANSACTION_RESPONSE,
                         base::Bind(&DnsAttempt::NetLogResponseCallback,
                                    base::Unretained(attempt)));
-
-      base::UmaHistogramSparse("AsyncDNS.Rcode",
-                               attempt->GetResponse()->rcode());
     }
   }
 
