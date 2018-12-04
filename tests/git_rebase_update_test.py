@@ -69,7 +69,7 @@ class GitRebaseUpdateTest(git_test_utils.GitRepoReadWriteTestBase):
     super(GitRebaseUpdateTest, self).tearDown()
 
   def testRebaseUpdate(self):
-    self.repo.git('checkout', 'branch_K')
+    self.repo.git('checkout', 'origin/master')
 
     self.repo.run(self.nb.main, ['foobar'])
     self.assertEqual(self.repo.git('rev-parse', 'HEAD').stdout,
