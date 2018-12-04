@@ -47,7 +47,9 @@ namespace wm {
 class ActivationChangeObserver;
 }
 
+namespace chromecast {
 class CastScreen;
+}
 
 namespace exo {
 
@@ -57,7 +59,7 @@ class WMHelperCastShell : public WMHelper {
  public:
   WMHelperCastShell(aura::Env* env,
                     chromecast::CastWindowManagerAura* cast_window_manager_aura,
-                    CastScreen* cast_screen);
+                    chromecast::CastScreen* cast_screen);
   ~WMHelperCastShell() override;
 
   // Overridden from WMHelper
@@ -126,7 +128,7 @@ class WMHelperCastShell : public WMHelper {
 
   chromecast::CastWindowManagerAura* cast_window_manager_aura_;
   aura::Env* const env_;
-  CastScreen* cast_screen_;
+  chromecast::CastScreen* cast_screen_;
   CastDisplayObserver display_observer_;
   LifetimeManager lifetime_manager_;
 

@@ -23,7 +23,7 @@ namespace exo {
 WMHelperCastShell::WMHelperCastShell(
     aura::Env* env,
     chromecast::CastWindowManagerAura* cast_window_manager_aura,
-    CastScreen* cast_screen)
+    chromecast::CastScreen* cast_screen)
     : cast_window_manager_aura_(cast_window_manager_aura),
       env_(env),
       cast_screen_(cast_screen) {
@@ -59,11 +59,11 @@ void WMHelperCastShell::RemoveFocusObserver(
 }
 
 void WMHelperCastShell::AddDragDropObserver(DragDropObserver* observer) {
-  drag_drop_observers_.AddObserver(observer);
+  NOTIMPLEMENTED();
 }
 
 void WMHelperCastShell::RemoveDragDropObserver(DragDropObserver* observer) {
-  drag_drop_observers_.RemoveObserver(observer);
+  NOTIMPLEMENTED();
 }
 
 void WMHelperCastShell::SetDragDropDelegate(aura::Window* window) {
@@ -86,7 +86,10 @@ void WMHelperCastShell::RemoveVSyncObserver(
 
 void WMHelperCastShell::OnDragEntered(const ui::DropTargetEvent& event) {}
 
-int WMHelperCastShell::OnDragUpdated(const ui::DropTargetEvent& event) {}
+int WMHelperCastShell::OnDragUpdated(const ui::DropTargetEvent& event) {
+  NOTIMPLEMENTED();
+  return 0;
+}
 
 void WMHelperCastShell::OnDragExited() {}
 
