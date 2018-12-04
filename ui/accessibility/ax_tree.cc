@@ -882,7 +882,8 @@ int32_t AXTree::GetNextNegativeInternalNodeId() {
   return return_value;
 }
 
-// Populates items vector with all items within ordered set whose roles match.
+// Populates items vector with all items within ordered_set.
+// Will only add items whose roles match the role of the ordered_set.
 void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
                                      const AXNode* local_parent,
                                      std::vector<const AXNode*>& items) const {
@@ -908,7 +909,10 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
 
 // Given an ordered_set, compute pos_in_set and set_size for all of its items
 // and store values in cache.
+// Ordered_set should never be nullptr.
 void AXTree::ComputeSetSizePosInSetAndCache(const AXNode* ordered_set) {
+  DCHECK(ordered_set);
+
   // Default ordered_set's pos_in_set and set_size to 0.
   ordered_set_info_map_[ordered_set->id()] = OrderedSetInfo();
 
@@ -983,9 +987,11 @@ void AXTree::ComputeSetSizePosInSetAndCache(const AXNode* ordered_set) {
 // pos_in_set values, minimizing the size of the cache.
 int32_t AXTree::GetPosInSet(const AXNode& item) {
   // If item's id is not in the cache, compute it.
-  if (ordered_set_info_map_.find(item.id()) == ordered_set_info_map_.end())
-    ComputeSetSizePosInSetAndCache(item.GetOrderedSet());
-
+  if (ordered_set_info_map_.find(item.id()) == ordered_set_info_map_.end()) {
+    const AXNode* ordered_set = item.GetOrderedSet();
+    if (ordered_set)
+      ComputeSetSizePosInSetAndCache(ordered_set);
+  }
   return ordered_set_info_map_[item.id()].pos_in_set;
 }
 
@@ -996,17 +1002,14 @@ int32_t AXTree::GetPosInSet(const AXNode& item) {
 // This function is guaranteed to be only called on nodes that can hold
 // set_size values, minimizing the size of the cache.
 int32_t AXTree::GetSetSize(const AXNode& node) {
-  const AXNode* ordered_set;
-
   // If node's id is not in the cache, compute it.
   if (ordered_set_info_map_.find(node.id()) == ordered_set_info_map_.end()) {
+    const AXNode* ordered_set = &node;
     // If node is item-like, find its outerlying ordered set
     if (IsItemLike(node.data().role))
       ordered_set = node.GetOrderedSet();
-    // If its set-like, then it is the ordered set
-    else
-      ordered_set = &node;
-    ComputeSetSizePosInSetAndCache(ordered_set);
+    if (ordered_set)
+      ComputeSetSizePosInSetAndCache(ordered_set);
   }
   return ordered_set_info_map_[node.id()].set_size;
 }

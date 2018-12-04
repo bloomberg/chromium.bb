@@ -362,7 +362,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
     ~OrderedSetInfo() {}
   };
 
-  // Populates items vector with all items within ordered_set whose roles match.
+  // Populates items vector with all items within ordered_set.
+  // Will only add items whose roles match the role of the ordered_set.
   void PopulateOrderedSetItems(const AXNode* ordered_set,
                                const AXNode* local_parent,
                                std::vector<const AXNode*>& items) const;
@@ -370,8 +371,10 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // values of all items in ordered_set and caches those values.
   void ComputeSetSizePosInSetAndCache(const AXNode* ordered_set);
 
-  // Map from node ID to OrderedSetInfo, if the given node
-  // is an element within an ordered set.
+  // Map from node ID to OrderedSetInfo.
+  // Item-like and ordered-set-like objects will map to populated OrderedSetInfo
+  // objects.
+  // All other objects will map to default-constructed OrderedSetInfo objects.
   // Invalidated every time the tree is updated.
   mutable std::unordered_map<int32_t, OrderedSetInfo> ordered_set_info_map_;
 

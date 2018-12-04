@@ -1943,7 +1943,7 @@ TEST(AXTreeTest, TestSetSizePosInSetAddItem) {
   EXPECT_EQ(new_item4->GetSetSize(), 4);
 }
 
-// Tests that the outerlying ordered set reports its set_size. Ordered sets
+// Tests that the outerlying ordered set reports a set_size. Ordered sets
 // should not report a pos_in_set value other than 0, since they are not
 // considered to be items within a set (even when nested).
 TEST(AXTreeTest, TestOrderedSetReportsSetSize) {
@@ -2025,6 +2025,33 @@ TEST(AXTreeTest, TestOrderedSetReportsSetSize) {
   // Even though list is empty, kSetSize attribute was set, so it takes
   // precedence
   EXPECT_EQ(inner_list4->GetSetSize(), 5);
+}
+
+// Tests GetPosInSet and GetSetSize code on invalid input
+TEST(AXTreeTest, TestSetSizePosInSetInvalid) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(3);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kListItem;  // 0 of 0
+  tree_update.nodes[0].child_ids = {2, 3};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListItem;
+  tree_update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kPosInSet,
+                                       4);  // 0 of 0
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListItem;
+  AXTree tree(tree_update);
+
+  AXNode* item1 = tree.GetFromId(1);
+  EXPECT_EQ(item1->GetPosInSet(), 0);
+  EXPECT_EQ(item1->GetSetSize(), 0);
+  AXNode* item2 = tree.GetFromId(2);
+  EXPECT_EQ(item2->GetPosInSet(), 0);
+  EXPECT_EQ(item2->GetSetSize(), 0);
+  AXNode* item3 = tree.GetFromId(3);
+  EXPECT_EQ(item3->GetPosInSet(), 0);
+  EXPECT_EQ(item3->GetSetSize(), 0);
 }
 
 }  // namespace ui
