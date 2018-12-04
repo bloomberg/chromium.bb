@@ -199,6 +199,7 @@ void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   tpm_firmware_update::ShowNotificationIfNeeded(user_profile);
   ArcTermsOfServiceScreen::MaybeLaunchArcSettings(user_profile);
   SyncConsentScreen::MaybeLaunchSyncConsentSettings(user_profile);
+  UserSessionManager::GetInstance()->StartAccountManagerMigration(user_profile);
 }
 
 }  // namespace

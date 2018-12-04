@@ -271,6 +271,9 @@ class UserSessionManager
   // and show the message accordingly.
   void CheckEolStatus(Profile* profile);
 
+  // Starts migrating accounts to Chrome OS Account Manager.
+  void StartAccountManagerMigration(Profile* profile);
+
   // Note this could return NULL if not enabled.
   EasyUnlockKeyManager* GetEasyUnlockKeyManager();
 

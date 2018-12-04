@@ -35,6 +35,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -2031,6 +2032,11 @@ void UserSessionManager::CheckEolStatus(Profile* profile) {
   iter->second->CheckEolStatus();
 }
 
+void UserSessionManager::StartAccountManagerMigration(Profile* profile) {
+  chromeos::AccountManagerMigratorFactory::GetForBrowserContext(profile)
+      ->Start();
+}
+
 EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
   if (!easy_unlock_key_manager_)
     easy_unlock_key_manager_.reset(new EasyUnlockKeyManager);
@@ -2114,6 +2120,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
     SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
   }
+  StartAccountManagerMigration(profile);
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(

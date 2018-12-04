@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data/browsing_data_history_observer_service.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate_factory.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -263,6 +264,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   explore_sites::ExploreSitesServiceFactory::GetInstance();
 #endif
 #if defined(OS_CHROMEOS)
+  chromeos::AccountManagerMigratorFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::CupsPrintersManagerFactory::GetInstance();
   chromeos::SyncedPrintersManagerFactory::GetInstance();
