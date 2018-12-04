@@ -36,6 +36,7 @@ constexpr char kCachedImageFetcherEventHistogramName[] =
 constexpr char kImageUrl[] = "http://gstatic.img.com/foo.jpg";
 constexpr char kImageUrlHashed[] = "3H7UODDH3WKDWK6FQ3IZT3LQMVBPYJ4M";
 constexpr char kImageData[] = "data";
+const int kOverMaxCacheSize = 65 * 1024 * 1024;
 
 }  // namespace
 
@@ -92,6 +93,17 @@ class ImageCacheTest : public testing::Test {
       db()->LoadCallback(true);
       db()->UpdateCallback(true);
       db()->LoadKeysCallback(true);
+    }
+
+    RunUntilIdle();
+  }
+
+  void RunEvictionWhenFull(bool success) {
+    image_cache()->RunEvictionWhenFull();
+
+    if (success) {
+      db()->LoadCallback(true);
+      db()->UpdateCallback(true);
     }
 
     RunUntilIdle();
@@ -289,6 +301,20 @@ TEST_F(ImageCacheTest, Eviction) {
   histogram_tester().ExpectBucketCount(
       kCachedImageFetcherEventHistogramName,
       CachedImageFetcherEvent::kCacheStartupEvictionFinished, 1);
+}
+
+TEST_F(ImageCacheTest, EvictionWhenFull) {
+  PrepareImageCache();
+  InjectMetadata(kImageUrl, kOverMaxCacheSize);
+  clock()->SetNow(clock()->Now() + base::TimeDelta::FromDays(6));
+  RunEvictionWhenFull(/* success */ true);
+
+  // The data should be removed because it's over the allowed limit.
+  EXPECT_CALL(*this, DataCallback(""));
+  image_cache()->LoadImage(
+      false, kImageUrl,
+      base::BindOnce(&ImageCacheTest::DataCallback, base::Unretained(this)));
+  RunUntilIdle();
 }
 
 TEST_F(ImageCacheTest, EvictionTooSoon) {
