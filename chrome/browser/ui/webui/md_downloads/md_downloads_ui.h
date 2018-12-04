@@ -6,21 +6,39 @@
 #define CHROME_BROWSER_UI_WEBUI_MD_DOWNLOADS_MD_DOWNLOADS_UI_H_
 
 #include "base/macros.h"
-#include "content/public/browser/web_ui_controller.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/layout.h"
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace base {
 class RefCountedMemory;
 }
 
-class MdDownloadsUI : public content::WebUIController {
+class MdDownloadsDOMHandler;
+
+class MdDownloadsUI : public ui::MojoWebUIController,
+                      public md_downloads::mojom::PageHandlerFactory {
  public:
   explicit MdDownloadsUI(content::WebUI* web_ui);
+  ~MdDownloadsUI() override;
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
 
  private:
+  void BindPageHandlerFactory(
+      md_downloads::mojom::PageHandlerFactoryRequest request);
+
+  // md_downloads::mojom::PageHandlerFactory:
+  void CreatePageHandler(
+      md_downloads::mojom::PagePtr page,
+      md_downloads::mojom::PageHandlerRequest request) override;
+
+  std::unique_ptr<MdDownloadsDOMHandler> page_handler_;
+
+  mojo::Binding<md_downloads::mojom::PageHandlerFactory> page_factory_binding_;
+
   DISALLOW_COPY_AND_ASSIGN(MdDownloadsUI);
 };
 

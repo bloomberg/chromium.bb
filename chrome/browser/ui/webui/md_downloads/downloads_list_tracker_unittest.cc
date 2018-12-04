@@ -12,8 +12,10 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/ui/webui/md_downloads/mock_md_downloads_page.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -30,37 +32,6 @@ using testing::Return;
 
 namespace {
 
-uint64_t GetId(const base::Value& value) {
-  const base::DictionaryValue* dict;
-  CHECK(value.GetAsDictionary(&dict));
-
-  int id;
-  CHECK(dict->GetInteger("id", &id));
-  CHECK_GE(id, 0);
-  return static_cast<uint64_t>(id);
-}
-
-std::vector<uint64_t> GetIds(const base::Value& value) {
-  std::vector<uint64_t> ids;
-
-  const base::ListValue* list;
-  if (value.GetAsList(&list)) {
-    for (const auto& list_item : *list)
-      ids.push_back(GetId(list_item));
-  } else {
-    ids.push_back(GetId(value));
-  }
-
-  return ids;
-}
-
-int GetIndex(const base::Value* value) {
-  CHECK(value);
-  int index;
-  CHECK(value->GetAsInteger(&index));
-  return index;
-}
-
 bool ShouldShowItem(const DownloadItem& item) {
   DownloadItemModel model(const_cast<DownloadItem*>(&item));
   return model.ShouldShowInShelf();
@@ -72,8 +43,10 @@ bool ShouldShowItem(const DownloadItem& item) {
 class TestDownloadsListTracker : public DownloadsListTracker {
  public:
   TestDownloadsListTracker(content::DownloadManager* manager,
-                           content::WebUI* web_ui)
-      : DownloadsListTracker(manager, web_ui, base::Bind(&ShouldShowItem)) {}
+                           md_downloads::mojom::PagePtr page)
+      : DownloadsListTracker(manager,
+                             std::move(page),
+                             base::BindRepeating(&ShouldShowItem)) {}
   ~TestDownloadsListTracker() override {}
 
   using DownloadsListTracker::IsIncognito;
@@ -81,12 +54,11 @@ class TestDownloadsListTracker : public DownloadsListTracker {
   using DownloadsListTracker::SetChunkSizeForTesting;
 
  protected:
-  std::unique_ptr<base::DictionaryValue> CreateDownloadItemValue(
-      download::DownloadItem* item) const override {
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    CHECK_LE(item->GetId(), static_cast<uint64_t>(INT_MAX));
-    dict->SetInteger("id", item->GetId());
-    return dict;
+  md_downloads::mojom::DataPtr CreateDownloadData(
+      download::DownloadItem* download_item) const override {
+    auto file_value = md_downloads::mojom::Data::New();
+    file_value->id = base::NumberToString(download_item->GetId());
+    return file_value;
   }
 };
 
@@ -124,13 +96,16 @@ class DownloadsListTrackerTest : public testing::Test {
   }
 
   void CreateTracker() {
-    tracker_.reset(new TestDownloadsListTracker(manager(), web_ui()));
+    tracker_.reset(
+        new TestDownloadsListTracker(manager(), page_.BindAndGetPtr()));
   }
 
   TestingProfile* profile() { return &profile_; }
   content::DownloadManager* manager() { return &manager_; }
-  content::TestWebUI* web_ui() { return &web_ui_; }
   TestDownloadsListTracker* tracker() { return tracker_.get(); }
+
+ protected:
+  testing::StrictMock<MockPage> page_;
 
  private:
   void GetAllDownloads(DownloadVector* result) {
@@ -143,7 +118,6 @@ class DownloadsListTrackerTest : public testing::Test {
   TestingProfile profile_;
 
   testing::NiceMock<content::MockDownloadManager> manager_;
-  content::TestWebUI web_ui_;
   std::unique_ptr<TestDownloadsListTracker> tracker_;
 
   std::vector<std::unique_ptr<MockDownloadItem>> mock_items_;
@@ -152,11 +126,11 @@ class DownloadsListTrackerTest : public testing::Test {
 TEST_F(DownloadsListTrackerTest, SetSearchTerms) {
   CreateTracker();
 
-  const base::ListValue empty_terms;
+  std::vector<std::string> empty_terms;
   EXPECT_FALSE(tracker()->SetSearchTerms(empty_terms));
 
-  base::ListValue search_terms;
-  search_terms.AppendString("search");
+  std::vector<std::string> search_terms;
+  search_terms.push_back("search");
   EXPECT_TRUE(tracker()->SetSearchTerms(search_terms));
 
   EXPECT_FALSE(tracker()->SetSearchTerms(search_terms));
@@ -164,7 +138,17 @@ TEST_F(DownloadsListTrackerTest, SetSearchTerms) {
   EXPECT_TRUE(tracker()->SetSearchTerms(empty_terms));
 
   // Notifying the page is left up to the handler in this case.
-  EXPECT_TRUE(web_ui()->call_data().empty());
+}
+
+MATCHER_P(MatchIds, expected, "") {
+  if (arg.size() != expected.size())
+    return false;
+
+  for (size_t i = 0; i < arg.size(); ++i) {
+    if (arg[i]->id != base::NumberToString(expected[i]))
+      return false;
+  }
+  return true;
 }
 
 TEST_F(DownloadsListTrackerTest, StartCallsInsertItems) {
@@ -172,18 +156,10 @@ TEST_F(DownloadsListTrackerTest, StartCallsInsertItems) {
 
   CreateTracker();
   ASSERT_TRUE(tracker()->GetItemForTesting(0));
-  EXPECT_TRUE(web_ui()->call_data().empty());
 
   tracker()->StartAndSendChunk();
-  ASSERT_FALSE(web_ui()->call_data().empty());
-
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
-
-  std::vector<uint64_t> ids = GetIds(*web_ui()->call_data()[0]->arg2());
-  ASSERT_FALSE(ids.empty());
-  EXPECT_EQ(first_item->GetId(), ids[0]);
+  std::vector<uint64_t> expected = {first_item->GetId()};
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 }
 
 // The page is in a loading state until it gets an insertItems call. Ensure that
@@ -192,60 +168,45 @@ TEST_F(DownloadsListTrackerTest, EmptyGetAllItemsStillCallsInsertItems) {
   CreateTracker();
 
   ASSERT_FALSE(tracker()->GetItemForTesting(0));
-  ASSERT_TRUE(web_ui()->call_data().empty());
-
   tracker()->StartAndSendChunk();
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  ASSERT_TRUE(web_ui()->call_data()[0]->arg2());
-  EXPECT_TRUE(GetIds(*web_ui()->call_data()[0]->arg2()).empty());
+  std::vector<uint64_t> expected;
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 }
 
 TEST_F(DownloadsListTrackerTest, OnDownloadCreatedCallsInsertItems) {
   CreateTracker();
+  EXPECT_CALL(page_, InsertItems(_, _));
   tracker()->StartAndSendChunk();
-  web_ui()->ClearTrackedCalls();
 
   ASSERT_FALSE(tracker()->GetItemForTesting(0));
   DownloadItem* first_item = CreateNextItem();
   tracker()->OnDownloadCreated(manager(), first_item);
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
-
-  std::vector<uint64_t> ids = GetIds(*web_ui()->call_data()[0]->arg2());
-  ASSERT_FALSE(ids.empty());
-  EXPECT_EQ(first_item->GetId(), ids[0]);
+  std::vector<uint64_t> expected = {first_item->GetId()};
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 }
 
 TEST_F(DownloadsListTrackerTest, OnDownloadRemovedCallsRemoveItem) {
   DownloadItem* first_item = CreateNextItem();
 
   CreateTracker();
+  EXPECT_CALL(page_, InsertItems(_, _));
   tracker()->StartAndSendChunk();
-  web_ui()->ClearTrackedCalls();
 
   EXPECT_TRUE(tracker()->GetItemForTesting(0));
   tracker()->OnDownloadRemoved(manager(), first_item);
   EXPECT_FALSE(tracker()->GetItemForTesting(0));
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
-
-  EXPECT_EQ("downloads.Manager.removeItem",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
+  EXPECT_CALL(page_, RemoveItem(0));
 }
 
 TEST_F(DownloadsListTrackerTest, OnDownloadUpdatedCallsRemoveItem) {
   DownloadItem* first_item = CreateNextItem();
 
   CreateTracker();
+  EXPECT_CALL(page_, InsertItems(_, _));
   tracker()->StartAndSendChunk();
-  web_ui()->ClearTrackedCalls();
 
   EXPECT_TRUE(tracker()->GetItemForTesting(0));
 
@@ -254,11 +215,7 @@ TEST_F(DownloadsListTrackerTest, OnDownloadUpdatedCallsRemoveItem) {
 
   EXPECT_FALSE(tracker()->GetItemForTesting(0));
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
-
-  EXPECT_EQ("downloads.Manager.removeItem",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
+  EXPECT_CALL(page_, RemoveItem(0));
 }
 
 TEST_F(DownloadsListTrackerTest, StartExcludesHiddenItems) {
@@ -268,11 +225,8 @@ TEST_F(DownloadsListTrackerTest, StartExcludesHiddenItems) {
   CreateTracker();
   tracker()->StartAndSendChunk();
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
-
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_TRUE(GetIds(*web_ui()->call_data()[0]->arg2()).empty());
+  std::vector<uint64_t> expected;
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 }
 
 TEST_F(DownloadsListTrackerTest, Incognito) {
@@ -285,7 +239,8 @@ TEST_F(DownloadsListTrackerTest, Incognito) {
 
   ON_CALL(incognito_manager, GetDownload(0)).WillByDefault(Return(&item));
 
-  TestDownloadsListTracker tracker(&incognito_manager, web_ui());
+  testing::StrictMock<MockPage> page;
+  TestDownloadsListTracker tracker(&incognito_manager, page.BindAndGetPtr());
   EXPECT_TRUE(tracker.IsIncognito(item));
 }
 
@@ -298,22 +253,16 @@ TEST_F(DownloadsListTrackerTest, OnlySendSomeItems) {
 
   CreateTracker();
   tracker()->SetChunkSizeForTesting(3);
-  tracker()->StartAndSendChunk();
-
-  ASSERT_FALSE(web_ui()->call_data().empty());
-
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
-  EXPECT_EQ(3u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
-
-  tracker()->StartAndSendChunk();
-  ASSERT_GE(2u, web_ui()->call_data().size());
-
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[1]->function_name());
-  EXPECT_EQ(3, GetIndex(web_ui()->call_data()[1]->arg1()));
-  EXPECT_EQ(2u, GetIds(*web_ui()->call_data()[1]->arg2()).size());
+  {
+    tracker()->StartAndSendChunk();
+    std::vector<uint64_t> expected = {4, 3, 2};
+    EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
+  }
+  {
+    tracker()->StartAndSendChunk();
+    std::vector<uint64_t> expected = {1, 0};
+    EXPECT_CALL(page_, InsertItems(3, MatchIds(expected)));
+  }
 }
 
 TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemUpdates) {
@@ -324,14 +273,11 @@ TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemUpdates) {
   tracker()->SetChunkSizeForTesting(1);
   tracker()->StartAndSendChunk();
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
+  std::vector<uint64_t> expected = {1};
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(1u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
-
+  // Does not send an update. StrictMock ensures no methods called on |page_|.
   tracker()->OnDownloadUpdated(manager(), unsent_item);
-  EXPECT_EQ(1u, web_ui()->call_data().size());
 }
 
 TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemRemovals) {
@@ -342,19 +288,16 @@ TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemRemovals) {
   tracker()->SetChunkSizeForTesting(1);
   tracker()->StartAndSendChunk();
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
+  std::vector<uint64_t> expected = {1};
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 
-  EXPECT_EQ("downloads.Manager.insertItems",
-            web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(1u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
-
+  // Does not send an update. StrictMock ensures no methods called on |page_|.
   DownloadItemModel(unsent_item).SetShouldShowInShelf(false);
   tracker()->OnDownloadUpdated(manager(), unsent_item);
-  EXPECT_EQ(1u, web_ui()->call_data().size());
 
+  // Does not send an update. StrictMock ensures no methods called on |page_|.
   DownloadItemModel(unsent_item).SetShouldShowInShelf(true);
   tracker()->OnDownloadUpdated(manager(), unsent_item);
-  EXPECT_EQ(1u, web_ui()->call_data().size());
 }
 
 TEST_F(DownloadsListTrackerTest, IgnoreTransientDownloads) {
@@ -364,6 +307,6 @@ TEST_F(DownloadsListTrackerTest, IgnoreTransientDownloads) {
   CreateTracker();
   tracker()->StartAndSendChunk();
 
-  ASSERT_FALSE(web_ui()->call_data().empty());
-  EXPECT_EQ(0u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
+  std::vector<uint64_t> expected;
+  EXPECT_CALL(page_, InsertItems(0, MatchIds(expected)));
 }

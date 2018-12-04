@@ -50,7 +50,7 @@ cr.define('downloads', function() {
       'itemsChanged_(items_.*)',
     ],
 
-    /** @private {?downloads.BrowserProxy} */
+    /** @private {mdDownloads.mojom.PageHandlerInterface} */
     browserProxy_: null,
 
     /** @private {?downloads.SearchService} */
@@ -59,15 +59,34 @@ cr.define('downloads', function() {
     /** @private {!PromiseResolver} */
     loaded_: new PromiseResolver,
 
+    /** @private {Array<number>} */
+    listenerIds_: null,
+
     /** @override */
     created: function() {
-      this.browserProxy_ = downloads.BrowserProxy.getInstance();
+      this.browserProxy_ = downloads.BrowserProxy.getInstance().handler;
       this.searchService_ = downloads.SearchService.getInstance();
     },
 
     /** @override */
     attached: function() {
       document.documentElement.classList.remove('loading');
+      const callbackRouter =
+          downloads.BrowserProxy.getInstance().callbackRouter;
+      this.listenerIds_ = [
+        callbackRouter.clearAll.addListener(this.clearAll_.bind(this)),
+        callbackRouter.insertItems.addListener(this.insertItems_.bind(this)),
+        callbackRouter.removeItem.addListener(this.removeItem_.bind(this)),
+        callbackRouter.updateItem.addListener(this.updateItem_.bind(this)),
+      ];
+    },
+
+    /** @override */
+    detached: function() {
+      const callbackRouter =
+          downloads.BrowserProxy.getInstance().callbackRouter;
+      this.listenerIds_.forEach(
+          id => assert(callbackRouter.removeListener(id)));
     },
 
     /** @private */
@@ -86,16 +105,16 @@ cr.define('downloads', function() {
 
     /**
      * @param {number} index
-     * @param {!Array<!downloads.Data>} list
+     * @param {!Array<downloads.Data>} items
      * @private
      */
-    insertItems_: function(index, list) {
-      // Insert |list| at the given |index| via Array#splice().
-      this.items_.splice.apply(this.items_, [index, 0].concat(list));
-      this.updateHideDates_(index, index + list.length);
+    insertItems_: function(index, items) {
+      // Insert |items| at the given |index| via Array#splice().
+      this.items_.splice.apply(this.items_, [index, 0].concat(items));
+      this.updateHideDates_(index, index + items.length);
       this.notifySplices('items_', [{
                            index: index,
-                           addedCount: list.length,
+                           addedCount: items.length,
                            object: this.items_,
                            type: 'splice',
                            removed: [],
@@ -229,7 +248,7 @@ cr.define('downloads', function() {
         if (!current)
           continue;
         const prev = this.items_[i - 1];
-        current.hideDate = !!prev && prev.date_string == current.date_string;
+        current.hideDate = !!prev && prev.dateString == current.dateString;
       }
     },
 
@@ -255,31 +274,14 @@ cr.define('downloads', function() {
     },
   });
 
-  Manager.clearAll = function() {
-    Manager.get().clearAll_();
-  };
-
   /** @return {!downloads.Manager} */
   Manager.get = function() {
     return /** @type {!downloads.Manager} */ (
         queryRequiredElement('downloads-manager'));
   };
-
-  Manager.insertItems = function(index, list) {
-    Manager.get().insertItems_(index, list);
-  };
-
   /** @return {!Promise} */
   Manager.onLoad = function() {
     return Manager.get().onLoad_();
-  };
-
-  Manager.removeItem = function(index) {
-    Manager.get().removeItem_(index);
-  };
-
-  Manager.updateItem = function(index, data) {
-    Manager.get().updateItem_(index, data);
   };
 
   return {Manager: Manager};

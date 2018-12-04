@@ -226,14 +226,16 @@
       }
     </style>
 
-    <h3 id="date">[[computeDate_(data.hideDate, data.since_string, data.date_string)]]</h3>
+    <h3 id="date">[[computeDate_(data.hideDate,
+                                 data.sinceString,
+                                 data.dateString)]]</h3>
 
     <div id="content" on-dragstart="onDragStart_"
         class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
         <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
         <iron-icon id="danger-icon"
-            icon$="[[computeDangerIcon_(isDangerous_, data.danger_type)]]"
+            icon$="[[computeDangerIcon_(isDangerous_, data.dangerType)]]"
             hidden="[[!isDangerous_]]"></iron-icon>
       </div>
 
@@ -242,16 +244,22 @@
           Can't have any line breaks.
           --><a is="action-link" id="file-link" href="[[data.url]]"
               on-click="onFileLinkTap_"
-              hidden="[[!completelyOnDisk_]]">[[data.file_name]]</a><!--
+              hidden="[[!completelyOnDisk_]]">[[data.fileName]]</a><!--
           Before #name.
           --><span id="name"
-              hidden="[[completelyOnDisk_]]">[[data.file_name]]</span>
-          <span id="tag">[[computeTag_(data.state, data.last_reason_text, data.file_externally_removed)]]</span>
+              hidden="[[completelyOnDisk_]]">[[data.fileName]]</span>
+          <span id="tag">[[computeTag_(data.state,
+                                       data.lastReasonText,
+                                       data.fileExternallyRemoved)]]</span>
         </div>
 
         <a id="url" target="_blank">[[chopUrl_(data.url)]]</a>
 
-        <div id="description">[[computeDescription_(data.state, data.danger_type, data.file_name, data.progress_status_text)]]</div>
+        <div id="description">[[computeDescription_(
+          data.state,
+          data.dangerType,
+          data.fileName,
+          data.progressStatusText)]]</div>
 
         <template is="dom-if" if="[[showProgress_]]">
           <paper-progress id="progress"

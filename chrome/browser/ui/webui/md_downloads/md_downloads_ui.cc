@@ -104,10 +104,13 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_MD_DOWNLOADS_1X_NO_DOWNLOADS_PNG);
   source->AddResourcePath("2x/no_downloads.png",
                           IDR_MD_DOWNLOADS_2X_NO_DOWNLOADS_PNG);
+  source->AddResourcePath("md_downloads.mojom-lite.js",
+                          IDR_MD_DOWNLOADS_MOJO_LITE_JS);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip({"1x/incognito_marker.png", "1x/no_downloads.png",
-                   "2x/incognito_marker.png", "2x/no_downloads.png"});
+                   "2x/incognito_marker.png", "2x/no_downloads.png",
+                   "md_downloads.mojom-lite.js"});
 
   source->AddResourcePath("crisper.js", IDR_MD_DOWNLOADS_CRISPER_JS);
   source->SetDefaultResource(
@@ -150,23 +153,44 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui)
+    : ui::MojoWebUIController(web_ui, true), page_factory_binding_(this) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
-
-  web_ui->AddMessageHandler(
-      std::make_unique<MdDownloadsDOMHandler>(dlm, web_ui));
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);
   content::WebUIDataSource::Add(profile, source);
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));
+
+  AddHandlerToRegistry(base::BindRepeating(
+      &MdDownloadsUI::BindPageHandlerFactory, base::Unretained(this)));
 }
+
+MdDownloadsUI::~MdDownloadsUI() = default;
 
 // static
 base::RefCountedMemory* MdDownloadsUI::GetFaviconResourceBytes(
     ui::ScaleFactor scale_factor) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
       IDR_DOWNLOADS_FAVICON, scale_factor);
+}
+
+void MdDownloadsUI::BindPageHandlerFactory(
+    md_downloads::mojom::PageHandlerFactoryRequest request) {
+  if (page_factory_binding_.is_bound())
+    page_factory_binding_.Unbind();
+
+  page_factory_binding_.Bind(std::move(request));
+}
+
+void MdDownloadsUI::CreatePageHandler(
+    md_downloads::mojom::PagePtr page,
+    md_downloads::mojom::PageHandlerRequest request) {
+  DCHECK(page);
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
+
+  page_handler_.reset(new MdDownloadsDOMHandler(
+      std::move(request), std::move(page), dlm, web_ui()));
 }

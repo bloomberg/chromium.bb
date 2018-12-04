@@ -14,12 +14,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/ui/webui/md_downloads/downloads_list_tracker.h"
+#include "chrome/browser/ui/webui/md_downloads/md_downloads.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
-
-namespace base {
-class ListValue;
-}
+#include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class DownloadManager;
@@ -33,66 +31,41 @@ class DownloadItem;
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
+// TODO(calamity): Remove WebUIMessageHandler.
 class MdDownloadsDOMHandler : public content::WebContentsObserver,
+                              public md_downloads::mojom::PageHandler,
                               public content::WebUIMessageHandler {
  public:
-  MdDownloadsDOMHandler(content::DownloadManager* download_manager,
+  MdDownloadsDOMHandler(md_downloads::mojom::PageHandlerRequest request,
+                        md_downloads::mojom::PagePtr page,
+                        content::DownloadManager* download_manager,
                         content::WebUI* web_ui);
   ~MdDownloadsDOMHandler() override;
 
-  // WebUIMessageHandler implementation.
+  // content::WebUIMessageHandler:
   void RegisterMessages() override;
+  // TODO(calamity): Decouple OnJavascriptDisallowed from WebUIMessageHandler
+  // and remove superclass.
   void OnJavascriptDisallowed() override;
 
   // WebContentsObserver implementation.
   void RenderProcessGone(base::TerminationStatus status) override;
 
-  // Callback for the "getDownloads" message.
-  void HandleGetDownloads(const base::ListValue* args);
-
-  // Callback for the "openFile" message - opens the file in the shell.
-  void HandleOpenFile(const base::ListValue* args);
-
-  // Callback for the "drag" message - initiates a file object drag.
-  void HandleDrag(const base::ListValue* args);
-
-  // Callback for the "saveDangerous" message - specifies that the user
-  // wishes to save a dangerous file.
-  void HandleSaveDangerous(const base::ListValue* args);
-
-  // Callback for the "retryDownload" message - specifies that the user wishes
-  // to download an item again.
-  void HandleRetryDownload(const base::ListValue* args);
-
-  // Callback for the "discardDangerous" message - specifies that the user
-  // wishes to discard (remove) a dangerous file.
-  void HandleDiscardDangerous(const base::ListValue* args);
-
-  // Callback for the "show" message - shows the file in explorer.
-  void HandleShow(const base::ListValue* args);
-
-  // Callback for the "pause" message - pauses the file download.
-  void HandlePause(const base::ListValue* args);
-
-  // Callback for the "resume" message - resumes the file download.
-  void HandleResume(const base::ListValue* args);
-
-  // Callback for the "remove" message - removes the file download from shelf
-  // and list.
-  void HandleRemove(const base::ListValue* args);
-
-  // Callback for the "undo" message. Currently only undoes removals.
-  void HandleUndo(const base::ListValue* args);
-
-  // Callback for the "cancel" message - cancels the download.
-  void HandleCancel(const base::ListValue* args);
-
-  // Callback for the "clearAll" message - clears all the downloads.
-  void HandleClearAll(const base::ListValue* args);
-
-  // Callback for the "openDownloadsFolder" message - opens the downloads
-  // folder.
-  void HandleOpenDownloadsFolder(const base::ListValue* args);
+  // md_downloads::mojom::PageHandler:
+  void GetDownloads(const std::vector<std::string>& search_terms) override;
+  void OpenFileRequiringGesture(const std::string& id) override;
+  void Drag(const std::string& id) override;
+  void SaveDangerousRequiringGesture(const std::string& id) override;
+  void DiscardDangerous(const std::string& id) override;
+  void RetryDownload(const std::string& id) override;
+  void Show(const std::string& id) override;
+  void Pause(const std::string& id) override;
+  void Resume(const std::string& id) override;
+  void Remove(const std::string& id) override;
+  void Undo() override;
+  void Cancel(const std::string& id) override;
+  void ClearAll() override;
+  void OpenDownloadsFolderRequiringGesture() override;
 
  protected:
   // These methods are for mocking so that most of this class does not actually
@@ -136,17 +109,14 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // to be deleted.
   bool IsDeletingHistoryAllowed();
 
-  // Returns the download that is referred to in a given value.
-  download::DownloadItem* GetDownloadByValue(const base::ListValue* args);
+  // Returns the download that is referred to by a given string |id|.
+  download::DownloadItem* GetDownloadByStringId(const std::string& id);
 
   // Returns the download with |id| or NULL if it doesn't exist.
   download::DownloadItem* GetDownloadById(uint32_t id);
 
   // Removes the download specified by an ID from JavaScript in |args|.
-  void RemoveDownloadInArgs(const base::ListValue* args);
-
-  // Retry the download specified by an ID from JavaScript in |args|.
-  void RetryDownload(const base::ListValue* args);
+  void RemoveDownloadInArgs(const std::string& id);
 
   // Checks whether a download's file was removed from its original location.
   void CheckForRemovedFiles();
@@ -158,6 +128,10 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
 
   // Whether the render process has gone.
   bool render_process_gone_ = false;
+
+  content::WebUI* web_ui_;
+
+  mojo::Binding<md_downloads::mojom::PageHandler> binding_;
 
   base::WeakPtrFactory<MdDownloadsDOMHandler> weak_ptr_factory_{this};
 

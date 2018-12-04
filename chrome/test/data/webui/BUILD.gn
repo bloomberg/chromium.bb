@@ -53,7 +53,6 @@ js2gtest("browser_tests_js_webui") {
     "cr_elements/cr_elements_browsertest.js",
     "load_time_data_browsertest.js",
     "md_bookmarks/md_bookmarks_browsertest.js",
-    "md_downloads/downloads_browsertest.js",
     "md_history/md_history_browsertest.js",
     "media_router/media_router_elements_browsertest.js",
     "mock4js_browsertest.js",
@@ -92,10 +91,7 @@ js2gtest("browser_tests_js_webui") {
     "webui_resource_async_browsertest.js",
   ]
 
-  extra_js_files = [
-    "//chrome/browser/resources/md_downloads/constants.js",
-    "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js",
-  ]
+  extra_js_files = [ "//chrome/browser/resources/signin/dice_sync_confirmation/sync_confirmation_browser_proxy.js" ]
 
   if (is_chromeos) {
     sources += [
@@ -161,11 +157,14 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
 
   sources = [
     "app_management/app_management_browsertest.js",
+    "md_downloads/downloads_browsertest.js",
   ]
 
   deps = [
     "//chrome/browser/ui",
   ]
+
+  extra_js_files = [ "//chrome/browser/resources/md_downloads/constants.js" ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 }

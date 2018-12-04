@@ -12,6 +12,7 @@
 #include "base/i18n/unicodestring.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -25,7 +26,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
 #include "net/base/filename_util.h"
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
@@ -40,7 +40,7 @@ using DownloadVector = DownloadManager::DownloadVector;
 namespace {
 
 // Returns a string constant to be used as the |danger_type| value in
-// CreateDownloadItemValue().  Only return strings for DANGEROUS_FILE,
+// CreateDownloadData().  Only return strings for DANGEROUS_FILE,
 // DANGEROUS_URL, DANGEROUS_CONTENT, and UNCOMMON_CONTENT because the
 // |danger_type| value is only defined if the value of |state| is |DANGEROUS|.
 const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
@@ -71,23 +71,22 @@ const char* GetDangerTypeString(download::DownloadDangerType danger_type) {
 }
 
 // TODO(dbeam): if useful elsewhere, move to base/i18n/time_formatting.h?
-base::string16 TimeFormatLongDate(const base::Time& time) {
+std::string TimeFormatLongDate(const base::Time& time) {
   std::unique_ptr<icu::DateFormat> formatter(
       icu::DateFormat::createDateInstance(icu::DateFormat::kLong));
   icu::UnicodeString date_string;
   formatter->format(static_cast<UDate>(time.ToDoubleT() * 1000), date_string);
-  return base::i18n::UnicodeStringToString16(date_string);
+  return base::UTF16ToUTF8(base::i18n::UnicodeStringToString16(date_string));
 }
 
 }  // namespace
 
-DownloadsListTracker::DownloadsListTracker(
-    DownloadManager* download_manager,
-    content::WebUI* web_ui)
-  : main_notifier_(download_manager, this),
-    web_ui_(web_ui),
-    should_show_(base::Bind(&DownloadsListTracker::ShouldShow,
-                            base::Unretained(this))) {
+DownloadsListTracker::DownloadsListTracker(DownloadManager* download_manager,
+                                           md_downloads::mojom::PagePtr page)
+    : main_notifier_(download_manager, this),
+      page_(std::move(page)),
+      should_show_(base::BindRepeating(&DownloadsListTracker::ShouldShow,
+                                       base::Unretained(this))) {
   Init();
 }
 
@@ -95,16 +94,17 @@ DownloadsListTracker::~DownloadsListTracker() {}
 
 void DownloadsListTracker::Reset() {
   if (sending_updates_)
-    web_ui_->CallJavascriptFunctionUnsafe("downloads.Manager.clearAll");
+    page_->ClearAll();
   sent_to_page_ = 0u;
 }
 
-bool DownloadsListTracker::SetSearchTerms(const base::ListValue& search_terms) {
+bool DownloadsListTracker::SetSearchTerms(
+    const std::vector<std::string>& search_terms) {
   std::vector<base::string16> new_terms;
-  new_terms.resize(search_terms.GetSize());
+  new_terms.resize(search_terms.size());
 
-  for (size_t i = 0; i < search_terms.GetSize(); ++i)
-    search_terms.GetString(i, &new_terms[i]);
+  for (const auto& t : search_terms)
+    new_terms.push_back(base::UTF8ToUTF16(t));
 
   if (new_terms == search_terms_)
     return false;
@@ -122,17 +122,16 @@ void DownloadsListTracker::StartAndSendChunk() {
   auto it = sorted_items_.begin();
   std::advance(it, sent_to_page_);
 
-  base::ListValue list;
-  while (it != sorted_items_.end() && list.GetSize() < chunk_size_) {
-    list.Append(CreateDownloadItemValue(*it));
+  std::vector<md_downloads::mojom::DataPtr> list;
+  while (it != sorted_items_.end() && list.size() < chunk_size_) {
+    list.push_back(CreateDownloadData(*it));
     ++it;
   }
 
-  web_ui_->CallJavascriptFunctionUnsafe(
-      "downloads.Manager.insertItems",
-      base::Value(static_cast<int>(sent_to_page_)), list);
+  size_t list_size = list.size();
+  page_->InsertItems(static_cast<int>(sent_to_page_), std::move(list));
 
-  sent_to_page_ += list.GetSize();
+  sent_to_page_ += list_size;
 }
 
 void DownloadsListTracker::Stop() {
@@ -177,42 +176,35 @@ void DownloadsListTracker::OnDownloadRemoved(DownloadManager* manager,
 
 DownloadsListTracker::DownloadsListTracker(
     DownloadManager* download_manager,
-    content::WebUI* web_ui,
+    md_downloads::mojom::PagePtr page,
     base::Callback<bool(const DownloadItem&)> should_show)
-  : main_notifier_(download_manager, this),
-    web_ui_(web_ui),
-    should_show_(should_show) {
+    : main_notifier_(download_manager, this),
+      page_(std::move(page)),
+      should_show_(should_show) {
+  DCHECK(page_);
   Init();
 }
 
-std::unique_ptr<base::DictionaryValue>
-DownloadsListTracker::CreateDownloadItemValue(
+md_downloads::mojom::DataPtr DownloadsListTracker::CreateDownloadData(
     download::DownloadItem* download_item) const {
   // TODO(asanka): Move towards using download_model here for getting status and
   // progress. The difference currently only matters to Drive downloads and
   // those don't show up on the downloads page, but should.
   DownloadItemModel download_model(download_item);
 
-  // The items which are to be written into file_value are also described in
-  // chrome/browser/resources/downloads/downloads.js in @typedef for
-  // BackendDownloadObject. Please update it whenever you add or remove
-  // any keys in file_value.
-  std::unique_ptr<base::DictionaryValue> file_value(new base::DictionaryValue);
+  auto file_value = md_downloads::mojom::Data::New();
 
-  file_value->SetInteger(
-      "started", static_cast<int>(download_item->GetStartTime().ToTimeT()));
-  file_value->SetString(
-      "since_string", ui::TimeFormat::RelativeDate(
-          download_item->GetStartTime(), NULL));
-  file_value->SetString(
-      "date_string", TimeFormatLongDate(download_item->GetStartTime()));
+  file_value->started =
+      static_cast<int>(download_item->GetStartTime().ToTimeT());
+  file_value->since_string = base::UTF16ToUTF8(
+      ui::TimeFormat::RelativeDate(download_item->GetStartTime(), NULL));
+  file_value->date_string = TimeFormatLongDate(download_item->GetStartTime());
 
-  file_value->SetString("id", base::NumberToString(download_item->GetId()));
+  file_value->id = base::NumberToString(download_item->GetId());
 
   base::FilePath download_path(download_item->GetTargetFilePath());
-  file_value->SetKey("file_path", base::CreateFilePathValue(download_path));
-  file_value->SetString("file_url",
-                        net::FilePathToFileURL(download_path).spec());
+  file_value->file_path = download_path.AsUTF8Unsafe();
+  file_value->file_url = net::FilePathToFileURL(download_path).spec();
 
   extensions::DownloadedByExtension* by_ext =
       extensions::DownloadedByExtension::Get(download_item);
@@ -236,21 +228,20 @@ DownloadsListTracker::CreateDownloadItemValue(
     if (extension)
       by_ext_name = extension->name();
   }
-  file_value->SetString("by_ext_id", by_ext_id);
-  file_value->SetString("by_ext_name", by_ext_name);
+  file_value->by_ext_id = by_ext_id;
+  file_value->by_ext_name = by_ext_name;
 
   // Keep file names as LTR. TODO(dbeam): why?
   base::string16 file_name =
       download_item->GetFileNameToReportUser().LossyDisplayName();
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
-  file_value->SetString("file_name", file_name);
-  file_value->SetString("url", download_item->GetURL().spec());
-  file_value->SetInteger("total", static_cast<int>(
-      download_item->GetTotalBytes()));
-  file_value->SetBoolean("file_externally_removed",
-                         download_item->GetFileExternallyRemoved());
-  file_value->SetBoolean("resume", download_item->CanResume());
-  file_value->SetBoolean("otr", IsIncognito(*download_item));
+  file_value->file_name = base::UTF16ToUTF8(file_name);
+  file_value->url = download_item->GetURL().spec();
+  file_value->total = static_cast<int>(download_item->GetTotalBytes());
+  file_value->file_externally_removed =
+      download_item->GetFileExternallyRemoved();
+  file_value->resume = download_item->CanResume();
+  file_value->otr = IsIncognito(*download_item);
 
   const char* danger_type = "";
   base::string16 last_reason_text;
@@ -310,12 +301,12 @@ DownloadsListTracker::CreateDownloadItemValue(
 
   DCHECK(state);
 
-  file_value->SetString("danger_type", danger_type);
-  file_value->SetString("last_reason_text", last_reason_text);
-  file_value->SetInteger("percent", percent);
-  file_value->SetString("progress_status_text", progress_status_text);
-  file_value->SetBoolean("retry", retry);
-  file_value->SetString("state", state);
+  file_value->danger_type = danger_type;
+  file_value->last_reason_text = base::UTF16ToUTF8(last_reason_text);
+  file_value->percent = percent;
+  file_value->progress_status_text = base::UTF16ToUTF8(progress_status_text);
+  file_value->retry = retry;
+  file_value->state = state;
 
   return file_value;
 }
@@ -391,12 +382,10 @@ void DownloadsListTracker::InsertItem(const SortedSet::iterator& insert) {
   if (index >= chunk_size_ && index >= sent_to_page_)
     return;
 
-  base::ListValue list;
-  list.Append(CreateDownloadItemValue(*insert));
+  std::vector<md_downloads::mojom::DataPtr> list;
+  list.push_back(CreateDownloadData(*insert));
 
-  web_ui_->CallJavascriptFunctionUnsafe("downloads.Manager.insertItems",
-                                        base::Value(static_cast<int>(index)),
-                                        list);
+  page_->InsertItems(static_cast<int>(index), std::move(list));
 
   sent_to_page_++;
 }
@@ -405,10 +394,8 @@ void DownloadsListTracker::UpdateItem(const SortedSet::iterator& update) {
   if (!sending_updates_ || GetIndex(update) >= sent_to_page_)
     return;
 
-  web_ui_->CallJavascriptFunctionUnsafe(
-      "downloads.Manager.updateItem",
-      base::Value(static_cast<int>(GetIndex(update))),
-      *CreateDownloadItemValue(*update));
+  page_->UpdateItem(static_cast<int>(GetIndex(update)),
+                    CreateDownloadData(*update));
 }
 
 size_t DownloadsListTracker::GetIndex(const SortedSet::iterator& item) const {
@@ -419,9 +406,9 @@ size_t DownloadsListTracker::GetIndex(const SortedSet::iterator& item) const {
 void DownloadsListTracker::RemoveItem(const SortedSet::iterator& remove) {
   if (sending_updates_) {
     size_t index = GetIndex(remove);
+
     if (index < sent_to_page_) {
-      web_ui_->CallJavascriptFunctionUnsafe(
-          "downloads.Manager.removeItem", base::Value(static_cast<int>(index)));
+      page_->RemoveItem(static_cast<int>(index));
       sent_to_page_--;
     }
   }

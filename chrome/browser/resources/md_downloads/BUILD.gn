@@ -14,6 +14,10 @@ optimize_webui("build") {
   input = rebase_path(".", root_build_dir)
   insert_in_head = "<base href=chrome://downloads>"
   js_out_files = [ "crisper.js" ]
+  excludes = [
+    "chrome://resources/js/mojo_bindings_lite.js",
+    "chrome://downloads/md_downloads.mojom-lite.js",
+  ]
 }
 
 js_type_check("closure_compile") {
@@ -31,6 +35,7 @@ js_type_check("closure_compile") {
 
 js_library("browser_proxy") {
   deps = [
+    ":externs",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -49,6 +54,11 @@ js_library("downloads") {
 }
 
 js_library("externs") {
+  extra_deps = [ "//chrome/browser/ui/webui/md_downloads:mojo_bindings_js" ]
+  externs_list = [
+    "$root_gen_dir/chrome/browser/ui/webui/md_downloads/md_downloads.mojom-lite.externs.js",
+    "$externs_path/mojo.js",
+  ]
 }
 
 js_library("item") {
@@ -83,6 +93,7 @@ js_library("manager") {
 js_library("search_service") {
   deps = [
     ":browser_proxy",
+    ":externs",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
   ]

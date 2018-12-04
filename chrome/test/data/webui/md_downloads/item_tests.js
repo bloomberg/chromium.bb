@@ -7,15 +7,16 @@ suite('item tests', function() {
   let item;
 
   setup(function() {
+    PolymerTest.clearBody();
     item = document.createElement('downloads-item');
     document.body.appendChild(item);
   });
 
   test('dangerous downloads aren\'t linkable', function() {
     item.set('data', {
-      danger_type: downloads.DangerType.DANGEROUS_FILE,
+      dangerType: downloads.DangerType.DANGEROUS_FILE,
+      fileExternallyRemoved: false,
       hideDate: true,
-      file_externally_removed: false,
       state: downloads.States.DANGEROUS,
       url: 'http://evil.com'
     });

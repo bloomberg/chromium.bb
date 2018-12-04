@@ -13,14 +13,14 @@ cr.define('downloads', function() {
       /** @private */
       completelyOnDisk_: {
         computed: 'computeCompletelyOnDisk_(' +
-            'data.state, data.file_externally_removed)',
+            'data.state, data.fileExternallyRemoved)',
         type: Boolean,
         value: true,
       },
 
       /** @private */
       controlledBy_: {
-        computed: 'computeControlledBy_(data.by_ext_id, data.by_ext_name)',
+        computed: 'computeControlledBy_(data.byExtId, data.byExtName)',
         type: String,
         value: '',
       },
@@ -28,13 +28,13 @@ cr.define('downloads', function() {
       /** @private */
       controlRemoveFromListAriaLabel_: {
         type: String,
-        computed: 'computeControlRemoveFromListAriaLabel_(data.file_name)',
+        computed: 'computeControlRemoveFromListAriaLabel_(data.fileName)',
       },
 
       /** @private */
       isActive_: {
         computed: 'computeIsActive_(' +
-            'data.state, data.file_externally_removed)',
+            'data.state, data.fileExternallyRemoved)',
         type: Boolean,
         value: true,
       },
@@ -48,7 +48,7 @@ cr.define('downloads', function() {
 
       /** @private */
       isMalware_: {
-        computed: 'computeIsMalware_(isDangerous_, data.danger_type)',
+        computed: 'computeIsMalware_(isDangerous_, data.dangerType)',
         type: Boolean,
         value: false,
       },
@@ -88,18 +88,18 @@ cr.define('downloads', function() {
     },
 
     observers: [
-      // TODO(dbeam): this gets called way more when I observe data.by_ext_id
-      // and data.by_ext_name directly. Why?
+      // TODO(dbeam): this gets called way more when I observe data.byExtId
+      // and data.byExtName directly. Why?
       'observeControlledBy_(controlledBy_)',
       'observeIsDangerous_(isDangerous_, data)',
     ],
 
-    /** @private {?downloads.BrowserProxy} */
+    /** @private {mdDownloads.mojom.PageHandlerInterface} */
     browserProxy_: null,
 
     /** @override */
     ready: function() {
-      this.browserProxy_ = downloads.BrowserProxy.getInstance();
+      this.browserProxy_ = downloads.BrowserProxy.getInstance().handler;
       this.content = this.$.content;
     },
 
@@ -134,7 +134,7 @@ cr.define('downloads', function() {
      */
     computeCompletelyOnDisk_: function() {
       return this.data.state == downloads.States.COMPLETE &&
-          !this.data.file_externally_removed;
+          !this.data.fileExternallyRemoved;
     },
 
     /**
@@ -142,11 +142,11 @@ cr.define('downloads', function() {
      * @private
      */
     computeControlledBy_: function() {
-      if (!this.data.by_ext_id || !this.data.by_ext_name)
+      if (!this.data.byExtId || !this.data.byExtName)
         return '';
 
-      const url = `chrome://extensions#${this.data.by_ext_id}`;
-      const name = this.data.by_ext_name;
+      const url = `chrome://extensions#${this.data.byExtId}`;
+      const name = this.data.byExtName;
       return loadTimeData.getStringF('controlledByUrl', url, HTMLEscape(name));
     },
 
@@ -156,7 +156,7 @@ cr.define('downloads', function() {
      */
     computeControlRemoveFromListAriaLabel_: function() {
       return loadTimeData.getStringF(
-          'controlRemoveFromListAriaLabel', this.data.file_name);
+          'controlRemoveFromListAriaLabel', this.data.fileName);
     },
 
     /**
@@ -175,7 +175,7 @@ cr.define('downloads', function() {
       assert(typeof this.data.hideDate == 'boolean');
       if (this.data.hideDate)
         return '';
-      return assert(this.data.since_string || this.data.date_string);
+      return assert(this.data.sinceString || this.data.dateString);
     },
 
     /**
@@ -187,8 +187,8 @@ cr.define('downloads', function() {
 
       switch (data.state) {
         case downloads.States.DANGEROUS:
-          const fileName = data.file_name;
-          switch (data.danger_type) {
+          const fileName = data.fileName;
+          switch (data.dangerType) {
             case downloads.DangerType.DANGEROUS_FILE:
               return loadTimeData.getString('dangerFileDesc');
 
@@ -207,7 +207,7 @@ cr.define('downloads', function() {
 
         case downloads.States.IN_PROGRESS:
         case downloads.States.PAUSED:  // Fallthrough.
-          return data.progress_status_text;
+          return data.progressStatusText;
       }
 
       return '';
@@ -220,7 +220,7 @@ cr.define('downloads', function() {
     computeIsActive_: function() {
       return this.data.state != downloads.States.CANCELLED &&
           this.data.state != downloads.States.INTERRUPTED &&
-          !this.data.file_externally_removed;
+          !this.data.fileExternallyRemoved;
     },
 
     /**
@@ -245,10 +245,10 @@ cr.define('downloads', function() {
      */
     computeIsMalware_: function() {
       return this.isDangerous_ &&
-          (this.data.danger_type == downloads.DangerType.DANGEROUS_CONTENT ||
-           this.data.danger_type == downloads.DangerType.DANGEROUS_HOST ||
-           this.data.danger_type == downloads.DangerType.DANGEROUS_URL ||
-           this.data.danger_type == downloads.DangerType.POTENTIALLY_UNWANTED);
+          (this.data.dangerType == downloads.DangerType.DANGEROUS_CONTENT ||
+           this.data.dangerType == downloads.DangerType.DANGEROUS_HOST ||
+           this.data.dangerType == downloads.DangerType.DANGEROUS_URL ||
+           this.data.dangerType == downloads.DangerType.POTENTIALLY_UNWANTED);
     },
 
     /**
@@ -314,10 +314,10 @@ cr.define('downloads', function() {
           return loadTimeData.getString('statusCancelled');
 
         case downloads.States.INTERRUPTED:
-          return this.data.last_reason_text;
+          return this.data.lastReasonText;
 
         case downloads.States.COMPLETE:
-          return this.data.file_externally_removed ?
+          return this.data.fileExternallyRemoved ?
               loadTimeData.getString('statusRemoved') :
               '';
       }
@@ -347,7 +347,7 @@ cr.define('downloads', function() {
         this.$.url.removeAttribute('href');
       } else {
         this.$.url.href = assert(this.data.url);
-        const filePath = encodeURIComponent(this.data.file_path);
+        const filePath = encodeURIComponent(this.data.filePath);
         const scaleFactor = `?scale=${window.devicePixelRatio}x`;
         this.$['file-icon'].src = `chrome://fileicon/${filePath}${scaleFactor}`;
       }
@@ -378,7 +378,7 @@ cr.define('downloads', function() {
      */
     onFileLinkTap_: function(e) {
       e.preventDefault();
-      this.browserProxy_.openFile(this.data.id);
+      this.browserProxy_.openFileRequiringGesture(this.data.id);
     },
 
     /** @private */
@@ -401,7 +401,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onSaveDangerousTap_: function() {
-      this.browserProxy_.saveDangerous(this.data.id);
+      this.browserProxy_.saveDangerousRequiringGesture(this.data.id);
     },
 
     /** @private */
