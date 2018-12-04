@@ -173,7 +173,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MaybeNewRelationTarget(Node* node, AXObject* obj);
 
   void HandleActiveDescendantChanged(Node*);
-  void HandlePossibleRoleChange(Node*);
+  void HandleRoleChange(Node*);
+  void HandleRoleChangeIfNotEditable(Node*);
   void HandleAriaExpandedChange(Node*);
   void HandleAriaSelectedChanged(Node*);
 
