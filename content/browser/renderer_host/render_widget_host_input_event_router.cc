@@ -1249,11 +1249,9 @@ RenderWidgetHostInputEventRouter::FindTouchscreenGestureEventTarget(
 
 bool RenderWidgetHostInputEventRouter::IsViewInMap(
     const RenderWidgetHostViewBase* view) const {
-  for (auto entry : owner_map_) {
-    if (entry.second == view)
-      return true;
-  }
-  return false;
+  DCHECK(!is_registered(view->GetFrameSinkId()) ||
+         owner_map_.find(view->GetFrameSinkId())->second == view);
+  return is_registered(view->GetFrameSinkId());
 }
 
 void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
