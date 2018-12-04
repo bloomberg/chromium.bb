@@ -422,10 +422,15 @@ GURL VariationsService::GetVariationsServerURL(HttpOptions http_options) {
 }
 
 void VariationsService::EnsureLocaleEquals(const std::string& locale) {
+#if defined(OS_CHROMEOS)
+  // Chrome OS may switch language on the fly.
+  DCHECK_EQ(locale, field_trial_creator_.application_locale());
+#else
   // Uses a CHECK rather than a DCHECK to ensure that issues are caught since
   // problems in this area may only appear in the wild due to official builds
   // and end user machines.
   CHECK_EQ(locale, field_trial_creator_.application_locale());
+#endif
 }
 
 // static
