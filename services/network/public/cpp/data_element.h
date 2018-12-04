@@ -181,7 +181,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
 
   // Takes ownership of the DataPipeGetter, if this is of
   // TYPE_CHUNKED_DATA_PIPE.
-  mojom::ChunkedDataPipeGetterPtr ReleaseChunkedDataPipeGetter();
+  mojom::ChunkedDataPipeGetterPtrInfo ReleaseChunkedDataPipeGetter();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
@@ -200,7 +200,7 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
   // For TYPE_DATA_PIPE.
   mojom::DataPipeGetterPtrInfo data_pipe_getter_;
   // For TYPE_CHUNKED_DATA_PIPE.
-  mojom::ChunkedDataPipeGetterPtr chunked_data_pipe_getter_;
+  mojom::ChunkedDataPipeGetterPtrInfo chunked_data_pipe_getter_;
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;

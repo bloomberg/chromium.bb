@@ -715,9 +715,9 @@ std::string SpeechRecognitionEngineTest::ConsumeChunkedUploadData() {
       network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
           const_cast<network::TestURLLoaderFactory::PendingRequest*>(
               upstream_request);
-      chunked_data_pipe_getter_ = (*mutable_upstream_request->request
-                                        .request_body->elements_mutable())[0]
-                                      .ReleaseChunkedDataPipeGetter();
+      chunked_data_pipe_getter_.Bind((*mutable_upstream_request->request
+                                           .request_body->elements_mutable())[0]
+                                         .ReleaseChunkedDataPipeGetter());
     }
     mojo::DataPipe data_pipe;
     chunked_data_pipe_getter_->StartReading(
