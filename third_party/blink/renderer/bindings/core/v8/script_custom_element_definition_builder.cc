@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_constructor.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_disabled_state_changed_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_form_associated_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_custom_element_value_setter.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_void_function.h"
 #include "third_party/blink/renderer/platform/bindings/callback_method_retriever.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
@@ -61,7 +62,8 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
   // step 10. Run the following substeps while catching any exceptions:
   CallbackMethodRetriever retriever(constructor_);
 
-  retriever.GetPrototypeObject(exception_state_);
+  v8::Local<v8::Object> prototype =
+      retriever.GetPrototypeObject(exception_state_);
   if (exception_state_.HadException())
     return false;
 
@@ -188,6 +190,40 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
           V8CustomElementDisabledStateChangedCallback::Create(
               v8_disabled_state_changed_callback_.As<v8::Function>());
     }
+
+    auto* isolate = script_state_->GetIsolate();
+    v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::Value> value_desc;
+    if (!prototype
+             ->GetOwnPropertyDescriptor(current_context,
+                                        V8AtomicString(isolate, "value"))
+             .ToLocal(&value_desc)) {
+      exception_state_.RethrowV8Exception(try_catch.Exception());
+      return false;
+    }
+    if (!value_desc->IsObject()) {
+      exception_state_.ThrowDOMException(
+          DOMExceptionCode::kTypeMismatchError,
+          "A class for form-associated custom elements must have a 'value' "
+          "property setter.");
+      return false;
+    }
+    if (!value_desc.As<v8::Object>()
+             ->Get(current_context, V8AtomicString(isolate, "set"))
+             .ToLocal(&v8_value_setter_)) {
+      exception_state_.RethrowV8Exception(try_catch.Exception());
+      return false;
+    }
+    if (!v8_value_setter_->IsFunction()) {
+      exception_state_.ThrowDOMException(
+          DOMExceptionCode::kTypeMismatchError,
+          "A class for form-associated custom elements must have a 'value' "
+          "property setter.");
+      return false;
+    }
+    value_setter_ =
+        V8CustomElementValueSetter::Create(v8_value_setter_.As<v8::Function>());
   }
 
   return true;
@@ -196,6 +232,7 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
 CustomElementDefinition* ScriptCustomElementDefinitionBuilder::Build(
     const CustomElementDescriptor& descriptor,
     CustomElementDefinition::Id id) {
+  // TODO(tkent): Pass value_setter_ to ScriptCustomElementDefinition.
   return ScriptCustomElementDefinition::Create(
       script_state_, registry_, descriptor, id, constructor_,
       connected_callback_, disconnected_callback_, adopted_callback_,
