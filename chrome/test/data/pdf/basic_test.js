@@ -69,7 +69,9 @@ var tests = [
     chrome.test.assertFalse(dropdown.dropdownOpen);
     MockInteractions.tap(dropdown.$.icon);
     chrome.test.assertTrue(dropdown.dropdownOpen);
-    MockInteractions.tap(plugin);
+    // Generate pointer event manually, as MockInteractions doesn't include
+    // this.
+    plugin.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
     chrome.test.assertFalse(dropdown.dropdownOpen,
         "Clicking plugin closes dropdown");
 

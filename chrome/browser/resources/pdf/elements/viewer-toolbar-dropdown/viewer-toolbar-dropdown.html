@@ -8,21 +8,22 @@
   <template>
     <style>
       :host {
+        position: relative;
         text-align: start;
+        --dropdown-width: 260px;
+      }
+
+      :host([dropdown-centered]) {
+        --container-offset: calc(50% - var(--dropdown-width) / 2);
       }
 
       #container {
         position: absolute;
-        /* Controls the position of the dropdown relative to the right of the
-         * screen. Default is aligned with the right of the toolbar buttons.
-         * TODO(tsergeant): Change the layout of the dropdown so this is not
-         * required.
-         */
-        right: var(--viewer-toolbar-dropdown-right-distance, 28px);
+        right: var(--container-offset, 0);
       }
 
       :host-context([dir=rtl]) #container {
-        left: var(--viewer-toolbar-dropdown-right-distance, 28px);
+        left: var(--container-offset, 0);
         right: auto;
       }
 
@@ -33,7 +34,7 @@
         color: var(--cr-primary-text-color);
         overflow-y: hidden;
         padding-bottom: 2px;
-        width: 260px;
+        width: var(--dropdown-width);
       }
 
       #scroll-container {
@@ -67,14 +68,16 @@
     </style>
     <div on-click="toggleDropdown" id="icon">
       <paper-icon-button id="main-icon" icon="[[dropdownIcon]]"
-          aria-label$="{{header}}" title$="{{header}}">
+         aria-label$="{{header}}" title$="{{header}}">
       </paper-icon-button>
       <iron-icon icon="cr:arrow-drop-down" id="arrow"></iron-icon>
     </div>
 
     <div id="container">
       <div id="dropdown" style="display: none">
-        <h1>{{header}}</h1>
+        <template is="dom-if" if="{{header}}">
+          <h1>{{header}}</h1>
+        </template>
         <div id="scroll-container">
           <slot></slot>
         </div>

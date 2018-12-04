@@ -244,10 +244,6 @@ function PDFViewer(browserApi) {
     this.toolbar_.addEventListener('print', this.print_.bind(this));
     this.toolbar_.addEventListener(
         'rotate-right', this.rotateClockwise_.bind(this));
-    // Must attach to mouseup on the plugin element, since it eats mousedown
-    // and click events.
-    this.plugin_.addEventListener(
-        'mouseup', this.toolbar_.hideDropdowns.bind(this.toolbar_));
 
     this.toolbar_.docTitle = getFilenameFromURL(this.originalUrl_);
   }
