@@ -1078,6 +1078,15 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['remove_webcore_debug_symbols'] = False
     gn_args['blink_symbol_level'] = -1
 
+    # Remove symbol_level specified in the ebuild to use the default.
+    # Currently that is 1 when is_debug=false, instead of 2 specified by the
+    # ebuild. This results in faster builds in Simple Chrome.
+    if 'symbol_level' in gn_args:
+      symbol_level = gn_args.pop('symbol_level')
+      logging.info('Removing symbol_level = %d from gn args, use '
+                   '--gn-extra-args to specify a non default value.' %
+                   symbol_level)
+
     if options.gn_extra_args:
       gn_args.update(gn_helpers.FromGNArgs(options.gn_extra_args))
 
