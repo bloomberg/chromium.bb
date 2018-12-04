@@ -31,8 +31,8 @@ struct PRINTING_EXPORT PrinterBasicInfo {
 
   std::string printer_name;
   std::string printer_description;
-  int printer_status;
-  int is_default;
+  int printer_status = 0;
+  int is_default = false;
   std::map<std::string, std::string> options;
 };
 
@@ -43,25 +43,26 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
   PrinterSemanticCapsAndDefaults(const PrinterSemanticCapsAndDefaults& other);
   ~PrinterSemanticCapsAndDefaults();
 
-  bool collate_capable;
-  bool collate_default;
+  bool collate_capable = false;
+  bool collate_default = false;
 
-  bool copies_capable;
+  bool copies_capable = false;
 
   std::vector<DuplexMode> duplex_modes;
-  DuplexMode duplex_default;
+  DuplexMode duplex_default = UNKNOWN_DUPLEX_MODE;
 
-  bool color_changeable;
-  bool color_default;
-  ColorModel color_model;
-  ColorModel bw_model;
+  bool color_changeable = false;
+  bool color_default = false;
+  ColorModel color_model = UNKNOWN_COLOR_MODEL;
+  ColorModel bw_model = UNKNOWN_COLOR_MODEL;
 
   struct Paper {
     std::string display_name;
     std::string vendor_id;
     gfx::Size size_um;
   };
-  std::vector<Paper> papers;
+  using Papers = std::vector<Paper>;
+  Papers papers;
   Paper default_paper;
 
   std::vector<gfx::Size> dpis;
