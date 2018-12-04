@@ -44,8 +44,9 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
             const String& path,
             WildcardDisposition host_wildcard,
             WildcardDisposition port_wildcard);
+  CSPSource(ContentSecurityPolicy* policy, const CSPSource& other);
   bool IsSchemeOnly() const;
-  const String& GetScheme() { return scheme_; };
+  const String& GetScheme() { return scheme_; }
   bool Matches(const KURL&,
                ResourceRequest::RedirectStatus =
                    ResourceRequest::RedirectStatus::kNoRedirect) const;

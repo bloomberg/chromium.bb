@@ -177,6 +177,12 @@ void ContentSecurityPolicy::SetupSelf(const SecurityOrigin& security_origin) {
       String(), CSPSource::kNoWildcard, CSPSource::kNoWildcard);
 }
 
+void ContentSecurityPolicy::SetupSelf(const ContentSecurityPolicy& other) {
+  self_protocol_ = other.self_protocol_;
+  if (other.self_source_)
+    self_source_ = new CSPSource(this, *(other.self_source_.Get()));
+}
+
 void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
   DCHECK(execution_context_ &&
          execution_context_->GetSecurityContext().GetSecurityOrigin());
@@ -265,6 +271,7 @@ void ContentSecurityPolicy::CopyStateFrom(const ContentSecurityPolicy* other) {
   for (const auto& policy : other->policies_)
     AddAndReportPolicyFromHeaderValue(policy->Header(), policy->HeaderType(),
                                       policy->HeaderSource());
+  SetupSelf(*other);
 }
 
 void ContentSecurityPolicy::CopyPluginTypesFrom(
