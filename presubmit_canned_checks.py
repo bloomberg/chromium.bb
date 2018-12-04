@@ -1062,6 +1062,7 @@ def PanProjectChecks(input_api, output_api,
 
 def CheckPatchFormatted(input_api,
                         output_api,
+                        bypass_warnings=True,
                         check_js=False,
                         check_python=None,
                         result_factory=None):
@@ -1092,8 +1093,11 @@ def CheckPatchFormatted(input_api,
   # contains the PRESUBMIT.py.
   if presubmit_subdir:
     cmd.append(input_api.PresubmitLocalPath())
-  code, _ = git_cl.RunGitWithCode(cmd, suppress_stderr=True)
-  if code == 2:
+  code, _ = git_cl.RunGitWithCode(cmd, suppress_stderr=bypass_warnings)
+  # bypass_warnings? Only fail with code 2.
+  # As this is just a warning, ignore all other errors if the user
+  # happens to have a broken clang-format, doesn't use git, etc etc.
+  if code == 2 or (code and not bypass_warnings):
     if presubmit_subdir:
       short_path = presubmit_subdir
     else:
@@ -1103,8 +1107,6 @@ def CheckPatchFormatted(input_api,
       'The %s directory requires source formatting. '
       'Please run: git cl format %s' %
       (short_path, ' '.join(display_args)))]
-  # As this is just a warning, ignore all other errors if the user
-  # happens to have a broken clang-format, doesn't use git, etc etc.
   return []
 
 
