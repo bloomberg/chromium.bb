@@ -111,6 +111,9 @@ class WebUIDataSource {
   // Tells the loading code that resources are gzipped on disk. |excluded_paths|
   // are uncompressed paths, and therefore should not be decompressed.
   virtual void UseGzip(const std::vector<std::string>& excluded_paths = {}) = 0;
+
+  // The |source_name| this WebUIDataSource was created with.
+  virtual std::string GetSource() const = 0;
 };
 
 }  // namespace content
