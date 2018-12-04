@@ -50,7 +50,11 @@
 
 // Focuses the omnibox by tapping and types |text| into it. The '\n' symbol can
 // be passed in order to commit the string.
+// If |text| is empty or nil, the omnibox is just focused.
 + (void)focusOmniboxAndType:(NSString*)text;
+
+// Focuses the omnibox by tapping it.
++ (void)focusOmnibox;
 
 // Open a new tab via the tools menu.
 + (void)openNewTab;

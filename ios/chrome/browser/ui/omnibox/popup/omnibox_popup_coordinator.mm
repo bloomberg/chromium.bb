@@ -80,20 +80,6 @@
                    forProtocol:@protocol(OmniboxSuggestionCommands)];
 
   _popupView->SetMediator(self.mediator);
-
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
-      !self.browserState->IsOffTheRecord()) {
-    self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
-        initWithBaseViewController:self.popupViewController
-                      browserState:self.browserState];
-    self.shortcutsCoordinator.dispatcher =
-        (id<ApplicationCommands, BrowserCommands, UrlLoader,
-            OmniboxFocuser>)(self.dispatcher);
-    [self.shortcutsCoordinator start];
-    self.popupViewController.shortcutsViewController =
-        self.shortcutsCoordinator.viewController;
-  }
 }
 
 - (void)stop {
@@ -108,6 +94,21 @@
 }
 
 - (void)openPopup {
+  // Initialize the shortcuts feature when necessary.
+  if (base::FeatureList::IsEnabled(
+          omnibox::kOmniboxPopupShortcutIconsInZeroState) &&
+      !self.browserState->IsOffTheRecord() && !self.shortcutsCoordinator) {
+    self.shortcutsCoordinator = [[ShortcutsCoordinator alloc]
+        initWithBaseViewController:self.popupViewController
+                      browserState:self.browserState];
+    self.shortcutsCoordinator.dispatcher =
+        (id<ApplicationCommands, BrowserCommands, UrlLoader,
+            OmniboxFocuser>)(self.dispatcher);
+    [self.shortcutsCoordinator start];
+    self.popupViewController.shortcutsViewController =
+        self.shortcutsCoordinator.viewController;
+  }
+
   // Show shortcuts when the feature is enabled. Don't show them on NTP as they
   // are already part of the NTP.
   if (!IsVisibleURLNewTabPage(self.webStateList->GetActiveWebState()) &&
