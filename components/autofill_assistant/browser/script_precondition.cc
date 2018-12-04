@@ -152,7 +152,7 @@ bool ScriptPrecondition::MatchPath(const GURL& url) const {
                          ? base::StrCat({url.PathForRequest(), "#", url.ref()})
                          : url.PathForRequest();
   for (auto& regexp : path_pattern_) {
-    if (regexp->Match(path, 0, path.size(), re2::RE2::UNANCHORED, NULL, 0)) {
+    if (regexp->Match(path, 0, path.size(), re2::RE2::ANCHOR_BOTH, NULL, 0)) {
       return true;
     }
   }
