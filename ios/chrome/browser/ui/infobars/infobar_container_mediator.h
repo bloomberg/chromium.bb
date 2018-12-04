@@ -14,6 +14,7 @@ class ChromeBrowserState;
 }
 
 @protocol InfobarContainerConsumer;
+@protocol LanguageSelectionHandler;
 @protocol SigninPresenter;
 @protocol SyncPresenter;
 @class TabModel;
@@ -33,6 +34,10 @@ class ChromeBrowserState;
 
 // The SigninPresenter delegate for this Mediator.
 @property(nonatomic, weak) id<SigninPresenter> signinPresenter;
+
+// The delegate that allows user to select a language from a list of languages.
+@property(nonatomic, weak) id<LanguageSelectionHandler>
+    languageSelectionHandler;
 
 @end
 

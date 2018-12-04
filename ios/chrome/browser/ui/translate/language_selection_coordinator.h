@@ -24,12 +24,6 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
-// The base view controller the receiver was initialized with.
-@property(weak, nonatomic, readonly) UIViewController* baseViewController;
-
-// Presenter to use to for presenting the receiver's view controller.
-@property(nonatomic) id<ContainedPresenter> presenter;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TRANSLATE_LANGUAGE_SELECTION_COORDINATOR_H_
