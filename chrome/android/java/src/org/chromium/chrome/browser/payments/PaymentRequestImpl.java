@@ -729,6 +729,14 @@ public class PaymentRequestImpl
             String canDedupedApplicationId = canDedupedApplicationIdUri.toString();
             if (TextUtils.isEmpty(canDedupedApplicationId)) continue;
             canDedupedApplicationIds.add(canDedupedApplicationId);
+            // Add the trailing slash, because Service worker registration scope is a directory path
+            // that must end with a '/' (e.g., "https://google.com/pay/"), whereas
+            // "canDedupedApplicationIdUri" is derived from the native Android payment app's default
+            // URL-based payment method name that may not necessarily specify the trailing slash
+            // (e.g., "https://google.com/pay").
+            if (canDedupedApplicationId.charAt(canDedupedApplicationId.length() - 1) != '/') {
+                canDedupedApplicationIds.add(canDedupedApplicationId + '/');
+            }
         }
         for (String appId : canDedupedApplicationIds) {
             for (int i = 0; i < mApps.size(); i++) {
