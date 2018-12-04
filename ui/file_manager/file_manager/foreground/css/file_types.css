@@ -362,6 +362,7 @@ tree .tree-item[selected] > .tree-row >
 }
 
 .external-media-root[file-type-icon='folder'],
+[volume-type-icon='external_media'],
 [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb.png) 1x,
@@ -370,6 +371,7 @@ tree .tree-item[selected] > .tree-row >
 
 tree .tree-item[selected] > .tree-row >
 .external-media-root[file-type-icon='folder'],
+.tree-row[selected] [volume-type-icon='external_media'],
 .tree-row[selected] [volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/usb_active.png) 1x,

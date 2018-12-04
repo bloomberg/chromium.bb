@@ -238,6 +238,22 @@ DirectoryItem.prototype = {
   },
 
   /**
+   * Returns true if this item is inside any part of Computers.
+   * @type {!boolean}
+   */
+  get insideComputers() {
+    if (!this.entry)
+      return false;
+
+    const locationInfo =
+        this.parentTree_.volumeManager.getLocationInfo(this.entry);
+    return locationInfo &&
+        (locationInfo.rootType ===
+             VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT ||
+         locationInfo.rootType === VolumeManagerCommon.RootType.COMPUTER);
+  },
+
+  /**
    * Returns true if this item is inside any part of Drive, including Team
    * Drive.
    * @type {!boolean}
@@ -269,8 +285,8 @@ DirectoryItem.prototype = {
    * support it.
    * @type {!boolean}
    */
-  get supportsSharedFeature() {
-    return this.insideMyDrive;
+  get supportDriveSpecificIcons() {
+    return this.insideMyDrive || this.insideComputers;
   },
 };
 
@@ -280,7 +296,11 @@ DirectoryItem.prototype = {
  * @param {Event} event Metadata update event.
  */
 DirectoryItem.prototype.onMetadataUpdated_ = function(event) {
-  if (!(event.names.has('shared') && this.supportsSharedFeature))
+  if (!this.supportDriveSpecificIcons)
+    return;
+
+  const updateableProperties = ['shared', 'isMachineRoot', 'isExternalMedia'];
+  if (!updateableProperties.some((prop) => event.names.has(prop)))
     return;
 
   let index = 0;
@@ -289,7 +309,7 @@ DirectoryItem.prototype.onMetadataUpdated_ = function(event) {
     const childElement = this.items[index];
 
     if (event.entriesMap.has(childEntry.toURL()))
-      childElement.updateSharedStatusIcon();
+      childElement.updateDriveSpecificIcons();
 
     index++;
   }
@@ -328,7 +348,7 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
       this.add(item);
       index++;
     } else if (util.isSameEntry(currentEntry, currentElement.entry)) {
-      currentElement.updateSharedStatusIcon();
+      currentElement.updateDriveSpecificIcons();
       if (recursive && this.expanded) {
         if (this.delayExpansion) {
           // Only update deeper on expanded children.
@@ -430,7 +450,7 @@ DirectoryItem.prototype.clearHasChildren = function() {
  * @private
  */
 DirectoryItem.prototype.onExpand_ = function(e) {
-  if (this.supportsSharedFeature && !this.onMetadataUpdateBound_) {
+  if (this.supportDriveSpecificIcons && !this.onMetadataUpdateBound_) {
     this.onMetadataUpdateBound_ = this.onMetadataUpdated_.bind(this);
     this.parentTree_.metadataModel_.addEventListener(
         'update', this.onMetadataUpdateBound_);
@@ -581,7 +601,7 @@ DirectoryItem.prototype.updateItemByEntry = function(changedDirectoryEntry) {
 /**
  * Update the icon based on whether the folder is shared on Drive.
  */
-DirectoryItem.prototype.updateSharedStatusIcon = function() {};
+DirectoryItem.prototype.updateDriveSpecificIcons = function() {};
 
 /**
  * Select the item corresponding to the given {@code entry}.
@@ -665,7 +685,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
     if (iconOverride)
       icon.setAttribute('volume-type-icon', iconOverride);
     icon.setAttribute('file-type-icon', iconOverride || 'folder');
-    item.updateSharedStatusIcon();
+    item.updateDriveSpecificIcons();
   }
 
   // Sets up context menu of the item.
@@ -699,11 +719,17 @@ SubDirectoryItem.prototype = {
  * Update the icon based on whether the folder is shared on Drive.
  * @override
  */
-SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
+SubDirectoryItem.prototype.updateDriveSpecificIcons = function() {
   const icon = this.querySelector('.icon');
-  const metadata =
-      this.parentTree_.metadataModel.getCache([this.dirEntry_], ['shared']);
+  const metadata = this.parentTree_.metadataModel.getCache(
+      [this.dirEntry_], ['shared', 'isMachineRoot', 'isExternalMedia']);
   icon.classList.toggle('shared', !!(metadata[0] && metadata[0].shared));
+  if (metadata[0] && metadata[0].isMachineRoot)
+    icon.setAttribute(
+        'volume-type-icon', VolumeManagerCommon.RootType.COMPUTER);
+  if (metadata[0] && metadata[0].isExternalMedia)
+    icon.setAttribute(
+        'volume-type-icon', VolumeManagerCommon.RootType.EXTERNAL_MEDIA);
 };
 
 /**
@@ -1605,7 +1631,7 @@ FakeItem.prototype.updateSubDirectories = function(
 /**
  * FakeItem doesn't really have shared status/icon so we define here as no-op.
  */
-FakeItem.prototype.updateSharedStatusIcon = function() {};
+FakeItem.prototype.updateDriveSpecificIcons = function() {};
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree

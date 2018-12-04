@@ -47,9 +47,22 @@ constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES = [
  * @const {!Array<string>}
  */
 constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES = [
-  'availableOffline', 'contentMimeType', 'customIconUrl', 'hosted',
-  'modificationTime', 'modificationByMeTime', 'shared', 'size', 'canCopy',
-  'canDelete', 'canRename', 'canAddChildren', 'canShare'
+  'availableOffline',
+  'contentMimeType',
+  'customIconUrl',
+  'hosted',
+  'modificationTime',
+  'modificationByMeTime',
+  'shared',
+  'size',
+  'canCopy',
+  'canDelete',
+  'canRename',
+  'canAddChildren',
+  'canShare',
+  'isMachineRoot',
+  'isExternalMedia',
+  'isArbitrarySyncFolder',
 ];
 
 /**
