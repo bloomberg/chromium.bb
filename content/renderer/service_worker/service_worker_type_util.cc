@@ -99,8 +99,9 @@ blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
 
   return blink::mojom::FetchAPIResponse::New(
       GetURLList(web_response.UrlList()), web_response.Status(),
-      web_response.StatusText().Utf8(), web_response.ResponseType(), headers,
-      std::move(blob), web_response.GetError(), web_response.ResponseTime(),
+      web_response.StatusText().Utf8(), web_response.ResponseType(),
+      web_response.ResponseSource(), headers, std::move(blob),
+      web_response.GetError(), web_response.ResponseTime(),
       web_response.CacheStorageCacheName().Utf8(),
       GetHeaderList(web_response.CorsExposedHeaderNames()),
       !web_response.CacheStorageCacheName().IsNull(),

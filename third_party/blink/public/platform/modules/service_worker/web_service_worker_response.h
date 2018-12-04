@@ -59,6 +59,9 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerResponse {
   void SetResponseType(network::mojom::FetchResponseType);
   network::mojom::FetchResponseType ResponseType() const;
 
+  void SetResponseSource(network::mojom::FetchResponseSource);
+  network::mojom::FetchResponseSource ResponseSource() const;
+
   void SetHeader(const WebString& key, const WebString& value);
 
   // If the key already exists, appends the value to the same key (comma

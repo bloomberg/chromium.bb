@@ -346,8 +346,8 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
       url_list, metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
-      headers, nullptr /* blob */,
-      blink::mojom::ServiceWorkerResponseError::kUnknown,
+      network::mojom::FetchResponseSource::kCacheStorage, headers,
+      nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       cache_name,
       std::vector<std::string>(

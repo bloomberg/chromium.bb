@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 using Type = network::mojom::FetchResponseType;
+using ResponseSource = network::mojom::FetchResponseSource;
 
 namespace blink {
 
@@ -45,15 +46,16 @@ FetchResponseData* FetchResponseData::Create() {
   // "Unless stated otherwise, a response's url is null, status is 200, status
   // message is the empty byte sequence, header list is an empty header list,
   // and body is null."
-  return MakeGarbageCollected<FetchResponseData>(Type::kDefault, 200,
-                                                 g_empty_atom);
+  return MakeGarbageCollected<FetchResponseData>(
+      Type::kDefault, ResponseSource::kUnspecified, 200, g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateNetworkErrorResponse() {
   // "A network error is a response whose status is always 0, status message
   // is always the empty byte sequence, header list is aways an empty list,
   // and body is always null."
-  return MakeGarbageCollected<FetchResponseData>(Type::kError, 0, g_empty_atom);
+  return MakeGarbageCollected<FetchResponseData>(
+      Type::kError, ResponseSource::kUnspecified, 0, g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateWithBuffer(
@@ -69,7 +71,7 @@ FetchResponseData* FetchResponseData::CreateBasicFilteredResponse() const {
   // header list excludes any headers in internal response's header list whose
   // name is `Set-Cookie` or `Set-Cookie2`."
   FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
-      Type::kBasic, status_, status_message_);
+      Type::kBasic, response_source_, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     if (FetchUtils::IsForbiddenResponseHeaderName(header.first))
@@ -93,7 +95,7 @@ FetchResponseData* FetchResponseData::CreateCorsFilteredResponse(
   // parsing `Access-Control-Expose-Headers` in internal response's header
   // list."
   FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
-      Type::kCors, status_, status_message_);
+      Type::kCors, response_source_, status_, status_message_);
   response->SetURLList(url_list_);
   for (const auto& header : header_list_->List()) {
     const String& name = header.first;
@@ -118,8 +120,8 @@ FetchResponseData* FetchResponseData::CreateOpaqueFilteredResponse() const {
   // cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
-  FetchResponseData* response =
-      MakeGarbageCollected<FetchResponseData>(Type::kOpaque, 0, g_empty_atom);
+  FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
+      Type::kOpaque, response_source_, 0, g_empty_atom);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
@@ -133,7 +135,7 @@ FetchResponseData* FetchResponseData::CreateOpaqueRedirectFilteredResponse()
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
   FetchResponseData* response = MakeGarbageCollected<FetchResponseData>(
-      Type::kOpaqueRedirect, 0, g_empty_atom);
+      Type::kOpaqueRedirect, response_source_, 0, g_empty_atom);
   response->SetURLList(url_list_);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
@@ -180,6 +182,7 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
                                             ExceptionState& exception_state) {
   FetchResponseData* new_response = Create();
   new_response->type_ = type_;
+  new_response->response_source_ = response_source_;
   if (termination_reason_) {
     new_response->termination_reason_ = std::make_unique<TerminationReason>();
     *new_response->termination_reason_ = *termination_reason_;
@@ -242,6 +245,7 @@ void FetchResponseData::PopulateWebServiceWorkerResponse(
   if (internal_response_) {
     internal_response_->PopulateWebServiceWorkerResponse(response);
     response.SetResponseType(type_);
+    response.SetResponseSource(response_source_);
     response.SetCorsExposedHeaderNames(
         HeaderSetToWebVector(cors_exposed_header_names_));
     return;
@@ -250,6 +254,7 @@ void FetchResponseData::PopulateWebServiceWorkerResponse(
   response.SetStatus(Status());
   response.SetStatusText(StatusMessage());
   response.SetResponseType(type_);
+  response.SetResponseSource(response_source_);
   response.SetResponseTime(ResponseTime());
   response.SetCacheStorageCacheName(CacheStorageCacheName());
   response.SetCorsExposedHeaderNames(
@@ -265,6 +270,7 @@ FetchResponseData::PopulateFetchAPIResponse() {
     mojom::blink::FetchAPIResponsePtr response =
         internal_response_->PopulateFetchAPIResponse();
     response->response_type = type_;
+    response->response_source = response_source_;
     response->cors_exposed_header_names =
         HeaderSetToVector(cors_exposed_header_names_);
     return response;
@@ -275,6 +281,7 @@ FetchResponseData::PopulateFetchAPIResponse() {
   response->status_code = status_;
   response->status_text = status_message_;
   response->response_type = type_;
+  response->response_source = response_source_;
   response->response_time = response_time_;
   response->cache_storage_cache_name = cache_storage_cache_name_;
   response->cors_exposed_header_names =
@@ -285,9 +292,11 @@ FetchResponseData::PopulateFetchAPIResponse() {
 }
 
 FetchResponseData::FetchResponseData(Type type,
+                                     network::mojom::FetchResponseSource source,
                                      unsigned short status,
                                      AtomicString status_message)
     : type_(type),
+      response_source_(source),
       status_(status),
       status_message_(status_message),
       header_list_(FetchHeaderList::Create()),

@@ -627,6 +627,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void FetchOnRegisteredWorker(
+      const std::string& path,
       ServiceWorkerFetchDispatcher::FetchEventResult* result,
       blink::mojom::FetchAPIResponsePtr* response,
       std::unique_ptr<storage::BlobDataHandle>* blob_data_handle) {
@@ -639,7 +640,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&self::FetchOnIOThread, base::Unretained(this),
-                       fetch_run_loop.QuitClosure(), &prepare_result,
+                       fetch_run_loop.QuitClosure(), path, &prepare_result,
                        &fetch_result));
     fetch_run_loop.Run();
     ASSERT_TRUE(prepare_result);
@@ -924,11 +925,12 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   }
 
   void FetchOnIOThread(base::OnceClosure done,
+                       const std::string& path,
                        bool* prepare_result,
                        FetchResult* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-    GURL url = embedded_test_server()->GetURL("/service_worker/empty.html");
+    GURL url = embedded_test_server()->GetURL(path);
     ResourceType resource_type = RESOURCE_TYPE_MAIN_FRAME;
     base::OnceClosure prepare_callback = CreatePrepareReceiver(prepare_result);
     ServiceWorkerFetchDispatcher::FetchCallback fetch_callback =
@@ -1413,11 +1415,16 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
                     blink::ServiceWorkerStatusCode::kOk);
   ActivateTestHelper(blink::ServiceWorkerStatusCode::kOk);
 
-  FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
+  FetchOnRegisteredWorker("/service_worker/empty.html", &result, &response,
+                          &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
   EXPECT_EQ(301, response->status_code);
   EXPECT_EQ("Moved Permanently", response->status_text);
+  // The response is created from blob, in which case we don't set the
+  // response source for now.
+  EXPECT_EQ(network::mojom::FetchResponseSource::kUnspecified,
+            response->response_source);
   base::flat_map<std::string, std::string> expected_headers;
   expected_headers["content-language"] = "fi";
   expected_headers["content-type"] = "text/html; charset=UTF-8";
@@ -1429,37 +1436,70 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   EXPECT_EQ("This resource is gone. Gone, gone, gone.", body);
 }
 
+// Tests for response type when a service worker does respondWith(fetch()).
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       FetchEvent_ResponseViaCache) {
+                       FetchEvent_ResponseNetwork) {
+  const char* kPath = "/service_worker/http_cache.html";
+
   StartServerAndNavigateToSetup();
   ServiceWorkerFetchDispatcher::FetchEventResult result;
   blink::mojom::FetchAPIResponsePtr response1;
   blink::mojom::FetchAPIResponsePtr response2;
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
-  const base::Time start_time(base::Time::Now());
+  InstallTestHelper("/service_worker/fetch_event_respond_with_fetch.js",
+                    blink::ServiceWorkerStatusCode::kOk);
+  ActivateTestHelper(blink::ServiceWorkerStatusCode::kOk);
+
+  // The first fetch() response should come from network.
+  FetchOnRegisteredWorker(kPath, &result, &response1, &blob_data_handle);
+  ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            result);
+  EXPECT_EQ(std::string(), *response1->cache_storage_cache_name);
+  EXPECT_EQ(network::mojom::FetchResponseSource::kNetwork,
+            response1->response_source);
+
+  // The second fetch() response should come from HttpCache.
+  FetchOnRegisteredWorker(kPath, &result, &response2, &blob_data_handle);
+  ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+            result);
+  EXPECT_EQ(response1->status_code, response2->status_code);
+  EXPECT_EQ(response1->status_text, response2->status_text);
+  EXPECT_EQ(response1->response_time, response2->response_time);
+  EXPECT_EQ(network::mojom::FetchResponseSource::kHttpCache,
+            response2->response_source);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       FetchEvent_ResponseViaCache) {
+  const char* kPath = "/service_worker/empty.html";
+  StartServerAndNavigateToSetup();
+  ServiceWorkerFetchDispatcher::FetchEventResult result;
+  blink::mojom::FetchAPIResponsePtr response1;
+  blink::mojom::FetchAPIResponsePtr response2;
+  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
   InstallTestHelper("/service_worker/fetch_event_response_via_cache.js",
                     blink::ServiceWorkerStatusCode::kOk);
   ActivateTestHelper(blink::ServiceWorkerStatusCode::kOk);
 
-  FetchOnRegisteredWorker(&result, &response1, &blob_data_handle);
+  // The first fetch() response should come from network.
+  FetchOnRegisteredWorker(kPath, &result, &response1, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(200, response1->status_code);
-  EXPECT_EQ("OK", response1->status_text);
-  EXPECT_TRUE(response1->response_time >= start_time);
-  EXPECT_FALSE(response1->is_in_cache_storage);
-  ASSERT_TRUE(response1->cache_storage_cache_name);
   EXPECT_EQ(std::string(), *response1->cache_storage_cache_name);
+  EXPECT_EQ(network::mojom::FetchResponseSource::kNetwork,
+            response1->response_source);
 
-  FetchOnRegisteredWorker(&result, &response2, &blob_data_handle);
+  // The second fetch() response should come from CacheStorage.
+  FetchOnRegisteredWorker(kPath, &result, &response2, &blob_data_handle);
   ASSERT_EQ(ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
             result);
-  EXPECT_EQ(200, response2->status_code);
-  EXPECT_EQ("OK", response2->status_text);
+  EXPECT_EQ(response1->status_code, response2->status_code);
+  EXPECT_EQ(response1->status_text, response2->status_text);
   EXPECT_EQ(response1->response_time, response2->response_time);
   EXPECT_TRUE(response2->is_in_cache_storage);
-  ASSERT_TRUE(response2->cache_storage_cache_name);
   EXPECT_EQ("cache_name", *response2->cache_storage_cache_name);
+  EXPECT_EQ(network::mojom::FetchResponseSource::kCacheStorage,
+            response2->response_source);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
@@ -1477,7 +1517,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                                base::Unretained(version_->embedded_worker()),
                                &console_listener));
 
-  FetchOnRegisteredWorker(&result, &response, &blob_data_handle);
+  FetchOnRegisteredWorker("/service_worker/empty.html", &result, &response,
+                          &blob_data_handle);
   const base::string16 expected1 = base::ASCIIToUTF16(
       "resulted in a network error response: the promise was rejected.");
   const base::string16 expected2 =

@@ -45,6 +45,7 @@ class CORE_EXPORT FetchResponseData final
   static FetchResponseData* CreateWithBuffer(BodyStreamBuffer*);
 
   FetchResponseData(network::mojom::FetchResponseType,
+                    network::mojom::FetchResponseSource,
                     unsigned short,
                     AtomicString);
 
@@ -62,6 +63,9 @@ class CORE_EXPORT FetchResponseData final
   FetchResponseData* Clone(ScriptState*, ExceptionState& exception_state);
 
   network::mojom::FetchResponseType GetType() const { return type_; }
+  network::mojom::FetchResponseSource ResponseSource() const {
+    return response_source_;
+  }
   const KURL* Url() const;
   unsigned short Status() const { return status_; }
   AtomicString StatusMessage() const { return status_message_; }
@@ -78,6 +82,9 @@ class CORE_EXPORT FetchResponseData final
     return cors_exposed_header_names_;
   }
 
+  void SetResponseSource(network::mojom::FetchResponseSource response_source) {
+    response_source_ = response_source;
+  }
   void SetURLList(const Vector<KURL>&);
   const Vector<KURL>& UrlList() const { return url_list_; }
   const Vector<KURL>& InternalURLList() const;
@@ -111,6 +118,7 @@ class CORE_EXPORT FetchResponseData final
 
  private:
   network::mojom::FetchResponseType type_;
+  network::mojom::FetchResponseSource response_source_;
   std::unique_ptr<TerminationReason> termination_reason_;
   Vector<KURL> url_list_;
   unsigned short status_;

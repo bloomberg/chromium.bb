@@ -462,6 +462,7 @@ class CacheStorageCacheTest : public testing::Test {
     return blink::mojom::FetchAPIResponse::New(
         std::vector<GURL>({kNoBodyUrl}), 200, "OK",
         network::mojom::FetchResponseType::kDefault,
+        network::mojom::FetchResponseSource::kUnspecified,
         base::flat_map<std::string, std::string>(kHeaders.cbegin(),
                                                  kHeaders.cend()),
         nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,

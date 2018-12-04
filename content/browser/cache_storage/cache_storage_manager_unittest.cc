@@ -505,9 +505,9 @@ class CacheStorageManagerTest : public testing::Test {
 
     auto response = blink::mojom::FetchAPIResponse::New(
         std::vector<GURL>({request.url}), status_code, "OK", response_type,
-        response_headers, std::move(blob),
-        blink::mojom::ServiceWorkerResponseError::kUnknown, base::Time(),
-        std::string() /* cache_storage_cache_name */,
+        network::mojom::FetchResponseSource::kUnspecified, response_headers,
+        std::move(blob), blink::mojom::ServiceWorkerResponseError::kUnknown,
+        base::Time(), std::string() /* cache_storage_cache_name */,
         std::vector<std::string>() /* cors_exposed_header_names */,
         false /* is_in_cache_storage */, nullptr /* side_data_blob */);
 

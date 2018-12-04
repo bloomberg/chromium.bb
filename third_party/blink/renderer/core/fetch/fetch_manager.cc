@@ -574,6 +574,14 @@ void FetchManager::Loader::DidReceiveResponse(
   response_data->SetMIMEType(response.MimeType());
   response_data->SetResponseTime(response.ResponseTime());
 
+  if (response.WasCached()) {
+    response_data->SetResponseSource(
+        network::mojom::FetchResponseSource::kHttpCache);
+  } else if (!response.WasFetchedViaServiceWorker()) {
+    response_data->SetResponseSource(
+        network::mojom::FetchResponseSource::kNetwork);
+  }
+
   FetchResponseData* tainted_response = nullptr;
 
   DCHECK(!(network_utils::IsRedirectResponseCode(response_http_status_code_) &&
