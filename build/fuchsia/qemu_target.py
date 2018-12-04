@@ -12,6 +12,7 @@ import platform
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 
 from common import GetQemuRootForPlatform, EnsurePathExists
@@ -146,18 +147,27 @@ class QemuTarget(target.Target):
 
     # Zircon sends debug logs to serial port (see kernel.serial=legacy flag
     # above). Serial port is redirected to a file through QEMU stdout.
-    # This approach is used instead of loglistener to debug
-    # https://crbug.com/86975 .
+    # Unless a |_system_log_file| is explicitly set, we output the kernel serial
+    # log to a temporary file, and print that out if we are unable to connect to
+    # the QEMU guest, to make it easier to diagnose connectivity issues.
+    temporary_system_log_file = None
     if self._system_log_file:
       stdout = self._system_log_file
       stderr = subprocess.STDOUT
     else:
-      stdout = open(os.devnull)
+      temporary_system_log_file = tempfile.NamedTemporaryFile('w')
+      stdout = temporary_system_log_file
       stderr = sys.stderr
 
     self._qemu_process = subprocess.Popen(qemu_command, stdin=open(os.devnull),
                                           stdout=stdout, stderr=stderr)
-    self._WaitUntilReady();
+    try:
+      self._WaitUntilReady();
+    except target.FuchsiaTargetException:
+      if temporary_system_log_file:
+        logging.info("Kernel logs:\n" +
+                     open(temporary_system_log_file.name, 'r').read())
+      raise
 
   def _IsQemuStillRunning(self):
     if not self._qemu_process:
