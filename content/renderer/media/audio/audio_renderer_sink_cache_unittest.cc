@@ -40,6 +40,9 @@ class AudioRendererSinkCacheTest : public testing::Test {
             base::BindRepeating(&AudioRendererSinkCacheTest::CreateSink,
                                 base::Unretained(this)),
             kDeleteTimeout)) {}
+  ~AudioRendererSinkCacheTest() override {
+    task_env_.FastForwardUntilNoTasksRemain();
+  }
 
   void GetSink(int render_frame_id,
                const std::string& device_id,
@@ -245,6 +248,7 @@ TEST_F(AudioRendererSinkCacheTest, UnhealthySinkIsStopped) {
       new media::MockAudioRendererSink(
           kUnhealthyDeviceId, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 
+  cache_.reset();  // Destruct first so there's only one cache at a time.
   cache_ = std::make_unique<AudioRendererSinkCacheImpl>(
       task_env_.GetMainThreadTaskRunner(),
       base::BindRepeating(
@@ -271,6 +275,7 @@ TEST_F(AudioRendererSinkCacheTest, UnhealthySinkUsingSessionIdIsStopped) {
       new media::MockAudioRendererSink(
           kUnhealthyDeviceId, media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
 
+  cache_.reset();  // Destruct first so there's only one cache at a time.
   cache_ = std::make_unique<AudioRendererSinkCacheImpl>(
       task_env_.GetMainThreadTaskRunner(),
       base::BindRepeating(

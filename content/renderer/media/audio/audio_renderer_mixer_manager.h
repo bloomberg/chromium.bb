@@ -10,10 +10,12 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_sink_parameters.h"
 #include "media/base/audio_latency.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_renderer_mixer_pool.h"
@@ -26,7 +28,6 @@ class AudioRendererSink;
 }
 
 namespace content {
-class AudioRendererSinkCache;
 
 // Manages sharing of an AudioRendererMixer among AudioRendererMixerInputs based
 // on their AudioParameters configuration.  Inputs with the same AudioParameters
@@ -75,8 +76,14 @@ class CONTENT_EXPORT AudioRendererMixerManager
       const std::string& device_id) final;
 
  protected:
-  explicit AudioRendererMixerManager(
-      std::unique_ptr<AudioRendererSinkCache> sink_cache);
+  // Callback which will be used to create sinks. See AudioDeviceFactory for
+  // more details on the parameters.
+  using CreateSinkCB =
+      base::RepeatingCallback<scoped_refptr<media::AudioRendererSink>(
+          int source_render_frame_id,
+          const media::AudioSinkParameters& params)>;
+
+  explicit AudioRendererMixerManager(CreateSinkCB create_sink_cb);
 
  private:
   friend class AudioRendererMixerManagerTest;
@@ -130,25 +137,22 @@ class CONTENT_EXPORT AudioRendererMixerManager
     }
   };
 
+  const CreateSinkCB create_sink_cb_;
+
   // Map of MixerKey to <AudioRendererMixer, Count>.  Count allows
   // AudioRendererMixerManager to keep track explicitly (v.s. RefCounted which
   // is implicit) of the number of outstanding AudioRendererMixers.
   struct AudioRendererMixerReference {
     media::AudioRendererMixer* mixer;
     int ref_count;
-    // Mixer sink pointer, to remove a sink from cache upon mixer destruction.
-    const media::AudioRendererSink* sink_ptr;
   };
 
   using AudioRendererMixerMap =
-      std::map<MixerKey, AudioRendererMixerReference, MixerKeyCompare>;
+      base::flat_map<MixerKey, AudioRendererMixerReference, MixerKeyCompare>;
 
   // Active mixers.
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
-
-  // Mixer sink cache.
-  const std::unique_ptr<AudioRendererSinkCache> sink_cache_;
 
   // Map of the output latencies encountered throughout mixer manager lifetime.
   // Used for UMA histogram logging.

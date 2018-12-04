@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -25,14 +25,13 @@
 namespace content {
 
 AudioRendererSinkCacheImpl* AudioRendererSinkCacheImpl::instance_ = nullptr;
-constexpr int kDeleteTimeoutMs = 5000;
 constexpr int kDefaultSessionId = 0;
 
 class AudioRendererSinkCacheImpl::FrameObserver : public RenderFrameObserver {
  public:
   explicit FrameObserver(content::RenderFrame* render_frame)
       : RenderFrameObserver(render_frame) {}
-  ~FrameObserver() override{};
+  ~FrameObserver() override {}
 
  private:
   // content::RenderFrameObserver implementation:
@@ -88,35 +87,22 @@ struct AudioRendererSinkCacheImpl::CacheEntry {
 };
 
 // static
-std::unique_ptr<AudioRendererSinkCache> AudioRendererSinkCache::Create() {
-  return std::make_unique<AudioRendererSinkCacheImpl>(
-      base::ThreadTaskRunnerHandle::Get(),
-      base::Bind(&AudioDeviceFactory::NewAudioRendererMixerSink),
-      base::TimeDelta::FromMilliseconds(kDeleteTimeoutMs));
-}
-
-// static
 void AudioRendererSinkCache::ObserveFrame(RenderFrame* frame) {
   new AudioRendererSinkCacheImpl::FrameObserver(frame);
 }
 
 AudioRendererSinkCacheImpl::AudioRendererSinkCacheImpl(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<base::SequencedTaskRunner> cleanup_task_runner,
     CreateSinkCallback create_sink_cb,
     base::TimeDelta delete_timeout)
-    : task_runner_(std::move(task_runner)),
+    : cleanup_task_runner_(std::move(cleanup_task_runner)),
       create_sink_cb_(std::move(create_sink_cb)),
-      delete_timeout_(delete_timeout),
-      weak_ptr_factory_(this) {
-  weak_this_ = weak_ptr_factory_.GetWeakPtr();
-  if (instance_)
-    LOG(ERROR) << "More that one AudioRendererSinkCache instance created. "
-                  "Allowed in tests only.";
+      delete_timeout_(delete_timeout) {
+  DCHECK(!instance_);
   instance_ = this;
 }
 
 AudioRendererSinkCacheImpl::~AudioRendererSinkCacheImpl() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
   // We just release all the cached sinks here. Stop them first.
   // We can stop all the sinks, no matter they are used or not, since everything
   // is being destroyed anyways.
@@ -238,10 +224,12 @@ void AudioRendererSinkCacheImpl::ReleaseSink(
 
 void AudioRendererSinkCacheImpl::DeleteLaterIfUnused(
     const media::AudioRendererSink* sink_ptr) {
-  task_runner_->PostDelayedTask(
+  cleanup_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AudioRendererSinkCacheImpl::DeleteSink, weak_this_,
-                     base::RetainedRef(sink_ptr),
+      base::BindOnce(&AudioRendererSinkCacheImpl::DeleteSink,
+                     // Unretained is safe here since this is a process-wide
+                     // singleton and tests will ensure lifetime.
+                     base::Unretained(this), base::RetainedRef(sink_ptr),
                      false /*do not delete if used*/),
       delete_timeout_);
 }

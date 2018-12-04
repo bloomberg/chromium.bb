@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
+#include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
@@ -15,6 +17,7 @@
 #include "content/renderer/media/audio/audio_input_ipc_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
+#include "content/renderer/media/audio/audio_renderer_sink_cache_impl.h"
 #include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -182,11 +185,23 @@ AudioDeviceFactory::NewAudioCapturerSource(
 media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
     int render_frame_id,
     const media::AudioSinkParameters& params) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
-                        << "GetOutputDeviceInfo() is called on a wrong thread ";
-  return render_thread->GetAudioRendererMixerManager()->GetOutputDeviceInfo(
-      render_frame_id, params.session_id, params.device_id);
+  DCHECK(RenderThreadImpl::current())
+      << "RenderThreadImpl is not instantiated, or "
+      << "GetOutputDeviceInfo() is called on a wrong thread ";
+
+  constexpr base::TimeDelta kDeleteTimeout =
+      base::TimeDelta::FromMilliseconds(5000);
+
+  // There's one process wide instance that lives on the render thread.
+  static base::NoDestructor<AudioRendererSinkCacheImpl> cache(
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
+      base::BindRepeating(&AudioDeviceFactory::NewAudioRendererSink,
+                          AudioDeviceFactory::kSourceNone),
+      kDeleteTimeout);
+  return cache->GetSinkInfo(render_frame_id, params.session_id,
+                            params.device_id);
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

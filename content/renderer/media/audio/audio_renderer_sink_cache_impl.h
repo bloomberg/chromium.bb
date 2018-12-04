@@ -11,8 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
@@ -32,8 +31,11 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
           int render_frame_id,
           const media::AudioSinkParameters& params)>;
 
+  // |cleanup_task_runner| will be used to delete sinks when they are unused,
+  // AudioRendererSinkCacheImpl must outlive any tasks posted to it. Since
+  // the sink cache is normally a process-wide singleton, this isn't a problem.
   AudioRendererSinkCacheImpl(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> cleanup_task_runner,
       CreateSinkCallback create_sink_callback,
       base::TimeDelta delete_timeout);
 
@@ -85,7 +87,7 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
   static AudioRendererSinkCacheImpl* instance_;
 
   // Renderer main task runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> cleanup_task_runner_;
 
   // Callback used for sink creation.
   const CreateSinkCallback create_sink_cb_;
@@ -101,17 +103,6 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
   // Cached sinks, protected by lock.
   base::Lock cache_lock_;
   CacheContainer cache_;
-
-  // Weak pointer to be used for delayed sink deletion on |task_runner_|.
-  // Pre-created in constructor and is used to post all the delayed tasks.
-  // A delayed task can be concurrently posted from any thread the cache is used
-  // on, so on-the-flight weak pointer creation with
-  // weak_ptr_factory_.GetWeakPtr() can't be used, because it will result in the
-  // racy access to the factory.
-  base::WeakPtr<AudioRendererSinkCacheImpl> weak_this_;
-
-  // Used to produce |weak_this_| on AudioRendererSinkCacheImpl construction.
-  base::WeakPtrFactory<AudioRendererSinkCacheImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererSinkCacheImpl);
 };
