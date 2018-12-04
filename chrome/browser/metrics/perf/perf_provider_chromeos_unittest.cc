@@ -964,28 +964,26 @@ TEST_F(PerfProviderCollectionParamsTest, Parameters_Override) {
 
   // Not initialized yet:
   EXPECT_NE(base::TimeDelta::FromSeconds(15),
-            parsed_params.collection_duration());
-  EXPECT_NE(base::TimeDelta::FromHours(1),
-            parsed_params.periodic_interval());
-  EXPECT_NE(1, parsed_params.resume_from_suspend().sampling_factor());
+            parsed_params.collection_duration);
+  EXPECT_NE(base::TimeDelta::FromHours(1), parsed_params.periodic_interval);
+  EXPECT_NE(1, parsed_params.resume_from_suspend.sampling_factor);
   EXPECT_NE(base::TimeDelta::FromSeconds(10),
-            parsed_params.resume_from_suspend().max_collection_delay());
-  EXPECT_NE(2, parsed_params.restore_session().sampling_factor());
+            parsed_params.resume_from_suspend.max_collection_delay);
+  EXPECT_NE(2, parsed_params.restore_session.sampling_factor);
   EXPECT_NE(base::TimeDelta::FromSeconds(20),
-            parsed_params.restore_session().max_collection_delay());
+            parsed_params.restore_session.max_collection_delay);
 
   perf_provider.Init();
 
   EXPECT_EQ(base::TimeDelta::FromSeconds(15),
-            parsed_params.collection_duration());
-  EXPECT_EQ(base::TimeDelta::FromHours(1),
-            parsed_params.periodic_interval());
-  EXPECT_EQ(1, parsed_params.resume_from_suspend().sampling_factor());
+            parsed_params.collection_duration);
+  EXPECT_EQ(base::TimeDelta::FromHours(1), parsed_params.periodic_interval);
+  EXPECT_EQ(1, parsed_params.resume_from_suspend.sampling_factor);
   EXPECT_EQ(base::TimeDelta::FromSeconds(10),
-            parsed_params.resume_from_suspend().max_collection_delay());
-  EXPECT_EQ(2, parsed_params.restore_session().sampling_factor());
+            parsed_params.resume_from_suspend.max_collection_delay);
+  EXPECT_EQ(2, parsed_params.restore_session.sampling_factor);
   EXPECT_EQ(base::TimeDelta::FromSeconds(20),
-            parsed_params.restore_session().max_collection_delay());
+            parsed_params.restore_session.max_collection_delay);
 }
 
 // Setting "::SamplingFactor" to zero should disable the trigger.
