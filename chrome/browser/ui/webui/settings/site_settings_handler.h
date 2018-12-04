@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SITE_SETTINGS_HANDLER_H_
 
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -70,8 +71,18 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
  private:
-  friend class SiteSettingsHandlerTest;
+  friend class SiteSettingsHandlerChooserExceptionTest;
   friend class SiteSettingsHandlerInfobarTest;
+  friend class SiteSettingsHandlerTest;
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerChooserExceptionTest,
+                           HandleGetChooserExceptionListForUsb);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerChooserExceptionTest,
+                           HandleResetChooserExceptionForSiteForUsb);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
+                           SettingPermissionsTriggersInfobar);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
+                           BlockAutoplay_SendOnRequest);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, BlockAutoplay_Update);
 #if BUILDFLAG(ENABLE_PLUGINS)
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
                            ChangingFlashSettingForSiteIsRemembered);
@@ -79,22 +90,17 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, DefaultSettingSource);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExceptionHelpers);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ExtensionDisplayName);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSites);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAllSitesLocalStorage);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetForInvalidURLs);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetOriginPermissions);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Incognito);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, PatternsAndContentType);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
-                           SettingPermissionsTriggersInfobar);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, SessionOnlyException);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
-                           BlockAutoplay_SendOnRequest);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, BlockAutoplay_Update);
+  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, ZoomLevels);
 
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
@@ -130,6 +136,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Returns the list of site exceptions for a given content settings type.
   void HandleGetExceptionList(const base::ListValue* args);
 
+  // Returns the list of chooser exceptions for a given chooser type.
+  void HandleGetChooserExceptionList(const base::ListValue* args);
+
   // Gets and sets a list of ContentSettingTypes for an origin.
   // TODO(https://crbug.com/739241): Investigate replacing the
   // '*CategoryPermissionForPattern' equivalents below with these methods.
@@ -143,6 +152,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Handles setting and resetting an origin permission.
   void HandleResetCategoryPermissionForPattern(const base::ListValue* args);
   void HandleSetCategoryPermissionForPattern(const base::ListValue* args);
+
+  // Handles resetting a chooser exception for the given site.
+  void HandleResetChooserExceptionForSite(const base::ListValue* args);
 
   // Returns whether a given string is a valid origin.
   void HandleIsOriginValid(const base::ListValue* args);

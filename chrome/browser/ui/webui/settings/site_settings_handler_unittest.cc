@@ -6,19 +6,25 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "base/json/json_reader.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "base/values.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -33,6 +39,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
+#include "device/usb/public/cpp/fake_usb_device_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -1322,6 +1329,273 @@ TEST_F(SiteSettingsHandlerTest, BlockAutoplay_Update) {
 
   handler()->HandleSetBlockAutoplayEnabled(&data);
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kBlockAutoplayEnabled));
+}
+
+namespace {
+
+const GURL kAndroidOrigin("https://android.com");
+const GURL kChromiumOrigin("https://chromium.org");
+const GURL kGoogleOrigin("https://google.com");
+
+constexpr char kUsbPolicySetting[] = R"(
+    [
+      {
+        "devices": [{ "vendor_id": 6353, "product_id": 5678 }],
+        "urls": ["https://chromium.org"]
+      }, {
+        "devices": [{ "vendor_id": 6353 }],
+        "urls": ["https://google.com,https://android.com"]
+      }, {
+        "devices": [{ "vendor_id": 6354 }],
+        "urls": ["https://android.com,"]
+      }, {
+        "devices": [{}],
+        "urls": ["https://google.com,https://google.com"]
+      }
+    ])";
+
+}  // namespace
+
+class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
+ protected:
+  void SetUp() override {
+    SiteSettingsHandlerTest::SetUp();
+    SetUpUsbChooserContext();
+  }
+
+  // Sets up the UsbChooserContext with two devices and permissions for these
+  // devices. It also adds three policy defined permissions. There are three
+  // devices that are granted user permissions. Two are covered by different
+  // policy permissions, while the third is not covered by policy at all. These
+  // unit tests will check that the WebUI is able to receive the exceptions and
+  // properly manipulate their permissions.
+  void SetUpUsbChooserContext() {
+    persistent_device_info_ = device_manager_.CreateAndAddDevice(
+        6353, 5678, "Google", "Gizmo", "123ABC");
+    ephemeral_device_info_ =
+        device_manager_.CreateAndAddDevice(6354, 0, "Google", "Gadget", "");
+    user_granted_device_info_ = device_manager_.CreateAndAddDevice(
+        6355, 0, "Google", "Widget", "789XYZ");
+
+    auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile());
+    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
+    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+    chooser_context->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+    chooser_context->GetDevices(
+        base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
+    base::RunLoop().RunUntilIdle();
+
+    // Add the user granted permissions for testing.
+    // These two persistent device permissions should be lumped together with
+    // the policy permissions, since they apply to the same device and URL.
+    chooser_context->GrantDevicePermission(kChromiumOrigin, kChromiumOrigin,
+                                           *persistent_device_info_);
+    chooser_context->GrantDevicePermission(kChromiumOrigin, kGoogleOrigin,
+                                           *persistent_device_info_);
+    chooser_context->GrantDevicePermission(kAndroidOrigin, kChromiumOrigin,
+                                           *persistent_device_info_);
+    chooser_context->GrantDevicePermission(kAndroidOrigin, kAndroidOrigin,
+                                           *ephemeral_device_info_);
+    chooser_context->GrantDevicePermission(kAndroidOrigin, kAndroidOrigin,
+                                           *user_granted_device_info_);
+
+    // Add the policy granted permissions for testing.
+    auto policy_value = base::JSONReader::Read(kUsbPolicySetting);
+    DCHECK(policy_value);
+    profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
+                               *policy_value);
+  }
+
+  // Call SiteSettingsHandler::HandleGetChooserExceptionList for |chooser_type|
+  // and return the exception list received by the WebUI.
+  void ValidateChooserExceptionList(const std::string& chooser_type,
+                                    size_t expected_total_calls) {
+    base::ListValue args;
+    args.AppendString(kCallbackId);
+    args.AppendString(chooser_type);
+
+    handler()->HandleGetChooserExceptionList(&args);
+
+    EXPECT_EQ(web_ui()->call_data().size(), expected_total_calls);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+    ASSERT_TRUE(data.arg1());
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ(data.arg1()->GetString(), kCallbackId);
+
+    ASSERT_TRUE(data.arg2());
+    ASSERT_TRUE(data.arg2()->is_bool());
+    EXPECT_TRUE(data.arg2()->GetBool());
+
+    ASSERT_TRUE(data.arg3());
+    ASSERT_TRUE(data.arg3()->is_list());
+  }
+
+  const base::Value& GetChooserExceptionListFromWebUiCallData(
+      const std::string& chooser_type,
+      size_t expected_total_calls) {
+    ValidateChooserExceptionList(chooser_type, expected_total_calls);
+    return *web_ui()->call_data().back()->arg3();
+  }
+
+  // Iterate through the exception's sites array and return true if a site
+  // exception matches |requesting_origin| and |embedding_origin|.
+  bool ChooserExceptionContainsSiteException(
+      const base::Value& exception,
+      const std::string& requesting_origin,
+      const std::string& embedding_origin) {
+    const base::Value* site_value = exception.FindKey(site_settings::kSites);
+    for (const auto& site : site_value->GetList()) {
+      const base::Value* origin_value = site.FindKey(site_settings::kOrigin);
+      if (origin_value->GetString() != requesting_origin)
+        continue;
+
+      const base::Value* embedding_origin_value =
+          site.FindKey(site_settings::kEmbeddingOrigin);
+      if (embedding_origin_value->GetString() == embedding_origin)
+        return true;
+    }
+    return false;
+  }
+
+  // Iterate through the |exception_list| array and return true if there is a
+  // chooser exception with |display_name| that contains a site exception for
+  // |requesting_origin| and |embedding_origin|.
+  bool ChooserExceptionContainsSiteException(
+      const base::Value& exception_list,
+      const std::string& display_name,
+      const std::string& requesting_origin,
+      const std::string& embedding_origin) {
+    for (const auto& exception : exception_list.GetList()) {
+      const base::Value* display_name_value =
+          exception.FindKey(site_settings::kDisplayName);
+      if (display_name_value->GetString() == display_name) {
+        return ChooserExceptionContainsSiteException(
+            exception, requesting_origin, embedding_origin);
+      }
+    }
+    return false;
+  }
+
+  device::mojom::UsbDeviceInfoPtr persistent_device_info_;
+  device::mojom::UsbDeviceInfoPtr ephemeral_device_info_;
+  device::mojom::UsbDeviceInfoPtr user_granted_device_info_;
+
+ private:
+  device::FakeUsbDeviceManager device_manager_;
+};
+
+TEST_F(SiteSettingsHandlerChooserExceptionTest,
+       HandleGetChooserExceptionListForUsb) {
+  const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+      site_settings::kGroupTypeUsb, /*expected_total_calls=*/1ul);
+  EXPECT_EQ(exceptions.GetList().size(), 5ul);
+}
+
+TEST_F(SiteSettingsHandlerChooserExceptionTest,
+       HandleResetChooserExceptionForSiteForUsb) {
+  const std::string kAndroidOriginStr = kAndroidOrigin.GetOrigin().spec();
+  const std::string kChromiumOriginStr = kChromiumOrigin.GetOrigin().spec();
+
+  {
+    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+        site_settings::kGroupTypeUsb, /*expected_total_calls=*/1ul);
+    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+  }
+
+  // User granted USB permissions for devices also containing policy permissions
+  // should be able to be reset without removing the chooser exception object
+  // from the list.
+  base::ListValue args;
+  args.AppendString(site_settings::kGroupTypeUsb);
+  args.AppendString(kAndroidOriginStr);
+  args.AppendString(kChromiumOriginStr);
+  args.Append(
+      UsbChooserContext::DeviceInfoToDictValue(*persistent_device_info_));
+
+  handler()->HandleResetChooserExceptionForSite(&args);
+
+  {
+    // The exception list size should not have been reduced since there is still
+    // a policy granted permission for the "Gizmo" device.
+    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+        site_settings::kGroupTypeUsb, /*expected_total_calls=*/2ul);
+    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+
+    // Ensure that the sites list does not contain the URLs of the removed
+    // permission.
+    EXPECT_FALSE(ChooserExceptionContainsSiteException(
+        exceptions, "Gizmo", kAndroidOriginStr, kChromiumOriginStr));
+  }
+
+  // User granted USB permissions that are also granted by policy should not
+  // be able to be reset.
+  args.Clear();
+  args.AppendString(site_settings::kGroupTypeUsb);
+  args.AppendString(kChromiumOriginStr);
+  args.AppendString(kChromiumOriginStr);
+  args.Append(
+      UsbChooserContext::DeviceInfoToDictValue(*persistent_device_info_));
+
+  {
+    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+        site_settings::kGroupTypeUsb, 3ul);
+    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+
+    // User granted exceptions that are also granted by policy are only
+    // displayed through the policy granted site exception, so ensure that a
+    // site exception entry for a requesting and embedding origin of
+    // kChromiumOriginStr does not exist.
+    EXPECT_TRUE(ChooserExceptionContainsSiteException(
+        exceptions, "Gizmo", kChromiumOriginStr, std::string()));
+    EXPECT_FALSE(ChooserExceptionContainsSiteException(
+        exceptions, "Gizmo", kChromiumOriginStr, kChromiumOriginStr));
+  }
+
+  handler()->HandleResetChooserExceptionForSite(&args);
+
+  {
+    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+        site_settings::kGroupTypeUsb, /*expected_total_calls=*/4ul);
+    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+
+    // Ensure that the sites list still displays a site exception entry for a
+    // requesting origin of kChromiumOriginStr and a wildcard embedding origin.
+    EXPECT_TRUE(ChooserExceptionContainsSiteException(
+        exceptions, "Gizmo", kChromiumOriginStr, std::string()));
+    EXPECT_FALSE(ChooserExceptionContainsSiteException(
+        exceptions, "Gizmo", kChromiumOriginStr, kChromiumOriginStr));
+  }
+
+  // User granted USB permissions that are not covered by policy should be able
+  // to be reset and the chooser exception entry should be removed from the list
+  // when the exception only has one site exception granted to it..
+  args.Clear();
+  args.AppendString(site_settings::kGroupTypeUsb);
+  args.AppendString(kAndroidOriginStr);
+  args.AppendString(kAndroidOriginStr);
+  args.Append(
+      UsbChooserContext::DeviceInfoToDictValue(*user_granted_device_info_));
+
+  {
+    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+        site_settings::kGroupTypeUsb, 5ul);
+    EXPECT_EQ(exceptions.GetList().size(), 5ul);
+    EXPECT_TRUE(ChooserExceptionContainsSiteException(
+        exceptions, "Widget", kAndroidOriginStr, kAndroidOriginStr));
+  }
+
+  handler()->HandleResetChooserExceptionForSite(&args);
+
+  {
+    const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
+        site_settings::kGroupTypeUsb, /*expected_total_calls=*/6ul);
+    EXPECT_EQ(exceptions.GetList().size(), 4ul);
+    EXPECT_FALSE(ChooserExceptionContainsSiteException(
+        exceptions, "Widget", kAndroidOriginStr, kAndroidOriginStr));
+  }
 }
 
 }  // namespace settings

@@ -272,6 +272,10 @@ void SiteSettingsHandler::RegisterMessages() {
       base::BindRepeating(&SiteSettingsHandler::HandleGetExceptionList,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getChooserExceptionList",
+      base::BindRepeating(&SiteSettingsHandler::HandleGetChooserExceptionList,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getOriginPermissions",
       base::BindRepeating(&SiteSettingsHandler::HandleGetOriginPermissions,
                           base::Unretained(this)));
@@ -292,6 +296,11 @@ void SiteSettingsHandler::RegisterMessages() {
       "setCategoryPermissionForPattern",
       base::BindRepeating(
           &SiteSettingsHandler::HandleSetCategoryPermissionForPattern,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "resetChooserExceptionForSite",
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleResetChooserExceptionForSite,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "isOriginValid",
@@ -782,6 +791,26 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
 }
 
+void SiteSettingsHandler::HandleGetChooserExceptionList(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  CHECK_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  std::string type;
+  CHECK(args->GetString(1, &type));
+  const site_settings::ChooserTypeNameEntry* chooser_type =
+      site_settings::ChooserTypeFromGroupName(type);
+  CHECK(chooser_type);
+
+  std::unique_ptr<base::ListValue> exceptions =
+      site_settings::GetChooserExceptionListFromProfile(profile_,
+                                                        /*incognito=*/false,
+                                                        *chooser_type);
+  ResolveJavascriptCallback(*callback_id, *exceptions.get());
+}
+
 void SiteSettingsHandler::HandleGetOriginPermissions(
     const base::ListValue* args) {
   AllowJavascript();
@@ -1027,6 +1056,36 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
     }
   }
   WebSiteSettingsUmaUtil::LogPermissionChange(content_type, setting);
+}
+
+void SiteSettingsHandler::HandleResetChooserExceptionForSite(
+    const base::ListValue* args) {
+  CHECK_EQ(4U, args->GetSize());
+
+  std::string chooser_type_str;
+  CHECK(args->GetString(0, &chooser_type_str));
+  const site_settings::ChooserTypeNameEntry* chooser_type =
+      site_settings::ChooserTypeFromGroupName(chooser_type_str);
+  CHECK(chooser_type);
+
+  std::string origin_str;
+  CHECK(args->GetString(1, &origin_str));
+  GURL requesting_origin(origin_str);
+  CHECK(requesting_origin.is_valid());
+
+  // An empty embedding origin means that the user exception object was granted
+  // for any embedding origin.
+  std::string embedding_origin_str;
+  CHECK(args->GetString(2, &embedding_origin_str));
+  GURL embedding_origin(embedding_origin_str);
+  CHECK(embedding_origin.is_valid() || embedding_origin.is_empty());
+
+  const base::DictionaryValue* object = nullptr;
+  CHECK(args->GetDictionary(3, &object));
+
+  ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
+  chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
+                                          *object);
 }
 
 void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {
