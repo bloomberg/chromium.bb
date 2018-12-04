@@ -21,7 +21,7 @@ import java.io.File;
 public class CachedImageFetcherImpl implements CachedImageFetcher {
     private static CachedImageFetcherImpl sInstance;
 
-    public static CachedImageFetcher getInstance() {
+    public static CachedImageFetcherImpl getInstance() {
         ThreadUtils.assertOnUiThread();
 
         if (sInstance == null) {
@@ -54,6 +54,11 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
     }
 
     @Override
+    public void reportEvent(@CachedImageFetcherEvent int eventId) {
+        mCachedImageFetcherBridge.reportEvent(eventId);
+    }
+
+    @Override
     public void destroy() {
         // Do nothing, this lives for the lifetime of the application.
     }
@@ -79,6 +84,7 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
      */
     @VisibleForTesting
     void fetchImageImpl(String url, int width, int height, Callback<Bitmap> callback) {
+        long startTimeMillis = System.currentTimeMillis();
         String filePath = mCachedImageFetcherBridge.getFilePath(url);
         new AsyncTask<Bitmap>() {
             @Override
@@ -90,10 +96,11 @@ public class CachedImageFetcherImpl implements CachedImageFetcher {
             protected void onPostExecute(Bitmap bitmap) {
                 if (bitmap != null) {
                     callback.onResult(bitmap);
-                    return;
+                    reportEvent(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT);
+                    mCachedImageFetcherBridge.reportCacheHitTime(startTimeMillis);
+                } else {
+                    mCachedImageFetcherBridge.fetchImage(url, width, height, callback);
                 }
-
-                mCachedImageFetcherBridge.fetchImage(url, width, height, callback);
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 static_library("core") {
   sources = [
     "cached_image_fetcher.cc",
@@ -74,4 +78,12 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]
+}
+
+if (is_android) {
+  java_cpp_enum("cached_image_fetcher_java_enums_srcjar") {
+    sources = [
+      "cache/cached_image_fetcher_metrics_reporter.h",
+    ]
+  }
 }

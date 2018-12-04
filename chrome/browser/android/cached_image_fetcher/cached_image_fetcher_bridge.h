@@ -41,6 +41,14 @@ class CachedImageFetcherBridge {
                   const jint height_px,
                   const base::android::JavaRef<jobject>& j_callback);
 
+  void ReportEvent(JNIEnv* j_env,
+                   const base::android::JavaRef<jobject>& j_this,
+                   const jint j_event_id);
+
+  void ReportCacheHitTime(JNIEnv* j_env,
+                          const base::android::JavaRef<jobject>& j_this,
+                          const jlong start_time_millis);
+
  private:
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const std::string& id,

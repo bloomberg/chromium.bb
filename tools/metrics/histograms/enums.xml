@@ -5484,6 +5484,10 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Cache decoding error"/>
   <int value="4" label="Network transcoding error"/>
   <int value="5" label="Failure to fetch the image from the network"/>
+  <int value="6" label="Cache startup eviction began"/>
+  <int value="7" label="Cache startup eviction finished"/>
+  <int value="8" label="Java in-memory cache hit"/>
+  <int value="9" label="Java disk cache hit"/>
 </enum>
 
 <enum name="CacheResult">

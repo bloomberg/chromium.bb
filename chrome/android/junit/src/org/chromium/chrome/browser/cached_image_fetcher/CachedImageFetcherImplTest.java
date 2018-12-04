@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.cached_image_fetcher;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -84,6 +85,11 @@ public class CachedImageFetcherImplTest {
         verify(mCachedImageFetcher).fetchImageImpl(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
         verify(mCachedImageFetcherBridge, never()) // Should never make it to native.
                 .fetchImage(eq(URL), anyInt(), anyInt(), any());
+
+        // Verify metrics have been reported.
+        verify(mCachedImageFetcherBridge)
+                .reportEvent(eq(CachedImageFetcherEvent.JAVA_DISK_CACHE_HIT));
+        verify(mCachedImageFetcherBridge).reportCacheHitTime(anyLong());
     }
 
     @Test

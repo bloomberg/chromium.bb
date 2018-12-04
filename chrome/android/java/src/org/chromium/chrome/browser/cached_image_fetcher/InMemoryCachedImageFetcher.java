@@ -14,12 +14,13 @@ import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
 
 /**
- * A wrapper around the static CachedImageFetcher that also provides in-memory cahcing.
+ * A wrapper around the CachedImageFetcher that also provides in-memory caching.
  */
 public class InMemoryCachedImageFetcher implements CachedImageFetcher {
     private static final int DEFAULT_CACHE_SIZE = 20 * ConversionUtils.BYTES_PER_MEGABYTE; // 20mb
     private static final float PORTION_OF_AVAILABLE_MEMORY = 1.f / 8.f;
 
+    // Will do the work if the image isn't cached in memory.
     private CachedImageFetcher mCachedImageFetcher;
     private BitmapCache mBitmapCache;
 
@@ -46,6 +47,11 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
     }
 
     @Override
+    public void reportEvent(@CachedImageFetcherEvent int eventId) {
+        mCachedImageFetcher.reportEvent(eventId);
+    }
+
+    @Override
     public void destroy() {
         mCachedImageFetcher.destroy();
         mCachedImageFetcher = null;
@@ -69,6 +75,7 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
                 callback.onResult(bitmap);
             });
         } else {
+            reportEvent(CachedImageFetcherEvent.JAVA_IN_MEMORY_CACHE_HIT);
             callback.onResult(cachedBitmap);
         }
     }
