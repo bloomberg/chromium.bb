@@ -220,6 +220,7 @@ void FrameLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(progress_tracker_);
   visitor->Trace(document_loader_);
   visitor->Trace(provisional_document_loader_);
+  visitor->Trace(last_origin_document_csp_);
 }
 
 void FrameLoader::Init() {
@@ -900,6 +901,14 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
     resource_request.SetInitiatorCSP(initiator_csp);
     auto request = mojo::MakeRequest(&navigation_initiator);
     origin_document->BindNavigationInitiatorRequest(std::move(request));
+  }
+
+  if (origin_document && origin_document->GetContentSecurityPolicy()) {
+    last_origin_document_csp_ = ContentSecurityPolicy::Create();
+    last_origin_document_csp_->CopyStateFrom(
+        origin_document->GetContentSecurityPolicy());
+    last_origin_document_csp_->CopyPluginTypesFrom(
+        origin_document->GetContentSecurityPolicy());
   }
 
   // Record the latest requiredCSP value that will be used when sending this

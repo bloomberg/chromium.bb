@@ -289,7 +289,7 @@ class CORE_EXPORT DocumentLoader
                           InstallNewDocumentReason,
                           ParserSynchronizationPolicy,
                           const KURL& overriding_url);
-  void DidInstallNewDocument(Document*, const ContentSecurityPolicy*);
+  void DidInstallNewDocument(Document*);
   void WillCommitNavigation();
   void DidCommitNavigation(WebGlobalObjectReusePolicy);
 
