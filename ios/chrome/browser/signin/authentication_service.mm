@@ -382,8 +382,13 @@ void AuthenticationService::SignOut(
   bool is_managed = IsAuthenticatedIdentityManaged();
 
   sync_service_->StopAndClear();
-  identity_manager_->ClearPrimaryAccount(
-      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+
+  auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
+
+  // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+  DCHECK(account_mutator);
+  account_mutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signout_source, signin_metrics::SignoutDelete::IGNORE_METRIC);
   breakpad_helper::SetCurrentlySignedIn(false);
   cached_mdm_infos_.clear();

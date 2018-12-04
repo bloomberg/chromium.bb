@@ -28,6 +28,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/version_info/version_info_values.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -687,8 +688,12 @@ TEST_F(ProfileSyncServiceTest, EnableSyncSignOutAndChangeAccount) {
   EXPECT_EQ(identity_manager()->GetPrimaryAccountId(),
             identity_provider()->GetActiveAccountId());
 
-  identity_manager()->ClearPrimaryAccount(
-      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+
+  // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+  DCHECK(account_mutator);
+  account_mutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   // Wait for PSS to be notified that the primary account has gone away.
@@ -875,8 +880,13 @@ TEST_F(ProfileSyncServiceTest, SignOutRevokeAccessToken) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(service()->GetAccessTokenForTest().empty());
 
-  identity_manager()->ClearPrimaryAccount(
-      identity::IdentityManager::ClearAccountTokensAction::kDefault,
+  auto* account_mutator = identity_manager()->GetPrimaryAccountMutator();
+
+  // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.
+  DCHECK(account_mutator);
+
+  account_mutator->ClearPrimaryAccount(
+      identity::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
   EXPECT_TRUE(service()->GetAccessTokenForTest().empty());
