@@ -24,8 +24,7 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const TrustedTypePolicyOptions* policy_options,
     bool exposed,
     ExceptionState& exception_state) {
-  if (!GetFrame()
-           ->GetDocument()
+  if (!GetExecutionContext()
            ->GetContentSecurityPolicy()
            ->AllowTrustedTypePolicy(policy_name)) {
     exception_state.ThrowTypeError("Policy " + policy_name + " disallowed.");
@@ -59,8 +58,8 @@ TrustedTypePolicy* TrustedTypePolicyFactory::getExposedPolicy(
   return nullptr;
 }
 
-TrustedTypePolicyFactory::TrustedTypePolicyFactory(LocalFrame* frame)
-    : DOMWindowClient(frame) {}
+TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
+    : ContextClient(context) {}
 
 Vector<String> TrustedTypePolicyFactory::getPolicyNames() const {
   Vector<String> policyNames;
@@ -117,7 +116,7 @@ bool TrustedTypePolicyFactory::isURL(ScriptState* script_state,
 
 void TrustedTypePolicyFactory::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  DOMWindowClient::Trace(visitor);
+  ContextClient::Trace(visitor);
   visitor->Trace(policy_map_);
 }
 

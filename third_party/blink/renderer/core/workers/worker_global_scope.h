@@ -61,6 +61,8 @@ class FontFaceSet;
 class OffscreenFontSelector;
 class V8VoidFunction;
 class WorkerClassicScriptLoader;
+class StringOrTrustedScriptURL;
+class TrustedTypePolicyFactory;
 class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
@@ -107,7 +109,8 @@ class CORE_EXPORT WorkerGlobalScope
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unhandledrejection, kUnhandledrejection);
 
   // WorkerUtils
-  virtual void importScripts(const Vector<String>& urls, ExceptionState&);
+  virtual void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
+                             ExceptionState&);
 
   // ExecutionContext
   const KURL& Url() const final { return url_; }
@@ -177,6 +180,8 @@ class CORE_EXPORT WorkerGlobalScope
   // Returns true when this is a nested worker.
   virtual bool IsNestedWorker() const { return false; }
 
+  TrustedTypePolicyFactory* trustedTypes();
+
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
@@ -205,6 +210,9 @@ class CORE_EXPORT WorkerGlobalScope
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
  private:
+  virtual void importScriptsFromStrings(const Vector<String>& urls,
+                                        ExceptionState&);
+
   void SetWorkerSettings(std::unique_ptr<WorkerSettings>);
 
   // Returns true if this worker script is supposed to be fetched on the main
@@ -256,6 +264,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   mutable Member<WorkerLocation> location_;
   mutable TraceWrapperMember<WorkerNavigator> navigator_;
+  Member<TrustedTypePolicyFactory> trusted_types_;
 
   WorkerThread* thread_;
 
