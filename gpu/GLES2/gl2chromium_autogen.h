@@ -336,8 +336,6 @@
 #define glCommitOverlayPlanesCHROMIUM GLES2_GET_FUN(CommitOverlayPlanesCHROMIUM)
 #define glFlushDriverCachesCHROMIUM GLES2_GET_FUN(FlushDriverCachesCHROMIUM)
 #define glGetLastFlushIdCHROMIUM GLES2_GET_FUN(GetLastFlushIdCHROMIUM)
-#define glScheduleDCLayerSharedStateCHROMIUM \
-  GLES2_GET_FUN(ScheduleDCLayerSharedStateCHROMIUM)
 #define glScheduleDCLayerCHROMIUM GLES2_GET_FUN(ScheduleDCLayerCHROMIUM)
 #define glSetActiveURLCHROMIUM GLES2_GET_FUN(SetActiveURLCHROMIUM)
 #define glMatrixLoadfCHROMIUM GLES2_GET_FUN(MatrixLoadfCHROMIUM)

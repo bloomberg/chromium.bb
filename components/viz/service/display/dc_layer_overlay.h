@@ -18,62 +18,44 @@ namespace viz {
 class DisplayResourceProvider;
 class OutputSurface;
 
-class VIZ_SERVICE_EXPORT DCLayerOverlaySharedState
-    : public base::RefCounted<DCLayerOverlaySharedState> {
- public:
-  DCLayerOverlaySharedState() {}
-  int z_order = 0;
-  // If |is_clipped| is true, then clip to |clip_rect| in the target space.
-  bool is_clipped = false;
-  gfx::RectF clip_rect;
-  // The opacity property for the CAayer.
-  float opacity = 1;
-  // The transform to apply to the DCLayer.
-  SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
-
- private:
-  friend class base::RefCounted<DCLayerOverlaySharedState>;
-  ~DCLayerOverlaySharedState() {}
-};
-
 // Holds all information necessary to construct a DCLayer from a DrawQuad.
 class VIZ_SERVICE_EXPORT DCLayerOverlay {
  public:
   DCLayerOverlay();
   DCLayerOverlay(const DCLayerOverlay& other);
+  DCLayerOverlay& operator=(const DCLayerOverlay& other);
   ~DCLayerOverlay();
 
-  bool IsProtectedVideo() const {
-    return (protected_video_type != ui::ProtectedVideoType::kClear);
-  }
   // TODO(magchen): Once software protected video is enabled for all GPUs and
-  // all configurations, RequiresOverlay() will be equivalent to
-  // IsProtectedVideo. Currently, we only force the overlay swap chain path
-  // (RequiresOverlay) for hardware protected video and soon for Finch
-  // experiment on software protected video.
+  // all configurations, RequiresOverlay() will be true for all protected video.
+  // Currently, we only force the overlay swap chain path (RequiresOverlay) for
+  // hardware protected video and soon for Finch experiment on software
+  // protected video.
   bool RequiresOverlay() const {
     return (protected_video_type == ui::ProtectedVideoType::kHardwareProtected);
   }
 
-  // State that is frequently shared between consecutive DCLayerOverlays.
-  scoped_refptr<DCLayerOverlaySharedState> shared_state;
+  // Resource ids for video Y and UV planes.  Can be the same resource.
+  // See DirectCompositionSurfaceWin for details.
+  ResourceId y_resource_id = 0;
+  ResourceId uv_resource_id = 0;
 
-  // Resource ids that correspond to the DXGI textures to set as the contents
-  // of the DCLayer.
-  DrawQuad::Resources resources;
-  // The contents rect property for the DCLayer.
-  gfx::RectF contents_rect;
-  // The bounds for the DCLayer in pixels.
-  gfx::RectF bounds_rect;
-  // The background color property for the DCLayer.
-  SkColor background_color = SK_ColorTRANSPARENT;
-  // The edge anti-aliasing mask property for the DCLayer.
-  unsigned edge_aa_mask = 0;
-  // The minification and magnification filters for the DCLayer.
-  unsigned filter;
-  // If |rpdq| is present, then the renderer must draw the filter effects and
-  // copy the result into an IOSurface.
-  const RenderPassDrawQuad* rpdq = nullptr;
+  // Stacking order relative to backbuffer which has z-order 0.
+  int z_order = 1;
+
+  // What part of the content to display in pixels.
+  gfx::Rect content_rect;
+
+  // Bounds of the overlay in pre-transform space.
+  gfx::Rect quad_rect;
+
+  // 2D flattened transform that maps |quad_rect| to root target space,
+  // after applying the |quad_rect.origin()| as an offset.
+  gfx::Transform transform;
+
+  // If |is_clipped| is true, then clip to |clip_rect| in root target space.
+  bool is_clipped = false;
+  gfx::Rect clip_rect;
 
   // This is the color-space the texture should be displayed as. If invalid,
   // then the default for the texture should be used. For YUV textures, that's
@@ -112,7 +94,7 @@ class DCLayerOverlayProcessor {
                RenderPassList* render_passes,
                gfx::Rect* overlay_damage_rect,
                gfx::Rect* damage_rect,
-               DCLayerOverlayList* ca_layer_overlays);
+               DCLayerOverlayList* dc_layer_overlays);
   void ClearOverlayState() {
     previous_frame_underlay_rect_ = gfx::Rect();
     previous_frame_underlay_occlusion_ = gfx::Rect();
@@ -121,21 +103,22 @@ class DCLayerOverlayProcessor {
 
  private:
   DCLayerResult FromDrawQuad(DisplayResourceProvider* resource_provider,
-                             const gfx::RectF& display_rect,
                              QuadList::ConstIterator quad_list_begin,
                              QuadList::ConstIterator quad,
-                             DCLayerOverlay* ca_layer_overlay);
+                             const gfx::Transform& transform_to_root_target,
+                             DCLayerOverlay* dc_layer_overlay);
   // Returns an iterator to the element after |it|.
   QuadList::Iterator ProcessRenderPassDrawQuad(RenderPass* render_pass,
                                                gfx::Rect* damage_rect,
                                                QuadList::Iterator it);
+
   void ProcessRenderPass(DisplayResourceProvider* resource_provider,
                          const gfx::RectF& display_rect,
                          RenderPass* render_pass,
                          bool is_root,
                          gfx::Rect* overlay_damage_rect,
                          gfx::Rect* damage_rect,
-                         DCLayerOverlayList* ca_layer_overlays);
+                         DCLayerOverlayList* dc_layer_overlays);
   bool ProcessForOverlay(const gfx::RectF& display_rect,
                          QuadList* quad_list,
                          const gfx::Rect& quad_rectangle,

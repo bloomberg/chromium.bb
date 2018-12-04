@@ -14101,71 +14101,6 @@ static_assert(sizeof(FlushDriverCachesCHROMIUM) == 4,
 static_assert(offsetof(FlushDriverCachesCHROMIUM, header) == 0,
               "offset of FlushDriverCachesCHROMIUM header should be 0");
 
-struct ScheduleDCLayerSharedStateCHROMIUM {
-  typedef ScheduleDCLayerSharedStateCHROMIUM ValueType;
-  static const CommandId kCmdId = kScheduleDCLayerSharedStateCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLfloat _opacity,
-            GLboolean _is_clipped,
-            GLint _z_order,
-            GLuint _shm_id,
-            GLuint _shm_offset) {
-    SetHeader();
-    opacity = _opacity;
-    is_clipped = _is_clipped;
-    z_order = _z_order;
-    shm_id = _shm_id;
-    shm_offset = _shm_offset;
-  }
-
-  void* Set(void* cmd,
-            GLfloat _opacity,
-            GLboolean _is_clipped,
-            GLint _z_order,
-            GLuint _shm_id,
-            GLuint _shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_opacity, _is_clipped, _z_order, _shm_id,
-                                       _shm_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  float opacity;
-  uint32_t is_clipped;
-  int32_t z_order;
-  uint32_t shm_id;
-  uint32_t shm_offset;
-};
-
-static_assert(sizeof(ScheduleDCLayerSharedStateCHROMIUM) == 24,
-              "size of ScheduleDCLayerSharedStateCHROMIUM should be 24");
-static_assert(
-    offsetof(ScheduleDCLayerSharedStateCHROMIUM, header) == 0,
-    "offset of ScheduleDCLayerSharedStateCHROMIUM header should be 0");
-static_assert(
-    offsetof(ScheduleDCLayerSharedStateCHROMIUM, opacity) == 4,
-    "offset of ScheduleDCLayerSharedStateCHROMIUM opacity should be 4");
-static_assert(
-    offsetof(ScheduleDCLayerSharedStateCHROMIUM, is_clipped) == 8,
-    "offset of ScheduleDCLayerSharedStateCHROMIUM is_clipped should be 8");
-static_assert(
-    offsetof(ScheduleDCLayerSharedStateCHROMIUM, z_order) == 12,
-    "offset of ScheduleDCLayerSharedStateCHROMIUM z_order should be 12");
-static_assert(
-    offsetof(ScheduleDCLayerSharedStateCHROMIUM, shm_id) == 16,
-    "offset of ScheduleDCLayerSharedStateCHROMIUM shm_id should be 16");
-static_assert(
-    offsetof(ScheduleDCLayerSharedStateCHROMIUM, shm_offset) == 20,
-    "offset of ScheduleDCLayerSharedStateCHROMIUM shm_offset should be 20");
-
 struct ScheduleDCLayerCHROMIUM {
   typedef ScheduleDCLayerCHROMIUM ValueType;
   static const CommandId kCmdId = kScheduleDCLayerCHROMIUM;
@@ -14178,66 +14113,165 @@ struct ScheduleDCLayerCHROMIUM {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(GLsizei _num_textures,
-            GLuint _background_color,
-            GLuint _edge_aa_mask,
-            GLuint _filter,
-            GLuint _shm_id,
-            GLuint _shm_offset,
+  void Init(GLuint _y_texture_id,
+            GLuint _uv_texture_id,
+            GLint _z_order,
+            GLint _content_x,
+            GLint _content_y,
+            GLint _content_width,
+            GLint _content_height,
+            GLint _quad_x,
+            GLint _quad_y,
+            GLint _quad_width,
+            GLint _quad_height,
+            GLfloat _transform_c1r1,
+            GLfloat _transform_c2r1,
+            GLfloat _transform_c1r2,
+            GLfloat _transform_c2r2,
+            GLfloat _transform_tx,
+            GLfloat _transform_ty,
+            GLboolean _is_clipped,
+            GLint _clip_x,
+            GLint _clip_y,
+            GLint _clip_width,
+            GLint _clip_height,
             GLuint _protected_video_type) {
     SetHeader();
-    num_textures = _num_textures;
-    background_color = _background_color;
-    edge_aa_mask = _edge_aa_mask;
-    filter = _filter;
-    shm_id = _shm_id;
-    shm_offset = _shm_offset;
+    y_texture_id = _y_texture_id;
+    uv_texture_id = _uv_texture_id;
+    z_order = _z_order;
+    content_x = _content_x;
+    content_y = _content_y;
+    content_width = _content_width;
+    content_height = _content_height;
+    quad_x = _quad_x;
+    quad_y = _quad_y;
+    quad_width = _quad_width;
+    quad_height = _quad_height;
+    transform_c1r1 = _transform_c1r1;
+    transform_c2r1 = _transform_c2r1;
+    transform_c1r2 = _transform_c1r2;
+    transform_c2r2 = _transform_c2r2;
+    transform_tx = _transform_tx;
+    transform_ty = _transform_ty;
+    is_clipped = _is_clipped;
+    clip_x = _clip_x;
+    clip_y = _clip_y;
+    clip_width = _clip_width;
+    clip_height = _clip_height;
     protected_video_type = _protected_video_type;
   }
 
   void* Set(void* cmd,
-            GLsizei _num_textures,
-            GLuint _background_color,
-            GLuint _edge_aa_mask,
-            GLuint _filter,
-            GLuint _shm_id,
-            GLuint _shm_offset,
+            GLuint _y_texture_id,
+            GLuint _uv_texture_id,
+            GLint _z_order,
+            GLint _content_x,
+            GLint _content_y,
+            GLint _content_width,
+            GLint _content_height,
+            GLint _quad_x,
+            GLint _quad_y,
+            GLint _quad_width,
+            GLint _quad_height,
+            GLfloat _transform_c1r1,
+            GLfloat _transform_c2r1,
+            GLfloat _transform_c1r2,
+            GLfloat _transform_c2r2,
+            GLfloat _transform_tx,
+            GLfloat _transform_ty,
+            GLboolean _is_clipped,
+            GLint _clip_x,
+            GLint _clip_y,
+            GLint _clip_width,
+            GLint _clip_height,
             GLuint _protected_video_type) {
-    static_cast<ValueType*>(cmd)->Init(_num_textures, _background_color,
-                                       _edge_aa_mask, _filter, _shm_id,
-                                       _shm_offset, _protected_video_type);
+    static_cast<ValueType*>(cmd)->Init(
+        _y_texture_id, _uv_texture_id, _z_order, _content_x, _content_y,
+        _content_width, _content_height, _quad_x, _quad_y, _quad_width,
+        _quad_height, _transform_c1r1, _transform_c2r1, _transform_c1r2,
+        _transform_c2r2, _transform_tx, _transform_ty, _is_clipped, _clip_x,
+        _clip_y, _clip_width, _clip_height, _protected_video_type);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
-  int32_t num_textures;
-  uint32_t background_color;
-  uint32_t edge_aa_mask;
-  uint32_t filter;
-  uint32_t shm_id;
-  uint32_t shm_offset;
+  uint32_t y_texture_id;
+  uint32_t uv_texture_id;
+  int32_t z_order;
+  int32_t content_x;
+  int32_t content_y;
+  int32_t content_width;
+  int32_t content_height;
+  int32_t quad_x;
+  int32_t quad_y;
+  int32_t quad_width;
+  int32_t quad_height;
+  float transform_c1r1;
+  float transform_c2r1;
+  float transform_c1r2;
+  float transform_c2r2;
+  float transform_tx;
+  float transform_ty;
+  uint32_t is_clipped;
+  int32_t clip_x;
+  int32_t clip_y;
+  int32_t clip_width;
+  int32_t clip_height;
   uint32_t protected_video_type;
 };
 
-static_assert(sizeof(ScheduleDCLayerCHROMIUM) == 32,
-              "size of ScheduleDCLayerCHROMIUM should be 32");
+static_assert(sizeof(ScheduleDCLayerCHROMIUM) == 96,
+              "size of ScheduleDCLayerCHROMIUM should be 96");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, header) == 0,
               "offset of ScheduleDCLayerCHROMIUM header should be 0");
-static_assert(offsetof(ScheduleDCLayerCHROMIUM, num_textures) == 4,
-              "offset of ScheduleDCLayerCHROMIUM num_textures should be 4");
-static_assert(offsetof(ScheduleDCLayerCHROMIUM, background_color) == 8,
-              "offset of ScheduleDCLayerCHROMIUM background_color should be 8");
-static_assert(offsetof(ScheduleDCLayerCHROMIUM, edge_aa_mask) == 12,
-              "offset of ScheduleDCLayerCHROMIUM edge_aa_mask should be 12");
-static_assert(offsetof(ScheduleDCLayerCHROMIUM, filter) == 16,
-              "offset of ScheduleDCLayerCHROMIUM filter should be 16");
-static_assert(offsetof(ScheduleDCLayerCHROMIUM, shm_id) == 20,
-              "offset of ScheduleDCLayerCHROMIUM shm_id should be 20");
-static_assert(offsetof(ScheduleDCLayerCHROMIUM, shm_offset) == 24,
-              "offset of ScheduleDCLayerCHROMIUM shm_offset should be 24");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, y_texture_id) == 4,
+              "offset of ScheduleDCLayerCHROMIUM y_texture_id should be 4");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, uv_texture_id) == 8,
+              "offset of ScheduleDCLayerCHROMIUM uv_texture_id should be 8");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, z_order) == 12,
+              "offset of ScheduleDCLayerCHROMIUM z_order should be 12");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, content_x) == 16,
+              "offset of ScheduleDCLayerCHROMIUM content_x should be 16");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, content_y) == 20,
+              "offset of ScheduleDCLayerCHROMIUM content_y should be 20");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, content_width) == 24,
+              "offset of ScheduleDCLayerCHROMIUM content_width should be 24");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, content_height) == 28,
+              "offset of ScheduleDCLayerCHROMIUM content_height should be 28");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, quad_x) == 32,
+              "offset of ScheduleDCLayerCHROMIUM quad_x should be 32");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, quad_y) == 36,
+              "offset of ScheduleDCLayerCHROMIUM quad_y should be 36");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, quad_width) == 40,
+              "offset of ScheduleDCLayerCHROMIUM quad_width should be 40");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, quad_height) == 44,
+              "offset of ScheduleDCLayerCHROMIUM quad_height should be 44");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, transform_c1r1) == 48,
+              "offset of ScheduleDCLayerCHROMIUM transform_c1r1 should be 48");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, transform_c2r1) == 52,
+              "offset of ScheduleDCLayerCHROMIUM transform_c2r1 should be 52");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, transform_c1r2) == 56,
+              "offset of ScheduleDCLayerCHROMIUM transform_c1r2 should be 56");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, transform_c2r2) == 60,
+              "offset of ScheduleDCLayerCHROMIUM transform_c2r2 should be 60");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, transform_tx) == 64,
+              "offset of ScheduleDCLayerCHROMIUM transform_tx should be 64");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, transform_ty) == 68,
+              "offset of ScheduleDCLayerCHROMIUM transform_ty should be 68");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, is_clipped) == 72,
+              "offset of ScheduleDCLayerCHROMIUM is_clipped should be 72");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, clip_x) == 76,
+              "offset of ScheduleDCLayerCHROMIUM clip_x should be 76");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, clip_y) == 80,
+              "offset of ScheduleDCLayerCHROMIUM clip_y should be 80");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, clip_width) == 84,
+              "offset of ScheduleDCLayerCHROMIUM clip_width should be 84");
+static_assert(offsetof(ScheduleDCLayerCHROMIUM, clip_height) == 88,
+              "offset of ScheduleDCLayerCHROMIUM clip_height should be 88");
 static_assert(
-    offsetof(ScheduleDCLayerCHROMIUM, protected_video_type) == 28,
-    "offset of ScheduleDCLayerCHROMIUM protected_video_type should be 28");
+    offsetof(ScheduleDCLayerCHROMIUM, protected_video_type) == 92,
+    "offset of ScheduleDCLayerCHROMIUM protected_video_type should be 92");
 
 struct SetActiveURLCHROMIUM {
   typedef SetActiveURLCHROMIUM ValueType;

@@ -349,12 +349,11 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   image_dxgi->SetTexture(texture, 0);
   image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
-  gfx::Size window_size(100, 100);
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(texture_size);
+  params.quad_rect = gfx::Rect(100, 100);
   surface->ScheduleDCLayer(params);
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
@@ -390,12 +389,9 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   image_dxgi2->SetTexture(texture, 0);
   image_dxgi2->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
-  ui::DCRendererLayerParams params2(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi2},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
-  surface->ScheduleDCLayer(params2);
+  params.y_image = image_dxgi2;
+  params.uv_image = image_dxgi2;
+  surface->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
@@ -443,14 +439,14 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   // HW supports scaled overlays
   // The input texture size is maller than the window size.
   surface->SetScaledOverlaysSupportedForTesting(true);
-  gfx::Size window_size(100, 100);
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
 
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(texture_size);
+  params.quad_rect = gfx::Rect(100, 100);
   surface->ScheduleDCLayer(params);
+
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
       surface->GetLayerSwapChainForTesting(0);
@@ -467,14 +463,9 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   // The input texture size is bigger than the window size.
-  window_size = gfx::Size(32, 48);
-  ui::DCRendererLayerParams params2(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
+  params.quad_rect = gfx::Rect(32, 48);
 
-  surface->ScheduleDCLayer(params2);
+  surface->ScheduleDCLayer(params);
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
@@ -482,8 +473,8 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithScaledOverlays) {
   ASSERT_TRUE(swap_chain2);
 
   EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&Desc)));
-  EXPECT_EQ((int)Desc.BufferDesc.Width, window_size.width());
-  EXPECT_EQ((int)Desc.BufferDesc.Height, window_size.height());
+  EXPECT_EQ((int)Desc.BufferDesc.Width, params.quad_rect.width());
+  EXPECT_EQ((int)Desc.BufferDesc.Height, params.quad_rect.height());
 
   context = nullptr;
   DestroySurface(std::move(surface));
@@ -522,14 +513,14 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   // HW doesn't support scaled overlays
   // The input texture size is bigger than the window size.
   surface->SetScaledOverlaysSupportedForTesting(false);
-  gfx::Size window_size(42, 42);
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
 
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(texture_size);
+  params.quad_rect = gfx::Rect(42, 42);
   surface->ScheduleDCLayer(params);
+
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
       surface->GetLayerSwapChainForTesting(0);
@@ -537,18 +528,13 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
 
   DXGI_SWAP_CHAIN_DESC desc;
   EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&desc)));
-  EXPECT_EQ((int)desc.BufferDesc.Width, window_size.width());
-  EXPECT_EQ((int)desc.BufferDesc.Height, window_size.height());
+  EXPECT_EQ((int)desc.BufferDesc.Width, params.quad_rect.width());
+  EXPECT_EQ((int)desc.BufferDesc.Height, params.quad_rect.height());
 
   // The input texture size is smaller than the window size.
-  window_size = gfx::Size(124, 136);
-  ui::DCRendererLayerParams params2(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
+  params.quad_rect = gfx::Rect(124, 136);
 
-  surface->ScheduleDCLayer(params2);
+  surface->ScheduleDCLayer(params);
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers(base::DoNothing()));
 
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
@@ -556,19 +542,106 @@ TEST(DirectCompositionSurfaceTest, SwapchainSizeWithoutScaledOverlays) {
   ASSERT_TRUE(swap_chain2);
 
   EXPECT_TRUE(SUCCEEDED(swap_chain2->GetDesc(&desc)));
-  EXPECT_EQ((int)desc.BufferDesc.Width, window_size.width());
-  EXPECT_EQ((int)desc.BufferDesc.Height, window_size.height());
+  EXPECT_EQ((int)desc.BufferDesc.Width, params.quad_rect.width());
+  EXPECT_EQ((int)desc.BufferDesc.Height, params.quad_rect.height());
 
   context = nullptr;
   DestroySurface(std::move(surface));
 }
 
-SkColor ReadBackWindowPixel(HWND window, const gfx::Point& point) {
+// Test protected video flags
+TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
+  if (!CheckIfDCSupported())
+    return;
+
+  TestImageTransportSurfaceDelegate delegate;
+  scoped_refptr<DirectCompositionSurfaceWin> surface(
+      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
+                                      ui::GetHiddenWindow()));
+  EXPECT_TRUE(surface->Initialize());
+
+  scoped_refptr<gl::GLContext> context =
+      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
+  EXPECT_TRUE(context->MakeCurrent(surface.get()));
+
+  surface->SetEnableDCLayers(true);
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+
+  gfx::Size texture_size(1280, 720);
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
+      CreateNV12Texture(d3d11_device, texture_size, false);
+
+  scoped_refptr<gl::GLImageDXGI> image_dxgi(
+      new gl::GLImageDXGI(texture_size, nullptr));
+  image_dxgi->SetTexture(texture, 0);
+  image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
+  gfx::Size window_size(640, 360);
+
+  // Clear video
+  {
+    ui::DCRendererLayerParams params;
+    params.y_image = image_dxgi;
+    params.uv_image = image_dxgi;
+    params.quad_rect = gfx::Rect(window_size);
+    params.content_rect = gfx::Rect(texture_size);
+    params.protected_video_type = ui::ProtectedVideoType::kClear;
+
+    surface->ScheduleDCLayer(params);
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface->SwapBuffers(base::DoNothing()));
+    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+        surface->GetLayerSwapChainForTesting(0);
+    ASSERT_TRUE(swap_chain);
+
+    DXGI_SWAP_CHAIN_DESC Desc;
+    EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
+    unsigned display_only_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
+    unsigned hw_protected_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+    EXPECT_EQ(display_only_flag, (unsigned)0);
+    EXPECT_EQ(hw_protected_flag, (unsigned)0);
+  }
+
+  // Software protected video
+  {
+    ui::DCRendererLayerParams params;
+    params.y_image = image_dxgi;
+    params.uv_image = image_dxgi;
+    params.quad_rect = gfx::Rect(window_size);
+    params.content_rect = gfx::Rect(texture_size);
+    params.protected_video_type = ui::ProtectedVideoType::kSoftwareProtected;
+
+    surface->ScheduleDCLayer(params);
+    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+              surface->SwapBuffers(base::DoNothing()));
+    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
+        surface->GetLayerSwapChainForTesting(0);
+    ASSERT_TRUE(swap_chain);
+
+    DXGI_SWAP_CHAIN_DESC Desc;
+    EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
+    unsigned display_only_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
+    unsigned hw_protected_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+    EXPECT_EQ(display_only_flag, (unsigned)DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY);
+    EXPECT_EQ(hw_protected_flag, (unsigned)0);
+  }
+
+  // TODO(magchen): Add a hardware protected video test when hardware procted
+  // video support is enabled by defaut in the Intel driver and Chrome
+
+  context = nullptr;
+  DestroySurface(std::move(surface));
+}
+
+std::vector<SkColor> ReadBackWindow(HWND window, const gfx::Size& size) {
   base::win::ScopedCreateDC mem_hdc(::CreateCompatibleDC(nullptr));
-  void* bits = nullptr;
-  BITMAPV4HEADER hdr;
-  gfx::CreateBitmapV4Header(point.x() + 1, point.y() + 1, &hdr);
   DCHECK(mem_hdc.IsValid());
+
+  BITMAPV4HEADER hdr;
+  gfx::CreateBitmapV4Header(size.width(), size.height(), &hdr);
+
+  void* bits = nullptr;
   base::win::ScopedBitmap bitmap(
       ::CreateDIBSection(mem_hdc.Get(), reinterpret_cast<BITMAPINFO*>(&hdr),
                          DIB_RGB_COLORS, &bits, nullptr, 0));
@@ -588,16 +661,21 @@ SkColor ReadBackWindowPixel(HWND window, const gfx::Point& point) {
 
   GdiFlush();
 
-  uint32_t pixel_value =
-      static_cast<uint32_t*>(bits)[hdr.bV4Width * point.y() + point.x()];
+  std::vector<SkColor> pixels(size.width() * size.height());
+  memcpy(pixels.data(), bits, pixels.size() * sizeof(SkColor));
+  return pixels;
+}
 
-  return static_cast<SkColor>(pixel_value);
+SkColor ReadBackWindowPixel(HWND window, const gfx::Point& point) {
+  gfx::Size size(point.x() + 1, point.y() + 1);
+  auto pixels = ReadBackWindow(window, size);
+  return pixels[size.width() * point.y() + point.x()];
 }
 
 class DirectCompositionPixelTest : public testing::Test {
  public:
   DirectCompositionPixelTest()
-      : window_(&platform_delegate_, gfx::Rect(0, 0, 100, 100)) {}
+      : window_(&platform_delegate_, gfx::Rect(100, 100)) {}
 
   ~DirectCompositionPixelTest() override {
     context_ = nullptr;
@@ -699,11 +777,11 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
     image_dxgi->SetTexture(texture, 0);
     image_dxgi->SetColorSpace(color_space);
 
-    ui::DCRendererLayerParams params(
-        false, gfx::Rect(), 1, gfx::Transform(),
-        std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-        gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(texture_size), 0, 0, 1.0,
-        0, ui::ProtectedVideoType::kClear);
+    ui::DCRendererLayerParams params;
+    params.y_image = image_dxgi;
+    params.uv_image = image_dxgi;
+    params.content_rect = gfx::Rect(texture_size);
+    params.quad_rect = gfx::Rect(texture_size);
     surface_->ScheduleDCLayer(params);
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -711,13 +789,9 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
 
     // Scaling up the swapchain with the same image should cause it to be
     // transformed again, but not presented again.
-    ui::DCRendererLayerParams params2(
-        false, gfx::Rect(), 1, gfx::Transform(),
-        std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-        gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0,
-        0, ui::ProtectedVideoType::kClear);
-    surface_->ScheduleDCLayer(params2);
+    params.quad_rect = gfx::Rect(window_size);
 
+    surface_->ScheduleDCLayer(params);
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
               surface_->SwapBuffers(base::DoNothing()));
     Sleep(1000);
@@ -787,11 +861,11 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
                        gfx::BufferFormat::RG_88);
   y_image->SetColorSpace(gfx::ColorSpace::CreateREC709());
 
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{y_image, uv_image},
-      gfx::RectF(gfx::Rect(y_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
+  ui::DCRendererLayerParams params;
+  params.y_image = y_image;
+  params.uv_image = uv_image;
+  params.content_rect = gfx::Rect(y_size);
+  params.quad_rect = gfx::Rect(window_size);
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -832,11 +906,11 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
       new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
   ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
 
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(texture_size);
+  params.quad_rect = gfx::Rect(window_size);
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -883,12 +957,10 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
   ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
 
   // Layer with empty bounds rect.
-  gfx::Rect bounds_rect;
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-      gfx::RectF(gfx::Rect(texture_size)), bounds_rect, 0, 0, 1.0, 0,
-      ui::ProtectedVideoType::kClear);
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(texture_size);
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -940,11 +1012,10 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
   ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
 
   // Layer with empty content rect.
-  gfx::RectF contents_rect;
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi}, contents_rect,
-      gfx::Rect(window_size), 0, 0, 1.0, 0, ui::ProtectedVideoType::kClear);
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.quad_rect = gfx::Rect(window_size);
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -996,11 +1067,11 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
 
   // Pass content rect with odd with and height.  Surface should round up width
   // and height when creating swap chain.
-  gfx::RectF contents_rect(0, 0, 49, 49);
-  ui::DCRendererLayerParams params(
-      false, gfx::Rect(), 1, gfx::Transform(),
-      std::vector<scoped_refptr<gl::GLImage>>{image_dxgi}, contents_rect,
-      gfx::Rect(window_size), 0, 0, 1.0, 0, ui::ProtectedVideoType::kClear);
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(0, 0, 49, 49);
+  params.quad_rect = gfx::Rect(window_size);
   surface_->ScheduleDCLayer(params);
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -1026,87 +1097,74 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
       << actual_color;
 }
 
-// Test protected video flags
-TEST(DirectCompositionSurfaceTest, ProtectedVideos) {
+TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
   if (!CheckIfDCSupported())
     return;
+  InitializeSurface();
+  // Swap chain size is overridden to content rect size only if scaled overlays
+  // are supported.
+  DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(true);
+  surface_->SetEnableDCLayers(true);
 
-  TestImageTransportSurfaceDelegate delegate;
-  scoped_refptr<DirectCompositionSurfaceWin> surface(
-      new DirectCompositionSurfaceWin(nullptr, delegate.AsWeakPtr(),
-                                      ui::GetHiddenWindow()));
-  EXPECT_TRUE(surface->Initialize());
+  gfx::Size window_size(100, 100);
+  EXPECT_TRUE(surface_->Resize(window_size, 1.0,
+                               gl::GLSurface::ColorSpace::UNSPECIFIED, true));
+  EXPECT_TRUE(surface_->SetDrawRectangle(gfx::Rect(window_size)));
 
-  scoped_refptr<gl::GLContext> context =
-      gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
-  EXPECT_TRUE(context->MakeCurrent(surface.get()));
-
-  surface->SetEnableDCLayers(true);
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
 
-  gfx::Size texture_size(1280, 720);
+  gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
-      CreateNV12Texture(d3d11_device, texture_size, false);
+      CreateNV12Texture(d3d11_device, texture_size, true);
+  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
+  texture.CopyTo(resource.GetAddressOf());
+  HANDLE handle = 0;
+  resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
+                               &handle);
+  // The format doesn't matter, since we aren't binding.
+  scoped_refptr<gl::GLImageDXGIHandle> image_dxgi(
+      new gl::GLImageDXGIHandle(texture_size, 0, gfx::BufferFormat::RGBA_8888));
+  ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
 
-  scoped_refptr<gl::GLImageDXGI> image_dxgi(
-      new gl::GLImageDXGI(texture_size, nullptr));
-  image_dxgi->SetTexture(texture, 0);
-  image_dxgi->SetColorSpace(gfx::ColorSpace::CreateREC709());
-  gfx::Size window_size(640, 360);
+  ui::DCRendererLayerParams params;
+  params.y_image = image_dxgi;
+  params.uv_image = image_dxgi;
+  params.content_rect = gfx::Rect(texture_size);
+  params.quad_rect = gfx::Rect(gfx::Point(25, 25), texture_size);
+  surface_->ScheduleDCLayer(params);
 
-  // Clear video
-  {
-    ui::DCRendererLayerParams params(
-        false, gfx::Rect(), 1, gfx::Transform(),
-        std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-        gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0,
-        0, ui::ProtectedVideoType::kClear);
+  EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
+            surface_->SwapBuffers(base::DoNothing()));
 
-    surface->ScheduleDCLayer(params);
-    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-              surface->SwapBuffers(base::DoNothing()));
-    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-        surface->GetLayerSwapChainForTesting(0);
-    ASSERT_TRUE(swap_chain);
+  Sleep(1000);
 
-    DXGI_SWAP_CHAIN_DESC Desc;
-    EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
-    unsigned display_only_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-    unsigned hw_protected_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
-    EXPECT_EQ(display_only_flag, (unsigned)0);
-    EXPECT_EQ(hw_protected_flag, (unsigned)0);
+  SkColor video_color = SkColorSetRGB(0xe1, 0x90, 0xeb);
+  struct {
+    gfx::Point point;
+    SkColor expected_color;
+  } test_cases[] = {
+      // Outside bounds
+      {{24, 24}, SK_ColorBLACK},
+      {{75, 75}, SK_ColorBLACK},
+      // Inside bounds
+      {{25, 25}, video_color},
+      {{74, 74}, video_color},
+  };
+
+  auto pixels = ReadBackWindow(window_.hwnd(), window_size);
+
+  for (const auto& test_case : test_cases) {
+    const auto& point = test_case.point;
+    const auto& expected_color = test_case.expected_color;
+    SkColor actual_color = pixels[window_size.width() * point.y() + point.x()];
+    EXPECT_TRUE(AreColorsSimilar(expected_color, actual_color))
+        << std::hex << "Expected " << expected_color << " Actual "
+        << actual_color << " at " << point.ToString();
   }
-
-  // Software protected video
-  {
-    ui::DCRendererLayerParams params(
-        false, gfx::Rect(), 1, gfx::Transform(),
-        std::vector<scoped_refptr<gl::GLImage>>{image_dxgi},
-        gfx::RectF(gfx::Rect(texture_size)), gfx::Rect(window_size), 0, 0, 1.0,
-        0, ui::ProtectedVideoType::kSoftwareProtected);
-
-    surface->ScheduleDCLayer(params);
-    EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
-              surface->SwapBuffers(base::DoNothing()));
-    Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
-        surface->GetLayerSwapChainForTesting(0);
-    ASSERT_TRUE(swap_chain);
-
-    DXGI_SWAP_CHAIN_DESC Desc;
-    EXPECT_TRUE(SUCCEEDED(swap_chain->GetDesc(&Desc)));
-    unsigned display_only_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
-    unsigned hw_protected_flag = Desc.Flags & DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
-    EXPECT_EQ(display_only_flag, (unsigned)DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY);
-    EXPECT_EQ(hw_protected_flag, (unsigned)0);
-  }
-
-  // TODO(magchen): Add a hardware protected video test when hardware procted
-  // video support is enabled by defaut in the Intel driver and Chrome
-
-  context = nullptr;
-  DestroySurface(std::move(surface));
 }
 
 TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
@@ -1140,12 +1198,11 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   ASSERT_TRUE(image_dxgi->Initialize(base::win::ScopedHandle(handle)));
 
   {
-    gfx::RectF contents_rect = gfx::RectF(gfx::Rect(texture_size));
-    ui::DCRendererLayerParams params(
-        false, gfx::Rect(), 1, gfx::Transform(),
-        std::vector<scoped_refptr<gl::GLImage>>{image_dxgi}, contents_rect,
-        gfx::Rect(window_size), 0, 0, 1.0, 0, ui::ProtectedVideoType::kClear);
-
+    ui::DCRendererLayerParams params;
+    params.y_image = image_dxgi;
+    params.uv_image = image_dxgi;
+    params.content_rect = gfx::Rect(texture_size);
+    params.quad_rect = gfx::Rect(window_size);
     surface_->ScheduleDCLayer(params);
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,
@@ -1162,12 +1219,11 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   }
 
   {
-    gfx::RectF contents_rect(30, 30);
-    ui::DCRendererLayerParams params(
-        false, gfx::Rect(), 1, gfx::Transform(),
-        std::vector<scoped_refptr<gl::GLImage>>{image_dxgi}, contents_rect,
-        gfx::Rect(window_size), 0, 0, 1.0, 0, ui::ProtectedVideoType::kClear);
-
+    ui::DCRendererLayerParams params;
+    params.y_image = image_dxgi;
+    params.uv_image = image_dxgi;
+    params.content_rect = gfx::Rect(30, 30);
+    params.quad_rect = gfx::Rect(window_size);
     surface_->ScheduleDCLayer(params);
 
     EXPECT_EQ(gfx::SwapResult::SWAP_ACK,

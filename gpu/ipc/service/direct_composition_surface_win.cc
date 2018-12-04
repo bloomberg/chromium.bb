@@ -52,6 +52,10 @@ bool SizeContains(const gfx::Size& a, const gfx::Size& b) {
   return gfx::Rect(a).Contains(gfx::Rect(b));
 }
 
+bool IsProtectedVideo(ui::ProtectedVideoType protected_video_type) {
+  return protected_video_type != ui::ProtectedVideoType::kClear;
+}
+
 // This keeps track of whether the previous 30 frames used Overlays or GPU
 // composition to present.
 class PresentationHistory {
@@ -486,13 +490,13 @@ class DCLayerTree::SwapChainPresenter {
   // Perform a blit using video processor from given input texture to swap chain
   // backbuffer. |input_texture| is the input texture (array), and |input_level|
   // is the index of the texture in the texture array.  |keyed_mutex| is
-  // optional, and is used to lock the resource for reading.  |input_size| is
-  // the size of the input texture, and |src_color_space| is the color space
-  // of the video.
+  // optional, and is used to lock the resource for reading.  |content_rect| is
+  // subrectangle of the input texture that should be blitted to swap chain, and
+  // |src_color_space| is the color space of the video.
   bool VideoProcessorBlt(Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture,
                          UINT input_level,
                          Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
-                         const gfx::Size& input_size,
+                         const gfx::Rect& content_rect,
                          const gfx::ColorSpace& src_color_space);
 
   // Returns optimal swap chain size for given layer.
@@ -502,11 +506,6 @@ class DCLayerTree::SwapChainPresenter {
   // returns true if a commit is needed.
   bool UpdateVisuals(const ui::DCRendererLayerParams& params,
                      const gfx::Size& swap_chain_size);
-
-  // Whether the video is protected
-  bool IsProtectedVideo(ui::ProtectedVideoType protected_video_type) const {
-    return (protected_video_type != ui::ProtectedVideoType::kClear);
-  }
 
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_;
@@ -550,8 +549,9 @@ class DCLayerTree::SwapChainPresenter {
   // |content_visual_|, and root of the visual tree for this layer.
   Microsoft::WRL::ComPtr<IDCompositionVisual2> clip_visual_;
 
-  // These are the GLImages that were presented in the last frame.
-  std::vector<scoped_refptr<gl::GLImage>> last_gl_images_;
+  // GLImages that were presented in the last frame.
+  scoped_refptr<gl::GLImage> last_y_image_;
+  scoped_refptr<gl::GLImage> last_uv_image_;
 
   // NV12 staging texture used for software decoded YUV buffers.  Mapped to CPU
   // for copying from YUV buffers.
@@ -562,8 +562,8 @@ class DCLayerTree::SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
   Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
 
-  // Handle returned by DCompositionCreateSurfaceHandle() used to create swap
-  // chain that can be used for direct composition.
+  // Handle returned by DCompositionCreateSurfaceHandle() used to create YUV
+  // swap chain that can be used for direct composition.
   base::win::ScopedHandle swap_chain_handle_;
 
   // Video processor output view created from swap chain back buffer.  Must be
@@ -790,16 +790,30 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
 
 gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
     const ui::DCRendererLayerParams& params) {
-  // Swap chain size is the minimum of the on-screen size and the source
-  // size so the video processor can do the minimal amount of work and
-  // the overlay has to read the minimal amount of data.
-  // DWM is also less likely to promote a surface to an overlay if it's
-  // much larger than its area on-screen.
+  // Swap chain size is the minimum of the on-screen size and the source size so
+  // the video processor can do the minimal amount of work and the overlay has
+  // to read the minimal amount of data. DWM is also less likely to promote a
+  // surface to an overlay if it's much larger than its area on-screen.
+  gfx::Size swap_chain_size = params.content_rect.size();
 
-  // display_rect is the rect on screen
-  gfx::RectF transformed_rect = gfx::RectF(params.rect);
-  params.transform.TransformRect(&transformed_rect);
-  gfx::Rect display_rect = gfx::ToEnclosingRect(transformed_rect);
+  // If transform isn't a scale or translation then swap chain can't be promoted
+  // to an overlay so avoid blitting to a large surface unnecessarily.  Also,
+  // after the video rotation fix (crbug.com/904035), using rotated size for
+  // swap chain size will cause stretching since there's no squashing factor in
+  // the transform to counteract.
+  // TODO(sunnyps): Support 90/180/270 deg rotations using video context.
+  if (params.transform.IsScaleOrTranslation()) {
+    gfx::RectF bounds(params.quad_rect);
+    params.transform.TransformRect(&bounds);
+    swap_chain_size = gfx::ToEnclosingRect(bounds).size();
+  }
+
+  if (g_supports_scaled_overlays) {
+    // Downscaling doesn't work on Intel display HW, and so DWM will perform an
+    // extra BLT to avoid HW downscaling. This prevents the use of hardware
+    // overlays especially for protected video.
+    swap_chain_size.SetToMin(params.content_rect.size());
+  }
 
   if (layer_tree_->workarounds().disable_larger_than_screen_overlays &&
       !g_overlay_monitor_size.IsEmpty()) {
@@ -814,30 +828,17 @@ gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
     // TODO(jbauman): Remove when http://crbug.com/668278 is fixed.
     const int kOversizeMargin = 3;
 
-    if ((display_rect.x() >= 0) &&
-        (display_rect.width() > g_overlay_monitor_size.width()) &&
-        (display_rect.width() <=
+    if ((swap_chain_size.width() > g_overlay_monitor_size.width()) &&
+        (swap_chain_size.width() <=
          g_overlay_monitor_size.width() + kOversizeMargin)) {
-      display_rect.set_width(g_overlay_monitor_size.width());
+      swap_chain_size.set_width(g_overlay_monitor_size.width());
     }
 
-    if ((display_rect.y() >= 0) &&
-        (display_rect.height() > g_overlay_monitor_size.height()) &&
-        (display_rect.height() <=
+    if ((swap_chain_size.height() > g_overlay_monitor_size.height()) &&
+        (swap_chain_size.height() <=
          g_overlay_monitor_size.height() + kOversizeMargin)) {
-      display_rect.set_height(g_overlay_monitor_size.height());
+      swap_chain_size.set_height(g_overlay_monitor_size.height());
     }
-  }
-
-  // Downscaling doesn't work on Intel display HW, and so DWM will perform
-  // an extra BLT to avoid HW downscaling. This prevents the use of hardware
-  // overlays especially for protected video.
-  gfx::Size swap_chain_size = display_rect.size();
-
-  if (g_supports_scaled_overlays) {
-    gfx::Size ceiled_input_size =
-        gfx::ToCeiledSize(params.contents_rect.size());
-    swap_chain_size.SetToMin(ceiled_input_size);
   }
 
   // 4:2:2 subsampled formats like YUY2 must have an even width, and 4:2:0
@@ -865,26 +866,25 @@ bool DCLayerTree::SwapChainPresenter::UpdateVisuals(
     needs_commit = true;
   }
 
-  // This is the scale from the swapchain size to the size of the contents
-  // onscreen.
-  float swap_chain_scale_x =
-      params.rect.width() * 1.0f / swap_chain_size.width();
-  float swap_chain_scale_y =
-      params.rect.height() * 1.0f / swap_chain_size.height();
+  // Visual offset is applied before transform so it behaves similar to how the
+  // compositor uses transform to map quad rect in layer space to target space.
+  gfx::Point offset = params.quad_rect.origin();
   gfx::Transform transform = params.transform;
-  gfx::Transform scale_transform;
-  scale_transform.Scale(swap_chain_scale_x, swap_chain_scale_y);
-  transform.PreconcatTransform(scale_transform);
-  transform.Transpose();
 
-  // Offset is in layer space, and is applied before transform.
-  // TODO(magchen): We should consider recalculating offset when it's non-zero.
-  // Have not seen non-zero params.rect.x() and y() so far.
-  gfx::Point offset(params.rect.x(), params.rect.y());
+  // Transform is correct for scaling up |quad_rect| to on screen bounds, but
+  // doesn't include scaling transform from |swap_chain_size| to |quad_rect|.
+  // Since |swap_chain_size| could be equal to on screen bounds, and therefore
+  // possibly larger than |quad_rect|, this scaling could be downscaling, but
+  // only to the extent that it would cancel upscaling already in the transform.
+  float swap_chain_scale_x =
+      params.quad_rect.width() * 1.0f / swap_chain_size.width();
+  float swap_chain_scale_y =
+      params.quad_rect.height() * 1.0f / swap_chain_size.height();
+  transform.Scale(swap_chain_scale_x, swap_chain_scale_y);
 
-  if (visual_info_.transform != transform || visual_info_.offset != offset) {
-    visual_info_.transform = transform;
+  if (visual_info_.offset != offset || visual_info_.transform != transform) {
     visual_info_.offset = offset;
+    visual_info_.transform = transform;
     needs_commit = true;
 
     content_visual_->SetOffsetX(offset.x());
@@ -893,10 +893,11 @@ bool DCLayerTree::SwapChainPresenter::UpdateVisuals(
     Microsoft::WRL::ComPtr<IDCompositionMatrixTransform> dcomp_transform;
     dcomp_device_->CreateMatrixTransform(dcomp_transform.GetAddressOf());
     DCHECK(dcomp_transform);
+    // SkMatrix44 is column-major, but D2D_MATRIX_3x2_F is row-major.
     D2D_MATRIX_3X2_F d2d_matrix = {
-        {{transform.matrix().get(0, 0), transform.matrix().get(0, 1),
-          transform.matrix().get(1, 0), transform.matrix().get(1, 1),
-          transform.matrix().get(3, 0), transform.matrix().get(3, 1)}}};
+        {{transform.matrix().get(0, 0), transform.matrix().get(1, 0),
+          transform.matrix().get(0, 1), transform.matrix().get(1, 1),
+          transform.matrix().get(0, 3), transform.matrix().get(1, 3)}}};
     dcomp_transform->SetMatrix(d2d_matrix);
     content_visual_->SetTransform(dcomp_transform.Get());
   }
@@ -906,18 +907,17 @@ bool DCLayerTree::SwapChainPresenter::UpdateVisuals(
     visual_info_.is_clipped = params.is_clipped;
     visual_info_.clip_rect = params.clip_rect;
     needs_commit = true;
-    // DirectComposition clips happen in the pre-transform visual
-    // space, while cc/ clips happen post-transform. So the clip needs
-    // to go on a separate parent visual that's untransformed.
+    // DirectComposition clips happen in the pre-transform visual space, while
+    // cc/ clips happen post-transform. So the clip needs to go on a separate
+    // parent visual that's untransformed.
     if (params.is_clipped) {
       Microsoft::WRL::ComPtr<IDCompositionRectangleClip> clip;
       dcomp_device_->CreateRectangleClip(clip.GetAddressOf());
       DCHECK(clip);
-      const gfx::Rect& offset_clip = params.clip_rect;
-      clip->SetLeft(offset_clip.x());
-      clip->SetRight(offset_clip.right());
-      clip->SetBottom(offset_clip.bottom());
-      clip->SetTop(offset_clip.y());
+      clip->SetLeft(params.clip_rect.x());
+      clip->SetRight(params.clip_rect.right());
+      clip->SetBottom(params.clip_rect.bottom());
+      clip->SetTop(params.clip_rect.y());
       clip_visual_->SetClip(clip.Get());
     } else {
       clip_visual_->SetClip(nullptr);
@@ -932,17 +932,15 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   *needs_commit = false;
 
   gl::GLImageDXGIBase* image_dxgi =
-      gl::GLImageDXGIBase::FromGLImage(params.image[0].get());
-  gl::GLImageMemory* y_image_memory = nullptr;
-  gl::GLImageMemory* uv_image_memory = nullptr;
-  if (params.image.size() >= 2) {
-    y_image_memory = gl::GLImageMemory::FromGLImage(params.image[0].get());
-    uv_image_memory = gl::GLImageMemory::FromGLImage(params.image[1].get());
-  }
+      gl::GLImageDXGIBase::FromGLImage(params.y_image.get());
+  gl::GLImageMemory* y_image_memory =
+      gl::GLImageMemory::FromGLImage(params.y_image.get());
+  gl::GLImageMemory* uv_image_memory =
+      gl::GLImageMemory::FromGLImage(params.uv_image.get());
 
   if (!image_dxgi && (!y_image_memory || !uv_image_memory)) {
     DLOG(ERROR) << "Video GLImages are missing";
-    last_gl_images_.clear();
+    // No need to release resources as context will be lost soon.
     return false;
   }
 
@@ -978,14 +976,15 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     first_present = true;
     content_visual_->SetContent(swap_chain_.Get());
     *needs_commit = true;
-  } else if (last_gl_images_ == params.image) {
+  } else if (last_y_image_ == params.y_image &&
+             last_uv_image_ == params.uv_image) {
     // The swap chain is presenting the same images as last swap, which means
     // that the images were never returned to the video decoder and should
     // have the same contents as last time. It shouldn't need to be redrawn.
     return true;
   }
-
-  last_gl_images_ = params.image;
+  last_y_image_ = params.y_image;
+  last_uv_image_ = params.uv_image;
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture;
   UINT input_level;
@@ -1015,11 +1014,10 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (image_dxgi && image_dxgi->color_space().IsValid())
     src_color_space = image_dxgi->color_space();
 
-  gfx::Size input_size = gfx::ToCeiledSize(params.contents_rect.size());
-
-  if (!VideoProcessorBlt(input_texture, input_level, keyed_mutex, input_size,
-                         src_color_space))
+  if (!VideoProcessorBlt(input_texture, input_level, keyed_mutex,
+                         params.content_rect, src_color_space)) {
     return false;
+  }
 
   if (first_present) {
     HRESULT hr = swap_chain_->Present(0, 0);
@@ -1087,11 +1085,12 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     Microsoft::WRL::ComPtr<ID3D11Texture2D> input_texture,
     UINT input_level,
     Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
-    const gfx::Size& input_size,
+    const gfx::Rect& content_rect,
     const gfx::ColorSpace& src_color_space) {
-  if (!layer_tree_->InitializeVideoProcessor(input_size, swap_chain_size_))
+  if (!layer_tree_->InitializeVideoProcessor(content_rect.size(),
+                                             swap_chain_size_)) {
     return false;
-
+  }
   Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context =
       layer_tree_->video_context();
   Microsoft::WRL::ComPtr<ID3D11VideoProcessor> video_processor =
@@ -1184,7 +1183,7 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
                                                      TRUE, &dest_rect);
     video_context->VideoProcessorSetStreamDestRect(video_processor.Get(), 0,
                                                    TRUE, &dest_rect);
-    RECT source_rect = gfx::Rect(input_size).ToRECT();
+    RECT source_rect = content_rect.ToRECT();
     video_context->VideoProcessorSetStreamSourceRect(video_processor.Get(), 0,
                                                      TRUE, &source_rect);
 

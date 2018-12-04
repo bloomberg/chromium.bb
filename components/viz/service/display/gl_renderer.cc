@@ -3123,62 +3123,46 @@ void GLRenderer::ScheduleCALayers() {
 }
 
 void GLRenderer::ScheduleDCLayers() {
-  scoped_refptr<DCLayerOverlaySharedState> shared_state;
   for (DCLayerOverlay& dc_layer_overlay :
        current_frame()->dc_layer_overlay_list) {
-    DCHECK(!dc_layer_overlay.rpdq);
-
-    int i = 0;
-    unsigned texture_ids[DrawQuad::Resources::kMaxResourceIdCount] = {};
-    int ids_to_send = 0;
-
-    for (const auto& contents_resource_id : dc_layer_overlay.resources) {
-      if (contents_resource_id) {
-        pending_overlay_resources_.push_back(
-            std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
-                resource_provider_, contents_resource_id));
-        texture_ids[i] = pending_overlay_resources_.back()->texture_id();
-        ids_to_send = i + 1;
-      }
-      i++;
+    ResourceId resource_ids[] = {dc_layer_overlay.y_resource_id,
+                                 dc_layer_overlay.uv_resource_id};
+    GLuint texture_ids[2] = {};
+    size_t i = 0;
+    for (ResourceId resource_id : resource_ids) {
+      DCHECK(resource_id);
+      pending_overlay_resources_.push_back(
+          std::make_unique<DisplayResourceProvider::ScopedReadLockGL>(
+              resource_provider_, resource_id));
+      texture_ids[i++] = pending_overlay_resources_.back()->texture_id();
     }
-    GLfloat contents_rect[4] = {
-        dc_layer_overlay.contents_rect.x(), dc_layer_overlay.contents_rect.y(),
-        dc_layer_overlay.contents_rect.width(),
-        dc_layer_overlay.contents_rect.height(),
-    };
-    GLfloat bounds_rect[4] = {
-        dc_layer_overlay.bounds_rect.x(), dc_layer_overlay.bounds_rect.y(),
-        dc_layer_overlay.bounds_rect.width(),
-        dc_layer_overlay.bounds_rect.height(),
-    };
-    GLboolean is_clipped = dc_layer_overlay.shared_state->is_clipped;
-    GLfloat clip_rect[4] = {dc_layer_overlay.shared_state->clip_rect.x(),
-                            dc_layer_overlay.shared_state->clip_rect.y(),
-                            dc_layer_overlay.shared_state->clip_rect.width(),
-                            dc_layer_overlay.shared_state->clip_rect.height()};
-    GLint z_order = dc_layer_overlay.shared_state->z_order;
-    GLfloat transform[16];
-    dc_layer_overlay.shared_state->transform.asColMajorf(transform);
-    unsigned filter = dc_layer_overlay.filter;
+    GLuint y_texture_id = texture_ids[0];
+    GLuint uv_texture_id = texture_ids[1];
+    DCHECK(y_texture_id && uv_texture_id);
+
+    // TODO(sunnyps): Set color space in renderer like we do for tiles.
+    gl_->SetColorSpaceMetadataCHROMIUM(
+        y_texture_id,
+        reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
+
+    int z_order = dc_layer_overlay.z_order;
+    const gfx::Rect& content_rect = dc_layer_overlay.content_rect;
+    const gfx::Rect& quad_rect = dc_layer_overlay.quad_rect;
+    DCHECK(dc_layer_overlay.transform.IsFlat());
+    const SkMatrix44& transform = dc_layer_overlay.transform.matrix();
+    bool is_clipped = dc_layer_overlay.is_clipped;
+    const gfx::Rect& clip_rect = dc_layer_overlay.clip_rect;
     unsigned protected_video_type =
         static_cast<unsigned>(dc_layer_overlay.protected_video_type);
 
-    if (dc_layer_overlay.shared_state != shared_state) {
-      shared_state = dc_layer_overlay.shared_state;
-      gl_->ScheduleDCLayerSharedStateCHROMIUM(
-          dc_layer_overlay.shared_state->opacity, is_clipped, clip_rect,
-          z_order, transform);
-    }
-    if (ids_to_send > 0) {
-      gl_->SetColorSpaceMetadataCHROMIUM(
-          texture_ids[0],
-          reinterpret_cast<GLColorSpace>(&dc_layer_overlay.color_space));
-    }
-    gl_->ScheduleDCLayerCHROMIUM(ids_to_send, texture_ids, contents_rect,
-                                 dc_layer_overlay.background_color,
-                                 dc_layer_overlay.edge_aa_mask, bounds_rect,
-                                 filter, protected_video_type);
+    gl_->ScheduleDCLayerCHROMIUM(
+        y_texture_id, uv_texture_id, z_order, content_rect.x(),
+        content_rect.y(), content_rect.width(), content_rect.height(),
+        quad_rect.x(), quad_rect.y(), quad_rect.width(), quad_rect.height(),
+        transform.get(0, 0), transform.get(0, 1), transform.get(1, 0),
+        transform.get(1, 1), transform.get(0, 3), transform.get(1, 3),
+        is_clipped, clip_rect.x(), clip_rect.y(), clip_rect.width(),
+        clip_rect.height(), protected_video_type);
   }
 }
 

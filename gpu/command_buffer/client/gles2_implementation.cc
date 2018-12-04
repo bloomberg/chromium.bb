@@ -4972,26 +4972,6 @@ void GLES2Implementation::ScheduleCALayerCHROMIUM(GLuint contents_texture_id,
                                    buffer.offset());
 }
 
-void GLES2Implementation::ScheduleDCLayerSharedStateCHROMIUM(
-    GLfloat opacity,
-    GLboolean is_clipped,
-    const GLfloat* clip_rect,
-    GLint z_order,
-    const GLfloat* transform) {
-  size_t shm_size = 20 * sizeof(GLfloat);
-  ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
-  if (!buffer.valid() || buffer.size() < shm_size) {
-    SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleDCLayerSharedStateCHROMIUM",
-               "out of memory");
-    return;
-  }
-  GLfloat* mem = static_cast<GLfloat*>(buffer.address());
-  memcpy(mem + 0, clip_rect, 4 * sizeof(GLfloat));
-  memcpy(mem + 4, transform, 16 * sizeof(GLfloat));
-  helper_->ScheduleDCLayerSharedStateCHROMIUM(opacity, is_clipped, z_order,
-                                              buffer.shm_id(), buffer.offset());
-}
-
 void GLES2Implementation::SetColorSpaceMetadataCHROMIUM(
     GLuint texture_id,
     GLColorSpace color_space) {
@@ -5017,34 +4997,6 @@ void GLES2Implementation::SetColorSpaceMetadataCHROMIUM(
   helper_->SetColorSpaceMetadataCHROMIUM(
       texture_id, buffer.shm_id(), buffer.offset(), color_space_data.size());
 #endif
-}
-
-void GLES2Implementation::ScheduleDCLayerCHROMIUM(
-    GLsizei num_textures,
-    const GLuint* contents_texture_ids,
-    const GLfloat* contents_rect,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    const GLfloat* bounds_rect,
-    GLuint filter,
-    GLuint protected_video_type) {
-  const size_t kRectsSize = 8 * sizeof(GLfloat);
-  size_t textures_size = num_textures * sizeof(GLuint);
-  size_t shm_size = kRectsSize + textures_size;
-  ScopedTransferBufferPtr buffer(shm_size, helper_, transfer_buffer_);
-  if (!buffer.valid() || buffer.size() < shm_size) {
-    SetGLError(GL_OUT_OF_MEMORY, "GLES2::ScheduleDCLayerCHROMIUM",
-               "out of memory");
-    return;
-  }
-  GLfloat* mem = static_cast<GLfloat*>(buffer.address());
-  memcpy(mem + 0, contents_rect, 4 * sizeof(GLfloat));
-  memcpy(mem + 4, bounds_rect, 4 * sizeof(GLfloat));
-  memcpy(static_cast<char*>(buffer.address()) + kRectsSize,
-         contents_texture_ids, textures_size);
-  helper_->ScheduleDCLayerCHROMIUM(num_textures, background_color, edge_aa_mask,
-                                   filter, buffer.shm_id(), buffer.offset(),
-                                   protected_video_type);
 }
 
 void GLES2Implementation::CommitOverlayPlanesCHROMIUM(uint64_t swap_id,

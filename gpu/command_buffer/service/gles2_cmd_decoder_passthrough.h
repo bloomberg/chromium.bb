@@ -836,8 +836,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;
 
-  std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
-
   // After a second fence is inserted, both the GpuChannelMessageQueue and
   // CommandExecutor are descheduled. Once the first fence has completed, both
   // get rescheduled.

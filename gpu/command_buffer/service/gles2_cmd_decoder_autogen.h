@@ -5090,6 +5090,44 @@ error::Error GLES2DecoderImpl::HandleFlushDriverCachesCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleScheduleDCLayerCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
+          cmd_data);
+  GLuint y_texture_id = static_cast<GLuint>(c.y_texture_id);
+  GLuint uv_texture_id = static_cast<GLuint>(c.uv_texture_id);
+  GLint z_order = static_cast<GLint>(c.z_order);
+  GLint content_x = static_cast<GLint>(c.content_x);
+  GLint content_y = static_cast<GLint>(c.content_y);
+  GLint content_width = static_cast<GLint>(c.content_width);
+  GLint content_height = static_cast<GLint>(c.content_height);
+  GLint quad_x = static_cast<GLint>(c.quad_x);
+  GLint quad_y = static_cast<GLint>(c.quad_y);
+  GLint quad_width = static_cast<GLint>(c.quad_width);
+  GLint quad_height = static_cast<GLint>(c.quad_height);
+  GLfloat transform_c1r1 = static_cast<GLfloat>(c.transform_c1r1);
+  GLfloat transform_c2r1 = static_cast<GLfloat>(c.transform_c2r1);
+  GLfloat transform_c1r2 = static_cast<GLfloat>(c.transform_c1r2);
+  GLfloat transform_c2r2 = static_cast<GLfloat>(c.transform_c2r2);
+  GLfloat transform_tx = static_cast<GLfloat>(c.transform_tx);
+  GLfloat transform_ty = static_cast<GLfloat>(c.transform_ty);
+  GLboolean is_clipped = static_cast<GLboolean>(c.is_clipped);
+  GLint clip_x = static_cast<GLint>(c.clip_x);
+  GLint clip_y = static_cast<GLint>(c.clip_y);
+  GLint clip_width = static_cast<GLint>(c.clip_width);
+  GLint clip_height = static_cast<GLint>(c.clip_height);
+  GLuint protected_video_type = static_cast<GLuint>(c.protected_video_type);
+  DoScheduleDCLayerCHROMIUM(
+      y_texture_id, uv_texture_id, z_order, content_x, content_y, content_width,
+      content_height, quad_x, quad_y, quad_width, quad_height, transform_c1r1,
+      transform_c2r1, transform_c1r2, transform_c2r2, transform_tx,
+      transform_ty, is_clipped, clip_x, clip_y, clip_width, clip_height,
+      protected_video_type);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleMatrixLoadfCHROMIUMImmediate(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
