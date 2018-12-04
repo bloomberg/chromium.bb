@@ -13,11 +13,12 @@
 #include "services/content/navigable_contents_impl.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/content/service_delegate.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace content {
 
-Service::Service(ServiceDelegate* delegate) : delegate_(delegate) {
+Service::Service(ServiceDelegate* delegate,
+                 service_manager::mojom::ServiceRequest request)
+    : delegate_(delegate), service_binding_(this, std::move(request)) {
   binders_.AddInterface(base::BindRepeating(
       [](Service* service, mojom::NavigableContentsFactoryRequest request) {
         service->AddNavigableContentsFactory(
@@ -37,10 +38,7 @@ void Service::ForceQuit() {
   navigable_contents_factories_.clear();
   navigable_contents_.clear();
   binders_.RemoveInterface<mojom::NavigableContentsFactory>();
-
-  // Force-disconnect from the Service Mangager. Under normal circumstances
-  // (i.e. in non-test code), the call below destroys |this|.
-  context()->QuitNow();
+  Terminate();
 }
 
 void Service::AddNavigableContentsFactory(

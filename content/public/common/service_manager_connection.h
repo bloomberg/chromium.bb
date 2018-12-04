@@ -10,7 +10,6 @@
 #include "base/callback_forward.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
-#include "services/service_manager/public/cpp/embedded_service_info.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
@@ -103,19 +102,9 @@ class CONTENT_EXPORT ServiceManagerConnection {
   // Removal (and destruction) happens asynchronously on the IO thread.
   virtual void RemoveConnectionFilter(int filter_id) = 0;
 
-  // Adds an embedded service to this connection's ServiceFactory.
-  // |info| provides details on how to construct new instances of the
-  // service when an incoming connection is made to |name|.
-  virtual void AddEmbeddedService(
-      const std::string& name,
-      const service_manager::EmbeddedServiceInfo& info) = 0;
-
   // Adds a generic ServiceRequestHandler for a given service name. This
   // will be used to satisfy any incoming calls to CreateService() which
   // reference the given name.
-  //
-  // For in-process services, it is preferable to use |AddEmbeddedService()| as
-  // defined above.
   virtual void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) = 0;

@@ -11,9 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "services/file/file_service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -27,19 +26,20 @@ class MojoTestWithFileService : public testing::Test {
   ~MojoTestWithFileService() override;
 
  protected:
-  void ResetFileServiceAndConnector(
-      std::unique_ptr<service_manager::Service> service);
-
   const base::FilePath& temp_path() { return temp_path_.GetPath(); }
 
-  service_manager::Connector* connector() const { return connector_.get(); }
+  file::FileService* file_service() { return &file_service_; }
+
+  service_manager::Connector* connector() {
+    return test_connector_factory_.GetDefaultConnector();
+  }
 
   void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  std::unique_ptr<service_manager::TestConnectorFactory> test_connector_;
-  std::unique_ptr<service_manager::Connector> connector_;
+  service_manager::TestConnectorFactory test_connector_factory_;
+  file::FileService file_service_;
   base::ScopedTempDir temp_path_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoTestWithFileService);

@@ -27,7 +27,6 @@
 #include "native_client/src/public/nonsfi/irt_random.h"
 #include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 #if !defined(OS_NACL_NONSFI)
 #error "This file must be built for nacl_helper_nonsfi."
@@ -50,8 +49,7 @@ NonSfiListener::~NonSfiListener() {
 
 void NonSfiListener::Listen() {
   mojo::ScopedMessagePipeHandle channel_handle;
-  std::unique_ptr<service_manager::ServiceContext> service_context =
-      CreateNaClServiceContext(io_thread_.task_runner(), &channel_handle);
+  auto service = CreateNaClService(io_thread_.task_runner(), &channel_handle);
   channel_ = IPC::SyncChannel::Create(
       channel_handle.release(), IPC::Channel::MODE_CLIENT,
       this,  // As a Listener.

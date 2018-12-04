@@ -27,10 +27,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "services/file/file_service.h"
 #include "services/file/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/service_context.h"
-#include "services/service_manager/public/cpp/test/test_service_decorator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -623,11 +620,10 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   url::Origin origin3 = url::Origin::Create(GURL("http://example.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  ResetFileServiceAndConnector(
-      service_manager::TestServiceDecorator::CreateServiceWithUniqueOverride(
-          file::CreateFileService(), leveldb::mojom::LevelDBService::Name_,
-          base::BindRepeating(&test::FakeLevelDBService::Bind,
-                              base::Unretained(&fake_leveldb_service))));
+  file_service()->GetBinderRegistryForTesting()->AddInterface(
+      leveldb::mojom::LevelDBService::Name_,
+      base::BindRepeating(&test::FakeLevelDBService::Bind,
+                          base::Unretained(&fake_leveldb_service)));
 
   // Open three connections to the database.
   blink::mojom::StorageAreaAssociatedPtr area1;
@@ -760,11 +756,10 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  ResetFileServiceAndConnector(
-      service_manager::TestServiceDecorator::CreateServiceWithUniqueOverride(
-          file::CreateFileService(), leveldb::mojom::LevelDBService::Name_,
-          base::BindRepeating(&test::FakeLevelDBService::Bind,
-                              base::Unretained(&fake_leveldb_service))));
+  file_service()->GetBinderRegistryForTesting()->AddInterface(
+      leveldb::mojom::LevelDBService::Name_,
+      base::BindRepeating(&test::FakeLevelDBService::Bind,
+                          base::Unretained(&fake_leveldb_service)));
 
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> test_data;
 

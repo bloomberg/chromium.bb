@@ -100,6 +100,52 @@ class ServiceInstanceGroupHolder : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(ServiceInstanceGroupHolder);
 };
 
+// The file service runs on the IO thread but we want to limit its lifetime to
+// that of the BrowserContext which creates it. This provides thread-safe access
+// to the relevant state on the IO thread.
+class FileServiceIOThreadState
+    : public base::RefCountedThreadSafe<FileServiceIOThreadState> {
+ public:
+  explicit FileServiceIOThreadState(
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+      : io_task_runner_(std::move(io_task_runner)) {}
+
+  void StartOnIOThread(service_manager::mojom::ServiceRequest request) {
+    DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+    file_service_ = std::make_unique<file::FileService>(std::move(request));
+  }
+
+  void ShutDown() {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FileServiceIOThreadState::ShutDownOnIOThread, this));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<FileServiceIOThreadState>;
+
+  ~FileServiceIOThreadState() { DCHECK(!file_service_); }
+
+  void ShutDownOnIOThread() { file_service_.reset(); }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  std::unique_ptr<file::FileService> file_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileServiceIOThreadState);
+};
+
+class FileServiceHolder : public base::SupportsUserData::Data {
+ public:
+  explicit FileServiceHolder(scoped_refptr<FileServiceIOThreadState> state)
+      : state_(std::move(state)) {}
+  ~FileServiceHolder() override { state_->ShutDown(); }
+
+ private:
+  const scoped_refptr<FileServiceIOThreadState> state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileServiceHolder);
+};
+
 class ContentServiceDelegateHolder : public base::SupportsUserData::Data {
  public:
   explicit ContentServiceDelegateHolder(BrowserContext* browser_context)
@@ -163,6 +209,7 @@ class CorsOriginPatternSetter
 // Key names on BrowserContext.
 const char kBrowsingDataRemoverKey[] = "browsing-data-remover";
 const char kContentServiceDelegateKey[] = "content-service-delegate";
+const char kFileServiceKey[] = "file-service";
 const char kDownloadManagerKeyName[] = "download_manager";
 const char kPermissionControllerKey[] = "permission-controller";
 const char kServiceManagerConnection[] = "service-manager-connection";
@@ -248,13 +295,34 @@ void SetDownloadManager(
   context->SetUserData(kDownloadManagerKeyName, std::move(download_manager));
 }
 
+std::unique_ptr<service_manager::Service>
+CreateMainThreadServiceForBrowserContext(
+    BrowserContext* browser_context,
+    const std::string& service_name,
+    service_manager::mojom::ServiceRequest request) {
+  if (service_name == content::mojom::kServiceName) {
+    auto* delegate_holder = static_cast<ContentServiceDelegateHolder*>(
+        browser_context->GetUserData(kContentServiceDelegateKey));
+    auto* delegate = delegate_holder->delegate();
+    auto service =
+        std::make_unique<content::Service>(delegate, std::move(request));
+    delegate->AddService(service.get());
+    return service;
+  }
+
+  return browser_context->HandleServiceRequest(service_name,
+                                               std::move(request));
+}
+
 class BrowserContextServiceManagerConnectionHolder
     : public base::SupportsUserData::Data {
  public:
   explicit BrowserContextServiceManagerConnectionHolder(
       BrowserContext* browser_context,
-      service_manager::mojom::ServiceRequest request)
+      service_manager::mojom::ServiceRequest request,
+      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
       : browser_context_(browser_context),
+        main_thread_task_runner_(std::move(main_thread_task_runner)),
         service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
             base::CreateSingleThreadTaskRunnerWithTraits(
@@ -274,8 +342,8 @@ class BrowserContextServiceManagerConnectionHolder
   void OnServiceRequest(const std::string& service_name,
                         service_manager::mojom::ServiceRequest request) {
     std::unique_ptr<service_manager::Service> service =
-        browser_context_->HandleServiceRequest(service_name,
-                                               std::move(request));
+        CreateMainThreadServiceForBrowserContext(browser_context_, service_name,
+                                                 std::move(request));
     if (!service) {
       LOG(ERROR) << "Ignoring request for unknown per-browser-context service:"
                  << service_name;
@@ -294,6 +362,7 @@ class BrowserContextServiceManagerConnectionHolder
   }
 
   BrowserContext* const browser_context_;
+  const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
   std::map<service_manager::Service*, std::unique_ptr<service_manager::Service>>
       running_services_;
@@ -633,41 +702,32 @@ void BrowserContext::Initialize(
 
     BrowserContextServiceManagerConnectionHolder* connection_holder =
         new BrowserContextServiceManagerConnectionHolder(
-            browser_context, std::move(service_request));
+            browser_context, std::move(service_request),
+            base::SequencedTaskRunnerHandle::Get());
     browser_context->SetUserData(kServiceManagerConnection,
                                  base::WrapUnique(connection_holder));
-
     ServiceManagerConnection* connection =
         connection_holder->service_manager_connection();
-
-    // New embedded service factories should be added to |connection| here.
-
-    {
-      service_manager::EmbeddedServiceInfo info;
-      info.factory = base::BindRepeating(&file::CreateFileService);
-      connection->AddEmbeddedService(file::mojom::kServiceName, info);
-    }
 
     browser_context->SetUserData(
         kContentServiceDelegateKey,
         std::make_unique<ContentServiceDelegateHolder>(browser_context));
 
-    {
-      service_manager::EmbeddedServiceInfo info;
-      info.task_runner = base::SequencedTaskRunnerHandle::Get();
-      info.factory = base::BindRepeating(
-          [](BrowserContext* context)
-              -> std::unique_ptr<service_manager::Service> {
-            auto* holder = static_cast<ContentServiceDelegateHolder*>(
-                context->GetUserData(kContentServiceDelegateKey));
-            auto* delegate = holder->delegate();
-            auto service = std::make_unique<content::Service>(delegate);
-            delegate->AddService(service.get());
-            return service;
-          },
-          browser_context);
-      connection->AddEmbeddedService(content::mojom::kServiceName, info);
-    }
+    scoped_refptr<FileServiceIOThreadState> file_service_io_thread_state =
+        base::MakeRefCounted<FileServiceIOThreadState>(
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+    connection->AddServiceRequestHandler(
+        file::mojom::kServiceName,
+        base::BindRepeating(
+            [](scoped_refptr<FileServiceIOThreadState> io_thread_state,
+               service_manager::mojom::ServiceRequest request) {
+              io_thread_state->StartOnIOThread(std::move(request));
+            },
+            file_service_io_thread_state));
+
+    browser_context->SetUserData(kFileServiceKey,
+                                 std::make_unique<FileServiceHolder>(
+                                     std::move(file_service_io_thread_state)));
 
     RegisterCommonBrowserInterfaces(connection);
     connection->Start();

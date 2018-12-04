@@ -30,7 +30,6 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "services/service_manager/embedder/switches.h"
-#include "services/service_manager/public/cpp/service_context.h"
 
 namespace {
 
@@ -46,10 +45,8 @@ NaClBrokerListener::~NaClBrokerListener() = default;
 
 void NaClBrokerListener::Listen() {
   mojo::ScopedMessagePipeHandle channel_handle;
-  std::unique_ptr<service_manager::ServiceContext> service_context =
-      CreateNaClServiceContext(base::ThreadTaskRunnerHandle::Get(),
-                               &channel_handle);
-
+  auto service =
+      CreateNaClService(base::ThreadTaskRunnerHandle::Get(), &channel_handle);
   channel_ = IPC::Channel::CreateClient(channel_handle.release(), this,
                                         base::ThreadTaskRunnerHandle::Get());
   CHECK(channel_->Connect());

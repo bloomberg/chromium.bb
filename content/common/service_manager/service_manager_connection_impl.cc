@@ -23,7 +23,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/embedded_service_runner.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
@@ -116,15 +115,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
         FROM_HERE,
         base::BindOnce(&IOThreadContext::RemoveConnectionFilterOnIOThread, this,
                        filter_id));
-  }
-
-  void AddEmbeddedService(const std::string& name,
-                          const service_manager::EmbeddedServiceInfo& info) {
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ServiceManagerConnectionImpl::IOThreadContext::
-                           AddEmbeddedServiceRequestHandlerOnIoThread,
-                       this, name, info));
   }
 
   void AddServiceRequestHandler(const std::string& name,
@@ -229,7 +219,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
     ClearConnectionFiltersOnIOThread();
 
     request_handlers_.clear();
-    embedded_services_.clear();
     child_binding_.Close();
   }
 
@@ -245,24 +234,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
     // by ClearConnectionFiltersOnIOThread() above, so this id might not exist.
     if (it != connection_filters_.end())
       connection_filters_.erase(it);
-  }
-
-  void AddEmbeddedServiceRequestHandlerOnIoThread(
-      const std::string& name,
-      const service_manager::EmbeddedServiceInfo& info) {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    std::unique_ptr<service_manager::EmbeddedServiceRunner> service(
-        new service_manager::EmbeddedServiceRunner(name, info));
-    AddServiceRequestHandlerOnIoThread(
-        name,
-        base::BindRepeating(
-            &WrapServiceRequestHandlerNoPID,
-            base::BindRepeating(
-                &service_manager::EmbeddedServiceRunner::BindServiceRequest,
-                base::Unretained(service.get()))));
-    auto result =
-        embedded_services_.insert(std::make_pair(name, std::move(service)));
-    DCHECK(result.second);
   }
 
   void AddServiceRequestHandlerOnIoThread(
@@ -361,8 +332,6 @@ class ServiceManagerConnectionImpl::IOThreadContext
       GUARDED_BY(lock_);
   int next_filter_id_ GUARDED_BY(lock_) = kInvalidConnectionFilterId;
 
-  std::map<std::string, std::unique_ptr<service_manager::EmbeddedServiceRunner>>
-      embedded_services_;
   std::map<std::string, ServiceRequestHandlerWithPID> request_handlers_;
 
   mojo::Binding<mojom::Child> child_binding_;
@@ -469,12 +438,6 @@ int ServiceManagerConnectionImpl::AddConnectionFilter(
 
 void ServiceManagerConnectionImpl::RemoveConnectionFilter(int filter_id) {
   context_->RemoveConnectionFilter(filter_id);
-}
-
-void ServiceManagerConnectionImpl::AddEmbeddedService(
-    const std::string& name,
-    const service_manager::EmbeddedServiceInfo& info) {
-  context_->AddEmbeddedService(name, info);
 }
 
 void ServiceManagerConnectionImpl::AddServiceRequestHandler(

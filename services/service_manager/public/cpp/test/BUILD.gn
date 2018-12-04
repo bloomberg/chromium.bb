@@ -10,8 +10,6 @@ source_set("test_support") {
     "test_connector_factory.h",
     "test_service.cc",
     "test_service.h",
-    "test_service_decorator.cc",
-    "test_service_decorator.h",
     "test_service_manager.cc",
     "test_service_manager.h",
   ]

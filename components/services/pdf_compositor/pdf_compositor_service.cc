@@ -17,7 +17,6 @@
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/cpp/service_context.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
