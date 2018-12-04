@@ -1252,7 +1252,7 @@
         },
         'test_suites': {
           'gtest_tests': 'layout_ng_gtests',
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'WebKit Linux root_layer_scrolls Dummy Builder': {
@@ -1265,7 +1265,7 @@
           'hard_timeout': 900,
         },
         'test_suites': {
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'WebKit Linux slimming_paint_v2 Dummy Builder': {
@@ -1283,7 +1283,7 @@
           'priority_adjustment': 30,
         },
         'test_suites': {
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'Win 10 Fast Ring': {
@@ -1444,7 +1444,7 @@
       },
       'linux-blink-gen-property-trees': {
         'test_suites': {
-          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
       'linux-blink-heap-incremental-marking': {
