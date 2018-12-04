@@ -9,9 +9,9 @@
 
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/profiles/profile.h"
-// TODO(crbug.com/826982): move source of truth for built-in apps out of
-// ui/app_list when the AppService feature is enabled by default.
+#include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -65,6 +65,8 @@ void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
                                   apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
+    // TODO(crbug.com/826982): move source of truth for built-in apps from
+    // ui/app_list to here when the AppService feature is enabled by default.
     for (const auto& internal_app : app_list::GetInternalAppList(profile_)) {
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
@@ -100,7 +102,24 @@ void BuiltInChromeOsApps::LoadIcon(
 }
 
 void BuiltInChromeOsApps::Launch(const std::string& app_id,
-                                 int32_t event_flags) {
+                                 int32_t event_flags,
+                                 apps::mojom::LaunchSource launch_source,
+                                 int64_t display_id) {
+  switch (launch_source) {
+    case apps::mojom::LaunchSource::kUnknown:
+      break;
+    case apps::mojom::LaunchSource::kFromAppList:
+      InternalAppItem::RecordActiveHistogram(app_id);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListSearch:
+      app_list::InternalAppResult::RecordOpenHistogram(app_id);
+      break;
+  }
+  // TODO(crbug.com/826982): we should also update a UMA histogram when an app
+  // result is *shown* in the app list search box, not just *launched*.
+  //
+  // See //chrome/browser/ui/app_list/search/internal_app_result.cc.
+
   app_list::OpenInternalApp(app_id, profile_, event_flags);
 }
 

@@ -34,8 +34,9 @@ void AppServiceAppModelBuilder::OnAppUpdate(const apps::AppUpdate& update) {
   // forwards updates such as icon changes on to each AppItem)?? Or should
   // every AppItem be its own observer??
 
-  if (update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue)
+  if (update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue) {
     return;
+  }
 
   InsertApp(std::make_unique<AppServiceAppItem>(
       profile(), model_updater(), GetSyncItem(update.AppId()), update));

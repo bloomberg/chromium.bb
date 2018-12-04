@@ -73,3 +73,9 @@ struct IconValue {
   gfx.mojom.ImageSkia? uncompressed;
   array<uint8>? compressed;
 };
+
+enum LaunchSource {
+  kUnknown,
+  kFromAppList,
+  kFromAppListSearch,
+};

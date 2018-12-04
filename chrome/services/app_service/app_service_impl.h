@@ -39,7 +39,9 @@ class AppServiceImpl : public apps::mojom::AppService {
                 LoadIconCallback callback) override;
   void Launch(apps::mojom::AppType app_type,
               const std::string& app_id,
-              int32_t event_flags) override;
+              int32_t event_flags,
+              apps::mojom::LaunchSource launch_source,
+              int64_t display_id) override;
 
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);
