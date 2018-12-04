@@ -4,8 +4,6 @@
 
 #include "services/test/user_id/user_id_service.h"
 
-#include "services/service_manager/public/cpp/service_context.h"
-
 namespace user_id {
 
 UserIdService::UserIdService(service_manager::mojom::ServiceRequest request)

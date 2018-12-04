@@ -58,7 +58,9 @@ class TestWakeLockProvider::TestWakeLock : public mojom::WakeLock,
   DISALLOW_COPY_AND_ASSIGN(TestWakeLock);
 };
 
-TestWakeLockProvider::TestWakeLockProvider() = default;
+TestWakeLockProvider::TestWakeLockProvider(
+    service_manager::mojom::ServiceRequest request)
+    : service_binding_(this, std::move(request)) {}
 
 TestWakeLockProvider::~TestWakeLockProvider() = default;
 
