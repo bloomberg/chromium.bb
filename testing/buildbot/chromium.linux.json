@@ -848,7 +848,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--smoke-test-mode",
+          "--pageset-repeat=1",
           "--test-shard-map-filename=linux_leak_detection_shard_map.json",
           "--upload-results",
           "--output-format=histograms",
