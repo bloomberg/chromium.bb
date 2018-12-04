@@ -36,9 +36,6 @@ static constexpr int kPeriodicScriptCheckCount = 10;
 // autostart.
 static constexpr int kAutostartCheckCountLimit = 5;
 
-// Caller parameter name.
-static const char* const kCallerScriptParameterName = "CALLER";
-
 // Cookie experiment name.
 // TODO(crbug.com/806868): Introduce a dedicated experiment extra parameter to
 // pass allow passing more than one experiment.
@@ -355,16 +352,11 @@ void Controller::FinishStart(const GURL& initial_url) {
   started_ = true;
   GetOrCheckScripts(initial_url);
   if (allow_autostart_) {
-    auto iter = parameters_->find(kCallerScriptParameterName);
-    // TODO(crbug.com/806868): Put back an explicit AUTOSTART parameter so we
-    // don't need to know who calls us.
-    if (iter != parameters_->end() && iter->second == "1") {
-      should_fail_after_checking_scripts_ = true;
-      GetUiController()->ShowOverlay();
-      GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
-          IDS_AUTOFILL_ASSISTANT_LOADING,
-          base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
-    }
+    should_fail_after_checking_scripts_ = true;
+    GetUiController()->ShowOverlay();
+    GetUiController()->ShowStatusMessage(l10n_util::GetStringFUTF8(
+        IDS_AUTOFILL_ASSISTANT_LOADING,
+        base::UTF8ToUTF16(web_contents()->GetVisibleURL().host())));
   }
 
   touchable_element_area_.SetOnUpdate(base::BindRepeating(
