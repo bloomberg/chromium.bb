@@ -682,7 +682,6 @@ void Tab::AlertStateChanged() {
 
 void Tab::FrameColorsChanged() {
   UpdateForegroundColors();
-  SchedulePaint();
 }
 
 void Tab::SelectedStateChanged() {
@@ -1059,4 +1058,6 @@ void Tab::UpdateForegroundColors() {
     button_color_ = generated_icon_color;
     alert_indicator_->OnParentTabButtonColorChanged();
   }
+
+  SchedulePaint();
 }
