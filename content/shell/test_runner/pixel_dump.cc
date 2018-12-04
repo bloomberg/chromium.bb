@@ -16,7 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
-#include "content/shell/common/layout_test/layout_test_utils.h"
+#include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "services/service_manager/public/cpp/connector.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
@@ -61,7 +61,7 @@ void DrawSelectionRect(
     const blink::WebRect& wr,
     base::OnceCallback<void(const SkBitmap&)> original_callback,
     const SkBitmap& bitmap) {
-  content::layout_test_utils::DrawSelectionRect(bitmap, wr);
+  content::web_test_utils::DrawSelectionRect(bitmap, wr);
   std::move(original_callback).Run(bitmap);
 }
 

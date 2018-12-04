@@ -22,7 +22,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"

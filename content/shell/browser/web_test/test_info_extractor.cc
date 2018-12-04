@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"

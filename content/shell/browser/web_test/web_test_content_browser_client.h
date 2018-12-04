@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/common/layout_test/fake_bluetooth_chooser.mojom.h"
+#include "content/shell/common/web_test/fake_bluetooth_chooser.mojom.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 
 namespace content {

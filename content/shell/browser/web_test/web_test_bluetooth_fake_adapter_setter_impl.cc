@@ -22,7 +22,7 @@ WebTestBluetoothFakeAdapterSetterImpl::
 
 // static
 void WebTestBluetoothFakeAdapterSetterImpl::Create(
-    mojom::LayoutTestBluetoothFakeAdapterSetterRequest request) {
+    mojom::WebTestBluetoothFakeAdapterSetterRequest request) {
   mojo::MakeStrongBinding(
       std::make_unique<WebTestBluetoothFakeAdapterSetterImpl>(),
       std::move(request));

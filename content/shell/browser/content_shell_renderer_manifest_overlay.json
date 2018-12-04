@@ -12,7 +12,7 @@
     "navigation:frame": {
       "provides": {
         "browser": [
-          "content.mojom.LayoutTestControl"
+          "content.mojom.WebTestControl"
         ]
       }
     }

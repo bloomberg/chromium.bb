@@ -6,18 +6,17 @@
 #define CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_BLUETOOTH_FAKE_ADAPTER_SETTER_IMPL_H_
 
 #include "base/macros.h"
-#include "content/shell/common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom.h"
+#include "content/shell/common/web_test/web_test_bluetooth_fake_adapter_setter.mojom.h"
 
 namespace content {
 
 class WebTestBluetoothFakeAdapterSetterImpl
-    : public mojom::LayoutTestBluetoothFakeAdapterSetter {
+    : public mojom::WebTestBluetoothFakeAdapterSetter {
  public:
   WebTestBluetoothFakeAdapterSetterImpl();
   ~WebTestBluetoothFakeAdapterSetterImpl() override;
 
-  static void Create(
-      mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
+  static void Create(mojom::WebTestBluetoothFakeAdapterSetterRequest request);
 
  private:
   void Set(const std::string& adapter_name, SetCallback callback) override;

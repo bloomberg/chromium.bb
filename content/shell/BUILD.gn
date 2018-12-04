@@ -46,19 +46,19 @@ source_set("android_shell_descriptors") {
   ]
 }
 
-source_set("layout_test_switches") {
+source_set("web_test_switches") {
   testonly = true
   sources = [
-    "common/layout_test/layout_test_switches.cc",
-    "common/layout_test/layout_test_switches.h",
+    "common/web_test/web_test_switches.cc",
+    "common/web_test/web_test_switches.h",
   ]
 }
 
-source_set("layout_test_utils") {
+source_set("web_test_utils") {
   testonly = true
   sources = [
-    "common/layout_test/layout_test_utils.cc",
-    "common/layout_test/layout_test_utils.h",
+    "common/web_test/web_test_utils.cc",
+    "common/web_test/web_test_utils.h",
   ]
   deps = [
     "//cc/paint:paint",
@@ -184,10 +184,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/web_test_push_messaging_service.h",
     "browser/web_test/web_test_url_request_context_getter.cc",
     "browser/web_test/web_test_url_request_context_getter.h",
-    "common/layout_test/layout_test_content_client.cc",
-    "common/layout_test/layout_test_content_client.h",
-    "common/layout_test/layout_test_messages.cc",
-    "common/layout_test/layout_test_messages.h",
     "common/power_monitor_test_impl.cc",
     "common/power_monitor_test_impl.h",
     "common/shell_content_client.cc",
@@ -198,6 +194,10 @@ jumbo_static_library("content_shell_lib") {
     "common/shell_origin_trial_policy.h",
     "common/shell_switches.cc",
     "common/shell_switches.h",
+    "common/web_test/web_test_content_client.cc",
+    "common/web_test/web_test_content_client.h",
+    "common/web_test/web_test_messages.cc",
+    "common/web_test/web_test_messages.h",
     "gpu/shell_content_gpu_client.cc",
     "gpu/shell_content_gpu_client.h",
     "renderer/shell_content_renderer_client.cc",
@@ -229,7 +229,7 @@ jumbo_static_library("content_shell_lib") {
     # generate the code. This is not compatible with jumbo
     # compilations since all other files need the "clean" version of
     # the message headers.
-    "common/layout_test/layout_test_messages.cc",
+    "common/web_test/web_test_messages.cc",
     "common/shell_messages.cc",
   ]
 
@@ -246,7 +246,7 @@ jumbo_static_library("content_shell_lib") {
   public_deps = [
     ":android_shell_descriptors",
 
-    # #include'ed by renderer/layout_test/blink_test_runner.h
+    # #include'ed by renderer/web_test/blink_test_runner.h
     ":mojo_bindings",
 
     # This exposes all public content APIs.
@@ -262,9 +262,9 @@ jumbo_static_library("content_shell_lib") {
   ]
   deps = [
     ":content_shell_packaged_services_manifest_overlay",
-    ":layout_test_switches",
-    ":layout_test_utils",
     ":resources",
+    ":web_test_switches",
+    ":web_test_utils",
     "//base",
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
@@ -916,10 +916,10 @@ if (is_mac) {
 
 mojom("mojo_bindings") {
   sources = [
-    "common/layout_test.mojom",
-    "common/layout_test/fake_bluetooth_chooser.mojom",
-    "common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom",
     "common/power_monitor_test.mojom",
+    "common/web_test.mojom",
+    "common/web_test/fake_bluetooth_chooser.mojom",
+    "common/web_test/web_test_bluetooth_fake_adapter_setter.mojom",
   ]
   public_deps = [
     "//mojo/public/mojom/base",

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Defines all the "layout_test" command-line switches.
+// Defines all the "web_test" command-line switches.
 
-#ifndef CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_SWITCHES_H_
-#define CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_SWITCHES_H_
+#ifndef CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_
+#define CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_
 
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ extern const char kAllowExternalPages[];
 extern const char kAndroidStderrPort[];
 extern const char kAndroidStdinPort[];
 extern const char kAndroidStdoutPort[];
-#endif // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 extern const char kCrashOnFailure[];
 extern const char kCustomDevToolsFrontend[];
 extern const char kDebugDevTools[];
@@ -34,4 +34,4 @@ extern const char kEnableDisplayCompositorPixelDump[];
 
 }  // namespace switches
 
-#endif  // CONTENT_SHELL_COMMON_LAYOUT_TEST_LAYOUT_TEST_SWITCHES_H_
+#endif  // CONTENT_SHELL_COMMON_WEB_TEST_WEB_TEST_SWITCHES_H_

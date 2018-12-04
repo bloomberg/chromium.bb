@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/web_preferences.h"
 #include "content/shell/browser/web_test/leak_detector.h"
-#include "content/shell/common/layout_test.mojom.h"
+#include "content/shell/common/web_test.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
@@ -220,12 +220,12 @@ class BlinkTestController : public WebContentsObserver,
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
   void OnBlockThirdPartyCookies(bool block);
-  mojom::LayoutTestControlAssociatedPtr& GetLayoutTestControlPtr(
+  mojom::WebTestControlAssociatedPtr& GetWebTestControlPtr(
       RenderFrameHost* frame);
-  void HandleLayoutTestControlError(const GlobalFrameRoutingId& key);
+  void HandleWebTestControlError(const GlobalFrameRoutingId& key);
 
   void OnCleanupFinished();
-  void OnCaptureDumpCompleted(mojom::LayoutTestDumpPtr dump);
+  void OnCaptureDumpCompleted(mojom::WebTestDumpPtr dump);
   void OnPixelDumpCaptured(const SkBitmap& snapshot);
   void ReportResults();
   void EnqueueSurfaceCopyRequest();
@@ -315,7 +315,7 @@ class BlinkTestController : public WebContentsObserver,
   std::string navigation_history_dump_;
   base::Optional<SkBitmap> pixel_dump_;
   std::string actual_pixel_hash_;
-  mojom::LayoutTestDumpPtr main_frame_dump_;
+  mojom::WebTestDumpPtr main_frame_dump_;
   bool waiting_for_pixel_results_ = false;
   bool waiting_for_main_frame_dump_ = false;
 
@@ -323,8 +323,8 @@ class BlinkTestController : public WebContentsObserver,
   std::queue<Node*> composite_all_frames_node_queue_;
 
   // Map from one frame to one mojo pipe.
-  std::map<GlobalFrameRoutingId, mojom::LayoutTestControlAssociatedPtr>
-      layout_test_control_map_;
+  std::map<GlobalFrameRoutingId, mojom::WebTestControlAssociatedPtr>
+      web_test_control_map_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

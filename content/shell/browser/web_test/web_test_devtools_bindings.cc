@@ -16,7 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/web_test/blink_test_controller.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 #include "net/base/filename_util.h"
 
 namespace {

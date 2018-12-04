@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/common/layout_test/layout_test_content_client.h"
+#include "content/shell/common/web_test/web_test_content_client.h"
 
 #include "content/shell/common/shell_messages.h"
 

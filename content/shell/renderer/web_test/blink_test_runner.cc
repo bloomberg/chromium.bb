@@ -41,9 +41,9 @@
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/public/test/layouttest_support.h"
-#include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/renderer/web_test/blink_test_helpers.h"
 #include "content/shell/renderer/web_test/web_test_render_thread_observer.h"
 #include "content/shell/test_runner/app_banner_service.h"
@@ -447,7 +447,7 @@ void BlinkTestRunner::TestFinished() {
 
   // Initialize a new dump results object which we will populate in the calls
   // below.
-  dump_result_ = mojom::LayoutTestDump::New();
+  dump_result_ = mojom::WebTestDump::New();
 
   CaptureLocalAudioDump();
   // TODO(vmpstr): Sometimes the layout isn't stable, which means that if we
@@ -767,7 +767,7 @@ void BlinkTestRunner::Reset(bool for_new_test) {
 }
 
 void BlinkTestRunner::CaptureDump(
-    mojom::LayoutTestControl::CaptureDumpCallback callback) {
+    mojom::WebTestControl::CaptureDumpCallback callback) {
   // TODO(vmpstr): This is only called on the main frame. One suggestion is to
   // split the interface on which this call lives so that it is only accessible
   // to the main frame (as opposed to all frames).
@@ -779,7 +779,7 @@ void BlinkTestRunner::CaptureDump(
 
 // Private methods  -----------------------------------------------------------
 
-mojom::LayoutTestBluetoothFakeAdapterSetter&
+mojom::WebTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
     RenderThread::Get()->GetConnector()->BindInterface(

@@ -14,7 +14,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/web_test/web_test_switches.h"
 
 #if !defined(OS_ANDROID)
 #include "content/public/browser/devtools_frontend_host.h"
