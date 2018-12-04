@@ -39,12 +39,18 @@ public class FeedConfigurationTest {
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
                 FeedConfiguration.getFeedServerMethod());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
-                FeedConfiguration.getFeedServerReponseLengthPrefixed());
+                FeedConfiguration.getFeedServerResponseLengthPrefixed());
+        Assert.assertEquals(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
+                FeedConfiguration.getInitialNonCachedPageSize());
         Assert.assertEquals(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 FeedConfiguration.getLoggingImmediateContentThresholdMs());
+        Assert.assertEquals(FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
+                FeedConfiguration.getNonCachedMinPageSize());
+        Assert.assertEquals(FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT,
+                FeedConfiguration.getNonCachedPageSize());
         Assert.assertEquals(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 FeedConfiguration.getSessionLifetimeMs());
-        Assert.assertFalse(FeedConfiguration.getTriggerImmedatePagination());
+        Assert.assertFalse(FeedConfiguration.getTriggerImmediatePagination());
         Assert.assertEquals(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT,
                 FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
     }
@@ -75,7 +81,17 @@ public class FeedConfigurationTest {
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:feed_server_response_length_prefixed/false"})
     public void testFeedServerResponseLengthPrefixedParameter() {
-        Assert.assertEquals(false, FeedConfiguration.getFeedServerReponseLengthPrefixed());
+        Assert.assertEquals(false, FeedConfiguration.getFeedServerResponseLengthPrefixed());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:initial_non_cached_page_size/100"})
+    public void
+    testInitialNonCachedPageSize() {
+        Assert.assertEquals(100, FeedConfiguration.getInitialNonCachedPageSize());
     }
 
     @Test
@@ -83,8 +99,29 @@ public class FeedConfigurationTest {
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:logging_immediate_content_threshold_ms/5000"})
-    public void testLoggingImmediateContentThresholdMs() {
+    public void
+    testLoggingImmediateContentThresholdMs() {
         Assert.assertEquals(5000, FeedConfiguration.getLoggingImmediateContentThresholdMs());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:non_cached_min_page_size/100"})
+    public void
+    testNonCachedMinPageSize() {
+        Assert.assertEquals(100, FeedConfiguration.getNonCachedMinPageSize());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:non_cached_page_size/100"})
+    public void
+    testNonCachedPageSize() {
+        Assert.assertEquals(100, FeedConfiguration.getNonCachedPageSize());
     }
 
     @Test
@@ -102,7 +139,7 @@ public class FeedConfigurationTest {
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:trigger_immediate_pagination/true"})
     public void testTriggerImmedatePagination() {
-        Assert.assertTrue(FeedConfiguration.getTriggerImmedatePagination());
+        Assert.assertTrue(FeedConfiguration.getTriggerImmediatePagination());
     }
 
     @Test
@@ -126,10 +163,16 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_METHOD, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED, 0));
+        Assert.assertEquals(Integer.valueOf(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT),
+                configuration.getValueOrDefault(ConfigKey.INITIAL_NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals(
                 Long.valueOf(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT),
                 configuration.getValueOrDefault(
                         ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
+        Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT),
+                configuration.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0));
+        Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT),
+                configuration.getValueOrDefault(ConfigKey.NON_CACHED_PAGE_SIZE, 0));
         Assert.assertEquals(Long.valueOf(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT),
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
         Assert.assertFalse(
