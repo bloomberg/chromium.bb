@@ -3609,9 +3609,8 @@ bool Document::CheckCompletedInternal() {
   return true;
 }
 
-bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
+bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                          bool is_reload,
-                                         bool auto_cancel,
                                          bool& did_allow_navigation) {
   if (!dom_window_)
     return true;
@@ -3673,9 +3672,9 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
     return true;
   }
 
-  // If |auto_cancel| is set then do not ask the |chrome_client| to display a
-  // modal dialog. Simply indicate that the navigation should not proceed.
-  if (auto_cancel) {
+  // If |chrome_client| is null simply indicate that the navigation should
+  // not proceed.
+  if (!chrome_client) {
     beforeunload_dialog_histogram.Count(kNoDialogAutoCancelTrue);
     did_allow_navigation = false;
     return false;
@@ -3686,7 +3685,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
       BeforeUnloadDialogHistogramEnum::kShowDialog);
   const TimeTicks beforeunload_confirmpanel_start = CurrentTimeTicks();
   did_allow_navigation =
-      chrome_client.OpenBeforeUnloadConfirmPanel(text, frame_, is_reload);
+      chrome_client->OpenBeforeUnloadConfirmPanel(text, frame_, is_reload);
   const TimeTicks beforeunload_confirmpanel_end = CurrentTimeTicks();
   if (did_allow_navigation) {
     // Only record when a navigation occurs, since we want to understand
