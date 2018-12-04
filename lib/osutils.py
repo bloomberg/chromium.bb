@@ -15,7 +15,6 @@ import ctypes.util
 import datetime
 import errno
 import glob
-import operator
 import os
 import pwd
 import re
@@ -1092,7 +1091,7 @@ def MountImagePartition(image_file, part_id, destination, gpt_table=None,
     image_file: A path to the image file (chromiumos_base_image.bin).
     part_id: A partition name or number.
     destination: A path to the mount point.
-    gpt_table: A dictionary of PartitionInfo objects. See
+    gpt_table: A list of PartitionInfo objects. See
       cros_build_lib.GetImageDiskPartitionInfo.
     sudo: Same as MountDir.
     makedirs: Same as MountDir.
@@ -1101,19 +1100,15 @@ def MountImagePartition(image_file, part_id, destination, gpt_table=None,
   """
 
   if gpt_table is None:
-    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file,
-                                                         key_selector='number')
+    gpt_table = cros_build_lib.GetImageDiskPartitionInfo(image_file)
 
-  matcher = operator.attrgetter('name')
-  if isinstance(part_id, int):
-    matcher = operator.attrgetter('number')
-  for part in gpt_table.values():
-    if matcher(part) == part_id:
+  for part in gpt_table:
+    if part_id == part.name or part_id == part.number:
       break
   else:
     part = None
     raise ValueError('Partition number %s not found in the GPT %r.' %
-                     (str(part_id), gpt_table))
+                     (part_id, gpt_table))
 
   opts = ['loop', 'offset=%d' % part.start, 'sizelimit=%d' % part.size]
   opts += mount_opts
@@ -1170,9 +1165,7 @@ class MountImageContext(object):
       mount_opts: Tuple of options to mount with.
     """
     self._image_file = image_file
-    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(
-        self._image_file, key_selector='number'
-    )
+    self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(self._image_file)
     # Target dir is absolute path so that we do not have to worry about
     # CWD being changed later.
     self._target_dir = ExpandPath(destination)
@@ -1246,11 +1239,8 @@ class MountImageContext(object):
 
   def __enter__(self):
     for selector in self._part_selects:
-      matcher = operator.attrgetter('number')
-      if not isinstance(selector, int):
-        matcher = operator.attrgetter('name')
-      for _, part in self._gpt_table.items():
-        if matcher(part) == selector:
+      for part in self._gpt_table:
+        if selector == part.name or selector == part.number:
           try:
             self._Mount(part)
           except:

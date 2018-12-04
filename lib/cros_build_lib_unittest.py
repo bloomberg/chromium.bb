@@ -1505,44 +1505,46 @@ EEC571FFB6E1)
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
     partitions = cros_build_lib.GetImageDiskPartitionInfo('...')
-    self.assertEqual(partitions['STATE'].start, 983564288)
-    self.assertEqual(partitions['STATE'].size, 1073741824)
-    self.assertEqual(partitions['STATE'].number, 1)
-    self.assertEqual(partitions['STATE'].name, 'STATE')
-    self.assertEqual(partitions['EFI-SYSTEM'].start, 249856 * 512)
-    self.assertEqual(partitions['EFI-SYSTEM'].size, 32768 * 512)
-    self.assertEqual(partitions['EFI-SYSTEM'].number, 12)
-    self.assertEqual(partitions['EFI-SYSTEM'].name, 'EFI-SYSTEM')
-    # Because "reserved" is duplicated, we only have 11 key-value pairs.
-    self.assertEqual(11, len(partitions))
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(part_dict['STATE'].start, 983564288)
+    self.assertEqual(part_dict['STATE'].size, 1073741824)
+    self.assertEqual(part_dict['STATE'].number, 1)
+    self.assertEqual(part_dict['STATE'].name, 'STATE')
+    self.assertEqual(part_dict['EFI-SYSTEM'].start, 249856 * 512)
+    self.assertEqual(part_dict['EFI-SYSTEM'].size, 32768 * 512)
+    self.assertEqual(part_dict['EFI-SYSTEM'].number, 12)
+    self.assertEqual(part_dict['EFI-SYSTEM'].name, 'EFI-SYSTEM')
+    self.assertEqual(12, len(partitions))
 
   def testNormalPath(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
-    # Because "reserved" is duplicated, we only have 11 key-value pairs.
-    self.assertEqual(11, len(partitions))
-    self.assertEqual(1, partitions['STATE'].number)
-    self.assertEqual(2097152000, partitions['ROOT-A'].size)
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(12, len(partitions))
+    self.assertEqual(1, part_dict['STATE'].number)
+    self.assertEqual(2097152000, part_dict['ROOT-A'].size)
 
   def testKeyedByNumber(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_PARTED)
     partitions = cros_build_lib.GetImageDiskPartitionInfo(
-        '_ignored', key_selector='number'
+        '_ignored'
     )
-    self.assertEqual(12, len(partitions))
-    self.assertEqual('STATE', partitions[1].name)
-    self.assertEqual(2097152000, partitions[3].size)
-    self.assertEqual('reserved', partitions[9].name)
-    self.assertEqual('reserved', partitions[10].name)
+    part_dict = {p.number: p for p in partitions}
+    self.assertEqual(12, len(part_dict))
+    self.assertEqual('STATE', part_dict[1].name)
+    self.assertEqual(2097152000, part_dict[3].size)
+    self.assertEqual('reserved', part_dict[9].name)
+    self.assertEqual('reserved', part_dict[10].name)
 
   def testChangeUnitInsideChroot(self):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.rc.AddCmdResult(partial_mock.Ignore(), output=self.SAMPLE_CGPT)
     partitions = cros_build_lib.GetImageDiskPartitionInfo('_ignored')
-    self.assertEqual(partitions['STATE'].start, 983564288)
-    self.assertEqual(partitions['STATE'].size, 1073741824)
+    part_dict = {p.name: p for p in partitions}
+    self.assertEqual(part_dict['STATE'].start, 983564288)
+    self.assertEqual(part_dict['STATE'].size, 1073741824)
 
 
 class DummyOutput(object):

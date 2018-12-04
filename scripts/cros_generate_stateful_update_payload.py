@@ -32,12 +32,10 @@ def GenerateStatefulPayload(image_path, output_directory):
 
   output_gz = os.path.join(output_directory, _STATEFUL_FILE)
 
-  parts = cros_build_lib.GetImageDiskPartitionInfo(image_path)
-  stateful_num = parts[constants.PART_STATE].number
-
   # Mount the image to pull out the important directories.
   with osutils.TempDir() as stateful_mnt, \
-      osutils.MountImageContext(image_path, stateful_mnt, (stateful_num,)) as _:
+      osutils.MountImageContext(image_path, stateful_mnt,
+                                (constants.PART_STATE,)) as _:
     stateful_dir = os.path.join(stateful_mnt, 'dir-%s' % constants.PART_STATE)
 
     try:

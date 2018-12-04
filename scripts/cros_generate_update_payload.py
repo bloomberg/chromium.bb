@@ -49,7 +49,7 @@ def ExtractPartitionToTempFile(filename, partition, temp_file=None):
     temp_file = tempfile.mktemp(prefix='cros_generate_update_payload')
 
   parts = cros_build_lib.GetImageDiskPartitionInfo(filename)
-  part_info = parts[partition]
+  part_info = [p for p in parts if p.name == partition][0]
 
   offset = int(part_info.start)
   length = int(part_info.size)
@@ -216,8 +216,8 @@ def GenerateUpdatePayload(opts):
 
     # Add partition size. Only *required* for minor_version=1.
     # TODO(tbrindus): deprecate this when we deprecate minor version 1.
-    dst_root_part_size = cros_build_lib.GetImageDiskPartitionInfo(
-        opts.image)[constants.PART_ROOT_A].size
+    dst_root_part_size = [p for p in cros_build_lib.GetImageDiskPartitionInfo(
+        opts.image) if p.name == constants.PART_ROOT_A][0].size
 
     if dst_root_part_size:
       logging.info('Using rootfs partition size: %d', dst_root_part_size)

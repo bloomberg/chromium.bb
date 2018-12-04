@@ -132,12 +132,10 @@ def PrepareImage(image, content, domain=None):
     content: The content of the OOBE autoconfiguration.
     domain: Which domain to enroll to.
   """
-  parts = cros_build_lib.GetImageDiskPartitionInfo(image)
-  stateful_num = parts[constants.CROS_PART_STATEFUL].number
-
   with osutils.TempDir() as tmp, \
-     osutils.MountImageContext(image, tmp, (stateful_num,), ('rw',)) as _:
-    stateful_mnt = os.path.join(tmp, 'dir-%d' % stateful_num)
+     osutils.MountImageContext(image, tmp, (constants.CROS_PART_STATEFUL,),
+                               ('rw',)) as _:
+    stateful_mnt = os.path.join(tmp, 'dir-%s' % constants.CROS_PART_STATEFUL)
 
     # /stateful/unencrypted may not exist at this point in time on the
     # recovery image, so create it root-owned here.

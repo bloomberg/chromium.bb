@@ -24,9 +24,9 @@ class GenerateStatefulPayloadTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(osutils.MountImageContext, '_Mount', autospec=True)
     self.PatchObject(osutils.MountImageContext, '_Unmount', autospec=True)
 
-    fake_partitions = {
-        'STATE': cros_build_lib.PartitionInfo(3, 0, 4, 4, 'fs', 'STATE', ''),
-    }
+    fake_partitions = (
+        cros_build_lib.PartitionInfo(3, 0, 4, 4, 'fs', 'STATE', ''),
+    )
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
 

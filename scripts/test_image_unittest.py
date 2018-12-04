@@ -30,11 +30,11 @@ class TestImageTest(cros_test_lib.MockTempDirTestCase):
     self.image_file = os.path.join(self.tempdir,
                                    constants.BASE_IMAGE_NAME + '.bin')
     osutils.WriteFile(self.image_file, '')
-    fake_partitions = {
-        1: cros_build_lib.PartitionInfo(1, 0, 0, 0, 'fs', 'STATE', 'flag'),
-        2: cros_build_lib.PartitionInfo(2, 0, 0, 0, 'fs', 'KERN-A', 'flag'),
-        3: cros_build_lib.PartitionInfo(3, 0, 0, 0, 'fs', 'ROOT-A', 'flag'),
-    }
+    fake_partitions = (
+        cros_build_lib.PartitionInfo(1, 0, 0, 0, 'fs', 'STATE', 'flag'),
+        cros_build_lib.PartitionInfo(2, 0, 0, 0, 'fs', 'KERN-A', 'flag'),
+        cros_build_lib.PartitionInfo(3, 0, 0, 0, 'fs', 'ROOT-A', 'flag'),
+    )
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      autospec=True, return_value=fake_partitions)
     self.PatchObject(osutils.MountImageContext, '_Mount', autospec=True)

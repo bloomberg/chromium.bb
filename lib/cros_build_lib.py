@@ -16,7 +16,6 @@ import functools
 import getpass
 import hashlib
 import inspect
-import operator
 import os
 import pprint
 import re
@@ -1865,16 +1864,14 @@ def _ParseCgpt(lines):
   return ret
 
 
-def GetImageDiskPartitionInfo(image_path, key_selector='name'):
+def GetImageDiskPartitionInfo(image_path):
   """Returns the disk partition table of an image.
 
   Args:
     image_path: Path to the image file.
-    key_selector: The value of the partition that will be used as the key for
-      that partition in this function's returned dictionary.
 
   Returns:
-    A dictionary of ParitionInfo items keyed by |key_selector|.
+    A list of ParitionInfo items.
   """
 
   if IsInsideChroot():
@@ -1890,9 +1887,7 @@ def GetImageDiskPartitionInfo(image_path, key_selector='name'):
       cmd,
       extra_env={'PATH': '/sbin:%s' % os.environ['PATH'], 'LC_ALL': 'C'},
       capture_output=True).output.splitlines()
-  infos = func(lines)
-  selector = operator.attrgetter(key_selector)
-  return dict((selector(x), x) for x in infos)
+  return func(lines)
 
 
 def GetRandomString(length=20):

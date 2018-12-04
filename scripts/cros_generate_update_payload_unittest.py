@@ -77,10 +77,10 @@ class ExtractPartitionToTempFileTest(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(image, image_bin)
     part_a = os.path.join(self.tempdir, 'a.bin')
 
-    fake_partitions = {
-        'PART-A': cros_build_lib.PartitionInfo(1, 0, 4, 4, 'fs', 'PART-A', ''),
-        'PART-B': cros_build_lib.PartitionInfo(2, 4, 8, 4, 'fs', 'PART-B', ''),
-    }
+    fake_partitions = (
+        cros_build_lib.PartitionInfo(1, 0, 4, 4, 'fs', 'PART-A', ''),
+        cros_build_lib.PartitionInfo(2, 4, 8, 4, 'fs', 'PART-B', ''),
+    )
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
 
@@ -105,9 +105,9 @@ class DeltaGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(cros_generate_update_payload, 'Ext2FileSystemSize',
                      return_value=4)
 
-    fake_partitions = {
-        'ROOT-A': cros_build_lib.PartitionInfo(3, 0, 4, 4, 'fs', 'ROOT-A', ''),
-    }
+    fake_partitions = (
+        cros_build_lib.PartitionInfo(3, 0, 4, 4, 'fs', 'ROOT-A', ''),
+    )
     self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
                      return_value=fake_partitions)
     cros_generate_update_payload.main([
