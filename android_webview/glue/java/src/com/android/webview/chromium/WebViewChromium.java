@@ -218,6 +218,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
             if (mShouldDisableThreadChecking) disableThreadChecking();
 
+            mSharedWebViewChromium.init(mContentsClientAdapter);
+
             mFactory.addTask(new Runnable() {
                 @Override
                 public void run() {
@@ -274,8 +276,6 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
                             return mFactory.createAutofillProvider(context, mWebView);
                         }
                     });
-            mSharedWebViewChromium.setAwContentsOnUiThread(mAwContents);
-
             if (mAppTargetSdkVersion >= Build.VERSION_CODES.KITKAT) {
                 // On KK and above, favicons are automatically downloaded as the method
                 // old apps use to enable that behavior is deprecated.
@@ -290,6 +290,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
 
             // TODO: This assumes AwContents ignores second Paint param.
             mAwContents.setLayerType(mWebView.getLayerType(), null);
+
+            mSharedWebViewChromium.initForReal(mAwContents);
         }
     }
 
