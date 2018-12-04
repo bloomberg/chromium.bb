@@ -760,6 +760,22 @@ TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
 }
 
 TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
+       ConnectThenBluetoothDisconnects) {
+  std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
+      CreateConnection(true /* should_set_low_connection_latency */));
+  InitializeConnection(connection.get(), kDefaultMaxPacketSize);
+  EXPECT_EQ(connection->sub_status(), SubStatus::CONNECTED_AND_IDLE);
+
+  connection->DeviceConnectedStateChanged(adapter_.get(),
+                                          mock_bluetooth_device_.get(),
+                                          false /* is_now_connected */);
+
+  VerifyBleWeaveConnectionResult(
+      BluetoothLowEnergyWeaveClientConnection::BleWeaveConnectionResult::
+          BLE_WEAVE_CONNECTION_RESULT_ERROR_CONNECTION_DROPPED);
+}
+
+TEST_F(CryptAuthBluetoothLowEnergyWeaveClientConnectionTest,
        DisconnectCalledTwice) {
   std::unique_ptr<TestBluetoothLowEnergyWeaveClientConnection> connection(
       CreateConnection(true /* should_set_low_connection_latency */));

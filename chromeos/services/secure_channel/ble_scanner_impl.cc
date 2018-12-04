@@ -88,14 +88,11 @@ void BleScannerImpl::HandleScanFilterChange() {
   UpdateDiscoveryStatus();
 }
 
-void BleScannerImpl::DeviceAdded(device::BluetoothAdapter* adapter,
-                                 device::BluetoothDevice* bluetooth_device) {
-  DCHECK_EQ(adapter_.get(), adapter);
-  HandleDeviceUpdated(bluetooth_device);
-}
-
-void BleScannerImpl::DeviceChanged(device::BluetoothAdapter* adapter,
-                                   device::BluetoothDevice* bluetooth_device) {
+void BleScannerImpl::DeviceAdvertisementReceived(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* bluetooth_device,
+    int16_t rssi,
+    const std::vector<uint8_t>& eir) {
   DCHECK_EQ(adapter_.get(), adapter);
   HandleDeviceUpdated(bluetooth_device);
 }
