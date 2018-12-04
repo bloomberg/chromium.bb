@@ -28,7 +28,7 @@ class PLATFORM_EXPORT CallbackMethodRetriever {
 
   // Get the prototype object from the callback function. Must be invoked prior
   // to GetMethod or GetStaticMethod.
-  void GetPrototypeObject(ExceptionState&);
+  v8::Local<v8::Object> GetPrototypeObject(ExceptionState&);
 
   // Returns a function extracted from the prototype chain, or undefined.
   // Throws if the property is neither of function nor undefined.

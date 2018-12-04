@@ -27,6 +27,7 @@ class V8CustomElementAttributeChangedCallback;
 class V8CustomElementConstructor;
 class V8CustomElementDisabledStateChangedCallback;
 class V8CustomElementFormAssociatedCallback;
+class V8CustomElementValueSetter;
 class V8VoidFunction;
 
 class CORE_EXPORT ScriptCustomElementDefinitionBuilder
@@ -61,6 +62,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   v8::Local<v8::Value> v8_attribute_changed_callback_;
   v8::Local<v8::Value> v8_form_associated_callback_;
   v8::Local<v8::Value> v8_disabled_state_changed_callback_;
+  v8::Local<v8::Value> v8_value_setter_;
   Member<V8VoidFunction> connected_callback_;
   Member<V8VoidFunction> disconnected_callback_;
   Member<V8CustomElementAdoptedCallback> adopted_callback_;
@@ -68,6 +70,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   Member<V8CustomElementFormAssociatedCallback> form_associated_callback_;
   Member<V8CustomElementDisabledStateChangedCallback>
       disabled_state_changed_callback_;
+  Member<V8CustomElementValueSetter> value_setter_;
   HashSet<AtomicString> observed_attributes_;
   Vector<String> disabled_features_;
   bool is_form_associated_ = false;
