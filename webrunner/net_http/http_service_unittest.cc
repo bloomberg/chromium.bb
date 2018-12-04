@@ -211,7 +211,8 @@ TEST_F(HttpServiceTest, BasicRequestBuffer) {
 }
 
 // Check network request headers are received properly.
-TEST_F(HttpServiceTest, RequestWithHeaders) {
+// TODO(https://crbug.com/898938): Disabled due to flake.
+TEST_F(HttpServiceTest, DISABLED_RequestWithHeaders) {
   oldhttp::URLLoaderPtr url_loader;
   http_service()->CreateURLLoader(url_loader.NewRequest());
 
@@ -235,7 +236,8 @@ TEST_F(HttpServiceTest, RequestWithHeaders) {
 }
 
 // Check duplicate network request headers are received properly.
-TEST_F(HttpServiceTest, RequestWithDuplicateHeaders) {
+// TODO(https://crbug.com/898938): Disabled due to flake.
+TEST_F(HttpServiceTest, DISABLED_RequestWithDuplicateHeaders) {
   oldhttp::URLLoaderPtr url_loader;
   http_service()->CreateURLLoader(url_loader.NewRequest());
 
