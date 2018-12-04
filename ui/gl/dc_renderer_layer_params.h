@@ -29,58 +29,34 @@ enum class ProtectedVideoType : uint32_t {
 };
 
 struct GL_EXPORT DCRendererLayerParams {
-  DCRendererLayerParams(bool is_clipped,
-                        const gfx::Rect clip_rect,
-                        int z_order,
-                        const gfx::Transform& transform,
-                        std::vector<scoped_refptr<gl::GLImage>> image,
-                        const gfx::RectF& contents_rect,
-                        const gfx::Rect& rect,
-                        unsigned background_color,
-                        unsigned edge_aa_mask,
-                        float opacity,
-                        unsigned filter,
-                        ProtectedVideoType protected_video_type);
+  DCRendererLayerParams();
   DCRendererLayerParams(const DCRendererLayerParams& other);
+  DCRendererLayerParams& operator=(const DCRendererLayerParams& other);
   ~DCRendererLayerParams();
 
-  bool is_clipped;
-  const gfx::Rect clip_rect;
-  int z_order;
-  const gfx::Transform transform;
-  std::vector<scoped_refptr<gl::GLImage>> image;
-  const gfx::RectF contents_rect;
-  const gfx::Rect rect;
-  unsigned background_color;
-  unsigned edge_aa_mask;
-  float opacity;
-  unsigned filter;
-  ProtectedVideoType protected_video_type;
+  // Images to display in overlay.  There can either be one NV12 GPU buffer with
+  // both Y and UV planes, or two software buffers one each for Y and UV planes.
+  scoped_refptr<gl::GLImage> y_image;
+  scoped_refptr<gl::GLImage> uv_image;
 
-  // This is a subset of cc::FilterOperation::FilterType.
-  enum class FilterEffectType : uint32_t {
-    GRAYSDCLE,
-    SEPIA,
-    SATURATE,
-    HUE_ROTATE,
-    INVERT,
-    BRIGHTNESS,
-    CONTRAST,
-    OPACITY,
-    BLUR,
-    DROP_SHADOW,
-  };
-  struct GL_EXPORT FilterEffect {
-    FilterEffectType type = FilterEffectType::GRAYSDCLE;
+  // Stacking order relative to backbuffer which has z-order 0.
+  int z_order = 1;
 
-    // For every filter other than DROP_SHADOW, only |amount| is populated.
-    float amount = 0;
-    gfx::Point drop_shadow_offset;
-    SkColor drop_shadow_color = 0;
-  };
-  using FilterEffects = std::vector<FilterEffect>;
+  // What part of the content to display in pixels.
+  gfx::Rect content_rect;
 
-  FilterEffects filter_effects;
+  // Bounds of the overlay in pre-transform space.
+  gfx::Rect quad_rect;
+
+  // 2D flattened transform that maps |quad_rect| to root target space,
+  // after applying the |quad_rect.origin()| as an offset.
+  gfx::Transform transform;
+
+  // If |is_clipped| is true, then clip to |clip_rect| in root target space.
+  bool is_clipped = false;
+  gfx::Rect clip_rect;
+
+  ProtectedVideoType protected_video_type = ProtectedVideoType::kClear;
 };
 
 }  // namespace ui

@@ -4725,41 +4725,46 @@ TEST_F(GLES2FormatTest, FlushDriverCachesCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, ScheduleDCLayerSharedStateCHROMIUM) {
-  cmds::ScheduleDCLayerSharedStateCHROMIUM& cmd =
-      *GetBufferAs<cmds::ScheduleDCLayerSharedStateCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLfloat>(11),
-                           static_cast<GLboolean>(12), static_cast<GLint>(13),
-                           static_cast<GLuint>(14), static_cast<GLuint>(15));
-  EXPECT_EQ(
-      static_cast<uint32_t>(cmds::ScheduleDCLayerSharedStateCHROMIUM::kCmdId),
-      cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLfloat>(11), cmd.opacity);
-  EXPECT_EQ(static_cast<GLboolean>(12), cmd.is_clipped);
-  EXPECT_EQ(static_cast<GLint>(13), cmd.z_order);
-  EXPECT_EQ(static_cast<GLuint>(14), cmd.shm_id);
-  EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, ScheduleDCLayerCHROMIUM) {
   cmds::ScheduleDCLayerCHROMIUM& cmd =
       *GetBufferAs<cmds::ScheduleDCLayerCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLsizei>(11),
-                           static_cast<GLuint>(12), static_cast<GLuint>(13),
-                           static_cast<GLuint>(14), static_cast<GLuint>(15),
-                           static_cast<GLuint>(16), static_cast<GLuint>(17));
+  void* next_cmd = cmd.Set(
+      &cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+      static_cast<GLint>(13), static_cast<GLint>(14), static_cast<GLint>(15),
+      static_cast<GLint>(16), static_cast<GLint>(17), static_cast<GLint>(18),
+      static_cast<GLint>(19), static_cast<GLint>(20), static_cast<GLint>(21),
+      static_cast<GLfloat>(22), static_cast<GLfloat>(23),
+      static_cast<GLfloat>(24), static_cast<GLfloat>(25),
+      static_cast<GLfloat>(26), static_cast<GLfloat>(27),
+      static_cast<GLboolean>(28), static_cast<GLint>(29),
+      static_cast<GLint>(30), static_cast<GLint>(31), static_cast<GLint>(32),
+      static_cast<GLuint>(33));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleDCLayerCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLsizei>(11), cmd.num_textures);
-  EXPECT_EQ(static_cast<GLuint>(12), cmd.background_color);
-  EXPECT_EQ(static_cast<GLuint>(13), cmd.edge_aa_mask);
-  EXPECT_EQ(static_cast<GLuint>(14), cmd.filter);
-  EXPECT_EQ(static_cast<GLuint>(15), cmd.shm_id);
-  EXPECT_EQ(static_cast<GLuint>(16), cmd.shm_offset);
-  EXPECT_EQ(static_cast<GLuint>(17), cmd.protected_video_type);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.y_texture_id);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.uv_texture_id);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.z_order);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.content_x);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.content_y);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.content_width);
+  EXPECT_EQ(static_cast<GLint>(17), cmd.content_height);
+  EXPECT_EQ(static_cast<GLint>(18), cmd.quad_x);
+  EXPECT_EQ(static_cast<GLint>(19), cmd.quad_y);
+  EXPECT_EQ(static_cast<GLint>(20), cmd.quad_width);
+  EXPECT_EQ(static_cast<GLint>(21), cmd.quad_height);
+  EXPECT_EQ(static_cast<GLfloat>(22), cmd.transform_c1r1);
+  EXPECT_EQ(static_cast<GLfloat>(23), cmd.transform_c2r1);
+  EXPECT_EQ(static_cast<GLfloat>(24), cmd.transform_c1r2);
+  EXPECT_EQ(static_cast<GLfloat>(25), cmd.transform_c2r2);
+  EXPECT_EQ(static_cast<GLfloat>(26), cmd.transform_tx);
+  EXPECT_EQ(static_cast<GLfloat>(27), cmd.transform_ty);
+  EXPECT_EQ(static_cast<GLboolean>(28), cmd.is_clipped);
+  EXPECT_EQ(static_cast<GLint>(29), cmd.clip_x);
+  EXPECT_EQ(static_cast<GLint>(30), cmd.clip_y);
+  EXPECT_EQ(static_cast<GLint>(31), cmd.clip_width);
+  EXPECT_EQ(static_cast<GLint>(32), cmd.clip_height);
+  EXPECT_EQ(static_cast<GLuint>(33), cmd.protected_video_type);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

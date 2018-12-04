@@ -874,20 +874,29 @@ error::Error DoScheduleCALayerCHROMIUM(GLuint contents_texture_id,
 error::Error DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,
     const volatile GLuint* textures);
-error::Error DoScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
-                                                  GLboolean is_clipped,
-                                                  const GLfloat* clip_rect,
-                                                  GLint z_order,
-                                                  const GLfloat* transform);
-error::Error DoScheduleDCLayerCHROMIUM(
-    GLsizei num_textures,
-    const volatile GLuint* contents_texture_ids,
-    const GLfloat* contents_rect,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    GLenum filter,
-    const GLfloat* bounds_rect,
-    GLuint protected_video_type);
+error::Error DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
+                                       GLuint uv_texture_id,
+                                       GLint z_order,
+                                       GLint content_x,
+                                       GLint content_y,
+                                       GLint content_width,
+                                       GLint content_height,
+                                       GLint quad_x,
+                                       GLint quad_y,
+                                       GLint quad_width,
+                                       GLint quad_height,
+                                       GLfloat transform_c1r1,
+                                       GLfloat transform_c2r1,
+                                       GLfloat transform_c1r2,
+                                       GLfloat transform_c2r2,
+                                       GLfloat transform_tx,
+                                       GLfloat transform_ty,
+                                       GLboolean is_clipped,
+                                       GLint clip_x,
+                                       GLint clip_y,
+                                       GLint clip_width,
+                                       GLint clip_height,
+                                       GLuint protected_video_type);
 error::Error DoCommitOverlayPlanesCHROMIUM(uint64_t swap_id, GLbitfield flags);
 error::Error DoSetColorSpaceMetadataCHROMIUM(GLuint texture_id,
                                              gfx::ColorSpace color_space);

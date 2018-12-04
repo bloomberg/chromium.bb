@@ -20,21 +20,41 @@ namespace viz {
 
 namespace {
 
-DCLayerOverlayProcessor::DCLayerResult FromYUVQuad(
-    DisplayResourceProvider* resource_provider,
-    const YUVVideoDrawQuad* quad,
-    DCLayerOverlay* dc_layer_overlay) {
-  for (const auto& resource : quad->resources) {
-    if (!resource_provider->IsOverlayCandidate(resource))
-      return DCLayerOverlayProcessor::DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
-  }
-  dc_layer_overlay->resources = quad->resources;
-  dc_layer_overlay->contents_rect = quad->ya_tex_coord_rect;
-  dc_layer_overlay->filter = GL_LINEAR;
-  dc_layer_overlay->color_space = quad->video_color_space;
-  dc_layer_overlay->protected_video_type = quad->protected_video_type;
+DCLayerOverlay FromYUVQuad(const YUVVideoDrawQuad* quad,
+                           const gfx::Transform& transform_to_root_target) {
+  DCLayerOverlay dc_layer;
+  // Direct composition path only supports single NV12 buffer, or two buffers
+  // one each for Y and UV planes.
+  DCHECK(quad->y_plane_resource_id() && quad->u_plane_resource_id());
+  DCHECK_EQ(quad->u_plane_resource_id(), quad->v_plane_resource_id());
+  dc_layer.y_resource_id = quad->y_plane_resource_id();
+  dc_layer.uv_resource_id = quad->u_plane_resource_id();
 
-  return DCLayerOverlayProcessor::DC_LAYER_SUCCESS;
+  dc_layer.z_order = 1;
+  dc_layer.content_rect = gfx::ToNearestRect(quad->ya_tex_coord_rect);
+  dc_layer.quad_rect = quad->rect;
+  // Quad rect is in quad content space so both quad to target, and target to
+  // root transforms must be applied to it.
+  gfx::Transform quad_to_root_transform(
+      quad->shared_quad_state->quad_to_target_transform);
+  quad_to_root_transform.ConcatTransform(transform_to_root_target);
+  // Flatten transform to 2D since DirectComposition doesn't support 3D
+  // transforms.
+  quad_to_root_transform.FlattenTo2d();
+  dc_layer.transform = quad_to_root_transform;
+
+  dc_layer.is_clipped = quad->shared_quad_state->is_clipped;
+  if (dc_layer.is_clipped) {
+    // Clip rect is in quad target space, and must be transformed to root target
+    // space.
+    gfx::RectF clip_rect = gfx::RectF(quad->shared_quad_state->clip_rect);
+    transform_to_root_target.TransformRect(&clip_rect);
+    dc_layer.clip_rect = gfx::ToEnclosingRect(clip_rect);
+  }
+  dc_layer.color_space = quad->video_color_space;
+  dc_layer.protected_video_type = quad->protected_video_type;
+
+  return dc_layer;
 }
 
 // This returns the smallest rectangle in target space that contains the quad.
@@ -94,11 +114,11 @@ void RecordDCLayerResult(DCLayerOverlayProcessor::DCLayerResult result,
 }
 }  // namespace
 
-DCLayerOverlay::DCLayerOverlay() : filter(GL_LINEAR) {}
-
+DCLayerOverlay::DCLayerOverlay() = default;
 DCLayerOverlay::DCLayerOverlay(const DCLayerOverlay& other) = default;
-
-DCLayerOverlay::~DCLayerOverlay() {}
+DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
+    default;
+DCLayerOverlay::~DCLayerOverlay() = default;
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(OutputSurface* surface) {
 #if defined(OS_WIN)
@@ -117,30 +137,28 @@ DCLayerOverlayProcessor::~DCLayerOverlayProcessor() = default;
 
 DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
     DisplayResourceProvider* resource_provider,
-    const gfx::RectF& display_rect,
     QuadList::ConstIterator quad_list_begin,
     QuadList::ConstIterator quad,
+    const gfx::Transform& transform_to_root_target,
     DCLayerOverlay* dc_layer_overlay) {
-
-  DCLayerResult result;
   switch (quad->material) {
     case DrawQuad::YUV_VIDEO_CONTENT:
-      result =
-          FromYUVQuad(resource_provider, YUVVideoDrawQuad::MaterialCast(*quad),
-                      dc_layer_overlay);
+      *dc_layer_overlay = FromYUVQuad(YUVVideoDrawQuad::MaterialCast(*quad),
+                                      transform_to_root_target);
       break;
     default:
       return DC_LAYER_FAILED_UNSUPPORTED_QUAD;
   }
-  if (result != DC_LAYER_SUCCESS)
-    return result;
-
   // Hardware protected video must use Direct Composition Overlay
   if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver &&
       dc_layer_overlay->protected_video_type !=
           ui::ProtectedVideoType::kHardwareProtected)
     return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
+  for (const auto& resource : quad->resources) {
+    if (!resource_provider->IsOverlayCandidate(resource))
+      return DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
+  }
   // To support software protected video on machines without hardware overlay
   // capability. Don't do dc layer overlay if no hardware support.
   if (!has_hw_overlay_support_ &&
@@ -148,23 +166,7 @@ DCLayerOverlayProcessor::DCLayerResult DCLayerOverlayProcessor::FromDrawQuad(
           ui::ProtectedVideoType::kSoftwareProtected) {
     return DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT;
   }
-
-  scoped_refptr<DCLayerOverlaySharedState> overlay_shared_state(
-      new DCLayerOverlaySharedState);
-  overlay_shared_state->z_order = 1;
-
-  overlay_shared_state->is_clipped = quad->shared_quad_state->is_clipped;
-  overlay_shared_state->clip_rect =
-      gfx::RectF(quad->shared_quad_state->clip_rect);
-
-  overlay_shared_state->opacity = quad->shared_quad_state->opacity;
-  overlay_shared_state->transform =
-      quad->shared_quad_state->quad_to_target_transform.matrix();
-
-  dc_layer_overlay->shared_state = overlay_shared_state;
-  dc_layer_overlay->bounds_rect = gfx::RectF(quad->rect);
-
-  return result;
+  return DC_LAYER_SUCCESS;
 }
 
 void DCLayerOverlayProcessor::Process(
@@ -303,8 +305,9 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     }
 
     DCLayerOverlay dc_layer;
-    DCLayerResult result = FromDrawQuad(resource_provider, display_rect,
-                                        quad_list->begin(), it, &dc_layer);
+    DCLayerResult result =
+        FromDrawQuad(resource_provider, quad_list->begin(), it,
+                     render_pass->transform_to_root_target, &dc_layer);
     if (result != DC_LAYER_SUCCESS) {
       RecordDCLayerResult(result, dc_layer.protected_video_type);
       continue;
@@ -320,17 +323,6 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
       continue;
     }
 
-    dc_layer.shared_state->transform.postConcat(
-        render_pass->transform_to_root_target.matrix());
-
-    // Clip rect is in quad target (render pass) space, and must be transformed
-    // to display space since we only send the quad content (layer) to root
-    // transform to compositor. To transform clip rect we need the quad target
-    // (render pass) to root transform too, so it's better to perform the
-    // transform here instead of sending two separate transforms.
-    render_pass->transform_to_root_target.TransformRect(
-        &dc_layer.shared_state->clip_rect);
-
     // These rects are in quad target space.
     gfx::Rect quad_rectangle = gfx::ToEnclosingRect(ClippedQuadRectangle(*it));
     gfx::RectF occlusion_bounding_box =
@@ -341,6 +333,8 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     // check root render pass because we can only check for occlusion within a
     // render pass. Only check if an overlay hasn't been processed already since
     // our damage calculations will be wrong otherwise.
+    // TODO(sunnyps): Is the above comment correct?  We seem to allow multiple
+    // overlays for protected video, but don't calculate damage differently.
     // TODO(magchen): Collect all overlay candidates, and filter the list at the
     // end to find the best candidates (largest size?).
     if (is_root &&
@@ -425,7 +419,7 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
                           dc_layer->protected_video_type);
       return false;
     }
-    if ((it->shared_quad_state->opacity < 1.0)) {
+    if (it->shared_quad_state->opacity < 1.0f) {
       RecordDCLayerResult(DC_LAYER_FAILED_TRANSPARENT,
                           dc_layer->protected_video_type);
       return false;
@@ -438,11 +432,11 @@ bool DCLayerOverlayProcessor::ProcessForUnderlay(
       return false;
     }
   }
-
   // TODO(magchen): Assign decreasing z-order so that underlays processed
   // earlier, and hence which are above the subsequent underlays, are placed
   // above in the direct composition visual tree.
-  dc_layer->shared_state->z_order = -1;
+  dc_layer->z_order = -1;
+
   const SharedQuadState* shared_quad_state = it->shared_quad_state;
   gfx::Rect rect = it->visible_rect;
 

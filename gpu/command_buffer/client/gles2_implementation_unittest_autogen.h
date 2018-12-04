@@ -2936,6 +2936,19 @@ TEST_F(GLES2ImplementationTest, FlushDriverCachesCHROMIUM) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, ScheduleDCLayerCHROMIUM) {
+  struct Cmds {
+    cmds::ScheduleDCLayerCHROMIUM cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                    true, 19, 20, 21, 22, 23);
+
+  gl_->ScheduleDCLayerCHROMIUM(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+                               15, 16, 17, true, 19, 20, 21, 22, 23);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, MatrixLoadfCHROMIUM) {
   GLfloat data[16] = {0};
   struct Cmds {

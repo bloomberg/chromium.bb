@@ -3391,8 +3391,6 @@ error::Error GLES2DecoderPassthroughImpl::DoBindVertexArrayOES(GLuint array) {
 
 error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
                                                         GLbitfield flags) {
-  dc_layer_shared_state_.reset();
-
   if (offscreen_) {
     if (offscreen_single_buffer_) {
       return error::kNoError;
@@ -4018,8 +4016,6 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
     return error::kNoError;
   }
 
-  dc_layer_shared_state_.reset();
-
   std::vector<gfx::Rect> bounds(count);
   for (GLsizei i = 0; i < count; ++i) {
     bounds[i] = gfx::Rect(rects[i * 4 + 0], rects[i * 4 + 1], rects[i * 4 + 2],
@@ -4044,8 +4040,6 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
                 "glPostSubBufferCHROMIUM is not supported for this surface.");
     return error::kNoError;
   }
-
-  dc_layer_shared_state_.reset();
 
   client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
@@ -4385,104 +4379,78 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerSharedStateCHROMIUM(
-    GLfloat opacity,
-    GLboolean is_clipped,
-    const GLfloat* clip_rect,
-    GLint z_order,
-    const GLfloat* transform) {
-  if (!dc_layer_shared_state_) {
-    dc_layer_shared_state_.reset(new DCLayerSharedState);
-  }
-  dc_layer_shared_state_->opacity = opacity;
-  dc_layer_shared_state_->is_clipped = is_clipped ? true : false;
-  dc_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(
-      gfx::RectF(clip_rect[0], clip_rect[1], clip_rect[2], clip_rect[3]));
-  dc_layer_shared_state_->z_order = z_order;
-  dc_layer_shared_state_->transform =
-      gfx::Transform(transform[0], transform[4], transform[8], transform[12],
-                     transform[1], transform[5], transform[9], transform[13],
-                     transform[2], transform[6], transform[10], transform[14],
-                     transform[3], transform[7], transform[11], transform[15]);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
-    GLsizei num_textures,
-    const volatile GLuint* contents_texture_ids,
-    const GLfloat* contents_rect,
-    GLuint background_color,
-    GLuint edge_aa_mask,
-    GLenum filter,
-    const GLfloat* bounds_rect,
+    GLuint y_texture_id,
+    GLuint uv_texture_id,
+    GLint z_order,
+    GLint content_x,
+    GLint content_y,
+    GLint content_width,
+    GLint content_height,
+    GLint quad_x,
+    GLint quad_y,
+    GLint quad_width,
+    GLint quad_height,
+    GLfloat transform_c1r1,
+    GLfloat transform_c2r1,
+    GLfloat transform_c1r2,
+    GLfloat transform_c2r2,
+    GLfloat transform_tx,
+    GLfloat transform_ty,
+    GLboolean is_clipped,
+    GLint clip_x,
+    GLint clip_y,
+    GLint clip_width,
+    GLint clip_height,
     GLuint protected_video_type) {
-  switch (filter) {
-    case GL_NEAREST:
-    case GL_LINEAR:
-      break;
-    default:
-      InsertError(GL_INVALID_OPERATION, "invalid filter.");
-      return error::kNoError;
-  }
-
-  if (!dc_layer_shared_state_) {
-    InsertError(GL_INVALID_OPERATION,
-                "glScheduleDCLayerSharedStateCHROMIUM has not been called.");
-    return error::kNoError;
-  }
-
-  if (num_textures < 0 || num_textures > 4) {
-    InsertError(GL_INVALID_OPERATION,
-                "number of textures greater than maximum of 4.");
-    return error::kNoError;
-  }
-
-  gfx::RectF contents_rect_object(contents_rect[0], contents_rect[1],
-                                  contents_rect[2], contents_rect[3]);
-  gfx::RectF bounds_rect_object(bounds_rect[0], bounds_rect[1], bounds_rect[2],
-                                bounds_rect[3]);
-
-  std::vector<scoped_refptr<gl::GLImage>> images(num_textures);
-  for (int i = 0; i < num_textures; ++i) {
-    GLuint contents_texture_client_id = contents_texture_ids[i];
-    if (contents_texture_client_id != 0) {
-      scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
-      if (!resources_->texture_object_map.GetServiceID(
-              contents_texture_client_id, &passthrough_texture)) {
-        InsertError(GL_INVALID_VALUE, "unknown texture.");
-        return error::kNoError;
-      }
-      DCHECK(passthrough_texture != nullptr);
-
-      scoped_refptr<gl::GLImage> image =
-          passthrough_texture->GetLevelImage(passthrough_texture->target(), 0);
-      if (image == nullptr) {
-        InsertError(GL_INVALID_VALUE, "unsupported texture format");
-        return error::kNoError;
-      }
-      images[i] = image;
-    }
-  }
-
   if (protected_video_type >
       static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
-    InsertError(GL_INVALID_VALUE, "unknown protected video type.");
+    InsertError(GL_INVALID_VALUE, "invalid protected video type");
     return error::kNoError;
   }
-  ui::ProtectedVideoType protected_video_type_param =
+
+  GLuint texture_ids[] = {y_texture_id, uv_texture_id};
+  scoped_refptr<gl::GLImage> images[2];
+  size_t i = 0;
+  for (GLuint texture_id : texture_ids) {
+    if (!texture_id) {
+      InsertError(GL_INVALID_VALUE, "invalid texture");
+      return error::kNoError;
+    }
+
+    scoped_refptr<TexturePassthrough> passthrough_texture;
+    if (!resources_->texture_object_map.GetServiceID(texture_id,
+                                                     &passthrough_texture)) {
+      InsertError(GL_INVALID_VALUE, "unknown texture");
+      return error::kNoError;
+    }
+    DCHECK(passthrough_texture);
+    gl::GLImage* image =
+        passthrough_texture->GetLevelImage(passthrough_texture->target(), 0);
+    if (!image) {
+      InsertError(GL_INVALID_VALUE, "unsupported texture format");
+      return error::kNoError;
+    }
+    images[i++] = scoped_refptr<gl::GLImage>(image);
+  }
+
+  ui::DCRendererLayerParams params;
+  params.y_image = std::move(images[0]);
+  params.uv_image = std::move(images[1]);
+  params.z_order = z_order;
+  params.content_rect =
+      gfx::Rect(content_x, content_y, content_width, content_height);
+  params.quad_rect = gfx::Rect(quad_x, quad_y, quad_width, quad_height);
+  params.transform =
+      gfx::Transform(transform_c1r1, transform_c2r1, transform_c1r2,
+                     transform_c2r2, transform_tx, transform_ty);
+  params.is_clipped = is_clipped;
+  params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+  params.protected_video_type =
       static_cast<ui::ProtectedVideoType>(protected_video_type);
 
-  ui::DCRendererLayerParams params(
-      dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
-      dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform,
-      images, contents_rect_object, gfx::ToEnclosingRect(bounds_rect_object),
-      background_color, edge_aa_mask, dc_layer_shared_state_->opacity, filter,
-      protected_video_type_param);
-
-  if (!surface_->ScheduleDCLayer(params)) {
+  if (!surface_->ScheduleDCLayer(params))
     InsertError(GL_INVALID_OPERATION, "failed to schedule DCLayer");
-    return error::kNoError;
-  }
 
   return error::kNoError;
 }
@@ -4495,8 +4463,6 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
                 "glCommitOverlayPlanes not supported by surface.");
     return error::kNoError;
   }
-
-  dc_layer_shared_state_.reset();
 
   client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(

@@ -1192,6 +1192,30 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoFlushMappedBufferRange(
       GLenum target, GLintptr offset, GLsizeiptr size);
 
+  void DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
+                                 GLuint uv_texture_id,
+                                 GLint z_order,
+                                 GLint content_x,
+                                 GLint content_y,
+                                 GLint content_width,
+                                 GLint content_height,
+                                 GLint quad_x,
+                                 GLint quad_y,
+                                 GLint quad_width,
+                                 GLint quad_height,
+                                 GLfloat transform_c1r1,
+                                 GLfloat transform_c2r1,
+                                 GLfloat transform_c1r2,
+                                 GLfloat transform_c2r2,
+                                 GLfloat transform_tx,
+                                 GLfloat transform_ty,
+                                 GLboolean is_clipped,
+                                 GLint clip_x,
+                                 GLint clip_y,
+                                 GLint clip_width,
+                                 GLint clip_height,
+                                 GLuint protected_video_type);
+
   // Creates a Program for the given program.
   Program* CreateProgram(GLuint client_id, GLuint service_id) {
     return program_manager()->CreateProgram(client_id, service_id);
@@ -2357,7 +2381,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // The GL_CHROMIUM_schedule_ca_layer extension requires that SwapBuffers and
   // equivalent functions reset shared state.
   void ClearScheduleCALayerState();
-  void ClearScheduleDCLayerState();
 
   // Helper method to call glClear workaround.
   void ClearFramebufferForWorkaround(GLbitfield mask);
@@ -2666,7 +2689,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   SamplerState default_sampler_state_;
 
   std::unique_ptr<CALayerSharedState> ca_layer_shared_state_;
-  std::unique_ptr<DCLayerSharedState> dc_layer_shared_state_;
 
   // All currently outstanding AbstractTextures that we've created.
   std::set<ValidatingAbstractTextureImpl*> abstract_textures_;
@@ -12514,7 +12536,6 @@ void GLES2DecoderImpl::DoSwapBuffersWithBoundsCHROMIUM(
   }
 
   ClearScheduleCALayerState();
-  ClearScheduleDCLayerState();
 
   std::vector<gfx::Rect> bounds(count);
   for (GLsizei i = 0; i < count; ++i) {
@@ -12549,7 +12570,6 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   }
 
   ClearScheduleCALayerState();
-  ClearScheduleDCLayerState();
 
   if (supports_async_swap_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "AsyncSwapBuffers", c.swap_id());
@@ -12703,125 +12723,6 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   if (!surface_->ScheduleCALayer(params)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
-  }
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleScheduleDCLayerSharedStateCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM& c =
-      *static_cast<
-          const volatile gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM*>(
-          cmd_data);
-
-  const GLfloat* mem = GetSharedMemoryAs<const GLfloat*>(c.shm_id, c.shm_offset,
-                                                         20 * sizeof(GLfloat));
-  if (!mem) {
-    return error::kOutOfBounds;
-  }
-  gfx::RectF clip_rect(mem[0], mem[1], mem[2], mem[3]);
-  gfx::Transform transform(mem[4], mem[8], mem[12], mem[16], mem[5], mem[9],
-                           mem[13], mem[17], mem[6], mem[10], mem[14], mem[18],
-                           mem[7], mem[11], mem[15], mem[19]);
-  dc_layer_shared_state_.reset(new DCLayerSharedState);
-  dc_layer_shared_state_->opacity = c.opacity;
-  dc_layer_shared_state_->is_clipped = c.is_clipped ? true : false;
-  dc_layer_shared_state_->clip_rect = gfx::ToEnclosingRect(clip_rect);
-  dc_layer_shared_state_->z_order = c.z_order;
-  dc_layer_shared_state_->transform = transform;
-  return error::kNoError;
-}
-
-error::Error GLES2DecoderImpl::HandleScheduleDCLayerCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  const volatile gles2::cmds::ScheduleDCLayerCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::ScheduleDCLayerCHROMIUM*>(
-          cmd_data);
-  GLuint filter = c.filter;
-  if (filter != GL_NEAREST && filter != GL_LINEAR) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
-                       "invalid filter");
-    return error::kNoError;
-  }
-
-  if (!dc_layer_shared_state_) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
-        "glScheduleDCLayerSharedStateCHROMIUM has not been called");
-    return error::kNoError;
-  }
-
-  GLsizei num_textures = c.num_textures;
-  if (num_textures < 0 || num_textures > 4) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
-                       "number of textures greater than maximum of 4");
-    return error::kNoError;
-  }
-
-  size_t textures_size = num_textures * sizeof(GLuint);
-
-  base::CheckedNumeric<uint32_t> data_size = textures_size;
-  const uint32_t kRectDataSize = 8 * sizeof(GLfloat);
-  data_size += kRectDataSize;
-  if (!data_size.IsValid())
-    return error::kOutOfBounds;
-  const void* data =
-      GetAddressAndCheckSize(c.shm_id, c.shm_offset, data_size.ValueOrDie());
-  if (!data) {
-    return error::kOutOfBounds;
-  }
-  const GLfloat* mem = reinterpret_cast<const GLfloat*>(data);
-
-  gfx::RectF contents_rect(mem[0], mem[1], mem[2], mem[3]);
-  gfx::RectF bounds_rect(mem[4], mem[5], mem[6], mem[7]);
-
-  const volatile GLuint* texture_ids = reinterpret_cast<const volatile GLuint*>(
-      static_cast<const volatile char*>(data) + kRectDataSize);
-
-  std::vector<scoped_refptr<gl::GLImage>> images;
-  for (int i = 0; i < num_textures; ++i) {
-    GLuint contents_texture_id = texture_ids[i];
-    scoped_refptr<gl::GLImage> image;
-    if (contents_texture_id) {
-      TextureRef* ref = texture_manager()->GetTexture(contents_texture_id);
-      if (!ref) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
-                           "unknown texture");
-        return error::kNoError;
-      }
-      Texture::ImageState image_state;
-      image = ref->texture()->GetLevelImage(ref->texture()->target(), 0,
-                                            &image_state);
-      if (!image) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
-                           "unsupported texture format");
-        return error::kNoError;
-      }
-    }
-    images.push_back(image);
-  }
-
-  GLuint protected_video_type = c.protected_video_type;
-  if (protected_video_type >
-      static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
-                       "unknown protected video type");
-    return error::kNoError;
-  }
-  ui::ProtectedVideoType protected_video_type_param =
-      static_cast<ui::ProtectedVideoType>(protected_video_type);
-
-  ui::DCRendererLayerParams params = ui::DCRendererLayerParams(
-      dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
-      dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform,
-      images, contents_rect, gfx::ToEnclosingRect(bounds_rect),
-      c.background_color, c.edge_aa_mask, dc_layer_shared_state_->opacity,
-      filter, protected_video_type_param);
-  if (!surface_->ScheduleDCLayer(params)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
-                       "failed to schedule DCLayer");
   }
   return error::kNoError;
 }
@@ -15796,7 +15697,6 @@ void GLES2DecoderImpl::DoSwapBuffers(uint64_t swap_id, GLbitfield flags) {
   }
 
   ClearScheduleCALayerState();
-  ClearScheduleDCLayerState();
 
   // If offscreen then don't actually SwapBuffers to the display. Just copy
   // the rendered frame to another frame buffer.
@@ -15936,7 +15836,6 @@ void GLES2DecoderImpl::DoCommitOverlayPlanes(uint64_t swap_id,
     return;
   }
   ClearScheduleCALayerState();
-  ClearScheduleDCLayerState();
   if (supports_async_swap_) {
     client_->OnSwapBuffers(swap_id, flags);
     surface_->CommitOverlayPlanesAsync(
@@ -18626,6 +18525,83 @@ void GLES2DecoderImpl::DoFlushMappedBufferRange(
   api()->glFlushMappedBufferRangeFn(target, offset, size);
 }
 
+void GLES2DecoderImpl::DoScheduleDCLayerCHROMIUM(GLuint y_texture_id,
+                                                 GLuint uv_texture_id,
+                                                 GLint z_order,
+                                                 GLint content_x,
+                                                 GLint content_y,
+                                                 GLint content_width,
+                                                 GLint content_height,
+                                                 GLint quad_x,
+                                                 GLint quad_y,
+                                                 GLint quad_width,
+                                                 GLint quad_height,
+                                                 GLfloat transform_c1r1,
+                                                 GLfloat transform_c2r1,
+                                                 GLfloat transform_c1r2,
+                                                 GLfloat transform_c2r2,
+                                                 GLfloat transform_tx,
+                                                 GLfloat transform_ty,
+                                                 GLboolean is_clipped,
+                                                 GLint clip_x,
+                                                 GLint clip_y,
+                                                 GLint clip_width,
+                                                 GLint clip_height,
+                                                 GLuint protected_video_type) {
+  if (protected_video_type >
+      static_cast<GLuint>(ui::ProtectedVideoType::kMaxValue)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                       "invalid protected video type");
+    return;
+  }
+
+  GLuint texture_ids[] = {y_texture_id, uv_texture_id};
+  scoped_refptr<gl::GLImage> images[2];
+  size_t i = 0;
+  for (auto& texture_id : texture_ids) {
+    if (!texture_id) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                         "invalid texture");
+      return;
+    }
+    TextureRef* ref = texture_manager()->GetTexture(texture_id);
+    if (!ref) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                         "unknown texture");
+      return;
+    }
+    Texture::ImageState image_state;
+    gl::GLImage* image = ref->texture()->GetLevelImage(ref->texture()->target(),
+                                                       0, &image_state);
+    if (!image) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glScheduleDCLayerCHROMIUM",
+                         "unsupported texture format");
+      return;
+    }
+    images[i++] = scoped_refptr<gl::GLImage>(image);
+  }
+
+  ui::DCRendererLayerParams params;
+  params.y_image = std::move(images[0]);
+  params.uv_image = std::move(images[1]);
+  params.z_order = z_order;
+  params.content_rect =
+      gfx::Rect(content_x, content_y, content_width, content_height);
+  params.quad_rect = gfx::Rect(quad_x, quad_y, quad_width, quad_height);
+  params.transform =
+      gfx::Transform(transform_c1r1, transform_c2r1, transform_c1r2,
+                     transform_c2r2, transform_tx, transform_ty);
+  params.is_clipped = is_clipped;
+  params.clip_rect = gfx::Rect(clip_x, clip_y, clip_width, clip_height);
+  params.protected_video_type =
+      static_cast<ui::ProtectedVideoType>(protected_video_type);
+
+  if (!surface_->ScheduleDCLayer(params)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleDCLayerCHROMIUM",
+                       "failed to schedule DCLayer");
+  }
+}
+
 // Note that GL_LOST_CONTEXT is specific to GLES.
 // For desktop GL we have to query the reset status proactively.
 void GLES2DecoderImpl::OnContextLostError() {
@@ -19652,10 +19628,6 @@ bool GLES2DecoderImpl::ChromiumImageNeedsRGBEmulation() {
 
 void GLES2DecoderImpl::ClearScheduleCALayerState() {
   ca_layer_shared_state_.reset();
-}
-
-void GLES2DecoderImpl::ClearScheduleDCLayerState() {
-  dc_layer_shared_state_.reset();
 }
 
 void GLES2DecoderImpl::ClearFramebufferForWorkaround(GLbitfield mask) {

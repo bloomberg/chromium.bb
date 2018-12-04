@@ -2852,30 +2852,37 @@ void FlushDriverCachesCHROMIUM() {
   }
 }
 
-void ScheduleDCLayerSharedStateCHROMIUM(GLfloat opacity,
-                                        GLboolean is_clipped,
-                                        GLint z_order,
-                                        GLuint shm_id,
-                                        GLuint shm_offset) {
-  gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::ScheduleDCLayerSharedStateCHROMIUM>();
-  if (c) {
-    c->Init(opacity, is_clipped, z_order, shm_id, shm_offset);
-  }
-}
-
-void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
-                             GLuint background_color,
-                             GLuint edge_aa_mask,
-                             GLuint filter,
-                             GLuint shm_id,
-                             GLuint shm_offset,
+void ScheduleDCLayerCHROMIUM(GLuint y_texture_id,
+                             GLuint uv_texture_id,
+                             GLint z_order,
+                             GLint content_x,
+                             GLint content_y,
+                             GLint content_width,
+                             GLint content_height,
+                             GLint quad_x,
+                             GLint quad_y,
+                             GLint quad_width,
+                             GLint quad_height,
+                             GLfloat transform_c1r1,
+                             GLfloat transform_c2r1,
+                             GLfloat transform_c1r2,
+                             GLfloat transform_c2r2,
+                             GLfloat transform_tx,
+                             GLfloat transform_ty,
+                             GLboolean is_clipped,
+                             GLint clip_x,
+                             GLint clip_y,
+                             GLint clip_width,
+                             GLint clip_height,
                              GLuint protected_video_type) {
   gles2::cmds::ScheduleDCLayerCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleDCLayerCHROMIUM>();
   if (c) {
-    c->Init(num_textures, background_color, edge_aa_mask, filter, shm_id,
-            shm_offset, protected_video_type);
+    c->Init(y_texture_id, uv_texture_id, z_order, content_x, content_y,
+            content_width, content_height, quad_x, quad_y, quad_width,
+            quad_height, transform_c1r1, transform_c2r1, transform_c1r2,
+            transform_c2r2, transform_tx, transform_ty, is_clipped, clip_x,
+            clip_y, clip_width, clip_height, protected_video_type);
   }
 }
 

@@ -3773,23 +3773,20 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_schedule_ca_layer',
     'unit_test': False,
   },
-  'ScheduleDCLayerSharedStateCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'client_test': False,
-    'cmd_args': 'GLfloat opacity, GLboolean is_clipped, '
-                'GLint z_order, GLuint shm_id, GLuint shm_offset',
-    'extension': 'CHROMIUM_schedule_ca_layer',
-  },
   'ScheduleDCLayerCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'client_test': False,
-    'cmd_args': 'GLsizei num_textures, GLuint background_color, '
-                'GLuint edge_aa_mask, GLuint filter, GLuint shm_id, '
-                'GLuint shm_offset, GLuint protected_video_type',
-
-    'extension': 'CHROMIUM_schedule_ca_layer',
+    'cmd_args': 'GLuint y_texture_id, GLuint uv_texture_id, GLint z_order, '
+                'GLint content_x, GLint content_y, GLint content_width, '
+                'GLint content_height, GLint quad_x, GLint quad_y, '
+                'GLint quad_width, GLint quad_height, '
+                'GLfloat transform_c1r1, GLfloat transform_c2r1, '
+                'GLfloat transform_c1r2, GLfloat transform_c2r2, '
+                'GLfloat transform_tx, GLfloat transform_ty, '
+                'GLboolean is_clipped, GLint clip_x, GLint clip_y, '
+                'GLint clip_width, GLint clip_height, '
+                'GLuint protected_video_type',
+    'decoder_func': 'DoScheduleDCLayerCHROMIUM',
+    'extension': 'CHROMIUM_schedule_dc_layer',
+    'unit_test': False,
   },
   'CommitOverlayPlanesCHROMIUM': {
     'impl_func': False,
