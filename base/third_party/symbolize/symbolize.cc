@@ -137,17 +137,20 @@ _END_GOOGLE_NAMESPACE_
 
 _START_GOOGLE_NAMESPACE_
 
-// Read up to "count" bytes from file descriptor "fd" into the buffer
-// starting at "buf" while handling short reads and EINTR.  On
-// success, return the number of bytes read.  Otherwise, return -1.
-static ssize_t ReadPersistent(const int fd, void *buf, const size_t count) {
+// Read up to "count" bytes from "offset" in the file pointed by file
+// descriptor "fd" into the buffer starting at "buf" while handling short reads
+// and EINTR.  On success, return the number of bytes read.  Otherwise, return
+// -1.
+static ssize_t ReadFromOffset(const int fd, void *buf, const size_t count,
+                              const off_t offset) {
   SAFE_ASSERT(fd >= 0);
   SAFE_ASSERT(count <= std::numeric_limits<ssize_t>::max());
   char *buf0 = reinterpret_cast<char *>(buf);
   ssize_t num_bytes = 0;
   while (num_bytes < count) {
     ssize_t len;
-    NO_INTR(len = read(fd, buf0 + num_bytes, count - num_bytes));
+    NO_INTR(len = pread(fd, buf0 + num_bytes, count - num_bytes,
+                        offset + num_bytes));
     if (len < 0) {  // There was an error other than EINTR.
       return -1;
     }
@@ -158,18 +161,6 @@ static ssize_t ReadPersistent(const int fd, void *buf, const size_t count) {
   }
   SAFE_ASSERT(num_bytes <= count);
   return num_bytes;
-}
-
-// Read up to "count" bytes from "offset" in the file pointed by file
-// descriptor "fd" into the buffer starting at "buf".  On success,
-// return the number of bytes read.  Otherwise, return -1.
-static ssize_t ReadFromOffset(const int fd, void *buf,
-                              const size_t count, const off_t offset) {
-  off_t off = lseek(fd, offset, SEEK_SET);
-  if (off == (off_t)-1) {
-    return -1;
-  }
-  return ReadPersistent(fd, buf, count);
 }
 
 // Try reading exactly "count" bytes from "offset" bytes in a file
@@ -210,6 +201,9 @@ GetSectionHeaderByType(const int fd, ElfW(Half) sh_num, const off_t sh_offset,
         (sizeof(buf) > num_bytes_left) ? num_bytes_left : sizeof(buf);
     const ssize_t len = ReadFromOffset(fd, buf, num_bytes_to_read,
                                        sh_offset + i * sizeof(buf[0]));
+    if (len == -1) {
+      return false;
+    }
     SAFE_ASSERT(len % sizeof(buf[0]) == 0);
     const ssize_t num_headers_in_buf = len / sizeof(buf[0]);
     SAFE_ASSERT(num_headers_in_buf <= sizeof(buf) / sizeof(buf[0]));
@@ -395,9 +389,14 @@ struct FileDescriptor {
 // and snprintf().
 class LineReader {
  public:
-  explicit LineReader(int fd, char *buf, int buf_len) : fd_(fd),
-    buf_(buf), buf_len_(buf_len), bol_(buf), eol_(buf), eod_(buf) {
-  }
+  explicit LineReader(int fd, char *buf, int buf_len, off_t offset)
+      : fd_(fd),
+        buf_(buf),
+        buf_len_(buf_len),
+        offset_(offset),
+        bol_(buf),
+        eol_(buf),
+        eod_(buf) {}
 
   // Read '\n'-terminated line from file.  On success, modify "bol"
   // and "eol", then return true.  Otherwise, return false.
@@ -406,10 +405,11 @@ class LineReader {
   // dropped.  It's an intentional behavior to make the code simple.
   bool ReadLine(const char **bol, const char **eol) {
     if (BufferIsEmpty()) {  // First time.
-      const ssize_t num_bytes = ReadPersistent(fd_, buf_, buf_len_);
+      const ssize_t num_bytes = ReadFromOffset(fd_, buf_, buf_len_, offset_);
       if (num_bytes <= 0) {  // EOF or error.
         return false;
       }
+      offset_ += num_bytes;
       eod_ = buf_ + num_bytes;
       bol_ = buf_;
     } else {
@@ -422,11 +422,12 @@ class LineReader {
         // Read text from file and append it.
         char * const append_pos = buf_ + incomplete_line_length;
         const int capacity_left = buf_len_ - incomplete_line_length;
-        const ssize_t num_bytes = ReadPersistent(fd_, append_pos,
-                                                 capacity_left);
+        const ssize_t num_bytes =
+            ReadFromOffset(fd_, append_pos, capacity_left, offset_);
         if (num_bytes <= 0) {  // EOF or error.
           return false;
         }
+        offset_ += num_bytes;
         eod_ = append_pos + num_bytes;
         bol_ = buf_;
       }
@@ -471,6 +472,7 @@ class LineReader {
   const int fd_;
   char * const buf_;
   const int buf_len_;
+  off_t offset_;
   char *bol_;
   char *eol_;
   const char *eod_;  // End of data in "buf_".
@@ -529,7 +531,7 @@ OpenObjectFileContainingPcAndGetStartAddress(uint64_t pc,
   // look into the symbol tables inside.
   char buf[1024];  // Big enough for line of sane /proc/self/maps
   int num_maps = 0;
-  LineReader reader(wrapped_maps_fd.get(), buf, sizeof(buf));
+  LineReader reader(wrapped_maps_fd.get(), buf, sizeof(buf), 0);
   while (true) {
     num_maps++;
     const char *cursor;
@@ -572,6 +574,7 @@ OpenObjectFileContainingPcAndGetStartAddress(uint64_t pc,
 
     // Determine the base address by reading ELF headers in process memory.
     ElfW(Ehdr) ehdr;
+    // Skip non-readable maps.
     if (flags_start[0] == 'r' &&
         ReadFromOffsetExact(mem_fd, &ehdr, sizeof(ElfW(Ehdr)), start_address) &&
         memcmp(ehdr.e_ident, ELFMAG, SELFMAG) == 0) {
@@ -612,8 +615,8 @@ OpenObjectFileContainingPcAndGetStartAddress(uint64_t pc,
       continue;  // We skip this map.  PC isn't in this map.
     }
 
-    // Check flags.  We are only interested in "r-x" maps.
-    if (memcmp(flags_start, "r-x", 3) != 0) {  // Not a "r-x" map.
+   // Check flags.  We are only interested in "r*x" maps.
+    if (flags_start[0] != 'r' || flags_start[2] != 'x') {
       continue;  // We skip this map.
     }
     ++cursor;  // Skip ' '.
@@ -664,7 +667,7 @@ OpenObjectFileContainingPcAndGetStartAddress(uint64_t pc,
 // bytes. Output will be truncated as needed, and a NUL character is always
 // appended.
 // NOTE: code from sandbox/linux/seccomp-bpf/demo.cc.
-char *itoa_r(intptr_t i, char *buf, size_t sz, int base, size_t padding) {
+static char *itoa_r(intptr_t i, char *buf, size_t sz, int base, size_t padding) {
   // Make sure we can write at least one NUL byte.
   size_t n = 1;
   if (n > sz)
@@ -727,7 +730,7 @@ char *itoa_r(intptr_t i, char *buf, size_t sz, int base, size_t padding) {
 
 // Safely appends string |source| to string |dest|.  Never writes past the
 // buffer size |dest_size| and guarantees that |dest| is null-terminated.
-void SafeAppendString(const char* source, char* dest, int dest_size) {
+static void SafeAppendString(const char* source, char* dest, int dest_size) {
   int dest_string_length = strlen(dest);
   SAFE_ASSERT(dest_string_length < dest_size);
   dest += dest_string_length;
@@ -740,7 +743,7 @@ void SafeAppendString(const char* source, char* dest, int dest_size) {
 // Converts a 64-bit value into a hex string, and safely appends it to |dest|.
 // Never writes past the buffer size |dest_size| and guarantees that |dest| is
 // null-terminated.
-void SafeAppendHexNumber(uint64_t value, char* dest, int dest_size) {
+static void SafeAppendHexNumber(uint64_t value, char* dest, int dest_size) {
   // 64-bit numbers in hex can have up to 16 digits.
   char buf[17] = {'\0'};
   SafeAppendString(itoa_r(value, buf, sizeof(buf), 16, 0), dest, dest_size);
@@ -846,6 +849,71 @@ static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
       DemangleInplace(out, out_size);
       return true;
     }
+  }
+  return false;
+}
+
+_END_GOOGLE_NAMESPACE_
+
+#elif defined(OS_WINDOWS) || defined(OS_CYGWIN)
+
+#include <windows.h>
+#include <dbghelp.h>
+
+#ifdef _MSC_VER
+#pragma comment(lib, "dbghelp")
+#endif
+
+_START_GOOGLE_NAMESPACE_
+
+class SymInitializer {
+public:
+  HANDLE process;
+  bool ready;
+  SymInitializer() : process(NULL), ready(false) {
+    // Initialize the symbol handler.
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms680344(v=vs.85).aspx
+    process = GetCurrentProcess();
+    // Defer symbol loading.
+    // We do not request undecorated symbols with SYMOPT_UNDNAME
+    // because the mangling library calls UnDecorateSymbolName.
+    SymSetOptions(SYMOPT_DEFERRED_LOADS);
+    if (SymInitialize(process, NULL, true)) {
+      ready = true;
+    }
+  }
+  ~SymInitializer() {
+    SymCleanup(process);
+    // We do not need to close `HANDLE process` because it's a "pseudo handle."
+  }
+private:
+  SymInitializer(const SymInitializer&);
+  SymInitializer& operator=(const SymInitializer&);
+};
+
+static ATTRIBUTE_NOINLINE bool SymbolizeAndDemangle(void *pc, char *out,
+                                                      int out_size) {
+  const static SymInitializer symInitializer;
+  if (!symInitializer.ready) {
+    return false;
+  }
+  // Resolve symbol information from address.
+  // https://msdn.microsoft.com/en-us/library/windows/desktop/ms680578(v=vs.85).aspx
+  char buf[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
+  SYMBOL_INFO *symbol = reinterpret_cast<SYMBOL_INFO *>(buf);
+  symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+  symbol->MaxNameLen = MAX_SYM_NAME;
+  // We use the ANSI version to ensure the string type is always `char *`.
+  // This could break if a symbol has Unicode in it.
+  BOOL ret = SymFromAddr(symInitializer.process,
+                         reinterpret_cast<DWORD64>(pc), 0, symbol);
+  if (ret == 1 && static_cast<int>(symbol->NameLen) < out_size) {
+    // `NameLen` does not include the null terminating character.
+    strncpy(out, symbol->Name, static_cast<size_t>(symbol->NameLen) + 1);
+    out[static_cast<size_t>(symbol->NameLen)] = '\0';
+    // Symbolization succeeded.  Now we try to demangle the symbol.
+    DemangleInplace(out, out_size);
+    return true;
   }
   return false;
 }

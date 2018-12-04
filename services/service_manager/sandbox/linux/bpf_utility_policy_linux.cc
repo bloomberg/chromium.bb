@@ -38,7 +38,6 @@ ResultExpr UtilityProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_ugetrlimit:
 #endif
     case __NR_mremap:  // https://crbug.com/546204
-    case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sysinfo:
     case __NR_times:

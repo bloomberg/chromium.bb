@@ -343,6 +343,7 @@ _BANNED_CPP_FUNCTIONS = (
       ),
       True,
       (
+          r'^base[\\/]third_party[\\/]symbolize[\\/].*',
           r'^third_party[\\/]abseil-cpp[\\/].*',
       ),
     ),
@@ -3171,7 +3172,7 @@ def _CheckForInvalidOSMacrosInFile(input_api, f):
 def _CheckForInvalidOSMacros(input_api, output_api):
   """Check all affected files for invalid OS macros."""
   bad_macros = []
-  for f in input_api.AffectedFiles():
+  for f in input_api.AffectedSourceFiles(None):
     if not f.LocalPath().endswith(('.py', '.js', '.html', '.css', '.md')):
       bad_macros.extend(_CheckForInvalidOSMacrosInFile(input_api, f))
 
