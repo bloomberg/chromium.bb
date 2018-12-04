@@ -16,7 +16,7 @@
  *   requestOrigin: string
  * }}
  */
-var OfflinePage;
+let OfflinePage;
 
 /**
  * @typedef {{
@@ -29,7 +29,7 @@ var OfflinePage;
  *   requestOrigin: string
  * }}
  */
-var SavePageRequest;
+let SavePageRequest;
 
 /**
  * @typedef {{
@@ -38,7 +38,7 @@ var SavePageRequest;
  *   prefetchIsLogging: boolean
  * }}
  */
-var IsLogging;
+let IsLogging;
 
 cr.define('offlineInternals', function() {
   /** @interface */

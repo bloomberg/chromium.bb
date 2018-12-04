@@ -6,9 +6,9 @@ cr.define('signin.emailConfirmation', function() {
   'use strict';
 
   function initialize() {
-    var args = JSON.parse(chrome.getVariableValue('dialogArguments'));
-    var lastEmail = args.lastEmail;
-    var newEmail = args.newEmail;
+    const args = JSON.parse(chrome.getVariableValue('dialogArguments'));
+    const lastEmail = args.lastEmail;
+    const newEmail = args.newEmail;
     $('dialogTitle').textContent =
         loadTimeData.getStringF('signinEmailConfirmationTitle', lastEmail);
     $('createNewUserRadioButtonSubtitle').textContent = loadTimeData.getStringF(

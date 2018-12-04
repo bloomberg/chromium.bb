@@ -12,8 +12,8 @@ cr.define('sync.confirmation', function() {
    * @private
    */
   function getConsentConfirmation(path) {
-    var consentConfirmation;
-    for (var element of path) {
+    let consentConfirmation;
+    for (const element of path) {
       if (element.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
           element.hasAttribute('consent-confirmation')) {
         return element.innerHTML.trim();
@@ -25,7 +25,7 @@ cr.define('sync.confirmation', function() {
 
   /** @return {!Array<string>} Text of the consent description elements. */
   function getConsentDescription() {
-    var consentDescription =
+    const consentDescription =
         Array.from(document.querySelectorAll('[consent-description]'))
             .filter(element => element.clientWidth * element.clientHeight > 0)
             .map(element => element.innerHTML.trim());

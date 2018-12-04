@@ -78,8 +78,8 @@ TtsExtension.prototype = {
    */
   init: function() {
     // Get voices from manifest.
-    var voices = chrome.app.getDetails().tts_engine.voices;
-    for (var i = 0; i < voices.length; i++) {
+    const voices = chrome.app.getDetails().tts_engine.voices;
+    for (let i = 0; i < voices.length; i++) {
       this.voiceNameToLangAndGender_[voices[i].voice_name] = {
         lang: voices[i].lang,
         gender: voices[i].gender
@@ -128,8 +128,8 @@ TtsExtension.prototype = {
         callback: callback
       };
 
-      var lang = options.lang;
-      var gender = options.gender;
+      let lang = options.lang;
+      let gender = options.gender;
       if (options.voiceName) {
         lang = this.voiceNameToLangAndGender_[options.voiceName].lang;
         gender = this.voiceNameToLangAndGender_[options.voiceName].gender;
@@ -142,10 +142,10 @@ TtsExtension.prototype = {
       // If it's not in the map, it doesn't matter - the language will
       // be used directly. This is only used for languages where more
       // than one gender is actually available.
-      var key = lang.toLowerCase() + '-' + gender;
-      var voiceName = this.LANG_AND_GENDER_TO_VOICE_NAME_[key];
+      const key = lang.toLowerCase() + '-' + gender;
+      const voiceName = this.LANG_AND_GENDER_TO_VOICE_NAME_[key];
 
-      var url = this.SPEECH_SERVER_URL_;
+      let url = this.SPEECH_SERVER_URL_;
       chrome.systemPrivate.getApiKey(
           (function(key) {
             url += '&key=' + key;

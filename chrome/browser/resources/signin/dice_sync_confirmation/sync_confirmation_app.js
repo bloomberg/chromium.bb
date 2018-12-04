@@ -76,7 +76,7 @@ Polymer({
    * @private
    */
   getConsentConfirmation_: function(path) {
-    for (var element of path) {
+    for (const element of path) {
       if (element.nodeType !== Node.DOCUMENT_FRAGMENT_NODE &&
           element.hasAttribute('consent-confirmation')) {
         return element.innerHTML.trim();
@@ -88,7 +88,7 @@ Polymer({
 
   /** @return {!Array<string>} Text of the consent description elements. */
   getConsentDescription_: function() {
-    var consentDescription =
+    const consentDescription =
         Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
             .filter(element => element.clientWidth * element.clientHeight > 0)
             .map(element => element.innerHTML.trim());

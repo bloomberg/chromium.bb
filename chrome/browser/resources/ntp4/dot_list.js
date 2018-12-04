@@ -13,14 +13,14 @@ cr.define('ntp', function() {
    * Live list of the navigation dots.
    * @type {!NodeList|undefined}
    */
-  var navDots;
+  let navDots;
 
   /**
    * Creates a new DotList object.
    * @constructor
    * @extends {HTMLUListElement}
    */
-  var DotList = cr.ui.define('ul');
+  const DotList = cr.ui.define('ul');
 
   DotList.prototype = {
     __proto__: HTMLUListElement.prototype,
@@ -47,7 +47,7 @@ cr.define('ntp', function() {
       if (hasKeyModifiers(e))
         return;
 
-      var direction = 0;
+      let direction = 0;
       if (e.key == 'ArrowLeft')
         direction = -1;
       else if (e.key == 'ArrowRight')
@@ -55,11 +55,11 @@ cr.define('ntp', function() {
       else
         return;
 
-      var focusDot = this.querySelector('.dot:focus');
+      const focusDot = this.querySelector('.dot:focus');
       if (!focusDot)
         return;
-      var focusIndex = Array.prototype.indexOf.call(navDots, focusDot);
-      var newFocusIndex = focusIndex + direction;
+      const focusIndex = Array.prototype.indexOf.call(navDots, focusDot);
+      let newFocusIndex = focusIndex + direction;
       if (focusIndex == newFocusIndex)
         return;
 

@@ -8,7 +8,7 @@
  */
 
 /* Stack of events that has been logged. */
-var eventLog = [];
+const eventLog = [];
 
 /**
  * Logs an event.
