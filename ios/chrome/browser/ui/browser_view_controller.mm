@@ -4048,7 +4048,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)loadURLWithParams:(const ChromeLoadParams&)chromeParams {
   web::NavigationManager::WebLoadParams params = chromeParams.web_params;
   if (chromeParams.disposition == WindowOpenDisposition::SWITCH_TO_TAB) {
-    [self switchToTabWithURL:params.url];
+    [self switchToTabWithParams:params];
     return;
   }
 
@@ -4570,7 +4570,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [nativeController focusFakebox];
 }
 
-- (void)switchToTabWithURL:(const GURL&)URL {
+- (void)switchToTabWithParams:
+    (const web::NavigationManager::WebLoadParams&)params {
+  const GURL& URL = params.url;
+
   NSInteger newWebStateIndex = 0;
   WebStateList* webStateList = self.tabModel.webStateList;
   NSInteger currentWebStateIndex = webStateList->active_index();
@@ -4586,8 +4589,28 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     newWebStateIndex++;
   }
 
-  if (newWebStateIndex >= webStateList->count())
+  BOOL isNTPWithoutHistory =
+      IsVisibleURLNewTabPage(currentWebState) &&
+      currentWebState->GetNavigationManager()->GetItemCount() <= 1;
+
+  if (newWebStateIndex >= webStateList->count()) {
+    // If the tab containing the URL has been closed.
+    if (isNTPWithoutHistory) {
+      // It is NTP, just load the URL.
+      ChromeLoadParams currentPageParams(params);
+      [self loadURLWithParams:currentPageParams];
+    } else {
+      // Open the URL in foreground.
+      OpenNewTabCommand* newTabCommand =
+          [[OpenNewTabCommand alloc] initWithURL:URL
+                                        referrer:params.referrer
+                                     inIncognito:_isOffTheRecord
+                                    inBackground:NO
+                                        appendTo:kCurrentTab];
+      [self.dispatcher openURLInNewTab:newTabCommand];
+    }
     return;
+  }
 
   web::WebState* webStateBeingActivated =
       webStateList->GetWebStateAt(newWebStateIndex);
@@ -4637,10 +4660,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
   // Close the tab if it is NTP with no back/forward history to avoid having
   // empty tabs.
-  if (IsVisibleURLNewTabPage(currentWebState) &&
-      currentWebState->GetNavigationManager() &&
-      !currentWebState->GetNavigationManager()->CanGoBack() &&
-      !currentWebState->GetNavigationManager()->CanGoForward()) {
+  if (isNTPWithoutHistory) {
     webStateList->CloseWebStateAt(currentWebStateIndex,
                                   WebStateList::CLOSE_USER_ACTION);
   }
