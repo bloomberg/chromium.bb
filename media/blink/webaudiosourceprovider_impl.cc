@@ -130,8 +130,13 @@ void WebAudioSourceProviderImpl::SetClient(
   base::AutoLock auto_lock(sink_lock_);
   if (client) {
     // Detach the audio renderer from normal playback.
-    if (sink_)
+    if (sink_) {
       sink_->Stop();
+
+      // It's not possible to resume an element after disconnection, so just
+      // drop the sink entirely for now.
+      sink_ = nullptr;
+    }
 
     // The client will now take control by calling provideInput() periodically.
     client_ = client;
@@ -148,15 +153,9 @@ void WebAudioSourceProviderImpl::SetClient(
     return;
   }
 
-  // Restore normal playback.
+  // Drop client, but normal playback can't be restored. This is okay, the only
+  // way to disconnect a client is internally at time of destruction.
   client_ = nullptr;
-  if (sink_) {
-    sink_->SetVolume(volume_);
-    if (state_ >= kStarted)
-      sink_->Start();
-    if (state_ >= kPlaying)
-      sink_->Play();
-  }
 }
 
 void WebAudioSourceProviderImpl::ProvideInput(
@@ -198,7 +197,8 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
 
   tee_filter_->Initialize(renderer, params.channels(), params.sample_rate());
 
-  sink_->Initialize(params, tee_filter_.get());
+  if (sink_)
+    sink_->Initialize(params, tee_filter_.get());
 
   if (set_format_cb_)
     std::move(set_format_cb_).Run();
@@ -209,14 +209,14 @@ void WebAudioSourceProviderImpl::Start() {
   DCHECK(tee_filter_);
   DCHECK_EQ(state_, kStopped);
   state_ = kStarted;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Start();
 }
 
 void WebAudioSourceProviderImpl::Stop() {
   base::AutoLock auto_lock(sink_lock_);
   state_ = kStopped;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Stop();
 }
 
@@ -224,7 +224,7 @@ void WebAudioSourceProviderImpl::Play() {
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStarted);
   state_ = kPlaying;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Play();
 }
 
@@ -232,7 +232,7 @@ void WebAudioSourceProviderImpl::Pause() {
   base::AutoLock auto_lock(sink_lock_);
   DCHECK(state_ == kPlaying || state_ == kStarted);
   state_ = kStarted;
-  if (!client_)
+  if (!client_ && sink_)
     sink_->Pause();
 }
 
@@ -257,10 +257,12 @@ void WebAudioSourceProviderImpl::GetOutputDeviceInfoAsync(
     return;
   }
 
+  // Just return empty hardware parameters. When a |client_| is attached, the
+  // underlying audio renderer will prefer the media parameters. See
+  // IsOptimizedForHardwareParameters() for more details.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(info_cb),
-                     OutputDeviceInfo(OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND)));
+      FROM_HERE, base::BindOnce(std::move(info_cb),
+                                OutputDeviceInfo(OUTPUT_DEVICE_STATUS_OK)));
 }
 
 bool WebAudioSourceProviderImpl::IsOptimizedForHardwareParameters() {

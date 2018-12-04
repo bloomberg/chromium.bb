@@ -114,19 +114,17 @@ class WebAudioSourceProviderImplTest
 };
 
 TEST_F(WebAudioSourceProviderImplTest, SetClientBeforeInitialize) {
-  // setClient() with a NULL client should do nothing if no client is set.
-  wasp_impl_->SetClient(NULL);
+  // setClient() with a nullptr client should do nothing if no client is set.
+  wasp_impl_->SetClient(nullptr);
 
   // If |mock_sink_| is not null, it should be stopped during setClient(this).
   if (mock_sink_)
-    EXPECT_CALL(*mock_sink_.get(), Stop()).Times(2);
+    EXPECT_CALL(*mock_sink_.get(), Stop());
 
   wasp_impl_->SetClient(this);
   base::RunLoop().RunUntilIdle();
 
-  if (mock_sink_)
-    EXPECT_CALL(*mock_sink_.get(), SetVolume(1)).Times(1);
-  wasp_impl_->SetClient(NULL);
+  wasp_impl_->SetClient(nullptr);
   base::RunLoop().RunUntilIdle();
 
   wasp_impl_->SetClient(this);
@@ -155,34 +153,10 @@ TEST_F(WebAudioSourceProviderImplTest, SinkMethods) {
   SetClient(this);
   CallAllSinkMethodsAndVerify(false);
 
-  // Removing the client should cause WASP to revert to the underlying sink.
-  EXPECT_CALL(*mock_sink_, SetVolume(kTestVolume));
-  SetClient(NULL);
-  CallAllSinkMethodsAndVerify(true);
-}
-
-// Verify underlying sink state is restored after client removal.
-TEST_F(WebAudioSourceProviderImplTest, SinkStateRestored) {
-  wasp_impl_->Initialize(params_, &fake_callback_);
-
-  // Verify state set before the client is set propagates back afterward.
-  EXPECT_CALL(*mock_sink_, Start());
-  wasp_impl_->Start();
-  SetClient(this);
-
-  EXPECT_CALL(*mock_sink_, SetVolume(1.0));
-  EXPECT_CALL(*mock_sink_, Start());
-  SetClient(NULL);
-
-  // Verify state set while the client was attached propagates back afterward.
-  SetClient(this);
-  wasp_impl_->Play();
-  wasp_impl_->SetVolume(kTestVolume);
-
-  EXPECT_CALL(*mock_sink_, SetVolume(kTestVolume));
-  EXPECT_CALL(*mock_sink_, Start());
-  EXPECT_CALL(*mock_sink_, Play());
-  SetClient(NULL);
+  // Removing the client should cause WASP to revert to the underlying sink;
+  // this shouldn't crash, but shouldn't do anything either.
+  SetClient(nullptr);
+  CallAllSinkMethodsAndVerify(false);
 }
 
 // Test the AudioRendererSink state machine and its effects on provideInput().
