@@ -88,6 +88,33 @@ using TimingField = page_load_metrics::PageLoadMetricsTestWaiter::TimingField;
 using WebFeature = blink::mojom::WebFeature;
 using testing::UnorderedElementsAre;
 
+namespace {
+
+constexpr char kCacheablePathPrefix[] = "/cacheable";
+
+std::unique_ptr<net::test_server::HttpResponse> HandleCachableRequestHandler(
+    const net::test_server::HttpRequest& request) {
+  if (!base::StartsWith(request.relative_url, kCacheablePathPrefix,
+                        base::CompareCase::SENSITIVE)) {
+    return nullptr;
+  }
+
+  if (request.headers.find("If-None-Match") != request.headers.end()) {
+    return std::make_unique<net::test_server::RawHttpResponse>(
+        "HTTP/1.1 304 Not Modified", "");
+  }
+
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_code(net::HTTP_OK);
+  response->set_content_type("text/html");
+  response->AddCustomHeader("cache-control", "max-age=60");
+  response->AddCustomHeader("etag", "foobar");
+  response->set_content("hi");
+  return std::move(response);
+}
+
+}  // namespace
+
 class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
   PageLoadMetricsBrowserTest() {
@@ -100,6 +127,8 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+    embedded_test_server()->RegisterRequestHandler(
+        base::BindRepeating(&HandleCachableRequestHandler));
   }
 
   void PreRunTestOnMainThread() override {
@@ -226,6 +255,48 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
   // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
   // have been recorded.
   EXPECT_FALSE(NoPageLoadMetricsRecorded());
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, CachedPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url = embedded_test_server()->GetURL(kCacheablePathPrefix);
+
+  // Navigate to the |url| to cache the main resource.
+  ui_test_utils::NavigateToURL(browser(), url);
+  NavigateToUntrackedUrl();
+
+  using PageLoad = ukm::builders::PageLoad;
+  auto entries =
+      test_ukm_recorder_->GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto& kv : entries) {
+    auto* const uncached_load_entry = kv.second.get();
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(uncached_load_entry, url);
+
+    EXPECT_FALSE(test_ukm_recorder_->EntryHasMetric(uncached_load_entry,
+                                                    PageLoad::kWasCachedName));
+  }
+
+  // Reset the UKM recorder so it would only contain the cached pageload.
+  test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+
+  // Second navigation to the |url| should hit cache.
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Force navigation to another page, which should force logging of histograms
+  // persisted at the end of the page load lifetime.
+  NavigateToUntrackedUrl();
+
+  entries = test_ukm_recorder_->GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  for (const auto& kv : entries) {
+    auto* const cached_load_entry = kv.second.get();
+    test_ukm_recorder_->ExpectEntrySourceHasUrl(cached_load_entry, url);
+
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(cached_load_entry,
+                                                   PageLoad::kWasCachedName));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {

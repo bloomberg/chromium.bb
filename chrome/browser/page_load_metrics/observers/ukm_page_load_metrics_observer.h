@@ -105,6 +105,9 @@ class UkmPageLoadMetricsObserver
   // True if the page started hidden, or ever became hidden.
   bool was_hidden_ = false;
 
+  // True if the page main resource was served from disk cache.
+  bool was_cached_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(UkmPageLoadMetricsObserver);
 };
 
