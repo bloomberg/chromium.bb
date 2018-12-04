@@ -55,7 +55,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
   void RequestAudioFocus(mojom::MediaSessionInfoPtr session_info,
                          mojom::AudioFocusType type,
                          RequestAudioFocusCallback callback) override {
-    session_info_ = std::move(session_info);
+    SetSessionInfo(std::move(session_info));
 
     if (IsActive() && owner_->IsSessionOnTopOfAudioFocusStack(id(), type)) {
       // Early returning if |media_session| is already on top (has focus) and is
@@ -84,7 +84,7 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
   }
 
   void MediaSessionInfoChanged(mojom::MediaSessionInfoPtr info) override {
-    session_info_ = std::move(info);
+    SetSessionInfo(std::move(info));
   }
 
   void GetRequestId(GetRequestIdCallback callback) override {
@@ -120,6 +120,16 @@ class AudioFocusManager::StackRow : public mojom::AudioFocusRequestClient {
   }
 
  private:
+  void SetSessionInfo(mojom::MediaSessionInfoPtr session_info) {
+    bool is_controllable_changed =
+        session_info_->is_controllable != session_info->is_controllable;
+
+    session_info_ = std::move(session_info);
+
+    if (is_controllable_changed)
+      owner_->MaybeUpdateActiveSession();
+  }
+
   void OnConnectionError() {
     // Since we have multiple pathways that can call |OnConnectionError| we
     // should use the |encountered_error_| bit to make sure we abandon focus
@@ -404,7 +414,7 @@ void AudioFocusManager::MaybeUpdateActiveSession() {
   StackRow* active = nullptr;
 
   for (auto& row : base::Reversed(audio_focus_stack_)) {
-    if (row->audio_focus_type() != mojom::AudioFocusType::kGain)
+    if (!row->info()->is_controllable)
       continue;
 
     active = row.get();

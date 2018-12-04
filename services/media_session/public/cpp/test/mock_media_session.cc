@@ -140,6 +140,11 @@ void MockMediaSession::Stop() {
   SetState(mojom::MediaSessionInfo::SessionState::kInactive);
 }
 
+void MockMediaSession::SetIsControllable(bool value) {
+  is_controllable_ = value;
+  NotifyObservers();
+}
+
 void MockMediaSession::AbandonAudioFocusFromClient() {
   DCHECK(afr_client_.is_bound());
   afr_client_->AbandonAudioFocus();
@@ -270,6 +275,8 @@ mojom::MediaSessionInfoPtr MockMediaSession::GetMediaSessionInfoSync() const {
   info->playback_state = mojom::MediaPlaybackState::kPaused;
   if (state_ == mojom::MediaSessionInfo::SessionState::kActive)
     info->playback_state = mojom::MediaPlaybackState::kPlaying;
+
+  info->is_controllable = is_controllable_;
 
   return info;
 }

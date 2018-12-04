@@ -993,6 +993,7 @@ TEST_P(AudioFocusManagerTest,
 TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
   test::MockMediaSession media_session_1;
   test::MockMediaSession media_session_2;
+  media_session_1.SetIsControllable(true);
 
   {
     std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
@@ -1008,7 +1009,7 @@ TEST_P(AudioFocusManagerTest, ObserverActiveSessionChanged) {
   {
     std::unique_ptr<test::TestAudioFocusObserver> observer = CreateObserver();
 
-    RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGainTransient);
+    RequestAudioFocus(&media_session_2, mojom::AudioFocusType::kGain);
     EXPECT_EQ(mojom::MediaSessionInfo::SessionState::kActive,
               GetState(&media_session_2));
 
