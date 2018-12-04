@@ -30,7 +30,7 @@ if (current_cpu == "x86") {
   }
 } else {
   if (is_chromeos) {
-    # ChromeOS gets highbd vp9 but other arm targets do not.
+    # ChromeOS on arm64 has an extra switch in generate_gni.sh
     cpu_arch_full = "chromeos-arm64"
   } else {
     cpu_arch_full = current_cpu

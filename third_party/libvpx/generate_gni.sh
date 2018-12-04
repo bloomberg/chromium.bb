@@ -353,6 +353,7 @@ gen_config_files linux/chromeos-arm64 "--target=armv8-linux-gcc ${all_platforms}
 gen_config_files linux/mipsel "--target=mips32-linux-gcc ${all_platforms}"
 gen_config_files linux/mips64el "--target=mips64-linux-gcc ${all_platforms}"
 gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
+gen_config_files win/arm64 "--target=arm64-win64-vs15 ${all_platforms} ${HIGHBD}"
 gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platforms}"
 gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
 gen_config_files mac/ia32 "--target=x86-darwin9-gcc ${all_platforms} ${x86_platforms}"
@@ -377,6 +378,7 @@ lint_config linux/chromeos-arm64
 lint_config linux/mipsel
 lint_config linux/mips64el
 lint_config linux/generic
+lint_config win/arm64
 lint_config win/ia32
 lint_config win/x64
 lint_config mac/ia32
@@ -405,6 +407,7 @@ gen_rtcd_header linux/chromeos-arm64 armv8
 gen_rtcd_header linux/mipsel mipsel
 gen_rtcd_header linux/mips64el mips64el
 gen_rtcd_header linux/generic generic
+gen_rtcd_header win/arm64 armv8
 gen_rtcd_header win/ia32 x86 "${require_sse2}"
 gen_rtcd_header win/x64 x86_64
 gen_rtcd_header mac/ia32 x86 "${require_sse2}"
