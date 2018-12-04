@@ -86,8 +86,6 @@ void DelegatedFrameHost::WasShown(
         CreateTabSwitchingTimeRecorder(base::TimeTicks::Now()));
   }
 
-  frame_evictor_->SetVisible(true);
-
   // Use the default deadline to synchronize web content with browser UI.
   // TODO(fsamuel): Investigate if there is a better deadline to use here.
   EmbedSurface(new_local_surface_id, new_dip_size,
