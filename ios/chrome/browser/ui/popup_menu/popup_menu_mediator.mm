@@ -218,6 +218,11 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   [self updatePopupMenu];
 }
 
+- (void)webStateDidChangeBackForwardState:(web::WebState*)webState {
+  DCHECK_EQ(_webState, webState);
+  [self updatePopupMenu];
+}
+
 - (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState {
   DCHECK_EQ(_webState, webState);
   [self updatePopupMenu];
