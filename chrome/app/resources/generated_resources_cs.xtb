@@ -479,7 +479,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1680849702532889074">Při instalaci vaší aplikace pro Linux došlo k chybě.</translation>
 <translation id="16815041330799488">Nepovolovat webům přístup k textu a obrázkům zkopírovaným do schránky</translation>
 <translation id="1682548588986054654">Nové anonymní okno</translation>
-<translation id="1683850629661177840">Režim Lite teď zrychluje procházení všech stránek, včetně stránek HTTPS.</translation>
 <translation id="168715261339224929">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci.</translation>
 <translation id="1688867105868176567">Vymazat data webu?</translation>
 <translation id="1688935057616748272">Zadejte písmeno</translation>
@@ -717,7 +716,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2048653237708779538">Akce není k dispozici</translation>
 <translation id="204914487372604757">Vytvořit zástupce</translation>
 <translation id="2050339315714019657">Na výšku</translation>
-<translation id="2052369079215022979">Spravováno vaší organizací</translation>
 <translation id="2053312383184521053">Údaje o stavu nečinnosti</translation>
 <translation id="205560151218727633">Logo Asistenta Google</translation>
 <translation id="2058456167109518507">Bylo zjištěno zařízení</translation>
@@ -3863,7 +3861,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6916590542764765824">Spravovat rozšíření</translation>
 <translation id="6920989436227028121">Otevřít jako běžnou kartu</translation>
 <translation id="6921709132208495314">Přestat na této stránce využívat data</translation>
-<translation id="6922128026973287222">Pomocí Spořiče dat od Googlu můžete data ukládat a procházet rychleji. Kliknutím zobrazíte další informace.</translation>
 <translation id="6923132443355966645">Posouvání/kliknutí</translation>
 <translation id="6923633482430812883">Při připojování sdíleného úložiště došlo k chybě. Zkontrolujte, zda souborový server, ke kterému se připojujete, podporuje protokol SMBv2 nebo novější.</translation>
 <translation id="6930242544192836755">Délka</translation>

@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">S'ha produït un error en instal·lar l'aplicació per a Linux.</translation>
 <translation id="16815041330799488">No permetis que els llocs web vegin el text i les imatges copiats al porta-retalls</translation>
 <translation id="1682548588986054654">Finestra d'incògnit nova</translation>
-<translation id="1683850629661177840">Ara el mode bàsic agilitza la navegació en totes les pàgines, també si estan en format HTTPS.</translation>
 <translation id="168715261339224929">Per accedir a les adreces d'interès des de tots els dispositius, activa la sincronització.</translation>
 <translation id="1688867105868176567">Vols esborrar les dades del lloc web?</translation>
 <translation id="1688935057616748272">Escriu una lletra</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">Acció no disponible</translation>
 <translation id="204914487372604757">Crea la drecera</translation>
 <translation id="2050339315714019657">Vertical</translation>
-<translation id="2052369079215022979">Gestionat per la teva organització</translation>
 <translation id="2053312383184521053">Dades de l'estat d'inactivitat</translation>
 <translation id="205560151218727633">Logotip de l'Assistent de Google</translation>
 <translation id="2058456167109518507">S'ha detectat un dispositiu</translation>
@@ -3866,7 +3864,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6916590542764765824">Gestiona les extensions</translation>
 <translation id="6920989436227028121">Obre-ho com a pestanya normal</translation>
 <translation id="6921709132208495314">Deixa d'utilitzar dades en aquesta pàgina</translation>
-<translation id="6922128026973287222">Deseu les dades i agilitzeu la navegació amb Economitzador de dades de Google. Feu clic per obtenir més informació.</translation>
 <translation id="6923132443355966645">Desplaça't / fes clic</translation>
 <translation id="6923633482430812883">S'ha produït un error en activar l'ús compartit. Comprova que el servidor de fitxers a què t'estàs connectant admeti el protocol SMB 2 o versions posteriors.</translation>
 <translation id="6930242544192836755">Durada</translation>

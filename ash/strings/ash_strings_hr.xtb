@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Odaberite mogu li web-lokacije upotrebljavati usluge lokacije odnosno mikrofon, fotoaparat ili druge značajke uređaja</translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
 <translation id="2803734122639935495">Za otključavanje unesite zaporku</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">Još je jedna tipkovnica povezana s ovim uređajem otkad ste se posljednji put prijavili. Provjerite je li riječ o pouzdanoj tipkovnici prije nego što je upotrijebite.</translation>
 <translation id="3477079411857374384">Control-Shift-razmaknica</translation>
 <translation id="3510164367642747937">Istakni pokazivač miša</translation>
-<translation id="3510503721818156981">Chromebook je povezan s novim telefonom</translation>
 <translation id="3513798432020909783">Računom upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Vratite na "<ph name="FROM_LOCALE" />" (zahtijeva ponovno pokretanje)</translation>
 <translation id="3595596368722241419">Baterija je puna</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">Diktat</translation>
 <translation id="4261870227682513959">Prikaz postavki obavijesti. Obavijesti su isključene</translation>
 <translation id="4269883910223712419">Administrator ovog uređaja ima sljedeće mogućnosti:</translation>
-<translation id="4274921305979314545">Povežite svoj Chromebook sa svojim telefonom</translation>
 <translation id="4279490309300973883">Zrcaljenje</translation>
 <translation id="4292681942966152062">Aktiviranje mreže <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">Uređaji</translation>
 <translation id="4659419629803378708">ChromeVox omogućen</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
+<translation id="476166673298332917">Administrator uređaja može pratiti vašu aktivnost pregledavanja.</translation>
 <translation id="4774338217796918551">Vrati se sutra u <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Zaporka za adresu <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google asistent nije dostupan u demosesiji.</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Uključi</translation>
-<translation id="592343074608792716">Ovaj Chromebook i vaš telefon povezat će se automatski</translation>
 <translation id="5947494881799873997">Vrati</translation>
 <translation id="595202126637698455">Omogućeno je praćenje izvedbe</translation>
 <translation id="5957083217255311415">Mobilni su podaci isključeni.</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">Uključeno je praćenje izvedbe</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
-<translation id="6814658242098378692">Upravljanje aplikacijama, proširenjima i temama</translation>
 <translation id="6820676911989879663">Odmorite se!</translation>
 <translation id="683971173229319003">Pretraživanje + L</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +374,6 @@
 <translation id="7564874036684306347">Premještanje prozora na drugu radnu površinu može dovesti do neočekivanog ponašanja. Daljnje obavijesti, prozori i dijaloški okviri mogu se podijeliti između radnih površina.</translation>
 <translation id="7569509451529460200">Brajica i ChromeVox omogućeni</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
-<translation id="7604942372593434070">Pristup aktivnosti pregledavanja</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlasnik)</translation>
 <translation id="7647488630410863958">Otključajte uređaj da biste vidjeli obavijesti</translation>
 <translation id="7649070708921625228">Pomoć</translation>

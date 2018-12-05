@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">A apărut o eroare în timpul instalării aplicației Linux.</translation>
 <translation id="16815041330799488">Nu permite site-urilor să vadă textul și imaginile copiate în clipboard</translation>
 <translation id="1682548588986054654">Fereastră &amp;incognito nouă</translation>
-<translation id="1683850629661177840">Modul Lite accelerează acum navigarea pe toate paginile, inclusiv HTTPS.</translation>
 <translation id="168715261339224929">Pentru a accesa marcajele pe toate dispozitivele, activează sincronizarea.</translation>
 <translation id="1688867105868176567">Ștergi datele site-ului?</translation>
 <translation id="1688935057616748272">Tastează o literă</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">Acțiunea nu este disponibilă</translation>
 <translation id="204914487372604757">Creează o comandă rapidă</translation>
 <translation id="2050339315714019657">Portret</translation>
-<translation id="2052369079215022979">Gestionat de organizația ta</translation>
 <translation id="2053312383184521053">Date pentru starea inactivă</translation>
 <translation id="205560151218727633">Sigla Asistentului Google</translation>
 <translation id="2058456167109518507">S-a detectat un dispozitiv</translation>
@@ -3868,7 +3866,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6916590542764765824">Gestionează extensiile</translation>
 <translation id="6920989436227028121">Deschide ca filă obișnuită</translation>
 <translation id="6921709132208495314">Nu mai folosi datele din această pagină</translation>
-<translation id="6922128026973287222">Economisește date și navighează mai rapid folosind Economizorul de date Google. Dă clic pentru a afla mai multe.</translation>
 <translation id="6923132443355966645">Derulează / Dă clic</translation>
 <translation id="6923633482430812883">Eroare la instalarea dispozitivului de stocare în rețea. Te rugăm să verifici dacă serverul de fișiere la care te conectezi acceptă SMBv2 sau versiuni ulterioare.</translation>
 <translation id="6930242544192836755">Durată</translation>

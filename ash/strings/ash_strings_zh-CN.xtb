@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
-<translation id="2790844815106384441">选择是否允许网站使用位置信息服务或使用此设备的麦克风/摄像头/其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2803734122639935495">要解锁此设备，请输入您的密码</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">这部设备当前连接的键盘已不同于您上次登录时所用的键盘。请确保您信任此键盘，然后再使用它。</translation>
 <translation id="3477079411857374384">Ctrl+Shift+空格键</translation>
 <translation id="3510164367642747937">突出显示鼠标光标</translation>
-<translation id="3510503721818156981">Chromebook 已连接到新手机</translation>
 <translation id="3513798432020909783">该帐号由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE" />”（需要重启）</translation>
 <translation id="3595596368722241419">电池已充满</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">语音输入</translation>
 <translation id="4261870227682513959">显示通知设置。通知已关闭</translation>
 <translation id="4269883910223712419">此设备的管理员能够：</translation>
-<translation id="4274921305979314545">将您的 Chromebook 连接到手机</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4292681942966152062">正在启用<ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -225,6 +222,7 @@
 <translation id="4628757576491864469">设备</translation>
 <translation id="4659419629803378708">已启用 ChromeVox</translation>
 <translation id="4734965478015604180">横向</translation>
+<translation id="476166673298332917">此设备的管理员可能会监控您的浏览活动。</translation>
 <translation id="4774338217796918551">您需要等到明天<ph name="COME_BACK_TIME" /> 才能再次使用此设备。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="4778095205580009397">无法在演示会话中使用 Google 助理。</translation>
@@ -281,7 +279,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">启用</translation>
-<translation id="592343074608792716">此 Chromebook 将会自动连接到您的手机</translation>
 <translation id="5947494881799873997">还原</translation>
 <translation id="595202126637698455">已启用性能跟踪</translation>
 <translation id="5957083217255311415">移动数据网络现处于关闭状态。</translation>
@@ -339,7 +336,6 @@
 <translation id="6751826523481687655">已启用性能跟踪</translation>
 <translation id="6785414152754474415">电池电量为<ph name="PERCENTAGE" />%（正在充电）。</translation>
 <translation id="6803622936009808957">找不到系统支持的分辨率，因此无法镜像显示屏。已改为进入扩展桌面。</translation>
-<translation id="6814658242098378692">管理应用、扩展程序和主题背景</translation>
 <translation id="6820676911989879663">休息一下！</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">激活 <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +375,6 @@
 <translation id="7564874036684306347">将窗口移至另一桌面可能会导致出现意外行为 - 后续的通知、窗口和对话框可能会被拆分到不同的桌面中。</translation>
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
-<translation id="7604942372593434070">访问您的浏览活动</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">解锁设备即可查看您的通知</translation>
 <translation id="7649070708921625228">帮助</translation>

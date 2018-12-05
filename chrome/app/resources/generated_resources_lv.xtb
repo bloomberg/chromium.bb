@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">Linux lietojumprogrammas instalēšanas laikā radās kļūda.</translation>
 <translation id="16815041330799488">Neļaut vietnēm skatīt starpliktuvē kopēto tekstu un attēlus</translation>
 <translation id="1682548588986054654">Jauns inkognito režīma logs</translation>
-<translation id="1683850629661177840">Vienkāršotais režīms paātrina pārlūkošanu visās lapās, tostarp HTTPS lapās.</translation>
 <translation id="168715261339224929">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, ieslēdziet sinhronizāciju.</translation>
 <translation id="1688867105868176567">Vai notīrīt vietnes datus?</translation>
 <translation id="1688935057616748272">Ierakstiet kādu burtu.</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">Darbība nav pieejama</translation>
 <translation id="204914487372604757">Izveidot saīsni</translation>
 <translation id="2050339315714019657">Portrets</translation>
-<translation id="2052369079215022979">Pārvalda jūsu organizācija</translation>
 <translation id="2053312383184521053">Dati par neaktīvu stāvokli</translation>
 <translation id="205560151218727633">Google asistenta logotips</translation>
 <translation id="2058456167109518507">Atrastā ierīce</translation>
@@ -3868,7 +3866,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6916590542764765824">Paplašinājumu pārvaldība</translation>
 <translation id="6920989436227028121">Atvērt kā parastu cilni</translation>
 <translation id="6921709132208495314">Pārtraukt resursu ielādi šajā lapā</translation>
-<translation id="6922128026973287222">Ietaupiet datu lietojumu un veiciet pārlūkošanu ātrāk, izmantojot Google datu lietojuma samazinātāju. Noklikšķiniet, lai uzzinātu vairāk.</translation>
 <translation id="6923132443355966645">Ritināt/klikšķināt</translation>
 <translation id="6923633482430812883">Iekļaujot kopīgošanu, radās kļūda. Pārbaudiet, vai failu serveris, ar kuru veidojat savienojumu, atbalsta failu kopīgošanu SMBv2 vai jaunāku versiju.</translation>
 <translation id="6930242544192836755">Ilgums</translation>

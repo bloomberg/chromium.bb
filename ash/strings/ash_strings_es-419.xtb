@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Restableciendo conexión con <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Elegir si los sitios web pueden usar servicios de ubicación, o el micrófono, la cámara o demás funciones del dispositivo</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2803734122639935495">Para desbloquear el dispositivo, vuelve a escribir la contraseña</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">Se conectó otro teclado a este dispositivo desde la última vez que accediste. Asegúrate de que este teclado sea de confianza antes de usarlo.</translation>
 <translation id="3477079411857374384">Control-Mayúscula-Espacio</translation>
 <translation id="3510164367642747937">Resaltar el cursor del mouse</translation>
-<translation id="3510503721818156981">La Chromebook se conectó a un teléfono nuevo</translation>
 <translation id="3513798432020909783">Cuenta administrada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Volver a "<ph name="FROM_LOCALE" />" (debes reiniciar).</translation>
 <translation id="3595596368722241419">Batería completa</translation>
@@ -198,7 +196,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4217571870635786043">Dictado</translation>
 <translation id="4261870227682513959">Mostrar la configuración de las notificaciones: Están desactivadas</translation>
 <translation id="4269883910223712419">El administrador de este dispositivo puede hacer lo siguiente:</translation>
-<translation id="4274921305979314545">Conecta tu Chromebook con el teléfono</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4292681942966152062">Activando la red <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -225,6 +222,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">Se habilitó ChromeVox</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">El administrador tiene acceso a toda la actividad, incluidas las contraseñas y comunicaciones.</translation>
 <translation id="4774338217796918551">Regresa mañana a las <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Contraseña para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en la sesión de demostración.</translation>
@@ -281,7 +279,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Activada</translation>
-<translation id="592343074608792716">La Chromebook y el teléfono se conectarán automáticamente</translation>
 <translation id="5947494881799873997">Revertir</translation>
 <translation id="595202126637698455">Seguimiento de rendimiento habilitado</translation>
 <translation id="5957083217255311415">Los datos móviles están desactivados.</translation>
@@ -339,7 +336,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6751826523481687655">Se activó el registro del rendimiento</translation>
 <translation id="6785414152754474415">La batería tiene un <ph name="PERCENTAGE" /> % de carga y se está cargando.</translation>
 <translation id="6803622936009808957">No se pudieron reflejar las pantallas porque no se encontraron resoluciones compatibles. En su lugar, se activó el escritorio extendido.</translation>
-<translation id="6814658242098378692">Administrar apps, extensiones y temas</translation>
 <translation id="6820676911989879663">Toma un descanso</translation>
 <translation id="683971173229319003">Tecla de búsqueda + L</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +375,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7564874036684306347">Si mueves las ventanas a otro escritorio, puede producirse un comportamiento inesperado. Es posible que las próximas notificaciones, ventanas y cuadros de diálogo se dividan entre los escritorios.</translation>
 <translation id="7569509451529460200">Se habilitaron el braille y ChromeVox</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
-<translation id="7604942372593434070">Se accederá a tu actividad de navegación</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario/a)</translation>
 <translation id="7647488630410863958">Desbloquea el dispositivo para ver tus notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>

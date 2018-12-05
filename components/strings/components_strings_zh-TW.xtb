@@ -435,7 +435,7 @@
 <translation id="3736520371357197498">如果你瞭解安全性風險，也可以選擇在危險程式尚未遭到移除的狀態下<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>
 <translation id="3739623965217189342">您複製的連結</translation>
 <translation id="3744899669254331632"><ph name="SITE" /> 傳送的憑證受到干擾，造成 Chromium 無法處理，因此你目前無法造訪該網站。網路錯誤和攻擊通常是暫時性狀態，因此這個網頁可能稍後就會恢復正常運作。</translation>
-<translation id="3745099705178523657">完成驗證後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
+<translation id="3745099705178523657">經你確認後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
 <translation id="3748148204939282805">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 誘使你做一些危險行為，例如安裝軟體或提供個人資訊 (包括密碼、電話號碼或信用卡資料)。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="375403751935624634">伺服器錯誤，翻譯作業失敗。</translation>
 <translation id="3759461132968374835">最近沒有收到當機資訊。當機回報功能停用時發生的當機不會列在這裡。</translation>
@@ -576,7 +576,7 @@
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4785689107224900852">切換至這個分頁</translation>
 <translation id="4792143361752574037">存取工作階段檔案時發生問題，目前無法將檔案儲存到磁碟。請重新載入網頁，然後再試一次。</translation>
-<translation id="4798078619018708837">請輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，以更新你的信用卡詳細資料。完成驗證後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
+<translation id="4798078619018708837">請輸入 <ph name="CREDIT_CARD" /> 的到期日和信用卡安全碼，以更新你的信用卡詳細資料。經你確認後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102">您目前無法造訪 <ph name="SITE" />，因為這個網站傳送的憑證是亂碼，Google Chrome 無法處理。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會正常運作。</translation>
@@ -628,7 +628,7 @@
 <translation id="5141240743006678641">使用你的 Google 憑證對已同步處理的密碼進行加密</translation>
 <translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
 <translation id="5159010409087891077">在新的無痕式視窗中開啟網頁 (⇧ + ⌘ + N 鍵)</translation>
-<translation id="516920405563544094">請輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼。完成驗證後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
+<translation id="516920405563544094">請輸入 <ph name="CREDIT_CARD" /> 的信用卡安全碼。經你確認後，這個網站就會取得你的 Google 帳戶中的信用卡詳細資料。</translation>
 <translation id="5169827969064885044">你可能會失去貴機構帳戶的存取權，或身分遭到冒用。Chrome 建議你立即變更密碼。</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5172758083709347301">本機</translation>

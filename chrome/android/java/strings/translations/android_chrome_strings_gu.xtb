@@ -10,7 +10,6 @@
 <translation id="1067922213147265141">અન્ય Google સેવાઓ</translation>
 <translation id="1068672505746868501">પેજનો ક્યારેય પણ <ph name="SOURCE_LANGUAGE" />માં અનુવાદ કરશો નહીં</translation>
 <translation id="1080790410959514870">તમે <ph name="DOMAIN_NAME" /> દ્વારા મેનેજ એકાઉન્ટથી સાઇન આઉટ કરી રહ્યાં છો. આ ડિવાઇસ પર સ્ટોર કરેલા Chrome ડેટાને આ ડિલીટ કરશે, પરંતુ ડેટા તમારા Google એકાઉન્ટમાં રહેશે.</translation>
-<translation id="1099080783256647258">ડેટા સેવર ચાલુ હોય ત્યારે, પેજ લોડ થવાની ઝડપ વધારવા તેમજ તેને કમ્પ્રેસ કરવા Chrome Google સર્વરનો ઉપયોગ કરે છે. વધુ પડતાં ધીમા પેજ પર, ફક્ત જરૂરી કન્ટેન્ટ લોડ કરી શકાય તે રીતે ડેટા સેવર પેજને ફરી લખે છે. છૂપા મોડમાં લોડ થયેલા પેજને ડેટા સેવર ઑપ્ટિમાઇઝ કરતું નથી.</translation>
 <translation id="1105960400813249514">સ્ક્રીન કૅપ્ચર</translation>
 <translation id="1111673857033749125">તમારા અન્ય ઉપકરણો પર સાચવેલા બુકમાર્ક્સ અહીં દેખાશે.</translation>
 <translation id="1113597929977215864">સરળ દૃશ્ય બતાવો</translation>
@@ -97,7 +96,6 @@
 <translation id="1670399744444387456">મૂળભૂત</translation>
 <translation id="1671236975893690980">ડાઉનલોડ બાકી…</translation>
 <translation id="1672586136351118594">ફરીથી બતાવશો નહીં</translation>
-<translation id="1709438864123551175">ડેટા સેવર</translation>
 <translation id="1718835860248848330">છેલ્લા એક કલાક</translation>
 <translation id="1729516292547892356">વર્ચ્યુઅલ રિયાલિટી કન્ટેન્ટ જોવા માટે, Google VR સેવાઓ અપડેટ કરો</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> અપડેટ કર્યું</translation>
@@ -205,7 +203,6 @@
 <translation id="2501278716633472235">પાછા જાઓ</translation>
 <translation id="2513403576141822879">ગોપનીયતા, સુરક્ષા, અને ડેટા સંગ્રહથી સંબંધિત વધુ સેટિંગ માટે, <ph name="BEGIN_LINK" />સિંક અને Google સેવાઓ<ph name="END_LINK" /> જુઓ</translation>
 <translation id="2523184218357549926">તમે મુલાકાત લો તે પેજના URLs Googleને મોકલે છે</translation>
-<translation id="2526148617758225454">ડેટા સર્વર ચાલુ છે. તેને સેટિંગ્સમાં સંચાલિત કરો.</translation>
 <translation id="2532336938189706096">વેબ દૃશ્ય</translation>
 <translation id="2536728043171574184">આ પેજની ઓફલાઇન કૉપિ જોઈ રહ્યા છે</translation>
 <translation id="2546283357679194313">કૂકીઝ અને સાઇટ ડેટા</translation>
@@ -303,7 +300,6 @@
 <translation id="3341058695485821946">તમે કેટલો ડેટા સાચવ્યો તે જુઓ</translation>
 <translation id="3350687908700087792">બધા છુપા ટેબ્સ બંધ કરો</translation>
 <translation id="3353615205017136254">Google દ્વારા પૂરું પાડવામાં આવેલું લાઇટ વર્ઝનનું પેજ. ઑરિજિનલ પેજ લોડ કરવા માટે ઑરિજિનલ લોડ કરો બટન ટૅપ કરો.</translation>
-<translation id="3365671512111106261">જ્યારે ડેટા સેવર ચાલુ કરેલ હોય ત્યારે અનુપલબ્ધ હોય છે</translation>
 <translation id="3367813778245106622">સમન્વયન શરૂ કરવા માટે ફરીથી સાઇન ઇન કરો</translation>
 <translation id="3377025655491224618">ખાનગી ટૅબ</translation>
 <translation id="3384347053049321195">છબી શેર કરો</translation>
@@ -332,14 +328,12 @@
 <translation id="3600792891314830896">જે સાઇટ અવાજ ચલાવતી હોય તેઓનો અવાજ બંધ કરો</translation>
 <translation id="360207483134687714">Chromeમાં VR અનુભવ સુધારવામાં સહાય કરો</translation>
 <translation id="3616113530831147358">ઑડિઓ</translation>
-<translation id="3620176948598597475">રીસેટ કરવાથી મુલાકાત લીધેલ સાઇટોની સૂચિ સહિતનો ડેટા સેવર ઇતિહાસ કાઢી નાખવામાં આવે છે.</translation>
 <translation id="3630011985153972676">વાઇ-ફાઇ પર હો ત્યારે સેટિંગ હેઠળ, Chromeને તમારા માટે લેખ ડાઉનલોડ કરવાની મંજૂરી આપો.</translation>
 <translation id="3632295766818638029">પાસવર્ડ બતાવો</translation>
 <translation id="363596933471559332">સંગ્રહિત ઓળખપત્રોનો ઉપયોગ કરીને વેબસાઇટ્સમાં આપમેળે સાઇન ઇન કરો. જ્યારે સુવિધા બંધ હોય છે, ત્યારે વેબસાઇટમાં સાઇન ઇન કરતાં પહેલાં દર વખતે તમને ચકાસણી માટે કહેવામાં આવશે.</translation>
 <translation id="3662546969139119822">અહીં કોઈ ઇતિહાસ નથી</translation>
 <translation id="3672452749423051839">નેવિગેશન ભૂલ સૂચનો</translation>
 <translation id="3692944402865947621">સ્ટોરેજ સ્થાન સુધી પહોંચી ન શકવાને કારણે <ph name="FILE_NAME" />નું ડાઉનલોડ નિષ્ફળ થયું.</translation>
-<translation id="3712575778697986964">ડેટા સેવર રીસેટ કરીએ?</translation>
 <translation id="3714981814255182093">શોધો બાર ખોલો</translation>
 <translation id="3716182511346448902">આ પેજ ઘણી વધુ મેમરીનો ઉપયોગ કરે છે, તેથી Chromeએ તેને થોભાવ્યું છે.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> માં બુકમાર્ક કર્યું</translation>
@@ -357,7 +351,6 @@
 <translation id="3819562311292413223">તમારા માટે લેખ ડાઉનલોડ કરો</translation>
 <translation id="3822502789641063741">સાઇટ સ્ટોરેજ સાફ કરીએ?</translation>
 <translation id="3859306556332390985">આગળ કરો</translation>
-<translation id="3868004864571585162">કુકી, મીડિયા લાઇસન્સ અને સાઇટ ડેટા</translation>
 <translation id="3894427358181296146">ફોલ્ડર ઉમેરો</translation>
 <translation id="3895926599014793903">ફરજિયાતપૂર્વક ઝૂમ ચાલુ કરો</translation>
 <translation id="3918221729963301892">ફરી બતાવશો નહીં</translation>
@@ -465,7 +458,6 @@
 <translation id="4698034686595694889"><ph name="APP_NAME" />માં ઑફલાઇન જુઓ</translation>
 <translation id="4698413471314543145">Chrome ચલાવવા માટે જરૂરી કાર્ય ખૂટે છે; અથવા તમારું Chrome ઇન્સ્ટૉલેશન અધૂરું છે, અથવા Androidના આ વર્ઝન સાથે બંધબેસતું નથી.</translation>
 <translation id="4699172675775169585">કેશ કરેલ છબીઓ અને ફાઇલો</translation>
-<translation id="4714588616299687897">તમારો 60% જેટલો ડેટા બચાવો</translation>
 <translation id="4719927025381752090">અનુવાદ કરવાની ઑફર કરો</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> માં ખોલો</translation>
 <translation id="4720982865791209136">Chromeને બહેતર બનાવવામાં સહાય કરો. <ph name="BEGIN_LINK" />સર્વેક્ષણમાં ભાગ લો<ph name="END_LINK" /></translation>
@@ -476,20 +468,17 @@
 <translation id="4751476147751820511">મોશન અથવા લાઇટ સેન્સર</translation>
 <translation id="4759238208242260848">ડાઉનલોડ્સ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ડાઉનલોડ પૂર્ણ થયું.}one{# ડાઉનલોડ પૂર્ણ થયું.}other{# ડાઉનલોડ પૂર્ણ થયાં.}}</translation>
-<translation id="4766369052440583386">ડેટા સેવર ચાલુ છે</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" /> પર પાછા આવવા માટે ટચ કરો</translation>
 <translation id="4802417911091824046">પાસફ્રેઝ એન્ક્રિપ્શનમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી. 
 
 આ સેટિંગ બદલવા માટે, <ph name="BEGIN_LINK" />સિંકને રીસેટ કરો<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">કાર્ડ પરનું નામ</translation>
-<translation id="4807963036345170158">ડેટા સેવર બંધ છે</translation>
 <translation id="4816465935029283692">ડેટા પ્રકાર</translation>
 <translation id="4837753911714442426">પેજને પ્રિન્ટ કરવાના વિકલ્પો ખોલો</translation>
 <translation id="4842092870884894799">પાસવર્ડ જનરેશન પોપઅપ દર્શાવે છે</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4857347795080810417">ઇન્સ્ટૉલ કરેલું VR મૉડ્યૂલ</translation>
 <translation id="4860895144060829044">કૉલ કરો</translation>
-<translation id="4874967477260347223">મીડિયા લાઇસન્સ</translation>
 <translation id="4875775213178255010">કન્ટેન્ટ માટે સૂચનો</translation>
 <translation id="4878404682131129617">પ્રૉક્સી સર્વર મારફતે એક ટનલને સ્થાપિત કરવું નિષ્ફળ થયું</translation>
 <translation id="4880127995492972015">અનુવાદ કરો…</translation>
@@ -511,7 +500,6 @@
 <translation id="4988210275050210843">(<ph name="MEGABYTES" />)ની ફાઇલ ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="4988526792673242964">પૃષ્ઠો</translation>
 <translation id="4996978546172906250">આનાથી શેર કરો</translation>
-<translation id="5004339818306944878">60% જેટલા ઓછા ડેટાનો ઉપયોગ કરો અને વેબની ઝડપ વધારો. Google સર્વર, તમે મુલાકાત લો છો તે પૃષ્ઠોને ઓપ્ટિમાઇઝ કરશે.</translation>
 <translation id="5004416275253351869">Google પ્રવૃત્તિ નિયંત્રણો</translation>
 <translation id="5005498671520578047">પાસવર્ડની કૉપિ કરો</translation>
 <translation id="5011311129201317034"><ph name="SITE" />, કનેક્ટ કરવા માગે છે</translation>
@@ -670,7 +658,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> ડેટા બચત</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6177111841848151710">હાલનાં શોધ એંજિન માટે અવરોધિત</translation>
-<translation id="6177390657002841081">ડેટા સેવર ચાલુ કરો</translation>
 <translation id="6181444274883918285">સાઇટ અપવાદ ઉમેરો</translation>
 <translation id="618993374665929060">"આના જેવી વધુ" શીટ સંપૂર્ણ ઊંચાઈએ ખુલી</translation>
 <translation id="6192333916571137726">ફાઇલ ડાઉનલોડ કરો</translation>
@@ -723,7 +710,6 @@
 <translation id="6545017243486555795">બધો ડેટા સાફ કરો</translation>
 <translation id="6560414384669816528">Sogou થી શોધો</translation>
 <translation id="6566259936974865419">Chrome એ તમારો <ph name="GIGABYTES" /> GB બચાવ્યો</translation>
-<translation id="6567212464587185774">60% જેટલા ઓછા ડેટાનો ઉપયોગ કરો અને વેબની ઝડપ વધારો.</translation>
 <translation id="6573096386450695060">હંમેશાં મંજૂરી આપો</translation>
 <translation id="6573431926118603307">તમારા અન્ય ઉપકરણો પર તમે Chrome માં ખોલેલા ટૅબ્સ અહીં દેખાશે.</translation>
 <translation id="6583199322650523874">વર્તમાન પૃષ્ઠને બુકમાર્ક કરો</translation>
@@ -746,7 +732,6 @@
 <translation id="6697492270171225480">જ્યારે કોઈ પેજ ન મળે ત્યારે તેના જેવા પેજ માટે સૂચનો બતાવો</translation>
 <translation id="6697947395630195233">Chromeને આ સાઇટ સાથે તમારું સ્થાન શેર કરવા માટે તમારા સ્થાનના ઍક્સેસની જરૂર પડે છે.</translation>
 <translation id="6698801883190606802">સમન્વયિત ડેટા સંચાલિત કરો</translation>
-<translation id="6699370405921460408">Google સર્વર, તમે મુલાકાત લો છો તે પેજને ઑપ્ટિમાઇઝ કરશે.</translation>
 <translation id="6709133671862442373">News</translation>
 <translation id="6710213216561001401">પાછલી</translation>
 <translation id="6712388303105732168">"આના જેવા વધુ" બટનનો ઉપયોગ કરીને Google તરફથી "આના જેવી વધુ" શીટ જુઓ</translation>
@@ -841,6 +826,7 @@
 <translation id="7437998757836447326">Chromeમાંથી સાઇન આઉટ કરો</translation>
 <translation id="7444811645081526538">વધુ કૅટેગરી</translation>
 <translation id="7445411102860286510">સાઇટ્સને આપમેળે મ્યૂટ કરેલ વિડિઓઝને ચલાવવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
+<translation id="7453467225369441013">તમને મોટાભાગની સાઇટોમાંથી સાઇન આઉટ કરે છે. તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ નહિ થાઓ.</translation>
 <translation id="7454641608352164238">પર્યાપ્ત જગ્યા નથી</translation>
 <translation id="7455923816558154057">જોવા માટે ટૅપ કરો</translation>
 <translation id="7465104139234185284">બધાં ખાનગી ટૅબ બંધ કરો</translation>
@@ -1064,7 +1050,6 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">છબીઓ</translation>
 <translation id="932327136139879170">હોમ</translation>
-<translation id="932599481871055447">ડેટા બચાવો અને વધુ ઝડપથી બ્રાઉઝ કરો</translation>
 <translation id="938850635132480979">ભૂલ: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">પ્રતિસાદ મોકલો</translation>
 <translation id="945632385593298557">તમારા માઇક્રોફોનની ઍક્સેસ</translation>

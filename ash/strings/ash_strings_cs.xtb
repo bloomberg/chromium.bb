@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Obnovování připojení k síti <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Určete, zda weby mohou používat určování polohy nebo mikrofon, fotoaparát a další funkce zařízení</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
 <translation id="2803734122639935495">Chcete-li zařízení odemknout, zadejte heslo</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">K tomuto zařízení je připojena jiná klávesnice než při vašem posledním přihlášení. Před použitím této klávesnice se ujistěte, že jí můžete důvěřovat.</translation>
 <translation id="3477079411857374384">Control + Shift + mezerník</translation>
 <translation id="3510164367642747937">Zvýraznit ukazatel myši</translation>
-<translation id="3510503721818156981">Chromebook se připojil k novému telefonu</translation>
 <translation id="3513798432020909783">Správce účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Změnit zpět na jazyk <ph name="FROM_LOCALE" /> (vyžaduje restart)</translation>
 <translation id="3595596368722241419">Baterie je nabitá</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">Diktování</translation>
 <translation id="4261870227682513959">Zobrazit nastavení oznámení. Oznámení jsou vypnutá</translation>
 <translation id="4269883910223712419">Administrátor zařízení má následující možnosti:</translation>
-<translation id="4274921305979314545">Propojte svůj Chromebook s telefonem</translation>
 <translation id="4279490309300973883">Zrcadlení</translation>
 <translation id="4292681942966152062">Aktivace sítě <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">Zařízení</translation>
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
 <translation id="4734965478015604180">Na šířku</translation>
+<translation id="476166673298332917">Správce tohoto zařízení může monitorovat vaše aktivity v prohlížeči.</translation>
 <translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asistent Google není v ukázkové relaci k dispozici.</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="5916664084637901428">Zapnuto</translation>
-<translation id="592343074608792716">Tenhle Chromebook a váš telefon se automaticky spojí</translation>
 <translation id="5947494881799873997">Vrátit zpět</translation>
 <translation id="595202126637698455">Sledování výkonu aktivováno</translation>
 <translation id="5957083217255311415">Mobilní data jsou vypnuta.</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">Trasování výkonu je zapnuté</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
-<translation id="6814658242098378692">Správa aplikací, rozšíření a motivů</translation>
 <translation id="6820676911989879663">Dejte si pauzu.</translation>
 <translation id="683971173229319003">Hledat+L</translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +374,6 @@
 <translation id="7564874036684306347">Přesunutí oken na jinou plochu může vést k neočekávanému chování. Následná oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
 <translation id="7569509451529460200">Jsou zapnuty funkce Braille a ChromeVox</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
-<translation id="7604942372593434070">Přistupovat k vaší aktivitě prohlížení</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Chcete-li zobrazit oznámení, odemkněte zařízení</translation>
 <translation id="7649070708921625228">Nápověda</translation>

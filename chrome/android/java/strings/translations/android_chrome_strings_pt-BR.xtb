@@ -10,7 +10,6 @@
 <translation id="1067922213147265141">Outros serviços do Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
-<translation id="1099080783256647258">Quando a Economia de dados está ativada, o Chrome usa os servidores do Google para acelerar e compactar os carregamentos de páginas. Em páginas especialmente lentas, a Economia de dados reescreve a página para carregar apenas o conteúdo essencial. Esse recurso não otimiza as páginas carregadas no modo de navegação anônima.</translation>
 <translation id="1105960400813249514">Captura de tela</translation>
 <translation id="1111673857033749125">Favoritos salvos nos seus outros dispositivos serão exibidos aqui.</translation>
 <translation id="1113597929977215864">Mostrar visualização simplificada</translation>
@@ -97,7 +96,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="1670399744444387456">Básicas</translation>
 <translation id="1671236975893690980">Download pendente…</translation>
 <translation id="1672586136351118594">Não mostrar novamente</translation>
-<translation id="1709438864123551175">Economia de dados</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1729516292547892356">Para ver conteúdo de realidade virtual, atualize os Serviços de RV do Google</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> — Última atualização: <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -205,7 +203,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="2501278716633472235">Voltar</translation>
 <translation id="2513403576141822879">Para ver mais configurações relacionadas à privacidade, segurança e coleta de dados, acesse <ph name="BEGIN_LINK" />Serviços do Google e de sincronização<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">Envia URLs das páginas que você visita para o Google</translation>
-<translation id="2526148617758225454">A economia de dados está ativada. Gerencie esse recurso em "Configurações".</translation>
 <translation id="2532336938189706096">Visualização da Web</translation>
 <translation id="2536728043171574184">Vendo uma cópia off-line desta página</translation>
 <translation id="2546283357679194313">Cookies e dados do site</translation>
@@ -303,7 +300,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3341058695485821946">Veja a quantidade de dados que você salvou</translation>
 <translation id="3350687908700087792">Fechar todas as guias anônimas</translation>
 <translation id="3353615205017136254">Página Lite exibida pelo Google. Toque no botão "Carregar original" para carregar a página original.</translation>
-<translation id="3365671512111106261">Indisponível quando a extensão Economia de dados está ativada</translation>
 <translation id="3367813778245106622">Faça login novamente para começar a sincronizar</translation>
 <translation id="3377025655491224618">Guia privada</translation>
 <translation id="3384347053049321195">Compartilhar imagem</translation>
@@ -332,14 +328,12 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3600792891314830896">Silenciar sites que reproduzem sons</translation>
 <translation id="360207483134687714">Ajude a melhorar a experiência de realidade virtual no Chrome</translation>
 <translation id="3616113530831147358">Áudio</translation>
-<translation id="3620176948598597475">A redefinição limpa o histórico da Economia de dados, incluindo a lista de sites visitados.</translation>
 <translation id="3630011985153972676">Permitir que o Chrome faça o download de artigos para você quando conectado ao Wi-Fi nas configurações.</translation>
 <translation id="3632295766818638029">Reautenticar para ver senha</translation>
 <translation id="363596933471559332">Faça login automaticamente nos websites usando as credenciais armazenadas. Se o recurso estiver desativado, será preciso fazer a verificação sempre antes de fazer login em um website.</translation>
 <translation id="3662546969139119822">Não há histórico aqui</translation>
 <translation id="3672452749423051839">Sugerir opções quando houver erro de navegação</translation>
 <translation id="3692944402865947621">Falha no download do arquivo <ph name="FILE_NAME" /> porque não foi possível acessar o local do armazenamento.</translation>
-<translation id="3712575778697986964">Redefinir a Economia de dados?</translation>
 <translation id="3714981814255182093">Abrir a barra Localizar</translation>
 <translation id="3716182511346448902">Como esta página usa muita memória, o Chrome a pausou.</translation>
 <translation id="3739899004075612870">Adicionado aos favoritos no <ph name="PRODUCT_NAME" /></translation>
@@ -357,7 +351,6 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="3819562311292413223">Fazer o download de artigos para você</translation>
 <translation id="3822502789641063741">Limpar armaz. de sites?</translation>
 <translation id="3859306556332390985">Avançar</translation>
-<translation id="3868004864571585162">Cookies, licenças de mídia e dados do site</translation>
 <translation id="3894427358181296146">Adicionar pasta</translation>
 <translation id="3895926599014793903">Forçar zoom</translation>
 <translation id="3918221729963301892">Não exibir novamente</translation>
@@ -466,7 +459,6 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4698034686595694889">Ver off-line no app <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">Um recurso importante e necessário para a execução do Google Chrome está ausente. Isso acontece porque a instalação do Google Chrome não foi concluída ou porque ele não é compatível com esta versão do Android.</translation>
 <translation id="4699172675775169585">Imagens e arquivos armazenados em cache</translation>
-<translation id="4714588616299687897">Economize até 60% dos seus dados</translation>
 <translation id="4719927025381752090">Oferecer para traduzir</translation>
 <translation id="4720023427747327413">Abrir no <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Ajude a melhorar o Chrome. <ph name="BEGIN_LINK" />Responda à pesquisa.<ph name="END_LINK" /></translation>
@@ -477,20 +469,17 @@ Para ajustar o termo de pesquisa, toque nele e mantenha-o pressionado. Para refi
 <translation id="4751476147751820511">Sensores de luz ou movimento</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download concluído.}one{# download concluído.}other{# downloads concluídos.}}</translation>
-<translation id="4766369052440583386">A Economia de dados está ativada</translation>
 <translation id="4797039098279997504">Toque para voltar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">A criptografia por senha longa não inclui formas de pagamento e endereços do Google Pay.
 
 Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Nome no cartão de crédito</translation>
-<translation id="4807963036345170158">A Economia de dados está desativada</translation>
 <translation id="4816465935029283692">Tipos de dados</translation>
 <translation id="4837753911714442426">Abrir opções de impressão de página</translation>
 <translation id="4842092870884894799">Mostrando pop-up da criação de senhas</translation>
 <translation id="4850886885716139402">Visualizar</translation>
 <translation id="4857347795080810417">Módulo RV instalado</translation>
 <translation id="4860895144060829044">Ligar</translation>
-<translation id="4874967477260347223">Licenças de mídia</translation>
 <translation id="4875775213178255010">Sugestões de conteúdo</translation>
 <translation id="4878404682131129617">Falha ao estabelecer encapsulamento via servidor proxy</translation>
 <translation id="4880127995492972015">Traduzir…</translation>
@@ -512,7 +501,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4988210275050210843">Fazendo o download do arquivo (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Páginas</translation>
 <translation id="4996978546172906250">Compartilhar via</translation>
-<translation id="5004339818306944878">Use até 60% a menos de dados e deixe a Web mais rápida. Os servidores do Google otimizarão as páginas que você visitar.</translation>
 <translation id="5004416275253351869">Controles de atividade do Google</translation>
 <translation id="5005498671520578047">Copiar senha</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> deseja se conectar</translation>
@@ -670,7 +658,6 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6177111841848151710">Bloqueado para o mecanismo de pesquisa atual</translation>
-<translation id="6177390657002841081">Ativar a Economia de dados</translation>
 <translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="618993374665929060">Mais opções semelhantes abertas no tamanho máximo</translation>
 <translation id="6192333916571137726">Fazer o download do arquivo</translation>
@@ -723,7 +710,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6545017243486555795">Limpar todos os dados</translation>
 <translation id="6560414384669816528">Pesquisar usando o Sogou</translation>
 <translation id="6566259936974865419">O Chrome economizou <ph name="GIGABYTES" /> GB</translation>
-<translation id="6567212464587185774">Use até 60% a menos de dados e deixe a Web mais rápida.</translation>
 <translation id="6573096386450695060">Sempre permitir</translation>
 <translation id="6573431926118603307">As guias que você abriu no Chrome nos seus outros dispositivos serão exibidas aqui.</translation>
 <translation id="6583199322650523874">Adicionar a página atual aos favoritos</translation>
@@ -746,7 +732,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="6697492270171225480">Mostrar sugestões de páginas semelhantes quando uma página não for encontrada</translation>
 <translation id="6697947395630195233">O Chrome precisa acessar sua localização para compartilhá-la com este site.</translation>
 <translation id="6698801883190606802">Gerenciar dados sincronizados</translation>
-<translation id="6699370405921460408">Os servidores do Google otimizarão as páginas visitadas.</translation>
 <translation id="6709133671862442373">Notícias</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6712388303105732168">Veja mais páginas do Google como esta usando o botão "Mais opções semelhantes"</translation>
@@ -841,6 +826,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7437998757836447326">Sair do Google Chrome</translation>
 <translation id="7444811645081526538">Mais categorias</translation>
 <translation id="7445411102860286510">Permite que os sites reproduzam automaticamente vídeos silenciados (recomendado)</translation>
+<translation id="7453467225369441013">Desconecta você da maioria dos sites, mas não da sua Conta do Google.</translation>
 <translation id="7454641608352164238">Espaço insuficiente</translation>
 <translation id="7455923816558154057">Toque para ver</translation>
 <translation id="7465104139234185284">Fechar todas as guias privadas</translation>
@@ -1064,7 +1050,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="932327136139879170">Início</translation>
-<translation id="932599481871055447">Economize dados e navegue mais rapidamente</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="945632385593298557">Acessar seu microfone</translation>

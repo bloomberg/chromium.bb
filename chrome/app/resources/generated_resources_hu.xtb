@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">Hiba történt a Linux-alkalmazás telepítése során.</translation>
 <translation id="16815041330799488">Annak tiltása a webhelyek számára, hogy lássák a vágólapra másolt szövegeket és képeket</translation>
 <translation id="1682548588986054654">Új &amp;inkognitóablak</translation>
-<translation id="1683850629661177840">Az Egyszerűsített mód mostantól minden oldalon gyorsabb böngészést nyújt (HTTPS esetében is).</translation>
 <translation id="168715261339224929">Ha az összes eszközén szeretné elérni könyvjelzőit, kapcsolja be a szinkronizálást.</translation>
 <translation id="1688867105868176567">Törli a webhelyadatokat?</translation>
 <translation id="1688935057616748272">Írja be a kívánt karaktert</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">A művelet nem végezhető el</translation>
 <translation id="204914487372604757">Parancsikon létrehozása</translation>
 <translation id="2050339315714019657">Álló</translation>
-<translation id="2052369079215022979">Az Ön szervezete kezeli</translation>
 <translation id="2053312383184521053">Tétlen állapot adatai</translation>
 <translation id="205560151218727633">A Google Segéd logója</translation>
 <translation id="2058456167109518507">Eszköz észlelve</translation>
@@ -3870,7 +3868,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6916590542764765824">Bővítmények kezelése</translation>
 <translation id="6920989436227028121">Megnyitás normál lapként</translation>
 <translation id="6921709132208495314">Adathasználat leállítása ennél az oldalnál</translation>
-<translation id="6922128026973287222">A Google Adatforgalom-csökkentő segítségével adatforgalmat takaríthat meg, és gyorsabban böngészhet. További információért kattintson ide.</translation>
 <translation id="6923132443355966645">Görgetés / Kattintás</translation>
 <translation id="6923633482430812883">Hiba történt a megosztás csatolásakor. Ellenőrizze, hogy a fájlszerver, amelyhez kapcsolódni szeretne, támogatja-e az SMBv2 vagy újabb protokollt.</translation>
 <translation id="6930242544192836755">Időtartam</translation>

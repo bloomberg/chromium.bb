@@ -476,7 +476,6 @@
 <translation id="1680849702532889074">Der opstod en fejl ved installationen af Linux-appen.</translation>
 <translation id="16815041330799488">Tillad ikke, at websites kan se tekst og billeder, der er kopieret til udklipsholderen</translation>
 <translation id="1682548588986054654">Nyt inkognitovindue</translation>
-<translation id="1683850629661177840">Lite-tilstand gør nu browsing hurtigere på alle sider, herunder HTTPS.</translation>
 <translation id="168715261339224929">Aktivér synkronisering for at se dine bogmærker på alle dine enheder.</translation>
 <translation id="1688867105868176567">Ville du rydde websitets data?</translation>
 <translation id="1688935057616748272">Skriv et bogstav</translation>
@@ -714,7 +713,6 @@
 <translation id="2048653237708779538">Handlingen er ikke tilgængelig</translation>
 <translation id="204914487372604757">Opret genvej</translation>
 <translation id="2050339315714019657">Stående</translation>
-<translation id="2052369079215022979">Administreret af din organisation</translation>
 <translation id="2053312383184521053">Data for inaktiv tilstand</translation>
 <translation id="205560151218727633">Google Assistent-logo</translation>
 <translation id="2058456167109518507">Der blev registreret en enhed</translation>
@@ -3867,7 +3865,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6916590542764765824">Administrer udvidelser</translation>
 <translation id="6920989436227028121">Åbn som almindelig fane</translation>
 <translation id="6921709132208495314">Stop med at bruge data på denne side</translation>
-<translation id="6922128026973287222">Spar på dataforbruget, og få en hurtigere browseroplevelse med Googles datasparefunktion. Klik for at få flere oplysninger.</translation>
 <translation id="6923132443355966645">Rul/klik</translation>
 <translation id="6923633482430812883">Delingen kunne ikke anvendes. Tjek, at den filserver, du opretter forbindelse til, understøtter SMBv2 eller nyere.</translation>
 <translation id="6930242544192836755">Varighed</translation>

@@ -10,7 +10,6 @@
 <translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
-<translation id="1099080783256647258">‏عند تفعيل أداة توفير البيانات، يستخدم Chrome خوادم Google لزيادة سرعة تحميل الصفحات وضغطها. وخاصة في الصفحات البطيئة، تعيد أداة توفير البيانات كتابة الصفحة لتحميل المحتوى الأساسي فقط. ولا تعمل أداة توفير البيانات على تحسين الصفحات المحمَّلة في وضع التصفُّح المتخفي.</translation>
 <translation id="1105960400813249514">التقاط الشاشة</translation>
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1113597929977215864">إظهار العرض المبسَّط</translation>
@@ -97,7 +96,6 @@
 <translation id="1670399744444387456">الأساسية</translation>
 <translation id="1671236975893690980">التنزيل معلّق...</translation>
 <translation id="1672586136351118594">عدم العرض مرة أخرى</translation>
-<translation id="1709438864123551175">توفير البيانات</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1729516292547892356">‏لعرض محتوى الواقع الافتراضي، يلزمك تحديث خدمات Google VR</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم تحديثه منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
@@ -205,7 +203,6 @@
 <translation id="2501278716633472235">الرجوع للخلف</translation>
 <translation id="2513403576141822879">‏لعرض مزيد من الإعدادات المتعلِّقة بالخصوصية والأمان وجمع البيانات، يُرجى الاطِّلاع على <ph name="BEGIN_LINK" />خدمات Google والمزامنة<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">‏يتم إرسال عناوين URL للصفحات التي تزورها إلى Google.</translation>
-<translation id="2526148617758225454">تم تشغيل توفير البيانات. يمكنك إدارته في الإعدادات.</translation>
 <translation id="2532336938189706096">عرض الويب</translation>
 <translation id="2536728043171574184">عرض نسخة بلا اتصال من هذه الصفحة</translation>
 <translation id="2546283357679194313">ملفات تعريف الارتباط وبيانات الموقع</translation>
@@ -303,7 +300,6 @@
 <translation id="3341058695485821946">الاطّلاع على مقدار البيانات التي حفظتها</translation>
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
 <translation id="3353615205017136254">‏نسخة خفيفة تقدِّمها Google. انقر على زر "تحميل الصفحة الأصلية" لتحميلها.</translation>
-<translation id="3365671512111106261">غير متاح عند تشغيل توفير البيانات</translation>
 <translation id="3367813778245106622">تسجيل الدخول مرة أخرى لبدء المزامنة</translation>
 <translation id="3377025655491224618">علامة تبويب خاصة</translation>
 <translation id="3384347053049321195">مشاركة صورة</translation>
@@ -332,14 +328,12 @@
 <translation id="3600792891314830896">كتم صوت المواقع التي تُشغّل الصوت</translation>
 <translation id="360207483134687714">‏المساعدة في تحسين تجربة الواقع الافتراضي (VR) في Chrome</translation>
 <translation id="3616113530831147358">الصوت</translation>
-<translation id="3620176948598597475">تؤدي إعادة الضبط إلى محو سجلّ توفير البيانات، بما في ذلك قائمة المواقع التي تمت زيارتها.</translation>
 <translation id="3630011985153972676">‏يمكنك السماح لمتصفِّح Chrome بتنزيل مقالات لك عند الاتصال بشبكة Wi-Fi ضمن الإعدادات.</translation>
 <translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكن تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدم الاعتمادات المخزّنة. وعندما تكون الميزة غير مفعّلة، فسيُطلب منك التحقق كل مرة قبل تسجيل الدخول إلى مواقع الويب.</translation>
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
 <translation id="3692944402865947621">تعذّر تنزيل <ph name="FILE_NAME" /> نظرًا لعدم إمكانية الوصول إلى موقع مساحة التخزين.</translation>
-<translation id="3712575778697986964">أترغب في إعادة ضبط توفير البيانات؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
 <translation id="3739899004075612870">تمت إضافة إشارة مرجعية في <ph name="PRODUCT_NAME" /></translation>
@@ -357,7 +351,6 @@
 <translation id="3819562311292413223">تنزيل مقالات لك</translation>
 <translation id="3822502789641063741">أتمحو مساحة تخزين الموقع؟</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
-<translation id="3868004864571585162">ملفات تعريف الارتباط وتراخيص الوسائط وبيانات الموقع الإلكتروني</translation>
 <translation id="3894427358181296146">إضافة مجلد</translation>
 <translation id="3895926599014793903">فرض تفعيل التكبير/التصغير</translation>
 <translation id="3918221729963301892">عدم العرض مرة أخرى</translation>
@@ -465,7 +458,6 @@
 <translation id="4698034686595694889">العرض بلا اتصال بالإنترنت في تطبيق <ph name="APP_NAME" /></translation>
 <translation id="4698413471314543145">‏هناك وظائف مفقودة تعد ذات أهمية كبيرة لتشغيل Chrome؛ إما أن يكون الإصدار الذي تستخدمه من Chrome غير مكتمل، أو ليس متوافقًا مع هذا الإصدار من Android.</translation>
 <translation id="4699172675775169585">الصور والملفات المخزنة مؤقتًا</translation>
-<translation id="4714588616299687897">توفير ما يصل إلى 60% من بياناتك</translation>
 <translation id="4719927025381752090">عرض ترجمة</translation>
 <translation id="4720023427747327413">الفتح في <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">‏المساعدة في تحسين Chrome. <ph name="BEGIN_LINK" />المشاركة في الاستطلاع<ph name="END_LINK" /></translation>
@@ -476,20 +468,17 @@
 <translation id="4751476147751820511">أجهزة استشعار الإضاءة أو الحركة</translation>
 <translation id="4759238208242260848">التنزيلات</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
-<translation id="4766369052440583386">تم تشغيل توفير البيانات</translation>
 <translation id="4797039098279997504">المس  للعودة إلى <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4802417911091824046">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay.
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">الاسم كما على البطاقة</translation>
-<translation id="4807963036345170158">تم إيقاف توفير البيانات</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
 <translation id="4842092870884894799">عرض نافذة إنشاء كلمة المرور المنبثقة</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4857347795080810417">‏تم تثبيت وحدة VR</translation>
 <translation id="4860895144060829044">اتصال</translation>
-<translation id="4874967477260347223">تراخيص وسائل الإعلام</translation>
 <translation id="4875775213178255010">اقتراحات المحتوى</translation>
 <translation id="4878404682131129617">أخفق إنشاء نفق عبر الخادم الوكيل.</translation>
 <translation id="4880127995492972015">ترجمة…</translation>
@@ -511,7 +500,6 @@
 <translation id="4988210275050210843">جارٍ تنزيل الملف (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">صفحات</translation>
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
-<translation id="5004339818306944878">‏يمكنك خفض استخدام البيانات بنسبة تصل إلى 60%، إلى جانب تسريع الويب. كما ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="5004416275253351869">‏عناصر التحكم بالنشاط على Google</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
 <translation id="5011311129201317034">يريد <ph name="SITE" /> الاتصال</translation>
@@ -670,7 +658,6 @@
 <translation id="6159335304067198720">توفير البيانات بنسبة <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6177111841848151710">تم حظره لمحرك البحث الحالي</translation>
-<translation id="6177390657002841081">تشغيل إضافة "توفير البيانات"</translation>
 <translation id="6181444274883918285">إضافة موقع ويب إلى قائمة الاستثناءات</translation>
 <translation id="618993374665929060">يتم فتح "المزيد من النتائج المشابهة" بارتفاع كامل</translation>
 <translation id="6192333916571137726">ملف تحميل</translation>
@@ -723,7 +710,6 @@
 <translation id="6545017243486555795">مسح جميع البيانات</translation>
 <translation id="6560414384669816528">‏البحث باستخدام Sogou</translation>
 <translation id="6566259936974865419">‏لقد وفر Chrome لك <ph name="GIGABYTES" /> غيغابايت</translation>
-<translation id="6567212464587185774">يمكنك خفض استخدام البيانات بنسبة تصل إلى 60%، إلى جانب تسريع الويب.</translation>
 <translation id="6573096386450695060">السماح دومًا</translation>
 <translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="6583199322650523874">وضع إشارة مرجعية على الصفحة الحالية</translation>
@@ -746,7 +732,6 @@
 <translation id="6697492270171225480">عرض اقتراحات للصفحات المشابهة عند تعذّر العثور على صفحة</translation>
 <translation id="6697947395630195233">‏يحتاج Chrome إلى الوصول إلى موقعك الجغرافي لمشاركة موقعك الجغرافي مع موقع الويب هذا.</translation>
 <translation id="6698801883190606802">إدارة البيانات المتزامنة</translation>
-<translation id="6699370405921460408">‏ستعمل خوادم Google على تحسين الصفحات التي تزورها.</translation>
 <translation id="6709133671862442373">الأخبار</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6712388303105732168">‏الاطِّلاع على المزيد من النتائج المشابهة من Google باستخدام الزر "المزيد من النتائج المشابهة"</translation>
@@ -841,6 +826,7 @@
 <translation id="7437998757836447326">‏الخروج من Chrome</translation>
 <translation id="7444811645081526538">مزيد من الفئات</translation>
 <translation id="7445411102860286510">السماح للمواقع بتشغيل الفيديوهات مكتومة الصوت تلقائيًا (مُستحسن)</translation>
+<translation id="7453467225369441013">‏سيتم تسجيل الخروج من معظم مواقع الويب لكن لن يتم تسجيل الخروج من حسابك في Google.</translation>
 <translation id="7454641608352164238">مساحة التخزين غير كافية</translation>
 <translation id="7455923816558154057">يُرجى النقر للعرض</translation>
 <translation id="7465104139234185284">إغلاق جميع علامات التبويب الخاصة</translation>
@@ -1064,7 +1050,6 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">صور</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
-<translation id="932599481871055447">حفظ البيانات والاستمتاع بتصفح أسرع</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="945632385593298557">الدخول إلى الميكروفون</translation>

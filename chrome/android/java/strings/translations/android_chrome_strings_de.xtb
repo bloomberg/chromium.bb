@@ -10,7 +10,6 @@
 <translation id="1067922213147265141">Weitere Google-Dienste</translation>
 <translation id="1068672505746868501">Seiten auf <ph name="SOURCE_LANGUAGE" /> nie übersetzen</translation>
 <translation id="1080790410959514870">Sie melden sich von einem Konto ab, das von <ph name="DOMAIN_NAME" /> verwaltet wird. Dadurch werden die auf diesem Gerät gespeicherten Chrome-Daten gelöscht. Die Daten verbleiben jedoch weiterhin in Ihrem Google-Konto.</translation>
-<translation id="1099080783256647258">Wenn die Datenkomprimierung aktiviert ist, nutzt Chrome Google-Server, um Seitenladevorgänge zu beschleunigen und zu komprimieren. Bei besonders langsamen Seiten schreibt die Datenkomprimierung die Seite um, um nur die wesentlichen Inhalte zu laden. Seiten, die im Inkognitomodus geladen werden, werden von der Datenkomprimierung nicht optimiert.</translation>
 <translation id="1105960400813249514">Bildschirmaufnahme</translation>
 <translation id="1111673857033749125">Hier werden die Lesezeichen angezeigt, die auf Ihren anderen Geräten gespeichert sind.</translation>
 <translation id="1113597929977215864">Vereinfachte Ansicht anzeigen</translation>
@@ -97,7 +96,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="1670399744444387456">Grundlegend</translation>
 <translation id="1671236975893690980">Download ausstehend...</translation>
 <translation id="1672586136351118594">Nicht mehr anzeigen</translation>
-<translation id="1709438864123551175">Datensparmodus</translation>
 <translation id="1718835860248848330">Letzte Stunde</translation>
 <translation id="1729516292547892356">Google VR Services aktualisieren, um Virtual-Reality-Inhalte zu sehen</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> – <ph name="TIME_SINCE_UPDATE" /> aktualisiert</translation>
@@ -205,7 +203,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="2501278716633472235">Zurück</translation>
 <translation id="2513403576141822879">Weitere Einstellungen in Verbindung mit Datenschutz, Sicherheit und der Erhebung von Daten finden Sie unter <ph name="BEGIN_LINK" />Synchronisierung und Google-Dienste<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">URLs der von Ihnen besuchten Seiten werden an Google gesendet</translation>
-<translation id="2526148617758225454">Der Datensparmodus ist aktiviert. Über die Einstellungen können Sie ihn wieder deaktivieren.</translation>
 <translation id="2532336938189706096">Web-Ansicht</translation>
 <translation id="2536728043171574184">Eine Offline-Kopie dieser Seite wird angezeigt.</translation>
 <translation id="2546283357679194313">Cookies und Websitedaten</translation>
@@ -303,7 +300,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3341058695485821946">Sie können sich ansehen, wie viel Datenvolumen Sie einsparen</translation>
 <translation id="3350687908700087792">Alle Inkognito-Tabs schließen</translation>
 <translation id="3353615205017136254">Lite-Modus-Seite von Google bereitgestellt. Zum Laden der Originalseite auf die Schaltfläche "Original laden" tippen.</translation>
-<translation id="3365671512111106261">Nicht verfügbar, wenn der Datensparmodus aktiviert ist</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3377025655491224618">Privater Tab</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
@@ -332,14 +328,12 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3600792891314830896">Websites stummschalten, die Ton wiedergeben</translation>
 <translation id="360207483134687714">Unterstütze uns dabei, VR in Chrome zu verbessern</translation>
 <translation id="3616113530831147358">Audio</translation>
-<translation id="3620176948598597475">Durch das Zurücksetzen wird der Verlauf des Datensparmodus gelöscht, dazu gehört auch die Liste der besuchten Websites.</translation>
 <translation id="3630011985153972676">Sie können in den Einstellungen festlegen, dass Chrome Artikel für Sie herunterlädt, wenn eine WLAN-Verbindung besteht.</translation>
 <translation id="3632295766818638029">Passwort anzeigen</translation>
 <translation id="363596933471559332">Sie werden mit gespeicherten Anmeldedaten automatisch auf Websites angemeldet. Wenn das Kästchen nicht angeklickt ist, werden Sie jedes Mal aufgefordert, sich manuell auf einer Website anzumelden.</translation>
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
 <translation id="3692944402865947621">Download von <ph name="FILE_NAME" /> fehlgeschlagen, weil der Speicherort nicht erreichbar ist.</translation>
-<translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
 <translation id="3739899004075612870">Als Lesezeichen in <ph name="PRODUCT_NAME" /> gespeichert</translation>
@@ -357,7 +351,6 @@ Sie sind aber dennoch nicht unsichtbar. Durch den privaten Modus wird die Tatsac
 <translation id="3819562311292413223">Artikel für Sie herunterladen</translation>
 <translation id="3822502789641063741">Websitespeicher löschen?</translation>
 <translation id="3859306556332390985">Nach vorne navigieren</translation>
-<translation id="3868004864571585162">Cookies, Medienlizenzen und Websitedaten</translation>
 <translation id="3894427358181296146">Ordner hinzufügen</translation>
 <translation id="3895926599014793903">Zoom zwingend aktivieren</translation>
 <translation id="3918221729963301892">Nicht mehr anzeigen</translation>
@@ -465,7 +458,6 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4698034686595694889">Offline in <ph name="APP_NAME" /> ansehen</translation>
 <translation id="4698413471314543145">Es fehlen wichtige Funktionen zur Ausführung von Chrome. Ihre Chrome-Installation ist entweder unvollständig oder nicht mit dieser Android-Version kompatibel.</translation>
 <translation id="4699172675775169585">Bilder und Dateien im Cache</translation>
-<translation id="4714588616299687897">Reduzieren Sie Ihre Daten um bis zu 60 %</translation>
 <translation id="4719927025381752090">Übersetzung anbieten</translation>
 <translation id="4720023427747327413">In <ph name="PRODUCT_NAME" /> öffnen</translation>
 <translation id="4720982865791209136">Helfen Sie uns, Chrome zu verbessern. <ph name="BEGIN_LINK" />An Umfrage teilnehmen<ph name="END_LINK" /></translation>
@@ -476,20 +468,17 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4751476147751820511">Bewegungs- oder Lichtsensoren</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 Download abgeschlossen.}other{# Downloads abgeschlossen.}}</translation>
-<translation id="4766369052440583386">Datensparmodus aktiviert</translation>
 <translation id="4797039098279997504">Tippen, um zu <ph name="URL_OF_THE_CURRENT_TAB" /> zurückzukehren</translation>
 <translation id="4802417911091824046">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay.
 
 Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Name auf Karte</translation>
-<translation id="4807963036345170158">Datensparmodus deaktiviert</translation>
 <translation id="4816465935029283692">Datentypen</translation>
 <translation id="4837753911714442426">Optionen zum Drucken einer Seite öffnen</translation>
 <translation id="4842092870884894799">Pop-up-Fenster zur Passwortgenerierung wird angezeigt.</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4857347795080810417">VR-Modul wurde installiert</translation>
 <translation id="4860895144060829044">Anrufen</translation>
-<translation id="4874967477260347223">Medienlizenzen</translation>
 <translation id="4875775213178255010">Inhaltsvorschläge</translation>
 <translation id="4878404682131129617">Tunnelerstellung via Proxyserver ist fehlgeschlagen</translation>
 <translation id="4880127995492972015">Übersetzen…</translation>
@@ -511,7 +500,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4988210275050210843">Datei wird heruntergeladen (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Seiten</translation>
 <translation id="4996978546172906250">Teilen über</translation>
-<translation id="5004339818306944878">Bis zu 60 % weniger Datenverbrauch und schnelleres Internet. Google-Server optimieren die Seiten, die Sie besuchen.</translation>
 <translation id="5004416275253351869">Google-Aktivitätseinstellungen</translation>
 <translation id="5005498671520578047">Passwort kopieren</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> möchte eine Verbindung herstellen</translation>
@@ -670,7 +658,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6177111841848151710">Für die aktuelle Suchmaschine blockiert</translation>
-<translation id="6177390657002841081">Datensparmodus aktivieren</translation>
 <translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="618993374665929060">"Weitere ähnliche" ganz geöffnet</translation>
 <translation id="6192333916571137726">Download-Datei</translation>
@@ -723,7 +710,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6545017243486555795">Alle Daten löschen</translation>
 <translation id="6560414384669816528">Suche mit Sogou</translation>
 <translation id="6566259936974865419">Dank Chrome haben Sie <ph name="GIGABYTES" /> GB eingespart</translation>
-<translation id="6567212464587185774">Bis zu 60 % weniger Datenverbrauch und schnelleres Internet.</translation>
 <translation id="6573096386450695060">Immer zulassen</translation>
 <translation id="6573431926118603307">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chrome geöffnet haben.</translation>
 <translation id="6583199322650523874">Aktuelle Seite als Lesezeichen speichern</translation>
@@ -746,7 +732,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
 <translation id="6697947395630195233">Chrome benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen.</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
-<translation id="6699370405921460408">Google-Server optimieren die Seiten, die Sie besuchen.</translation>
 <translation id="6709133671862442373">Nachrichten</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6712388303105732168">Über die Schaltfläche "Weitere ähnliche" sehen Sie ähnliche Inhalte von Google</translation>
@@ -841,6 +826,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7437998757836447326">Von Chrome abmelden</translation>
 <translation id="7444811645081526538">Weitere Kategorien</translation>
 <translation id="7445411102860286510">Automatische Wiedergabe stummgeschalteter Videos auf Websites zulassen (empfohlen)</translation>
+<translation id="7453467225369441013">Sie werden von den meisten Websites, aber nicht aus Ihrem Google-Konto abgemeldet.</translation>
 <translation id="7454641608352164238">Zu wenig Speicherplatz</translation>
 <translation id="7455923816558154057">Zum Ansehen tippen</translation>
 <translation id="7465104139234185284">Alle privaten Tabs schließen</translation>
@@ -1064,7 +1050,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Privat</translation>
-<translation id="932599481871055447">Geringerer Datenverbrauch und schnelleres Surfen</translation>
 <translation id="938850635132480979">Fehler: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="945632385593298557">Mikrofonzugriff</translation>

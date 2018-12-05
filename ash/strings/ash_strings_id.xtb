@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Dipasang ke pengisi daya rendah. Pengisian daya baterai mungkin tidak dapat diandalkan.</translation>
 <translation id="2761704814324807722">Baki status, waktu <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Menyambungkan lagi ke <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Memilih apakah situs dapat menggunakan layanan lokasi atau mikrofon perangkat, kamera, atau fitur lainnya</translation>
 <translation id="2792498699870441125">Alt+Telusuri</translation>
 <translation id="2803734122639935495">Untuk membuka kunci, masukkan sandi Anda</translation>
 <translation id="2819276065543622893">Anda akan dikeluarkan sekarang.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">Keyboard lain telah tersambung ke perangkat ini sejak terakhir kali Anda login. Pastikan Anda memercayai keyboard ini sebelum menggunakannya.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Sorot kursor mouse</translation>
-<translation id="3510503721818156981">Chromebook terhubung ke ponsel baru</translation>
 <translation id="3513798432020909783">Akun dikelola oleh <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Ubah kembali ke "<ph name="FROM_LOCALE" />" (harus dinyalakan ulang)</translation>
 <translation id="3595596368722241419">Baterai penuh</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">Dikte</translation>
 <translation id="4261870227682513959">Tampilkan setelan notifikasi. Notifikasi nonaktif.</translation>
 <translation id="4269883910223712419">Admin perangkat ini memiliki kemampuan untuk:</translation>
-<translation id="4274921305979314545">Hubungkan Chromebook dengan ponsel</translation>
 <translation id="4279490309300973883">Mencerminkan</translation>
 <translation id="4292681942966152062">Mengaktifkan <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">Perangkat</translation>
 <translation id="4659419629803378708">ChromeVox diaktifkan</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">Admin perangkat dapat memantau aktivitas akses internet Anda.</translation>
 <translation id="4774338217796918551">Gunakan lagi besok pukul <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Sandi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asisten Google tidak tersedia dalam sesi demo.</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Aktif</translation>
-<translation id="592343074608792716">Chromebook ini dan ponsel akan terhubung otomatis</translation>
 <translation id="5947494881799873997">Kembalikan</translation>
 <translation id="595202126637698455">Kinerja pelacakan aktif</translation>
 <translation id="5957083217255311415">Data seluler dinonaktifkan.</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
 <translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
-<translation id="6814658242098378692">Mengelola aplikasi, ekstensi, dan tema</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Aktifkan <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +374,6 @@
 <translation id="7564874036684306347">Memindahkan jendela ke desktop lain dapat mengakibatkan perilaku tak terduga. Notifikasi, jendela, dan dialog berikutnya dapat terpisah antardesktop.</translation>
 <translation id="7569509451529460200">Braille dan ChromeVox diaktifkan</translation>
 <translation id="7593891976182323525">Telusuri atau Shift</translation>
-<translation id="7604942372593434070">Mengakses aktivitas akses internet Anda</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (pemilik)</translation>
 <translation id="7647488630410863958">Buka kunci perangkat untuk melihat notifikasi</translation>
 <translation id="7649070708921625228">Bantuan</translation>

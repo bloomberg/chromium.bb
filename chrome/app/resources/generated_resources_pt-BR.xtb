@@ -143,7 +143,7 @@
 <translation id="1189418886587279221">Ative recursos de acessibilidade para facilitar o uso do seu dispositivo.</translation>
 <translation id="1190144681599273207">A busca deste arquivo usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acessar um arquivo armazenado no seu computador}one{Acessar # arquivos armazenados no seu computador.}other{Acessar # arquivos armazenados no seu computador}}</translation>
-<translation id="1190660338026981543">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
+<translation id="1190660338026981543">Seu dispositivo (<ph name="DEVICE_TYPE" />) foi inscrito para o gerenciamento empresarial por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">Para limpar os dados de navegação apenas deste dispositivo e mantê-los na sua Conta do Google, <ph name="BEGIN_LINK" />saia da sua conta<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Entrar na sessão gerenciada</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, digite sua senha. Na próxima vez, você poderá usar seu smartphone para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">Ocorreu um erro durante a instalação do aplicativo Linux.</translation>
 <translation id="16815041330799488">Não permitir que sites vejam textos e imagens copiados para a área de transferência</translation>
 <translation id="1682548588986054654">Nova janela anônima</translation>
-<translation id="1683850629661177840">Agora, o modo Lite acelera a navegação em todas as páginas, inclusive HTTPS.</translation>
 <translation id="168715261339224929">Para ver seus favoritos em todos os seus dispositivos, ative a sincronização.</translation>
 <translation id="1688867105868176567">Limpar dados do site?</translation>
 <translation id="1688935057616748272">Digite uma letra</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">Ação indisponível</translation>
 <translation id="204914487372604757">Criar atalho</translation>
 <translation id="2050339315714019657">Retrato</translation>
-<translation id="2052369079215022979">Gerenciado pela sua organização</translation>
 <translation id="2053312383184521053">Dados em estado de inatividade</translation>
 <translation id="205560151218727633">Logotipo do Google Assistente</translation>
 <translation id="2058456167109518507">Dispositivo detectado</translation>
@@ -3870,7 +3868,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6916590542764765824">Gerenciar extensões</translation>
 <translation id="6920989436227028121">Abrir como guia normal</translation>
 <translation id="6921709132208495314">Parar de usar dados nesta página</translation>
-<translation id="6922128026973287222">Economize dados e navegue mais rápido usando a Economia de dados do Google. Clique para saber mais.</translation>
 <translation id="6923132443355966645">Rolar / Clicar</translation>
 <translation id="6923633482430812883">Erro ao ativar o compartilhamento. Verifique se o servidor de arquivos ao qual você está se conectando tem compatibilidade com SMBv2 ou versões posteriores.</translation>
 <translation id="6930242544192836755">Duração</translation>
