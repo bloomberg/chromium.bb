@@ -173,11 +173,11 @@ WebIDBKeyRange WebIDBKeyRangeBuilder::Build(
 // static
 IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(const WebIDBKeyPath& key_path) {
   switch (key_path.KeyPathType()) {
-    case kWebIDBKeyPathTypeString:
+    case mojom::IDBKeyPathType::String:
       return IndexedDBKeyPath(key_path.String().Utf16());
-    case kWebIDBKeyPathTypeArray:
+    case mojom::IDBKeyPathType::Array:
       return IndexedDBKeyPath(CopyArray(key_path.Array()));
-    case kWebIDBKeyPathTypeNull:
+    case mojom::IDBKeyPathType::Null:
       return IndexedDBKeyPath();
   }
 }
@@ -185,15 +185,15 @@ IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(const WebIDBKeyPath& key_path) {
 // static
 WebIDBKeyPath WebIDBKeyPathBuilder::Build(const IndexedDBKeyPath& key_path) {
   switch (key_path.type()) {
-    case kWebIDBKeyPathTypeString:
+    case mojom::IDBKeyPathType::String:
       return WebIDBKeyPath::Create(WebString::FromUTF16(key_path.string()));
-    case kWebIDBKeyPathTypeArray: {
+    case mojom::IDBKeyPathType::Array: {
       WebVector<WebString> key_path_vector(key_path.array().size());
       for (const auto& item : key_path.array())
         key_path_vector.emplace_back(WebString::FromUTF16(item));
       return WebIDBKeyPath::Create(key_path_vector);
     }
-    case kWebIDBKeyPathTypeNull:
+    case mojom::IDBKeyPathType::Null:
       return WebIDBKeyPath::CreateNull();
   }
 }

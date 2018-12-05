@@ -158,16 +158,16 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::IndexedDBKeyPath>::data(
 
   auto data = blink::mojom::IDBKeyPathData::New();
   switch (key_path.type()) {
-    case blink::kWebIDBKeyPathTypeString:
+    case blink::mojom::IDBKeyPathType::String:
       data->set_string(key_path.string());
       return data;
-    case blink::kWebIDBKeyPathTypeArray:
+    case blink::mojom::IDBKeyPathType::Array:
       data->set_string_array(key_path.array());
       return data;
 
     // The following key path types are not used.
-    case blink::kWebIDBKeyPathTypeNull:;  // No-op, fall out of switch block to
-                                          // NOTREACHED().
+    case blink::mojom::IDBKeyPathType::Null:;  // No-op, fall out of switch
+                                               // block to NOTREACHED().
   }
   NOTREACHED();
   return data;

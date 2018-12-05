@@ -820,7 +820,8 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
         "The keyPath argument contains an invalid key path.");
     return nullptr;
   }
-  if (key_path.GetType() == IDBKeyPath::kArrayType && options->multiEntry()) {
+  if (key_path.GetType() == mojom::IDBKeyPathType::Array &&
+      options->multiEntry()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The keyPath argument was an array and the multiEntry option is true.");

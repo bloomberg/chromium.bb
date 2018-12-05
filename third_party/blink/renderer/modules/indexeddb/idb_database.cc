@@ -295,9 +295,9 @@ IDBObjectStore* IDBDatabase::createObjectStore(
     return nullptr;
   }
 
-  if (auto_increment && ((key_path.GetType() == IDBKeyPath::kStringType &&
+  if (auto_increment && ((key_path.GetType() == mojom::IDBKeyPathType::String &&
                           key_path.GetString().IsEmpty()) ||
-                         key_path.GetType() == IDBKeyPath::kArrayType)) {
+                         key_path.GetType() == mojom::IDBKeyPathType::Array)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidAccessError,
         "The autoIncrement option was set but the "
