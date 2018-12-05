@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "storage/common/blob_storage/blob_handle.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
@@ -64,7 +65,7 @@ std::vector<GURL> GetURLList(
 
 void GetServiceWorkerHeaderMapFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request,
-    ServiceWorkerHeaderMap* headers) {
+    blink::FetchAPIRequestHeadersMap* headers) {
   DCHECK(headers);
   DCHECK(headers->empty());
   web_request.VisitHTTPHeaderFields(MakeHeaderVisitor(headers).get());

@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_UTIL_H_
 
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
 namespace blink {
@@ -17,7 +18,7 @@ namespace content {
 
 void CONTENT_EXPORT GetServiceWorkerHeaderMapFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request,
-    ServiceWorkerHeaderMap* headers);
+    blink::FetchAPIRequestHeadersMap* headers);
 
 blink::mojom::FetchAPIResponsePtr GetFetchAPIResponseFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response);

@@ -88,9 +88,6 @@ class ServiceWorkerUtils {
   CONTENT_EXPORT static blink::mojom::FetchAPIRequestPtr
   DeserializeFetchRequestFromString(const std::string& serialized);
 
-  CONTENT_EXPORT static content::ServiceWorkerHeaderMap
-  ToServiceWorkerHeaderMap(const blink::FetchAPIRequestHeadersMap& headers);
-
  private:
   static bool IsPathRestrictionSatisfiedInternal(
       const GURL& scope,

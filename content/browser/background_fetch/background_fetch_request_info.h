@@ -64,8 +64,8 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   const std::string& download_guid() const { return download_guid_; }
 
   // Returns the Fetch API Request object that details the developer's request.
-  const blink::mojom::FetchAPIRequest& fetch_request() const {
-    return *fetch_request_;
+  const blink::mojom::FetchAPIRequestPtr& fetch_request() const {
+    return fetch_request_;
   }
 
   // Returns the Fetch API Request Ptr object that details the developer's

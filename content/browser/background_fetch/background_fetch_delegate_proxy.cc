@@ -115,7 +115,7 @@ class BackgroundFetchDelegateProxy::Core
     if (!delegate_)
       return;
 
-    const blink::mojom::FetchAPIRequest& fetch_request =
+    const blink::mojom::FetchAPIRequestPtr& fetch_request =
         request->fetch_request();
 
     const net::NetworkTrafficAnnotationTag traffic_annotation(
@@ -150,23 +150,23 @@ class BackgroundFetchDelegateProxy::Core
     // TODO(peter): The |headers| should be populated with all the properties
     // set in the |fetch_request| structure.
     net::HttpRequestHeaders headers;
-    for (const auto& pair : fetch_request.headers)
+    for (const auto& pair : fetch_request->headers)
       headers.SetHeader(pair.first, pair.second);
 
     // Append the Origin header for requests whose CORS flag is set, or whose
     // request method is not GET or HEAD. See section 3.1 of the standard:
     // https://fetch.spec.whatwg.org/#origin-header
-    if (fetch_request.mode == network::mojom::FetchRequestMode::kCors ||
-        fetch_request.mode ==
+    if (fetch_request->mode == network::mojom::FetchRequestMode::kCors ||
+        fetch_request->mode ==
             network::mojom::FetchRequestMode::kCorsWithForcedPreflight ||
-        (fetch_request.method != "GET" && fetch_request.method != "HEAD")) {
+        (fetch_request->method != "GET" && fetch_request->method != "HEAD")) {
       headers.SetHeader("Origin", origin.Serialize());
     }
 
     // TODO(crbug.com/774054): Update |has_request_body| after the cache storage
     // supports request bodies.
     delegate_->DownloadUrl(job_unique_id, request->download_guid(),
-                           fetch_request.method, fetch_request.url,
+                           fetch_request->method, fetch_request->url,
                            traffic_annotation, headers,
                            /* has_request_body= */ false);
   }

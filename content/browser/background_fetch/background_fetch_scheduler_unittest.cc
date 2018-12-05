@@ -51,7 +51,7 @@ class FakeController : public BackgroundFetchJobController {
     // Record the completed request. Store everything after the origin and the
     // slash, to be able to directly compare with the provided requests.
     controller_sequence_list_->push_back(
-        request->fetch_request().url.path().substr(1));
+        request->fetch_request()->url.path().substr(1));
 
     // Continue normally.
     BackgroundFetchJobController::DidCompleteRequest(request);

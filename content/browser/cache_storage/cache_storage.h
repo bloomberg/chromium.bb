@@ -100,7 +100,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
-                  std::unique_ptr<ServiceWorkerFetchRequest> request,
+                  blink::mojom::FetchAPIRequestPtr request,
                   blink::mojom::QueryParamsPtr match_params,
                   CacheStorageCache::ResponseCallback callback);
 
@@ -108,13 +108,13 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // response from the first cache (in order of cache creation) to have the
   // entry. If no response is found then |callback| is called with
   // blink::mojom::CacheStorageError::kErrorNotFound.
-  void MatchAllCaches(std::unique_ptr<ServiceWorkerFetchRequest> request,
+  void MatchAllCaches(blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::QueryParamsPtr match_params,
                       CacheStorageCache::ResponseCallback callback);
 
   // Puts the request/response pair in the cache.
   void WriteToCache(const std::string& cache_name,
-                    std::unique_ptr<ServiceWorkerFetchRequest> request,
+                    blink::mojom::FetchAPIRequestPtr request,
                     blink::mojom::FetchAPIResponsePtr response,
                     CacheStorage::ErrorCallback callback);
 
@@ -196,7 +196,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
-                      std::unique_ptr<ServiceWorkerFetchRequest> request,
+                      blink::mojom::FetchAPIRequestPtr request,
                       blink::mojom::QueryParamsPtr match_params,
                       CacheStorageCache::ResponseCallback callback);
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
@@ -205,7 +205,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
                           blink::mojom::FetchAPIResponsePtr response);
 
   // The MatchAllCaches callbacks are below.
-  void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
+  void MatchAllCachesImpl(blink::mojom::FetchAPIRequestPtr request,
                           blink::mojom::QueryParamsPtr match_params,
                           CacheStorageCache::ResponseCallback callback);
   void MatchAllCachesDidMatch(CacheStorageCacheHandle cache_handle,
@@ -219,7 +219,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // WriteToCache callbacks.
   void WriteToCacheImpl(const std::string& cache_name,
-                        std::unique_ptr<ServiceWorkerFetchRequest> request,
+                        blink::mojom::FetchAPIRequestPtr request,
                         blink::mojom::FetchAPIResponsePtr response,
                         CacheStorage::ErrorCallback callback);
 

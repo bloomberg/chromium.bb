@@ -30,7 +30,6 @@
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,7 +110,7 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
   std::string headers =
       success ? "HTTP/1.1 200 OK\n" : "HTTP/1.1 404 Not found\n";
   auto response = std::make_unique<BackgroundFetchResponse>(
-      std::vector<GURL>(1u, request_info->fetch_request().url),
+      std::vector<GURL>(1u, request_info->fetch_request()->url),
       base::MakeRefCounted<net::HttpResponseHeaders>(headers));
 
   if (!success) {
@@ -445,12 +444,11 @@ class BackgroundFetchDataManagerTest
   bool MatchCache(const blink::mojom::FetchAPIRequestPtr& request) {
     bool result = false;
 
-    auto request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
-        mojo::ConvertTo<ServiceWorkerFetchRequest>(*request));
     base::RunLoop run_loop;
     background_fetch_data_manager_->cache_manager()->MatchCache(
         origin(), CacheStorageOwner::kBackgroundFetch, kExampleUniqueId,
-        std::move(request_ptr), nullptr /* match_params */,
+        BackgroundFetchSettledFetch::CloneRequest(request),
+        nullptr /* match_params */,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -1967,9 +1965,9 @@ TEST_F(BackgroundFetchDataManagerTest, GetInitializationData) {
     EXPECT_EQ(request_info->request_index(),
               init_request_info->request_index());
     EXPECT_EQ(ServiceWorkerUtils::SerializeFetchRequestToString(
-                  request_info->fetch_request()),
+                  *(request_info->fetch_request())),
               ServiceWorkerUtils::SerializeFetchRequestToString(
-                  init_request_info->fetch_request()));
+                  *(init_request_info->fetch_request())));
   }
 
   // Create another registration.

@@ -32,39 +32,4 @@ const char kServiceWorkerRedirectError[] =
     "The script resource is behind a redirect, which is disallowed.";
 const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
 
-ServiceWorkerFetchRequest::ServiceWorkerFetchRequest() = default;
-
-ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
-    const GURL& url,
-    const std::string& method,
-    const ServiceWorkerHeaderMap& headers,
-    const Referrer& referrer,
-    bool is_reload)
-    : url(url),
-      method(method),
-      headers(headers),
-      referrer(referrer),
-      is_reload(is_reload) {}
-
-ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
-    const ServiceWorkerFetchRequest& other) = default;
-
-ServiceWorkerFetchRequest& ServiceWorkerFetchRequest::operator=(
-    const ServiceWorkerFetchRequest& other) = default;
-
-ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
-
-size_t ServiceWorkerFetchRequest::EstimatedStructSize() {
-  size_t size = sizeof(ServiceWorkerFetchRequest);
-  size += url.spec().size();
-  size += client_id.size();
-
-  for (const auto& key_and_value : headers) {
-    size += key_and_value.first.size();
-    size += key_and_value.second.size();
-  }
-
-  return size;
-}
-
 }  // namespace content

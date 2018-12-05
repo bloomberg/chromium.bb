@@ -22,6 +22,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -45,7 +46,7 @@ class TestServiceManagerContext;
 blink::mojom::FetchAPIRequestPtr CreateFetchAPIRequest(
     const GURL& url,
     const std::string& method,
-    const base::flat_map<std::string, std::string>& headers,
+    const blink::FetchAPIRequestHeadersMap& headers,
     blink::mojom::ReferrerPtr referrer,
     bool is_reload);
 

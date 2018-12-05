@@ -26,6 +26,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
@@ -391,12 +392,12 @@ TEST_F(ServiceWorkerContextClientTest, DispatchFetchEvent_Headers) {
   ASSERT_EQ(1u, mock_proxy.fetch_events().size());
   const blink::WebServiceWorkerRequest& received_request =
       mock_proxy.fetch_events()[0].second;
-  ServiceWorkerHeaderMap header_map;
+  blink::FetchAPIRequestHeadersMap header_map;
   GetServiceWorkerHeaderMapFromWebRequest(received_request, &header_map);
 
   EXPECT_EQ(expected_url, static_cast<GURL>(received_request.Url()));
-  EXPECT_TRUE(header_map.find("x-bye-bye") == header_map.end());
-  auto iter = header_map.find("x-hi-hi");
+  EXPECT_TRUE(header_map.find(std::string("x-bye-bye")) == header_map.end());
+  auto iter = header_map.find(std::string("x-hi-hi"));
   ASSERT_TRUE(iter != header_map.end());
   EXPECT_EQ("present", iter->second);
 

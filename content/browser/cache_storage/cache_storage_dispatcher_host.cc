@@ -21,7 +21,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
-#include "content/common/service_worker/service_worker_type_converter.h"
+#include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,13 +77,8 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
-        request->url, request->method,
-        ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-        request->referrer.To<Referrer>(), request->is_reload);
-
     cache->Match(
-        std::move(scoped_request), std::move(match_params),
+        std::move(request), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheMatchCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -111,17 +106,8 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    std::unique_ptr<ServiceWorkerFetchRequest> request_ptr;
-
-    if (request && !request->url.is_empty()) {
-      request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
-          request->url, request->method,
-          ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-          request->referrer.To<Referrer>(), request->is_reload);
-    }
-
     cache->MatchAll(
-        std::move(request_ptr), std::move(match_params),
+        std::move(request), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -150,16 +136,8 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
 
-    std::unique_ptr<ServiceWorkerFetchRequest> request_ptr;
-    if (request) {
-      request_ptr = std::make_unique<ServiceWorkerFetchRequest>(
-          request->url, request->method,
-          ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-          request->referrer.To<Referrer>(), request->is_reload);
-    }
-
     cache->Keys(
-        std::move(request_ptr), std::move(match_params),
+        std::move(request), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheKeysCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -173,9 +151,8 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
     std::vector<blink::mojom::FetchAPIRequestPtr> requests_;
-    for (auto request : *requests) {
-      requests_.push_back(
-          mojo::ConvertTo<blink::mojom::FetchAPIRequestPtr>(request));
+    for (const auto& request : *requests) {
+      requests_.push_back(BackgroundFetchSettledFetch::CloneRequest(request));
     }
 
     std::move(callback).Run(
@@ -321,14 +298,10 @@ void CacheStorageDispatcherHost::Match(
   }
   if (!ValidState())
     return;
-  auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
-      request->url, request->method,
-      ServiceWorkerUtils::ToServiceWorkerHeaderMap(request->headers),
-      request->referrer.To<Referrer>(), request->is_reload);
 
   if (!match_params->cache_name) {
     context_->cache_manager()->MatchAllCaches(
-        origin, CacheStorageOwner::kCacheAPI, std::move(scoped_request),
+        origin, CacheStorageOwner::kCacheAPI, std::move(request),
         std::move(match_params),
         base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
                        std::move(callback)));
@@ -337,7 +310,7 @@ void CacheStorageDispatcherHost::Match(
   std::string cache_name = base::UTF16ToUTF8(*match_params->cache_name);
   context_->cache_manager()->MatchCache(
       origin, CacheStorageOwner::kCacheAPI, std::move(cache_name),
-      std::move(scoped_request), std::move(match_params),
+      std::move(request), std::move(match_params),
       base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
                      std::move(callback)));
 }

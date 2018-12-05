@@ -23,14 +23,13 @@ class BlobStorageContext;
 namespace content {
 
 enum class CacheStorageOwner;
-struct ServiceWorkerFetchRequest;
 
 // The state needed to pass when writing to a cache.
 struct PutContext {
   using ErrorCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError)>;
 
-  PutContext(std::unique_ptr<ServiceWorkerFetchRequest> request,
+  PutContext(blink::mojom::FetchAPIRequestPtr request,
              blink::mojom::FetchAPIResponsePtr response,
              blink::mojom::BlobPtr blob,
              uint64_t blob_size,
@@ -40,7 +39,7 @@ struct PutContext {
   ~PutContext();
 
   // Provided by the constructor.
-  std::unique_ptr<ServiceWorkerFetchRequest> request;
+  blink::mojom::FetchAPIRequestPtr request;
   blink::mojom::FetchAPIResponsePtr response;
   blink::mojom::BlobPtr blob;
   uint64_t blob_size;
@@ -82,7 +81,7 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
   virtual ~CacheStorageCacheEntryHandler();
 
   virtual std::unique_ptr<PutContext> CreatePutContext(
-      std::unique_ptr<ServiceWorkerFetchRequest>,
+      blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::FetchAPIResponsePtr response) = 0;
   virtual void PopulateResponseBody(
       CacheStorageCacheHandle handle,
