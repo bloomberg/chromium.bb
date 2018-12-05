@@ -5,6 +5,8 @@
 #include "components/arc/arc_client_adapter.h"
 
 #include "components/arc/arc_container_client_adapter.h"
+#include "components/arc/arc_util.h"
+#include "components/arc/arc_vm_client_adapter.h"
 
 namespace arc {
 
@@ -21,8 +23,8 @@ void ArcClientAdapter::RemoveObserver(Observer* observer) {
 
 // static
 std::unique_ptr<ArcClientAdapter> ArcClientAdapter::Create() {
-  // TODO(yusukes): Create a different adapter for arcvm.
-  return CreateArcContainerClientAdapter();
+  return IsArcVmEnabled() ? CreateArcVmClientAdapter()
+                          : CreateArcContainerClientAdapter();
 }
 
 }  // namespace arc
