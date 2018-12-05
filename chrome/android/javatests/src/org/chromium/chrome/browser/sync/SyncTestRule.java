@@ -282,7 +282,6 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                 FakeServerHelper.deleteFakeServer();
             }
         });
-        SigninTestUtil.resetSigninState();
         SigninTestUtil.tearDownAuthForTest();
     }
 }

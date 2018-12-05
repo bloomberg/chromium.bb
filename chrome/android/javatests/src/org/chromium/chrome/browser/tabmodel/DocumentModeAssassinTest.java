@@ -507,7 +507,6 @@ public class DocumentModeAssassinTest {
                     TEST_INFO.contents[i].url, selector.getModel(false).getTabAt(i).getUrl());
         }
 
-        SigninTestUtil.resetSigninState();
         SigninTestUtil.tearDownAuthForTest();
     }
 

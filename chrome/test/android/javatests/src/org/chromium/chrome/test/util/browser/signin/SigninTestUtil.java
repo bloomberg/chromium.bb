@@ -58,6 +58,7 @@ public final class SigninTestUtil {
             sAccountManager.removeAccountHolderBlocking(accountHolder);
         }
         sAddedAccounts.clear();
+        resetSigninState();
     }
 
     /**
