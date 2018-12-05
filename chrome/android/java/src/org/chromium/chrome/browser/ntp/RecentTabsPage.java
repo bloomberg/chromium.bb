@@ -103,7 +103,8 @@ public class RecentTabsPage
         View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
         if (activity.getFullscreenManager().getBottomControlsHeight() != 0) {
             ViewCompat.setPaddingRelative(recentTabsRoot,
-                    ViewCompat.getPaddingStart(recentTabsRoot), 0,
+                    ViewCompat.getPaddingStart(recentTabsRoot),
+                    activity.getFullscreenManager().getTopControlsHeight(),
                     ViewCompat.getPaddingEnd(recentTabsRoot),
                     activity.getFullscreenManager().getBottomControlsHeight());
         }
