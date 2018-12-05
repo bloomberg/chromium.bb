@@ -428,14 +428,6 @@ typedef struct macroblockd_plane {
 #define BLOCK_OFFSET(x, i) \
   ((x) + (i) * (1 << (tx_size_wide_log2[0] + tx_size_high_log2[0])))
 
-struct RefCntBuffer;
-
-typedef struct RefBuffer {
-  int map_idx;  // frame map idx
-  struct RefCntBuffer *buf;
-  struct scale_factors sf;
-} RefBuffer;
-
 typedef struct {
   DECLARE_ALIGNED(16, InterpKernel, vfilter);
   DECLARE_ALIGNED(16, InterpKernel, hfilter);
@@ -497,6 +489,8 @@ typedef struct jnt_comp_params {
   int bck_offset;
 } JNT_COMP_PARAMS;
 
+struct scale_factors;
+
 // Most/all of the pointers are mere pointers to actual arrays are allocated
 // elsewhere. This is mostly for coding convenience.
 typedef struct macroblockd {
@@ -523,8 +517,8 @@ typedef struct macroblockd {
   int mb_to_top_edge;
   int mb_to_bottom_edge;
 
-  /* pointers to reference frames */
-  const RefBuffer *block_refs[2];
+  /* pointers to reference frame scale factors */
+  const struct scale_factors *block_ref_scale_factors[2];
 
   /* pointer to current frame */
   const YV12_BUFFER_CONFIG *cur_buf;
@@ -1046,7 +1040,8 @@ motion_mode_allowed(const WarpedMotionParams *gm_params, const MACROBLOCKD *xd,
     if (!check_num_overlappable_neighbors(mbmi)) return SIMPLE_TRANSLATION;
     assert(!has_second_ref(mbmi));
     if (mbmi->num_proj_ref >= 1 &&
-        (allow_warped_motion && !av1_is_scaled(&(xd->block_refs[0]->sf)))) {
+        (allow_warped_motion &&
+         !av1_is_scaled(xd->block_ref_scale_factors[0]))) {
       if (xd->cur_frame_force_integer_mv) {
         return OBMC_CAUSAL;
       }

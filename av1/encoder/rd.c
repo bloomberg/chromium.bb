@@ -1259,7 +1259,8 @@ YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const AV1_COMP *cpi,
                                              int ref_frame) {
   assert(ref_frame >= LAST_FRAME && ref_frame <= ALTREF_FRAME);
   RefCntBuffer *const scaled_buf = cpi->scaled_ref_buf[ref_frame - 1];
-  RefCntBuffer *const ref_buf = get_ref_frame_buf(cpi, ref_frame);
+  const RefCntBuffer *const ref_buf =
+      get_ref_frame_buf(&cpi->common, ref_frame);
   return (scaled_buf != ref_buf && scaled_buf != NULL) ? &scaled_buf->buf
                                                        : NULL;
 }

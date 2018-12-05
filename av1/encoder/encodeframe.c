@@ -188,7 +188,8 @@ static unsigned int get_sby_perpixel_diff_variance(const AV1_COMP *const cpi,
                                                    BLOCK_SIZE bs) {
   unsigned int sse, var;
   uint8_t *last_y;
-  const YV12_BUFFER_CONFIG *last = get_ref_frame_buffer(cpi, LAST_FRAME);
+  const YV12_BUFFER_CONFIG *last =
+      get_ref_frame_yv12_buf(&cpi->common, LAST_FRAME);
 
   assert(last != NULL);
   last_y =
@@ -2118,7 +2119,7 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
   mbmi->ref_frame[1] = NONE_FRAME;
   mbmi->motion_mode = SIMPLE_TRANSLATION;
 
-  YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref);
+  const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref);
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
   struct buf_2d backup_yv12;
@@ -2140,8 +2141,7 @@ static void simple_motion_search(AV1_COMP *const cpi, MACROBLOCK *x, int mi_row,
                          num_planes);
   } else {
     av1_setup_pre_planes(xd, ref_idx, yv12, mi_row, mi_col,
-                         &cm->current_frame.frame_refs[ref - LAST_FRAME].sf,
-                         num_planes);
+                         get_ref_scale_factors(cm, ref), num_planes);
   }
 
   // This overwrites the mv_limits so we will need to restore it later.
@@ -5502,8 +5502,7 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
       // Retain GOLDEN/ALTERF
       if (ref_frame == GOLDEN_FRAME || ref_frame == ALTREF_FRAME) continue;
 
-      const RefCntBuffer *const buf =
-          cm->current_frame.frame_refs[ref_frame - LAST_FRAME].buf;
+      const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
       if (buf != NULL) {
         const unsigned int ref_order_hint = buf->order_hint;
 
@@ -5571,8 +5570,8 @@ static INLINE int av1_refs_are_one_sided(const AV1_COMMON *cm) {
   assert(!frame_is_intra_only(cm));
 
   int one_sided_refs = 1;
-  for (int ref = 0; ref < INTER_REFS_PER_FRAME; ++ref) {
-    const RefCntBuffer *const buf = cm->current_frame.frame_refs[ref].buf;
+  for (int ref = LAST_FRAME; ref <= ALTREF_FRAME; ++ref) {
+    const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref);
     if (buf == NULL) continue;
 
     const int ref_order_hint = buf->order_hint;
@@ -5592,9 +5591,9 @@ static INLINE void get_skip_mode_ref_offsets(const AV1_COMMON *cm,
   if (!skip_mode_info->skip_mode_allowed) return;
 
   const RefCntBuffer *const buf_0 =
-      cm->current_frame.frame_refs[skip_mode_info->ref_frame_idx_0].buf;
+      get_ref_frame_buf(cm, LAST_FRAME + skip_mode_info->ref_frame_idx_0);
   const RefCntBuffer *const buf_1 =
-      cm->current_frame.frame_refs[skip_mode_info->ref_frame_idx_1].buf;
+      get_ref_frame_buf(cm, LAST_FRAME + skip_mode_info->ref_frame_idx_1);
   assert(buf_0 != NULL && buf_1 != NULL);
 
   ref_order_hint[0] = buf_0->order_hint;
@@ -5867,7 +5866,9 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     int num_refs_using_gm = 0;
 
     for (frame = ALTREF_FRAME; frame >= LAST_FRAME; --frame) {
-      ref_buf[frame] = get_ref_frame_buffer(cpi, frame);
+      ref_buf[frame] = NULL;
+      RefCntBuffer *buf = get_ref_frame_buf(cm, frame);
+      if (buf != NULL) ref_buf[frame] = &buf->buf;
       int pframe;
       cm->global_motion[frame] = default_warp_params;
       const WarpedMotionParams *ref_params =
@@ -6357,10 +6358,11 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
     set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
     for (ref = 0; ref < 1 + is_compound; ++ref) {
-      YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, mbmi->ref_frame[ref]);
+      const YV12_BUFFER_CONFIG *cfg =
+          get_ref_frame_yv12_buf(cm, mbmi->ref_frame[ref]);
       assert(IMPLIES(!is_intrabc_block(mbmi), cfg));
       av1_setup_pre_planes(xd, ref, cfg, mi_row, mi_col,
-                           &xd->block_refs[ref]->sf, num_planes);
+                           xd->block_ref_scale_factors[ref], num_planes);
     }
 
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);

@@ -636,10 +636,8 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
   }
 
   *use_jnt_comp_avg = 1;
-  const RefCntBuffer *const bck_buf =
-      cm->current_frame.frame_refs[mbmi->ref_frame[0] - LAST_FRAME].buf;
-  const RefCntBuffer *const fwd_buf =
-      cm->current_frame.frame_refs[mbmi->ref_frame[1] - LAST_FRAME].buf;
+  const RefCntBuffer *const bck_buf = get_ref_frame_buf(cm, mbmi->ref_frame[0]);
+  const RefCntBuffer *const fwd_buf = get_ref_frame_buf(cm, mbmi->ref_frame[1]);
   const int cur_frame_index = cm->cur_frame->order_hint;
   int bck_frame_index = 0, fwd_frame_index = 0;
 
@@ -968,15 +966,15 @@ void av1_setup_build_prediction_by_above_pred(
   for (int ref = 0; ref < num_refs; ++ref) {
     const MV_REFERENCE_FRAME frame = above_mbmi->ref_frame[ref];
 
-    const RefBuffer *const ref_buf =
-        &ctxt->cm->current_frame.frame_refs[frame - LAST_FRAME];
-
-    xd->block_refs[ref] = ref_buf;
-    if ((!av1_is_valid_scale(&ref_buf->sf)))
+    const RefCntBuffer *const ref_buf = get_ref_frame_buf(ctxt->cm, frame);
+    const struct scale_factors *const sf =
+        get_ref_scale_factors_const(ctxt->cm, frame);
+    xd->block_ref_scale_factors[ref] = sf;
+    if ((!av1_is_valid_scale(sf)))
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Reference frame has invalid dimensions");
-    av1_setup_pre_planes(xd, ref, &ref_buf->buf->buf, ctxt->mi_row,
-                         above_mi_col, &ref_buf->sf, num_planes);
+    av1_setup_pre_planes(xd, ref, &ref_buf->buf, ctxt->mi_row, above_mi_col, sf,
+                         num_planes);
   }
 
   xd->mb_to_left_edge = 8 * MI_SIZE * (-above_mi_col);
@@ -1006,15 +1004,16 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
   for (int ref = 0; ref < num_refs; ++ref) {
     const MV_REFERENCE_FRAME frame = left_mbmi->ref_frame[ref];
 
-    const RefBuffer *const ref_buf =
-        &ctxt->cm->current_frame.frame_refs[frame - LAST_FRAME];
+    const RefCntBuffer *const ref_buf = get_ref_frame_buf(ctxt->cm, frame);
+    const struct scale_factors *const ref_scale_factors =
+        get_ref_scale_factors_const(ctxt->cm, frame);
 
-    xd->block_refs[ref] = ref_buf;
-    if ((!av1_is_valid_scale(&ref_buf->sf)))
+    xd->block_ref_scale_factors[ref] = ref_scale_factors;
+    if ((!av1_is_valid_scale(ref_scale_factors)))
       aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Reference frame has invalid dimensions");
-    av1_setup_pre_planes(xd, ref, &ref_buf->buf->buf, left_mi_row, ctxt->mi_col,
-                         &ref_buf->sf, num_planes);
+    av1_setup_pre_planes(xd, ref, &ref_buf->buf, left_mi_row, ctxt->mi_col,
+                         ref_scale_factors, num_planes);
   }
 
   xd->mb_to_top_edge = 8 * MI_SIZE * (-left_mi_row);

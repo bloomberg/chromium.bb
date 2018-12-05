@@ -618,26 +618,6 @@ typedef struct AV1_COMP {
   unsigned int row_mt;
   RefCntBuffer *scaled_ref_buf[INTER_REFS_PER_FRAME];
 
-  // For encoder, we have a two-level mapping from reference frame type to the
-  // corresponding buffer in the buffer pool:
-  // * 'remapped_ref_idx[i - 1]' maps reference type ‘i’ (range: LAST_FRAME ...
-  // EXTREF_FRAME) to a remapped index ‘j’ (in range: 0 ... REF_FRAMES - 1)
-  // * Later, 'cm->ref_frame_map[j]' maps the remapped index ‘j’ to a pointer to
-  // the reference counted buffer structure RefCntBuffer, taken from the buffer
-  // pool cm->buffer_pool->frame_bufs.
-  //
-  // LAST_FRAME,                        ...,      EXTREF_FRAME
-  //      |                                           |
-  //      v                                           v
-  // remapped_ref_idx[LAST_FRAME - 1],  ...,  remapped_ref_idx[EXTREF_FRAME - 1]
-  //      |                                           |
-  //      v                                           v
-  // ref_frame_map[],                   ...,     ref_frame_map[]
-  //
-  // Note: INTRA_FRAME always refers to the current frame, so there's no need to
-  // have a remapped index for the same.
-  int remapped_ref_idx[REF_FRAMES];
-
   RefCntBuffer *last_show_frame_buf;  // last show frame buffer
 
   // refresh_*_frame are boolean flags. If 'refresh_xyz_frame' is true, then
@@ -915,41 +895,30 @@ static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
          (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref);
 }
 
-static INLINE int get_ref_frame_map_idx(const AV1_COMP *cpi,
-                                        MV_REFERENCE_FRAME ref_frame) {
-  return (ref_frame >= LAST_FRAME)
-             ? cpi->remapped_ref_idx[ref_frame - LAST_FRAME]
-             : INVALID_IDX;
-}
-
-static INLINE RefCntBuffer *get_ref_frame_buf(const AV1_COMP *cpi,
-                                              MV_REFERENCE_FRAME ref_frame) {
-  const AV1_COMMON *const cm = &cpi->common;
-  const int map_idx = get_ref_frame_map_idx(cpi, ref_frame);
-  return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
-}
-
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
 static INLINE int av1_use_hash_me(const AV1_COMMON *const cm) {
   return cm->allow_screen_content_tools;
 }
 
 static INLINE hash_table *av1_get_ref_frame_hash_map(
-    const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
-  RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
-  return buf != NULL ? &buf->hash_table : NULL;
+    const AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame) {
+  const int map_idx = get_ref_frame_map_idx(cm, ref_frame);
+  RefCntBuffer *buf =
+      (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
+  return buf ? &buf->hash_table : NULL;
 }
 
-static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
-    const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {
-  RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+static INLINE const YV12_BUFFER_CONFIG *get_ref_frame_yv12_buf(
+    const AV1_COMMON *const cm, MV_REFERENCE_FRAME ref_frame) {
+  const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
   return buf != NULL ? &buf->buf : NULL;
 }
 
-static INLINE int enc_is_ref_frame_buf(AV1_COMP *cpi, RefCntBuffer *frame_buf) {
+static INLINE int enc_is_ref_frame_buf(const AV1_COMMON *const cm,
+                                       const RefCntBuffer *const frame_buf) {
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    const RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+    const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
     if (buf == NULL) continue;
     if (frame_buf == buf) break;
   }
@@ -1011,10 +980,10 @@ static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {
 static INLINE void set_ref_ptrs(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 MV_REFERENCE_FRAME ref0,
                                 MV_REFERENCE_FRAME ref1) {
-  xd->block_refs[0] =
-      &cm->current_frame.frame_refs[ref0 >= LAST_FRAME ? ref0 - LAST_FRAME : 0];
-  xd->block_refs[1] =
-      &cm->current_frame.frame_refs[ref1 >= LAST_FRAME ? ref1 - LAST_FRAME : 0];
+  xd->block_ref_scale_factors[0] =
+      get_ref_scale_factors_const(cm, ref0 >= LAST_FRAME ? ref0 : 1);
+  xd->block_ref_scale_factors[1] =
+      get_ref_scale_factors_const(cm, ref1 >= LAST_FRAME ? ref1 : 1);
 }
 
 static INLINE int get_chessboard_index(int frame_index) {

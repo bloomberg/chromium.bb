@@ -90,10 +90,8 @@ static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
 static INLINE int get_comp_index_context(const AV1_COMMON *cm,
                                          const MACROBLOCKD *xd) {
   MB_MODE_INFO *mbmi = xd->mi[0];
-  const RefCntBuffer *const bck_buf =
-      cm->current_frame.frame_refs[mbmi->ref_frame[0] - LAST_FRAME].buf;
-  const RefCntBuffer *const fwd_buf =
-      cm->current_frame.frame_refs[mbmi->ref_frame[1] - LAST_FRAME].buf;
+  const RefCntBuffer *const bck_buf = get_ref_frame_buf(cm, mbmi->ref_frame[0]);
+  const RefCntBuffer *const fwd_buf = get_ref_frame_buf(cm, mbmi->ref_frame[1]);
   int bck_frame_index = 0, fwd_frame_index = 0;
   int cur_frame_index = cm->cur_frame->order_hint;
 

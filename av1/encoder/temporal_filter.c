@@ -579,7 +579,8 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
 static void temporal_filter_iterate_c(AV1_COMP *cpi,
                                       YV12_BUFFER_CONFIG **frames,
                                       int frame_count, int alt_ref_index,
-                                      int strength, RefBuffer *ref_buf) {
+                                      int strength,
+                                      struct scale_factors *ref_scale_factors) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   int byte;
@@ -610,8 +611,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
     predictor = predictor8;
   }
 
-  mbd->block_refs[0] = ref_buf;
-  mbd->block_refs[1] = ref_buf;
+  mbd->block_ref_scale_factors[0] = ref_scale_factors;
+  mbd->block_ref_scale_factors[1] = ref_scale_factors;
 
   for (i = 0; i < num_planes; i++) input_buffer[i] = mbd->plane[i].pre[0].buf;
 
@@ -677,8 +678,8 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               frames[frame]->u_buffer + mb_uv_offset,
               frames[frame]->v_buffer + mb_uv_offset, frames[frame]->y_stride,
               mb_uv_width, mb_uv_height, mbd->mi[0]->mv[0].as_mv.row,
-              mbd->mi[0]->mv[0].as_mv.col, predictor, &ref_buf->sf, mb_col * BW,
-              mb_row * BH, cm->allow_warped_motion, num_planes);
+              mbd->mi[0]->mv[0].as_mv.col, predictor, ref_scale_factors,
+              mb_col * BW, mb_row * BH, cm->allow_warped_motion, num_planes);
 
           // Apply the filter (YUV)
           if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -974,8 +975,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   int strength;
   int frames_to_blur_backward;
   int frames_to_blur_forward;
-  RefBuffer ref_buf;
-  ref_buf.buf = NULL;
+  struct scale_factors sf;
 
   YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
   const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
@@ -1020,7 +1020,7 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
     // supported.
     // ARF is produced at the native frame size and resized when coded.
     av1_setup_scale_factors_for_frame(
-        &ref_buf.sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
+        &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
   }
 
@@ -1031,5 +1031,5 @@ void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   av1_initialize_cost_tables(&cpi->common, &cpi->td.mb);
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,
-                            frames_to_blur_backward, strength, &ref_buf);
+                            frames_to_blur_backward, strength, &sf);
 }

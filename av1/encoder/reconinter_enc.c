@@ -143,22 +143,23 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
 
         ref = 0;
-        const RefBuffer *ref_buf =
-            &cm->current_frame
-                 .frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
+        const RefCntBuffer *ref_buf =
+            get_ref_frame_buf(cm, this_mbmi->ref_frame[ref]);
+        const struct scale_factors *ref_scale_factors =
+            get_ref_scale_factors_const(cm, this_mbmi->ref_frame[ref]);
 
-        pd->pre[ref].buf0 = (plane == 1) ? ref_buf->buf->buf.u_buffer
-                                         : ref_buf->buf->buf.v_buffer;
+        pd->pre[ref].buf0 =
+            (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer;
         pd->pre[ref].buf =
-            pd->pre[ref].buf0 +
-            scaled_buffer_offset(pre_x, pre_y, ref_buf->buf->buf.uv_stride,
-                                 &ref_buf->sf);
-        pd->pre[ref].width = ref_buf->buf->buf.uv_crop_width;
-        pd->pre[ref].height = ref_buf->buf->buf.uv_crop_height;
-        pd->pre[ref].stride = ref_buf->buf->buf.uv_stride;
+            pd->pre[ref].buf0 + scaled_buffer_offset(pre_x, pre_y,
+                                                     ref_buf->buf.uv_stride,
+                                                     ref_scale_factors);
+        pd->pre[ref].width = ref_buf->buf.uv_crop_width;
+        pd->pre[ref].height = ref_buf->buf.uv_crop_height;
+        pd->pre[ref].stride = ref_buf->buf.uv_stride;
 
         const struct scale_factors *const sf =
-            is_intrabc ? &cm->sf_identity : &ref_buf->sf;
+            is_intrabc ? &cm->sf_identity : ref_scale_factors;
         struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 
         const MV mv = this_mbmi->mv[ref].as_mv;
@@ -203,7 +204,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     uint8_t *const dst = dst_buf->buf;
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
-          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
+          is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
 
@@ -493,7 +494,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const MB_MODE_INFO *mi = xd->mi[0];
 
-  const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
+  const struct scale_factors *const sf = xd->block_ref_scale_factors[ref];
   struct buf_2d *const pre_buf = &pd->pre[ref];
   uint8_t *const dst = get_buf_by_bd(xd, ext_dst) + ext_dst_stride * y + x;
   const MV mv = mi->mv[ref].as_mv;

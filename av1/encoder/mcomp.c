@@ -2209,9 +2209,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
         // for the hashMap
         hash_table *ref_frame_hash =
-            intra
-                ? &cpi->common.cur_frame->hash_table
-                : av1_get_ref_frame_hash_map(cpi, x->e_mbd.mi[0]->ref_frame[0]);
+            intra ? &cpi->common.cur_frame->hash_table
+                  : av1_get_ref_frame_hash_map(&cpi->common,
+                                               x->e_mbd.mi[0]->ref_frame[0]);
 
         av1_get_block_hash_value(
             what, what_stride, block_width, &hash_value1, &hash_value2,

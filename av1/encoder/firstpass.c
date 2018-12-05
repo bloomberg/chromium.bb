@@ -523,8 +523,9 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   TWO_PASS *twopass = &cpi->twopass;
   int recon_y_stride, recon_uv_stride, uv_mb_height;
 
-  YV12_BUFFER_CONFIG *const lst_yv12 = get_ref_frame_buffer(cpi, LAST_FRAME);
-  YV12_BUFFER_CONFIG *gld_yv12 = get_ref_frame_buffer(cpi, GOLDEN_FRAME);
+  const YV12_BUFFER_CONFIG *const lst_yv12 =
+      get_ref_frame_yv12_buf(cm, LAST_FRAME);
+  const YV12_BUFFER_CONFIG *gld_yv12 = get_ref_frame_yv12_buf(cm, GOLDEN_FRAME);
   YV12_BUFFER_CONFIG *const new_yv12 = &cm->cur_frame->buf;
   const YV12_BUFFER_CONFIG *first_ref_buf = lst_yv12;
   double intra_factor;
@@ -1061,8 +1062,8 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
          DOUBLE_DIVIDE_CHECK(twopass->this_frame_stats.coded_error)) > 2.0))) {
     if (gld_yv12 != NULL) {
       assign_frame_buffer_p(
-          &cm->ref_frame_map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)],
-          cm->ref_frame_map[get_ref_frame_map_idx(cpi, LAST_FRAME)]);
+          &cm->ref_frame_map[get_ref_frame_map_idx(cm, GOLDEN_FRAME)],
+          cm->ref_frame_map[get_ref_frame_map_idx(cm, LAST_FRAME)]);
     }
     twopass->sr_update_lag = 1;
   } else {
@@ -1073,16 +1074,15 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 
   // The frame we just compressed now becomes the last frame.
   assign_frame_buffer_p(
-      &cm->ref_frame_map[get_ref_frame_map_idx(cpi, LAST_FRAME)],
-      cm->cur_frame);
+      &cm->ref_frame_map[get_ref_frame_map_idx(cm, LAST_FRAME)], cm->cur_frame);
 
   // Special case for the first frame. Copy into the GF buffer as a second
   // reference.
   if (current_frame->frame_number == 0 &&
-      get_ref_frame_map_idx(cpi, GOLDEN_FRAME) != INVALID_IDX) {
+      get_ref_frame_map_idx(cm, GOLDEN_FRAME) != INVALID_IDX) {
     assign_frame_buffer_p(
-        &cm->ref_frame_map[get_ref_frame_map_idx(cpi, GOLDEN_FRAME)],
-        cm->ref_frame_map[get_ref_frame_map_idx(cpi, LAST_FRAME)]);
+        &cm->ref_frame_map[get_ref_frame_map_idx(cm, GOLDEN_FRAME)],
+        cm->ref_frame_map[get_ref_frame_map_idx(cm, LAST_FRAME)]);
   }
 
   // Use this to see what the first pass reconstruction looks like.

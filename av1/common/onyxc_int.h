@@ -315,9 +315,6 @@ typedef struct {
   unsigned int order_hint;
   unsigned int frame_number;
   SkipModeInfo skip_mode_info;
-  // Each Inter frame can reference INTER_REFS_PER_FRAME buffers. This maps each
-  // (inter) reference frame type to the corresponding reference buffer.
-  RefBuffer frame_refs[INTER_REFS_PER_FRAME];
 } CurrentFrame;
 
 typedef struct AV1Common {
@@ -345,6 +342,28 @@ typedef struct AV1Common {
 
   // TODO(hkuang): Combine this with cur_buf in macroblockd.
   RefCntBuffer *cur_frame;
+
+  // For encoder, we have a two-level mapping from reference frame type to the
+  // corresponding buffer in the buffer pool:
+  // * 'remapped_ref_idx[i - 1]' maps reference type ‘i’ (range: LAST_FRAME ...
+  // EXTREF_FRAME) to a remapped index ‘j’ (in range: 0 ... REF_FRAMES - 1)
+  // * Later, 'cm->ref_frame_map[j]' maps the remapped index ‘j’ to a pointer to
+  // the reference counted buffer structure RefCntBuffer, taken from the buffer
+  // pool cm->buffer_pool->frame_bufs.
+  //
+  // LAST_FRAME,                        ...,      EXTREF_FRAME
+  //      |                                           |
+  //      v                                           v
+  // remapped_ref_idx[LAST_FRAME - 1],  ...,  remapped_ref_idx[EXTREF_FRAME - 1]
+  //      |                                           |
+  //      v                                           v
+  // ref_frame_map[],                   ...,     ref_frame_map[]
+  //
+  // Note: INTRA_FRAME always refers to the current frame, so there's no need to
+  // have a remapped index for the same.
+  int remapped_ref_idx[REF_FRAMES];
+
+  struct scale_factors ref_scale_factors[REF_FRAMES];
 
   // For decoder, ref_frame_map[i] maps reference type 'i' to a pointer to
   // the buffer in the buffer pool ‘cm->buffer_pool.frame_bufs’.
@@ -639,13 +658,41 @@ static INLINE int frame_is_sframe(const AV1_COMMON *cm) {
   return cm->current_frame.frame_type == S_FRAME;
 }
 
-static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
-  if (cm->primary_ref_frame == PRIMARY_REF_NONE ||
-      cm->current_frame.frame_refs[cm->primary_ref_frame].buf == NULL) {
-    return NULL;
-  } else {
-    return cm->current_frame.frame_refs[cm->primary_ref_frame].buf;
-  }
+// These functions take a reference frame label between LAST_FRAME and
+// EXTREF_FRAME inclusive.  Note that this is different to the indexing
+// previously used by the frame_refs[] array.
+static INLINE int get_ref_frame_map_idx(const AV1_COMMON *const cm,
+                                        const MV_REFERENCE_FRAME ref_frame) {
+  return (ref_frame >= LAST_FRAME && ref_frame <= EXTREF_FRAME)
+             ? cm->remapped_ref_idx[ref_frame - LAST_FRAME]
+             : INVALID_IDX;
+}
+
+static INLINE RefCntBuffer *get_ref_frame_buf(
+    const AV1_COMMON *const cm, const MV_REFERENCE_FRAME ref_frame) {
+  const int map_idx = get_ref_frame_map_idx(cm, ref_frame);
+  return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
+}
+
+// Both const and non-const versions of this function are provided so that it
+// can be used with a const AV1_COMMON if needed.
+static INLINE const struct scale_factors *get_ref_scale_factors_const(
+    const AV1_COMMON *const cm, const MV_REFERENCE_FRAME ref_frame) {
+  const int map_idx = get_ref_frame_map_idx(cm, ref_frame);
+  return (map_idx != INVALID_IDX) ? &cm->ref_scale_factors[map_idx] : NULL;
+}
+
+static INLINE struct scale_factors *get_ref_scale_factors(
+    AV1_COMMON *const cm, const MV_REFERENCE_FRAME ref_frame) {
+  const int map_idx = get_ref_frame_map_idx(cm, ref_frame);
+  return (map_idx != INVALID_IDX) ? &cm->ref_scale_factors[map_idx] : NULL;
+}
+
+static INLINE RefCntBuffer *get_primary_ref_frame_buf(
+    const AV1_COMMON *const cm) {
+  if (cm->primary_ref_frame == PRIMARY_REF_NONE) return NULL;
+  const int map_idx = get_ref_frame_map_idx(cm, cm->primary_ref_frame + 1);
+  return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : NULL;
 }
 
 // Returns 1 if this frame might allow mvs from some reference frame.

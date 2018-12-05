@@ -1934,13 +1934,9 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
     aom_wb_write_bit(wb, lf->mode_ref_delta_update);
 
     if (lf->mode_ref_delta_update) {
-      const int prime_idx = cm->primary_ref_frame;
-      const RefCntBuffer *const buf =
-          prime_idx == PRIMARY_REF_NONE
-              ? NULL
-              : cm->current_frame.frame_refs[prime_idx].buf;
+      const RefCntBuffer *buf = get_primary_ref_frame_buf(cm);
       int8_t last_ref_deltas[REF_FRAMES];
-      if (prime_idx == PRIMARY_REF_NONE || buf == NULL) {
+      if (buf == NULL) {
         av1_set_default_ref_deltas(last_ref_deltas);
       } else {
         memcpy(last_ref_deltas, buf->ref_deltas, REF_FRAMES);
@@ -1953,7 +1949,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
       }
 
       int8_t last_mode_deltas[MAX_MODE_LF_DELTAS];
-      if (prime_idx == PRIMARY_REF_NONE || buf == NULL) {
+      if (buf == NULL) {
         av1_set_default_mode_deltas(last_mode_deltas);
       } else {
         memcpy(last_mode_deltas, buf->mode_deltas, MAX_MODE_LF_DELTAS);
@@ -2197,9 +2193,10 @@ static void write_ext_tile_info(const AV1_COMMON *const cm,
 }
 
 static int get_refresh_mask(AV1_COMP *cpi) {
-  if ((cpi->common.current_frame.frame_type == KEY_FRAME &&
-       cpi->common.show_frame) ||
-      frame_is_sframe(&cpi->common))
+  const AV1_COMMON *const cm = &cpi->common;
+
+  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
+      frame_is_sframe(cm))
     return 0xFF;
 
   int refresh_mask = 0;
@@ -2213,7 +2210,7 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   //     shifted and become the new virtual indexes for LAST2_FRAME and
   //     LAST3_FRAME.
   refresh_mask |=
-      (cpi->refresh_last_frame << get_ref_frame_map_idx(cpi, LAST3_FRAME));
+      (cpi->refresh_last_frame << get_ref_frame_map_idx(cm, LAST3_FRAME));
 
 #if USE_SYMM_MULTI_LAYER
   const int bwd_ref_frame =
@@ -2222,10 +2219,10 @@ static int get_refresh_mask(AV1_COMP *cpi) {
   const int bwd_ref_frame = BWDREF_FRAME;
 #endif
   refresh_mask |=
-      (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cpi, bwd_ref_frame));
+      (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cm, bwd_ref_frame));
 
-  refresh_mask |= (cpi->refresh_alt2_ref_frame
-                   << get_ref_frame_map_idx(cpi, ALTREF2_FRAME));
+  refresh_mask |=
+      (cpi->refresh_alt2_ref_frame << get_ref_frame_map_idx(cm, ALTREF2_FRAME));
 
   if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
@@ -2243,13 +2240,13 @@ static int get_refresh_mask(AV1_COMP *cpi) {
       return refresh_mask;
     } else {
       return refresh_mask | (cpi->refresh_golden_frame
-                             << get_ref_frame_map_idx(cpi, ALTREF_FRAME));
+                             << get_ref_frame_map_idx(cm, ALTREF_FRAME));
     }
   } else {
-    const int arf_idx = get_ref_frame_map_idx(cpi, ALTREF_FRAME);
+    const int arf_idx = get_ref_frame_map_idx(cm, ALTREF_FRAME);
     return refresh_mask |
            (cpi->refresh_golden_frame
-            << get_ref_frame_map_idx(cpi, GOLDEN_FRAME)) |
+            << get_ref_frame_map_idx(cm, GOLDEN_FRAME)) |
            (cpi->refresh_alt_ref_frame << arf_idx);
   }
 }
@@ -2354,14 +2351,13 @@ static void write_frame_size(const AV1_COMMON *cm, int frame_size_override,
   write_render_size(cm, wb);
 }
 
-static void write_frame_size_with_refs(AV1_COMP *cpi,
+static void write_frame_size_with_refs(const AV1_COMMON *const cm,
                                        struct aom_write_bit_buffer *wb) {
-  AV1_COMMON *const cm = &cpi->common;
   int found = 0;
 
   MV_REFERENCE_FRAME ref_frame;
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    YV12_BUFFER_CONFIG *cfg = get_ref_frame_buffer(cpi, ref_frame);
+    const YV12_BUFFER_CONFIG *cfg = get_ref_frame_yv12_buf(cm, ref_frame);
 
     if (cfg != NULL) {
       found = cm->superres_upscaled_width == cfg->y_crop_width &&
@@ -2545,7 +2541,7 @@ static void write_film_grain_params(AV1_COMP *cpi,
   if (!pars->update_parameters) {
     int ref_frame, ref_idx;
     for (ref_frame = LAST_FRAME; ref_frame < REF_FRAMES; ref_frame++) {
-      ref_idx = get_ref_frame_map_idx(cpi, ref_frame);
+      ref_idx = get_ref_frame_map_idx(cm, ref_frame);
       assert(ref_idx != INVALID_IDX);
       const RefCntBuffer *const buf = cm->ref_frame_map[ref_idx];
       if (buf->film_grain_params_present &&
@@ -2804,7 +2800,7 @@ static void write_global_motion(AV1_COMP *cpi,
     // does not work currently and causes mismatches when resize is on.
     // Fix it before turning the optimization back on.
     /*
-    YV12_BUFFER_CONFIG *ref_buf = get_ref_frame_buffer(cpi, frame);
+    YV12_BUFFER_CONFIG *ref_buf = get_ref_frame_yv12_buf(cpi, frame);
     if (cpi->source->y_crop_width == ref_buf->y_crop_width &&
         cpi->source->y_crop_height == ref_buf->y_crop_height) {
       write_global_motion_params(&cm->global_motion[frame],
@@ -2825,14 +2821,12 @@ static void write_global_motion(AV1_COMP *cpi,
   }
 }
 
-static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
-  AV1_COMMON *const cm = &cpi->common;
-
+static int check_frame_refs_short_signaling(AV1_COMMON *const cm) {
   // Check whether all references are distinct frames.
   const RefCntBuffer *seen_bufs[FRAME_BUFFERS] = { NULL };
   int num_refs = 0;
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    const RefCntBuffer *const buf = get_ref_frame_buf(cpi, ref_frame);
+    const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame);
     if (buf != NULL) {
       int seen = 0;
       for (int i = 0; i < num_refs; i++) {
@@ -2855,14 +2849,17 @@ static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
 
   // Check whether the encoder side ref frame choices are aligned with that to
   // be derived at the decoder side.
-  RefBuffer frame_refs_copy[INTER_REFS_PER_FRAME];
+  int remapped_ref_idx_copy[REF_FRAMES];
+  struct scale_factors ref_scale_factors_copy[REF_FRAMES];
 
   // Backup the frame refs info
-  memcpy(frame_refs_copy, cm->current_frame.frame_refs,
-         INTER_REFS_PER_FRAME * sizeof(RefBuffer));
+  memcpy(remapped_ref_idx_copy, cm->remapped_ref_idx,
+         REF_FRAMES * sizeof(*remapped_ref_idx_copy));
+  memcpy(ref_scale_factors_copy, cm->ref_scale_factors,
+         REF_FRAMES * sizeof(*ref_scale_factors_copy));
 
-  const int lst_map_idx = get_ref_frame_map_idx(cpi, LAST_FRAME);
-  const int gld_map_idx = get_ref_frame_map_idx(cpi, GOLDEN_FRAME);
+  const int lst_map_idx = get_ref_frame_map_idx(cm, LAST_FRAME);
+  const int gld_map_idx = get_ref_frame_map_idx(cm, GOLDEN_FRAME);
 
   // Set up the frame refs mapping indexes according to the
   // frame_refs_short_signaling policy.
@@ -2874,8 +2871,10 @@ static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ++ref_idx) {
     // Compare the buffer index between two reference frames indexed
     // respectively by the encoder and the decoder side decisions.
-    if (cm->current_frame.frame_refs[ref_idx].buf !=
-        frame_refs_copy[ref_idx].buf) {
+    RefCntBuffer *ref_frame_buf_copy = NULL;
+    if (remapped_ref_idx_copy[ref_idx] != INVALID_IDX)
+      ref_frame_buf_copy = cm->ref_frame_map[remapped_ref_idx_copy[ref_idx]];
+    if (get_ref_frame_buf(cm, LAST_FRAME + ref_idx) != ref_frame_buf_copy) {
       frame_refs_short_signaling = 0;
       break;
     }
@@ -2887,16 +2886,18 @@ static int check_frame_refs_short_signaling(AV1_COMP *const cpi) {
   for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     printf("enc_ref(map_idx=%d)=%d, vs. "
         "dec_ref(map_idx=%d)=%d\n",
-        get_ref_frame_map_idx(cpi, ref_frame), ref_frame,
-        cm->current_frame.frame_refs[ref_frame - LAST_FRAME].map_idx,
+        get_ref_frame_map_idx(cm, ref_frame), ref_frame,
+        cm->remapped_ref_idx[ref_frame - LAST_FRAME],
         ref_frame);
   }
 #endif  // 0
 
   // Restore the frame refs info if frame_refs_short_signaling is off.
   if (!frame_refs_short_signaling) {
-    memcpy(cm->current_frame.frame_refs, frame_refs_copy,
-           INTER_REFS_PER_FRAME * sizeof(RefBuffer));
+    memcpy(cm->remapped_ref_idx, remapped_ref_idx_copy,
+           REF_FRAMES * sizeof(*remapped_ref_idx_copy));
+    memcpy(cm->ref_scale_factors, ref_scale_factors_copy,
+           REF_FRAMES * sizeof(*ref_scale_factors_copy));
   }
   return frame_refs_short_signaling;
 }
@@ -3137,27 +3138,27 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         //   An example solution for encoder-side implementation on frame refs
         //   short signaling, which is only turned on when the encoder side
         //   decision on ref frames is identical to that at the decoder side.
-        frame_refs_short_signaling = check_frame_refs_short_signaling(cpi);
+        frame_refs_short_signaling = check_frame_refs_short_signaling(cm);
       }
 
       if (seq_params->order_hint_info.enable_order_hint)
         aom_wb_write_bit(wb, frame_refs_short_signaling);
 
       if (frame_refs_short_signaling) {
-        const int lst_ref = get_ref_frame_map_idx(cpi, LAST_FRAME);
+        const int lst_ref = get_ref_frame_map_idx(cm, LAST_FRAME);
         aom_wb_write_literal(wb, lst_ref, REF_FRAMES_LOG2);
 
-        const int gld_ref = get_ref_frame_map_idx(cpi, GOLDEN_FRAME);
+        const int gld_ref = get_ref_frame_map_idx(cm, GOLDEN_FRAME);
         aom_wb_write_literal(wb, gld_ref, REF_FRAMES_LOG2);
       }
 
       for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-        assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
+        assert(get_ref_frame_map_idx(cm, ref_frame) != INVALID_IDX);
         if (!frame_refs_short_signaling)
-          aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
+          aom_wb_write_literal(wb, get_ref_frame_map_idx(cm, ref_frame),
                                REF_FRAMES_LOG2);
         if (seq_params->frame_id_numbers_present_flag) {
-          int i = get_ref_frame_map_idx(cpi, ref_frame);
+          int i = get_ref_frame_map_idx(cm, ref_frame);
           int frame_id_len = seq_params->frame_id_length;
           int diff_len = seq_params->delta_frame_id_length;
           int delta_frame_id_minus_1 =
@@ -3175,7 +3176,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       }
 
       if (!cm->error_resilient_mode && frame_size_override_flag) {
-        write_frame_size_with_refs(cpi, wb);
+        write_frame_size_with_refs(cm, wb);
       } else {
         write_frame_size(cm, frame_size_override_flag, wb);
       }

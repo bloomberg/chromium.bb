@@ -364,7 +364,7 @@ static void separate_arf_mbs(AV1_COMP *cpi) {
 void av1_update_mbgraph_stats(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int i, n_frames = av1_lookahead_depth(cpi->lookahead);
-  YV12_BUFFER_CONFIG *golden_ref = get_ref_frame_buffer(cpi, GOLDEN_FRAME);
+  YV12_BUFFER_CONFIG *golden_ref = &get_ref_frame_buf(cm, GOLDEN_FRAME)->buf;
 
   assert(golden_ref != NULL);
 

@@ -701,22 +701,23 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
 
         ref = 0;
-        const RefBuffer *ref_buf =
-            &cm->current_frame
-                 .frame_refs[this_mbmi->ref_frame[ref] - LAST_FRAME];
+        const RefCntBuffer *ref_buf =
+            get_ref_frame_buf(cm, this_mbmi->ref_frame[ref]);
+        const struct scale_factors *ref_scale_factors =
+            get_ref_scale_factors_const(cm, this_mbmi->ref_frame[ref]);
 
-        pd->pre[ref].buf0 = (plane == 1) ? ref_buf->buf->buf.u_buffer
-                                         : ref_buf->buf->buf.v_buffer;
+        pd->pre[ref].buf0 =
+            (plane == 1) ? ref_buf->buf.u_buffer : ref_buf->buf.v_buffer;
         pd->pre[ref].buf =
-            pd->pre[ref].buf0 +
-            scaled_buffer_offset(pre_x, pre_y, ref_buf->buf->buf.uv_stride,
-                                 &ref_buf->sf);
-        pd->pre[ref].width = ref_buf->buf->buf.uv_crop_width;
-        pd->pre[ref].height = ref_buf->buf->buf.uv_crop_height;
-        pd->pre[ref].stride = ref_buf->buf->buf.uv_stride;
+            pd->pre[ref].buf0 + scaled_buffer_offset(pre_x, pre_y,
+                                                     ref_buf->buf.uv_stride,
+                                                     ref_scale_factors);
+        pd->pre[ref].width = ref_buf->buf.uv_crop_width;
+        pd->pre[ref].height = ref_buf->buf.uv_crop_height;
+        pd->pre[ref].stride = ref_buf->buf.uv_stride;
 
         const struct scale_factors *const sf =
-            is_intrabc ? &cm->sf_identity : &ref_buf->sf;
+            is_intrabc ? &cm->sf_identity : ref_scale_factors;
         struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
 
         const MV mv = this_mbmi->mv[ref].as_mv;
@@ -769,7 +770,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
     int src_stride[2];
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
-          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
+          is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
       struct buf_2d *const pre_buf = is_intrabc ? dst_buf : &pd->pre[ref];
       const MV mv = mi->mv[ref].as_mv;
       PadBlock block;
@@ -806,7 +807,7 @@ static INLINE void dec_build_inter_predictors(const AV1_COMMON *cm,
 
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
-          is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
+          is_intrabc ? &cm->sf_identity : xd->block_ref_scale_factors[ref];
       WarpTypesAllowed warp_types;
       warp_types.global_warp_allowed = is_global[ref];
       warp_types.local_warp_allowed = mi->motion_mode == WARPED_CAUSAL;
@@ -1063,11 +1064,13 @@ static void predict_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       assert(frame == INTRA_FRAME);
       assert(ref == 0);
     } else {
-      RefBuffer *ref_buf = &cm->current_frame.frame_refs[frame - LAST_FRAME];
+      const RefCntBuffer *ref_buf = get_ref_frame_buf(cm, frame);
+      const struct scale_factors *ref_scale_factors =
+          get_ref_scale_factors_const(cm, frame);
 
-      xd->block_refs[ref] = ref_buf;
-      av1_setup_pre_planes(xd, ref, &ref_buf->buf->buf, mi_row, mi_col,
-                           &ref_buf->sf, num_planes);
+      xd->block_ref_scale_factors[ref] = ref_scale_factors;
+      av1_setup_pre_planes(xd, ref, &ref_buf->buf, mi_row, mi_col,
+                           ref_scale_factors, num_planes);
     }
   }
 
@@ -2437,17 +2440,28 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   int width, height;
   int found = 0;
   int has_valid_ref_frame = 0;
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
+  for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
     if (aom_rb_read_bit(rb)) {
-      YV12_BUFFER_CONFIG *const buf = &cm->current_frame.frame_refs[i].buf->buf;
-      width = buf->y_crop_width;
-      height = buf->y_crop_height;
-      cm->render_width = buf->render_width;
-      cm->render_height = buf->render_height;
-      setup_superres(cm, rb, &width, &height);
-      resize_context_buffers(cm, width, height);
-      found = 1;
-      break;
+      const RefCntBuffer *const ref_buf = get_ref_frame_buf(cm, i);
+      // This will never be NULL in a normal stream, as streams are required to
+      // have a shown keyframe before any inter frames, which would refresh all
+      // the reference buffers. However, it might be null if we're starting in
+      // the middle of a stream, and static analysis will error if we don't do
+      // a null check here.
+      if (ref_buf == NULL) {
+        aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                           "Invalid condition: invalid reference buffer");
+      } else {
+        const YV12_BUFFER_CONFIG *const buf = &ref_buf->buf;
+        width = buf->y_crop_width;
+        height = buf->y_crop_height;
+        cm->render_width = buf->render_width;
+        cm->render_height = buf->render_height;
+        setup_superres(cm, rb, &width, &height);
+        resize_context_buffers(cm, width, height);
+        found = 1;
+        break;
+      }
     }
   }
 
@@ -2468,20 +2482,20 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 
   // Check to make sure at least one of frames that this frame references
   // has valid dimensions.
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
+  for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+    const RefCntBuffer *const ref_frame = get_ref_frame_buf(cm, i);
     has_valid_ref_frame |=
-        valid_ref_frame_size(ref_frame->buf->buf.y_crop_width,
-                             ref_frame->buf->buf.y_crop_height, width, height);
+        valid_ref_frame_size(ref_frame->buf.y_crop_width,
+                             ref_frame->buf.y_crop_height, width, height);
   }
   if (!has_valid_ref_frame)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Referenced frame has invalid size");
-  for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
+  for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+    const RefCntBuffer *const ref_frame = get_ref_frame_buf(cm, i);
     if (!valid_ref_frame_img_fmt(
-            ref_frame->buf->buf.bit_depth, ref_frame->buf->buf.subsampling_x,
-            ref_frame->buf->buf.subsampling_y, seq_params->bit_depth,
+            ref_frame->buf.bit_depth, ref_frame->buf.subsampling_x,
+            ref_frame->buf.subsampling_y, seq_params->bit_depth,
             seq_params->subsampling_x, seq_params->subsampling_y))
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Referenced frame has incompatible color format");
@@ -4713,7 +4727,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
   pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-    cm->current_frame.frame_refs[i].buf = NULL;
+    cm->remapped_ref_idx[i] = INVALID_IDX;
   }
 
   if (pbi->need_resync) {
@@ -5007,7 +5021,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-      cm->current_frame.frame_refs[i].buf = NULL;
+      cm->remapped_ref_idx[i] = INVALID_IDX;
     }
     if (pbi->need_resync) {
       reset_ref_frame_map(cm);
@@ -5128,7 +5142,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         int ref = 0;
         if (!frame_refs_short_signaling) {
           ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
-          RefCntBuffer *const buf = cm->ref_frame_map[ref];
 
           // Most of the time, streams start with a keyframe. In that case,
           // ref_frame_map will have been filled in at that point and will not
@@ -5136,15 +5149,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           // with an intra-only frame, so long as they don't then signal a
           // reference to a slot that hasn't been set yet. That's what we are
           // checking here.
-          if (buf == NULL)
+          if (cm->ref_frame_map[ref] == NULL)
             aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                                "Inter frame requests nonexistent reference");
-
-          RefBuffer *const ref_frame = &cm->current_frame.frame_refs[i];
-          ref_frame->buf = buf;
-          ref_frame->map_idx = ref;
+          cm->remapped_ref_idx[i] = ref;
         } else {
-          ref = cm->current_frame.frame_refs[i].map_idx;
+          ref = cm->remapped_ref_idx[i];
         }
 
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
@@ -5181,9 +5191,9 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->switchable_motion_mode = aom_rb_read_bit(rb);
     }
 
-    cm->prev_frame = get_prev_frame(cm);
+    cm->prev_frame = get_primary_ref_frame_buf(cm);
     if (cm->primary_ref_frame != PRIMARY_REF_NONE &&
-        cm->current_frame.frame_refs[cm->primary_ref_frame].buf == NULL) {
+        get_primary_ref_frame_buf(cm) == NULL) {
       aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Reference frame containing this frame's initial "
                          "frame context is unavailable.");
@@ -5196,12 +5206,14 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       else
         cm->allow_ref_frame_mvs = 0;
 
-      for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
-        RefBuffer *const ref_buf = &cm->current_frame.frame_refs[i];
+      for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i) {
+        const RefCntBuffer *const ref_buf = get_ref_frame_buf(cm, i);
+        struct scale_factors *const ref_scale_factors =
+            get_ref_scale_factors(cm, i);
         av1_setup_scale_factors_for_frame(
-            &ref_buf->sf, ref_buf->buf->buf.y_crop_width,
-            ref_buf->buf->buf.y_crop_height, cm->width, cm->height);
-        if ((!av1_is_valid_scale(&ref_buf->sf)))
+            ref_scale_factors, ref_buf->buf.y_crop_width,
+            ref_buf->buf.y_crop_height, cm->width, cm->height);
+        if ((!av1_is_valid_scale(ref_scale_factors)))
           aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                              "Reference frame has invalid dimensions");
       }
@@ -5480,8 +5492,7 @@ uint32_t av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     // use the default frame context values
     *cm->fc = *cm->default_frame_context;
   } else {
-    *cm->fc =
-        cm->current_frame.frame_refs[cm->primary_ref_frame].buf->frame_context;
+    *cm->fc = get_primary_ref_frame_buf(cm)->frame_context;
   }
   if (!cm->fc->initialized)
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,

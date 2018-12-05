@@ -7036,11 +7036,11 @@ static void setup_buffer_ref_mvs_inter(
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
+  const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_yv12_buf(cm, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct scale_factors *const sf =
-      &cm->current_frame.frame_refs[ref_frame - 1].sf;
+      get_ref_scale_factors_const(cm, ref_frame);
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
   assert(yv12 != NULL);
@@ -8493,9 +8493,8 @@ static int64_t interpolation_filter_search(
   const int is_compound = has_second_ref(mbmi);
   assert(is_intrabc_block(mbmi) == 0);
   for (int j = 0; j < 1 + is_compound; ++j) {
-    const RefBuffer *ref_buf =
-        &cm->current_frame.frame_refs[mbmi->ref_frame[j] - LAST_FRAME];
-    const struct scale_factors *const sf = &ref_buf->sf;
+    const struct scale_factors *const sf =
+        get_ref_scale_factors_const(cm, mbmi->ref_frame[j]);
     // TODO(any): Refine skip flag calculation considering scaling
     if (av1_is_scaled(sf)) {
       skip_hor = 0;
@@ -10681,7 +10680,7 @@ static void set_params_rd_pick_inter_mode(
           if (skip) continue;
         }
       }
-      assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
+      assert(get_ref_frame_yv12_buf(cm, ref_frame) != NULL);
       setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                                  yv12_mb);
     }
@@ -11179,8 +11178,7 @@ static int inter_mode_search_order_independent_skip(
   if ((sf->selective_ref_frame >= 2) && comp_pred && !cpi->all_one_sided_refs) {
     unsigned int ref_offsets[2];
     for (int i = 0; i < 2; ++i) {
-      const RefCntBuffer *const buf =
-          cm->current_frame.frame_refs[ref_frame[i] - LAST_FRAME].buf;
+      const RefCntBuffer *const buf = get_ref_frame_buf(cm, ref_frame[i]);
       assert(buf != NULL);
       ref_offsets[i] = buf->order_hint;
     }
