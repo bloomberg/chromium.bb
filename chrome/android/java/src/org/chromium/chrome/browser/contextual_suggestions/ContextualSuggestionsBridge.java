@@ -128,9 +128,10 @@ public class ContextualSuggestionsBridge {
 
     @CalledByNative
     private static void setPeekConditionsOnResult(ContextualSuggestionsResult result,
-            float pageScrollPercentage, float minimumSecondsOnPage, float maximumNumberOfPeeks) {
+            float confidence, float pageScrollPercentage, float minimumSecondsOnPage,
+            float maximumNumberOfPeeks) {
         PeekConditions peekConditions = new PeekConditions(
-                pageScrollPercentage, minimumSecondsOnPage, maximumNumberOfPeeks);
+                confidence, pageScrollPercentage, minimumSecondsOnPage, maximumNumberOfPeeks);
         result.setPeekConditions(peekConditions);
     }
 
