@@ -87,7 +87,6 @@ class WebPerformance {
   BLINK_EXPORT double LoadEventEnd() const;
   BLINK_EXPORT double FirstLayout() const;
   BLINK_EXPORT double FirstPaint() const;
-  BLINK_EXPORT double FirstTextPaint() const;
   BLINK_EXPORT double FirstImagePaint() const;
   BLINK_EXPORT double FirstContentfulPaint() const;
   BLINK_EXPORT double FirstMeaningfulPaint() const;

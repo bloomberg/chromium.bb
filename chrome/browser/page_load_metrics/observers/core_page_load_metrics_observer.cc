@@ -72,10 +72,6 @@ const char kHistogramFirstPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstPaint";
 const char kBackgroundHistogramFirstPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstPaint.Background";
-const char kHistogramFirstTextPaint[] =
-    "PageLoad.PaintTiming.NavigationToFirstTextPaint";
-const char kBackgroundHistogramFirstTextPaint[] =
-    "PageLoad.PaintTiming.NavigationToFirstTextPaint.Background";
 const char kHistogramFirstImagePaint[] =
     "PageLoad.PaintTiming.NavigationToFirstImagePaint";
 const char kBackgroundHistogramFirstImagePaint[] =
@@ -364,19 +360,6 @@ void CorePageLoadMetricsObserver::OnFirstPaintInPage(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramForegroundToFirstPaint,
                         timing.paint_timing->first_paint.value() -
                             info.first_foreground_time.value());
-  }
-}
-
-void CorePageLoadMetricsObserver::OnFirstTextPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_text_paint, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstTextPaint,
-                        timing.paint_timing->first_text_paint.value());
-  } else {
-    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstTextPaint,
-                        timing.paint_timing->first_text_paint.value());
   }
 }
 

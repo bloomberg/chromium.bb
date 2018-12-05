@@ -60,8 +60,8 @@ class FromGWSPageLoadMetricsObserverTest
 class FromGWSPageLoadMetricsLoggerTest : public testing::Test {};
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, NoMetrics) {
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 0);
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
@@ -69,7 +69,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, NoPreviousCommittedUrl) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL(kExampleUrl));
 
@@ -77,8 +77,8 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, NoPreviousCommittedUrl) {
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 0);
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
@@ -86,7 +86,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, NonSearchPreviousCommittedUrl) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("http://www.other.com"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -95,8 +95,8 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, NonSearchPreviousCommittedUrl) {
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 0);
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
@@ -105,7 +105,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -114,8 +114,8 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 0);
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
@@ -124,7 +124,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   // Navigation from /search, but missing a query string, so can't have been a
   // search results page.
@@ -135,8 +135,8 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 0);
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
 
@@ -148,7 +148,6 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
   timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(20);
   timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(40);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(80);
   timing.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(160);
   timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(320);
@@ -193,12 +192,6 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
        timing.parse_timing->parse_start.value())
           .InMilliseconds(),
       1);
-
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
-  histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramFromGWSFirstImagePaint, 1);
@@ -246,7 +239,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/#q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -255,11 +248,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -273,7 +266,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl3) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/webhp#q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -282,11 +275,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl3) {
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -300,7 +293,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl4) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.co.uk/search#q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -309,11 +302,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl4) {
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -327,11 +320,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToOtherPage) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(2);
-  timing2.paint_timing->first_text_paint =
+  timing2.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(100);
   PopulateRequiredTimingFields(&timing);
   PopulateRequiredTimingFields(&timing2);
@@ -344,11 +337,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToOtherPage) {
   // Navigate again to force logging. We expect to log timing for the page
   // navigated from search, but not for the page navigated from that page.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -362,11 +355,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToSearch) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(2);
-  timing2.paint_timing->first_text_paint =
+  timing2.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(100);
   PopulateRequiredTimingFields(&timing);
   PopulateRequiredTimingFields(&timing2);
@@ -379,11 +372,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToSearch) {
   // Navigate again to force logging. We expect to log timing for the page
   // navigated from search, but not for the search page we navigated to.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -398,16 +391,16 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(2);
-  timing2.paint_timing->first_text_paint =
+  timing2.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(100);
   page_load_metrics::mojom::PageLoadTiming timing3;
   page_load_metrics::InitPageLoadTimingForTest(&timing3);
   timing3.navigation_start = base::Time::FromDoubleT(3);
-  timing3.paint_timing->first_text_paint =
+  timing3.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(1000);
   PopulateRequiredTimingFields(&timing);
   PopulateRequiredTimingFields(&timing2);
@@ -423,14 +416,14 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   // Navigate again to force logging. We expect to log timing for both pages
   // navigated from search, but not for the search pages we navigated to.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      2);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 2);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing3.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing3.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -445,16 +438,16 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(2);
-  timing2.paint_timing->first_text_paint =
+  timing2.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(100);
   page_load_metrics::mojom::PageLoadTiming timing3;
   page_load_metrics::InitPageLoadTimingForTest(&timing3);
   timing3.navigation_start = base::Time::FromDoubleT(3);
-  timing3.paint_timing->first_text_paint =
+  timing3.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(1000);
   PopulateRequiredTimingFields(&timing);
   PopulateRequiredTimingFields(&timing2);
@@ -471,11 +464,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   // Navigate again to force logging. We expect to log timing for the first page
   // navigated from search, but not the second since it was backgrounded.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -490,7 +483,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/search#q=test"));
   NavigateAndCommit(GURL("https://www.google.com/url?source=web"));
@@ -500,11 +493,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kHistogramFromGWSFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   auto entries = test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -519,7 +512,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/webhp?q=test"));
   NavigateAndCommit(GURL("https://www.google.com/url?a=b&c=d"));
@@ -529,8 +522,8 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 
   // Navigate again to force logging.
   NavigateToUntrackedUrl();
-  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
-                                      0);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 0);
 
   EXPECT_EQ(0ul, test_ukm_recorder().entries_count());
 }
@@ -540,7 +533,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromMicroseconds(1);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromMicroseconds(1);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL("https://www.google.com/search#q=test"));
@@ -553,17 +546,17 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
       GetPageLoadExtraInfoForCommittedLoad();
 
   // If the system clock is low resolution PageLoadTracker's background_time_
-  // may be < timing.first_text_paint.
+  // may be < timing.first_image_paint.
   if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_text_paint, info)) {
+          timing.paint_timing->first_image_paint, info)) {
     histogram_tester().ExpectTotalCount(
-        internal::kHistogramFromGWSFirstTextPaint, 1);
+        internal::kHistogramFromGWSFirstImagePaint, 1);
     histogram_tester().ExpectBucketCount(
-        internal::kHistogramFromGWSFirstTextPaint,
-        timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+        internal::kHistogramFromGWSFirstImagePaint,
+        timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
   } else {
     histogram_tester().ExpectTotalCount(
-        internal::kHistogramFromGWSFirstTextPaint, 0);
+        internal::kHistogramFromGWSFirstImagePaint, 0);
   }
 }
 

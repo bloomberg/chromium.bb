@@ -13,7 +13,6 @@ enum class PaintEvent {
   kFirstPaint,
   kFirstContentfulPaint,
   kProvisionalFirstMeaningfulPaint,
-  kFirstTextPaint,
   kFirstImagePaint,
 };
 

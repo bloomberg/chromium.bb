@@ -38,7 +38,6 @@ class AMPPageLoadMetricsObserverTest
     timing_.paint_timing->first_contentful_paint =
         base::TimeDelta::FromSeconds(4);
     timing_.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(5);
-    timing_.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.document_timing->load_event_start = base::TimeDelta::FromSeconds(7);
     PopulateRequiredTimingFields(&timing_);
   }

@@ -16,7 +16,6 @@ namespace internal {
 extern const char kHistogramFromGWSDomContentLoaded[];
 extern const char kHistogramFromGWSLoad[];
 extern const char kHistogramFromGWSFirstPaint[];
-extern const char kHistogramFromGWSFirstTextPaint[];
 extern const char kHistogramFromGWSFirstImagePaint[];
 extern const char kHistogramFromGWSFirstContentfulPaint[];
 extern const char kHistogramFromGWSParseStartToFirstContentfulPaint[];
@@ -78,9 +77,6 @@ class FromGWSPageLoadMetricsLogger {
   void OnLoadEventStart(const page_load_metrics::mojom::PageLoadTiming& timing,
                         const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnFirstPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info);
-  void OnFirstTextPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info);
   void OnFirstImagePaintInPage(
@@ -148,9 +144,6 @@ class FromGWSPageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnFirstPaintInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-  void OnFirstTextPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnFirstImagePaintInPage(

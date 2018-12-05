@@ -41,7 +41,7 @@ TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest,
@@ -65,7 +65,7 @@ TEST_F(CorePageLoadMetricsObserverTest,
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstLayout,
                                        first_layout.InMilliseconds(), 1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
@@ -109,7 +109,7 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramParseBlockedOnScriptExecution,
       parse_script_exec_duration.InMilliseconds(), 1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
@@ -119,8 +119,8 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   base::TimeDelta response = base::TimeDelta::FromMilliseconds(1);
   base::TimeDelta first_layout_1 = base::TimeDelta::FromMilliseconds(10);
   base::TimeDelta first_layout_2 = base::TimeDelta::FromMilliseconds(20);
-  base::TimeDelta first_text_paint = base::TimeDelta::FromMilliseconds(30);
-  base::TimeDelta first_contentful_paint = first_text_paint;
+  base::TimeDelta first_image_paint = base::TimeDelta::FromMilliseconds(30);
+  base::TimeDelta first_contentful_paint = first_image_paint;
   base::TimeDelta dom_content = base::TimeDelta::FromMilliseconds(40);
   base::TimeDelta load = base::TimeDelta::FromMilliseconds(100);
 
@@ -129,7 +129,7 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.response_start = response;
   timing.document_timing->first_layout = first_layout_1;
-  timing.paint_timing->first_text_paint = first_text_paint;
+  timing.paint_timing->first_image_paint = first_image_paint;
   timing.paint_timing->first_contentful_paint = first_contentful_paint;
   timing.document_timing->dom_content_loaded_event_start = dom_content;
   timing.document_timing->load_event_start = load;
@@ -167,9 +167,9 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstContentfulPaint,
                                        first_contentful_paint.InMilliseconds(),
                                        1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 1);
-  histogram_tester().ExpectBucketCount(internal::kHistogramFirstTextPaint,
-                                       first_text_paint.InMilliseconds(), 1);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 1);
+  histogram_tester().ExpectBucketCount(internal::kHistogramFirstImagePaint,
+                                       first_image_paint.InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester().ExpectBucketCount(internal::kHistogramDomContentLoaded,
@@ -209,12 +209,12 @@ TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
       internal::kBackgroundHistogramFirstLayout, first_layout.InMilliseconds(),
       1);
   histogram_tester().ExpectTotalCount(
-      internal::kBackgroundHistogramFirstTextPaint, 0);
+      internal::kBackgroundHistogramFirstImagePaint, 0);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
@@ -225,10 +225,10 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
       base::TimeDelta::FromMicroseconds(1);
   PopulateRequiredTimingFields(&timing);
 
-  // Make sure first_text_paint hasn't been set (wasn't set by
+  // Make sure first_image_paint hasn't been set (wasn't set by
   // PopulateRequiredTimingFields), since we want to defer setting it until
   // after backgrounding.
-  ASSERT_FALSE(timing.paint_timing->first_text_paint);
+  ASSERT_FALSE(timing.paint_timing->first_image_paint);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
@@ -236,7 +236,7 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
   // Background the tab, then foreground it.
   web_contents()->WasHidden();
   web_contents()->WasShown();
-  timing.paint_timing->first_text_paint = base::TimeDelta::FromSeconds(4);
+  timing.paint_timing->first_image_paint = base::TimeDelta::FromSeconds(4);
   PopulateRequiredTimingFields(&timing);
   SimulateTimingUpdate(timing);
 
@@ -269,13 +269,13 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
 
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(
-      internal::kBackgroundHistogramFirstTextPaint, 1);
+      internal::kBackgroundHistogramFirstImagePaint, 1);
   histogram_tester().ExpectBucketCount(
-      internal::kBackgroundHistogramFirstTextPaint,
-      timing.paint_timing->first_text_paint.value().InMilliseconds(), 1);
+      internal::kBackgroundHistogramFirstImagePaint,
+      timing.paint_timing->first_image_paint.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramPageTimingForegroundDuration, 1);
@@ -312,7 +312,7 @@ TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester().ExpectBucketCount(internal::kHistogramFirstLayout,
                                        first_layout.InMilliseconds(), 1);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
@@ -329,7 +329,7 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
   histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
-  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstImagePaint, 0);
   histogram_tester().ExpectTotalCount(internal::kHistogramFailedProvisionalLoad,
                                       1);
 

@@ -139,9 +139,6 @@ void DispatchObserverTimingCallbacks(
   if (new_timing.paint_timing->first_paint &&
       !last_timing.paint_timing->first_paint)
     observer->OnFirstPaintInPage(new_timing, extra_info);
-  if (new_timing.paint_timing->first_text_paint &&
-      !last_timing.paint_timing->first_text_paint)
-    observer->OnFirstTextPaintInPage(new_timing, extra_info);
   if (new_timing.paint_timing->first_image_paint &&
       !last_timing.paint_timing->first_image_paint)
     observer->OnFirstImagePaintInPage(new_timing, extra_info);

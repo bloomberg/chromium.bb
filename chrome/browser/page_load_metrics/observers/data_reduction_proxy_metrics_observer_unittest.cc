@@ -117,8 +117,6 @@ class DataReductionProxyMetricsObserverTest
                                 timing_.paint_timing->first_image_paint);
     ValidateHistogramsForSuffix(::internal::kHistogramFirstPaintSuffix,
                                 timing_.paint_timing->first_paint);
-    ValidateHistogramsForSuffix(::internal::kHistogramFirstTextPaintSuffix,
-                                timing_.paint_timing->first_text_paint);
     ValidateHistogramsForSuffix(::internal::kHistogramParseStartSuffix,
                                 timing_.parse_timing->parse_start);
     ValidateHistogramsForSuffix(

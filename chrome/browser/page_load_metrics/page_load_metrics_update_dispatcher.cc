@@ -162,14 +162,6 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
   }
 
   if (!EventsInOrder(timing.paint_timing->first_paint,
-                     timing.paint_timing->first_text_paint)) {
-    LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
-               << " for first_text_paint "
-               << timing.paint_timing->first_text_paint;
-    return internal::INVALID_ORDER_FIRST_PAINT_FIRST_TEXT_PAINT;
-  }
-
-  if (!EventsInOrder(timing.paint_timing->first_paint,
                      timing.paint_timing->first_image_paint)) {
     LOG(ERROR) << "Invalid first_paint " << timing.paint_timing->first_paint
                << " for first_image_paint "
@@ -334,9 +326,6 @@ class PageLoadTimingMerger {
     mojom::PaintTiming* target_paint_timing = target_->paint_timing.get();
     MaybeUpdateTimeDelta(&target_paint_timing->first_paint,
                          navigation_start_offset, new_paint_timing.first_paint);
-    MaybeUpdateTimeDelta(&target_paint_timing->first_text_paint,
-                         navigation_start_offset,
-                         new_paint_timing.first_text_paint);
     MaybeUpdateTimeDelta(&target_paint_timing->first_image_paint,
                          navigation_start_offset,
                          new_paint_timing.first_image_paint);
@@ -671,9 +660,6 @@ void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
 
   LogIfOutOfOrderTiming(current_merged_page_timing_->paint_timing->first_paint,
                         pending_merged_page_timing_->paint_timing->first_paint);
-  LogIfOutOfOrderTiming(
-      current_merged_page_timing_->paint_timing->first_text_paint,
-      pending_merged_page_timing_->paint_timing->first_text_paint);
   LogIfOutOfOrderTiming(
       current_merged_page_timing_->paint_timing->first_image_paint,
       pending_merged_page_timing_->paint_timing->first_image_paint);
