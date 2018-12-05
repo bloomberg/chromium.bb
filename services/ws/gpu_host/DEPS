@@ -9,6 +9,7 @@ include_rules = [
   "+gpu/ipc/client",
   "+gpu/ipc/common",
   "+gpu/ipc/host",
+  "+media/gpu",
   "+mojo/public",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
@@ -18,12 +19,14 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # TODO(crbug.com/620927): This can be removed after ozone-mojo.
-  "gpu_host.h": [
+  # TODO(crbug.com/912221): This goes away after the gpu process split in mash.
+  "gpu_host.cc": [
     "+components/viz/service/main/viz_main_impl.h",
+    "+gpu/ipc/service/gpu_init.h",
   ],
   "gpu_host_unittest.cc": [
     "+components/viz/service/gl/gpu_service_impl.h",
+    "+gpu/ipc/service/gpu_watchdog_thread.h",
   ],
   ".*_(unit|pixel|perf)test.*\.cc": [
     "+components/viz/test",

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//media/gpu/args.gni")
+
 source_set("gpu_host") {
   sources = [
     "gpu_host.cc",
@@ -14,13 +16,15 @@ source_set("gpu_host") {
     "//components/discardable_memory/service",
     "//components/viz/common",
     "//components/viz/host",
-    "//components/viz/service/main",  # TODO(sad): Temporary until GPU process split.
+    "//components/viz/service/main",  # TODO(crbug/912221): Remove after GPU process split.
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/service",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
     "//gpu/ipc/host",
+    "//gpu/ipc/service",  # TODO(crbug/912221): Remove after GPU process split.
+    "//media/gpu:buildflags",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
@@ -39,6 +43,10 @@ source_set("gpu_host") {
       "arc_client.cc",
       "arc_client.h",
     ]
+  }
+
+  if (use_vaapi) {
+    deps += [ "//media/gpu/vaapi" ]
   }
 
   # ui service should not depend on below components.

@@ -8,7 +8,6 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/viz/host/gpu_host_impl.h"
-#include "components/viz/service/main/viz_main_impl.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
@@ -38,6 +37,7 @@ namespace viz {
 class GpuClient;
 class GpuHostImpl;
 class HostGpuMemoryBufferManager;
+class VizMainImpl;
 }
 
 namespace ws {
@@ -70,7 +70,7 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
 
   void OnBadMessageFromGpu();
 
-  // TODO(crbug.com/611505): this goes away after the gpu process split in mus.
+  // TODO(crbug.com/912221): This goes away after the gpu process split in mash.
   void InitializeVizMain(viz::mojom::VizMainRequest request);
   void DestroyVizMain();
 
@@ -117,7 +117,7 @@ class GpuHost : public viz::GpuHostImpl::Delegate {
 
   std::vector<std::unique_ptr<viz::GpuClient>> gpu_clients_;
 
-  // TODO(crbug.com/620927): This should be removed once ozone-mojo is done.
+  // TODO(crbug.com/912221): This goes away after the gpu process split in mash.
   base::Thread gpu_thread_;
   std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
 
