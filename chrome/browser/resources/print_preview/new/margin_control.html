@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../print_preview_utils.html">
 <link rel="import" href="../data/coordinate2d.html">
 <link rel="import" href="../data/margins.html">
@@ -89,9 +88,8 @@
     </style>
     <div id="line"></div>
     <cr-input id="textbox" aria-hidden$="[[getAriaHidden_(invisible)]]"
-        aria-label$="[[i18n(side)]]" type="text" disabled="[[invisible]]"
-        invalid="[[invalid]]" on-blur="onBlur_" on-focus="onFocus_"
-        data-timeout-delay="1000">
+        type="text" disabled="[[invisible]]" on-blur="onBlur_"
+        on-focus="onFocus_" invalid="[[invalid]]" data-timeout-delay="1000">
     </cr-input>
   </template>
   <script src="margin_control.js"></script>

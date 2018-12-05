@@ -132,15 +132,4 @@ Polymer({
   updateHighlighting_: function() {
     return print_preview.updateHighlights(this, this.searchQuery);
   },
-
-  /**
-   * @return {string} A tooltip for the extension printer icon.
-   * @private
-   */
-  getExtensionPrinterTooltip_: function() {
-    if (!this.destination.isExtension)
-      return '';
-    return loadTimeData.getStringF(
-        'extensionDestinationIconTooltip', this.destination.extensionName);
-  },
 });
