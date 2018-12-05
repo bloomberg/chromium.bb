@@ -78,7 +78,7 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     kBypass = 1,
 
     // Previews server will respond with HTTP 307 to a non-preview page.
-    kRedirect = 2,
+    kRedirectNonPreview = 2,
 
     // Previews server will respond with HTTP 503.
     kLoadshed = 3,
@@ -94,6 +94,9 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
     // a subresource. When the subresource is loaded, |subresources_requested|_
     // will be incremented if the X-Client-Data header if in the request.
     kSubresources = 6,
+
+    // Previews server will respond with HTTP 307 to a preview page.
+    kRedirectPreview = 7,
   };
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -554,9 +557,14 @@ class PreviewsLitePageServerBrowserTest : public InProcessBrowserTest {
         response->set_content("porgporgporgporgporg" /* length = 20 */);
         response->AddCustomHeader("chrome-proxy", "ofcl=60");
         break;
-      case kRedirect:
+      case kRedirectNonPreview:
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
         response->AddCustomHeader("Location", HttpLitePageURL(kSuccess).spec());
+        break;
+      case kRedirectPreview:
+        response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+        response->AddCustomHeader("Location",
+                                  HttpsLitePageURL(kSuccess).spec());
         break;
       case kBypass:
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
@@ -844,9 +852,11 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   }
 
   {
-    // Verify the preview is not triggered when the previews server redirects.
+    // Verify the preview is not triggered when the previews server redirects to
+    // a non-preview page.
     base::HistogramTester histogram_tester;
-    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirect));
+    ui_test_utils::NavigateToURL(browser(),
+                                 HttpsLitePageURL(kRedirectNonPreview));
     VerifyPreviewNotLoaded();
     VerifyInfoStatus(previews::ServerLitePageStatus::kRedirect);
     ClearDeciderState();
@@ -855,6 +865,24 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
         PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
+  }
+
+  {
+    // Verify the preview is triggered when the previews server redirects to a
+    // preview page.
+    base::HistogramTester histogram_tester;
+    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirectPreview));
+    VerifyPreviewLoaded();
+    VerifyInfoStatus(previews::ServerLitePageStatus::kSuccess);
+    ClearDeciderState();
+    histogram_tester.ExpectBucketCount("Previews.ServerLitePage.Triggered",
+                                       true, 2);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kOk, 1);
   }
 }
 
