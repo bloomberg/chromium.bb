@@ -279,6 +279,7 @@ js_library("margin_control") {
     "../data:coordinate2d",
     "../data:margins",
     "../data:size",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
