@@ -1074,6 +1074,12 @@
       status: "stable",
     },
     {
+      name: "RestrictLazyFrameLoadingToDataSaver",
+    },
+    {
+      name: "RestrictLazyImageLoadingToDataSaver",
+    },
+    {
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
