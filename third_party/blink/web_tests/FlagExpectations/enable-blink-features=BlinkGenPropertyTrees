@@ -112,11 +112,7 @@ Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html
 Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
-
-# mask-with-added-filters.html should be newly-passing with BGPT but currently
-# has minor pixel differences and should be rebaselined.
-# crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
-Bug(none) compositing/masks/mask-with-added-filters.html [ Failure ]
+crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 
 # Link highlights are no longer affected by ancestor effects.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
