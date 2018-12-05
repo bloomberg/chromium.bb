@@ -72,8 +72,9 @@ int LoginBaseBubbleView::GetDialogButtons() const {
 }
 
 gfx::Size LoginBaseBubbleView::CalculatePreferredSize() const {
-  gfx::Size size = views::BubbleDialogDelegateView::CalculatePreferredSize();
+  gfx::Size size;
   size.set_width(kBubbleTotalWidthDp);
+  size.set_height(GetHeightForWidth(kBubbleTotalWidthDp));
   return size;
 }
 
