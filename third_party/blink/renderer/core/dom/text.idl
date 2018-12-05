@@ -31,5 +31,5 @@
     [ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement? assignedSlot;
 
     // Non-standard API:
-    [RuntimeEnabled=ShadowDOMV0] NodeList getDestinationInsertionPoints();
+    [OriginTrialEnabled=ShadowDOMV0] NodeList getDestinationInsertionPoints();
 };
