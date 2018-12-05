@@ -26,6 +26,14 @@
         "enum": ["declarativeContent.ShowPageAction"]
       },
       {
+        "id": "ShowActionInstanceType",
+        "type": "string",
+        "enum": ["declarativeContent.ShowAction"],
+        // TODO(devlin): Open this up once M72 hits stable, and deprecate the
+        // ShowPageAction entries.
+        "nodoc": true
+      },
+      {
         "id": "SetIconInstanceType",
         "type": "string",
         "enum": ["declarativeContent.SetIcon"]
@@ -78,6 +86,20 @@
         "properties": {
           "instanceType": {
             "$ref": "ShowPageActionInstanceType",
+            "nodoc": true
+          }
+        }
+      },
+      {
+        "id": "ShowAction",
+        "description": "Declarative event action that shows the extension's toolbar action ($(ref:pageAction page action) or $(ref:browserAction browser action)) while the corresponding conditions are met. This action can be used without <a href=\"declare_permissions#host-permissions\">host permissions</a>. If the extension has the <a href=\"activeTab.html\">activeTab</a> permission, clicking the page action grants access to the active tab.",
+        "type": "object",
+        // TODO(devlin): Open this up once M72 hits stable, and deprecate the
+        // ShowPageAction entries.
+        "nodoc": true,
+        "properties": {
+          "instanceType": {
+            "$ref": "ShowActionInstanceType",
             "nodoc": true
           }
         }
@@ -161,7 +183,8 @@
           "actions": [
             "declarativeContent.RequestContentScript",
             "declarativeContent.SetIcon",
-            "declarativeContent.ShowPageAction"
+            "declarativeContent.ShowPageAction",
+            "declarativeContent.ShowAction"
           ]
         }
       }

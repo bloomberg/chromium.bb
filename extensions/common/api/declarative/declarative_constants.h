@@ -24,9 +24,12 @@ extern const char kPageUrl[];
 
 // Values of dictionaries, in particular instance types
 extern const char kPageStateMatcherType[];
-extern const char kShowPageAction[];
+extern const char kShowAction[];
 extern const char kRequestContentScript[];
 extern const char kSetIcon[];
+
+// The old ShowAction instance type.
+extern const char kLegacyShowAction[];
 
 }  // namespace declarative_content_constants
 }  // namespace extensions
