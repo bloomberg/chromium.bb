@@ -188,6 +188,10 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // windows are to be created in the current process.
   virtual BridgeFactoryHost* GetBridgeFactoryHost();
 
+  // Called after the window has been initialized. Allows subclasses to perform
+  // additional initialization.
+  virtual void OnWindowInitialized() {}
+
   // Optional hook for subclasses invoked by WindowDestroying().
   virtual void OnWindowDestroying(gfx::NativeWindow window) {}
 

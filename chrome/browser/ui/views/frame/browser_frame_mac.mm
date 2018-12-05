@@ -26,6 +26,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#import "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
@@ -94,10 +95,7 @@ API_AVAILABLE(macos(10.12.2))
 
 BrowserFrameMac::BrowserFrameMac(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
-    : views::NativeWidgetMac(browser_frame),
-      browser_view_(browser_view),
-      command_dispatcher_delegate_(
-          [[ChromeCommandDispatcherDelegate alloc] init]) {}
+    : views::NativeWidgetMac(browser_frame), browser_view_(browser_view) {}
 
 BrowserFrameMac::~BrowserFrameMac() {
 }
@@ -321,12 +319,6 @@ void BrowserFrameMac::PopulateCreateWindowParams(
 NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
     const views_bridge_mac::mojom::CreateWindowParams* params) {
   NativeWidgetMacNSWindow* ns_window = NativeWidgetMac::CreateNSWindow(params);
-  // TODO(ccameron): Window-level hotkeys need to be wired up across processes.
-  // https://crbug.com/895168
-  [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
-  [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
-                                   autorelease]];
-
   if (@available(macOS 10.12.2, *)) {
     touch_bar_delegate_.reset([[BrowserWindowTouchBarViewsDelegate alloc]
         initWithBrowser:browser_view_->browser()
@@ -345,14 +337,22 @@ views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
       browser_view_->browser());
 }
 
+void BrowserFrameMac::OnWindowInitialized() {
+  // TODO(ccameron): Window-level hotkeys need to be wired up across processes.
+  // https://crbug.com/895168
+  if (bridge_impl()) {
+    bridge_impl()->SetCommandDispatcher(
+        [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
+        [[[BrowserWindowCommandHandler alloc] init] autorelease]);
+  }
+}
+
 void BrowserFrameMac::OnWindowDestroying(gfx::NativeWindow native_window) {
   // Clear delegates set in CreateNSWindow() to prevent objects with a reference
   // to |window| attempting to validate commands by looking for a Browser*.
   NativeWidgetMacNSWindow* ns_window =
       base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(
           native_window.GetNativeNSWindow());
-  [ns_window setCommandHandler:nil];
-  [ns_window setCommandDispatcherDelegate:nil];
   [ns_window setWindowTouchBarDelegate:nil];
 }
 
