@@ -1,8 +1,8 @@
 '\" t
 .\"     Title: git-new-branch
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 11/26/2018
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 12/15/2016
 .\"    Manual: Chromium depot_tools Manual
 .\"    Source: depot_tools f72f1ad
 .\"  Language: English
@@ -40,7 +40,7 @@ git-new-branch \- Create a new branch with correct tracking information\&.
 .sp
 .SH "DESCRIPTION"
 .sp
-Creates a new branch for \fBHEAD\fR\&. By default the new branch will track the configured upstream for the repo (defaults to \fIorigin/master\fR)\&. If one of the other options is specified, it will track that other ref instead\&.
+Creates a new branch\&. By default the new branch will track the configured upstream for the repo (defaults to \fIorigin/master\fR)\&. If one of the other options is specified, it will track that other ref instead\&.
 .sp
 Conceptually, each branch in your repo represents one \fIChange List (CL)\fR\&. If you have many independent CLs (i\&.e\&. the changes in one do not interact with/depend on the changes in another), then you should create them as new branches tracking the default upstream (i\&.e\&. git new\-branch <branch_name>)\&. If you have features which depend on each other, you should create stacked branches using git new\-branch \-\-upstream_current <branch_name>\&.
 .SH "OPTIONS"

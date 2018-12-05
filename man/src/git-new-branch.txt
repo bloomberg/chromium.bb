@@ -17,9 +17,9 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-Creates a new branch for *HEAD*. By default the new branch will track the
-configured upstream for the repo (defaults to 'origin/master'). If one of the
-other options is specified, it will track that other ref instead.
+Creates a new branch. By default the new branch will track the configured
+upstream for the repo (defaults to 'origin/master'). If one of the other options
+is specified, it will track that other ref instead.
 
 Conceptually, each branch in your repo represents one 'Change List (CL)'. If you
 have many independent CLs (i.e. the changes in one do not interact with/depend
