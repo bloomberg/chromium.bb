@@ -47,6 +47,11 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     return session_info_;
   }
 
+  const base::Optional<base::Optional<MediaMetadata>>& session_metadata()
+      const {
+    return session_metadata_;
+  }
+
  private:
   mojom::MediaSessionInfoPtr session_info_;
   base::Optional<base::Optional<MediaMetadata>> session_metadata_;

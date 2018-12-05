@@ -41,6 +41,8 @@ const char kMediaSessionStateInactive[] = "Inactive";
 const char kMediaSessionPlaybackStatePaused[] = "Paused";
 const char kMediaSessionPlaybackStatePlaying[] = "Playing";
 
+const char kMediaSessionIsControllable[] = "Controllable";
+
 }  // namespace
 
 MediaInternalsAudioFocusHelper::MediaInternalsAudioFocusHelper() = default;
@@ -293,6 +295,10 @@ std::string MediaInternalsAudioFocusHelper::BuildStateString(
   // Convert the |force_duck| boolean into a string.
   if (state->session_info->force_duck)
     stream << " " << kAudioFocusForceDuck;
+
+  // Convert the |is_controllable| boolean into a string.
+  if (state->session_info->is_controllable)
+    stream << " " << kMediaSessionIsControllable;
 
   if (!provided_state.empty())
     stream << " " << provided_state;
