@@ -239,7 +239,6 @@ void DumpAccessibilityTreeTest::AddDefaultFilters(
   AddFilter(filters, "minValueForRange*");
   AddFilter(filters, "maxValueForRange*");
   AddFilter(filters, "hierarchicalLevel*");
-  AddFilter(filters, "aria*");  // ariaCurrentState, ariaInvalidValue, etc.
   AddFilter(filters, "autoComplete*");
   AddFilter(filters, "restriction*");
   AddFilter(filters, "keyShortcuts*");
