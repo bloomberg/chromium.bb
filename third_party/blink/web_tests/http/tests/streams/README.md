@@ -7,3 +7,5 @@ directory.
 * chromium/ - Tests for functionality specific to Blink.
 * resources/ - Contains rs-utils.js, which is used by stream-related tests in
   ../fetch.
+* transferables/ - Contains tests for transferable streams. These will be
+  upstreamed to wpt once they are standardised.

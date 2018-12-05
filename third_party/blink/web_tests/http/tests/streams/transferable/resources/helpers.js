@@ -1,3 +1,5 @@
+'use strict';
+
 // Create a ReadableStream that will pass the tests in
 // testTransferredReadableStream(), below.
 function createOriginalReadableStream() {
@@ -24,7 +26,7 @@ function testTransferredReadableStream(rs) {
     assert_false(done, 'done should be false');
     assert_equals(value, 'a', 'value should be "a"');
     return reader.read();
-  }).then(({value, done}) => {
+  }).then(({done}) => {
     assert_true(done, 'done should be true');
   });
 }
@@ -39,7 +41,7 @@ function testMessageEvent(target) {
     target.addEventListener('message', ev => {
       try {
         resolve(testMessage(ev));
-      } catch(e) {
+      } catch (e) {
         reject(e);
       }
     }, {once: true});
@@ -57,7 +59,7 @@ function testMessageEventOrErrorMessage(target) {
 
       try {
         resolve(testMessage(ev));
-      } catch(e) {
+      } catch (e) {
         reject(e);
       }
     }, {once: true});
@@ -78,4 +80,42 @@ function checkTestResults(target) {
       }
     };
   });
+}
+
+// These tests assume that a transferred ReadableStream will behave the same
+// regardless of how it was transferred. This enables us to simply transfer the
+// stream to ourselves.
+function createTransferredReadableStream(underlyingSource) {
+  const original = new ReadableStream(underlyingSource);
+  const promise = new Promise((resolve, reject) => {
+    addEventListener('message', msg => {
+      const rs = msg.data;
+      if (rs instanceof ReadableStream) {
+        resolve(rs);
+      } else {
+        reject(new Error(`what is this thing: "${rs}"?`));
+      }
+    }, {once: true});
+  });
+  postMessage(original, '*', [original]);
+  return promise;
+}
+
+function recordingTransferredReadableStream(underlyingSource, strategy) {
+  const original = recordingReadableStream(underlyingSource, strategy);
+  const promise = new Promise((resolve, reject) => {
+    addEventListener('message', msg => {
+      const rs = msg.data;
+      if (rs instanceof ReadableStream) {
+        rs.events = original.events;
+        rs.eventsWithoutPulls = original.eventsWithoutPulls;
+        rs.controller = original.controller;
+        resolve(rs);
+      } else {
+        reject(new Error(`what is this thing: "${rs}"?`));
+      }
+    }, {once: true});
+  });
+  postMessage(original, '*', [original]);
+  return promise;
 }
