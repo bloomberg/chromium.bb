@@ -918,10 +918,8 @@ void Tab::UpdateIconVisibility() {
 
     // Show the close button if it's allowed to show on hover, even if it's
     // forced to be hidden normally.
-    const bool show_on_hover = controller_->ShouldShowCloseButtonOnHover();
-    showing_close_button_ |= show_on_hover && hover_controller_.ShouldDraw();
     showing_close_button_ &= large_enough_for_close_button;
-    if (showing_close_button_ || show_on_hover)
+    if (showing_close_button_)
       available_width -= close_button_width;
 
     // If no other controls are visible, show the alert icon or the favicon
