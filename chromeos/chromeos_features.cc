@@ -35,7 +35,7 @@ const base::Feature kChromeVoxArcSupport{"ChromeVoxArcSupport",
 
 // Enables or disables Crostini Files.
 const base::Feature kCrostiniFiles{"CrostiniFiles",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini support for usb mounting.
 const base::Feature kCrostiniUsbSupport{"CrostiniUsbSupport",
