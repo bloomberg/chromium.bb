@@ -29,6 +29,7 @@ public class FakeContextualSuggestionsSource
     final static String TEST_TOOLBAR_TITLE = "More about capybaras";
     // There should be 6 items in the cluster list - 5 articles and one cluster title.
     final static Integer TOTAL_ITEM_COUNT = 6;
+    final static float TEST_PEEK_CONFIDENCE = 0.75f;
     final static float TEST_PEEK_TARGET_PERCENTAGE = .5f;
     final static int TEST_PEEK_COUNT = 3;
     final static int TEST_PEEK_DELAY_SECONDS = 2;
@@ -122,7 +123,7 @@ public class FakeContextualSuggestionsSource
         cluster2.getSuggestions().add(article5);
 
         ContextualSuggestionsResult result = new ContextualSuggestionsResult(TEST_TOOLBAR_TITLE);
-        result.setPeekConditions(new PeekConditions(
+        result.setPeekConditions(new PeekConditions(TEST_PEEK_CONFIDENCE,
                 TEST_PEEK_TARGET_PERCENTAGE, TEST_PEEK_DELAY_SECONDS, TEST_PEEK_COUNT));
         result.getClusters().add(cluster1);
         result.getClusters().add(cluster2);
