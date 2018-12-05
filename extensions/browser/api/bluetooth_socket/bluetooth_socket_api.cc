@@ -115,19 +115,6 @@ bool IsValidPsm(int psm) {
   return true;
 }
 
-// Generates a hash from a UUID suitable for
-// base::UmaHistogramSparse(positive int).
-//
-// Hash values can be produced manually using tool: bluetooth_metrics_hash.
-int HashUUID(const device::BluetoothUUID& uuid) {
-  // TODO(520284): Other than verifying that |uuid| contains a value, this logic
-  // should be migrated to a dedicated histogram macro for hashed strings.
-  uint32_t data = base::PersistentHash(uuid.canonical_value());
-
-  // Strip off the sign bit to make the hash look nicer.
-  return static_cast<int>(data & 0x7fffffff);
-}
-
 }  // namespace
 
 BluetoothSocketAsyncApiFunction::BluetoothSocketAsyncApiFunction() {}
@@ -357,9 +344,6 @@ void BluetoothSocketListenUsingRfcommFunction::CreateService(
       service_options.channel.reset(new int(*(options->channel)));
   }
 
-  base::UmaHistogramSparse("Extensions.BluetoothSocket.ListenRFCOMM.Service",
-                           HashUUID(uuid));
-
   adapter->CreateRfcommService(uuid, service_options, callback, error_callback);
 }
 
@@ -409,9 +393,6 @@ void BluetoothSocketListenUsingL2capFunction::CreateService(
       service_options.psm.reset(new int(psm));
     }
   }
-
-  base::UmaHistogramSparse("Extensions.BluetoothSocket.ListenL2CAP.Service",
-                           HashUUID(uuid));
 
   adapter->CreateL2capService(uuid, service_options, callback, error_callback);
 }
@@ -513,9 +494,6 @@ BluetoothSocketConnectFunction::~BluetoothSocketConnectFunction() {}
 void BluetoothSocketConnectFunction::ConnectToService(
     device::BluetoothDevice* device,
     const device::BluetoothUUID& uuid) {
-  base::UmaHistogramSparse("Extensions.BluetoothSocket.Connect.Service",
-                           HashUUID(uuid));
-
   device->ConnectToService(
       uuid,
       base::Bind(&BluetoothSocketConnectFunction::OnConnect, this),
