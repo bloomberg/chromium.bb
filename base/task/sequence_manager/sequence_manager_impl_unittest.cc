@@ -39,17 +39,18 @@
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::sequence_manager::internal::EnqueueOrder;
+using testing::_;
 using testing::AnyNumber;
 using testing::Contains;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
+using testing::HasSubstr;
 using testing::Mock;
 using testing::Not;
 using testing::Return;
 using testing::StrictMock;
 using testing::UnorderedElementsAre;
-using testing::_;
-using base::sequence_manager::internal::EnqueueOrder;
 
 namespace base {
 namespace sequence_manager {
@@ -4069,6 +4070,37 @@ TEST_P(SequenceManagerTest, PostDelayedTaskFromOtherThread) {
   test_task_runner_->FastForwardUntilNoTasksRemain();
   RunLoop().RunUntilIdle();
   thread.Stop();
+}
+
+void PostTaskA(scoped_refptr<TaskRunner> task_runner) {
+  task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
+  task_runner->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               base::TimeDelta::FromMilliseconds(10));
+}
+
+void PostTaskB(scoped_refptr<TaskRunner> task_runner) {
+  task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
+  task_runner->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               base::TimeDelta::FromMilliseconds(20));
+}
+
+void PostTaskC(scoped_refptr<TaskRunner> task_runner) {
+  task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
+  task_runner->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
+                               base::TimeDelta::FromMilliseconds(30));
+}
+
+TEST_P(SequenceManagerTest, DescribeAllPendingTasks) {
+  CreateTaskQueues(3u);
+
+  PostTaskA(queues_[0]->task_runner());
+  PostTaskB(queues_[1]->task_runner());
+  PostTaskC(queues_[2]->task_runner());
+
+  std::string description = manager_->DescribeAllPendingTasks();
+  EXPECT_THAT(description, HasSubstr("PostTaskA@"));
+  EXPECT_THAT(description, HasSubstr("PostTaskB@"));
+  EXPECT_THAT(description, HasSubstr("PostTaskC@"));
 }
 
 }  // namespace sequence_manager_impl_unittest

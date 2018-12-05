@@ -140,7 +140,9 @@ class BASE_EXPORT TaskQueueImpl {
   // Must only be called from the thread this task queue was created on.
   void ReloadImmediateWorkQueueIfEmpty();
 
-  void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
+  void AsValueInto(TimeTicks now,
+                   trace_event::TracedValue* state,
+                   bool force_verbose) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }

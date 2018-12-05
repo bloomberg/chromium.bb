@@ -11,6 +11,7 @@
 #include "base/bit_cast.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
+#include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/optional.h"
@@ -450,7 +451,9 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
         main_thread_only().selector.SelectWorkQueueToService(&work_queue);
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
         TRACE_DISABLED_BY_DEFAULT("sequence_manager.debug"), "SequenceManager",
-        this, AsValueWithSelectorResult(should_run, work_queue));
+        this,
+        AsValueWithSelectorResult(should_run, work_queue,
+                                  /* force_verbose */ false));
 
     if (!should_run)
       return nullopt;
@@ -732,22 +735,23 @@ internal::EnqueueOrder SequenceManagerImpl::GetNextSequenceNumber() {
 std::unique_ptr<trace_event::ConvertableToTraceFormat>
 SequenceManagerImpl::AsValueWithSelectorResult(
     bool should_run,
-    internal::WorkQueue* selected_work_queue) const {
+    internal::WorkQueue* selected_work_queue,
+    bool force_verbose) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   std::unique_ptr<trace_event::TracedValue> state(
       new trace_event::TracedValue());
   TimeTicks now = NowTicks();
   state->BeginArray("active_queues");
   for (auto* const queue : main_thread_only().active_queues)
-    queue->AsValueInto(now, state.get());
+    queue->AsValueInto(now, state.get(), force_verbose);
   state->EndArray();
   state->BeginArray("queues_to_gracefully_shutdown");
   for (const auto& pair : main_thread_only().queues_to_gracefully_shutdown)
-    pair.first->AsValueInto(now, state.get());
+    pair.first->AsValueInto(now, state.get(), force_verbose);
   state->EndArray();
   state->BeginArray("queues_to_delete");
   for (const auto& pair : main_thread_only().queues_to_delete)
-    pair.first->AsValueInto(now, state.get());
+    pair.first->AsValueInto(now, state.get(), force_verbose);
   state->EndArray();
   state->BeginDictionary("selector");
   main_thread_only().selector.AsValueInto(state.get());
@@ -897,6 +901,12 @@ size_t SequenceManagerImpl::GetPendingTaskCountForTesting() const {
 scoped_refptr<TaskQueue> SequenceManagerImpl::CreateTaskQueue(
     const TaskQueue::Spec& spec) {
   return WrapRefCounted(new TaskQueue(CreateTaskQueueImpl(spec), spec));
+}
+
+std::string SequenceManagerImpl::DescribeAllPendingTasks() const {
+  return AsValueWithSelectorResult(/* should_run */ false, nullptr,
+                                   /* force_verbose */ true)
+      ->ToString();
 }
 
 void SequenceManagerImpl::AddDestructionObserver(
