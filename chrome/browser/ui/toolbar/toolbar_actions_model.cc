@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model_factory.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -556,9 +557,8 @@ void ToolbarActionsModel::Populate() {
   UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.OverallActionsCount",
                            toolbar_items_.size());
 
-  const char kDocsOfflineExtensionId[] = "ghbmnnjooekpmoecnnnilnnbdlolhkhi";
   if (extension_registry_->GetExtensionById(
-          kDocsOfflineExtensionId,
+          extension_misc::kDocsOfflineExtensionId,
           extensions::ExtensionRegistry::ENABLED |
               extensions::ExtensionRegistry::DISABLED) != nullptr) {
     // Note: This enum is used in UMA (directly below). Don't renumber.
@@ -569,12 +569,13 @@ void ToolbarActionsModel::Populate() {
       BOUNDARY   = 3,
     };
     ExtensionState doc_state = DISABLED;
-    if (extensions.GetByID(kDocsOfflineExtensionId)) {  // In the enabled set.
+    if (extensions.GetByID(
+            extension_misc::kDocsOfflineExtensionId)) {  // In the enabled set.
       auto current_pos = std::find_if(
           toolbar_items_.begin(), toolbar_items_.end(),
-          [&kDocsOfflineExtensionId](const ToolbarItem& item) {
-        return item.id == kDocsOfflineExtensionId;
-      });
+          [](const ToolbarItem& item) {
+            return item.id == extension_misc::kDocsOfflineExtensionId;
+          });
       doc_state =
           current_pos - toolbar_items_.begin() <
               static_cast<int>(visible_icon_count()) ||

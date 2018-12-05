@@ -42,8 +42,8 @@ extern const char kCloudPrintAppId[];
 // The extension id of the Data Saver extension.
 extern const char kDataSaverExtensionId[];
 
-// The extension id of the Drive extension.
-extern const char kDriveExtensionId[];
+// The extension id of the Google Docs Offline extension.
+extern const char kDocsOfflineExtensionId[];
 
 // The extension id of the Drive hosted app.
 extern const char kDriveHostedAppId[];
