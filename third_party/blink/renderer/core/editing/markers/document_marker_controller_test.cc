@@ -102,6 +102,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByNormalize) {
     MarkNodeContents(parent);
     EXPECT_EQ(2u, MarkerController().Markers().size());
     parent->normalize();
+    UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
@@ -114,6 +115,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveChildren) {
   MarkNodeContents(parent);
   EXPECT_EQ(1u, MarkerController().Markers().size());
   parent->RemoveChildren();
+  UpdateAllLifecyclePhasesForTest();
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0u, MarkerController().Markers().size());
@@ -127,12 +129,14 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->RemoveChild(parent->firstChild());
+    UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
+// TODO(xiaochengh): Fix this test in LayoutNG. See https://crbug.com/906260.
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
   SetBodyContent("<b><i>foo</i></b>");
   {
@@ -141,6 +145,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->parentNode()->parentNode()->RemoveChild(parent->parentNode());
+    UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
@@ -155,6 +160,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveParent) {
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->parentNode()->RemoveChild(parent);
+    UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
@@ -169,12 +175,14 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->ReplaceChild(CreateTextNode("bar"), parent->firstChild());
+    UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
+// TODO(xiaochengh): Fix this test in LayoutNG. See https://crbug.com/906260.
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
   SetBodyContent("<b><i>foo</i></b>");
   {
@@ -183,6 +191,7 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     SetBodyContent("");
+    UpdateAllLifecyclePhasesForTest();
   }
   // No more reference to marked node.
   ThreadState::Current()->CollectAllGarbage();
@@ -200,6 +209,7 @@ TEST_F(DocumentMarkerControllerTest, SynchronousMutationNotificationAfterGC) {
     MarkNodeContents(parent);
     EXPECT_EQ(1u, MarkerController().Markers().size());
     parent->parentNode()->RemoveChild(parent);
+    UpdateAllLifecyclePhasesForTest();
   }
 
   // GC the marked node, so it disappears from WeakMember collections.
