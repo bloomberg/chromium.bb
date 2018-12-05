@@ -42,9 +42,7 @@ Polymer({
    * @param {!Object} data New dictionary with i18n values.
    */
   reloadContent: function(data) {
-    // Reload global local strings, process DOM tree again.
-    loadTimeData.overrideValues(data);
-    i18nTemplate.process(document, loadTimeData);
+    this.voiceMatchFeatureEnabled = data['voiceMatchFeatureEnabled'];
     this.$['value-prop'].reloadContent(data);
     this.$['third-party'].reloadContent(data);
     this.$['get-more'].reloadContent(data);
@@ -80,7 +78,11 @@ Polymer({
         this.showScreen(this.$['third-party']);
         break;
       case this.$['third-party']:
-        this.showScreen(this.$['voice-match']);
+        if (this.voiceMatchFeatureEnabled) {
+          this.showScreen(this.$['voice-match']);
+        } else {
+          this.showScreen(this.$['get-more']);
+        }
         break;
       case this.$['voice-match']:
         this.showScreen(this.$['get-more']);

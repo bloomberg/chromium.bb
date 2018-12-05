@@ -31,11 +31,11 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for next button.
+   * On-tap event handler for agree button.
    *
    * @private
    */
-  onNextTap_: function() {
+  onAgreeTap_: function() {
     this.removeClass_('intro');
     this.addClass_('recording');
     chrome.send(
@@ -44,7 +44,7 @@ Polymer({
   },
 
   /**
-   * On-tap event handler for next button.
+   * On-tap event handler for done button.
    *
    * @private
    */
@@ -107,6 +107,6 @@ Polymer({
    * Signal from host to show the screen.
    */
   onShow: function() {
-    this.$['next-button'].focus();
+    this.$['agree-button'].focus();
   },
 });
