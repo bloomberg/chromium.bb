@@ -613,6 +613,18 @@ def GetGerritFetchUrl(host):
   return '%s://%s/' % (GERRIT_PROTOCOL, host)
 
 
+def GetCodeReviewTbrScore(host, project):
+  """Given a gerrit host name and project, return the Code-Review score for TBR.
+  """
+  conn = CreateHttpConn(host, '/projects/%s' % urllib.quote(project, safe=''))
+  project = ReadHttpJsonResponse(conn)
+  if ('labels' not in project
+      or 'Code-Review' not in project['labels']
+      or 'values' not in project['labels']['Code-Review']):
+    return 1
+  return max([int(x) for x in project['labels']['Code-Review']['values']])
+
+
 def GetChangePageUrl(host, change_number):
   """Given a gerrit host name and change number, return change page url."""
   return '%s://%s/#/c/%d/' % (GERRIT_PROTOCOL, host, change_number)
@@ -976,7 +988,7 @@ def tempdir():
 
 
 def ChangeIdentifier(project, change_number):
-  """Returns change identifier "project~number" suitable for |chagne| arg of
+  """Returns change identifier "project~number" suitable for |change| arg of
   this module API.
 
   Such format is allows for more efficient Gerrit routing of HTTP requests,

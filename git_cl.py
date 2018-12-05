@@ -1613,41 +1613,6 @@ class Changelist(object):
         ret = upload_branch_deps(self, orig_args)
     return ret
 
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    """Sets labels on the change based on the provided flags.
-
-    Sets labels if issue is already uploaded and known, else returns without
-    doing anything.
-
-    Args:
-      enable_auto_submit: Sets Auto-Submit+1 on the change.
-      use_commit_queue: Sets Commit-Queue+2 on the change.
-      cq_dry_run: Sets Commit-Queue+1 on the change. Overrides Commit-Queue+2 if
-                  both use_commit_queue and cq_dry_run are true.
-    """
-    if not self.GetIssue():
-      return
-    try:
-      self._codereview_impl.SetLabels(enable_auto_submit, use_commit_queue,
-                                      cq_dry_run)
-      return 0
-    except KeyboardInterrupt:
-      raise
-    except:
-      labels = []
-      if enable_auto_submit:
-        labels.append('Auto-Submit')
-      if use_commit_queue or cq_dry_run:
-        labels.append('Commit-Queue')
-      print('WARNING: Failed to set label(s) on your change: %s\n'
-            'Either:\n'
-            ' * Your project does not have the above label(s),\n'
-            ' * You don\'t have permission to set the above label(s),\n'
-            ' * There\'s a bug in this code (see stack trace below).\n' %
-            (', '.join(labels)))
-      # Still raise exception so that stack trace is printed.
-      raise
-
   def SetCQState(self, new_state):
     """Updates the CQ state for the latest patchset.
 
@@ -1839,13 +1804,6 @@ class _ChangelistCodereviewBase(object):
 
   def CMDUploadChange(self, options, git_diff_args, custom_cl_base, change):
     """Uploads a change to codereview."""
-    raise NotImplementedError()
-
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    """Sets labels on the change based on the provided flags.
-
-    Issue must have been already uploaded and known.
-    """
     raise NotImplementedError()
 
   def SetCQState(self, new_state):
@@ -2670,16 +2628,18 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # https://gerrit-review.googlesource.com/Documentation/user-upload.html#topic
       refspec_opts.append('topic=%s' % options.topic)
 
-    if not change_desc.get_reviewers(tbr_only=True):
-      # Change is not TBR, so we can inline setting other labels, too.
-      # TODO(crbug.com/877717): make this working for TBR, too, by figuring out
-      # max score for CR label somehow.
-      if options.enable_auto_submit:
-        refspec_opts.append('l=Auto-Submit+1')
-      if options.use_commit_queue:
-        refspec_opts.append('l=Commit-Queue+2')
-      elif options.cq_dry_run:
-        refspec_opts.append('l=Commit-Queue+1')
+    if options.enable_auto_submit:
+      refspec_opts.append('l=Auto-Submit+1')
+    if options.use_commit_queue:
+      refspec_opts.append('l=Commit-Queue+2')
+    elif options.cq_dry_run:
+      refspec_opts.append('l=Commit-Queue+1')
+
+    if change_desc.get_reviewers(tbr_only=True):
+      score = gerrit_util.GetCodeReviewTbrScore(
+          self._GetGerritHost(),
+          self._GetGerritProject())
+      refspec_opts.append('l=Code-Review+%s' % score)
 
     # Gerrit sorts hashtags, so order is not important.
     hashtags = {change_desc.sanitize_hash_tag(t) for t in options.hashtags}
@@ -2740,20 +2700,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           reviewers, cc,
           notify=bool(options.send_mail))
 
-    if change_desc.get_reviewers(tbr_only=True):
-      labels = self._GetChangeDetail(['LABELS']).get('labels', {})
-      score = 1
-      if 'Code-Review' in labels and 'values' in labels['Code-Review']:
-        score = max([int(x) for x in labels['Code-Review']['values'].keys()])
-      print('Adding self-LGTM (Code-Review +%d) because of TBRs.' % score)
-      gerrit_util.SetReview(
-          self._GetGerritHost(),
-          self._GerritChangeIdentifier(),
-          msg='Self-approving for TBR',
-          labels={'Code-Review': score})
-      # Labels aren't set through refspec only if tbr is set (see check above).
-      self.SetLabels(options.enable_auto_submit, options.use_commit_queue,
-                     options.cq_dry_run)
     return 0
 
   def _ComputeParent(self, remote, upstream_branch, custom_cl_base, force,
@@ -2829,23 +2775,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       return new_log_desc
     else:
       DieWithError('ERROR: Gerrit commit-msg hook not installed.')
-
-  def SetLabels(self, enable_auto_submit, use_commit_queue, cq_dry_run):
-    """Sets labels on the change based on the provided flags."""
-    labels = {}
-    notify = None;
-    if enable_auto_submit:
-      labels['Auto-Submit'] = 1
-    if use_commit_queue:
-      labels['Commit-Queue'] = 2
-    elif cq_dry_run:
-      labels['Commit-Queue'] = 1
-      notify = False
-    if labels:
-      gerrit_util.SetReview(
-          self._GetGerritHost(),
-          self._GerritChangeIdentifier(),
-          labels=labels, notify=notify)
 
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""

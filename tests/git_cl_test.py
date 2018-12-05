@@ -1059,10 +1059,17 @@ class TestGitCl(TestCase):
         if c in cc:
           cc.remove(c)
 
-    if not tbr:
-      for k, v in sorted((labels or {}).items()):
-        ref_suffix += ',l=%s+%d' % (k, v)
-        metrics_arguments.append('l=%s+%d' % (k, v))
+    for k, v in sorted((labels or {}).items()):
+      ref_suffix += ',l=%s+%d' % (k, v)
+      metrics_arguments.append('l=%s+%d' % (k, v))
+
+    if tbr:
+      calls += [
+        (('GetCodeReviewTbrScore',
+          '%s-review.googlesource.com' % short_hostname,
+          'my/repo'),
+         2,),
+      ]
 
     calls += [
       (('time.time',), 1000,),
@@ -1114,29 +1121,6 @@ class TestGitCl(TestCase):
             cc + ['chromium-reviews+test-more-cc@chromium.org'],
             notify),
            ''),
-      ]
-    if tbr:
-      calls += [
-        (('GetChangeDetail', 'chromium-review.googlesource.com',
-          'my%2Frepo~123456', ['LABELS']), {
-             'labels': {
-                 'Code-Review': {
-                     'default_value': 0,
-                     'all': [],
-                     'values': {
-                         '+2': 'lgtm, approved',
-                         '+1': 'lgtm, but someone else must approve',
-                         ' 0': 'No score',
-                         '-1': 'Don\'t submit as-is',
-                     }
-                 }
-              }
-          }),
-        (('SetReview',
-          'chromium-review.googlesource.com',
-          'my%2Frepo~123456',
-          'Self-approving for TBR',
-          {'Code-Review': 2}, None), ''),
       ]
     calls += cls._git_post_upload_calls()
     return calls
@@ -1261,6 +1245,8 @@ class TestGitCl(TestCase):
         notify=True)
 
   def test_gerrit_reviewer_multiple(self):
+    self.mock(git_cl.gerrit_util, 'GetCodeReviewTbrScore',
+              lambda *a: self._mocked_call('GetCodeReviewTbrScore', *a))
     self._run_gerrit_upload_test(
         [],
         'desc\nTBR=reviewer@example.com\nBUG=\nR=another@example.com\n'
@@ -1269,7 +1255,8 @@ class TestGitCl(TestCase):
         ['reviewer@example.com', 'another@example.com'],
         expected_upstream_ref='origin/master',
         cc=['more@example.com', 'people@example.com'],
-        tbr='reviewer@example.com')
+        tbr='reviewer@example.com',
+        labels={'Code-Review': 2})
 
   def test_gerrit_upload_squash_first_is_default(self):
     self._run_gerrit_upload_test(

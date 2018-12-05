@@ -147,6 +147,8 @@ KNOWN_SUBCOMMAND_ARGS = {
   'cc',
   'hashtag',
   'l=Auto-Submit+1',
+  'l=Code-Review+1',
+  'l=Code-Review+2',
   'l=Commit-Queue+1',
   'l=Commit-Queue+2',
   'label',
