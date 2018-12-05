@@ -1689,8 +1689,8 @@ TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
 
   APIPermissionSet apis;
   apis.insert(APIPermission::kTab);
-  PermissionSet permissions(apis, ManifestPermissionSet(), URLPatternSet(),
-                            URLPatternSet());
+  PermissionSet permissions(std::move(apis), ManifestPermissionSet(),
+                            URLPatternSet(), URLPatternSet());
   permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
       profile(), *dummy_extension, permissions);
 

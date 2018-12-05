@@ -139,7 +139,8 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
     new_apis.insert(permission.id());
   }
   auto permission_set = std::make_unique<PermissionSet>(
-      new_apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
+      std::move(new_apis), ManifestPermissionSet(), URLPatternSet(),
+      URLPatternSet());
   auto prompt = prompt_factory.Run(web_contents);
 
   auto permissions_prompt = std::make_unique<ExtensionInstallPrompt::Prompt>(

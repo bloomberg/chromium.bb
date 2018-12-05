@@ -32,21 +32,24 @@ ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct() {
 
 ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
     const PermissionSet& permissions)
-    : apis(permissions.apis()),
-      manifest_permissions(permissions.manifest_permissions()),
+    : apis(permissions.apis().Clone()),
+      manifest_permissions(permissions.manifest_permissions().Clone()),
       explicit_hosts(permissions.explicit_hosts()),
-      scriptable_hosts(permissions.scriptable_hosts()) {
-}
+      scriptable_hosts(permissions.scriptable_hosts()) {}
+
+ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {}
 
 ExtensionMsg_PermissionSetStruct::ExtensionMsg_PermissionSetStruct(
-    const ExtensionMsg_PermissionSetStruct& other) = default;
+    ExtensionMsg_PermissionSetStruct&& other) = default;
 
-ExtensionMsg_PermissionSetStruct::~ExtensionMsg_PermissionSetStruct() {
-}
+ExtensionMsg_PermissionSetStruct& ExtensionMsg_PermissionSetStruct::operator=(
+    ExtensionMsg_PermissionSetStruct&& other) = default;
 
 std::unique_ptr<const PermissionSet>
 ExtensionMsg_PermissionSetStruct::ToPermissionSet() const {
-  return std::make_unique<PermissionSet>(apis, manifest_permissions,
+  // TODO(devlin): Make this destructive so we can std::move() the members.
+  return std::make_unique<PermissionSet>(apis.Clone(),
+                                         manifest_permissions.Clone(),
                                          explicit_hosts, scriptable_hosts);
 }
 

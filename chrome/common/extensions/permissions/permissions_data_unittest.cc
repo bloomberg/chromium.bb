@@ -779,8 +779,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, CaptureChromeURLs) {
     URLPatternSet tab_hosts;
     tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         settings_url.GetOrigin());
-    PermissionSet tab_permissions(tab_api_permissions, ManifestPermissionSet(),
-                                  tab_hosts, tab_hosts);
+    PermissionSet tab_permissions(std::move(tab_api_permissions),
+                                  ManifestPermissionSet(), tab_hosts,
+                                  tab_hosts);
     active_tab->permissions_data()->UpdateTabSpecificPermissions(
         kTabId, tab_permissions);
   }
@@ -805,8 +806,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, CaptureFileURLs) {
     URLPatternSet tab_hosts;
     tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         file_url.GetOrigin());
-    PermissionSet tab_permissions(tab_api_permissions, ManifestPermissionSet(),
-                                  tab_hosts, tab_hosts);
+    PermissionSet tab_permissions(std::move(tab_api_permissions),
+                                  ManifestPermissionSet(), tab_hosts,
+                                  tab_hosts);
     active_tab->permissions_data()->UpdateTabSpecificPermissions(
         kTabId, tab_permissions);
   }
@@ -1076,8 +1078,9 @@ class CaptureVisiblePageTest : public testing::Test {
     URLPatternSet tab_hosts;
     tab_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
                         url::Origin::Create(url).GetURL());
-    PermissionSet tab_permissions(tab_api_permissions, ManifestPermissionSet(),
-                                  tab_hosts, tab_hosts);
+    PermissionSet tab_permissions(std::move(tab_api_permissions),
+                                  ManifestPermissionSet(), tab_hosts,
+                                  tab_hosts);
     active_tab_->permissions_data()->UpdateTabSpecificPermissions(
         kTabId, tab_permissions);
   }

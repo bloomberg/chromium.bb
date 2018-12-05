@@ -212,11 +212,11 @@ APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
   }
   // Check whether if in one of them, setting is specified.
   if (iter_id != settings_by_id_.end())
-    return iter_id->second->blocked_permissions;
+    return iter_id->second->blocked_permissions.Clone();
   if (iter_update_url != settings_by_update_url_.end())
-    return iter_update_url->second->blocked_permissions;
+    return iter_update_url->second->blocked_permissions.Clone();
   // Fall back to the default blocked permissions setting.
-  return default_settings_->blocked_permissions;
+  return default_settings_->blocked_permissions.Clone();
 }
 
 const URLPatternSet& ExtensionManagement::GetDefaultPolicyBlockedHosts() const {

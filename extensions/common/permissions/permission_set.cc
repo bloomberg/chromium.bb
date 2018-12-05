@@ -31,12 +31,12 @@ void AddPatternsAndRemovePaths(const URLPatternSet& set, URLPatternSet* out) {
 //
 
 PermissionSet::PermissionSet() {}
-PermissionSet::PermissionSet(const APIPermissionSet& apis,
-                             const ManifestPermissionSet& manifest_permissions,
+PermissionSet::PermissionSet(APIPermissionSet apis,
+                             ManifestPermissionSet manifest_permissions,
                              const URLPatternSet& explicit_hosts,
                              const URLPatternSet& scriptable_hosts)
-    : apis_(apis),
-      manifest_permissions_(manifest_permissions),
+    : apis_(std::move(apis)),
+      manifest_permissions_(std::move(manifest_permissions)),
       scriptable_hosts_(scriptable_hosts) {
   AddPatternsAndRemovePaths(explicit_hosts, &explicit_hosts_);
   InitImplicitPermissions();
@@ -63,7 +63,8 @@ std::unique_ptr<const PermissionSet> PermissionSet::CreateDifference(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateDifference(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+  return base::WrapUnique(new PermissionSet(std::move(apis),
+                                            std::move(manifest_permissions),
                                             explicit_hosts, scriptable_hosts));
 }
 
@@ -85,7 +86,8 @@ std::unique_ptr<const PermissionSet> PermissionSet::CreateIntersection(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateIntersection(
       set1.scriptable_hosts(), set2.scriptable_hosts(), intersection_behavior);
 
-  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+  return base::WrapUnique(new PermissionSet(std::move(apis),
+                                            std::move(manifest_permissions),
                                             explicit_hosts, scriptable_hosts));
 }
 
@@ -107,7 +109,8 @@ std::unique_ptr<const PermissionSet> PermissionSet::CreateUnion(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateUnion(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return base::WrapUnique(new PermissionSet(apis, manifest_permissions,
+  return base::WrapUnique(new PermissionSet(std::move(apis),
+                                            std::move(manifest_permissions),
                                             explicit_hosts, scriptable_hosts));
 }
 
@@ -218,7 +221,12 @@ bool PermissionSet::HasEffectiveAccessToURL(const GURL& url) const {
   return effective_hosts().MatchesURL(url);
 }
 
-PermissionSet::PermissionSet(const PermissionSet& permissions) = default;
+PermissionSet::PermissionSet(const PermissionSet& other)
+    : apis_(other.apis_.Clone()),
+      manifest_permissions_(other.manifest_permissions_.Clone()),
+      explicit_hosts_(other.explicit_hosts_),
+      scriptable_hosts_(other.scriptable_hosts_),
+      effective_hosts_(other.effective_hosts_) {}
 
 void PermissionSet::InitImplicitPermissions() {
   // The downloads permission implies the internal version as well.

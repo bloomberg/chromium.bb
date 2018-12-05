@@ -82,14 +82,13 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsGranted) {
   // Mark all the tested APIs as granted to bypass the confirmation UI.
   APIPermissionSet apis;
   apis.insert(APIPermission::kBookmark);
-  ManifestPermissionSet manifest_permissions;
   URLPatternSet explicit_hosts;
   AddPattern(&explicit_hosts, "http://*.c.com/*");
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddRuntimeGrantedPermissions(
       "kjmkgkdkpedkejedfhmfcenooemhbpbo",
-      PermissionSet(apis, manifest_permissions, explicit_hosts,
+      PermissionSet(std::move(apis), ManifestPermissionSet(), explicit_hosts,
                     URLPatternSet()));
 
   PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
@@ -117,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(PermissionsApiTest, OptionalPermissionsDeny) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser()->profile());
   prefs->AddRuntimeGrantedPermissions(
       "kjmkgkdkpedkejedfhmfcenooemhbpbo",
-      PermissionSet(apis, ManifestPermissionSet(), URLPatternSet(),
+      PermissionSet(std::move(apis), ManifestPermissionSet(), URLPatternSet(),
                     URLPatternSet()));
 
   PermissionsRequestFunction::SetAutoConfirmForTests(false);

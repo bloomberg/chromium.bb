@@ -571,19 +571,19 @@ TEST_F(ExtensionManagementServiceTest, BlockedPermissionsConflictHandling) {
 
   APIPermissionSet api_permission_set;
 
-  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set = blocked_permissions_for_update_url.Clone();
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kDownloads);
   api_permission_set.insert(APIPermission::kBookmark);
   EXPECT_EQ(api_permission_set,
             GetBlockedAPIPermissions(kTargetExtension, kExampleUpdateUrl));
 
-  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set = blocked_permissions_for_update_url.Clone();
   api_permission_set.insert(APIPermission::kDownloads);
   EXPECT_EQ(api_permission_set,
             GetBlockedAPIPermissions(kTargetExtension2, kExampleUpdateUrl));
 
-  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set = blocked_permissions_for_update_url.Clone();
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kHistory);
   EXPECT_EQ(api_permission_set,

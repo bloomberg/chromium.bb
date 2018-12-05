@@ -863,7 +863,8 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
     apis.insert(APIPermission::kPower);
     apis.insert(APIPermission::kIdle);
     extension->permissions_data()->SetPermissions(
-        std::make_unique<PermissionSet>(apis, ManifestPermissionSet(),
+        std::make_unique<PermissionSet>(std::move(apis),
+                                        ManifestPermissionSet(),
                                         URLPatternSet(), URLPatternSet()),
         std::make_unique<PermissionSet>());
     bindings_system()->OnExtensionPermissionsUpdated(extension->id());

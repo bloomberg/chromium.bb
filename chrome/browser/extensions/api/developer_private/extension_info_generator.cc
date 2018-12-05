@@ -338,9 +338,10 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
   // from host permissions.
   const PermissionSet& active_permissions =
       extension.permissions_data()->active_permissions();
-  PermissionSet non_host_permissions(active_permissions.apis(),
-                                     active_permissions.manifest_permissions(),
-                                     URLPatternSet(), URLPatternSet());
+  PermissionSet non_host_permissions(
+      active_permissions.apis().Clone(),
+      active_permissions.manifest_permissions().Clone(), URLPatternSet(),
+      URLPatternSet());
   const PermissionMessageProvider* message_provider =
       PermissionMessageProvider::Get();
   // Generate the messages for just the API (and manifest) permissions.

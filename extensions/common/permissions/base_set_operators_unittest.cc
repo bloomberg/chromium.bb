@@ -74,7 +74,7 @@ TEST(BaseSetOperatorsTest, CopyCorrectness) {
   set1.insert(std::make_unique<TestPermission>(1));
   set1.insert(std::make_unique<TestPermission>(2));
 
-  TestPermissionSet set2 = set1;
+  TestPermissionSet set2 = set1.Clone();
   EXPECT_EQ(set1, set2);
   EXPECT_EQ(2u, set2.size());
   EXPECT_EQ(1u, set2.count(1));
@@ -87,7 +87,7 @@ TEST(BaseSetOperatorsTest, CopyCorrectness) {
   EXPECT_EQ(1u, set2.count(3));
 
   // Assigning should clear the set (https://crbug.com/908619).
-  set2 = set1;
+  set2 = set1.Clone();
   EXPECT_EQ(set1, set2);
   EXPECT_EQ(2u, set2.size());
   EXPECT_EQ(1u, set2.count(1));
@@ -115,19 +115,14 @@ TEST(BaseSetOperatorsTest, CloningDoesNotReuseItems) {
 
   {
     SCOPED_TRACE("Assignment Operator");
-    TestPermissionSet copy = set;
-    validate(set, copy);
-  }
-
-  {
-    SCOPED_TRACE("Copy Constructor");
-    TestPermissionSet copy(set);
+    TestPermissionSet copy = set.Clone();
     validate(set, copy);
   }
 
   {
     SCOPED_TRACE("Assigned to Return Value");
-    TestPermissionSet copy = ([&]() -> TestPermissionSet { return set; })();
+    TestPermissionSet copy =
+        ([&]() -> TestPermissionSet { return set.Clone(); })();
     validate(set, copy);
   }
 }

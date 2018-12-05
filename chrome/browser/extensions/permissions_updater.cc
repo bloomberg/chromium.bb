@@ -353,8 +353,8 @@ void PermissionsUpdater::RevokeRuntimePermissions(
   if (needs_adjustment) {
     // Tedious, because PermissionSets are const. :(
     active_permissions_to_remove = std::make_unique<PermissionSet>(
-        active_permissions_to_remove->apis(),
-        active_permissions_to_remove->manifest_permissions(),
+        active_permissions_to_remove->apis().Clone(),
+        active_permissions_to_remove->manifest_permissions().Clone(),
         URLPatternSet(removable_explicit_hosts),
         active_permissions_to_remove->scriptable_hosts());
   }
