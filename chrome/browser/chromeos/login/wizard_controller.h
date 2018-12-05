@@ -469,7 +469,6 @@ class WizardController : public BaseScreenDelegate,
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeConfigurationTest;
   friend class WizardControllerOobeResumeTest;
-  friend class WizardInProcessBrowserTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
