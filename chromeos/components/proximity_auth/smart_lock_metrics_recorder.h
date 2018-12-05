@@ -10,6 +10,10 @@ class SmartLockMetricsRecorder {
   SmartLockMetricsRecorder();
   ~SmartLockMetricsRecorder();
 
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other). Entries should be never modified
+  // or deleted. Only additions possible.
   enum class SmartLockGetRemoteStatusResultFailureReason {
     kTimedOutBluetoothDisabled = 0,
     kTimedOutCouldNotEstablishAuthenticatedChannel = 1,
@@ -20,6 +24,10 @@ class SmartLockMetricsRecorder {
     kMaxValue = kAuthenticatedChannelDropped
   };
 
+  // This enum is tied directly to a UMA enum defined in
+  // //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+  // change one without changing the other). Entries should be never modified
+  // or deleted. Only additions possible.
   enum class SmartLockAuthResultFailureReason {
     kUnlockNotAllowed = 0,
     kAlreadyAttemptingAuth = 1,
@@ -27,14 +35,16 @@ class SmartLockMetricsRecorder {
     kInvalidAccoundId = 3,
     kAuthAttemptCannotStart = 4,
     kNoPendingOrActiveHost = 5,
-    kFailedtoNotifyHostDeviceThatSmartLockWasUsed = 6,
+    kAuthenticatedChannelDropped = 6,
     kFailedToSendUnlockRequest = 7,
-    kAuthenticatedChannelDropped = 8,
-    kAuthAttemptTimedOut = 9,
-    kUnlockEventSentButNotAttemptingAuth = 10,
-    kUnlockRequestSentButNotAttemptingAuth = 11,
-    kFailedToDecryptSignInChallenge = 12,
-    kMaxValue = kFailedToDecryptSignInChallenge
+    kFailedToDecryptSignInChallenge = 8,
+    kFailedtoNotifyHostDeviceThatSmartLockWasUsed = 9,
+    kAuthAttemptTimedOut = 10,
+    kUnlockEventSentButNotAttemptingAuth = 11,
+    kUnlockRequestSentButNotAttemptingAuth = 12,
+    kLoginDisplayHostDoesNotExist = 13,
+    kUserControllerSignInFailure = 14,
+    kMaxValue = kUserControllerSignInFailure
   };
 
   static void RecordAuthResultUnlockSuccess(bool success = true);
@@ -48,6 +58,10 @@ class SmartLockMetricsRecorder {
   static void RecordAuthResultSignInSuccess(bool success = true);
   static void RecordAuthResultSignInFailure(
       SmartLockAuthResultFailureReason failure_reason);
+
+  static void RecordGetRemoteStatusResultSignInSuccess(bool success = true);
+  static void RecordGetRemoteStatusResultSignInFailure(
+      SmartLockGetRemoteStatusResultFailureReason failure_reason);
 };
 
 #endif  // CHROMEOS_COMPONENTS_PROXIMITY_AUTH_SMART_LOCK_METRICS_RECORDER_H_

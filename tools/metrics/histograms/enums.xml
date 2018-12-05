@@ -47151,13 +47151,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Invalid account id"/>
   <int value="4" label="Auth attempt cannot start"/>
   <int value="5" label="No pending or active host"/>
-  <int value="6" label="Failed to notify host device that Smart Lock was used"/>
+  <int value="6" label="Authentication channel dropped"/>
   <int value="7" label="Failed to send unlock request"/>
-  <int value="8" label="Authentication channel dropped"/>
-  <int value="9" label="Authentication attempt timed out"/>
-  <int value="10" label="Unlock event sent but not attempting auth"/>
-  <int value="11" label="Unlock request sent but not attempting auth"/>
-  <int value="12" label="Failed to decrypt sign-in"/>
+  <int value="8" label="Failed to decrypt sign-in"/>
+  <int value="9" label="Failed to notify host device that Smart Lock was used"/>
+  <int value="10" label="Authentication attempt timed out"/>
+  <int value="11" label="Unlock event sent but not attempting auth"/>
+  <int value="12" label="Unlock request sent but not attempting auth"/>
+  <int value="13" label="Login display host does not exist"/>
+  <int value="14" label="User controller sign in failure"/>
 </enum>
 
 <enum name="SmartLockEnabledState">
