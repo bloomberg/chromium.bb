@@ -372,8 +372,9 @@ Polymer({
       // it is.
       const currentKnobRatio = this.getKnobRatio_(knob);
       ratio = currentKnobRatio > 0.5 ? 1.0 : 0.0;
+    } else {
+      ratio = this.isRTL_ ? (1.0 - ratio) : ratio;
     }
-    ratio = this.isRTL_ ? (1.0 - ratio) : ratio;
     knob.style.left = (ratio * this.$.sliderBar.offsetWidth) + 'px';
   },
 
