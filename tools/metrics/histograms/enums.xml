@@ -30414,6 +30414,7 @@ from previous Chrome versions.
   <int value="-133098377" label="SyncPseudoUSSSearchEngines:disabled"/>
   <int value="-128687277"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef:disabled"/>
+  <int value="-127666141" label="TabGroups:disabled"/>
   <int value="-127231994" label="VrBrowsingNativeAndroidUi:disabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
   <int value="-120521482" label="DirectManipulationStylus:enabled"/>
@@ -30582,6 +30583,7 @@ from previous Chrome versions.
   <int value="173288154" label="PrintPdfAsImage:enabled"/>
   <int value="178337215" label="enable-md-history"/>
   <int value="180074362" label="memory-pressure-thresholds"/>
+  <int value="183208826" label="TabGroups:enabled"/>
   <int value="185991204" label="enable-webrtc-srtp-encrypted-headers"/>
   <int value="188610022" label="NewMessageListView:enabled"/>
   <int value="189728101" label="FasterLocationReload:disabled"/>

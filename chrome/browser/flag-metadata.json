@@ -3092,6 +3092,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "tab-groups",
+    "owners": ["chrome-desktop-ui-seattle@google.com", "bsep"],
+    "expiry_milestone": 76
+  },
+  {
     "name": "tab-hover-cards",
     "owners": [ "corising", "//chrome/browser/ui/views/tabs/OWNERS" ],
     "expiry_milestone": 76
