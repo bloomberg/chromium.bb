@@ -478,8 +478,8 @@ class FormStructure {
   // The name of the form.
   base::string16 form_name_;
 
-  // The title of form submission button.
-  base::string16 button_title_;
+  // The titles of form's buttons.
+  ButtonTitleList button_titles_;
 
   // The type of the event that was taken as an indication that the form has
   // been successfully submitted.

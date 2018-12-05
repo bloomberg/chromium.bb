@@ -441,7 +441,7 @@ FormStructure::FormStructure(const FormData& form)
     : id_attribute_(form.id_attribute),
       name_attribute_(form.name_attribute),
       form_name_(form.name),
-      button_title_(form.button_title),
+      button_titles_(form.button_titles),
       submission_event_(SubmissionIndicatorEvent::NONE),
       source_url_(form.origin),
       target_url_(form.action),
@@ -571,6 +571,13 @@ bool FormStructure::EncodeUploadRequest(
     upload->set_action_signature(StrToHash64Bit(target_url_.host()));
     if (!form_name().empty())
       upload->set_form_name(base::UTF16ToUTF8(form_name()));
+    for (const ButtonTitleInfo& e : button_titles_) {
+      auto* button_title = upload->add_button_title();
+      button_title->set_title(base::UTF16ToUTF8(e.first));
+      button_title->set_type(
+          static_cast<AutofillUploadContents_ButtonTitle_ButtonTitleType>(
+              e.second));
+    }
   }
 
   if (!login_form_signature.empty()) {

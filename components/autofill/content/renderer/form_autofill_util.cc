@@ -29,6 +29,7 @@
 #include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "third_party/blink/public/platform/url_conversion.h"
@@ -68,6 +69,11 @@ namespace form_util {
 const size_t kMaxParseableFields = 200;
 
 namespace {
+
+// Maximal length of a button's title.
+const int kMaxLengthForSingleButtonTitle = 30;
+// Maximal length of all button titles.
+const int kMaxLengthForAllButtonTitles = 200;
 
 // A bit field mask for FillForm functions to not fill some fields.
 enum FieldFilterMask {
@@ -355,6 +361,26 @@ bool InferLabelFromSibling(const WebFormControlElement& element,
     return true;
   }
   return false;
+}
+
+// Helper function to add a button's |title| to the |list| and updates the
+// |total_length| of stored titles. Returns true iff the list still have free
+// capacity.
+bool AddButtonTitleToList(base::string16&& title,
+                          ButtonTitleType button_type,
+                          ButtonTitleList* list,
+                          int* total_length) {
+  if (*total_length >= kMaxLengthForAllButtonTitles)
+    return false;
+  if (title.empty())
+    return true;
+  title = base::CollapseWhitespace(std::move(title), false);
+  TruncateString(&title,
+                 std::min(kMaxLengthForSingleButtonTitle,
+                          kMaxLengthForAllButtonTitles - *total_length));
+  *total_length += title.length();
+  list->push_back(std::make_pair(std::move(title), button_type));
+  return *total_length < kMaxLengthForAllButtonTitles;
 }
 
 // Helper for |InferLabelForElement()| that infers a label, if possible, from
@@ -780,13 +806,14 @@ bool InferLabelForElement(const WebFormControlElement& element,
   return false;
 }
 
-base::string16 InferButtonTitleForForm(const WebFormElement& form_element) {
+ButtonTitleList InferButtonTitlesForForm(const WebFormElement& form_element) {
   static base::NoDestructor<WebString> kSubmit("submit");
   static base::NoDestructor<WebString> kButton("button");
 
-  base::string16 title;
+  ButtonTitleList result;
   WebVector<WebFormControlElement> control_elements;
   form_element.GetFormControlElements(control_elements);
+  int total_length = 0;
   for (const WebFormControlElement& control_element : control_elements) {
     bool is_submit_input =
         control_element.FormControlTypeForAutofill() == *kSubmit;
@@ -794,26 +821,37 @@ base::string16 InferButtonTitleForForm(const WebFormElement& form_element) {
         control_element.FormControlTypeForAutofill() == *kButton;
     if (!is_submit_input && !is_button_input)
       continue;
-    if (!control_element.Value().IsEmpty())
-      title = control_element.Value().Utf16() +
-              base::ASCIIToUTF16(is_submit_input ? "$" : "#") + title;
-    if (title.length() >= kMaxDataLength)
+    base::string16&& title = control_element.Value().Utf16();
+    if (!AddButtonTitleToList(std::move(title),
+                              is_submit_input
+                                  ? ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE
+                                  : ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE,
+                              &result, &total_length)) {
       break;
+    }
   }
   WebElementCollection buttons =
       form_element.GetElementsByHTMLTagName(*kButton);
   for (WebElement item = buttons.FirstItem();
-       !item.IsNull() && title.length() <= kMaxDataLength;
+       !item.IsNull() && total_length < kMaxLengthForAllButtonTitles;
        item = buttons.NextItem()) {
-    if (!item.TextContent().IsEmpty()) {
-      bool is_submit_button =
-          item.HasAttribute("type") && item.GetAttribute("type") == *kSubmit;
-      title = item.TextContent().Utf16() +
-              base::ASCIIToUTF16(is_submit_button ? "&" : "%") + title;
+    WebString type_attribute = item.GetAttribute("type");
+    if (!type_attribute.IsNull() && type_attribute != *kButton &&
+        type_attribute != *kSubmit) {
+      // Neither type='submit' nor type='button'. Skip this button.
+      continue;
+    }
+    bool is_submit_type = type_attribute.IsNull() || type_attribute == *kSubmit;
+    base::string16&& title = item.TextContent().Utf16();
+    if (!AddButtonTitleToList(std::move(title),
+                              is_submit_type
+                                  ? ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE
+                                  : ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE,
+                              &result, &total_length)) {
+      break;
     }
   }
-  TruncateString(&title, kMaxDataLength);
-  return title;
+  return result;
 }
 
 // Fills |option_strings| with the values of the <option> elements present in
@@ -1647,7 +1685,7 @@ bool WebFormElementToFormData(
   form->unique_renderer_id = form_element.UniqueRendererFormId();
   form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
-  form->button_title = InferButtonTitleForForm(form_element);
+  form->button_titles = InferButtonTitlesForForm(form_element);
   if (frame->Top()) {
     form->main_frame_origin = frame->Top()->GetSecurityOrigin();
   } else {
@@ -2017,8 +2055,9 @@ bool InferLabelForElementForTesting(const WebFormControlElement& element,
   return InferLabelForElement(element, stop_words, label, label_source);
 }
 
-base::string16 InferButtonTitleForTesting(const WebFormElement& form_element) {
-  return InferButtonTitleForForm(form_element);
+ButtonTitleList InferButtonTitlesForTesting(
+    const WebFormElement& form_element) {
+  return InferButtonTitlesForForm(form_element);
 }
 
 WebFormElement FindFormByUniqueRendererId(WebDocument doc,
