@@ -78,6 +78,10 @@ class SVGImage::SVGImageLocalFrameClient : public EmptyLocalFrameClient {
   void ClearImage() { image_ = nullptr; }
 
  private:
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
+  }
+
   void DispatchDidHandleOnloadEvents() override {
     // The SVGImage was destructed before SVG load completion.
     if (!image_)
