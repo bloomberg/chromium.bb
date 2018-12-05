@@ -154,10 +154,6 @@ double WebPerformance::FirstPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstPaint());
 }
 
-double WebPerformance::FirstTextPaint() const {
-  return MillisecondsToSeconds(private_->timing()->FirstTextPaint());
-}
-
 double WebPerformance::FirstImagePaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstImagePaint());
 }

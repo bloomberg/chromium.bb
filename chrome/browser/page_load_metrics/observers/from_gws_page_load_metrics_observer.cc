@@ -25,8 +25,6 @@ const char kHistogramFromGWSLoad[] =
     "NavigationToLoadEventFired";
 const char kHistogramFromGWSFirstPaint[] =
     "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstPaint";
-const char kHistogramFromGWSFirstTextPaint[] =
-    "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstTextPaint";
 const char kHistogramFromGWSFirstImagePaint[] =
     "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstImagePaint";
 const char kHistogramFromGWSFirstContentfulPaint[] =
@@ -394,12 +392,6 @@ void FromGWSPageLoadMetricsObserver::OnFirstPaintInPage(
   logger_.OnFirstPaintInPage(timing, extra_info);
 }
 
-void FromGWSPageLoadMetricsObserver::OnFirstTextPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  logger_.OnFirstTextPaintInPage(timing, extra_info);
-}
-
 void FromGWSPageLoadMetricsObserver::OnFirstImagePaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
@@ -583,16 +575,6 @@ void FromGWSPageLoadMetricsLogger::OnFirstPaintInPage(
                         timing.paint_timing->first_paint.value());
   }
   first_paint_triggered_ = true;
-}
-
-void FromGWSPageLoadMetricsLogger::OnFirstTextPaintInPage(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (ShouldLogForegroundEventAfterCommit(timing.paint_timing->first_text_paint,
-                                          extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstTextPaint,
-                        timing.paint_timing->first_text_paint.value());
-  }
 }
 
 void FromGWSPageLoadMetricsLogger::OnFirstImagePaintInPage(

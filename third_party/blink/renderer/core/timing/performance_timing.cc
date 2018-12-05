@@ -326,14 +326,6 @@ unsigned long long PerformanceTiming::FirstPaint() const {
   return MonotonicTimeToIntegerMilliseconds(timing->FirstPaint());
 }
 
-unsigned long long PerformanceTiming::FirstTextPaint() const {
-  const PaintTiming* timing = GetPaintTiming();
-  if (!timing)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(timing->FirstTextPaint());
-}
-
 unsigned long long PerformanceTiming::FirstImagePaint() const {
   const PaintTiming* timing = GetPaintTiming();
   if (!timing)

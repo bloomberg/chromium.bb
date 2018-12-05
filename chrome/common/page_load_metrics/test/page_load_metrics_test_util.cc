@@ -26,13 +26,11 @@ void PopulateRequiredTimingFields(
     inout_timing->paint_timing->first_contentful_paint =
         inout_timing->paint_timing->first_meaningful_paint;
   }
-  if ((inout_timing->paint_timing->first_text_paint ||
-       inout_timing->paint_timing->first_image_paint ||
+  if ((inout_timing->paint_timing->first_image_paint ||
        inout_timing->paint_timing->first_contentful_paint) &&
       !inout_timing->paint_timing->first_paint) {
     inout_timing->paint_timing->first_paint =
-        OptionalMin(OptionalMin(inout_timing->paint_timing->first_text_paint,
-                                inout_timing->paint_timing->first_image_paint),
+        OptionalMin(inout_timing->paint_timing->first_image_paint,
                     inout_timing->paint_timing->first_contentful_paint);
   }
   if (inout_timing->paint_timing->first_paint &&

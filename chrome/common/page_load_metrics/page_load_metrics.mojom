@@ -24,9 +24,6 @@ struct PaintTiming {
   // Time when the first paint is performed.
   mojo_base.mojom.TimeDelta? first_paint;
 
-  // Time when the first non-blank text is painted.
-  mojo_base.mojom.TimeDelta? first_text_paint;
-
   // Time when the first image is painted.
   mojo_base.mojom.TimeDelta? first_image_paint;
 

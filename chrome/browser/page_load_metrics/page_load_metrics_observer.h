@@ -402,8 +402,6 @@ class PageLoadMetricsObserver {
   // across all frames, is observed.
   virtual void OnFirstPaintInPage(const mojom::PageLoadTiming& timing,
                                   const PageLoadExtraInfo& extra_info) {}
-  virtual void OnFirstTextPaintInPage(const mojom::PageLoadTiming& timing,
-                                      const PageLoadExtraInfo& extra_info) {}
   virtual void OnFirstImagePaintInPage(const mojom::PageLoadTiming& timing,
                                        const PageLoadExtraInfo& extra_info) {}
   virtual void OnFirstContentfulPaintInPage(

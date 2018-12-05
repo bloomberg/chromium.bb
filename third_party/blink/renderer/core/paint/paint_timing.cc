@@ -72,14 +72,6 @@ void PaintTiming::MarkFirstContentfulPaint() {
   SetFirstContentfulPaint(CurrentTimeTicks());
 }
 
-void PaintTiming::MarkFirstTextPaint() {
-  if (!first_text_paint_.is_null())
-    return;
-  first_text_paint_ = CurrentTimeTicks();
-  SetFirstContentfulPaint(first_text_paint_);
-  RegisterNotifySwapTime(PaintEvent::kFirstTextPaint);
-}
-
 void PaintTiming::MarkFirstImagePaint() {
   if (!first_image_paint_.is_null())
     return;
@@ -140,7 +132,7 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   if (is_first_paint)
     MarkFirstPaint();
   if (text_painted)
-    MarkFirstTextPaint();
+    MarkFirstContentfulPaint();
   if (image_painted)
     MarkFirstImagePaint();
   fmp_detector_->NotifyPaint();
@@ -222,9 +214,6 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
     case PaintEvent::kFirstContentfulPaint:
       SetFirstContentfulPaintSwap(timestamp);
       return;
-    case PaintEvent::kFirstTextPaint:
-      SetFirstTextPaintSwap(timestamp);
-      return;
     case PaintEvent::kFirstImagePaint:
       SetFirstImagePaintSwap(timestamp);
       return;
@@ -256,14 +245,6 @@ void PaintTiming::SetFirstContentfulPaintSwap(TimeTicks stamp) {
     GetFrame()->Loader().Progress().DidFirstContentfulPaint();
   NotifyPaintTimingChanged();
   fmp_detector_->NotifyFirstContentfulPaint(first_contentful_paint_swap_);
-}
-
-void PaintTiming::SetFirstTextPaintSwap(TimeTicks stamp) {
-  DCHECK(first_text_paint_swap_.is_null());
-  first_text_paint_swap_ = stamp;
-  probe::paintTiming(GetSupplementable(), "firstTextPaint",
-                     TimeTicksInSeconds(first_text_paint_swap_));
-  NotifyPaintTimingChanged();
 }
 
 void PaintTiming::SetFirstImagePaintSwap(TimeTicks stamp) {
