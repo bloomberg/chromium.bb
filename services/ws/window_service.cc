@@ -150,6 +150,21 @@ aura::Window* WindowService::GetWindowByClientId(Id transport_id) {
                      : nullptr;
 }
 
+Id WindowService::GetCompleteTransportIdForWindow(aura::Window* window) {
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  if (!server_window)
+    return kInvalidTransportId;
+  if (!server_window->owning_window_tree())
+    return kInvalidTransportId;
+  // NOTE: WindowTree::TransportIdForWindow() is the id sent to the client,
+  // which has the client_id portion set to 0. This function wants to see the
+  // real client_id, so it has to build it.
+  return BuildTransportId(
+      server_window->owning_window_tree()->client_id(),
+      ClientWindowIdFromTransportId(
+          server_window->owning_window_tree()->TransportIdForWindow(window)));
+}
+
 WindowService::TreeAndWindowId
 WindowService::FindTreeWithScheduleEmbedForExistingClient(
     const base::UnguessableToken& embed_token) {

@@ -1898,6 +1898,7 @@ test("ash_unittests") {
     "wm/workspace/workspace_window_resizer_unittest.cc",
     "wm/workspace_controller_unittest.cc",
     "ws/ash_window_manager_unittest.cc",
+    "ws/window_lookup_unittest.cc",
     "ws/window_service_delegate_impl_unittest.cc",
   ]
   configs += [
