@@ -664,6 +664,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         EventCase("tabindexFocusDownloads").EnableMyFilesVolume(),
         EventCase("tabindexFocusDownloads").InGuestMode(),
         EventCase("tabindexFocusDownloads").InGuestMode().EnableMyFilesVolume(),
+        EventCase("tabindexFocusBreadcrumbBackground"),
         EventCase("tabindexFocusDirectorySelected"),
         EventCase("tabindexFocusDirectorySelected").EnableMyFilesVolume(),
         EventCase("tabindexOpenDialogDrive").WithBrowser().DisableDriveFs(),
