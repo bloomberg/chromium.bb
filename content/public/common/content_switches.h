@@ -128,7 +128,6 @@ CONTENT_EXPORT extern const char kEnablePrintBrowser[];
 CONTENT_EXPORT extern const char kEnableRGBA4444Textures[];
 CONTENT_EXPORT extern const char kEnableServiceBinaryLauncher[];
 extern const char kEnableSkiaBenchmarking[];
-CONTENT_EXPORT extern const char kEnableSlimmingPaintV2[];
 CONTENT_EXPORT extern const char kEnableSmoothScrolling[];
 CONTENT_EXPORT extern const char kEnableSpatialNavigation[];
 CONTENT_EXPORT extern const char kEnableStrictMixedContentChecking[];
