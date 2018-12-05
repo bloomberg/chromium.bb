@@ -5,6 +5,7 @@
 module views_bridge_mac.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
+import "ui/base/accelerators/mojo/accelerator.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "ui/display/mojo/display.mojom";
@@ -216,4 +217,13 @@ interface BridgedNativeWidgetHost {
   ExecuteCommand(int32 command,
                  ui.mojom.WindowOpenDisposition window_open_disposition,
                  bool is_before_first_responder) => (bool was_executed);
+
+  // Give the widget's FocusManager a chance to to handle the specified
+  // accelerator. If |require_priority_handler| is true, the only send the
+  // accelerator to the FocusManager if the FocusManager has a priority handler
+  // for the specified accelerator.
+  [Sync]
+  HandleAccelerator(ui.mojom.Accelerator accelerator,
+                    bool require_priority_handler) =>
+      (bool was_handled);
 };

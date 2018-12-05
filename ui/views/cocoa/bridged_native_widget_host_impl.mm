@@ -910,6 +910,21 @@ bool BridgedNativeWidgetHostImpl::ExecuteCommand(
   return true;
 }
 
+bool BridgedNativeWidgetHostImpl::HandleAccelerator(
+    const ui::Accelerator& accelerator,
+    bool require_priority_handler,
+    bool* was_handled) {
+  *was_handled = false;
+  if (Widget* widget = native_widget_mac_->GetWidget()) {
+    if (require_priority_handler &&
+        !widget->GetFocusManager()->HasPriorityHandler(accelerator)) {
+      return true;
+    }
+    *was_handled = widget->GetFocusManager()->ProcessAccelerator(accelerator);
+  }
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
@@ -1055,6 +1070,15 @@ void BridgedNativeWidgetHostImpl::ExecuteCommand(
   ExecuteCommand(command, window_open_disposition, is_before_first_responder,
                  &was_executed);
   std::move(callback).Run(was_executed);
+}
+
+void BridgedNativeWidgetHostImpl::HandleAccelerator(
+    const ui::Accelerator& accelerator,
+    bool require_priority_handler,
+    HandleAcceleratorCallback callback) {
+  bool was_handled = false;
+  HandleAccelerator(accelerator, require_priority_handler, &was_handled);
+  std::move(callback).Run(was_handled);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
