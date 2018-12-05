@@ -33,6 +33,8 @@ GPU_EXPORT extern const base::Feature kSharedImageManager;
 
 GPU_EXPORT extern const base::Feature kUseDCOverlaysForSoftwareProtectedVideo;
 
+GPU_EXPORT extern const base::Feature kDirectCompositionUseNV12DecodeSwapChain;
+
 GPU_EXPORT extern const base::Feature kVaapiJpegImageDecodeAcceleration;
 
 }  // namespace features

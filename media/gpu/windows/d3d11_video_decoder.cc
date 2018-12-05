@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/metrics/histogram_macros.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
@@ -543,6 +544,13 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   texture_desc.Usage = D3D11_USAGE_DEFAULT;
   texture_desc.BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
   texture_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
+  if (base::FeatureList::IsEnabled(
+          features::kDirectCompositionUseNV12DecodeSwapChain)) {
+    // Decode swap chains do not support shared resources.
+    // TODO(sunnyps): Find a workaround for when the decoder moves to its own
+    // thread and D3D device.  See https://crbug.com/911847
+    texture_desc.MiscFlags = 0;
+  }
   if (is_encrypted_)
     texture_desc.MiscFlags |= D3D11_RESOURCE_MISC_HW_PROTECTED;
 

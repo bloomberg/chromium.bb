@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -507,6 +508,14 @@ class DCLayerTree::SwapChainPresenter {
   bool UpdateVisuals(const ui::DCRendererLayerParams& params,
                      const gfx::Size& swap_chain_size);
 
+  // Present to a decode swap chain created from compatible video decoder
+  // buffers using given |image_dxgi| with destination size |swap_chain_size|.
+  // Sets |needs_commit| to true if a commit is needed. Returns true on success.
+  bool PresentToDecodeSwapChain(gl::GLImageDXGIBase* image_dxgi,
+                                const gfx::Rect& content_rect,
+                                const gfx::Size& swap_chain_size,
+                                bool* needs_commit);
+
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_;
 
@@ -529,6 +538,10 @@ class DCLayerTree::SwapChainPresenter {
 
   // Whether creating a YUV swap chain failed.
   bool failed_to_create_yuv_swapchain_ = false;
+
+  // Set to true when PresentToDecodeSwapChain fails for the first time after
+  // which we won't attempt to use decode swap chain again.
+  bool failed_to_present_decode_swapchain_ = false;
 
   // Number of frames since we switched from YUV to BGRA swap chain, or
   // vice-versa.
@@ -572,6 +585,10 @@ class DCLayerTree::SwapChainPresenter {
   // Video processor output view created from swap chain back buffer.  Must be
   // cached for performance reasons.
   Microsoft::WRL::ComPtr<ID3D11VideoProcessorOutputView> output_view_;
+
+  Microsoft::WRL::ComPtr<IDXGIResource> decode_resource_;
+  Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
+  Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };
@@ -929,6 +946,107 @@ bool DCLayerTree::SwapChainPresenter::UpdateVisuals(
   return needs_commit;
 }
 
+bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
+    gl::GLImageDXGIBase* image_dxgi,
+    const gfx::Rect& content_rect,
+    const gfx::Size& swap_chain_size,
+    bool* needs_commit) {
+  DCHECK(!swap_chain_size.IsEmpty());
+
+  Microsoft::WRL::ComPtr<IDXGIResource> decode_resource;
+  image_dxgi->texture()->QueryInterface(
+      IID_PPV_ARGS(decode_resource.GetAddressOf()));
+  DCHECK(decode_resource);
+
+  if (!decode_swap_chain_ || decode_resource_ != decode_resource) {
+    ReleaseSwapChainResources();
+
+    decode_resource_ = decode_resource;
+
+    HANDLE handle = INVALID_HANDLE_VALUE;
+    if (!CreateSurfaceHandleHelper(&handle))
+      return false;
+    swap_chain_handle_.Set(handle);
+
+    Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
+    d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
+    DCHECK(dxgi_device);
+    Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
+    dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
+    DCHECK(dxgi_adapter);
+    Microsoft::WRL::ComPtr<IDXGIFactoryMedia> media_factory;
+    dxgi_adapter->GetParent(IID_PPV_ARGS(media_factory.GetAddressOf()));
+    DCHECK(media_factory);
+
+    DXGI_DECODE_SWAP_CHAIN_DESC desc = {};
+    desc.Flags = 0;
+    HRESULT hr =
+        media_factory->CreateDecodeSwapChainForCompositionSurfaceHandle(
+            d3d11_device_.Get(), swap_chain_handle_.Get(), &desc,
+            decode_resource_.Get(), nullptr,
+            decode_swap_chain_.ReleaseAndGetAddressOf());
+    base::UmaHistogramSparse(
+        "GPU.DirectComposition.DecodeSwapChainCreationResult", hr);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "CreateDecodeSwapChainForCompositionSurfaceHandle failed "
+                     "with error 0x"
+                  << std::hex << hr;
+      return false;
+    }
+    DCHECK(decode_swap_chain_);
+
+    Microsoft::WRL::ComPtr<IDCompositionDesktopDevice> desktop_device;
+    dcomp_device_.CopyTo(desktop_device.GetAddressOf());
+    DCHECK(desktop_device);
+
+    desktop_device->CreateSurfaceFromHandle(
+        swap_chain_handle_.Get(), decode_surface_.ReleaseAndGetAddressOf());
+    base::UmaHistogramSparse(
+        "GPU.DirectComposition.DecodeSwapChainSurfaceCreationResult", hr);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "CreateSurfaceFromHandle failed with error 0x" << std::hex
+                  << hr;
+      return false;
+    }
+    DCHECK(decode_surface_);
+
+    content_visual_->SetContent(decode_surface_.Get());
+    *needs_commit = true;
+  }
+
+  RECT source_rect = content_rect.ToRECT();
+  decode_swap_chain_->SetSourceRect(&source_rect);
+
+  decode_swap_chain_->SetDestSize(swap_chain_size.width(),
+                                  swap_chain_size.height());
+  RECT target_rect = gfx::Rect(swap_chain_size).ToRECT();
+  decode_swap_chain_->SetTargetRect(&target_rect);
+
+  // TODO(sunnyps): Set color space on swap chain.  Setting Rec 709 color space
+  // on the swap chain seems to produce incorrect colors.
+  HRESULT hr = decode_swap_chain_->PresentBuffer(image_dxgi->level(), 1, 0);
+  base::UmaHistogramSparse("GPU.DirectComposition.DecodeSwapChainPresentResult",
+                           hr);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "PresentBuffer failed with error 0x" << std::hex << hr;
+    return false;
+  }
+
+  last_y_image_ = image_dxgi;
+  last_uv_image_ = image_dxgi;
+  swap_chain_size_ = swap_chain_size;
+  if (is_yuv_swapchain_) {
+    frames_since_color_space_change_++;
+  } else {
+    UMA_HISTOGRAM_COUNTS_1000(
+        "GPU.DirectComposition.FramesSinceColorSpaceChange",
+        frames_since_color_space_change_);
+    frames_since_color_space_change_ = 0;
+    is_yuv_swapchain_ = true;
+  }
+  return true;
+}
+
 bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     const ui::DCRendererLayerParams& params,
     bool* needs_commit) {
@@ -961,6 +1079,35 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
 
   if (UpdateVisuals(params, swap_chain_size))
     *needs_commit = true;
+
+  bool use_decode_swap_chain =
+      base::FeatureList::IsEnabled(
+          features::kDirectCompositionUseNV12DecodeSwapChain) &&
+      g_overlay_format_used == OverlayFormat::kNV12 &&
+      !failed_to_present_decode_swapchain_;
+  // TODO(sunnyps): Try using decode swap chain for uploaded video images.
+  if (image_dxgi && use_decode_swap_chain) {
+    D3D11_TEXTURE2D_DESC texture_desc = {};
+    image_dxgi->texture()->GetDesc(&texture_desc);
+    bool is_decoder_texture = texture_desc.BindFlags & D3D11_BIND_DECODER;
+    // Decode swap chains do not support shared resources.
+    // TODO(sunnyps): Find a workaround for when the decoder moves to its own
+    // thread and D3D device.  See https://crbug.com/911847
+    bool is_shared_texture =
+        texture_desc.MiscFlags &
+        (D3D11_RESOURCE_MISC_SHARED | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX |
+         D3D11_RESOURCE_MISC_SHARED_NTHANDLE);
+    if (is_decoder_texture && !is_shared_texture) {
+      if (PresentToDecodeSwapChain(image_dxgi, params.content_rect,
+                                   swap_chain_size, needs_commit)) {
+        return true;
+      }
+      ReleaseSwapChainResources();
+      failed_to_present_decode_swapchain_ = true;
+      DLOG(ERROR)
+          << "Present to decode swap chain failed - falling back to blit";
+    }
+  }
 
   bool swap_chain_resized = swap_chain_size_ != swap_chain_size;
   bool use_yuv_swap_chain = ShouldUseYUVSwapChain(params.protected_video_type);
@@ -1223,6 +1370,9 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
 void DCLayerTree::SwapChainPresenter::ReleaseSwapChainResources() {
   output_view_.Reset();
   swap_chain_.Reset();
+  decode_surface_.Reset();
+  decode_swap_chain_.Reset();
+  decode_resource_.Reset();
   swap_chain_handle_.Close();
 }
 
@@ -1276,7 +1426,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
   // The composition surface handle is only used to create YUV swap chains since
   // CreateSwapChainForComposition can't do that.
-  HANDLE handle;
+  HANDLE handle = INVALID_HANDLE_VALUE;
   if (!CreateSurfaceHandleHelper(&handle))
     return false;
   swap_chain_handle_.Set(handle);
@@ -1582,8 +1732,7 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
 
   HRESULT hr = S_OK;
   Microsoft::WRL::ComPtr<IDXGIFactory> factory;
-  hr = CreateDXGIFactory(__uuidof(IDXGIFactory),
-                         reinterpret_cast<void**>(factory.GetAddressOf()));
+  hr = CreateDXGIFactory(IID_PPV_ARGS(factory.GetAddressOf()));
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create DXGI factory.";
     return false;
@@ -1611,9 +1760,7 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
       }
 
       Microsoft::WRL::ComPtr<IDXGIOutput6> output6;
-      hr = output->QueryInterface(
-          __uuidof(IDXGIOutput6),
-          reinterpret_cast<void**>(output6.GetAddressOf()));
+      hr = output->QueryInterface(IID_PPV_ARGS(output6.GetAddressOf()));
       if (FAILED(hr)) {
         DLOG(WARNING) << "IDXGIOutput6 is required for HDR detection.";
         continue;
