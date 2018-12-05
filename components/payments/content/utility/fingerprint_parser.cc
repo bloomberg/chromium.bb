@@ -43,9 +43,10 @@ std::vector<uint8_t> FingerprintStringToByteArray(const std::string& input,
 
   for (size_t i = 0; i < input.size(); i += 3) {
     if (i < input.size() - 2 && input[i + 2] != ':') {
-      log.Error(base::StringPrintf(
-          "Bytes in fingerprint \"%s\" should separated by \":\" characters.",
-          input.c_str()));
+      log.Error(
+          base::StringPrintf("Bytes in fingerprint \"%s\" should be separated "
+                             "by \":\" characters.",
+                             input.c_str()));
       output.clear();
       return output;
     }
