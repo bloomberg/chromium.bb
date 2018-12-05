@@ -10,13 +10,13 @@
 
 namespace content {
 
-class LayoutTestContentClient : public ShellContentClient {
+class WebTestContentClient : public ShellContentClient {
  public:
-  LayoutTestContentClient() {}
+  WebTestContentClient() {}
   bool CanSendWhileSwappedOut(const IPC::Message* message) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LayoutTestContentClient);
+  DISALLOW_COPY_AND_ASSIGN(WebTestContentClient);
 };
 
 }  // namespace content

@@ -384,7 +384,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
   render_process_host_observer_.RemoveAll();
   all_observed_render_process_hosts_.clear();
   main_window_render_process_hosts_.clear();
-  accumulated_layout_test_runtime_flags_changes_.Clear();
+  accumulated_web_test_runtime_flags_changes_.Clear();
   web_test_control_map_.clear();
 
   ShellBrowserContext* browser_context =
@@ -800,7 +800,7 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
                         OnGetBluetoothManualChooserEvents)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SendBluetoothManualChooserEvent,
                         OnSendBluetoothManualChooserEvent)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_BlockThirdPartyCookies,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_BlockThirdPartyCookies,
                         OnBlockThirdPartyCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -974,8 +974,8 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
       GetWebTestControlPtr(frame)->SetupSecondaryRenderer();
     }
 
-    process_host->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
-        accumulated_layout_test_runtime_flags_changes_));
+    process_host->Send(new WebTestMsg_ReplicateWebTestRuntimeFlagsChanges(
+        accumulated_web_test_runtime_flags_changes_));
   }
 }
 
@@ -1141,12 +1141,12 @@ void BlinkTestController::OnInitiateLayoutDump() {
   pending_layout_dumps_ = number_of_messages;
 }
 
-void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
+void BlinkTestController::OnWebTestRuntimeFlagsChanged(
     int sender_process_host_id,
-    const base::DictionaryValue& changed_layout_test_runtime_flags) {
+    const base::DictionaryValue& changed_web_test_runtime_flags) {
   // Stash the accumulated changes for future, not-yet-created renderers.
-  accumulated_layout_test_runtime_flags_changes_.MergeDictionary(
-      &changed_layout_test_runtime_flags);
+  accumulated_web_test_runtime_flags_changes_.MergeDictionary(
+      &changed_web_test_runtime_flags);
 
   // Propagate the changes to all the tracked renderer processes.
   for (RenderProcessHost* process : all_observed_render_process_hosts_) {
@@ -1156,8 +1156,8 @@ void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
     if (process->GetID() == sender_process_host_id)
       continue;
 
-    process->Send(new LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges(
-        changed_layout_test_runtime_flags));
+    process->Send(new WebTestMsg_ReplicateWebTestRuntimeFlagsChanges(
+        changed_web_test_runtime_flags));
   }
 }
 

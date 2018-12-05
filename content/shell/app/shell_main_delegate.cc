@@ -304,7 +304,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   content_client_.reset(switches::IsRunWebTestsSwitchPresent()
-                            ? new LayoutTestContentClient
+                            ? new WebTestContentClient
                             : new ShellContentClient);
   SetContentClient(content_client_.get());
 

@@ -190,8 +190,8 @@ class WebTestDelegate {
   // Sets the POSIX locale of the current process.
   virtual void SetLocale(const std::string& locale) = 0;
 
-  // Invoked when layout test runtime flags change.
-  virtual void OnLayoutTestRuntimeFlagsChanged(
+  // Invoked when web test runtime flags change.
+  virtual void OnWebTestRuntimeFlagsChanged(
       const base::DictionaryValue& changed_values) = 0;
 
   // Invoked when the test finished.

@@ -209,8 +209,8 @@ WebString BlinkTestRunner::RegisterIsolatedFileSystem(
   for (size_t i = 0; i < absolute_filenames.size(); ++i)
     files.push_back(blink::WebStringToFilePath(absolute_filenames[i]));
   std::string filesystem_id;
-  Send(new LayoutTestHostMsg_RegisterIsolatedFileSystem(routing_id(), files,
-                                                        &filesystem_id));
+  Send(new WebTestHostMsg_RegisterIsolatedFileSystem(routing_id(), files,
+                                                     &filesystem_id));
   return WebString::FromUTF8(filesystem_id);
 }
 
@@ -238,8 +238,8 @@ WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
     return WebURL();
 
   std::string contents;
-  Send(new LayoutTestHostMsg_ReadFileToString(routing_id(), local_path,
-                                              &contents));
+  Send(
+      new WebTestHostMsg_ReadFileToString(routing_id(), local_path, &contents));
 
   std::string contents_base64;
   base::Base64Encode(contents, &contents_base64);
@@ -290,29 +290,29 @@ void BlinkTestRunner::NavigateSecondaryWindow(const GURL& url) {
 }
 
 void BlinkTestRunner::InspectSecondaryWindow() {
-  Send(new LayoutTestHostMsg_InspectSecondaryWindow(routing_id()));
+  Send(new WebTestHostMsg_InspectSecondaryWindow(routing_id()));
 }
 
 void BlinkTestRunner::ClearAllDatabases() {
-  Send(new LayoutTestHostMsg_ClearAllDatabases(routing_id()));
+  Send(new WebTestHostMsg_ClearAllDatabases(routing_id()));
 }
 
 void BlinkTestRunner::SetDatabaseQuota(int quota) {
-  Send(new LayoutTestHostMsg_SetDatabaseQuota(routing_id(), quota));
+  Send(new WebTestHostMsg_SetDatabaseQuota(routing_id(), quota));
 }
 
 void BlinkTestRunner::SimulateWebNotificationClick(
     const std::string& title,
     const base::Optional<int>& action_index,
     const base::Optional<base::string16>& reply) {
-  Send(new LayoutTestHostMsg_SimulateWebNotificationClick(routing_id(), title,
-                                                          action_index, reply));
+  Send(new WebTestHostMsg_SimulateWebNotificationClick(routing_id(), title,
+                                                       action_index, reply));
 }
 
 void BlinkTestRunner::SimulateWebNotificationClose(const std::string& title,
                                                    bool by_user) {
-  Send(new LayoutTestHostMsg_SimulateWebNotificationClose(routing_id(), title,
-                                                          by_user));
+  Send(new WebTestHostMsg_SimulateWebNotificationClose(routing_id(), title,
+                                                       by_user));
 }
 
 void BlinkTestRunner::SetDeviceScaleFactor(float factor) {
@@ -378,7 +378,7 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
 }
 
 void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
-  Send(new LayoutTestHostMsg_BlockThirdPartyCookies(routing_id(), block));
+  Send(new WebTestHostMsg_BlockThirdPartyCookies(routing_id(), block));
 }
 
 std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
@@ -407,7 +407,7 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
   setlocale(LC_ALL, locale.c_str());
 }
 
-void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
+void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
     const base::DictionaryValue& changed_values) {
   // Ignore changes that happen before we got the initial, accumulated
   // layout flag changes in either OnReplicateTestConfiguration or
@@ -418,7 +418,7 @@ void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
     return;
 
   RenderThread::Get()->Send(
-      new LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged(changed_values));
+      new WebTestHostMsg_WebTestRuntimeFlagsChanged(changed_values));
 }
 
 void BlinkTestRunner::TestFinished() {
@@ -434,7 +434,7 @@ void BlinkTestRunner::TestFinished() {
   // to the main frame instead.
   if (!is_main_window_ || !render_view()->GetMainRenderFrame()) {
     RenderThread::Get()->Send(
-        new LayoutTestHostMsg_TestFinishedInSecondaryRenderer());
+        new WebTestHostMsg_TestFinishedInSecondaryRenderer());
     return;
   }
 
@@ -471,7 +471,7 @@ void BlinkTestRunner::TestFinished() {
 
   // Request the browser to send us a callback through which we will return the
   // results.
-  Send(new LayoutTestHostMsg_InitiateCaptureDump(
+  Send(new WebTestHostMsg_InitiateCaptureDump(
       routing_id(), interfaces->TestRunner()->ShouldDumpBackForwardList(),
       browser_should_capture_pixels));
 }
@@ -585,7 +585,7 @@ void BlinkTestRunner::CloseRemainingWindows() {
 }
 
 void BlinkTestRunner::DeleteAllCookies() {
-  Send(new LayoutTestHostMsg_DeleteAllCookies(routing_id()));
+  Send(new WebTestHostMsg_DeleteAllCookies(routing_id()));
 }
 
 int BlinkTestRunner::NavigationEntryCount() {
@@ -631,12 +631,12 @@ void BlinkTestRunner::SetPermission(const std::string& name,
     status = blink::mojom::PermissionStatus::DENIED;
   }
 
-  Send(new LayoutTestHostMsg_SetPermission(routing_id(), name, status, origin,
-                                           embedding_origin));
+  Send(new WebTestHostMsg_SetPermission(routing_id(), name, status, origin,
+                                        embedding_origin));
 }
 
 void BlinkTestRunner::ResetPermissions() {
-  Send(new LayoutTestHostMsg_ResetPermissions(routing_id()));
+  Send(new WebTestHostMsg_ResetPermissions(routing_id()));
 }
 
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(

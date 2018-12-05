@@ -44,18 +44,18 @@ bool WebTestRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebTestRenderThreadObserver, message)
-    IPC_MESSAGE_HANDLER(LayoutTestMsg_ReplicateLayoutTestRuntimeFlagsChanges,
-                        OnReplicateLayoutTestRuntimeFlagsChanges)
+    IPC_MESSAGE_HANDLER(WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
+                        OnReplicateWebTestRuntimeFlagsChanges)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void WebTestRenderThreadObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
-    const base::DictionaryValue& changed_layout_test_runtime_flags) {
-  test_interfaces()->TestRunner()->ReplicateLayoutTestRuntimeFlagsChanges(
-      changed_layout_test_runtime_flags);
+void WebTestRenderThreadObserver::OnReplicateWebTestRuntimeFlagsChanges(
+    const base::DictionaryValue& changed_web_test_runtime_flags) {
+  test_interfaces()->TestRunner()->ReplicateWebTestRuntimeFlagsChanges(
+      changed_web_test_runtime_flags);
 }
 
 }  // namespace content

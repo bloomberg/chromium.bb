@@ -39,7 +39,7 @@ class WebTestRenderThreadObserver : public RenderThreadObserver {
 
  private:
   // Message handlers.
-  void OnReplicateLayoutTestRuntimeFlagsChanges(
+  void OnReplicateWebTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_layout_test_runtime_flags);
 
   std::unique_ptr<test_runner::WebTestInterfaces> test_interfaces_;

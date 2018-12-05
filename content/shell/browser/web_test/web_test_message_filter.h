@@ -77,8 +77,8 @@ class WebTestMessageFilter : public BrowserMessageFilter {
                        const GURL& origin,
                        const GURL& embedding_origin);
   void OnResetPermissions();
-  void OnLayoutTestRuntimeFlagsChanged(
-      const base::DictionaryValue& changed_layout_test_runtime_flags);
+  void OnWebTestRuntimeFlagsChanged(
+      const base::DictionaryValue& changed_web_test_runtime_flags);
   void OnTestFinishedInSecondaryRenderer();
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
