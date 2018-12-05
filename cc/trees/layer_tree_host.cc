@@ -803,8 +803,9 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
   // Dump property trees and layers if run with:
   //   --vmodule=layer_tree_host=3
-  // This only prints output for the renderer.
-  if (VLOG_IS_ON(3) && GetClientNameForMetrics() == std::string("Renderer")) {
+  // This only prints output in unit test or for the renderer.
+  if (VLOG_IS_ON(3) && (!GetClientNameForMetrics() ||
+                        GetClientNameForMetrics() == std::string("Renderer"))) {
     std::string property_trees;
     base::JSONWriter::WriteWithOptions(
         *property_trees_.AsTracedValue()->ToBaseValue(),
