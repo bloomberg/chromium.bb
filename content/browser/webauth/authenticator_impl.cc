@@ -164,15 +164,24 @@ bool IsRelyingPartyIdValid(const std::string& relying_party_id,
   return true;
 }
 
-bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
+// Validates whether the given origin is authorized to use the provided App
+// ID value, mostly according to the rules in
+// https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-appid-and-facets-v1.2-ps-20170411.html#determining-if-a-caller-s-facetid-is-authorized-for-an-appid.
+//
+// Returns the App ID to use for the request, or base::nullopt if the origin
+// is not authorized to use the provided value.
+base::Optional<std::string> ProcessAppIdExtension(std::string appid,
+                                                  const url::Origin& origin) {
   // The CryptoToken U2F extension checks the appid before calling the WebAuthn
-  // APIs so there is no need to validate it here.
+  // API so there is no need to validate it here.
   if (OriginIsCryptoTokenExtension(origin) &&
-      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken))
-    return true;
-
-  // See
-  // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-appid-and-facets-v1.2-ps-20170411.html#determining-if-a-caller-s-facetid-is-authorized-for-an-appid
+      base::FeatureList::IsEnabled(device::kWebAuthProxyCryptotoken)) {
+    if (!GURL(appid).is_valid()) {
+      DCHECK(false) << "cryptotoken request did not set a valid App ID";
+      return base::nullopt;
+    }
+    return appid;
+  }
 
   // Step 1: "If the AppID is not an HTTPS URL, and matches the FacetID of the
   // caller, no additional processing is necessary and the operation may
@@ -186,23 +195,31 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
   // Step 2: "If the AppID is null or empty, the client must set the AppID to be
   // the FacetID of the caller, and the operation may proceed without additional
   // processing."
-
-  // This step is handled before calling this function.
+  if (appid.empty()) {
+    // While the U2F spec says to default the App ID to the Facet ID, which is
+    // the origin plus a trailing forward slash [1], cryptotoken and Firefox
+    // just use the site's Origin without trailing slash. We follow their
+    // implementations rather than the spec.
+    //
+    // [1]https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-appid-and-facets-v2.0-id-20180227.html#determining-the-facetid-of-a-calling-application
+    appid = origin.Serialize();
+  }
 
   // Step 3: "If the caller's FacetID is an https:// Origin sharing the same
   // host as the AppID, (e.g. if an application hosted at
   // https://fido.example.com/myApp set an AppID of
   // https://fido.example.com/myAppId), no additional processing is necessary
   // and the operation may proceed."
-  if (origin.scheme() != url::kHttpsScheme ||
-      appid.scheme_piece() != origin.scheme()) {
-    return false;
+  GURL appid_url = GURL(appid);
+  if (!appid_url.is_valid() || appid_url.scheme() != url::kHttpsScheme ||
+      appid_url.scheme_piece() != origin.scheme()) {
+    return base::nullopt;
   }
 
   // This check is repeated inside |SameDomainOrHost|, just after this. However
   // it's cheap and mirrors the structure of the spec.
-  if (appid.host_piece() == origin.host()) {
-    return true;
+  if (appid_url.host_piece() == origin.host()) {
+    return appid;
   }
 
   // At this point we diverge from the specification in order to avoid the
@@ -210,9 +227,9 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
   // neccessary in practice. See also
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1244959#c8
   if (net::registry_controlled_domains::SameDomainOrHost(
-          appid, origin,
+          appid_url, origin,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-    return true;
+    return appid;
   }
 
   // As a compatibility hack, sites within google.com are allowed to assert two
@@ -224,13 +241,13 @@ bool IsAppIdAllowedForOrigin(const GURL& appid, const url::Origin& origin) {
       GURL("https://www.gstatic.com/securitykey/a/google.com/origins.json");
   DCHECK(kGstatic1.is_valid() && kGstatic2.is_valid());
 
-  if (origin.DomainIs("google.com") && !appid.has_ref() &&
-      (appid.EqualsIgnoringRef(kGstatic1) ||
-       appid.EqualsIgnoringRef(kGstatic2))) {
-    return true;
+  if (origin.DomainIs("google.com") && !appid_url.has_ref() &&
+      (appid_url.EqualsIgnoringRef(kGstatic1) ||
+       appid_url.EqualsIgnoringRef(kGstatic2))) {
+    return appid;
   }
 
-  return false;
+  return base::nullopt;
 }
 
 device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
@@ -299,36 +316,6 @@ std::array<uint8_t, crypto::kSHA256Length> CreateApplicationParameter(
   crypto::SHA256HashString(relying_party_id, application_parameter.data(),
                            application_parameter.size());
   return application_parameter;
-}
-
-base::Optional<std::string> ProcessAppIdExtension(
-    std::string appid,
-    const url::Origin& caller_origin) {
-  if (appid.empty()) {
-    if (OriginIsCryptoTokenExtension(caller_origin)) {
-      // Cryptotoken must always set an App ID.
-      DCHECK(false);
-      return base::nullopt;
-    }
-
-    // While the U2F spec says to default the App ID to the Facet ID, which is
-    // the origin plus a trailing forward slash [1], cryptotoken and Firefox
-    // just use the site's Origin without trailing slash. We follow their
-    // implementations rather than the spec.
-    //
-    // [1]https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-appid-and-facets-v2.0-id-20180227.html#determining-the-facetid-of-a-calling-application
-    //
-    // Also see step two in the comments in |IsAppIdAllowedForOrigin|.
-    appid = caller_origin.Serialize();
-  }
-
-  GURL appid_url = GURL(appid);
-  if (!(appid_url.is_valid() &&
-        IsAppIdAllowedForOrigin(appid_url, caller_origin))) {
-    return base::nullopt;
-  }
-
-  return appid;
 }
 
 // Parses the FIDO transport types extension from the DER-encoded, X.509
