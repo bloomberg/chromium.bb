@@ -92,6 +92,32 @@ testcase.tabindexFocusDownloads = async function() {
   chrome.test.assertTrue(
       await remoteCall.checkNextTabFocus(appId, 'file-list'));
 };
+
+/**
+ * Tests for background color change when breadcrumb has focus.
+ */
+testcase.tabindexFocusBreadcrumbBackground = async function() {
+  // Open Files app on Downloads.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Get background color for breadcrumb with no focus.
+  const unfocused = await remoteCall.waitForElementStyles(
+      appId, '#breadcrumb-path-0', ['background-color']);
+
+  // Press the tab key.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeKeyDown', appId, ['body', 'Tab', false, false, false]));
+
+  // Get background color for breadcrumb with focus.
+  const focused = await remoteCall.waitForElementStyles(
+      appId, '#breadcrumb-path-0:focus', ['background-color']);
+
+  // Check that background colour has changed.
+  chrome.test.assertFalse(
+      focused.styles['background-color'] ===
+      unfocused.styles['background-color']);
+};
+
 /**
  * Tests the tab focus behavior of the Files app when a directory is selected.
  */
