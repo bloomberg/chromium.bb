@@ -19,7 +19,7 @@ source_set("struct_traits") {
     "accelerator_struct_traits.h",
   ]
   public_deps = [
-    ":interfaces",
+    ":interfaces_shared_cpp_sources",
     "//mojo/public/mojom/base",
     "//ui/base",
     "//ui/events",

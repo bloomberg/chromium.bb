@@ -15,9 +15,10 @@
 
 @implementation ChromeCommandDispatcherDelegate
 
-- (BOOL)eventHandledByExtensionCommand:(NSEvent*)event
-                              priority:(ui::AcceleratorManager::HandlerPriority)
-                                           priority {
+- (BOOL)eventHandledByViewsFocusManager:(NSEvent*)event
+                               priority:
+                                   (ui::AcceleratorManager::HandlerPriority)
+                                       priority {
   NSWindow* window = [event window];
   if (!window)
     return NO;
@@ -38,9 +39,6 @@
   // trigger any other sources of registered accelerators. This is actually
   // desired.
   //
-  // TODO(erikchen): Once we no longer support Cocoa, we should rename this
-  // method to be eventHandledByViewsFocusManager.
-  //
   // Note: FocusManager is also given an opportunity to consume the accelerator
   // in the RenderWidgetHostView event handling path. That logic doesn't trigger
   // when the focused view is not a RenderWidgetHostView, which is why this
@@ -49,16 +47,15 @@
   content::NativeWebKeyboardEvent keyboard_event(event);
   ui::Accelerator accelerator =
       ui::GetAcceleratorFromNativeWebKeyboardEvent(keyboard_event);
-  if (views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window)) {
-    if (priority == ui::AcceleratorManager::HandlerPriority::kHighPriority) {
-      if (!widget->GetFocusManager()->HasPriorityHandler(accelerator)) {
-        return NO;
-      }
-    }
-    return widget->GetFocusManager()->ProcessAccelerator(accelerator);
+  auto* bridge = views::BridgedNativeWidgetImpl::GetFromNativeWindow(window);
+  bool was_handled = false;
+  if (bridge) {
+    bridge->host()->HandleAccelerator(
+        accelerator,
+        priority == ui::AcceleratorManager::HandlerPriority::kHighPriority,
+        &was_handled);
   }
-
-  return NO;
+  return was_handled;
 }
 
 - (ui::PerformKeyEquivalentResult)prePerformKeyEquivalent:(NSEvent*)event
@@ -75,9 +72,9 @@
       return ui::PerformKeyEquivalentResult::kUnhandled;
   }
 
-  if ([self eventHandledByExtensionCommand:event
-                                  priority:ui::AcceleratorManager::
-                                               kHighPriority]) {
+  if ([self eventHandledByViewsFocusManager:event
+                                   priority:ui::AcceleratorManager::
+                                                kHighPriority]) {
     return ui::PerformKeyEquivalentResult::kHandled;
   }
 
@@ -113,9 +110,9 @@
 - (ui::PerformKeyEquivalentResult)postPerformKeyEquivalent:(NSEvent*)event
                                                     window:(NSWindow*)window
                                               isRedispatch:(BOOL)isRedispatch {
-  if ([self eventHandledByExtensionCommand:event
-                                  priority:ui::AcceleratorManager::
-                                               kNormalPriority]) {
+  if ([self eventHandledByViewsFocusManager:event
+                                   priority:ui::AcceleratorManager::
+                                                kNormalPriority]) {
     return ui::PerformKeyEquivalentResult::kHandled;
   }
 

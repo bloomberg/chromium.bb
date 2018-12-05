@@ -276,6 +276,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                       WindowOpenDisposition window_open_disposition,
                       bool is_before_first_responder,
                       bool* was_executed) override;
+  bool HandleAccelerator(const ui::Accelerator& accelerator,
+                         bool require_priority_handler,
+                         bool* was_handled) override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
@@ -314,6 +317,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
                       WindowOpenDisposition window_open_disposition,
                       bool is_before_first_responder,
                       ExecuteCommandCallback callback) override;
+  void HandleAccelerator(const ui::Accelerator& accelerator,
+                         bool require_priority_handler,
+                         HandleAcceleratorCallback callback) override;
 
   // DialogObserver:
   void OnDialogChanged() override;
