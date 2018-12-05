@@ -756,27 +756,6 @@ void sqlite3Pragma(
   }
 #endif
 
-  /*
-  **  PRAGMA [schema.]auto_vacuum_slack_pages(N)
-  **
-  ** Control chunk size of auto-vacuum.
-  */
-#ifndef SQLITE_OMIT_AUTOVACUUM
-  case PragTyp_AUTO_VACUUM_SLACK_PAGES: {
-    Btree *pBt = pDb->pBt;
-    assert( pBt!=0 );
-    if( !zRight ){
-      returnSingleInt(v, sqlite3BtreeGetAutoVacuumSlackPages(pBt));
-    }else{
-      int nPages = 8;
-      if( sqlite3GetInt32(zRight, &nPages) ){
-        sqlite3BtreeSetAutoVacuumSlackPages(pBt, nPages);
-      }
-    }
-    break;
-  }
-#endif
-
 #ifndef SQLITE_OMIT_PAGER_PRAGMAS
   /*
   **  PRAGMA [schema.]cache_size

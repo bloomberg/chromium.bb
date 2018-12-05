@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Scott Hess <shess@chromium.org>
 Date: Thu, 12 Feb 2015 15:01:26 -0800
-Subject: [PATCH 06/10] [fts3] Fix uninit variable in fts3EvalDeferredPhrase.
+Subject: [PATCH 6/9] [fts3] Fix uninit variable in fts3EvalDeferredPhrase.
 
 Chromium compiles with SQLITE_DISABLE_FTS4_DEFERRED since fts4 is
 disabled.  That compiles away sqlite3Fts3DeferredTokenList() which
@@ -24,8 +24,8 @@ index 3c6501cea432..24c0f2940f33 100644
 -# define sqlite3Fts3DeferredTokenList(x,y,z) SQLITE_OK
 +# define sqlite3Fts3DeferredTokenList(x,y,z) ((*(y)=0),(*(z)=0),SQLITE_OK)
  #endif
-
+ 
  void sqlite3Fts3SegmentsClose(Fts3Table *);
---
+-- 
 2.18.0
 

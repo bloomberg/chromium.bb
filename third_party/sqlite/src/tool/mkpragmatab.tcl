@@ -387,10 +387,6 @@ set pragma_def {
   TYPE: FLAG
   ARG:  SQLITE_LegacyAlter
   IF:   !defined(SQLITE_OMIT_FLAG_PRAGMAS)
-
-  NAME: auto_vacuum_slack_pages
-  FLAG: NeedSchema Result0 SchemaReq NoColumns1
-  IF:   !defined(SQLITE_OMIT_AUTOVACUUM)
 }
 
 # Open the output file
