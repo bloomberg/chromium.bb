@@ -17,11 +17,13 @@ NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
                                        unsigned index,
                                        unsigned start,
                                        unsigned end,
+                                       bool break_anywhere_if_overflow,
                                        bool should_create_line_box)
     : item(item),
       item_index(index),
       start_offset(start),
       end_offset(end),
+      break_anywhere_if_overflow(break_anywhere_if_overflow),
       should_create_line_box(should_create_line_box) {}
 
 void NGLineInfo::SetLineStyle(const NGInlineNode& node,

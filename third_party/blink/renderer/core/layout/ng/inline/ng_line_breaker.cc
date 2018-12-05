@@ -97,6 +97,7 @@ inline NGInlineItemResult* NGLineBreaker::AddItem(const NGInlineItem& item,
                                                   unsigned end_offset) {
   DCHECK_LE(end_offset, item.EndOffset());
   return &item_results_->emplace_back(&item, item_index_, offset_, end_offset,
+                                      break_anywhere_if_overflow_,
                                       ShouldCreateLineBox(*item_results_));
 }
 
@@ -1036,13 +1037,20 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item) {
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().
 void NGLineBreaker::HandleOverflow() {
+  // Compute the width needing to rewind. When |width_to_rewind| goes negative,
+  // items can fit within the line.
   LayoutUnit available_width = AvailableWidthToFit();
   LayoutUnit width_to_rewind = position_ - available_width;
   DCHECK_GT(width_to_rewind, 0);
+
+  // Indicates positions of items may be changed and need to UpdatePosition().
   bool position_maybe_changed = false;
 
   // Keep track of the shortest break opportunity.
   unsigned break_before = 0;
+
+  // True if there is at least one item that has `break-word`.
+  bool has_break_anywhere_if_overflow = break_anywhere_if_overflow_;
 
   // Search for a break opportunity that can fit.
   for (unsigned i = item_results_->size(); i;) {
@@ -1060,56 +1068,63 @@ void NGLineBreaker::HandleOverflow() {
     }
 
     // Try to break inside of this item.
-    LayoutUnit next_width_to_rewind =
-        width_to_rewind - item_result->inline_size;
+    width_to_rewind -= item_result->inline_size;
     DCHECK(item_result->item);
     const NGInlineItem& item = *item_result->item;
-    if (item.Type() == NGInlineItem::kText && next_width_to_rewind < 0 &&
-        (item_result->may_break_inside || override_break_anywhere_)) {
-      // When the text fits but its right margin does not, the break point
-      // must not be at the end.
-      LayoutUnit item_available_width =
-          std::min(-next_width_to_rewind, item_result->inline_size - 1);
-      SetCurrentStyle(*item.Style());
-      BreakText(item_result, item, item_available_width);
+    if (item.Type() == NGInlineItem::kText) {
+      DCHECK(item_result->shape_result ||
+             (item_result->break_anywhere_if_overflow &&
+              !override_break_anywhere_));
+      if (width_to_rewind < 0 &&
+          (item_result->may_break_inside || override_break_anywhere_)) {
+        // When the text fits but its right margin does not, the break point
+        // must not be at the end.
+        LayoutUnit item_available_width =
+            std::min(-width_to_rewind, item_result->inline_size - 1);
+        SetCurrentStyle(*item.Style());
+        BreakText(item_result, item, item_available_width);
 #if DCHECK_IS_ON()
-      item_result->CheckConsistency(true);
+        item_result->CheckConsistency(true);
 #endif
-      // If BreakText() changed this item small enough to fit, break here.
-      if (item_result->inline_size <= item_available_width) {
-        DCHECK(item_result->end_offset < item.EndOffset());
-        DCHECK(item_result->can_break_after);
-        DCHECK_LE(i + 1, item_results_->size());
-        if (i + 1 == item_results_->size()) {
-          // If this is the last item, adjust states to accomodate the change.
-          position_ =
-              available_width + next_width_to_rewind + item_result->inline_size;
-          if (line_info_->LineEndFragment())
-            SetLineEndFragment(nullptr);
-          DCHECK_EQ(position_, line_info_->ComputeWidth());
-          item_index_ = item_result->item_index;
-          offset_ = item_result->end_offset;
-          items_data_.AssertOffset(item_index_, offset_);
-        } else {
-          Rewind(i + 1);
+        // If BreakText() changed this item small enough to fit, break here.
+        if (item_result->inline_size <= item_available_width) {
+          DCHECK(item_result->end_offset < item.EndOffset());
+          DCHECK(item_result->can_break_after);
+          DCHECK_LE(i + 1, item_results_->size());
+          if (i + 1 == item_results_->size()) {
+            // If this is the last item, adjust states to accomodate the change.
+            position_ =
+                available_width + width_to_rewind + item_result->inline_size;
+            if (line_info_->LineEndFragment())
+              SetLineEndFragment(nullptr);
+            DCHECK_EQ(position_, line_info_->ComputeWidth());
+            item_index_ = item_result->item_index;
+            offset_ = item_result->end_offset;
+            items_data_.AssertOffset(item_index_, offset_);
+          } else {
+            Rewind(i + 1);
+          }
+          state_ = LineBreakState::kTrailing;
+          return;
         }
-        state_ = LineBreakState::kTrailing;
-        return;
+        position_maybe_changed = true;
       }
-      position_maybe_changed = true;
     }
 
-    width_to_rewind = next_width_to_rewind;
+    has_break_anywhere_if_overflow |= item_result->break_anywhere_if_overflow;
   }
 
   // Reaching here means that the rewind point was not found.
 
-  if (break_anywhere_if_overflow_ && !override_break_anywhere_) {
+  if (!override_break_anywhere_ && has_break_anywhere_if_overflow) {
     override_break_anywhere_ = true;
     break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
+    // TODO(kojii): Not all items need to rewind, but such case is rare and
+    // rewinding all items simplifes the code.
     if (!item_results_->IsEmpty())
       Rewind(0);
     state_ = LineBreakState::kLeading;
+    SetCurrentStyle(line_info_->LineStyle());
     return;
   }
 
@@ -1188,29 +1203,30 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
-    if (UNLIKELY(override_break_anywhere_)) {
-      break_iterator_.SetBreakType(LineBreakType::kBreakCharacter);
-    } else {
-      switch (style.WordBreak()) {
-        case EWordBreak::kNormal:
-          break_anywhere_if_overflow_ =
-              style.OverflowWrap() == EOverflowWrap::kBreakWord;
-          break_iterator_.SetBreakType(LineBreakType::kNormal);
-          break;
-        case EWordBreak::kBreakAll:
-          break_anywhere_if_overflow_ = false;
-          break_iterator_.SetBreakType(LineBreakType::kBreakAll);
-          break;
-        case EWordBreak::kBreakWord:
-          break_anywhere_if_overflow_ = true;
-          break_iterator_.SetBreakType(LineBreakType::kNormal);
-          break;
-        case EWordBreak::kKeepAll:
-          break_anywhere_if_overflow_ = false;
-          break_iterator_.SetBreakType(LineBreakType::kKeepAll);
-          break;
-      }
+    LineBreakType line_break_type;
+    switch (style.WordBreak()) {
+      case EWordBreak::kNormal:
+        break_anywhere_if_overflow_ =
+            style.OverflowWrap() == EOverflowWrap::kBreakWord &&
+            mode_ == NGLineBreakerMode::kContent;
+        line_break_type = LineBreakType::kNormal;
+        break;
+      case EWordBreak::kBreakAll:
+        break_anywhere_if_overflow_ = false;
+        line_break_type = LineBreakType::kBreakAll;
+        break;
+      case EWordBreak::kBreakWord:
+        break_anywhere_if_overflow_ = true;
+        line_break_type = LineBreakType::kNormal;
+        break;
+      case EWordBreak::kKeepAll:
+        break_anywhere_if_overflow_ = false;
+        line_break_type = LineBreakType::kKeepAll;
+        break;
     }
+    if (UNLIKELY(override_break_anywhere_ && break_anywhere_if_overflow_))
+      line_break_type = LineBreakType::kBreakCharacter;
+    break_iterator_.SetBreakType(line_break_type);
 
     enable_soft_hyphen_ = style.GetHyphens() != Hyphens::kNone;
     hyphenation_ = style.GetHyphenation();
