@@ -52,7 +52,6 @@ class PrefRegistrySyncable;
 namespace suggestions {
 
 class BlacklistStore;
-class ImageManager;
 class SuggestionsStore;
 
 // Actual (non-test) implementation of the SuggestionsService interface.
@@ -64,7 +63,6 @@ class SuggestionsServiceImpl : public SuggestionsService,
       syncer::SyncService* sync_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<SuggestionsStore> suggestions_store,
-      std::unique_ptr<ImageManager> thumbnail_manager,
       std::unique_ptr<BlacklistStore> blacklist_store,
       const base::TickClock* tick_clock);
   ~SuggestionsServiceImpl() override;
@@ -75,11 +73,6 @@ class SuggestionsServiceImpl : public SuggestionsService,
       const override;
   std::unique_ptr<ResponseCallbackList::Subscription> AddCallback(
       const ResponseCallback& callback) override WARN_UNUSED_RESULT;
-  void GetPageThumbnail(const GURL& url,
-                        const BitmapCallback& callback) override;
-  void GetPageThumbnailWithURL(const GURL& url,
-                               const GURL& thumbnail_url,
-                               const BitmapCallback& callback) override;
   bool BlacklistURL(const GURL& candidate_url) override;
   bool UndoBlacklistURL(const GURL& url) override;
   void ClearBlacklist() override;
@@ -194,9 +187,6 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   // The cache for the suggestions.
   std::unique_ptr<SuggestionsStore> suggestions_store_;
-
-  // Used to obtain server thumbnails, if available.
-  std::unique_ptr<ImageManager> thumbnail_manager_;
 
   // The local cache for temporary blacklist, until uploaded to the server.
   std::unique_ptr<BlacklistStore> blacklist_store_;

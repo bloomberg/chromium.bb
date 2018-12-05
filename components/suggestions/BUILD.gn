@@ -8,9 +8,6 @@ static_library("suggestions") {
     "blacklist_store.h",
     "features.cc",
     "features.h",
-    "image_encoder.h",
-    "image_manager.cc",
-    "image_manager.h",
     "suggestions_pref_names.cc",
     "suggestions_pref_names.h",
     "suggestions_service.h",
@@ -34,9 +31,7 @@ static_library("suggestions") {
   deps = [
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
-    "//components/image_fetcher/core",
     "//components/keyed_service/core",
-    "//components/leveldb_proto",
     "//components/pref_registry",
     "//components/sync",
     "//components/variations",
@@ -44,34 +39,25 @@ static_library("suggestions") {
     "//google_apis",
     "//services/identity/public/cpp",
   ]
-
-  if (is_ios) {
-    sources += [ "image_encoder_ios.mm" ]
-  } else {
-    sources += [ "image_encoder.cc" ]
-  }
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
     "blacklist_store_unittest.cc",
-    "image_manager_unittest.cc",
     "suggestions_service_impl_unittest.cc",
     "suggestions_store_unittest.cc",
   ]
   deps = [
     ":suggestions",
     "//base/test:test_support",
-    "//components/image_fetcher/core",
-    "//components/image_fetcher/core:test_support",
-    "//components/leveldb_proto:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",
     "//components/sync_preferences:test_support",
     "//net:test_support",
     "//services/identity/public/cpp",
     "//services/identity/public/cpp:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -9,17 +9,11 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/time/default_tick_clock.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/image_fetcher/core/image_fetcher.h"
-#include "components/image_fetcher/core/image_fetcher_impl.h"
-#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/leveldb_proto/proto_database_impl.h"
 #include "components/suggestions/blacklist_store.h"
-#include "components/suggestions/image_manager.h"
 #include "components/suggestions/suggestions_service_impl.h"
 #include "components/suggestions/suggestions_store.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -35,10 +29,6 @@
 #endif
 
 namespace suggestions {
-namespace {
-const base::FilePath::CharType kThumbnailDirectory[] =
-    FILE_PATH_LITERAL("Thumbnail");
-}
 
 // static
 SuggestionsServiceFactory* SuggestionsServiceFactory::GetInstance() {
@@ -72,33 +62,16 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
       IdentityManagerFactory::GetForBrowserState(browser_state);
   browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
-  base::FilePath database_dir(
-      browser_state->GetStatePath().Append(kThumbnailDirectory));
 
   std::unique_ptr<SuggestionsStore> suggestions_store(
       new SuggestionsStore(browser_state->GetPrefs()));
   std::unique_ptr<BlacklistStore> blacklist_store(
       new BlacklistStore(browser_state->GetPrefs()));
 
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ImageData>> db(
-      new leveldb_proto::ProtoDatabaseImpl<ImageData>(db_task_runner));
-
-  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher =
-      std::make_unique<image_fetcher::ImageFetcherImpl>(
-          image_fetcher::CreateIOSImageDecoder(),
-          browser_state->GetSharedURLLoaderFactory());
-
-  std::unique_ptr<ImageManager> thumbnail_manager(
-      new ImageManager(std::move(image_fetcher), std::move(db), database_dir));
-
   return std::make_unique<SuggestionsServiceImpl>(
       identity_manager, sync_service,
       browser_state->GetSharedURLLoaderFactory(), std::move(suggestions_store),
-      std::move(thumbnail_manager), std::move(blacklist_store),
-      base::DefaultTickClock::GetInstance());
+      std::move(blacklist_store), base::DefaultTickClock::GetInstance());
 }
 
 void SuggestionsServiceFactory::RegisterBrowserStatePrefs(
