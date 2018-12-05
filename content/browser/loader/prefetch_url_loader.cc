@@ -181,11 +181,25 @@ void PrefetchURLLoader::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 
 void PrefetchURLLoader::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  // Just drain this here; we don't need to forward the body data to
-  // the renderer for prefetch.
+  // Just drain the original response's body here.
   DCHECK(!pipe_drainer_);
   pipe_drainer_ =
       std::make_unique<mojo::DataPipeDrainer>(this, std::move(body));
+
+  // Send an empty response's body instead.
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  if (CreateDataPipe(nullptr, &producer, &consumer) == MOJO_RESULT_OK) {
+    forwarding_client_->OnStartLoadingResponseBody(std::move(consumer));
+    return;
+  }
+
+  // No more resources available for creating a data pipe. Close the connection,
+  // which will in turn make this loader destroyed.
+  forwarding_client_->OnComplete(
+      network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
+  forwarding_client_.reset();
+  client_binding_.Close();
 }
 
 void PrefetchURLLoader::OnComplete(
