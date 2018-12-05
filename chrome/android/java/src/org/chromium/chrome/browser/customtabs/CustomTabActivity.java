@@ -1701,7 +1701,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     private void maybeUpdateCctHeaderVisibility(String url) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE) || !isModuleLoaded()) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)
+                || (!isModuleLoaded() && !isModuleLoading())) {
             return;
         }
         boolean isModuleManagedUrl = isModuleManagedUrl(url);
