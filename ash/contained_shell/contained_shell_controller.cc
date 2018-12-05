@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/contained_shell/contained_shell_controller.h"
+#include "ash/session/session_controller.h"
+#include "ash/shell.h"
+#include "components/account_id/account_id.h"
 
 #include <utility>
 
@@ -18,9 +21,10 @@ void ContainedShellController::BindRequest(
 }
 
 void ContainedShellController::LaunchContainedShell() {
-  // TODO(crbug/902571): Implement launch by dispatching to a
-  // ContainedShellClient method.
-  NOTIMPLEMENTED();
+  contained_shell_client_->LaunchContainedShell(Shell::Get()
+                                                    ->session_controller()
+                                                    ->GetPrimaryUserSession()
+                                                    ->user_info->account_id);
 }
 
 void ContainedShellController::SetClient(

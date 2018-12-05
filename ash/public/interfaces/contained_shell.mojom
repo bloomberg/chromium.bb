@@ -4,9 +4,14 @@
 
 module ash.mojom;
 
+import "components/account_id/interfaces/account_id.mojom";
+
 // Performs browser-side functionality for the ContainedShell feature,
 // e.g. launching a WebView to host the ContainedShell.
 interface ContainedShellClient {
+  // Launch a contained shell experience for the current user, identified by
+  // |account_id|.
+  LaunchContainedShell(signin.mojom.AccountId account_id);
 };
 
 // Allows Ash and its consumers to interact with the ContainedShell
