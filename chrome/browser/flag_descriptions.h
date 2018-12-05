@@ -589,9 +589,6 @@ extern const char kExperimentalCrostiniUIDescription[];
 extern const char kExperimentalExtensionApisName[];
 extern const char kExperimentalExtensionApisDescription[];
 
-extern const char kExperimentalFullscreenExitUIName[];
-extern const char kExperimentalFullscreenExitUIDescription[];
-
 extern const char kExperimentalProductivityFeaturesName[];
 extern const char kExperimentalProductivityFeaturesDescription[];
 

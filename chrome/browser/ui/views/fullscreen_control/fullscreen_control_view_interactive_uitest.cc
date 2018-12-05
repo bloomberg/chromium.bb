@@ -68,9 +68,8 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
     // disabled. It is important to disable system keyboard lock as low-level
     // test utilities may install a keyboard hook to listen for keyboard events
     // and having an active system hook may cause issues with that mechanism.
-    scoped_feature_list_.InitWithFeatures(
-        {features::kFullscreenExitUI, features::kKeyboardLockAPI},
-        {features::kSystemKeyboardLock});
+    scoped_feature_list_.InitWithFeatures({features::kKeyboardLockAPI},
+                                          {features::kSystemKeyboardLock});
     InProcessBrowserTest::SetUp();
   }
 

@@ -179,8 +179,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kOpenVR;
 
 #endif  // ENABLE_VR
 
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kFullscreenExitUI;
-
 #if defined(OS_WIN)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kGdiTextPrinting;
 #endif

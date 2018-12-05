@@ -68,10 +68,10 @@ bool IsExitUiEnabled() {
   // menu and controls reveal when the cursor is moved to the top.
   return false;
 #else
-  // Fullscreen exit UI should not be enabled when kiosk mode is on.
+  // Kiosk mode is a fullscreen experience, which makes the exit UI
+  // inappropriate.
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kKioskMode) &&
-         base::FeatureList::IsEnabled(features::kFullscreenExitUI);
+      switches::kKioskMode);
 #endif
 }
 

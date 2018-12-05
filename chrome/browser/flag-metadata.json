@@ -1159,11 +1159,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-experimental-fullscreen-exit-ui",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-experimental-productivity-features",
     "owners": [ "feature-control@chromium.org" ],
     "expiry_milestone": 76
