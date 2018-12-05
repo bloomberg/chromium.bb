@@ -500,9 +500,6 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // |document| is the node document here, and its context document is the
   // relevant settings object.
   Document* context_document = document.ContextDocument();
-  auto* settings_object =
-      context_document->CreateFetchClientSettingsObjectSnapshot();
-
   Modulator* modulator =
       Modulator::From(ToScriptStateForMainWorld(context_document->GetFrame()));
   DCHECK(modulator);
@@ -549,7 +546,7 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // destination, options, settings object, "client", and with the top-level
   // module fetch flag set. Wait until algorithm asynchronously completes with
   // result." [spec text]
-  modulator->FetchSingle(request, settings_object,
+  modulator->FetchSingle(request, context_document->Fetcher(),
                          ModuleGraphLevel::kDependentModuleFetch,
                          ModuleScriptCustomFetchType::kNone, link_loader);
 

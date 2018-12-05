@@ -12,23 +12,20 @@
 
 namespace blink {
 
-DocumentModuleScriptFetcher::DocumentModuleScriptFetcher(
-    ResourceFetcher* fetcher)
-    : fetcher_(fetcher) {
-  DCHECK(fetcher_);
-}
-
-void DocumentModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
-                                        ModuleGraphLevel level,
-                                        ModuleScriptFetcher::Client* client) {
+void DocumentModuleScriptFetcher::Fetch(
+    FetchParameters& fetch_params,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
+    ModuleGraphLevel level,
+    ModuleScriptFetcher::Client* client) {
+  DCHECK(fetch_client_settings_object_fetcher);
   DCHECK(!client_);
   client_ = client;
 
   if (FetchIfLayeredAPI(fetch_params))
     return;
 
-  ScriptResource::Fetch(fetch_params, fetcher_, this,
-                        ScriptResource::kNoStreaming);
+  ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
+                        this, ScriptResource::kNoStreaming);
 }
 
 void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
@@ -50,7 +47,6 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
 }
 
 void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetcher_);
   visitor->Trace(client_);
   ResourceClient::Trace(visitor);
 }

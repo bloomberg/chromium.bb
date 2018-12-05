@@ -21,11 +21,14 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
 
  public:
-  explicit DocumentModuleScriptFetcher(ResourceFetcher*);
+  DocumentModuleScriptFetcher() = default;
   ~DocumentModuleScriptFetcher() override = default;
 
   // Implements ModuleScriptFetcher.
-  void Fetch(FetchParameters&, ModuleGraphLevel, Client*) override;
+  void Fetch(FetchParameters&,
+             ResourceFetcher*,
+             ModuleGraphLevel,
+             Client*) override;
 
   // Implements ResourceClient
   void NotifyFinished(Resource*) override;
@@ -36,7 +39,6 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
  private:
   bool FetchIfLayeredAPI(FetchParameters&);
 
-  const Member<ResourceFetcher> fetcher_;
   Member<Client> client_;
 };
 

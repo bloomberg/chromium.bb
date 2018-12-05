@@ -30,32 +30,6 @@ using ExitCode = WorkerThread::ExitCode;
 
 namespace {
 
-class MockWorkerReportingProxy final : public WorkerReportingProxy {
- public:
-  MockWorkerReportingProxy() = default;
-  ~MockWorkerReportingProxy() override = default;
-
-  MOCK_METHOD1(DidCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
-  MOCK_METHOD0(DidInitializeWorkerContext, void());
-  MOCK_METHOD2(WillEvaluateClassicScriptMock,
-               void(size_t scriptSize, size_t cachedMetadataSize));
-  MOCK_METHOD1(DidEvaluateClassicScript, void(bool success));
-  MOCK_METHOD0(DidCloseWorkerGlobalScope, void());
-  MOCK_METHOD0(WillDestroyWorkerGlobalScope, void());
-  MOCK_METHOD0(DidTerminateWorkerThread, void());
-
-  void WillEvaluateClassicScript(size_t script_size,
-                                 size_t cached_metadata_size) override {
-    script_evaluation_event_.Signal();
-    WillEvaluateClassicScriptMock(script_size, cached_metadata_size);
-  }
-
-  void WaitUntilScriptEvaluation() { script_evaluation_event_.Wait(); }
-
- private:
-  WaitableEvent script_evaluation_event_;
-};
-
 // Used as a debugger task. Waits for a signal from the main thread.
 void WaitForSignalTask(WorkerThread* worker_thread,
                        WaitableEvent* waitable_event) {

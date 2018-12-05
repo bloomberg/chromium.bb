@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -23,7 +24,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
+#include "third_party/blink/renderer/core/workers/worker_thread_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -66,13 +67,8 @@ class TestModuleScriptLoaderClient final
 
 class ModuleScriptLoaderTestModulator final : public DummyModulator {
  public:
-  ModuleScriptLoaderTestModulator(
-      ScriptState* script_state,
-      scoped_refptr<const SecurityOrigin> security_origin,
-      ResourceFetcher* fetcher)
-      : script_state_(script_state),
-        security_origin_(std::move(security_origin)),
-        fetcher_(fetcher) {}
+  explicit ModuleScriptLoaderTestModulator(ScriptState* script_state)
+      : script_state_(script_state) {}
 
   ~ModuleScriptLoaderTestModulator() override = default;
 
@@ -101,25 +97,20 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
       EXPECT_EQ(ModuleScriptCustomFetchType::kWorkletAddModule,
                 custom_fetch_type);
       return MakeGarbageCollected<WorkletModuleScriptFetcher>(
-          Fetcher(), scope->GetModuleResponsesMap());
+          scope->GetModuleResponsesMap());
     }
     EXPECT_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-    return MakeGarbageCollected<DocumentModuleScriptFetcher>(Fetcher());
+    return MakeGarbageCollected<DocumentModuleScriptFetcher>();
   }
-
-  ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
   void Trace(blink::Visitor*) override;
 
  private:
   Member<ScriptState> script_state_;
-  scoped_refptr<const SecurityOrigin> security_origin_;
-  Member<ResourceFetcher> fetcher_;
   Vector<ModuleRequest> requests_;
 };
 
 void ModuleScriptLoaderTestModulator::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetcher_);
   visitor->Trace(script_state_);
   DummyModulator::Trace(visitor);
 }
@@ -130,7 +121,7 @@ class ModuleScriptLoaderTest : public PageTestBase {
   DISALLOW_COPY_AND_ASSIGN(ModuleScriptLoaderTest);
 
  public:
-  ModuleScriptLoaderTest() = default;
+  ModuleScriptLoaderTest();
   void SetUp() override;
 
   void InitializeForDocument();
@@ -148,57 +139,61 @@ class ModuleScriptLoaderTest : public PageTestBase {
 
   void RunUntilIdle() {
     base::SingleThreadTaskRunner* runner =
-        GetModulator()->Fetcher()->Context().GetLoadingTaskRunner().get();
+        fetcher_->Context().GetLoadingTaskRunner().get();
     static_cast<scheduler::FakeTaskRunner*>(runner)->RunUntilIdle();
   }
 
  protected:
+  const KURL url_;
+  const scoped_refptr<const SecurityOrigin> security_origin_;
+
+  Persistent<ResourceFetcher> fetcher_;
+
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
-  std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
+  std::unique_ptr<MockWorkerReportingProxy> reporting_proxy_;
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
   Persistent<WorkletGlobalScope> global_scope_;
 };
 
+ModuleScriptLoaderTest::ModuleScriptLoaderTest()
+    : url_("https://example.test"),
+      security_origin_(SecurityOrigin::Create(url_)) {}
+
 void ModuleScriptLoaderTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   PageTestBase::SetUp(IntSize(500, 500));
-  GetDocument().SetURL(KURL("https://example.test"));
-  GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
 }
 
 void ModuleScriptLoaderTest::InitializeForDocument() {
   auto* fetch_context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
-  auto* fetcher = ResourceFetcher::Create(fetch_context);
+  fetch_context->SetSecurityOrigin(security_origin_);
+  fetcher_ = ResourceFetcher::Create(fetch_context);
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
-      ToScriptStateForMainWorld(&GetFrame()), GetDocument().GetSecurityOrigin(),
-      fetcher);
+      ToScriptStateForMainWorld(&GetFrame()));
 }
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
   auto* fetch_context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
-  auto* fetcher = ResourceFetcher::Create(fetch_context);
-  reporting_proxy_ =
-      std::make_unique<MainThreadWorkletReportingProxy>(&GetDocument());
+  fetch_context->SetSecurityOrigin(security_origin_);
+  fetcher_ = ResourceFetcher::Create(fetch_context);
+  reporting_proxy_ = std::make_unique<MockWorkerReportingProxy>();
   auto creation_params = std::make_unique<GlobalScopeCreationParams>(
-      GetDocument().Url(), mojom::ScriptType::kModule,
-      GetDocument().UserAgent(), nullptr /* web_worker_fetch_context */,
-      Vector<CSPHeaderAndType>(), GetDocument().GetReferrerPolicy(),
-      GetDocument().GetSecurityOrigin(), GetDocument().IsSecureContext(),
-      GetDocument().GetHttpsState(), nullptr /* worker_clients */,
-      GetDocument().AddressSpace(),
-      OriginTrialContext::GetTokens(&GetDocument()).get(),
-      base::UnguessableToken::Create(), nullptr /* worker_settings */,
-      kV8CacheOptionsDefault,
+      url_, mojom::ScriptType::kModule, "UserAgent",
+      nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
+      network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
+      true /* is_secure_context */, HttpsState::kModern,
+      nullptr /* worker_clients */, mojom::IPAddressSpace::kLocal,
+      nullptr /* origin_trial_token */, base::UnguessableToken::Create(),
+      nullptr /* worker_settings */, kV8CacheOptionsDefault,
       MakeGarbageCollected<WorkletModuleResponsesMap>());
   global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
       std::move(creation_params), *reporting_proxy_, &GetFrame());
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context",
                                                                NullURL());
   modulator_ = MakeGarbageCollected<ModuleScriptLoaderTestModulator>(
-      global_scope_->ScriptController()->GetScriptState(),
-      GetDocument().GetSecurityOrigin(), fetcher);
+      global_scope_->ScriptController()->GetScriptState());
 }
 
 void ModuleScriptLoaderTest::TestFetchDataURL(
@@ -206,12 +201,10 @@ void ModuleScriptLoaderTest::TestFetchDataURL(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,export default 'grapes';");
-  auto* fetch_client_settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
-  ModuleScriptLoader::Fetch(
-      ModuleScriptFetchRequest::CreateForTest(url),
-      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
-      GetModulator(), custom_fetch_type, registry, client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), custom_fetch_type, registry,
+                            client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchDataURL) {
@@ -265,13 +258,11 @@ void ModuleScriptLoaderTest::TestInvalidSpecifier(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url("data:text/javascript,import 'invalid';export default 'grapes';");
-  auto* fetch_client_settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
   GetModulator()->SetModuleRequests({"invalid"});
-  ModuleScriptLoader::Fetch(
-      ModuleScriptFetchRequest::CreateForTest(url),
-      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
-      GetModulator(), custom_fetch_type, registry, client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), custom_fetch_type, registry,
+                            client);
 }
 
 TEST_F(ModuleScriptLoaderTest, InvalidSpecifier) {
@@ -312,12 +303,10 @@ void ModuleScriptLoaderTest::TestFetchInvalidURL(
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
   KURL url;
   EXPECT_FALSE(url.IsValid());
-  auto* fetch_client_settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
-  ModuleScriptLoader::Fetch(
-      ModuleScriptFetchRequest::CreateForTest(url),
-      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
-      GetModulator(), custom_fetch_type, registry, client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), custom_fetch_type, registry,
+                            client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchInvalidURL) {
@@ -353,14 +342,12 @@ void ModuleScriptLoaderTest::TestFetchURL(
   KURL url("https://example.test/module.js");
   url_test_helpers::RegisterMockedURLLoad(
       url, test::CoreTestDataPath("module.js"), "text/javascript");
-  auto* fetch_client_settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  ModuleScriptLoader::Fetch(
-      ModuleScriptFetchRequest::CreateForTest(url),
-      fetch_client_settings_object, ModuleGraphLevel::kTopLevelModuleFetch,
-      GetModulator(), custom_fetch_type, registry, client);
+  ModuleScriptLoader::Fetch(ModuleScriptFetchRequest::CreateForTest(url),
+                            fetcher_, ModuleGraphLevel::kTopLevelModuleFetch,
+                            GetModulator(), custom_fetch_type, registry,
+                            client);
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchURL) {

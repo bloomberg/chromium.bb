@@ -468,12 +468,11 @@ class ModulePreloadTestModulator final : public DummyModulator {
   ModulePreloadTestModulator(const ModulePreloadTestParams* params)
       : params_(params), fetched_(false) {}
 
-  void FetchSingle(
-      const ModuleScriptFetchRequest& request,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptCustomFetchType custom_fetch_type,
-      SingleModuleClient*) override {
+  void FetchSingle(const ModuleScriptFetchRequest& request,
+                   ResourceFetcher*,
+                   ModuleGraphLevel,
+                   ModuleScriptCustomFetchType custom_fetch_type,
+                   SingleModuleClient*) override {
     fetched_ = true;
 
     EXPECT_EQ(KURL(NullURL(), params_->href), request.Url());

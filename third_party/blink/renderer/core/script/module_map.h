@@ -16,11 +16,11 @@
 
 namespace blink {
 
-class FetchClientSettingsObjectSnapshot;
 class Modulator;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptLoaderRegistry;
+class ResourceFetcher;
 class SingleModuleClient;
 enum class ModuleGraphLevel;
 enum class ModuleScriptCustomFetchType;
@@ -44,7 +44,7 @@ class CORE_EXPORT ModuleMap final : public GarbageCollected<ModuleMap>,
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
   void FetchSingleModuleScript(
       const ModuleScriptFetchRequest&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType,
       SingleModuleClient*);

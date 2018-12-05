@@ -9,21 +9,18 @@
 namespace blink {
 
 WorkletModuleScriptFetcher::WorkletModuleScriptFetcher(
-    ResourceFetcher* fetcher,
     WorkletModuleResponsesMap* module_responses_map)
-    : fetcher_(fetcher), module_responses_map_(module_responses_map) {}
+    : module_responses_map_(module_responses_map) {}
 
-void WorkletModuleScriptFetcher::Trace(blink::Visitor* visitor) {
-  ModuleScriptFetcher::Trace(visitor);
-  visitor->Trace(fetcher_);
-}
-
-void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
-                                       ModuleGraphLevel level,
-                                       ModuleScriptFetcher::Client* client) {
+void WorkletModuleScriptFetcher::Fetch(
+    FetchParameters& fetch_params,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
+    ModuleGraphLevel level,
+    ModuleScriptFetcher::Client* client) {
   if (module_responses_map_->GetEntry(
           fetch_params.Url(), client,
-          fetcher_->Context().GetLoadingTaskRunner())) {
+          fetch_client_settings_object_fetcher->Context()
+              .GetLoadingTaskRunner())) {
     return;
   }
 
@@ -38,8 +35,8 @@ void WorkletModuleScriptFetcher::Fetch(FetchParameters& fetch_params,
   // need to handle that case, maybe by having a way to restart fetches in a
   // different global scope?
   url_ = fetch_params.Url();
-  ScriptResource::Fetch(fetch_params, fetcher_.Get(), this,
-                        ScriptResource::kNoStreaming);
+  ScriptResource::Fetch(fetch_params, fetch_client_settings_object_fetcher,
+                        this, ScriptResource::kNoStreaming);
 }
 
 void WorkletModuleScriptFetcher::NotifyFinished(Resource* resource) {

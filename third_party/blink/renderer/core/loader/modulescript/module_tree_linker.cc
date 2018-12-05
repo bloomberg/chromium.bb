@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -20,7 +21,7 @@ namespace blink {
 
 void ModuleTreeLinker::Fetch(
     const KURL& url,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
@@ -28,8 +29,8 @@ void ModuleTreeLinker::Fetch(
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object, destination, modulator, custom_fetch_type,
-      registry, client);
+      fetch_client_settings_object_fetcher, destination, modulator,
+      custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRoot(url, options);
   DCHECK(fetcher->IsFetching());
@@ -37,7 +38,7 @@ void ModuleTreeLinker::Fetch(
 
 void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -45,21 +46,22 @@ void ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleTreeClient* client) {
   DCHECK(module_script);
   ModuleTreeLinker* fetcher = MakeGarbageCollected<ModuleTreeLinker>(
-      fetch_client_settings_object, destination, modulator, custom_fetch_type,
-      registry, client);
+      fetch_client_settings_object_fetcher, destination, modulator,
+      custom_fetch_type, registry, client);
   registry->AddFetcher(fetcher);
   fetcher->FetchRootInline(module_script);
   DCHECK(fetcher->IsFetching());
 }
 
 ModuleTreeLinker::ModuleTreeLinker(
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     Modulator* modulator,
     ModuleScriptCustomFetchType custom_fetch_type,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client)
-    : fetch_client_settings_object_(fetch_client_settings_object),
+    : fetch_client_settings_object_fetcher_(
+          fetch_client_settings_object_fetcher),
       destination_(destination),
       modulator_(modulator),
       custom_fetch_type_(custom_fetch_type),
@@ -71,7 +73,7 @@ ModuleTreeLinker::ModuleTreeLinker(
 }
 
 void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetch_client_settings_object_);
+  visitor->Trace(fetch_client_settings_object_fetcher_);
   visitor->Trace(modulator_);
   visitor->Trace(registry_);
   visitor->Trace(client_);
@@ -228,8 +230,8 @@ void ModuleTreeLinker::InitiateInternalModuleScriptGraphFetching(
   ++num_incomplete_fetches_;
 
   // [IMSGF] Step 2. Fetch a single module script given ...
-  modulator_->FetchSingle(request, fetch_client_settings_object_.Get(), level,
-                          custom_fetch_type_, this);
+  modulator_->FetchSingle(request, fetch_client_settings_object_fetcher_.Get(),
+                          level, custom_fetch_type_, this);
 
   // [IMSGF] Step 3-- are executed when NotifyModuleLoadFinished() is called.
 }

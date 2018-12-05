@@ -36,8 +36,7 @@ Modulator* Modulator::From(ScriptState* script_state) {
     return modulator;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   if (auto* document = DynamicTo<Document>(execution_context)) {
-    modulator =
-        DocumentModulatorImpl::Create(script_state, document->Fetcher());
+    modulator = DocumentModulatorImpl::Create(script_state);
     Modulator::SetModulator(script_state, modulator);
 
     // See comment in LocalDOMWindow::modulator_ for this workaround.
