@@ -22,4 +22,8 @@ NSString* const CIDetectorTypeText = @"CIDetectorTypeText";
 #if !defined(MAC_OS_X_VERSION_10_14) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_14
 NSString* const NSAppearanceNameDarkAqua = @"NSAppearanceNameDarkAqua";
+NSString* const NSAppearanceNameAccessibilityHighContrastDarkAqua =
+    @"NSAppearanceNameAccessibilityHighContrastDarkAqua";
+NSString* const NSAppearanceNameAccessibilityHighContrastAqua =
+    @"NSAppearanceNameAccessibilityHighContrastAqua";
 #endif

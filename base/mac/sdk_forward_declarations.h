@@ -357,6 +357,10 @@ typedef NSString* NSAppearanceName;
 @end
 
 BASE_EXPORT extern NSAppearanceName const NSAppearanceNameDarkAqua;
+BASE_EXPORT extern NSAppearanceName const
+    NSAppearanceNameAccessibilityHighContrastDarkAqua;
+BASE_EXPORT extern NSAppearanceName const
+    NSAppearanceNameAccessibilityHighContrastAqua;
 
 #endif
 

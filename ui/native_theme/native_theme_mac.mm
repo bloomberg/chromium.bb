@@ -7,10 +7,13 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #import "skia/ext/skia_utils_mac.h"
+#include "ui/base/ui_base_features.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -19,6 +22,41 @@
 @interface NSWorkspace (Redeclarations)
 
 @property(readonly) BOOL accessibilityDisplayShouldIncreaseContrast;
+
+@end
+
+// Helper object to respond to light mode/dark mode changeovers.
+@interface NativeThemeEffectiveAppearanceObserver : NSObject
+@end
+
+@implementation NativeThemeEffectiveAppearanceObserver
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    if (@available(macOS 10.14, *)) {
+      [NSApp addObserver:self
+              forKeyPath:@"effectiveAppearance"
+                 options:0
+                 context:nullptr];
+    }
+  }
+  return self;
+}
+
+- (void)dealloc {
+  if (@available(macOS 10.14, *)) {
+    [NSApp removeObserver:self forKeyPath:@"effectiveAppearance"];
+  }
+  [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString*)forKeyPath
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+}
 
 @end
 
@@ -113,7 +151,39 @@ SkColor NativeThemeMac::ApplySystemControlTint(SkColor color) {
   return color;
 }
 
+// static
+void NativeThemeMac::MaybeUpdateBrowserAppearance() {
+  if (@available(macOS 10.14, *)) {
+    if (!base::FeatureList::IsEnabled(features::kDarkMode)) {
+      ui::NativeTheme* theme = ui::NativeTheme::GetInstanceForNativeUi();
+      NSAppearanceName new_appearance_name;
+      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kForceDarkMode)) {
+        new_appearance_name =
+            theme->UsesHighContrastColors()
+                ? NSAppearanceNameAccessibilityHighContrastDarkAqua
+                : NSAppearanceNameDarkAqua;
+      } else {
+        new_appearance_name =
+            theme->UsesHighContrastColors()
+                ? NSAppearanceNameAccessibilityHighContrastAqua
+                : NSAppearanceNameAqua;
+      }
+      [NSApp setAppearance:[NSAppearance appearanceNamed:new_appearance_name]];
+    }
+  }
+}
+
 SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
+  // Empirically, currentAppearance is incorrect when switching
+  // appearances. It's unclear exactly why right now, so work
+  // around it for the time being by resynchronizing.
+  if (@available(macOS 10.14, *)) {
+    NSAppearance* effective_appearance = [NSApp effectiveAppearance];
+    if (![effective_appearance isEqual:[NSAppearance currentAppearance]]) {
+      [NSAppearance setCurrentAppearance:effective_appearance];
+    }
+  }
   // Even with --secondary-ui-md, menus use the platform colors and styling, and
   // Mac has a couple of specific color overrides, documented below.
   switch (color_id) {
@@ -214,9 +284,26 @@ bool NativeThemeMac::SystemDarkModeEnabled() const {
 }
 
 NativeThemeMac::NativeThemeMac() {
+  if (base::FeatureList::IsEnabled(features::kDarkMode)) {
+    appearance_observer_.reset(
+        [[NativeThemeEffectiveAppearanceObserver alloc] init]);
+  }
+  if (@available(macOS 10.10, *)) {
+    high_contrast_notification_token_ = [[NSNotificationCenter defaultCenter]
+        addObserverForName:
+            NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification* notification) {
+                  ui::NativeThemeMac::MaybeUpdateBrowserAppearance();
+                  ui::NativeTheme::GetInstanceForNativeUi()->NotifyObservers();
+                }];
+  }
 }
 
 NativeThemeMac::~NativeThemeMac() {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:high_contrast_notification_token_];
 }
 
 void NativeThemeMac::PaintSelectedMenuItem(cc::PaintCanvas* canvas,

@@ -589,6 +589,7 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   if (!IsInitialized())
     return;
 
+  tint_ = GetTint();
   RefreshBackground();
   location_icon_view_->Update(/*suppress_animations=*/false);
   RefreshClearAllButtonIcon();

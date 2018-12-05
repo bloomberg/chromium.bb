@@ -38,6 +38,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
@@ -88,6 +89,11 @@ int ChromeBrowserMainPartsMac::PreEarlyInitialization() {
   }
 
   return ChromeBrowserMainPartsPosix::PreEarlyInitialization();
+}
+
+void ChromeBrowserMainPartsMac::PostEarlyInitialization() {
+  ui::NativeThemeMac::MaybeUpdateBrowserAppearance();
+  ChromeBrowserMainPartsPosix::PostEarlyInitialization();
 }
 
 void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
