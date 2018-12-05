@@ -106,9 +106,10 @@ class SequenceManagerTest : public SequenceManagerTestBase {
     test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(1));
     start_time_ = GetTickClock()->NowTicks();
 
-    manager_ =
-        SequenceManagerForTest::Create(nullptr, ThreadTaskRunnerHandle::Get(),
-                                       test_task_runner_->GetMockTickClock());
+    manager_ = SequenceManagerForTest::Create(
+        nullptr, ThreadTaskRunnerHandle::Get(),
+        test_task_runner_->GetMockTickClock(),
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
   }
 
   const TickClock* GetTickClock() {
@@ -179,7 +180,8 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
 
     manager_ = SequenceManagerForTest::Create(
         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
-        &mock_clock_);
+        &mock_clock_,
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
   }
 
   void SetUpWithMessagePump() {
@@ -187,7 +189,8 @@ class SequenceManagerTestWithMessageLoop : public SequenceManagerTestBase {
     start_time_ = mock_clock_.NowTicks();
     manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(
-            std::make_unique<MessagePumpDefault>(), &mock_clock_));
+            std::make_unique<MessagePumpDefault>(), &mock_clock_),
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
     // ThreadControllerWithMessagePumpImpl doesn't provide
     // a default task runner.
     default_task_queue_ = manager_->CreateTaskQueueWithType<TestTaskQueue>(
@@ -214,7 +217,8 @@ class SequenceManagerTestWithMessagePump : public SequenceManagerTestBase {
 
     manager_ = SequenceManagerForTest::Create(
         message_loop_->GetMessageLoopBase(), ThreadTaskRunnerHandle::Get(),
-        &mock_clock_);
+        &mock_clock_,
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
   }
 
   void SetUpWithMessagePump() {
@@ -222,7 +226,8 @@ class SequenceManagerTestWithMessagePump : public SequenceManagerTestBase {
     start_time_ = mock_clock_.NowTicks();
     manager_ = SequenceManagerForTest::Create(
         std::make_unique<ThreadControllerWithMessagePumpImpl>(
-            std::make_unique<MessagePumpDefault>(), &mock_clock_));
+            std::make_unique<MessagePumpDefault>(), &mock_clock_),
+        SequenceManager::Settings{.randomised_sampling_enabled = false});
     // ThreadControllerWithMessagePumpImpl doesn't provide
     // a default task runner.
     default_task_queue_ = manager_->CreateTaskQueueWithType<TestTaskQueue>(
@@ -299,7 +304,8 @@ TEST_P(SequenceManagerTestWithCustomInitialization, NowNotCalledIfUnneeded) {
   TestCountUsesTimeSource test_count_uses_time_source;
 
   manager_ = SequenceManagerForTest::Create(
-      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source);
+      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
+      SequenceManager::Settings{.randomised_sampling_enabled = false});
   manager_->SetWorkBatchSize(6);
 
   CreateTaskQueues(3u);
@@ -322,7 +328,8 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   TestCountUsesTimeSource test_count_uses_time_source;
 
   manager_ = SequenceManagerForTest::Create(
-      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source);
+      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
+      SequenceManager::Settings{.randomised_sampling_enabled = false});
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
@@ -347,7 +354,8 @@ TEST_P(SequenceManagerTestWithCustomInitialization,
   TestCountUsesTimeSource test_count_uses_time_source;
 
   manager_ = SequenceManagerForTest::Create(
-      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source);
+      nullptr, ThreadTaskRunnerHandle::Get(), &test_count_uses_time_source,
+      SequenceManager::Settings{.randomised_sampling_enabled = false});
   manager_->SetWorkBatchSize(6);
   manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
@@ -3377,8 +3385,10 @@ TEST_P(SequenceManagerTestWithCustomInitialization, DefaultTaskRunnerSupport) {
       MakeRefCounted<TestSimpleTaskRunner>();
   {
     std::unique_ptr<SequenceManagerForTest> manager =
-        SequenceManagerForTest::Create(message_loop.GetMessageLoopBase(),
-                                       message_loop.task_runner(), nullptr);
+        SequenceManagerForTest::Create(
+            message_loop.GetMessageLoopBase(), message_loop.task_runner(),
+            nullptr,
+            SequenceManager::Settings{.randomised_sampling_enabled = false});
     manager->SetDefaultTaskRunner(custom_task_runner);
     DCHECK_EQ(custom_task_runner, message_loop.task_runner());
   }
