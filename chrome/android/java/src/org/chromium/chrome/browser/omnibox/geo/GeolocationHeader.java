@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
@@ -404,7 +404,7 @@ public class GeolocationHeader {
                 WebsitePreferenceBridge.isPermissionControlledByDSE(
                         ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, uri.toString(),
                         isIncognito)
-                && locationContentSettingForUrl(uri, isIncognito) == ContentSetting.ALLOW;
+                && locationContentSettingForUrl(uri, isIncognito) == ContentSettingValues.ALLOW;
         return !enabled;
     }
 
@@ -412,7 +412,8 @@ public class GeolocationHeader {
      * Returns the location permission for sharing their location with url (e.g. via the
      * geolocation infobar).
      */
-    static ContentSetting locationContentSettingForUrl(Uri uri, boolean isIncognito) {
+    static @ContentSettingValues @Nullable Integer locationContentSettingForUrl(
+            Uri uri, boolean isIncognito) {
         PermissionInfo locationSettings = new PermissionInfo(
                 PermissionInfo.Type.GEOLOCATION, uri.toString(), null, isIncognito);
         return locationSettings.getContentSetting();
@@ -496,11 +497,13 @@ public class GeolocationHeader {
      */
     @Permission
     private static int getDomainPermission(String url, boolean isIncognito) {
-        ContentSetting domainPermission = locationContentSettingForUrl(Uri.parse(url), isIncognito);
+        @ContentSettingValues
+        @Nullable
+        Integer domainPermission = locationContentSettingForUrl(Uri.parse(url), isIncognito);
         switch (domainPermission) {
-            case ALLOW:
+            case ContentSettingValues.ALLOW:
                 return Permission.GRANTED;
-            case ASK:
+            case ContentSettingValues.ASK:
                 return Permission.PROMPT;
             default:
                 return Permission.BLOCKED;

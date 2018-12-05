@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -103,7 +103,7 @@ public class PermissionUpdateInfobarTest {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    geolocationSettings.setContentSetting(ContentSetting.ALLOW);
+                    geolocationSettings.setContentSetting(ContentSettingValues.ALLOW);
                 }
             });
 
@@ -144,7 +144,7 @@ public class PermissionUpdateInfobarTest {
             ThreadUtils.runOnUiThreadBlocking(new Runnable() {
                 @Override
                 public void run() {
-                    geolocationSettings.setContentSetting(ContentSetting.DEFAULT);
+                    geolocationSettings.setContentSetting(ContentSettingValues.DEFAULT);
                 }
             });
         }

@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.notifications.NotificationChannelStatus;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 import org.chromium.chrome.browser.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 
@@ -194,7 +194,7 @@ public class SiteChannelsManagerTest {
     public void testBlockingPermissionInIncognitoCreatesNoChannels() throws Exception {
         PermissionInfo info = new PermissionInfo(
                 PermissionInfo.Type.NOTIFICATION, "https://example-incognito.com", null, true);
-        ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(ContentSetting.BLOCK));
+        ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(ContentSettingValues.BLOCK));
         assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
     }
 

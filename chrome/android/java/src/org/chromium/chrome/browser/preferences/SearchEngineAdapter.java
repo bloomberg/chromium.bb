@@ -30,7 +30,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
@@ -502,14 +502,14 @@ public class SearchEngineAdapter extends BaseAdapter
 
         PermissionInfo settings =
                 new PermissionInfo(PermissionInfo.Type.NOTIFICATION, url, null, false);
-        boolean notificationsAllowed = settings.getContentSetting() == ContentSetting.ALLOW
+        boolean notificationsAllowed = settings.getContentSetting() == ContentSettingValues.ALLOW
                 && WebsitePreferenceBridge.isPermissionControlledByDSE(
-                           ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, false);
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, url, false);
 
         settings = new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
-        boolean locationAllowed = settings.getContentSetting() == ContentSetting.ALLOW
+        boolean locationAllowed = settings.getContentSetting() == ContentSettingValues.ALLOW
                 && WebsitePreferenceBridge.isPermissionControlledByDSE(
-                           ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, url, false);
+                        ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, url, false);
 
         boolean systemLocationAllowed =
                 LocationUtils.getInstance().isSystemLocationSettingEnabled();
@@ -564,7 +564,7 @@ public class SearchEngineAdapter extends BaseAdapter
 
         PermissionInfo locationSettings =
                 new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
-        return locationSettings.getContentSetting() == ContentSetting.ALLOW;
+        return locationSettings.getContentSetting() == ContentSettingValues.ALLOW;
     }
 
     private int computeStartIndexForRecentSearchEngines() {
