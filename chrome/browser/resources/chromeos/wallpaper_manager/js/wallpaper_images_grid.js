@@ -16,6 +16,12 @@ cr.define('wallpapers', function() {
   var DAILY_REFRESH_IMAGES_NUM = 5;
 
   /**
+   * The minimum number of images a collection should contain to enable daily
+   * refresh.
+   */
+  var DAILY_REFRESH_MIN_IMAGES_COUNT = 13;
+
+  /**
    * The following values should be kept in sync with the style sheet.
    */
   var GRID_SIZE_CSS = 160;
@@ -376,9 +382,10 @@ cr.define('wallpapers', function() {
         // item is constructed in function itemConstructor below.
         this.pendingItems_ = 0;
 
-        // Add a daily refresh item as the first element of the grid when
-        // showing online wallpapers.
-        if (dataModel.item(0).source == Constants.WallpaperSourceEnum.Online) {
+        // Add a daily refresh item as the first element of the grid if an
+        // online collection contains sufficient number of images.
+        if (dataModel.length >= DAILY_REFRESH_MIN_IMAGES_COUNT &&
+            dataModel.item(0).source == Constants.WallpaperSourceEnum.Online) {
           dataModel.splice(
               0, 0, {isDailyRefreshItem: true, availableOffline: false});
         }
