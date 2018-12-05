@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -41,6 +42,10 @@
 #include "ash/shell.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 #endif
 
 using ::testing::_;
@@ -163,9 +168,9 @@ class ControlPictureInPictureWindowControllerBrowserTest
 };
 
 // Checks the creation of the window controller, as well as basic window
-// creation and visibility.
+// creation, visibility and activation.
 IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
-                       CreationAndVisibility) {
+                       CreationAndVisibilityAndActivation) {
   GURL test_page_url = ui_test_utils::GetTestUrl(
       base::FilePath(base::FilePath::kCurrentDirectory),
       base::FilePath(
@@ -181,13 +186,24 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 
   ASSERT_TRUE(window_controller()->GetWindowForTesting() != nullptr);
   EXPECT_FALSE(window_controller()->GetWindowForTesting()->IsVisible());
-
   bool result = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       active_web_contents, "enterPictureInPicture();", &result));
   EXPECT_TRUE(result);
 
   EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+#if defined(TOOLKIT_VIEWS)
+  auto* overlay_window = window_controller()->GetWindowForTesting();
+  gfx::NativeWindow native_window =
+      static_cast<OverlayWindowViews*>(overlay_window)->GetNativeWindow();
+#if defined(OS_CHROMEOS) || \
+    (defined(MAC_OS_X_VERSION_10_12) && !defined(MAC_OS_VERSION_10_13))
+  EXPECT_FALSE(platform_util::IsWindowActive(native_window));
+#else
+  EXPECT_TRUE(platform_util::IsWindowActive(native_window));
+#endif
+#endif
 }
 
 #if !defined(OS_CHROMEOS)

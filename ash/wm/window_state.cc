@@ -679,13 +679,22 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds,
 
 void WindowState::UpdatePipState(bool was_pip) {
   auto* widget = views::Widget::GetWidgetForNativeWindow(window());
-
   if (IsPip()) {
-    Shell::Get()->focus_cycler()->AddWidget(widget);
+    // widget may not exit in some unit tests.
+    // TODO(oshima): Fix unit tests and add DCHECK.
+    if (widget) {
+      widget->widget_delegate()->set_can_activate(false);
+      if (widget->IsActive())
+        widget->Deactivate();
+      Shell::Get()->focus_cycler()->AddWidget(widget);
+    }
     ::wm::SetWindowVisibilityAnimationType(
         window(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT);
   } else if (was_pip) {
-    Shell::Get()->focus_cycler()->RemoveWidget(widget);
+    if (widget) {
+      widget->widget_delegate()->set_can_activate(true);
+      Shell::Get()->focus_cycler()->RemoveWidget(widget);
+    }
     ::wm::SetWindowVisibilityAnimationType(
         window(), ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
   }
