@@ -103,7 +103,7 @@ void PrimaryAccountMutatorImpl::LegacyCompletePendingPrimaryAccountSignin() {
 }
 
 void PrimaryAccountMutatorImpl::LegacyMergeSigninCredentialIntoCookieJar() {
-  NOTIMPLEMENTED();
+  signin_manager_->MergeSigninCredentialIntoCookieJar();
 }
 
 bool PrimaryAccountMutatorImpl::LegacyIsPrimaryAccountAuthInProgress() const {
