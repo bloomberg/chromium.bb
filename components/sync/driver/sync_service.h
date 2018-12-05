@@ -112,14 +112,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     ACTIVE
   };
 
-  // Passed as an argument to RequestStop to control whether or not the sync
-  // engine should clear its data directory when it shuts down. See
-  // RequestStop for more information.
-  enum SyncStopDataFate {
-    KEEP_DATA,
-    CLEAR_DATA,
-  };
-
   ~SyncService() override {}
 
   virtual SyncUserSettings* GetUserSettings() = 0;

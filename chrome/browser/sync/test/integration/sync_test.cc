@@ -1324,6 +1324,6 @@ bool SyncTest::ClearServerData(ProfileSyncServiceHarness* harness) {
 
   // Our birthday is invalidated on the server here so restart sync to get
   // the new birthday from the server.
-  harness->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  harness->StopSyncServiceAndClearData();
   return harness->StartSyncService();
 }

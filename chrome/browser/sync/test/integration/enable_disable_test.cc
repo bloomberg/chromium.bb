@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   ASSERT_GT(initial_updates_downloaded, 0);
 
   // Stop and restart Sync.
-  GetClient(0)->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  GetClient(0)->StopSyncServiceAndClearData();
   GetClient(0)->StartSyncService();
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
@@ -367,7 +367,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   ASSERT_GT(GetNumUpdatesDownloadedInLastCycle(), 0);
 
   // Stop and restart Sync.
-  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  GetClient(0)->StopSyncServiceWithoutClearingData();
   GetClient(0)->StartSyncService();
   ASSERT_TRUE(GetSyncService(0)->IsSyncFeatureActive());
 
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
   ASSERT_GT(GetNumUpdatesDownloadedInLastCycle(), 0);
 
   // Stop Sync and let it start up again in standalone transport mode.
-  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  GetClient(0)->StopSyncServiceWithoutClearingData();
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion(
       /*skip_passphrase_verification=*/false));
   ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,

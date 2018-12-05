@@ -186,6 +186,14 @@ class ProfileSyncService : public syncer::SyncService,
     MANUAL_START,
   };
 
+  // Passed as an argument to RequestStop to control whether or not the sync
+  // engine should clear its data directory when it shuts down. See
+  // RequestStop for more information.
+  enum SyncStopDataFate {
+    KEEP_DATA,
+    CLEAR_DATA,
+  };
+
   // Bundles the arguments for ProfileSyncService construction. This is a
   // movable struct. Because of the non-POD data members, it needs out-of-line
   // constructors, so in particular the move constructor needs to be

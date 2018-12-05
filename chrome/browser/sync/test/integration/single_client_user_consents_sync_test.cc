@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(
   sync_consent.set_status(UserConsentTypes::GIVEN);
   consent_service->RecordSyncConsent(GetAccountId(), sync_consent);
 
-  GetClient(0)->StopSyncService(syncer::SyncService::CLEAR_DATA);
+  GetClient(0)->StopSyncServiceAndClearData();
   ASSERT_TRUE(GetClient(0)->StartSyncService());
 
   EXPECT_TRUE(ExpectUserConsents({specifics}));

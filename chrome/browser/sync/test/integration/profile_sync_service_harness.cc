@@ -314,10 +314,14 @@ void ProfileSyncServiceHarness::FinishSyncSetup() {
   service()->GetUserSettings()->SetFirstSetupComplete();
 }
 
-void ProfileSyncServiceHarness::StopSyncService(
-    syncer::SyncService::SyncStopDataFate data_fate) {
-  DVLOG(1) << "Requesting stop for service.";
-  service()->RequestStop(data_fate);
+void ProfileSyncServiceHarness::StopSyncServiceAndClearData() {
+  DVLOG(1) << "Requesting stop for service and clearing data.";
+  service()->StopAndClear();
+}
+
+void ProfileSyncServiceHarness::StopSyncServiceWithoutClearingData() {
+  DVLOG(1) << "Requesting stop for service without clearing data.";
+  service()->GetUserSettings()->SetSyncRequested(false);
 }
 
 bool ProfileSyncServiceHarness::StartSyncService() {

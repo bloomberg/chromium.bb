@@ -108,10 +108,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientPollingSyncTest, ShouldPollOnStartup) {
   DisableNotificationsForClient(1);
   // Make sure no extra sync cycles get triggered by test infrastructure.
   StopConfigurationRefresher();
-  // Note: It's important to specify KEEP_DATA here - if we CLEAR_DATA, then
+  // Note: It's important to *not* clear data here - if we clear data, then
   // we'll do a regular GetUpdates at the next startup, so there'd be no need
   // for a poll.
-  GetClient(1)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  GetClient(1)->StopSyncServiceWithoutClearingData();
 
   ASSERT_TRUE(OpenTab(0, GURL(kURL1)));
   SessionCountMatchChecker server_checker(4, GetSyncService(0),
