@@ -767,7 +767,7 @@ void ArcNotificationContentView::GetAccessibleNodeData(
   if (surface_ && surface_->GetAXTreeId() != ui::AXTreeIDUnknown()) {
     node_data->role = ax::mojom::Role::kClient;
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                  surface_->GetAXTreeId());
+                                  surface_->GetAXTreeId().ToString());
   } else {
     node_data->role = ax::mojom::Role::kButton;
     node_data->AddStringAttribute(

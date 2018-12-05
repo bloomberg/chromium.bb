@@ -873,3 +873,12 @@ enum TreeOrder {
    // First node is after the second one.
   kAfter,
 };
+
+// For internal use by ui::AXTreeID / ax::mojom::AXTreeID.
+enum AXTreeIDType {
+  kUnknown,  // The Tree ID is unknown.
+  kDesktop,  // The Tree ID is the desktop / root tree, which doesn't
+             // need to have an unguessable token.
+  kToken,    // Every other tree ID must have a valid unguessable token.
+};
+

@@ -21,8 +21,7 @@ AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(int process_id, int routing_id) {
   if (it != frame_to_ax_tree_id_map_.end())
     return it->second;
 
-  AXTreeID new_id =
-      AXTreeID::FromString(base::IntToString(++ax_tree_id_counter_));
+  AXTreeID new_id = AXTreeID::CreateNewAXTreeID();
   frame_to_ax_tree_id_map_[frame_id] = new_id;
   ax_tree_to_frame_id_map_[new_id] = frame_id;
 
@@ -42,8 +41,7 @@ AXTreeID AXTreeIDRegistry::GetOrCreateAXTreeID(AXHostDelegate* delegate) {
     if (it.second == delegate)
       return it.first;
   }
-  AXTreeID new_id =
-      AXTreeID::FromString(base::IntToString(++ax_tree_id_counter_));
+  AXTreeID new_id = AXTreeID::CreateNewAXTreeID();
   id_to_host_delegate_[new_id] = delegate;
   return new_id;
 }
@@ -72,7 +70,7 @@ void AXTreeIDRegistry::RemoveAXTreeID(AXTreeID ax_tree_id) {
     id_to_host_delegate_.erase(action_it);
 }
 
-AXTreeIDRegistry::AXTreeIDRegistry() : ax_tree_id_counter_(-1) {
+AXTreeIDRegistry::AXTreeIDRegistry() {
   // Always populate default desktop tree value (0 -> 0, 0).
   GetOrCreateAXTreeID(0, 0);
 }

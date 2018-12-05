@@ -1420,6 +1420,10 @@ TEST(AXTreeTest, SkipIgnoredNodes) {
 }
 
 TEST(AXTreeTest, ChildTreeIds) {
+  ui::AXTreeID tree_id_1 = ui::AXTreeID::CreateNewAXTreeID();
+  ui::AXTreeID tree_id_2 = ui::AXTreeID::CreateNewAXTreeID();
+  ui::AXTreeID tree_id_3 = ui::AXTreeID::CreateNewAXTreeID();
+
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(4);
@@ -1429,47 +1433,42 @@ TEST(AXTreeTest, ChildTreeIds) {
   initial_state.nodes[0].child_ids.push_back(4);
   initial_state.nodes[1].id = 2;
   initial_state.nodes[1].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, "92");
+      ax::mojom::StringAttribute::kChildTreeId, tree_id_2.ToString());
   initial_state.nodes[2].id = 3;
   initial_state.nodes[2].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, "93");
+      ax::mojom::StringAttribute::kChildTreeId, tree_id_3.ToString());
   initial_state.nodes[3].id = 4;
   initial_state.nodes[3].AddStringAttribute(
-      ax::mojom::StringAttribute::kChildTreeId, "93");
+      ax::mojom::StringAttribute::kChildTreeId, tree_id_3.ToString());
   AXTree tree(initial_state);
 
-  auto child_tree_91_nodes =
-      tree.GetNodeIdsForChildTreeId(AXTreeID::FromString("91"));
-  EXPECT_EQ(0U, child_tree_91_nodes.size());
+  auto child_tree_1_nodes = tree.GetNodeIdsForChildTreeId(tree_id_1);
+  EXPECT_EQ(0U, child_tree_1_nodes.size());
 
-  auto child_tree_92_nodes =
-      tree.GetNodeIdsForChildTreeId(AXTreeID::FromString("92"));
-  EXPECT_EQ(1U, child_tree_92_nodes.size());
-  EXPECT_TRUE(base::ContainsKey(child_tree_92_nodes, 2));
+  auto child_tree_2_nodes = tree.GetNodeIdsForChildTreeId(tree_id_2);
+  EXPECT_EQ(1U, child_tree_2_nodes.size());
+  EXPECT_TRUE(base::ContainsKey(child_tree_2_nodes, 2));
 
-  auto child_tree_93_nodes =
-      tree.GetNodeIdsForChildTreeId(AXTreeID::FromString("93"));
-  EXPECT_EQ(2U, child_tree_93_nodes.size());
-  EXPECT_TRUE(base::ContainsKey(child_tree_93_nodes, 3));
-  EXPECT_TRUE(base::ContainsKey(child_tree_93_nodes, 4));
+  auto child_tree_3_nodes = tree.GetNodeIdsForChildTreeId(tree_id_3);
+  EXPECT_EQ(2U, child_tree_3_nodes.size());
+  EXPECT_TRUE(base::ContainsKey(child_tree_3_nodes, 3));
+  EXPECT_TRUE(base::ContainsKey(child_tree_3_nodes, 4));
 
   AXTreeUpdate update = initial_state;
   update.nodes[2].string_attributes.clear();
   update.nodes[2].AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                     "92");
+                                     tree_id_2.ToString());
   update.nodes[3].string_attributes.clear();
 
   EXPECT_TRUE(tree.Unserialize(update));
 
-  child_tree_92_nodes =
-      tree.GetNodeIdsForChildTreeId(AXTreeID::FromString("92"));
-  EXPECT_EQ(2U, child_tree_92_nodes.size());
-  EXPECT_TRUE(base::ContainsKey(child_tree_92_nodes, 2));
-  EXPECT_TRUE(base::ContainsKey(child_tree_92_nodes, 3));
+  child_tree_2_nodes = tree.GetNodeIdsForChildTreeId(tree_id_2);
+  EXPECT_EQ(2U, child_tree_2_nodes.size());
+  EXPECT_TRUE(base::ContainsKey(child_tree_2_nodes, 2));
+  EXPECT_TRUE(base::ContainsKey(child_tree_2_nodes, 3));
 
-  child_tree_93_nodes =
-      tree.GetNodeIdsForChildTreeId(AXTreeID::FromString("93"));
-  EXPECT_EQ(0U, child_tree_93_nodes.size());
+  child_tree_3_nodes = tree.GetNodeIdsForChildTreeId(tree_id_3);
+  EXPECT_EQ(0U, child_tree_3_nodes.size());
 }
 
 // Tests GetPosInSet and GetSetSize return the assigned int attribute values.

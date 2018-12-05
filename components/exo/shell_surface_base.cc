@@ -807,7 +807,7 @@ void ShellSurfaceBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     return;
 
   node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
-                                child_ax_tree_id_);
+                                child_ax_tree_id_.ToString());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

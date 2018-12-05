@@ -27,7 +27,7 @@ namespace {
 class TestAXTreeSourceViews : public AXTreeSourceViews {
  public:
   TestAXTreeSourceViews(AXAuraObjWrapper* root)
-      : AXTreeSourceViews(root, ui::AXTreeID::FromString("123")) {}
+      : AXTreeSourceViews(root, ui::AXTreeID::CreateNewAXTreeID()) {}
 
   ~TestAXTreeSourceViews() override = default;
 

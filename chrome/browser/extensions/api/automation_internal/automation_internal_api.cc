@@ -296,8 +296,9 @@ AutomationInternalEnableTabFunction::Run() {
       source_process_id(),
       ax_tree_id);
 
-  return RespondNow(ArgumentList(
-      api::automation_internal::EnableTab::Results::Create(ax_tree_id)));
+  return RespondNow(
+      ArgumentList(api::automation_internal::EnableTab::Results::Create(
+          ax_tree_id.ToString())));
 }
 
 ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {

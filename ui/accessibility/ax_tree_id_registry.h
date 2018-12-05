@@ -57,9 +57,6 @@ class AX_EXPORT AXTreeIDRegistry {
   AXTreeIDRegistry();
   virtual ~AXTreeIDRegistry();
 
-  // Tracks the current unique ax tree id.
-  int ax_tree_id_counter_;
-
   // Maps an accessibility tree to its frame via ids.
   std::map<AXTreeID, FrameID> ax_tree_to_frame_id_map_;
 

@@ -114,7 +114,8 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
 
   browser_context = browser_context ? browser_context : active_profile_;
   std::unique_ptr<base::ListValue> args(
-      api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
+      api::automation_internal::OnAccessibilityTreeDestroyed::Create(
+          tree_id.ToString()));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
@@ -134,7 +135,7 @@ void AutomationEventRouter::DispatchActionResult(const ui::AXActionData& data,
 
   std::unique_ptr<base::ListValue> args(
       api::automation_internal::OnActionResult::Create(
-          data.target_tree_id, data.request_id, result));
+          data.target_tree_id.ToString(), data.request_id, result));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
       api::automation_internal::OnActionResult::kEventName, std::move(args),
@@ -156,7 +157,7 @@ void AutomationEventRouter::DispatchGetTextLocationDataResult(
   if (listeners_.empty())
     return;
   extensions::api::automation_internal::AXTextLocationParams params;
-  params.tree_id = data.target_tree_id;
+  params.tree_id = data.target_tree_id.ToString();
   params.node_id = data.target_node_id;
   params.result = false;
   if (rect) {
