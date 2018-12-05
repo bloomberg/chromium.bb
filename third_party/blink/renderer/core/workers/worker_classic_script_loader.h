@@ -35,9 +35,9 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
@@ -154,10 +154,12 @@ class CORE_EXPORT WorkerClassicScriptLoader final
   long long app_cache_id_ = 0;
   std::unique_ptr<Vector<char>> cached_metadata_;
   Member<ContentSecurityPolicy> content_security_policy_;
-  Member<ExecutionContext> execution_context_;
   mojom::IPAddressSpace response_address_space_;
   std::unique_ptr<Vector<String>> origin_trial_tokens_;
   String referrer_policy_;
+
+  bool is_worker_global_scope_ = false;
+  Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
 
   // TODO(nhiroki): Move this to FetchClientSettingsObject.
   AllowedByNosniff::MimeTypeCheck mime_type_check_mode_;

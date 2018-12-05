@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
+#include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
@@ -16,6 +14,8 @@
 namespace blink {
 
 namespace {
+
+using WebFeature = mojom::WebFeature;
 
 // In addition to makeing an allowed/not-allowed decision,
 // AllowedByNosniff::MimeTypeAsScript reports common usage patterns to support
@@ -129,9 +129,10 @@ bool AllowMimeTypeAsScript(const String& mime_type,
 
 }  // namespace
 
-bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
+bool AllowedByNosniff::MimeTypeAsScript(FetchContext& context,
                                         const ResourceResponse& response,
-                                        MimeTypeCheck mime_type_check_mode) {
+                                        MimeTypeCheck mime_type_check_mode,
+                                        bool is_worker_global_scope) {
   // The content type is really only meaningful for the http:-family & data
   // schemes.
   bool is_http_family_or_data =
@@ -149,55 +150,51 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
   if (!(ParseContentTypeOptionsHeader(response.HttpHeaderField(
             http_names::kXContentTypeOptions)) != kContentTypeOptionsNosniff ||
         MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))) {
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
-                               "Refused to execute script from '" +
-                                   response.CurrentRequestUrl().ElidedString() +
-                                   "' because its MIME type ('" + mime_type +
-                                   "') is not executable, and "
-                                   "strict MIME type checking is "
-                                   "enabled."));
+    context.AddErrorConsoleMessage(
+        "Refused to execute script from '" +
+            response.CurrentRequestUrl().ElidedString() +
+            "' because its MIME type ('" + mime_type +
+            "') is not executable, and strict MIME type checking is enabled.",
+        FetchContext::kSecuritySource);
     return false;
   }
 
   // Check for certain non-executable MIME types.
   // See:
   // https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-mime-type
-
-  bool same_origin = execution_context->GetSecurityOrigin()->CanRequest(
-      response.CurrentRequestUrl());
+  bool same_origin =
+      context.GetSecurityOrigin()->CanRequest(response.CurrentRequestUrl());
 
   // For any MIME type, we can do three things: accept/reject it, print a
   // warning into the console, and count it using a use counter.
   const WebFeature kWebFeatureNone = WebFeature::kNumberOfFeatures;
   bool warn = false;
   WebFeature counter = kWebFeatureNone;
-  bool allow = AllowMimeTypeAsScript(
-      mime_type, same_origin, mime_type_check_mode,
-      execution_context->IsWorkerGlobalScope(), warn, counter);
+  bool allow =
+      AllowMimeTypeAsScript(mime_type, same_origin, mime_type_check_mode,
+                            is_worker_global_scope, warn, counter);
 
   // These record usages for two MIME types (without subtypes), per same/cross
   // origin.
   if (mime_type.StartsWithIgnoringASCIICase("application/")) {
-    UseCounter::Count(execution_context, kApplicationFeatures[same_origin]);
+    context.CountUsage(kApplicationFeatures[same_origin]);
   } else if (mime_type.StartsWithIgnoringASCIICase("text/")) {
-    UseCounter::Count(execution_context, kTextFeatures[same_origin]);
+    context.CountUsage(kTextFeatures[same_origin]);
   }
 
   // The code above has made a decision and handed down the result in accept,
   // warn, and counter.
   if (counter != kWebFeatureNone) {
-    UseCounter::Count(execution_context, counter);
+    context.CountUsage(counter);
   }
   if (!allow || warn) {
     const char* msg =
         allow ? "Deprecated: Future versions will refuse" : "Refused";
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(kSecurityMessageSource, kErrorMessageLevel,
-                               String() + msg + " to execute script from '" +
-                                   response.CurrentRequestUrl().ElidedString() +
-                                   "' because its MIME type ('" + mime_type +
-                                   "') is not executable."));
+    context.AddErrorConsoleMessage(
+        String() + msg + " to execute script from '" +
+            response.CurrentRequestUrl().ElidedString() +
+            "' because its MIME type ('" + mime_type + "') is not executable.",
+        FetchContext::kSecuritySource);
   }
   return allow;
 }

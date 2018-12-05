@@ -2,52 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/loader/allowed_by_nosniff.h"
+#include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
-#include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/loader/testing/mock_fetch_context.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
+namespace {
+
 using MimeTypeCheck = AllowedByNosniff::MimeTypeCheck;
+using WebFeature = mojom::WebFeature;
+using ::testing::_;
 
-class AllowedByNosniffTest : public testing::Test {
+class CountUsageMockFetchContext : public MockFetchContext {
  public:
-  void SetUp() override {
-    // Create a new dummy page holder for each test, so that we get a fresh
-    // set of counters for each.
-    dummy_page_holder_ = DummyPageHolder::Create();
-    Page::InsertOrdinaryPageForTesting(&dummy_page_holder_->GetPage());
+  CountUsageMockFetchContext()
+      : MockFetchContext(MockFetchContext::kShouldLoadNewResource,
+                         nullptr,
+                         nullptr) {}
+  static CountUsageMockFetchContext* Create() {
+    return MakeGarbageCollected<
+        ::testing::StrictMock<CountUsageMockFetchContext>>();
   }
-
-  Document* doc() { return &dummy_page_holder_->GetDocument(); }
-
-  size_t ConsoleMessageStoreSize() const {
-    return dummy_page_holder_->GetPage().GetConsoleMessageStorage().size();
-  }
-
- private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  MOCK_CONST_METHOD1(CountUsage, void(mojom::WebFeature));
+  MOCK_CONST_METHOD2(AddErrorConsoleMessage, void(const String&, LogSource));
 };
 
-TEST_F(AllowedByNosniffTest, SanityCheckSetUp) {
-  // UseCounter counts will be silently swallowed under various conditions,
-  // e.g. if the document doesn't actually hold a frame. This test is a sanity
-  // test that UseCounter::Count + UseCounter::IsCounted work at all with the
-  // current test setup. If this test fails, we know that the setup is wrong,
-  // rather than the code under test.
-  WebFeature f = WebFeature::kSameOriginTextScript;
-  EXPECT_FALSE(UseCounter::IsCounted(*doc(), f));
-  UseCounter::Count(doc(), f);
-  EXPECT_TRUE(UseCounter::IsCounted(*doc(), f));
+}  // namespace
 
-  EXPECT_EQ(ConsoleMessageStoreSize(), 0U);
-}
+class AllowedByNosniffTest : public testing::Test {};
 
 TEST_F(AllowedByNosniffTest, AllowedOrNot) {
   struct {
@@ -100,8 +87,9 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
                  << "\n  strict_allowed: "
                  << (testcase.strict_allowed ? "true" : "false"));
 
+    auto* context = CountUsageMockFetchContext::Create();
     const KURL url("https://bla.com/");
-    doc()->SetSecurityOrigin(SecurityOrigin::Create(url));
+    context->SetSecurityOrigin(SecurityOrigin::Create(url));
     ResourceResponse response(url);
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
@@ -109,39 +97,63 @@ TEST_F(AllowedByNosniffTest, AllowedOrNot) {
     // setting. Warnings for any blocked script.
     RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
-    size_t message_count = ConsoleMessageStoreSize();
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
-                                    doc(), response, MimeTypeCheck::kLax));
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
-                                    doc(), response, MimeTypeCheck::kStrict));
-    EXPECT_EQ(ConsoleMessageStoreSize(), message_count + 2 * !testcase.allowed);
+    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    if (!testcase.allowed)
+      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(*context, response,
+                                                 MimeTypeCheck::kLax, false));
+    ::testing::Mock::VerifyAndClear(context);
+
+    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    if (!testcase.allowed)
+      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(
+                  *context, response, MimeTypeCheck::kStrict, false));
+    ::testing::Mock::VerifyAndClear(context);
 
     // Nosniff worker blocked: Workers follow the 'strict_allow' setting.
     // Warnings for any blocked scripts.
     RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(true);
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
-    message_count = ConsoleMessageStoreSize();
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
-                                    doc(), response, MimeTypeCheck::kLax));
-    EXPECT_EQ(ConsoleMessageStoreSize(), message_count + !testcase.allowed);
+
+    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    if (!testcase.allowed)
+      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(*context, response,
+                                                 MimeTypeCheck::kLax, false));
+    ::testing::Mock::VerifyAndClear(context);
+
+    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    if (!testcase.strict_allowed)
+      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
     EXPECT_EQ(testcase.strict_allowed,
-              AllowedByNosniff::MimeTypeAsScript(doc(), response,
-                                                 MimeTypeCheck::kStrict));
-    EXPECT_EQ(ConsoleMessageStoreSize(),
-              message_count + !testcase.allowed + !testcase.strict_allowed);
+              AllowedByNosniff::MimeTypeAsScript(
+                  *context, response, MimeTypeCheck::kStrict, false));
+    ::testing::Mock::VerifyAndClear(context);
 
     // Nosniff 'legacy', but with warnings. The allowed setting follows the
     // 'allowed' setting, but the warnings follow the 'strict' setting.
     RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
     RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(true);
-    message_count = ConsoleMessageStoreSize();
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
-                                    doc(), response, MimeTypeCheck::kLax));
-    EXPECT_EQ(ConsoleMessageStoreSize(), message_count + !testcase.allowed);
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
-                                    doc(), response, MimeTypeCheck::kStrict));
-    EXPECT_EQ(ConsoleMessageStoreSize(),
-              message_count + !testcase.allowed + !testcase.strict_allowed);
+
+    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    if (!testcase.allowed)
+      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(*context, response,
+                                                 MimeTypeCheck::kLax, false));
+    ::testing::Mock::VerifyAndClear(context);
+
+    EXPECT_CALL(*context, CountUsage(_)).Times(::testing::AnyNumber());
+    if (!testcase.strict_allowed)
+      EXPECT_CALL(*context, AddErrorConsoleMessage(_, _));
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(
+                  *context, response, MimeTypeCheck::kStrict, false));
+    ::testing::Mock::VerifyAndClear(context);
   }
 }
 
@@ -177,17 +189,21 @@ TEST_F(AllowedByNosniffTest, Counters) {
   };
 
   for (auto& testcase : data) {
-    SetUp();
     SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
                                     << "\n  origin: " << testcase.origin
                                     << "\n  mime type: " << testcase.mimetype
                                     << "\n  webfeature: " << testcase.expected);
-    doc()->SetSecurityOrigin(SecurityOrigin::Create(KURL(testcase.origin)));
+    auto* context = CountUsageMockFetchContext::Create();
+    context->SetSecurityOrigin(SecurityOrigin::Create(KURL(testcase.origin)));
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
-    AllowedByNosniff::MimeTypeAsScript(doc(), response, MimeTypeCheck::kLax);
-    EXPECT_TRUE(UseCounter::IsCounted(*doc(), testcase.expected));
+    EXPECT_CALL(*context, CountUsage(testcase.expected));
+    EXPECT_CALL(*context, CountUsage(::testing::Ne(testcase.expected)))
+        .Times(::testing::AnyNumber());
+    AllowedByNosniff::MimeTypeAsScript(*context, response, MimeTypeCheck::kLax,
+                                       false);
+    ::testing::Mock::VerifyAndClear(context);
   }
 }
 
@@ -217,14 +233,17 @@ TEST_F(AllowedByNosniffTest, AllTheSchemes) {
   };
 
   for (auto& testcase : data) {
-    SetUp();
+    auto* context = CountUsageMockFetchContext::Create();
+    EXPECT_CALL(*context, AddErrorConsoleMessage(_, _))
+        .Times(::testing::AnyNumber());
     SCOPED_TRACE(testing::Message() << "\n  url: " << testcase.url
                                     << "\n  allowed: " << testcase.allowed);
     ResourceResponse response(KURL(testcase.url));
     response.SetHTTPHeaderField("Content-Type", "invalid");
     response.SetHTTPHeaderField("X-Content-Type-Options", "nosniff");
-    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScript(
-                                    doc(), response, MimeTypeCheck::kLax));
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(*context, response,
+                                                 MimeTypeCheck::kLax, false));
   }
 }
 
