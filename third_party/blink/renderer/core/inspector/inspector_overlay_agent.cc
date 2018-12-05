@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/events/web_input_event_conversion.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -64,7 +65,6 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/page/page_overlay.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -142,14 +142,14 @@ const int kCtrlOrMeta = WebInputEvent::kControlKey;
 }  // namespace
 
 class InspectorOverlayAgent::InspectorPageOverlayDelegate final
-    : public PageOverlay::Delegate {
+    : public FrameOverlay::Delegate {
  public:
   explicit InspectorPageOverlayDelegate(InspectorOverlayAgent& overlay)
       : overlay_(&overlay) {}
 
-  void PaintPageOverlay(const PageOverlay&,
-                        GraphicsContext& graphics_context,
-                        const IntSize& web_view_size) const override {
+  void PaintFrameOverlay(const FrameOverlay&,
+                         GraphicsContext& graphics_context,
+                         const IntSize& web_view_size) const override {
     if (overlay_->IsEmpty())
       return;
 
@@ -485,18 +485,18 @@ void InspectorOverlayAgent::Invalidate() {
   if (IsEmpty())
     return;
 
-  if (!page_overlay_) {
-    page_overlay_ = PageOverlay::Create(
+  if (!frame_overlay_) {
+    frame_overlay_ = FrameOverlay::Create(
         frame_impl_->GetFrame(),
         std::make_unique<InspectorPageOverlayDelegate>(*this));
   }
 
-  page_overlay_->Update();
+  frame_overlay_->Update();
 }
 
 void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
-  if (page_overlay_)
-    page_overlay_->Update();
+  if (frame_overlay_)
+    frame_overlay_->Update();
 
   if (!IsEmpty()) {
     base::AutoReset<bool> scoped(&in_layout_, true);
@@ -508,12 +508,12 @@ void InspectorOverlayAgent::UpdateAllOverlayLifecyclePhases() {
         DocumentLifecycle::LifecycleUpdateReason::kOther);
   }
 
-  if (page_overlay_ && page_overlay_->GetGraphicsLayer())
-    page_overlay_->GetGraphicsLayer()->Paint(nullptr);
+  if (frame_overlay_ && frame_overlay_->GetGraphicsLayer())
+    frame_overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
 bool InspectorOverlayAgent::IsInspectorLayer(GraphicsLayer* layer) {
-  return page_overlay_ && page_overlay_->GetGraphicsLayer() == layer;
+  return frame_overlay_ && frame_overlay_->GetGraphicsLayer() == layer;
 }
 
 void InspectorOverlayAgent::DispatchBufferedTouchEvents() {
@@ -647,8 +647,8 @@ bool InspectorOverlayAgent::IsEmpty() {
 
 void InspectorOverlayAgent::ScheduleUpdate() {
   if (IsEmpty()) {
-    if (page_overlay_)
-      page_overlay_.reset();
+    if (frame_overlay_)
+      frame_overlay_.reset();
     return;
   }
   needs_update_ = true;
@@ -943,7 +943,7 @@ void InspectorOverlayAgent::ClearInternal() {
   inspect_mode_ = kNotSearching;
   screenshot_mode_ = false;
   timer_.Stop();
-  page_overlay_.reset();
+  frame_overlay_.reset();
   InnerHideHighlight();
 }
 

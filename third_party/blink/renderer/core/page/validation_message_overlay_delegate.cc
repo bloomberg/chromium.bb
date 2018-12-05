@@ -26,7 +26,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
  public:
   explicit ValidationMessageChromeClient(ChromeClient& main_chrome_client,
                                          LocalFrameView* anchor_view,
-                                         PageOverlay& overlay)
+                                         FrameOverlay& overlay)
       : main_chrome_client_(main_chrome_client),
         anchor_view_(anchor_view),
         overlay_(overlay) {}
@@ -53,7 +53,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
  private:
   Member<ChromeClient> main_chrome_client_;
   Member<LocalFrameView> anchor_view_;
-  PageOverlay& overlay_;
+  FrameOverlay& overlay_;
 };
 
 inline ValidationMessageOverlayDelegate::ValidationMessageOverlayDelegate(
@@ -92,8 +92,8 @@ LocalFrameView& ValidationMessageOverlayDelegate::FrameView() const {
   return *ToLocalFrame(page_->MainFrame())->View();
 }
 
-void ValidationMessageOverlayDelegate::PaintPageOverlay(
-    const PageOverlay& overlay,
+void ValidationMessageOverlayDelegate::PaintFrameOverlay(
+    const FrameOverlay& overlay,
     GraphicsContext& context,
     const IntSize& view_size) const {
   if (IsHiding() && !page_)
@@ -107,7 +107,7 @@ void ValidationMessageOverlayDelegate::PaintPageOverlay(
 }
 
 void ValidationMessageOverlayDelegate::UpdateFrameViewState(
-    const PageOverlay& overlay,
+    const FrameOverlay& overlay,
     const IntSize& view_size) {
   EnsurePage(overlay, view_size);
   if (FrameView().Size() != view_size) {
@@ -124,7 +124,7 @@ void ValidationMessageOverlayDelegate::UpdateFrameViewState(
       DocumentLifecycle::LifecycleUpdateReason::kOther);
 }
 
-void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
+void ValidationMessageOverlayDelegate::EnsurePage(const FrameOverlay& overlay,
                                                   const IntSize& view_size) {
   if (page_)
     return;
@@ -134,7 +134,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   FillWithEmptyClients(page_clients);
   chrome_client_ = MakeGarbageCollected<ValidationMessageChromeClient>(
       main_page_->GetChromeClient(), anchor_->GetDocument().View(),
-      const_cast<PageOverlay&>(overlay));
+      const_cast<FrameOverlay&>(overlay));
   page_clients.chrome_client = chrome_client_;
   Settings& main_settings = main_page_->GetSettings();
   page_ = Page::Create(page_clients);

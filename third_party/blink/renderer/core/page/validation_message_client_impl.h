@@ -37,7 +37,7 @@
 namespace blink {
 
 class LocalFrameView;
-class PageOverlay;
+class FrameOverlay;
 class ValidationMessageOverlayDelegate;
 
 class ValidationMessageClientImpl final
@@ -80,7 +80,7 @@ class ValidationMessageClientImpl final
   String message_;
   TimeTicks finish_time_;
   std::unique_ptr<TimerBase> timer_;
-  std::unique_ptr<PageOverlay> overlay_;
+  std::unique_ptr<FrameOverlay> overlay_;
   // Raw pointer. This pointer is valid unless overlay_ is nullptr.
   ValidationMessageOverlayDelegate* overlay_delegate_ = nullptr;
 };

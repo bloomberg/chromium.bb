@@ -229,7 +229,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void PerformCustomContextMenuAction(unsigned action) override;
   void DidCloseContextMenu() override;
   void HidePopups() override;
-  void SetPageOverlayColor(SkColor) override;
+  void SetMainFrameOverlayColor(SkColor) override;
   WebPageImportanceSignals* PageImportanceSignals() override;
   void SetShowPaintRects(bool) override;
   void SetShowDebugBorders(bool);

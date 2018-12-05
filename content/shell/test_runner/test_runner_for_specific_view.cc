@@ -514,11 +514,11 @@ void TestRunnerForSpecificView::SetTextDirection(
 }
 
 void TestRunnerForSpecificView::AddWebPageOverlay() {
-  web_view()->SetPageOverlayColor(SK_ColorCYAN);
+  web_view()->SetMainFrameOverlayColor(SK_ColorCYAN);
 }
 
 void TestRunnerForSpecificView::RemoveWebPageOverlay() {
-  web_view()->SetPageOverlayColor(SK_ColorTRANSPARENT);
+  web_view()->SetMainFrameOverlayColor(SK_ColorTRANSPARENT);
 }
 
 void TestRunnerForSpecificView::ForceNextWebGLContextCreationToFail() {

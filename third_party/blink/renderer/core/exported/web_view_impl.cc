@@ -3040,8 +3040,10 @@ void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
   SetZoomLevel(ZoomLevel());
 }
 
-void WebViewImpl::SetPageOverlayColor(SkColor color) {
-  page_->SetPageOverlayColor(color);
+void WebViewImpl::SetMainFrameOverlayColor(SkColor color) {
+  DCHECK(page_->MainFrame());
+  if (page_->MainFrame()->IsLocalFrame())
+    ToLocalFrame(page_->MainFrame())->View()->SetMainFrameColorOverlay(color);
 }
 
 WebPageImportanceSignals* WebViewImpl::PageImportanceSignals() {

@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/page/page_overlay.h"
+#include "third_party/blink/renderer/core/frame/frame_overlay.h"
 
 #include <memory>
 #include <utility>
@@ -46,24 +46,24 @@
 
 namespace blink {
 
-std::unique_ptr<PageOverlay> PageOverlay::Create(
+std::unique_ptr<FrameOverlay> FrameOverlay::Create(
     LocalFrame* local_frame,
-    std::unique_ptr<PageOverlay::Delegate> delegate) {
-  return base::WrapUnique(new PageOverlay(local_frame, std::move(delegate)));
+    std::unique_ptr<FrameOverlay::Delegate> delegate) {
+  return base::WrapUnique(new FrameOverlay(local_frame, std::move(delegate)));
 }
 
-PageOverlay::PageOverlay(LocalFrame* local_frame,
-                         std::unique_ptr<PageOverlay::Delegate> delegate)
+FrameOverlay::FrameOverlay(LocalFrame* local_frame,
+                           std::unique_ptr<FrameOverlay::Delegate> delegate)
     : frame_(local_frame), delegate_(std::move(delegate)) {}
 
-PageOverlay::~PageOverlay() {
+FrameOverlay::~FrameOverlay() {
   if (!layer_)
     return;
   layer_->RemoveFromParent();
   layer_ = nullptr;
 }
 
-void PageOverlay::Update() {
+void FrameOverlay::Update() {
   if (!frame_)
     return;
 
@@ -88,7 +88,7 @@ void PageOverlay::Update() {
     // while scrolling.
     cc::Layer* cc_layer = layer_->CcLayer();
     cc_layer->AddMainThreadScrollingReasons(
-        MainThreadScrollingReason::kPageOverlay);
+        MainThreadScrollingReason::kFrameOverlay);
 
     layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
                           IntPoint());
@@ -102,26 +102,26 @@ void PageOverlay::Update() {
     layer_->SetNeedsDisplay();
 }
 
-LayoutRect PageOverlay::VisualRect() const {
+LayoutRect FrameOverlay::VisualRect() const {
   DCHECK(layer_.get());
   return LayoutRect(IntPoint(), IntSize(layer_->Size()));
 }
 
-IntRect PageOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
-                                         const IntRect&) const {
+IntRect FrameOverlay::ComputeInterestRect(const GraphicsLayer* graphics_layer,
+                                          const IntRect&) const {
   return IntRect(IntPoint(), IntSize(layer_->Size()));
 }
 
-void PageOverlay::PaintContents(const GraphicsLayer* graphics_layer,
-                                GraphicsContext& gc,
-                                GraphicsLayerPaintingPhase phase,
-                                const IntRect& interest_rect) const {
+void FrameOverlay::PaintContents(const GraphicsLayer* graphics_layer,
+                                 GraphicsContext& gc,
+                                 GraphicsLayerPaintingPhase phase,
+                                 const IntRect& interest_rect) const {
   DCHECK(layer_);
-  delegate_->PaintPageOverlay(*this, gc, interest_rect.Size());
+  delegate_->PaintFrameOverlay(*this, gc, interest_rect.Size());
 }
 
-String PageOverlay::DebugName(const GraphicsLayer*) const {
-  return "Page Overlay Content Layer";
+String FrameOverlay::DebugName(const GraphicsLayer*) const {
+  return "Frame Overlay Content Layer";
 }
 
 }  // namespace blink

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/page/page_overlay.h"
+#include "third_party/blink/renderer/core/frame/frame_overlay.h"
 
 #include <memory>
 
@@ -37,22 +37,20 @@ namespace {
 static const int kViewportWidth = 800;
 static const int kViewportHeight = 600;
 
-// These unit tests cover both PageOverlay and PageOverlayList.
-
-// PageOverlay that paints a solid color.
-class SolidColorOverlay : public PageOverlay::Delegate {
+// FrameOverlay that paints a solid color.
+class SolidColorOverlay : public FrameOverlay::Delegate {
  public:
   SolidColorOverlay(Color color) : color_(color) {}
 
-  void PaintPageOverlay(const PageOverlay& page_overlay,
-                        GraphicsContext& graphics_context,
-                        const IntSize& size) const override {
+  void PaintFrameOverlay(const FrameOverlay& frame_overlay,
+                         GraphicsContext& graphics_context,
+                         const IntSize& size) const override {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
-            graphics_context, page_overlay, DisplayItem::kPageOverlay))
+            graphics_context, frame_overlay, DisplayItem::kFrameOverlay))
       return;
     FloatRect rect(0, 0, size.Width(), size.Height());
-    DrawingRecorder recorder(graphics_context, page_overlay,
-                             DisplayItem::kPageOverlay);
+    DrawingRecorder recorder(graphics_context, frame_overlay,
+                             DisplayItem::kFrameOverlay);
     graphics_context.FillRect(rect, color_);
   }
 
@@ -60,9 +58,9 @@ class SolidColorOverlay : public PageOverlay::Delegate {
   Color color_;
 };
 
-class PageOverlayTest : public testing::Test {
+class FrameOverlayTest : public testing::Test {
  protected:
-  PageOverlayTest() {
+  FrameOverlayTest() {
     helper_.Initialize(nullptr /* web_frame_client */,
                        nullptr /* web_view_client */,
                        nullptr /* web_widget_client */);
@@ -73,8 +71,8 @@ class PageOverlayTest : public testing::Test {
 
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
 
-  std::unique_ptr<PageOverlay> CreateSolidYellowOverlay() {
-    return PageOverlay::Create(
+  std::unique_ptr<FrameOverlay> CreateSolidYellowOverlay() {
+    return FrameOverlay::Create(
         GetWebView()->MainFrameImpl()->GetFrame(),
         std::make_unique<SolidColorOverlay>(SK_ColorYELLOW));
   }
@@ -88,7 +86,7 @@ class PageOverlayTest : public testing::Test {
   }
 
   template <typename OverlayType>
-  void RunPageOverlayTestWithAcceleratedCompositing();
+  void RunFrameOverlayTestWithAcceleratedCompositing();
 
  private:
   frame_test_helpers::WebViewHelper helper_;
@@ -106,21 +104,21 @@ class RuntimeFeatureChange {
   bool old_value_;
 };
 
-class MockPageOverlayCanvas : public SkCanvas {
+class MockFrameOverlayCanvas : public SkCanvas {
  public:
-  MockPageOverlayCanvas(int width, int height) : SkCanvas(width, height) {}
+  MockFrameOverlayCanvas(int width, int height) : SkCanvas(width, height) {}
   MOCK_METHOD2(onDrawRect, void(const SkRect&, const SkPaint&));
 };
 
-TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
+TEST_F(FrameOverlayTest, FrameOverlay_AcceleratedCompositing) {
   SetViewportSize(WebSize(kViewportWidth, kViewportHeight));
 
-  std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
-  page_overlay->Update();
+  std::unique_ptr<FrameOverlay> frame_overlay = CreateSolidYellowOverlay();
+  frame_overlay->Update();
   GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
-  GraphicsLayer* graphics_layer = page_overlay->GetGraphicsLayer();
+  GraphicsLayer* graphics_layer = frame_overlay->GetGraphicsLayer();
   WebRect rect(0, 0, kViewportWidth, kViewportHeight);
 
   IntRect int_rect = rect;
@@ -129,7 +127,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   // Ideally, we would get results from the compositor that showed that this
   // page overlay actually winds up getting drawn on top of the rest.
   // For now, we just check that the GraphicsLayer will draw the right thing.
-  MockPageOverlayCanvas canvas(kViewportWidth, kViewportHeight);
+  MockFrameOverlayCanvas canvas(kViewportWidth, kViewportHeight);
   EXPECT_CALL(canvas, onDrawRect(_, _)).Times(AtLeast(0));
   EXPECT_CALL(canvas,
               onDrawRect(SkRect::MakeWH(kViewportWidth, kViewportHeight),
@@ -138,13 +136,13 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
       ToSkPicture(graphics_layer->CapturePaintRecord(), int_rect));
 }
 
-TEST_F(PageOverlayTest, PageOverlay_VisualRect) {
-  std::unique_ptr<PageOverlay> page_overlay = CreateSolidYellowOverlay();
-  page_overlay->Update();
+TEST_F(FrameOverlayTest, FrameOverlay_VisualRect) {
+  std::unique_ptr<FrameOverlay> frame_overlay = CreateSolidYellowOverlay();
+  frame_overlay->Update();
   GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
   EXPECT_EQ(LayoutRect(0, 0, kViewportWidth, kViewportHeight),
-            page_overlay->VisualRect());
+            frame_overlay->VisualRect());
 }
 
 }  // namespace

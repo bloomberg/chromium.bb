@@ -373,10 +373,10 @@ class WebView {
   virtual void SetIsHidden(bool hidden, bool is_initial_state) = 0;
   virtual bool IsHidden() = 0;
 
-  // PageOverlay ----------------------------------------------------------
+  // FrameOverlay ----------------------------------------------------------
 
   // Overlay this WebView with a solid color.
-  virtual void SetPageOverlayColor(SkColor) = 0;
+  virtual void SetMainFrameOverlayColor(SkColor) = 0;
 
   // Page Importance Signals ----------------------------------------------
 

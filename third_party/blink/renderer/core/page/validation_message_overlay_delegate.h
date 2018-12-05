@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_VALIDATION_MESSAGE_OVERLAY_DELEGATE_H_
 
-#include "third_party/blink/renderer/core/page/page_overlay.h"
+#include "third_party/blink/renderer/core/frame/frame_overlay.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -22,8 +22,8 @@ class Page;
 // Lifetime: An instance is created by a ValidationMessageClientImpl when a
 // bubble is shown, and deleted when the bubble is closed.
 //
-// Ownership: A PageOverlay instance owns a ValidationMessageOverlayDelegate.
-class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
+// Ownership: A FrameOverlay instance owns a ValidationMessageOverlayDelegate.
+class ValidationMessageOverlayDelegate : public FrameOverlay::Delegate {
  public:
   static std::unique_ptr<ValidationMessageOverlayDelegate> Create(
       Page&,
@@ -34,9 +34,9 @@ class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
       TextDirection sub_message_dir);
   ~ValidationMessageOverlayDelegate() override;
 
-  void PaintPageOverlay(const PageOverlay&,
-                        GraphicsContext&,
-                        const IntSize& view_size) const override;
+  void PaintFrameOverlay(const FrameOverlay&,
+                         GraphicsContext&,
+                         const IntSize& view_size) const override;
   void StartToHide();
 
  private:
@@ -47,8 +47,8 @@ class ValidationMessageOverlayDelegate : public PageOverlay::Delegate {
                                    const String& sub_message,
                                    TextDirection sub_message_dir);
   LocalFrameView& FrameView() const;
-  void UpdateFrameViewState(const PageOverlay&, const IntSize& view_size);
-  void EnsurePage(const PageOverlay&, const IntSize& view_size);
+  void UpdateFrameViewState(const FrameOverlay&, const IntSize& view_size);
+  void EnsurePage(const FrameOverlay&, const IntSize& view_size);
   void WriteDocument(SharedBuffer*);
   Element& GetElementById(const AtomicString&) const;
   void AdjustBubblePosition(const IntSize& view_size);

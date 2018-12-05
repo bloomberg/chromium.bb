@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -60,7 +59,6 @@ class LinkHighlights;
 class LocalFrame;
 class LocalFrameView;
 class OverscrollController;
-class PageOverlay;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class PluginData;
@@ -310,12 +308,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   int32_t AutoplayFlags() const;
 
-  void SetPageOverlayColor(SkColor);
-
-  void UpdatePageColorOverlay();
-
-  void PaintPageColorOverlay();
-
  private:
   friend class ScopedPagePauser;
 
@@ -364,8 +356,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   Member<PluginData> plugin_data_;
 
   Member<ValidationMessageClient> validation_message_client_;
-
-  std::unique_ptr<PageOverlay> page_color_overlay_;
 
   Deprecation deprecation_;
   HostsUsingFeatures hosts_using_features_;
