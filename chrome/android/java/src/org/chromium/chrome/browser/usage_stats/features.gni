@@ -5,5 +5,5 @@
 import("//build/config/android/config.gni")
 
 declare_args() {
-  enable_usage_stats = android_sdk_version > 28
+  enable_usage_stats = android_sdk_release == "q"
 }
