@@ -147,13 +147,27 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT WebURLResponse();
   BLINK_PLATFORM_EXPORT WebURLResponse(const WebURLResponse&);
-  BLINK_PLATFORM_EXPORT explicit WebURLResponse(const WebURL&);
+  BLINK_PLATFORM_EXPORT explicit WebURLResponse(
+      const WebURL& current_request_url);
   BLINK_PLATFORM_EXPORT WebURLResponse& operator=(const WebURLResponse&);
 
   BLINK_PLATFORM_EXPORT bool IsNull() const;
 
-  BLINK_PLATFORM_EXPORT WebURL Url() const;
-  BLINK_PLATFORM_EXPORT void SetURL(const WebURL&);
+  // The current request URL for this resource (the URL after redirects).
+  // Corresponds to:
+  // https://fetch.spec.whatwg.org/#concept-request-current-url
+  //
+  // It is usually wrong to use this for security checks. See detailed
+  // documentation at blink::ResourceResponse::CurrentRequestUrl().
+  BLINK_PLATFORM_EXPORT WebURL CurrentRequestUrl() const;
+  BLINK_PLATFORM_EXPORT void SetCurrentRequestUrl(const WebURL&);
+
+  // The response URL of this resource. Corresponds to:
+  // https://fetch.spec.whatwg.org/#concept-response-url
+  //
+  // This may be the empty URL. See detailed documentation at
+  // blink::ResourceResponse::ResponseUrl().
+  BLINK_PLATFORM_EXPORT WebURL ResponseUrl() const;
 
   BLINK_PLATFORM_EXPORT void SetConnectionID(unsigned);
 
@@ -242,11 +256,6 @@ class WebURLResponse {
   // for details.
   BLINK_PLATFORM_EXPORT void SetURLListViaServiceWorker(
       const WebVector<WebURL>&);
-
-  // Returns the last URL of the URL list of the Response object the
-  // ServiceWorker passed to respondWith() if it did. Otherwise returns an empty
-  // URL.
-  BLINK_PLATFORM_EXPORT WebURL OriginalURLViaServiceWorker() const;
 
   // The boundary of the response. Set only when this is a multipart response.
   BLINK_PLATFORM_EXPORT void SetMultipartBoundary(const char* bytes,

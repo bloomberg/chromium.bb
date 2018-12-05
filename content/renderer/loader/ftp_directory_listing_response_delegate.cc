@@ -70,7 +70,7 @@ FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
         static_cast<WebURLResponseExtraDataImpl*>(response.GetExtraData());
     extra_data->set_is_ftp_directory_listing(true);
   }
-  Init(response.Url());
+  Init(response.CurrentRequestUrl());
 }
 
 void FtpDirectoryListingResponseDelegate::Cancel() {

@@ -358,10 +358,8 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
   }
 
   // This test is vital for security!
-  const GURL& original_url = response.WasFetchedViaServiceWorker()
-                                 ? response.OriginalURLViaServiceWorker()
-                                 : response.Url();
-  if (!url_data_->ValidateDataOrigin(original_url.GetOrigin())) {
+  const GURL& response_url = response.ResponseUrl();
+  if (!url_data_->ValidateDataOrigin(response_url.GetOrigin())) {
     active_loader_.reset();
     url_data_->Fail();
     return;  // "this" may be deleted now.

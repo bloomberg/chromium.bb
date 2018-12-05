@@ -81,8 +81,9 @@ WebURLResponse::WebURLResponse(const WebURLResponse& r)
           std::make_unique<ResourceResponse>(*r.resource_response_)),
       resource_response_(owned_resource_response_.get()) {}
 
-WebURLResponse::WebURLResponse(const WebURL& url) : WebURLResponse() {
-  SetURL(url);
+WebURLResponse::WebURLResponse(const WebURL& current_request_url)
+    : WebURLResponse() {
+  SetCurrentRequestUrl(current_request_url);
 }
 
 WebURLResponse& WebURLResponse::operator=(const WebURLResponse& r) {
@@ -99,12 +100,16 @@ bool WebURLResponse::IsNull() const {
   return resource_response_->IsNull();
 }
 
-WebURL WebURLResponse::Url() const {
+WebURL WebURLResponse::CurrentRequestUrl() const {
   return resource_response_->CurrentRequestUrl();
 }
 
-void WebURLResponse::SetURL(const WebURL& url) {
+void WebURLResponse::SetCurrentRequestUrl(const WebURL& url) {
   resource_response_->SetCurrentRequestUrl(url);
+}
+
+WebURL WebURLResponse::ResponseUrl() const {
+  return resource_response_->ResponseUrl();
 }
 
 void WebURLResponse::SetConnectionID(unsigned connection_id) {
@@ -353,12 +358,6 @@ void WebURLResponse::SetURLListViaServiceWorker(
                  url_list_via_service_worker.end(), url_list.begin(),
                  [](const WebURL& url) { return url; });
   resource_response_->SetURLListViaServiceWorker(url_list);
-}
-
-WebURL WebURLResponse::OriginalURLViaServiceWorker() const {
-  if (!resource_response_->WasFetchedViaServiceWorker())
-    return WebURL();
-  return resource_response_->ResponseUrl();
 }
 
 void WebURLResponse::SetMultipartBoundary(const char* bytes, size_t size) {

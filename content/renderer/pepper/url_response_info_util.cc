@@ -46,7 +46,7 @@ bool IsRedirect(int32_t status) { return status >= 300 && status <= 399; }
 ppapi::URLResponseInfoData DataFromWebURLResponse(
     const WebURLResponse& response) {
   ppapi::URLResponseInfoData data;
-  data.url = response.Url().GetString().Utf8();
+  data.url = response.CurrentRequestUrl().GetString().Utf8();
   data.status_code = response.HttpStatusCode();
   data.status_text = response.HttpStatusText().Utf8();
   if (IsRedirect(data.status_code)) {

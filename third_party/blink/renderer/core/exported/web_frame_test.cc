@@ -6646,7 +6646,7 @@ class TestSubstituteDataWebFrameClient
   void DidCommitProvisionalLoad(const WebHistoryItem&,
                                 WebHistoryCommitType,
                                 WebGlobalObjectReusePolicy) override {
-    if (Frame()->GetDocumentLoader()->GetResponse().Url() !=
+    if (Frame()->GetDocumentLoader()->GetResponse().CurrentRequestUrl() !=
         WebURL(url_test_helpers::ToKURL("about:blank")))
       commit_called_ = true;
   }
@@ -6673,7 +6673,7 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation) {
   std::string error_url = "http://0.0.0.0";
   ResourceError error = ResourceError::Failure(ToKURL(error_url));
   WebURLResponse response;
-  response.SetURL(url_test_helpers::ToKURL(error_url));
+  response.SetCurrentRequestUrl(url_test_helpers::ToKURL(error_url));
   response.SetMIMEType("text/html");
   response.SetHTTPStatusCode(500);
   WebHistoryItem error_history_item;

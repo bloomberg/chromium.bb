@@ -122,7 +122,8 @@ class WebAssociatedURLLoaderTest : public testing::Test,
                           const WebURLResponse& redirect_response) override {
     will_follow_redirect_ = true;
     EXPECT_EQ(expected_new_url_, new_url);
-    EXPECT_EQ(expected_redirect_response_.Url(), redirect_response.Url());
+    EXPECT_EQ(expected_redirect_response_.CurrentRequestUrl(),
+              redirect_response.CurrentRequestUrl());
     EXPECT_EQ(expected_redirect_response_.HttpStatusCode(),
               redirect_response.HttpStatusCode());
     EXPECT_EQ(expected_redirect_response_.MimeType(),
@@ -138,7 +139,8 @@ class WebAssociatedURLLoaderTest : public testing::Test,
   void DidReceiveResponse(const WebURLResponse& response) override {
     did_receive_response_ = true;
     actual_response_ = WebURLResponse(response);
-    EXPECT_EQ(expected_response_.Url(), response.Url());
+    EXPECT_EQ(expected_response_.CurrentRequestUrl(),
+              response.CurrentRequestUrl());
     EXPECT_EQ(expected_response_.HttpStatusCode(), response.HttpStatusCode());
   }
 
