@@ -932,7 +932,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.no_vmtest_builder,
       display_label=config_lib.DISPLAY_LABEL_TOOLCHAIN,
       build_type=constants.TOOLCHAIN_TYPE,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       images=['base', 'test', 'recovery'],
       build_timeout=(15 * 60 + 50) * 60,
       # Need to re-enable platform_SyncCrash after issue crosbug/658864 is
@@ -1003,7 +1002,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       health_threshold=1,
       afdo_use=False,
       active_waterfall=waterfall.WATERFALL_SWARMING,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       slave_configs=[],
       # 3 PM UTC is 7 AM PST (no daylight savings)
       schedule="0 15 * * *",
@@ -1423,7 +1421,6 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.PI_ANDROID_PFQ_MASTER,
       site_config.templates.pi_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 60m interval',
   )
@@ -3238,7 +3235,6 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
                                       board[config_lib.CONFIG_TEMPLATE_NAME])
           site_config[config_name].apply(
               _GetConfigValues(board),
-              buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
               chrome_sdk_build_chrome=False,
               vm_tests=[],
           )
@@ -3492,7 +3488,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.CHROOT_BUILDER_TYPE,
       active_waterfall=waterfall.WATERFALL_SWARMING,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
       prebuilts=constants.PUBLIC,
@@ -3653,7 +3648,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       boards=[],
       display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.GENERIC_TYPE,
-      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='infra_builders.InfraGoBuilder',
       use_sdk=True,
       prebuilts=constants.PUBLIC,

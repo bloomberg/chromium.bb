@@ -552,18 +552,6 @@ ANDROID_PACKAGE_NAME = 'android-container'
 ANDROID_REV_LATEST = 'latest_release'
 VALID_ANDROID_REVISIONS = [ANDROID_REV_LATEST]
 
-
-# Builder types supported
-BAREMETAL_BUILD_SLAVE_TYPE = 'baremetal'
-GCE_BEEFY_BUILD_SLAVE_TYPE = 'gce_beefy'
-GCE_BUILD_SLAVE_TYPE = 'gce'
-
-VALID_BUILD_SLAVE_TYPES = (
-    BAREMETAL_BUILD_SLAVE_TYPE,
-    GCE_BEEFY_BUILD_SLAVE_TYPE,
-    GCE_BUILD_SLAVE_TYPE,
-)
-
 # Build types supported.
 
 # TODO(sosa): Deprecate PFQ type.
