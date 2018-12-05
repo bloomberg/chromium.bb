@@ -499,8 +499,8 @@ function testOpenZipWithZipArchiver(callback) {
 }
 
 /**
- * Tests opening a .deb file. The crostini linux package install dialog
- * should be shown.
+ * Tests opening a .deb file. The crostini linux package install dialog should
+ * be called.
  */
 function testOpenInstallLinuxPackageDialog(callback) {
   window.chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {
@@ -549,9 +549,9 @@ function testOpenInstallLinuxPackageDialog(callback) {
 }
 
 /**
- * Tests that opening files within Downloads using a crostini app, shows a
- * dialog for the user to grant permission to share the directory that the
- * files are contained in with crostini.
+ * Tests that opening files within the Downloads directory using a crostini app
+ * displays the sharing permission dialog, which users can use to allow or deny
+ * sharing the directory with crostini.
  */
 function testMaybeShareCrostiniOrShowDialog() {
   const volumeManagerDownloads = /** @type {!VolumeManager} */ ({
