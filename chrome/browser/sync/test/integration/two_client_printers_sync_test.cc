@@ -129,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
 
   // Client 0 goes offline, to make this test deterministic (client 1 commits
   // first).
-  GetClient(0)->StopSyncService(syncer::SyncService::KEEP_DATA);
+  GetClient(0)->StopSyncServiceWithoutClearingData();
 
   // Client 0 makes a change while offline.
   ASSERT_TRUE(

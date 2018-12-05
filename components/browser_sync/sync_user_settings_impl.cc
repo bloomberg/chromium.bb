@@ -27,7 +27,7 @@ void SyncUserSettingsImpl::SetSyncRequested(bool requested) {
   if (requested) {
     service_->RequestStart();
   } else {
-    service_->RequestStop(syncer::SyncService::KEEP_DATA);
+    service_->RequestStop(ProfileSyncService::KEEP_DATA);
   }
 }
 

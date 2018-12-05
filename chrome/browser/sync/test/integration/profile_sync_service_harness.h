@@ -88,14 +88,15 @@ class ProfileSyncServiceHarness {
   //
   // For example, this can be used to simulate a sign-in/sign-out or can be
   // useful to recover from a lost birthday.
-  // To start from a clear slate, clear server
-  // data first, then call StopSyncService(syncer::SyncService::CLEAR_DATA)
-  // followed by StartSyncService().
+  // To start from a clear slate, clear server data first, then call
+  // StopSyncServiceAndClearData() followed by StartSyncService().
   // To simulate the user being offline for a while, call
-  // StopSyncService(syncer::SyncService::KEEP_DATA) followed by
-  // StartSyncService();
-  // Stops the sync service.
-  void StopSyncService(syncer::SyncService::SyncStopDataFate data_fate);
+  // StopSyncServiceWithoutClearingData() followed by StartSyncService().
+
+  // Stops the sync service and clears all local sync data.
+  void StopSyncServiceAndClearData();
+  // Stops the sync service but keeps all local sync data around.
+  void StopSyncServiceWithoutClearingData();
   // Starts the sync service after a previous stop.
   bool StartSyncService();
 
