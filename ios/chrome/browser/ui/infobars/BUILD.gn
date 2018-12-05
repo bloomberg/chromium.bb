@@ -35,6 +35,17 @@ source_set("public") {
   ]
 }
 
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "infobar_feature.h",
+    "infobar_feature.mm",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 source_set("infobars_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

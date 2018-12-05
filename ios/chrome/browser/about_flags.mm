@@ -55,6 +55,7 @@
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/sad_tab/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
@@ -486,6 +487,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSyncUSSBookmarksName,
      flag_descriptions::kEnableSyncUSSBookmarksDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncUSSBookmarks)},
+    {"infobar-ui-reboot", flag_descriptions::kInfobarUIRebootName,
+     flag_descriptions::kInfobarUIRebootDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kInfobarUIReboot)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -55,6 +55,9 @@ bool IsThirdPartyKeyboardWorkaroundEnabled();
 // TODO (crbug.com/884719): Remove all use of this flag.
 bool IsBookmarksUIRebootEnabled();
 
+// Whether the Infobar UI Reboot is enabled.
+bool IsInfobarUIRebootEnabled();
+
 // Whether the application group sandbox must be cleared before starting.
 // Calling this method will reset the flag to false, so the sandbox is cleared
 // only once.
