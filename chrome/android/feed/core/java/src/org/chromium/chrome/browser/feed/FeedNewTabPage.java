@@ -316,8 +316,12 @@ public class FeedNewTabPage extends NewTabPage {
                 chromeActivity, chromeActivity.getChromeApplication().getReferencePool());
         FeedLoggingBridge loggingBridge = FeedProcessScopeFactory.getFeedLoggingBridge();
         FeedOfflineIndicator offlineIndicator = FeedProcessScopeFactory.getFeedOfflineIndicator();
-        Runnable consumptionObserver =
-                () -> FeedProcessScopeFactory.getFeedScheduler().onSuggestionConsumed();
+        Runnable consumptionObserver = () -> {
+            FeedScheduler scheduler = FeedProcessScopeFactory.getFeedScheduler();
+            if (scheduler != null) {
+                scheduler.onSuggestionConsumed();
+            }
+        };
         ActionApi actionApi = new FeedActionHandler(mNewTabPageManager.getNavigationDelegate(),
                 consumptionObserver, offlineIndicator, OfflinePageBridge.getForProfile(profile),
                 loggingBridge);
