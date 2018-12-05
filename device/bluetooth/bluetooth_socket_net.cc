@@ -11,7 +11,6 @@
 #include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -135,7 +134,7 @@ void BluetoothSocketNet::DoClose() {
   // Send/Receive operations, so we can no safely release the state associated
   // to those pending operations.
   read_buffer_ = NULL;
-  base::queue<linked_ptr<WriteRequest>> empty;
+  base::queue<std::unique_ptr<WriteRequest>> empty;
   std::swap(write_queue_, empty);
 
   ResetData();
@@ -214,13 +213,13 @@ void BluetoothSocketNet::DoSend(
     return;
   }
 
-  linked_ptr<WriteRequest> request(new WriteRequest());
+  auto request = std::make_unique<WriteRequest>();
   request->buffer = buffer;
   request->buffer_size = buffer_size;
   request->success_callback = success_callback;
   request->error_callback = error_callback;
 
-  write_queue_.push(request);
+  write_queue_.push(std::move(request));
   if (write_queue_.size() == 1) {
     SendFrontWriteRequest();
   }
@@ -236,7 +235,7 @@ void BluetoothSocketNet::SendFrontWriteRequest() {
   if (write_queue_.size() == 0)
     return;
 
-  linked_ptr<WriteRequest> request = write_queue_.front();
+  WriteRequest* request = write_queue_.front().get();
   net::CompletionCallback callback =
       base::Bind(&BluetoothSocketNet::OnSocketWriteComplete,
                  this,
