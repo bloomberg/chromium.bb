@@ -23,12 +23,10 @@ class ServiceWorkerProviderHost;
 // Created per one running service worker for loading its scripts. This is kept
 // alive while ServiceWorkerNetworkProvider in the renderer process is alive.
 //
-// This factory handles requests for the scripts of a new (installing)
-// service worker. For installed workers, service worker script streaming
-// (ServiceWorkerInstalledScriptsSender) is typically used instead. However,
-// this factory can still be used when an installed worker imports a
-// non-installed script. In this case, this factory just returns a network
-// error as the spec disallows it.
+// This factory handles requests for scripts from service workers that were
+// new (non-installed) when they started. For service workers that were already
+// installed when they started, ServiceWorkerInstalledScriptsManager is used
+// instead.
 //
 // This factory creates either a ServiceWorkerNewScriptLoader or a
 // ServiceWorkerInstalledScriptLoader to load a script.

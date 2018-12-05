@@ -16,14 +16,15 @@
 namespace content {
 
 // S13nServiceWorker: A URLLoader that loads an installed service worker script
-// for a non-installed service worker.
+// for a service worker that doesn't have a
+// ServiceWorkerInstalledScriptsManager.
 //
-// This only happens when a service worker that's still being installed uses
-// importScripts() to load a script multiple times, or load the main script
-// again, which is an unusual case. In the usual cases, installed scripts are
-// served to installed service workers via service worker script streaming
-// (i.e., ServiceWorkerInstalledScriptsSender) and non-installed scripts are
-// served to non-installed service workers via ServiceWorkerNewScriptLoader.
+// Some cases where this happens:
+// - a new (non-installed) service worker requests a script that it already
+//   installed, e.g., importScripts('a.js') multiple times.
+// - a service worker that was new when it started and became installed while
+//   running requests an installed script, e.g., importScripts('a.js') after
+//   installation.
 class CONTENT_EXPORT ServiceWorkerInstalledScriptLoader
     : public network::mojom::URLLoader,
       public ServiceWorkerInstalledScriptReader::Client,
