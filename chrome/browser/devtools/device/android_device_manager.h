@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_ANDROID_DEVICE_MANAGER_H_
 
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -15,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/usb/public/mojom/device_manager.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace net {
@@ -197,6 +201,10 @@ class AndroidDeviceManager {
   void SetDeviceProviders(const DeviceProviders& providers);
 
   void QueryDevices(const DevicesCallback& callback);
+  void CountDevices(const base::Callback<void(int)>& callback);
+
+  void set_usb_device_manager_for_test(
+      device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager);
 
   static std::string GetBrowserName(const std::string& socket,
                                     const std::string& package);

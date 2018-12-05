@@ -35,7 +35,7 @@ void FakeUsbDeviceManager::GetDevices(mojom::UsbEnumerationOptionsPtr options,
 
   std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& it : devices_) {
-    mojom::UsbDeviceInfoPtr device_info = it.second->GetDeviceInfo();
+    mojom::UsbDeviceInfoPtr device_info = it.second->GetDeviceInfo().Clone();
     if (UsbDeviceFilterMatchesAny(filters, *device_info)) {
       device_infos.push_back(std::move(device_info));
     }
@@ -72,7 +72,7 @@ mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(
   DCHECK(device);
   DCHECK(!base::ContainsKey(devices_, device->guid()));
   devices_[device->guid()] = device;
-  auto device_info = device->GetDeviceInfo();
+  auto device_info = device->GetDeviceInfo().Clone();
 
   // Notify all the clients.
   clients_.ForAllPtrs(
@@ -86,7 +86,7 @@ void FakeUsbDeviceManager::RemoveDevice(
     scoped_refptr<FakeUsbDeviceInfo> device) {
   DCHECK(device);
   DCHECK(base::ContainsKey(devices_, device->guid()));
-  auto device_info = device->GetDeviceInfo();
+  auto device_info = device->GetDeviceInfo().Clone();
   devices_.erase(device->guid());
 
   // Notify all the clients

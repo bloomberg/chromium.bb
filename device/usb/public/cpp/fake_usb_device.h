@@ -6,6 +6,8 @@
 #define DEVICE_USB_PUBLIC_CPP_FAKE_USB_DEVICE_H_
 
 #include <stdint.h>
+
+#include <set>
 #include <vector>
 
 #include "base/macros.h"
@@ -29,7 +31,7 @@ class FakeUsbDevice : public mojom::UsbDevice,
                      mojom::UsbDeviceClientPtr client);
   ~FakeUsbDevice() override;
 
- private:
+ protected:
   FakeUsbDevice(scoped_refptr<FakeUsbDeviceInfo> device,
                 mojom::UsbDeviceClientPtr client);
 
@@ -81,12 +83,17 @@ class FakeUsbDevice : public mojom::UsbDevice,
 
   void CloseHandle();
 
+  mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
+
+ private:
   const scoped_refptr<FakeUsbDeviceInfo> device_;
 
   ScopedObserver<FakeUsbDeviceInfo, FakeUsbDeviceInfo::Observer> observer_;
 
   bool is_opened_ = false;
-  mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
+
+  // Recording the claimed interface_number list.
+  std::set<uint8_t> claimed_interfaces_;
   device::mojom::UsbDeviceClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUsbDevice);

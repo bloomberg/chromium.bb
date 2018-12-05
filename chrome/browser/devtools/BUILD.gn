@@ -141,6 +141,8 @@ static_library("devtools") {
       "device/usb/android_usb_device.h",
       "device/usb/android_usb_socket.cc",
       "device/usb/android_usb_socket.h",
+      "device/usb/usb_device_manager_helper.cc",
+      "device/usb/usb_device_manager_helper.h",
       "device/usb/usb_device_provider.cc",
       "device/usb/usb_device_provider.h",
       "devtools_auto_opener.cc",
