@@ -45,9 +45,6 @@
 #ifdef USE_QOPEN
 #include "qopen.hpp"
 #endif
-#ifdef USE_ARCMEM
-#include "arcmem.hpp"
-#endif
 #include "archive.hpp"
 #include "match.hpp"
 #include "cmddata.hpp"

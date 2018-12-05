@@ -20,7 +20,7 @@ bool Archive::GetComment(Array<wchar> *CmtData)
       // Old style (RAR 2.9) archive comment embedded into the main 
       // archive header.
       Seek(SFXSize+SIZEOF_MARKHEAD3+SIZEOF_MAINHEAD3,SEEK_SET);
-      if (!ReadHeader())
+      if (!ReadHeader() || GetHeaderType()!=HEAD3_CMT)
         return false;
     }
     else

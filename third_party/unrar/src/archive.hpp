@@ -20,6 +20,9 @@ enum ADDSUBDATA_FLAGS
   ASDF_CRYPTIFHEADERS = 8  // Encrypt data after subheader only in -hp mode.
 };
 
+// RAR5 headers must not exceed 2 MB.
+#define MAX_HEADER_SIZE_RAR5 0x200000
+
 class Archive:public File
 {
   private:
@@ -45,8 +48,6 @@ class Archive:public File
     bool DummyCmd;
     RAROptions *Cmd;
 
-    int64 RecoverySize;
-    int RecoveryPercent;
 
     RarTime LatestTime;
     int LastReadBlock;
@@ -56,9 +57,6 @@ class Archive:public File
 #ifdef USE_QOPEN
     QuickOpen QOpen;
     bool ProhibitQOpen;
-#endif
-#ifdef USE_ARCMEM
-    ArcMemory ArcMem;
 #endif
   public:
     Archive(RAROptions *InitCmd=NULL);
@@ -93,13 +91,11 @@ class Archive:public File
 #if 0
     void GetRecoveryInfo(bool Required,int64 *Size,int *Percent);
 #endif
+#ifdef USE_QOPEN
     bool Open(const wchar *Name,uint Mode=FMF_READ);
-    bool Close();
     int Read(void *Data,size_t Size);
     void Seek(int64 Offset,int Method);
     int64 Tell();
-    bool IsOpened();
-#ifdef USE_QOPEN
     void QOpenUnload() {QOpen.Unload();}
     void SetProhibitQOpen(bool Mode) {ProhibitQOpen=Mode;}
 #endif
@@ -114,10 +110,7 @@ class Archive:public File
     FileHeader SubHead;
     CommentHeader CommHead;
     ProtectHeader ProtectHead;
-    AVHeader AVHead;
-    SignHeader SignHead;
     UnixOwnersHeader UOHead;
-    MacFInfoHeader MACHead;
     EAHeader EAHead;
     StreamHeader StreamHead;
 
