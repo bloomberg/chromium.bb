@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.support.annotation.Nullable;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -21,8 +22,6 @@ import org.chromium.chrome.browser.widget.prefeditor.EditorModel;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 /**
  * Contact information editor.

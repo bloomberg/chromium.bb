@@ -4,13 +4,12 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
-
-import javax.annotation.Nullable;
 
 /**
  * Provides a context in which to search, and links to the native ContextualSearchContext.

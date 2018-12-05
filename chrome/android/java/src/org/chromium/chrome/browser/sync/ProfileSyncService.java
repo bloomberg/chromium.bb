@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.sync;
 
+import android.support.annotation.Nullable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -17,8 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.annotation.Nullable;
 
 /**
  * JNI wrapper for the native ProfileSyncService.

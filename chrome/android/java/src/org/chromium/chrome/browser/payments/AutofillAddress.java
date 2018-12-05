@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -24,8 +25,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 /**
  * The locally stored autofill address.

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.media.AudioManager;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
@@ -27,8 +28,6 @@ import org.chromium.services.media_session.MediaMetadata;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import javax.annotation.Nullable;
 
 /**
  * Notification control controls the cast notification and lock screen, using

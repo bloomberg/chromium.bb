@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.AccountChangeEvent;
 import com.google.android.gms.auth.GoogleAuthException;
@@ -27,8 +28,6 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * A helper for tasks like re-signin.

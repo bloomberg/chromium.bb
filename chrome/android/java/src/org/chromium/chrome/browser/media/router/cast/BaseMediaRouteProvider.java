@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * A {@link BaseMediaRouteProvider} common implementation for MediaRouteProviders.

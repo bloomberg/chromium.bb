@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import android.view.Menu;
@@ -178,8 +179,6 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 /**
  * A {@link AsyncInitializationActivity} that builds and manages a {@link CompositorViewHolder}

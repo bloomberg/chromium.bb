@@ -4,9 +4,9 @@
 
 package org.chromium.base.task;
 
-import java.util.Arrays;
+import android.support.annotation.Nullable;
 
-import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /**
  * TaskTraits are metadata that influence how the TaskSecheduler deals with that task.

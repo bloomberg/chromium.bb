@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -27,8 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Implements the JNI interface called from the C++ Media Router implementation on Android.

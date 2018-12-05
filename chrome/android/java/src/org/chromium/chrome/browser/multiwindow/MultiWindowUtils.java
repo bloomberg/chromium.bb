@@ -15,6 +15,7 @@ import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Display;
 
@@ -35,8 +36,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Utilities for detecting multi-window/multi-instance support.

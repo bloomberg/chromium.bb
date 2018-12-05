@@ -8,6 +8,7 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -20,8 +21,6 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
-
-import javax.annotation.Nullable;
 
 /**
  * This view is used to obscure content and bring focus to a foreground view (i.e. the bottom sheet

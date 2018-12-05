@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.Callback;
@@ -25,8 +26,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Access gate to C++ side offline pages functionalities.

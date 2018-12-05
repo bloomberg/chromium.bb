@@ -4,6 +4,7 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -11,8 +12,6 @@ import org.chromium.base.ThreadUtils;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * A class that handles logic related to observers that are waiting to see when the

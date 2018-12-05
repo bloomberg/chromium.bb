@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.widget.prefeditor;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Pair;
@@ -17,8 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Representation of a single input text field in an editor. Can be used, for example, for a phone

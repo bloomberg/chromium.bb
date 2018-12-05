@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import static org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.CheckBox;
@@ -22,8 +23,6 @@ import org.chromium.chrome.browser.widget.AlertDialogEditText;
 import org.chromium.chrome.download.R;
 
 import java.io.File;
-
-import javax.annotation.Nullable;
 
 /**
  * Dialog that is displayed to ask user where they want to download the file.

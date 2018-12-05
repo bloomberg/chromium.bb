@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.content.Intent;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
@@ -34,8 +35,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * A wrapper around the established Cast application session.

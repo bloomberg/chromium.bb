@@ -5,10 +5,9 @@
 package org.chromium.base.task;
 
 import android.os.Handler;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.annotations.JNINamespace;
-
-import javax.annotation.Nullable;
 
 /**
  * Implementation of the abstract class {@link SingleThreadTaskRunner}. Before native initialization

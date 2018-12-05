@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.media.router.cast.remoting;
 
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
 
 import org.chromium.base.Log;
@@ -18,8 +19,6 @@ import org.chromium.chrome.browser.media.router.cast.BaseMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.CastSession;
 import org.chromium.chrome.browser.media.router.cast.ChromeCastSessionManager;
 import org.chromium.chrome.browser.media.router.cast.CreateRouteRequest;
-
-import javax.annotation.Nullable;
 
 /**
  * A {@link MediaRouteProvider} implementation for media remote playback.

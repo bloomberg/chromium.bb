@@ -8,12 +8,11 @@ import static org.chromium.chrome.browser.ChromeFeatureList.ALLOW_REMOTE_CONTEXT
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.channels.ChannelsInitializer;
-
-import javax.annotation.Nullable;
 
 /**
  * Factory which supplies the appropriate type of notification builder based on Android version.

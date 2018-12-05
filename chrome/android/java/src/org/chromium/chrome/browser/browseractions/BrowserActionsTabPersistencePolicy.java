@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.browseractions;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
@@ -13,8 +15,6 @@ import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executor;
-
-import javax.annotation.Nullable;
 
 /**
  * Handles the Browser Actions Tab specific behaviors of tab persistence.

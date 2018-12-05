@@ -5,13 +5,12 @@
 package org.chromium.chrome.browser.payments;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
-
-import javax.annotation.Nullable;
 
 /**
  * The locally stored contact details.

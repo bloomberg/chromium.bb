@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router.cast;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouteSelector;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
@@ -13,8 +14,6 @@ import org.chromium.chrome.browser.media.router.MediaSource;
 
 import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Abstracts parsing the Cast application id and other parameters from the source ID.

@@ -9,6 +9,7 @@ import android.content.ComponentName;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -29,8 +30,6 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.OnCloseContextMenuListener;
 
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * A helper class that handles generating context menus for {@link WebContents}s.

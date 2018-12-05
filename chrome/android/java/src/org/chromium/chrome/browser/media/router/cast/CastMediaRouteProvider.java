@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
 
 import org.json.JSONException;
@@ -22,8 +23,6 @@ import org.chromium.chrome.browser.media.router.MediaSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * A {@link MediaRouteProvider} implementation for Cast devices and applications.

@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.push_messaging;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-
-import javax.annotation.Nullable;
 
 /**
  * Observes events and changes in the PushMessagingService.

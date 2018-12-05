@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -36,8 +37,6 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig.DisplayStyle;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Contains UI elements common to selectable list views: a loading view, empty view, selection

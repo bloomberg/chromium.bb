@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouteSelector;
 import android.util.Base64;
 
@@ -17,8 +18,6 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.MediaSource;
 
 import java.io.UnsupportedEncodingException;
-
-import javax.annotation.Nullable;
 
 /**
  * Abstracts parsing the Cast application id and other parameters from the source id.

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
@@ -15,8 +16,6 @@ import org.chromium.payments.mojom.PaymentMethodData;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * The base class for a single payment instrument, e.g., a credit card.

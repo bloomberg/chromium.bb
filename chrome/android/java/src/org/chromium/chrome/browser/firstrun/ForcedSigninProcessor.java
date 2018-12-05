@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -16,8 +17,6 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
-
-import javax.annotation.Nullable;
 
 /**
  * A helper to perform all necessary steps for forced sign in.

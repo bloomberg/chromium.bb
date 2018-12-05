@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -20,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * The data to show in the contact details section where the user can select something.

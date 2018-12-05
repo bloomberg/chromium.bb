@@ -9,6 +9,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.os.Build;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
@@ -16,8 +17,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Mocked implementation of the NotificationManagerProxy. Imitates behavior of the Android

@@ -4,10 +4,10 @@
 
 package org.chromium.content_public.browser;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.content.browser.ScreenOrientationProviderImpl;
 import org.chromium.ui.base.WindowAndroid;
-
-import javax.annotation.Nullable;
 
 /**
  * Interface providing the access to C++ ScreenOrientationProvider.

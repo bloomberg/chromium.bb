@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.ChromeActivity;
@@ -21,8 +22,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * This app class represents a service worker based payment app.

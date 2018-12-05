@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
@@ -14,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * The data to show in a single section where the user can select something, e.g., their

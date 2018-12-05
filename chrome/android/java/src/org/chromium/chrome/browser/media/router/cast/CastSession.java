@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
+import android.support.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.chromium.chrome.browser.media.router.FlingingController;
 
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * The interface for talking to the GMS core. We need to isolate this

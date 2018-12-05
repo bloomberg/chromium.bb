@@ -7,6 +7,7 @@ package org.chromium.components.sync.notifier;
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
@@ -20,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Class to manage the preferences used by the invalidation client.

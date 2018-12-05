@@ -10,6 +10,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
@@ -52,8 +53,6 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionO
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * A toolbar that changes its view depending on whether a selection is established. The toolbar

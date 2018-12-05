@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaControlIntent;
 import android.support.v7.media.MediaItemStatus;
 import android.support.v7.media.MediaRouteSelector;
@@ -28,8 +29,6 @@ import org.chromium.ui.widget.Toast;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import javax.annotation.Nullable;
 
 /**
  * Class containing the common, connection type independent, code for all MediaRouteControllers.

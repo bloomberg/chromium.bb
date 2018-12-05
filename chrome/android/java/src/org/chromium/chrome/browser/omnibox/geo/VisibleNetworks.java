@@ -5,14 +5,13 @@
 package org.chromium.chrome.browser.omnibox.geo;
 
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.v4.util.ObjectsCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * Visible networks. Stores the data of connected and visible networks.

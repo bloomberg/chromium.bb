@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -17,8 +18,6 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
-
-import javax.annotation.Nullable;
 
 /**
  * A utility class to take a feedback-formatted screenshot of an {@link Activity}.

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -25,8 +26,6 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.components.sync.StopSource;
-
-import javax.annotation.Nullable;
 
 /**
  * SyncController handles the coordination of sync state between the invalidation controller,

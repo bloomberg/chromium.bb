@@ -10,6 +10,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.support.annotation.MainThread;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
@@ -26,8 +27,6 @@ import org.chromium.components.sync.SyncConstants;
 
 import java.io.IOException;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 /**
  * Sends Upstream messages for Invalidations using GCM.

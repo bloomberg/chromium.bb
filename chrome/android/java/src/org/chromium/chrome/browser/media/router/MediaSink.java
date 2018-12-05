@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.support.annotation.Nullable;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
 import com.google.android.gms.cast.CastDevice;
-
-import javax.annotation.Nullable;
 
 /**
  * A common descriptor of a device that can present some URI.
