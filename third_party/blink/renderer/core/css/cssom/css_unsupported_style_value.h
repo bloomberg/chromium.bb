@@ -12,14 +12,25 @@ namespace blink {
 
 // CSSUnsupportedStyleValue is the internal representation of a base
 // CSSStyleValue that is returned when we do not yet support a CSS Typed OM type
-// for a given CSS Value. It is tied to a specific CSS property and is only
-// considered valid for that property.
+// for a given CSS Value.
+//
+// It is either:
+//
+// * Tied to a specific CSS property, and therefore only valid for that
+//   property, or
+// * Tied to no CSS property at all, in which case it's not valid for any
+//   property.
+
 class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
  public:
+  static CSSUnsupportedStyleValue* Create(const CSSValue& value) {
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(value.CssText());
+  }
   static CSSUnsupportedStyleValue* Create(
       CSSPropertyID property,
       const AtomicString& custom_property_name,
       const String& css_text) {
+    DCHECK_NE(property, CSSPropertyInvalid);
     return MakeGarbageCollected<CSSUnsupportedStyleValue>(
         property, custom_property_name, css_text);
   }
@@ -27,10 +38,15 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
       CSSPropertyID property,
       const AtomicString& custom_property_name,
       const CSSValue& value) {
+    DCHECK_NE(property, CSSPropertyInvalid);
     return MakeGarbageCollected<CSSUnsupportedStyleValue>(
         property, custom_property_name, value.CssText());
   }
 
+  CSSUnsupportedStyleValue(const String& css_text)
+      : property_(CSSPropertyInvalid) {
+    SetCSSText(css_text);
+  }
   CSSUnsupportedStyleValue(CSSPropertyID property,
                            const AtomicString& custom_property_name,
                            const String& css_text)
