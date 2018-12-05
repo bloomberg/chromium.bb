@@ -44,7 +44,9 @@ void AudioFocusWebContentsObserver::DidFinishNavigation(
   extensions::ProcessManager* pm = extensions::ProcessManager::Get(context);
   extensions::ExtensionHost* host =
       pm->GetBackgroundHostForExtension(extension->id());
-  DCHECK(host);
+
+  if (!host || !host->host_contents())
+    return;
 
   // If we are the background contents then we will generate a group id.
   // Otherwise, we will use the group id from the background contents. This
