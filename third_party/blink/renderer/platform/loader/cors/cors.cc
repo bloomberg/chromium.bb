@@ -280,8 +280,10 @@ network::mojom::FetchResponseType CalculateResponseTainting(
   base::Optional<url::Origin> origin_to_pass;
   if (origin)
     origin_to_pass = AsUrlOrigin(*origin);
+  // Blink-side loaders mutate origin instead of setting "tainted_origin" flag,
+  // so we are not using the flag.
   return network::cors::CalculateResponseTainting(
-      url, request_mode, origin_to_pass, cors_flag == CorsFlag::Set);
+      url, request_mode, origin_to_pass, cors_flag == CorsFlag::Set, false);
 }
 
 bool CalculateCredentialsFlag(
