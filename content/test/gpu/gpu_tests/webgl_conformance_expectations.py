@@ -744,6 +744,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=784817)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
+    self.Flaky('conformance/glsl/constructors/glsl-construct-ivec4.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
+    self.Flaky('conformance/glsl/constructors/' +
+        'glsl-construct-vec-mat-corner-cases.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
+    self.Flaky('conformance/glsl/functions/glsl-function-dot.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
