@@ -23,13 +23,11 @@ ccameron@chromium.org
 penghuang@chromium.org
 
 # display_embedder / ozone
-reveman@chromium.org
 rjkroege@chromium.org
 sadrul@chromium.org
 
 # frame sinks / surfaces
 enne@chromium.org
-fsamuel@chromium.org
 kylechar@chromium.org
 samans@chromium.org
 
@@ -42,20 +40,15 @@ sadrul@chromium.org
 # hit testing
 rjkroege@chromium.org
 sadrul@chromium.org
-vollick@chromium.org
 
 # math / geometry
 flackr@chromium.org
-vollick@chromium.org
 
 # overlays
 ccameron@chromium.org
 dcastagna@chromium.org
-reveman@chromium.org
 
 # scheduling / begin frames
-brianderson@chromium.org
-skyostil@chromium.org
 sunnyps@chromium.org
 
 # general
