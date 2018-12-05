@@ -79,12 +79,13 @@ void EmailHandler::HandleGetEmailList(const base::ListValue* args) {
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
   ResolveJavascriptCallback(*callback_id,
-                            bookmarkItemsToListValue(email_providers_));
+                            BookmarkItemsToListValue(email_providers_));
 }
 
 void EmailHandler::AddSources(content::WebUIDataSource* html_source) {
   // Add constants to loadtime data
-  html_source->AddInteger("email_providers_enum_count", EmailProviders::kCount);
+  html_source->AddInteger("email_providers_enum_count",
+                          GetNumberOfEmailProviders());
   html_source->SetJsonPath("strings.js");
 }
 

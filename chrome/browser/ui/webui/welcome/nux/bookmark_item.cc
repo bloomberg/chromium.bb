@@ -9,7 +9,7 @@
 
 namespace nux {
 
-base::ListValue bookmarkItemsToListValue(const BookmarkItem items[],
+base::ListValue BookmarkItemsToListValue(const BookmarkItem items[],
                                          size_t count) {
   base::ListValue list_value;
   for (size_t i = 0; i < count; ++i) {
@@ -25,7 +25,7 @@ base::ListValue bookmarkItemsToListValue(const BookmarkItem items[],
   return list_value;
 }
 
-base::ListValue bookmarkItemsToListValue(
+base::ListValue BookmarkItemsToListValue(
     const std::vector<BookmarkItem>& items) {
   base::ListValue list_value;
   for (const auto& item : items) {

@@ -11,18 +11,10 @@
 
 namespace nux {
 
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum EmailProviders {
-  kGmail = 0,
-  kYahoo = 1,
-  kOutlook = 2,
-  kAol = 3,
-  kiCloud = 4,
-  kCount,
-};
-
 std::vector<BookmarkItem> GetCurrentCountryEmailProviders();
+
+// Function to avoid exposing enum only for count.
+int GetNumberOfEmailProviders();
 
 }  // namespace nux
 
