@@ -11,6 +11,14 @@
 interface ElementInternals {
   // Attributes and operations for form-associated custom elements.
   [RaisesException] void setFormValue(FormDataEntryValue value, optional FormData entrySource);
+
   [RaisesException] readonly attribute HTMLFormElement? form;
+
+  [RaisesException] void setValidity(ValidityStateFlags flags, optional DOMString message);
+  [RaisesException] readonly attribute boolean willValidate;
+  [RaisesException] readonly attribute ValidityState validity;
+  [RaisesException, ImplementedAs=ValidationMessageForBinding] readonly attribute DOMString validationMessage;
+  [RaisesException] boolean checkValidity();
+  [RaisesException] boolean reportValidity();
 };
 

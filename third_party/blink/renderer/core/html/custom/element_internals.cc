@@ -8,8 +8,10 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
+#include "third_party/blink/renderer/core/html/custom/validity_state_flags.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
+#include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 
 namespace blink {
@@ -22,6 +24,7 @@ void ElementInternals::Trace(Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(value_);
   visitor->Trace(entry_source_);
+  visitor->Trace(validity_flags_);
   ListedElement::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -57,6 +60,91 @@ HTMLFormElement* ElementInternals::form(ExceptionState& exception_state) const {
     return nullptr;
   }
   return ListedElement::Form();
+}
+
+void ElementInternals::setValidity(ValidityStateFlags* flags,
+                                   ExceptionState& exception_state) {
+  setValidity(flags, String(), exception_state);
+}
+
+void ElementInternals::setValidity(ValidityStateFlags* flags,
+                                   const String& message,
+                                   ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return;
+  }
+  // Custom element authors should provide a message. They can omit the message
+  // argument only if nothing if | flags| is true.
+  if ((flags->badInput() || flags->customError() || flags->patternMismatch() ||
+       flags->rangeOverflow() || flags->rangeUnderflow() ||
+       flags->stepMismatch() || flags->tooLong() || flags->tooShort() ||
+       flags->typeMismatch() || flags->valueMissing()) &&
+      message.IsEmpty()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kTypeMismatchError,
+        "The second argument should not be empty if one or more flags in the "
+        "first argument are true.");
+    return;
+  }
+  validity_flags_ = flags;
+  SetCustomValidationMessage(message);
+  SetNeedsValidityCheck();
+}
+
+bool ElementInternals::willValidate(ExceptionState& exception_state) const {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return false;
+  }
+  return WillValidate();
+}
+
+ValidityState* ElementInternals::validity(ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return nullptr;
+  }
+  return ListedElement::validity();
+}
+
+String ElementInternals::ValidationMessageForBinding(
+    ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return String();
+  }
+  if (ListedElement::validity()->valid())
+    return String();
+  return CustomValidationMessage();
+}
+
+bool ElementInternals::checkValidity(ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return false;
+  }
+  return ListedElement::checkValidity();
+}
+
+bool ElementInternals::reportValidity(ExceptionState& exception_state) {
+  if (!IsTargetFormAssociated()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The target element is not a form-associated custom element.");
+    return false;
+  }
+  return ListedElement::reportValidity();
 }
 
 void ElementInternals::DidUpgrade() {
@@ -131,6 +219,46 @@ void ElementInternals::AppendToFormData(FormData& form_data) {
 void ElementInternals::DidChangeForm() {
   ListedElement::DidChangeForm();
   CustomElement::EnqueueFormAssociatedCallback(Target(), Form());
+}
+
+bool ElementInternals::HasBadInput() const {
+  return validity_flags_ && validity_flags_->badInput();
+}
+
+bool ElementInternals::PatternMismatch() const {
+  return validity_flags_ && validity_flags_->patternMismatch();
+}
+
+bool ElementInternals::RangeOverflow() const {
+  return validity_flags_ && validity_flags_->rangeOverflow();
+}
+
+bool ElementInternals::RangeUnderflow() const {
+  return validity_flags_ && validity_flags_->rangeUnderflow();
+}
+
+bool ElementInternals::StepMismatch() const {
+  return validity_flags_ && validity_flags_->stepMismatch();
+}
+
+bool ElementInternals::TooLong() const {
+  return validity_flags_ && validity_flags_->tooLong();
+}
+
+bool ElementInternals::TooShort() const {
+  return validity_flags_ && validity_flags_->tooShort();
+}
+
+bool ElementInternals::TypeMismatch() const {
+  return validity_flags_ && validity_flags_->typeMismatch();
+}
+
+bool ElementInternals::ValueMissing() const {
+  return validity_flags_ && validity_flags_->valueMissing();
+}
+
+bool ElementInternals::CustomError() const {
+  return validity_flags_ && validity_flags_->customError();
 }
 
 }  // namespace blink

@@ -207,10 +207,8 @@ void HTMLFormElement::SubmitImplicitly(Event& event,
 
 bool HTMLFormElement::ValidateInteractively() {
   UseCounter::Count(GetDocument(), WebFeature::kFormValidationStarted);
-  for (const auto& element : ListedElements()) {
-    if (element->IsFormControlElement())
-      ToHTMLFormControlElement(element)->HideVisibleValidationMessage();
-  }
+  for (const auto& element : ListedElements())
+    element->HideVisibleValidationMessage();
 
   ListedElement::List unhandled_invalid_controls;
   if (!CheckInvalidControlsAndCollectUnhandled(
@@ -736,16 +734,23 @@ bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
     elements.push_back(element);
   int invalid_controls_count = 0;
   for (const auto& element : elements) {
-    if (element->Form() == this && element->IsFormControlElement()) {
-      HTMLFormControlElement* control = ToHTMLFormControlElement(element);
-      if (control->IsSubmittableElement() &&
-          !control->checkValidity(unhandled_invalid_controls, event_behavior) &&
-          control->formOwner() == this) {
-        ++invalid_controls_count;
-        if (!unhandled_invalid_controls &&
-            event_behavior == kCheckValidityDispatchNoEvent)
-          return true;
-      }
+    if (element->Form() != this)
+      continue;
+    // TOOD(tkent): Virtualize checkValidity().
+    bool should_check_validity = false;
+    if (element->IsFormControlElement()) {
+      should_check_validity =
+          ToHTMLFormControlElement(element)->IsSubmittableElement();
+    } else if (element->IsElementInternals()) {
+      should_check_validity = true;
+    }
+    if (should_check_validity &&
+        !element->checkValidity(unhandled_invalid_controls, event_behavior) &&
+        element->Form() == this) {
+      ++invalid_controls_count;
+      if (!unhandled_invalid_controls &&
+          event_behavior == kCheckValidityDispatchNoEvent)
+        return true;
     }
   }
   return invalid_controls_count;

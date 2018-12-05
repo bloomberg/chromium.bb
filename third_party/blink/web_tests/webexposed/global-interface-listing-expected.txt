@@ -2051,8 +2051,14 @@ interface Element : Node
 interface ElementInternals
     attribute @@toStringTag
     getter form
+    getter validationMessage
+    getter validity
+    getter willValidate
+    method checkValidity
     method constructor
+    method reportValidity
     method setFormValue
+    method setValidity
 interface EnterPictureInPictureEvent : Event
     attribute @@toStringTag
     getter pictureInPictureWindow
