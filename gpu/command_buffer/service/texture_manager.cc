@@ -2605,12 +2605,11 @@ TextureRef* TextureManager::GetTextureInfoForTargetUnlessDefault(
   return texture;
 }
 
-bool TextureManager::ValidateTexImage(
-    ContextState* state,
-    const char* function_name,
-    const DoTexImageArguments& args,
-    TextureRef** texture_ref) {
-  ErrorState* error_state = state->GetErrorState();
+bool TextureManager::ValidateTexImage(ContextState* state,
+                                      ErrorState* error_state,
+                                      const char* function_name,
+                                      const DoTexImageArguments& args,
+                                      TextureRef** texture_ref) {
   const Validators* validators = feature_info_->validators();
   if (((args.command_type == DoTexImageArguments::kTexImage2D) &&
        !validators->texture_target.IsValid(args.target)) ||
@@ -2727,6 +2726,7 @@ bool TextureManager::ValidateTexImage(
 void TextureManager::DoCubeMapWorkaround(
     DecoderTextureState* texture_state,
     ContextState* state,
+    ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
     TextureRef* texture_ref,
     const char* function_name,
@@ -2761,7 +2761,7 @@ void TextureManager::DoCubeMapWorkaround(
   for (GLenum face : undefined_faces) {
     new_args.target = face;
     new_args.pixels = zero.get();
-    DoTexImage(texture_state, state, framebuffer_state,
+    DoTexImage(texture_state, state, error_state, framebuffer_state,
                function_name, texture_ref, new_args);
     texture->MarkLevelAsInternalWorkaround(face, args.level);
   }
@@ -2771,11 +2771,13 @@ void TextureManager::DoCubeMapWorkaround(
 void TextureManager::ValidateAndDoTexImage(
     DecoderTextureState* texture_state,
     ContextState* state,
+    ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
     const char* function_name,
     const DoTexImageArguments& args) {
   TextureRef* texture_ref;
-  if (!ValidateTexImage(state, function_name, args, &texture_ref)) {
+  if (!ValidateTexImage(state, error_state, function_name, args,
+                        &texture_ref)) {
     return;
   }
 
@@ -2799,7 +2801,7 @@ void TextureManager::ValidateAndDoTexImage(
             GL_SRGB));
 
   if (need_cube_map_workaround && !buffer) {
-    DoCubeMapWorkaround(texture_state, state, framebuffer_state,
+    DoCubeMapWorkaround(texture_state, state, error_state, framebuffer_state,
                         texture_ref, function_name, args);
   }
 
@@ -2815,8 +2817,9 @@ void TextureManager::ValidateAndDoTexImage(
       // The rows overlap in unpack memory. Upload the texture row by row to
       // work around driver bug.
 
-      ReserveTexImageToBeFilled(texture_state, state, framebuffer_state,
-                                function_name, texture_ref, args);
+      ReserveTexImageToBeFilled(texture_state, state, error_state,
+                                framebuffer_state, function_name, texture_ref,
+                                args);
 
       DoTexSubImageArguments sub_args = {
           args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
@@ -2839,8 +2842,9 @@ void TextureManager::ValidateAndDoTexImage(
     const PixelStoreParams unpack_params(state->GetUnpackParams(dimension));
     if (unpack_params.image_height != 0 &&
         unpack_params.image_height != args.height) {
-      ReserveTexImageToBeFilled(texture_state, state, framebuffer_state,
-                                function_name, texture_ref, args);
+      ReserveTexImageToBeFilled(texture_state, state, error_state,
+                                framebuffer_state, function_name, texture_ref,
+                                args);
 
       DoTexSubImageArguments sub_args = {
           args.target,
@@ -2871,8 +2875,9 @@ void TextureManager::ValidateAndDoTexImage(
     if (buffer_size - args.pixels_size - ToGLuint(args.pixels) < args.padding) {
       // In ValidateTexImage(), we already made sure buffer size is no less
       // than offset + pixels_size.
-      ReserveTexImageToBeFilled(texture_state, state, framebuffer_state,
-                                function_name, texture_ref, args);
+      ReserveTexImageToBeFilled(texture_state, state, error_state,
+                                framebuffer_state, function_name, texture_ref,
+                                args);
 
       DoTexSubImageArguments sub_args = {
           args.target, args.level, 0, 0, 0, args.width, args.height, args.depth,
@@ -2886,13 +2891,14 @@ void TextureManager::ValidateAndDoTexImage(
       return;
     }
   }
-  DoTexImage(texture_state, state, framebuffer_state,
+  DoTexImage(texture_state, state, error_state, framebuffer_state,
              function_name, texture_ref, args);
 }
 
 void TextureManager::ReserveTexImageToBeFilled(
     DecoderTextureState* texture_state,
     ContextState* state,
+    ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
     const char* function_name,
     TextureRef* texture_ref,
@@ -2903,17 +2909,17 @@ void TextureManager::ReserveTexImageToBeFilled(
   DoTexImageArguments new_args = args;
   new_args.pixels = nullptr;
   // pixels_size might be incorrect, but it's not used in this case.
-  DoTexImage(texture_state, state, framebuffer_state, function_name,
-             texture_ref, new_args);
+  DoTexImage(texture_state, state, error_state, framebuffer_state,
+             function_name, texture_ref, new_args);
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer->service_id());
   state->SetBoundBuffer(GL_PIXEL_UNPACK_BUFFER, buffer);
 }
 
 bool TextureManager::ValidateTexSubImage(ContextState* state,
+                                         ErrorState* error_state,
                                          const char* function_name,
                                          const DoTexSubImageArguments& args,
                                          TextureRef** texture_ref) {
-  ErrorState* error_state = state->GetErrorState();
   const Validators* validators = feature_info_->validators();
 
   if ((args.command_type == DoTexSubImageArguments::kTexSubImage2D &&
@@ -3024,13 +3030,14 @@ void TextureManager::ValidateAndDoTexSubImage(
     DecoderContext* decoder,
     DecoderTextureState* texture_state,
     ContextState* state,
+    ErrorState* error_state,
     DecoderFramebufferState* framebuffer_state,
     const char* function_name,
     const DoTexSubImageArguments& args) {
   TRACE_EVENT0("gpu", "TextureManager::ValidateAndDoTexSubImage");
-  ErrorState* error_state = state->GetErrorState();
   TextureRef* texture_ref;
-  if (!ValidateTexSubImage(state, function_name, args, &texture_ref)) {
+  if (!ValidateTexSubImage(state, error_state, function_name, args,
+                           &texture_ref)) {
     return;
   }
 
@@ -3431,14 +3438,13 @@ GLenum TextureManager::AdjustTexStorageFormat(
   return format;
 }
 
-void TextureManager::DoTexImage(
-    DecoderTextureState* texture_state,
-    ContextState* state,
-    DecoderFramebufferState* framebuffer_state,
-    const char* function_name,
-    TextureRef* texture_ref,
-    const DoTexImageArguments& args) {
-  ErrorState* error_state = state->GetErrorState();
+void TextureManager::DoTexImage(DecoderTextureState* texture_state,
+                                ContextState* state,
+                                ErrorState* error_state,
+                                DecoderFramebufferState* framebuffer_state,
+                                const char* function_name,
+                                TextureRef* texture_ref,
+                                const DoTexImageArguments& args) {
   Texture* texture = texture_ref->texture();
   GLsizei tex_width = 0;
   GLsizei tex_height = 0;
