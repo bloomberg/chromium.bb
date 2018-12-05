@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ui/views/window/frame_caption_button.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -22,8 +22,8 @@ constexpr SkColor kBackgroundColors[] = {
 
 TEST(FrameCaptionButtonTest, ThemedColorContrast) {
   for (SkColor background_color : kBackgroundColors) {
-    SkColor button_color = ash::FrameCaptionButton::GetButtonColor(
-        ash::FrameCaptionButton::ColorMode::kThemed, background_color);
+    SkColor button_color = views::FrameCaptionButton::GetButtonColor(
+        views::FrameCaptionButton::ColorMode::kThemed, background_color);
     EXPECT_GE(color_utils::GetContrastRatio(button_color, background_color), 3);
   }
 }

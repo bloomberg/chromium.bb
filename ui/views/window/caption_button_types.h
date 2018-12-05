@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_CAPTION_BUTTON_TYPES_H_
-#define ASH_PUBLIC_CPP_CAPTION_BUTTONS_CAPTION_BUTTON_TYPES_H_
+#ifndef UI_VIEWS_WINDOW_CAPTION_BUTTON_TYPES_H_
+#define UI_VIEWS_WINDOW_CAPTION_BUTTON_TYPES_H_
 
-namespace ash {
+namespace views {
 
 // These are the icon types that a caption button can have. The size button's
 // action (SnapType) can be different from its icon.
@@ -22,6 +22,6 @@ enum CaptionButtonIcon {
   CAPTION_BUTTON_ICON_COUNT
 };
 
-}  // namespace ash
+}  // namespace views
 
-#endif  // ASH_PUBLIC_CPP_CAPTION_BUTTONS_CAPTION_BUTTON_TYPES_H_
+#endif  // UI_VIEWS_WINDOW_CAPTION_BUTTON_TYPES_H_

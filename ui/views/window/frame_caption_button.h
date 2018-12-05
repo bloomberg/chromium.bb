@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
-#define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#ifndef UI_VIEWS_WINDOW_FRAME_CAPTION_BUTTON_H_
+#define UI_VIEWS_WINDOW_FRAME_CAPTION_BUTTON_H_
 
 #include <memory>
 
-#include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/views_export.h"
+#include "ui/views/window/caption_button_types.h"
 
 namespace gfx {
 class SlideAnimation;
 struct VectorIcon;
 }  // namespace gfx
 
-namespace ash {
+namespace views {
 
 // Base class for the window caption buttons (minimize, maximize, restore,
 // close).
-class ASH_PUBLIC_EXPORT FrameCaptionButton : public views::Button {
+class VIEWS_EXPORT FrameCaptionButton : public views::Button {
  public:
   enum Animate { ANIMATE_YES, ANIMATE_NO };
 
@@ -75,11 +75,15 @@ class ASH_PUBLIC_EXPORT FrameCaptionButton : public views::Button {
     paint_as_active_ = paint_as_active;
   }
 
-  bool paint_as_active() { return paint_as_active_; }
+  bool paint_as_active() const { return paint_as_active_; }
+
+  SkColor background_color() const { return background_color_; }
+
+  ColorMode color_mode() const { return color_mode_; }
 
   CaptionButtonIcon icon() const { return icon_; }
 
-  const gfx::ImageSkia& icon_image() { return icon_image_; }
+  const gfx::ImageSkia& icon_image() const { return icon_image_; }
 
   const gfx::VectorIcon* icon_definition_for_test() const {
     return icon_definition_;
@@ -126,6 +130,6 @@ class ASH_PUBLIC_EXPORT FrameCaptionButton : public views::Button {
   DISALLOW_COPY_AND_ASSIGN(FrameCaptionButton);
 };
 
-}  // namespace ash
+}  // namespace views
 
-#endif  // ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#endif  // UI_VIEWS_WINDOW_FRAME_CAPTION_BUTTON_H_

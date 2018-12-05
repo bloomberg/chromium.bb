@@ -13,7 +13,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -41,6 +40,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/caption_button_layout_constants.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 DEFINE_UI_CLASS_PROPERTY_TYPE(ash::NonClientFrameController*);
@@ -254,13 +254,18 @@ NonClientFrameController* NonClientFrameController::Get(aura::Window* window) {
 
 // static
 gfx::Insets NonClientFrameController::GetPreferredClientAreaInsets() {
-  return gfx::Insets(
-      GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(), 0, 0, 0);
+  return gfx::Insets(views::GetCaptionButtonLayoutSize(
+                         views::CaptionButtonLayoutSize::kNonBrowserCaption)
+                         .height(),
+                     0, 0, 0);
 }
 
 // static
 int NonClientFrameController::GetMaxTitleBarButtonWidth() {
-  return GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).width() * 3;
+  return views::GetCaptionButtonLayoutSize(
+             views::CaptionButtonLayoutSize::kNonBrowserCaption)
+             .width() *
+         3;
 }
 
 void NonClientFrameController::StoreCursor(const ui::Cursor& cursor) {

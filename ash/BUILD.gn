@@ -1401,6 +1401,7 @@ component("ash") {
     "//ui/platform_window/mojo",
     "//ui/platform_window/stub",
     "//ui/snapshot",
+    "//ui/views/window/vector_icons",
     "//ui/wm/public",
     "//url",
   ]
@@ -1675,7 +1676,6 @@ test("ash_unittests") {
     "first_run/first_run_helper_unittest.cc",
     "focus_cycler_unittest.cc",
     "frame/caption_buttons/frame_caption_button_container_view_unittest.cc",
-    "frame/caption_buttons/frame_caption_button_unittest.cc",
     "frame/caption_buttons/frame_size_button_unittest.cc",
     "frame/default_frame_header_unittest.cc",
     "frame/non_client_frame_view_ash_unittest.cc",
@@ -1994,6 +1994,7 @@ test("ash_unittests") {
     "//ui/views",
     "//ui/views:test_support",
     "//ui/views/mus",
+    "//ui/views/window/vector_icons",
     "//ui/wm",
     "//ui/wm:test_support",
     "//ui/wm/public",

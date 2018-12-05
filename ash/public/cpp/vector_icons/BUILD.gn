@@ -37,11 +37,7 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "notification_vpn.icon",
     "notification_warning.icon",
     "notification_wifi_off.icon",
-    "window_control_close.icon",
     "window_control_left_snapped.icon",
-    "window_control_maximize.icon",
-    "window_control_minimize.icon",
-    "window_control_restore.icon",
     "window_control_right_snapped.icon",
   ]
 }

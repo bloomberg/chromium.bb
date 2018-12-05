@@ -1329,18 +1329,19 @@ TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
   shell_surface->SetGeometry(gfx::Rect(0, 0, 64, 64));
   surface->Commit();
 
-  constexpr ash::CaptionButtonIcon kAllButtons[] = {
-      ash::CAPTION_BUTTON_ICON_MINIMIZE,
-      ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      ash::CAPTION_BUTTON_ICON_CLOSE,
-      ash::CAPTION_BUTTON_ICON_BACK,
-      ash::CAPTION_BUTTON_ICON_MENU,
+  constexpr views::CaptionButtonIcon kAllButtons[] = {
+      views::CAPTION_BUTTON_ICON_MINIMIZE,
+      views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+      views::CAPTION_BUTTON_ICON_CLOSE,
+      views::CAPTION_BUTTON_ICON_BACK,
+      views::CAPTION_BUTTON_ICON_MENU,
   };
   constexpr uint32_t kAllButtonMask =
-      1 << ash::CAPTION_BUTTON_ICON_MINIMIZE |
-      1 << ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE |
-      1 << ash::CAPTION_BUTTON_ICON_CLOSE | 1 << ash::CAPTION_BUTTON_ICON_BACK |
-      1 << ash::CAPTION_BUTTON_ICON_MENU;
+      1 << views::CAPTION_BUTTON_ICON_MINIMIZE |
+      1 << views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE |
+      1 << views::CAPTION_BUTTON_ICON_CLOSE |
+      1 << views::CAPTION_BUTTON_ICON_BACK |
+      1 << views::CAPTION_BUTTON_ICON_MENU;
 
   ash::NonClientFrameViewAsh* frame_view =
       static_cast<ash::NonClientFrameViewAsh*>(
@@ -1378,7 +1379,7 @@ TEST_F(ClientControlledShellSurfaceTest, CaptionButtonModel) {
   // Zoom mode
   EXPECT_FALSE(container->model()->InZoomMode());
   shell_surface->SetFrameButtons(
-      kAllButtonMask | 1 << ash::CAPTION_BUTTON_ICON_ZOOM, kAllButtonMask);
+      kAllButtonMask | 1 << views::CAPTION_BUTTON_ICON_ZOOM, kAllButtonMask);
   EXPECT_TRUE(container->model()->InZoomMode());
 }
 

@@ -4,8 +4,6 @@
 
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 
-#include "ash/public/cpp/ash_layout_constants.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -14,6 +12,9 @@
 #include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_layout_constants.h"
+#include "ui/views/window/frame_caption_button.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 
 namespace ash {
 
@@ -67,19 +68,19 @@ class FrameCaptionButtonContainerViewTest : public AshTestBase {
   // Sets arbitrary images for the icons and assign the default caption button
   // size to the buttons in |container|.
   void InitContainer(FrameCaptionButtonContainerView* container) {
-    container->SetButtonSize(
-        GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption));
-    for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
-      container->SetButtonImage(static_cast<CaptionButtonIcon>(icon),
-                                ash::kWindowControlCloseIcon);
+    container->SetButtonSize(views::GetCaptionButtonLayoutSize(
+        views::CaptionButtonLayoutSize::kNonBrowserCaption));
+    for (int icon = 0; icon < views::CAPTION_BUTTON_ICON_COUNT; ++icon) {
+      container->SetButtonImage(static_cast<views::CaptionButtonIcon>(icon),
+                                views::kWindowControlCloseIcon);
     }
     container->SizeToPreferredSize();
   }
 
   // Tests that |leftmost| and |rightmost| are at |container|'s edges.
   bool CheckButtonsAtEdges(FrameCaptionButtonContainerView* container,
-                           const ash::FrameCaptionButton& leftmost,
-                           const ash::FrameCaptionButton& rightmost) {
+                           const views::FrameCaptionButton& leftmost,
+                           const views::FrameCaptionButton& rightmost) {
     gfx::Rect expected(container->GetPreferredSize());
 
     gfx::Rect container_size(container->GetPreferredSize());

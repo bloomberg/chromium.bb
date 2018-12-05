@@ -9,9 +9,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
@@ -43,6 +41,9 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_layout_constants.h"
+#include "ui/views/window/frame_caption_button.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -147,7 +148,9 @@ TEST_F(NonClientFrameViewAshTest, HeaderHeight) {
 
   // The header should have enough room for the window controls. The
   // header/content separator line overlays the window controls.
-  EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
+  EXPECT_EQ(views::GetCaptionButtonLayoutSize(
+                views::CaptionButtonLayoutSize::kNonBrowserCaption)
+                .height(),
             delegate->non_client_frame_view()->GetHeaderView()->height());
 }
 
@@ -297,7 +300,7 @@ TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
   // Restore icon for size button in maximized window state. Compare by name
   // because the address may not be the same for different build targets in the
   // component build.
-  EXPECT_STREQ(kWindowControlRestoreIcon.name,
+  EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                test.size_button()->icon_definition_for_test()->name);
   widget->Minimize();
 
@@ -309,7 +312,7 @@ TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
   // maximized window state, which is restore icon.
   ::wm::Unminimize(widget->GetNativeWindow());
   EXPECT_TRUE(widget->IsMaximized());
-  EXPECT_STREQ(kWindowControlRestoreIcon.name,
+  EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                test.size_button()->icon_definition_for_test()->name);
 }
 
@@ -333,7 +336,9 @@ TEST_F(NonClientFrameViewAshTest,
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
+  EXPECT_EQ(views::GetCaptionButtonLayoutSize(
+                views::CaptionButtonLayoutSize::kNonBrowserCaption)
+                .height(),
             delegate->GetNonClientFrameViewTopBorderHeight());
 }
 
@@ -376,7 +381,9 @@ TEST_F(NonClientFrameViewAshTest, OpeningAppsInTabletMode) {
   EXPECT_EQ(0, delegate->GetNonClientFrameViewTopBorderHeight());
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
+  EXPECT_EQ(views::GetCaptionButtonLayoutSize(
+                views::CaptionButtonLayoutSize::kNonBrowserCaption)
+                .height(),
             delegate->GetNonClientFrameViewTopBorderHeight());
 }
 
@@ -488,14 +495,14 @@ class TestButtonModel : public CaptionButtonModel {
 
   void set_zoom_mode(bool zoom_mode) { zoom_mode_ = zoom_mode; }
 
-  void SetVisible(CaptionButtonIcon type, bool visible) {
+  void SetVisible(views::CaptionButtonIcon type, bool visible) {
     if (visible)
       visible_buttons_.insert(type);
     else
       visible_buttons_.erase(type);
   }
 
-  void SetEnabled(CaptionButtonIcon type, bool enabled) {
+  void SetEnabled(views::CaptionButtonIcon type, bool enabled) {
     if (enabled)
       enabled_buttons_.insert(type);
     else
@@ -503,17 +510,17 @@ class TestButtonModel : public CaptionButtonModel {
   }
 
   // CaptionButtonModel::
-  bool IsVisible(CaptionButtonIcon type) const override {
+  bool IsVisible(views::CaptionButtonIcon type) const override {
     return visible_buttons_.count(type);
   }
-  bool IsEnabled(CaptionButtonIcon type) const override {
+  bool IsEnabled(views::CaptionButtonIcon type) const override {
     return enabled_buttons_.count(type);
   }
   bool InZoomMode() const override { return zoom_mode_; }
 
  private:
-  base::flat_set<CaptionButtonIcon> visible_buttons_;
-  base::flat_set<CaptionButtonIcon> enabled_buttons_;
+  base::flat_set<views::CaptionButtonIcon> visible_buttons_;
+  base::flat_set<views::CaptionButtonIcon> enabled_buttons_;
   bool zoom_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestButtonModel);
@@ -547,7 +554,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
 
   HeaderView* header_view = non_client_frame_view->GetHeaderView();
   EXPECT_FALSE(header_view->GetBackButton());
-  model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
   EXPECT_FALSE(header_view->GetBackButton()->enabled());
@@ -561,7 +568,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
 
-  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_BACK, true);
+  model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
   EXPECT_TRUE(header_view->GetBackButton()->enabled());
@@ -575,7 +582,7 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   EXPECT_EQ(1, target_back_press.accelerator_count());
   EXPECT_EQ(1, target_back_release.accelerator_count());
 
-  model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, false);
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, false);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_FALSE(header_view->GetBackButton());
 }
@@ -639,47 +646,47 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
   EXPECT_FALSE(test_api.menu_button()->visible());
 
   // Back button
-  model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton()->visible());
   EXPECT_FALSE(header_view->GetBackButton()->enabled());
 
-  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_BACK, true);
+  model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_BACK, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton()->enabled());
 
   // size button
-  model_ptr->SetVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.size_button()->visible());
   EXPECT_FALSE(test_api.size_button()->enabled());
 
-  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
+  model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.size_button()->enabled());
 
   // minimize button
-  model_ptr->SetVisible(CAPTION_BUTTON_ICON_MINIMIZE, true);
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.minimize_button()->visible());
   EXPECT_FALSE(test_api.minimize_button()->enabled());
 
-  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MINIMIZE, true);
+  model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MINIMIZE, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.minimize_button()->enabled());
 
   // menu button
-  model_ptr->SetVisible(CAPTION_BUTTON_ICON_MENU, true);
+  model_ptr->SetVisible(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.menu_button()->visible());
   EXPECT_FALSE(test_api.menu_button()->enabled());
 
-  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MENU, true);
+  model_ptr->SetEnabled(views::CAPTION_BUTTON_ICON_MENU, true);
   non_client_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.menu_button()->enabled());
 
   // zoom button
-  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+  EXPECT_STREQ(views::kWindowControlMaximizeIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
   model_ptr->set_zoom_mode(true);
   non_client_frame_view->SizeConstraintsChanged();
@@ -783,26 +790,26 @@ TEST_F(NonClientFrameViewAshTest, WideFrameButton) {
   FrameCaptionButtonContainerView::TestApi test_api(
       header_view->caption_button_container());
 
-  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+  EXPECT_STREQ(views::kWindowControlMaximizeIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
   widget->Maximize();
   header_view->Layout();
-  EXPECT_STREQ(kWindowControlRestoreIcon.name,
+  EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
 
   widget->Restore();
   header_view->Layout();
-  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+  EXPECT_STREQ(views::kWindowControlMaximizeIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
 
   widget->SetFullscreen(true);
   header_view->Layout();
-  EXPECT_STREQ(kWindowControlRestoreIcon.name,
+  EXPECT_STREQ(views::kWindowControlRestoreIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
 
   widget->SetFullscreen(false);
   header_view->Layout();
-  EXPECT_STREQ(kWindowControlMaximizeIcon.name,
+  EXPECT_STREQ(views::kWindowControlMaximizeIcon.name,
                test_api.size_button()->icon_definition_for_test()->name);
 }
 

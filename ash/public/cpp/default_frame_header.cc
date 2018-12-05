@@ -5,7 +5,6 @@
 #include "ash/public/cpp/default_frame_header.h"
 
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/caption_buttons/caption_button_model.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "base/logging.h"  // DCHECK
@@ -18,6 +17,7 @@
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_layout_constants.h"
 
 using views::Widget;
 
@@ -155,8 +155,8 @@ void DefaultFrameHeader::DoSetFrameColors(SkColor active_frame_color,
   }
 }
 
-AshLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {
-  return AshLayoutSize::kNonBrowserCaption;
+views::CaptionButtonLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {
+  return views::CaptionButtonLayoutSize::kNonBrowserCaption;
 }
 
 SkColor DefaultFrameHeader::GetTitleColor() const {

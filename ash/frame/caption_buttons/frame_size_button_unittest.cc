@@ -5,8 +5,6 @@
 #include "ash/public/cpp/caption_buttons/frame_size_button.h"
 
 #include "ash/frame/ash_frame_caption_controller.h"
-#include "ash/public/cpp/ash_layout_constants.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -20,6 +18,9 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_layout_constants.h"
+#include "ui/views/window/frame_caption_button.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 
 namespace ash {
 
@@ -60,10 +61,12 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
       // Set arbitrary images for the button icons and assign the default
       // caption button size.
       caption_button_container_->SetButtonSize(
-          GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption));
-      for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
+          views::GetCaptionButtonLayoutSize(
+              views::CaptionButtonLayoutSize::kNonBrowserCaption));
+      for (int icon = 0; icon < views::CAPTION_BUTTON_ICON_COUNT; ++icon) {
         caption_button_container_->SetButtonImage(
-            static_cast<CaptionButtonIcon>(icon), kWindowControlCloseIcon);
+            static_cast<views::CaptionButtonIcon>(icon),
+            views::kWindowControlCloseIcon);
       }
 
       AddChildView(caption_button_container_);
@@ -137,16 +140,16 @@ class FrameSizeButtonTest : public AshTestBase {
   ash::wm::WindowState* window_state() { return window_state_; }
   const ash::wm::WindowState* window_state() const { return window_state_; }
 
-  FrameCaptionButton* minimize_button() { return minimize_button_; }
-  FrameCaptionButton* size_button() { return size_button_; }
-  FrameCaptionButton* close_button() { return close_button_; }
+  views::FrameCaptionButton* minimize_button() { return minimize_button_; }
+  views::FrameCaptionButton* size_button() { return size_button_; }
+  views::FrameCaptionButton* close_button() { return close_button_; }
 
  private:
   // Not owned.
   ash::wm::WindowState* window_state_;
-  FrameCaptionButton* minimize_button_;
-  FrameCaptionButton* size_button_;
-  FrameCaptionButton* close_button_;
+  views::FrameCaptionButton* minimize_button_;
+  views::FrameCaptionButton* size_button_;
+  views::FrameCaptionButton* close_button_;
   bool resizable_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSizeButtonTest);
@@ -289,8 +292,8 @@ TEST_F(FrameSizeButtonTest, RightMouseButton) {
 // - The state of all the caption buttons is reset.
 // - The icon displayed by all of the caption buttons is reset.
 TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
   EXPECT_TRUE(AllButtonsInNormalState());
 
   // Pressing the size button should result in the size button being pressed and
@@ -301,8 +304,8 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   // Dragging the mouse over the minimize button should hover the minimize
   // button and the minimize and close button icons should stay changed.
@@ -310,8 +313,8 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(views::Button::STATE_HOVERED, minimize_button()->state());
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   // Release the mouse, snapping the window left.
   generator->ReleaseLeftButton();
@@ -321,8 +324,8 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.
   EXPECT_TRUE(AllButtonsInNormalState());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 
   // Repeat test but release button where it does not affect the window's state
   // because the code path is different.
@@ -331,8 +334,8 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   const gfx::Rect work_area_bounds_in_screen =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -342,8 +345,8 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   // any of the caption buttons. The minimize and close button icons should
   // be changed because the mouse is pressed.
   EXPECT_TRUE(AllButtonsInNormalState());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   // Release the mouse. The window should stay snapped left.
   generator->ReleaseLeftButton();
@@ -353,15 +356,15 @@ TEST_F(FrameSizeButtonTest, ResetButtonsAfterClick) {
   // The buttons should stay unpressed and the buttons should now have their
   // regular icons.
   EXPECT_TRUE(AllButtonsInNormalState());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 }
 
 // Test that the size button is pressed whenever the snap left/right buttons
 // are hovered.
 TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
   EXPECT_TRUE(AllButtonsInNormalState());
 
   // Pressing the size button should result in the size button being pressed and
@@ -372,8 +375,8 @@ TEST_F(FrameSizeButtonTest, SizeButtonPressedWhenSnapButtonHovered) {
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED, close_button()->icon());
 
   // Dragging the mouse over the minimize button (snap left button) should hover
   // the minimize button and keep the size button pressed.
@@ -431,8 +434,8 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   // Test initial state.
   EXPECT_TRUE(window_state()->IsNormalStateType());
   EXPECT_TRUE(AllButtonsInNormalState());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 
   // Pressing the size button should swap the icons of the minimize and close
   // buttons to icons for snapping right and for snapping left respectively.
@@ -442,8 +445,9 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   EXPECT_EQ(views::Button::STATE_NORMAL, minimize_button()->state());
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_RIGHT_SNAPPED, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_LEFT_SNAPPED, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
+            minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_LEFT_SNAPPED, close_button()->icon());
 
   // Dragging over to the minimize button should press it.
   generator->MoveMouseTo(CenterPointInScreen(minimize_button()));
@@ -459,8 +463,8 @@ TEST_F(FrameSizeButtonTestRTL, ButtonDrag) {
   // None of the buttons should stay pressed and the buttons should have their
   // regular icons.
   EXPECT_TRUE(AllButtonsInNormalState());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 }
 
 namespace {
@@ -477,8 +481,8 @@ class FrameSizeButtonNonResizableTest : public FrameSizeButtonTest {
 }  // namespace
 
 TEST_F(FrameSizeButtonNonResizableTest, NoSnap) {
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
   EXPECT_TRUE(AllButtonsInNormalState());
 
   // Pressing the size button should result in the size button being pressed and
@@ -490,8 +494,8 @@ TEST_F(FrameSizeButtonNonResizableTest, NoSnap) {
   EXPECT_EQ(views::Button::STATE_PRESSED, size_button()->state());
   EXPECT_EQ(views::Button::STATE_NORMAL, close_button()->state());
 
-  EXPECT_EQ(CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
-  EXPECT_EQ(CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_MINIMIZE, minimize_button()->icon());
+  EXPECT_EQ(views::CAPTION_BUTTON_ICON_CLOSE, close_button()->icon());
 }
 
 }  // namespace ash
