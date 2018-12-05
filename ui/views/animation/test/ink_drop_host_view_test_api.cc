@@ -36,10 +36,6 @@ InkDrop* InkDropHostViewTestApi::GetInkDrop() {
   return host_view_->GetInkDrop();
 }
 
-bool InkDropHostViewTestApi::HasInkdropEventHandler() const {
-  return host_view_->ink_drop_event_handler_ != nullptr;
-}
-
 gfx::Point InkDropHostViewTestApi::GetInkDropCenterBasedOnLastEvent() const {
   return host_view_->GetInkDropCenterBasedOnLastEvent();
 }
