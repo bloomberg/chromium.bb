@@ -137,3 +137,13 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=911898)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_180', ['android'], bug=911898)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270', ['android'], bug=911898)
+
+    # Fails on Mac Pro FYI Release (AMD)
+    self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3',
+        ['mac', ('amd', 0x679e)], bug=911413)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_90',
+        ['mac', ('amd', 0x679e)], bug=911413)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_180',
+        ['mac', ('amd', 0x679e)], bug=911413)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
+        ['mac', ('amd', 0x679e)], bug=911413)
