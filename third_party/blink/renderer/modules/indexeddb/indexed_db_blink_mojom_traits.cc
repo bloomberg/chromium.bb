@@ -204,19 +204,19 @@ bool StructTraits<blink::mojom::IDBKeyDataView, blink::WebIDBKey>::Read(
 blink::mojom::blink::IDBKeyPathDataPtr
 StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::data(
     const blink::IDBKeyPath& key_path) {
-  if (key_path.GetType() == blink::IDBKeyPath::Type::kNullType)
+  if (key_path.GetType() == blink::mojom::IDBKeyPathType::Null)
     return nullptr;
 
   auto data = blink::mojom::blink::IDBKeyPathData::New();
   switch (key_path.GetType()) {
-    case blink::IDBKeyPath::Type::kStringType: {
+    case blink::mojom::IDBKeyPathType::String: {
       String key_path_string = key_path.GetString();
       if (key_path_string.IsNull())
         key_path_string = g_empty_string;
       data->set_string(key_path_string);
       return data;
     }
-    case blink::IDBKeyPath::Type::kArrayType: {
+    case blink::mojom::IDBKeyPathType::Array: {
       const auto& array = key_path.Array();
       Vector<String> result;
       result.ReserveInitialCapacity(SafeCast<wtf_size_t>(array.size()));
@@ -226,7 +226,7 @@ StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::data(
       return data;
     }
 
-    case blink::IDBKeyPath::Type::kNullType:
+    case blink::mojom::IDBKeyPathType::Null:
       break;  // Not used, NOTREACHED.
   }
   NOTREACHED();

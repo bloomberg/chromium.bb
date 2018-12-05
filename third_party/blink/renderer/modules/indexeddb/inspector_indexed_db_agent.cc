@@ -390,16 +390,16 @@ IDBIndex* IndexForObjectStore(IDBObjectStore* idb_object_store,
 std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(const IDBKeyPath& idb_key_path) {
   std::unique_ptr<KeyPath> key_path;
   switch (idb_key_path.GetType()) {
-    case IDBKeyPath::kNullType:
+    case mojom::IDBKeyPathType::Null:
       key_path = KeyPath::create().setType(KeyPath::TypeEnum::Null).build();
       break;
-    case IDBKeyPath::kStringType:
+    case mojom::IDBKeyPathType::String:
       key_path = KeyPath::create()
                      .setType(KeyPath::TypeEnum::String)
                      .setString(idb_key_path.GetString())
                      .build();
       break;
-    case IDBKeyPath::kArrayType: {
+    case mojom::IDBKeyPathType::Array: {
       key_path = KeyPath::create().setType(KeyPath::TypeEnum::Array).build();
       std::unique_ptr<protocol::Array<String>> array =
           protocol::Array<String>::create();

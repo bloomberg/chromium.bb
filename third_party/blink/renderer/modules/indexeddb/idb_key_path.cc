@@ -103,12 +103,12 @@ void IDBParseKeyPath(const String& key_path,
 }
 
 IDBKeyPath::IDBKeyPath(const class String& string)
-    : type_(kStringType), string_(string) {
+    : type_(mojom::IDBKeyPathType::String), string_(string) {
   DCHECK(!string_.IsNull());
 }
 
 IDBKeyPath::IDBKeyPath(const Vector<class String>& array)
-    : type_(kArrayType), array_(array) {
+    : type_(mojom::IDBKeyPathType::Array), array_(array) {
 #if DCHECK_IS_ON()
   for (const auto& element : array_)
     DCHECK(!element.IsNull());
@@ -117,14 +117,14 @@ IDBKeyPath::IDBKeyPath(const Vector<class String>& array)
 
 IDBKeyPath::IDBKeyPath(const StringOrStringSequence& key_path) {
   if (key_path.IsNull()) {
-    type_ = kNullType;
+    type_ = mojom::IDBKeyPathType::Null;
   } else if (key_path.IsString()) {
-    type_ = kStringType;
+    type_ = mojom::IDBKeyPathType::String;
     string_ = key_path.GetAsString();
     DCHECK(!string_.IsNull());
   } else {
     DCHECK(key_path.IsStringSequence());
-    type_ = kArrayType;
+    type_ = mojom::IDBKeyPathType::Array;
     array_ = key_path.GetAsStringSequence();
 #if DCHECK_IS_ON()
     for (const auto& element : array_)
@@ -134,18 +134,16 @@ IDBKeyPath::IDBKeyPath(const StringOrStringSequence& key_path) {
 }
 
 IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& key_path) {
+  type_ = key_path.KeyPathType();
   switch (key_path.KeyPathType()) {
-    case kWebIDBKeyPathTypeNull:
-      type_ = kNullType;
+    case mojom::IDBKeyPathType::Null:
       return;
 
-    case kWebIDBKeyPathTypeString:
-      type_ = kStringType;
+    case mojom::IDBKeyPathType::String:
       string_ = key_path.String();
       return;
 
-    case kWebIDBKeyPathTypeArray:
-      type_ = kArrayType;
+    case mojom::IDBKeyPathType::Array:
       for (size_t i = 0, size = key_path.Array().size(); i < size; ++i)
         array_.push_back(key_path.Array()[i]);
       return;
@@ -155,11 +153,11 @@ IDBKeyPath::IDBKeyPath(const WebIDBKeyPath& key_path) {
 
 IDBKeyPath::operator WebIDBKeyPath() const {
   switch (type_) {
-    case kNullType:
+    case mojom::IDBKeyPathType::Null:
       return WebIDBKeyPath();
-    case kStringType:
+    case mojom::IDBKeyPathType::String:
       return WebIDBKeyPath(WebString(string_));
-    case kArrayType:
+    case mojom::IDBKeyPathType::Array:
       return WebIDBKeyPath(array_);
   }
   NOTREACHED();
@@ -168,13 +166,13 @@ IDBKeyPath::operator WebIDBKeyPath() const {
 
 bool IDBKeyPath::IsValid() const {
   switch (type_) {
-    case kNullType:
+    case mojom::IDBKeyPathType::Null:
       return false;
 
-    case kStringType:
+    case mojom::IDBKeyPathType::String:
       return IDBIsValidKeyPath(string_);
 
-    case kArrayType:
+    case mojom::IDBKeyPathType::Array:
       if (array_.IsEmpty())
         return false;
       for (const auto& element : array_) {
@@ -192,19 +190,15 @@ bool IDBKeyPath::operator==(const IDBKeyPath& other) const {
     return false;
 
   switch (type_) {
-    case kNullType:
+    case mojom::IDBKeyPathType::Null:
       return true;
-    case kStringType:
+    case mojom::IDBKeyPathType::String:
       return string_ == other.string_;
-    case kArrayType:
+    case mojom::IDBKeyPathType::Array:
       return array_ == other.array_;
   }
   NOTREACHED();
   return false;
 }
-
-STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeNull, IDBKeyPath::kNullType);
-STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeString, IDBKeyPath::kStringType);
-STATIC_ASSERT_ENUM(kWebIDBKeyPathTypeArray, IDBKeyPath::kArrayType);
 
 }  // namespace blink

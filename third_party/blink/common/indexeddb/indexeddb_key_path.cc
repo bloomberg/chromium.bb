@@ -5,20 +5,17 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
 #include "base/logging.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 
 namespace blink {
 
-using blink::kWebIDBKeyPathTypeArray;
-using blink::kWebIDBKeyPathTypeNull;
-using blink::kWebIDBKeyPathTypeString;
-
-IndexedDBKeyPath::IndexedDBKeyPath() : type_(kWebIDBKeyPathTypeNull) {}
+IndexedDBKeyPath::IndexedDBKeyPath() : type_(mojom::IDBKeyPathType::Null) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const base::string16& string)
-    : type_(kWebIDBKeyPathTypeString), string_(string) {}
+    : type_(mojom::IDBKeyPathType::String), string_(string) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const std::vector<base::string16>& array)
-    : type_(kWebIDBKeyPathTypeArray), array_(array) {}
+    : type_(mojom::IDBKeyPathType::Array), array_(array) {}
 
 IndexedDBKeyPath::IndexedDBKeyPath(const IndexedDBKeyPath& other) = default;
 IndexedDBKeyPath::IndexedDBKeyPath(IndexedDBKeyPath&& other) = default;
@@ -29,12 +26,12 @@ IndexedDBKeyPath& IndexedDBKeyPath::operator=(IndexedDBKeyPath&& other) =
     default;
 
 const std::vector<base::string16>& IndexedDBKeyPath::array() const {
-  DCHECK(type_ == blink::kWebIDBKeyPathTypeArray);
+  DCHECK(type_ == blink::mojom::IDBKeyPathType::Array);
   return array_;
 }
 
 const base::string16& IndexedDBKeyPath::string() const {
-  DCHECK(type_ == blink::kWebIDBKeyPathTypeString);
+  DCHECK(type_ == blink::mojom::IDBKeyPathType::String);
   return string_;
 }
 
@@ -43,11 +40,11 @@ bool IndexedDBKeyPath::operator==(const IndexedDBKeyPath& other) const {
     return false;
 
   switch (type_) {
-    case kWebIDBKeyPathTypeNull:
+    case mojom::IDBKeyPathType::Null:
       return true;
-    case kWebIDBKeyPathTypeString:
+    case mojom::IDBKeyPathType::String:
       return string_ == other.string_;
-    case kWebIDBKeyPathTypeArray:
+    case mojom::IDBKeyPathType::Array:
       return array_ == other.array_;
   }
   NOTREACHED();

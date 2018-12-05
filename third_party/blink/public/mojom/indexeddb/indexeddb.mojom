@@ -63,6 +63,15 @@ struct IDBKey {
   IDBKeyData data;
 };
 
+// In order of the least to the highest precedent in terms of sort order.
+// These values are written to logs. New enum values can be added, but
+// existing enums must never be renumbered or deleted and reused.
+enum IDBKeyPathType {
+  Null,
+  String,
+  Array,
+};
+
 // Represents WebIDBKeyPathTypeString and WebIDBKeyPathTypeArray in a key path.
 union IDBKeyPathData {
   mojo_base.mojom.String16 string;

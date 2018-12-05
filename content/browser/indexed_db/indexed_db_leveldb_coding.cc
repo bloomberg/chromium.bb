@@ -19,10 +19,6 @@
 using base::StringPiece;
 using blink::IndexedDBKey;
 using blink::IndexedDBKeyPath;
-using blink::WebIDBKeyPathType;
-using blink::kWebIDBKeyPathTypeArray;
-using blink::kWebIDBKeyPathTypeNull;
-using blink::kWebIDBKeyPathTypeString;
 
 namespace content {
 
@@ -208,11 +204,11 @@ void EncodeIDBKey(const IndexedDBKey& value, std::string* into) {
       static_cast<unsigned char>(a) == static_cast<unsigned char>(b), \
       "Blink enum and coding byte must match.")
 
-COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeNull,
+COMPILE_ASSERT_MATCHING_VALUES(blink::mojom::IDBKeyPathType::Null,
                                kIndexedDBKeyPathNullTypeByte);
-COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeString,
+COMPILE_ASSERT_MATCHING_VALUES(blink::mojom::IDBKeyPathType::String,
                                kIndexedDBKeyPathStringTypeByte);
-COMPILE_ASSERT_MATCHING_VALUES(kWebIDBKeyPathTypeArray,
+COMPILE_ASSERT_MATCHING_VALUES(blink::mojom::IDBKeyPathType::Array,
                                kIndexedDBKeyPathArrayTypeByte);
 
 void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
@@ -223,13 +219,13 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
   EncodeByte(kIndexedDBKeyPathTypeCodedByte2, into);
   EncodeByte(static_cast<char>(value.type()), into);
   switch (value.type()) {
-    case kWebIDBKeyPathTypeNull:
+    case blink::mojom::IDBKeyPathType::Null:
       break;
-    case kWebIDBKeyPathTypeString: {
+    case blink::mojom::IDBKeyPathType::String: {
       EncodeStringWithLength(value.string(), into);
       break;
     }
-    case kWebIDBKeyPathTypeArray: {
+    case blink::mojom::IDBKeyPathType::Array: {
       const std::vector<base::string16>& array = value.array();
       size_t count = array.size();
       EncodeVarInt(count, into);
@@ -445,15 +441,16 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
 
   slice->remove_prefix(2);
   DCHECK(!slice->empty());
-  WebIDBKeyPathType type = static_cast<WebIDBKeyPathType>((*slice)[0]);
+  blink::mojom::IDBKeyPathType type =
+      static_cast<blink::mojom::IDBKeyPathType>((*slice)[0]);
   slice->remove_prefix(1);
 
   switch (type) {
-    case kWebIDBKeyPathTypeNull:
+    case blink::mojom::IDBKeyPathType::Null:
       DCHECK(slice->empty());
       *value = IndexedDBKeyPath();
       return true;
-    case kWebIDBKeyPathTypeString: {
+    case blink::mojom::IDBKeyPathType::String: {
       base::string16 string;
       if (!DecodeStringWithLength(slice, &string))
         return false;
@@ -461,7 +458,7 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
       *value = IndexedDBKeyPath(string);
       return true;
     }
-    case kWebIDBKeyPathTypeArray: {
+    case blink::mojom::IDBKeyPathType::Array: {
       std::vector<base::string16> array;
       int64_t count;
       if (!DecodeVarInt(slice, &count))

@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_PATH_H_
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -44,13 +45,13 @@ class WebIDBKeyPath {
   }
   static WebIDBKeyPath CreateNull() { return WebIDBKeyPath(); }
 
-  WebIDBKeyPath() : type_(kWebIDBKeyPathTypeNull) {}
+  WebIDBKeyPath() : type_(mojom::IDBKeyPathType::Null) {}
 
   explicit WebIDBKeyPath(const WebString& string)
-      : type_(kWebIDBKeyPathTypeString), string_(string) {}
+      : type_(mojom::IDBKeyPathType::String), string_(string) {}
 
   explicit WebIDBKeyPath(const WebVector<WebString>& array)
-      : type_(kWebIDBKeyPathTypeArray), array_(array) {}
+      : type_(mojom::IDBKeyPathType::Array), array_(array) {}
 
   WebIDBKeyPath(const WebIDBKeyPath& key_path) = default;
 
@@ -58,7 +59,7 @@ class WebIDBKeyPath {
 
   WebIDBKeyPath& operator=(const WebIDBKeyPath& key_path) = default;
 
-  WebIDBKeyPathType KeyPathType() const { return type_; }
+  mojom::IDBKeyPathType KeyPathType() const { return type_; }
 
   // Only valid for ArrayType.
   const WebVector<WebString>& Array() const { return array_; }
@@ -67,7 +68,7 @@ class WebIDBKeyPath {
   const WebString& String() const { return string_; }
 
  private:
-  WebIDBKeyPathType type_;
+  mojom::IDBKeyPathType type_;
   WebVector<WebString> array_;
   WebString string_;
 };

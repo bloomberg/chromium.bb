@@ -278,7 +278,7 @@ Status ReadObjectStores(
       // (2) Later, null vs. string vs. array was stored in the key_path itself.
       // So this check is only relevant for string-type key_paths.
       if (!has_key_path &&
-          (key_path.type() == blink::kWebIDBKeyPathTypeString &&
+          (key_path.type() == blink::mojom::IDBKeyPathType::String &&
            !key_path.string().empty())) {
         INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
         break;

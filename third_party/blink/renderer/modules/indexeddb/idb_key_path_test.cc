@@ -38,7 +38,7 @@ void CheckKeyPath(const String& key_path,
                   const Vector<String>& expected,
                   int parser_error) {
   IDBKeyPath idb_key_path(key_path);
-  ASSERT_EQ(idb_key_path.GetType(), IDBKeyPath::kStringType);
+  ASSERT_EQ(idb_key_path.GetType(), mojom::IDBKeyPathType::String);
   ASSERT_EQ(idb_key_path.IsValid(),
             (parser_error == kIDBKeyPathParseErrorNone));
 
