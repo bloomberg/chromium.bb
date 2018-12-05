@@ -114,8 +114,6 @@ MailtoHandlerProvider* ChromeBrowserProvider::GetMailtoHandlerProvider() const {
   return mailto_handler_provider_.get();
 }
 
-void ChromeBrowserProvider::CheckForFirstPartyApps() const {}
-
 BrandedImageProvider* ChromeBrowserProvider::GetBrandedImageProvider() const {
   return nullptr;
 }
