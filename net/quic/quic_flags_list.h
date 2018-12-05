@@ -151,7 +151,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup4, false)
 
 // If true, QuicCryptoServerConfig::EvaluateClientHello will use GetCertChain
 // instead of the more expensive GetProof.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_cert_chain, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_cert_chain, true)
 
 // If true, try to aggregate acked stream frames.
 QUIC_FLAG(bool,
