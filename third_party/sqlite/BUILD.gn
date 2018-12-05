@@ -58,11 +58,6 @@ config("chromium_sqlite3_compile_options") {
     # private, so our databases use stricter settings.
     "SQLITE_DEFAULT_FILE_PERMISSIONS=0600",
 
-    # SQLite uses a lookaside buffer to improve performance of small mallocs.
-    # Chrome already depends on small mallocs being efficient, so we disable
-    # this to avoid the extra memory overhead.
-    "SQLITE_DEFAULT_LOOKASIDE=0,0",
-
     # Needed by the SQL MemoryDumpProvider.
     #
     # Setting this to 1 is needed to collect the information reported by
@@ -130,6 +125,11 @@ config("chromium_sqlite3_compile_options") {
     # there's a tiny security benefit to knowing that WebSQL can't possibly
     # reach extension loading code.
     "SQLITE_OMIT_LOAD_EXTENSION",
+
+    # Chrome already depends on malloc being very efficient, so we disable
+    # SQLite's arena allocator.
+    "SQLITE_DEFAULT_LOOKASIDE=0,0",
+    "SQLITE_OMIT_LOOKASIDE",
 
     # Chrome doesn't use TCL variables.
     "SQLITE_OMIT_TCL_VARIABLE",
