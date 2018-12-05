@@ -1190,6 +1190,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
     enabled_features.emplace_back(features::kExperimentalCrostiniUI);
+    enabled_features.emplace_back(chromeos::features::kCrostiniFiles);
   }
   if (IsDriveFsTest()) {
     enabled_features.emplace_back(chromeos::features::kDriveFs);

@@ -198,6 +198,7 @@ class CrostiniSharePathTest : public testing::Test {
 };
 
 TEST_F(CrostiniSharePathTest, SuccessDownloadsRoot) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   crostini_share_path()->SharePath(
       "vm-running", downloads_, PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -209,7 +210,9 @@ TEST_F(CrostiniSharePathTest, SuccessDownloadsRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessMyFilesRoot) {
-  features_.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kMyFilesVolume},
+      {});
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile());
   crostini_share_path()->SharePath(
@@ -223,6 +226,7 @@ TEST_F(CrostiniSharePathTest, SuccessMyFilesRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   crostini_share_path()->SharePath(
       "vm-running", share_path_, PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -234,6 +238,7 @@ TEST_F(CrostiniSharePathTest, SuccessNoPersist) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessPersist) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   crostini_share_path()->SharePath(
       "vm-running", share_path_, PERSIST_YES,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -245,7 +250,8 @@ TEST_F(CrostiniSharePathTest, SuccessPersist) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
-  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -257,7 +263,8 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDrive) {
 }
 
 TEST_F(CrostiniSharePathTest, FailureDriveFsDisabled) {
-  features_.InitAndDisableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures({chromeos::features::kCrostiniFiles},
+                             {chromeos::features::kDriveFs});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_.Append("root").Append("my"), PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -268,7 +275,8 @@ TEST_F(CrostiniSharePathTest, FailureDriveFsDisabled) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
-  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_.Append("root"), PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -280,7 +288,8 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsMyDriveRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, FailDriveFsRoot) {
-  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_, PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -291,7 +300,8 @@ TEST_F(CrostiniSharePathTest, FailDriveFsRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
-  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_.Append("team_drives").Append("team"), PERSIST_NO,
       base::BindOnce(
@@ -303,7 +313,8 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsTeamDrives) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
-  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_.Append("Computers").Append("pc"), PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -315,7 +326,8 @@ TEST_F(CrostiniSharePathTest, SuccessDriveFsComputers) {
 }
 
 TEST_F(CrostiniSharePathTest, FailDriveFsTrash) {
-  features_.InitAndEnableFeature(chromeos::features::kDriveFs);
+  features_.InitWithFeatures(
+      {chromeos::features::kCrostiniFiles, chromeos::features::kDriveFs}, {});
   crostini_share_path()->SharePath(
       "vm-running", drivefs_.Append(".Trash").Append("in-the-trash"),
       PERSIST_NO,
@@ -327,6 +339,7 @@ TEST_F(CrostiniSharePathTest, FailDriveFsTrash) {
 }
 
 TEST_F(CrostiniSharePathTest, SuccessRemovable) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   crostini_share_path()->SharePath(
       "vm-running", base::FilePath("/media/removable/MyUSB"), PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -338,6 +351,7 @@ TEST_F(CrostiniSharePathTest, SuccessRemovable) {
 }
 
 TEST_F(CrostiniSharePathTest, FailRemovableRoot) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   crostini_share_path()->SharePath(
       "vm-running", base::FilePath("/media/removable"), PERSIST_NO,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -348,6 +362,7 @@ TEST_F(CrostiniSharePathTest, FailRemovableRoot) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   vm_tools::concierge::StartVmResponse start_vm_response;
   start_vm_response.set_status(vm_tools::concierge::VM_STATUS_RUNNING);
   start_vm_response.mutable_vm_info()->set_seneschal_server_handle(123);
@@ -369,6 +384,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorSeneschal) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   const base::FilePath path("not/absolute/dir");
   crostini_share_path()->SharePath(
       "vm-running", path, PERSIST_YES,
@@ -380,6 +396,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorPathNotAbsolute) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorReferencesParent) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   const base::FilePath path("/path/../references/parent");
   crostini_share_path()->SharePath(
       "vm-running", path, PERSIST_NO,
@@ -391,6 +408,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorReferencesParent) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   const base::FilePath path("/not/under/downloads");
   crostini_share_path()->SharePath(
       "vm-running", path, PERSIST_YES,
@@ -402,6 +420,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorNotUnderDownloads) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathVmToBeRestarted) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   crostini_share_path()->SharePath(
       "vm-to-be-started", share_path_, PERSIST_YES,
       base::BindOnce(&CrostiniSharePathTest::SharePathCallback,
@@ -413,6 +432,7 @@ TEST_F(CrostiniSharePathTest, SharePathVmToBeRestarted) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePathErrorVmCouldNotBeStarted) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   vm_tools::concierge::StartVmResponse start_vm_response;
   start_vm_response.set_status(vm_tools::concierge::VM_STATUS_FAILURE);
   fake_concierge_client_->set_start_vm_response(start_vm_response);
@@ -427,6 +447,7 @@ TEST_F(CrostiniSharePathTest, SharePathErrorVmCouldNotBeStarted) {
 }
 
 TEST_F(CrostiniSharePathTest, SharePersistedPaths) {
+  features_.InitAndEnableFeature(chromeos::features::kCrostiniFiles);
   base::FilePath share_path2_ = downloads_.AppendASCII("path-to-share-2");
   ASSERT_TRUE(base::CreateDirectory(share_path2_));
   vm_tools::concierge::VmInfo vm_info;
