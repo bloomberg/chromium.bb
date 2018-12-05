@@ -139,10 +139,6 @@ crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Fa
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
 
-# Opacity not applied to descendant of animated filter node.
-crbug.com/905859 transitions/opacity-transform-transitions-inside-iframe.html [ Failure ]
-crbug.com/905859 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Failure ]
-
 # Antialiasing differences
 crbug.com/905861 virtual/threaded/animations/skew-notsequential-compositor.html [ Failure ]
 

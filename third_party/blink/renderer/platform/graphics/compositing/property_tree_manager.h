@@ -119,11 +119,10 @@ class PropertyTreeManager {
   void Finalize();
 
  private:
-  bool BuildEffectNodesRecursively(const EffectPaintPropertyNode* next_effect);
+  void BuildEffectNodesRecursively(const EffectPaintPropertyNode* next_effect);
   SkBlendMode SynthesizeCcEffectsForClipsIfNeeded(
       const ClipPaintPropertyNode* target_clip,
-      SkBlendMode delegated_blend,
-      bool effect_is_newly_built);
+      SkBlendMode delegated_blend);
   void EmitClipMaskLayer();
   void CloseCcEffect();
 
@@ -192,19 +191,34 @@ class PropertyTreeManager {
     // effect and clip state from the last
     // SwitchToEffectNodeWithSynthesizedClip.
     int effect_id;
+
     CcEffectType effect_type;
+
     // The effect state of the cc effect node.
     const EffectPaintPropertyNode* effect;
+
     // The clip state of the cc effect node. This value may be shallower than
     // the one passed into SwitchToEffectNodeWithSynthesizedClip because not
-    // every clip needs to be synthesized as cc effect.
-    // Is set to output clip of the effect if the type is kEffect, or set to the
-    // synthesized clip node if the type is kSyntheticForNonTrivialClip.
+    // every clip needs to be synthesized as cc effect. Is set to output clip of
+    // the effect if the type is kEffect, or set to the synthesized clip node.
     const ClipPaintPropertyNode* clip;
-    // The transform space of the containing render surface.
-    // TODO(crbug.com/504464): Remove this when move render surface decision
-    // logic into cc compositor thread.
-    const TransformPaintPropertyNode* render_surface_transform;
+
+    // Whether the transform space of this state may be 2d axis misaligned to
+    // the containing render surface. As there may be new render surfaces
+    // created between this state and the current known ancestor render surface
+    // after this state is created, we must conservatively accumulate this flag
+    // from the known render surface instead of checking if the combined
+    // transform is 2d axis aligned, in case of:
+    //  Effect1 (Current known render surface)
+    //  Rotate(45deg)
+    //  Effect2 (Not known now, but may become render surface later)
+    //  Rotate(-45deg)
+    //  Clip (Would be mistakenly treated as 2d axis aligned if we used
+    //        accumulated transform from the clip to the known render surface.)
+    bool may_be_2d_axis_misaligned_to_render_surface;
+
+    // The transform space of the state.
+    const TransformPaintPropertyNode* Transform() const;
   };
 
   // The current effect state. Virtually it's the top of the effect stack if

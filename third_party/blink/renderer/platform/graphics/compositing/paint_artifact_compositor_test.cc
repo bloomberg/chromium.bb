@@ -24,6 +24,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
@@ -3265,6 +3266,171 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
             cc_transform_node->post_local);
   EXPECT_TRUE(cc_transform_node->local.IsIdentity());
   EXPECT_TRUE(cc_transform_node->pre_local.IsIdentity());
+}
+
+enum { kNoRenderSurface, kHasRenderSurface };
+
+#define EXPECT_OPACITY(effect_id, expected_opacity, expected_render_surface) \
+  do {                                                                       \
+    const auto* effect = GetPropertyTrees().effect_tree.Node(effect_id);     \
+    EXPECT_EQ(expected_opacity, effect->opacity);                            \
+    EXPECT_EQ(expected_render_surface == kHasRenderSurface,                  \
+              effect->has_render_surface);                                   \
+  } while (false)
+
+TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
+  //            e
+  //         /  |  \
+  //       a    b    c -- L4
+  //     / \   / \    \
+  //    aa ab L2 L3   ca          (L = layer)
+  //    |   |          |
+  //   L0  L1         L5
+  auto e = CreateOpacityEffect(e0(), 0.1f);
+  auto a = CreateOpacityEffect(*e, 0.2f);
+  auto b =
+      CreateOpacityEffect(*e, 0.3f, CompositingReason::kActiveOpacityAnimation);
+  auto c =
+      CreateOpacityEffect(*e, 0.4f, CompositingReason::kActiveOpacityAnimation);
+  auto aa =
+      CreateOpacityEffect(*a, 0.5f, CompositingReason::kActiveOpacityAnimation);
+  auto ab =
+      CreateOpacityEffect(*a, 0.6f, CompositingReason::kActiveOpacityAnimation);
+  auto ca =
+      CreateOpacityEffect(*c, 0.7f, CompositingReason::kActiveOpacityAnimation);
+  auto t = CreateTransform(t0(), TransformationMatrix().Rotate(90),
+                           FloatPoint3D(), CompositingReason::k3DTransform);
+
+  TestPaintArtifact artifact;
+  FloatRect r(150, 150, 100, 100);
+  artifact.Chunk(t0(), c0(), *aa).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *ab).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *b).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(*t, c0(), *b).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *c).RectDrawing(r, Color::kWhite);
+  artifact.Chunk(t0(), c0(), *ca).RectDrawing(r, Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(6u, ContentLayerCount());
+
+  int effect_ids[6];
+  for (size_t i = 0; i < ContentLayerCount(); i++)
+    effect_ids[i] = ContentLayerAt(i)->effect_tree_index();
+
+  // Effects of layer 0, 1, 5 each has one compositing layer, so don't have
+  // render surface.
+  EXPECT_OPACITY(effect_ids[0], 0.5f, kNoRenderSurface);
+  EXPECT_OPACITY(effect_ids[1], 0.6f, kNoRenderSurface);
+  EXPECT_OPACITY(effect_ids[5], 0.7f, kNoRenderSurface);
+
+  // Layer 2 and 3 have the same effect state. The effect has render surface
+  // because it has two compositing layers.
+  EXPECT_EQ(effect_ids[2], effect_ids[3]);
+  EXPECT_OPACITY(effect_ids[2], 0.3f, kHasRenderSurface);
+
+  // Effect |a| has two indirect compositing layers, so has render surface.
+  const auto& effect_tree = GetPropertyTrees().effect_tree;
+  int id_a = effect_tree.Node(effect_ids[0])->parent_id;
+  EXPECT_EQ(id_a, effect_tree.Node(effect_ids[1])->parent_id);
+  EXPECT_OPACITY(id_a, 0.2f, kHasRenderSurface);
+
+  // Effect |c| has one direct and one indirect compositing layers, so has
+  // render surface.
+  EXPECT_OPACITY(effect_ids[4], 0.4f, kHasRenderSurface);
+
+  // Though all children of effect |e| have render surfaces and |e| doesn't
+  // control any compositing layer, we still give it a render surface for
+  // simplicity of the algorithm.
+  EXPECT_OPACITY(effect_tree.Node(effect_ids[4])->parent_id, 0.1f,
+                 kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest, OpacityIndirectlyAffectingTwoLayers) {
+  auto opacity = CreateOpacityEffect(e0(), 0.5f);
+  auto child_composited_effect = CreateOpacityEffect(
+      *opacity, 1.f, CompositingReason::kActiveOpacityAnimation);
+  auto grandchild_composited_effect =
+      CreateOpacityEffect(*child_composited_effect, 1.f,
+                          CompositingReason::kActiveOpacityAnimation);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *child_composited_effect)
+      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kWhite);
+  artifact.Chunk(t0(), c0(), *grandchild_composited_effect)
+      .RectDrawing(FloatRect(150, 150, 100, 100), Color::kGray);
+  Update(artifact.Build());
+  ASSERT_EQ(2u, ContentLayerCount());
+
+  const auto& effect_tree = GetPropertyTrees().effect_tree;
+  int layer0_effect_id = ContentLayerAt(0)->effect_tree_index();
+  EXPECT_OPACITY(layer0_effect_id, 1.f, kNoRenderSurface);
+  int layer1_effect_id = ContentLayerAt(1)->effect_tree_index();
+  EXPECT_OPACITY(layer1_effect_id, 1.f, kNoRenderSurface);
+  int opacity_id = effect_tree.Node(layer0_effect_id)->parent_id;
+  EXPECT_OPACITY(opacity_id, 0.5f, kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest, Non2dAxisAlignedClip) {
+  auto rotate = CreateTransform(t0(), TransformationMatrix().Rotate(45));
+  auto clip = CreateClip(c0(), rotate.get(), FloatRoundedRect(50, 50, 50, 50));
+  auto opacity = CreateOpacityEffect(
+      e0(), 0.5f, CompositingReason::kActiveOpacityAnimation);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *clip, *opacity)
+      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(1u, ContentLayerCount());
+
+  // We should create a synthetic effect node for the non-2d-axis-aligned clip.
+  int clip_id = ContentLayerAt(0)->clip_tree_index();
+  const auto* cc_clip = GetPropertyTrees().clip_tree.Node(clip_id);
+  int effect_id = ContentLayerAt(0)->effect_tree_index();
+  const auto* cc_effect = GetPropertyTrees().effect_tree.Node(effect_id);
+  EXPECT_OPACITY(effect_id, 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(cc_effect->parent_id, 0.5f, kNoRenderSurface);
+  EXPECT_EQ(cc_effect->clip_id, cc_clip->parent_id);
+}
+
+TEST_P(PaintArtifactCompositorTest,
+       Non2dAxisAlignedClipUnderLaterRenderSurface) {
+  auto rotate1 =
+      CreateTransform(t0(), TransformationMatrix().Rotate(45), FloatPoint3D(),
+                      CompositingReason::k3DTransform);
+  auto rotate2 =
+      CreateTransform(*rotate1, TransformationMatrix().Rotate(-45),
+                      FloatPoint3D(), CompositingReason::k3DTransform);
+  auto clip = CreateClip(c0(), rotate2.get(), FloatRoundedRect(50, 50, 50, 50));
+  auto opacity =
+      CreateOpacityEffect(e0(), rotate1.get(), &c0(), 0.5f,
+                          CompositingReason::kActiveOpacityAnimation);
+
+  // This assert ensures the test actually tests the situation. If it fails
+  // due to floating-point errors, we should choose other transformation values
+  // to make it succeed.
+  ASSERT_TRUE(
+      GeometryMapper::SourceToDestinationProjection(&t0(), rotate2.get())
+          .Preserves2dAxisAlignment());
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), c0(), *opacity)
+      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+  artifact.Chunk(*rotate1, c0(), *opacity)
+      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+  artifact.Chunk(*rotate2, *clip, *opacity)
+      .RectDrawing(FloatRect(50, 50, 50, 50), Color::kWhite);
+  Update(artifact.Build());
+  ASSERT_EQ(3u, ContentLayerCount());
+
+  // We should create a synthetic effect node for the non-2d-axis-aligned clip,
+  // though the accumulated transform to the known render surface was identity
+  // when the cc clip node was created.
+  int clip_id = ContentLayerAt(2)->clip_tree_index();
+  const auto* cc_clip = GetPropertyTrees().clip_tree.Node(clip_id);
+  int effect_id = ContentLayerAt(2)->effect_tree_index();
+  const auto* cc_effect = GetPropertyTrees().effect_tree.Node(effect_id);
+  EXPECT_OPACITY(effect_id, 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(cc_effect->parent_id, 0.5f, kHasRenderSurface);
+  EXPECT_EQ(cc_effect->clip_id, cc_clip->parent_id);
 }
 
 }  // namespace blink
