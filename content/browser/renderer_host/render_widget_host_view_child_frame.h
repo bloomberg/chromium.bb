@@ -98,6 +98,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void Show() override;
   void Hide() override;
   bool IsShowing() override;
+  void WasUnOccluded() override;
+  void WasOccluded() override;
   gfx::Rect GetViewBounds() const override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;

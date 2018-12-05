@@ -1451,8 +1451,10 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
     // TODO(fdoray): Replace RenderWidgetHostView::WasUnOccluded() with a method
     // to explicitly notify the RenderWidgetHostView that capture began.
     // https://crbug.com/668690
-    for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
-      view->WasUnOccluded();
+    if (auto* main_view = GetRenderWidgetHostView())
+      main_view->WasUnOccluded();
+    if (!ShowingInterstitialPage())
+      SetVisibilityForChildViews(true);
   }
 }
 
@@ -1729,8 +1731,13 @@ void WebContentsImpl::SetMainFrameImportance(
 
 void WebContentsImpl::WasOccluded() {
   if (!IsBeingCaptured()) {
-    for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
-      view->WasOccluded();
+    if (auto* main_view = GetRenderWidgetHostView())
+      main_view->WasOccluded();
+    if (!ShowingInterstitialPage()) {
+      // Occluding child view is treated as hiding the view
+      // (https://crbug.com/903455).
+      SetVisibilityForChildViews(false);
+    }
   }
   SetVisibility(Visibility::OCCLUDED);
 }
