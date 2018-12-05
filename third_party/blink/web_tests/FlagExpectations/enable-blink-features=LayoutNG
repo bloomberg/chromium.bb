@@ -392,7 +392,7 @@ crbug.com/591099 virtual/sampling-heap-profiler/inspector-protocol/memory/sampli
 crbug.com/591099 virtual/scroll_customization/ [ Skip ]
 crbug.com/591099 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-simple-success.html [ Pass ]
-crbug.com/591099 virtual/spv2/paint/invalidation/box/margin.html [ Failure Pass ]
+crbug.com/591099 virtual/composite-after-paint/paint/invalidation/box/margin.html [ Failure Pass ]
 crbug.com/591099 virtual/stable/ [ Skip ]
 crbug.com/591099 virtual/threaded/ [ Skip ]
 crbug.com/591099 virtual/user-activation-v2/fast/events/mouse-cursor.html [ Failure Pass ]

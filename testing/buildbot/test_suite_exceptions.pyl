@@ -1379,7 +1379,6 @@
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',
-          '--additional-driver-flag=--enable-slimming-paint-v175',
         ],
       },
       'WebKit Linux root_layer_scrolls Dummy Builder': {
@@ -1389,7 +1388,7 @@
       },
       'WebKit Linux slimming_paint_v2 Dummy Builder': {
         'args': [
-          '--additional-driver-flag=--enable-slimming-paint-v2',
+          '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
         ],
       },
       # chromium.linux

@@ -2200,8 +2200,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-blink-features=LayoutNG",
-          "--additional-driver-flag=--enable-slimming-paint-v175"
+          "--additional-driver-flag=--enable-blink-features=LayoutNG"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -2259,7 +2258,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--additional-driver-flag=--enable-slimming-paint-v2"
+          "--additional-driver-flag=--enable-blink-features=CompositeAfterPaint"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
