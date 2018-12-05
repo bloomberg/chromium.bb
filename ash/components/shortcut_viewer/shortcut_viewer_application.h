@@ -55,6 +55,8 @@ class ShortcutViewerApplication
 
   void AddBinding(shortcut_viewer::mojom::ShortcutViewerRequest request);
 
+  void OnLastWindowClosed();
+
   service_manager::ServiceBinding service_binding_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
