@@ -1176,6 +1176,7 @@
     // without native Shadow DOM v0 support
     {
       name: "ShadowDOMV0",
+      origin_trial_feature_name: "WebComponentsV0",
       status: "stable",
     },
     {
