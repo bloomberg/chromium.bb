@@ -43,6 +43,10 @@ class ForeignSessionHelper {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& session_tag);
+  void SetInvalidationsForSessionsEnabled(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean enabled);
 
  private:
   // Fires |callback_| if it is not null.

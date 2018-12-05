@@ -197,6 +197,13 @@ class ForeignSessionHelper {
         nativeDeleteForeignSession(mNativeForeignSessionHelper, session.tag);
     }
 
+    /**
+     * Enable invalidations for sessions sync related datatypes.
+     */
+    void setInvalidationsForSessionsEnabled(boolean enabled) {
+        nativeSetInvalidationsForSessionsEnabled(mNativeForeignSessionHelper, enabled);
+    }
+
     private static native long nativeInit(Profile profile);
     private static native void nativeDestroy(long nativeForeignSessionHelper);
     private static native boolean nativeIsTabSyncEnabled(long nativeForeignSessionHelper);
@@ -210,4 +217,6 @@ class ForeignSessionHelper {
             int disposition);
     private static native void nativeDeleteForeignSession(
             long nativeForeignSessionHelper, String sessionTag);
+    private static native void nativeSetInvalidationsForSessionsEnabled(
+            long nativeForeignSessionHelper, boolean enabled);
 }
