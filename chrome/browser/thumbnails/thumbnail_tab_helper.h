@@ -20,10 +20,6 @@ class NavigationHandle;
 class RenderViewHost;
 }  // namespace content
 
-namespace thumbnails {
-class ThumbnailService;
-}  // namespace thumbnails
-
 class ThumbnailTabHelper
     : public content::RenderWidgetHostObserver,
       public content::WebContentsObserver,
@@ -97,8 +93,6 @@ class ThumbnailTabHelper
 
   // Called when the current tab gets hidden.
   void TabHidden();
-
-  scoped_refptr<thumbnails::ThumbnailService> GetThumbnailService();
 
   static void LogThumbnailingOutcome(TriggerReason trigger, Outcome outcome);
 
