@@ -56,6 +56,11 @@ const base::Feature kUseDCOverlaysForSoftwareProtectedVideo{
     "UseDCOverlaysForSoftwareProtectedVideo",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use decode swap chain created from compatible video decoder buffers.
+const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
+    "DirectCompositionUseNV12DecodeSwapChain",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls the decode acceleration of JPEG images (as opposed to camera
 // captures) in Chrome OS using the VA-API.
 // TODO(andrescj): remove or enable by default in Chrome OS once
