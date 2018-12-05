@@ -145,7 +145,7 @@ public class ToolbarPhone
 
     protected ViewGroup mToolbarButtonsContainer;
     private IncognitoToggleTabLayout mIncognitoToggleTabLayout;
-    protected ToggleTabStackButton mToggleTabStackButton;
+    protected @Nullable ToggleTabStackButton mToggleTabStackButton;
     protected NewTabButton mNewTabButton;
     protected @Nullable ImageButton mHomeButton;
     private TextView mUrlBar;
@@ -1923,7 +1923,9 @@ public class ToolbarPhone
 
     @Override
     public void setOnTabSwitcherClickHandler(OnClickListener listener) {
-        mToggleTabStackButton.setOnTabSwitcherClickHandler(listener);
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setOnTabSwitcherClickHandler(listener);
+        }
     }
 
     @Override
@@ -2125,7 +2127,7 @@ public class ToolbarPhone
     public void onUrlFocusChange(final boolean hasFocus) {
         super.onUrlFocusChange(hasFocus);
 
-        mToggleTabStackButton.setClickable(!hasFocus);
+        if (mToggleTabStackButton != null) mToggleTabStackButton.setClickable(!hasFocus);
         triggerUrlFocusAnimation(hasFocus);
     }
 
@@ -2182,7 +2184,9 @@ public class ToolbarPhone
     public void setTabCountProvider(TabCountProvider tabCountProvider) {
         mTabCountProvider = tabCountProvider;
         mTabCountProvider.addObserver(this);
-        mToggleTabStackButton.setTabCountProvider(tabCountProvider);
+        if (mToggleTabStackButton != null) {
+            mToggleTabStackButton.setTabCountProvider(tabCountProvider);
+        }
     }
 
     @Override
