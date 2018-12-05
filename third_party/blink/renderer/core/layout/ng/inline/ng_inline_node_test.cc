@@ -864,4 +864,37 @@ TEST_F(NGInlineNodeTest, MarkLineBoxesDirtyOnChildOfWrappedBox) {
   EXPECT_TRUE(lines[0]->IsDirty());
 }
 
+TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty1) {
+  SetupHtml("container", "<div id=container><b id=remove><i>foo</i></b></div>");
+  ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
+
+  Element* to_remove = GetElementById("remove");
+  to_remove->remove();
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
+}
+
+TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockBecomesEmpty2) {
+  SetupHtml("container", "<div id=container><b><i>foo</i></b></div>");
+  ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
+
+  GetElementById("container")->SetInnerHTMLFromString("");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
+}
+
+TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockObtainsBlockChild) {
+  SetupHtml("container",
+            "<div id=container><b id=blockify><i>foo</i></b></div>");
+  ASSERT_TRUE(layout_block_flow_->HasNGInlineNodeData());
+
+  GetElementById("blockify")
+      ->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueBlock);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
+}
+
 }  // namespace blink

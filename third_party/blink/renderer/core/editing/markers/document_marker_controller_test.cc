@@ -136,7 +136,6 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedByRemoveMarked) {
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
-// TODO(xiaochengh): Fix this test in LayoutNG. See https://crbug.com/906260.
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByRemoveAncestor) {
   SetBodyContent("<b><i>foo</i></b>");
   {
@@ -182,7 +181,6 @@ TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedMarkedByReplaceChild) {
   EXPECT_EQ(0u, MarkerController().Markers().size());
 }
 
-// TODO(xiaochengh): Fix this test in LayoutNG. See https://crbug.com/906260.
 TEST_F(DocumentMarkerControllerTest, NodeWillBeRemovedBySetInnerHTML) {
   SetBodyContent("<b><i>foo</i></b>");
   {

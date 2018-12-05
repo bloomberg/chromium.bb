@@ -454,6 +454,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   virtual NGInlineNodeData* TakeNGInlineNodeData() { return nullptr; }
   virtual NGInlineNodeData* GetNGInlineNodeData() const { return nullptr; }
   virtual void ResetNGInlineNodeData() {}
+  virtual void ClearNGInlineNodeData() {}
   virtual bool HasNGInlineNodeData() const { return false; }
   virtual NGPaintFragment* PaintFragment() const { return nullptr; }
   virtual scoped_refptr<NGLayoutResult> CachedLayoutResult(
