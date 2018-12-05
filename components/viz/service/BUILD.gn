@@ -320,6 +320,7 @@ viz_source_set("gpu_service_dependencies") {
     "//media/mojo/services",
     "//services/viz/privileged/interfaces/gl",
     "//skia",
+    "//ui/latency:latency",
   ]
 
   defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
