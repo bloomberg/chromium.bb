@@ -176,9 +176,9 @@ int MapOpenSSLErrorWithDetails(int err,
     case SSL_ERROR_EARLY_DATA_REJECTED:
       return ERR_EARLY_DATA_REJECTED;
     case SSL_ERROR_SYSCALL:
-      LOG(ERROR) << "OpenSSL SYSCALL error, earliest error code in "
-                    "error queue: " << ERR_peek_error() << ", errno: "
-                 << errno;
+      PLOG(ERROR) << "OpenSSL SYSCALL error, earliest error code in "
+                     "error queue: "
+                  << ERR_peek_error();
       return ERR_FAILED;
     case SSL_ERROR_SSL:
       // Walk down the error stack to find an SSL or net error.

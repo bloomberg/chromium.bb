@@ -269,8 +269,7 @@ void MessagePumpLibevent::ScheduleWork() {
   // Tell libevent (in a threadsafe way) that it should break out of its loop.
   char buf = 0;
   int nwrite = HANDLE_EINTR(write(wakeup_pipe_in_, &buf, 1));
-  DCHECK(nwrite == 1 || errno == EAGAIN)
-      << "[nwrite:" << nwrite << "] [errno:" << errno << "]";
+  DPCHECK(nwrite == 1 || errno == EAGAIN) << "nwrite:" << nwrite;
 }
 
 void MessagePumpLibevent::ScheduleDelayedWork(

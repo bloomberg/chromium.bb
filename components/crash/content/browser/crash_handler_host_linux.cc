@@ -229,10 +229,9 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   const ssize_t msg_size = HANDLE_EINTR(recvmsg(browser_socket_, &msg, 0));
   if (msg_size < 0) {
-    LOG(ERROR) << "Error reading from death signal socket. Crash dumping"
-               << " is disabled."
-               << " msg_size:" << msg_size
-               << " errno:" << errno;
+    PLOG(ERROR) << "Error reading from death signal socket. Crash dumping"
+                << " is disabled."
+                << " msg_size:" << msg_size;
     fd_watch_controller_.StopWatchingFileDescriptor();
     return;
   }

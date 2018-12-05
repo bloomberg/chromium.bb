@@ -40,7 +40,7 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 bool WriteIccFile(const base::FilePath file_path, const std::string& data) {
   int bytes_written = base::WriteFile(file_path, data.data(), data.length());
   if (bytes_written == -1)
-    LOG(ERROR) << "Write failed: " << file_path.value() << ", err = " << errno;
+    PLOG(ERROR) << "Write failed: " << file_path.value();
   else
     VLOG(1) << bytes_written << "bytes written to: " << file_path.value();
 
