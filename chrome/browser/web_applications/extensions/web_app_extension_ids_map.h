@@ -31,11 +31,6 @@ class ExtensionIdsMap {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // TODO(nigeltao): delete this after M72 has branched.
-  //
-  // This is public only for testing.
-  static void UpgradeFromM70Format(PrefService* pref_service);
-
   static bool HasExtensionId(const PrefService* pref_service,
                              const std::string& extension_id);
 
