@@ -3414,6 +3414,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDoubleTapToZoomInTabletMode)},
 #endif  // defined(OS_CHROMEOS)
 
+    {"tab-groups", flag_descriptions::kTabGroupsName,
+     flag_descriptions::kTabGroupsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kTabGroups)},
+
 #if defined(OS_ANDROID)
     {"dont-prefetch-libraries", flag_descriptions::kDontPrefetchLibrariesName,
      flag_descriptions::kDontPrefetchLibrariesDescription, kOsAndroid,

@@ -26,6 +26,8 @@ extern const base::Feature kWebUIDarkMode;
 
 extern const base::Feature kTabHoverCards;
 
+extern const base::Feature kTabGroups;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_BROWSER_FEATURES_H_

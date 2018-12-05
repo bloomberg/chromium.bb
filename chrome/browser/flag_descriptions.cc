@@ -1866,6 +1866,11 @@ const char kSystemKeyboardLockDescription[] =
     "keyboard shortcuts and have the events routed directly to the website "
     "when in fullscreen mode.";
 
+const char kTabGroupsName[] = "Tab Groups";
+const char kTabGroupsDescription[] =
+    "Allows users to organize tabs into visually distinct groups, e.g. to "
+    "separate tabs associated with different tasks.";
+
 const char kTabHoverCardsName[] = "Tab Hover Cards";
 const char kTabHoverCardsDescription[] =
     "Enables a popup containing tab information to be visible when hovering "
