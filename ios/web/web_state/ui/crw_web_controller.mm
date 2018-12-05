@@ -1191,7 +1191,8 @@ GURL URLEscapedForHistory(const GURL& url) {
     }
   }
   web::NavigationItem* item =
-      self.navigationManagerImpl->GetLastCommittedItem();
+      self.navigationManagerImpl
+          ->GetLastCommittedItemInCurrentOrRestoredSession();
   return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 

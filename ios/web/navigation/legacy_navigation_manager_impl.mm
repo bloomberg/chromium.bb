@@ -60,7 +60,7 @@ void LegacyNavigationManagerImpl::OnNavigationItemChanged() {
 
 void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
   LoadCommittedDetails details;
-  details.item = GetLastCommittedItem();
+  details.item = GetLastCommittedItemInCurrentOrRestoredSession();
   DCHECK(details.item);
   details.previous_item_index = [session_controller_ previousItemIndex];
   if (details.previous_item_index >= 0) {
@@ -168,7 +168,8 @@ int LegacyNavigationManagerImpl::GetPendingItemIndex() const {
   return -1;
 }
 
-int LegacyNavigationManagerImpl::GetLastCommittedItemIndex() const {
+int LegacyNavigationManagerImpl::
+    GetLastCommittedItemIndexInCurrentOrRestoredSession() const {
   if (GetItemCount() == 0)
     return -1;
   return [session_controller_ lastCommittedItemIndex];
@@ -295,7 +296,8 @@ int LegacyNavigationManagerImpl::GetIndexForOffset(int offset) const {
   return result;
 }
 
-NavigationItemImpl* LegacyNavigationManagerImpl::GetLastCommittedItemImpl()
+NavigationItemImpl*
+LegacyNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     const {
   return [session_controller_ lastCommittedItem];
 }

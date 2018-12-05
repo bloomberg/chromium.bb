@@ -90,7 +90,7 @@ void WKBasedNavigationManagerImpl::DetachFromWebView() {
 
 void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
   LoadCommittedDetails details;
-  details.item = GetLastCommittedItem();
+  details.item = GetLastCommittedItemInCurrentOrRestoredSession();
   DCHECK(details.item);
 
   if (!wk_navigation_util::IsRestoreSessionUrl(details.item->GetURL()) &&
@@ -160,7 +160,8 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
   DiscardNonCommittedItems();
 
   pending_item_index_ = -1;
-  NavigationItem* last_committed_item = GetLastCommittedItem();
+  NavigationItem* last_committed_item =
+      GetLastCommittedItemInCurrentOrRestoredSession();
   pending_item_ = CreateNavigationItemWithRewriters(
       url, referrer, navigation_type, initiation_type,
       last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
@@ -376,21 +377,6 @@ int WKBasedNavigationManagerImpl::GetPendingItemIndex() const {
   return -1;
 }
 
-int WKBasedNavigationManagerImpl::GetLastCommittedItemIndex() const {
-  // WKBackForwardList's |currentItem| is usually the last committed item,
-  // except two cases:
-  // 1) when the pending navigation is a back-forward navigation, in which
-  //    case it is actually the pending item. As a workaround, fall back to
-  //    last_committed_item_index_. This is not 100% correct (since
-  //    last_committed_item_index_ is only updated for main frame navigations),
-  //    but is the best possible answer.
-  // 2) when the last committed item is an empty window open item.
-  if (pending_item_index_ >= 0 || empty_window_open_item_) {
-    return last_committed_item_index_;
-  }
-  return web_view_cache_.GetCurrentItemIndex();
-}
-
 bool WKBasedNavigationManagerImpl::RemoveItemAtIndex(int index) {
   DLOG(WARNING) << "Not yet implemented.";
   return true;
@@ -572,15 +558,32 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
       index, true /* create_if_missing */);
 }
 
-NavigationItemImpl* WKBasedNavigationManagerImpl::GetLastCommittedItemImpl()
+NavigationItemImpl*
+WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     const {
   if (empty_window_open_item_) {
     return empty_window_open_item_.get();
   }
 
-  int index = GetLastCommittedItemIndex();
+  int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
   return index == -1 ? nullptr
                      : GetNavigationItemImplAtIndex(static_cast<size_t>(index));
+}
+
+int WKBasedNavigationManagerImpl::
+    GetLastCommittedItemIndexInCurrentOrRestoredSession() const {
+  // WKBackForwardList's |currentItem| is usually the last committed item,
+  // except two cases:
+  // 1) when the pending navigation is a back-forward navigation, in which
+  //    case it is actually the pending item. As a workaround, fall back to
+  //    last_committed_item_index_. This is not 100% correct (since
+  //    last_committed_item_index_ is only updated for main frame navigations),
+  //    but is the best possible answer.
+  // 2) when the last committed item is an empty window open item.
+  if (pending_item_index_ >= 0 || empty_window_open_item_) {
+    return last_committed_item_index_;
+  }
+  return web_view_cache_.GetCurrentItemIndex();
 }
 
 NavigationItemImpl* WKBasedNavigationManagerImpl::GetPendingItemImpl() const {

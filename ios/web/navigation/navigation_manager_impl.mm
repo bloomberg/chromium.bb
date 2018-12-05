@@ -182,7 +182,7 @@ NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
   if (pending_item)
     return pending_item;
 
-  return GetLastCommittedItemImpl();
+  return GetLastCommittedItemInCurrentOrRestoredSession();
 }
 
 void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
@@ -236,7 +236,17 @@ void NavigationManagerImpl::GoToIndex(int index) {
 }
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
-  return GetLastCommittedItemImpl();
+  if (IsRestoreSessionInProgress())
+    return nullptr;
+
+  return GetLastCommittedItemInCurrentOrRestoredSession();
+}
+
+int NavigationManagerImpl::GetLastCommittedItemIndex() const {
+  if (IsRestoreSessionInProgress())
+    return -1;
+
+  return GetLastCommittedItemIndexInCurrentOrRestoredSession();
 }
 
 NavigationItem* NavigationManagerImpl::GetPendingItem() const {
@@ -264,7 +274,8 @@ void NavigationManagerImpl::LoadURLWithParams(
   // because window.hashchange message may not arrive on time.
   NavigationItemImpl* pending_item = GetPendingItemImpl();
   if (pending_item) {
-    NavigationItem* last_committed_item = GetLastCommittedItem();
+    NavigationItem* last_committed_item =
+        GetLastCommittedItemInCurrentOrRestoredSession();
     GURL last_committed_url = last_committed_item
                                   ? last_committed_item->GetVirtualURL()
                                   : GURL::EmptyGURL();
@@ -286,7 +297,8 @@ void NavigationManagerImpl::LoadURLWithParams(
   // cleared.
   DCHECK(!GetTransientItem());
   NavigationItemImpl* added_item =
-      pending_item ? pending_item : GetLastCommittedItemImpl();
+      pending_item ? pending_item
+                   : GetLastCommittedItemInCurrentOrRestoredSession();
   DCHECK(added_item);
   if (params.extra_headers)
     added_item->AddHttpRequestHeaders(params.extra_headers);
@@ -467,7 +479,8 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
     const {
-  for (int index = GetLastCommittedItemIndex(); index >= 0; index--) {
+  for (int index = GetLastCommittedItemIndexInCurrentOrRestoredSession();
+       index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
     if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL()))
       return item;
