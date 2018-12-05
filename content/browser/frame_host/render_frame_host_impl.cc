@@ -5375,12 +5375,12 @@ void RenderFrameHostImpl::AXContentNodeDataToAXNodeData(
       case AX_CONTENT_ATTR_CHILD_ROUTING_ID:
         dst->string_attributes.push_back(
             std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
-                           RoutingIDToAXTreeID(value)));
+                           RoutingIDToAXTreeID(value).ToString()));
         break;
       case AX_CONTENT_ATTR_CHILD_BROWSER_PLUGIN_INSTANCE_ID:
-        dst->string_attributes.push_back(
-            std::make_pair(ax::mojom::StringAttribute::kChildTreeId,
-                           BrowserPluginInstanceIDToAXTreeID(value)));
+        dst->string_attributes.push_back(std::make_pair(
+            ax::mojom::StringAttribute::kChildTreeId,
+            BrowserPluginInstanceIDToAXTreeID(value).ToString()));
         break;
       case AX_CONTENT_INT_ATTRIBUTE_LAST:
         NOTREACHED();

@@ -51,8 +51,8 @@ ui::AXTreeUpdate MakeAXTreeUpdate(
 
   ui::AXTreeUpdate update;
   ui::AXTreeData tree_data;
-  tree_data.tree_id = ui::AXTreeID::FromString("1");
-  tree_data.focused_tree_id = ui::AXTreeID::FromString("1");
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  tree_data.focused_tree_id = tree_data.tree_id;
   update.tree_data = tree_data;
   update.has_tree_data = true;
   update.root_id = node1.id;

@@ -93,7 +93,8 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
     return;
 
   std::unique_ptr<base::ListValue> args(
-      api::automation_internal::OnAccessibilityTreeDestroyed::Create(tree_id));
+      api::automation_internal::OnAccessibilityTreeDestroyed::Create(
+          tree_id.ToString()));
   auto event = std::make_unique<Event>(
       events::AUTOMATION_INTERNAL_ON_ACCESSIBILITY_TREE_DESTROYED,
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,

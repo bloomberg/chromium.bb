@@ -11,10 +11,14 @@
 using mojo::test::SerializeAndDeserialize;
 
 TEST(AXTreeDataMojomTraitsTest, TestSerializeAndDeserializeAXTreeData) {
+  ui::AXTreeID tree_id_1 = ui::AXTreeID::CreateNewAXTreeID();
+  ui::AXTreeID tree_id_2 = ui::AXTreeID::CreateNewAXTreeID();
+  ui::AXTreeID tree_id_3 = ui::AXTreeID::CreateNewAXTreeID();
+
   ui::AXTreeData input, output;
-  input.tree_id = ui::AXTreeID::FromString("1");
-  input.parent_tree_id = ui::AXTreeID::FromString("2");
-  input.focused_tree_id = ui::AXTreeID::FromString("3");
+  input.tree_id = tree_id_1;
+  input.parent_tree_id = tree_id_2;
+  input.focused_tree_id = tree_id_3;
   input.doctype = "4";
   input.loaded = true;
   input.loading_progress = 5;
@@ -31,9 +35,9 @@ TEST(AXTreeDataMojomTraitsTest, TestSerializeAndDeserializeAXTreeData) {
 
   EXPECT_TRUE(SerializeAndDeserialize<ax::mojom::AXTreeData>(&input, &output));
 
-  EXPECT_EQ("1", output.tree_id.ToString());
-  EXPECT_EQ("2", output.parent_tree_id.ToString());
-  EXPECT_EQ("3", output.focused_tree_id.ToString());
+  EXPECT_EQ(tree_id_1, output.tree_id);
+  EXPECT_EQ(tree_id_2, output.parent_tree_id);
+  EXPECT_EQ(tree_id_3, output.focused_tree_id);
   EXPECT_EQ("4", output.doctype);
   EXPECT_EQ(true, output.loaded);
   EXPECT_EQ(5, output.loading_progress);

@@ -26,7 +26,7 @@ namespace {
 // Returns a well-known tree ID for the test widget.
 const ui::AXTreeID& TestAXTreeID() {
   static const base::NoDestructor<ui::AXTreeID> test_ax_tree_id(
-      ui::AXTreeID::FromString("123"));
+      ui::AXTreeID::CreateNewAXTreeID());
   return *test_ax_tree_id;
 }
 
@@ -62,7 +62,7 @@ class TestAXHostService : public ax::mojom::AXHost {
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event) override {
     ++event_count_;
-    last_tree_id_ = ui::AXTreeID::FromString(tree_id);
+    last_tree_id_ = tree_id;
     last_updates_ = updates;
     last_event_ = event;
   }
