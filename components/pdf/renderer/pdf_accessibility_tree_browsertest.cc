@@ -72,7 +72,7 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
   void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(const std::vector<int>&)>& callback)
+      base::OnceCallback<void(const std::vector<int>&)> callback)
       const override {}
   GURL GetDocumentURL(PP_Instance instance) const override { return GURL(); }
 

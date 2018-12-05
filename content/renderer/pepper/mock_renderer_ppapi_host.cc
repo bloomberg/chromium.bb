@@ -112,8 +112,8 @@ void MockRendererPpapiHost::SetToExternalPluginHost() {
 void MockRendererPpapiHost::CreateBrowserResourceHosts(
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,
-    const base::Callback<void(const std::vector<int>&)>& callback) const {
-  callback.Run(std::vector<int>(nested_msgs.size(), 0));
+    base::OnceCallback<void(const std::vector<int>&)> callback) const {
+  std::move(callback).Run(std::vector<int>(nested_msgs.size(), 0));
   return;
 }
 

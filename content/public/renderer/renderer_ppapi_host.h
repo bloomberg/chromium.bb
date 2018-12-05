@@ -158,7 +158,7 @@ class RendererPpapiHost {
   virtual void CreateBrowserResourceHosts(
       PP_Instance instance,
       const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(const std::vector<int>&)>& callback) const = 0;
+      base::OnceCallback<void(const std::vector<int>&)> callback) const = 0;
 
   // Gets the URL of the document containing the given PP_Instance.
   // Returns an empty URL if the instance is invalid.
