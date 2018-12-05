@@ -177,6 +177,74 @@ class ConciergeClientImpl : public ConciergeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void AttachUsbDevice(base::ScopedFD fd,
+      const vm_tools::concierge::AttachUsbDeviceRequest& request,
+      DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback)
+      override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kAttachUsbDeviceMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode AttachUsbDeviceRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    writer.AppendFileDescriptor(fd.get());
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::AttachUsbDeviceResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void DetachUsbDevice(
+      const vm_tools::concierge::DetachUsbDeviceRequest& request,
+      DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback)
+      override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kDetachUsbDeviceMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode DetachUsbDeviceRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::DetachUsbDeviceResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void ListUsbDevices(
+      const vm_tools::concierge::ListUsbDeviceRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
+      override {
+    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
+                                 vm_tools::concierge::kListUsbDeviceMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode ListUsbDeviceRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::ListUsbDeviceResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     concierge_proxy_ = bus->GetObjectProxy(

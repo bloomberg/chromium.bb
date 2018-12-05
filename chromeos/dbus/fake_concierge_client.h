@@ -77,6 +77,29 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
       DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
           callback) override;
 
+  // Fake version of the method that attaches a USB device to a VM
+  // |callback| is called once the method call has finished
+  void AttachUsbDevice(base::ScopedFD fd,
+      const vm_tools::concierge::AttachUsbDeviceRequest& request,
+      DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback)
+      override;
+
+  // Fake version of the method that removes a USB device from a VM it's been
+  // attached to
+  // |callback| is called once the method call has finished
+  void DetachUsbDevice(
+      const vm_tools::concierge::DetachUsbDeviceRequest& request,
+      DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback)
+      override;
+
+  // Fake version of the method that lists all the USB devices currently
+  // attached to a given VM
+  // |callback| is called once the method call has finished
+  void ListUsbDevices(
+      const vm_tools::concierge::ListUsbDeviceRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
+      override;
+
   // Indicates whether CreateDiskImage has been called
   bool create_disk_image_called() const { return create_disk_image_called_; }
   // Indicates whether DestroyDiskImage has been called
@@ -123,6 +146,21 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
           container_ssh_keys_response) {
     container_ssh_keys_response_ = container_ssh_keys_response;
   }
+  void set_attach_usb_device_response(
+      const vm_tools::concierge::AttachUsbDeviceResponse&
+          attach_usb_device_response) {
+    attach_usb_device_response_ = attach_usb_device_response;
+  }
+  void set_detach_usb_device_response(
+      const vm_tools::concierge::DetachUsbDeviceResponse&
+      detach_usb_device_response) {
+    detach_usb_device_response_ = detach_usb_device_response;
+  }
+  void set_list_usb_devices_response(
+      const vm_tools::concierge::ListUsbDeviceResponse&
+      list_usb_devices_response) {
+    list_usb_devices_response_ = list_usb_devices_response;
+  }
 
  protected:
   void Init(dbus::Bus* bus) override {}
@@ -139,6 +177,9 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
   bool get_container_ssh_keys_called_ = false;
+  bool attach_usb_device_called = false;
+  bool detach_usb_device_called = false;
+  bool list_usb_devices_called = false;
   bool is_container_startup_failed_signal_connected_ = true;
 
   vm_tools::concierge::CreateDiskImageResponse create_disk_image_response_;
@@ -147,6 +188,9 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   vm_tools::concierge::StartVmResponse start_vm_response_;
   vm_tools::concierge::StopVmResponse stop_vm_response_;
   vm_tools::concierge::ContainerSshKeysResponse container_ssh_keys_response_;
+  vm_tools::concierge::AttachUsbDeviceResponse attach_usb_device_response_;
+  vm_tools::concierge::DetachUsbDeviceResponse detach_usb_device_response_;
+  vm_tools::concierge::ListUsbDeviceResponse list_usb_devices_response_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;
 
