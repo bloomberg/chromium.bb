@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/internal/background_service/android/network_status_listener_android.h"
+#include "components/download/network/android/network_status_listener_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/trace_event/trace_event.h"

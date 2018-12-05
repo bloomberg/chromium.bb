@@ -11,7 +11,7 @@
 #include "base/timer/timer.h"
 #include "components/download/internal/background_service/scheduler/battery_status_listener.h"
 #include "components/download/internal/background_service/scheduler/device_status.h"
-#include "components/download/internal/background_service/scheduler/network_status_listener.h"
+#include "components/download/network/network_status_listener.h"
 
 namespace download {
 
