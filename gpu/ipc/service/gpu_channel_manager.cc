@@ -460,7 +460,7 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
 
 void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   // Work around issues with recovery by allowing a new GPU process to launch.
-  if (!synthetic_loss || gpu_driver_bug_workarounds_.exit_on_context_lost)
+  if (!synthetic_loss && gpu_driver_bug_workarounds_.exit_on_context_lost)
     MaybeExitOnContextLost();
 
   // Lose all other contexts.
