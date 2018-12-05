@@ -12,6 +12,7 @@
 #include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell_observer.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/lock_state_observer.h"
 #include "ash/wm/wm_snap_to_pixel_layout_manager.h"
@@ -55,7 +56,8 @@ class ASH_EXPORT ShelfLayoutManager
       public wm::WmSnapToPixelLayoutManager,
       public display::DisplayObserver,
       public SessionObserver,
-      public WallpaperControllerObserver {
+      public WallpaperControllerObserver,
+      public LocaleChangeObserver {
  public:
   // The snapping threshold for dragging app list from shelf in tablet mode,
   // measured in DIPs.
@@ -231,6 +233,9 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Updates the background of the shelf if it has changed.
   void MaybeUpdateShelfBackground(AnimationChangeType change_type);
+
+  // LocaleChangeObserver:
+  void OnLocaleChanged() override;
 
  private:
   class UpdateShelfObserver;

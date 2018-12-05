@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +29,8 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace {
 
@@ -267,6 +270,7 @@ void WelcomeScreen::OnLanguageChangedCallback(
 
   AccessibilityManager::Get()->OnLocaleChanged();
   SetInputMethod(input_method);
+  NotifyLocaleChange();
 }
 
 void WelcomeScreen::ScheduleResolveLanguageList(
@@ -298,6 +302,29 @@ void WelcomeScreen::OnSystemTimezoneChanged() {
   std::string current_timezone_id;
   CrosSettings::Get()->GetString(kSystemTimezone, &current_timezone_id);
   GetContextEditor().SetString(kContextKeyTimezone, current_timezone_id);
+}
+
+void WelcomeScreen::ConnectToLocaleUpdateController() {
+  content::ServiceManagerConnection* connection =
+      content::ServiceManagerConnection::GetForProcess();
+  service_manager::Connector* connector =
+      connection ? connection->GetConnector() : nullptr;
+  // Unit tests may not have a connector.
+  if (!connector)
+    return;
+
+  connector->BindInterface(ash::mojom::kServiceName,
+                           &locale_update_controller_);
+}
+
+void WelcomeScreen::NotifyLocaleChange() {
+  if (!locale_update_controller_)
+    ConnectToLocaleUpdateController();
+
+  DCHECK(locale_update_controller_);
+  locale_update_controller_->OnLocaleChanged(
+      std::string(), std::string(), std::string(),
+      base::DoNothing::Once<ash::mojom::LocaleNotificationResult>());
 }
 
 }  // namespace chromeos

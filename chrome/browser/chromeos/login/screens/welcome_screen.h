@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/locale.mojom.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -119,6 +120,11 @@ class WelcomeScreen : public BaseScreen,
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
 
+  // Notifies locale change via mojom.
+  void ConnectToLocaleUpdateController();
+  void NotifyLocaleChange();
+  void OnLocaleChangeResult(ash::mojom::LocaleNotificationResult result);
+
   std::unique_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 
   WelcomeView* view_ = nullptr;
@@ -136,6 +142,9 @@ class WelcomeScreen : public BaseScreen,
   std::string selected_language_code_;
 
   base::ObserverList<Observer>::Unchecked observers_;
+
+  // Ash's mojom::LocaleUpdateController
+  ash::mojom::LocaleUpdateControllerPtr locale_update_controller_ = nullptr;
 
   base::WeakPtrFactory<WelcomeScreen> weak_factory_;
 

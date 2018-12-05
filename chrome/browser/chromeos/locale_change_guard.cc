@@ -68,7 +68,7 @@ void LocaleChangeGuard::OnLogin() {
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-void LocaleChangeGuard::ConnectToLocaleNotificationController() {
+void LocaleChangeGuard::ConnectToLocaleUpdateController() {
   content::ServiceManagerConnection* connection =
       content::ServiceManagerConnection::GetForProcess();
   service_manager::Connector* connector =
@@ -193,7 +193,7 @@ void LocaleChangeGuard::Check() {
   }
 
   if (!notification_controller_)
-    ConnectToLocaleNotificationController();
+    ConnectToLocaleUpdateController();
 
   notification_controller_->OnLocaleChanged(
       cur_locale, from_locale_, to_locale_,
