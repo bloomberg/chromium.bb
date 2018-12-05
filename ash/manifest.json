@@ -30,7 +30,7 @@
           "ash.mojom.HighlighterController",
           "ash.mojom.ImeController",
           "ash.mojom.KeyboardController",
-          "ash.mojom.LocaleNotificationController",
+          "ash.mojom.LocaleUpdateController",
           "ash.mojom.LoginScreen",
           "ash.mojom.MediaController",
           "ash.mojom.NewWindowController",

@@ -24,6 +24,7 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/locale/locale_update_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/fullscreen_window_finder.h"
@@ -175,6 +176,7 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->lock_state_controller()->AddObserver(this);
   Shell::Get()->activation_client()->AddObserver(this);
+  Shell::Get()->locale_update_controller()->AddObserver(this);
   state_.session_state = Shell::Get()->session_controller()->GetSessionState();
   keyboard::KeyboardController::Get()->AddObserver(this);
   wallpaper_controller_observer_.Add(Shell::Get()->wallpaper_controller());
@@ -189,6 +191,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     observer.WillDeleteShelfLayoutManager();
   display::Screen::GetScreen()->RemoveObserver(this);
   keyboard::KeyboardController::Get()->RemoveObserver(this);
+  Shell::Get()->locale_update_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->lock_state_controller()->RemoveObserver(this);
 }
@@ -1515,6 +1518,11 @@ void ShelfLayoutManager::UpdateWorkspaceMask(
       container->layer()->SetMasksToBounds(true);
       break;
   }
+}
+
+void ShelfLayoutManager::OnLocaleChanged() {
+  // Layout update is needed when language changes between LTR and RTL.
+  LayoutShelfAndUpdateBounds();
 }
 
 }  // namespace ash

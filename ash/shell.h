@@ -130,7 +130,7 @@ class KeyAccessibilityEnabler;
 class KeyboardBrightnessControlDelegate;
 class AshKeyboardController;
 class LaserPointerController;
-class LocaleNotificationController;
+class LocaleUpdateController;
 class LockStateController;
 class LogoutConfirmationController;
 class LoginScreenController;
@@ -422,8 +422,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   LaserPointerController* laser_pointer_controller() {
     return laser_pointer_controller_.get();
   }
-  LocaleNotificationController* locale_notification_controller() {
-    return locale_notification_controller_.get();
+  LocaleUpdateController* locale_update_controller() {
+    return locale_update_controller_.get();
   }
   LoginScreenController* login_screen_controller() {
     return login_screen_controller_.get();
@@ -737,7 +737,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
-  std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
+  std::unique_ptr<LocaleUpdateController> locale_update_controller_;
   std::unique_ptr<LoginScreenController> login_screen_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
