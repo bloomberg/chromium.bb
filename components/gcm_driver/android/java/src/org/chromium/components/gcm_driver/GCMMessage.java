@@ -7,6 +7,7 @@ package org.chromium.components.gcm_driver;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,8 +19,6 @@ import org.chromium.base.VisibleForTesting;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Represents the contents of a GCM Message that is to be handled by the GCM Driver. Can be created

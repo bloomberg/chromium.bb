@@ -14,6 +14,7 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.v4.util.ObjectsCompat;
 import android.util.Base64;
 
@@ -39,8 +40,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 /**
  * Provides methods for building the X-Geo HTTP header, which provides device location to a server

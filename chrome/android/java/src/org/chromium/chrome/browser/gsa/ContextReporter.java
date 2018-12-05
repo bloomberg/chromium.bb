@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.gsa;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -21,8 +22,6 @@ import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.Nullable;
 
 /**
  * Reports context to GSA for search quality.

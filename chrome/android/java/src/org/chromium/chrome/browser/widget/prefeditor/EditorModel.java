@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.widget.prefeditor;
 
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Representation of an editor layout. Can be used, for example, to edit contact information.

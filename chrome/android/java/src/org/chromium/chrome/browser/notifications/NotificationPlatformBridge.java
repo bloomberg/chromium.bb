@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.customtabs.trusted.TrustedWebActivityServiceConnectionManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -48,8 +49,6 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 /**
  * Provides the ability for the NotificationPlatformBridgeAndroid to talk to the Android platform

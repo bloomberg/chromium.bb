@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.app.ProgressDialog;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -30,8 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
 
 /**
  * An address editor. Can be used for either shipping or billing address editing.

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.router.cast;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.LaunchOptions;
@@ -26,8 +27,6 @@ import org.chromium.chrome.browser.media.router.cast.remoting.RemotingCastSessio
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-
-import javax.annotation.Nullable;
 
 /**
  * Establishes a {@link MediaRoute} by starting a Cast application represented by the given

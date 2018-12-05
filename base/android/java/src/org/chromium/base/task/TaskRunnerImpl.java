@@ -4,13 +4,13 @@
 
 package org.chromium.base.task;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * Implementation of the abstract class {@link TaskRunnerImpl}. Uses AsyncTasks until

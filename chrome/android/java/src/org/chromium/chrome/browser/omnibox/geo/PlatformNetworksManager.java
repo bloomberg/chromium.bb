@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.telephony.CellIdentityCdma;
 import android.telephony.CellIdentityGsm;
 import android.telephony.CellIdentityLte;
@@ -38,8 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
 
 /**
  * Util methods for platform networking APIs.

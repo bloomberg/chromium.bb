@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.VisibleForTesting;
@@ -12,9 +13,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-
-import javax.annotation.Nullable;
-
 
 /**
  * Bundles a Search Request URL with a low-priority version of the URL, helps manage the

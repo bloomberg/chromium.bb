@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ChildBindingState;
 import org.chromium.base.Log;
@@ -26,7 +27,6 @@ import org.chromium.base.memory.MemoryPressureCallback;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
 /**

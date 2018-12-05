@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.prefeditor;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.Editable;
@@ -28,8 +29,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-
-import javax.annotation.Nullable;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 @VisibleForTesting

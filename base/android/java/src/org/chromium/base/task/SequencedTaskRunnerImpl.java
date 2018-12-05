@@ -4,9 +4,9 @@
 
 package org.chromium.base.task;
 
-import org.chromium.base.annotations.JNINamespace;
+import android.support.annotation.Nullable;
 
-import javax.annotation.Nullable;
+import org.chromium.base.annotations.JNINamespace;
 
 /**
  * Implementation of the abstract class {@link SequencedTaskRunner}. Uses AsyncTasks until

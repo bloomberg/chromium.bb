@@ -15,12 +15,11 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.os.StrictMode;
 import android.os.StrictMode.ThreadPolicy;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /** Abstraction of Android's package manager to enable testing. */
 public class PackageManagerDelegate {

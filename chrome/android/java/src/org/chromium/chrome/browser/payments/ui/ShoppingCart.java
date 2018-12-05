@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.payments.ui;
 
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /**
  * The shopping cart contents and total.

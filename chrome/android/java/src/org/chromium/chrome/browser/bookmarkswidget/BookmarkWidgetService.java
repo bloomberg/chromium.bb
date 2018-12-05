@@ -14,6 +14,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.StrictMode;
 import android.support.annotation.BinderThread;
+import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.text.TextUtils;
 import android.widget.RemoteViews;
@@ -45,8 +46,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.annotation.Nullable;
 
 /**
  * Service to support the bookmarks widget.

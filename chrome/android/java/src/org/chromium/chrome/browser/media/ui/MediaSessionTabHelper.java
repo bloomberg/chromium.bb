@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.chromium.base.Log;
@@ -34,8 +35,6 @@ import org.chromium.ui.base.WindowAndroid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 /**
  * A tab helper responsible for enabling/disabling media controls and passing

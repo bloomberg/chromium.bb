@@ -13,13 +13,12 @@ import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /** Simulates a package manager in memory. */
 class MockPackageManagerDelegate extends PackageManagerDelegate {

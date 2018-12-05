@@ -5,14 +5,13 @@
 package org.chromium.chrome.browser.preferences.website;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 import java.io.Serializable;
-
-import javax.annotation.Nullable;
 
 /**
  * A pattern that matches a certain set of URLs used in content settings rules. The pattern can be

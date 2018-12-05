@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
@@ -98,8 +99,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
-
-import javax.annotation.Nullable;
 
 // TODO(pedrosimonetti): Create class with limited API to encapsulate the internals of simulations.
 // TODO(pedrosimonetti): Separate tests into different classes grouped by type of tests. Examples:

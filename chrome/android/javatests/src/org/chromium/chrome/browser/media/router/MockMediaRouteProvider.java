@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Mocked {@link MediaRouteProvider}.

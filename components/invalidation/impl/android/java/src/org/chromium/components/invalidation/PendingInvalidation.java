@@ -5,6 +5,7 @@
 package org.chromium.components.invalidation;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 
 import org.chromium.base.Log;
@@ -13,8 +14,6 @@ import org.chromium.components.invalidation.SerializedInvalidation.Invalidation;
 
 import java.io.IOException;
 import java.util.Locale;
-
-import javax.annotation.Nullable;
 
 /**
  * A container class that stores the received invalidations.

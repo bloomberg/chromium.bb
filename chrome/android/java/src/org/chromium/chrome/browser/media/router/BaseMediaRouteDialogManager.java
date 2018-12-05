@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -14,8 +15,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import org.chromium.base.ApplicationStatus;
-
-import javax.annotation.Nullable;
 
 /**
  * Shared code for {@link MediaRouteDialogManager} implementations.

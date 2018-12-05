@@ -4,12 +4,11 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextWatcher;
 
 import org.chromium.base.annotations.JNINamespace;
-
-import javax.annotation.Nullable;
 
 /**
  * Android wrapper of i18n::phonenumbers::PhoneNumberUtil which provides convenient methods to

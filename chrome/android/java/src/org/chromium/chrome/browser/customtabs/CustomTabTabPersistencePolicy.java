@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.os.StrictMode;
+import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.util.SparseBooleanArray;
 
@@ -38,8 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-
-import javax.annotation.Nullable;
 
 /**
  * Handles the Custom Tab specific behaviors of tab persistence.
