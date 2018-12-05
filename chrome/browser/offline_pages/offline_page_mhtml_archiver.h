@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/offline_pages/core/offline_page_archiver.h"
 #include "content/public/common/page_type.h"
 
@@ -65,10 +66,14 @@ class OfflinePageMHTMLArchiver : public OfflinePageArchiver {
   void OnGenerateMHTMLDone(const GURL& url,
                            const base::FilePath& file_path,
                            const base::string16& title,
+                           const std::string& name_space,
+                           base::Time mhtml_start_time,
                            int64_t file_size);
   void OnComputeDigestDone(const GURL& url,
                            const base::FilePath& file_path,
                            const base::string16& title,
+                           const std::string& name_space,
+                           base::Time digest_start_time,
                            int64_t file_size,
                            const std::string& digest);
 

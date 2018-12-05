@@ -4,6 +4,9 @@
 
 #include "components/offline_pages/core/offline_page_test_archiver.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -22,6 +25,7 @@ OfflinePageTestArchiver::OfflinePageTestArchiver(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : observer_(observer),
       url_(url),
+      create_archive_params_(std::string()),
       result_(result),
       size_to_report_(size_to_report),
       create_archive_called_(false),
@@ -58,12 +62,14 @@ void OfflinePageTestArchiver::PublishArchive(
     PublishArchiveDoneCallback publish_done_callback) {
   publish_archive_called_ = true;
   PublishArchiveResult publish_archive_result;
-  publish_archive_result.move_result = SavePageResult::SUCCESS;
-  publish_archive_result.new_file_path = offline_page.file_path;
-  publish_archive_result.download_id = 0;
 
   if (archive_attempt_failure_) {
     publish_archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
+  } else {
+    publish_archive_result.move_result = SavePageResult::SUCCESS;
+    publish_archive_result.new_file_path =
+        new_file_path.Append(offline_page.file_path.BaseName());
+    publish_archive_result.download_id = 0;
   }
 
   // Note: once the |publish_done_callback| is invoked it is very likely that
