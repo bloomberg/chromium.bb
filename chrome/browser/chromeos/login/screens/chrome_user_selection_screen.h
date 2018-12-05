@@ -45,6 +45,11 @@ class ChromeUserSelectionScreen
   void CheckForPublicSessionLocalePolicyChange(
       policy::DeviceLocalAccountPolicyBroker* broker);
 
+  // Check whether full management disclosure is needed for the public/managed
+  // session login screen and if so, notify the UI.
+  void CheckIfFullManagementDisclosureNeeded(
+      policy::DeviceLocalAccountPolicyBroker* broker);
+
   // Notify the UI that the display name for a public session has changed,
   // taking the display name from the |User| owned by |UserManager|.
   void SetPublicSessionDisplayName(const AccountId& account_id);
@@ -54,6 +59,11 @@ class ChromeUserSelectionScreen
   void SetPublicSessionLocales(
       const AccountId& account_id,
       const std::vector<std::string>& recommended_locales);
+
+  // Send an updated flag for enabling/disable full management disclosure to the
+  // UI.
+  void SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure);
 
   policy::DeviceLocalAccountPolicyService* device_local_account_policy_service_;
 

@@ -88,6 +88,14 @@ void UserBoardViewMojo::SetPublicSessionLocales(
                                                                 default_locale);
 }
 
+void UserBoardViewMojo::SetPublicSessionShowFullManagementDisclosure(
+    bool show_full_management_disclosure) {
+  LoginScreenClient::Get()
+      ->login_screen()
+      ->SetPublicSessionShowFullManagementDisclosure(
+          show_full_management_disclosure);
+}
+
 void UserBoardViewMojo::ShowBannerMessage(const base::string16& message,
                                           bool is_warning) {
   // As of M69, ShowBannerMessage is used only for showing ext4 migration

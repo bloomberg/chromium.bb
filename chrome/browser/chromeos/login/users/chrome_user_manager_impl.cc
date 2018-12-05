@@ -124,6 +124,10 @@ constexpr char kGoogleDotCom[] = "@google.com";
 
 constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
 
+// If the service doesn't exist or the policy is not set, enable managed
+// session by default.
+constexpr bool kManagedSessionEnabledByDefault = true;
+
 bool FakeOwnership() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kStubCrosSettings);
@@ -209,6 +213,15 @@ void MaybeStartBluetoothLogging(const AccountId& account_id) {
     return;
   chromeos::DBusThreadManager::Get()->GetUpstartClient()->StartJob(
       kBluetoothLoggingUpstartJob, {}, EmptyVoidDBusMethodCallback());
+}
+
+bool IsManagedSessionEnabled(policy::DeviceLocalAccountPolicyBroker* broker) {
+  const policy::PolicyMap::Entry* entry =
+      broker->core()->store()->policy_map().Get(
+          policy::key::kDeviceLocalAccountManagedSessionEnabled);
+  if (!entry)
+    return kManagedSessionEnabledByDefault;
+  return entry->value && entry->value->GetBool();
 }
 
 }  // namespace
@@ -1407,6 +1420,24 @@ bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
       *(GetLocalState()->GetList(prefs::kReportingUsers));
   base::Value user_id_value(FullyCanonicalize(user_id));
   return !(reporting_users.Find(user_id_value) == reporting_users.end());
+}
+
+bool ChromeUserManagerImpl::IsManagedSessionEnabledForUser(
+    const user_manager::User& active_user) const {
+  policy::DeviceLocalAccountPolicyService* service =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceLocalAccountPolicyService();
+  if (!service)
+    return kManagedSessionEnabledByDefault;
+
+  return IsManagedSessionEnabled(
+      service->GetBrokerForUser(active_user.GetAccountId().GetUserEmail()));
+}
+
+bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
+    policy::DeviceLocalAccountPolicyBroker* broker) const {
+  return IsManagedSessionEnabled(broker);
 }
 
 void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {

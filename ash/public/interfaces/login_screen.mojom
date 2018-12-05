@@ -184,6 +184,11 @@ interface LoginScreen {
                                   string locale,
                                   array<InputMethodItem> keyboard_layouts);
 
+  // Sets whether full management disclosure is needed for the public/managed
+  // session login screen.
+  SetPublicSessionShowFullManagementDisclosure(
+      bool show_full_management_disclosure);
+
   // Update the kiosk app data for the login screen.
   SetKioskApps(array<KioskAppInfo> kiosk_apps);
 

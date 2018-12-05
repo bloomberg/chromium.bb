@@ -145,6 +145,8 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
       const AccountId& account_id,
       const std::string& locale,
       std::vector<mojom::InputMethodItemPtr> keyboard_layouts) override;
+  void SetPublicSessionShowFullManagementDisclosure(
+      bool is_full_management_disclosure_needed) override;
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps) override;
   void ShowKioskAppError(const std::string& message) override;
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
