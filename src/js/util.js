@@ -373,9 +373,9 @@ cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
   switch (mode) {
     case cca.util.SmoothScroller.Mode.INSTANT:
       // Cancel any current animations.
-      if (this.animating_)
+      if (this.animating_) {
         this.flushScroll_();
-
+      }
       this.element_.scrollLeft = x;
       this.element_.scrollTop = y;
       break;
@@ -407,8 +407,9 @@ cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
       // animation is finished.
       cca.util.waitAnimationCompleted(this.padder_, () => {
         // Check if the animation got invalidated by a later scroll.
-        if (currentAnimationId == this.animationId_)
+        if (currentAnimationId == this.animationId_) {
           this.flushScroll_();
+        }
       });
       break;
   }
@@ -641,19 +642,19 @@ cca.util.ScrollTracker.prototype.onTouchEnd_ = function(event) {
  * Starts monitoring.
  */
 cca.util.ScrollTracker.prototype.start = function() {
-  if (this.timer_ !== null)
-    return;
-  this.timer_ = setInterval(this.probe_.bind(this), 100);
+  if (this.timer_ === null) {
+    this.timer_ = setInterval(this.probe_.bind(this), 100);
+  }
 };
 
 /**
  * Stops monitoring.
  */
 cca.util.ScrollTracker.prototype.stop = function() {
-  if (this.timer_ === null)
-    return;
-  clearTimeout(this.timer_);
-  this.timer_ = null;
+  if (this.timer_ !== null) {
+    clearTimeout(this.timer_);
+    this.timer_ = null;
+  }
 };
 
 /**
@@ -748,9 +749,9 @@ cca.util.MouseScroller = function(scroller) {
  * @private
  */
 cca.util.MouseScroller.prototype.onMouseDown_ = function(event) {
-  if (event.which != 1)
+  if (event.which != 1) {
     return;
-
+  }
   this.startPosition_ = [event.screenX, event.screenY];
   this.startScrollPosition_ = [
     this.scroller_.scrollLeft,
@@ -764,8 +765,9 @@ cca.util.MouseScroller.prototype.onMouseDown_ = function(event) {
  * @private
  */
 cca.util.MouseScroller.prototype.onMouseMove_ = function(event) {
-  if (!this.startPosition_)
+  if (!this.startPosition_) {
     return;
+  }
 
   // It may happen that we won't receive the mouseup event, when clicking on
   // the -webkit-app-region: drag area.

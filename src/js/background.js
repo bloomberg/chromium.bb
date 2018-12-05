@@ -66,9 +66,9 @@ cca.bg.create = function() {
       // 'state' option in CreateWindowOptions is ignored when a window is
       // launched with 'hidden' option, so we restore window state here.
       // Don't launch in fullscreen as the topbar might not work as expected.
-      if (maximized)
+      if (maximized) {
         inAppWindow.maximize();
-
+      }
       inAppWindow.onClosed.addListener(() => {
         chrome.storage.local.set({maximized: inAppWindow.isMaximized()});
         chrome.storage.local.set({fullscreen: inAppWindow.isFullscreen()});

@@ -89,13 +89,13 @@ cca.views.GalleryBase.prototype = {
  */
 cca.views.GalleryBase.prototype.exportSelection = function() {
   var selectedIndexes = this.selectedIndexes;
-  if (!selectedIndexes.length)
+  if (!selectedIndexes.length) {
     return;
-
+  }
   chrome.fileSystem.chooseEntry({type: 'openDirectory'}, (dirEntry) => {
-    if (!dirEntry)
+    if (!dirEntry) {
       return;
-
+    }
     this.selectedPictures().forEach((domPicture) => {
       var picture = domPicture.picture;
       // TODO(yuli): Use FileSystem.getFile_ to handle name conflicts.
@@ -148,9 +148,9 @@ cca.views.GalleryBase.prototype.deleteSelection = function() {
  */
 cca.views.GalleryBase.prototype.lastSelectedIndex = function() {
   var selectedIndexes = this.selectedIndexes;
-  if (!selectedIndexes.length)
+  if (!selectedIndexes.length) {
     return null;
-
+  }
   return selectedIndexes[selectedIndexes.length - 1];
 };
 
@@ -183,8 +183,9 @@ cca.views.GalleryBase.prototype.selectedPictures = function() {
  */
 cca.views.GalleryBase.prototype.pictureIndex = function(picture) {
   for (var index = 0; index < this.pictures.length; index++) {
-    if (this.pictures[index].picture == picture)
+    if (this.pictures[index].picture == picture) {
       return index;
+    }
   }
   return null;
 };
@@ -218,8 +219,9 @@ cca.views.GalleryBase.prototype.setSelectedIndex = function(index) {
  */
 cca.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
   var index = this.pictureIndex(picture);
-  if (index == null)
+  if (index == null) {
     return;
+  }
 
   // Hack to restore focus after removing an element. Note, that we restore
   // focus only if there was something focused before. However, if the focus
@@ -234,8 +236,9 @@ cca.views.GalleryBase.prototype.onPictureDeleted = function(picture) {
   if (removal != -1) {
     this.selectedIndexes.splice(removal, 1);
     for (var i = 0; i < this.selectedIndexes.length; i++) {
-      if (this.selectedIndexes[i] > index)
+      if (this.selectedIndexes[i] > index) {
         this.selectedIndexes[i]--;
+      }
     }
   }
   if (!this.selectedIndexes.length) {

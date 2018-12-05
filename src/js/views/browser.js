@@ -201,8 +201,9 @@ cca.views.Browser.prototype.onScrollEnded_ = function() {
 
   // Select the closest picture to the center of the window.
   // This may invoke scrolling, to center the currently selected picture.
-  if (minIndex != -1)
+  if (minIndex != -1) {
     this.setSelectedIndex(minIndex);
+  }
 };
 
 /**
@@ -360,12 +361,14 @@ cca.views.Browser.prototype.handlingKey = function(key) {
       }
       return true;
     case 'End':
-      if (this.pictures.length)
+      if (this.pictures.length) {
         this.setSelectedIndex(0);
+      }
       return true;
     case 'Home':
-      if (this.pictures.length)
+      if (this.pictures.length) {
         this.setSelectedIndex(this.pictures.length - 1);
+      }
       return true;
   }
   // Call the gallery-base view for unhandled keys.
