@@ -358,9 +358,18 @@ class AboutURLLoaderFactory : public network::mojom::URLLoaderFactory {
     network::ResourceResponseHead response_head;
     response_head.mime_type = "text/html";
     client->OnReceiveResponse(response_head);
-    // The response's body is empty, so this data pipe will not be filled.
-    mojo::DataPipe pipe;
-    client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
+
+    // Create a data pipe for transmitting the empty response. The |producer|
+    // doesn't add any data.
+    mojo::ScopedDataPipeProducerHandle producer;
+    mojo::ScopedDataPipeConsumerHandle consumer;
+    if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
+      client->OnComplete(
+          network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
+      return;
+    }
+
+    client->OnStartLoadingResponseBody(std::move(consumer));
     client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   }
 
