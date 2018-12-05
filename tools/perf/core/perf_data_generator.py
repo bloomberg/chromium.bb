@@ -19,19 +19,16 @@ import json
 import os
 import re
 import sys
-import sets
 import tempfile
 
+from core import benchmark_finders
 from core import benchmark_utils
 from core import bot_platforms
 from core import path_util
 from core import undocumented_benchmarks as ub_module
 path_util.AddTelemetryToPath()
 
-from telemetry import benchmark as benchmark_module
 from telemetry import decorators
-
-from py_utils import discover
 
 
 # Additional compile targets to add to builders.
@@ -559,8 +556,6 @@ def add_builder(waterfall, name, additional_compile_targets=None):
 
   return waterfall
 
-
-
 def get_waterfall_builder_config():
   builders = {'builders':{}}
 
@@ -569,21 +564,6 @@ def get_waterfall_builder_config():
         builders, builder, additional_compile_targets=targets)
 
   return builders
-
-
-def current_benchmarks():
-  benchmarks_dir = os.path.join(
-      path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmarks')
-  top_level_dir = os.path.dirname(benchmarks_dir)
-
-  all_benchmarks = []
-
-  for b in discover.DiscoverClasses(
-      benchmarks_dir, top_level_dir, benchmark_module.Benchmark,
-      index_by_class_name=True).values():
-    all_benchmarks.append(b)
-
-  return sorted(all_benchmarks, key=lambda b: b.Name())
 
 
 def update_all_tests(waterfall, file_path):
@@ -600,23 +580,24 @@ def update_all_tests(waterfall, file_path):
   with open(file_path, 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
-  verify_all_tests_in_benchmark_csv(tests,
-                                    get_all_waterfall_benchmarks_metadata())
+  verify_all_tests_in_benchmark_csv(
+      tests, ALL_PERF_WATERFALL_BENCHMARKS_METADATA)
+
+
+def merge_dicts(*dict_args):
+    result = {}
+    for dictionary in dict_args:
+      result.update(dictionary)
+    return result
 
 
 class BenchmarkMetadata(object):
-  def __init__(self, emails, component='', documentation_url='', tags='',
-               not_scheduled=False):
+  def __init__(self, emails, component='', documentation_url='', tags=''):
     self.emails = emails
     self.component = component
     self.documentation_url = documentation_url
     self.tags = tags
-    # not_scheduled means this test is not scheduled on any of the chromium.perf
-    # waterfalls. Right now, all the below benchmarks are scheduled, but some
-    # other benchmarks are not scheduled, because they're disabled on all
-    # platforms.
-    # TODO(crbug.com/875232): remove this field
-    self.not_scheduled = not_scheduled
+
 
 NON_TELEMETRY_BENCHMARKS = {
     'angle_perftests': BenchmarkMetadata(
@@ -669,14 +650,9 @@ NON_WATERFALL_BENCHMARKS = {
 }
 
 
-# Returns a dictionary mapping waterfall benchmark name to benchmark owner
-# metadata
-def get_all_waterfall_benchmarks_metadata():
-  return get_all_benchmarks_metadata(NON_TELEMETRY_BENCHMARKS)
-
-
-def get_all_benchmarks_metadata(metadata):
-  benchmark_list = current_benchmarks()
+def _get_telemetry_perf_benchmarks_metadata():
+  metadata = {}
+  benchmark_list = benchmark_finders.GetAllPerfBenchmarks()
 
   for benchmark in benchmark_list:
     emails = decorators.GetEmails(benchmark)
@@ -686,13 +662,20 @@ def get_all_benchmarks_metadata(metadata):
     metadata[benchmark.Name()] = BenchmarkMetadata(
         emails, decorators.GetComponent(benchmark),
         decorators.GetDocumentationLink(benchmark),
-        ','.join(tags_set), False)
+        ','.join(tags_set))
   return metadata
+
+
+TELEMETRY_PERF_BENCHMARKS = _get_telemetry_perf_benchmarks_metadata()
+
+ALL_PERF_WATERFALL_BENCHMARKS_METADATA = merge_dicts(
+    TELEMETRY_PERF_BENCHMARKS, NON_TELEMETRY_BENCHMARKS)
+
 
 # With migration to new recipe tests are now listed in the shard maps
 # that live in tools/perf/core.  We need to verify off of that list.
-def get_tests_in_performance_test_suite():
-  tests = sets.Set()
+def get_telemetry_tests_in_performance_test_suite():
+  tests = set()
   add_benchmarks_from_sharding_map(
       tests, "shard_maps/linux-perf_map.json")
   add_benchmarks_from_sharding_map(
@@ -712,9 +695,10 @@ def add_benchmarks_from_sharding_map(tests, shard_map_name):
         tests.add(benchmark)
 
 
-def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
-  benchmark_names = sets.Set(benchmark_metadata)
-  test_names = get_tests_in_performance_test_suite()
+def verify_all_tests_in_benchmark_csv(tests, benchmark_metadatas):
+  benchmark_names = set(benchmark_metadatas)
+  test_names = get_telemetry_tests_in_performance_test_suite()
+
 
   for t in tests:
     scripts = []
@@ -736,12 +720,6 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
         continue
       test_names.add(name)
 
-
-  # Disabled tests are filtered out of the waterfall json. Add them back here.
-  for name, data in benchmark_metadata.items():
-    if data.not_scheduled:
-      test_names.add(name)
-
   error_messages = []
   for test in benchmark_names - test_names:
     error_messages.append('Remove ' + test + ' from NON_TELEMETRY_BENCHMARKS')
@@ -751,14 +729,14 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
   assert benchmark_names == test_names, ('Please update '
       'NON_TELEMETRY_BENCHMARKS as below:\n' + '\n'.join(error_messages))
 
-  _verify_benchmark_owners(benchmark_metadata)
+  _verify_benchmark_owners(benchmark_metadatas)
 
 
 # Verify that all benchmarks have owners except those on the whitelist.
-def _verify_benchmark_owners(benchmark_metadata):
+def _verify_benchmark_owners(benchmark_metadatas):
   unowned_benchmarks = set()
-  for benchmark_name in benchmark_metadata:
-    if benchmark_metadata[benchmark_name].emails is None:
+  for benchmark_name in benchmark_metadatas:
+    if benchmark_metadatas[benchmark_name].emails is None:
       unowned_benchmarks.add(benchmark_name)
 
   assert not unowned_benchmarks, (
@@ -779,21 +757,21 @@ def update_benchmark_csv(file_path):
   ]
 
   csv_data = []
-  all_benchmarks = NON_TELEMETRY_BENCHMARKS
-  all_benchmarks.update(NON_WATERFALL_BENCHMARKS)
-  benchmark_metadata = get_all_benchmarks_metadata(all_benchmarks)
-  _verify_benchmark_owners(benchmark_metadata)
+  benchmark_metadatas = merge_dicts(
+      NON_TELEMETRY_BENCHMARKS, TELEMETRY_PERF_BENCHMARKS,
+      NON_WATERFALL_BENCHMARKS)
+  _verify_benchmark_owners(benchmark_metadatas)
 
   undocumented_benchmarks = set()
-  for benchmark_name in benchmark_metadata:
-    if not benchmark_metadata[benchmark_name].documentation_url:
+  for benchmark_name in benchmark_metadatas:
+    if not benchmark_metadatas[benchmark_name].documentation_url:
       undocumented_benchmarks.add(benchmark_name)
     csv_data.append([
         benchmark_name,
-        benchmark_metadata[benchmark_name].emails,
-        benchmark_metadata[benchmark_name].component,
-        benchmark_metadata[benchmark_name].documentation_url,
-        benchmark_metadata[benchmark_name].tags,
+        benchmark_metadatas[benchmark_name].emails,
+        benchmark_metadatas[benchmark_name].component,
+        benchmark_metadatas[benchmark_name].documentation_url,
+        benchmark_metadatas[benchmark_name].tags,
     ])
   if undocumented_benchmarks != ub_module.UNDOCUMENTED_BENCHMARKS:
     error_message = (
