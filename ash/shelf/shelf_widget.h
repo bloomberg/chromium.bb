@@ -81,7 +81,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void PostCreateShelf();
 
   bool IsShowingAppList() const;
-  bool IsShowingContextMenu() const;
+  bool IsShowingMenu() const;
   bool IsShowingOverflowBubble() const;
 
   // Sets the focus cycler.  Also adds the shelf to the cycle.
