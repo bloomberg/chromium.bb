@@ -40,7 +40,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom-blink.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-shared.h"
-#include "third_party/blink/public/platform/web_content_security_policy.h"
+#include "third_party/blink/public/platform/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/web/web_shared_worker_client.h"
 #include "third_party/blink/public/web/worker_content_settings_proxy.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -92,7 +92,7 @@ class CORE_EXPORT WebSharedWorkerImpl final : public WebSharedWorker,
       const WebURL&,
       const WebString& name,
       const WebString& content_security_policy,
-      WebContentSecurityPolicyType,
+      mojom::ContentSecurityPolicyType,
       mojom::IPAddressSpace,
       const base::UnguessableToken& devtools_worker_token,
       PrivacyPreferences privacy_preferences,

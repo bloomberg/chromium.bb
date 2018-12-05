@@ -1704,7 +1704,8 @@ bool CSPDirectiveList::Subsumes(const CSPDirectiveListVector& other) {
 
 WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   WebContentSecurityPolicy policy;
-  policy.disposition = static_cast<WebContentSecurityPolicyType>(header_type_);
+  policy.disposition =
+      static_cast<mojom::ContentSecurityPolicyType>(header_type_);
   policy.source = static_cast<WebContentSecurityPolicySource>(header_source_);
   std::vector<WebContentSecurityPolicyDirective> directives;
   for (const auto& directive :

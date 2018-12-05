@@ -54,7 +54,7 @@ class WebSharedWorkerRepositoryClient {
       const WebString& name,
       DocumentID,
       const WebString& content_security_policy,
-      WebContentSecurityPolicyType,
+      mojom::ContentSecurityPolicyType,
       mojom::IPAddressSpace,
       mojom::SharedWorkerCreationContextType,
       MessagePortChannel,

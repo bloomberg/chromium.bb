@@ -4,8 +4,6 @@
 
 module blink.mojom;
 
-// TODO(darin): Update all WebContentSecurityPolicyType consumers to use this
-// type instead, and remove the typemap.
 enum ContentSecurityPolicyType {
   kReport,
   kEnforce,

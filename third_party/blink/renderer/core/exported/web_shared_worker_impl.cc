@@ -196,7 +196,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebURL& script_request_url,
     const WebString& name,
     const WebString& content_security_policy,
-    WebContentSecurityPolicyType policy_type,
+    mojom::ContentSecurityPolicyType policy_type,
     mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& devtools_worker_token,
     PrivacyPreferences privacy_preferences,

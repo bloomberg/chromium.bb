@@ -125,12 +125,13 @@ void SharedWorkerRepositoryClientImpl::Connect(
   Vector<CSPHeaderAndType> headers =
       worker->GetExecutionContext()->GetContentSecurityPolicy()->Headers();
   WebString header;
-  WebContentSecurityPolicyType header_type =
-      kWebContentSecurityPolicyTypeReport;
+  mojom::ContentSecurityPolicyType header_type =
+      mojom::ContentSecurityPolicyType::kReport;
 
   if (headers.size() > 0) {
     header = headers[0].first;
-    header_type = static_cast<WebContentSecurityPolicyType>(headers[0].second);
+    header_type =
+        static_cast<mojom::ContentSecurityPolicyType>(headers[0].second);
   }
 
   bool is_secure_context = worker->GetExecutionContext()->IsSecureContext();
