@@ -49,6 +49,7 @@ AudioContext* AudioContext::Create(Document& document,
                                    const AudioContextOptions* context_options,
                                    ExceptionState& exception_state) {
   DCHECK(IsMainThread());
+  LOG(ERROR) << __func__;
 
   UseCounter::CountCrossOriginIframe(
       document, WebFeature::kAudioContextCrossOriginIframe);
@@ -90,6 +91,7 @@ AudioContext* AudioContext::Create(Document& document,
   audio_context->MaybeAllowAutoplayWithUnlockType(
       AutoplayUnlockType::kContextConstructor);
   if (audio_context->IsAllowedToStart()) {
+    LOG(ERROR) << "starting";
     audio_context->StartRendering();
     audio_context->SetContextState(kRunning);
   }
@@ -126,12 +128,15 @@ AudioContext::AudioContext(Document& document,
     : BaseAudioContext(&document, kRealtimeContext),
       context_id_(g_context_id++) {
   destination_node_ = DefaultAudioDestinationNode::Create(this, latency_hint);
+  LOG(ERROR) << __func__;
 
   switch (GetAutoplayPolicy()) {
     case AutoplayPolicy::Type::kNoUserGestureRequired:
+      LOG(ERROR) << "no user gesture";
       break;
     case AutoplayPolicy::Type::kUserGestureRequired:
     case AutoplayPolicy::Type::kUserGestureRequiredForCrossOrigin:
+      LOG(ERROR) << "user gesture";
       if (document.GetFrame() &&
           document.GetFrame()->IsCrossOriginSubframe()) {
         autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
@@ -139,6 +144,7 @@ AudioContext::AudioContext(Document& document,
       }
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
+      LOG(ERROR) << "document user activation";
       autoplay_status_ = AutoplayStatus::kAutoplayStatusFailed;
       user_gesture_required_ = true;
       break;
@@ -198,6 +204,7 @@ ScriptPromise AudioContext::suspendContext(ScriptState* script_state) {
 
 ScriptPromise AudioContext::resumeContext(ScriptState* script_state) {
   DCHECK(IsMainThread());
+  LOG(ERROR) << __func__;
 
   if (IsContextClosed()) {
     return ScriptPromise::RejectWithDOMException(
@@ -427,6 +434,7 @@ void AudioContext::MaybeAllowAutoplayWithUnlockType(AutoplayUnlockType type) {
 }
 
 bool AudioContext::IsAllowedToStart() const {
+  LOG(ERROR) << __func__;
   if (!user_gesture_required_)
     return true;
 
