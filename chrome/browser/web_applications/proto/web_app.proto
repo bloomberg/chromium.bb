@@ -8,6 +8,14 @@ option optimize_for = LITE_RUNTIME;
 
 package web_app;
 
+// Information about web app icon.
+message WebAppIconInfoProto {
+  // The URL of the app icon.
+  required string url = 1;
+  // The size of the square app icon, in raw pixels.
+  required int32 size_in_px = 2;
+}
+
 // WebApp class data.
 // TODO(loyso): Consider moving this proto to components/sync/protocol/
 // crbug.com/902214.
@@ -19,4 +27,8 @@ message WebAppProto {
   required string launch_url = 4;
   optional string scope = 5;
   optional uint32 theme_color = 6;
+
+  // Local data members, not to be synced:
+  // List of icon infos.
+  repeated WebAppIconInfoProto icons = 7;
 }

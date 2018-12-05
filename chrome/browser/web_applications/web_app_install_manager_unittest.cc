@@ -42,39 +42,6 @@ namespace web_app {
 
 namespace {
 
-SkBitmap CreateSquareIcon(int size_px, SkColor solid_color) {
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size_px, size_px);
-  bitmap.eraseColor(solid_color);
-  return bitmap;
-}
-
-IconsMap GenerateIconsMapWithOneIcon(const GURL& icon_url,
-                                     int size_px,
-                                     SkColor solid_color) {
-  SkBitmap bitmap = CreateSquareIcon(size_px, solid_color);
-
-  std::vector<SkBitmap> bitmaps;
-  bitmaps.push_back(std::move(bitmap));
-
-  IconsMap icons_map;
-  icons_map.emplace(icon_url, std::move(bitmaps));
-
-  return icons_map;
-}
-
-WebApplicationInfo::IconInfo GenerateIconInfo(const GURL& url,
-                                              int size_px,
-                                              SkColor solid_color) {
-  WebApplicationInfo::IconInfo icon_info;
-  icon_info.url = url;
-  icon_info.width = size_px;
-  icon_info.height = size_px;
-  icon_info.data = CreateSquareIcon(size_px, solid_color);
-
-  return icon_info;
-}
-
 bool ReadBitmap(FileUtilsWrapper* utils,
                 const base::FilePath& file_path,
                 SkBitmap* bitmap) {

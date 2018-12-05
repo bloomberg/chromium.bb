@@ -7,12 +7,16 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace web_app {
@@ -57,18 +61,19 @@ bool WriteIcon(FileUtilsWrapper* utils,
                const WebApplicationInfo::IconInfo& icon_info) {
   base::FilePath icon_file =
       icons_dir.AppendASCII(base::StringPrintf("%i.png", icon_info.width));
+
   std::vector<unsigned char> image_data;
   const bool discard_transparency = false;
   if (!gfx::PNGCodec::EncodeBGRASkBitmap(icon_info.data, discard_transparency,
                                          &image_data)) {
-    LOG(ERROR) << "Could not encode icon data.";
+    LOG(ERROR) << "Could not encode icon data for file " << icon_file;
     return false;
   }
 
   const char* image_data_ptr = reinterpret_cast<const char*>(&image_data[0]);
   int size = base::checked_cast<int>(image_data.size());
   if (utils->WriteFile(icon_file, image_data_ptr, size) != size) {
-    LOG(ERROR) << "Could not write icon file.";
+    LOG(ERROR) << "Could not write icon file: " << icon_file;
     return false;
   }
 
@@ -129,6 +134,39 @@ bool WriteDataBlocking(std::unique_ptr<FileUtilsWrapper> utils,
   return true;
 }
 
+// Performs blocking I/O. May be called on another thread.
+// Returns empty SkBitmap if any errors occured.
+SkBitmap ReadIconBlocking(std::unique_ptr<FileUtilsWrapper> utils,
+                          base::FilePath web_apps_directory,
+                          AppId app_id,
+                          int icon_size_px) {
+  const base::FilePath app_dir = web_apps_directory.AppendASCII(app_id);
+  const base::FilePath icons_dir = app_dir.Append(kIconsDirectoryName);
+
+  base::FilePath icon_file =
+      icons_dir.AppendASCII(base::StringPrintf("%i.png", icon_size_px));
+
+  auto icon_data = base::MakeRefCounted<base::RefCountedString>();
+
+  if (!utils->ReadFileToString(icon_file, &icon_data->data())) {
+    LOG(ERROR) << "Could not read icon file: " << icon_file;
+    return SkBitmap();
+  }
+
+  SkBitmap bitmap;
+
+  if (!gfx::PNGCodec::Decode(icon_data->front(), icon_data->size(), &bitmap)) {
+    LOG(ERROR) << "Could not decode icon data for file " << icon_file;
+    return SkBitmap();
+  }
+
+  return bitmap;
+}
+
+constexpr base::TaskTraits kTaskTraits = {
+    base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
+
 }  // namespace
 
 WebAppIconManager::WebAppIconManager(Profile* profile,
@@ -145,15 +183,31 @@ void WebAppIconManager::WriteData(
     WriteDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  constexpr base::TaskTraits traits = {
-      base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN};
-
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, traits,
+      FROM_HERE, kTaskTraits,
       base::BindOnce(WriteDataBlocking, utils_->Clone(), web_apps_directory_,
                      std::move(app_id), std::move(web_app_info)),
       std::move(callback));
+}
+
+bool WebAppIconManager::ReadIcon(const WebApp& web_app,
+                                 int icon_size_in_px,
+                                 ReadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  for (const WebApp::IconInfo& icon_info : web_app.icons()) {
+    if (icon_info.size_in_px == icon_size_in_px) {
+      base::PostTaskWithTraitsAndReplyWithResult(
+          FROM_HERE, kTaskTraits,
+          base::BindOnce(ReadIconBlocking, utils_->Clone(), web_apps_directory_,
+                         web_app.app_id(), icon_size_in_px),
+          std::move(callback));
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace web_app

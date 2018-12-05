@@ -14,11 +14,13 @@
 #include "chrome/common/web_application_info.h"
 
 class Profile;
+class SkBitmap;
 struct WebApplicationInfo;
 
 namespace web_app {
 
 class FileUtilsWrapper;
+class WebApp;
 
 // Exclusively used from the UI thread.
 class WebAppIconManager {
@@ -26,11 +28,18 @@ class WebAppIconManager {
   WebAppIconManager(Profile* profile, std::unique_ptr<FileUtilsWrapper> utils);
   ~WebAppIconManager();
 
+  // Writes all data (icons) for an app.
   using WriteDataCallback = base::OnceCallback<void(bool success)>;
-
   void WriteData(AppId app_id,
                  std::unique_ptr<WebApplicationInfo> web_app_info,
                  WriteDataCallback callback);
+
+  // Reads icon's bitmap for an app. Returns false if no IconInfo for
+  // |icon_size_in_px|. Returns empty SkBitmap in |callback| if IO error.
+  using ReadIconCallback = base::OnceCallback<void(SkBitmap)>;
+  bool ReadIcon(const WebApp& web_app,
+                int icon_size_in_px,
+                ReadIconCallback callback);
 
  private:
   base::FilePath web_apps_directory_;
