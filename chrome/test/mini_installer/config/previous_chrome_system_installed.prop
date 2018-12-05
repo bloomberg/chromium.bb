@@ -2,6 +2,7 @@
   "Files": {
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome_proxy.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome.dll":
         {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
