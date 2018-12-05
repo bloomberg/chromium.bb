@@ -1670,6 +1670,9 @@ constexpr const char kHostedAppProcessModelManifest[] =
 //                 |diff_dir|.
 // - |isolated| - isolated.site.com/title1.htm
 //                Within app's extent, but belongs to an isolated origin.
+//                Some tests also use isolated.site.com/title1.htm (defined by
+//                |isolated_url_outside_app_|), which is an isolated origin
+//                outside the app's extent.
 // - |cross_site| - cross.domain.com/title1.htm
 //                  Cross-site from all the other frames.
 
@@ -1681,8 +1684,12 @@ class HostedAppProcessModelTest : public HostedAppTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     HostedAppTest::SetUpCommandLine(command_line);
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-    std::string origin_list =
+    std::string origin1 =
         embedded_test_server()->GetURL("isolated.site.com", "/").spec();
+    std::string origin2 =
+        embedded_test_server()->GetURL("isolated.foo.com", "/").spec();
+    std::string origin_list =
+        base::StringPrintf("%s,%s", origin1.c_str(), origin2.c_str());
     command_line->AppendSwitchASCII(switches::kIsolateOrigins, origin_list);
   }
 
@@ -1703,6 +1710,8 @@ class HostedAppProcessModelTest : public HostedAppTest {
         embedded_test_server()->GetURL("other.site.com", "/title1.html");
     isolated_url_ =
         embedded_test_server()->GetURL("isolated.site.com", "/title1.html");
+    isolated_url_outside_app_ =
+        embedded_test_server()->GetURL("isolated.foo.com", "/title1.html");
     cross_site_url_ =
         embedded_test_server()->GetURL("cross.domain.com", "/title1.html");
   }
@@ -1792,6 +1801,7 @@ class HostedAppProcessModelTest : public HostedAppTest {
   GURL diff_dir_url_;
   GURL same_site_url_;
   GURL isolated_url_;
+  GURL isolated_url_outside_app_;
   GURL cross_site_url_;
 
  private:
@@ -1849,9 +1859,14 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, IframesInsideHostedApp) {
   EXPECT_NE(same_site_site, app_site);
   EXPECT_EQ(same_site_site, diff_dir_site);
 
+  // The isolated.site.com iframe is covered by the hosted app's extent, so it
+  // uses a chrome-extension site URL, but the site URL should be different
+  // from the main app's site URL, as this iframe is expected to go into a
+  // separate app process, because isolated.site.com matches an isolated
+  // origin.
   GURL isolated_site = content::SiteInstance::GetSiteForURL(
       app_browser_->profile(), isolated->GetLastCommittedURL());
-  EXPECT_NE(extensions::kExtensionScheme, isolated_site.scheme());
+  EXPECT_EQ(extensions::kExtensionScheme, isolated_site.scheme());
   EXPECT_NE(isolated_site, app_site);
   EXPECT_NE(isolated_site, diff_dir_site);
 
@@ -1885,10 +1900,12 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, IframesInsideHostedApp) {
   else
     EXPECT_EQ(cross_site->GetProcess(), app->GetProcess());
 
-  // The isolated origin iframe's process should not be in the ProcessMap. If
-  // we swapped processes for the |cross_site| iframe, its process should also
+  // The isolated origin iframe's process should be in the ProcessMap, since
+  // the isolated origin is covered by the app's extent.
+  EXPECT_TRUE(process_map_->Contains(isolated->GetProcess()->GetID()));
+
+  // If we swapped processes for the |cross_site| iframe, its process should
   // not be on the ProcessMap.
-  EXPECT_FALSE(process_map_->Contains(isolated->GetProcess()->GetID()));
   if (should_swap_for_cross_site_)
     EXPECT_FALSE(process_map_->Contains(cross_site->GetProcess()->GetID()));
 
@@ -2009,9 +2026,19 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
     SCOPED_TRACE("... for same_site popup");
     TestPopupProcess(app, same_site_url_, true, true);
   }
+  // The isolated origin URL for isolated.site.com should swap processes, but
+  // since it's covered by the app's extent, it should still be in a
+  // (different) app process.
   {
     SCOPED_TRACE("... for isolated_url popup");
-    TestPopupProcess(app, isolated_url_, false, false);
+    TestPopupProcess(app, isolated_url_, false, true);
+  }
+  // The isolated origin URL for isolated.foo.com should swap processes, and
+  // since it's not covered by the app's extent, it should not be in an app
+  // process.
+  {
+    SCOPED_TRACE("... for isolated_url_outside_app popup");
+    TestPopupProcess(app, isolated_url_outside_app_, false, false);
   }
   // For cross-site, the resulting popup should swap processes and not be in
   // the app process.
@@ -2036,7 +2063,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, PopupsInsideHostedApp) {
   }
   {
     SCOPED_TRACE("... for isolated_url iframe popup");
-    TestPopupProcess(isolated, isolated_url_, true, false);
+    TestPopupProcess(isolated, isolated_url_, true, true);
   }
   {
     SCOPED_TRACE("... for cross_site iframe popup");
@@ -2099,10 +2126,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, MAYBE_FromOutsideHostedApp) {
     TestPopupProcess(same_site_rfh, app_url, false, true);
   }
 
-  // Starting on an isolated origin, popups should swap to the app.
+  // Starting on an isolated origin outside the app's extent, popups should
+  // swap to the app.
   {
     SCOPED_TRACE("... from isolated_url");
-    ui_test_utils::NavigateToURL(app_browser_, isolated_url_);
+    ui_test_utils::NavigateToURL(app_browser_, isolated_url_outside_app_);
     RenderFrameHost* main_frame = web_contents->GetMainFrame();
     EXPECT_FALSE(main_frame->GetSiteInstance()->GetSiteURL().SchemeIs(
         extensions::kExtensionScheme));
@@ -2153,11 +2181,11 @@ class HostedAppIsolatedOriginTest : public HostedAppProcessModelTest {
   }
 };
 
-// Check that a hosted app that is contained entirely within an isolated.com
-// isolated origin is allowed to load in a privileged app process. Also check
-// that very.isolated.com, which does *not* match all URLs in the hosted app's
-// extent, still ends up in its own non-app process.  See
-// https://crbug.com/799638.
+// Check that a hosted app that is contained within an isolated.com isolated
+// origin is allowed to load in a privileged app process. Also check that a
+// very.isolated.com URL, which corresponds to very.isolated.com isolated
+// origin but is outside the hosted app's extent, ends up in its own non-app
+// process. See https://crbug.com/799638.
 IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
                        NestedIsolatedOriginStaysOutsideApp) {
   // Set up and launch the hosted app.
@@ -2185,8 +2213,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // Check that the app loaded properly. Even though its URL is from an
-  // isolated origin (isolated.com), it should go into an app process because
-  // the app's extent is contained entirely within isolated.com.
+  // isolated origin (isolated.com), it should go into an app process.
   RenderFrameHost* app = web_contents->GetMainFrame();
   EXPECT_EQ(extensions::kExtensionScheme,
             app->GetSiteInstance()->GetSiteURL().scheme());
@@ -2195,19 +2222,29 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
   EXPECT_EQ(extensions::kExtensionScheme, app_site.scheme());
   EXPECT_TRUE(process_map_->Contains(app->GetProcess()->GetID()));
 
-  // Add a same-site subframe on isolated.com.  This should stay in app
-  // process.
+  // Add a same-site subframe on isolated.com outside the app's extent.  This
+  // should stay in app process.
   GURL foo_isolated_url =
       embedded_test_server()->GetURL("foo.isolated.com", "/title1.html");
   TestSubframeProcess(app, foo_isolated_url, true /* expect_same_process */,
                       true /* expect_app_process */);
 
-  // Add a subframe on very.isolated.com.  This should go into a separate,
-  // non-app process.
+  // Add a subframe on very.isolated.com outside the app's extent.  Despite
+  // being same-site, this matches a different, more specific isolated origin
+  // and should go into a separate, non-app process.
   GURL very_isolated_url =
       embedded_test_server()->GetURL("very.isolated.com", "/title2.html");
   TestSubframeProcess(app, very_isolated_url, false /* expect_same_process */,
                       false /* expect_app_process */);
+
+  // Add a subframe on very.isolated.com inside the app's extent.  Despite
+  // being same-site, this matches a different, more specific isolated origin
+  // and should go into a separate app process.
+  GURL very_isolated_app_url = embedded_test_server()->GetURL(
+      "very.isolated.com", "/frame_tree/simple.htm");
+  TestSubframeProcess(app, very_isolated_app_url,
+                      false /* expect_same_process */,
+                      true /* expect_app_process */);
 
   // Similarly, a popup for very.isolated.com should go into a separate,
   // non-app process.
@@ -2227,8 +2264,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
 }
 
 // Check that when a hosted app's extent contains multiple origins, one of
-// which is an isolated origin, loading an app URL in that isolated origin does
-// not go into the app process.
+// which is an isolated origin, loading an app URL in that isolated origin
+// won't later allow another origin in the app's extent to share the same app
+// process.
 IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
                        AppBroaderThanIsolatedOrigin) {
   // Set up and launch the hosted app, with the launch URL being in an isolated
@@ -2256,23 +2294,32 @@ IN_PROC_BROWSER_TEST_P(HostedAppIsolatedOriginTest,
       app_browser_->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
-  // The app URL shouldn't have loaded in an app process, because that would
-  // allow isolated.com to share the app process with unisolated.com.
+  // The app URL should have loaded in an app process.
   RenderFrameHost* app = web_contents->GetMainFrame();
-  EXPECT_FALSE(process_map_->Contains(app->GetProcess()->GetID()));
-  EXPECT_NE(extensions::kExtensionScheme,
+  EXPECT_TRUE(process_map_->Contains(app->GetProcess()->GetID()));
+  EXPECT_EQ(extensions::kExtensionScheme,
             app->GetSiteInstance()->GetSiteURL().scheme());
+  int first_app_process_id = app->GetProcess()->GetID();
 
-  // In contrast, opening a popup or navigating to an app URL on unisolated.com
-  // is permitted to go into an app process.
+  // Creating a subframe on unisolated.com should not be allowed to share the
+  // main frame's app process, since we don't want the isolated.com isolated
+  // origin to share a process with another origin.
   GURL unisolated_app_url =
       embedded_test_server()->GetURL("unisolated.com", "/title1.html");
+  TestSubframeProcess(app, unisolated_app_url, false /* expect_same_process */,
+                      true /* expect_app_process */);
+
+  // Opening a popup or navigating to an app URL on unisolated.com should go
+  // into a separate app process, different from the one that was used for
+  // isolated.com.
   TestPopupProcess(app, unisolated_app_url, false /* expect_same_process */,
                    true /* expect_app_process */);
 
   ui_test_utils::NavigateToURL(app_browser_, unisolated_app_url);
   EXPECT_TRUE(process_map_->Contains(
       web_contents->GetMainFrame()->GetProcess()->GetID()));
+  EXPECT_NE(first_app_process_id,
+            web_contents->GetMainFrame()->GetProcess()->GetID());
 }
 
 class HostedAppSitePerProcessTest : public HostedAppProcessModelTest {
