@@ -356,8 +356,8 @@ void WebRuntimeFeatures::EnableScriptedSpeechSynthesis(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechSynthesisEnabled(enable);
 }
 
-bool WebRuntimeFeatures::IsSlimmingPaintV2Enabled() {
-  return RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
+bool WebRuntimeFeatures::IsCompositeAfterPaintEnabled() {
+  return RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
 }
 
 void WebRuntimeFeatures::EnableUserActivationV2(bool enable) {

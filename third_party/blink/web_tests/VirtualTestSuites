@@ -257,44 +257,44 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "compositing",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "fast/block",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "fast/borders",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "fast/clip",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "fast/css",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "fast/overflow",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "paint",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "spv2",
+    "prefix": "composite-after-paint",
     "base": "svg",
-    "args": ["--enable-slimming-paint-v2"]
+    "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
     "prefix": "blink-gen-property-trees",

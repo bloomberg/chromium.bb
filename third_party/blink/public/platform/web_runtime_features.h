@@ -74,7 +74,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableOriginTrials(bool);
   BLINK_PLATFORM_EXPORT static bool IsOriginTrialsEnabled();
 
-  BLINK_PLATFORM_EXPORT static bool IsSlimmingPaintV2Enabled();
+  BLINK_PLATFORM_EXPORT static bool IsCompositeAfterPaintEnabled();
 
   BLINK_PLATFORM_EXPORT static void EnableAccelerated2dCanvas(bool);
   BLINK_PLATFORM_EXPORT static void EnableAccessibilityObjectModel(bool);

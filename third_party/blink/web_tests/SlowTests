@@ -213,7 +213,7 @@ crbug.com/802029 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 
 crbug.com/592183 external/wpt/webusb/usbDevice.https.html [ Slow ]
 
-crbug.com/594189 virtual/spv2/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
+crbug.com/594189 virtual/composite-after-paint/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
 
 crbug.com/614910 virtual/gpu-rasterization/images/color-profile-filter.html [ Slow ]
 
@@ -315,7 +315,7 @@ crbug.com/626703 [ Debug ] external/wpt/html/nemantics/tabular-data/processing-m
 # This test continues to fail as timeout on Win7(dbg)
 crbug.com/757292 [ Win Debug ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-encode-form-errors-han.html [ Slow ]
 
-# This page loads slow in real browser, and can timeout in SPv2 layout test.
+# This page loads slow in real browser, and can timeout in CompositeAfterPaint layout test.
 crbug.com/779366 fast/shapes/crash-allocating-very-large-raster-shape.html [ Slow ]
 
 crbug.com/787971 external/wpt/WebCryptoAPI/wrapKey_unwrapKey/wrapKey_unwrapKey.https.worker.html [ Slow ]

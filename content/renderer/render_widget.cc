@@ -2735,11 +2735,11 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  // Blink sends cc a layer list and property trees when either Blink Gen
-  // Property Trees or Slimming Paint V2 are enabled.
+  // Blink sends cc a layer list and property trees when either
+  // BlinkGenPropertyTrees or CompositeAfterPaint are enabled.
   settings.use_layer_lists =
       blink::WebRuntimeFeatures::IsBlinkGenPropertyTreesEnabled() ||
-      blink::WebRuntimeFeatures::IsSlimmingPaintV2Enabled();
+      blink::WebRuntimeFeatures::IsCompositeAfterPaintEnabled();
 
   // Blink currently doesn't support setting fractional scroll offsets so CC
   // must send integer values. We plan to eventually make Blink use fractional
