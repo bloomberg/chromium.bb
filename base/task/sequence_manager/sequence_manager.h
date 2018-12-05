@@ -35,20 +35,39 @@ class SequenceManager {
   };
 
   struct MetricRecordingSettings {
-    MetricRecordingSettings();
-    // Note: These parameters are desired and MetricRecordingSetting's will
-    // update them for consistency (e.g. setting values to false when
-    // ThreadTicks are not supported).
-    MetricRecordingSettings(bool records_cpu_time_for_each_task,
-                            double task_sampling_rate_for_recording_cpu_time);
+    // This parameter will be updated for consistency on creation (setting
+    // value to 0 when ThreadTicks are not supported).
+    MetricRecordingSettings(double task_sampling_rate_for_recording_cpu_time);
 
-    // True if cpu time is measured for each task, so the integral
-    // metrics (as opposed to per-task metrics) can be recorded.
-    bool records_cpu_time_for_each_task = false;
     // The proportion of the tasks for which the cpu time will be
     // sampled or 0 if this is not enabled.
-    // This value is always 1 if the |records_cpu_time_for_each_task| is true.
+    // Since randomised sampling requires the use of Rand(), it is enabled only
+    // on platforms which support it.
+    // If it is 1 then cpu time is measured for each task, so the integral
+    // metrics (as opposed to per-task metrics) can be recorded.
     double task_sampling_rate_for_recording_cpu_time = 0;
+
+    bool records_cpu_time_for_some_tasks() const {
+      return task_sampling_rate_for_recording_cpu_time > 0.0;
+    }
+
+    bool records_cpu_time_for_all_tasks() const {
+      return task_sampling_rate_for_recording_cpu_time == 1.0;
+    }
+  };
+
+  // Settings defining the desired SequenceManager behaviour: the type of the
+  // MessageLoop and whether randomised sampling should be enabled.
+  struct Settings {
+    Settings() = default;
+    // In the future MessagePump (which is move-only) will also be a setting,
+    // so we are making Settings move-only in preparation.
+    Settings(Settings&& move_from) noexcept = default;
+
+    MessageLoop::Type message_loop_type = MessageLoop::Type::TYPE_DEFAULT;
+    bool randomised_sampling_enabled = false;
+
+    DISALLOW_COPY_AND_ASSIGN(Settings);
   };
 
   virtual ~SequenceManager() = default;
@@ -173,15 +192,15 @@ class SequenceManager {
 // Implementation is located in sequence_manager_impl.cc.
 // TODO(scheduler-dev): Remove after every thread has a SequenceManager.
 BASE_EXPORT std::unique_ptr<SequenceManager>
-CreateSequenceManagerOnCurrentThread();
+CreateSequenceManagerOnCurrentThread(SequenceManager::Settings settings);
 
 // Create a SequenceManager using the given MessagePump on the current thread.
 // MessagePump instances can be created with
 // MessageLoop::CreateMessagePumpForType().
 BASE_EXPORT std::unique_ptr<SequenceManager>
 CreateSequenceManagerOnCurrentThreadWithPump(
-    MessageLoop::Type type,
-    std::unique_ptr<MessagePump> message_pump);
+    std::unique_ptr<MessagePump> message_pump,
+    SequenceManager::Settings settings = SequenceManager::Settings());
 
 // Create a SequenceManager for a future thread using the provided MessageLoop.
 // The SequenceManager can be initialized on the current thread and then needs
@@ -193,7 +212,8 @@ CreateSequenceManagerOnCurrentThreadWithPump(
 // Remove when we get rid of MessageLoop.
 // TODO(scheduler-dev): Change this to CreateUnboundSequenceManagerWithPump.
 BASE_EXPORT std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoopBase* message_loop_base);
+    MessageLoopBase* message_loop_base,
+    SequenceManager::Settings settings = SequenceManager::Settings());
 
 }  // namespace sequence_manager
 }  // namespace base

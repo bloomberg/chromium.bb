@@ -25,11 +25,17 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
   static std::unique_ptr<SequenceManagerForTest> Create(
       MessageLoopBase* message_loop_base,
       scoped_refptr<SingleThreadTaskRunner> task_runner,
-      const TickClock* clock);
+      const TickClock* clock,
+      // Since most test calls are in Blink, randomised sampling is enabled
+      // by default in the test SequenceManager, as opposed to production code.
+      SequenceManager::Settings settings = SequenceManager::Settings{
+          .randomised_sampling_enabled = true});
 
   // Creates SequenceManagerForTest using the provided ThreadController.
   static std::unique_ptr<SequenceManagerForTest> Create(
-      std::unique_ptr<internal::ThreadController> thread_controller);
+      std::unique_ptr<internal::ThreadController> thread_controller,
+      SequenceManager::Settings settings = SequenceManager::Settings{
+          .randomised_sampling_enabled = true});
 
   size_t ActiveQueuesCount() const;
   bool HasImmediateWork() const;
@@ -43,7 +49,8 @@ class SequenceManagerForTest : public internal::SequenceManagerImpl {
 
  private:
   explicit SequenceManagerForTest(
-      std::unique_ptr<internal::ThreadController> thread_controller);
+      std::unique_ptr<internal::ThreadController> thread_controller,
+      SequenceManager::Settings settings);
 };
 
 }  // namespace sequence_manager

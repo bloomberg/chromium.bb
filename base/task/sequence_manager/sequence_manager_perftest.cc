@@ -75,6 +75,7 @@ enum class PerfTestType : int {
   kUseUIMessageLoop = 7,
   kUseIOMessageLoop = 8,
   kUseSingleThreadInWorkerPool = 9,
+  kUseSequenceManagerWithMessagePumpAndRandomSampling = 10,
 };
 
 // Customization point for SequenceManagerPerfTest which allows us to test
@@ -150,7 +151,8 @@ class SequenceManagerWithMessageLoopPerfTestDelegate
       : name_(name), message_loop_(new MessageLoopType()) {
     SetSequenceManager(SequenceManagerForTest::Create(
         message_loop_->GetMessageLoopBase(), message_loop_->task_runner(),
-        DefaultTickClock::GetInstance()));
+        DefaultTickClock::GetInstance(),
+        SequenceManager::Settings{.randomised_sampling_enabled = false}));
   }
 
   ~SequenceManagerWithMessageLoopPerfTestDelegate() override { ShutDown(); }
@@ -165,13 +167,17 @@ class SequenceManagerWithMessageLoopPerfTestDelegate
 class SequenceManagerWithMessagePumpPerfTestDelegate
     : public BaseSequenceManagerPerfTestDelegate {
  public:
-  SequenceManagerWithMessagePumpPerfTestDelegate(const char* name,
-                                                 MessageLoop::Type type)
+  SequenceManagerWithMessagePumpPerfTestDelegate(
+      const char* name,
+      MessageLoop::Type type,
+      bool randomised_sampling_enabled = false)
       : name_(name) {
     SetSequenceManager(SequenceManagerForTest::Create(
         std::make_unique<internal::ThreadControllerWithMessagePumpImpl>(
             MessageLoop ::CreateMessagePumpForType(type),
-            DefaultTickClock::GetInstance())));
+            DefaultTickClock::GetInstance()),
+        SequenceManager::Settings{.randomised_sampling_enabled =
+                                      randomised_sampling_enabled}));
 
     // ThreadControllerWithMessagePumpImpl doesn't provide a default task
     // runner.
@@ -617,6 +623,11 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
       case PerfTestType::kUseSingleThreadInWorkerPool:
         return std::make_unique<SingleThreadInWorkerPoolPerfTestDelegate>();
 
+      case PerfTestType::kUseSequenceManagerWithMessagePumpAndRandomSampling:
+        return std::make_unique<SequenceManagerWithMessagePumpPerfTestDelegate>(
+            " SequenceManager with MessagePumpDefault and random sampling ",
+            MessageLoop::TYPE_DEFAULT, true);
+
       default:
         NOTREACHED();
         return nullptr;
@@ -661,17 +672,18 @@ class SequenceManagerPerfTest : public testing::TestWithParam<PerfTestType> {
 INSTANTIATE_TEST_CASE_P(
     ,
     SequenceManagerPerfTest,
-    testing::Values(PerfTestType::kUseSequenceManagerWithMessageLoop,
-                    PerfTestType::kUseSequenceManagerWithMessagePump,
-                    PerfTestType::kUseSequenceManagerWithUIMessageLoop,
-                    PerfTestType::kUseSequenceManagerWithUIMessagePump,
-                    PerfTestType::kUseSequenceManagerWithIOMessageLoop,
-                    PerfTestType::kUseSequenceManagerWithIOMessagePump,
-                    PerfTestType::kUseMessageLoop,
-                    PerfTestType::kUseUIMessageLoop,
-                    PerfTestType::kUseIOMessageLoop,
-                    PerfTestType::kUseSingleThreadInWorkerPool));
-
+    testing::Values(
+        PerfTestType::kUseSequenceManagerWithMessageLoop,
+        PerfTestType::kUseSequenceManagerWithMessagePump,
+        PerfTestType::kUseSequenceManagerWithUIMessageLoop,
+        PerfTestType::kUseSequenceManagerWithUIMessagePump,
+        PerfTestType::kUseSequenceManagerWithIOMessageLoop,
+        PerfTestType::kUseSequenceManagerWithIOMessagePump,
+        PerfTestType::kUseMessageLoop,
+        PerfTestType::kUseUIMessageLoop,
+        PerfTestType::kUseIOMessageLoop,
+        PerfTestType::kUseSingleThreadInWorkerPool,
+        PerfTestType::kUseSequenceManagerWithMessagePumpAndRandomSampling));
 TEST_P(SequenceManagerPerfTest, PostDelayedTasks_OneQueue) {
   if (!delegate_->VirtualTimeIsSupported()) {
     LOG(INFO) << "Unsupported";

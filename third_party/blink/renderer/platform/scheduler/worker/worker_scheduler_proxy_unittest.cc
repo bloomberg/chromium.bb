@@ -76,7 +76,9 @@ class WorkerThreadForTest : public WorkerThread {
   std::unique_ptr<NonMainThreadSchedulerImpl> CreateNonMainThreadScheduler()
       override {
     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
-        base::sequence_manager::CreateSequenceManagerOnCurrentThread(),
+        base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+            base::sequence_manager::SequenceManager::Settings{
+                .randomised_sampling_enabled = true}),
         worker_scheduler_proxy(), throtting_state_changed_);
     scheduler_ = scheduler.get();
     worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(

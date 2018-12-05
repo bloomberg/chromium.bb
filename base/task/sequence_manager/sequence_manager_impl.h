@@ -86,7 +86,8 @@ class BASE_EXPORT SequenceManagerImpl
   // This function should be called only once per thread.
   // This function assumes that a MessageLoop is initialized for
   // the current thread.
-  static std::unique_ptr<SequenceManagerImpl> CreateOnCurrentThread();
+  static std::unique_ptr<SequenceManagerImpl> CreateOnCurrentThread(
+      SequenceManager::Settings settings = SequenceManager::Settings());
 
   // Create a SequenceManager for a future thread that will run the provided
   // MessageLoop. The SequenceManager can be initialized on the current thread
@@ -98,10 +99,11 @@ class BASE_EXPORT SequenceManagerImpl
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
       MessageLoopBase* message_loop_base,
-      const TickClock* clock = DefaultTickClock::GetInstance());
+      const TickClock* clock = DefaultTickClock::GetInstance(),
+      SequenceManager::Settings settings = Settings());
 
   static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
-      MessageLoop::Type type,
+      SequenceManager::Settings settings,
       const TickClock* clock = DefaultTickClock::GetInstance());
 
   // SequenceManager implementation:
@@ -203,7 +205,7 @@ class BASE_EXPORT SequenceManagerImpl
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
   SequenceManagerImpl(std::unique_ptr<internal::ThreadController> controller,
-                      MessageLoop::Type type);
+                      SequenceManager::Settings settings = Settings());
 
   friend class internal::TaskQueueImpl;
   friend class ::base::sequence_manager::SequenceManagerForTest;
@@ -250,7 +252,8 @@ class BASE_EXPORT SequenceManagerImpl
 
   struct MainThreadOnly {
     explicit MainThreadOnly(
-        const scoped_refptr<AssociatedThreadId>& associated_thread);
+        const scoped_refptr<AssociatedThreadId>& associated_thread,
+        bool randomised_sampling_enabled);
     ~MainThreadOnly();
 
     int nesting_depth = 0;

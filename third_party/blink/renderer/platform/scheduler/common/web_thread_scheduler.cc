@@ -24,12 +24,15 @@ WebThreadScheduler::CreateMainThreadScheduler(
   WarmupTracingCategories();
   // Workers might be short-lived, so placing warmup here.
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("worker.scheduler"));
+  auto settings = base::sequence_manager::SequenceManager::Settings{
+      .randomised_sampling_enabled = true};
   auto sequence_manager =
       message_pump
           ? base::sequence_manager::
                 CreateSequenceManagerOnCurrentThreadWithPump(
-                    base::MessageLoop::TYPE_DEFAULT, std::move(message_pump))
-          : base::sequence_manager::CreateSequenceManagerOnCurrentThread();
+                    std::move(message_pump), std::move(settings))
+          : base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+                std::move(settings));
   std::unique_ptr<MainThreadSchedulerImpl> scheduler(
       new MainThreadSchedulerImpl(std::move(sequence_manager),
                                   initial_virtual_time));

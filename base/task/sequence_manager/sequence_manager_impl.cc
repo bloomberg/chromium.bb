@@ -38,22 +38,26 @@ namespace sequence_manager {
 // greater than current anticipated usage.
 static constexpr const size_t kInitialTaskExecutionStackReserveCount = 10;
 
-std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
-  return internal::SequenceManagerImpl::CreateOnCurrentThread();
+std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread(
+    SequenceManager::Settings settings) {
+  return internal::SequenceManagerImpl::CreateOnCurrentThread(
+      std::move(settings));
 }
 
 std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThreadWithPump(
-    MessageLoop::Type type,
-    std::unique_ptr<MessagePump> message_pump) {
+    std::unique_ptr<MessagePump> message_pump,
+    SequenceManager::Settings settings) {
   std::unique_ptr<SequenceManager> sequence_manager =
-      internal::SequenceManagerImpl::CreateUnboundWithPump(type);
+      internal::SequenceManagerImpl::CreateUnboundWithPump(std::move(settings));
   sequence_manager->BindToMessagePump(std::move(message_pump));
   return sequence_manager;
 }
 
 std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
-    MessageLoopBase* message_loop_base) {
-  return internal::SequenceManagerImpl::CreateUnbound(message_loop_base);
+    MessageLoopBase* message_loop_base,
+    SequenceManager::Settings settings) {
+  return internal::SequenceManagerImpl::CreateUnbound(
+      message_loop_base, DefaultTickClock::GetInstance(), std::move(settings));
 }
 
 namespace internal {
@@ -81,24 +85,30 @@ void SweepCanceledDelayedTasksInQueue(
   queue->SweepCanceledDelayedTasks(time_domain_now->at(time_domain));
 }
 
-SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings() {
-  bool cpu_time_recording_always_on =
+SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings(
+    bool randomised_sampling_enabled) {
+  if (!randomised_sampling_enabled)
+    return SequenceManager::MetricRecordingSettings(0);
+  bool records_cpu_time_for_each_task =
       base::RandDouble() < kThreadSamplingRateForRecordingCPUTime;
   return SequenceManager::MetricRecordingSettings(
-      cpu_time_recording_always_on, kTaskSamplingRateForRecordingCPUTime);
+      records_cpu_time_for_each_task ? 1
+                                     : kTaskSamplingRateForRecordingCPUTime);
 }
 
 }  // namespace
 
 SequenceManagerImpl::SequenceManagerImpl(
     std::unique_ptr<internal::ThreadController> controller,
-    MessageLoop::Type type)
+    SequenceManager::Settings settings)
     : associated_thread_(controller->GetAssociatedThread()),
       controller_(std::move(controller)),
-      type_(type),
-      metric_recording_settings_(InitializeMetricRecordingSettings()),
+      type_(settings.message_loop_type),
+      metric_recording_settings_(InitializeMetricRecordingSettings(
+          settings.randomised_sampling_enabled)),
       memory_corruption_sentinel_(kMemoryCorruptionSentinelValue),
-      main_thread_only_(associated_thread_),
+      main_thread_only_(associated_thread_,
+                        settings.randomised_sampling_enabled),
       weak_factory_(this) {
   TRACE_EVENT_WARMUP_CATEGORY("sequence_manager");
   TRACE_EVENT_WARMUP_CATEGORY(TRACE_DISABLED_BY_DEFAULT("sequence_manager"));
@@ -152,21 +162,25 @@ SequenceManagerImpl::AnyThread::AnyThread() = default;
 SequenceManagerImpl::AnyThread::~AnyThread() = default;
 
 SequenceManagerImpl::MainThreadOnly::MainThreadOnly(
-    const scoped_refptr<AssociatedThreadId>& associated_thread)
-    : random_generator(RandUint64()),
-      uniform_distribution(0.0, 1.0),
-      selector(associated_thread),
+    const scoped_refptr<AssociatedThreadId>& associated_thread,
+    bool randomised_sampling_enabled)
+    : selector(associated_thread),
       real_time_domain(new internal::RealTimeDomain()) {
+  if (randomised_sampling_enabled) {
+    random_generator = std::mt19937_64(RandUint64());
+    uniform_distribution = std::uniform_real_distribution<double>(0.0, 1.0);
+  }
   task_execution_stack.reserve(kInitialTaskExecutionStackReserveCount);
 }
 
 SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
 // static
-std::unique_ptr<SequenceManagerImpl>
-SequenceManagerImpl::CreateOnCurrentThread() {
+std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateOnCurrentThread(
+    SequenceManager::Settings settings) {
   std::unique_ptr<SequenceManagerImpl> manager =
-      CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated());
+      CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated(),
+                    DefaultTickClock::GetInstance(), std::move(settings));
   manager->BindToCurrentThread();
   manager->CompleteInitializationOnBoundThread();
   return manager;
@@ -175,18 +189,20 @@ SequenceManagerImpl::CreateOnCurrentThread() {
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
     MessageLoopBase* message_loop_base,
-    const TickClock* clock) {
+    const TickClock* clock,
+    SequenceManager::Settings settings) {
   return WrapUnique(new SequenceManagerImpl(
       ThreadControllerImpl::Create(message_loop_base, clock),
-      MessageLoop::Type::TYPE_DEFAULT));
+      std::move(settings)));
 }
 
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnboundWithPump(
-    MessageLoop::Type type,
+    SequenceManager::Settings settings,
     const TickClock* clock) {
   return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerWithMessagePumpImpl::CreateUnbound(clock), type));
+      ThreadControllerWithMessagePumpImpl::CreateUnbound(clock),
+      std::move(settings)));
 }
 
 void SequenceManagerImpl::BindToMessageLoop(
@@ -828,7 +844,9 @@ TimeTicks SequenceManagerImpl::NowTicks() const {
 }
 
 bool SequenceManagerImpl::ShouldRecordCPUTimeForTask() {
-  return ThreadTicks::IsSupported() &&
+  DCHECK(ThreadTicks::IsSupported() ||
+         !metric_recording_settings_.records_cpu_time_for_some_tasks());
+  return metric_recording_settings_.records_cpu_time_for_some_tasks() &&
          main_thread_only().uniform_distribution(
              main_thread_only().random_generator) <
              metric_recording_settings_
