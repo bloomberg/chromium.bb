@@ -1663,8 +1663,8 @@ bool Database::OpenInternal(const std::string& file_name,
     OnSqliteError(err, nullptr, "PRAGMA auto_vacuum");
 
     // Retry or bail out if the error handler poisoned the handle.
-    // TODO(shess): Move this handling to one place (see also sqlite3_open and
-    // secure_delete).  Possibly a wrapper function?
+    // TODO(shess): Move this handling to one place (see also sqlite3_open).
+    //              Possibly a wrapper function?
     if (poisoned_) {
       Close();
       if (retry_flag == RETRY_ON_POISON)
@@ -1715,13 +1715,8 @@ bool Database::OpenInternal(const std::string& file_name,
     ignore_result(ExecuteWithTimeout(cache_size_sql.c_str(), kBusyTimeout));
   }
 
-  if (!ExecuteWithTimeout("PRAGMA secure_delete=ON", kBusyTimeout)) {
-    bool was_poisoned = poisoned_;
-    Close();
-    if (was_poisoned && retry_flag == RETRY_ON_POISON)
-      return OpenInternal(file_name, NO_RETRY);
-    return false;
-  }
+  static_assert(SQLITE_SECURE_DELETE == 1,
+                "Chrome assumes secure_delete is on by default.");
 
   // Set a reasonable chunk size for larger files.  This reduces churn from
   // remapping memory on size changes.  It also reduces filesystem
