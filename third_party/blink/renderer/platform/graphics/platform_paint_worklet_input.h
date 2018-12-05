@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PLATFORM_PAINT_WORKLET_INPUT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PLATFORM_PAINT_WORKLET_INPUT_H_
 
-#include "cc/trees/layer_tree_painter.h"
+#include "cc/paint/layer_tree_painter.h"
 
 namespace blink {
 
@@ -19,6 +19,11 @@ class PLATFORM_EXPORT PlatformPaintWorkletInput : public cc::PaintWorkletInput {
         effective_zoom_(effective_zoom) {}
 
   ~PlatformPaintWorkletInput() override = default;
+
+  // PaintWorkletInput implementation
+  gfx::SizeF GetSize() const override {
+    return gfx::SizeF(container_size_.Width(), container_size_.Height());
+  }
 
   const std::string& Name() const { return name_; }
   const FloatSize& ContainerSize() const { return container_size_; }

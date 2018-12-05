@@ -9,8 +9,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
+#include "cc/paint/layer_tree_painter.h"
 #include "cc/paint/paint_export.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/rect.h"
@@ -173,13 +175,31 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage::ContentId content_id() const { return content_id_; }
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
-  uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
-  explicit operator bool() const { return !!GetSkImage(); }
-  bool IsLazyGenerated() const { return GetSkImage()->isLazyGenerated(); }
-  bool IsTextureBacked() const { return GetSkImage()->isTextureBacked(); }
-  int width() const { return GetSkImage()->width(); }
-  int height() const { return GetSkImage()->height(); }
-  SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }
+  uint32_t unique_id() const {
+    return paint_worklet_input_ ? 0 : GetSkImage()->uniqueID();
+  }
+  explicit operator bool() const {
+    return paint_worklet_input_ || !!GetSkImage();
+  }
+  bool IsLazyGenerated() const {
+    return paint_worklet_input_ ? false : GetSkImage()->isLazyGenerated();
+  }
+  bool IsTextureBacked() const {
+    return paint_worklet_input_ ? false : GetSkImage()->isTextureBacked();
+  }
+  int width() const {
+    return paint_worklet_input_
+               ? static_cast<int>(paint_worklet_input_->GetSize().width())
+               : GetSkImage()->width();
+  }
+  int height() const {
+    return paint_worklet_input_
+               ? static_cast<int>(paint_worklet_input_->GetSize().height())
+               : GetSkImage()->height();
+  }
+  SkColorSpace* color_space() const {
+    return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
+  }
 
   // Returns the color type of this image.
   SkColorType GetColorType() const;
@@ -197,6 +217,10 @@ class CC_PAINT_EXPORT PaintImage {
   // Returns an SkImage for the frame at |index|.
   sk_sp<SkImage> GetSkImageForFrame(size_t index,
                                     GeneratorClientId client_id) const;
+
+  PaintWorkletInput* paint_worklet_input() {
+    return paint_worklet_input_.get();
+  }
 
   std::string ToString() const;
 
@@ -260,6 +284,9 @@ class CC_PAINT_EXPORT PaintImage {
   //    skia's cache.
   // 2) Ensures that accesses to it are thread-safe.
   sk_sp<SkImage> cached_sk_image_;
+
+  // The input parameters that are needed to execute the JS paint callback.
+  scoped_refptr<PaintWorkletInput> paint_worklet_input_;
 };
 
 }  // namespace cc

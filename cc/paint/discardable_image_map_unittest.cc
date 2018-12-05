@@ -18,6 +18,7 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_paint_worklet_input.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -879,6 +880,19 @@ TEST_F(DiscardableImageMapTest, EmbeddedShaderWithAnimatedImages) {
             ImageAnalysisState::kAnimatedImages);
   EXPECT_EQ(shader_with_shader_with_image->image_analysis_state(),
             ImageAnalysisState::kAnimatedImages);
+}
+
+TEST_F(DiscardableImageMapTest, BuildPaintWorkletImage) {
+  gfx::SizeF size(100, 50);
+  scoped_refptr<TestPaintWorkletInput> input =
+      base::MakeRefCounted<TestPaintWorkletInput>(size);
+  PaintImage paint_image = PaintImageBuilder::WithDefault()
+                               .set_id(1)
+                               .set_paint_worklet_input(std::move(input))
+                               .TakePaintImage();
+  EXPECT_TRUE(paint_image.paint_worklet_input());
+  EXPECT_EQ(paint_image.width(), size.width());
+  EXPECT_EQ(paint_image.height(), size.height());
 }
 
 TEST_F(DiscardableImageMapTest, DecodingModeHintsBasic) {
