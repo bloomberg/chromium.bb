@@ -1489,10 +1489,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Profile creation ----------------------------------------------------------
 
-  metrics::MetricsService::SetExecutionPhase(
-      metrics::ExecutionPhase::CREATE_PROFILE,
-      g_browser_process->local_state());
-
   UMA_HISTOGRAM_TIMES("Startup.PreMainMessageLoopRunImplStep1Time",
                       base::TimeTicks::Now() - start_time_step1);
 
@@ -1654,9 +1650,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Start watching for hangs during startup. We disarm this hang detector when
   // ThreadWatcher takes over or when browser is shutdown or when
   // startup_watcher_ is deleted.
-  metrics::MetricsService::SetExecutionPhase(
-      metrics::ExecutionPhase::STARTUP_TIMEBOMB_ARM,
-      g_browser_process->local_state());
   startup_watcher_->Arm(base::TimeDelta::FromSeconds(600));
 #endif  // !defined(OS_ANDROID)
 
@@ -1679,9 +1672,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
   // Start watching all browser threads for responsiveness.
-  metrics::MetricsService::SetExecutionPhase(
-      metrics::ExecutionPhase::THREAD_WATCHER_START,
-      g_browser_process->local_state());
   ThreadWatcherList::StartWatchingAll(parsed_command_line());
 
   // This has to come before the first GetInstance() call. PreBrowserStart()
@@ -1859,9 +1849,6 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
   performance_monitor::PerformanceMonitor::GetInstance()->StartGatherCycle();
 
-  metrics::MetricsService::SetExecutionPhase(
-      metrics::ExecutionPhase::MAIN_MESSAGE_LOOP_RUN,
-      g_browser_process->local_state());
   g_run_loop->Run();
 
   return true;
@@ -1877,9 +1864,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 #else
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
-  metrics::MetricsService::SetExecutionPhase(
-      metrics::ExecutionPhase::SHUTDOWN_TIMEBOMB_ARM,
-      g_browser_process->local_state());
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.

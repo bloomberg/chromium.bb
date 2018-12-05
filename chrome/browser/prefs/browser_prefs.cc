@@ -561,6 +561,9 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kLastWelcomedOSVersion, std::string());
 #endif
 
+  // Obsolete. See MigrateObsoleteBrowserPrefs().
+  registry->RegisterIntegerPref(metrics::prefs::kStabilityExecutionPhase, 0);
+
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
 #endif
@@ -827,6 +830,9 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
+  // Added 12/2018.
+  local_state->ClearPref(metrics::prefs::kStabilityExecutionPhase);
+
 #if defined(OS_ANDROID)
   // Added 9/2018
   local_state->ClearPref(
