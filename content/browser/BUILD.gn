@@ -601,6 +601,8 @@ jumbo_source_set("browser") {
     "code_cache/generated_code_cache.h",
     "code_cache/generated_code_cache_context.cc",
     "code_cache/generated_code_cache_context.h",
+    "contacts/contacts_manager_impl.cc",
+    "contacts/contacts_manager_impl.h",
     "startup_data_impl.cc",
     "startup_data_impl.h",
     "startup_helper.cc",

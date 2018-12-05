@@ -34,6 +34,7 @@
 #include "content/browser/bluetooth/web_bluetooth_service_impl.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -3975,6 +3976,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       &BackgroundFetchServiceImpl::CreateForFrame, GetProcess(), routing_id_));
+
+  registry_->AddInterface(base::BindRepeating(&ContactsManagerImpl::Create));
 
   registry_->AddInterface(
       base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
