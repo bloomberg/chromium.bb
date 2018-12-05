@@ -225,7 +225,9 @@ public class FeedProcessScopeFactory {
         // Should only be subscribed while it was enabled. A change should mean articles are now
         // disabled.
         assert !PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_SECTION_ENABLED);
-        // Log this event warning while investigating https://crbug.com/901414.
+        // There have been quite a few crashes/bugs that happen when code does not correctly handle
+        // the scenario where Feed suddenly becomes disabled and the above getters start returning
+        // nulls. Having this log a warning helps diagnose this pattern from the logcat.
         Log.w(TAG, "Disabling Feed because of policy.");
         sEverDisabledForPolicy = true;
         destroy();
