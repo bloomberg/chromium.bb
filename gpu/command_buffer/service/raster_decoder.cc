@@ -2365,6 +2365,19 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
 
     paint_buffer_size -= skip;
     paint_buffer_memory += skip;
+
+#if defined(OS_MACOSX)
+    // Aggressively call glFlush on macOS to determine if this is sufficient to
+    // avoid GL driver crashes. This will cause very significant performance
+    // regressions.
+    // TODO(ccameron): If this makes the crashes go away, then (1) try moving
+    // this flush outside of the above while loop and (2) add instrumentation
+    // to find the culprit ops.
+    // https://crbug.com/906453
+    if (gr_context())
+      gr_context()->flush();
+    api()->glFlushFn();
+#endif
   }
 }
 
