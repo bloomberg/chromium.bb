@@ -8,6 +8,7 @@ In theory you shouldn't need anything else in subprocess, or this module failed.
 """
 
 import cStringIO
+import codecs
 import errno
 import logging
 import os
@@ -17,6 +18,9 @@ import sys
 import time
 import threading
 
+# Cache the string-escape codec to ensure subprocess can find it later.
+# See crbug.com/912292#c2 for context.
+codecs.lookup('string-escape')
 
 # Constants forwarded from subprocess.
 PIPE = subprocess.PIPE
