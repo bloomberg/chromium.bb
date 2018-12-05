@@ -46,9 +46,9 @@ void ShortcutViewerApplication::OnStart() {
   ash::ash_client::Init();
 
   // Quit the application when the window is closed.
-  last_window_closed_observer_ =
-      std::make_unique<LastWindowClosedObserver>(base::BindRepeating(
-          &ShortcutViewerApplication::Terminate, base::Unretained(this)));
+  last_window_closed_observer_ = std::make_unique<LastWindowClosedObserver>(
+      base::BindRepeating(&ShortcutViewerApplication::OnLastWindowClosed,
+                          base::Unretained(this)));
 }
 
 void ShortcutViewerApplication::OnBindInterface(
@@ -79,6 +79,10 @@ void ShortcutViewerApplication::AddBinding(
     shortcut_viewer::mojom::ShortcutViewerRequest request) {
   shortcut_viewer_binding_.Close();
   shortcut_viewer_binding_.Bind(std::move(request));
+}
+
+void ShortcutViewerApplication::OnLastWindowClosed() {
+  service_binding_.RequestClose();
 }
 
 }  // namespace keyboard_shortcut_viewer
