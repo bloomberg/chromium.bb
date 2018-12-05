@@ -157,9 +157,6 @@ class ChromeBrowserProvider {
   // Returns an instance of the fullscreen provider.
   virtual FullscreenProvider* GetFullscreenProvider() const;
 
-  // Checks for native iOS apps that are installed.
-  virtual void CheckForFirstPartyApps() const;
-
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

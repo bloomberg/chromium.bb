@@ -34,7 +34,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
   SpotlightProvider* GetSpotlightProvider() const override;
   FullscreenProvider* GetFullscreenProvider() const override;
-  void CheckForFirstPartyApps() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
   MailtoHandlerProvider* GetMailtoHandlerProvider() const override;
 
