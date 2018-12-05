@@ -31,6 +31,7 @@
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -47,7 +48,6 @@
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
@@ -366,7 +366,7 @@ ShellSurfaceBase::~ShellSurfaceBase() {
   if (root_surface())
     root_surface()->RemoveSurfaceObserver(this);
   if (has_grab_)
-    wm::CaptureController::Get()->RemoveObserver(this);
+    WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
 }
 
 void ShellSurfaceBase::Activate() {
@@ -760,7 +760,7 @@ void ShellSurfaceBase::GetWidgetHitTestMask(gfx::Path* mask) const {
 void ShellSurfaceBase::OnCaptureChanged(aura::Window* lost_capture,
                                         aura::Window* gained_capture) {
   if (lost_capture == widget_->GetNativeWindow() && is_popup_) {
-    wm::CaptureController::Get()->RemoveObserver(this);
+    WMHelper::GetInstance()->GetCaptureClient()->RemoveObserver(this);
     if (gained_capture &&
         lost_capture == wm::GetTransientParent(gained_capture)) {
       // Don't close if the capture has been transferred to the child popup.
@@ -1072,7 +1072,7 @@ void ShellSurfaceBase::SetParentWindow(aura::Window* parent) {
 
 void ShellSurfaceBase::StartCapture() {
   widget_->set_auto_release_capture(false);
-  wm::CaptureController::Get()->AddObserver(this);
+  WMHelper::GetInstance()->GetCaptureClient()->AddObserver(this);
   // Just capture on the window.
   widget_->SetCapture(nullptr /* view */);
 }

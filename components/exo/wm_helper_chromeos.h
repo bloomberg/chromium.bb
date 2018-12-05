@@ -97,6 +97,7 @@ class WMHelperChromeOS : public WMHelper {
   double GetDefaultDeviceScaleFactor() const override;
 
   LifetimeManager* GetLifetimeManager() override;
+  aura::client::CaptureClient* GetCaptureClient() override;
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;

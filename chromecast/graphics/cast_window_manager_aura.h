@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "chromecast/graphics/cast_window_manager.h"
+#include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window_tree_host_platform.h"
 
 namespace aura {
 namespace client {
-class DefaultCaptureClient;
 class ScreenPositionClient;
 }  // namespace client
 }  // namespace aura
@@ -53,6 +53,10 @@ class CastWindowManagerAura : public CastWindowManager,
  public:
   explicit CastWindowManagerAura(bool enable_input);
   ~CastWindowManagerAura() override;
+
+  aura::client::CaptureClient* capture_client() const {
+    return capture_client_.get();
+  }
 
   void Setup();
 

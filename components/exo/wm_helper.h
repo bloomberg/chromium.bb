@@ -15,9 +15,9 @@
 #include "ui/compositor/compositor_vsync_manager.h"
 
 namespace aura {
-class env;
 class Window;
 namespace client {
+class CaptureClient;
 class CursorClient;
 class FocusChangeObserver;
 }  // namespace client
@@ -126,6 +126,7 @@ class WMHelper : public aura::client::DragDropDelegate {
   virtual double GetDefaultDeviceScaleFactor() const = 0;
 
   virtual LifetimeManager* GetLifetimeManager() = 0;
+  virtual aura::client::CaptureClient* GetCaptureClient() = 0;
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override = 0;
