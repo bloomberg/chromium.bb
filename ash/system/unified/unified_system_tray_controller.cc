@@ -304,7 +304,7 @@ void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
 
 void UnifiedSystemTrayController::CloseBubble() {
   if (unified_view_->GetWidget())
-    unified_view_->GetWidget()->Close();
+    unified_view_->GetWidget()->CloseNow();
 }
 
 void UnifiedSystemTrayController::EnsureExpanded() {
