@@ -390,15 +390,8 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, EnableAndStopTracing) {
   TestStartAndStopTracingString();
 }
 
-// TODO(crbug.com/871770): Disabled for failing on ASAN.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DisableRecordingStoresMetadata \
-  DISABLED_DisableRecordingStoresMetadata
-#else
-#define MAYBE_DisableRecordingStoresMetadata DisableRecordingStoresMetadata
-#endif
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       MAYBE_DisableRecordingStoresMetadata) {
+                       DisableRecordingStoresMetadata) {
   TestStartAndStopTracingString();
   // Check that a number of important keys exist in the metadata dictionary. The
   // values are not checked to ensure the test is robust.
