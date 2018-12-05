@@ -262,10 +262,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kScrollAnchorSerialization))
     WebRuntimeFeatures::EnableScrollAnchorSerialization(true);
 
-  if (base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees) ||
-      command_line.HasSwitch(switches::kEnableBlinkGenPropertyTrees)) {
+  if (base::FeatureList::IsEnabled(blink::features::kBlinkGenPropertyTrees))
     WebRuntimeFeatures::EnableFeatureFromString("BlinkGenPropertyTrees", true);
-  }
 
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
