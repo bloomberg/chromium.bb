@@ -247,17 +247,10 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       views::View* container = setup_horizontal_margin_container(
           new NonAccessibleView("UsernameLabel MarginContainer"));
       username_label_ = CreateLabel(display_username, SK_ColorWHITE);
-      // Do not change these two lines. Without them, the remove user button
-      // will be pushed out of the box when the user has a long name.
-      username_label_->SetMultiLine(true);
-      username_label_->SetMaxLines(1);
       container->AddChildView(username_label_);
       add_space(container, kBubbleBetweenChildSpacingDp);
       views::Label* email_label =
           CreateLabel(email, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha));
-      // Do not change these two lines for the same reasons as above.
-      email_label->SetMultiLine(true);
-      email_label->SetMaxLines(1);
       container->AddChildView(email_label);
     }
 
