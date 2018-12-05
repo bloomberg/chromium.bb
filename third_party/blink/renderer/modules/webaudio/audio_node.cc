@@ -46,6 +46,7 @@ AudioHandler::AudioHandler(NodeType node_type,
       node_type_(kNodeTypeUnknown),
       node_(&node),
       context_(node.context()),
+      deferred_task_handler_(&context_->GetDeferredTaskHandler()),
       last_processing_time_(-1),
       last_non_silent_time_(0),
       connection_ref_count_(0),
@@ -101,11 +102,11 @@ void AudioHandler::Uninitialize() {
 
 void AudioHandler::Dispose() {
   DCHECK(IsMainThread());
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
-  Context()->GetDeferredTaskHandler().RemoveChangedChannelCountMode(this);
-  Context()->GetDeferredTaskHandler().RemoveChangedChannelInterpretation(this);
-  Context()->GetDeferredTaskHandler().RemoveAutomaticPullNode(this);
+  deferred_task_handler_->RemoveChangedChannelCountMode(this);
+  deferred_task_handler_->RemoveChangedChannelInterpretation(this);
+  deferred_task_handler_->RemoveAutomaticPullNode(this);
   for (auto& output : outputs_)
     output->Dispose();
 }
@@ -360,7 +361,7 @@ void AudioHandler::ProcessIfNecessary(uint32_t frames_to_process) {
 
 void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
   DCHECK(inputs_.Contains(input));
   if (!inputs_.Contains(input))
@@ -402,7 +403,7 @@ void AudioHandler::UnsilenceOutputs() {
 
 void AudioHandler::EnableOutputsIfNecessary() {
   DCHECK(IsMainThread());
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
   // We're enabling outputs for this handler.  Remove this from the tail
   // processing list (if it's there) so that we don't inadvertently disable the
@@ -427,7 +428,7 @@ void AudioHandler::EnableOutputsIfNecessary() {
 void AudioHandler::DisableOutputsIfNecessary() {
   // This function calls other functions that require graph ownership,
   // so assert that this needs graph ownership too.
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
 
   // Disable outputs if appropriate. We do this if the number of connections is
   // 0 or 1. The case of 0 is from deref() where there are no connections left.
@@ -449,9 +450,8 @@ void AudioHandler::DisableOutputsIfNecessary() {
     // the outputs so that the tail for the node can be output.
     // Otherwise, we can disable the outputs right away.
     if (RequiresTailProcessing()) {
-      auto& deferred_task_handler = Context()->GetDeferredTaskHandler();
-      if (deferred_task_handler.AcceptsTailProcessing())
-        deferred_task_handler.AddTailProcessingHandler(this);
+      if (deferred_task_handler_->AcceptsTailProcessing())
+        deferred_task_handler_->AddTailProcessingHandler(this);
     } else {
       DisableOutputs();
     }
@@ -465,7 +465,7 @@ void AudioHandler::DisableOutputs() {
 }
 
 void AudioHandler::MakeConnection() {
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
   connection_ref_count_++;
 
 #if DEBUG_AUDIONODE_REFERENCES
@@ -507,7 +507,7 @@ void AudioHandler::BreakConnection() {
 }
 
 void AudioHandler::BreakConnectionWithLock() {
-  Context()->AssertGraphOwner();
+  deferred_task_handler_->AssertGraphOwner();
   connection_ref_count_--;
 
 #if DEBUG_AUDIONODE_REFERENCES
