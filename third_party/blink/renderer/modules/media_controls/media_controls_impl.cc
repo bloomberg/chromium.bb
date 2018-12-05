@@ -1430,7 +1430,8 @@ void MediaControlsImpl::UpdateOverflowMenuItemCSSClass() const {
     DOMTokenList& class_list = item->classList();
 
     // We don't care if the hidden element still have animated-* CSS class
-    if (inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
+    if (inline_style &&
+        inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
       continue;
 
     AtomicString css_class =
