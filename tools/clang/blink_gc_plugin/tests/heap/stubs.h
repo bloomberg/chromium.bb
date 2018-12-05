@@ -198,12 +198,6 @@ using namespace WTF;
   virtual bool IsHeapObjectAlive(Visitor*) const override { return 0; } \
   void* mixin_constructor_marker_;
 
-#define USING_GARBAGE_COLLECTED_MIXIN_NEW(type)                         \
- public:                                                                \
-  virtual void AdjustAndMark(Visitor*) const override {}                \
-  virtual bool IsHeapObjectAlive(Visitor*) const override { return 0; } \
-  typedef int HasUsingGarbageCollectedMixinMacro;
-
 #define EAGERLY_FINALIZED() typedef int IsEagerlyFinalizedMarker
 
 template<typename T> class GarbageCollected { };
