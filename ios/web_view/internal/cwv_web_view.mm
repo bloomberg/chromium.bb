@@ -352,6 +352,10 @@ static NSString* gUserAgentProduct = nil;
   self.estimatedProgress = progress;
 }
 
+- (void)webStateDidChangeBackForwardState:(web::WebState*)webState {
+  [self updateNavigationAvailability];
+}
+
 - (void)webStateDidStopLoading:(web::WebState*)webState {
   self.loading = _webState->IsLoading();
 }
