@@ -53532,6 +53532,11 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Error"/>
 </enum>
 
+<enum name="WebRtcLoggingWebAppIdHash">
+  <int value="-100222544" label="Hangouts"/>
+  <int value="0" label="Undefined"/>
+</enum>
+
 <enum name="WebRtcNativeRate">
   <int value="0" label="8kHz"/>
   <int value="1" label="16kHz"/>
