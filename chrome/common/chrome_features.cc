@@ -126,12 +126,6 @@ const base::Feature kBrowserHangFixesExperiment{
 const base::Feature kBundledConnectionHelpFeature{
     "BundledConnectionHelp", base::FEATURE_ENABLED_BY_DEFAULT};
 
-#if defined(OS_MACOSX)
-// Enables or disables keyboard focus for the tab strip.
-const base::Feature kTabStripKeyboardFocus{"TabStripKeyboardFocus",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(OS_MACOSX)
-
 #if !defined(OS_ANDROID)
 // Enables logging UKMs for background tab activity by TabActivityWatcher.
 const base::Feature kTabMetricsLogging{"TabMetricsLogging",
