@@ -1929,8 +1929,9 @@ TEST_F(WorkspaceLayoutManagerSystemUiAreaTest,
   EXPECT_EQ(0, test_state()->num_system_ui_area_changes());
 
   keyboard_controller->ShowKeyboard(/*lock=*/true);
-  keyboard_controller->SetKeyboardWindowBounds(gfx::Rect(0, 0, 100, 50));
   ASSERT_TRUE(keyboard::WaitUntilShown());
+
+  keyboard_controller->SetKeyboardWindowBounds(gfx::Rect(0, 0, 100, 50));
   EXPECT_GE(test_state()->num_system_ui_area_changes(), 1);
   test_state()->reset_num_system_ui_area_changes();
 

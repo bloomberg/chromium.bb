@@ -18,6 +18,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/geometry/rect.h"
@@ -31,7 +32,9 @@ const int kShadowElevationVirtualKeyboard = 2;
 }  // namespace
 
 ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
-    : browser_context_(context) {}
+    : browser_context_(context) {
+  DCHECK(!::features::IsUsingWindowService());
+}
 
 ChromeKeyboardUI::~ChromeKeyboardUI() {
   DCHECK(!keyboard_controller());
@@ -46,7 +49,8 @@ aura::Window* ChromeKeyboardUI::LoadKeyboardWindow(LoadCallback callback) {
       browser_context_,
       ChromeKeyboardControllerClient::Get()->GetVirtualKeyboardUrl(),
       base::BindOnce(
-          [](LoadCallback callback) {
+          [](LoadCallback callback, const base::UnguessableToken&,
+             const gfx::Size&) {
             ChromeKeyboardControllerClient::Get()->NotifyKeyboardLoaded();
             std::move(callback).Run();
           },
@@ -78,6 +82,7 @@ ui::InputMethod* ChromeKeyboardUI::GetInputMethod() {
 }
 
 void ChromeKeyboardUI::ReloadKeyboardIfNeeded() {
+  VLOG(1) << "ReloadKeyboardIfNeeded";
   DCHECK(keyboard_contents_);
   keyboard_contents_->SetKeyboardUrl(
       ChromeKeyboardControllerClient::Get()->GetVirtualKeyboardUrl());

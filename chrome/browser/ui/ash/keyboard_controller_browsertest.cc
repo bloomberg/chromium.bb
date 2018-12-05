@@ -389,10 +389,10 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
             keyboard::KeyboardControllerState::INITIAL);
 }
 
-// A test for crbug.com/734534.
+// A test for crbug.com/734534. Only for classic Ash.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerWebContentTest,
                        DoesNotCrashWhenParentDoesNotExist) {
-  if (::features::IsMultiProcessMash())
+  if (::features::IsUsingWindowService())
     return;
   auto* controller = keyboard::KeyboardController::Get();
 

@@ -41,6 +41,10 @@ void ServerRemoteViewHost::EmbedUsingToken(
     EmbedImpl();
 }
 
+const char* ServerRemoteViewHost::GetClassName() const {
+  return "ServerRemoteViewHost";
+}
+
 void ServerRemoteViewHost::EmbedImpl() {
   DCHECK(IsEmbedPending());
   const bool result = window_service_->CompleteScheduleEmbedForExistingClient(

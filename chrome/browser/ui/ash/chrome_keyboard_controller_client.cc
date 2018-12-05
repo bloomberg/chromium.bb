@@ -14,6 +14,8 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 #include "extensions/browser/event_router.h"
@@ -29,6 +31,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/public/keyboard_switches.h"
 #include "ui/keyboard/resources/keyboard_resource_util.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
@@ -89,7 +92,20 @@ ChromeKeyboardControllerClient::ChromeKeyboardControllerClient(
 
 ChromeKeyboardControllerClient::~ChromeKeyboardControllerClient() {
   CHECK(g_chrome_keyboard_controller_client);
+  Shutdown();
+  // Clear the global instance pointer last so that  keyboard_contents_ and
+  // KeyboardController owned classes can remove themselves as observers.
   g_chrome_keyboard_controller_client = nullptr;
+}
+
+void ChromeKeyboardControllerClient::Shutdown() {
+  if (!::features::IsUsingWindowService() &&
+      keyboard::KeyboardController::HasInstance()) {
+    // In classic Ash, keyboard::KeyboardController owns ChromeKeyboardUI which
+    // accesses this class, so make sure that the UI has been destroyed.
+    keyboard::KeyboardController::Get()->DisableKeyboard();
+  }
+  keyboard_contents_.reset();
 }
 
 void ChromeKeyboardControllerClient::AddObserver(Observer* observer) {
@@ -101,6 +117,7 @@ void ChromeKeyboardControllerClient::RemoveObserver(Observer* observer) {
 }
 
 void ChromeKeyboardControllerClient::NotifyKeyboardLoaded() {
+  DVLOG(1) << "NotifyKeyboardLoaded: " << is_keyboard_loaded_;
   is_keyboard_loaded_ = true;
   for (auto& observer : observers_)
     observer.OnKeyboardLoaded();
@@ -130,6 +147,7 @@ void ChromeKeyboardControllerClient::GetKeyboardEnabled(
 
 void ChromeKeyboardControllerClient::SetEnableFlag(
     const keyboard::mojom::KeyboardEnableFlag& flag) {
+  DVLOG(1) << "SetEnableFlag: " << flag;
   keyboard_controller_ptr_->SetEnableFlag(flag);
 }
 
@@ -221,9 +239,9 @@ GURL ChromeKeyboardControllerClient::GetVirtualKeyboardUrl() {
 
 aura::Window* ChromeKeyboardControllerClient::GetKeyboardWindow() const {
   if (::features::IsUsingWindowService()) {
-    // TODO(stevenjb): When WS support is added, return the Chrome window
-    // hosting the extension instead.
-    return nullptr;
+    content::WebContents* contents =
+        keyboard_contents_ ? keyboard_contents_->web_contents() : nullptr;
+    return contents ? contents->GetNativeView() : nullptr;
   }
   return keyboard::KeyboardController::Get()->GetKeyboardWindow();
 }
@@ -239,6 +257,8 @@ void ChromeKeyboardControllerClient::OnKeyboardEnableFlagsChanged(
 }
 
 void ChromeKeyboardControllerClient::OnKeyboardEnabledChanged(bool enabled) {
+  DVLOG(1) << "OnKeyboardEnabledChanged: " << enabled;
+
   bool was_enabled = is_keyboard_enabled_;
   is_keyboard_enabled_ = enabled;
   if (enabled || !was_enabled)
@@ -282,6 +302,13 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibilityChanged(bool visible) {
 
 void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
     const gfx::Rect& screen_bounds) {
+  DVLOG(1) << "OnKeyboardVisibleBoundsChanged: " << screen_bounds.ToString();
+  if (keyboard_contents_)
+    keyboard_contents_->SetInitialContentsSize(screen_bounds.size());
+
+  if (!GetKeyboardWindow())
+    return;
+
   Profile* profile = GetProfile();
   extensions::EventRouter* router = extensions::EventRouter::Get(profile);
   // |router| may be null in tests.
@@ -290,14 +317,14 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
     return;
   }
 
-  // Note: |bounds| is in screen coordinates, which is what we want to pass to
-  // the extension.
+  // Convert screen bounds to the frame of reference of the keyboard window.
+  gfx::Rect bounds = BoundsFromScreen(screen_bounds);
   auto event_args = std::make_unique<base::ListValue>();
   auto new_bounds = std::make_unique<base::DictionaryValue>();
-  new_bounds->SetInteger("left", screen_bounds.x());
-  new_bounds->SetInteger("top", screen_bounds.y());
-  new_bounds->SetInteger("width", screen_bounds.width());
-  new_bounds->SetInteger("height", screen_bounds.height());
+  new_bounds->SetInteger("left", bounds.x());
+  new_bounds->SetInteger("top", bounds.y());
+  new_bounds->SetInteger("width", bounds.width());
+  new_bounds->SetInteger("height", bounds.height());
   event_args->Append(std::move(new_bounds));
 
   auto event = std::make_unique<extensions::Event>(
@@ -309,8 +336,39 @@ void ChromeKeyboardControllerClient::OnKeyboardVisibleBoundsChanged(
 
 void ChromeKeyboardControllerClient::OnKeyboardOccludedBoundsChanged(
     const gfx::Rect& screen_bounds) {
+  if (!GetKeyboardWindow())
+    return;
+  gfx::Rect bounds = BoundsFromScreen(screen_bounds);
+  DVLOG(1) << "OnKeyboardOccludedBoundsChanged: " << bounds.ToString();
   for (auto& observer : observers_)
-    observer.OnKeyboardOccludedBoundsChanged(screen_bounds);
+    observer.OnKeyboardOccludedBoundsChanged(bounds);
+}
+
+void ChromeKeyboardControllerClient::OnLoadKeyboardContentsRequested() {
+  GURL keyboard_url = GetVirtualKeyboardUrl();
+  if (keyboard_contents_) {
+    DVLOG(1) << "OnLoadKeyboardContentsRequested: SetUrl: " << keyboard_url;
+    keyboard_contents_->SetKeyboardUrl(keyboard_url);
+    return;
+  }
+
+  DVLOG(1) << "OnLoadKeyboardContentsRequested: Create: " << keyboard_url;
+  keyboard_contents_ = std::make_unique<ChromeKeyboardWebContents>(
+      GetProfile(), keyboard_url,
+      base::BindOnce(&ChromeKeyboardControllerClient::OnKeyboardContentsLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ChromeKeyboardControllerClient::OnKeyboardUIDestroyed() {
+  keyboard_contents_.reset();
+}
+
+void ChromeKeyboardControllerClient::OnKeyboardContentsLoaded(
+    const base::UnguessableToken& token,
+    const gfx::Size& size) {
+  DVLOG(1) << "OnLoadKeyboardContentsRequested: " << size.ToString();
+  NotifyKeyboardLoaded();
+  keyboard_controller_ptr_->KeyboardContentsLoaded(token, size);
 }
 
 Profile* ChromeKeyboardControllerClient::GetProfile() {
@@ -321,4 +379,13 @@ Profile* ChromeKeyboardControllerClient::GetProfile() {
   // virtual keyboard extensions associated with the active user are notified.
   // (Note: UI and associated extensions only exist for the active user).
   return ProfileManager::GetActiveUserProfile();
+}
+
+gfx::Rect ChromeKeyboardControllerClient::BoundsFromScreen(
+    const gfx::Rect& screen_bounds) {
+  aura::Window* keyboard_window = GetKeyboardWindow();
+  DCHECK(keyboard_window);
+  gfx::Rect bounds(screen_bounds);
+  ::wm::ConvertRectFromScreen(keyboard_window, &bounds);
+  return bounds;
 }

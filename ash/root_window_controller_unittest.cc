@@ -777,23 +777,6 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   root_window->RemovePreTargetHandler(&handler);
 }
 
-// Test for http://crbug.com/299787. RootWindowController should remove
-// the old keyboard window when we activate it elsewhere.
-// TODO(https://crbug.com/849995): This test no longer belongs here, but in
-// KeyboardController.
-TEST_F(VirtualKeyboardRootWindowControllerTest,
-       DeleteOldContainerOnVirtualKeyboardInit) {
-  aura::Window* keyboard_window =
-      keyboard::KeyboardController::Get()->GetKeyboardWindow();
-  // Track the keyboard contents window.
-  aura::WindowTracker tracker;
-  tracker.Add(keyboard_window);
-  // Reinitialize the keyboard.
-  Shell::Get()->EnableKeyboard();
-  // keyboard_window should no longer be present.
-  EXPECT_FALSE(tracker.Contains(keyboard_window));
-}
-
 // Test for crbug.com/342524. After user login, the work space should restore to
 // full screen.
 TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
