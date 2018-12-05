@@ -111,6 +111,7 @@ void ListedElement::InsertedInto(ContainerNode& insertion_point) {
   }
 
   FieldSetAncestorsSetNeedsValidityCheck(&insertion_point);
+  DisabledStateMightBeChanged();
 
   // Trigger for elements outside of forms.
   if (!form_ && insertion_point.isConnected())
@@ -137,6 +138,8 @@ void ListedElement::RemovedFrom(ContainerNode& insertion_point) {
   if (form_ && NodeTraversal::HighestAncestorOrSelf(*element) !=
                    NodeTraversal::HighestAncestorOrSelf(*form_.Get()))
     ResetFormOwner();
+
+  DisabledStateMightBeChanged();
 }
 
 HTMLFormElement* ListedElement::FindAssociatedForm(
@@ -517,6 +520,7 @@ void ListedElement::DisabledAttributeChanged() {
   HTMLElement& element = ToHTMLElement(*this);
   element.PseudoStateChanged(CSSSelector::kPseudoDisabled);
   element.PseudoStateChanged(CSSSelector::kPseudoEnabled);
+  DisabledStateMightBeChanged();
 }
 
 void ListedElement::UpdateAncestorDisabledState() const {

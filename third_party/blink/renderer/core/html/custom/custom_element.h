@@ -106,6 +106,8 @@ class CORE_EXPORT CustomElement {
                                               const AtomicString& new_value);
   static void EnqueueFormAssociatedCallback(Element& element,
                                             HTMLFormElement* nullable_form);
+  static void EnqueueDisabledStateChangedCallback(Element& element,
+                                                  bool is_disabled);
 
   static void TryToUpgrade(Element*, bool upgrade_invisible_elements = false);
 

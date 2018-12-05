@@ -265,4 +265,12 @@ bool ElementInternals::CustomError() const {
   return validity_flags_ && validity_flags_->customError();
 }
 
+void ElementInternals::DisabledStateMightBeChanged() {
+  bool new_disabled = IsActuallyDisabled();
+  if (is_disabled_ == new_disabled)
+    return;
+  is_disabled_ = new_disabled;
+  CustomElement::EnqueueDisabledStateChangedCallback(Target(), new_disabled);
+}
+
 }  // namespace blink
