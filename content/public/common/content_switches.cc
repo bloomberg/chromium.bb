@@ -332,10 +332,6 @@ const char kEnablePreferCompositingToLCDText[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
-// This is now an alias of "--enable-blink-features=BlinkGenPropertyTrees".
-// TODO(pdr): This flag is redundant and should be removed.
-const char kEnableBlinkGenPropertyTrees[] = "enable-blink-gen-property-trees";
-
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
     "enable-experimental-web-platform-features";
