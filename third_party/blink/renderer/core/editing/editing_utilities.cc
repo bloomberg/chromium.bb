@@ -1610,7 +1610,7 @@ DispatchEventResult DispatchBeforeInputDataTransfer(
 
   InputEvent* before_input_event;
 
-  if (HasRichlyEditableStyle(*(target->ToNode())) || !data_transfer) {
+  if (HasRichlyEditableStyle(*target) || !data_transfer) {
     before_input_event = InputEvent::CreateBeforeInput(
         input_type, data_transfer, InputTypeIsCancelable(input_type),
         InputEvent::EventIsComposing::kNotComposing,

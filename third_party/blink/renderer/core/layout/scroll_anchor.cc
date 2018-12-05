@@ -143,14 +143,13 @@ static const AtomicString UniqueClassnameAmongSiblings(Element* element) {
 
   auto classname_filter = std::make_unique<ClassnameFilter>();
 
-  Element* parent_element = ElementTraversal::FirstAncestor(*element->ToNode());
+  Element* parent_element = ElementTraversal::FirstAncestor(*element);
   Element* sibling_element =
-      parent_element ? ElementTraversal::FirstChild(*parent_element->ToNode())
-                     : element;
+      parent_element ? ElementTraversal::FirstChild(*parent_element) : element;
   // Add every classname of every sibling to our bloom filter, starting from the
   // leftmost sibling, but skipping |element|.
-  for (; sibling_element; sibling_element = ElementTraversal::NextSibling(
-                              *sibling_element->ToNode())) {
+  for (; sibling_element;
+       sibling_element = ElementTraversal::NextSibling(*sibling_element)) {
     if (sibling_element->HasClass() && sibling_element != element) {
       const SpaceSplitString& class_names = sibling_element->ClassNames();
       for (wtf_size_t i = 0; i < class_names.size(); ++i) {
@@ -231,7 +230,7 @@ static const String ComputeUniqueSelector(Node* anchor_node) {
 
   std::vector<String> selector_list;
   for (Element* element = ElementTraversal::FirstAncestorOrSelf(*anchor_node);
-       element; element = ElementTraversal::FirstAncestor(*element->ToNode())) {
+       element; element = ElementTraversal::FirstAncestor(*element)) {
     selector_list.push_back(UniqueSimpleSelectorAmongSiblings(element));
     if (element->HasID() &&
         !element->GetDocument().ContainsMultipleElementsWithId(
@@ -505,7 +504,7 @@ bool ScrollAnchor::RestoreAnchor(const SerializedAnchor& serialized_anchor) {
 
   for (unsigned index = 0; index < found_elements->length(); index++) {
     Element* anchor_element = found_elements->item(index);
-    LayoutObject* anchor_object = anchor_element->ToNode()->GetLayoutObject();
+    LayoutObject* anchor_object = anchor_element->GetLayoutObject();
 
     if (!anchor_object) {
       continue;
