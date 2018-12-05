@@ -12,12 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/test_autofill_client.h"
-#include "components/autofill/core/browser/test_autofill_driver.h"
-#include "components/autofill/core/browser/test_personal_data_manager.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -48,36 +43,26 @@ constexpr int kNumberOfPasswordAttributes =
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
  public:
-  MockAutofillDownloadManager(
-      autofill::AutofillDriver* driver,
-      autofill::AutofillDownloadManager::Observer* observer)
-      : AutofillDownloadManager(driver, observer) {}
+  MockAutofillDownloadManager()
+      : AutofillDownloadManager(nullptr, &fake_observer) {}
 
   MOCK_METHOD6(StartUploadRequest,
                bool(const FormStructure&,
                     bool,
-                    const ServerFieldTypeSet&,
+                    const autofill::ServerFieldTypeSet&,
                     const std::string&,
                     bool,
                     PrefService*));
 
  private:
+  class StubObserver : public AutofillDownloadManager::Observer {
+    void OnLoadedServerPredictions(
+        std::string response,
+        const std::vector<std::string>& form_signatures) override {}
+  };
+
+  StubObserver fake_observer;
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDownloadManager);
-};
-
-class MockAutofillManager : public autofill::AutofillManager {
- public:
-  MockAutofillManager(autofill::AutofillDriver* driver,
-                      autofill::AutofillClient* client,
-                      autofill::PersonalDataManager* data_manager)
-      : AutofillManager(driver, client, data_manager) {}
-
-  void SetDownloadManager(autofill::AutofillDownloadManager* manager) {
-    set_download_manager(manager);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAutofillManager);
 };
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
@@ -90,26 +75,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class VotesUploaderTest : public testing::Test {
  public:
-  VotesUploaderTest()
-      : mock_autofill_manager_(&test_autofill_driver_,
-                               &test_autofill_client_,
-                               &test_personal_data_manager_) {
-    std::unique_ptr<TestingPrefServiceSimple> prefs(
-        new TestingPrefServiceSimple());
-    prefs->registry()->RegisterBooleanPref(
-        autofill::prefs::kAutofillCreditCardEnabled, true);
-    prefs->registry()->RegisterBooleanPref(
-        autofill::prefs::kAutofillProfileEnabled, true);
-    test_autofill_client_.SetPrefs(std::move(prefs));
-    mock_autofill_download_manager_ = new MockAutofillDownloadManager(
-        &test_autofill_driver_, &mock_autofill_manager_);
-    // AutofillManager takes ownership of |mock_autofill_download_manager_|.
-    mock_autofill_manager_.SetDownloadManager(mock_autofill_download_manager_);
-
+  VotesUploaderTest() {
     EXPECT_CALL(client_, GetAutofillDownloadManager())
-        .WillRepeatedly(Return(mock_autofill_download_manager_));
+        .WillRepeatedly(Return(&mock_autofill_download_manager_));
 
-    ON_CALL(*mock_autofill_download_manager_,
+    ON_CALL(mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
         .WillByDefault(Return(true));
 
@@ -131,12 +101,8 @@ class VotesUploaderTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  autofill::TestAutofillDriver test_autofill_driver_;
-  autofill::TestAutofillClient test_autofill_client_;
-  autofill::TestPersonalDataManager test_personal_data_manager_;
-  MockAutofillDownloadManager* mock_autofill_download_manager_;
+  MockAutofillDownloadManager mock_autofill_download_manager_;
 
-  MockAutofillManager mock_autofill_manager_;
   MockPasswordManagerClient client_;
 
   PasswordForm form_to_upload_;
@@ -163,7 +129,7 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteUpdate) {
       SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
   EXPECT_CALL(
-      *mock_autofill_download_manager_,
+      mock_autofill_download_manager_,
       StartUploadRequest(
           AllOf(SignatureIsSameAs(form_to_upload_),
                 UploadedAutofillTypesAre(expected_types),
@@ -188,7 +154,7 @@ TEST_F(VotesUploaderTest, UploadPasswordVoteSave) {
   SubmissionIndicatorEvent expected_submission_event =
       SubmissionIndicatorEvent::HTML_FORM_SUBMISSION;
 
-  EXPECT_CALL(*mock_autofill_download_manager_,
+  EXPECT_CALL(mock_autofill_download_manager_,
               StartUploadRequest(
                   SubmissionEventIsSameAs(expected_submission_event), false,
                   expected_field_types, login_form_signature_, true,
