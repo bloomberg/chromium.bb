@@ -5079,7 +5079,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 #pragma mark - PreloadControllerDelegate methods
 
 - (BOOL)preloadShouldUseDesktopUserAgent {
-  return self.tabModel.currentTab.usesDesktopUserAgent;
+  return [self userAgentType] == web::UserAgentType::DESKTOP;
 }
 
 - (BOOL)preloadHasNativeControllerForURL:(const GURL&)url {

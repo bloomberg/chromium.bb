@@ -288,15 +288,6 @@ NSString* const kTabUrlKey = @"url";
 
 #pragma mark - Public API (relatinge to User agent)
 
-- (BOOL)usesDesktopUserAgent {
-  if (!self.navigationManager)
-    return NO;
-
-  web::NavigationItem* visibleItem = self.navigationManager->GetVisibleItem();
-  return visibleItem &&
-         visibleItem->GetUserAgentType() == web::UserAgentType::DESKTOP;
-}
-
 - (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
   web::NavigationManager* navigationManager = [self navigationManager];
   DCHECK(navigationManager);
