@@ -5,11 +5,9 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
@@ -103,11 +101,6 @@ class ImmersiveModeControllerAshTest : public TestWithBrowserView {
   }
 
   ImmersiveModeController* controller() { return controller_; }
-
-  ash::ShelfLayoutManager* shelf() {
-    return ash::Shell::GetPrimaryRootWindowController()
-        ->GetShelfLayoutManager();
-  }
 
  private:
   // Not used in non-Mash, but harmless.
@@ -233,37 +226,6 @@ TEST_F(ImmersiveModeControllerAshTest, ExitUponRestore) {
   EXPECT_FALSE(controller()->IsEnabled());
 }
 
-// Test the shelf visibility affected by entering and exiting tab fullscreen and
-// immersive fullscreen.
-TEST_F(ImmersiveModeControllerAshTest, TabAndBrowserFullscreen) {
-  AddTab(browser(), GURL("about:blank"));
-
-  // The shelf should start out as visible.
-  ASSERT_EQ(ash::SHELF_VISIBLE, shelf()->visibility_state());
-
-  // 1) Test that entering tab fullscreen from immersive fullscreen hides
-  // the shelf.
-  ToggleFullscreen();
-  ASSERT_TRUE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf()->visibility_state());
-
-  SetTabFullscreen(true);
-  ASSERT_TRUE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_HIDDEN, shelf()->visibility_state());
-
-  // 2) Test that exiting tab fullscreen autohides the shelf.
-  SetTabFullscreen(false);
-  ASSERT_TRUE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf()->visibility_state());
-
-  // 3) Test that exiting tab fullscreen and immersive fullscreen correctly
-  // updates the shelf visibility.
-  SetTabFullscreen(true);
-  ToggleFullscreen();
-  ASSERT_FALSE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_VISIBLE, shelf()->visibility_state());
-}
-
 // Ensure the circular tab-loading throbbers are not painted as layers in
 // immersive fullscreen, since the tab strip may animate in or out without
 // moving the layers.
@@ -284,51 +246,4 @@ TEST_F(ImmersiveModeControllerAshTest, LayeredSpinners) {
 
   ToggleFullscreen();
   EXPECT_TRUE(tabstrip->CanPaintThrobberToLayer());
-}
-
-// Regression test for crbug.com/796171.  Make sure that going from regular
-// fullscreen to locked fullscreen does not cause a crash.
-// Also test that the immersive mode is disabled afterwards (and the shelf is
-// hidden, and the fullscreen control popup doesn't show up).
-TEST_F(ImmersiveModeControllerAshTest,
-       RegularToLockedFullscreenDisablesImmersive) {
-  ToggleFullscreen();
-  // Set locked fullscreen state.
-  browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
-
-  // We're fullscreen, immersive is disabled in locked fullscreen, and while
-  // we're at it, also make sure that the shelf is hidden.
-  EXPECT_TRUE(browser_view()->GetWidget()->IsFullscreen());
-  EXPECT_FALSE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_HIDDEN, shelf()->visibility_state());
-
-  // Make sure the fullscreen control popup doesn't show up.
-  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
-                            base::TimeTicks(), 0, 0);
-  ASSERT_TRUE(browser_view()->fullscreen_control_host_for_test());
-  browser_view()->fullscreen_control_host_for_test()->OnMouseEvent(mouse_move);
-  EXPECT_FALSE(browser_view()->fullscreen_control_host_for_test()->IsVisible());
-}
-
-// Regression test for crbug.com/883104.  Make sure that immersive fullscreen is
-// disabled in locked fullscreen mode (also the shelf is hidden, and the
-// fullscreen control popup doesn't show up).
-TEST_F(ImmersiveModeControllerAshTest, LockedFullscreenDisablesImmersive) {
-  // Set locked fullscreen state.
-  browser()->window()->GetNativeWindow()->SetProperty(
-      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
-
-  // We're fullscreen, immersive is disabled in locked fullscreen, and while
-  // we're at it, also make sure that the shelf is hidden.
-  EXPECT_TRUE(browser_view()->GetWidget()->IsFullscreen());
-  EXPECT_FALSE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_HIDDEN, shelf()->visibility_state());
-
-  // Make sure the fullscreen control popup doesn't show up.
-  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
-                            base::TimeTicks(), 0, 0);
-  ASSERT_TRUE(browser_view()->fullscreen_control_host_for_test());
-  browser_view()->fullscreen_control_host_for_test()->OnMouseEvent(mouse_move);
-  EXPECT_FALSE(browser_view()->fullscreen_control_host_for_test()->IsVisible());
 }

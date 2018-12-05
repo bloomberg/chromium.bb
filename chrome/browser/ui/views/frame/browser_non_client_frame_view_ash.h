@@ -145,8 +145,7 @@ class BrowserNonClientFrameViewAsh
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            NonImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
-                           ImmersiveFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTest, ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleTabletModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,

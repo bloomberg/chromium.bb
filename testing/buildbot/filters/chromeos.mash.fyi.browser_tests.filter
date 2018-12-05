@@ -314,4 +314,8 @@
 # Use of Shell. https://crbug.com/899869
 -AutotestPrivateApiTest.AutotestPrivate
 
+# Pinning by setting the window property doesn't work in Mash.
+# https://crbug.com/912191
+-ImmersiveModeBrowserViewTest.LockedFullscreenDisablesImmersive/*
+
 # See comment at top of file regarding adding test exclusions.

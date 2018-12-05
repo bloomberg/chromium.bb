@@ -166,6 +166,7 @@
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "ui/base/ui_base_features.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
@@ -2741,7 +2742,9 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
       immersive_mode_controller_->ShouldStayImmersiveAfterExitingFullscreen();
   bool is_locked_fullscreen = false;
 #if defined(OS_CHROMEOS)
-  is_locked_fullscreen = ash::IsWindowTrustedPinned(GetNativeWindow());
+  is_locked_fullscreen = ash::IsWindowTrustedPinned(
+      features::IsUsingWindowService() ? GetNativeWindow()->GetRootWindow()
+                                       : GetNativeWindow());
 #endif
   // Never use immersive in locked fullscreen as it allows the user to exit the
   // locked mode.
