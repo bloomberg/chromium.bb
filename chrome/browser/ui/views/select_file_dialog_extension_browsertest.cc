@@ -327,12 +327,12 @@ class SelectFileDialogExtensionBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, CreateAndDestroy) {
-  // Browser window must be up for us to test dialog window parent.
-  gfx::NativeWindow native_window = browser()->window()->GetNativeWindow();
-  ASSERT_TRUE(native_window != NULL);
+  // The browser window must exist for us to test dialog's parent window.
+  gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
-  // Before we call SelectFile, dialog is not running/visible.
-  ASSERT_FALSE(dialog_->IsRunning(native_window));
+  // Before we call SelectFile, the dialog should not be running/visible.
+  ASSERT_FALSE(dialog_->IsRunning(owning_window));
 }
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
@@ -344,6 +344,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, CanResize) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -356,6 +357,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, CanResize) {
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        CanResize_TabletMode) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Setup tablet mode.
   test::SetAndWaitForTabletMode(true);
@@ -371,6 +373,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        SelectFileAndCancel) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -387,6 +390,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        SelectFileAndOpen) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Create an empty file to provide the file to open.
   const base::FilePath test_file =
@@ -417,6 +421,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        SelectFileAndSave) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Open the file dialog to save a file, providing a suggested file path.
   // Ensure the "Save" button is enabled by waiting for notification from
@@ -439,6 +444,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        SelectFileVirtualKeyboard_TabletMode) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Setup tablet mode.
   test::SetAndWaitForTabletMode(true);
@@ -473,6 +479,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        OpenSingletonTabAndCancel) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -496,6 +503,7 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, OpenTwoDialogs) {
   gfx::NativeWindow owning_window = browser()->window()->GetNativeWindow();
+  ASSERT_NE(nullptr, owning_window);
 
   // Open the file dialog on the default path.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
@@ -547,19 +555,18 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, FileInputElement) {
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
-#if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
                        OpenDialogWithoutOwningWindow) {
+  gfx::NativeWindow owning_window = nullptr;
+
   // Open the file dialog with no |owning_window|.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
-                                     base::FilePath(),
-                                     nullptr /* owning_window */, ""));
+                                     base::FilePath(), owning_window, ""));
 
   // Click the "Cancel" button.
-  CloseDialog(DIALOG_BTN_CANCEL, nullptr /* owning_window */);
+  CloseDialog(DIALOG_BTN_CANCEL, owning_window);
 
   // Listener should have been informed of the cancellation.
   ASSERT_TRUE(listener_->canceled());
   ASSERT_EQ(this, listener_->params());
 }
-#endif
