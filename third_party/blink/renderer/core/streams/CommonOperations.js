@@ -310,7 +310,7 @@
   function isATypeError(object) {
     // There doesn't appear to be a 100% reliable way to identify a TypeError
     // from JS.
-    return getPrototypeOf(object) === TypeError_prototype;
+    return object !== null && getPrototypeOf(object) === TypeError_prototype;
   }
 
   function isADOMException(object) {
@@ -329,6 +329,7 @@
     switch (typeof reason) {
       case 'string':
       case 'number':
+      case 'boolean':
         return {encoder: 'json', string: JSON_stringify(reason)};
 
       case 'object':
