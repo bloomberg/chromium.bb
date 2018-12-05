@@ -28,6 +28,11 @@ class CORE_EXPORT CSSPropertyName {
     DCHECK(!custom_property_name.IsNull());
   }
 
+  bool operator==(const CSSPropertyName&) const;
+  bool operator!=(const CSSPropertyName& other) const {
+    return !(*this == other);
+  }
+
   CSSPropertyID Id() const { return property_id_; }
 
   bool IsCustomProperty() const { return property_id_ == CSSPropertyVariable; }

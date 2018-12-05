@@ -6,6 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_STYLE_VALUE_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 
 namespace blink {
@@ -26,42 +28,29 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
   static CSSUnsupportedStyleValue* Create(const CSSValue& value) {
     return MakeGarbageCollected<CSSUnsupportedStyleValue>(value.CssText());
   }
-  static CSSUnsupportedStyleValue* Create(
-      CSSPropertyID property,
-      const AtomicString& custom_property_name,
-      const String& css_text) {
-    DCHECK_NE(property, CSSPropertyInvalid);
-    return MakeGarbageCollected<CSSUnsupportedStyleValue>(
-        property, custom_property_name, css_text);
+  static CSSUnsupportedStyleValue* Create(const CSSPropertyName& name,
+                                          const String& css_text) {
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(name, css_text);
   }
-  static CSSUnsupportedStyleValue* Create(
-      CSSPropertyID property,
-      const AtomicString& custom_property_name,
-      const CSSValue& value) {
-    DCHECK_NE(property, CSSPropertyInvalid);
-    return MakeGarbageCollected<CSSUnsupportedStyleValue>(
-        property, custom_property_name, value.CssText());
+  static CSSUnsupportedStyleValue* Create(const CSSPropertyName& name,
+                                          const CSSValue& value) {
+    return MakeGarbageCollected<CSSUnsupportedStyleValue>(name,
+                                                          value.CssText());
   }
 
-  CSSUnsupportedStyleValue(const String& css_text)
-      : property_(CSSPropertyInvalid) {
+  CSSUnsupportedStyleValue(const String& css_text) { SetCSSText(css_text); }
+  CSSUnsupportedStyleValue(const CSSPropertyName& name, const String& css_text)
+      : name_(name) {
     SetCSSText(css_text);
-  }
-  CSSUnsupportedStyleValue(CSSPropertyID property,
-                           const AtomicString& custom_property_name,
-                           const String& css_text)
-      : property_(property), custom_property_name_(custom_property_name) {
-    SetCSSText(css_text);
-    DCHECK_EQ(property == CSSPropertyVariable, !custom_property_name.IsNull());
   }
 
   StyleValueType GetType() const override {
     return StyleValueType::kUnknownType;
   }
-  CSSPropertyID GetProperty() const { return property_; }
-  const AtomicString& GetCustomPropertyName() const {
-    return custom_property_name_;
+  bool IsValidFor(const CSSPropertyName& name) const {
+    return name_ && *name_ == name;
   }
+
   const CSSValue* ToCSSValue() const override {
     NOTREACHED();
     return nullptr;
@@ -70,10 +59,7 @@ class CORE_EXPORT CSSUnsupportedStyleValue final : public CSSStyleValue {
   String toString() const final { return CSSText(); }
 
  private:
-  const CSSPropertyID property_;
-  // Name is set when property_ is CSSPropertyVariable, otherwise it's
-  // g_null_atom.
-  AtomicString custom_property_name_;
+  base::Optional<CSSPropertyName> name_;
   DISALLOW_COPY_AND_ASSIGN(CSSUnsupportedStyleValue);
 };
 

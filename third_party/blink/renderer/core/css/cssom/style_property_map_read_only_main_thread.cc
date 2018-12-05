@@ -187,8 +187,8 @@ CSSStyleValue* StylePropertyMapReadOnlyMainThread::GetShorthandProperty(
   const auto serialization = SerializationForShorthand(property);
   if (serialization.IsEmpty())
     return nullptr;
-  return CSSUnsupportedStyleValue::Create(property.PropertyID(), g_null_atom,
-                                          serialization);
+  return CSSUnsupportedStyleValue::Create(
+      CSSPropertyName(property.PropertyID()), serialization);
 }
 
 }  // namespace blink
