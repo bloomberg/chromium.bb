@@ -41,20 +41,20 @@ class DummyProofSource : public quic::ProofSource {
                 quic::QuicTransportVersion transport_version,
                 quic::QuicStringPiece chlo_hash,
                 std::unique_ptr<Callback> callback) override {
-    quic::QuicReferenceCountedPointer<ProofSource::Chain> chain;
     quic::QuicCryptoProof proof;
-    std::vector<quic::QuicString> certs;
-    certs.push_back("Dummy cert");
-    chain = new ProofSource::Chain(certs);
     proof.signature = "Dummy signature";
     proof.leaf_cert_scts = "Dummy timestamp";
-    callback->Run(true, chain, proof, nullptr /* details */);
+    callback->Run(true, GetCertChain(server_addr, hostname), proof,
+                  nullptr /* details */);
   }
 
   quic::QuicReferenceCountedPointer<Chain> GetCertChain(
       const quic::QuicSocketAddress& server_address,
       const quic::QuicString& hostname) override {
-    return quic::QuicReferenceCountedPointer<Chain>();
+    std::vector<quic::QuicString> certs;
+    certs.push_back("Dummy cert");
+    return quic::QuicReferenceCountedPointer<Chain>(
+        new ProofSource::Chain(certs));
   }
 
   void ComputeTlsSignature(
