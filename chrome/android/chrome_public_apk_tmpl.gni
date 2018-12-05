@@ -8,6 +8,7 @@ import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/locales.gni")
+import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/common/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("channel.gni")
@@ -234,14 +235,22 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         !invoker.use_trichrome_library) {
       # Always build 64-bit //android_webview:monochrome because Chrome runs
       # in 32-bit mode.
-      if (android_64bit_target_cpu) {
-        shared_libraries = [ "//android_webview:monochrome" ]
+      if (invoker.target_type == "android_app_bundle_module") {
+        _suffix = bundle_library_suffix
       } else {
-        shared_libraries = [ "//chrome/android:monochrome" ]
+        _suffix = ""
       }
-      if (android_64bit_target_cpu && build_apk_secondary_abi) {
-        secondary_abi_shared_libraries =
-            [ "//chrome/android:monochrome_secondary_abi_lib" ]
+      if (android_64bit_target_cpu) {
+        shared_libraries = [ "//android_webview:monochrome${_suffix}" ]
+        if (build_apk_secondary_abi) {
+          secondary_abi_shared_libraries =
+              [ "//chrome/android:monochrome${_suffix}_secondary_abi_lib" ]
+        }
+      } else {
+        shared_libraries = [ "//chrome/android:monochrome${_suffix}" ]
+      }
+      if (invoker.add_unwind_tables_in_apk) {
+        shared_library_for_unwind_asset = "monochrome${_suffix}"
       }
     } else {
       # Include a 32-bit placeholder library to ensure that Chrome runs in
@@ -252,9 +261,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       } else {
         native_lib_placeholders = [ "libdummy.so" ]
       }
-    }
-    if (invoker.add_unwind_tables_in_apk) {
-      shared_library_for_unwind_asset = "monochrome"
     }
 
     alternative_android_sdk_dep = webview_framework_dep
@@ -296,10 +302,15 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//android_webview/apk:webview_license_activity_java",
       "//android_webview/glue",
       "//chrome/android:chrome_public_non_pak_assets",
-      "//chrome/android:monochrome_apk_pak_assets",
       "//chrome/android/monochrome:monochrome_license_provider_java",
       "//components/crash/android:handler_java",
     ]
+    if (invoker.target_type == "android_app_bundle_module") {
+      deps +=
+          [ "//chrome/android:monochrome_${bundle_pak_asset_type}_pak_assets" ]
+    } else {
+      deps += [ "//chrome/android:monochrome_apk_pak_assets" ]
+    }
 
     if (_enable_multidex && invoker.target_type == "android_apk" &&
         !defined(invoker.negative_main_dex_globs)) {

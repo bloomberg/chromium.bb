@@ -426,15 +426,24 @@ if (android_64bit_target_cpu) {
     ]
   }
 
+  template("webview_library") {
+    chrome_common_shared_library(target_name) {
+      forward_variables_from(invoker, "*")
+      deps = [
+        ":webview_entry_point",
+        "//components/crash/android:crashpad_main",
+      ]
+      is_webview = true
+    }
+  }
+
   # The webview-only library needs the same library name as the browser
   # library, since the system webview factory will differentiate only by ABI.
-  chrome_common_shared_library("monochrome") {
-    deps = [
-      ":webview_entry_point",
-      "//components/crash/android:crashpad_main",
-    ]
+  webview_library("monochrome") {
+  }
 
-    is_webview = true
+  # Bundle-specific webview library. Currently identical, but may diverge.
+  webview_library("monochrome_base") {
   }
 }
 

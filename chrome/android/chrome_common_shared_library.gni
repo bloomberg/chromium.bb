@@ -8,6 +8,14 @@ import("//build/config/android/linker_version_script.gni")
 import("//build/config/compiler/compiler.gni")
 import("//device/vr/buildflags/buildflags.gni")
 
+# These variables control whether app bundles use the same native libraries as
+# the APK, or bundle-specific versions. The bundle-specific versions may
+# diverge when code is moved from the base library into dynamic feature
+# modules. The variables can be removed when the bundle-specific lib
+# configuration has stabilized.
+bundle_library_suffix = ""
+bundle_pak_asset_type = "apk"
+
 # This template contains all common configuration for native shared libraries,
 # including libchrome, monochrome, standalone webview (also called monochrome),
 # and libchromefortest (used by chrome_public_test_apk).
