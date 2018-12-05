@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var nacl = nacl || {};
+const nacl = {};
 
 (function() {
 /**
@@ -13,8 +13,8 @@ var nacl = nacl || {};
  */
 function renderTemplate(moduleListData) {
   // Process the template.
-  var input = new JsEvalContext(moduleListData);
-  var output = $('naclInfoTemplate');
+  const input = new JsEvalContext(moduleListData);
+  const output = $('naclInfoTemplate');
   jstProcess(input, output);
 }
 
