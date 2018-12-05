@@ -352,7 +352,7 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
       } else {
         rootType = VolumeManagerCommon.RootType.COMPUTER;
         if (util.isComputersRoot(entry)) {
-          isReadOnly = false;
+          isReadOnly = true;
           isRootEntry = true;
         } else {
           // Regular files/directories under a Computer entry.
