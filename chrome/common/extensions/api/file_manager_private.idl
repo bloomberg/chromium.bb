@@ -184,7 +184,10 @@ enum EntryPropertyName {
   canDelete,
   canRename,
   canAddChildren,
-  canShare
+  canShare,
+  isMachineRoot,
+  isExternalMedia,
+  isArbitrarySyncFolder
 };
 
 // Entry property visibility for setEntryTag();
