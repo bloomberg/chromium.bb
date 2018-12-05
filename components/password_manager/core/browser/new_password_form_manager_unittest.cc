@@ -301,6 +301,7 @@ class NewPasswordFormManagerTest : public testing::Test {
         observed_form_.fields[kPasswordFieldIndex].name;
 
     parsed_submitted_form_ = parsed_observed_form_;
+    parsed_submitted_form_.form_data = submitted_form_;
     parsed_submitted_form_.username_value =
         submitted_form_.fields[kUsernameFieldIndex].value;
     parsed_submitted_form_.password_value =
@@ -1245,8 +1246,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
       .WillOnce(SaveArg<0>(&saved_form));
 
-  PasswordForm form_with_generated_password;
-  form_with_generated_password.form_data = submitted_form_;
+  PasswordForm form_with_generated_password = parsed_submitted_form_;
   FormData& form_data = form_with_generated_password.form_data;
   form_manager_->PresaveGeneratedPassword(form_with_generated_password);
 
@@ -1259,7 +1259,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   Mock::VerifyAndClearExpectations(&form_saver);
 
   // Check that when the generated password is edited, then it's presaved.
-  form_data.fields[kPasswordFieldIndex].value += ASCIIToUTF16("1");
+  form_with_generated_password.password_value += ASCIIToUTF16("1");
   EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
       .WillOnce(SaveArg<0>(&saved_form));
 
@@ -1269,7 +1269,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   EXPECT_EQ(saved_form.username_value,
             form_data.fields[kUsernameFieldIndex].value);
   EXPECT_EQ(saved_form.password_value,
-            form_data.fields[kPasswordFieldIndex].value);
+            form_with_generated_password.password_value);
 
   Mock::VerifyAndClearExpectations(&form_saver);
 
@@ -1283,6 +1283,62 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordEmptyStore) {
   CheckPasswordGenerationUKM(test_ukm_recorder, expected_metrics);
 }
 
+TEST_F(NewPasswordFormManagerTest, GeneratedPasswordWhichIsNotInFormData) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  // Create a password form such that |form_data| do not contain the generated
+  // password.
+  PasswordForm form_with_generated_password;
+  form_with_generated_password.form_data = submitted_form_;
+  const base::string16 generated_password = ASCIIToUTF16("gen_pw");
+  // |password_value| should contain the generated password.
+  form_with_generated_password.password_value = generated_password;
+
+  // Check that the generated password is presaved.
+  PasswordForm saved_form;
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&saved_form));
+
+  form_manager_->PresaveGeneratedPassword(form_with_generated_password);
+  EXPECT_EQ(submitted_form_.fields[kUsernameFieldIndex].value,
+            saved_form.username_value);
+  EXPECT_EQ(generated_password, saved_form.password_value);
+  EXPECT_TRUE(form_manager_->HasGeneratedPassword());
+
+  // Check that the generated password is saved.
+  EXPECT_CALL(form_saver, Save(_, _)).WillOnce(SaveArg<0>(&saved_form));
+  EXPECT_CALL(client_, UpdateFormManagers());
+
+  EXPECT_TRUE(
+      form_manager_->ProvisionallySaveIfIsManaged(submitted_form_, &driver_));
+  form_manager_->Save();
+
+  EXPECT_EQ(submitted_form_.fields[kUsernameFieldIndex].value,
+            saved_form.username_value);
+  EXPECT_EQ(generated_password, saved_form.password_value);
+}
+
+TEST_F(NewPasswordFormManagerTest, PresaveGenerationWhenParsingFails) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  fetcher_->SetNonFederated({}, 0u);
+  MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
+
+  // Create a password form with empty |form_data|. On this form the form parser
+  // should fail.
+  PasswordForm form_with_empty_form_data;
+  const base::string16 generated_password = ASCIIToUTF16("gen_pw");
+  form_with_empty_form_data.password_value = generated_password;
+
+  // Check that nevertheless the generated password is presaved.
+  PasswordForm saved_form;
+  EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
+      .WillOnce(SaveArg<0>(&saved_form));
+  form_manager_->PresaveGeneratedPassword(form_with_empty_form_data);
+  EXPECT_EQ(generated_password, saved_form.password_value);
+}
+
 TEST_F(NewPasswordFormManagerTest, PasswordNoLongerGenerated) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
@@ -1294,8 +1350,7 @@ TEST_F(NewPasswordFormManagerTest, PasswordNoLongerGenerated) {
 
   EXPECT_CALL(form_saver, PresaveGeneratedPassword(_));
 
-  PasswordForm form;
-  form.form_data = submitted_form_;
+  PasswordForm form = parsed_submitted_form_;
   form_manager_->PresaveGeneratedPassword(form);
   Mock::VerifyAndClearExpectations(&form_saver);
 
@@ -1333,8 +1388,7 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordExistingCredential) {
   EXPECT_CALL(form_saver, PresaveGeneratedPassword(_))
       .WillOnce(SaveArg<0>(&saved_form));
 
-  PasswordForm form_with_generated_password;
-  form_with_generated_password.form_data = submitted_form_;
+  PasswordForm form_with_generated_password = parsed_submitted_form_;
   FormData& form_data = form_with_generated_password.form_data;
 
   // Check that the generated password is saved with the empty username when
@@ -1344,8 +1398,8 @@ TEST_F(NewPasswordFormManagerTest, PresaveGeneratedPasswordExistingCredential) {
 
   EXPECT_TRUE(form_manager_->HasGeneratedPassword());
   EXPECT_TRUE(saved_form.username_value.empty());
-  EXPECT_EQ(saved_form.password_value,
-            form_data.fields[kPasswordFieldIndex].value);
+  EXPECT_EQ(form_with_generated_password.password_value,
+            saved_form.password_value);
 }
 
 TEST_F(NewPasswordFormManagerTest, UserEventsForGeneration) {

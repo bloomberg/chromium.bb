@@ -254,7 +254,7 @@ void NewPasswordFormManager::Save() {
   }
   if (user_action_ == UserAction::kOverridePassword &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
-      !has_generated_password_) {
+      !HasGeneratedPassword()) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
         metrics_util::PASSWORD_OVERRIDDEN);
     pending_credentials_.type = PasswordForm::TYPE_MANUAL;
@@ -369,19 +369,15 @@ void NewPasswordFormManager::PresaveGeneratedPassword(
   std::unique_ptr<PasswordForm> parsed_form =
       ParseFormAndMakeLogging(form.form_data, FormDataParser::Mode::kSaving);
 
-  if (!parsed_form)
-    return;
-
-  // Clear the username value if there are already saved credentials with the
-  // same username in order to prevent overwriting.
-  if (base::ContainsKey(best_matches_, parsed_form->username_value))
-    parsed_form->username_value.clear();
-
-  form_saver_->PresaveGeneratedPassword(*parsed_form);
+  if (!parsed_form) {
+    // Use the old parser result if parsing fails.
+    // TODO(https://crbug.com/831123). Make it work without the old parser.
+    parsed_form.reset(new PasswordForm(form));
+  }
 
   // If a password had been generated already, a call to
   // PresaveGeneratedPassword() implies that this password was modified.
-  if (!has_generated_password_) {
+  if (!HasGeneratedPassword()) {
     votes_uploader_.set_generated_password_changed(false);
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::
@@ -391,14 +387,28 @@ void NewPasswordFormManager::PresaveGeneratedPassword(
     metrics_recorder_->SetGeneratedPasswordStatus(
         PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordEdited);
   }
-  has_generated_password_ = true;
   votes_uploader_.set_has_generated_password(true);
+
+  // TODO(https://crbug.com/831123). Propagate generated password independently
+  // of PasswordForm when PasswordForm goes away from the renderer process.
+  generated_password_ = form.password_value;
+
+  // Set |password_value| to the generated password in order to ensure that the
+  // generated password is saved.
+  parsed_form->password_value = generated_password_;
+
+  // Clear the username value if there are already saved credentials with
+  // the same username in order to prevent overwriting.
+  if (base::ContainsKey(best_matches_, parsed_form->username_value))
+    parsed_form->username_value.clear();
+
+  form_saver_->PresaveGeneratedPassword(*parsed_form);
 }
 
 void NewPasswordFormManager::PasswordNoLongerGenerated() {
-  DCHECK(has_generated_password_);
+  DCHECK(HasGeneratedPassword());
   form_saver_->RemovePresavedPassword();
-  has_generated_password_ = false;
+  generated_password_.clear();
   votes_uploader_.set_has_generated_password(false);
   votes_uploader_.set_generated_password_changed(false);
   metrics_recorder_->SetGeneratedPasswordStatus(
@@ -406,7 +416,7 @@ void NewPasswordFormManager::PasswordNoLongerGenerated() {
 }
 
 bool NewPasswordFormManager::HasGeneratedPassword() const {
-  return has_generated_password_;
+  return !generated_password_.empty();
 }
 
 void NewPasswordFormManager::SetGenerationPopupWasShown(
@@ -472,7 +482,7 @@ std::unique_ptr<NewPasswordFormManager> NewPasswordFormManager::Clone() {
   //       code.
   //   (3) They are not changed during ProcessMatches, triggered at some point
   //       by the cloned FormFetcher.
-  result->has_generated_password_ = has_generated_password_;
+  result->generated_password_ = generated_password_;
   result->user_action_ = user_action_;
   result->votes_uploader_ = votes_uploader_;
   if (parser_.predictions())
@@ -784,7 +794,7 @@ void NewPasswordFormManager::CreatePendingCredentials() {
     if (best_update_match) {
       // Chose |best_update_match| to be updated.
       pending_credentials_ = *best_update_match;
-    } else if (has_generated_password_) {
+    } else if (HasGeneratedPassword()) {
       // If a password was generated and we didn't find a match, we have to save
       // it in a separate entry since we have to store it but we don't know
       // where.
@@ -822,7 +832,9 @@ void NewPasswordFormManager::CreatePendingCredentials() {
   if (!IsValidAndroidFacetURI(pending_credentials_.signon_realm))
     pending_credentials_.action = submitted_form_.action;
 
-  pending_credentials_.password_value = password_to_save.first;
+  pending_credentials_.password_value = generated_password_.empty()
+                                            ? password_to_save.first
+                                            : generated_password_;
   pending_credentials_.preferred = true;
   pending_credentials_.form_has_autofilled_value =
       parsed_submitted_form_->form_has_autofilled_value;
@@ -846,7 +858,7 @@ void NewPasswordFormManager::CreatePendingCredentials() {
     pending_credentials_.signon_realm = parsed_submitted_form_->signon_realm;
   }
 
-  if (has_generated_password_)
+  if (HasGeneratedPassword())
     pending_credentials_.type = PasswordForm::TYPE_GENERATED;
 }
 
@@ -855,7 +867,7 @@ const PasswordForm* NewPasswordFormManager::FindBestMatchForUpdatePassword(
   // This function is called for forms that do not contain a username field.
   // This means that we cannot update credentials based on a matching username
   // and that we may need to show an update prompt.
-  if (best_matches_.size() == 1 && !has_generated_password_) {
+  if (best_matches_.size() == 1 && !HasGeneratedPassword()) {
     // In case the submitted form contained no username but a password, and if
     // the user has only one credential stored, return it as the one that should
     // be updated.
