@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -23,6 +24,9 @@ std::ostream& operator<<(std::ostream& ostream,
 class InlineBoxPositionTest : public EditingTestBase {};
 
 TEST_F(InlineBoxPositionTest, ComputeInlineBoxPositionBidiIsolate) {
+  // InlineBoxPosition is a legacy-only data structure.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
   // "|" is bidi-level 0, and "foo" and "bar" are bidi-level 2
   SetBodyContent(
       "|<span id=sample style='unicode-bidi: isolate;'>foo<br>bar</span>|");
@@ -38,6 +42,9 @@ TEST_F(InlineBoxPositionTest, ComputeInlineBoxPositionBidiIsolate) {
 
 // http://crbug.com/716093
 TEST_F(InlineBoxPositionTest, ComputeInlineBoxPositionMixedEditable) {
+  // InlineBoxPosition is a legacy-only data structure.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
   SetBodyContent(
       "<div contenteditable id=sample>abc<input contenteditable=false></div>");
   Element* const sample = GetDocument().getElementById("sample");
@@ -51,6 +58,9 @@ TEST_F(InlineBoxPositionTest, ComputeInlineBoxPositionMixedEditable) {
 
 // http://crbug.com/841363
 TEST_F(InlineBoxPositionTest, InFlatTreeAfterInputWithPlaceholderDoesntCrash) {
+  // InlineBoxPosition is a legacy-only data structure.
+  ScopedLayoutNGForTest scoped_layout_ng(false);
+
   SetBodyContent("foo <input placeholder=bla> bar");
   const Element* const input = GetDocument().QuerySelector("input");
   const LayoutBox* const input_layout = ToLayoutBox(input->GetLayoutObject());
