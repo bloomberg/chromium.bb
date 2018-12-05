@@ -115,21 +115,25 @@ void AppListButton::OnAppListDismissed() {
 void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
   // Handle gesture events that are on the app list circle.
   switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      AnimateInkDrop(views::InkDropState::HIDDEN, event);
-      ImageButton::OnGestureEvent(event);
-      return;
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
       if (UseVoiceInteractionStyle()) {
         assistant_overlay_->EndAnimation();
         assistant_animation_delay_timer_->Stop();
       }
-      if (IsTabletMode())
+      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
         AnimateInkDrop(views::InkDropState::ACTION_TRIGGERED, event);
+
       ImageButton::OnGestureEvent(event);
       return;
     case ui::ET_GESTURE_TAP_DOWN:
+      // If |!ShouldEnterPushedState|, ImageButton::OnGestureEvent will not set
+      // the event to be handled. This will cause the |ET_GESTURE_TAP| or
+      // |ET_GESTURE_TAP_CANCEL| not to be sent to |app_list_button|, therefore
+      // leaving the assistant overlay ripple stays visible.
+      if (!ShouldEnterPushedState(*event))
+        return;
+
       if (UseVoiceInteractionStyle()) {
         assistant_animation_delay_timer_->Start(
             FROM_HERE,
@@ -138,10 +142,14 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
             base::Bind(&AppListButton::StartVoiceInteractionAnimation,
                        base::Unretained(this)));
       }
-      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode()) {
+      if (!Shell::Get()->app_list_controller()->IsVisible() || IsTabletMode())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
-      }
+
       ImageButton::OnGestureEvent(event);
+      // If assistant overlay animation starts, we need to make sure the event
+      // is handled in order to end the animation in |ET_GESTURE_TAP| or
+      // |ET_GESTURE_TAP_CANCEL|.
+      DCHECK(event->stopped_propagation());
       return;
     case ui::ET_GESTURE_LONG_PRESS:
       if (UseVoiceInteractionStyle()) {
@@ -226,8 +234,6 @@ void AppListButton::NotifyClick(const ui::Event& event) {
 
 bool AppListButton::ShouldEnterPushedState(const ui::Event& event) {
   if (!shelf_view_->ShouldEventActivateButton(this, event))
-    return false;
-  if (Shell::Get()->app_list_controller()->IsVisible())
     return false;
   return views::ImageButton::ShouldEnterPushedState(event);
 }

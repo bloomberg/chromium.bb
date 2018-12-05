@@ -2589,7 +2589,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::DEACTIVATED));
+              ElementsAre(views::InkDropState::ACTION_PENDING,
+                          views::InkDropState::DEACTIVATED));
 
   // Dragging mouse out and back and releasing the button should not change the
   // ink drop state.
@@ -2625,7 +2626,8 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::ACTIVATED));
+              ElementsAre(views::InkDropState::ACTION_TRIGGERED,
+                          views::InkDropState::ACTIVATED));
 }
 
 // Tests that when the app list is visible, tapping on the app list button
@@ -2676,7 +2678,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::HIDDEN));
+              ElementsAre(views::InkDropState::ACTION_TRIGGERED));
 
   // Touch release should not change the ink drop state.
   generator->ReleaseTouch();
@@ -2687,7 +2689,7 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 }
 
 // Tests that when the app list is visible, tapping down on the app list button
-// and dragging the touch point transitions ink drop states correctly.
+// and dragging the touch point will not change ink drop states.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
   InitAppListButtonInkDrop();
 
@@ -2699,14 +2701,33 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
               ElementsAre(views::InkDropState::ACTIVATED));
 
   // Touch press on the button, dragging the touch point, and releasing, which
-  // dismisses the app list, should end up in the hidden state.
+  // will not dismisses the app list, should end up in the |ACTIVATED| state.
   ui::test::EventGenerator* generator = GetEventGenerator();
-  generator->MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
-  generator->PressMoveAndReleaseTouchBy(app_list_button_->width(), 0);
-  EXPECT_EQ(views::InkDropState::HIDDEN,
+  gfx::Point touch_location =
+      app_list_button_->GetBoundsInScreen().CenterPoint();
+  generator->MoveMouseTo(touch_location);
+
+  // Touch press on the button should not change the ink drop state.
+  generator->PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::HIDDEN));
+              IsEmpty());
+
+  // Dragging the touch point should not hide the pending ink drop.
+  touch_location.Offset(app_list_button_->width(), 0);
+  generator->MoveTouch(touch_location);
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
+
+  // Touch release should not change the ink drop state.
+  generator->ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            app_list_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 }
 
 // Tests that clicking on a shelf item that does not show a menu transitions ink
