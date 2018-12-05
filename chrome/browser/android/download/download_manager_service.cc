@@ -674,6 +674,29 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
   return manager;
 }
 
+void DownloadManagerService::CreateInterruptedDownloadForTest(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jurl,
+    const JavaParamRef<jstring>& jdownload_guid,
+    const JavaParamRef<jstring>& jtarget_path) {
+  if (!in_progress_manager_)
+    return;
+  std::vector<GURL> url_chain;
+  url_chain.emplace_back(ConvertJavaStringToUTF8(env, jurl));
+  base::FilePath target_path(ConvertJavaStringToUTF8(env, jtarget_path));
+  in_progress_manager_->AddInProgressDownloadForTest(
+      std::make_unique<download::DownloadItemImpl>(
+          in_progress_manager_.get(),
+          ConvertJavaStringToUTF8(env, jdownload_guid), 1,
+          target_path.AddExtension("crdownload"), target_path, url_chain,
+          GURL(), GURL(), GURL(), GURL(), "", "", base::Time(), base::Time(),
+          "", "", 0, -1, "", download::DownloadItem::INTERRUPTED,
+          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+          download::DOWNLOAD_INTERRUPT_REASON_CRASH, false, false, base::Time(),
+          false, std::vector<download::DownloadItem::ReceivedSlice>()));
+}
+
 // static
 jboolean JNI_DownloadManagerService_IsSupportedMimeType(
     JNIEnv* env,

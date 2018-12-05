@@ -148,6 +148,15 @@ class DownloadManagerService
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Called by the java code to create and insert an interrupted download to
+  // |in_progress_manager_| for testing purpose.
+  void CreateInterruptedDownloadForTest(
+      JNIEnv* env,
+      jobject obj,
+      const JavaParamRef<jstring>& jurl,
+      const JavaParamRef<jstring>& jdownload_guid,
+      const JavaParamRef<jstring>& jtarget_path);
+
   // Retrives the in-progress manager and give up the ownership.
   download::InProgressDownloadManager* RetriveInProgressDownloadManager(
       content::BrowserContext* context);

@@ -438,4 +438,9 @@ void InProgressDownloadManager::OnAllInprogressDownloadsLoaded() {
   download_entries_.clear();
 }
 
+void InProgressDownloadManager::AddInProgressDownloadForTest(
+    std::unique_ptr<download::DownloadItemImpl> download) {
+  in_progress_downloads_.push_back(std::move(download));
+}
+
 }  // namespace download

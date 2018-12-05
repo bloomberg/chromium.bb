@@ -1861,6 +1861,17 @@ public class DownloadManagerService
     }
 
     /**
+     * Creates an interrupted download in native code to be used by instrumentation tests.
+     * @param url URL of the download.
+     * @param guid Download GUID.
+     * @param targetPath Target file path.
+     */
+    void createInterruptedDownloadForTest(String url, String guid, String targetPath) {
+        nativeCreateInterruptedDownloadForTest(
+                getNativeDownloadManagerService(), url, guid, targetPath);
+    }
+
+    /**
      * Updates the last access time of a download.
      * @param downloadGuid Download GUID.
      * @param isOffTheRecord Whether the download is off the record.
@@ -1910,4 +1921,6 @@ public class DownloadManagerService
     private native void nativeUpdateLastAccessTime(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativeOnFullBrowserStarted(long nativeDownloadManagerService);
+    private native void nativeCreateInterruptedDownloadForTest(
+            long nativeDownloadManagerService, String url, String guid, String targetPath);
 }

@@ -160,6 +160,10 @@ class COMPONENTS_DOWNLOAD_EXPORT InProgressDownloadManager
     is_origin_secure_cb_ = is_origin_secure_cb;
   }
 
+  // Called to insert an in-progress download for testing purpose.
+  void AddInProgressDownloadForTest(
+      std::unique_ptr<download::DownloadItemImpl> download);
+
  private:
   void Initialize(const base::FilePath& in_progress_db_dir);
 
