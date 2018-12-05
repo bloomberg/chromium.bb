@@ -610,6 +610,14 @@ void SSLErrorHandler::HandleSSLError(
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  // This can happen if GetBrowserContext no longer exist by the time this gets
+  // called (e.g. the SSL error was in a webview that has since been destroyed),
+  // if that's the case we don't need to handle the error (and will crash if we
+  // attempt to).
+  if (!profile)
+    return;
+
   bool hard_override_disabled =
       !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
   int options_mask = CalculateOptionsMask(cert_error, hard_override_disabled,
