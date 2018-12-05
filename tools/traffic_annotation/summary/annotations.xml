@@ -141,7 +141,6 @@ Refer to README.md for content description and update process.
  <item id="interest_feed_send" hash_code="76717919" type="0" content_hash_code="34678180" os_list="linux,windows" file_path="components/feed/core/feed_networking_host.cc"/>
  <item id="intranet_redirect_detector" hash_code="21785164" type="0" content_hash_code="62025595" os_list="linux,windows" file_path="chrome/browser/intranet_redirect_detector.cc"/>
  <item id="invalidation_service" hash_code="72354423" type="0" content_hash_code="78425687" os_list="linux,windows" file_path="components/invalidation/impl/gcm_network_channel.cc"/>
- <item id="journey_journey_info_json_request" hash_code="62660788" type="0" content_hash_code="77009071" os_list="linux,windows" file_path="components/journey/journey_info_json_request.cc"/>
  <item id="lib_address_input" hash_code="50816767" type="0" content_hash_code="57977576" os_list="linux,windows" file_path="third_party/libaddressinput/chromium/chrome_metadata_source.cc"/>
  <item id="logo_tracker" hash_code="36859107" type="0" content_hash_code="67588075" os_list="linux,windows" file_path="components/search_provider_logos/logo_tracker.cc"/>
  <item id="md_downloads_dom_handler" hash_code="65603364" type="0" content_hash_code="134779147" os_list="linux,windows" file_path="chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.cc"/>
