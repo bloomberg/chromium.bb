@@ -15,7 +15,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -367,13 +366,13 @@ void BluetoothSocketBlueZ::NewConnection(
         base::BindOnce(&BluetoothSocketBlueZ::DoNewConnection, this,
                        device_path_, std::move(fd), options, callback));
   } else {
-    linked_ptr<ConnectionRequest> request(new ConnectionRequest());
+    auto request = std::make_unique<ConnectionRequest>();
     request->device_path = device_path;
     request->fd = std::move(fd);
     request->options = options;
     request->callback = callback;
 
-    connection_request_queue_.push(request);
+    connection_request_queue_.push(std::move(request));
     VLOG(1) << uuid_.canonical_value() << ": Connection is now pending.";
     if (accept_request_) {
       AcceptConnectionRequest();
@@ -402,7 +401,7 @@ void BluetoothSocketBlueZ::Cancel() {
 
   // If the front request is being accepted mark it as cancelled, otherwise
   // just pop it from the queue.
-  linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
+  ConnectionRequest* request = connection_request_queue_.front().get();
   if (!request->accepting) {
     request->cancelled = true;
   } else {
@@ -419,7 +418,7 @@ void BluetoothSocketBlueZ::AcceptConnectionRequest() {
   VLOG(1) << profile_->object_path().value()
           << ": Accepting pending connection.";
 
-  linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
+  ConnectionRequest* request = connection_request_queue_.front().get();
   request->accepting = true;
 
   BluetoothDeviceBlueZ* device =
@@ -488,7 +487,8 @@ void BluetoothSocketBlueZ::OnNewConnection(
   DCHECK(accept_request_.get());
   DCHECK(connection_request_queue_.size() >= 1);
 
-  linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
+  std::unique_ptr<ConnectionRequest> request =
+      std::move(connection_request_queue_.front());
   if (status == SUCCESS && !request->cancelled) {
     BluetoothDeviceBlueZ* device =
         static_cast<BluetoothAdapterBlueZ*>(adapter_.get())
@@ -516,8 +516,7 @@ void BluetoothSocketBlueZ::DoCloseListening() {
   }
 
   while (connection_request_queue_.size() > 0) {
-    linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
-    request->callback.Run(REJECTED);
+    connection_request_queue_.front()->callback.Run(REJECTED);
     connection_request_queue_.pop();
   }
 }
