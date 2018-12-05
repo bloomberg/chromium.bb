@@ -11,10 +11,13 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_position.h"
@@ -429,6 +432,354 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
       "++++++++<ListMarker: \xE2\x80\xA2 >\n"
       "++++++++<StaticText: Item 2.|>\n",
       GetSelectionText(ax_selection));
+}
+
+//
+// Tests that involve selection inside, outside, and spanning text controls.
+//
+
+TEST_F(AccessibilitySelectionTest, ForwardSelectionInTextField) {
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" value="Inside text field.">
+      )HTML");
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  input->focus(FocusOptions::Create());
+  ASSERT_TRUE(input->IsFocusedElementInDocument());
+
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  // Forward selection.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreateFirstPositionInObject(*ax_input))
+          .SetExtent(AXPosition::CreateLastPositionInObject(*ax_input))
+          .Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  EXPECT_EQ(0u, ToTextControl(*input).selectionStart());
+  EXPECT_EQ(18u, ToTextControl(*input).selectionEnd());
+  EXPECT_EQ("forward", ToTextControl(*input).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, BackwardSelectionInTextField) {
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" value="Inside text field.">
+      )HTML");
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  input->focus(FocusOptions::Create());
+  ASSERT_TRUE(input->IsFocusedElementInDocument());
+
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  // Backward selection.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, 10))
+          .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, 3))
+          .Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  EXPECT_EQ(3u, ToTextControl(*input).selectionStart());
+  EXPECT_EQ(10u, ToTextControl(*input).selectionEnd());
+  EXPECT_EQ("backward", ToTextControl(*input).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, SelectingTheWholeOfTheTextField) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="before">Before text field.</p>
+      <input id="input" value="Inside text field.">
+      <p id="after">After text field.</p>
+      )HTML");
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  ASSERT_TRUE(ToTextControl(*input).SetSelectionRange(
+      3u, 10u, kSelectionHasBackwardDirection));
+
+  const AXObject* ax_before = GetAXObjectByElementId("before");
+  ASSERT_NE(nullptr, ax_before);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  // Light tree only selection. Selects the whole of the text field.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreatePositionBeforeObject(*ax_before))
+          .SetExtent(AXPosition::CreatePositionAfterObject(*ax_input))
+          .Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  const SelectionInDOMTree dom_selection = Selection().GetSelectionInDOMTree();
+  EXPECT_EQ(GetDocument().body(), dom_selection.Base().AnchorNode());
+  EXPECT_EQ(1, dom_selection.Base().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("before"),
+            dom_selection.Base().ComputeNodeAfterPosition());
+  EXPECT_EQ(GetDocument().body(), dom_selection.Extent().AnchorNode());
+  EXPECT_EQ(5, dom_selection.Extent().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("after"),
+            dom_selection.Extent().ComputeNodeAfterPosition());
+
+  // The selection in the text field should remain unchanged because the field
+  // is not focused.
+  EXPECT_EQ(3u, ToTextControl(*input).selectionStart());
+  EXPECT_EQ(10u, ToTextControl(*input).selectionEnd());
+  EXPECT_EQ("backward", ToTextControl(*input).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, InvalidSelectionInTextField) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="before">Before text field.</p>
+      <input id="input" value="Inside text field.">
+      <p id="after">After text field.</p>
+      )HTML");
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  ASSERT_TRUE(ToTextControl(*input).SetSelectionRange(
+      3u, 10u, kSelectionHasBackwardDirection));
+
+  const AXObject* ax_before = GetAXObjectByElementId("before");
+  ASSERT_NE(nullptr, ax_before);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+  const AXObject* ax_after = GetAXObjectByElementId("after");
+  ASSERT_NE(nullptr, ax_after);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
+
+  {
+    // Light tree only selection. Selects the whole of the text field.
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionBeforeObject(*ax_before))
+            .SetExtent(AXPosition::CreatePositionAfterObject(*ax_input))
+            .Build();
+    ax_selection.Select();
+  }
+
+  // Invalid selection because it crosses a user agent shadow tree boundary.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, 0))
+          .SetExtent(AXPosition::CreatePositionBeforeObject(*ax_after))
+          .Build();
+
+  EXPECT_FALSE(ax_selection.IsValid());
+
+  // The selection in the light DOM should remain unchanged.
+  const SelectionInDOMTree dom_selection = Selection().GetSelectionInDOMTree();
+  EXPECT_EQ(GetDocument().body(), dom_selection.Base().AnchorNode());
+  EXPECT_EQ(1, dom_selection.Base().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("before"),
+            dom_selection.Base().ComputeNodeAfterPosition());
+  EXPECT_EQ(GetDocument().body(), dom_selection.Extent().AnchorNode());
+  EXPECT_EQ(5, dom_selection.Extent().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("after"),
+            dom_selection.Extent().ComputeNodeAfterPosition());
+
+  // The selection in the text field should remain unchanged because the field
+  // is not focused.
+  EXPECT_EQ(3u, ToTextControl(*input).selectionStart());
+  EXPECT_EQ(10u, ToTextControl(*input).selectionEnd());
+  EXPECT_EQ("backward", ToTextControl(*input).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, ForwardSelectionInTextarea) {
+  SetBodyInnerHTML(R"HTML(
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      )HTML");
+
+  Element* const textarea = GetDocument().QuerySelector("textarea");
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+  textarea->focus(FocusOptions::Create());
+  ASSERT_TRUE(textarea->IsFocusedElementInDocument());
+
+  const AXObject* ax_textarea = GetAXObjectByElementId("textarea");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+
+  // Forward selection.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreateFirstPositionInObject(*ax_textarea))
+          .SetExtent(AXPosition::CreateLastPositionInObject(*ax_textarea))
+          .Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  EXPECT_EQ(0u, ToTextControl(*textarea).selectionStart());
+  EXPECT_EQ(53u, ToTextControl(*textarea).selectionEnd());
+  EXPECT_EQ("forward", ToTextControl(*textarea).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, BackwardSelectionInTextarea) {
+  SetBodyInnerHTML(R"HTML(
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      )HTML");
+
+  Element* const textarea = GetDocument().QuerySelector("textarea");
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+  textarea->focus(FocusOptions::Create());
+  ASSERT_TRUE(textarea->IsFocusedElementInDocument());
+
+  const AXObject* ax_textarea = GetAXObjectByElementId("textarea");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+
+  // Backward selection.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_textarea, 10))
+          .SetExtent(AXPosition::CreatePositionInTextObject(*ax_textarea, 3))
+          .Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  EXPECT_EQ(3u, ToTextControl(*textarea).selectionStart());
+  EXPECT_EQ(10u, ToTextControl(*textarea).selectionEnd());
+  EXPECT_EQ("backward", ToTextControl(*textarea).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, SelectTheWholeOfTheTextarea) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="before">Before textarea field.</p>
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      <p id="after">After textarea field.</p>
+      )HTML");
+
+  Element* const textarea = GetDocument().QuerySelector("textarea");
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+  ASSERT_TRUE(ToTextControl(*textarea).SetSelectionRange(
+      3u, 10u, kSelectionHasBackwardDirection));
+
+  const AXObject* ax_before = GetAXObjectByElementId("before");
+  ASSERT_NE(nullptr, ax_before);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
+  const AXObject* ax_textarea = GetAXObjectByElementId("textarea");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+
+  // Light tree only selection. Selects the whole of the textarea field.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreatePositionBeforeObject(*ax_before))
+          .SetExtent(AXPosition::CreatePositionAfterObject(*ax_textarea))
+          .Build();
+
+  EXPECT_TRUE(ax_selection.Select());
+
+  const SelectionInDOMTree dom_selection = Selection().GetSelectionInDOMTree();
+  EXPECT_EQ(GetDocument().body(), dom_selection.Base().AnchorNode());
+  EXPECT_EQ(1, dom_selection.Base().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("before"),
+            dom_selection.Base().ComputeNodeAfterPosition());
+  EXPECT_EQ(GetDocument().body(), dom_selection.Extent().AnchorNode());
+  EXPECT_EQ(5, dom_selection.Extent().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("after"),
+            dom_selection.Extent().ComputeNodeAfterPosition());
+
+  // The selection in the textarea field should remain unchanged because the
+  // field is not focused.
+  EXPECT_EQ(3u, ToTextControl(*textarea).selectionStart());
+  EXPECT_EQ(10u, ToTextControl(*textarea).selectionEnd());
+  EXPECT_EQ("backward", ToTextControl(*textarea).selectionDirection());
+}
+
+TEST_F(AccessibilitySelectionTest, InvalidSelectionInTextarea) {
+  SetBodyInnerHTML(R"HTML(
+      <p id="before">Before textarea field.</p>
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      <p id="after">After textarea field.</p>
+      )HTML");
+
+  Element* const textarea = GetDocument().QuerySelector("textarea");
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+  ASSERT_TRUE(ToTextControl(*textarea).SetSelectionRange(
+      3u, 10u, kSelectionHasBackwardDirection));
+
+  const AXObject* ax_before = GetAXObjectByElementId("before");
+  ASSERT_NE(nullptr, ax_before);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_before->RoleValue());
+  const AXObject* ax_textarea = GetAXObjectByElementId("textarea");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+  const AXObject* ax_after = GetAXObjectByElementId("after");
+  ASSERT_NE(nullptr, ax_after);
+  ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
+
+  {
+    // Light tree only selection. Selects the whole of the textarea field.
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionBeforeObject(*ax_before))
+            .SetExtent(AXPosition::CreatePositionAfterObject(*ax_textarea))
+            .Build();
+    ax_selection.Select();
+  }
+
+  // Invalid selection because it crosses a user agent shadow tree boundary.
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_textarea, 0))
+          .SetExtent(AXPosition::CreatePositionBeforeObject(*ax_after))
+          .Build();
+
+  EXPECT_FALSE(ax_selection.IsValid());
+
+  // The selection in the light DOM should remain unchanged.
+  const SelectionInDOMTree dom_selection = Selection().GetSelectionInDOMTree();
+  EXPECT_EQ(GetDocument().body(), dom_selection.Base().AnchorNode());
+  EXPECT_EQ(1, dom_selection.Base().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("before"),
+            dom_selection.Base().ComputeNodeAfterPosition());
+  EXPECT_EQ(GetDocument().body(), dom_selection.Extent().AnchorNode());
+  EXPECT_EQ(5, dom_selection.Extent().OffsetInContainerNode());
+  EXPECT_EQ(GetElementById("after"),
+            dom_selection.Extent().ComputeNodeAfterPosition());
+
+  // The selection in the textarea field should remain unchanged because the
+  // field is not focused.
+  EXPECT_EQ(3u, ToTextControl(*textarea).selectionStart());
+  EXPECT_EQ(10u, ToTextControl(*textarea).selectionEnd());
+  EXPECT_EQ("backward", ToTextControl(*textarea).selectionDirection());
 }
 
 //

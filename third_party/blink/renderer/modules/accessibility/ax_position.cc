@@ -28,8 +28,10 @@ const AXPosition AXPosition::CreatePositionBeforeObject(
   if (child.IsDetached())
     return {};
 
-  // If |child| is a text object, make behavior the same as
-  // |CreateFirstPositionInObject| so that equality would hold.
+  // If |child| is a text object, but not a text control, make behavior the same
+  // as |CreateFirstPositionInObject| so that equality would hold. Text controls
+  // behave differently because you should be able to set a position before the
+  // text control in case you want to e.g. select it as a whole.
   if (child.IsTextObject())
     return CreateFirstPositionInObject(child, adjustment_behavior);
 
@@ -48,8 +50,10 @@ const AXPosition AXPosition::CreatePositionAfterObject(
   if (child.IsDetached())
     return {};
 
-  // If |child| is a text object, make behavior the same as
-  // |CreateLastPositionInObject| so that equality would hold.
+  // If |child| is a text object, but not a text control, make behavior the same
+  // as |CreateLastPositionInObject| so that equality would hold. Text controls
+  // behave differently because you should be able to set a position after the
+  // text control in case you want to e.g. select it as a whole.
   if (child.IsTextObject())
     return CreateLastPositionInObject(child, adjustment_behavior);
 
@@ -68,7 +72,7 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
   if (container.IsDetached())
     return {};
 
-  if (container.IsTextObject()) {
+  if (container.IsTextObject() || container.IsNativeTextControl()) {
     AXPosition position(container);
     position.text_offset_or_child_index_ = 0;
     DCHECK(position.IsValid());
@@ -92,7 +96,7 @@ const AXPosition AXPosition::CreateLastPositionInObject(
   if (container.IsDetached())
     return {};
 
-  if (container.IsTextObject()) {
+  if (container.IsTextObject() || container.IsNativeTextControl()) {
     AXPosition position(container);
     position.text_offset_or_child_index_ = position.MaxTextOffset();
     DCHECK(position.IsValid());
@@ -115,8 +119,10 @@ const AXPosition AXPosition::CreatePositionInTextObject(
     const int offset,
     const TextAffinity affinity,
     const AXPositionAdjustmentBehavior adjustment_behavior) {
-  if (container.IsDetached() || !container.IsTextObject())
+  if (container.IsDetached() ||
+      !(container.IsTextObject() || container.IsTextControl())) {
     return {};
+  }
 
   AXPosition position(container);
   position.text_offset_or_child_index_ = offset;
@@ -330,6 +336,9 @@ int AXPosition::MaxTextOffset() const {
     return 0;
   }
 
+  if (container_object_->IsNativeTextControl())
+    return container_object_->StringValue().length();
+
   if (container_object_->IsAXInlineTextBox() || !container_object_->GetNode()) {
     // 1. The |Node| associated with an inline text box contains all the text in
     // the static text object parent, whilst the inline text box might contain
@@ -391,7 +400,8 @@ bool AXPosition::IsTextPosition() const {
   // We don't call |IsValid| from here because |IsValid| uses this method.
   if (!container_object_)
     return false;
-  return container_object_->IsTextObject();
+  return container_object_->IsTextObject() ||
+         container_object_->IsNativeTextControl();
 }
 
 const AXPosition AXPosition::CreateNextPosition() const {
@@ -441,7 +451,7 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
     if (container_object_->ChildCount()) {
       const AXObject* last_child = container_object_->LastChild();
       // Dont skip over any intervening text.
-      if (last_child->IsTextObject()) {
+      if (last_child->IsTextObject() || last_child->IsNativeTextControl()) {
         return CreatePositionAfterObject(
             *last_child, AXPositionAdjustmentBehavior::kMoveLeft);
       }
@@ -461,7 +471,8 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
   }
 
   // Dont skip over any intervening text.
-  if (object_before_position->IsTextObject()) {
+  if (object_before_position->IsTextObject() ||
+      object_before_position->IsNativeTextControl()) {
     return CreatePositionAfterObject(*object_before_position,
                                      AXPositionAdjustmentBehavior::kMoveLeft);
   }

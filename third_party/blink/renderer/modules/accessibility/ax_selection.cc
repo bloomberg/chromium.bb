@@ -20,6 +20,14 @@ namespace blink {
 
 namespace {
 
+// TODO(nektar): Add Web tests for this event.
+void ScheduleSelectEvent(TextControlElement& text_control) {
+  Event* event = Event::CreateBubble(event_type_names::kSelect);
+  event->SetTarget(&text_control);
+  text_control.GetDocument().EnqueueAnimationFrameEvent(event);
+}
+
+// TODO(nektar): Add Web tests for this event.
 DispatchEventResult DispatchSelectStart(Node* node) {
   if (!node)
     return DispatchEventResult::kNotCanceled;
@@ -188,6 +196,33 @@ bool AXSelection::IsValid() const {
     return false;
   }
 
+  //
+  // The following code checks if a text position in a text control is valid.
+  // Since the contents of a text control are implemented using user agent
+  // shadow DOM, we want to prevent users from selecting across the shadow DOM
+  // boundary.
+  //
+  // TODO(nektar): Generalize this logic to adjust user selection if it crosses
+  // disallowed shadow DOM boundaries such as user agent shadow DOM, editing
+  // boundaries, replaced elements, CSS user-select, etc.
+  //
+
+  if (base_.IsTextPosition() &&
+      base_.ContainerObject()->IsNativeTextControl() &&
+      !(base_.ContainerObject() == extent_.ContainerObject() &&
+        extent_.IsTextPosition() &&
+        extent_.ContainerObject()->IsNativeTextControl())) {
+    return false;
+  }
+
+  if (extent_.IsTextPosition() &&
+      extent_.ContainerObject()->IsNativeTextControl() &&
+      !(base_.ContainerObject() == extent_.ContainerObject() &&
+        base_.IsTextPosition() &&
+        base_.ContainerObject()->IsNativeTextControl())) {
+    return false;
+  }
+
   DCHECK(!base_.ContainerObject()->GetDocument()->NeedsLayoutTreeUpdate());
 #if DCHECK_IS_ON()
   DCHECK_EQ(base_.ContainerObject()->GetDocument()->DomTreeVersion(),
@@ -242,6 +277,22 @@ bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
   if (!IsValid()) {
     NOTREACHED() << "Trying to select an invalid accessibility selection.";
     return false;
+  }
+
+  base::Optional<AXSelection::TextControlSelection> text_control_selection =
+      AsTextControlSelection();
+  if (text_control_selection.has_value()) {
+    DCHECK_LE(text_control_selection->start, text_control_selection->end);
+    TextControlElement& text_control =
+        ToTextControl(*base_.ContainerObject()->GetNode());
+    if (!text_control.SetSelectionRange(text_control_selection->start,
+                                        text_control_selection->end,
+                                        text_control_selection->direction)) {
+      return false;
+    }
+
+    ScheduleSelectEvent(text_control);
+    return true;
   }
 
   const SelectionInDOMTree selection = AsSelection(selection_behavior);
@@ -311,6 +362,24 @@ String AXSelection::ToString() const {
   if (!IsValid())
     return "Invalid AXSelection";
   return "AXSelection from " + Base().ToString() + " to " + Extent().ToString();
+}
+
+base::Optional<AXSelection::TextControlSelection>
+AXSelection::AsTextControlSelection() const {
+  if (!IsValid() || !base_.IsTextPosition() || !extent_.IsTextPosition() ||
+      base_.ContainerObject() != extent_.ContainerObject() ||
+      !base_.ContainerObject()->IsNativeTextControl() ||
+      !IsTextControl(base_.ContainerObject()->GetNode())) {
+    return {};
+  }
+
+  if (base_ <= extent_) {
+    return TextControlSelection(base_.TextOffset(), extent_.TextOffset(),
+                                kSelectionHasForwardDirection);
+  } else {
+    return TextControlSelection(extent_.TextOffset(), base_.TextOffset(),
+                                kSelectionHasBackwardDirection);
+  }
 }
 
 bool operator==(const AXSelection& a, const AXSelection& b) {
