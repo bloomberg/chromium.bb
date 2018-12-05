@@ -96,8 +96,7 @@ bool PrepareMapFile(ScopedFD fd,
 
   *mapped_file = HANDLE_EINTR(dup(fd.get()));
   if (*mapped_file == -1) {
-    NOTREACHED() << "Call to dup failed, errno=" << errno;
-
+    DPCHECK(false) << "dup failed";
 #if defined(OS_CHROMEOS)
     if (errno == EMFILE) {
       // We're out of file descriptors and are probably about to crash somewhere

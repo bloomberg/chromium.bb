@@ -62,14 +62,12 @@ bool ReadProcFile(const FilePath& file, struct psinfo* info) {
   ThreadRestrictions::ScopedAllowIO allow_io;
   int fileId;
   if ((fileId = open(file.value().c_str(), O_RDONLY)) < 0) {
-    DLOG(WARNING) << "Failed to open " << file.MaybeAsASCII()
-                  << " errno = " << errno;
+    DPLOG(WARNING) << "Failed to open " << file.MaybeAsASCII();
     return false;
   }
 
   if (read(fileId, info, sizeof(*info)) < 0) {
-    DLOG(WARNING) << "Failed to read " << file.MaybeAsASCII()
-                  << " errno = " << errno;
+    DPLOG(WARNING) << "Failed to read " << file.MaybeAsASCII();
     return false;
   }
 

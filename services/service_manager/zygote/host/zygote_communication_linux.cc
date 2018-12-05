@@ -282,7 +282,7 @@ base::TerminationStatus ZygoteCommunication::GetTerminationStatus(
   int status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
 
   if (len == -1) {
-    LOG(WARNING) << "Error reading message from zygote: " << errno;
+    PLOG(WARNING) << "Error reading message from zygote";
   } else if (len == 0) {
     LOG(WARNING) << "Socket closed prematurely.";
   } else {

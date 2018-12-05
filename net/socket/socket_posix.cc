@@ -90,7 +90,7 @@ int SocketPosix::Open(int address_family) {
       SOCK_STREAM,
       address_family == AF_UNIX ? 0 : IPPROTO_TCP);
   if (socket_fd_ < 0) {
-    PLOG(ERROR) << "CreatePlatformSocket() returned an error, errno=" << errno;
+    PLOG(ERROR) << "CreatePlatformSocket() failed";
     return MapSystemError(errno);
   }
 
@@ -141,7 +141,7 @@ int SocketPosix::Bind(const SockaddrStorage& address) {
 
   int rv = bind(socket_fd_, address.addr, address.addr_len);
   if (rv < 0) {
-    PLOG(ERROR) << "bind() returned an error, errno=" << errno;
+    PLOG(ERROR) << "bind() failed";
     return MapSystemError(errno);
   }
 
@@ -155,7 +155,7 @@ int SocketPosix::Listen(int backlog) {
 
   int rv = listen(socket_fd_, backlog);
   if (rv < 0) {
-    PLOG(ERROR) << "listen() returned an error, errno=" << errno;
+    PLOG(ERROR) << "listen() failed";
     return MapSystemError(errno);
   }
 
@@ -177,7 +177,7 @@ int SocketPosix::Accept(std::unique_ptr<SocketPosix>* socket,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &accept_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on accept, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on accept";
     return MapSystemError(errno);
   }
 
@@ -202,7 +202,7 @@ int SocketPosix::Connect(const SockaddrStorage& address,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on connect, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on connect";
     return MapSystemError(errno);
   }
 
@@ -340,7 +340,7 @@ int SocketPosix::ReadIfReady(IOBuffer* buf,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &read_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on read, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on read";
     return MapSystemError(errno);
   }
 
@@ -390,7 +390,7 @@ int SocketPosix::WaitForWrite(IOBuffer* buf,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
-    PLOG(ERROR) << "WatchFileDescriptor failed on write, errno " << errno;
+    PLOG(ERROR) << "WatchFileDescriptor failed on write";
     return MapSystemError(errno);
   }
 
@@ -445,7 +445,7 @@ void SocketPosix::Close() {
 
   if (socket_fd_ != kInvalidSocket) {
     if (IGNORE_EINTR(close(socket_fd_)) < 0)
-      PLOG(ERROR) << "close() returned an error, errno=" << errno;
+      PLOG(ERROR) << "close() failed";
     socket_fd_ = kInvalidSocket;
   }
 }

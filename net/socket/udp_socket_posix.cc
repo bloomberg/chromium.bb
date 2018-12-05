@@ -441,7 +441,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
   if (!base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
           socket_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, &write_watcher_)) {
-    DVLOG(1) << "WatchFileDescriptor failed on write, errno " << errno;
+    DVPLOG(1) << "WatchFileDescriptor failed on write";
     int result = MapSystemError(errno);
     LogWrite(result, NULL, NULL);
     return result;
@@ -1415,7 +1415,7 @@ void UDPSocketPosix::DidSendBuffers(SendResult send_result) {
   if (last_async_result_ == ERR_IO_PENDING) {
     DVLOG(2) << __func__ << " WatchFileDescriptor start";
     if (!WatchFileDescriptor()) {
-      DVLOG(1) << "WatchFileDescriptor failed on write, errno " << errno;
+      DVPLOG(1) << "WatchFileDescriptor failed on write";
       last_async_result_ = MapSystemError(errno);
       LogWrite(last_async_result_, NULL, NULL);
     } else {

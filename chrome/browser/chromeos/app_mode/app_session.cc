@@ -83,11 +83,10 @@ void DumpPluginProcessOnIOThread(const std::set<int>& child_ids) {
       if (kill(data.GetProcess().Handle(), SIGFPE) == 0) {
         dump_requested = true;
       } else {
-        LOG(WARNING) << "Failed to send SIGFPE to plugin process"
-                     << ", errno=" << errno
-                     << ", pid=" << data.GetProcess().Pid()
-                     << ", type=" << data.process_type
-                     << ", name=" << data.name;
+        PLOG(WARNING) << "Failed to send SIGFPE to plugin process"
+                      << ", pid=" << data.GetProcess().Pid()
+                      << ", type=" << data.process_type
+                      << ", name=" << data.name;
       }
     }
     ++iter;

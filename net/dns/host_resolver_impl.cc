@@ -267,7 +267,7 @@ bool HaveOnlyLoopbackAddresses() {
   struct ifaddrs* interface_addr = NULL;
   int rv = getifaddrs(&interface_addr);
   if (rv != 0) {
-    DVLOG(1) << "getifaddrs() failed with errno = " << errno;
+    DVPLOG(1) << "getifaddrs() failed";
     return false;
   }
 
