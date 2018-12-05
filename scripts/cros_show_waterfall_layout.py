@@ -7,76 +7,47 @@
 
 from __future__ import print_function
 
-import json
-import sys
-
 from chromite.lib import config_lib
 from chromite.lib import commandline
-
-
-def _FormatText(data, out):
-  """Formatter function for text output."""
-  output = lambda *a: print(*a, file=out)
-
-  for waterfall in sorted(data.iterkeys()):
-    layout = data[waterfall]
-    if not layout:
-      continue
-
-    output('== %s ==' % (waterfall,))
-    for board in sorted(layout.iterkeys()):
-      board_layout = layout[board]
-      children = board_layout.get('children', ())
-      if not children:
-        output('%(name)s (%(buildslave_type)s)' % board_layout)
-      else:
-        output('[%(name)s] (%(buildslave_type)s)' % board_layout)
-      for child in sorted(board_layout.get('children', ())):
-        output('  %s' % (child,))
-    output()
-
-
-def _FormatJson(data, out):
-  """Formatter function for JSON output."""
-  json.dump(data, out, sort_keys=True)
-
-
-_FORMATTERS = {
-    'text': _FormatText,
-    'json': _FormatJson,
-}
 
 
 def _ParseArguments(argv):
   parser = commandline.ArgumentParser(description=__doc__)
 
-  parser.add_argument('--format', default='text',
-                      choices=sorted(_FORMATTERS.iterkeys()),
-                      help='Choose output format.')
   opts = parser.parse_args(argv)
-  opts.format = _FORMATTERS[opts.format]
   opts.Freeze()
   return opts
 
 
+def displayConfigs(label, configs):
+  print('== %s ==' % label)
+
+  for config in sorted(configs, key=lambda c: c.name):
+    print('  %s' % config.name)
+    if config.slave_configs:
+      for sc in sorted(config.slave_configs):
+        print('    %s' % sc)
+
+  print()
+
+
 def main(argv):
-  opts = _ParseArguments(argv)
+  _ = _ParseArguments(argv)
 
   site_config = config_lib.GetConfig()
 
-  layout = {}
-  for config_name, config in site_config.iteritems():
-    active_waterfall = config['active_waterfall']
-    if not active_waterfall:
-      continue
+  # Organize the builds as:
+  #  {Display Label: [build_config]}
 
-    waterfall_layout = layout.setdefault(active_waterfall, {})
-    board_layout = waterfall_layout[config_name] = {
-        'name': config_name,
-        'buildslave_type': config['buildslave_type'],
-    }
+  labeled_builds = {}
+  for config in site_config.itervalues():
+    if config.schedule:
+      labeled_builds.setdefault(config.display_label, []).append(config)
 
-    children = config['child_configs']
-    if children:
-      board_layout['children'] = [c['name'] for c in children]
-  opts.format(layout, sys.stdout)
+  for label in sorted(labeled_builds.iterkeys()):
+    displayConfigs(label, labeled_builds[label])
+
+  # Force the tryjob section to be last.
+  displayConfigs('tryjob',
+                 [c for c in site_config.itervalues()
+                  if config_lib.isTryjobConfig(c)])
