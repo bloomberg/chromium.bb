@@ -51,7 +51,6 @@ struct RawPrepopulatedPage {
   int title_id;          // The resource for the page title.
   int favicon_id;        // The raw data resource for the favicon.
   int large_favicon_id;  // The raw data resource for the larger favicon.
-  int thumbnail_id;      // The raw data resource for the thumbnail.
   SkColor color;         // The best color to highlight the page (should
                          // roughly match favicon).
 };
@@ -60,9 +59,11 @@ struct RawPrepopulatedPage {
 // Android does not use prepopulated pages.
 const RawPrepopulatedPage kRawPrepopulatedPages[] = {
     {
-        IDS_WEBSTORE_URL, IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
-        IDR_WEBSTORE_ICON_16, IDR_WEBSTORE_ICON_32,
-        IDR_NEWTAB_WEBSTORE_THUMBNAIL, SkColorSetRGB(63, 132, 197),
+        IDS_WEBSTORE_URL,
+        IDS_EXTENSION_WEB_STORE_TITLE_SHORT,
+        IDR_WEBSTORE_ICON_16,
+        IDR_WEBSTORE_ICON_32,
+        SkColorSetRGB(63, 132, 197),
     },
 };
 #endif
@@ -82,7 +83,7 @@ void InitializePrepopulatedPageList(
         GURL(l10n_util::GetStringUTF8(page.url_id)),
         l10n_util::GetStringUTF16(page.title_id),
         features::IsMDIconsEnabled() ? page.large_favicon_id : page.favicon_id,
-        page.thumbnail_id, page.color));
+        /*thumbnail_id=*/-1, page.color));
   }
 #endif
 }
