@@ -854,15 +854,6 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
 
       changes->observation_index_map[observer->id()].push_back(
           changes->observations.size() - 1);
-      if (observer->include_transaction() &&
-          !base::ContainsKey(changes->transaction_map, observer->id())) {
-        auto mojo_transaction = blink::mojom::IDBObserverTransaction::New();
-        mojo_transaction->id = connection->NewObserverTransactionId();
-        mojo_transaction->scope.insert(mojo_transaction->scope.end(),
-                                       observer->object_store_ids().begin(),
-                                       observer->object_store_ids().end());
-        changes->transaction_map[observer->id()] = std::move(mojo_transaction);
-      }
       if (value && observer->values() && !changes->observations.back()->value) {
         // TODO(dmurph): Avoid any and all IndexedDBValue copies. Perhaps defer
         // this until the end of the transaction, where we can safely erase the
@@ -879,25 +870,8 @@ void IndexedDBDatabase::SendObservations(
     std::map<int32_t, blink::mojom::IDBObserverChangesPtr> changes_map) {
   for (auto* conn : connections_) {
     auto it = changes_map.find(conn->id());
-    if (it == changes_map.end())
-      continue;
-
-    // Start all of the transactions.
-    blink::mojom::IDBObserverChangesPtr& changes = it->second;
-    for (const auto& transaction_pair : changes->transaction_map) {
-      std::set<int64_t> scope(transaction_pair.second->scope.begin(),
-                              transaction_pair.second->scope.end());
-      IndexedDBTransaction* transaction = conn->CreateTransaction(
-          transaction_pair.second->id, scope,
-          blink::mojom::IDBTransactionMode::ReadOnly,
-          new IndexedDBBackingStore::Transaction(backing_store_.get()));
-      DCHECK(transaction);
-      transaction_coordinator_.DidCreateObserverTransaction(transaction);
-      transaction_count_++;
-      transaction->GrabSnapshotThenStart();
-    }
-
-    conn->callbacks()->OnDatabaseChange(std::move(it->second));
+    if (it != changes_map.end())
+      conn->callbacks()->OnDatabaseChange(std::move(it->second));
   }
 }
 

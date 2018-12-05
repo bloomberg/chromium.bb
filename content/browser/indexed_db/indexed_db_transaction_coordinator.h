@@ -28,7 +28,6 @@ class CONTENT_EXPORT IndexedDBTransactionCoordinator {
 
   // Called by transactions as they start and finish.
   void DidCreateTransaction(IndexedDBTransaction* transaction);
-  void DidCreateObserverTransaction(IndexedDBTransaction* transaction);
   void DidFinishTransaction(IndexedDBTransaction* transaction);
 
   bool IsRunningVersionChangeTransaction() const;

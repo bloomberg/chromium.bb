@@ -68,10 +68,6 @@ class CONTENT_EXPORT IndexedDBTransaction {
   // Called by the transaction coordinator when this transaction is unblocked.
   void Start();
 
-  // Grabs a snapshot from the database immediately, then starts the
-  // transaction.
-  void GrabSnapshotThenStart();
-
   blink::mojom::IDBTransactionMode mode() const { return mode_; }
   const std::set<int64_t>& scope() const { return object_store_ids_; }
 
