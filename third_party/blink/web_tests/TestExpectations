@@ -223,10 +223,10 @@ crbug.com/619427 [ Mac ] virtual/composite-after-paint/fast/overflow/overflow-he
 crbug.com/619427 [ Linux ] virtual/composite-after-paint/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 # --- End CompositeAfterPaint Tests --
 
-# Slimming paint V1.75
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
+
 # Difficult ancestor clip mask issue.
 crbug.com/771643 compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
@@ -235,14 +235,10 @@ crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nes
 crbug.com/862483 compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 crbug.com/862483 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scrollbar-layer-placement-negative-z-index-child.html [ Failure ]
 
-
-crbug.com/771643 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Pass Failure ]
-crbug.com/771643 [ Win ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Pass Failure ]
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 
 crbug.com/807395 fast/multicol/mixed-opacity-test.html [ Failure ]
-# End of Slimming paint v1.75
 
 ########## Ref tests can't be rebaselined ##########
 crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-antialiased.html [ Failure ]
