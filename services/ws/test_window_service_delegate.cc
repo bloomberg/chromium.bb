@@ -71,6 +71,10 @@ void TestWindowServiceDelegate::CancelDragLoop(aura::Window* window) {
   cancel_drag_loop_called_ = true;
 }
 
+ui::EventTarget* TestWindowServiceDelegate::GetGlobalEventTarget() {
+  return top_level_parent_->GetRootWindow();
+}
+
 aura::Window* TestWindowServiceDelegate::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,

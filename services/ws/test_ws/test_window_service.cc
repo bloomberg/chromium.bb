@@ -137,6 +137,10 @@ void TestWindowService::CancelDragLoop(aura::Window* window) {
   drag_drop_client_.DragCancel();
 }
 
+ui::EventTarget* TestWindowService::GetGlobalEventTarget() {
+  return aura_test_helper_->root_window();
+}
+
 void TestWindowService::OnStart() {
   CHECK(!started_);
   started_ = true;
