@@ -1639,6 +1639,13 @@ base::TimeTicks WebContentsImpl::GetLastActiveTime() {
 void WebContentsImpl::WasShown() {
   controller_.SetActive(true);
 
+  // This shows the Page before showing the individual RenderWidgets, as
+  // RenderWidgets will work to produce compositor frames and handle input
+  // as soon as they are shown. But the Page and other classes do not expect to
+  // be producing frames when the Page is hidden. So we make sure the Page is
+  // shown first.
+  SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+
   if (auto* view = GetRenderWidgetHostView()) {
     view->Show();
 #if defined(OS_MACOSX)
@@ -1648,8 +1655,6 @@ void WebContentsImpl::WasShown() {
 
   if (!ShowingInterstitialPage())
     SetVisibilityForChildViews(true);
-
-  SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
 
   last_active_time_ = base::TimeTicks::Now();
   SetVisibility(Visibility::VISIBLE);
@@ -1668,6 +1673,12 @@ void WebContentsImpl::WasHidden() {
   // or in Picture-in-Picture mode, don't activate the "disable rendering"
   // optimization.
   if (!IsBeingCaptured() && !HasPictureInPictureVideo()) {
+    // This hides the individual RenderWidgets before hiding the Page, as
+    // RenderWidgets will work to produce compositor frames and handle input
+    // until they are hidden. But the Page and other classes do not expect to
+    // be producing frames when the Page is hidden. So we stop the widgets,
+    // then hide the Page.
+    //
     // |GetRenderViewHost()| can be NULL if the user middle clicks a link to
     // open a tab in the background, then closes the tab before selecting it.
     // This is because closing the tab calls WebContentsImpl::Destroy(), which
