@@ -1084,7 +1084,7 @@ void LoginDisplayHostWebUI::CreateExistingUserController() {
 
 // static
 void LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest() {
-  if (default_host()->GetOobeUI()) {
+  if (default_host() && default_host()->GetOobeUI()) {
     default_host()
         ->GetOobeUI()
         ->GetGaiaScreenView()
