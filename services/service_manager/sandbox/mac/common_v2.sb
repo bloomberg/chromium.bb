@@ -22,9 +22,10 @@
 (define log-file-path "LOG_FILE_PATH")
 (define os-version (string->number (param "OS_VERSION")))
 
-; Backwards compatibility for 10.9
+; Backwards compatibility for 10.10.
 (if (not (defined? 'path))
   (define path literal))
+; Backwards compatibility for 10.11.
 (if (not (defined? 'iokit-registry-entry-class))
   (define iokit-registry-entry-class iokit-user-client-class))
 
@@ -150,28 +151,25 @@
   (global-name "com.apple.system.opendirectoryd.libinfo"))
 
 ; sysctls permitted.
-(if (= os-version 1009)
-  (allow sysctl-read)
-  ; else
-  (allow sysctl-read
-    (sysctl-name "hw.activecpu")
-    (sysctl-name "hw.busfrequency_compat")
-    (sysctl-name "hw.byteorder")
-    (sysctl-name "hw.cachelinesize_compat")
-    (sysctl-name "hw.cpufrequency_compat")
-    (sysctl-name "hw.cputype")
-    (sysctl-name "hw.machine")
-    (sysctl-name "hw.ncpu")
-    (sysctl-name "hw.pagesize_compat")
-    (sysctl-name "hw.physicalcpu_max")
-    (sysctl-name "hw.tbfrequency_compat")
-    (sysctl-name "hw.vectorunit")
-    (sysctl-name "kern.hostname")
-    (sysctl-name "kern.maxfilesperproc")
-    (sysctl-name "kern.osrelease")
-    (sysctl-name "kern.ostype")
-    (sysctl-name "kern.osversion")
-    (sysctl-name (string-append "kern.proc.pid." (param current-pid)))
-    (sysctl-name "kern.usrstack64")
-    (sysctl-name "kern.version")
-    (sysctl-name "sysctl.proc_cputype")))
+(allow sysctl-read
+  (sysctl-name "hw.activecpu")
+  (sysctl-name "hw.busfrequency_compat")
+  (sysctl-name "hw.byteorder")
+  (sysctl-name "hw.cachelinesize_compat")
+  (sysctl-name "hw.cpufrequency_compat")
+  (sysctl-name "hw.cputype")
+  (sysctl-name "hw.machine")
+  (sysctl-name "hw.ncpu")
+  (sysctl-name "hw.pagesize_compat")
+  (sysctl-name "hw.physicalcpu_max")
+  (sysctl-name "hw.tbfrequency_compat")
+  (sysctl-name "hw.vectorunit")
+  (sysctl-name "kern.hostname")
+  (sysctl-name "kern.maxfilesperproc")
+  (sysctl-name "kern.osrelease")
+  (sysctl-name "kern.ostype")
+  (sysctl-name "kern.osversion")
+  (sysctl-name (string-append "kern.proc.pid." (param current-pid)))
+  (sysctl-name "kern.usrstack64")
+  (sysctl-name "kern.version")
+  (sysctl-name "sysctl.proc_cputype"))
