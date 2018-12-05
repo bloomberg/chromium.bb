@@ -319,7 +319,8 @@ WindowResizeHelperMac::~WindowResizeHelperMac() {}
 
 void WindowResizeHelperMac::EventTimedWait(base::WaitableEvent* event,
                                            base::TimeDelta delay) {
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  // http://crbug.com/902829
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   event->TimedWait(delay);
 }
 
