@@ -52,15 +52,18 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThreadInfo
 class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
     : public network::SharedURLLoaderFactory {
  public:
-  explicit URLLoaderFactoryForIOThread(
-      scoped_refptr<URLLoaderFactoryGetter> factory_getter)
-      : factory_getter_(std::move(factory_getter)) {
+  URLLoaderFactoryForIOThread(
+      scoped_refptr<URLLoaderFactoryGetter> factory_getter,
+      bool is_corb_enabled)
+      : factory_getter_(std::move(factory_getter)),
+        is_corb_enabled_(is_corb_enabled) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
   }
 
   explicit URLLoaderFactoryForIOThread(
       std::unique_ptr<URLLoaderFactoryForIOThreadInfo> info)
-      : factory_getter_(std::move(info->url_loader_factory_getter())) {
+      : factory_getter_(std::move(info->url_loader_factory_getter())),
+        is_corb_enabled_(false) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
   }
 
@@ -76,15 +79,17 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     if (!factory_getter_)
       return;
-    factory_getter_->GetURLLoaderFactory()->CreateLoaderAndStart(
-        std::move(request), routing_id, request_id, options, url_request,
-        std::move(client), traffic_annotation);
+    factory_getter_->GetURLLoaderFactory(is_corb_enabled_)
+        ->CreateLoaderAndStart(std::move(request), routing_id, request_id,
+                               options, url_request, std::move(client),
+                               traffic_annotation);
   }
 
   void Clone(network::mojom::URLLoaderFactoryRequest request) override {
     if (!factory_getter_)
       return;
-    factory_getter_->GetURLLoaderFactory()->Clone(std::move(request));
+    factory_getter_->GetURLLoaderFactory(is_corb_enabled_)
+        ->Clone(std::move(request));
   }
 
   // SharedURLLoaderFactory implementation:
@@ -99,6 +104,7 @@ class URLLoaderFactoryGetter::URLLoaderFactoryForIOThread
   ~URLLoaderFactoryForIOThread() override = default;
 
   scoped_refptr<URLLoaderFactoryGetter> factory_getter_;
+  bool is_corb_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryForIOThread);
 };
@@ -143,7 +149,7 @@ void URLLoaderFactoryGetter::HandleFactoryRequests() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(pending_network_factory_request_.is_pending());
   HandleNetworkFactoryRequestOnUIThread(
-      std::move(pending_network_factory_request_));
+      std::move(pending_network_factory_request_), false);
 }
 
 void URLLoaderFactoryGetter::OnStoragePartitionDestroyed() {
@@ -155,7 +161,14 @@ scoped_refptr<network::SharedURLLoaderFactory>
 URLLoaderFactoryGetter::GetNetworkFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return base::MakeRefCounted<URLLoaderFactoryForIOThread>(
-      base::WrapRefCounted(this));
+      base::WrapRefCounted(this), false);
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+URLLoaderFactoryGetter::GetNetworkFactoryWithCORBEnabled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return base::MakeRefCounted<URLLoaderFactoryForIOThread>(
+      base::WrapRefCounted(this), true);
 }
 
 std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -164,43 +177,54 @@ URLLoaderFactoryGetter::GetNetworkFactoryInfo() {
       base::WrapRefCounted(this));
 }
 
-network::mojom::URLLoaderFactory*
-URLLoaderFactoryGetter::GetURLLoaderFactory() {
+network::mojom::URLLoaderFactory* URLLoaderFactoryGetter::GetURLLoaderFactory(
+    bool is_corb_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // This needs to be done before returning |test_factory_|, as the
   // |test_factory_| may fall back to |network_factory_|. The |is_bound()| check
   // is only needed by unit tests.
-  if (network_factory_.encountered_error() || !network_factory_.is_bound()) {
+  network::mojom::URLLoaderFactoryPtr* factory =
+      is_corb_enabled ? &network_factory_corb_enabled_ : &network_factory_;
+  if (factory->encountered_error() || !factory->is_bound()) {
     network::mojom::URLLoaderFactoryPtr network_factory;
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread,
-            this, mojo::MakeRequest(&network_factory)));
-    ReinitializeOnIOThread(std::move(network_factory));
+            this, mojo::MakeRequest(&network_factory), is_corb_enabled));
+    ReinitializeOnIOThread(std::move(network_factory), is_corb_enabled);
   }
 
   if (g_get_network_factory_callback.Get() && !test_factory_)
     g_get_network_factory_callback.Get().Run(this);
 
-  if (test_factory_)
+  if (is_corb_enabled && test_factory_corb_enabled_)
+    return test_factory_corb_enabled_;
+
+  if (!is_corb_enabled && test_factory_)
     return test_factory_;
 
-  return network_factory_.get();
+  return factory->get();
 }
 
 void URLLoaderFactoryGetter::CloneNetworkFactory(
     network::mojom::URLLoaderFactoryRequest network_factory_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetURLLoaderFactory()->Clone(std::move(network_factory_request));
+  GetURLLoaderFactory(false)->Clone(std::move(network_factory_request));
 }
 
 void URLLoaderFactoryGetter::SetNetworkFactoryForTesting(
-    network::mojom::URLLoaderFactory* test_factory) {
+    network::mojom::URLLoaderFactory* test_factory,
+    bool is_corb_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!test_factory_ || !test_factory);
-  test_factory_ = test_factory;
+  if (is_corb_enabled) {
+    DCHECK(!test_factory_corb_enabled_ || !test_factory);
+    test_factory_corb_enabled_ = test_factory;
+  } else {
+    DCHECK(!test_factory_ || !test_factory);
+    test_factory_ = test_factory;
+  }
 }
 
 void URLLoaderFactoryGetter::SetGetNetworkFactoryCallbackForTesting(
@@ -227,6 +251,8 @@ void URLLoaderFactoryGetter::FlushNetworkInterfaceForTesting(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (network_factory_)
     network_factory_.FlushAsyncForTesting(std::move(callback));
+  if (network_factory_corb_enabled_)
+    network_factory_corb_enabled_.FlushAsyncForTesting(std::move(callback));
 }
 
 URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
@@ -234,13 +260,13 @@ URLLoaderFactoryGetter::~URLLoaderFactoryGetter() {}
 void URLLoaderFactoryGetter::InitializeOnIOThread(
     network::mojom::URLLoaderFactoryPtrInfo network_factory) {
   ReinitializeOnIOThread(
-      network::mojom::URLLoaderFactoryPtr(std::move(network_factory)));
+      network::mojom::URLLoaderFactoryPtr(std::move(network_factory)), false);
 }
 
 void URLLoaderFactoryGetter::ReinitializeOnIOThread(
-    network::mojom::URLLoaderFactoryPtr network_factory) {
+    network::mojom::URLLoaderFactoryPtr network_factory,
+    bool is_corb_enabled) {
   DCHECK(network_factory.is_bound());
-  network_factory_ = std::move(network_factory);
   // Set a connection error handle so that connection errors on the pipes are
   // noticed, but the class doesn't actually do anything when the error is
   // observed - instead, a new pipe is created in GetURLLoaderFactory() as
@@ -248,11 +274,17 @@ void URLLoaderFactoryGetter::ReinitializeOnIOThread(
   // callback, as that could result in increasing the reference count from 0 to
   // 1 while there's a pending task to delete |this|. See
   // https://crbug.com/870942 for more details.
-  network_factory_.set_connection_error_handler(base::DoNothing());
+  network_factory.set_connection_error_handler(base::DoNothing());
+  if (is_corb_enabled) {
+    network_factory_corb_enabled_ = std::move(network_factory);
+  } else {
+    network_factory_ = std::move(network_factory);
+  }
 }
 
 void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
-    network::mojom::URLLoaderFactoryRequest network_factory_request) {
+    network::mojom::URLLoaderFactoryRequest network_factory_request,
+    bool is_corb_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // |StoragePartitionImpl| may have went away while |URLLoaderFactoryGetter| is
   // still held by consumers.
@@ -261,7 +293,7 @@ void URLLoaderFactoryGetter::HandleNetworkFactoryRequestOnUIThread(
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
-  params->is_corb_enabled = false;
+  params->is_corb_enabled = is_corb_enabled;
   params->disable_web_security =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity);

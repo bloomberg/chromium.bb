@@ -12,6 +12,7 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -618,6 +619,68 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that other response parts have been sanitized.
   EXPECT_EQ(0u, interceptor.response_head().content_length);
+}
+
+IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, AppCache) {
+  embedded_test_server()->StartAcceptingConnections();
+
+  // Prepare to intercept the network request at the IPC layer.
+  // This has to be done before the RenderFrameHostImpl is created.
+  GURL cross_site_url("http://cross-origin.com/site_isolation/nosniff.json");
+  RequestInterceptor interceptor(cross_site_url);
+
+  // Set up a separate http server, to allow sanity-checking that AppCache
+  // serves files despite the fact that the original server is down.
+  net::EmbeddedTestServer app_cache_content_server;
+  app_cache_content_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("content/test/data")));
+  ASSERT_TRUE(app_cache_content_server.Start());
+
+  // Load the main page twice. The second navigation should have AppCache
+  // initialized for the page.
+  GURL main_url = app_cache_content_server.GetURL(
+      "/appcache/simple_page_with_manifest.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
+  content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Turn off the server and sanity check that the resource is still available
+  // (because of AppCache).
+  ASSERT_TRUE(app_cache_content_server.ShutdownAndWaitUntilComplete());
+  {
+    const char kScriptTemplate[] = R"(
+        new Promise(function (resolve, reject) {
+            var img = document.createElement('img');
+            img.src = '/appcache/' + $1;
+            img.onload = _ => resolve('IMG LOADED');
+            img.onerror = reject;
+        })
+    )";
+    EXPECT_EQ("IMG LOADED",
+              content::EvalJs(shell(),
+                              content::JsReplace(kScriptTemplate, "logo.png")));
+  }
+
+  FetchHistogramsFromChildProcesses();
+
+  // Verify that CORB also works in presence of AppCache.
+  {
+    // Fetch...
+    base::HistogramTester histograms;
+    const char kScriptTemplate[] = R"(
+        var img = document.createElement('img');
+        img.src = $1;
+        document.body.appendChild(img); )";
+    EXPECT_TRUE(ExecJs(shell(), JsReplace(kScriptTemplate, cross_site_url)));
+    interceptor.WaitForRequestCompletion();
+
+    // Verify...
+    InspectHistograms(histograms, kShouldBeBlockedWithoutSniffing,
+                      "nosniff.json", RESOURCE_TYPE_IMAGE);
+    interceptor.Verify(kShouldBeBlockedWithoutSniffing);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
