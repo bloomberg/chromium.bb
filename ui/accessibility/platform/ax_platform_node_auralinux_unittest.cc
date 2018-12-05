@@ -1128,4 +1128,112 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   g_object_unref(root_atk_object);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkSelectionInterface) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kListBox;
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+  root.child_ids.push_back(4);
+  root.child_ids.push_back(5);
+
+  AXNodeData item_1;
+  item_1.id = 2;
+  item_1.role = ax::mojom::Role::kListBoxOption;
+
+  AXNodeData item_2;
+  item_2.id = 3;
+  item_2.role = ax::mojom::Role::kListBoxOption;
+
+  AXNodeData item_3;
+  item_3.id = 4;
+  item_3.role = ax::mojom::Role::kListBoxOption;
+
+  // Add a final item which is not selectable.
+  AXNodeData item_4;
+  item_4.id = 5;
+  item_4.role = ax::mojom::Role::kListItem;
+
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.push_back(root);
+  update.nodes.push_back(item_1);
+  update.nodes.push_back(item_2);
+  update.nodes.push_back(item_3);
+  update.nodes.push_back(item_4);
+  Init(update);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+  g_object_ref(root_atk_object);
+
+  ASSERT_TRUE(ATK_IS_SELECTION(root_atk_object));
+
+  ASSERT_TRUE(ATK_IS_SELECTION(root_atk_object));
+  AtkSelection* selection = ATK_SELECTION(root_atk_object);
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 0);
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 0));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 1));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 2));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 3));
+
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, -1));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, -100));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 4));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 3000));
+
+  ASSERT_TRUE(atk_selection_select_all_selection(selection));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 3);
+  ASSERT_TRUE(atk_selection_is_child_selected(selection, 0));
+  ASSERT_TRUE(atk_selection_is_child_selected(selection, 1));
+  ASSERT_TRUE(atk_selection_is_child_selected(selection, 2));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 3));
+
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, -1));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, -100));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 4));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 3000));
+
+  ASSERT_TRUE(atk_selection_clear_selection(selection));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 0);
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 0));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 1));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 2));
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 3));
+
+  ASSERT_TRUE(atk_selection_add_selection(selection, 1));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 1);
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 0));
+  ASSERT_TRUE(atk_selection_is_child_selected(selection, 1));
+
+  // The index to this function is the index into the selected elements, not
+  // into the children.
+  ASSERT_TRUE(atk_selection_remove_selection(selection, 0));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 0);
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 1));
+
+  // We should not be able to select an item with a role that is not
+  // selectable.
+  ASSERT_FALSE(atk_selection_add_selection(selection, 3));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 0);
+  ASSERT_FALSE(atk_selection_is_child_selected(selection, 3));
+
+  // Test some out of bounds use of atk_selection_add_selection.
+  ASSERT_FALSE(atk_selection_add_selection(selection, -1));
+  ASSERT_FALSE(atk_selection_add_selection(selection, -100));
+  ASSERT_FALSE(atk_selection_add_selection(selection, 4));
+  ASSERT_FALSE(atk_selection_add_selection(selection, 100));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 0);
+
+  ASSERT_TRUE(atk_selection_select_all_selection(selection));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 3);
+  ASSERT_FALSE(atk_selection_remove_selection(selection, -1));
+  ASSERT_FALSE(atk_selection_remove_selection(selection, -100));
+  ASSERT_FALSE(atk_selection_remove_selection(selection, 4));
+  ASSERT_FALSE(atk_selection_remove_selection(selection, 100));
+  ASSERT_EQ(atk_selection_get_selection_count(selection), 3);
+
+  g_object_unref(root_atk_object);
+}
+
 }  // namespace ui
