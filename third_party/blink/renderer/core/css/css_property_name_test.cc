@@ -28,4 +28,13 @@ TEST(CSSPropertyNameTest, GetNameCustomProperty) {
   EXPECT_EQ(AtomicString("--x"), name.ToAtomicString());
 }
 
+TEST(CSSPropertyNameTest, OperatorEquals) {
+  EXPECT_EQ(CSSPropertyName("--x"), CSSPropertyName("--x"));
+  EXPECT_EQ(CSSPropertyName(CSSPropertyColor),
+            CSSPropertyName(CSSPropertyColor));
+  EXPECT_NE(CSSPropertyName("--x"), CSSPropertyName("--y"));
+  EXPECT_NE(CSSPropertyName(CSSPropertyColor),
+            CSSPropertyName(CSSPropertyBackgroundColor));
+}
+
 }  // namespace blink

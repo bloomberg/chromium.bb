@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
@@ -99,7 +100,8 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
           ToCSSIdentifierValue(value).GetValueID() == CSSValueCurrentcolor) {
         return CSSKeywordValue::Create("currentcolor");
       }
-      return CSSUnsupportedStyleValue::Create(property_id, g_null_atom, value);
+      return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
+                                              value);
     case CSSPropertyContain: {
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
@@ -216,7 +218,8 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
 
   if (!CSSOMTypes::IsPropertySupported(property_id)) {
     DCHECK_NE(property_id, CSSPropertyVariable);
-    return CSSUnsupportedStyleValue::Create(property_id, g_null_atom, value);
+    return CSSUnsupportedStyleValue::Create(CSSPropertyName(property_id),
+                                            value);
   }
 
   CSSStyleValue* style_value =
@@ -232,8 +235,10 @@ CSSStyleValueVector UnsupportedCSSValue(
     const CSSValue& value) {
   DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSStyleValueVector style_value_vector;
-  style_value_vector.push_back(CSSUnsupportedStyleValue::Create(
-      property_id, custom_property_name, value));
+  auto name = (property_id == CSSPropertyVariable)
+                  ? CSSPropertyName(custom_property_name)
+                  : CSSPropertyName(property_id);
+  style_value_vector.push_back(CSSUnsupportedStyleValue::Create(name, value));
   return style_value_vector;
 }
 
@@ -269,8 +274,8 @@ CSSStyleValueVector StyleValueFactory::FromString(
 
     // Shorthands are not yet supported.
     CSSStyleValueVector result;
-    result.push_back(
-        CSSUnsupportedStyleValue::Create(property_id, g_null_atom, css_text));
+    result.push_back(CSSUnsupportedStyleValue::Create(
+        CSSPropertyName(property_id), css_text));
     return result;
   }
 
@@ -308,8 +313,10 @@ CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
   CSSStyleValue* style_value =
       CreateStyleValueWithProperty(property_id, css_value);
   if (!style_value) {
-    return CSSUnsupportedStyleValue::Create(property_id, custom_property_name,
-                                            css_value);
+    auto name = (property_id == CSSPropertyVariable)
+                    ? CSSPropertyName(custom_property_name)
+                    : CSSPropertyName(property_id);
+    return CSSUnsupportedStyleValue::Create(name, css_value);
   }
   return style_value;
 }

@@ -21,6 +21,14 @@ static_assert(sizeof(CSSPropertyName) == sizeof(SameSizeAsCSSPropertyName),
 
 }  // namespace
 
+bool CSSPropertyName::operator==(const CSSPropertyName& other) const {
+  if (property_id_ != other.property_id_)
+    return false;
+  if (property_id_ != CSSPropertyVariable)
+    return true;
+  return custom_property_name_ == other.custom_property_name_;
+}
+
 AtomicString CSSPropertyName::ToAtomicString() const {
   if (IsCustomProperty())
     return custom_property_name_;
