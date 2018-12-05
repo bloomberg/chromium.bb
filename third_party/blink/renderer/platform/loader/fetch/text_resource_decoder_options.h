@@ -22,6 +22,13 @@ class PLATFORM_EXPORT TextResourceDecoderOptions final {
     kMaxContentType = kCSSContent
   };  // PlainText only checks for BOM.
 
+  // Implements https://encoding.spec.whatwg.org/#decode
+  // when ContentType is |kPlainTextContent|.
+  // The "fallback encoding" is
+  // - If TextResourceDecoder::SetEncoding(|encoding|) is called and
+  //   |encoding.IsValid()| is true, then |encoding|.
+  // - Else if |default_encoding.IsValid()| is true, then |default_encoding|.
+  // - Else, Latin-1.
   explicit TextResourceDecoderOptions(
       ContentType,
       const WTF::TextEncoding& default_encoding = WTF::TextEncoding());
