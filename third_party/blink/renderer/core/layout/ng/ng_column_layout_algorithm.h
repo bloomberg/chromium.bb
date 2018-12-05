@@ -50,6 +50,6 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       const NGLogicalSize& column_size) const;
 };
 
-}  // namespace Blink
+}  // namespace blink
 
 #endif  // NGColumnLayoutAlgorithm_h
