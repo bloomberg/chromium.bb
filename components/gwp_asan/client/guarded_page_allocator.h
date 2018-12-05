@@ -39,7 +39,9 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   // It must be less than or equal to the allocation size. If it's left as zero
   // it will default to the default alignment the allocator chooses.
   //
-  // Precondition: Init() must have been called, align <= size <= page_size_
+  // Preconditions: Init() must have been called,
+  //                size <= page_size,
+  //                align <= page_size
   void* Allocate(size_t size, size_t align = 0);
 
   // Deallocates memory pointed to by ptr. ptr must have been previously
