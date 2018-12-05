@@ -580,17 +580,6 @@ void VaapiVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
   QueueInputBuffer(std::move(buffer), bitstream_id);
 }
 
-void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
-    VASurfaceID va_surface_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-
-  available_va_surfaces_.push_back(va_surface_id);
-  surfaces_available_.Signal();
-
-  TryOutputPicture();
-}
-
 void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<PictureBuffer>& buffers) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -960,6 +949,11 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
   if (!decode_using_client_picture_buffers_) {
     const VASurfaceID id = available_va_surfaces_.front();
     available_va_surfaces_.pop_front();
+
+    TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
+                      pictures_.size() - available_va_surfaces_.size(),
+                      "available", available_va_surfaces_.size());
+
     return new VASurface(id, requested_pic_size_,
                          vaapi_wrapper_->va_surface_format(),
                          va_surface_release_cb_);
@@ -983,6 +977,21 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
     }
   }
   return nullptr;
+}
+
+void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
+    VASurfaceID va_surface_id) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  base::AutoLock auto_lock(lock_);
+  available_va_surfaces_.push_back(va_surface_id);
+  if (!decode_using_client_picture_buffers_) {
+    TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
+                      pictures_.size() - available_va_surfaces_.size(),
+                      "available", available_va_surfaces_.size());
+  }
+  surfaces_available_.Signal();
+
+  TryOutputPicture();
 }
 
 // static

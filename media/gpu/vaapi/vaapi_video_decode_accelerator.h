@@ -167,8 +167,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   void TryOutputPicture();
 
   // Called when a VASurface is no longer in use by the decoder or is not being
-  // synced/waiting to be synced to a picture. Returns it to available surfaces
-  // pool.
+  // synced/waiting to be synced to a picture. Returns it to the
+  // |available_va_surfaces_|
   void RecycleVASurfaceID(VASurfaceID va_surface_id);
 
   // Initiate wait cycle for surfaces to be released before we release them
