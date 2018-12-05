@@ -84,9 +84,11 @@ public class DiscardableReferencePool {
      */
     public void remove(DiscardableReference<?> ref) {
         assert ref != null;
-        assert mPool.contains(ref);
-        mPool.remove(ref);
+        if (!mPool.contains(ref)) return;
+        assert ref.get() != null;
+
         ref.discard();
+        mPool.remove(ref);
     }
 
     /**
