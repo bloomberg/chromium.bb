@@ -882,11 +882,24 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
     // know this up-front, to correctly evaluate if we need to mark for
     // relayout, and, if our estimate is correct, we'll even be able to insert
     // correct pagination struts on the first attempt.
-    LogicalExtentComputedValues computed_values;
-    positioned_object->ComputeLogicalHeight(positioned_object->LogicalHeight(),
-                                            positioned_object->LogicalTop(),
-                                            computed_values);
-    logical_top_estimate = computed_values.position_;
+    const ComputedStyle& style = positioned_object->StyleRef();
+    if (!style.LogicalBottom().IsAuto() && style.LogicalTop().IsAuto() &&
+        style.LogicalHeight().IsAuto()) {
+      // This child is bottom-aligned with auto block size. We cannot make a
+      // decent estimate before layout. Just estimate something as far above a
+      // fragmentainer break as possible. This is a way to try our best to avoid
+      // hitting fragmentainer breaks, as that could impact the block size of
+      // the child (increase it if contents need to be pushed to the next
+      // fragmentainer, or decrease it if a descendant margin collides into a
+      // fragmentainer boundary), and thus give us a bad block-start offset.
+      logical_top_estimate = -OffsetFromLogicalTopOfFirstPage();
+    } else {
+      LogicalExtentComputedValues computed_values;
+      positioned_object->ComputeLogicalHeight(
+          positioned_object->LogicalHeight(), positioned_object->LogicalTop(),
+          computed_values);
+      logical_top_estimate = computed_values.position_;
+    }
     positioned_object->SetLogicalTop(logical_top_estimate);
   }
 
