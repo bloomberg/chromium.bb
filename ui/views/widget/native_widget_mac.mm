@@ -151,6 +151,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
   }
   bridge_host_->SetParent(parent_host);
   bridge_host_->InitWindow(params);
+  OnWindowInitialized();
 
   // Only set always-on-top here if it is true since setting it may affect how
   // the window is treated by Expose.

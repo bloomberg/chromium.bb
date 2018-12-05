@@ -15,7 +15,6 @@ class BrowserFrame;
 class BrowserView;
 @class BrowserWindowTouchBarController;
 @class BrowserWindowTouchBarViewsDelegate;
-@class ChromeCommandDispatcherDelegate;
 
 ////////////////////////////////////////////////////////////////////////////////
 //  BrowserFrameMac is a NativeWidgetMac subclass that provides
@@ -66,6 +65,7 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   NativeWidgetMacNSWindow* CreateNSWindow(
       const views_bridge_mac::mojom::CreateWindowParams* params) override;
   views::BridgeFactoryHost* GetBridgeFactoryHost() override;
+  void OnWindowInitialized() override;
   void OnWindowDestroying(gfx::NativeWindow window) override;
 
   // Overridden from NativeBrowserFrame:
@@ -73,8 +73,6 @@ class BrowserFrameMac : public views::NativeWidgetMac,
 
  private:
   BrowserView* browser_view_;  // Weak. Our ClientView.
-  base::scoped_nsobject<ChromeCommandDispatcherDelegate>
-      command_dispatcher_delegate_;
   base::scoped_nsobject<BrowserWindowTouchBarViewsDelegate> touch_bar_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameMac);

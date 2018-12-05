@@ -338,6 +338,14 @@ void BridgedNativeWidgetImpl::SetWindow(
   ui::CATransactionCoordinator::Get().AddPreCommitObserver(this);
 }
 
+void BridgedNativeWidgetImpl::SetCommandDispatcher(
+    NSObject<CommandDispatcherDelegate>* delegate,
+    id<UserInterfaceItemCommandHandler> command_handler) {
+  window_command_dispatcher_delegate_.reset([delegate retain]);
+  [window_ setCommandDispatcherDelegate:delegate];
+  [window_ setCommandHandler:command_handler];
+}
+
 void BridgedNativeWidgetImpl::SetParent(uint64_t new_parent_id) {
   // Remove from the old parent.
   if (parent_) {
@@ -753,6 +761,9 @@ void BridgedNativeWidgetImpl::SetCursor(NSCursor* cursor) {
 }
 
 void BridgedNativeWidgetImpl::OnWindowWillClose() {
+  [window_ setCommandHandler:nil];
+  [window_ setCommandDispatcherDelegate:nil];
+
   ui::CATransactionCoordinator::Get().RemovePreCommitObserver(this);
   host_->OnWindowWillClose();
 
