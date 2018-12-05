@@ -175,7 +175,7 @@ IMPLEMENTATION_PREAMBLE = """// This is generated file. Do not modify directly.
 #include "%s"
 
 #include <stdlib.h>  // For NULL.
-#include <dlfcn.h>   // For dysym, dlopen.
+#include <dlfcn.h>   // For dlsym, dlopen.
 
 #include <map>
 #include <vector>
