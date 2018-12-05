@@ -472,6 +472,11 @@ class ChannelPosix : public Channel,
                  (errno != EAGAIN && errno != EWOULDBLOCK)) {
         read_error = true;
         break;
+      } else {
+        // We expect more data but there is none to read. The
+        // FileDescriptorWatcher will wake us up again once there is.
+        DCHECK(errno == EAGAIN || errno == EWOULDBLOCK);
+        return;
       }
     } while (bytes_read == buffer_capacity &&
              total_bytes_read < kMaxBatchReadCapacity && next_read_size > 0);
