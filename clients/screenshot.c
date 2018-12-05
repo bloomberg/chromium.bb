@@ -284,13 +284,6 @@ int main(int argc, char *argv[])
 	struct buffer_size buff_size = {};
 	struct screenshooter_data sh_data = {};
 
-	if (getenv("WAYLAND_SOCKET") == NULL) {
-		fprintf(stderr, "%s must be launched by weston.\n"
-			"Use the MOD+S shortcut to take a screenshot.\n",
-			program_invocation_short_name);
-		return -1;
-	}
-
 	display = wl_display_connect(NULL);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
