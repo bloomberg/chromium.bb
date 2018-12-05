@@ -1446,7 +1446,8 @@ void LayoutTableSection::ComputeLayoutOverflowFromDescendants() {
 bool LayoutTableSection::RecalcOverflow() {
   if (!ChildNeedsOverflowRecalc())
     return false;
-  ChildNeedsOverflowRecalc();
+  ClearChildNeedsLayoutOverflowRecalc();
+  ClearChildNeedsVisualOverflowRecalc();
   unsigned total_rows = grid_.size();
   bool children_overflow_changed = false;
   for (unsigned r = 0; r < total_rows; r++) {
