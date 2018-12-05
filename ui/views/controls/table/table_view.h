@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 #define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW_VIEWS_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -12,6 +13,7 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
@@ -32,6 +34,7 @@
 // sort by way of overriding TableModel::CompareValues().
 namespace views {
 
+class FocusRing;
 struct GroupRange;
 class TableGrouper;
 class TableHeader;
@@ -139,6 +142,13 @@ class VIEWS_EXPORT TableView
   // Returns true if the column with the specified id is known (either visible
   // or not).
   bool HasColumn(int id) const;
+
+  // Returns whether an active row and column have been set.
+  bool HasFocusIndicator() const;
+
+  // Moves the focus ring to its new location if the active cell has changed, or
+  // hides the focus ring if the table is not focused.
+  void ResetFocusIndicator();
 
   void set_observer(TableViewObserver* observer) { observer_ = observer; }
   TableViewObserver* observer() const { return observer_; }
@@ -328,6 +338,9 @@ class VIEWS_EXPORT TableView
   // The active visible column. Used for keyboard access to functionality such
   // as sorting and resizing. -1 if no visible column is active.
   int active_visible_column_index_;
+
+  // Used to draw a focus indicator around the active cell.
+  std::unique_ptr<FocusRing> focus_ring_;
 
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.
