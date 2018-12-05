@@ -56,6 +56,10 @@ class FeedSchedulerBridge {
   void OnSuggestionConsumed(JNIEnv* env,
                             const base::android::JavaRef<jobject>& j_this);
 
+  void OnArticlesCleared(JNIEnv* env,
+                         const base::android::JavaRef<jobject>& j_this,
+                         jboolean j_suppress_refreshes);
+
  private:
   // Callable by native code to invoke Java code. Sends a request to the Feed
   // library to make the refresh call.

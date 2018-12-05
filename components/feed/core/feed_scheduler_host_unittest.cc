@@ -786,13 +786,13 @@ TEST_F(FeedSchedulerHostTest, DisableBogusTriggers) {
                 /*has_outstanding_request*/ false));
 }
 
-TEST_F(FeedSchedulerHostTest, OnHistoryCleared) {
+TEST_F(FeedSchedulerHostTest, OnArticlesCleared) {
   // OnForegrounded() does nothing because content is fresher than threshold.
   scheduler()->OnReceiveNewContent(test_clock()->Now());
   scheduler()->OnForegrounded();
   EXPECT_EQ(0, refresh_call_count());
 
-  scheduler()->OnHistoryCleared();
+  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true);
 
   scheduler()->OnForegrounded();
   EXPECT_EQ(0, refresh_call_count());
@@ -823,7 +823,7 @@ TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
       kInterestFeedContentSuggestions.name,
       {{kSuppressRefreshDurationMinutes.name, "100"}},
       {kInterestFeedContentSuggestions.name});
-  scheduler()->OnHistoryCleared();
+  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true);
 
   test_clock()->Advance(TimeDelta::FromMinutes(99));
   scheduler()->OnForegrounded();
@@ -832,6 +832,24 @@ TEST_F(FeedSchedulerHostTest, SuppressRefreshDuration) {
   test_clock()->Advance(TimeDelta::FromMinutes(1));
   scheduler()->OnForegrounded();
   EXPECT_EQ(1, refresh_call_count());
+}
+
+TEST_F(FeedSchedulerHostTest, OnArticlesClearedNoSupress) {
+  EXPECT_EQ(0, refresh_call_count());
+
+  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
+  EXPECT_EQ(1, refresh_call_count());
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+
+  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
+  EXPECT_EQ(2, refresh_call_count());
+  scheduler()->OnReceiveNewContent(test_clock()->Now());
+
+  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ true);
+  EXPECT_EQ(2, refresh_call_count());
+
+  scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
+  EXPECT_EQ(2, refresh_call_count());
 }
 
 TEST_F(FeedSchedulerHostTest, OustandingRequest) {

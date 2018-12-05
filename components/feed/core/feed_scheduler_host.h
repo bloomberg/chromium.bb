@@ -109,9 +109,10 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
   // users to track the kind of user, and optimize refresh frequency.
   void OnSuggestionsShown();
 
-  // When the user clears history, the scheduler will clear out some stored data
-  // and stop requesting refreshes for a period of time.
-  void OnHistoryCleared();
+  // Should be called when something happens to clear stored articles. The
+  // scheduler updates its internal state and treats this event as a kNtpShown
+  // trigger.
+  void OnArticlesCleared(bool suppress_refreshes);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(FeedSchedulerHostTest, GetTriggerThreshold);
