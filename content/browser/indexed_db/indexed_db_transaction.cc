@@ -267,13 +267,6 @@ void IndexedDBTransaction::Start() {
   RunTasksIfStarted();
 }
 
-void IndexedDBTransaction::GrabSnapshotThenStart() {
-  DCHECK(!backing_store_transaction_begun_);
-  transaction_->Begin();
-  backing_store_transaction_begun_ = true;
-  Start();
-}
-
 class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
  public:
   explicit BlobWriteCallbackImpl(
