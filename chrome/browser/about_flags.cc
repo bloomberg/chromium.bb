@@ -3159,12 +3159,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kServiceWorkerLongRunningMessageDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
 
-#if defined(OS_MACOSX)
-    {"tab-strip-keyboard-focus", flag_descriptions::kTabStripKeyboardFocusName,
-     flag_descriptions::kTabStripKeyboardFocusDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kTabStripKeyboardFocus)},
-#endif
-
 #if defined(OS_CHROMEOS)
     {"ChromeVoxArcSupport", flag_descriptions::kChromeVoxArcSupportName,
      flag_descriptions::kChromeVoxArcSupportDescription, kOsCrOS,

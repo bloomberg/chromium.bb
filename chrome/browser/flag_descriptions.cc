@@ -3070,10 +3070,6 @@ const char kTabDetachingInFullscreenName[] =
 const char kTabDetachingInFullscreenDescription[] =
     "Allow tabs to detach from the tabstrip when in fullscreen mode on Mac.";
 
-const char kTabStripKeyboardFocusName[] = "Tab Strip Keyboard Focus";
-const char kTabStripKeyboardFocusDescription[] =
-    "Enable keyboard focus for the tabs in the tab strip.";
-
 const char kTextSuggestionsTouchBarName[] = "Text Suggestions Touch Bar";
 const char kTextSuggestionsTouchBarDescription[] =
     "Enable text suggestions touch bar for textfields.";
