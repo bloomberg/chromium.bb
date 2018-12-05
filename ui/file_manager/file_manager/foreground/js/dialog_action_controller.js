@@ -491,7 +491,8 @@ DialogActionController.prototype.updateOkButton_ = function() {
       this.dialogFooter_.okButtonLabel.textContent = str('SAVE_LABEL');
       this.dialogFooter_.okButton.disabled =
           this.directoryModel_.isReadOnly() ||
-          !this.dialogFooter_.filenameInput.value;
+          !this.dialogFooter_.filenameInput.value ||
+          !this.fileSelectionHandler_.isAvailable();
     }
     return;
   }
