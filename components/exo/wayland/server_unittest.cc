@@ -17,7 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "components/exo/display.h"
-#include "components/exo/test/exo_test_base.h"
+#include "components/exo/test/exo_test_base_aura.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace exo {
@@ -31,7 +31,7 @@ std::string GetUniqueSocketName() {
                             g_next_socket_id.GetNext());
 }
 
-class ServerTest : public test::ExoTestBase {
+class ServerTest : public test::ExoTestBaseAura {
  public:
   ServerTest() {}
   ~ServerTest() override {}
@@ -40,7 +40,7 @@ class ServerTest : public test::ExoTestBase {
     ASSERT_TRUE(xdg_temp_dir_.CreateUniqueTempDir());
     setenv("XDG_RUNTIME_DIR", xdg_temp_dir_.GetPath().MaybeAsASCII().c_str(),
            1 /* overwrite */);
-    test::ExoTestBase::SetUp();
+    test::ExoTestBaseAura::SetUp();
   }
 
  private:

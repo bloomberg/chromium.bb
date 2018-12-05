@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/exo/test/exo_test_base_cast.h"
+#include "components/exo/test/exo_test_base_aura.h"
 
 #include "components/exo/wm_helper.h"
 #include "ui/base/ime/input_method_factory.h"
@@ -85,10 +85,10 @@ class WMHelperTester : public WMHelper {
 
 }  // namespace
 
-ExoTestBaseCast::ExoTestBaseCast() {}
-ExoTestBaseCast::~ExoTestBaseCast() {}
+ExoTestBaseAura::ExoTestBaseAura() {}
+ExoTestBaseAura::~ExoTestBaseAura() {}
 
-void ExoTestBaseCast::SetUp() {
+void ExoTestBaseAura::SetUp() {
   aura::test::AuraTestBase::SetUp();
   // Takes care of its own lifetime.
   new wm::DefaultActivationClient(root_window());
@@ -98,7 +98,7 @@ void ExoTestBaseCast::SetUp() {
   WMHelper::SetInstance(wm_helper_.get());
 }
 
-void ExoTestBaseCast::TearDown() {
+void ExoTestBaseAura::TearDown() {
   WMHelper::SetInstance(nullptr);
   wm_helper_.reset();
 
