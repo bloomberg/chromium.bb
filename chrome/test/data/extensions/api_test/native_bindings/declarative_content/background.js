@@ -15,7 +15,7 @@ var rule = {
     new chrome.declarativeContent.PageStateMatcher(
         {pageUrl: {hostPrefix: 'example'}}),
   ], actions: [
-    new chrome.declarativeContent.ShowPageAction(),
+    new chrome.declarativeContent.ShowAction(),
     new chrome.declarativeContent.SetIcon({imageData: imageData}),
   ],
   id: kRuleId,

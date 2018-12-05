@@ -43,7 +43,7 @@ const char kInvalidInstanceTypeError[] =
 const char kMissingInstanceTypeError[] = "Action is missing instanceType";
 const char kMissingParameter[] = "Missing parameter is required: %s";
 const char kNoAction[] =
-    "Can't use declarativeContent.ShowPageAction without an action";
+    "Can't use declarativeContent.ShowAction without an action";
 const char kNoPageOrBrowserAction[] =
     "Can't use declarativeContent.SetIcon without a page or browser action";
 const char kIconNotSufficientlyVisible[] =
@@ -56,10 +56,10 @@ bool g_allow_invisible_icons_content_action = true;
 //
 
 // Action that instructs to show an extension's page action.
-class ShowPageAction : public ContentAction {
+class ShowExtensionAction : public ContentAction {
  public:
-  ShowPageAction() {}
-  ~ShowPageAction() override {}
+  ShowExtensionAction() {}
+  ~ShowExtensionAction() override {}
 
   static std::unique_ptr<ContentAction> Create(
       content::BrowserContext* browser_context,
@@ -72,9 +72,9 @@ class ShowPageAction : public ContentAction {
     if (!ActionInfo::GetPageActionInfo(extension) &&
         !ActionInfo::GetBrowserActionInfo(extension)) {
       *error = kNoAction;
-      return std::unique_ptr<ContentAction>();
+      return nullptr;
     }
-    return base::WrapUnique(new ShowPageAction);
+    return std::make_unique<ShowExtensionAction>();
   }
 
   // Implementation of ContentAction:
@@ -103,7 +103,7 @@ class ShowPageAction : public ContentAction {
         ->GetExtensionAction(*extension);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ShowPageAction);
+  DISALLOW_COPY_AND_ASSIGN(ShowExtensionAction);
 };
 
 // Action that sets an extension's action icon.
@@ -199,8 +199,8 @@ struct ContentActionFactory {
   std::map<std::string, FactoryMethod> factory_methods;
 
   ContentActionFactory() {
-    factory_methods[declarative_content_constants::kShowPageAction] =
-        &ShowPageAction::Create;
+    factory_methods[declarative_content_constants::kShowAction] =
+        &ShowExtensionAction::Create;
     factory_methods[declarative_content_constants::kRequestContentScript] =
         &RequestContentScript::Create;
     factory_methods[declarative_content_constants::kSetIcon] = &SetIcon::Create;

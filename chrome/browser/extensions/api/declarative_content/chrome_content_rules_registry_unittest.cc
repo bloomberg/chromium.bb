@@ -173,7 +173,7 @@ TEST_F(DeclarativeChromeContentRulesRegistryTest, ActiveRulesDoesntGrow) {
           "      \"test_predicate\": []\n"
           "    }],\n"
           "  \"actions\": [\n"
-          "    { \"instanceType\": \"declarativeContent.ShowPageAction\" }\n"
+          "    { \"instanceType\": \"declarativeContent.ShowAction\" }\n"
           "  ]\n"
           "}"),
       rule.get());

@@ -97,7 +97,7 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
   EXPECT_FALSE(result.get());
 }
 
-TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
+TEST(DeclarativeContentActionTest, ShowActionWithoutAction) {
   TestExtensionEnvironment env;
 
   // We install a component extension because all other extensions have a
@@ -119,7 +119,7 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
       &profile, extension.get(),
       *ParseJson("{\n"
-                 "  \"instanceType\": \"declarativeContent.ShowPageAction\",\n"
+                 "  \"instanceType\": \"declarativeContent.ShowAction\",\n"
                  "}"),
       &error);
   EXPECT_THAT(error, testing::HasSubstr("without an action"));
@@ -129,7 +129,7 @@ TEST(DeclarativeContentActionTest, ShowPageActionWithoutPageAction) {
 class ParameterizedDeclarativeContentActionTest
     : public ::testing::TestWithParam<ExtensionBuilder::ActionType> {};
 
-TEST_P(ParameterizedDeclarativeContentActionTest, ShowPageAction) {
+TEST_P(ParameterizedDeclarativeContentActionTest, ShowAction) {
   TestExtensionEnvironment env;
   content::RenderViewHostTestEnabler rvh_enabler;
 
@@ -145,7 +145,7 @@ TEST_P(ParameterizedDeclarativeContentActionTest, ShowPageAction) {
   TestingProfile profile;
   std::unique_ptr<const ContentAction> result = ContentAction::Create(
       nullptr, extension.get(),
-      *ParseJson(R"({"instanceType": "declarativeContent.ShowPageAction"})"),
+      *ParseJson(R"({"instanceType": "declarativeContent.ShowAction"})"),
       &error);
   EXPECT_TRUE(error.empty()) << error;
   ASSERT_TRUE(result.get());

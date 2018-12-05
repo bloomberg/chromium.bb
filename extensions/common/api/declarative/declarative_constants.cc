@@ -21,9 +21,11 @@ const char kPageUrl[] = "pageUrl";
 
 // Values of dictionaries, in particular instance types
 const char kPageStateMatcherType[] = "declarativeContent.PageStateMatcher";
-const char kShowPageAction[] = "declarativeContent.ShowPageAction";
+const char kShowAction[] = "declarativeContent.ShowAction";
 const char kRequestContentScript[] = "declarativeContent.RequestContentScript";
 const char kSetIcon[] = "declarativeContent.SetIcon";
+
+const char kLegacyShowAction[] = "declarativeContent.ShowPageAction";
 
 }  // namespace declarative_content_constants
 }  // namespace extensions

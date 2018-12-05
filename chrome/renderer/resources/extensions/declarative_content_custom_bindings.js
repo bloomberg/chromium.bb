@@ -87,9 +87,10 @@ binding.registerCustomHook(function(api) {
       canonicalizeCssSelectors(this.css);
     }
   };
-  declarativeContent.ShowPageAction = function(parameters) {
-    setupInstance(this, parameters, 'ShowPageAction');
+  declarativeContent.ShowAction = function(parameters) {
+    setupInstance(this, parameters, 'ShowAction');
   };
+  declarativeContent.ShowPageAction = declarativeContent.ShowAction;
   declarativeContent.RequestContentScript = function(parameters) {
     setupInstance(this, parameters, 'RequestContentScript');
   };

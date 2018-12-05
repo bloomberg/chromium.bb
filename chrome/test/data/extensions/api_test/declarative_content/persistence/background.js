@@ -11,7 +11,7 @@ var rule = {
         pageUrl: {hostPrefix: hostPrefix}})
   ],
   actions: [
-    new chrome.declarativeContent.ShowPageAction()
+    new chrome.declarativeContent.ShowAction()
   ]
 };
 

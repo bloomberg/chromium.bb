@@ -165,7 +165,8 @@ void DeclarativeContentHooksDelegate::InitializeTemplate(
   } kTypes[] = {
       {declarative_content_constants::kPageStateMatcherType,
        "PageStateMatcher"},
-      {declarative_content_constants::kShowPageAction, "ShowPageAction"},
+      {declarative_content_constants::kShowAction, "ShowAction"},
+      {declarative_content_constants::kShowAction, "ShowPageAction"},
       {declarative_content_constants::kSetIcon, "SetIcon"},
       {declarative_content_constants::kRequestContentScript,
        "RequestContentScript"},

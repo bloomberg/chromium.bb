@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/common/manifest_constants.h"
 
 namespace extensions {
@@ -58,6 +59,8 @@ bool ConvertManifestRule(const DeclarativeManifestData::Rule& rule,
             error_builder->Append("'type' is required and must be a string");
             return false;
           }
+          if (type == declarative_content_constants::kLegacyShowAction)
+            type = declarative_content_constants::kShowAction;
           dictionary->Remove("type", nullptr);
           dictionary->SetString("instanceType", type);
         }
