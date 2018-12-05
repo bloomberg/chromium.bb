@@ -584,13 +584,15 @@ def force_solution_revision(solution_name, git_url, revisions, cwd):
   git('checkout', '--force', treeish, '--', cwd=cwd)
 
 
-def _has_in_git_cache(revision_sha1, git_cache_dir, url):
+def _has_in_git_cache(revision_sha1, refs, git_cache_dir, url):
   """Returns whether given revision_sha1 is contained in cache of a given repo.
   """
   try:
     mirror_dir = git(
         'cache', 'exists', '--quiet', '--cache-dir', git_cache_dir, url).strip()
     git('cat-file', '-e', revision_sha1, cwd=mirror_dir)
+    for ref in refs:
+      git('cat-file', '-e', ref, cwd=mirror_dir)
     return True
   except SubprocessFailed:
     return False
@@ -664,7 +666,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
   if not pin:
     # Refresh only once.
     git(*populate_cmd, env=env)
-  elif _has_in_git_cache(pin, git_cache_dir, url):
+  elif _has_in_git_cache(pin, refs, git_cache_dir, url):
     # No need to fetch at all, because we already have needed revision.
     pass
   else:
@@ -678,7 +680,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
       # maintainers of *.googlesource.com (workaround git server replication
       # lag).
       git(*populate_cmd, env=env)
-      if _has_in_git_cache(pin, git_cache_dir, url):
+      if _has_in_git_cache(pin, refs, git_cache_dir, url):
         break
       overrun = time.time() - soft_deadline
       # Only kick in deadline after second attempt to ensure we retry at least
