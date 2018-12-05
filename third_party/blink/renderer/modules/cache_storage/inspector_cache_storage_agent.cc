@@ -232,7 +232,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
         requests.push_back(std::move(request));
       }
     }
-    size_t requestSize = requests.size();
+    wtf_size_t requestSize = requests.size();
     if (!requestSize) {
       callback_->sendSuccess(Array<DataEntry>::create(), false);
       return;

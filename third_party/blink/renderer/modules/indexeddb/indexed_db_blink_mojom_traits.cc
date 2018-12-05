@@ -36,7 +36,8 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
   MapDataView<int64_t, blink::mojom::IDBObjectStoreMetadataDataView>
       object_stores;
   data.GetObjectStoresDataView(&object_stores);
-  out->object_stores.ReserveCapacityForSize(object_stores.size());
+  out->object_stores.ReserveCapacityForSize(
+      SafeCast<wtf_size_t>(object_stores.size()));
   for (size_t i = 0; i < object_stores.size(); ++i) {
     const int64_t key = object_stores.keys()[i];
     scoped_refptr<blink::IDBObjectStoreMetadata> object_store;
@@ -297,7 +298,7 @@ bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
   value->max_index_id = data.max_index_id();
   MapDataView<int64_t, blink::mojom::IDBIndexMetadataDataView> indexes;
   data.GetIndexesDataView(&indexes);
-  value->indexes.ReserveCapacityForSize(indexes.size());
+  value->indexes.ReserveCapacityForSize(SafeCast<wtf_size_t>(indexes.size()));
   for (size_t i = 0; i < indexes.size(); ++i) {
     const int64_t key = indexes.keys()[i];
     scoped_refptr<blink::IDBIndexMetadata> index;
