@@ -121,9 +121,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;
 
-// Whether or not desktop user agent is used for the currently visible page.
-@property(nonatomic, readonly) BOOL usesDesktopUserAgent;
-
 // Loads the original url of the last non-redirect item (including non-history
 // items). Used by request desktop/mobile site so that the updated user agent is
 // used.
