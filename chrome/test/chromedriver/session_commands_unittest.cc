@@ -418,7 +418,7 @@ TEST(SessionCommandsTest, AutoReporting) {
 
   // an error should be given if the |enabled| parameter is not set
   status_code = ExecuteSetAutoReporting(&session, params, &value).code();
-  ASSERT_EQ(kUnknownError, status_code);
+  ASSERT_EQ(kInvalidArgument, status_code);
 
   // try to enable autoreporting
   params.SetBoolean("enabled", true);

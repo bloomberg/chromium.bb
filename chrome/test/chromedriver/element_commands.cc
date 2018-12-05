@@ -100,7 +100,7 @@ Status ExecuteElementCommand(
   std::string id;
   if (params.GetString("id", &id) || params.GetString("element", &id))
     return command.Run(session, web_view, id, params, value);
-  return Status(kUnknownError, "element identifier must be a string");
+  return Status(kInvalidArgument, "element identifier must be a string");
 }
 
 Status ExecuteFindChildElement(int interval_ms,
@@ -258,13 +258,13 @@ Status ExecuteFlick(Session* session,
 
   int xoffset, yoffset, speed;
   if (!params.GetInteger("xoffset", &xoffset))
-    return Status(kUnknownError, "'xoffset' must be an integer");
+    return Status(kInvalidArgument, "'xoffset' must be an integer");
   if (!params.GetInteger("yoffset", &yoffset))
-    return Status(kUnknownError, "'yoffset' must be an integer");
+    return Status(kInvalidArgument, "'yoffset' must be an integer");
   if (!params.GetInteger("speed", &speed))
-    return Status(kUnknownError, "'speed' must be an integer");
+    return Status(kInvalidArgument, "'speed' must be an integer");
   if (speed < 1)
-    return Status(kUnknownError, "'speed' must be a positive integer");
+    return Status(kInvalidArgument, "'speed' must be a positive integer");
 
   status = web_view->DispatchTouchEvent(
       TouchEvent(kTouchStart, location.x, location.y));
@@ -337,7 +337,7 @@ Status ExecuteSendKeysToElement(Session* session,
     key_list = &key_list_local;
   } else {
     if (!params.GetList("value", &key_list))
-      return Status(kUnknownError, "'value' must be a list");
+      return Status(kInvalidArgument, "'value' must be a list");
   }
 
   bool is_input = false;
@@ -361,7 +361,7 @@ Status ExecuteSendKeysToElement(Session* session,
     for (size_t i = 0; i < key_list->GetSize(); ++i) {
       base::FilePath::StringType path_part;
       if (!key_list->GetString(i, &path_part))
-        return Status(kUnknownError, "'value' is invalid");
+        return Status(kInvalidArgument, "'value' is invalid");
       paths_string.append(path_part);
     }
 
@@ -452,7 +452,7 @@ Status ExecuteGetElementProperty(Session* session,
 
   std::string name;
   if (!params.GetString("name", &name))
-    return Status(kUnknownError, "missing 'name'");
+    return Status(kInvalidArgument, "missing 'name'");
   args.AppendString(name);
 
   return web_view->CallFunction(
@@ -632,7 +632,7 @@ Status ExecuteGetElementAttribute(Session* session,
                                   std::unique_ptr<base::Value>* value) {
   std::string name;
   if (!params.GetString("name", &name))
-    return Status(kUnknownError, "missing 'name'");
+    return Status(kInvalidArgument, "missing 'name'");
   return GetElementAttribute(session, web_view, element_id, name, value);
 }
 
@@ -652,7 +652,7 @@ Status ExecuteGetElementValueOfCSSProperty(
   } else {
     std::string property_name;
     if (!params.GetString("propertyName", &property_name))
-      return Status(kUnknownError, "missing 'propertyName'");
+      return Status(kInvalidArgument, "missing 'propertyName'");
     std::string property_value;
     status = GetElementEffectiveStyle(
         session, web_view, element_id, property_name, &property_value);
@@ -670,7 +670,7 @@ Status ExecuteElementEquals(Session* session,
                             std::unique_ptr<base::Value>* value) {
   std::string other_element_id;
   if (!params.GetString("other", &other_element_id))
-    return Status(kUnknownError, "'other' must be a string");
+    return Status(kInvalidArgument, "'other' must be a string");
   value->reset(new base::Value(element_id == other_element_id));
   return Status(kOk);
 }
