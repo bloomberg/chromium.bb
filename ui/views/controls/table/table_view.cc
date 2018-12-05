@@ -29,6 +29,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/ax_virtual_view.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_header.h"
@@ -37,6 +38,7 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view_properties.h"
 
 namespace views {
 
@@ -143,7 +145,7 @@ TableView::TableView(ui::TableModel* model,
     : model_(NULL),
       columns_(columns),
       active_visible_column_index_(-1),
-      header_(NULL),
+      header_(nullptr),
       table_type_(table_type),
       single_selection_(single_selection),
       select_on_remove_(true),
@@ -298,6 +300,37 @@ bool TableView::HasColumn(int id) const {
   return false;
 }
 
+bool TableView::HasFocusIndicator() const {
+  int active_row = selection_model_.active();
+  return active_row != ui::ListSelectionModel::kUnselectedIndex &&
+         active_visible_column_index_ !=
+             ui::ListSelectionModel::kUnselectedIndex;
+}
+
+void TableView::ResetFocusIndicator() {
+  if (!PlatformStyle::kTableViewSupportsKeyboardNavigationByCell)
+    return;
+
+  if (HasFocusIndicator()) {
+    // Draw a focus indicator around the active column.
+    focus_ring_ = FocusRing::Install(this);
+    const gfx::Rect cell_bounds(GetCellBounds(
+        ModelToView(selection_model_.active()), active_visible_column_index_));
+    auto path = std::make_unique<SkPath>();
+    path->addRect(gfx::RectToSkRect(cell_bounds));
+    SetProperty(views::kHighlightPathKey, path.release());
+    focus_ring_->SchedulePaint();
+  } else {
+    ClearProperty(views::kHighlightPathKey);
+    focus_ring_.reset();
+  }
+
+  // Notify assistive technology that the active cell has changed. Without this,
+  // some screen readers will not announce the active cell.
+  if (HasFocus())
+    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+}
+
 const TableView::VisibleColumn& TableView::GetVisibleColumn(int index) {
   DCHECK(index >= 0 && index < static_cast<int>(visible_columns_.size()));
   return visible_columns_[index];
@@ -358,6 +391,9 @@ void TableView::Layout() {
     height = std::max(parent()->height(), height);
   }
   SetBounds(x(), y(), width, height);
+
+  if (focus_ring_)
+    focus_ring_->Layout();
 }
 
 const char* TableView::GetClassName() const {
@@ -788,7 +824,7 @@ void TableView::OnFocus() {
     scroll_view->SetHasFocusIndicator(true);
 
   SchedulePaintForSelection();
-  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  ResetFocusIndicator();
 }
 
 void TableView::OnBlur() {
@@ -796,6 +832,7 @@ void TableView::OnBlur() {
   if (scroll_view)
     scroll_view->SetHasFocusIndicator(false);
   SchedulePaintForSelection();
+  ResetFocusIndicator();
 }
 
 int TableView::GetCellMargin() const {
@@ -1016,10 +1053,7 @@ void TableView::SetActiveVisibleColumnIndex(int index) {
                                       active_visible_column_index_));
   }
 
-  // Notify assistive technology that the active cell has changed. Without this,
-  // some screen readers will not announce the active cell.
-  if (HasFocus())
-    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  ResetFocusIndicator();
 }
 
 void TableView::SelectByViewIndex(int view_index) {
@@ -1058,6 +1092,7 @@ void TableView::SetSelectionModel(ui::ListSelectionModel new_selection) {
     SetActiveVisibleColumnIndex(-1);
   }
 
+  ResetFocusIndicator();
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   if (observer_)
     observer_->OnSelectionChanged();
