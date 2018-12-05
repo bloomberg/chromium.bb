@@ -56,7 +56,9 @@ Run Snippet1..
 Snippet1:1 undefined
 Run Snippet2..
 Snippet1:1 undefined
-Snippet2:1 
+Snippet2:1 ƒ doesNothing() {
+  var i = 2+2;
+}
 Run Snippet1..
 VM Snippet1:1 undefined
 Snippet2:1 ƒ doesNothing() {
@@ -73,7 +75,7 @@ Snippet3:1 1
 
 Running: testEvaluateEditReload
 Run Snippet1..
-script-snippet-model.js:131 Console was cleared
+script-snippet-model.js:135 Console was cleared
 Snippet1:1 undefined
 Page reloaded.
 
