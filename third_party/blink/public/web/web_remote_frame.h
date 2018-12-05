@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
+#include "third_party/blink/public/platform/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_scroll_types.h"
@@ -90,7 +91,7 @@ class WebRemoteFrame : public WebFrame {
   // Adds |header| to the set of replicated CSP headers.
   virtual void AddReplicatedContentSecurityPolicyHeader(
       const WebString& header_value,
-      WebContentSecurityPolicyType,
+      mojom::ContentSecurityPolicyType,
       WebContentSecurityPolicySource) = 0;
 
   // Resets replicated CSP headers to an empty set.

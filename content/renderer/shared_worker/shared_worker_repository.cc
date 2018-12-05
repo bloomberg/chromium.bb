@@ -22,7 +22,7 @@ void SharedWorkerRepository::Connect(
     const blink::WebString& name,
     DocumentID document_id,
     const blink::WebString& content_security_policy,
-    blink::WebContentSecurityPolicyType content_security_policy_type,
+    blink::mojom::ContentSecurityPolicyType content_security_policy_type,
     blink::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     blink::MessagePortChannel channel,

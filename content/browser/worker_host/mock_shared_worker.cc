@@ -75,7 +75,8 @@ MockSharedWorkerFactory::~MockSharedWorkerFactory() = default;
 bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     const GURL& expected_url,
     const std::string& expected_name,
-    blink::WebContentSecurityPolicyType expected_content_security_policy_type,
+    blink::mojom::ContentSecurityPolicyType
+        expected_content_security_policy_type,
     mojom::SharedWorkerHostPtr* host,
     mojom::SharedWorkerRequest* request) {
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);

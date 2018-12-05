@@ -31,15 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SECURITY_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CONTENT_SECURITY_POLICY_H_
 
-#include "third_party/blink/public/platform/web_string.h"
-
 namespace blink {
-
-enum WebContentSecurityPolicyType {
-  kWebContentSecurityPolicyTypeReport,
-  kWebContentSecurityPolicyTypeEnforce,
-  kWebContentSecurityPolicyTypeLast = kWebContentSecurityPolicyTypeEnforce
-};
 
 enum WebContentSecurityPolicySource {
   kWebContentSecurityPolicySourceHTTP,

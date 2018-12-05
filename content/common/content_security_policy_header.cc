@@ -8,12 +8,12 @@ namespace content {
 
 ContentSecurityPolicyHeader::ContentSecurityPolicyHeader()
     : header_value(std::string()),
-      type(blink::kWebContentSecurityPolicyTypeEnforce),
+      type(blink::mojom::ContentSecurityPolicyType::kEnforce),
       source(blink::kWebContentSecurityPolicySourceHTTP) {}
 
 ContentSecurityPolicyHeader::ContentSecurityPolicyHeader(
     const std::string& header_value,
-    blink::WebContentSecurityPolicyType type,
+    blink::mojom::ContentSecurityPolicyType type,
     blink::WebContentSecurityPolicySource source)
     : header_value(header_value), type(type), source(source) {}
 

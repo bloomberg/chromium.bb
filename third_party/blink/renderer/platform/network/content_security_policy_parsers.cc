@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/network/content_security_policy_parsers.h"
 
+#include "third_party/blink/public/platform/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -57,9 +58,9 @@ bool IsMediaTypeCharacter(UChar c) {
   return !IsASCIISpace(c) && c != '/';
 }
 
-STATIC_ASSERT_ENUM(kWebContentSecurityPolicyTypeReport,
+STATIC_ASSERT_ENUM(mojom::ContentSecurityPolicyType::kReport,
                    kContentSecurityPolicyHeaderTypeReport);
-STATIC_ASSERT_ENUM(kWebContentSecurityPolicyTypeEnforce,
+STATIC_ASSERT_ENUM(mojom::ContentSecurityPolicyType::kEnforce,
                    kContentSecurityPolicyHeaderTypeEnforce);
 
 STATIC_ASSERT_ENUM(kWebContentSecurityPolicySourceHTTP,
