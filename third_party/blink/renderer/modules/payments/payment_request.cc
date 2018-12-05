@@ -630,8 +630,9 @@ void ValidateAndConvertPaymentDetailsBase(const PaymentDetailsBase* input,
   // If requestShipping is specified and there are shipping options to validate,
   // proceed with validation.
   if (options->requestShipping() && input->hasShippingOptions()) {
+    output->shipping_options = Vector<PaymentShippingOptionPtr>();
     ValidateAndConvertShippingOptions(
-        input->shippingOptions(), output->shipping_options,
+        input->shippingOptions(), *output->shipping_options,
         shipping_option_output, execution_context, exception_state);
     if (exception_state.HadException())
       return;
@@ -1056,16 +1057,18 @@ void PaymentRequest::OnUpdatePaymentDetails(
       UseCounter::Count(
           GetExecutionContext(),
           WebFeature::kUpdateWithoutShippingOptionOnShippingAddressChange);
+      validated_details->shipping_options = Vector<PaymentShippingOptionPtr>();
     }
     if (event_type == event_type_names::kShippingoptionchange) {
       UseCounter::Count(
           GetExecutionContext(),
           WebFeature::kUpdateWithoutShippingOptionOnShippingOptionChange);
+      validated_details->shipping_options = Vector<PaymentShippingOptionPtr>();
     }
   }
 
   if (!options_->requestShipping())
-    validated_details->shipping_options.clear();
+    validated_details->shipping_options = base::nullopt;
 
   payment_provider_->UpdateWith(std::move(validated_details));
 }
@@ -1150,7 +1153,7 @@ PaymentRequest::PaymentRequest(
   if (options_->requestShipping())
     shipping_type_ = options_->shippingType();
   else
-    validated_details->shipping_options.clear();
+    validated_details->shipping_options = base::nullopt;
 
   DCHECK(shipping_type_.IsNull() || shipping_type_ == "shipping" ||
          shipping_type_ == "delivery" || shipping_type_ == "pickup");

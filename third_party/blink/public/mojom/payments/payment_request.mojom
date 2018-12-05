@@ -155,7 +155,8 @@ struct PaymentDetailsModifier {
 struct PaymentDetails {
   PaymentItem? total;
   array<PaymentItem> display_items;
-  array<PaymentShippingOption> shipping_options;
+  // Shipping options can be null if updateWith() is called w/o shippingOptions
+  array<PaymentShippingOption>? shipping_options;
   array<PaymentDetailsModifier> modifiers;
   string error = "";
   AddressErrors? shipping_address_errors;
