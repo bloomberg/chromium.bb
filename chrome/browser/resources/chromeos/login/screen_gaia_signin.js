@@ -164,6 +164,9 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.screenMode_ != ScreenMode.SAML_INTERSTITIAL;
 
       $('login-header-bar').updateUI_();
+
+      let showGuestInOobe = !this.closable && this.isAtTheBeginning();
+      chrome.send('showGuestInOobe', [showGuestInOobe]);
     },
 
     /**
@@ -711,11 +714,6 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('login-header-bar').showCreateSupervisedButton =
           data.supervisedUsersCanCreate;
       $('login-header-bar').showGuestButton = data.guestSignin;
-      if (Oobe.getInstance().showingViewsLogin) {
-        chrome.send(
-            'showGuestForGaia',
-            [data.guestSignin, !this.closable && this.isAtTheBeginning()]);
-      }
 
       // Reset SAML
       this.classList.toggle('full-width', false);

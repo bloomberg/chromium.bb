@@ -19,31 +19,33 @@ import "mojo/public/mojom/base/time.mojom";
 enum OobeDialogState {
   // Showing other screen, which does not impact the visibility of login shelf
   // buttons.
-  NONE,
+  NONE = 0,
 
   // Showing gaia signin screen.
-  GAIA_SIGNIN,
+  GAIA_SIGNIN = 1,
+
+  // 2 is unused to keep in sync with display_manager.js
 
   // Showing wrong hardware identification screen.
-  WRONG_HWID_WARNING,
+  WRONG_HWID_WARNING = 3,
 
   // Showing supervised user creation screen.
-  SUPERVISED_USER_CREATION_FLOW,
+  SUPERVISED_USER_CREATION_FLOW = 4,
 
   // Showing SAML password confirmation screen.
-  SAML_PASSWORD_CONFIRM,
+  SAML_PASSWORD_CONFIRM = 5,
 
   // Showing password changed screen.
-  PASSWORD_CHANGED,
+  PASSWORD_CHANGED = 6,
 
   // Showing device enrollment screen.
-  ENROLLMENT,
+  ENROLLMENT = 7,
 
   // Showing error screen.
-  ERROR,
+  ERROR = 8,
 
   // Oobe UI dialog is currently hidden.
-  HIDDEN,
+  HIDDEN = 9,
 };
 
 // Allows clients (e.g. the browser process) to send messages to the ash
@@ -207,9 +209,8 @@ interface LoginScreen {
   // true the button may still not be visible.
   SetAllowLoginAsGuest(bool allow_guest);
 
-  // Sets if the guest button on the login shelf can be shown during gaia
-  // signin screen.
-  SetShowGuestButtonForGaiaScreen(bool can_show);
+  // Sets if the guest button on the login shelf can be shown during OOBE.
+  SetShowGuestButtonInOobe(bool show);
 
   // Transitions focus to the shelf area. If |reverse|, focuses the status area.
   FocusLoginShelf(bool reverse);

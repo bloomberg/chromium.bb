@@ -12,6 +12,9 @@
 #include "ash/login/ui/lock_window.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_detachable_base_model.h"
+#include "ash/shelf/login_shelf_view.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -81,6 +84,10 @@ void LockScreen::Show(ScreenType type) {
     instance_->window_->SetContentsView(instance_->contents_view_);
   }
 
+  data_dispatcher->AddObserver(Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+                                   ->shelf_widget()
+                                   ->login_shelf_view());
+
   instance_->window_->set_data_dispatcher(std::move(data_dispatcher));
   // Postpone showing the screen after the animation of the first wallpaper
   // completes, to make the transition smooth. The callback will be dispatched
@@ -111,6 +118,11 @@ void LockScreen::Destroy() {
                << static_cast<int>(authentication_stage);
   }
   CHECK_EQ(instance_, this);
+
+  data_dispatcher()->RemoveObserver(
+      Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+          ->shelf_widget()
+          ->login_shelf_view());
 
   window_->Close();
   delete instance_;

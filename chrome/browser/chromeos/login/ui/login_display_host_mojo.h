@@ -115,7 +115,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void HandleOnNoPodFocused() override;
   bool HandleFocusLockScreenApps(bool reverse) override;
   void HandleFocusOobeDialog() override;
-  void HandleLoginAsGuest() override;
   void HandleLaunchPublicSession(const AccountId& account_id,
                                  const std::string& locale,
                                  const std::string& input_method) override;

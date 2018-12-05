@@ -337,11 +337,8 @@ cr.define('cr.ui.login', function() {
      * The header bar should be hidden when views-based shelf is shown.
      */
     get showingViewsBasedShelf() {
-      var showingViewsLock = loadTimeData.valueExists('showViewsLock') &&
-          loadTimeData.getString('showViewsLock') == 'on' &&
-          (this.displayType_ == DISPLAY_TYPE.LOCK ||
-           this.displayType_ == DISPLAY_TYPE.USER_ADDING);
-      return showingViewsLock || this.showingViewsLogin;
+      // TODO: remove this method once webui shelf has been removed.
+      return true;
     },
 
     /**
@@ -1145,8 +1142,6 @@ cr.define('cr.ui.login', function() {
     var currentScreenId = Oobe.getInstance().currentScreen.id;
     if (currentScreenId == SCREEN_GAIA_SIGNIN)
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.GAIA_SIGNIN;
-    else if (currentScreenId == SCREEN_ACCOUNT_PICKER)
-      $('login-header-bar').signinUIState = SIGNIN_UI_STATE.ACCOUNT_PICKER;
     chrome.send('showAddUser', [opt_email]);
   };
 

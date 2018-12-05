@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_auth_recorder.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "components/user_manager/remove_user_delegate.h"
+#include "components/user_manager/user_names.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -239,8 +241,14 @@ void LoginScreenClient::CancelAddUser() {
 }
 
 void LoginScreenClient::LoginAsGuest() {
-  if (delegate_)
-    delegate_->HandleLoginAsGuest();
+  DCHECK(!chromeos::ScreenLocker::default_screen_locker());
+  if (chromeos::LoginDisplayHost::default_host()) {
+    chromeos::LoginDisplayHost::default_host()
+        ->GetExistingUserController()
+        ->Login(chromeos::UserContext(user_manager::USER_TYPE_GUEST,
+                                      user_manager::GuestAccountId()),
+                chromeos::SigninSpecifics());
+  }
 }
 
 void LoginScreenClient::OnMaxIncorrectPasswordAttempted(

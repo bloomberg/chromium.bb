@@ -25,6 +25,7 @@
 #include "chrome/browser/chromeos/login/enrollment/mock_auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
@@ -629,8 +630,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
           }
         }));
 
-    // Check visibility of the header bar.
-    ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
+    LoginShelfTestHelper shelf_helper;
+    ASSERT_TRUE(shelf_helper.IsLoginShelfShown());
 
     EXPECT_CALL(*mock_welcome_screen_, Hide()).Times(1);
     EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
@@ -638,9 +639,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
     OnExit(ScreenExitCode::NETWORK_CONNECTED);
 
     CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
-
-    // Header bar should still be visible.
-    ASSERT_FALSE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
+    // Login shelf should still be visible.
+    EXPECT_TRUE(shelf_helper.IsLoginShelfShown());
 
     EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
     EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);

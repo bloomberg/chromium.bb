@@ -499,11 +499,11 @@ void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
       ->SetAllowLoginAsGuest(allow_guest);
 }
 
-void LoginScreenController::SetShowGuestButtonForGaiaScreen(bool can_show) {
+void LoginScreenController::SetShowGuestButtonInOobe(bool show) {
   Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
       ->shelf_widget()
       ->login_shelf_view()
-      ->SetShowGuestButtonForGaiaScreen(can_show);
+      ->SetShowGuestButtonInOobe(show);
 }
 
 void LoginScreenController::FocusLoginShelf(bool reverse) {

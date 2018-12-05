@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
 #include "ash/login/login_screen_controller_observer.h"
+#include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller.h"
@@ -37,12 +38,16 @@ class KioskAppsButton;
 
 // LoginShelfView contains the shelf buttons visible outside of an active user
 // session. ShelfView and LoginShelfView should never be shown together.
+// This view is attached as a LoginDataDispatcher::Observer when the LockScreen
+// is instantiated in kLogin mode. It cannot attach itself because it does not
+// know when the Login is instantiated.
 class ASH_EXPORT LoginShelfView : public views::View,
                                   public views::ButtonListener,
                                   public TrayActionObserver,
                                   public LockScreenActionBackgroundObserver,
                                   public ShutdownController::Observer,
-                                  public LoginScreenControllerObserver {
+                                  public LoginScreenControllerObserver,
+                                  public LoginDataDispatcher::Observer {
  public:
   enum ButtonId {
     kShutdown = 1,    // Shut down the device.
@@ -75,7 +80,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   // Sets if the guest button on the login shelf can be shown during gaia
   // signin screen.
-  void SetShowGuestButtonForGaiaScreen(bool can_show);
+  void SetShowGuestButtonInOobe(bool show);
 
   // Sets whether users can be added from the login screen.
   void SetAddUserButtonEnabled(bool enable_add_user);
@@ -103,6 +108,10 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // LoginScreenControllerObserver:
   void OnOobeDialogStateChanged(mojom::OobeDialogState state) override;
 
+  // LoginDataDispatcher::Observer:
+  void OnUsersChanged(
+      const std::vector<mojom::LoginUserInfoPtr>& users) override;
+
  private:
   bool LockScreenActionBackgroundAnimating() const;
 
@@ -112,7 +121,11 @@ class ASH_EXPORT LoginShelfView : public views::View,
 
   mojom::OobeDialogState dialog_state_ = mojom::OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
-  bool allow_guest_during_gaia_ = false;
+  bool allow_guest_in_oobe_ = false;
+
+  // When the Gaia screen is active during Login, the guest-login button should
+  // appear if there are no user views.
+  bool login_screen_has_users_ = false;
 
   LockScreenActionBackgroundController* lock_screen_action_background_;
 
