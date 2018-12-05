@@ -134,7 +134,6 @@ class ExtensionsGuestViewMessageFilter::FrameNavigationHelper
   FrameNavigationHelper(RenderFrameHost* plugin_rfh,
                         int32_t guest_instance_id,
                         int32_t element_instance_id,
-                        base::DictionaryValue* attach_params,
                         bool is_full_page_plugin,
                         ExtensionsGuestViewMessageFilter* filter);
   ~FrameNavigationHelper() override;
@@ -148,7 +147,6 @@ class ExtensionsGuestViewMessageFilter::FrameNavigationHelper
   MimeHandlerViewGuest* GetGuestView() const;
 
   int32_t guest_instance_id() const { return guest_instance_id_; }
-  const base::DictionaryValue& attach_params() const { return attach_params_; }
   bool is_full_page_plugin() const { return is_full_page_plugin_; }
   SiteInstance* parent_site_instance() const {
     return parent_site_instance_.get();
@@ -161,7 +159,6 @@ class ExtensionsGuestViewMessageFilter::FrameNavigationHelper
   int32_t frame_tree_node_id_;
   const int32_t guest_instance_id_;
   const int32_t element_instance_id_;
-  base::DictionaryValue attach_params_;
   const bool is_full_page_plugin_;
   ExtensionsGuestViewMessageFilter* const filter_;
   scoped_refptr<SiteInstance> parent_site_instance_;
@@ -175,7 +172,6 @@ ExtensionsGuestViewMessageFilter::FrameNavigationHelper::FrameNavigationHelper(
     RenderFrameHost* plugin_rfh,
     int32_t guest_instance_id,
     int32_t element_instance_id,
-    base::DictionaryValue* attach_params,
     bool is_full_page_plugin,
     ExtensionsGuestViewMessageFilter* filter)
     : content::WebContentsObserver(
@@ -188,7 +184,6 @@ ExtensionsGuestViewMessageFilter::FrameNavigationHelper::FrameNavigationHelper(
       parent_site_instance_(plugin_rfh->GetParent()->GetSiteInstance()),
       weak_factory_(this) {
   DCHECK(GetGuestView());
-  attach_params_.Swap(attach_params);
   NavigateToAboutBlank();
   base::PostDelayedTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
@@ -524,56 +519,53 @@ void ExtensionsGuestViewMessageFilter::MimeHandlerViewGuestCreatedCallback(
   base::DictionaryValue attach_params;
   attach_params.SetInteger(guest_view::kElementWidth, element_size.width());
   attach_params.SetInteger(guest_view::kElementHeight, element_size.height());
-  auto uses_cross_process_frame =
-      content::MimeHandlerViewMode::UsesCrossProcessFrame();
-  if (uses_cross_process_frame) {
-    auto* plugin_rfh = RenderFrameHost::FromID(embedder_render_process_id,
-                                               plugin_frame_routing_id);
-    if (!plugin_rfh) {
-      // The plugin element has a proxy instead.
-      plugin_rfh = RenderFrameHost::FromPlaceholderId(
-          embedder_render_process_id, plugin_frame_routing_id);
-    }
-    if (!plugin_rfh) {
-      // This should only happen if the original plugin frame was cross-process
-      // and a concurrent navigation in its process won the race and ended up
-      // destroying the proxy whose routing ID was sent here by the
-      // MimeHandlerViewFrameContainer. We should ask the embedder to retry
-      // creating the guest.
-      guest_view->GetEmbedderFrame()->Send(
-          new ExtensionsGuestViewMsg_RetryCreatingMimeHandlerViewGuest(
-              element_instance_id));
-      guest_view->Destroy(true);
-      return;
-    }
-
-    if (guest_view->web_contents()->CanAttachToOuterContentsFrame(plugin_rfh)) {
-      AttachToEmbedderFrame(plugin_frame_routing_id, element_instance_id,
-                            guest_instance_id, attach_params,
-                            is_full_page_plugin);
-
-    } else {
-      // TODO(ekaramad): Replace this navigation logic with an asynchronous
-      // attach API in content layer (https://crbug.com/911161).
-      // The current API for attaching guests requires the frame in outer
-      // WebContents to be same-origin with parent. The current frame could also
-      // have beforeunload handlers. Considering these issues, we should first
-      // navigate the frame to "about:blank" and put it in the same SiteInstance
-      // as parent before using it for attach API.
-      frame_navigation_helpers_[element_instance_id] =
-          std::make_unique<FrameNavigationHelper>(
-              plugin_rfh, guest_view->guest_instance_id(), element_instance_id,
-              &attach_params, is_full_page_plugin, this);
-    }
-    return;
-  }
-
   auto* manager = GuestViewManager::FromBrowserContext(browser_context_);
   CHECK(manager);
   manager->AttachGuest(embedder_render_process_id, element_instance_id,
                        guest_instance_id, attach_params);
-  rfh->Send(new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
-      element_instance_id));
+
+  if (!content::MimeHandlerViewMode::UsesCrossProcessFrame()) {
+    rfh->Send(new ExtensionsGuestViewMsg_CreateMimeHandlerViewGuestACK(
+        element_instance_id));
+    return;
+  }
+  auto* plugin_rfh = RenderFrameHost::FromID(embedder_render_process_id,
+                                             plugin_frame_routing_id);
+  if (!plugin_rfh) {
+    // The plugin element has a proxy instead.
+    plugin_rfh = RenderFrameHost::FromPlaceholderId(embedder_render_process_id,
+                                                    plugin_frame_routing_id);
+  }
+  if (!plugin_rfh) {
+    // This should only happen if the original plugin frame was cross-process
+    // and a concurrent navigation in its process won the race and ended up
+    // destroying the proxy whose routing ID was sent here by the
+    // MimeHandlerViewFrameContainer. We should ask the embedder to retry
+    // creating the guest.
+    guest_view->GetEmbedderFrame()->Send(
+        new ExtensionsGuestViewMsg_RetryCreatingMimeHandlerViewGuest(
+            element_instance_id));
+    guest_view->Destroy(true);
+    return;
+  }
+
+  if (guest_view->web_contents()->CanAttachToOuterContentsFrame(plugin_rfh)) {
+    guest_view->AttachToOuterWebContentsFrame(plugin_rfh, element_instance_id,
+                                              is_full_page_plugin);
+
+  } else {
+    // TODO(ekaramad): Replace this navigation logic with an asynchronous
+    // attach API in content layer (https://crbug.com/911161).
+    // The current API for attaching guests requires the frame in outer
+    // WebContents to be same-origin with parent. The current frame could also
+    // have beforeunload handlers. Considering these issues, we should first
+    // navigate the frame to "about:blank" and put it in the same SiteInstance
+    // as parent before using it for attach API.
+    frame_navigation_helpers_[element_instance_id] =
+        std::make_unique<FrameNavigationHelper>(
+            plugin_rfh, guest_view->guest_instance_id(), element_instance_id,
+            is_full_page_plugin, this);
+  }
 }
 
 void ExtensionsGuestViewMessageFilter::ResumeAttachOrDestroy(
@@ -594,9 +586,8 @@ void ExtensionsGuestViewMessageFilter::ResumeAttachOrDestroy(
   if (plugin_rfh) {
     DCHECK(
         guest_view->web_contents()->CanAttachToOuterContentsFrame(plugin_rfh));
-    AttachToEmbedderFrame(plugin_rfh->GetRoutingID(), element_instance_id,
-                          helper->guest_instance_id(), helper->attach_params(),
-                          helper->is_full_page_plugin());
+    guest_view->AttachToOuterWebContentsFrame(plugin_rfh, element_instance_id,
+                                              helper->is_full_page_plugin());
   } else {
     guest_view->GetEmbedderFrame()->Send(
         new ExtensionsGuestViewMsg_DestroyFrameContainer(element_instance_id));
