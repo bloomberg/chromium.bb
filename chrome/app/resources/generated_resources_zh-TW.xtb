@@ -390,7 +390,7 @@
 <translation id="1556537182262721003">無法將擴充功能目錄移至設定檔。</translation>
 <translation id="155865706765934889">觸控板</translation>
 <translation id="1564414980088536597">無法使用這張圖片，請選擇其他圖片。</translation>
-<translation id="1566007797958927729">Chromebook 設定完成後，請先開啟 Google 助理，然後按下 Google 助理按鈕或說出「Ok Google」，就能隨時向你的 Google 助理下達指令。</translation>
+<translation id="1566007797958927729">Chromebook 設定完成後，請先開啟 Google 助理，之後只要按下 Google 助理按鈕或說出「Ok Google」，就能向你的 Google 助理下達指令。</translation>
 <translation id="1566049601598938765">網站</translation>
 <translation id="1567387640189251553">自你上次輸入密碼後，裝置已連接其他鍵盤。你的按鍵行為可能會遭到側錄。</translation>
 <translation id="1567750922576943685">驗證你的身分有助於確保個人資訊安全無虞</translation>
@@ -5209,7 +5209,7 @@
 <translation id="8962918469425892674">這個網站正在使用動作感應器或光源感應器。</translation>
 <translation id="8965037249707889821">輸入先前的密碼</translation>
 <translation id="8965697826696209160">空間不足。</translation>
-<translation id="8966870118594285808">請重新開啟不小心關閉的分頁</translation>
+<translation id="8966870118594285808">你可以重新開啟不小心關閉的分頁</translation>
 <translation id="8967866634928501045">按下 Alt + Shift + A 鍵即可顯示</translation>
 <translation id="8970203673128054105">查看投放模式清單</translation>
 <translation id="89720367119469899">Escape</translation>

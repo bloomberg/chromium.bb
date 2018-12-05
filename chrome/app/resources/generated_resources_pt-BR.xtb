@@ -143,7 +143,7 @@
 <translation id="1189418886587279221">Ative recursos de acessibilidade para facilitar o uso do seu dispositivo.</translation>
 <translation id="1190144681599273207">A busca deste arquivo usará aproximadamente <ph name="FILE_SIZE" /> de dados móveis.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Acessar um arquivo armazenado no seu computador}one{Acessar # arquivos armazenados no seu computador.}other{Acessar # arquivos armazenados no seu computador}}</translation>
-<translation id="1190660338026981543">Seu <ph name="DEVICE_TYPE" /> foi inscrito para o gerenciamento empresarial por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
+<translation id="1190660338026981543">Seu dispositivo (<ph name="DEVICE_TYPE" />) foi inscrito para o gerenciamento empresarial por <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.</translation>
 <translation id="119092896208640858">Para limpar os dados de navegação apenas deste dispositivo e mantê-los na sua Conta do Google, <ph name="BEGIN_LINK" />saia da sua conta<ph name="END_LINK" />.</translation>
 <translation id="1193273168751563528">Entrar na sessão gerenciada</translation>
 <translation id="1195076408729068893">Para iniciar o Smart Lock, digite sua senha. Na próxima vez, você poderá usar seu smartphone para desbloquear o <ph name="DEVICE_TYPE" />.</translation>
