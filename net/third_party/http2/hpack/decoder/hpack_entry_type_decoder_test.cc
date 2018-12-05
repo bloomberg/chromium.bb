@@ -56,7 +56,8 @@ TEST_F(HpackEntryTypeDecoderTest, DynamicTableSizeUpdate) {
 
 TEST_F(HpackEntryTypeDecoderTest, HeaderWithIndex) {
   std::vector<HpackEntryType> entry_types = {
-      HpackEntryType::kIndexedHeader, HpackEntryType::kIndexedLiteralHeader,
+      HpackEntryType::kIndexedHeader,
+      HpackEntryType::kIndexedLiteralHeader,
       HpackEntryType::kUnindexedLiteralHeader,
       HpackEntryType::kNeverIndexedLiteralHeader,
   };
