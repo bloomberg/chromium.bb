@@ -411,8 +411,8 @@ void ThumbnailDatabase::Vacuum() {
   ignore_result(db_.Execute("VACUUM"));
 }
 
-void ThumbnailDatabase::TrimMemory(bool aggressively) {
-  db_.TrimMemory(aggressively);
+void ThumbnailDatabase::TrimMemory() {
+  db_.TrimMemory();
 }
 
 std::map<favicon_base::FaviconID, IconMappingsForExpiry>

@@ -306,8 +306,8 @@ void HistoryDatabase::Vacuum() {
   ignore_result(db_.Execute("VACUUM"));
 }
 
-void HistoryDatabase::TrimMemory(bool aggressively) {
-  db_.TrimMemory(aggressively);
+void HistoryDatabase::TrimMemory() {
+  db_.TrimMemory();
 }
 
 bool HistoryDatabase::Raze() {
