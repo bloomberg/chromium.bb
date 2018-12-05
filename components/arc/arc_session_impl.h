@@ -17,7 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_client_adapter.h"
 #include "components/arc/arc_session.h"
 
 namespace ash {
@@ -30,8 +30,7 @@ namespace mojom {
 class ArcBridgeHost;
 }  // namespace mojom
 
-class ArcSessionImpl : public ArcSession,
-                       public chromeos::SessionManagerClient::Observer {
+class ArcSessionImpl : public ArcSession, public ArcClientAdapter::Observer {
  public:
   // The possible states of the session. Expected state changes are as follows.
   //
@@ -201,8 +200,8 @@ class ArcSessionImpl : public ArcSession,
   // Request to stop ARC instance via DBus.
   void StopArcInstance();
 
-  // chromeos::SessionManagerClient::Observer:
-  void ArcInstanceStopped(login_manager::ArcContainerStopReason stop_reason,
+  // ArcClientAdapter::Observer:
+  void ArcInstanceStopped(ArcContainerStopReason stop_reason,
                           const std::string& container_instance_id) override;
 
   // Completes the termination procedure. Note that calling this may end up with
@@ -218,6 +217,9 @@ class ArcSessionImpl : public ArcSession,
 
   // Delegate implementation.
   std::unique_ptr<Delegate> delegate_;
+
+  // An adapter to talk to the OS daemon.
+  std::unique_ptr<ArcClientAdapter> client_;
 
   // The state of the session.
   State state_ = State::NOT_STARTED;
