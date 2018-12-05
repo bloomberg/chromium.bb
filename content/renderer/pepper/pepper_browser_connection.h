@@ -32,8 +32,8 @@ class PepperBrowserConnection
     : public RenderFrameObserver,
       public RenderFrameObserverTracker<PepperBrowserConnection> {
  public:
-  typedef base::Callback<void(const std::vector<int>&)>
-      PendingResourceIDCallback;
+  using PendingResourceIDCallback =
+      base::OnceCallback<void(const std::vector<int>&)>;
   explicit PepperBrowserConnection(RenderFrame* render_frame);
   ~PepperBrowserConnection() override;
 
@@ -48,7 +48,7 @@ class PepperBrowserConnection
   void SendBrowserCreate(PP_Instance instance,
                          int child_process_id,
                          const std::vector<IPC::Message>& create_messages,
-                         const PendingResourceIDCallback& callback);
+                         PendingResourceIDCallback callback);
 
   // Called when the renderer creates an in-process instance.
   void DidCreateInProcessInstance(PP_Instance instance,

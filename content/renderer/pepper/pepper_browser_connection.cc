@@ -61,9 +61,9 @@ void PepperBrowserConnection::SendBrowserCreate(
     int child_process_id,
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,
-    const PendingResourceIDCallback& callback) {
+    PendingResourceIDCallback callback) {
   int32_t sequence_number = GetNextSequence();
-  pending_create_map_[sequence_number] = callback;
+  pending_create_map_[sequence_number] = std::move(callback);
   ppapi::proxy::ResourceMessageCallParams params(0, sequence_number);
   Send(new PpapiHostMsg_CreateResourceHostsFromHost(
       routing_id(), child_process_id, params, instance, nested_msgs));
@@ -76,7 +76,7 @@ void PepperBrowserConnection::OnMsgCreateResourceHostsFromHostReply(
   // with.
   auto it = pending_create_map_.find(sequence_number);
   if (it != pending_create_map_.end()) {
-    it->second.Run(pending_resource_host_ids);
+    std::move(it->second).Run(pending_resource_host_ids);
     pending_create_map_.erase(it);
   } else {
     NOTREACHED();

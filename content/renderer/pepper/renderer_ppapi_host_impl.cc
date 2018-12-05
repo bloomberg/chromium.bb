@@ -272,17 +272,17 @@ void RendererPpapiHostImpl::SetToExternalPluginHost() {
 void RendererPpapiHostImpl::CreateBrowserResourceHosts(
     PP_Instance instance,
     const std::vector<IPC::Message>& nested_msgs,
-    const base::Callback<void(const std::vector<int>&)>& callback) const {
+    base::OnceCallback<void(const std::vector<int>&)> callback) const {
   RenderFrame* render_frame = GetRenderFrameForInstance(instance);
   PepperBrowserConnection* browser_connection =
       PepperBrowserConnection::Get(render_frame);
   if (!browser_connection) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, std::vector<int>(nested_msgs.size(), 0)));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  std::vector<int>(nested_msgs.size(), 0)));
   } else {
-    browser_connection->SendBrowserCreate(
-        module_->GetPluginChildId(), instance, nested_msgs, callback);
+    browser_connection->SendBrowserCreate(module_->GetPluginChildId(), instance,
+                                          nested_msgs, std::move(callback));
   }
 }
 
