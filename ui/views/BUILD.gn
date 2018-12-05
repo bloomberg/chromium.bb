@@ -611,6 +611,7 @@ jumbo_component("views") {
     public += [
       "accessibility/ax_aura_obj_cache.h",
       "accessibility/ax_aura_obj_wrapper.h",
+      "accessibility/ax_aura_window_utils.h",
       "accessibility/ax_root_obj_wrapper.h",
       "accessibility/ax_tree_source_views.h",
       "accessibility/ax_view_obj_wrapper.h",
@@ -645,6 +646,7 @@ jumbo_component("views") {
     sources += [
       "accessibility/ax_aura_obj_cache.cc",
       "accessibility/ax_aura_obj_wrapper.cc",
+      "accessibility/ax_aura_window_utils.cc",
       "accessibility/ax_root_obj_wrapper.cc",
       "accessibility/ax_tree_source_views.cc",
       "accessibility/ax_view_obj_wrapper.cc",
@@ -1173,6 +1175,9 @@ test("views_unittests") {
       # are only useful for views_unittests, and not in views_mus_unittests.
       "touchui/touch_selection_controller_impl_unittest.cc",
       "widget/native_widget_aura_unittest.cc",
+
+      # Doesn't work in views_mus_unittests yet. crbug.com/911945
+      "accessibility/ax_aura_window_utils_unittest.cc",
     ]
 
     if (is_mac) {
