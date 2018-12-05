@@ -25,8 +25,6 @@
 #include "chrome/browser/signin/signin_util.h"
 #endif  // defined(OS_CHROMEOS)
 
-using browser_sync::ProfileSyncService;
-
 namespace sync_ui_util {
 
 namespace {
@@ -34,7 +32,7 @@ namespace {
 // Returns the message that should be displayed when the user is authenticated
 // and can connect to the sync server. If the user hasn't yet authenticated, an
 // empty string is returned.
-base::string16 GetSyncedStateStatusLabel(const ProfileSyncService* service,
+base::string16 GetSyncedStateStatusLabel(const syncer::SyncService* service,
                                          const SigninManagerBase& signin,
                                          StatusLabelStyle style,
                                          bool sync_everything) {
@@ -93,7 +91,7 @@ void GetStatusForActionableError(const syncer::SyncProtocolError& error,
 }
 
 void GetStatusForUnrecoverableError(Profile* profile,
-                                    const ProfileSyncService* service,
+                                    const syncer::SyncService* service,
                                     base::string16* status_label,
                                     base::string16* link_label,
                                     ActionType* action_type) {
@@ -165,7 +163,7 @@ void GetStatusForAuthError(Profile* profile,
 
 // status_label and link_label must either be both null or both non-null.
 MessageType GetStatusInfo(Profile* profile,
-                          const ProfileSyncService* service,
+                          const syncer::SyncService* service,
                           const SigninManagerBase& signin,
                           StatusLabelStyle style,
                           base::string16* status_label,
@@ -320,7 +318,7 @@ MessageType GetStatusInfo(Profile* profile,
 }  // namespace
 
 MessageType GetStatusLabels(Profile* profile,
-                            const ProfileSyncService* service,
+                            const syncer::SyncService* service,
                             const SigninManagerBase& signin,
                             base::string16* status_label,
                             base::string16* link_label,
@@ -337,8 +335,8 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     const identity::IdentityManager& identity_manager,
     int* content_string_id,
     int* button_string_id) {
-  const ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+  const syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
 
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
@@ -416,22 +414,22 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 #endif
 
 MessageType GetStatus(Profile* profile,
-                      const ProfileSyncService* service,
+                      const syncer::SyncService* service,
                       const SigninManagerBase& signin) {
   ActionType action_type = NO_ACTION;
   return GetStatusInfo(profile, service, signin, WITH_HTML, nullptr, nullptr,
                        &action_type);
 }
 
-bool ShouldRequestSyncConfirmation(const ProfileSyncService* service) {
+bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {
   return !service->IsSetupInProgress() &&
          !service->GetUserSettings()->IsFirstSetupComplete() &&
          !service->HasDisableReason(
-             ProfileSyncService::DISABLE_REASON_USER_CHOICE) &&
+             syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
          service->IsAuthenticatedAccountPrimary();
 }
 
-bool ShouldShowPassphraseError(const ProfileSyncService* service) {
+bool ShouldShowPassphraseError(const syncer::SyncService* service) {
   return service->GetUserSettings()->IsFirstSetupComplete() &&
          service->GetUserSettings()->IsPassphraseRequired() &&
          service->GetUserSettings()->IsPassphraseRequiredForDecryption();

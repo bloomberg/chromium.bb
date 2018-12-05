@@ -15,9 +15,9 @@ namespace identity {
 class IdentityManager;
 }
 
-namespace browser_sync {
-class ProfileSyncService;
-}  // namespace browser_sync
+namespace syncer {
+class SyncService;
+}  // namespace syncer
 
 // Utility functions to gather current sync status information from the sync
 // service and constructs messages suitable for showing in UI.
@@ -56,13 +56,10 @@ enum AvatarSyncErrorType {
   SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
 };
 
-// TODO(akalin): audit the use of ProfileSyncService* service below,
-// and use const ProfileSyncService& service where possible.
-
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
 MessageType GetStatusLabels(Profile* profile,
-                            const browser_sync::ProfileSyncService* service,
+                            const syncer::SyncService* service,
                             const SigninManagerBase& signin,
                             base::string16* status_label,
                             base::string16* link_label,
@@ -79,18 +76,17 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
 #endif
 
 MessageType GetStatus(Profile* profile,
-                      const browser_sync::ProfileSyncService* service,
+                      const syncer::SyncService* service,
                       const SigninManagerBase& signin);
 
 // Whether sync is currently blocked from starting because the sync
 // confirmation dialog hasn't been shown. Note that once the dialog is
 // showing (i.e. IsFirstSetupInProgress() is true), this will return false.
-bool ShouldRequestSyncConfirmation(
-    const browser_sync::ProfileSyncService* service);
+bool ShouldRequestSyncConfirmation(const syncer::SyncService* service);
 
 // Returns whether it makes sense to show a Sync passphrase error UI, i.e.
 // whether a missing passphrase is preventing Sync from fully starting up.
-bool ShouldShowPassphraseError(const browser_sync::ProfileSyncService* service);
+bool ShouldShowPassphraseError(const syncer::SyncService* service);
 
 }  // namespace sync_ui_util
 
