@@ -31,6 +31,20 @@ namespace blink {
 
 namespace {
 
+// Reify and return a CSSStyleValue, if |value| can be reified without the
+// context of a CSS property.
+CSSStyleValue* CreateStyleValueWithoutProperty(const CSSValue& value) {
+  if (value.IsCSSWideKeyword())
+    return CSSKeywordValue::FromCSSValue(value);
+  if (value.IsVariableReferenceValue())
+    return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
+  if (value.IsCustomPropertyDeclaration()) {
+    return CSSUnparsedValue::FromCSSValue(
+        ToCSSCustomPropertyDeclaration(value));
+  }
+  return nullptr;
+}
+
 CSSStyleValue* CreateStyleValue(const CSSValue& value) {
   if (value.IsIdentifierValue() || value.IsCustomIdentValue())
     return CSSKeywordValue::FromCSSValue(value);
@@ -195,15 +209,10 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
 
 CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
                                             const CSSValue& value) {
-  // These cannot be overridden by individual properties.
-  if (value.IsCSSWideKeyword())
-    return CSSKeywordValue::FromCSSValue(value);
-  if (value.IsVariableReferenceValue())
-    return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
-  if (value.IsCustomPropertyDeclaration()) {
-    return CSSUnparsedValue::FromCSSValue(
-        ToCSSCustomPropertyDeclaration(value));
-  }
+  DCHECK_NE(property_id, CSSPropertyInvalid);
+
+  if (CSSStyleValue* style_value = CreateStyleValueWithoutProperty(value))
+    return style_value;
 
   if (!CSSOMTypes::IsPropertySupported(property_id)) {
     DCHECK_NE(property_id, CSSPropertyVariable);
@@ -380,7 +389,14 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     const CSSValue& css_value) {
-  return CssValueToStyleValueVector(CSSPropertyInvalid, g_null_atom, css_value);
+  CSSStyleValueVector style_value_vector;
+
+  if (CSSStyleValue* value = CreateStyleValueWithoutProperty(css_value))
+    style_value_vector.push_back(value);
+  else
+    style_value_vector.push_back(CSSUnsupportedStyleValue::Create(css_value));
+
+  return style_value_vector;
 }
 
 }  // namespace blink

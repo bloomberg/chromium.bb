@@ -43,7 +43,16 @@ class CORE_EXPORT StyleValueFactory {
       const PropertyRegistration*,
       const HeapVector<CSSStyleValueOrString>& values,
       const ExecutionContext&);
-  // If you don't have complex CSS properties, use this one.
+  // Reify a CSSStyleValue without the context of a CSS property. For most
+  // CSSValues, this will result in a CSSUnsupportedStyleValue. Note that the
+  // CSSUnsupportedStyleValue returned from this function (unlike regular
+  // CSSUnsupportedStyleValues) do not have an associated CSS property,
+  // which means that any attempt to StylePropertyMap.set/setAll such values
+  // will always fail. Therefore, this function should only be used in
+  // situations where declared and inline style objects [1] are not accessible,
+  // such as paint worklets.
+  //
+  // [1] https://www.w3.org/TR/css-typed-om-1/#declared-stylepropertymap-objects
   static CSSStyleValueVector CssValueToStyleValueVector(const CSSValue&);
 };
 
