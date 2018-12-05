@@ -2312,6 +2312,15 @@ void ChromeContentBrowserClient::NavigationRequestRedirected(
         *modified_request_headers = std::move(*extra_headers);
     }
   }
+
+  std::unique_ptr<net::HttpRequestHeaders> client_hints_extra_headers =
+      client_hints::GetAdditionalNavigationRequestClientHintsHeaders(
+          browser_context, url);
+  if (client_hints_extra_headers) {
+    if (!modified_request_headers->has_value())
+      *modified_request_headers = net::HttpRequestHeaders();
+    modified_request_headers->value().MergeFrom(*client_hints_extra_headers);
+  }
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

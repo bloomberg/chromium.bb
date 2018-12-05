@@ -155,6 +155,9 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     https_cross_origin_server_.RegisterRequestMonitor(
         base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
                             base::Unretained(this)));
+    https_cross_origin_server_.RegisterRequestHandler(
+        base::BindRepeating(&ClientHintsBrowserTest::RequestHandlerToRedirect,
+                            base::Unretained(this)));
     https_server_.RegisterRequestHandler(base::BindRepeating(
         &ClientHintsBrowserTest::RequestHandlerToFetchCrossOriginIframe,
         base::Unretained(this)));
@@ -225,6 +228,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
         "/http_equiv_accept_ch_without_lifetime_img_localhost.html");
     http_equiv_accept_ch_with_lifetime_ =
         https_server_.GetURL("/http_equiv_accept_ch_with_lifetime.html");
+
+    redirect_url_ = https_cross_origin_server_.GetURL("/redirect.html");
   }
 
   ~ClientHintsBrowserTest() override {}
@@ -360,6 +365,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return http_equiv_accept_ch_without_lifetime_img_localhost_;
   }
 
+  const GURL& redirect_url() const { return redirect_url_; }
+
   size_t count_client_hints_headers_seen() const {
     return count_client_hints_headers_seen_;
   }
@@ -378,6 +385,27 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   bool intercept_to_http_equiv_iframe_ = false;
 
  private:
+  // Intercepts only the main frame requests that contain
+  // "redirect" in the resource path. The intercepted requests
+  // are served an HTML file that fetches an iframe from a cross-origin HTTPS
+  // server.
+  std::unique_ptr<net::test_server::HttpResponse> RequestHandlerToRedirect(
+      const net::test_server::HttpRequest& request) {
+    // Check if it's a main frame request.
+    if (request.relative_url.find(".html") == std::string::npos)
+      return nullptr;
+
+    if (request.GetURL().spec().find("redirect") == std::string::npos)
+      return nullptr;
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> response;
+    response.reset(new net::test_server::BasicHttpResponse);
+    response->set_code(net::HTTP_FOUND);
+    response->AddCustomHeader("Location",
+                              without_accept_ch_without_lifetime_url().spec());
+    return std::move(response);
+  }
+
   // Intercepts only the main frame requests that contain
   // |intercept_iframe_resource_| in the resource path. The intercepted requests
   // are served an HTML file that fetches an iframe from a cross-origin HTTPS
@@ -423,6 +451,11 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     bool is_main_frame_navigation =
         request.GetURL().spec().find(".html") != std::string::npos;
+
+    if (is_main_frame_navigation &&
+        request.GetURL().spec().find("redirect") != std::string::npos) {
+      return;
+    }
 
     if (is_main_frame_navigation) {
       VerifyClientHintsReceived(expect_client_hints_on_main_frame_, request);
@@ -602,6 +635,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   GURL accept_ch_without_lifetime_img_localhost_;
   GURL http_equiv_accept_ch_without_lifetime_img_localhost_;
   GURL http_equiv_accept_ch_with_lifetime_;
+  GURL redirect_url_;
 
   double main_frame_dpr_observed_ = -1;
   double main_frame_viewport_width_observed_ = -1;
@@ -1040,6 +1074,55 @@ IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
   SetClientHintExpectationsOnSubresources(true);
   ui_test_utils::NavigateToURL(browser(),
                                without_accept_ch_without_lifetime_url());
+
+  // Six client hints are attached to the image request, and six to the main
+  // frame request.
+  EXPECT_EQ(12u, count_client_hints_headers_seen());
+}
+
+// The test first fetches a page that sets Accept-CH-Lifetime. Next, it fetches
+// a URL from a different origin. However, that URL response redirects to the
+// same origin from where the first page was fetched. The test verifies that
+// on receiving redirect to an origin for which the browser has persisted client
+// hints prefs, the browser attaches the client hints headers when fetching the
+// redirected URL.
+IN_PROC_BROWSER_TEST_P(ClientHintsBrowserTest,
+                       ClientHintsLifetimeFollowedByRedirectToNoClientHint) {
+  const GURL gurl = GetParam() ? http_equiv_accept_ch_with_lifetime()
+                               : accept_ch_with_lifetime_url();
+
+  base::HistogramTester histogram_tester;
+  ContentSettingsForOneType host_settings;
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  // Fetching |gurl| should persist the request for client hints.
+  ui_test_utils::NavigateToURL(browser(), gurl);
+
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 6, 1);
+  // accept_ch_with_lifetime_url() sets client hints persist duration to 3600
+  // seconds.
+  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
+                                      3600 * 1000, 1);
+  base::RunLoop().RunUntilIdle();
+
+  // Clients hints preferences for one origin should be persisted.
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+
+  SetClientHintExpectationsOnMainFrame(true);
+  SetClientHintExpectationsOnSubresources(true);
+  ui_test_utils::NavigateToURL(browser(), redirect_url());
 
   // Six client hints are attached to the image request, and six to the main
   // frame request.
