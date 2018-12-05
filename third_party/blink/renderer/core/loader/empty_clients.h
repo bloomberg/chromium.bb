@@ -377,7 +377,13 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   WebTextCheckClient* GetTextCheckerClient() const override;
 
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return Platform::Current()->CreateDefaultURLLoaderFactory();
+    // Most consumers of EmptyLocalFrameClient should not make network requests.
+    // If an exception needs to be made (e.g. in test code), then the consumer
+    // should define their own subclass of LocalFrameClient or
+    // EmptyLocalFrameClient and override the CreateURLLoaderFactory method.
+    // See also https://crbug.com/891872.
+    NOTREACHED();
+    return nullptr;
   }
 
   void BubbleLogicalScrollInParentFrame(

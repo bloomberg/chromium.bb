@@ -43,6 +43,20 @@
 
 namespace blink {
 
+namespace {
+
+class DummyLocalFrameClient : public EmptyLocalFrameClient {
+ public:
+  DummyLocalFrameClient() = default;
+
+ private:
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
+  }
+};
+
+}  // namespace
+
 std::unique_ptr<DummyPageHolder> DummyPageHolder::Create(
     const IntSize& initial_view_size,
     Page::PageClients* page_clients,
@@ -69,7 +83,7 @@ DummyPageHolder::DummyPageHolder(
 
   local_frame_client_ = local_frame_client;
   if (!local_frame_client_)
-    local_frame_client_ = EmptyLocalFrameClient::Create();
+    local_frame_client_ = MakeGarbageCollected<DummyLocalFrameClient>();
 
   frame_ = LocalFrame::Create(local_frame_client_.Get(), *page_, nullptr);
   frame_->SetView(LocalFrameView::Create(*frame_, initial_view_size));
