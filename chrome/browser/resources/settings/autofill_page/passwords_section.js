@@ -374,7 +374,12 @@ Polymer({
   showPassword_: function(event) {
     this.passwordManager_.getPlaintextPassword(
         /** @type {!number} */ (event.detail.item.entry.id), item => {
-          event.detail.set('item.password', item.plaintextPassword);
+          // Note: We are explicitly not using event.detail.set() here, as that
+          // would not trigger notifyPath if event.detail.item.password is
+          // already equal to item.plaintextPassword. See crbug/910081 for more
+          // details.
+          event.detail.item.password = item.plaintextPassword;
+          event.detail.notifyPath('item.password');
         });
   },
 
