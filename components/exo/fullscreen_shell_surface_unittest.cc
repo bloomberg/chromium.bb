@@ -50,6 +50,9 @@ TEST_F(FullscreenShellSurfaceTest, SurfaceDestroyedCallback) {
   fullscreen_surface->set_surface_destroyed_callback(base::BindOnce(
       &DestroyFullscreenShellSurface, base::Unretained(&fullscreen_surface)));
 
+  // Change the surface so the commit has an actual change otherwise it triggers
+  // a DCHECK during frame submission.
+  surface->SetViewport(gfx::Size(64, 64));
   surface->Commit();
 
   EXPECT_TRUE(fullscreen_surface.get());
