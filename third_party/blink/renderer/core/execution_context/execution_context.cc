@@ -204,13 +204,6 @@ String ExecutionContext::OutgoingReferrer() const {
   return Url().StrippedForUseAsReferrer();
 }
 
-FetchClientSettingsObjectSnapshot*
-ExecutionContext::CreateFetchClientSettingsObjectSnapshot() {
-  return MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-      BaseURL(), GetSecurityOrigin(), GetReferrerPolicy(), OutgoingReferrer(),
-      GetHttpsState());
-}
-
 void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                                                  bool support_legacy_keywords) {
   network::mojom::ReferrerPolicy referrer_policy;

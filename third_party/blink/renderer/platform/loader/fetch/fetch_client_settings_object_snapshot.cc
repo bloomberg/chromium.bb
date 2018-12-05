@@ -9,6 +9,15 @@
 namespace blink {
 
 FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
+    const FetchClientSettingsObject& fetch_client_setting_object)
+    : FetchClientSettingsObjectSnapshot(
+          fetch_client_setting_object.BaseURL(),
+          fetch_client_setting_object.GetSecurityOrigin(),
+          fetch_client_setting_object.GetReferrerPolicy(),
+          fetch_client_setting_object.GetOutgoingReferrer(),
+          fetch_client_setting_object.GetHttpsState()) {}
+
+FetchClientSettingsObjectSnapshot::FetchClientSettingsObjectSnapshot(
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData> data)
     : FetchClientSettingsObjectSnapshot(data->base_url,
                                         data->security_origin,

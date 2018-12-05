@@ -64,6 +64,8 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/substitute_data.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -474,7 +476,8 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
     // called navigator.ServiceWorker.register(). To do it, we need to make a
     // way to pass the settings object over mojo IPCs.
     auto* outside_settings_object =
-        document->CreateFetchClientSettingsObjectSnapshot();
+        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+            *document->Fetcher()->Context().GetFetchClientSettingsObject());
     network::mojom::FetchCredentialsMode credentials_mode =
         network::mojom::FetchCredentialsMode::kOmit;
     worker_thread_->ImportModuleScript(worker_start_data_.script_url,

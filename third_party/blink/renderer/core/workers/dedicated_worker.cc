@@ -167,12 +167,18 @@ void DedicatedWorker::Start() {
       ThreadDebugger::From(ToIsolate(GetExecutionContext()))
           ->StoreCurrentStackTrace("Worker Created");
 
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
+    scope->EnsureFetcher();
   if (RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled() ||
       options_->type() == "module") {
     // Specify empty source code here because scripts will be fetched on the
     // worker thread.
     auto* outside_settings_object =
-        GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
+        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+            *GetExecutionContext()
+                 ->Fetcher()
+                 ->Context()
+                 .GetFetchClientSettingsObject());
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(
             script_request_url_, network::mojom::ReferrerPolicy::kDefault),
@@ -184,8 +190,6 @@ void DedicatedWorker::Start() {
     // Legacy code path (to be deprecated, see https://crbug.com/835717):
     // A worker thread will start after scripts are fetched on the current
     // thread.
-    if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
-      scope->EnsureFetcher();
     classic_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
         *GetExecutionContext(), GetExecutionContext()->Fetcher(),
@@ -296,7 +300,11 @@ void DedicatedWorker::OnFinished(const v8_inspector::V8StackTraceId& stack_id) {
            SecurityOrigin::AreSameSchemeHostPort(script_request_url_,
                                                  script_response_url));
     auto* outside_settings_object =
-        GetExecutionContext()->CreateFetchClientSettingsObjectSnapshot();
+        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+            *GetExecutionContext()
+                 ->Fetcher()
+                 ->Context()
+                 .GetFetchClientSettingsObject());
     context_proxy_->StartWorkerGlobalScope(
         CreateGlobalScopeCreationParams(script_response_url, referrer_policy),
         options_, script_response_url, outside_settings_object, stack_id,
