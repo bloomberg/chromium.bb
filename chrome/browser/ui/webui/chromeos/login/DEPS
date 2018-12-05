@@ -3,15 +3,6 @@ specific_include_rules = {
   "core_oobe_handler\.cc": [
     "+ash/shell.h",
   ],
-  # TODO(mash): Fix or deprecate. https://crbug.com/678990
-  "signin_screen_handler\.cc": [
-    "+ash/detachable_base",
-    "+ash/shell.h",
-  ],
-  "signin_screen_handler\.h": [
-    "+ash/detachable_base/detachable_base_observer.h",
-  ],
-
   # Tests.
   "oobe_display_chooser_browsertest\.cc": [
     "+ash/shell.h",

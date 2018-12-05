@@ -10,7 +10,6 @@
 #include <set>
 #include <string>
 
-#include "ash/detachable_base/detachable_base_observer.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -18,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -32,7 +30,6 @@
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "components/session_manager/core/session_manager_observer.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -49,8 +46,6 @@ namespace ash {
 namespace mojom {
 enum class TrayActionState;
 }  // namespace mojom
-
-class DetachableBaseHandler;
 }  // namespace ash
 
 namespace base {
@@ -60,10 +55,6 @@ class ListValue;
 
 namespace lock_screen_apps {
 class StateController;
-}
-
-namespace session_manager {
-class SessionManager;
 }
 
 namespace chromeos {
@@ -204,9 +195,7 @@ class SigninScreenHandler
       public TabletModeClientObserver,
       public lock_screen_apps::StateObserver,
       public OobeUI::Observer,
-      public session_manager::SessionManagerObserver,
-      public ash::mojom::WallpaperObserver,
-      public ash::DetachableBaseObserver {
+      public ash::mojom::WallpaperObserver {
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
@@ -250,11 +239,6 @@ class SigninScreenHandler
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override;
   void OnWallpaperBlurChanged(bool blurred) override;
-
-  // ash::DetachableBaseObserver:
-  void OnDetachableBasePairingStatusChanged(
-      ash::DetachableBasePairingStatus pairing_status) override;
-  void OnDetachableBaseRequiresUpdateChanged(bool requires_update) override;
 
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
@@ -335,9 +319,6 @@ class SigninScreenHandler
 
   // TabletModeClientObserver:
   void OnTabletModeToggled(bool enabled) override;
-
-  // session_manager::SessionManagerObserver:
-  void OnSessionStateChanged() override;
 
   // lock_screen_apps::StateObserver:
   void OnLockScreenNoteStateChanged(ash::mojom::TrayActionState state) override;
@@ -461,23 +442,6 @@ class SigninScreenHandler
   // responding to network state notifications.
   void ReenableNetworkStateUpdatesAfterProxyAuth();
 
-  // Determines whether a warning about the detachable base getting changed
-  // should be shown to the user. The warning is shown a detachable base is
-  // present, and the user whose pod is currently focused has used a different
-  // base last time. It updates the detachable base warning visibility as
-  // required.
-  void UpdateDetachableBaseChangedError();
-
-  // Sends a request to the UI to show a detachable base change warning for the
-  // currently focused user pod. The warning warns the user that the currently
-  // attached base is different than the one they last used, and that it might
-  // not be trusted.
-  void ShowDetachableBaseChangedError();
-
-  // If a detachable base change warning was requested to be shown, sends a
-  // request to UI to hide the warning.
-  void HideDetachableBaseChangedError();
-
   // Current UI state of the signin screen.
   UIState ui_state_ = UI_STATE_UNKNOWN;
 
@@ -560,19 +524,9 @@ class SigninScreenHandler
 
   std::unique_ptr<AccountId> focused_pod_account_id_;
 
-  // If set, the account for which detachable base change warning was shown in
-  // the login UI.
-  base::Optional<AccountId> account_with_detachable_base_error_;
-
-  ScopedObserver<session_manager::SessionManager,
-                 session_manager::SessionManagerObserver>
-      session_manager_observer_;
   ScopedObserver<lock_screen_apps::StateController,
                  lock_screen_apps::StateObserver>
       lock_screen_apps_observer_;
-
-  ScopedObserver<ash::DetachableBaseHandler, ash::DetachableBaseObserver>
-      detachable_base_observer_;
 
   // The binding this instance uses to implement ash::mojom::WallpaperObserver.
   mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
