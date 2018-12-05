@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/null_task_runner.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller_delegate.h"
@@ -70,6 +71,13 @@ TestBrowserContext::~TestBrowserContext() {
 
   NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
+
+  // disk_cache::SimpleBackendImpl performs all disk IO on the TaskScheduler
+  // threads. The cache is initialized in the directory owned by
+  // |browser_context_dir_| and so ScopedTempDir destructor may race with cache
+  // IO (see https://crbug.com/910029 for example). Let all pending IO
+  // operations finish before destroying |browser_context_dir_|.
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 }
 
 base::FilePath TestBrowserContext::TakePath() {
