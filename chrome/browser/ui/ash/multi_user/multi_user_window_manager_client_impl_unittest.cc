@@ -88,36 +88,6 @@ const char kBAccountIdString[] =
 const char kArrowBAccountIdString[] =
     "->{\"account_type\":\"unknown\",\"email\":\"B\"}";
 
-aura::Window* FindWindowInAshForClientWindow(aura::Window* window) {
-  if (!aura::WindowMus::Get(window))
-    return nullptr;
-
-  // Flush all messages from the WindowTreeClient to ensure the client id has
-  // been received.
-  aura::test::WaitForAllChangesToComplete();
-
-  DCHECK_EQ(window->env()->mode(), aura::Env::Mode::MUS);
-  DCHECK(views::MusClient::Exists());
-  aura::WindowTreeClient* window_tree_client =
-      views::MusClient::Get()->window_tree_client();
-  DCHECK(window_tree_client);
-
-  aura::WindowPortMus* window_port_mus = aura::WindowPortMus::Get(window);
-  if (!window_port_mus)
-    return nullptr;  // Should only happen if we're in shutdown.
-
-  // By the time we get here the id should have been determined.
-  DCHECK(window_tree_client->id().has_value());
-  ws::ClientSpecificId client_id = *(window_tree_client->id());
-
-  // Use the top-most remote window. This should correspond to the Window of
-  // the Widget (DesktopNativeWidgetAura creates two windows).
-  const ws::Id transport_id = ws::BuildTransportId(
-      client_id,
-      static_cast<ws::ClientSpecificId>(window_port_mus->server_id()));
-  return ash::window_lookup::GetWindowByClientId(transport_id);
-}
-
 void FlushWindowTreeClientMessages() {
   if (!views::MusClient::Exists())
     return;
@@ -1688,8 +1658,12 @@ TEST_F(MultiUserWindowManagerClientImplMashTest,
   SetUpForThisManyWindows(1);
 
   std::unique_ptr<views::Widget> widget = CreateMusWidget();
+  // Flush all messages from the WindowTreeClient to ensure the client id has
+  // been received.
+  aura::test::WaitForAllChangesToComplete();
   aura::Window* widget_window_in_ash =
-      FindWindowInAshForClientWindow(widget->GetNativeWindow()->parent());
+      ash::window_lookup::GetProxyWindowForClientWindow(
+          widget->GetNativeWindow()->parent());
   ASSERT_TRUE(widget_window_in_ash);
   EXPECT_EQ(widget_window_in_ash->parent(), window(0)->parent());
 

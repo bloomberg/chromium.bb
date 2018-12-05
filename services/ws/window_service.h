@@ -119,6 +119,16 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Returns the window representing the specified id.
   aura::Window* GetWindowByClientId(Id transport_id);
 
+  // Returns the transport-id for the specified |window|. If |window| was
+  // not created by a client, returns kInvalidTransportId.
+  // NOTE: this function returns an id with the client_id portion set to the
+  // id of the client that created it. The client that created the window
+  // generally uses a client_id of 0 for Windows it creates. If you need to
+  // correlate this with a WindowMus you will most likely need to set the
+  // client_id to 0. See documentation of ClientWindowId in README.md
+  // for more details.
+  Id GetCompleteTransportIdForWindow(aura::Window* window);
+
   struct TreeAndWindowId {
     ClientWindowId id;
     WindowTree* tree = nullptr;
