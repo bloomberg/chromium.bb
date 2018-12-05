@@ -296,7 +296,7 @@ void DevToolsAndroidBridge::RequestDeviceCount(
   if (device_count_listeners_.empty() || callback.IsCancelled())
     return;
 
-  UsbDeviceProvider::CountDevices(callback);
+  device_manager_->CountDevices(callback);
 }
 
 void DevToolsAndroidBridge::ReceivedDeviceCount(int count) {
@@ -398,4 +398,9 @@ void DevToolsAndroidBridge::set_tcp_provider_callback_for_test(
     TCPProviderCallback callback) {
   tcp_provider_callback_ = callback;
   CreateDeviceProviders();
+}
+
+void DevToolsAndroidBridge::set_usb_device_manager_for_test(
+    device::mojom::UsbDeviceManagerPtrInfo fake_usb_manager) {
+  device_manager_->set_usb_device_manager_for_test(std::move(fake_usb_manager));
 }
