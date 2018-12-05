@@ -1748,10 +1748,10 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
           max_migrations_to_non_default_network_on_write_error_) {
     HistogramAndLogMigrationFailure(
         net_log_, MIGRATION_STATUS_ON_WRITE_ERROR_DISABLED, connection_id(),
-        "Exceeds maximum number of migrations on write errpr");
+        "Exceeds maximum number of migrations on write error");
     connection()->CloseConnection(
         quic::QUIC_PACKET_WRITE_ERROR,
-        "Too many migration for write error for the same network",
+        "Too many migrations for write error for the same network",
         quic::ConnectionCloseBehavior::SILENT_CLOSE);
     return;
   }

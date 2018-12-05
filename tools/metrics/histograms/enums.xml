@@ -43131,7 +43131,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Disabled by config"/>
   <int value="10" label="Path degrading not enabled"/>
   <int value="11" label="Timeout with no new network"/>
-  <int value="12" label="Path degrading before handshake confirmed"/>
+  <int value="12"
+      label="Exceeding maximum number of migrations on write error"/>
+  <int value="13" label="Path degrading before handshake confirmed"/>
 </enum>
 
 <enum name="QuicDisabledReason">
