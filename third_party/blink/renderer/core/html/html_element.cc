@@ -924,8 +924,11 @@ String HTMLElement::title() const {
 }
 
 int HTMLElement::tabIndex() const {
-  if (SupportsFocus())
+  if (SupportsFocus() ||
+      (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+       IsScrollableNode(this))) {
     return Element::tabIndex();
+  }
   return -1;
 }
 
