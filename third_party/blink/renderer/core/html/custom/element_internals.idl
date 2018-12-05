@@ -20,5 +20,7 @@ interface ElementInternals {
   [RaisesException, ImplementedAs=ValidationMessageForBinding] readonly attribute DOMString validationMessage;
   [RaisesException] boolean checkValidity();
   [RaisesException] boolean reportValidity();
+
+  readonly attribute NodeList labels;
 };
 

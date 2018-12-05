@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -91,9 +92,10 @@ HTMLElement* HTMLLabelElement::control() const {
 
 HTMLFormElement* HTMLLabelElement::form() const {
   if (HTMLElement* control = this->control()) {
-    return control->IsFormControlElement()
-               ? ToHTMLFormControlElement(control)->Form()
-               : nullptr;
+    if (auto* form_control_element = ToHTMLFormControlElementOrNull(control))
+      return form_control_element->Form();
+    if (control->IsFormAssociatedCustomElement())
+      return control->EnsureElementInternals().Form();
   }
   return nullptr;
 }

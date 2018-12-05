@@ -147,6 +147,10 @@ bool ElementInternals::reportValidity(ExceptionState& exception_state) {
   return ListedElement::reportValidity();
 }
 
+LabelsNodeList* ElementInternals::labels() {
+  return Target().labels();
+}
+
 void ElementInternals::DidUpgrade() {
   ContainerNode* parent = Target().parentNode();
   if (!parent)

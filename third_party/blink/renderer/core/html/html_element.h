@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual bool IsPluginElement() const { return false; }
 
   // https://html.spec.whatwg.org/multipage/forms.html#category-label
-  virtual bool IsLabelable() const { return false; }
+  virtual bool IsLabelable() const;
   // |labels| IDL attribute implementation for IsLabelable()==true elements.
   LabelsNodeList* labels();
 
