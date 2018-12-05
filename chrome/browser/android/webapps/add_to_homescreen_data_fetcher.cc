@@ -116,6 +116,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       installable_manager_(InstallableManager::FromWebContents(web_contents)),
       observer_(observer),
       shortcut_info_(GetShortcutUrl(web_contents)),
+      has_maskable_primary_icon_(false),
       data_timeout_ms_(base::TimeDelta::FromMilliseconds(data_timeout_ms)),
       is_waiting_for_manifest_(true),
       weak_ptr_factory_(this) {
