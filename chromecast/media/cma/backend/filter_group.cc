@@ -27,6 +27,7 @@ FilterGroup::FilterGroup(int num_channels,
       name_(name),
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
+      playout_channel_selection_(kChannelAll),
       output_samples_per_second_(0),
       frames_zeroed_(0),
       last_volume_(0.0),
@@ -141,6 +142,16 @@ float FilterGroup::MixAndFilter(
     }
   }
 
+  if (playout_channel_selection_ != kChannelAll) {
+    // Duplicate selected channel to all channels.
+    float* data = interleaved_.get();
+    for (int f = 0; f < num_frames; ++f) {
+      float selected = data[f * num_channels_ + playout_channel_selection_];
+      for (int c = 0; c < num_channels_; ++c)
+        data[f * num_channels_ + c] = selected;
+    }
+  }
+
   // Allow paused streams to "ring out" at the last valid volume.
   // If the stream volume is actually 0, this doesn't matter, since the
   // data is 0's anyway.
@@ -216,6 +227,10 @@ void FilterGroup::UpdatePlayoutChannel(int playout_channel) {
     LOG(ERROR) << "only " << num_channels_ << " present, wanted channel #"
                << playout_channel;
     return;
+  }
+  if (name_ == "linearize") {
+    // We only do playout channel selection in the "linearize" group.
+    playout_channel_selection_ = playout_channel;
   }
   post_processing_pipeline_->UpdatePlayoutChannel(playout_channel);
 }

@@ -120,6 +120,7 @@ class FilterGroup {
   std::vector<FilterGroup*> mixed_inputs_;
   base::flat_set<MixerInput*> active_inputs_;
 
+  int playout_channel_selection_;
   int output_samples_per_second_;
   int frames_zeroed_;
   float last_volume_;

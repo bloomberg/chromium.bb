@@ -683,14 +683,6 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
   int linearize_channel_count = mixer_pipeline_->GetOutputChannelCount();
   if (num_output_channels_ == 1 && linearize_channel_count != 1) {
     MixToMono(linearized_data, frames, linearize_channel_count);
-  } else if (num_output_channels_ > 1 && playout_channel_ != kChannelAll) {
-    // Duplicate selected channel to all channels.
-    for (int f = 0; f < frames; ++f) {
-      float selected =
-          linearized_data[f * num_output_channels_ + playout_channel_];
-      for (int c = 0; c < num_output_channels_; ++c)
-        linearized_data[f * num_output_channels_ + c] = selected;
-    }
   }
 
   // Hard limit to [1.0, -1.0].
