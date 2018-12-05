@@ -7,12 +7,16 @@
 
 #include "ash/public/interfaces/contained_shell.mojom.h"
 #include "base/macros.h"
+#include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class ContainedShellClient : public ash::mojom::ContainedShellClient {
  public:
   ContainedShellClient();
   ~ContainedShellClient() override;
+
+  // mojom::ContainedShellClient:
+  void LaunchContainedShell(const AccountId& account_id) override;
 
  private:
   mojo::Binding<ash::mojom::ContainedShellClient> binding_{this};

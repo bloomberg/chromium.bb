@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/contained_shell.mojom.h"
 #include "base/macros.h"
+#include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -20,6 +21,9 @@ class MockContainedShellClient : public mojom::ContainedShellClient {
   ~MockContainedShellClient() override;
 
   mojom::ContainedShellClientPtr CreateInterfacePtrAndBind();
+
+  // mojom::ContainedShellClient:
+  MOCK_METHOD1(LaunchContainedShell, void(const AccountId& account_id));
 
  private:
   mojo::Binding<mojom::ContainedShellClient> binding_{this};

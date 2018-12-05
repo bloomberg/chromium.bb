@@ -4,10 +4,13 @@
 
 #include <string>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
@@ -29,6 +32,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "rlz/buildflags/buildflags.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/env_observer.h"
+#include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -76,6 +83,66 @@ class LoginUtilsTest : public OobeBaseTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
+
+class LoginUtilsContainedShellTest : public LoginUtilsTest {
+ public:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(ash::features::kContainedShell);
+    LoginUtilsTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// This observer is used by LoginUtilsContainedShellTest to keep track of
+// whether a Fullscreen window was launched by ash during the test run.
+class FullscreenWindowEnvObserver : public aura::EnvObserver,
+                                    public aura::WindowObserver {
+ public:
+  FullscreenWindowEnvObserver() { env_observer_.Add(aura::Env::GetInstance()); }
+
+  bool did_fullscreen_window_launch() const {
+    return did_fullscreen_window_launch_;
+  }
+
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override {
+    window_observer_.Add(window);
+  }
+
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    did_fullscreen_window_launch_ =
+        did_fullscreen_window_launch_ ||
+        window->GetProperty(aura::client::kShowStateKey) ==
+            ui::SHOW_STATE_FULLSCREEN;
+  }
+
+ private:
+  bool did_fullscreen_window_launch_ = false;
+
+  ScopedObserver<aura::Env, aura::EnvObserver> env_observer_{this};
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(FullscreenWindowEnvObserver);
+};
+
+// Checks that the Contained Experience window is launched on sign-in when the
+// feature is enabled.
+IN_PROC_BROWSER_TEST_F(LoginUtilsContainedShellTest, ContainedShellLaunch) {
+  WaitForSigninScreen();
+
+  FullscreenWindowEnvObserver fullscreen_observer;
+
+  Login("username");
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(fullscreen_observer.did_fullscreen_window_launch());
+}
 
 // Exercises login, like the desktopui_MashLogin Chrome OS autotest.
 IN_PROC_BROWSER_TEST_F(LoginUtilsTest, MashLogin) {
