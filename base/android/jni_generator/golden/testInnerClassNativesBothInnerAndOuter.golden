@@ -18,12 +18,21 @@
 
 // Step 1: Forward declarations.
 
+JNI_REGISTRATION_EXPORT extern const char kClassPath_org_chromium_TestJni[];
+const char kClassPath_org_chromium_TestJni[] = "org/chromium/TestJni";
+
 JNI_REGISTRATION_EXPORT extern const char kClassPath_org_chromium_TestJni_00024MyOtherInnerClass[];
 const char kClassPath_org_chromium_TestJni_00024MyOtherInnerClass[] =
     "org/chromium/TestJni$MyOtherInnerClass";
-
-JNI_REGISTRATION_EXPORT extern const char kClassPath_org_chromium_TestJni[];
-const char kClassPath_org_chromium_TestJni[] = "org/chromium/TestJni";
+// Leaking this jclass as we cannot use LazyInstance from some threads.
+JNI_REGISTRATION_EXPORT std::atomic<jclass> g_org_chromium_TestJni_clazz(nullptr);
+#ifndef org_chromium_TestJni_clazz_defined
+#define org_chromium_TestJni_clazz_defined
+inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
+  return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni,
+      &g_org_chromium_TestJni_clazz);
+}
+#endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 JNI_REGISTRATION_EXPORT std::atomic<jclass>
     g_org_chromium_TestJni_00024MyOtherInnerClass_clazz(nullptr);
@@ -32,15 +41,6 @@ JNI_REGISTRATION_EXPORT std::atomic<jclass>
 inline jclass org_chromium_TestJni_00024MyOtherInnerClass_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni_00024MyOtherInnerClass,
       &g_org_chromium_TestJni_00024MyOtherInnerClass_clazz);
-}
-#endif
-// Leaking this jclass as we cannot use LazyInstance from some threads.
-JNI_REGISTRATION_EXPORT std::atomic<jclass> g_org_chromium_TestJni_clazz(nullptr);
-#ifndef org_chromium_TestJni_clazz_defined
-#define org_chromium_TestJni_clazz_defined
-inline jclass org_chromium_TestJni_clazz(JNIEnv* env) {
-  return base::android::LazyGetClass(env, kClassPath_org_chromium_TestJni,
-      &g_org_chromium_TestJni_clazz);
 }
 #endif
 

@@ -19,9 +19,9 @@
 // Step 1: Forward declarations.
 
 JNI_REGISTRATION_EXPORT extern const char
-    kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass[];
-const char kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass[] =
-    "org/chromium/example/jni_generator/SampleForTests$MyOtherInnerClass";
+    kClassPath_org_chromium_example_jni_1generator_SampleForTests[];
+const char kClassPath_org_chromium_example_jni_1generator_SampleForTests[] =
+    "org/chromium/example/jni_generator/SampleForTests";
 
 JNI_REGISTRATION_EXPORT extern const char
     kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyInnerClass[];
@@ -29,19 +29,18 @@ const char kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024My
     "org/chromium/example/jni_generator/SampleForTests$MyInnerClass";
 
 JNI_REGISTRATION_EXPORT extern const char
-    kClassPath_org_chromium_example_jni_1generator_SampleForTests[];
-const char kClassPath_org_chromium_example_jni_1generator_SampleForTests[] =
-    "org/chromium/example/jni_generator/SampleForTests";
+    kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass[];
+const char kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass[] =
+    "org/chromium/example/jni_generator/SampleForTests$MyOtherInnerClass";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 JNI_REGISTRATION_EXPORT std::atomic<jclass>
-    g_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz(nullptr);
-#ifndef org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz_defined
-#define org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz_defined
-inline jclass
-    org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz(JNIEnv* env) {
+    g_org_chromium_example_jni_1generator_SampleForTests_clazz(nullptr);
+#ifndef org_chromium_example_jni_1generator_SampleForTests_clazz_defined
+#define org_chromium_example_jni_1generator_SampleForTests_clazz_defined
+inline jclass org_chromium_example_jni_1generator_SampleForTests_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env,
-      kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass,
-      &g_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz);
+      kClassPath_org_chromium_example_jni_1generator_SampleForTests,
+      &g_org_chromium_example_jni_1generator_SampleForTests_clazz);
 }
 #endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
@@ -58,13 +57,14 @@ inline jclass org_chromium_example_jni_1generator_SampleForTests_00024MyInnerCla
 #endif
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 JNI_REGISTRATION_EXPORT std::atomic<jclass>
-    g_org_chromium_example_jni_1generator_SampleForTests_clazz(nullptr);
-#ifndef org_chromium_example_jni_1generator_SampleForTests_clazz_defined
-#define org_chromium_example_jni_1generator_SampleForTests_clazz_defined
-inline jclass org_chromium_example_jni_1generator_SampleForTests_clazz(JNIEnv* env) {
+    g_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz(nullptr);
+#ifndef org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz_defined
+#define org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz_defined
+inline jclass
+    org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz(JNIEnv* env) {
   return base::android::LazyGetClass(env,
-      kClassPath_org_chromium_example_jni_1generator_SampleForTests,
-      &g_org_chromium_example_jni_1generator_SampleForTests_clazz);
+      kClassPath_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass,
+      &g_org_chromium_example_jni_1generator_SampleForTests_00024MyOtherInnerClass_clazz);
 }
 #endif
 

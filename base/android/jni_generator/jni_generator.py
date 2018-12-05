@@ -988,7 +988,7 @@ class HeaderFileGeneratorHelper(object):
     return template.substitute(values)
 
   def GetUniqueClasses(self, origin):
-    ret = {}
+    ret = collections.OrderedDict()
     for entry in origin:
       if isinstance(entry, NativeMethod) and entry.is_proxy:
         ret[ProxyHelpers.GetClass(self.use_proxy_hash)] \
