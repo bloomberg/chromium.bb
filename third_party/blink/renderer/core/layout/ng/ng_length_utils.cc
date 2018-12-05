@@ -492,7 +492,13 @@ LayoutUnit ComputeInlineSizeForFragment(
     logical_width = Length(kFitContent);
 
   LayoutBox* box = node.GetLayoutBox();
-  if (!box->PreferredLogicalWidthsDirty() && !override_minmax) {
+  // If we have usable cached min/max intrinsic sizes, use those if we can. They
+  // will normally also be constrained to {min,max}-inline-size, but not if
+  // percentages are involved. In such cases we'll have to calculate and apply
+  // the constraints on our own.
+  if (!box->PreferredLogicalWidthsDirty() && !override_minmax &&
+      !style.LogicalMinWidth().IsPercentOrCalc() &&
+      !style.LogicalMaxWidth().IsPercentOrCalc()) {
     if (logical_width.GetType() == kFitContent) {
       // This is not as easy as {min, max}.ShrinkToFit() because we also need
       // to subtract inline margins from the available size. The code in
