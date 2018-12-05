@@ -257,6 +257,8 @@ void WindowTree::RequestClose(ServerWindow* window) {
 }
 
 void WindowTree::OnEmbeddingDestroyed(Embedding* embedding) {
+  DVLOG(3) << "OnEmbeddingDestroyed client=" << client_id_
+           << " window=" << ClientWindowIdForWindow(embedding->window());
   auto iter = FindClientRootWithRoot(embedding->window());
   DCHECK(iter != client_roots_.end());
   window_tree_client_->OnWindowDeleted(
@@ -773,8 +775,12 @@ bool WindowTree::DeleteWindowImpl(const ClientWindowId& window_id) {
   DVLOG(3) << "deleting window client=" << client_id_
            << " client window_id=" << window_id.ToString();
   if (!window) {
-    DVLOG(1) << "DeleteWindow failed (no window)";
-    return false;
+    DVLOG(1) << "DeleteWindow: no window, returning true anyway";
+    // Even though there is no window, return true. This way, if both sides
+    // try to delete the window at the same time, there is no race. Deletion
+    // at the same should generally only happen for embed roots, but shutdown
+    // paths (in Ash) may also trigger deletion.
+    return true;
   }
 
   const bool is_client_created_window = IsClientCreatedWindow(window);
