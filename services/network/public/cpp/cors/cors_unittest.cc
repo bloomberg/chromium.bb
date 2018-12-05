@@ -319,64 +319,83 @@ TEST_F(CorsTest, CalculateResponseTainting) {
   const base::Optional<url::Origin> no_origin;
 
   // CORS flag is false, same-origin request
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kSameOrigin, origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, origin, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(same_origin_url, FetchRequestMode::kSameOrigin,
+                                origin, false, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(same_origin_url, FetchRequestMode::kNoCors,
+                                origin, false, false));
   EXPECT_EQ(FetchResponseType::kBasic,
             CalculateResponseTainting(same_origin_url, FetchRequestMode::kCors,
-                                      origin, false));
+                                      origin, false, false));
   EXPECT_EQ(FetchResponseType::kBasic,
             CalculateResponseTainting(
                 same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, false));
+                origin, false, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(same_origin_url, FetchRequestMode::kNavigate,
+                                origin, false, false));
+  EXPECT_EQ(
+      FetchResponseType::kOpaque,
+      CalculateResponseTainting(same_origin_url, FetchRequestMode::kNoCors,
+                                origin, false, true));
   EXPECT_EQ(FetchResponseType::kBasic,
             CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNavigate, origin, false));
+                same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
+                origin, false, true));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(same_origin_url, FetchRequestMode::kNavigate,
+                                origin, false, false));
 
   // CORS flag is false, cross-origin request
-  EXPECT_EQ(FetchResponseType::kOpaque,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNoCors, origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNavigate, origin, false));
+  EXPECT_EQ(
+      FetchResponseType::kOpaque,
+      CalculateResponseTainting(cross_origin_url, FetchRequestMode::kNoCors,
+                                origin, false, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(cross_origin_url, FetchRequestMode::kNavigate,
+                                origin, false, false));
 
   // CORS flag is true, same-origin request
   EXPECT_EQ(FetchResponseType::kCors,
             CalculateResponseTainting(same_origin_url, FetchRequestMode::kCors,
-                                      origin, true));
+                                      origin, true, false));
   EXPECT_EQ(FetchResponseType::kCors,
             CalculateResponseTainting(
                 same_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, true));
+                origin, true, false));
 
   // CORS flag is true, cross-origin request
   EXPECT_EQ(FetchResponseType::kCors,
             CalculateResponseTainting(cross_origin_url, FetchRequestMode::kCors,
-                                      origin, true));
+                                      origin, true, false));
   EXPECT_EQ(FetchResponseType::kCors,
             CalculateResponseTainting(
                 cross_origin_url, FetchRequestMode::kCorsWithForcedPreflight,
-                origin, true));
+                origin, true, false));
 
   // Origin is not provided.
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                same_origin_url, FetchRequestMode::kNoCors, no_origin, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(same_origin_url, FetchRequestMode::kNoCors,
+                                no_origin, false, false));
   EXPECT_EQ(
       FetchResponseType::kBasic,
       CalculateResponseTainting(same_origin_url, FetchRequestMode::kNavigate,
-                                no_origin, false));
-  EXPECT_EQ(FetchResponseType::kBasic,
-            CalculateResponseTainting(
-                cross_origin_url, FetchRequestMode::kNoCors, no_origin, false));
+                                no_origin, false, false));
+  EXPECT_EQ(
+      FetchResponseType::kBasic,
+      CalculateResponseTainting(cross_origin_url, FetchRequestMode::kNoCors,
+                                no_origin, false, false));
   EXPECT_EQ(
       FetchResponseType::kBasic,
       CalculateResponseTainting(cross_origin_url, FetchRequestMode::kNavigate,
-                                no_origin, false));
+                                no_origin, false, false));
 }
 
 TEST_F(CorsTest, SafelistedMethod) {

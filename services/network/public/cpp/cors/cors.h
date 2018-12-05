@@ -108,7 +108,8 @@ mojom::FetchResponseType CalculateResponseTainting(
     const GURL& url,
     mojom::FetchRequestMode request_mode,
     const base::Optional<url::Origin>& origin,
-    bool cors_flag);
+    bool cors_flag,
+    bool tainted_origin);
 
 // Checks safelisted request parameters.
 COMPONENT_EXPORT(NETWORK_CPP)

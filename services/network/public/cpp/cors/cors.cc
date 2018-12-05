@@ -322,7 +322,8 @@ mojom::FetchResponseType CalculateResponseTainting(
     const GURL& url,
     mojom::FetchRequestMode request_mode,
     const base::Optional<url::Origin>& origin,
-    bool cors_flag) {
+    bool cors_flag,
+    bool tainted_origin) {
   if (url.SchemeIs(url::kDataScheme))
     return mojom::FetchResponseType::kBasic;
 
@@ -338,7 +339,7 @@ mojom::FetchResponseType CalculateResponseTainting(
   }
 
   if (request_mode == mojom::FetchRequestMode::kNoCors &&
-      !origin->IsSameOriginWith(url::Origin::Create(url))) {
+      (tainted_origin || !origin->IsSameOriginWith(url::Origin::Create(url)))) {
     return mojom::FetchResponseType::kOpaque;
   }
   return mojom::FetchResponseType::kBasic;

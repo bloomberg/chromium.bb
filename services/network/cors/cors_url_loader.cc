@@ -157,9 +157,9 @@ void CorsURLLoader::FollowRedirect(
   // in net/url_request/redirect_util.cc).
   if ((original_fetch_cors_flag && !NeedsPreflight(request_)) ||
       !fetch_cors_flag_) {
-    response_tainting_ =
-        CalculateResponseTainting(request_.url, request_.fetch_request_mode,
-                                  request_.request_initiator, fetch_cors_flag_);
+    response_tainting_ = CalculateResponseTainting(
+        request_.url, request_.fetch_request_mode, request_.request_initiator,
+        fetch_cors_flag_, tainted_);
     network_loader_->FollowRedirect(to_be_removed_request_headers,
                                     modified_request_headers, new_url);
     return;
@@ -388,9 +388,9 @@ void CorsURLLoader::StartRequest() {
     return;
   }
 
-  response_tainting_ =
-      CalculateResponseTainting(request_.url, request_.fetch_request_mode,
-                                request_.request_initiator, fetch_cors_flag_);
+  response_tainting_ = CalculateResponseTainting(
+      request_.url, request_.fetch_request_mode, request_.request_initiator,
+      fetch_cors_flag_, tainted_);
 
   if (!CalculateCredentialsFlag(request_.fetch_credentials_mode,
                                 response_tainting_)) {
