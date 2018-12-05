@@ -295,8 +295,9 @@ class NewPasswordFormManager : public PasswordFormManagerInterface,
   // existing one.
   bool is_new_login_ = true;
 
-  // Whether this form has an auto generated password.
-  bool has_generated_password_ = false;
+  // Contains a generated password, empty if no password generation happened or
+  // a generated password removed by the user.
+  base::string16 generated_password_;
 
   // Whether the saved password was overridden.
   bool password_overridden_ = false;
