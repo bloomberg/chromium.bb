@@ -647,13 +647,13 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
 }
 
 void BackgroundTracingManagerImpl::AbortScenario() {
+  if (is_tracing_)
+    content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
+
   is_tracing_ = false;
   triggered_named_event_handle_ = -1;
   config_.reset();
   tracing_timer_.reset();
-
-  if (is_tracing_)
-    content::TracingControllerImpl::GetInstance()->StopTracing(nullptr);
 
   for (auto* observer : background_tracing_observers_)
     observer->OnScenarioAborted();
