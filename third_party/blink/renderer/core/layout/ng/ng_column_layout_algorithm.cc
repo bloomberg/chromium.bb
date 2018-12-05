@@ -329,4 +329,4 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstaintSpaceForBalancing(
   return space_builder.ToConstraintSpace();
 }
 
-}  // namespace Blink
+}  // namespace blink
