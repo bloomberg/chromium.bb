@@ -812,9 +812,12 @@ void CacheStorage::CacheSizeUpdated(const CacheStorageCache* cache) {
   DCHECK(!base::ContainsKey(doomed_caches_,
                             const_cast<CacheStorageCache*>(cache)));
   DCHECK_NE(cache->cache_padding(), kSizeUnknown);
-  cache_index_->SetCacheSize(cache->cache_name(), cache->cache_size());
-  cache_index_->SetCachePadding(cache->cache_name(), cache->cache_padding());
-  ScheduleWriteIndex();
+  bool size_changed =
+      cache_index_->SetCacheSize(cache->cache_name(), cache->cache_size());
+  bool padding_changed = cache_index_->SetCachePadding(cache->cache_name(),
+                                                       cache->cache_padding());
+  if (size_changed || padding_changed)
+    ScheduleWriteIndex();
 }
 
 void CacheStorage::StartAsyncOperationForTesting() {
