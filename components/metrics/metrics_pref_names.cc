@@ -122,6 +122,7 @@ const char kStabilityDebuggerNotPresent[] =
     "user_experience_metrics.stability.debugger_not_present";
 
 // An enum value to indicate the execution phase the browser was in.
+// TODO(asvitkine): Remove this after 2019-12.
 const char kStabilityExecutionPhase[] =
     "user_experience_metrics.stability.execution_phase";
 

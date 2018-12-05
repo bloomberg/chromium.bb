@@ -32,8 +32,6 @@ jumbo_static_library("metrics") {
     "enabled_state_provider.h",
     "environment_recorder.cc",
     "environment_recorder.h",
-    "execution_phase.cc",
-    "execution_phase.h",
     "expired_histogram_util.cc",
     "expired_histogram_util.h",
     "expired_histograms_checker.cc",

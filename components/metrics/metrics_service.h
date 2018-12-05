@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/delegating_provider.h"
-#include "components/metrics/execution_phase.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_store.h"
@@ -134,9 +133,6 @@ class MetricsService : public base::HistogramFlattener {
   // Set the dirty flag, which will require a later call to LogCleanShutdown().
   void LogNeedForCleanShutdown();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-  static void SetExecutionPhase(ExecutionPhase execution_phase,
-                                PrefService* local_state);
 
   // Saves in the preferences if the crash report registration was successful.
   // This count is eventually send via UMA logs.

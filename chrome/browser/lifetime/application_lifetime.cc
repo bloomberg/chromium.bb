@@ -33,7 +33,6 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
-#include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -346,9 +345,6 @@ void SessionEnding() {
   // exit this function.
   ShutdownWatcherHelper shutdown_watcher;
   shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
-  metrics::MetricsService::SetExecutionPhase(
-      metrics::ExecutionPhase::SHUTDOWN_TIMEBOMB_ARM,
-      g_browser_process->local_state());
 
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
