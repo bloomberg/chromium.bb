@@ -87,13 +87,6 @@
 #include "chrome/browser/offline_pages/offline_page_request_interceptor.h"
 #endif
 
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_delegate.h"
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_policy.h"
-#include "net/reporting/reporting_service.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
 namespace {
 
 // Returns the BackendType that the disk cache should use.

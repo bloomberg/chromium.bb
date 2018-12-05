@@ -67,11 +67,6 @@ class CookieStore;
 class HttpTransactionFactory;
 class URLRequestContextBuilder;
 class URLRequestJobFactoryImpl;
-
-#if BUILDFLAG(ENABLE_REPORTING)
-class NetworkErrorLoggingService;
-class ReportingService;
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 }  // namespace net
 
 namespace network {
@@ -283,13 +278,6 @@ class ProfileIOData {
     void SetHttpTransactionFactory(
         std::unique_ptr<net::HttpTransactionFactory> http_factory);
     void SetJobFactory(std::unique_ptr<net::URLRequestJobFactory> job_factory);
-#if BUILDFLAG(ENABLE_REPORTING)
-    void SetReportingService(
-        std::unique_ptr<net::ReportingService> reporting_service);
-    void SetNetworkErrorLoggingService(
-        std::unique_ptr<net::NetworkErrorLoggingService>
-            network_error_logging_service);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
    private:
     ~AppRequestContext() override;
@@ -299,11 +287,6 @@ class ProfileIOData {
     std::unique_ptr<net::HttpNetworkSession> http_network_session_;
     std::unique_ptr<net::HttpTransactionFactory> http_factory_;
     std::unique_ptr<net::URLRequestJobFactory> job_factory_;
-#if BUILDFLAG(ENABLE_REPORTING)
-    std::unique_ptr<net::ReportingService> reporting_service_;
-    std::unique_ptr<net::NetworkErrorLoggingService>
-        network_error_logging_service_;
-#endif  // BUILDFLAG(ENABLE_REPORTING)
   };
 
   // Created on the UI thread, read on the IO thread during ProfileIOData lazy
