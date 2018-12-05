@@ -39,7 +39,6 @@ namespace blink {
 
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebNotificationPresenter;
 class WebServiceWorkerNetworkProvider;
 
 // Provides an interface back to the in-page script object for a worker.
@@ -57,10 +56,6 @@ class WebSharedWorkerClient {
   virtual void WorkerScriptLoaded() = 0;
   virtual void WorkerScriptLoadFailed() = 0;
   virtual void SelectAppCacheID(long long) = 0;
-
-  // Returns the notification presenter for this worker context. Pointer
-  // is owned by the object implementing WebSharedWorkerClient.
-  virtual WebNotificationPresenter* NotificationPresenter() = 0;
 
   // Called on the main webkit thread in the worker process during
   // initialization.

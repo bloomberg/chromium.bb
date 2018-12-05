@@ -32,7 +32,6 @@
 namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebNotificationPresenter;
 class WebSharedWorker;
 }
 
@@ -87,7 +86,6 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerScriptLoaded() override;
   void WorkerScriptLoadFailed() override;
   void SelectAppCacheID(long long) override;
-  blink::WebNotificationPresenter* NotificationPresenter() override;
   std::unique_ptr<blink::WebApplicationCacheHost> CreateApplicationCacheHost(
       blink::WebApplicationCacheHostClient*) override;
   std::unique_ptr<blink::WebServiceWorkerNetworkProvider>

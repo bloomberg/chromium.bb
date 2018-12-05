@@ -360,13 +360,6 @@ void EmbeddedSharedWorkerStub::SelectAppCacheID(long long app_cache_id) {
   }
 }
 
-blink::WebNotificationPresenter*
-EmbeddedSharedWorkerStub::NotificationPresenter() {
-  // TODO(horo): delete this method if we have no plan to implement this.
-  NOTREACHED();
-  return nullptr;
-}
-
 std::unique_ptr<blink::WebApplicationCacheHost>
 EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
