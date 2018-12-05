@@ -576,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestScrollingPage) {
 }
 
 IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_TestScrollingPageAndSwitchingToNTP) {
+                       TestScrollingPageAndSwitchingToNTP) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

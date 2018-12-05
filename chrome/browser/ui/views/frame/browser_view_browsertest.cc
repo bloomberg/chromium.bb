@@ -303,18 +303,13 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, ShowFaviconInTab) {
   ASSERT_FALSE(favicon.IsEmpty());
 }
 
-#if defined(OS_MACOSX)
-// Voiceover treats tab modal dialogs as native windows, so this approach is not
-// necessary.
-#define MAYBE_GetAccessibleTabModalDialogTitle \
-  DISABLED_GetAccessibleTabModalDialogTitle
-#else
-#define MAYBE_GetAccessibleTabModalDialogTitle GetAccessibleTabModalDialogTitle
-#endif
+// On Mac, voiceover treats tab modal dialogs as native windows, so setting an
+// accessible title for tab-modal dialogs is not necessary.
+#if !defined(OS_MACOSX)
+
 // Open a tab-modal dialog and check that the accessible window title is the
 // title of the dialog.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest,
-                       MAYBE_GetAccessibleTabModalDialogTitle) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTitle) {
   base::string16 window_title = base::ASCIIToUTF16("about:blank - ") +
                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   EXPECT_TRUE(base::StartsWith(browser_view()->GetAccessibleWindowTitle(),
@@ -331,17 +326,9 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest,
                                window_title, base::CompareCase::SENSITIVE));
 }
 
-#if defined(OS_MACOSX)
-// Voiceover treats tab modal dialogs as native windows, so this approach is not
-// necessary.
-#define MAYBE_GetAccessibleTabModalDialogTree \
-  DISABLED_GetAccessibleTabModalDialogTree
-#else
-#define MAYBE_GetAccessibleTabModalDialogTree GetAccessibleTabModalDialogTree
-#endif
 // Open a tab-modal dialog and check that the accessibility tree only contains
 // the dialog.
-IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_GetAccessibleTabModalDialogTree) {
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
   ui::AXPlatformNode* ax_node = ui::AXPlatformNode::FromNativeViewAccessible(
       browser_view()->GetWidget()->GetRootView()->GetNativeViewAccessible());
 // We expect this conversion to be safe on Windows, but can't guarantee that it
@@ -372,3 +359,5 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, MAYBE_GetAccessibleTabModalDialogTree) {
   EXPECT_NE(ui::AXPlatformNodeTestHelper::FindChildByName(ax_node, "OK"),
             nullptr);
 }
+
+#endif  // !defined(OS_MACOSX)
