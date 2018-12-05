@@ -59,6 +59,7 @@ void DevToolsRendererChannel::SetRendererInternal(
     blink::mojom::DevToolsAgent* agent,
     int process_id,
     RenderFrameHostImpl* frame_host) {
+  ReportChildWorkersCallback();
   // Child workers will eventually disconnect, but timing depends on the
   // renderer process. To ensure consistent view over protocol, disconnect them
   // right now.
@@ -68,7 +69,8 @@ void DevToolsRendererChannel::SetRendererInternal(
   frame_host_ = frame_host;
   if (agent && !report_attachers_.empty()) {
     agent->ReportChildWorkers(true /* report */,
-                              !wait_for_debugger_attachers_.empty());
+                              !wait_for_debugger_attachers_.empty(),
+                              base::DoNothing());
   }
   for (DevToolsSession* session : owner_->sessions()) {
     for (auto& pair : session->handlers())
@@ -102,7 +104,10 @@ void DevToolsRendererChannel::InspectElement(const gfx::Point& point) {
 void DevToolsRendererChannel::SetReportChildWorkers(
     protocol::TargetAutoAttacher* attacher,
     bool report,
-    bool wait_for_debugger) {
+    bool wait_for_debugger,
+    base::OnceClosure callback) {
+  ReportChildWorkersCallback();
+  set_report_callback_ = std::move(callback);
   if (report) {
     if (report_attachers_.find(attacher) == report_attachers_.end()) {
       report_attachers_.insert(attacher);
@@ -117,12 +122,23 @@ void DevToolsRendererChannel::SetReportChildWorkers(
   else
     wait_for_debugger_attachers_.erase(attacher);
   if (agent_ptr_) {
-    agent_ptr_->ReportChildWorkers(!report_attachers_.empty(),
-                                   !wait_for_debugger_attachers_.empty());
+    agent_ptr_->ReportChildWorkers(
+        !report_attachers_.empty(), !wait_for_debugger_attachers_.empty(),
+        base::BindOnce(&DevToolsRendererChannel::ReportChildWorkersCallback,
+                       base::Unretained(this)));
   } else if (associated_agent_ptr_) {
     associated_agent_ptr_->ReportChildWorkers(
-        !report_attachers_.empty(), !wait_for_debugger_attachers_.empty());
+        !report_attachers_.empty(), !wait_for_debugger_attachers_.empty(),
+        base::BindOnce(&DevToolsRendererChannel::ReportChildWorkersCallback,
+                       base::Unretained(this)));
+  } else {
+    ReportChildWorkersCallback();
   }
+}
+
+void DevToolsRendererChannel::ReportChildWorkersCallback() {
+  if (set_report_callback_)
+    std::move(set_report_callback_).Run();
 }
 
 void DevToolsRendererChannel::ChildWorkerCreated(

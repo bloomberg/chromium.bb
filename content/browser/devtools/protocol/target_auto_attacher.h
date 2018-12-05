@@ -31,7 +31,9 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   ~TargetAutoAttacher() override;
 
   void SetRenderFrameHost(RenderFrameHostImpl* host);
-  void SetAutoAttach(bool auto_attach, bool wait_for_debugger_on_start);
+  void SetAutoAttach(bool auto_attach,
+                     bool wait_for_debugger_on_start,
+                     base::OnceClosure callback);
 
   void UpdateServiceWorkers();
   void AgentHostClosed(DevToolsAgentHost* host);

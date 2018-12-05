@@ -81,7 +81,7 @@ interface DevToolsAgent {
   // |wait_for_debugger| controls whether the worker should be paused
   // on start waiting for debugger to connect.
   // See ChildWorkerCreated in DevToolsAgentHost for details.
-  ReportChildWorkers(bool report, bool wait_for_debugger);
+  ReportChildWorkers(bool report, bool wait_for_debugger) => ();
 };
 
 // This interface is implemented in browser and is notified by DevToolsAgent

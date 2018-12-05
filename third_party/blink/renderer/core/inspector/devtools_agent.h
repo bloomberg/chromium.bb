@@ -75,7 +75,9 @@ class CORE_EXPORT DevToolsAgent
       mojom::blink::DevToolsSessionRequest io_session,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state) override;
   void InspectElement(const WebPoint& point) override;
-  void ReportChildWorkers(bool report, bool wait_for_debugger) override;
+  void ReportChildWorkers(bool report,
+                          bool wait_for_debugger,
+                          base::OnceClosure callback) override;
 
   struct WorkerData {
     KURL url;
