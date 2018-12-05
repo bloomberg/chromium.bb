@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge.StorageInfoClearedCallback;
@@ -111,7 +113,7 @@ public class Website implements Serializable {
      * @return permission value for permission of specified type.
      *         (Camera, Clipboard, etc.).
      */
-    public ContentSetting getPermission(@PermissionInfo.Type int type) {
+    public @ContentSettingValues @Nullable Integer getPermission(@PermissionInfo.Type int type) {
         return getPermissionInfo(type) != null ? getPermissionInfo(type).getContentSetting() : null;
     }
 
@@ -119,7 +121,7 @@ public class Website implements Serializable {
      * Set permission value for permission of specified type
      * (Camera, Clipboard, etc.).
      */
-    public void setPermission(@PermissionInfo.Type int type, ContentSetting value) {
+    public void setPermission(@PermissionInfo.Type int type, @ContentSettingValues int value) {
         if (getPermissionInfo(type) != null) getPermissionInfo(type).setContentSetting(value);
     }
 
@@ -142,7 +144,8 @@ public class Website implements Serializable {
     /**
      * Returns what ContentSettingException governs the setting of specified type.
      */
-    public ContentSetting getContentSettingPermission(@ContentSettingException.Type int type) {
+    public @ContentSettingValues @Nullable Integer getContentSettingPermission(
+            @ContentSettingException.Type int type) {
         return mContentSettingException[type] != null
                 ? mContentSettingException[type].getContentSetting()
                 : null;
@@ -152,7 +155,7 @@ public class Website implements Serializable {
      * Sets the permission.
      */
     public void setContentSettingPermission(
-            @ContentSettingException.Type int type, ContentSetting value) {
+            @ContentSettingException.Type int type, @ContentSettingValues int value) {
         if (type == ContentSettingException.Type.ADS) {
             // It is possible to set the permission without having an existing exception,
             // because we can show the BLOCK state even when this permission is set to the
@@ -161,7 +164,7 @@ public class Website implements Serializable {
             if (mContentSettingException[type] == null) {
                 mContentSettingException[type] =
                         new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
-                                getAddress().getOrigin(), ContentSetting.BLOCK, "");
+                                getAddress().getOrigin(), ContentSettingValues.BLOCK, "");
             }
         } else if (type == ContentSettingException.Type.SOUND) {
             // It is possible to set the permission without having an existing exception,
@@ -171,7 +174,7 @@ public class Website implements Serializable {
                         new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND,
                                 getAddress().getHost(), value, "");
             }
-            if (value == ContentSetting.BLOCK) {
+            if (value == ContentSettingValues.BLOCK) {
                 RecordUserAction.record("SoundContentSetting.MuteBy.SiteSettings");
             } else {
                 RecordUserAction.record("SoundContentSetting.UnmuteBy.SiteSettings");

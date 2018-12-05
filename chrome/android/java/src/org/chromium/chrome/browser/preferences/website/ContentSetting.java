@@ -4,55 +4,51 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import android.support.annotation.Nullable;
+
 /**
  * Java counterpart to C++ ContentSetting enum.
  *
  * @see ContentSettingValues
+ *
+ * Note 1: We assume, that ContentSettingValues are numbered from 0 and don't have gaps.
+ * Note 2: All updates for ContentSettingValues (including order of entries) must also
+ *         be reflected in {@link STRING_VALUES}.
  */
-public enum ContentSetting {
-    DEFAULT(ContentSettingValues.DEFAULT),
-    ALLOW(ContentSettingValues.ALLOW),
-    BLOCK(ContentSettingValues.BLOCK),
-    ASK(ContentSettingValues.ASK),
-    SESSION_ONLY(ContentSettingValues.SESSION_ONLY),
-    DETECT_IMPORTANT_CONTENT(ContentSettingValues.DETECT_IMPORTANT_CONTENT);
+public class ContentSetting {
+    // Indexed by {@link ContentSettingValues}.
+    private final static String[] STRING_VALUES = {
+            "DEFAULT", // ContentSettingValues.DEFAULT
+            "ALLOW", // ContentSettingValues.ALLOW
+            "BLOCK", // ContentSettingValues.BLOCK
+            "ASK", // ContentSettingValues.ASK
+            "SESSION_ONLY", // ContentSettingValues.SESSION_ONLY
+            "DETECT_IMPORTANT_CONTENT", // ContentSettingValues.DETECT_IMPORTANT_CONTENT
+    };
 
-    private final int mValue;
+    public static String toString(@ContentSettingValues int value) {
+        assert ContentSettingValues.DEFAULT == 0;
+        assert ContentSettingValues.NUM_SETTINGS == STRING_VALUES.length;
 
-    /**
-     * Converts the enum value to int. The integer value should be used when dealing with native
-     * code (reading from or writing to native content settings). Non-native code that needs a
-     * simple data type (e.g. preferences) should use the string representation.
-     */
-    public int toInt() {
-        return mValue;
-    }
-
-    /**
-     * Converts an int to its equivalent ContentSetting.
-     * @param i The integer to convert.
-     * @return What value the enum is representing (or null if failed).
-     */
-    public static ContentSetting fromInt(int i) {
-        for (ContentSetting enumValue : ContentSetting.values()) {
-            if (enumValue.toInt() == i) return enumValue;
+        for (int i = 0; i < ContentSettingValues.NUM_SETTINGS; ++i) {
+            if (i == value) return STRING_VALUES[i];
         }
-        return null;
+        assert false;
+        return "";
     }
 
     /**
-     * Converts a string to its equivalent ContentSetting.
+     * Converts a string to its equivalent #Value.
      * @param value The string to convert.
      * @return What value the enum is representing (or null if failed).
      */
-    public static ContentSetting fromString(String value) {
-        for (ContentSetting enumValue : ContentSetting.values()) {
-            if (enumValue.toString().equals(value)) return enumValue;
+    public static @Nullable @ContentSettingValues Integer fromString(String value) {
+        assert ContentSettingValues.DEFAULT == 0;
+        assert ContentSettingValues.NUM_SETTINGS == STRING_VALUES.length;
+
+        for (int i = 0; i < ContentSettingValues.NUM_SETTINGS; ++i) {
+            if (STRING_VALUES[i].equals(value)) return i;
         }
         return null;
-    }
-
-    private ContentSetting(int value) {
-        this.mValue = value;
     }
 }

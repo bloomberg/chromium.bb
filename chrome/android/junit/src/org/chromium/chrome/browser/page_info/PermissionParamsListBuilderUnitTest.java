@@ -31,7 +31,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.page_info.PermissionParamsListBuilderUnitTest.ShadowWebsitePreferenceBridge;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
@@ -64,8 +64,8 @@ public class PermissionParamsListBuilderUnitTest {
     @Test
     public void addSingleEntryAndBuild() {
         Context context = RuntimeEnvironment.application;
-        mPermissionParamsListBuilder.addPermissionEntry(
-                "Foo", ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES, ContentSetting.ALLOW);
+        mPermissionParamsListBuilder.addPermissionEntry("Foo",
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES, ContentSettingValues.ALLOW);
 
         List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
 
@@ -85,7 +85,7 @@ public class PermissionParamsListBuilderUnitTest {
     public void addLocationEntryAndBuildWhenSystemLocationDisabled() {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(false);
         mPermissionParamsListBuilder.addPermissionEntry("Test",
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, ContentSetting.ALLOW);
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION, ContentSettingValues.ALLOW);
 
         List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
 
@@ -106,8 +106,9 @@ public class PermissionParamsListBuilderUnitTest {
     public void appNotificationStatusMessagingWhenNotificationsDisabled() {
         getMutableNotificationManager().setNotificationsEnabled(false);
 
-        mPermissionParamsListBuilder.addPermissionEntry(
-                "", ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ContentSetting.ALLOW);
+        mPermissionParamsListBuilder.addPermissionEntry("",
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                ContentSettingValues.ALLOW);
 
         List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
 
@@ -121,8 +122,9 @@ public class PermissionParamsListBuilderUnitTest {
     public void appNotificationStatusMessagingWhenNotificationsEnabled() {
         getMutableNotificationManager().setNotificationsEnabled(true);
 
-        mPermissionParamsListBuilder.addPermissionEntry(
-                "", ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ContentSetting.ALLOW);
+        mPermissionParamsListBuilder.addPermissionEntry("",
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                ContentSettingValues.ALLOW);
 
         List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
 
@@ -135,8 +137,9 @@ public class PermissionParamsListBuilderUnitTest {
     public void appNotificationStatusMessagingFlagDisabled() {
         getMutableNotificationManager().setNotificationsEnabled(false);
 
-        mPermissionParamsListBuilder.addPermissionEntry(
-                "", ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ContentSetting.ALLOW);
+        mPermissionParamsListBuilder.addPermissionEntry("",
+                ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+                ContentSettingValues.ALLOW);
 
         List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
 

@@ -21,7 +21,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.SearchGeolocationDisclosureTabHelper;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -50,7 +50,8 @@ public class SearchGeolocationDisclosureInfoBarTest {
         // Simulate the DSE being granted location (the test server isn't set to be the DSE).
         PermissionInfo locationSettings = new PermissionInfo(
                 PermissionInfo.Type.GEOLOCATION, mTestServer.getURL(SEARCH_PAGE), null, false);
-        ThreadUtils.runOnUiThread(() -> locationSettings.setContentSetting(ContentSetting.ALLOW));
+        ThreadUtils.runOnUiThread(
+                () -> locationSettings.setContentSetting(ContentSettingValues.ALLOW));
     }
 
     @After

@@ -19,6 +19,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.format.Formatter;
 import android.widget.ListAdapter;
@@ -105,7 +106,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     // Records previous notification permission on Android O+ to allow detection of permission
     // revocation within the Android system permission activity.
-    private ContentSetting mPreviousNotificationPermission;
+    private @ContentSettingValues @Nullable Integer mPreviousNotificationPermission;
 
     private class SingleWebsitePermissionsPopulator
             implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
@@ -353,9 +354,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void setUpNotificationsPreference(Preference preference) {
-        final ContentSetting value = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
+        final @ContentSettingValues @Nullable Integer value =
+                mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (!(value == ContentSetting.ALLOW || value == ContentSetting.BLOCK)) {
+            if (value == null
+                    || (value != null && value != ContentSettingValues.ALLOW
+                            && value != ContentSettingValues.BLOCK)) {
                 // TODO(crbug.com/735110): Figure out if this is the correct thing to do, for values
                 // that are non-null, but not ALLOW or BLOCK either. (In setupListPreference we
                 // treat non-ALLOW settings as BLOCK, but here we are simply removing them.)
@@ -370,7 +374,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
             if (isPermissionControlledByDSE(
                         ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS)) {
-                newPreference.setSummary(getResources().getString(value == ContentSetting.ALLOW
+                newPreference.setSummary(getResources().getString(
+                        value != null && value == ContentSettingValues.ALLOW
                                 ? R.string.website_settings_permissions_allow_dse
                                 : R.string.website_settings_permissions_block_dse));
             } else {
@@ -448,13 +453,13 @@ public class SingleWebsitePreferences extends PreferenceFragment
             // permission, but do not return immediately to Chrome (e.g. they close the permissions
             // activity, instead of hitting the back button), but prevents us from having to check
             // for changes each time Chrome becomes active.
-            ContentSetting newPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
-            if (mPreviousNotificationPermission == ContentSetting.ALLOW &&
-                    newPermission != ContentSetting.ALLOW) {
+            @ContentSettingValues
+            int newPermission = mSite.getPermission(PermissionInfo.Type.NOTIFICATION);
+            if (mPreviousNotificationPermission == ContentSettingValues.ALLOW
+                    && newPermission != ContentSettingValues.ALLOW) {
                 WebsitePreferenceBridge.nativeReportNotificationRevokedForOrigin(
-                    mSite.getAddress().getOrigin(),
-                    newPermission.toInt(),
-                    mSite.getPermissionInfo(PermissionInfo.Type.NOTIFICATION).isIncognito());
+                        mSite.getAddress().getOrigin(), newPermission,
+                        mSite.getPermissionInfo(PermissionInfo.Type.NOTIFICATION).isIncognito());
                 mPreviousNotificationPermission = null;
             }
         }
@@ -563,7 +568,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
      * @param preference The ListPreference to initialize.
      * @param value The value to initialize it to.
      */
-    private void setUpListPreference(Preference preference, ContentSetting value) {
+    private void setUpListPreference(
+            Preference preference, @ContentSettingValues @Nullable Integer value) {
         if (value == null) {
             getPreferenceScreen().removePreference(preference);
             return;
@@ -573,17 +579,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
         CharSequence[] keys = new String[2];
         CharSequence[] descriptions = new String[2];
-        keys[0] = ContentSetting.ALLOW.toString();
-        keys[1] = ContentSetting.BLOCK.toString();
+        keys[0] = ContentSetting.toString(ContentSettingValues.ALLOW);
+        keys[1] = ContentSetting.toString(ContentSettingValues.BLOCK);
         descriptions[0] = getResources().getString(
-                ContentSettingsResources.getSiteSummary(ContentSetting.ALLOW));
+                ContentSettingsResources.getSiteSummary(ContentSettingValues.ALLOW));
         descriptions[1] = getResources().getString(
-                ContentSettingsResources.getSiteSummary(ContentSetting.BLOCK));
+                ContentSettingsResources.getSiteSummary(ContentSettingValues.BLOCK));
         listPreference.setEntryValues(keys);
         listPreference.setEntries(descriptions);
         // TODO(crbug.com/735110): Figure out if this is the correct thing to do - here we are
         // effectively treating non-ALLOW values as BLOCK.
-        int index = (value == ContentSetting.ALLOW ? 0 : 1);
+        int index = (value == ContentSettingValues.ALLOW ? 0 : 1);
         listPreference.setValueIndex(index);
         listPreference.setOnPreferenceChangeListener(this);
         listPreference.setSummary("%s");
@@ -616,7 +622,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void setUpLocationPreference(Preference preference) {
-        ContentSetting permission = mSite.getPermission(PermissionInfo.Type.GEOLOCATION);
+        @ContentSettingValues
+        @Nullable
+        Integer permission = mSite.getPermission(PermissionInfo.Type.GEOLOCATION);
         setUpListPreference(preference, permission);
         if (isPermissionControlledByDSE(ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION)
                 && permission != null) {
@@ -625,15 +633,17 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private void setUpSoundPreference(Preference preference) {
-        ContentSetting currentValue =
+        @ContentSettingValues
+        @Nullable
+        Integer currentValue =
                 mSite.getContentSettingPermission(ContentSettingException.Type.SOUND);
         // In order to always show the sound permission, set it up with the default value if it
         // doesn't have a current value.
         if (currentValue == null) {
             currentValue = PrefServiceBridge.getInstance().isCategoryEnabled(
                                    ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND)
-                    ? ContentSetting.ALLOW
-                    : ContentSetting.BLOCK;
+                    ? ContentSettingValues.ALLOW
+                    : ContentSettingValues.BLOCK;
         }
         setUpListPreference(preference, currentValue);
     }
@@ -655,8 +665,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
         // explicit permission disallowing the blocking.
         boolean activated =
                 WebsitePreferenceBridge.getAdBlockingActivated(mSite.getAddress().getOrigin());
-        ContentSetting permission =
-                mSite.getContentSettingPermission(ContentSettingException.Type.ADS);
+        @ContentSettingValues
+        @Nullable
+        Integer permission = mSite.getContentSettingPermission(ContentSettingException.Type.ADS);
 
         // If |permission| is null, there is no explicit (non-default) permission set for this site.
         // If the site is not considered a candidate for blocking, do the standard thing and remove
@@ -671,8 +682,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
         if (permission == null) {
             permission = PrefServiceBridge.getInstance().isCategoryEnabled(
                                  ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS)
-                    ? ContentSetting.ALLOW
-                    : ContentSetting.BLOCK;
+                    ? ContentSettingValues.ALLOW
+                    : ContentSettingValues.BLOCK;
         }
         setUpListPreference(preference, permission);
 
@@ -682,7 +693,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         listPreference.setEntries(
                 new String[] {res.getString(R.string.website_settings_permissions_allow),
                         res.getString(R.string.website_settings_permissions_ads_block)});
-        listPreference.setValueIndex(permission == ContentSetting.ALLOW ? 0 : 1);
+        listPreference.setValueIndex(permission == ContentSettingValues.ALLOW ? 0 : 1);
     }
 
     /**
@@ -728,7 +739,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        ContentSetting permission = ContentSetting.fromString((String) newValue);
+        @ContentSettingValues
+        int permission = ContentSetting.fromString((String) newValue);
         for (int i = 0; i < PERMISSION_PREFERENCE_KEYS.length; i++) {
             if (PERMISSION_PREFERENCE_KEYS[i].equals(preference.getKey())) {
                 if (i < ContentSettingException.Type.NUM_ENTRIES) {

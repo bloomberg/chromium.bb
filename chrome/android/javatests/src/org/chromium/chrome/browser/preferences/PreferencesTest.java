@@ -28,7 +28,7 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
@@ -120,23 +120,23 @@ public class PreferencesTest {
                 Assert.assertEquals(keyword2,
                         templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
                 Assert.assertEquals(
-                        ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
+                        ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
 
                 // Simulate selecting the fourth search engine and but set a blocked permission
                 // first and ensure that location permission is NOT granted.
                 String keyword3 = pref.getKeywordFromIndexForTesting(3);
                 String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.BLOCK.toInt(), false);
+                        url, url, ContentSettingValues.BLOCK, false);
                 keyword3 = pref.setValueForTesting("3");
                 Assert.assertEquals(keyword3,
                         TemplateUrlService.getInstance()
                                 .getDefaultSearchEngineTemplateUrl()
                                 .getKeyword());
                 Assert.assertEquals(
-                        ContentSetting.BLOCK, locationPermissionForSearchEngine(keyword3));
+                        ContentSettingValues.BLOCK, locationPermissionForSearchEngine(keyword3));
                 Assert.assertEquals(
-                        ContentSetting.ASK, locationPermissionForSearchEngine(keyword2));
+                        ContentSettingValues.ASK, locationPermissionForSearchEngine(keyword2));
 
                 // Make sure a pre-existing ALLOW value does not get deleted when switching away
                 // from a search engine. For this to work we need to change the DSE's content
@@ -144,11 +144,11 @@ public class PreferencesTest {
                 // Otherwise the block setting will cause the content setting for search engine 2
                 // to be reset when we switch to it.
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.ALLOW.toInt(), false);
+                        url, url, ContentSettingValues.ALLOW, false);
                 keyword2 = pref.getKeywordFromIndexForTesting(2);
                 url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword2);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
-                        url, url, ContentSetting.ALLOW.toInt(), false);
+                        url, url, ContentSettingValues.ALLOW, false);
                 keyword2 = pref.setValueForTesting("2");
                 Assert.assertEquals(keyword2,
                         TemplateUrlService.getInstance()
@@ -156,10 +156,10 @@ public class PreferencesTest {
                                 .getKeyword());
 
                 Assert.assertEquals(
-                        ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
+                        ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
                 pref.setValueForTesting("3");
                 Assert.assertEquals(
-                        ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword2));
+                        ContentSettingValues.ALLOW, locationPermissionForSearchEngine(keyword2));
             }
         });
     }
@@ -260,7 +260,8 @@ public class PreferencesTest {
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
                 Assert.assertEquals(keyword,
                         templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
-                Assert.assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(keyword));
+                Assert.assertEquals(
+                        ContentSettingValues.ASK, locationPermissionForSearchEngine(keyword));
             }
         });
     }
@@ -302,11 +303,12 @@ public class PreferencesTest {
         onTemplateUrlServiceLoadedHelper.waitForCallback(0);
     }
 
-    private ContentSetting locationPermissionForSearchEngine(String keyword) {
+    private @ContentSettingValues int locationPermissionForSearchEngine(String keyword) {
         String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(keyword);
         PermissionInfo locationSettings =
                 new PermissionInfo(PermissionInfo.Type.GEOLOCATION, url, null, false);
-        ContentSetting locationPermission = locationSettings.getContentSetting();
+        @ContentSettingValues
+        int locationPermission = locationSettings.getContentSetting();
         return locationPermission;
     }
 

@@ -171,7 +171,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     j < ContentSettingException.Type.NUM_ENTRIES; j++) {
                 if (ContentSettingException.getContentSettingsType(j)
                         == SiteSettingsCategory.contentSettingsType(i)) {
-                    return ContentSetting.BLOCK == website.site().getContentSettingPermission(j);
+                    return ContentSettingValues.BLOCK
+                            == website.site().getContentSettingPermission(j);
                 }
             }
             for (@PermissionInfo.Type int j = 0; j < PermissionInfo.Type.NUM_ENTRIES; j++) {
@@ -179,7 +180,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                         == SiteSettingsCategory.contentSettingsType(i)) {
                     return (j == PermissionInfo.Type.MIDI)
                             ? false
-                            : ContentSetting.BLOCK == website.site().getPermission(j);
+                            : ContentSettingValues.BLOCK == website.site().getPermission(j);
                 }
             }
         }
@@ -474,9 +475,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
             getInfoForOrigins();
         } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
-            ContentSetting setting = (ContentSetting) newValue;
-            prefServiceBridge.setContentSetting(
-                    mCategory.getContentSettingsType(), setting.toInt());
+            @ContentSettingValues
+            int setting = (int) newValue;
+            prefServiceBridge.setContentSetting(mCategory.getContentSettingsType(), setting);
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
             prefServiceBridge.setBlockThirdPartyCookiesEnabled(((boolean) newValue));
@@ -543,8 +544,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     public void onAddSite(String hostname) {
         int setting = (PrefServiceBridge.getInstance().isCategoryEnabled(
                               mCategory.getContentSettingsType()))
-                ? ContentSetting.BLOCK.toInt()
-                : ContentSetting.ALLOW.toInt();
+                ? ContentSettingValues.BLOCK
+                : ContentSettingValues.ALLOW;
 
         PrefServiceBridge.getInstance().nativeSetContentSettingForPattern(
                 mCategory.getContentSettingsType(), hostname, setting);
@@ -557,7 +558,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
         getInfoForOrigins();
 
         if (mCategory.showSites(SiteSettingsCategory.Type.SOUND)) {
-            if (setting == ContentSetting.BLOCK.toInt()) {
+            if (setting == ContentSettingValues.BLOCK) {
                 RecordUserAction.record("SoundContentSetting.MuteBy.PatternException");
             } else {
                 RecordUserAction.record("SoundContentSetting.UnmuteBy.PatternException");
@@ -745,7 +746,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
             TriStateSiteSettingsPreference triStateToggle =
                     (TriStateSiteSettingsPreference) getPreferenceScreen().findPreference(
                             TRI_STATE_TOGGLE_KEY);
-            return (triStateToggle.getCheckedSetting() == ContentSetting.BLOCK);
+            return (triStateToggle.getCheckedSetting() == ContentSettingValues.BLOCK);
         } else {
             ChromeSwitchPreference binaryToggle =
                     (ChromeSwitchPreference) getPreferenceScreen().findPreference(
@@ -861,8 +862,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private void configureTriStateToggle(
             TriStateSiteSettingsPreference triStateToggle, int contentType) {
         triStateToggle.setOnPreferenceChangeListener(this);
-        ContentSetting setting = ContentSetting.fromInt(
-                PrefServiceBridge.getInstance().getContentSetting(contentType));
+        @ContentSettingValues
+        int setting = PrefServiceBridge.getInstance().getContentSetting(contentType);
         int[] descriptionIds =
                 ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
         triStateToggle.initialize(setting, descriptionIds);

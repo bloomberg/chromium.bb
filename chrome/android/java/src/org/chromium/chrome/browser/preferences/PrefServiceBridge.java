@@ -16,7 +16,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.preferences.languages.LanguageItem;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
@@ -183,14 +182,10 @@ public class PrefServiceBridge {
     }
 
     @CalledByNative
-    private static void addContentSettingExceptionToList(
-            ArrayList<ContentSettingException> list,
-            int contentSettingsType,
-            String pattern,
-            int contentSetting,
-            String source) {
-        ContentSettingException exception = new ContentSettingException(
-                contentSettingsType, pattern, ContentSetting.fromInt(contentSetting), source);
+    private static void addContentSettingExceptionToList(ArrayList<ContentSettingException> list,
+            int contentSettingsType, String pattern, int contentSetting, String source) {
+        ContentSettingException exception =
+                new ContentSettingException(contentSettingsType, pattern, contentSetting, source);
         list.add(exception);
     }
 

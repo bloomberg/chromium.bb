@@ -172,12 +172,13 @@ public class SiteSettingsPreferences extends PreferenceFragment
                     prefServiceBridge.requiresTriStateContentSetting(contentType);
 
             boolean checked = false;
-            ContentSetting setting = ContentSetting.DEFAULT;
+            @ContentSettingValues
+            int setting = ContentSettingValues.DEFAULT;
 
             if (prefCategory == Type.DEVICE_LOCATION) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
             } else if (requiresTriStateSetting) {
-                setting = ContentSetting.fromInt(prefServiceBridge.getContentSetting(contentType));
+                setting = prefServiceBridge.getContentSetting(contentType);
             } else {
                 checked = prefServiceBridge.isCategoryEnabled(contentType);
             }

@@ -44,7 +44,7 @@ import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTab;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
-import org.chromium.chrome.browser.preferences.website.ContentSetting;
+import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
@@ -95,9 +95,9 @@ public class ClearBrowsingDataPreferencesTest {
         // Due to Android notification channels we need to delete the existing content setting in
         // in order to change it to block.
         ThreadUtils.runOnUiThread(
-                () -> notificationSettings.setContentSetting(ContentSetting.DEFAULT));
+                () -> notificationSettings.setContentSetting(ContentSettingValues.DEFAULT));
         ThreadUtils.runOnUiThread(
-                () -> notificationSettings.setContentSetting(ContentSetting.BLOCK));
+                () -> notificationSettings.setContentSetting(ContentSettingValues.BLOCK));
     }
 
     @After

@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class TriStateSiteSettingsPreference
         extends Preference implements RadioButtonWithDescription.OnCheckedChangeListener {
-    private ContentSetting mSetting = ContentSetting.DEFAULT;
+    private @ContentSettingValues int mSetting = ContentSettingValues.DEFAULT;
     private int[] mDescriptionIds;
     private RadioButtonWithDescription mAllowed;
     private RadioButtonWithDescription mAsk;
@@ -36,7 +36,7 @@ public class TriStateSiteSettingsPreference
      * @param descriptionIds An array of 3 resource IDs for descriptions for
      *                       Allowed, Ask and Blocked states, in that order.
      */
-    public void initialize(ContentSetting setting, int[] descriptionIds) {
+    public void initialize(@ContentSettingValues int setting, int[] descriptionIds) {
         mSetting = setting;
         mDescriptionIds = descriptionIds;
     }
@@ -44,7 +44,7 @@ public class TriStateSiteSettingsPreference
     /**
      * @return The current checked setting.
      */
-    public ContentSetting getCheckedSetting() {
+    public @ContentSettingValues int getCheckedSetting() {
         return mSetting;
     }
 
@@ -58,11 +58,11 @@ public class TriStateSiteSettingsPreference
     @Override
     public void onCheckedChanged() {
         if (mAllowed.isChecked())
-            mSetting = ContentSetting.ALLOW;
+            mSetting = ContentSettingValues.ALLOW;
         else if (mAsk.isChecked())
-            mSetting = ContentSetting.ASK;
+            mSetting = ContentSettingValues.ASK;
         else if (mBlocked.isChecked())
-            mSetting = ContentSetting.BLOCK;
+            mSetting = ContentSettingValues.BLOCK;
 
         callChangeListener(mSetting);
     }
@@ -92,12 +92,12 @@ public class TriStateSiteSettingsPreference
     /**
      * @param setting The setting to find RadioButton for.
      */
-    private RadioButtonWithDescription findRadioButton(ContentSetting setting) {
-        if (setting == ContentSetting.ALLOW)
+    private RadioButtonWithDescription findRadioButton(@ContentSettingValues int setting) {
+        if (setting == ContentSettingValues.ALLOW)
             return mAllowed;
-        else if (setting == ContentSetting.ASK)
+        else if (setting == ContentSettingValues.ASK)
             return mAsk;
-        else if (setting == ContentSetting.BLOCK)
+        else if (setting == ContentSettingValues.BLOCK)
             return mBlocked;
         else
             return null;
