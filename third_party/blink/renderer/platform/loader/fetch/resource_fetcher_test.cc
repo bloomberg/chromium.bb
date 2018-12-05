@@ -463,7 +463,7 @@ class ScopedMockRedirectRequester {
   void RegisterRedirect(const WebString& from_url, const WebString& to_url) {
     KURL redirect_url(from_url);
     WebURLResponse redirect_response;
-    redirect_response.SetURL(redirect_url);
+    redirect_response.SetCurrentRequestUrl(redirect_url);
     redirect_response.SetHTTPStatusCode(301);
     redirect_response.SetHTTPHeaderField(http_names::kLocation, to_url);
     redirect_response.SetEncodedDataLength(kRedirectResponseOverheadBytes);

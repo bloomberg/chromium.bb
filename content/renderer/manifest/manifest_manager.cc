@@ -148,7 +148,7 @@ void ManifestManager::OnManifestFetchComplete(
   }
 
   ManifestUmaUtil::FetchSucceeded();
-  GURL response_url = response.Url();
+  GURL response_url = response.CurrentRequestUrl();
   base::StringPiece data_piece(data);
   ManifestParser parser(data_piece, response_url, document_url);
   parser.Parse();
@@ -177,7 +177,7 @@ void ManifestManager::OnManifestFetchComplete(
     return;
   }
 
-  manifest_url_ = response.Url();
+  manifest_url_ = response.CurrentRequestUrl();
   manifest_ = parser.manifest();
   ResolveCallbacks(ResolveStateSuccess);
 }

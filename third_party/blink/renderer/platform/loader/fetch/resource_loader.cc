@@ -791,7 +791,8 @@ void ResourceLoader::DidReceiveResponse(
   if (Context().IsDetached()) {
     // If the fetch context is already detached, we don't need further signals,
     // so let's cancel the request.
-    HandleError(ResourceError::CancelledError(web_url_response.Url()));
+    HandleError(
+        ResourceError::CancelledError(web_url_response.CurrentRequestUrl()));
     return;
   }
 

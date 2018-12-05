@@ -71,7 +71,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
              const net::NetworkTrafficAnnotationTag& annotation_tag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
     status_ = Status::kStarted;
-    response_.SetURL(request.url);
+    response_.SetCurrentRequestUrl(request.url);
 
     network::mojom::URLLoaderClientPtr client;
     client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
@@ -187,7 +187,7 @@ class ResourceFetcherImpl::ClientImpl : public network::mojom::URLLoaderClient {
       const network::ResourceResponseHead& response_head) override {
     DCHECK_EQ(Status::kStarted, status_);
     loader_->FollowRedirect(base::nullopt, base::nullopt, base::nullopt);
-    response_.SetURL(redirect_info.new_url);
+    response_.SetCurrentRequestUrl(redirect_info.new_url);
   }
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,

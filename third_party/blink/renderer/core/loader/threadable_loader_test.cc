@@ -127,7 +127,7 @@ void SetUpRedirectURL() {
   timing.Initialize();
 
   WebURLResponse response;
-  response.SetURL(url);
+  response.SetCurrentRequestUrl(url);
   response.SetHTTPStatusCode(301);
   response.SetLoadTiming(timing);
   response.AddHTTPHeaderField("Location", SuccessURL().GetString());
@@ -144,7 +144,7 @@ void SetUpRedirectLoopURL() {
   timing.Initialize();
 
   WebURLResponse response;
-  response.SetURL(url);
+  response.SetCurrentRequestUrl(url);
   response.SetHTTPStatusCode(301);
   response.SetLoadTiming(timing);
   response.AddHTTPHeaderField("Location", RedirectLoopURL().GetString());

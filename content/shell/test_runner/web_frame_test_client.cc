@@ -67,11 +67,12 @@ void PrintResponseDescription(WebTestDelegate* delegate,
     delegate->PrintMessage("(null)");
     return;
   }
-  delegate->PrintMessage(base::StringPrintf(
-      "<NSURLResponse %s, http status code %d>",
-      DescriptionSuitableForTestResult(response.Url().GetString().Utf8())
-          .c_str(),
-      response.HttpStatusCode()));
+  delegate->PrintMessage(
+      base::StringPrintf("<NSURLResponse %s, http status code %d>",
+                         DescriptionSuitableForTestResult(
+                             response.CurrentRequestUrl().GetString().Utf8())
+                             .c_str(),
+                         response.HttpStatusCode()));
 }
 
 void BlockRequest(blink::WebURLRequest& request) {
@@ -475,13 +476,13 @@ void WebFrameTestClient::DidReceiveResponse(
     const blink::WebURLResponse& response) {
   if (test_runner()->shouldDumpResourceLoadCallbacks()) {
     delegate_->PrintMessage(DescriptionSuitableForTestResult(
-        GURL(response.Url()).possibly_invalid_spec()));
+        GURL(response.CurrentRequestUrl()).possibly_invalid_spec()));
     delegate_->PrintMessage(" - didReceiveResponse ");
     PrintResponseDescription(delegate_, response);
     delegate_->PrintMessage("\n");
   }
   if (test_runner()->shouldDumpResourceResponseMIMETypes()) {
-    GURL url = response.Url();
+    GURL url = response.CurrentRequestUrl();
     blink::WebString mime_type = response.MimeType();
     delegate_->PrintMessage(url.ExtractFileName());
     delegate_->PrintMessage(" has MIME type ");

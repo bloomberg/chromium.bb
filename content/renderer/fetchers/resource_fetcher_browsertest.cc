@@ -176,7 +176,8 @@ class ResourceFetcherTests : public ContentBrowserTest {
 
     ASSERT_TRUE(delegate->completed());
     EXPECT_EQ(200, delegate->response().HttpStatusCode());
-    EXPECT_EQ(final_url.spec(), delegate->response().Url().GetString().Utf8());
+    EXPECT_EQ(final_url.spec(),
+              delegate->response().CurrentRequestUrl().GetString().Utf8());
     std::string text = delegate->data();
     EXPECT_TRUE(text.find("Basic html test.") != std::string::npos);
   }

@@ -249,7 +249,7 @@ bool WebApplicationCacheHostImpl::SelectCacheWithManifest(
 void WebApplicationCacheHostImpl::DidReceiveResponseForMainResource(
     const WebURLResponse& response) {
   document_response_ = response;
-  document_url_ = ClearUrlRef(document_response_.Url());
+  document_url_ = ClearUrlRef(document_response_.CurrentRequestUrl());
   if (document_url_ != original_main_resource_url_)
     is_get_method_ = true;  // A redirect was involved.
   original_main_resource_url_ = GURL();

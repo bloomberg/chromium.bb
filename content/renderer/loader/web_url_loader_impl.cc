@@ -1181,7 +1181,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
     WebURLResponse* response,
     bool report_security_info,
     int request_id) {
-  response->SetURL(url);
+  response->SetCurrentRequestUrl(url);
   response->SetResponseTime(info.response_time);
   response->SetMIMEType(WebString::FromUTF8(info.mime_type));
   response->SetTextEncodingName(WebString::FromUTF8(info.charset));
