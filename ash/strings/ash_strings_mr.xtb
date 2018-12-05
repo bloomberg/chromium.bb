@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> शी पुन्हा कनेक्ट करीत आहे</translation>
-<translation id="2790844815106384441">वेबसायटी स्थान सेवा किंवा डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरू शकतात की नाही ते निवडा</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">अनलॉक करण्यासाठी, तुमचा पासवर्ड एंटर करा</translation>
 <translation id="2819276065543622893">आता तुम्हाला साइन आउट केले जाईल.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">तुम्ही शेवटचे साइन इन केल्यापासून या डिव्हाइसवर दुसरा कीबोर्ड कनेक्ट करण्यात आला आहे. तो वापरण्यापूर्वी तुमचा या कीबोर्डवर विश्वास असल्याची खात्री करा.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
-<translation id="3510503721818156981">Chromebook नवीन फोनशी कनेक्ट केले गेले</translation>
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4261870227682513959">सूचना सेटिंग्ज दाखवा. सूचना बंद आहेत</translation>
 <translation id="4269883910223712419">या डिव्हाइसचे प्रशासन पुढील गोष्टी करू शकते:</translation>
-<translation id="4274921305979314545">तुमचे Chromebook तुमच्या फोनशी कनेक्ट करा</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> अ‍ॅक्टिव्हेट करत आहे</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">डिव्हाइसेस</translation>
 <translation id="4659419629803378708">ChromeVox चालू केले</translation>
 <translation id="4734965478015604180">आडवा</translation>
+<translation id="476166673298332917">डिव्हाइस प्रशासक तुमच्या ब्राउझिंग अॅक्टिव्हिटीचे परीक्षण करू शकतो.</translation>
 <translation id="4774338217796918551"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> साठी पासवर्ड</translation>
 <translation id="4778095205580009397">डेमो सेशनमध्ये Google असिस्टंट उपलब्ध नाही.</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">चालू</translation>
-<translation id="592343074608792716">हे Chromebook आणि तुमचा फोन आपोआप कनेक्ट होतील</translation>
 <translation id="5947494881799873997">परत करा</translation>
 <translation id="595202126637698455">कार्यप्रदर्शन ट्रेसिंग सक्षम केले</translation>
 <translation id="5957083217255311415">मोबाइल डेटा बंद केला आहे.</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">परफॉर्मंस ट्रेसिंग चालू आहे</translation>
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="6803622936009808957">समर्थित रिजोल्यूशन न आढळल्यामुळे प्रदर्शने मिरर करू शकली नाहीत. त्याऐवजी विस्तारित डेस्कटॉप एंटर केला.</translation>
-<translation id="6814658242098378692">अॅप्स, एक्स्टेंशन आणि थीम व्यवस्थापित करा</translation>
 <translation id="6820676911989879663">ब्रेक घ्या!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +374,6 @@
 <translation id="7564874036684306347">दुसऱ्या डेस्कटॉपवर विंडो हलवण्याने अनपेक्षित वर्तन घडू शकते. नंतर येणाऱ्या सूचना, विंडो आणि डायलॉग हे डेस्कटॉपच्या दरम्यान विभाजित केले जाऊ शकतात.</translation>
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox चालू केलेले आहेत</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
-<translation id="7604942372593434070">आपल्या ब्राउझिंग क्रियाकलापामध्ये प्रवेश करा</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
 <translation id="7647488630410863958">आपल्या सूचना पाहण्यासाठी डिव्हाइस अनलॉक करा</translation>
 <translation id="7649070708921625228">मदत</translation>

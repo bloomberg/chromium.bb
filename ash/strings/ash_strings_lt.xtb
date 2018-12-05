@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Iš naujo prisijungiama prie „<ph name="NAME" />“</translation>
-<translation id="2790844815106384441">Pasirinkite, ar svetainėse galima naudoti Vietovės paslaugas arba įrenginio mikrofoną, fotoaparatą ir kitas funkcijas</translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
 <translation id="2803734122639935495">Kad atrakintumėte, įveskite slaptažodį</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">Nuo paskutinio jūsų prisijungimo su įrenginiu susieta kita klaviatūra. Prieš ją naudodami įsitikinkite, kad galite pasitikėti šia klaviatūra.</translation>
 <translation id="3477079411857374384">„Control“ + „Shift“ + „Space“</translation>
 <translation id="3510164367642747937">Paryškinti pelės žymeklį</translation>
-<translation id="3510503721818156981">„Chromebook“ prijungtas prie naujo telefono</translation>
 <translation id="3513798432020909783">Paskyrą tvarko: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE" />“ (reikia paleisti iš naujo)</translation>
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">Diktavimas</translation>
 <translation id="4261870227682513959">Rodyti pranešimų nustatymus. Pranešimai išjungti</translation>
 <translation id="4269883910223712419">Šio įrenginio administratorius gali atlikti nurodytus veiksmus.</translation>
-<translation id="4274921305979314545">Susiekite „Chromebook“ su telefonu</translation>
 <translation id="4279490309300973883">Dubliuojama</translation>
 <translation id="4292681942966152062">Suaktyvinamas „<ph name="NETWORK_NAME" />“</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -225,6 +222,7 @@
 <translation id="4628757576491864469">Įrenginiai</translation>
 <translation id="4659419629803378708">„ChromeVox“ įgalinta</translation>
 <translation id="4734965478015604180">Horizontaliai</translation>
+<translation id="476166673298332917">Šio įrenginio administratorius gali stebėti jūsų naršymo veiklą.</translation>
 <translation id="4774338217796918551">Grįžkite rytoj <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> slaptažodis</translation>
 <translation id="4778095205580009397">„Google“ padėjėjas nepasiekiamas demonstracinėje sesijoje.</translation>
@@ -281,7 +279,6 @@
 <translation id="5901316534475909376">„Shift“ + „Esc“</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Įjungta</translation>
-<translation id="592343074608792716">Šis „Chromebook“ ir telefonas bus susieti automatiškai</translation>
 <translation id="5947494881799873997">Grąžinti</translation>
 <translation id="595202126637698455">Įgalintas našumo stebėjimas</translation>
 <translation id="5957083217255311415">Mobiliojo ryšio duomenys išjungti.</translation>
@@ -339,7 +336,6 @@
 <translation id="6751826523481687655">Našumo stebėjimas įjungtas</translation>
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
-<translation id="6814658242098378692">Valdykite programas, plėtinius ir temas</translation>
 <translation id="6820676911989879663">Padarykite pertrauką!</translation>
 <translation id="683971173229319003">Paieškos klavišas + L</translation>
 <translation id="6857811139397017780">Suaktyvinti „<ph name="NETWORKSERVICE" />“</translation>
@@ -379,7 +375,6 @@
 <translation id="7564874036684306347">Perkėlus langus į kitą darbalaukį gali pasireikšti nenumatyta elgsena. Vėlesni pranešimai, langai ir dialogų langai gali būti padalyti keliuose darbalaukiuose.</translation>
 <translation id="7569509451529460200">Brailio rašmenys ir „ChromeVox“ įgalinti</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
-<translation id="7604942372593434070">Prieiga prie jūsų naršymo veiklos</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (savininkas)</translation>
 <translation id="7647488630410863958">Atrakinkite įrenginį, kad galėtumėte peržiūrėti pranešimus</translation>
 <translation id="7649070708921625228">Žinynas</translation>

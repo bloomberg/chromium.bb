@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="2761704814324807722">Treya ya hali, saa <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Inaunganisha upya kwenye <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Chagua ikiwa tovuti zinaweza kutumia huduma za mahali au maikrofoni, kamera au vipengele vingine vya kifaa</translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
 <translation id="2803734122639935495">Weka nenosiri lako ili ufungue</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">Kibodi nyingine imeunganishwa kwenye kifaa hiki tangu ulipoingia kwenye akaunti maya ya mwisho. Hakikisha kibodi hii ni salama kabla ya kuitumia.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Angazia kiteuzi cha kipanya</translation>
-<translation id="3510503721818156981">Umeunganisha Chromebook kwenye simu mpya</translation>
 <translation id="3513798432020909783">Akaunti inasimamiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">Kuandika kwa kutamka</translation>
 <translation id="4261870227682513959">Onyesha mipangilio ya arifa. Umezima arifa</translation>
 <translation id="4269883910223712419">Msimamizi wa kifaa hiki ana uwezo wa:</translation>
-<translation id="4274921305979314545">Unganisha Chromebook na simu yako</translation>
 <translation id="4279490309300973883">Kuakisi</translation>
 <translation id="4292681942966152062">Inawasha <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">Vifaa</translation>
 <translation id="4659419629803378708">ChromeVox imewashwa</translation>
 <translation id="4734965478015604180">Kimlalo</translation>
+<translation id="476166673298332917">Msimamizi wa kifaa hiki anaweza kufuatilia shughuli zako za kuvinjari.</translation>
 <translation id="4774338217796918551">Rejea kesho saa <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Nenosiri la <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Programu ya Mratibu wa Google haipatikani katika kipindi cha onyesho.</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
-<translation id="592343074608792716">Chromebook hii na simu yako zitaunganishwa kiotomatiki</translation>
 <translation id="5947494881799873997">Rejesha</translation>
 <translation id="595202126637698455">Ufuatiliaji wa utendaji umewashwa</translation>
 <translation id="5957083217255311415">Data ya mtandao wa simu imezimwa.</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">Kipengele cha ufuatiliaji wa utendaji kimewashwa</translation>
 <translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE" />% na inachaji.</translation>
 <translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>
-<translation id="6814658242098378692">Dhibiti programu, viendelezi na mandhari</translation>
 <translation id="6820676911989879663">Pumzika kidogo!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Amilisha <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +375,6 @@
 Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</translation>
 <translation id="7569509451529460200">Breli na ChromeVox zimewashwa</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
-<translation id="7604942372593434070">Fikia shughuli zako za kuvinjari</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (mmiliki)</translation>
 <translation id="7647488630410863958">Fungua kifaa ili uone arifa zako</translation>
 <translation id="7649070708921625228">Usaidizi</translation>

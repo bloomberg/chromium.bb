@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">Linuxi rakenduse installimisel ilmnes viga.</translation>
 <translation id="16815041330799488">Ära luba saitidel näha lõikelauale kopeeritud teksti ega kujutisi</translation>
 <translation id="1682548588986054654">Uus inkognito aken</translation>
-<translation id="1683850629661177840">Lihtsustatud režiim muudab sirvimise kõigil lehtedel (sh HTTPS-lehtedel) kiiremaks.</translation>
 <translation id="168715261339224929">Järjehoidjate hankimiseks kõigisse oma seadmetesse lülitage sünkroonimine sisse.</translation>
 <translation id="1688867105868176567">Kas soovite saidi andmed kustutada?</translation>
 <translation id="1688935057616748272">Sisestage täht</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">Toiming pole saadaval</translation>
 <translation id="204914487372604757">Loo otsetee</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
-<translation id="2052369079215022979">Haldab teie organisatsioon</translation>
 <translation id="2053312383184521053">Jõudeoleku andmed</translation>
 <translation id="205560151218727633">Google'i assistendi logo</translation>
 <translation id="2058456167109518507">Tuvastati seade</translation>
@@ -3868,7 +3866,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6916590542764765824">Laienduste haldamine</translation>
 <translation id="6920989436227028121">Ava tavalise vahelehena</translation>
 <translation id="6921709132208495314">Katkesta sel lehel andmemahu kasutamine</translation>
-<translation id="6922128026973287222">Salvestage andmeid ja sirvige kiiremini Google'i andmemahu säästjaga. Lisateabe saamiseks klõpsake.</translation>
 <translation id="6923132443355966645">Kerimine/klõpsamine</translation>
 <translation id="6923633482430812883">Viga ühiskasutuse seadistamisel. Veenduge, et failiserver, millega ühenduse loote, toetaks SMBv2 või uuemat versiooni.</translation>
 <translation id="6930242544192836755">Kestus</translation>

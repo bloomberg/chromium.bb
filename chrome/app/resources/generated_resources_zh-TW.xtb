@@ -390,7 +390,7 @@
 <translation id="1556537182262721003">無法將擴充功能目錄移至設定檔。</translation>
 <translation id="155865706765934889">觸控板</translation>
 <translation id="1564414980088536597">無法使用這張圖片，請選擇其他圖片。</translation>
-<translation id="1566007797958927729">Chromebook 設定完成後，請先開啟 Google 助理，然後按下 Google 助理按鈕或說出「Ok Google」，就能隨時向你的 Google 助理下達指令。</translation>
+<translation id="1566007797958927729">Chromebook 設定完成後，請先開啟 Google 助理，之後只要按下 Google 助理按鈕或說出「Ok Google」，就能向你的 Google 助理下達指令。</translation>
 <translation id="1566049601598938765">網站</translation>
 <translation id="1567387640189251553">自你上次輸入密碼後，裝置已連接其他鍵盤。你的按鍵行為可能會遭到側錄。</translation>
 <translation id="1567750922576943685">驗證你的身分有助於確保個人資訊安全無虞</translation>
@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">安裝 Linux 應用程式的過程中發生錯誤。</translation>
 <translation id="16815041330799488">禁止網站讀取已複製到剪貼簿的文字和圖片</translation>
 <translation id="1682548588986054654">新增無痕式視窗</translation>
-<translation id="1683850629661177840">現在可透過精簡模式加快所有網頁的瀏覽速度 (包括 HTTPS 網頁)。</translation>
 <translation id="168715261339224929">如要將書籤同步到所有裝置，請開啟同步處理功能。</translation>
 <translation id="1688867105868176567">要清除網站資料嗎？</translation>
 <translation id="1688935057616748272">請輸入英文字母</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">無法執行操作</translation>
 <translation id="204914487372604757">建立捷徑</translation>
 <translation id="2050339315714019657">縱向</translation>
-<translation id="2052369079215022979">由貴機構管理</translation>
 <translation id="2053312383184521053">閒置狀態資料</translation>
 <translation id="205560151218727633">Google 助理標誌</translation>
 <translation id="2058456167109518507">偵測到裝置</translation>
@@ -3866,7 +3864,6 @@
 <translation id="6916590542764765824">管理擴充功能</translation>
 <translation id="6920989436227028121">在一般分頁中開啟</translation>
 <translation id="6921709132208495314">停止這個網頁使用數據流量</translation>
-<translation id="6922128026973287222">使用 Google Data Saver 不僅能節約數據流量，還可讓您享有更快速的瀏覽體驗。按一下即可瞭解詳情。</translation>
 <translation id="6923132443355966645">捲動/點選</translation>
 <translation id="6923633482430812883">掛接共用裝置時發生錯誤。請檢查你要連接的檔案伺服器是否支援 SMBv2 以上版本。</translation>
 <translation id="6930242544192836755">持續時間</translation>
@@ -5203,7 +5200,7 @@
 <translation id="8962918469425892674">這個網站正在使用動作感應器或光源感應器。</translation>
 <translation id="8965037249707889821">輸入先前的密碼</translation>
 <translation id="8965697826696209160">空間不足。</translation>
-<translation id="8966870118594285808">請重新開啟不小心關閉的分頁</translation>
+<translation id="8966870118594285808">你可以重新開啟不小心關閉的分頁</translation>
 <translation id="8967866634928501045">按下 Alt + Shift + A 鍵即可顯示</translation>
 <translation id="8970203673128054105">查看投放模式清單</translation>
 <translation id="89720367119469899">Escape</translation>

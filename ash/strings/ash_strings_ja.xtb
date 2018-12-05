@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" /> に再接続しています</translation>
-<translation id="2790844815106384441">ウェブサイトで位置情報サービスまたは端末のマイクやカメラなどの機能を使用できるように指定する</translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
 <translation id="2803734122639935495">ロックを解除するにはパスワードを入力してください</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">前回のログイン後に、別のキーボードがこの端末に接続されました。このキーボードを使用する前に信頼できるものかどうか確認してください。</translation>
 <translation id="3477079411857374384">Control+Shift+Space</translation>
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
-<translation id="3510503721818156981">Chromebook が新しいスマートフォンに接続されました</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">音声入力</translation>
 <translation id="4261870227682513959">通知設定を表示します。通知はオフです</translation>
 <translation id="4269883910223712419">この端末の管理者は以下を行うことができます。</translation>
-<translation id="4274921305979314545">Chromebook とスマートフォンを接続できます</translation>
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4292681942966152062"><ph name="NETWORK_NAME" /> を有効化しています</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">デバイス</translation>
 <translation id="4659419629803378708">ChromeVox を有効にしました</translation>
 <translation id="4734965478015604180">横</translation>
+<translation id="476166673298332917">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="4774338217796918551">明日の <ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> のパスワード</translation>
 <translation id="4778095205580009397">Google アシスタントは、デモセッションではご利用いただけません。</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" />（<ph name="MAIL" />）</translation>
 <translation id="5916664084637901428">オン</translation>
-<translation id="592343074608792716">この Chromebook とお使いのスマートフォンは自動的に接続されます</translation>
 <translation id="5947494881799873997">元に戻す</translation>
 <translation id="595202126637698455">パフォーマンス追跡機能が有効です</translation>
 <translation id="5957083217255311415">モバイルデータ通信が無効になっています。</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">パフォーマンス追跡機能が有効になっています</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
-<translation id="6814658242098378692">アプリケーション、拡張機能、テーマを管理する</translation>
 <translation id="6820676911989879663">休憩の時間です！</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> を有効にする</translation>
@@ -379,7 +375,6 @@
 <translation id="7564874036684306347">ウィンドウを別のデスクトップに移動すると、予期しない動作が起こることがあります。以降の通知、ウィンドウ、ダイアログは、複数のデスクトップに分かれて表示される可能性があります。</translation>
 <translation id="7569509451529460200">Braille と ChromeVox が有効になっています</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
-<translation id="7604942372593434070">閲覧アクティビティへのアクセス</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">デバイスのロックを解除して通知を確認してください</translation>
 <translation id="7649070708921625228">ヘルプ</translation>

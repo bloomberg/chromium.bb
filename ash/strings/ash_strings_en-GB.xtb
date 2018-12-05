@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconnecting to <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Choose whether websites can use location services or the device’s microphone, camera or other features</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">To unlock, enter your password</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
@@ -159,7 +158,6 @@
 <translation id="3465223694362104965">Another keyboard has connected to this device since you last signed in. Make sure that you trust this keyboard before you use it.</translation>
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
-<translation id="3510503721818156981">Chromebook connected to a new phone</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
 <translation id="3595596368722241419">Battery full</translation>
@@ -197,7 +195,6 @@
 <translation id="4217571870635786043">Dictation</translation>
 <translation id="4261870227682513959">Show notification settings. Notifications are off</translation>
 <translation id="4269883910223712419">The admin of this device has the ability to:</translation>
-<translation id="4274921305979314545">Connect your Chromebook with your phone</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4292681942966152062">Activating <ph name="NETWORK_NAME" /></translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -224,6 +221,7 @@
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">The device admin may monitor your browsing activity.</translation>
 <translation id="4774338217796918551">Come back tomorrow at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">The Google Assistant is not available in a demo session.</translation>
@@ -280,7 +278,6 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
-<translation id="592343074608792716">This Chromebook and your phone will connect automatically</translation>
 <translation id="5947494881799873997">Revert</translation>
 <translation id="595202126637698455">Performance tracing enabled</translation>
 <translation id="5957083217255311415">Mobile data is turned off.</translation>
@@ -338,7 +335,6 @@
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
-<translation id="6814658242098378692">Manage apps, extensions and themes</translation>
 <translation id="6820676911989879663">Take a break!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +374,6 @@
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
-<translation id="7604942372593434070">Access your browsing activity</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>

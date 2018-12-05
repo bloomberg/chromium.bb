@@ -10,7 +10,6 @@
 <translation id="1067922213147265141">ఇతర Google సేవలు</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />లో ఉన్న పేజీలను ఎప్పుడూ అనువదించవద్దు</translation>
 <translation id="1080790410959514870">మీరు <ph name="DOMAIN_NAME" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ అవుతున్నారు. దీని వలన ఈ పరికరంలో నిల్వ చేయబడిన Chrome డేటా తొలగించబడుతుంది, కానీ మీ Google ఖాతాలో డేటా అలాగే ఉంటుంది.</translation>
-<translation id="1099080783256647258">డేటా సేవర్‌ని ఆన్ చేసినప్పుడు, Chrome వేగవంతంగా పని చేయడం మరియు పేజీ లోడ్‌లను తగ్గించడం కోసం Google సర్వర్‌లను ఉపయోగిస్తుంది. ప్రత్యేకించి నెమ్మదిగా ఉన్న పేజీలలో, కేవలం అవసరమైన కంటెంట్‌ని మాత్రమే లోడ్ చేయడం కోసం డేటా సేవర్ ఆ పేజీలను తిరిగి వ్రాస్తుంది. అజ్ఞాత మోడ్‌లో లోడ్ చేయబడే పేజీలను డేటా సేవర్ ఆప్టిమైజ్ చేయదు.</translation>
 <translation id="1105960400813249514">స్క్రీన్ క్యాప్చర్</translation>
 <translation id="1111673857033749125">మీ ఇతర పరికరాల్లో సేవ్ చేసిన బుక్‌మార్క్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="1113597929977215864">సరళీకృత వీక్షణను చూపు</translation>
@@ -97,7 +96,6 @@
 <translation id="1670399744444387456">ప్రాథమికం</translation>
 <translation id="1671236975893690980">డౌన్‌లోడ్ పెండింగ్‌లో ఉంది…</translation>
 <translation id="1672586136351118594">మళ్లీ చూపవద్దు</translation>
-<translation id="1709438864123551175">డేటా సేవర్</translation>
 <translation id="1718835860248848330">చివరి గంట</translation>
 <translation id="1729516292547892356">వర్చువల్ రియాలిటీ కంటెంట్‌ను వీక్షించడానికి, Google వర్చువల్ రియాలిటీ సేవలను అప్‌డేట్ చేయండి</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" /> అప్‌డేట్ అయింది</translation>
@@ -205,7 +203,6 @@
 <translation id="2501278716633472235">వెనుకకు వెళ్ళు</translation>
 <translation id="2513403576141822879">గోప్యత, భద్రత మరియు డేటా సేకరణకు సంబంధించిన మరిన్ని సెట్టింగ్‌ల కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణ మరియు Google సేవలను<ph name="END_LINK" /> చూడండి</translation>
 <translation id="2523184218357549926">మీరు సందర్శించే పేజీల URLలను Googleకి పంపుతుంది</translation>
-<translation id="2526148617758225454">డేటా సేవర్ ఆన్‌లో ఉంది. సెట్టింగ్‌ల్లో దీన్ని నిర్వహించండి.</translation>
 <translation id="2532336938189706096">వెబ్ వీక్షణ</translation>
 <translation id="2536728043171574184">ఈ పేజీ ఆఫ్‌లైన్ కాపీని వీక్షిస్తున్నారు</translation>
 <translation id="2546283357679194313">కుక్కీలు మరియు సైట్ డేటా</translation>
@@ -303,7 +300,6 @@
 <translation id="3341058695485821946">మీరు ఎంత డేటాను సేవ్ చేసారో చూడండి</translation>
 <translation id="3350687908700087792">అన్ని అజ్ఞాత ట్యాబ్‌లను మూసివేయండి</translation>
 <translation id="3353615205017136254">Google అందించిన లైట్ పేజీ. అసలు పేజీని లోడ్ చేయడానికి అసలైన దానిని లోడ్ చేయి బటన్‌ను నొక్కండి.</translation>
-<translation id="3365671512111106261">డేటా సేవర్ ఆన్‌లో ఉన్నప్పుడు అందుబాటులో ఉండదు</translation>
 <translation id="3367813778245106622">సమకాలీకరణను ప్రారంభించడానికి మళ్లీ సైన్ ఇన్ చేయండి</translation>
 <translation id="3377025655491224618">ప్రైవేట్ ట్యాబ్</translation>
 <translation id="3384347053049321195">చిత్రాన్ని భాగస్వామ్యం చేయి</translation>
@@ -332,14 +328,12 @@
 <translation id="3600792891314830896">ధ్వనిని ప్లే చేసే సైట్‌లను మ్యూట్ చేయండి</translation>
 <translation id="360207483134687714">Chromeలో VR అనుభవాన్ని మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="3616113530831147358">ఆడియో</translation>
-<translation id="3620176948598597475">రీసెట్ చేసినట్లయితే, సందర్శించిన సైట్‌ల జాబితాతో సహా డేటా సేవర్ చరిత్ర తుడిచివేయబడుతుంది.</translation>
 <translation id="3630011985153972676">సెట్టింగ్‌లలో Wi-Fi ఆన్‌లో ఉన్నప్పుడు మీ కోసం కథనాలను డౌన్‌లోడ్ చేయడానికి Chromeను అనుమతించండి.</translation>
 <translation id="3632295766818638029">పాస్‌వర్డ్‌ను చూపుతుంది</translation>
 <translation id="363596933471559332">నిల్వ చేసిన ఆధారాలను ఉపయోగించి ఆటోమేటిక్‌గా వెబ్‌సైట్‌లకు సైన్ ఇన్ చేయండి. లక్షణం ఆఫ్ చేయబడినప్పుడు, మీరు వెబ్‌సైట్‌కు సైన్ ఇన్ చేసే ప్రతిసారి ధృవీకరణ కోసం మిమ్మల్ని అడుగుతుంది.</translation>
 <translation id="3662546969139119822">ఇక్కడ చరిత్ర లేదు</translation>
 <translation id="3672452749423051839">నావిగేషన్ లోపం సూచనలు</translation>
 <translation id="3692944402865947621">నిల్వ స్థానాన్ని చేరుకోలేకపోయిన కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
-<translation id="3712575778697986964">డేటా సేవర్‌ని రీసెట్ చేయాలా?</translation>
 <translation id="3714981814255182093">శోధన పట్టీని తెరవండి</translation>
 <translation id="3716182511346448902">ఈ పేజీ చాలా మెమరీని ఉపయోగిస్తోంది, కాబట్టి దీన్ని Chrome పాజ్ చేయబడింది.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />లో బుక్‌మార్క్ చేయబడింది</translation>
@@ -357,7 +351,6 @@
 <translation id="3819562311292413223">మీ కోసం కథనాలను డౌన్‌లోడ్ చేయండి</translation>
 <translation id="3822502789641063741">సైట్ నిల్వను తీసివేయాలా?</translation>
 <translation id="3859306556332390985">ముందుకు జరుపు</translation>
-<translation id="3868004864571585162">కుక్కీలు, మీడియా లైసెన్స్‌లు మరియు సైట్ డేటా</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
 <translation id="3895926599014793903">జూమ్ చేయడాన్ని నిర్బంధంగా ప్రారంభించు</translation>
 <translation id="3918221729963301892">దీన్ని మళ్లీ చూపవద్దు</translation>
@@ -465,7 +458,6 @@
 <translation id="4698034686595694889"><ph name="APP_NAME" />లో ఆఫ్‌లైన్‌లో వీక్షించండి</translation>
 <translation id="4698413471314543145">Chromeను అమలు చేయడానికి అవసరమైన కీలక కార్యశీలత లేదు; మీ Chrome ఇన్‌స్టాలేషన్ పూర్తి కాలేదు లేదా Android యొక్క ఈ వెర్షన్‌కు అనుకూలంగా లేదు.</translation>
 <translation id="4699172675775169585">కాష్ చేసిన చిత్రాలు మరియు ఫైల్‌లు</translation>
-<translation id="4714588616299687897">మీ డేటాలో 60% వరకు ఆదా చేసుకోండి</translation>
 <translation id="4719927025381752090">అనువదించమని ఆఫర్ చేయి</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />లో తెరువు</translation>
 <translation id="4720982865791209136">Chromeని మెరుగుపరచడంలో సహాయపడండి. <ph name="BEGIN_LINK" />సర్వేలో పాల్గొనండి<ph name="END_LINK" /></translation>
@@ -476,20 +468,17 @@
 <translation id="4751476147751820511">కదలిక లేదా కాంతి సెన్సార్‌లు</translation>
 <translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ పూర్తయింది.}other{# డౌన్‌లోడ్‌లు పూర్తయ్యాయి.}}</translation>
-<translation id="4766369052440583386">డేటా సేవర్ ఆన్‌లో ఉంది</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" />కి తిరిగి వెళ్లడానికి తాకండి</translation>
 <translation id="4802417911091824046">Google Payకి సంబంధించిన చెల్లింపు పద్ధతులు మరియు చిరునామాలు రహస్య పదబంధం ఎన్‌క్రిప్షన్‌లో ఉండవు.
 
 ఈ సెట్టింగ్‌ని మార్చడం కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">కార్డ్‌పై పేరు</translation>
-<translation id="4807963036345170158">డేటా సేవర్ ఆఫ్‌లో ఉంది</translation>
 <translation id="4816465935029283692">డేటా రకాలు</translation>
 <translation id="4837753911714442426">పేజీని ముద్రించడానికి ఎంపికలను తెరవండి</translation>
 <translation id="4842092870884894799">పాస్‌వర్డ్ ఉత్పత్తి పాప్ అప్ చూపబడుతోంది</translation>
 <translation id="4850886885716139402">వీక్షణ</translation>
 <translation id="4857347795080810417">VR మాడ్యూల్ ఇన్‌స్టాల్ చేయబడింది</translation>
 <translation id="4860895144060829044">కాల్ చేయండి</translation>
-<translation id="4874967477260347223">మీడియా లైసెన్స్‌లు</translation>
 <translation id="4875775213178255010">కంటెంట్ సూచనలు</translation>
 <translation id="4878404682131129617">ప్రాక్సీ సర్వర్ ద్వారా ఒక సొరంగంను ఏర్పాటు చేయడం విఫలమైంది</translation>
 <translation id="4880127995492972015">అనువదించు…</translation>
@@ -511,7 +500,6 @@
 <translation id="4988210275050210843">ఫైల్‌ను డౌన్‌లోడ్ చేస్తోంది (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">పేజీలు</translation>
 <translation id="4996978546172906250">దీని ద్వారా భాగస్వామ్యం చే.</translation>
-<translation id="5004339818306944878">60% తక్కువ డేటాను ఉపయోగిస్తూ వెబ్‌ను వేగవంతం చేస్తుంది. Google సర్వర్‌లు మీరు సందర్శించే పేజీలను అనుకూలీకరిస్తాయి.</translation>
 <translation id="5004416275253351869">Google కార్యకలాప నియంత్రణలు</translation>
 <translation id="5005498671520578047">పాస్‌వర్డ్ కాపీచేయడం</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> దీనికి కనెక్ట్ చేయాలనుకుంటోంది</translation>
@@ -670,7 +658,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> డేటా పొదుపులు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6177111841848151710">ప్రస్తుత శోధన ఇంజిన్‌కు బ్లాక్ చేయబడింది</translation>
-<translation id="6177390657002841081">డేటా సేవర్‌ని ఆన్ చేయి</translation>
 <translation id="6181444274883918285">సైట్ మినహాయింపును జోడించు</translation>
 <translation id="618993374665929060">పూర్తి ఎత్తులో ఇలాంటివి మరిన్ని షీట్ తెరవబడింది</translation>
 <translation id="6192333916571137726">ఫైల్‌ని డౌన్‌లోడ్ చేయండి</translation>
@@ -723,7 +710,6 @@
 <translation id="6545017243486555795">మొత్తం డేటాను తీసివేయి</translation>
 <translation id="6560414384669816528">Sogouతో శోధించండి</translation>
 <translation id="6566259936974865419">Chrome మీకు <ph name="GIGABYTES" /> GB ఆదా చేసింది</translation>
-<translation id="6567212464587185774">గరిష్టంగా 60% వరకు తక్కువ డేటా వినియోగించబడుతుంది మరియు వెబ్ వేగవంతంగా పని చేస్తుంది.</translation>
 <translation id="6573096386450695060">ఎల్లప్పుడూ అనుమతించు</translation>
 <translation id="6573431926118603307">మీరు మీ ఇతర పరికరాల్లోని Chromeలో తెరిచిన ట్యాబ్‌లు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="6583199322650523874">ప్రస్తుత పేజీని బుక్‌మార్క్ చేయండి</translation>
@@ -746,7 +732,6 @@
 <translation id="6697492270171225480">పేజీ కనుగొనబడనప్పుడు అటువంటి పేజీల కోసం సూచనలను చూపుతుంది</translation>
 <translation id="6697947395630195233">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromeకు మీ స్థాన యాక్సెస్ అవసరం.</translation>
 <translation id="6698801883190606802">సమకాలీకరించిన డేటాను నిర్వహించండి</translation>
-<translation id="6699370405921460408">మీరు సందర్శించే పేజీలను Google సర్వర్‌లు ఆప్టిమైజ్ చేస్తాయి.</translation>
 <translation id="6709133671862442373">వార్తలు</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="6712388303105732168">ఇలాంటివి మరిన్ని బటన్‌ను ఉపయోగించి Google నుండి ఇలాంటివి మరిన్ని చూడండి</translation>
@@ -841,6 +826,7 @@
 <translation id="7437998757836447326">Chrome నుండి సైన్ అవుట్ చేయండి</translation>
 <translation id="7444811645081526538">మరిన్ని వర్గాలు</translation>
 <translation id="7445411102860286510">మ్యూట్ చేసిన వీడియోలను స్వయంచాలకంగా ప్లే చేయడానికి సైట్‌‌లను అనుమతిస్తుంది (సిఫార్సు చేయబడింది)</translation>
+<translation id="7453467225369441013">దాదాపు అన్ని సైట్‌ల నుండి మిమ్మల్ని సైన్ అవుట్ చేస్తుంది. మీరు మీ Google ఖాతా నుండి సైన్ అవుట్ చేయబడరు.</translation>
 <translation id="7454641608352164238">తగినంత స్థలం లేదు</translation>
 <translation id="7455923816558154057">వీక్షించడానికి నొక్కండి</translation>
 <translation id="7465104139234185284">అన్ని ప్రైవేట్ ట్యాబ్‌లను మూసివేయి</translation>
@@ -1064,7 +1050,6 @@
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">చిత్రాలు</translation>
 <translation id="932327136139879170">హోమ్</translation>
-<translation id="932599481871055447">డేటాను ఆదా చేయండి మరియు వేగంగా బ్రౌజ్ చేయండి</translation>
 <translation id="938850635132480979">లోపం: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>
 <translation id="945632385593298557">మీ మైక్రోఫోన్ ప్రాప్యత అనుమతి</translation>

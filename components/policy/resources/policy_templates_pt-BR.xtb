@@ -452,7 +452,7 @@
 <translation id="2163878108829382394">
         Se esta política for definida como verdadeira, a inscrição no gerenciamento em nuvem será obrigatória e bloqueará o processo de inicialização do Chrome em caso de falha.
 
-        Se esta política não for definida ou for definida como falsa, a inscrição no gerenciamento em nuvem será opcional e não bloqueará o processo de inicialziação do Chrome em caso de falha.</translation>
+        Se esta política não for definida ou for definida como falsa, a inscrição no gerenciamento em nuvem será opcional e não bloqueará o processo de inicialização do Chrome em caso de falha.</translation>
 <translation id="2166472654199325139">Não filtrar sites com conteúdo adulto</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>

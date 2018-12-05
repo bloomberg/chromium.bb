@@ -479,7 +479,6 @@
 <translation id="1680849702532889074">Linux 애플리케이션을 설치하는 중에 오류가 발생했습니다.</translation>
 <translation id="16815041330799488">사이트에서 클립보드에 복사된 텍스트 및 이미지를 확인하도록 허용하지 않음</translation>
 <translation id="1682548588986054654">새 시크릿 창</translation>
-<translation id="1683850629661177840">이제 라이트 모드를 사용하면 HTTPS를 포함한 모든 페이지에서 더욱 빨리 탐색할 수 있습니다.</translation>
 <translation id="168715261339224929">어느 기기에서나 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
 <translation id="1688867105868176567">사이트 데이터를 삭제하시겠습니까?</translation>
 <translation id="1688935057616748272">문자를 입력하세요</translation>
@@ -717,7 +716,6 @@
 <translation id="2048653237708779538">실행할 수 없는 작업</translation>
 <translation id="204914487372604757">바로가기 만들기</translation>
 <translation id="2050339315714019657">세로 방향</translation>
-<translation id="2052369079215022979">조직에서 관리</translation>
 <translation id="2053312383184521053">유휴 상태 데이터</translation>
 <translation id="205560151218727633">Google 어시스턴트 로고</translation>
 <translation id="2058456167109518507">기기가 검색됨</translation>
@@ -3866,7 +3864,6 @@
 <translation id="6916590542764765824">확장 프로그램 관리</translation>
 <translation id="6920989436227028121">일반 탭으로 열기</translation>
 <translation id="6921709132208495314">이 페이지에서 데이터 사용 중지</translation>
-<translation id="6922128026973287222">Google 데이터 절약 모드를 사용하여 더 빠르게 데이터를 저장하고 탐색하세요. 자세히 알아보려면 클릭하세요.</translation>
 <translation id="6923132443355966645">스크롤/클릭</translation>
 <translation id="6923633482430812883">공유를 마운트하는 중 오류가 발생했습니다. 연결하려는 파일 서버가 SMBv2 이상을 지원하는지 확인하세요.</translation>
 <translation id="6930242544192836755">기간</translation>

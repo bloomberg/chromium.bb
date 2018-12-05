@@ -10,7 +10,6 @@
 <translation id="1067922213147265141">Google-এর অন্যান্য পরিষেবা</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> ভাষার পৃষ্ঠার অনুবাদ কখনও দেখতে চাই না</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> এর দ্বারা পরিচালিত একটি অ্যাকাউন্ট থেকে আপনি প্রস্থান করুন হচ্ছেন৷ এটি এই ডিভাইসে সঞ্চিত Chrome ডেটা মুছে ফেলবে, কিন্তু আপনার Google অ্যাকাউন্টে ডেটা থেকে যাবে৷</translation>
-<translation id="1099080783256647258">ডেটা সেভার চালু করা থাকলে, Google সার্ভার ব্যবহার করে Chrome পৃষ্ঠাগুলিকে আরও দ্রুত লোড করে এবং কম্প্রেস করে। বিশেষত, ধীরে লোড হয় এমন পৃষ্ঠার শুধুমাত্র প্রয়োজনীয় কন্টেন্ট লোড করতে ডেটা সেভার সেগুলিকে আবার লেখে। ছদ্মবেশী মোডে লোড হওয়া পৃষ্ঠাগুলিকে ডেটা সেভার অপ্টিমাইজ করে না।</translation>
 <translation id="1105960400813249514">স্ক্রিন ক্যাপচার</translation>
 <translation id="1111673857033749125">আপনার অন্যান্য ডিভাইসে সংরক্ষিত বুকমার্কগুলি এখানে দেখা যাবে।</translation>
 <translation id="1113597929977215864">সরলীকৃত ভিউ দেখান</translation>
@@ -97,7 +96,6 @@
 <translation id="1670399744444387456">প্রাথমিক</translation>
 <translation id="1671236975893690980">ডাউনলোড মুলতবি হয়ে আছে...</translation>
 <translation id="1672586136351118594">আর দেখতে চাই না</translation>
-<translation id="1709438864123551175">ডেটা সেভার</translation>
 <translation id="1718835860248848330">শেষ ঘণ্টা</translation>
 <translation id="1729516292547892356">ভার্চুয়াল বাস্তবতার সামগ্রী দেখতে Google VR পরিষেবাগুলি আপডেট করুন</translation>
 <translation id="1733116627827457509"><ph name="FILE_SIZE" /> - আপডেট হয়েছে <ph name="TIME_SINCE_UPDATE" /></translation>
@@ -205,7 +203,6 @@
 <translation id="2501278716633472235">ফিরে যান</translation>
 <translation id="2513403576141822879">আপনার গোপনীয়তা, নিরাপত্তা এবং ডেটা সংগ্রহের সাথে সম্পর্কযুক্ত আরও সেটিংসের জন্য <ph name="BEGIN_LINK" />সিঙ্ক এবং Google পরিষেবাগুলি<ph name="END_LINK" /> দেখুন</translation>
 <translation id="2523184218357549926">আপনার দেখা পৃষ্ঠাগুলির ইউআরএল Google-এ পাঠায়</translation>
-<translation id="2526148617758225454">ডেটা সেভার চালু রয়েছে৷ সেটিংসে এটির পরিচালনা করুন৷</translation>
 <translation id="2532336938189706096">ওয়েব দর্শন</translation>
 <translation id="2536728043171574184">এই পৃষ্ঠার একটি অফলাইন অনুলিপি দেখছেন</translation>
 <translation id="2546283357679194313">কুকিজ ও সাইট ডেটা</translation>
@@ -303,7 +300,6 @@
 <translation id="3341058695485821946">দেখুন আপনি কত ডেটা সাশ্রয় করেছেন</translation>
 <translation id="3350687908700087792">সমস্ত ছদ্মবেশী ট্যাব বন্ধ করুন</translation>
 <translation id="3353615205017136254">Google লাইট পৃষ্ঠা পাঠিয়েছে। আসল পৃষ্ঠাটি লোড করতে "আসলটি লোড করুন" বোতামে ট্যাপ করুন।</translation>
-<translation id="3365671512111106261">ডেটা সেভার চালু করা হলে অনুপলব্ধ থাকে</translation>
 <translation id="3367813778245106622">সিঙ্ক করা শুরু করতে আবার সাইন ইন করুন</translation>
 <translation id="3377025655491224618">ব্যক্তিগত ট্যাব</translation>
 <translation id="3384347053049321195">ছবি শেয়ার করুন</translation>
@@ -332,14 +328,12 @@
 <translation id="3600792891314830896">সাউন্ড প্লে করা হয় যে সাইটগুলিতে সেগুলি মিউট করুন</translation>
 <translation id="360207483134687714">Chrome এ VR এর অভিজ্ঞতাকে আরও উন্নত করে তুলতে সাহায্য করুন</translation>
 <translation id="3616113530831147358">অডিও</translation>
-<translation id="3620176948598597475">রিসেট করলে আপনার ঘুরে দেখা সাইটগুলির তালিকা সহ ডেটা সেভারের ইতিহাস মুছে যাবে।</translation>
 <translation id="3630011985153972676">সেটিংসের অধীনে ওয়াই-ফাই চালু থাকাকালীন Chrome-কে আপনার জন্য নিবন্ধগুলি ডাউনলোড করার অনুমতি দিন।</translation>
 <translation id="3632295766818638029">পাসওয়ার্ড উম্মোচন করুন</translation>
 <translation id="363596933471559332">সঞ্চিত শংসাপত্রগুলি ব্যবহার করে ওয়েবসাইটগুলিতে স্বয়ংক্রিয়ভাবে প্রবেশ করুন। যখন বৈশিষ্ট্যটি বন্ধ করা থাকে, তখন প্রতিবারই একটি ওয়েবসাইটে প্রবেশ করার সময় আপনাকে যাচাইকরণের জন্য বলা হবে।</translation>
 <translation id="3662546969139119822">এখানে কোনো ইতিহাস নেই</translation>
 <translation id="3672452749423051839">নেভিগেশান ত্রুটির পরামর্শগুলি</translation>
 <translation id="3692944402865947621">স্টোর করার জায়গা খুঁজে না পাওয়ায় <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
-<translation id="3712575778697986964">ডেটা সেভার রিসেট করবেন?</translation>
 <translation id="3714981814255182093">খুঁজুন দণ্ডটি খুলুন</translation>
 <translation id="3716182511346448902">এই পৃষ্ঠাটি খুব বেশি মেমরি ব্যবহার করছে তাই Chrome এটি বিরত রেখেছে।</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> এ বুকমার্ক করা হয়েছে</translation>
@@ -357,7 +351,6 @@
 <translation id="3819562311292413223">আপনার জন্য নিবন্ধ ডাউনলোড করা</translation>
 <translation id="3822502789641063741">সাইটের সঞ্চয়স্থান সাফ করবেন?</translation>
 <translation id="3859306556332390985">সামনে এগোন</translation>
-<translation id="3868004864571585162">কুকি, মিডিয়া লাইসেন্স এবং সাইট ডেটা</translation>
 <translation id="3894427358181296146">ফোল্ডার যোগ করুন</translation>
 <translation id="3895926599014793903">বলপূর্বক জুম সক্রিয় করুন</translation>
 <translation id="3918221729963301892">আবার দেখাবেন না</translation>
@@ -467,7 +460,6 @@
 <translation id="4698034686595694889"><ph name="APP_NAME" /> এ অফলাইনে দেখুন</translation>
 <translation id="4698413471314543145">Chrome-এ চালনার জন্য প্রয়োজনীয় কঠিন কার্যকারিতা অনুপস্থিত আছে, হয় আপনার Chrome ইনস্টলেশনটি সম্পূর্ণ হয়নি, নতুবা Android-এর এই সংষ্করণটির সঙ্গে সামঞ্জস্যপূর্ণ হয়নি৷</translation>
 <translation id="4699172675775169585">ক্যাশেযুক্ত ছবি এবং ফাইলগুলি</translation>
-<translation id="4714588616299687897">আপনার ডেটা ৬০% পর্যন্ত সেভ করুন</translation>
 <translation id="4719927025381752090">অনুবাদ করুন</translation>
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> এ খুলুন</translation>
 <translation id="4720982865791209136">Chrome উন্নত করতে সাহায্য করুন। <ph name="BEGIN_LINK" />সমীক্ষাটিতে অংশ নিন।<ph name="END_LINK" /></translation>
@@ -478,20 +470,17 @@
 <translation id="4751476147751820511">মোশন বা হালকা সেন্সর</translation>
 <translation id="4759238208242260848">ডাউনলোডগুলি</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টি ডাউনলোড হয়ে গেছে।}one{#টি ডাউনলোড হয়ে গেছে।}other{#টি ডাউনলোড হয়ে গেছে।}}</translation>
-<translation id="4766369052440583386">ডেটা সেভার চালু আছে</translation>
 <translation id="4797039098279997504"><ph name="URL_OF_THE_CURRENT_TAB" />এ ফিরে যেতে স্পর্শ করুন</translation>
 <translation id="4802417911091824046">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।
 
 <ph name="BEGIN_LINK" />রিসেট সিঙ্ক<ph name="END_LINK" /> থেকে এই সেটিং পরিবর্তন করুন</translation>
 <translation id="4807098396393229769">কার্ডে থাকা নাম</translation>
-<translation id="4807963036345170158">ডেটা সেভার বন্ধ আছে</translation>
 <translation id="4816465935029283692">ডেটার প্রকার</translation>
 <translation id="4837753911714442426">‘পৃষ্ঠা প্রিন্ট করুন’ এর বিকল্পগুলি খুলুন</translation>
 <translation id="4842092870884894799">পাসওয়ার্ড প্রজন্মের পপআপ দেখানো হচ্ছে</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4857347795080810417">ভিআর মডিউল ইনস্টল করা হয়েছে</translation>
 <translation id="4860895144060829044">কল করুন</translation>
-<translation id="4874967477260347223">মিডিয়া লাইসেন্স</translation>
 <translation id="4875775213178255010">কন্টেন্টের প্রস্তাবনা</translation>
 <translation id="4878404682131129617">প্রক্সি সার্ভারের মাধ্যমে টানেল তৈরি করা যায়নি</translation>
 <translation id="4880127995492972015">অনুবাদ করুন…</translation>
@@ -513,7 +502,6 @@
 <translation id="4988210275050210843">ফাইল ডাউনলোড হচ্ছে (<ph name="MEGABYTES" />)।</translation>
 <translation id="4988526792673242964">পৃষ্ঠাসমূহ</translation>
 <translation id="4996978546172906250">এর মাধ্যমে শেয়ার করুন</translation>
-<translation id="5004339818306944878">৬০% পর্যন্ত ডেটা ব্যবহার করুন এবং ওয়েবে গতি আনুন। আপনি যে পৃষ্ঠাগুলি দেখেন Google সার্ভার সেগুলিকে অপ্টিমাইজ করবে।</translation>
 <translation id="5004416275253351869">Google অ্যাক্টিভিটির নিয়ন্ত্রণ</translation>
 <translation id="5005498671520578047">পাসওয়ার্ড কপি করুন</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> এদের সঙ্গে সংযুক্ত হতে চায়</translation>
@@ -672,7 +660,6 @@
 <translation id="6159335304067198720"><ph name="PERCENT" /> ডেটা সঞ্চয়</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
 <translation id="6177111841848151710">বর্তমান সার্চ ইঞ্জিনের জন্য অবরুদ্ধ করা হয়েছে</translation>
-<translation id="6177390657002841081">ডেটা সেভার চালু করুন</translation>
 <translation id="6181444274883918285">সাইটের ব্যতিক্রম যোগ করুন</translation>
 <translation id="618993374665929060">পুরো স্ক্রিনে 'এর মত আরও' খোলা আছে</translation>
 <translation id="6192333916571137726">ফাইল ডাউনলোড করুন</translation>
@@ -725,7 +712,6 @@
 <translation id="6545017243486555795">সমস্ত ডেটা সাফ করুন</translation>
 <translation id="6560414384669816528">Sogou দিয়ে খুঁজুন</translation>
 <translation id="6566259936974865419">Chrome আপনার জন্য <ph name="GIGABYTES" /> GB বাঁচিয়ে দিয়েছে</translation>
-<translation id="6567212464587185774">৬০% পর্যন্ত কম ডেটা ব্যবহার করুন এবং ওয়েবের গতি বৃদ্ধি করুন।</translation>
 <translation id="6573096386450695060">সর্বদা অনুমতি দিন</translation>
 <translation id="6573431926118603307">আপনার অন্য ডিভাইসগুলিতে Chrome এ আপনি যে ট্যাবগুলি খুলেছেন সেগুলি এখানে দেখা যাবে।</translation>
 <translation id="6583199322650523874">বর্তমান পৃষ্ঠাটি বুকমার্ক করুন</translation>
@@ -748,7 +734,6 @@
 <translation id="6697492270171225480">কোনও একটি পৃষ্ঠা খুঁজে পাওয়া না গেলে একইরকম আরও পৃষ্ঠার সাজেশন দেখুন</translation>
 <translation id="6697947395630195233">এই সাইটটির সাথে আপনার লোকেশন শেয়ার করার জন্য Chrome কে আপনার লোকেশনের তথ্যে অ্যাক্সেস দিতে হবে।</translation>
 <translation id="6698801883190606802">সিঙ্ক হওয়া ডেটা পরিচালনা করুন</translation>
-<translation id="6699370405921460408">আপনি যে পৃষ্ঠাগুলিতে যান সেগুলি Google সার্ভার অপ্টিমাইজ করবে।</translation>
 <translation id="6709133671862442373">সংবাদ</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="6712388303105732168">Google-এ 'এর মত আরও' বোতাম ব্যবহার করে এই ধরণের আরও কিছু দেখুন</translation>
@@ -843,6 +828,7 @@
 <translation id="7437998757836447326">Chrome থেকে প্রস্থান করুন</translation>
 <translation id="7444811645081526538">আরও বিভাগ</translation>
 <translation id="7445411102860286510">সাইটগুলিকে মিউট করে রাখা ভিডিও স্বতঃবাজানোর মঞ্জুরি দেয় (প্রস্তাবিত)</translation>
+<translation id="7453467225369441013">বেশিরভাগ সাইট থেকে আপনাকে সাইন-আউট করিয়ে দেয়। তবে আপনার Google অ্যাকাউন্ট থেকে আপনাকে সাইন-আউট করানো হবে না।</translation>
 <translation id="7454641608352164238">পর্যাপ্ত জায়গা নেই</translation>
 <translation id="7455923816558154057">দেখতে ট্যাপ করুন</translation>
 <translation id="7465104139234185284">সমস্ত ব্যক্তিগত ট্যাব বন্ধ করুন</translation>
@@ -1066,7 +1052,6 @@
 <translation id="9206873250291191720">আ</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="932327136139879170">হোম</translation>
-<translation id="932599481871055447">ডেটা সেভ করুন এবং দ্রুত ব্রাউজ করুন</translation>
 <translation id="938850635132480979">ত্রুটি: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">মতামত জানান</translation>
 <translation id="945632385593298557">আপনার মাইক্রোফোন অ্যাক্সেস করুন</translation>
