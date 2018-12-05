@@ -553,7 +553,7 @@ Polymer({
    */
   onPrintFailed_: function(httpError) {
     console.error('Printing failed with error code ' + httpError);
-    this.errorMessage_ = httpError.toString();
+    this.errorMessage_ = loadTimeData.getString('couldNotPrint');
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
   },
 
@@ -600,7 +600,8 @@ Polymer({
         this.$.destinationSettings.showCloudPrintPromo();
       }
     } else {
-      this.set('state_.cloudPrintError', event.message);
+      this.errorMessage_ = event.message;
+      this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
     }
     if (event.status == 200) {
       console.error(
