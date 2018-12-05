@@ -1648,15 +1648,14 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     // the client, or by ourselves, if we are allocating.
     output_record.at_client = true;
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
-      std::vector<base::ScopedFD> dmabuf_fds = device_->GetDmabufsForV4L2Buffer(
-          i, output_planes_count_, V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-      if (dmabuf_fds.empty()) {
+      std::vector<base::ScopedFD> passed_dmabuf_fds =
+          device_->GetDmabufsForV4L2Buffer(i, output_planes_count_,
+                                           V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
+      if (passed_dmabuf_fds.empty()) {
         NOTIFY_ERROR(PLATFORM_FAILURE);
         return;
       }
 
-      auto passed_dmabuf_fds(base::WrapUnique(
-          new std::vector<base::ScopedFD>(std::move(dmabuf_fds))));
       ImportBufferForPictureTask(output_record.picture_id,
                                  std::move(passed_dmabuf_fds));
     }  // else we'll get triggered via ImportBufferForPicture() from client.
@@ -1678,7 +1677,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
 void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     size_t buffer_index,
     int32_t picture_buffer_id,
-    std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds,
+    std::vector<base::ScopedFD> passed_dmabuf_fds,
     GLuint client_texture_id,
     GLuint texture_id,
     const gfx::Size& size,
@@ -1699,7 +1698,7 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   }
 
   scoped_refptr<gl::GLImage> gl_image =
-      device_->CreateGLImage(size, fourcc, *passed_dmabuf_fds);
+      device_->CreateGLImage(size, fourcc, passed_dmabuf_fds);
   if (!gl_image) {
     VLOGF(1) << "Could not create GLImage,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -1715,13 +1714,13 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
       FROM_HERE,
       base::BindOnce(&V4L2SliceVideoDecodeAccelerator::AssignDmaBufs,
                      base::Unretained(this), buffer_index, picture_buffer_id,
-                     base::Passed(&passed_dmabuf_fds)));
+                     std::move(passed_dmabuf_fds)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
     size_t buffer_index,
     int32_t picture_buffer_id,
-    std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds) {
+    std::vector<base::ScopedFD> passed_dmabuf_fds) {
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
@@ -1748,7 +1747,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
 
   if (output_mode_ == Config::OutputMode::IMPORT) {
     DCHECK(output_record.dmabuf_fds.empty());
-    output_record.dmabuf_fds = std::move(*passed_dmabuf_fds);
+    output_record.dmabuf_fds = std::move(passed_dmabuf_fds);
   }
 
   DCHECK_EQ(std::count(free_output_buffers_.begin(), free_output_buffers_.end(),
@@ -1765,11 +1764,11 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  auto passed_dmabuf_fds(base::WrapUnique(new std::vector<base::ScopedFD>()));
+  std::vector<base::ScopedFD> passed_dmabuf_fds;
 #if defined(USE_OZONE)
   for (const auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
     DCHECK_NE(fd.fd, -1);
-    passed_dmabuf_fds->push_back(base::ScopedFD(fd.fd));
+    passed_dmabuf_fds.push_back(base::ScopedFD(fd.fd));
   }
 #endif
 
@@ -1789,14 +1788,15 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
 
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask,
-                 base::Unretained(this), picture_buffer_id,
-                 base::Passed(&passed_dmabuf_fds)));
+      base::BindOnce(
+          &V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask,
+          base::Unretained(this), picture_buffer_id,
+          std::move(passed_dmabuf_fds)));
 }
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     int32_t picture_buffer_id,
-    std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds) {
+    std::vector<base::ScopedFD> passed_dmabuf_fds) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
@@ -1834,14 +1834,14 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   if (iter->texture_id != 0) {
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
-                   weak_this_, index, picture_buffer_id,
-                   base::Passed(&passed_dmabuf_fds), iter->client_texture_id,
-                   iter->texture_id, coded_size_, output_format_fourcc_));
+        base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
+                       weak_this_, index, picture_buffer_id,
+                       std::move(passed_dmabuf_fds), iter->client_texture_id,
+                       iter->texture_id, coded_size_, output_format_fourcc_));
   } else {
     // No need for a GLImage, start using this buffer now.
-    DCHECK_EQ(output_planes_count_, passed_dmabuf_fds->size());
-    iter->dmabuf_fds.swap(*passed_dmabuf_fds);
+    DCHECK_EQ(output_planes_count_, passed_dmabuf_fds.size());
+    iter->dmabuf_fds = std::move(passed_dmabuf_fds);
     free_output_buffers_.push_back(index);
     ScheduleDecodeBufferTaskIfNeeded();
   }
