@@ -494,7 +494,8 @@ TaskQueue::QueuePriority TaskQueueImpl::GetQueuePriority() const {
 }
 
 void TaskQueueImpl::AsValueInto(TimeTicks now,
-                                trace_event::TracedValue* state) const {
+                                trace_event::TracedValue* state,
+                                bool force_verbose) const {
   AutoLock lock(any_thread_lock_);
   AutoLock immediate_incoming_queue_lock(immediate_incoming_queue_lock_);
   state->BeginDictionary();
@@ -551,7 +552,7 @@ void TaskQueueImpl::AsValueInto(TimeTicks now,
       TRACE_DISABLED_BY_DEFAULT("sequence_manager.verbose_snapshots"),
       &verbose);
 
-  if (verbose) {
+  if (verbose || force_verbose) {
     state->BeginArray("immediate_incoming_queue");
     QueueAsValueInto(immediate_incoming_queue(), now, state);
     state->EndArray();
