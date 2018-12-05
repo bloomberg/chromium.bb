@@ -10,11 +10,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
@@ -41,6 +45,24 @@ static ChromeKeyboardControllerClient* g_chrome_keyboard_controller_client =
     nullptr;
 
 }  // namespace
+
+// static
+std::unique_ptr<ChromeKeyboardControllerClient>
+ChromeKeyboardControllerClient::Create(service_manager::Connector* connector) {
+  // Use WrapUnique to allow the constructor to be private.
+  std::unique_ptr<ChromeKeyboardControllerClient> client =
+      base::WrapUnique(new ChromeKeyboardControllerClient(connector));
+  client->InitializePrefObserver();
+  return client;
+}
+
+// static
+std::unique_ptr<ChromeKeyboardControllerClient>
+ChromeKeyboardControllerClient::CreateForTest(
+    service_manager::Connector* connector) {
+  // Use WrapUnique to allow the constructor to be private.
+  return base::WrapUnique(new ChromeKeyboardControllerClient(connector));
+}
 
 // static
 ChromeKeyboardControllerClient* ChromeKeyboardControllerClient::Get() {
@@ -98,7 +120,14 @@ ChromeKeyboardControllerClient::~ChromeKeyboardControllerClient() {
   g_chrome_keyboard_controller_client = nullptr;
 }
 
+void ChromeKeyboardControllerClient::InitializePrefObserver() {
+  session_manager::SessionManager::Get()->AddObserver(this);
+}
+
 void ChromeKeyboardControllerClient::Shutdown() {
+  if (session_manager::SessionManager::Get())
+    session_manager::SessionManager::Get()->RemoveObserver(this);
+  pref_change_registrar_.RemoveAll();
   if (!::features::IsUsingWindowService() &&
       keyboard::KeyboardController::HasInstance()) {
     // In classic Ash, keyboard::KeyboardController owns ChromeKeyboardUI which
@@ -369,6 +398,39 @@ void ChromeKeyboardControllerClient::OnKeyboardContentsLoaded(
   DVLOG(1) << "OnLoadKeyboardContentsRequested: " << size.ToString();
   NotifyKeyboardLoaded();
   keyboard_controller_ptr_->KeyboardContentsLoaded(token, size);
+}
+
+void ChromeKeyboardControllerClient::OnSessionStateChanged() {
+  if (!session_manager::SessionManager::Get()->IsSessionStarted()) {
+    // Reset the registrar so that prefs are re-registered after a crash.
+    pref_change_registrar_.RemoveAll();
+    return;
+  }
+  if (!pref_change_registrar_.IsEmpty())
+    return;
+
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  pref_change_registrar_.Init(profile->GetPrefs());
+  pref_change_registrar_.Add(
+      prefs::kTouchVirtualKeyboardEnabled,
+      base::BindRepeating(
+          &ChromeKeyboardControllerClient::SetVirtualKeyboardBehaviorFromPrefs,
+          base::Unretained(this)));
+  SetVirtualKeyboardBehaviorFromPrefs();
+}
+
+void ChromeKeyboardControllerClient::SetVirtualKeyboardBehaviorFromPrefs() {
+  using keyboard::mojom::KeyboardEnableFlag;
+  const PrefService* service = pref_change_registrar_.prefs();
+  if (service->HasPrefPath(prefs::kTouchVirtualKeyboardEnabled)) {
+    // Since these flags are mutually exclusive, setting one clears the other.
+    SetEnableFlag(service->GetBoolean(prefs::kTouchVirtualKeyboardEnabled)
+                      ? KeyboardEnableFlag::kPolicyEnabled
+                      : KeyboardEnableFlag::kPolicyDisabled);
+  } else {
+    ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
+    ClearEnableFlag(KeyboardEnableFlag::kPolicyEnabled);
+  }
 }
 
 Profile* ChromeKeyboardControllerClient::GetProfile() {

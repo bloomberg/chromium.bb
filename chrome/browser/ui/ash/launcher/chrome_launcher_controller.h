@@ -300,9 +300,6 @@ class ChromeLauncherController
   // Update the policy-pinned flag for each shelf item.
   void UpdatePolicyPinnedAppsFromPrefs();
 
-  // Sets whether the virtual keyboard is enabled from prefs.
-  void SetVirtualKeyboardBehaviorFromPrefs();
-
   // Returns the shelf item status for the given |app_id|, which can be either
   // STATUS_RUNNING (if there is such an app) or STATUS_CLOSED.
   ash::ShelfItemStatus GetAppState(const std::string& app_id);
