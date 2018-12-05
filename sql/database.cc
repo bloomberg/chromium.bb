@@ -501,10 +501,6 @@ void Database::Preload() {
 // spill to the journal.  That could be compensated by setting cache_spill to
 // false.  The downside then is that it allows open-ended use of memory for
 // large transactions.
-//
-// TODO(shess): The TrimMemory() trick of bouncing the cache size would also
-// work.  There could be two prepared statements, one for cache_size=1 one for
-// cache_size=goal.
 void Database::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
   // The database could have been closed during a transaction as part of error
   // recovery.
@@ -954,33 +950,19 @@ size_t Database::GetAppropriateMmapSize() {
   return mmap_ofs;
 }
 
-void Database::TrimMemory(bool aggressively) {
+void Database::TrimMemory() {
   if (!db_)
     return;
 
-  // TODO(shess): investigate using sqlite3_db_release_memory() when possible.
-  int original_cache_size;
-  {
-    Statement sql_get_original(GetUniqueStatement("PRAGMA cache_size"));
-    if (!sql_get_original.Step()) {
-      DLOG(WARNING) << "Could not get cache size " << GetErrorMessage();
-      return;
-    }
-    original_cache_size = sql_get_original.ColumnInt(0);
-  }
-  int shrink_cache_size = aggressively ? 1 : (original_cache_size / 2);
+  sqlite3_db_release_memory(db_);
 
-  // Force sqlite to try to reduce page cache usage.
-  const std::string sql_shrink =
-      base::StringPrintf("PRAGMA cache_size=%d", shrink_cache_size);
-  if (!Execute(sql_shrink.c_str()))
-    DLOG(WARNING) << "Could not shrink cache size: " << GetErrorMessage();
-
-  // Restore cache size.
-  const std::string sql_restore =
-      base::StringPrintf("PRAGMA cache_size=%d", original_cache_size);
-  if (!Execute(sql_restore.c_str()))
-    DLOG(WARNING) << "Could not restore cache size: " << GetErrorMessage();
+  // It is tempting to use sqlite3_release_memory() here as well. However, the
+  // API is documented to be a no-op unless SQLite is built with
+  // SQLITE_ENABLE_MEMORY_MANAGEMENT. We do not use this option, because it is
+  // incompatible with per-database page cache pools. Behind the scenes,
+  // SQLITE_ENABLE_MEMORY_MANAGEMENT causes SQLite to use a global page cache
+  // pool, and sqlite3_release_memory() releases unused pages from this global
+  // pool.
 }
 
 // Create an in-memory database with the existing database's page

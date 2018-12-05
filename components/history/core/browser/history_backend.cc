@@ -773,13 +773,10 @@ void HistoryBackend::InitImpl(
 
 void HistoryBackend::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
-  bool trim_aggressively =
-      memory_pressure_level ==
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
   if (db_)
-    db_->TrimMemory(trim_aggressively);
+    db_->TrimMemory();
   if (thumbnail_db_)
-    thumbnail_db_->TrimMemory(trim_aggressively);
+    thumbnail_db_->TrimMemory();
 }
 
 void HistoryBackend::CloseAllDatabases() {

@@ -252,11 +252,8 @@ class SQL_EXPORT Database {
   // everything else.
   void Preload();
 
-  // Try to trim the cache memory used by the database.  If |aggressively| is
-  // true, this function will try to free all of the cache memory it can. If
-  // |aggressively| is false, this function will try to cut cache memory
-  // usage by half.
-  void TrimMemory(bool aggressively);
+  // Release all non-essential memory associated with this database connection.
+  void TrimMemory();
 
   // Raze the database to the ground.  This approximates creating a
   // fresh database from scratch, within the constraints of SQLite's
