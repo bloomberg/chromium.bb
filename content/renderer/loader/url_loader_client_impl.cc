@@ -234,7 +234,7 @@ void URLLoaderClientImpl::Bind(
 
 void URLLoaderClientImpl::OnReceiveResponse(
     const network::ResourceResponseHead& response_head) {
-  has_received_response_head_ = true;
+  has_received_response_ = true;
   if (NeedsStoringMessage()) {
     StoreAndDispatch(
         std::make_unique<DeferredOnReceiveResponse>(response_head));
@@ -246,7 +246,7 @@ void URLLoaderClientImpl::OnReceiveResponse(
 void URLLoaderClientImpl::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseHead& response_head) {
-  DCHECK(!has_received_response_head_);
+  DCHECK(!has_received_response_);
   DCHECK(!body_consumer_);
   if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
       !bypass_redirect_checks_ &&
@@ -300,9 +300,7 @@ void URLLoaderClientImpl::OnTransferSizeUpdated(int32_t transfer_size_diff) {
 void URLLoaderClientImpl::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   DCHECK(!body_consumer_);
-  DCHECK(has_received_response_head_);
-  DCHECK(!has_received_response_body_);
-  has_received_response_body_ = true;
+  DCHECK(has_received_response_);
 
   if (pass_response_pipe_to_dispatcher_) {
     resource_dispatcher_->OnStartLoadingResponseBody(request_id_,
@@ -325,8 +323,6 @@ void URLLoaderClientImpl::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
   has_received_complete_ = true;
   if (!body_consumer_) {
-    // Except for errors, there must always be a response's body.
-    DCHECK(has_received_response_body_ || status.error_code != net::OK);
     if (NeedsStoringMessage()) {
       StoreAndDispatch(std::make_unique<DeferredOnComplete>(status));
     } else {
