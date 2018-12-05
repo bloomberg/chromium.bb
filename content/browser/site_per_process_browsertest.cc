@@ -14488,4 +14488,50 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(delete_a14.deleted());
 }
 
+#if !defined(OS_ANDROID)
+// This test verifies that after occluding a WebContents the RAF inside a
+// cross-process child frame is throttled.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       OccludedRenderWidgetThrottlesRAF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* subframe = root->child_at(0);
+  GURL page_with_raf_counter =
+      embedded_test_server()->GetURL("a.com", "/page_with_raf_counter.html");
+  NavigateFrameToURL(subframe, page_with_raf_counter);
+
+  // Initially page is visible - wait some time and then ensure a good number of
+  // rafs have been generated.
+  auto wait_for_half_a_second = []() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(500));
+    run_loop.Run();
+  };
+
+  ASSERT_TRUE(ExecuteScript(subframe, "reset_count();"));
+  wait_for_half_a_second();
+  int32_t default_raf_count = EvalJs(subframe, "raf_count").ExtractInt();
+  // On a 60 fps we should expect more than 30 counts - however purely for
+  // sanity checking and avoiding unnecessary flakes adding a comparison for a
+  // much lower value. This verifies that we did get *some* rAFs.
+  EXPECT_GT(default_raf_count, 5);
+  web_contents()->WasOccluded();
+  ASSERT_TRUE(ExecuteScript(subframe, "reset_count();"));
+  wait_for_half_a_second();
+  int32_t raf_count = EvalJs(subframe, "raf_count").ExtractInt();
+  // If the frame is throttled, we should expect 0 rAFs.
+  EXPECT_EQ(raf_count, 0);
+  // Sanity-check: unoccluding will reverse the effect.
+  web_contents()->WasShown();
+  ASSERT_TRUE(ExecuteScript(subframe, "reset_count();"));
+  wait_for_half_a_second();
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      subframe, "window.domAutomationController.send(raf_count)", &raf_count));
+  EXPECT_GT(raf_count, 5);
+}
+#endif
 }  // namespace content

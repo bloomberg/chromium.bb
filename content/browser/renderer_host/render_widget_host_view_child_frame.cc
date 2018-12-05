@@ -271,6 +271,14 @@ bool RenderWidgetHostViewChildFrame::IsShowing() {
   return !host()->is_hidden();
 }
 
+void RenderWidgetHostViewChildFrame::WasOccluded() {
+  Hide();
+}
+
+void RenderWidgetHostViewChildFrame::WasUnOccluded() {
+  Show();
+}
+
 gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
   gfx::Rect rect;
   if (frame_connector_) {
