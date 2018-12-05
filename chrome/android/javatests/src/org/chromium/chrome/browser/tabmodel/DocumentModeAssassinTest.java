@@ -80,6 +80,8 @@ public class DocumentModeAssassinTest {
 
     @Before
     public void setUp() throws Exception {
+        SigninTestUtil.setUpAuthForTest();
+
         mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
         mDocumentModeDirectory = new TestTabModelDirectory(
                 mContext, DOCUMENT_MODE_DIRECTORY_NAME, null);
@@ -144,6 +146,8 @@ public class DocumentModeAssassinTest {
         } catch (Exception e) {
             Log.e(TAG, "Failed to clean up tabbed mode directory.");
         }
+
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     private void writeUselessFileToDirectory(File directory, String filename) {
@@ -457,7 +461,6 @@ public class DocumentModeAssassinTest {
             throws Exception {
         // Load up the metadata file via a TabPersistentStore to make sure that it contains all of
         // the migrated tab information.
-        SigninTestUtil.setUpAuthForTest();
         mTestRule.loadNativeLibraryAndInitBrowserProcess();
         TabPersistentStore.setBaseStateDirectoryForTests(mTabbedModeDirectory.getBaseDirectory());
 
@@ -505,8 +508,6 @@ public class DocumentModeAssassinTest {
             Assert.assertEquals(
                     TEST_INFO.contents[i].url, selector.getModel(false).getTabAt(i).getUrl());
         }
-
-        SigninTestUtil.tearDownAuthForTest();
     }
 
     /** Checks that all TabState files are copied successfully. */

@@ -28,6 +28,7 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -134,8 +135,7 @@ public class HistoryActivityTest {
         // Account not signed in by default. The clear browsing data header, one date view, and two
         // history item views should be shown, but the info header should not. We enforce a default
         // state because the number of headers shown depends on the signed-in state.
-        ChromeSigninController signinController = ChromeSigninController.get();
-        signinController.setSignedInAccountName(null);
+        SigninTestUtil.setUpAuthForTest();
 
         mHistoryProvider = new StubbedHistoryProvider();
 
@@ -167,6 +167,11 @@ public class HistoryActivityTest {
         }
 
         Assert.assertEquals(4, mAdapter.getItemCount());
+    }
+
+    @After
+    public void tearDown() {
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     private void launchHistoryActivity() throws Exception {
@@ -674,7 +679,6 @@ public class HistoryActivityTest {
 
         // Sign in to account. Note that if supervised user is set before sign in, the supervised
         // user setting will be reset.
-        SigninTestUtil.setUpAuthForTest();
         final Account account = SigninTestUtil.addTestAccount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             SigninManager.get().onFirstRunCheckDone();
@@ -753,6 +757,5 @@ public class HistoryActivityTest {
                 SigninManager.get().removeSignInStateObserver(mTestObserver);
             }
         });
-        SigninTestUtil.tearDownAuthForTest();
     }
 }
