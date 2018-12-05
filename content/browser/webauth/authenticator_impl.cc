@@ -305,8 +305,21 @@ base::Optional<std::string> ProcessAppIdExtension(
     std::string appid,
     const url::Origin& caller_origin) {
   if (appid.empty()) {
-    // See step two in the comments in |IsAppIdAllowedForOrigin|.
-    appid = caller_origin.Serialize() + "/";
+    if (OriginIsCryptoTokenExtension(caller_origin)) {
+      // Cryptotoken must always set an App ID.
+      DCHECK(false);
+      return base::nullopt;
+    }
+
+    // While the U2F spec says to default the App ID to the Facet ID, which is
+    // the origin plus a trailing forward slash [1], cryptotoken and Firefox
+    // just use the site's Origin without trailing slash. We follow their
+    // implementations rather than the spec.
+    //
+    // [1]https://fidoalliance.org/specs/fido-v2.0-id-20180227/fido-appid-and-facets-v2.0-id-20180227.html#determining-the-facetid-of-a-calling-application
+    //
+    // Also see step two in the comments in |IsAppIdAllowedForOrigin|.
+    appid = caller_origin.Serialize();
   }
 
   GURL appid_url = GURL(appid);
