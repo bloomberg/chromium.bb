@@ -52,7 +52,6 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
     // fail if a hander for lock screen apps focus has not been set.
     virtual bool HandleFocusLockScreenApps(bool reverse) = 0;
     virtual void HandleFocusOobeDialog() = 0;
-    virtual void HandleLoginAsGuest() = 0;
     virtual void HandleLaunchPublicSession(const AccountId& account_id,
                                            const std::string& locale,
                                            const std::string& input_method) = 0;

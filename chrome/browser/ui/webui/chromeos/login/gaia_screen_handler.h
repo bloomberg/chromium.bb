@@ -152,8 +152,10 @@ class GaiaScreenHandler : public BaseScreenHandler,
                                        const std::string& typed_email,
                                        const std::string& gaia_id);
   void HandleUpdateSigninUIState(int state);
-  void HandleShowGuestForGaiaScreen(bool allow_guest_login,
-                                    bool can_show_for_gaia);
+
+  // Allows WebUI to control the login shelf's guest button visibility during
+  // OOBE.
+  void HandleShowGuestInOobe(bool show);
 
   void OnShowAddUser();
 

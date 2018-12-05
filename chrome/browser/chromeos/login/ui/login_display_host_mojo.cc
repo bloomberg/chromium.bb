@@ -422,12 +422,6 @@ void LoginDisplayHostMojo::HandleFocusOobeDialog() {
   dialog_->GetWebContents()->Focus();
 }
 
-void LoginDisplayHostMojo::HandleLoginAsGuest() {
-  existing_user_controller_->Login(UserContext(user_manager::USER_TYPE_GUEST,
-                                               user_manager::GuestAccountId()),
-                                   chromeos::SigninSpecifics());
-}
-
 void LoginDisplayHostMojo::HandleLaunchPublicSession(
     const AccountId& account_id,
     const std::string& locale,

@@ -292,13 +292,6 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   session_start_waiter.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowGuest) {
-  WaitForGaiaPageLoad();
-  JsExpect("!$('guest-user-header-bar-item').hidden");
-  settings_helper_.SetBoolean(kAccountsPrefAllowGuest, false);
-  JsExpect("$('guest-user-header-bar-item').hidden");
-}
-
 // Create new account option should be available only if the settings allow it.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, AllowNewUser) {
   WaitForGaiaPageLoad();

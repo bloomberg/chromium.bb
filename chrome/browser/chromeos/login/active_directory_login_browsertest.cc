@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/active_directory_test_helper.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
+#include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -150,8 +151,7 @@ class ActiveDirectoryLoginTest : public LoginManagerTest {
     // Checks if realm is set to autocomplete username.
     EXPECT_EQ(autocomplete_realm_, autocomplete_domain_ui);
 
-    // Checks if bottom bar is visible.
-    JSExpect("!Oobe.getInstance().headerHidden");
+    EXPECT_TRUE(LoginShelfTestHelper().IsLoginShelfShown());
   }
 
   // Checks if Active Directory password change screen is shown.

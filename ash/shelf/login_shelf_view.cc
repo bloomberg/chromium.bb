@@ -19,6 +19,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
+#include "ash/session/session_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_widget.h"
@@ -39,10 +40,12 @@
 #include "ui/base/models/menu_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
@@ -107,12 +110,13 @@ constexpr SkColor kButtonTextColor = SkColorSetRGB(0xF1, 0xF3, 0xF4);
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
 
-class LoginShelfButton : public views::LabelButton {
+class LoginShelfButton : public views::LabelButton,
+                         public ash::SessionObserver {
  public:
   LoginShelfButton(views::ButtonListener* listener,
                    const base::string16& text,
                    const gfx::VectorIcon& icon)
-      : LabelButton(listener, text) {
+      : LabelButton(listener, text), icon_(icon) {
     SetAccessibleName(text);
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(icon, kButtonIconColor));
@@ -181,7 +185,27 @@ class LoginShelfButton : public views::LabelButton {
         size(), GetBackgroundInsets(), kButtonRoundedBorderRadiusDp);
   }
 
+  // ash::SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override {
+    if (state == session_manager::SessionState::OOBE) {
+      SetTextColor(views::Button::STATE_NORMAL, gfx::kGoogleGrey600);
+      SetTextColor(views::Button::STATE_HOVERED, gfx::kGoogleGrey600);
+      SetTextColor(views::Button::STATE_PRESSED, gfx::kGoogleGrey600);
+      SetImage(views::Button::STATE_NORMAL,
+               gfx::CreateVectorIcon(icon_, gfx::kGoogleGrey600));
+    } else {
+      SetTextColor(views::Button::STATE_NORMAL, kButtonTextColor);
+      SetTextColor(views::Button::STATE_HOVERED, kButtonTextColor);
+      SetTextColor(views::Button::STATE_PRESSED, kButtonTextColor);
+      SetImage(views::Button::STATE_NORMAL,
+               gfx::CreateVectorIcon(icon_, kButtonTextColor));
+    }
+  }
+
  private:
+  ash::ScopedSessionObserver observer_{this};
+  const gfx::VectorIcon& icon_;
+
   DISALLOW_COPY_AND_ASSIGN(LoginShelfButton);
 };
 
@@ -481,8 +505,8 @@ void LoginShelfView::SetAllowLoginAsGuest(bool allow_guest) {
   UpdateUi();
 }
 
-void LoginShelfView::SetShowGuestButtonForGaiaScreen(bool can_show) {
-  allow_guest_during_gaia_ = can_show;
+void LoginShelfView::SetShowGuestButtonInOobe(bool show) {
+  allow_guest_in_oobe_ = show;
   UpdateUi();
 }
 
@@ -506,6 +530,12 @@ void LoginShelfView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
 
 void LoginShelfView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
   SetLoginDialogState(state);
+}
+
+void LoginShelfView::OnUsersChanged(
+    const std::vector<mojom::LoginUserInfoPtr>& users) {
+  login_screen_has_users_ = !users.empty();
+  UpdateUi();
 }
 
 bool LoginShelfView::LockScreenActionBackgroundAnimating() const {
@@ -545,31 +575,33 @@ void LoginShelfView::UpdateUi() {
                    is_lock_screen_note_in_foreground);
   GetViewByID(kCancel)->SetVisible(session_state ==
                                    SessionState::LOGIN_SECONDARY);
-  // TODO(agawronska): Implement full list of conditions for buttons visibility,
-  // when views based shelf if enabled during OOBE. https://crbug.com/798869
+
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
   bool dialog_visible = dialog_state_ != mojom::OobeDialogState::HIDDEN;
+  bool is_oobe = (session_state == SessionState::OOBE);
 
   // Show guest button if:
-  // 1. It's in login screen.
+  // 1. It's in login screen or OOBE. Note: In OOBE, the guest button visibility
+  // is manually controlled by the WebUI.
   // 2. Guest login is allowed.
   // 3. OOBE UI dialog is not currently showing wrong HWID warning screen or
   // SAML password confirmation screen.
-  // 4. OOBE UI dialog is not currently showing gaia signin screen or guest
-  // login is allowed during gaia.
+  // 4. OOBE UI dialog is not currently showing gaia signin screen, or if there
+  // are no user views available. If there are no user pods (i.e. Gaia is the
+  // only signin option), the guest button should be shown if allowed.
   GetViewByID(kBrowseAsGuest)
       ->SetVisible(
           allow_guest_ &&
           dialog_state_ != mojom::OobeDialogState::WRONG_HWID_WARNING &&
           dialog_state_ != mojom::OobeDialogState::SAML_PASSWORD_CONFIRM &&
           (dialog_state_ != mojom::OobeDialogState::GAIA_SIGNIN ||
-           allow_guest_during_gaia_) &&
-          is_login_primary);
+           !login_screen_has_users_) &&
+          (is_login_primary || (is_oobe && allow_guest_in_oobe_)));
 
   // Show add user button when it's in login screen and Oobe UI dialog is not
-  // visible.
+  // visible. The button should not appear if the device is not connected to a
+  // network.
   GetViewByID(kAddUser)->SetVisible(!dialog_visible && is_login_primary);
-
   // Show kiosk apps button if:
   // 1. It's in login screen.
   // 2. There are Kiosk apps available.

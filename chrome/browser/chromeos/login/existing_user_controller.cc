@@ -420,7 +420,6 @@ void ExistingUserController::UpdateLoginDisplay(
   // have guest session link.
   bool show_guest = user_manager->IsGuestSessionAllowed();
   show_users_on_signin |= !filtered_users.empty();
-  show_guest &= !filtered_users.empty();
   bool allow_new_user = true;
   cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   GetLoginDisplay()->set_parent_window(GetNativeWindow());

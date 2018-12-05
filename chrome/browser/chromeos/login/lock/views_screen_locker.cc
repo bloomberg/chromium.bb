@@ -294,10 +294,6 @@ void ViewsScreenLocker::HandleFocusOobeDialog() {
   NOTREACHED();
 }
 
-void ViewsScreenLocker::HandleLoginAsGuest() {
-  NOTREACHED();
-}
-
 void ViewsScreenLocker::HandleLaunchPublicSession(
     const AccountId& account_id,
     const std::string& locale,

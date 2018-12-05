@@ -13,6 +13,10 @@
 #include "ash/login/ui/login_auth_user_view.h"
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_password_view.h"
+#include "ash/shelf/login_shelf_view.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/views/controls/textfield/textfield.h"
 
@@ -32,6 +36,14 @@ void LoginScreenTestApi::IsLockShown(IsLockShownCallback callback) {
   std::move(callback).Run(
       LockScreen::HasInstance() && LockScreen::Get()->is_shown() &&
       LockScreen::Get()->screen_type() == LockScreen::ScreenType::kLock);
+}
+
+void LoginScreenTestApi::IsLoginShelfShown(IsLoginShelfShownCallback callback) {
+  std::move(callback).Run(Shell::HasInstance() &&
+                          Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+                              ->shelf_widget()
+                              ->login_shelf_view()
+                              ->visible());
 }
 
 void LoginScreenTestApi::SubmitPassword(const AccountId& account_id,

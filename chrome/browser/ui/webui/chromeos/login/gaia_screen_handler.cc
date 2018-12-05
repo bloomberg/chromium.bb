@@ -181,8 +181,6 @@ void UpdateAuthParams(base::DictionaryValue* params,
   CrosSettings* cros_settings = CrosSettings::Get();
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  params->SetBoolean("guestSignin",
-                     user_manager::UserManager::Get()->IsGuestSessionAllowed());
 
   // nosignup flow if new users are not allowed.
   if (!allow_new_user || is_restrictive_proxy)
@@ -193,7 +191,6 @@ void UpdateAuthParams(base::DictionaryValue* params,
   // Now check whether we're in multi-profiles user adding scenario and
   // disable GAIA right panel features if that's the case.
   if (UserAddingScreen::Get()->IsRunning()) {
-    params->SetBoolean("guestSignin", false);
     params->SetBoolean("supervisedUsersCanCreate", false);
   }
 }
@@ -617,8 +614,7 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("hideOobeDialog", &GaiaScreenHandler::HandleHideOobeDialog);
   AddCallback("updateSigninUIState",
               &GaiaScreenHandler::HandleUpdateSigninUIState);
-  AddCallback("showGuestForGaia",
-              &GaiaScreenHandler::HandleShowGuestForGaiaScreen);
+  AddCallback("showGuestInOobe", &GaiaScreenHandler::HandleShowGuestInOobe);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -938,12 +934,8 @@ void GaiaScreenHandler::HandleUpdateSigninUIState(int state) {
   }
 }
 
-void GaiaScreenHandler::HandleShowGuestForGaiaScreen(bool allow_guest_login,
-                                                     bool can_show_for_gaia) {
-  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(
-      allow_guest_login);
-  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonForGaiaScreen(
-      can_show_for_gaia);
+void GaiaScreenHandler::HandleShowGuestInOobe(bool show) {
+  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(show);
 }
 
 void GaiaScreenHandler::OnShowAddUser() {

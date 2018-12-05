@@ -151,6 +151,7 @@ class LoginShelfViewTest : public LoginTestBase {
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterSessionStateChange) {
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
@@ -253,6 +254,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterLockScreenNoteState) {
 }
 
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
@@ -273,6 +275,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
 }
 
 TEST_F(LoginShelfViewTest, SetAllowLoginByGuest) {
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
@@ -296,29 +299,13 @@ TEST_F(LoginShelfViewTest, SetAllowLoginByGuest) {
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 }
 
-TEST_F(LoginShelfViewTest, SetAllowLoginByGuestDuringGaia) {
-  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
-                                 LoginShelfView::kBrowseAsGuest,
-                                 LoginShelfView::kAddUser}));
-
-  // By default guest login during gaia is not allowed.
-  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
-
-  // SetShowGuestButtonForGaiaScreen(true) brings the guest button back.
-  login_shelf_view_->SetShowGuestButtonForGaiaScreen(true /*can_show*/);
-  EXPECT_TRUE(ShowsShelfButtons(
-      {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest}));
-
-  // However, SetShowGuestButtonForGaiaScreen(true) does not mean that the guest
-  // button is always visible.
-  login_shelf_view_->SetLoginDialogState(
-      mojom::OobeDialogState::SAML_PASSWORD_CONFIRM);
-  EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
-}
-
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  // The conditions in this test should only hold while there are user pods on
+  // the signin screen.
+  DataDispatcher()->AddObserver(login_shelf_view_);
+  AddUsers(1);
+
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
@@ -350,10 +337,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   // By default guest login during gaia is not allowed.
   login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
-  // SetShowGuestButtonForGaiaScreen(true) brings the guest button back.
-  login_shelf_view_->SetShowGuestButtonForGaiaScreen(true /*can_show*/);
-  EXPECT_TRUE(ShowsShelfButtons(
-      {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest}));
 
   // Guest button is hidden if SetAllowLoginAsGuest(false).
   login_shelf_view_->SetAllowLoginAsGuest(false /*allow_guest*/);
@@ -381,6 +364,19 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   login_shelf_view_->SetKioskApps(std::vector<mojom::KioskAppInfoPtr>());
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
+}
+
+TEST_F(LoginShelfViewTest, ShouldShowGuestButtonWhenNoUserPods) {
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  DataDispatcher()->AddObserver(login_shelf_view_);
+  SetUserCount(0);
+
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+  // When no user pods are visible, the Gaia dialog would normally pop up. We
+  // need to simulate that behavior in this test.
+  login_shelf_view_->SetLoginDialogState(mojom::OobeDialogState::GAIA_SIGNIN);
+  EXPECT_TRUE(ShowsShelfButtons(
+      {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest}));
 }
 
 TEST_F(LoginShelfViewTest, ClickShutdownButton) {
@@ -481,6 +477,7 @@ TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
 }
 
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterAddButtonStatusChange) {
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
   NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,

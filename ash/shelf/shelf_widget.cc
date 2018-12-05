@@ -146,12 +146,12 @@ bool ShelfWidget::IsUsingViewsShelf() {
       return true;
     // See https://crbug.com/798869.
     case session_manager::SessionState::OOBE:
-      return false;
+    case session_manager::SessionState::LOGIN_PRIMARY:
+      return true;
     case session_manager::SessionState::LOCKED:
     case session_manager::SessionState::LOGIN_SECONDARY:
       return switches::IsUsingViewsLock();
     case session_manager::SessionState::UNKNOWN:
-    case session_manager::SessionState::LOGIN_PRIMARY:
     case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
       return features::IsViewsLoginEnabled();
   }

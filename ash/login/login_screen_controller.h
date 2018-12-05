@@ -155,7 +155,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen,
   void NotifyOobeDialogState(mojom::OobeDialogState state) override;
   void SetAddUserButtonEnabled(bool enable) override;
   void SetAllowLoginAsGuest(bool allow_guest) override;
-  void SetShowGuestButtonForGaiaScreen(bool can_show) override;
+  void SetShowGuestButtonInOobe(bool show) override;
   void FocusLoginShelf(bool reverse) override;
 
   // Flushes the mojo pipes - to be used in tests.
