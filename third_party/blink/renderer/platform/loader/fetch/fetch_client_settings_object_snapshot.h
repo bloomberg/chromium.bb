@@ -59,6 +59,7 @@ struct CrossThreadFetchClientSettingsObjectData {
 class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
     : public FetchClientSettingsObject {
  public:
+  explicit FetchClientSettingsObjectSnapshot(const FetchClientSettingsObject&);
   explicit FetchClientSettingsObjectSnapshot(
       std::unique_ptr<CrossThreadFetchClientSettingsObjectData>);
   FetchClientSettingsObjectSnapshot(

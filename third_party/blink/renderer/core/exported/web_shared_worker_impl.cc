@@ -288,7 +288,8 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   // for now there is no way to pass the settings object over mojo IPCs, so as
   // a stopgap the shadow page's Document is used here.
   auto* outside_settings_object =
-      document->CreateFetchClientSettingsObjectSnapshot();
+      MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+          *document->Fetcher()->Context().GetFetchClientSettingsObject());
 
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext(
