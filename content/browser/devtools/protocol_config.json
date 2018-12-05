@@ -78,7 +78,7 @@
             },
             {
                 "domain": "Target",
-                "async": ["disposeBrowserContext"]
+                "async": ["disposeBrowserContext", "setAutoAttach"]
             },
             {
                 "domain": "Tethering",

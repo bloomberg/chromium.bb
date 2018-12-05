@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_RENDERER_CHANNEL_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_RENDERER_CHANNEL_H_
 
+#include "base/callback.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -57,7 +58,8 @@ class CONTENT_EXPORT DevToolsRendererChannel
 
   void SetReportChildWorkers(protocol::TargetAutoAttacher* attacher,
                              bool report,
-                             bool wait_for_debugger);
+                             bool wait_for_debugger,
+                             base::OnceClosure callback);
 
  private:
   // blink::mojom::DevToolsAgentHost implementation.
@@ -72,6 +74,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
   void SetRendererInternal(blink::mojom::DevToolsAgent* agent,
                            int process_id,
                            RenderFrameHostImpl* frame_host);
+  void ReportChildWorkersCallback();
 
   DevToolsAgentHostImpl* owner_;
   mojo::Binding<blink::mojom::DevToolsAgentHost> binding_;
@@ -83,6 +86,7 @@ class CONTENT_EXPORT DevToolsRendererChannel
   base::flat_set<protocol::TargetAutoAttacher*> report_attachers_;
   base::flat_set<protocol::TargetAutoAttacher*> wait_for_debugger_attachers_;
   base::flat_set<WorkerDevToolsAgentHost*> child_workers_;
+  base::OnceClosure set_report_callback_;
   base::WeakPtrFactory<DevToolsRendererChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsRendererChannel);

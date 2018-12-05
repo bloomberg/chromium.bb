@@ -456,7 +456,7 @@ void TargetHandler::SetRenderer(int process_host_id,
 }
 
 Response TargetHandler::Disable() {
-  SetAutoAttach(false, false, false);
+  SetAutoAttachInternal(false, false, false, base::DoNothing());
   SetDiscoverTargets(false);
   auto_attached_sessions_.clear();
   attached_sessions_.clear();
@@ -480,6 +480,17 @@ void TargetHandler::ClearThrottles() {
   for (Throttle* throttle : copy)
     throttle->Clear();
   throttles_.clear();
+}
+
+void TargetHandler::SetAutoAttachInternal(bool auto_attach,
+                                          bool wait_for_debugger_on_start,
+                                          bool flatten,
+                                          base::OnceClosure callback) {
+  flatten_auto_attach_ = flatten;
+  auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start,
+                               std::move(callback));
+  if (!auto_attacher_.ShouldThrottleFramesNavigation())
+    ClearThrottles();
 }
 
 void TargetHandler::AutoAttach(DevToolsAgentHost* host,
@@ -539,14 +550,14 @@ Response TargetHandler::SetDiscoverTargets(bool discover) {
   return Response::OK();
 }
 
-Response TargetHandler::SetAutoAttach(bool auto_attach,
-                                      bool wait_for_debugger_on_start,
-                                      Maybe<bool> flatten) {
-  flatten_auto_attach_ = flatten.fromMaybe(false);
-  auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start);
-  if (!auto_attacher_.ShouldThrottleFramesNavigation())
-    ClearThrottles();
-  return Response::OK();
+void TargetHandler::SetAutoAttach(
+    bool auto_attach,
+    bool wait_for_debugger_on_start,
+    Maybe<bool> flatten,
+    std::unique_ptr<SetAutoAttachCallback> callback) {
+  SetAutoAttachInternal(
+      auto_attach, wait_for_debugger_on_start, flatten.fromMaybe(false),
+      base::BindOnce(&SetAutoAttachCallback::sendSuccess, std::move(callback)));
 }
 
 Response TargetHandler::SetRemoteLocations(

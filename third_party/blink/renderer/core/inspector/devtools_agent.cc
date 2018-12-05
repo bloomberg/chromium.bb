@@ -124,14 +124,17 @@ void DevToolsAgent::FlushProtocolNotifications() {
     session->FlushProtocolNotifications();
 }
 
-void DevToolsAgent::ReportChildWorkers(bool report, bool wait_for_debugger) {
+void DevToolsAgent::ReportChildWorkers(bool report,
+                                       bool wait_for_debugger,
+                                       base::OnceClosure callback) {
   report_child_workers_ = report;
   pause_child_workers_on_start_ = wait_for_debugger;
-  if (!report_child_workers_)
-    return;
-  auto workers = std::move(unreported_child_worker_threads_);
-  for (auto& it : workers)
-    ReportChildWorker(std::move(it.value));
+  if (report_child_workers_) {
+    auto workers = std::move(unreported_child_worker_threads_);
+    for (auto& it : workers)
+      ReportChildWorker(std::move(it.value));
+  }
+  std::move(callback).Run();
 }
 
 // static
