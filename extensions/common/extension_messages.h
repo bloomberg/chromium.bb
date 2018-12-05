@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
@@ -306,9 +307,11 @@ struct ExtensionMsg_PermissionSetStruct {
   ExtensionMsg_PermissionSetStruct();
   explicit ExtensionMsg_PermissionSetStruct(
       const extensions::PermissionSet& permissions);
-  ExtensionMsg_PermissionSetStruct(
-      const ExtensionMsg_PermissionSetStruct& other);
   ~ExtensionMsg_PermissionSetStruct();
+
+  ExtensionMsg_PermissionSetStruct(ExtensionMsg_PermissionSetStruct&& other);
+  ExtensionMsg_PermissionSetStruct& operator=(
+      ExtensionMsg_PermissionSetStruct&& other);
 
   std::unique_ptr<const extensions::PermissionSet> ToPermissionSet() const;
 
@@ -316,6 +319,8 @@ struct ExtensionMsg_PermissionSetStruct {
   extensions::ManifestPermissionSet manifest_permissions;
   extensions::URLPatternSet explicit_hosts;
   extensions::URLPatternSet scriptable_hosts;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionMsg_PermissionSetStruct);
 };
 
 struct ExtensionMsg_Loaded_Params {

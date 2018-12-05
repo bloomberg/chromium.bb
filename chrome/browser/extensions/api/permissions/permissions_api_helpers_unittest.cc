@@ -44,8 +44,9 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
        URLPattern(UserScript::ValidUserScriptSchemes(), "http://d.com/*")});
 
   // Pack the permission set to value and verify its contents.
-  std::unique_ptr<Permissions> pack_result(PackPermissionSet(PermissionSet(
-      apis, ManifestPermissionSet(), explicit_hosts, scriptable_hosts)));
+  std::unique_ptr<Permissions> pack_result(
+      PackPermissionSet(PermissionSet(std::move(apis), ManifestPermissionSet(),
+                                      explicit_hosts, scriptable_hosts)));
   ASSERT_TRUE(pack_result);
   ASSERT_TRUE(pack_result->permissions);
   EXPECT_THAT(*pack_result->permissions,
@@ -74,7 +75,8 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_Basic) {
   optional_apis.insert(APIPermission::kTab);
   URLPatternSet optional_explicit_hosts(
       {URLPattern(Extension::kValidHostPermissionSchemes, "http://a.com/*")});
-  PermissionSet optional_permissions(optional_apis, ManifestPermissionSet(),
+  PermissionSet optional_permissions(std::move(optional_apis),
+                                     ManifestPermissionSet(),
                                      optional_explicit_hosts, URLPatternSet());
 
   // Origins shouldn't have to be present.
@@ -278,10 +280,12 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_APISeparation) {
   optional_apis.insert(kOptional1);
   optional_apis.insert(kOptional2);
 
-  PermissionSet required_permissions(required_apis, ManifestPermissionSet(),
-                                     URLPatternSet(), URLPatternSet());
-  PermissionSet optional_permissions(optional_apis, ManifestPermissionSet(),
-                                     URLPatternSet(), URLPatternSet());
+  PermissionSet required_permissions(std::move(required_apis),
+                                     ManifestPermissionSet(), URLPatternSet(),
+                                     URLPatternSet());
+  PermissionSet optional_permissions(std::move(optional_apis),
+                                     ManifestPermissionSet(), URLPatternSet(),
+                                     URLPatternSet());
 
   Permissions permissions_object;
   permissions_object.permissions = std::make_unique<std::vector<std::string>>(
@@ -308,8 +312,9 @@ TEST(ExtensionPermissionsAPIHelpers, Unpack_UnsupportedAPIPermission) {
   APIPermissionSet optional_apis;
   optional_apis.insert(APIPermission::kWallpaper);
   EXPECT_FALSE((*optional_apis.begin())->info()->supports_optional());
-  PermissionSet optional_permissions(optional_apis, ManifestPermissionSet(),
-                                     URLPatternSet(), URLPatternSet());
+  PermissionSet optional_permissions(std::move(optional_apis),
+                                     ManifestPermissionSet(), URLPatternSet(),
+                                     URLPatternSet());
 
   Permissions permissions_object;
   permissions_object.permissions = std::make_unique<std::vector<std::string>>(

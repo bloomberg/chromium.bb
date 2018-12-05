@@ -203,8 +203,8 @@ class ScriptContext : public RequestSender::Source {
                           const std::string& error) override;
 
   // Grants a set of content capabilities to this context.
-  void set_content_capabilities(const APIPermissionSet& capabilities) {
-    content_capabilities_ = capabilities;
+  void set_content_capabilities(APIPermissionSet capabilities) {
+    content_capabilities_ = std::move(capabilities);
   }
 
   // Indicates if this context has an effective API permission either by being

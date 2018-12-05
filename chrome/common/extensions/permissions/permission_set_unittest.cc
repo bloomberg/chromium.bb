@@ -310,8 +310,8 @@ TEST(PermissionsTest, ExplicitAccessToOrigin) {
   // The explicit host paths should get set to /*.
   AddPattern(&explicit_hosts, "http://www.example.com/a/particular/path/*");
 
-  PermissionSet perm_set(apis, manifest_permissions, explicit_hosts,
-                         scriptable_hosts);
+  PermissionSet perm_set(std::move(apis), std::move(manifest_permissions),
+                         explicit_hosts, scriptable_hosts);
   ASSERT_TRUE(
       perm_set.HasExplicitAccessToOrigin(GURL("http://www.google.com/")));
   ASSERT_TRUE(
@@ -367,10 +367,10 @@ TEST(PermissionsTest, CreateUnion) {
   AddPattern(&expected_explicit_hosts, "http://*.google.com/*");
   AddPattern(&effective_hosts, "http://*.google.com/*");
 
-  set1.reset(new PermissionSet(apis1, manifest_permissions, explicit_hosts1,
-                               scriptable_hosts1));
-  set2.reset(new PermissionSet(apis2, manifest_permissions, explicit_hosts2,
-                               scriptable_hosts2));
+  set1.reset(new PermissionSet(apis1.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts1, scriptable_hosts1));
+  set2.reset(new PermissionSet(apis2.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts2, scriptable_hosts2));
   union_set = PermissionSet::CreateUnion(*set1, *set2);
   EXPECT_TRUE(set1->Contains(*set2));
   EXPECT_TRUE(set1->Contains(*union_set));
@@ -422,8 +422,8 @@ TEST(PermissionsTest, CreateUnion) {
   effective_hosts =
       URLPatternSet::CreateUnion(explicit_hosts2, scriptable_hosts2);
 
-  set2.reset(new PermissionSet(apis2, manifest_permissions, explicit_hosts2,
-                               scriptable_hosts2));
+  set2.reset(new PermissionSet(apis2.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts2, scriptable_hosts2));
   union_set = PermissionSet::CreateUnion(*set1, *set2);
 
   EXPECT_FALSE(set1->Contains(*set2));
@@ -480,10 +480,10 @@ TEST(PermissionsTest, CreateIntersection) {
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
 
-  set1.reset(new PermissionSet(apis1, manifest_permissions, explicit_hosts1,
-                               scriptable_hosts1));
-  set2.reset(new PermissionSet(apis2, manifest_permissions, explicit_hosts2,
-                               scriptable_hosts2));
+  set1.reset(new PermissionSet(apis1.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts1, scriptable_hosts1));
+  set2.reset(new PermissionSet(apis2.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts2, scriptable_hosts2));
   new_set = PermissionSet::CreateIntersection(*set1, *set2);
   EXPECT_TRUE(set1->Contains(*new_set));
   EXPECT_TRUE(set2->Contains(*new_set));
@@ -530,8 +530,8 @@ TEST(PermissionsTest, CreateIntersection) {
   effective_hosts.ClearPatterns();
   AddPattern(&effective_hosts, "http://*.google.com/*");
 
-  set2.reset(new PermissionSet(apis2, manifest_permissions, explicit_hosts2,
-                               scriptable_hosts2));
+  set2.reset(new PermissionSet(apis2.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts2, scriptable_hosts2));
   new_set = PermissionSet::CreateIntersection(*set1, *set2);
 
   EXPECT_TRUE(set1->Contains(*new_set));
@@ -588,10 +588,10 @@ TEST(PermissionsTest, CreateDifference) {
   AddPattern(&explicit_hosts1, "http://*.google.com/*");
   AddPattern(&scriptable_hosts1, "http://www.reddit.com/*");
 
-  set1.reset(new PermissionSet(apis1, manifest_permissions, explicit_hosts1,
-                               scriptable_hosts1));
-  set2.reset(new PermissionSet(apis2, manifest_permissions, explicit_hosts2,
-                               scriptable_hosts2));
+  set1.reset(new PermissionSet(apis1.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts1, scriptable_hosts1));
+  set2.reset(new PermissionSet(apis2.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts2, scriptable_hosts2));
   new_set = PermissionSet::CreateDifference(*set1, *set2);
   EXPECT_EQ(*set1, *new_set);
 
@@ -626,8 +626,8 @@ TEST(PermissionsTest, CreateDifference) {
   effective_hosts.ClearPatterns();
   AddPattern(&effective_hosts, "http://www.reddit.com/*");
 
-  set2.reset(new PermissionSet(apis2, manifest_permissions, explicit_hosts2,
-                               scriptable_hosts2));
+  set2.reset(new PermissionSet(apis2.Clone(), manifest_permissions.Clone(),
+                               explicit_hosts2, scriptable_hosts2));
   new_set = PermissionSet::CreateDifference(*set1, *set2);
 
   EXPECT_TRUE(set1->Contains(*new_set));
@@ -719,13 +719,13 @@ TEST(PermissionsTest,
      IsNotPrivilegeIncreaseWhenSwitchingForLowerPrivilegePermission) {
   APIPermissionSet apis1;
   apis1.insert(APIPermission::kHistory);
-  PermissionSet permissions1(apis1, ManifestPermissionSet(), URLPatternSet(),
-                             URLPatternSet());
+  PermissionSet permissions1(apis1.Clone(), ManifestPermissionSet(),
+                             URLPatternSet(), URLPatternSet());
 
   APIPermissionSet apis2;
   apis2.insert(APIPermission::kTopSites);
-  PermissionSet permissions2(apis2, ManifestPermissionSet(), URLPatternSet(),
-                             URLPatternSet());
+  PermissionSet permissions2(apis2.Clone(), ManifestPermissionSet(),
+                             URLPatternSet(), URLPatternSet());
 
   EXPECT_FALSE(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
       permissions1, permissions2, Manifest::TYPE_EXTENSION));
@@ -906,7 +906,7 @@ TEST(PermissionsTest, FileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
   api_permissions.insert(APIPermission::kFileSystemDirectory);
-  PermissionSet permissions(api_permissions, ManifestPermissionSet(),
+  PermissionSet permissions(api_permissions.Clone(), ManifestPermissionSet(),
                             URLPatternSet(), URLPatternSet());
   EXPECT_TRUE(
       PermissionSetProducesMessage(permissions, Manifest::TYPE_PLATFORM_APP,
@@ -917,7 +917,7 @@ TEST(PermissionsTest, HiddenFileSystemPermissionMessages) {
   APIPermissionSet api_permissions;
   api_permissions.insert(APIPermission::kFileSystemWrite);
   api_permissions.insert(APIPermission::kFileSystemDirectory);
-  PermissionSet permissions(api_permissions, ManifestPermissionSet(),
+  PermissionSet permissions(api_permissions.Clone(), ManifestPermissionSet(),
                             URLPatternSet(), URLPatternSet());
   EXPECT_TRUE(
       PermissionSetProducesMessage(permissions, Manifest::TYPE_PLATFORM_APP,
@@ -932,8 +932,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
                                 "chrome://favicon/"));
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(), hosts,
-                              URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), hosts, URLPatternSet());
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions, Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kTab, APIPermission::kFavicon)));
@@ -945,8 +945,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI,
                                 "chrome://favicon/"));
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(), hosts,
-                              URLPatternSet());
+    PermissionSet permissions(api_permissions.Clone(), ManifestPermissionSet(),
+                              hosts, URLPatternSet());
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions, Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kHistory, APIPermission::kFavicon)));
@@ -957,8 +957,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTab);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(), hosts,
-                              URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), hosts, URLPatternSet());
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions, Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kHostsAll, APIPermission::kTab)));
@@ -969,8 +969,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(), hosts,
-                              URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), hosts, URLPatternSet());
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions, Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kHostsAll,
@@ -982,8 +982,8 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kDeclarativeWebRequest);
     URLPatternSet hosts;
     hosts.AddPattern(URLPattern(URLPattern::SCHEME_CHROMEUI, "*://*/*"));
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(), hosts,
-                              URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), hosts, URLPatternSet());
     EXPECT_TRUE(PermissionSetProducesMessage(
         permissions, Manifest::TYPE_EXTENSION,
         MakePermissionIDSet(APIPermission::kHostsAll)));
@@ -996,7 +996,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(),
+    PermissionSet permissions(api_permissions.Clone(), ManifestPermissionSet(),
                               URLPatternSet(), URLPatternSet());
     EXPECT_TRUE(
         PermissionSetProducesMessage(permissions, Manifest::TYPE_EXTENSION,
@@ -1009,7 +1009,7 @@ TEST(PermissionsTest, SuppressedPermissionMessages) {
     api_permissions.insert(APIPermission::kTopSites);
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(),
+    PermissionSet permissions(api_permissions.Clone(), ManifestPermissionSet(),
                               URLPatternSet(), URLPatternSet());
     EXPECT_TRUE(
         PermissionSetProducesMessage(permissions, Manifest::TYPE_EXTENSION,
@@ -1021,8 +1021,9 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
   {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kSerial);
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(),
-                              URLPatternSet(), URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), URLPatternSet(),
+                              URLPatternSet());
     VerifyOnePermissionMessage(
         permissions, Manifest::TYPE_EXTENSION,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL));
@@ -1032,8 +1033,9 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
     APIPermissionSet api_permissions;
     api_permissions.insert(APIPermission::kSerial);
     api_permissions.insert(APIPermission::kSerial);
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(),
-                              URLPatternSet(), URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), URLPatternSet(),
+                              URLPatternSet());
     VerifyOnePermissionMessage(
         permissions, Manifest::TYPE_EXTENSION,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL));
@@ -1059,22 +1061,22 @@ TEST(PermissionsTest, AccessToDevicesMessages) {
 TEST(PermissionsTest, MergedFileSystemPermissionComparison) {
   APIPermissionSet write_api_permissions;
   write_api_permissions.insert(APIPermission::kFileSystemWrite);
-  PermissionSet write_permissions(write_api_permissions,
+  PermissionSet write_permissions(write_api_permissions.Clone(),
                                   ManifestPermissionSet(), URLPatternSet(),
                                   URLPatternSet());
 
   APIPermissionSet directory_api_permissions;
   directory_api_permissions.insert(APIPermission::kFileSystemDirectory);
-  PermissionSet directory_permissions(directory_api_permissions,
+  PermissionSet directory_permissions(directory_api_permissions.Clone(),
                                       ManifestPermissionSet(), URLPatternSet(),
                                       URLPatternSet());
 
   APIPermissionSet write_directory_api_permissions;
   write_directory_api_permissions.insert(APIPermission::kFileSystemWrite);
   write_directory_api_permissions.insert(APIPermission::kFileSystemDirectory);
-  PermissionSet write_directory_permissions(write_directory_api_permissions,
-                                            ManifestPermissionSet(),
-                                            URLPatternSet(), URLPatternSet());
+  PermissionSet write_directory_permissions(
+      write_directory_api_permissions.Clone(), ManifestPermissionSet(),
+      URLPatternSet(), URLPatternSet());
 
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   EXPECT_FALSE(provider->IsPrivilegeIncrease(write_directory_permissions,
@@ -1157,8 +1159,9 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
     api_permissions.insert(APIPermission::kSessions);
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(),
-                              URLPatternSet(), URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), URLPatternSet(),
+                              URLPatternSet());
     EXPECT_TRUE(VerifyOnePermissionMessage(
         permissions, Manifest::TYPE_EXTENSION,
         l10n_util::GetStringUTF16(
@@ -1172,8 +1175,9 @@ TEST(PermissionsTest, GetWarningMessages_CombinedSessions) {
     api_permissions.insert(APIPermission::kProcesses);
     api_permissions.insert(APIPermission::kWebNavigation);
     api_permissions.insert(APIPermission::kSessions);
-    PermissionSet permissions(api_permissions, ManifestPermissionSet(),
-                              URLPatternSet(), URLPatternSet());
+    PermissionSet permissions(std::move(api_permissions),
+                              ManifestPermissionSet(), URLPatternSet(),
+                              URLPatternSet());
     EXPECT_TRUE(VerifyOnePermissionMessage(
         permissions, Manifest::TYPE_EXTENSION,
         l10n_util::GetStringUTF16(
@@ -1455,7 +1459,6 @@ TEST(PermissionsTest, GetDistinctHosts) {
   {
     SCOPED_TRACE("scriptable hosts");
 
-    APIPermissionSet empty_perms;
     explicit_hosts.ClearPatterns();
     URLPatternSet scriptable_hosts;
     expected.clear();
@@ -1468,8 +1471,8 @@ TEST(PermissionsTest, GetDistinctHosts) {
     expected.insert("*.google.com");
     expected.insert("*.example.com");
 
-    PermissionSet perm_set(empty_perms, ManifestPermissionSet(), explicit_hosts,
-                           scriptable_hosts);
+    PermissionSet perm_set(APIPermissionSet(), ManifestPermissionSet(),
+                           explicit_hosts, scriptable_hosts);
     EXPECT_EQ(expected, permission_message_util::GetDistinctHosts(
                             perm_set.effective_hosts(), true, true));
   }
@@ -1671,8 +1674,6 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
        true,
        false},
   };
-  const ManifestPermissionSet empty_manifest_permissions;
-  const APIPermissionSet empty_permissions;
   const URLPatternSet empty_scriptable_hosts;
   const PermissionMessageProvider* provider = PermissionMessageProvider::Get();
   for (size_t i = 0; i < base::size(test_cases); ++i) {
@@ -1687,9 +1688,9 @@ TEST(PermissionsTest, IsHostPrivilegeIncrease) {
       explicit_hosts2.AddPattern(
           URLPattern(final_host.schemes, final_host.pattern));
     }
-    const PermissionSet set1(empty_permissions, empty_manifest_permissions,
+    const PermissionSet set1(APIPermissionSet(), ManifestPermissionSet(),
                              explicit_hosts1, empty_scriptable_hosts);
-    const PermissionSet set2(empty_permissions, empty_manifest_permissions,
+    const PermissionSet set2(APIPermissionSet(), ManifestPermissionSet(),
                              explicit_hosts2, empty_scriptable_hosts);
     EXPECT_EQ(test_case.is_increase,
               provider->IsPrivilegeIncrease(set1, set2, test_case.type))
@@ -1709,7 +1710,8 @@ TEST(PermissionsTest, GetAPIsAsStrings) {
   apis.insert(APIPermission::kNotifications);
   apis.insert(APIPermission::kTab);
 
-  PermissionSet perm_set(apis, ManifestPermissionSet(), empty_set, empty_set);
+  PermissionSet perm_set(apis.Clone(), ManifestPermissionSet(), empty_set,
+                         empty_set);
   std::set<std::string> api_names = perm_set.GetAPIsAsStrings();
 
   // The result is correct if it has the same number of elements
@@ -1720,32 +1722,32 @@ TEST(PermissionsTest, GetAPIsAsStrings) {
 }
 
 TEST(PermissionsTest, IsEmpty) {
-  APIPermissionSet empty_apis;
   URLPatternSet empty_extent;
 
   std::unique_ptr<const PermissionSet> empty(new PermissionSet());
   EXPECT_TRUE(empty->IsEmpty());
   std::unique_ptr<const PermissionSet> perm_set;
 
-  perm_set.reset(new PermissionSet(empty_apis, ManifestPermissionSet(),
+  perm_set.reset(new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                                    empty_extent, empty_extent));
   EXPECT_TRUE(perm_set->IsEmpty());
 
   APIPermissionSet non_empty_apis;
   non_empty_apis.insert(APIPermission::kBackground);
-  perm_set.reset(new PermissionSet(non_empty_apis, ManifestPermissionSet(),
-                                   empty_extent, empty_extent));
+  perm_set.reset(new PermissionSet(std::move(non_empty_apis),
+                                   ManifestPermissionSet(), empty_extent,
+                                   empty_extent));
   EXPECT_FALSE(perm_set->IsEmpty());
 
   // Try non standard host
   URLPatternSet non_empty_extent;
   AddPattern(&non_empty_extent, "http://www.google.com/*");
 
-  perm_set.reset(new PermissionSet(empty_apis, ManifestPermissionSet(),
+  perm_set.reset(new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                                    non_empty_extent, empty_extent));
   EXPECT_FALSE(perm_set->IsEmpty());
 
-  perm_set.reset(new PermissionSet(empty_apis, ManifestPermissionSet(),
+  perm_set.reset(new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
                                    empty_extent, non_empty_extent));
   EXPECT_FALSE(perm_set->IsEmpty());
 }
@@ -1756,7 +1758,7 @@ TEST(PermissionsTest, ImpliedPermissions) {
   apis.insert(APIPermission::kFileBrowserHandler);
   EXPECT_EQ(1U, apis.size());
 
-  PermissionSet perm_set(apis, ManifestPermissionSet(), empty_extent,
+  PermissionSet perm_set(std::move(apis), ManifestPermissionSet(), empty_extent,
                          empty_extent);
   EXPECT_EQ(2U, perm_set.apis().size());
 }

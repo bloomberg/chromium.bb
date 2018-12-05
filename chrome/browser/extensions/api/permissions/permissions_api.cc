@@ -151,7 +151,7 @@ ExtensionFunction::ResponseAction PermissionsRemoveFunction::Run() {
   }
 
   PermissionSet permissions(
-      unpack_result->optional_apis, ManifestPermissionSet(),
+      std::move(unpack_result->optional_apis), ManifestPermissionSet(),
       unpack_result->optional_explicit_hosts, URLPatternSet());
 
   // Only try and remove those permissions that are active on the extension.
@@ -237,7 +237,7 @@ ExtensionFunction::ResponseAction PermissionsRequestFunction::Run() {
   // Determine which of the requested permissions are optional permissions that
   // are "new", i.e. aren't already active on the extension.
   requested_optional_ = std::make_unique<const PermissionSet>(
-      unpack_result->optional_apis, ManifestPermissionSet(),
+      std::move(unpack_result->optional_apis), ManifestPermissionSet(),
       unpack_result->optional_explicit_hosts, URLPatternSet());
   requested_optional_ =
       PermissionSet::CreateDifference(*requested_optional_, active_permissions);

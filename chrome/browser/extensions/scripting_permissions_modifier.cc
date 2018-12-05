@@ -86,9 +86,9 @@ void PartitionHostPermissions(
                             &granted_scriptable_hosts);
 
   *granted_permissions_out = std::make_unique<PermissionSet>(
-      requested_permissions.apis(),
-      requested_permissions.manifest_permissions(), granted_explicit_hosts,
-      granted_scriptable_hosts);
+      requested_permissions.apis().Clone(),
+      requested_permissions.manifest_permissions().Clone(),
+      granted_explicit_hosts, granted_scriptable_hosts);
 }
 
 // Returns true if the extension should even be considered for being affected

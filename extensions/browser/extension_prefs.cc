@@ -580,7 +580,8 @@ std::unique_ptr<const PermissionSet> ExtensionPrefs::ReadPrefAsPermissionSet(
       extension_id, JoinPrefs(pref_key, kPrefScriptableHosts),
       &scriptable_hosts, UserScript::ValidUserScriptSchemes());
 
-  return std::make_unique<PermissionSet>(apis, manifest_permissions,
+  return std::make_unique<PermissionSet>(std::move(apis),
+                                         std::move(manifest_permissions),
                                          explicit_hosts, scriptable_hosts);
 }
 

@@ -1323,10 +1323,10 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
     if (info.url_patterns.MatchesURL(url)) {
       APIPermissionSet new_permissions;
       APIPermissionSet::Union(permissions, info.permissions, &new_permissions);
-      permissions = new_permissions;
+      permissions = std::move(new_permissions);
     }
   }
-  context->set_content_capabilities(permissions);
+  context->set_content_capabilities(std::move(permissions));
 }
 
 void Dispatcher::PopulateSourceMap() {
