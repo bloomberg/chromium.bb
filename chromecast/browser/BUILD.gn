@@ -343,6 +343,7 @@ cast_source_set("browser") {
     deps += [
       "//components/exo",
       "//components/exo/wayland",
+      "//ui/display/manager",
     ]
   }
 
