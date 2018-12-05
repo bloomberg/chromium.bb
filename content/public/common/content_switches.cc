@@ -399,11 +399,6 @@ const char kEnableServiceBinaryLauncher[] = "enable-service-binary-launcher";
 // Enables the Skia benchmarking extension
 const char kEnableSkiaBenchmarking[]        = "enable-skia-benchmarking";
 
-// Enables slimming paint phase 2: https://www.chromium.org/blink/slimming-paint
-// This is now an alias of "--enable-blink-features=SlimmingPaintV2".
-// TODO(pdr): This flag is redundant should be removed.
-const char kEnableSlimmingPaintV2[]         = "enable-slimming-paint-v2";
-
 // On platforms that support it, enables smooth scroll animation.
 const char kEnableSmoothScrolling[]         = "enable-smooth-scrolling";
 
