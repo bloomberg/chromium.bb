@@ -4,6 +4,8 @@
 
 #include "device/fido/hid/fido_hid_device.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -23,9 +25,16 @@ static constexpr uint8_t kReportId = 0x00;
 FidoHidDevice::FidoHidDevice(device::mojom::HidDeviceInfoPtr device_info,
                              device::mojom::HidManager* hid_manager)
     : FidoDevice(),
+      output_report_size_(device_info->max_output_report_size),
       hid_manager_(hid_manager),
       device_info_(std::move(device_info)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK_GE(std::numeric_limits<decltype(output_report_size_)>::max(),
+            device_info_->max_output_report_size);
+  // These limits on the report size are enforced in fido_hid_discovery.cc.
+  DCHECK_LT(kHidInitPacketHeaderSize, output_report_size_);
+  DCHECK_GE(kHidMaxPacketSize, output_report_size_);
+}
 
 FidoHidDevice::~FidoHidDevice() = default;
 
@@ -43,7 +52,7 @@ void FidoHidDevice::Cancel() {
   pending_transactions_ = {};
   WriteMessage(
       FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kCancel,
-                             std::vector<uint8_t>()),
+                             output_report_size_, std::vector<uint8_t>()),
       false /* response_expected */, base::DoNothing());
 }
 
@@ -75,7 +84,8 @@ void FidoHidDevice::Transition(std::vector<uint8_t> command,
                                     ? FidoHidDeviceCommand::kCbor
                                     : FidoHidDeviceCommand::kMsg;
       WriteMessage(
-          FidoHidMessage::Create(channel_id_, command_type, std::move(command)),
+          FidoHidMessage::Create(channel_id_, command_type, output_report_size_,
+                                 std::move(command)),
           true,
           base::BindOnce(&FidoHidDevice::MessageReceived,
                          weak_factory_.GetWeakPtr(), repeating_callback));
@@ -126,12 +136,12 @@ void FidoHidDevice::AllocateChannel(std::vector<uint8_t> command,
   // Send random nonce to device to verify received message.
   std::vector<uint8_t> nonce(8);
   crypto::RandBytes(nonce.data(), nonce.size());
-  WriteMessage(
-      FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kInit, nonce),
-      true,
-      base::BindOnce(&FidoHidDevice::OnAllocateChannel,
-                     weak_factory_.GetWeakPtr(), nonce, std::move(command),
-                     std::move(callback)));
+  WriteMessage(FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kInit,
+                                      output_report_size_, nonce),
+               true,
+               base::BindOnce(&FidoHidDevice::OnAllocateChannel,
+                              weak_factory_.GetWeakPtr(), nonce,
+                              std::move(command), std::move(callback)));
 }
 
 void FidoHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
@@ -195,7 +205,9 @@ void FidoHidDevice::WriteMessage(base::Optional<FidoHidMessage> message,
     std::move(callback).Run(base::nullopt);
     return;
   }
-  const auto& packet = message->PopNextPacket();
+  auto packet = message->PopNextPacket();
+  DCHECK_LE(packet.size(), output_report_size_);
+  packet.resize(output_report_size_, 0);
   connection_->Write(
       kReportId, packet,
       base::BindOnce(&FidoHidDevice::PacketWritten, weak_factory_.GetWeakPtr(),
@@ -340,11 +352,12 @@ void FidoHidDevice::TryWink(WinkCallback callback) {
     return;
   }
 
-  WriteMessage(FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kWink,
-                                      std::vector<uint8_t>()),
-               true,
-               base::BindOnce(&FidoHidDevice::OnWink,
-                              weak_factory_.GetWeakPtr(), std::move(callback)));
+  WriteMessage(
+      FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kWink,
+                             output_report_size_, std::vector<uint8_t>()),
+      true,
+      base::BindOnce(&FidoHidDevice::OnWink, weak_factory_.GetWeakPtr(),
+                     std::move(callback)));
 }
 
 void FidoHidDevice::OnKeepAlive(DeviceCallback callback) {

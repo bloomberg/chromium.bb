@@ -120,6 +120,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
 
   uint32_t channel_id_ = kBroadcastChannel;
   uint8_t capabilities_ = 0;
+  // |output_report_size_| is the size of the packets that will be sent to the
+  // device. (For HID devices, these are called reports.)
+  const uint8_t output_report_size_;
 
   base::CancelableOnceClosure timeout_callback_;
   base::queue<std::pair<std::vector<uint8_t>, DeviceCallback>>

@@ -28,15 +28,10 @@ const char kIconUrlMapKey[] = "icon";
 const char kCredentialTypeMapKey[] = "type";
 const char kCredentialAlgorithmMapKey[] = "alg";
 
-const size_t kHidPacketSize = 64;
 const uint32_t kHidBroadcastChannel = 0xffffffff;
 const size_t kHidInitPacketHeaderSize = 7;
-const size_t kHidContinuationPacketHeader = 5;
+const size_t kHidContinuationPacketHeaderSize = 5;
 const size_t kHidMaxPacketSize = 64;
-const size_t kHidInitPacketDataSize =
-    kHidMaxPacketSize - kHidInitPacketHeaderSize;
-const size_t kHidContinuationPacketDataSize =
-    kHidMaxPacketSize - kHidContinuationPacketHeader;
 const uint8_t kHidMaxLockSeconds = 10;
 const size_t kHidMaxMessageSize = 7609;
 

@@ -308,14 +308,11 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialTypeMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialAlgorithmMapKey[];
 
 // HID transport specific constants.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidPacketSize;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const uint32_t kHidBroadcastChannel;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidInitPacketHeaderSize;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidContinuationPacketHeader;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxPacketSize;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidInitPacketDataSize;
 COMPONENT_EXPORT(DEVICE_FIDO)
-extern const size_t kHidContinuationPacketDataSize;
+extern const size_t kHidContinuationPacketHeaderSize;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxPacketSize;
 
 COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kHidMaxLockSeconds;
 
