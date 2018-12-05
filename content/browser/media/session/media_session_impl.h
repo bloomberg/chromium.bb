@@ -184,8 +184,7 @@ class MediaSessionImpl : public MediaSession,
   // Seek the media session.
   CONTENT_EXPORT void Seek(base::TimeDelta seek_time) override;
 
-  // Returns if the session can be controlled by Resume() and Suspend() calls
-  // above.
+  // Returns if the session can be controlled by the user.
   CONTENT_EXPORT bool IsControllable() const override;
 
   // Compute if the actual playback state is paused by combining the

@@ -736,6 +736,8 @@ MediaSessionImpl::GetMediaSessionInfoSync() {
 
   info->playback_state = IsActuallyPaused() ? MediaPlaybackState::kPaused
                                             : MediaPlaybackState::kPlaying;
+  info->is_controllable = IsControllable();
+
   return info;
 }
 

@@ -578,7 +578,30 @@ TEST_F(MediaSessionImplServiceRoutingTest,
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
     services_[main_frame_]->SetMetadata(base::nullopt);
+
+    // When the session becomes controllable we should receive empty metadata
+    // because we have not set any. The |is_controllable| boolean will also
+    // become true.
     EXPECT_FALSE(observer.WaitForMetadata());
+    EXPECT_TRUE(observer.session_info()->is_controllable);
+  }
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       NotifyMojoObserverWhenTurningUncontrollable) {
+  CreateServiceForFrame(main_frame_);
+  StartPlayerForFrame(main_frame_);
+
+  {
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    ClearPlayersForFrame(main_frame_);
+
+    // When the session becomes inactive it will also become uncontrollable so
+    // we should check the |is_controllable| boolean.
+    observer.WaitForState(
+        media_session::mojom::MediaSessionInfo::SessionState::kInactive);
+    EXPECT_FALSE(observer.session_info()->is_controllable);
   }
 }
 
