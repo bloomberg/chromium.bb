@@ -191,8 +191,9 @@ cca.ScrollBar.prototype.setThumbGeometry = function(position, size) {
  * @private
  */
 cca.ScrollBar.prototype.onMouseMove_ = function(event) {
-  if (!this.thumbLastScreenPosition_)
+  if (!this.thumbLastScreenPosition_) {
     return;
+  }
 
   if (!event.which) {
     this.onMouseUp_(event);
