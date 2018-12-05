@@ -2323,13 +2323,25 @@ registerLoadRequestForURL:(const GURL&)requestURL
       WKSnapshotConfiguration* configuration =
           [[WKSnapshotConfiguration alloc] init];
       configuration.rect = [_webView convertRect:rect fromView:self.view];
+      __weak CRWWebController* weakSelf = self;
       [_webView
           takeSnapshotWithConfiguration:configuration
                       completionHandler:^(UIImage* snapshot, NSError* error) {
-                        if (error)
-                          DLOG(ERROR) << "WKWebView snapshot error: "
-                                      << error.description;
-                        completion(snapshot);
+                        // Pass nil to the completion block if there is an error
+                        // or if the web view has been removed before the
+                        // snapshot is finished.  |snapshot| can sometimes be
+                        // corrupt if it's sent due to the WKWebView's
+                        // deallocation, so callbacks received after
+                        // |-removeWebView| are ignored to prevent crashing.
+                        if (error || !weakSelf.webView) {
+                          if (error) {
+                            DLOG(ERROR) << "WKWebView snapshot error: "
+                                        << error.description;
+                          }
+                          completion(nil);
+                        } else {
+                          completion(snapshot);
+                        }
                       }];
       return;
     }
