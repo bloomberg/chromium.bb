@@ -51,6 +51,8 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   const std::string& guid() const { return guid_; }
 
   // Accessors to basic information.
+  uint32_t bus_number() const { return bus_number_; }
+  uint32_t port_number() const { return port_number_; }
   uint16_t usb_version() const { return descriptor_.usb_version; }
   uint8_t device_class() const { return descriptor_.device_class; }
   uint8_t device_subclass() const { return descriptor_.device_subclass; }
@@ -92,11 +94,12 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
  protected:
   friend class UsbService;
 
-  UsbDevice();
+  UsbDevice(uint32_t bus_number, uint32_t port_number);
   UsbDevice(const UsbDeviceDescriptor& descriptor,
             const base::string16& manufacturer_string,
             const base::string16& product_string,
-            const base::string16& serial_number);
+            const base::string16& serial_number,
+            uint32_t bus_number, uint32_t port_number);
   UsbDevice(uint16_t usb_version,
             uint8_t device_class,
             uint8_t device_subclass,
@@ -106,7 +109,8 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
             uint16_t device_version,
             const base::string16& manufacturer_string,
             const base::string16& product_string,
-            const base::string16& serial_number);
+            const base::string16& serial_number,
+            uint32_t bus_number, uint32_t port_number);
   virtual ~UsbDevice();
 
   void ActiveConfigurationChanged(int configuration_value);
@@ -135,6 +139,9 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
 
   void OnDisconnect();
   void HandleClosed(UsbDeviceHandle* handle);
+
+  const uint32_t bus_number_;
+  const uint32_t port_number_;
 
   const std::string guid_;
 

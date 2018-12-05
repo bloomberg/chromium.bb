@@ -39,7 +39,9 @@ UsbDeviceImpl::UsbDeviceImpl(ScopedLibusbDeviceRef platform_device,
                 descriptor.bcdDevice,
                 base::string16(),
                 base::string16(),
-                base::string16()),
+                base::string16(),
+                libusb_get_bus_number(platform_device.get()),
+                libusb_get_port_number(platform_device.get())),
       platform_device_(std::move(platform_device)) {
   CHECK(platform_device_.IsValid()) << "platform_device must be valid";
   ReadAllConfigurations();

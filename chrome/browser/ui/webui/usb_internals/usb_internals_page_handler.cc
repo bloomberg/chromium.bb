@@ -43,7 +43,8 @@ TestUsbDevice::TestUsbDevice(const std::string& name,
                 0x0100,
                 base::string16(),
                 base::UTF8ToUTF16(name),
-                base::UTF8ToUTF16(serial_number)) {
+                base::UTF8ToUTF16(serial_number),
+                0, 0) {
   webusb_landing_page_ = landing_page;
 }
 

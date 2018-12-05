@@ -169,10 +169,21 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
   if (value)
     base::StringToUint(value, &active_configuration);
 
+  unsigned bus_number = 0;
+  value = udev_device_get_sysattr_value(device.get(), "busnum");
+  if (value)
+    base::StringToUint(value, &bus_number);
+
+  unsigned port_number = 0;
+  value = udev_device_get_sysattr_value(device.get(), "devnum");
+  if (value)
+    base::StringToUint(value, &port_number);
+
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_,
-                                device_path, descriptor, manufacturer, product,
-                                serial_number, active_configuration));
+      FROM_HERE,
+      base::BindOnce(&UsbServiceLinux::OnDeviceAdded, service_, device_path,
+                     descriptor, manufacturer, product, serial_number,
+                     active_configuration, bus_number, port_number));
 }
 
 void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
@@ -213,7 +224,8 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
                                     const std::string& manufacturer,
                                     const std::string& product,
                                     const std::string& serial_number,
-                                    uint8_t active_configuration) {
+                                    uint8_t active_configuration,
+                                    uint32_t bus_number, uint32_t port_number) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (ContainsKey(devices_by_path_, device_path)) {
@@ -229,7 +241,8 @@ void UsbServiceLinux::OnDeviceAdded(const std::string& device_path,
 
   scoped_refptr<UsbDeviceLinux> device(
       new UsbDeviceLinux(device_path, descriptor, manufacturer, product,
-                         serial_number, active_configuration));
+                         serial_number, active_configuration,
+                         bus_number, port_number));
   devices_by_path_[device->device_path()] = device;
   if (device->usb_version() >= kUsbVersion2_1) {
     device->Open(

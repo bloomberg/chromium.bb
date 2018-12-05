@@ -113,7 +113,12 @@ UsbDeviceAndroid::UsbDeviceAndroid(
                 device_version,
                 manufacturer_string,
                 product_string,
-                serial_number),
+                serial_number,
+                // We fake the bus and port number, because the underlying Java
+                // UsbDevice class doesn't offer an interface for getting these
+                // values, and nothing on Android seems to require them at this
+                // time (23-Nov-2018)
+                0, 0),
       device_id_(Java_ChromeUsbDevice_getDeviceId(env, wrapper)),
       service_(service),
       j_object_(wrapper) {
