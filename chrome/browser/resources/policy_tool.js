@@ -7,14 +7,14 @@
  * @param {!Array<string>} sessions List of session names.
  */
 policy.Page.setSessionsList = function(sessions) {
-  var list = $('session-list');
+  const list = $('session-list');
 
   // Clear the sessions list.
   list.innerHTML = '';
 
   // Set the new sessions list.
-  for (var i = 0; i < sessions.length; ++i) {
-    var option = document.createElement('OPTION');
+  for (let i = 0; i < sessions.length; ++i) {
+    const option = document.createElement('OPTION');
     option.value = sessions[i];
     option.textContent = sessions[i];
     list.appendChild(option);
@@ -71,19 +71,19 @@ policy.Page.disableSaving = function() {
 
 /** @override */
 policy.Page.setPolicyValues = function(values) {
-  var page = this.getInstance();
+  const page = this.getInstance();
   page.enableEditing();
-  var table = page.policyTables['chrome'];
+  let table = page.policyTables['chrome'];
   table.setPolicyValues(values.chromePolicies || {});
   if (values.hasOwnProperty('extensionPolicies')) {
-    for (var extensionId in values.extensionPolicies) {
+    for (const extensionId in values.extensionPolicies) {
       table = page.policyTables['extension-' + extensionId];
       if (table) {
         table.setPolicyValues(values.extensionPolicies[extensionId]);
       }
     }
   } else {
-    for (var extension in page.policyTables) {
+    for (const extension in page.policyTables) {
       if (extension == 'chrome') {
         continue;
       }
@@ -140,7 +140,7 @@ policy.Page.prototype.initialize = function() {
   };
 
   $('delete-session-button').onclick = () => {
-    var sessionName = $('session-list').value;
+    const sessionName = $('session-list').value;
     if (sessionName) {
       chrome.send('deleteSession', [sessionName]);
     }
@@ -148,7 +148,7 @@ policy.Page.prototype.initialize = function() {
 
   $('rename-session-button').onclick = () => {
     $('session-rename-error').hidden = true;
-    var sessionName = $('session-list').value;
+    const sessionName = $('session-list').value;
     if (sessionName) {
       $('rename-dialog').showModal();
       $('new-session-name-field').value = '';
@@ -162,8 +162,8 @@ policy.Page.prototype.initialize = function() {
 
   $('confirm-rename-button').onclick = () => {
     $('session-rename-error').textContent = '';
-    var sessionName = $('session-list').value;
-    var newSessionName = $('new-session-name-field').value;
+    const sessionName = $('session-list').value;
+    const newSessionName = $('new-session-name-field').value;
     if (sessionName && newSessionName) {
       chrome.send('renameSession', [sessionName, newSessionName]);
     }
@@ -192,13 +192,13 @@ policy.Page.prototype.enableEditing = function() {
  * @return {Object} The dictionary containing policy values.
  */
 policy.Page.prototype.getDictionary = function() {
-  var result = {chromePolicies: {}, extensionPolicies: {}};
-  for (var id in this.policyTables) {
+  const result = {chromePolicies: {}, extensionPolicies: {}};
+  for (const id in this.policyTables) {
     if (id == 'chrome') {
       result.chromePolicies = this.policyTables[id].getDictionary();
     } else {
       const PREFIX_LENGTH = 'extension-'.length;
-      var extensionId = id.substr(PREFIX_LENGTH);
+      const extensionId = id.substr(PREFIX_LENGTH);
       result.extensionPolicies[extensionId] =
           this.policyTables[id].getDictionary();
     }
@@ -240,7 +240,7 @@ policy.Policy.prototype.initialize = function(name, value, unknown) {
  * @private
  */
 policy.Policy.prototype.setStatus_ = function(value) {
-  var status;
+  let status;
   if (this.unknown) {
     status = loadTimeData.getString('unknown');
   } else if (!value) {
@@ -294,13 +294,13 @@ policy.Policy.prototype.onValueEditing_ = function() {
  * @private
  */
 policy.Policy.prototype.submitEditedValue_ = function() {
-  var newValue = this.querySelector('.value-edit-field').value;
+  const newValue = this.querySelector('.value-edit-field').value;
   this.setValue_(newValue);
   this.setStatus_(newValue);
   this.classList.remove('value-editing-on');
   this.querySelector('.value-container').valueWidth = undefined;
   this.checkOverflow();
-  var showUnset = $('show-unset').checked;
+  const showUnset = $('show-unset').checked;
   this.hidden = this.unset && !showUnset ||
       this.name.toLowerCase().indexOf(this.parentNode.filterPattern_) == -1;
   chrome.send('updateSession', [policy.Page.getInstance().getDictionary()]);
@@ -314,10 +314,10 @@ policy.Policy.prototype.submitEditedValue_ = function() {
  * @returns {Object} Dictionary with policy values.
  */
 policy.PolicyTable.prototype.getDictionary = function() {
-  var result = {};
-  var policies = this.getElementsByTagName('tbody');
-  for (var i = 0; i < policies.length; i++) {
-    var policy = policies[i];
+  const result = {};
+  const policies = this.getElementsByTagName('tbody');
+  for (let i = 0; i < policies.length; i++) {
+    const policy = policies[i];
     if (policy.unset) {
       continue;
     }

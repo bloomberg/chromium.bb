@@ -9,7 +9,7 @@ cr.define('policy', function() {
    * checking if the first column is hidden.
    * @return {boolean} True if this is the mobile version.
    */
-  var isMobilePage = function() {
+  const isMobilePage = function() {
     return document.defaultView
                .getComputedStyle(document.querySelector('.scope-column'))
                .display == 'none';
@@ -20,8 +20,8 @@ cr.define('policy', function() {
    * @constructor
    * @extends {HTMLFieldSetElement}
    */
-  var StatusBox = cr.ui.define(function() {
-    var node = $('status-box-template').cloneNode(true);
+  const StatusBox = cr.ui.define(function() {
+    const node = $('status-box-template').cloneNode(true);
     node.removeAttribute('id');
     return node;
   });
@@ -45,7 +45,7 @@ cr.define('policy', function() {
      *     False otherwise.
      */
     setLabelAndShow_: function(labelName, labelValue, needsToBeShown = true) {
-      var labelElement = this.querySelector(labelName);
+      const labelElement = this.querySelector(labelName);
       labelElement.textContent = labelValue || '';
       if (needsToBeShown)
         labelElement.parentElement.hidden = false;
@@ -115,8 +115,8 @@ cr.define('policy', function() {
    * @constructor
    * @extends {HTMLTableSectionElement}
    */
-  var Policy = cr.ui.define(function() {
-    var node = $('policy-template').cloneNode(true);
+  const Policy = cr.ui.define(function() {
+    const node = $('policy-template').cloneNode(true);
     node.removeAttribute('id');
     return node;
   });
@@ -171,7 +171,7 @@ cr.define('policy', function() {
       }
 
       // Populate the status column.
-      var status;
+      let status;
       if (!value) {
         // If the policy value has not been set, show an error message.
         status = loadTimeData.getString('unset');
@@ -191,9 +191,9 @@ cr.define('policy', function() {
       if (isMobilePage()) {
         // The number of columns which are hidden by the css file for the mobile
         // (Android) version of this page.
-        /** @const */ var HIDDEN_COLUMNS_IN_MOBILE_VERSION = 2;
+        /** @const */ const HIDDEN_COLUMNS_IN_MOBILE_VERSION = 2;
 
-        var expandedValue = this.querySelector('.expanded-value');
+        const expandedValue = this.querySelector('.expanded-value');
         expandedValue.setAttribute(
             'colspan',
             expandedValue.colSpan - HIDDEN_COLUMNS_IN_MOBILE_VERSION);
@@ -228,16 +228,16 @@ cr.define('policy', function() {
      */
     checkOverflow: function() {
       // Set a tooltip on all overflowed columns except the value column.
-      var divs = this.querySelectorAll('div.elide');
-      for (var i = 0; i < divs.length; i++) {
-        var div = divs[i];
+      const divs = this.querySelectorAll('div.elide');
+      for (let i = 0; i < divs.length; i++) {
+        const div = divs[i];
         div.title = div.offsetWidth < div.scrollWidth ? div.textContent : '';
       }
 
       // Cache the width of the value column's contents when it is first shown.
       // This is required to be able to check whether the contents would still
       // overflow the column once it has been hidden and replaced by a link.
-      var valueContainer = this.querySelector('.value-container');
+      const valueContainer = this.querySelector('.value-container');
       this.updateValueWidth_(valueContainer);
 
       // Determine whether the contents of the value column overflows. The
@@ -278,7 +278,7 @@ cr.define('policy', function() {
    * @constructor
    * @extends {HTMLTableElement}
    */
-  var PolicyTable = cr.ui.define('tbody');
+  const PolicyTable = cr.ui.define('tbody');
 
   PolicyTable.prototype = {
     // Set up the prototype chain.
@@ -309,13 +309,13 @@ cr.define('policy', function() {
      */
     setPolicyValues: function(values) {
       // Remove all policies from the table.
-      var policies = this.getElementsByTagName('tbody');
+      const policies = this.getElementsByTagName('tbody');
       while (policies.length > 0)
         this.removeChild(policies.item(0));
 
       // First, add known policies whose value is currently set.
-      var unset = [];
-      for (var name in this.policies_) {
+      const unset = [];
+      for (let name in this.policies_) {
         if (name in values)
           this.setPolicyValue_(name, values[name], false);
         else
@@ -324,13 +324,13 @@ cr.define('policy', function() {
 
       // Second, add policies whose value is currently set but whose name is not
       // recognized.
-      for (var name in values) {
+      for (let name in values) {
         if (!(name in this.policies_))
           this.setPolicyValue_(name, values[name], true);
       }
 
       // Finally, add known policies whose value is not currently set.
-      for (var i = 0; i < unset.length; i++)
+      for (let i = 0; i < unset.length; i++)
         this.setPolicyValue_(unset[i], undefined, false);
 
       // Filter the policies.
@@ -354,10 +354,10 @@ cr.define('policy', function() {
      * set are only shown if the corresponding checkbox is checked.
      */
     filter: function() {
-      var showUnset = $('show-unset').checked;
-      var policies = this.getElementsByTagName('tbody');
-      for (var i = 0; i < policies.length; i++) {
-        var policy = policies[i];
+      const showUnset = $('show-unset').checked;
+      const policies = this.getElementsByTagName('tbody');
+      for (let i = 0; i < policies.length; i++) {
+        const policy = policies[i];
         policy.hidden = policy.unset && !showUnset ||
             policy.name.toLowerCase().indexOf(this.filterPattern_) == -1;
       }
@@ -373,8 +373,8 @@ cr.define('policy', function() {
      * @private
      */
     checkOverflow_: function() {
-      var policies = this.getElementsByTagName('tbody');
-      for (var i = 0; i < policies.length; i++) {
+      const policies = this.getElementsByTagName('tbody');
+      for (let i = 0; i < policies.length; i++) {
         if (!policies[i].hidden)
           policies[i].checkOverflow();
       }
@@ -388,7 +388,7 @@ cr.define('policy', function() {
      * @private
      */
     setPolicyValue_: function(name, value, unknown) {
-      var policy = new Policy;
+      const policy = new Policy;
       policy.initialize(name, value, unknown);
       this.appendChild(policy);
     },
@@ -409,21 +409,22 @@ cr.define('policy', function() {
    * @param {Object} names Dictionary containing all known policy names.
    */
   Page.setPolicyNames = function(names) {
-    var page = this.getInstance();
+    const page = this.getInstance();
 
     // Clear all policy tables.
     page.mainSection.innerHTML = '';
     page.policyTables = {};
 
+    let table;
     // Create tables and set known policy names for Chrome and extensions.
     if (names.hasOwnProperty('chromePolicyNames')) {
-      var table = page.appendNewTable('chrome', 'Chrome policies', '');
+      table = page.appendNewTable('chrome', 'Chrome policies', '');
       table.setPolicyNames(names.chromePolicyNames);
     }
 
     if (names.hasOwnProperty('extensionPolicyNames')) {
-      for (var ext in names.extensionPolicyNames) {
-        var table = page.appendNewTable(
+      for (const ext in names.extensionPolicyNames) {
+        table = page.appendNewTable(
             'extension-' + ext, names.extensionPolicyNames[ext].name,
             'ID: ' + ext);
         table.setPolicyNames(names.extensionPolicyNames[ext].policyNames);
@@ -438,15 +439,16 @@ cr.define('policy', function() {
    * @param {Object} values Dictionary containing the current policy values.
    */
   Page.setPolicyValues = function(values) {
-    var page = this.getInstance();
+    const page = this.getInstance();
+    let table;
     if (values.hasOwnProperty('chromePolicies')) {
-      var table = page.policyTables['chrome'];
+      table = page.policyTables['chrome'];
       table.setPolicyValues(values.chromePolicies);
     }
 
     if (values.hasOwnProperty('extensionPolicies')) {
-      for (var extensionId in values.extensionPolicies) {
-        var table = page.policyTables['extension-' + extensionId];
+      for (const extensionId in values.extensionPolicies) {
+        table = page.policyTables['extension-' + extensionId];
         if (table)
           table.setPolicyValues(values.extensionPolicies[extensionId]);
       }
@@ -483,7 +485,7 @@ cr.define('policy', function() {
       // Place the initial focus on the filter input field.
       $('filter').focus();
 
-      var self = this;
+      const self = this;
       $('filter').onsearch = function(event) {
         for (policyTable in self.policyTables) {
           self.policyTables[policyTable].setFilterPattern(this.value);
@@ -519,7 +521,7 @@ cr.define('policy', function() {
      * @return {Element} The newly created table.
      */
     appendNewTable: function(id, label_title, label_content) {
-      var newSection =
+      const newSection =
           this.createPolicyTableSection(id, label_title, label_content);
       if (id != 'chrome') {
         newSection.classList.add('no-help-link');
@@ -537,29 +539,29 @@ cr.define('policy', function() {
      * @return {Element} The newly created section.
      */
     createPolicyTableSection: function(id, label_title, label_content) {
-      var section = document.createElement('section');
+      const section = document.createElement('section');
       section.setAttribute('class', 'policy-table-section');
 
       // Add title and description.
-      var title = window.document.createElement('h3');
+      const title = window.document.createElement('h3');
       title.textContent = label_title;
       section.appendChild(title);
 
       if (label_content) {
-        var description = window.document.createElement('div');
+        const description = window.document.createElement('div');
         description.classList.add('table-description');
         description.textContent = label_content;
         section.appendChild(description);
       }
 
       // Add 'No Policies Set' element.
-      var noPolicies = window.document.createElement('div');
+      const noPolicies = window.document.createElement('div');
       noPolicies.classList.add('no-policies-set');
       noPolicies.textContent = loadTimeData.getString('noPoliciesSet');
       section.appendChild(noPolicies);
 
       // Add table of policies.
-      var newTable = this.createPolicyTable();
+      const newTable = this.createPolicyTable();
       this.policyTables[id] = newTable;
       section.appendChild(newTable);
 
@@ -573,11 +575,11 @@ cr.define('policy', function() {
      * @return {Element} The newly created table.
      */
     createPolicyTable: function() {
-      var newTable = window.document.createElement('table');
-      var tableHead = window.document.createElement('thead');
-      var tableRow = window.document.createElement('tr');
-      for (var i = 0; i < this.tableHeadings.length; i++) {
-        var tableHeader = window.document.createElement('th');
+      const newTable = window.document.createElement('table');
+      const tableHead = window.document.createElement('thead');
+      const tableRow = window.document.createElement('tr');
+      for (let i = 0; i < this.tableHeadings.length; i++) {
+        const tableHeader = window.document.createElement('th');
         tableHeader.classList.add(
             this.tableHeadings[i].toLowerCase() + '-column');
         tableHeader.textContent =
@@ -597,16 +599,16 @@ cr.define('policy', function() {
      */
     setStatus: function(status) {
       // Remove any existing status boxes.
-      var container = $('status-box-container');
+      const container = $('status-box-container');
       while (container.firstChild)
         container.removeChild(container.firstChild);
       // Hide the status section.
-      var section = $('status-section');
+      const section = $('status-section');
       section.hidden = true;
 
       // Add a status box for each scope that has a cloud policy status.
-      for (var scope in status) {
-        var box = new StatusBox;
+      for (const scope in status) {
+        const box = new StatusBox;
         box.initialize(scope, status[scope]);
         container.appendChild(box);
         // Show the status section.

@@ -16,7 +16,7 @@ chromeos.connectionManager.setTransactionStatus = function(status, callback) {
 };
 
 chromeos.connectionManager.reportTransactionStatus_ = function(status) {
-  var msg = {
+  const msg = {
     'type': 'reportTransactionStatusMsg',
     'domain': location.href,
     'status': status
