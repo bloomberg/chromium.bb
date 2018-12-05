@@ -72,8 +72,6 @@ void ValidateSuggestions(const SuggestionsProfile& expected,
               actual.suggestions(i).expiry_ts());
     EXPECT_EQ(expected.suggestions(i).favicon_url(),
               actual.suggestions(i).favicon_url());
-    EXPECT_EQ(expected.suggestions(i).thumbnail(),
-              actual.suggestions(i).thumbnail());
   }
 }
 

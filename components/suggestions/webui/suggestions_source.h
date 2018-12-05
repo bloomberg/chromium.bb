@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "components/suggestions/suggestions_service.h"
-#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 namespace suggestions {
@@ -33,30 +32,6 @@ class SuggestionsSource {
   std::string GetMimeType(const std::string& path) const;
 
  private:
-  // Container for the state of a request.
-  struct RequestContext {
-    RequestContext(
-        bool is_refresh_in,
-        const suggestions::SuggestionsProfile& suggestions_profile_in,
-        const GotDataCallback& callback_in);
-    ~RequestContext();
-
-    const bool is_refresh;
-    const suggestions::SuggestionsProfile suggestions_profile;
-    const GotDataCallback callback;
-    std::map<GURL, std::string> base64_encoded_pngs;
-  };
-
-  // Callback for responses from each Thumbnail request.
-  void OnThumbnailAvailable(RequestContext* context,
-                            const base::Closure& barrier,
-                            const GURL& url,
-                            const gfx::Image& image);
-
-  // Callback for when all requests are complete. Renders the output webpage and
-  // passes the result to the original caller.
-  void OnThumbnailsFetched(RequestContext* context);
-
   // Only used when servicing requests on the UI thread.
   SuggestionsService* suggestions_service_;
 

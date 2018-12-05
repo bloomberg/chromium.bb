@@ -22,7 +22,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/suggestions/blacklist_store.h"
 #include "components/suggestions/features.h"
-#include "components/suggestions/image_manager.h"
 #include "components/suggestions/suggestions_store.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -123,7 +122,6 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
     syncer::SyncService* sync_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<SuggestionsStore> suggestions_store,
-    std::unique_ptr<ImageManager> thumbnail_manager,
     std::unique_ptr<BlacklistStore> blacklist_store,
     const base::TickClock* tick_clock)
     : identity_manager_(identity_manager),
@@ -132,7 +130,6 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       history_sync_state_(syncer::UploadState::INITIALIZING),
       url_loader_factory_(url_loader_factory),
       suggestions_store_(std::move(suggestions_store)),
-      thumbnail_manager_(std::move(thumbnail_manager)),
       blacklist_store_(std::move(blacklist_store)),
       tick_clock_(tick_clock),
       blacklist_upload_backoff_(&kBlacklistBackoffPolicy, tick_clock_),
@@ -165,7 +162,6 @@ SuggestionsServiceImpl::GetSuggestionsDataFromCache() const {
   // In case of empty cache or error, return empty.
   if (!suggestions_store_->LoadSuggestions(&suggestions))
     return base::nullopt;
-  thumbnail_manager_->Initialize(suggestions);
   blacklist_store_->FilterSuggestions(&suggestions);
   return suggestions;
 }
@@ -173,19 +169,6 @@ SuggestionsServiceImpl::GetSuggestionsDataFromCache() const {
 std::unique_ptr<SuggestionsServiceImpl::ResponseCallbackList::Subscription>
 SuggestionsServiceImpl::AddCallback(const ResponseCallback& callback) {
   return callback_list_.Add(callback);
-}
-
-void SuggestionsServiceImpl::GetPageThumbnail(const GURL& url,
-                                              const BitmapCallback& callback) {
-  thumbnail_manager_->GetImageForURL(url, callback);
-}
-
-void SuggestionsServiceImpl::GetPageThumbnailWithURL(
-    const GURL& url,
-    const GURL& thumbnail_url,
-    const BitmapCallback& callback) {
-  thumbnail_manager_->AddImageURL(url, thumbnail_url);
-  GetPageThumbnail(url, callback);
 }
 
 bool SuggestionsServiceImpl::BlacklistURL(const GURL& candidate_url) {
