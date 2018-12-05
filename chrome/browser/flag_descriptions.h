@@ -1798,9 +1798,6 @@ extern const char kWindows10CustomTitlebarDescription[];
 
 #if defined(OS_MACOSX)
 
-extern const char kFullscreenToolbarRevealName[];
-extern const char kFullscreenToolbarRevealDescription[];
-
 extern const char kContentFullscreenName[];
 extern const char kContentFullscreenDescription[];
 

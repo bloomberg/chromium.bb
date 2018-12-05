@@ -2744,10 +2744,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-content-fullscreen", flag_descriptions::kContentFullscreenName,
      flag_descriptions::kContentFullscreenDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kContentFullscreen)},
-    {"enable-fullscreen-toolbar-reveal",
-     flag_descriptions::kFullscreenToolbarRevealName,
-     flag_descriptions::kFullscreenToolbarRevealDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kFullscreenToolbarReveal)},
 #endif  // OS_MACOSX
     {"rewrite-leveldb-on-deletion",
      flag_descriptions::kRewriteLevelDBOnDeletionName,

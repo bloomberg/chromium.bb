@@ -3024,12 +3024,6 @@ const char kWindows10CustomTitlebarDescription[] =
 
 #if defined(OS_MACOSX)
 
-const char kFullscreenToolbarRevealName[] =
-    "Enables the toolbar in fullscreen to reveal itself.";
-const char kFullscreenToolbarRevealDescription[] =
-    "Reveal the toolbar in fullscreen for a short period when the tab strip "
-    "has changed.";
-
 const char kContentFullscreenName[] = "Improved Content Fullscreen";
 const char kContentFullscreenDescription[] =
     "Fullscreen content window detaches from main browser window and goes to "
