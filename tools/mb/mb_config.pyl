@@ -429,7 +429,7 @@
       'android_arm64-builder-perf': 'official_goma_minimal_symbols_android_arm64',
       'android-builder-perf': 'official_goma_minimal_symbols_android',
       'linux-builder-perf': 'official_goma_perf',
-      'mac-builder-perf': 'official_goma',
+      'mac-builder-perf': 'official_goma_mac_perf',
       'win32-builder-perf': 'official_goma_x86',
       'win64-builder-perf': 'official_goma',
     },
@@ -712,7 +712,7 @@
       'Android Compile Perf': 'official_goma_minimal_symbols_android',
       'Android arm64 Compile Perf': 'official_goma_minimal_symbols_android_arm64',
       'Linux Builder Perf': 'official_goma_perf',
-      'Mac Builder Perf': 'official_goma',
+      'Mac Builder Perf': 'official_goma_mac_perf',
       'Win Builder Perf': 'official_goma_x86',
       'Win x64 Builder Perf': 'official_goma',
     },
@@ -1539,6 +1539,10 @@
       'official', 'goma',
     ],
 
+    'official_goma_mac_perf': [
+      'official', 'goma', 'no_keystone_registration_framework',
+    ],
+
     'official_goma_perf': [
       'official', 'goma', 'no_gnome_keyring',
     ],
@@ -2070,6 +2074,10 @@
 
     'no_gnome_keyring': {
       'gn_args': 'use_gnome_keyring=false',
+    },
+
+    'no_keystone_registration_framework': {
+      'gn_args': 'enable_keystone_registration_framework=false',
     },
 
     'no_pch': {
