@@ -177,12 +177,11 @@ AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
   return identity_manager->GetPrimaryAccountInfo();
 }
 
-void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager) {
+void SetRefreshTokenForPrimaryAccount(IdentityManager* identity_manager,
+                                      const std::string* token) {
   DCHECK(identity_manager->HasPrimaryAccount());
   std::string account_id = identity_manager->GetPrimaryAccountId();
-
-  std::string refresh_token = "refresh_token_for_" + account_id;
-  SetRefreshTokenForAccount(identity_manager, account_id);
+  SetRefreshTokenForAccount(identity_manager, account_id, token);
 }
 
 void SetInvalidRefreshTokenForPrimaryAccount(
@@ -274,11 +273,12 @@ AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
 }
 
 void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                               const std::string& account_id) {
-  std::string refresh_token = "refresh_token_for_" + account_id;
-  UpdateRefreshTokenForAccount(identity_manager->GetTokenService(),
-                               identity_manager->GetAccountTrackerService(),
-                               identity_manager, account_id, refresh_token);
+                               const std::string& account_id,
+                               const std::string* token) {
+  UpdateRefreshTokenForAccount(
+      identity_manager->GetTokenService(),
+      identity_manager->GetAccountTrackerService(), identity_manager,
+      account_id, token ? *token : "refresh_token_for_" + account_id);
 }
 
 void SetInvalidRefreshTokenForAccount(IdentityManager* identity_manager,

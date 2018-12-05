@@ -258,7 +258,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend AccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
                                        const std::string& email);
   friend void SetRefreshTokenForPrimaryAccount(
-      IdentityManager* identity_manager);
+      IdentityManager* identity_manager,
+      const std::string* token);
   friend void SetInvalidRefreshTokenForPrimaryAccount(
       IdentityManager* identity_manager);
   friend void RemoveRefreshTokenForPrimaryAccount(
@@ -271,7 +272,8 @@ class IdentityManager : public SigninManagerBase::Observer,
   friend AccountInfo MakeAccountAvailable(IdentityManager* identity_manager,
                                           const std::string& email);
   friend void SetRefreshTokenForAccount(IdentityManager* identity_manager,
-                                        const std::string& account_id);
+                                        const std::string& account_id,
+                                        const std::string* token);
   friend void SetInvalidRefreshTokenForAccount(
       IdentityManager* identity_manager,
       const std::string& account_id);
