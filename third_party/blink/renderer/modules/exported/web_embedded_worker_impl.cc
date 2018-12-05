@@ -316,8 +316,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(!main_script_loader_);
   main_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
   main_script_loader_->LoadTopLevelScriptAsynchronously(
-      *shadow_page_->GetDocument(), worker_start_data_.script_url,
-      mojom::RequestContextType::SERVICE_WORKER,
+      *shadow_page_->GetDocument(), shadow_page_->GetDocument()->Fetcher(),
+      worker_start_data_.script_url, mojom::RequestContextType::SERVICE_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       worker_start_data_.address_space, false /* is_nested_worker */,

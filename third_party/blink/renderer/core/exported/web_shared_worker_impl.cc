@@ -127,8 +127,8 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
       client_->CreateServiceWorkerNetworkProvider());
   main_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
   main_script_loader_->LoadTopLevelScriptAsynchronously(
-      *shadow_page_->GetDocument(), script_request_url_,
-      mojom::RequestContextType::SHARED_WORKER,
+      *shadow_page_->GetDocument(), shadow_page_->GetDocument()->Fetcher(),
+      script_request_url_, mojom::RequestContextType::SHARED_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       creation_address_space_, false /* is_nested_worker */,

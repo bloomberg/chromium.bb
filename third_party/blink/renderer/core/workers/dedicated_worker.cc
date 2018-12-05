@@ -184,10 +184,12 @@ void DedicatedWorker::Start() {
     // Legacy code path (to be deprecated, see https://crbug.com/835717):
     // A worker thread will start after scripts are fetched on the current
     // thread.
+    if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
+      scope->EnsureFetcher();
     classic_script_loader_ = MakeGarbageCollected<WorkerClassicScriptLoader>();
     classic_script_loader_->LoadTopLevelScriptAsynchronously(
-        *GetExecutionContext(), script_request_url_,
-        mojom::RequestContextType::WORKER,
+        *GetExecutionContext(), GetExecutionContext()->Fetcher(),
+        script_request_url_, mojom::RequestContextType::WORKER,
         network::mojom::FetchRequestMode::kSameOrigin,
         network::mojom::FetchCredentialsMode::kSameOrigin,
         GetExecutionContext()->GetSecurityContext().AddressSpace(),

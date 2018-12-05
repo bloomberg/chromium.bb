@@ -199,9 +199,11 @@ ThreadableLoader::CreateAccessControlPreflightRequestForTesting(
 ThreadableLoader::ThreadableLoader(
     ExecutionContext& execution_context,
     ThreadableLoaderClient* client,
-    const ResourceLoaderOptions& resource_loader_options)
+    const ResourceLoaderOptions& resource_loader_options,
+    ResourceFetcher* resource_fetcher)
     : client_(client),
       execution_context_(execution_context),
+      resource_fetcher_(resource_fetcher),
       resource_loader_options_(resource_loader_options),
       out_of_blink_cors_(RuntimeEnabledFeatures::OutOfBlinkCorsEnabled()),
       is_using_data_consumer_handle_(false),
@@ -219,6 +221,8 @@ ThreadableLoader::ThreadableLoader(
   DCHECK(client);
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context_))
     scope->EnsureFetcher();
+  if (!resource_fetcher_)
+    resource_fetcher_ = execution_context_->Fetcher();
 }
 
 void ThreadableLoader::Start(const ResourceRequest& request) {
@@ -289,7 +293,7 @@ void ThreadableLoader::Start(const ResourceRequest& request) {
   // is_controlled_by_service_worker is the same as
   // ControllerServiceWorkerMode::kControlled, so this code can be simplified.
   bool is_controlled_by_service_worker = false;
-  switch (execution_context_->Fetcher()->IsControlledByServiceWorker()) {
+  switch (resource_fetcher_->IsControlledByServiceWorker()) {
     case blink::mojom::ControllerServiceWorkerMode::kControlled:
       is_controlled_by_service_worker = true;
       break;
@@ -1078,25 +1082,24 @@ void ThreadableLoader::LoadRequest(
   DCHECK(!GetResource());
 
   checker_.WillAddClient();
-  ResourceFetcher* fetcher = execution_context_->Fetcher();
   if (request.GetRequestContext() == mojom::RequestContextType::VIDEO ||
       request.GetRequestContext() == mojom::RequestContextType::AUDIO) {
     DCHECK(async_);
-    RawResource::FetchMedia(new_params, fetcher, this);
+    RawResource::FetchMedia(new_params, resource_fetcher_, this);
   } else if (request.GetRequestContext() ==
              mojom::RequestContextType::MANIFEST) {
     DCHECK(async_);
-    RawResource::FetchManifest(new_params, fetcher, this);
+    RawResource::FetchManifest(new_params, resource_fetcher_, this);
   } else if (async_) {
-    RawResource::Fetch(new_params, fetcher, this);
+    RawResource::Fetch(new_params, resource_fetcher_, this);
   } else {
-    RawResource::FetchSynchronously(new_params, fetcher, this);
+    RawResource::FetchSynchronously(new_params, resource_fetcher_, this);
   }
 }
 
 const SecurityOrigin* ThreadableLoader::GetSecurityOrigin() const {
   return security_origin_ ? security_origin_.get()
-                          : execution_context_->GetSecurityOrigin();
+                          : resource_fetcher_->Context().GetSecurityOrigin();
 }
 
 Document* ThreadableLoader::GetDocument() const {
@@ -1106,6 +1109,7 @@ Document* ThreadableLoader::GetDocument() const {
 void ThreadableLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(client_);
+  visitor->Trace(resource_fetcher_);
   RawResourceClient::Trace(visitor);
 }
 

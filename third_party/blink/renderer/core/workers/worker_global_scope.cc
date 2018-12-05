@@ -281,8 +281,10 @@ WorkerGlobalScope::LoadScriptFromClassicScriptLoader(
   ExecutionContext* execution_context = GetExecutionContext();
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
+  EnsureFetcher();
   classic_script_loader->LoadSynchronously(
-      *execution_context, script_url, mojom::RequestContextType::SCRIPT,
+      *execution_context, Fetcher(), script_url,
+      mojom::RequestContextType::SCRIPT,
       execution_context->GetSecurityContext().AddressSpace());
 
   // If the fetching attempt failed, throw a NetworkError exception and
@@ -396,7 +398,8 @@ void WorkerGlobalScope::ImportClassicScriptPausable(
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();
   classic_script_loader->LoadTopLevelScriptAsynchronously(
-      *execution_context, script_url, mojom::RequestContextType::WORKER,
+      *execution_context, CreateOutsideSettingsFetcher(outside_settings_object),
+      script_url, mojom::RequestContextType::WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
       GetSecurityContext().AddressSpace(), IsNestedWorker(),

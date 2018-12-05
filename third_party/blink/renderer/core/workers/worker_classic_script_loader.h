@@ -62,21 +62,27 @@ class CORE_EXPORT WorkerClassicScriptLoader final
 
   // For importScript().
   void LoadSynchronously(ExecutionContext&,
+                         ResourceFetcher* fetch_client_settings_object_fetcher,
                          const KURL&,
                          mojom::RequestContextType,
                          mojom::IPAddressSpace);
 
   // Note that callbacks could be invoked before
   // LoadTopLevelScriptAsynchronously() returns.
-  void LoadTopLevelScriptAsynchronously(ExecutionContext&,
-                                        const KURL&,
-                                        mojom::RequestContextType,
-                                        network::mojom::FetchRequestMode,
-                                        network::mojom::FetchCredentialsMode,
-                                        mojom::IPAddressSpace,
-                                        bool is_nested_worker,
-                                        base::OnceClosure response_callback,
-                                        base::OnceClosure finished_callback);
+  //
+  // |fetch_client_settings_object_fetcher| is different from
+  // ExecutionContext::Fetcher() in off-the-main-thread fetch.
+  void LoadTopLevelScriptAsynchronously(
+      ExecutionContext&,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
+      const KURL&,
+      mojom::RequestContextType,
+      network::mojom::FetchRequestMode,
+      network::mojom::FetchCredentialsMode,
+      mojom::IPAddressSpace,
+      bool is_nested_worker,
+      base::OnceClosure response_callback,
+      base::OnceClosure finished_callback);
 
   // This will immediately invoke |finishedCallback| if
   // LoadTopLevelScriptAsynchronously() is in progress.
