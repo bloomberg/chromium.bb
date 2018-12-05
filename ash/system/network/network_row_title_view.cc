@@ -44,7 +44,6 @@ NetworkRowTitleView::~NetworkRowTitleView() = default;
 
 void NetworkRowTitleView::SetSubtitle(int subtitle_message_id) {
   if (subtitle_message_id) {
-    title_->SetFontList(subtitle_->font_list());
     subtitle_->SetText(l10n_util::GetStringUTF16(subtitle_message_id));
     subtitle_->SetVisible(true);
     return;
