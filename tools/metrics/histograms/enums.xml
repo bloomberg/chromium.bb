@@ -54471,6 +54471,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WindowsToastActivatorCLSIDMismatchReason">
+  <obsolete>
+    Deprecated 12/2018 as this is no longer needed.
+  </obsolete>
   <int value="0" label="Shortcut CLSID is Stable"/>
   <int value="1" label="Shortcut CLSID is Beta"/>
   <int value="2" label="Shortcut CLSID is Dev"/>
