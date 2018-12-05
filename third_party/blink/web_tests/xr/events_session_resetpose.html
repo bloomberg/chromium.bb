@@ -52,7 +52,9 @@ let testFunction = function(session, t, fakeDeviceController) {
   session.addEventListener("resetpose", onPoseReset, false);
 
   // Trigger the reset pose.
-  session.requestAnimationFrame((time, xrFrame) => {});
+  session.requestAnimationFrame(() => {
+    session.requestAnimationFrame(() => {});
+  });
 
   return eventPromise;
 };
