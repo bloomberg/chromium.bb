@@ -89,17 +89,8 @@ ExtendedMouseWarpController::WarpRegion::GetIndicatorBoundsForTest(
     int64_t id) const {
   if (a_display_id_ == id)
     return a_indicator_bounds_;
-  DCHECK_EQ(b_display_id_, id);
+  CHECK_EQ(b_display_id_, id);
   return b_indicator_bounds_;
-}
-
-const gfx::Rect&
-ExtendedMouseWarpController::WarpRegion::GetIndicatorNativeBoundsForTest(
-    int64_t id) const {
-  if (a_display_id_ == id)
-    return a_edge_bounds_in_native_;
-  DCHECK_EQ(b_display_id_, id);
-  return b_edge_bounds_in_native_;
 }
 
 ExtendedMouseWarpController::ExtendedMouseWarpController(
