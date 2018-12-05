@@ -60,6 +60,9 @@ class MockFetchContext : public FetchContext {
   void SetLoadComplete(bool complete) { complete_ = complete; }
   long long GetTransferSize() const { return transfer_size_; }
 
+  void CountUsage(mojom::WebFeature) const override {}
+  void CountDeprecation(mojom::WebFeature) const override {}
+
   const SecurityOrigin* GetSecurityOrigin() const override {
     return security_origin_.get();
   }

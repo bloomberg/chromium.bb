@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
@@ -59,7 +60,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
     mojom::IPAddressSpace creation_address_space) {
   DCHECK(fetch_client_settings_object_fetcher);
   url_ = url;
-  execution_context_ = &execution_context;
+  fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
 
   // Impose strict MIME-type checks on importScripts(). See
   // https://crbug.com/794548.
@@ -100,7 +101,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   response_callback_ = std::move(response_callback);
   finished_callback_ = std::move(finished_callback);
   url_ = url;
-  execution_context_ = &execution_context;
+  fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   forbid_cross_origin_redirects_ = true;
 
   if (execution_context.IsDocument()) {
@@ -111,6 +112,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kLax;
   } else {
     DCHECK(execution_context.IsWorkerGlobalScope());
+    is_worker_global_scope_ = true;
     if (is_nested_worker) {
       // For nested workers, impose the strict MIME-type checks because the
       // feature is new (enabled by default in M69) and there is no backward
@@ -158,8 +160,9 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     NotifyError();
     return;
   }
-  if (!AllowedByNosniff::MimeTypeAsScript(execution_context_, response,
-                                          mime_type_check_mode_)) {
+  if (!AllowedByNosniff::MimeTypeAsScript(
+          fetch_client_settings_object_fetcher_->Context(), response,
+          mime_type_check_mode_, is_worker_global_scope_)) {
     NotifyError();
     return;
   }
@@ -169,9 +172,9 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
                                              response.CurrentRequestUrl())) {
     // Forbid cross-origin redirects to ensure the request and response URLs
     // have the same SecurityOrigin.
-    execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
-        "Refused to cross-origin redirects of the top-level worker script."));
+    fetch_client_settings_object_fetcher_->Context().AddErrorConsoleMessage(
+        "Refused to cross-origin redirects of the top-level worker script.",
+        FetchContext::kSecuritySource);
     NotifyError();
     return;
   }
@@ -250,7 +253,7 @@ void WorkerClassicScriptLoader::DidFailRedirectCheck() {
 void WorkerClassicScriptLoader::Trace(Visitor* visitor) {
   visitor->Trace(threadable_loader_);
   visitor->Trace(content_security_policy_);
-  visitor->Trace(execution_context_);
+  visitor->Trace(fetch_client_settings_object_fetcher_);
   ThreadableLoaderClient::Trace(visitor);
 }
 

@@ -56,6 +56,9 @@ class NullFetchContext final : public FetchContext {
     return fetch_client_settings_object_;
   }
 
+  void CountUsage(mojom::WebFeature) const override {}
+  void CountDeprecation(mojom::WebFeature) const override {}
+
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(fetch_client_settings_object_);
     FetchContext::Trace(visitor);

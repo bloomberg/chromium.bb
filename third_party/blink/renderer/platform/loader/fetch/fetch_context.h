@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
+#include "third_party/blink/public/platform/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -223,6 +224,9 @@ class PLATFORM_EXPORT FetchContext
   virtual void AddInfoConsoleMessage(const String&, LogSource) const;
   virtual void AddWarningConsoleMessage(const String&, LogSource) const;
   virtual void AddErrorConsoleMessage(const String&, LogSource) const;
+
+  virtual void CountUsage(mojom::WebFeature) const = 0;
+  virtual void CountDeprecation(mojom::WebFeature) const = 0;
 
   virtual const SecurityOrigin* GetSecurityOrigin() const { return nullptr; }
 

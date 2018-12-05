@@ -14,6 +14,8 @@ make_names("make_platform_loader_generated_fetch_initiator_type_names") {
 
 blink_platform_sources("loader") {
   sources = [
+    "allowed_by_nosniff.cc",
+    "allowed_by_nosniff.h",
     "cors/cors.cc",
     "cors/cors.h",
     "cors/cors_error_string.cc",
