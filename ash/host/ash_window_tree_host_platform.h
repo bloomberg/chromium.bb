@@ -27,7 +27,6 @@ struct PlatformWindowInitProperties;
 }
 
 namespace ash {
-class ExtendedMouseWarpControllerTest;
 
 class ASH_EXPORT AshWindowTreeHostPlatform
     : public AshWindowTreeHost,
@@ -41,10 +40,6 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   ~AshWindowTreeHostPlatform() override;
 
  protected:
-  friend ExtendedMouseWarpControllerTest;
-  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
-                           CheckHostPointToScreenInMouseWarpRegion);
-
   AshWindowTreeHostPlatform();
 
   // AshWindowTreeHost:
