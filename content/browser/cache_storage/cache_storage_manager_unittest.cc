@@ -1920,6 +1920,44 @@ TEST_P(CacheStorageManagerTestP, StorageWriteToCache) {
                             nullptr, CacheStorageOwner::kCacheAPI));
 }
 
+TEST_F(CacheStorageManagerTest, WriteIndexOnlyScheduledWhenValueChanges) {
+  const char* kCacheName = "WriteIndexOnlyScheduledWhenValueChanges";
+
+  // In order to make sure operations are flushed through the various scheduler
+  // queues we match against a non-existant URL.  This should always return
+  // false from Match() and when it completes we know any previous operations
+  // have completed as well.
+  const GURL kNonExistant("http://example.com/bar");
+  const GURL kResource("https://example.com/foo");
+
+  // Opening a new cache should require writing the index.
+  EXPECT_TRUE(Open(origin1_, kCacheName));
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(), kNonExistant));
+  EXPECT_TRUE(FlushCacheStorageIndex(origin1_));
+
+  // Allow the cache to close.
+  callback_cache_handle_ = CacheStorageCacheHandle();
+
+  // Opening an existing cache should *not* require writing the index.
+  EXPECT_TRUE(Open(origin1_, kCacheName));
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(), kNonExistant));
+  EXPECT_FALSE(FlushCacheStorageIndex(origin1_));
+
+  // Putting a value in the cache should require writing the index.
+  EXPECT_TRUE(CachePut(callback_cache_handle_.value(), kResource));
+  EXPECT_TRUE(FlushCacheStorageIndex(origin1_));
+
+  // Allow the cache to close.
+  callback_cache_handle_ = CacheStorageCacheHandle();
+
+  // Opening an existing cache after writing a value should *not* require
+  // writing the index.
+  EXPECT_TRUE(Open(origin1_, kCacheName));
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(), kNonExistant));
+  EXPECT_TRUE(CacheMatch(callback_cache_handle_.value(), kResource));
+  EXPECT_FALSE(FlushCacheStorageIndex(origin1_));
+}
+
 class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
  protected:
   CacheStorageQuotaClientTest() {}
