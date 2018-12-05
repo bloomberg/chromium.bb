@@ -101,6 +101,17 @@ public class TracingController {
         return sInstance;
     }
 
+    /**
+     * Query whether the TracingController instance has been created and initialized. Does not
+     * create the controller instance if it has not been created yet.
+     *
+     * @return |true| if the controller was created and is initialized, |false| otherwise.
+     */
+    public static boolean isInitialized() {
+        if (sInstance == null) return false;
+        return getInstance().getState() != State.INITIALIZING;
+    }
+
     private void initialize() {
         mNativeController = TracingControllerAndroid.create(ContextUtils.getApplicationContext());
         mNativeController.getKnownCategories(categories -> {
