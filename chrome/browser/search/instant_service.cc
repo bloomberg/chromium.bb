@@ -100,21 +100,8 @@ bool CheckLocalBackgroundImageExists(const base::FilePath& profile_path) {
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath profile_image =
       profile_path.AppendASCII(chrome::kChromeSearchLocalNtpBackgroundFilename);
-  base::FilePath user_data_image = user_data_dir.AppendASCII(
-      chrome::kChromeSearchLocalNtpBackgroundFilename);
 
-  if (base::PathExists(profile_image))
-    return true;
-
-  // The image was originally stored in the user data dir, it needs to be moved
-  // to the profile path if it's still there.
-  if (base::PathExists(user_data_image)) {
-    base::CopyFile(user_data_image, profile_image);
-    base::DeleteFile(user_data_image, false);
-    return true;
-  }
-
-  return false;
+  return base::PathExists(profile_image);
 }
 
 bool IsLocalFileUrl(GURL url) {
