@@ -71,15 +71,20 @@ public class TracingNotificationService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (ACTION_STOP_RECORDING.equals(intent.getAction())) {
-            ThreadUtils.runOnUiThreadBlocking(
-                    () -> { TracingController.getInstance().stopRecording(); });
-        } else if (ACTION_SHARE_TRACE.equals(intent.getAction())) {
-            ThreadUtils.runOnUiThreadBlocking(
-                    () -> { TracingController.getInstance().shareTrace(); });
-        } else if (ACTION_DISCARD_TRACE.equals(intent.getAction())) {
-            ThreadUtils.runOnUiThreadBlocking(
-                    () -> { TracingController.getInstance().discardTrace(); });
-        }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Clear the notification but don't do anything else if the TracingController went away.
+            if (!TracingController.isInitialized()) {
+                TracingNotificationManager.dismissNotification();
+                return;
+            }
+
+            if (ACTION_STOP_RECORDING.equals(intent.getAction())) {
+                TracingController.getInstance().stopRecording();
+            } else if (ACTION_SHARE_TRACE.equals(intent.getAction())) {
+                TracingController.getInstance().shareTrace();
+            } else if (ACTION_DISCARD_TRACE.equals(intent.getAction())) {
+                TracingController.getInstance().discardTrace();
+            }
+        });
     }
 }
