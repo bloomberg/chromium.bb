@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/native_event_processor_mac.h"
 #include "content/public/browser/native_event_processor_observer_mac.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace chrome_browser_application_mac {
 
@@ -116,18 +115,6 @@ std::string DescriptionForNSEvent(NSEvent* event) {
   chrome::InstallObjcExceptionPreprocessor();
 
   cocoa_l10n_util::ApplyForcedRTL();
-}
-
-- (id)init {
-  self = [super init];
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceDarkMode)) {
-    if (@available(macOS 10.14, *)) {
-      self.appearance = [NSAppearance appearanceNamed:NSAppearanceNameDarkAqua];
-    }
-  }
-
-  return self;
 }
 
 // Initialize NSApplication using the custom subclass.  Check whether NSApp
