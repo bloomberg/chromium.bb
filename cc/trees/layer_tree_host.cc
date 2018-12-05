@@ -1169,7 +1169,11 @@ void LayerTreeHost::SetViewportSizeAndScale(
     // be.
     CHECK(!has_pushed_local_surface_id_from_parent_ ||
           new_local_surface_id_request_ ||
-          !local_surface_id_allocation_from_parent_.IsValid());
+          !local_surface_id_allocation_from_parent_.IsValid())
+        << "Invalid Surface Id State: !has_pushed "
+        << !has_pushed_local_surface_id_from_parent_ << " new_id_request "
+        << new_local_surface_id_request_ << " !valid_parent_id "
+        << !local_surface_id_allocation_from_parent_.IsValid();
 #endif
   }
 }
