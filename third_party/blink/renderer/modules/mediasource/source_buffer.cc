@@ -171,7 +171,7 @@ const AtomicString& SourceBuffer::SequenceKeyword() {
 
 void SourceBuffer::setMode(const AtomicString& new_mode,
                            ExceptionState& exception_state) {
-  BLINK_SBLOG << __func__ << " this=" << this << " newMode=" << new_mode;
+  BLINK_SBLOG << __func__ << " this=" << this << " new_mode=" << new_mode;
   // Section 3.1 On setting mode attribute steps.
   // https://www.w3.org/TR/media-source/#dom-sourcebuffer-mode
   // 1. If this object has been removed from the sourceBuffers attribute of the

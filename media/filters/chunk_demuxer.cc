@@ -1123,6 +1123,10 @@ void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
     return;
 
   if (state_ == INITIALIZING) {
+    MEDIA_LOG(ERROR, media_log_)
+        << "MediaSource endOfStream before demuxer initialization completes "
+           "(before HAVE_METADATA) is treated as an error. This may also occur "
+           "as consequence of other MediaSource errors before HAVE_METADATA.";
     ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
   }

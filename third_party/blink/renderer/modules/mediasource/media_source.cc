@@ -503,6 +503,8 @@ void MediaSource::OnTrackChanged(TrackBase* track) {
 
 void MediaSource::setDuration(double duration,
                               ExceptionState& exception_state) {
+  BLINK_MSLOG << __func__ << " this=" << this << " : duration=" << duration;
+
   // 2.1 https://www.w3.org/TR/media-source/#widl-MediaSource-duration
   // 1. If the value being set is negative or NaN then throw a TypeError
   // exception and abort these steps.
@@ -624,6 +626,8 @@ void MediaSource::endOfStream(const AtomicString& error,
   DEFINE_STATIC_LOCAL(const AtomicString, network, ("network"));
   DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode"));
 
+  BLINK_MSLOG << __func__ << " this=" << this << " : error=" << error;
+
   // https://www.w3.org/TR/media-source/#dom-mediasource-endofstream
   // 1. If the readyState attribute is not in the "open" state then throw an
   //    InvalidStateError exception and abort these steps.
@@ -649,6 +653,9 @@ void MediaSource::endOfStream(ExceptionState& exception_state) {
 void MediaSource::setLiveSeekableRange(double start,
                                        double end,
                                        ExceptionState& exception_state) {
+  BLINK_MSLOG << __func__ << " this=" << this << " : start=" << start
+              << ", end=" << end;
+
   // http://w3c.github.io/media-source/#widl-MediaSource-setLiveSeekableRange-void-double-start-double-end
   // 1. If the readyState attribute is not "open" then throw an
   //    InvalidStateError exception and abort these steps.
@@ -678,6 +685,8 @@ void MediaSource::setLiveSeekableRange(double start,
 }
 
 void MediaSource::clearLiveSeekableRange(ExceptionState& exception_state) {
+  BLINK_MSLOG << __func__ << " this=" << this;
+
   // http://w3c.github.io/media-source/#widl-MediaSource-clearLiveSeekableRange-void
   // 1. If the readyState attribute is not "open" then throw an
   //    InvalidStateError exception and abort these steps.

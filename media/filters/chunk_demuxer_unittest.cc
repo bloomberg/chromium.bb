@@ -1705,6 +1705,7 @@ TEST_P(ChunkDemuxerTest, EOSDuringInit) {
   EXPECT_CALL(*this, DemuxerOpened());
   demuxer_->Initialize(&host_,
                        NewExpectedStatusCB(DEMUXER_ERROR_COULD_NOT_OPEN));
+  EXPECT_MEDIA_LOG(EosBeforeHaveMetadata());
   MarkEndOfStream(PIPELINE_OK);
 }
 
@@ -1716,7 +1717,10 @@ TEST_P(ChunkDemuxerTest, EndOfStreamWithNoAppend) {
   ASSERT_EQ(AddId(), ChunkDemuxer::kOk);
 
   CheckExpectedRanges("{ }");
+
+  EXPECT_MEDIA_LOG(EosBeforeHaveMetadata());
   MarkEndOfStream(PIPELINE_OK);
+
   ShutdownDemuxer();
   CheckExpectedRanges("{ }");
   demuxer_->RemoveId(kSourceId);
