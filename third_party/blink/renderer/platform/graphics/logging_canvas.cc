@@ -414,15 +414,15 @@ String StyleName(SkPaint::Style style) {
   };
 }
 
-String TextEncodingName(SkPaint::TextEncoding encoding) {
+String TextEncodingName(SkTextEncoding encoding) {
   switch (encoding) {
-    case SkPaint::kUTF8_TextEncoding:
+    case kUTF8_SkTextEncoding:
       return "UTF-8";
-    case SkPaint::kUTF16_TextEncoding:
+    case kUTF16_SkTextEncoding:
       return "UTF-16";
-    case SkPaint::kUTF32_TextEncoding:
+    case kUTF32_SkTextEncoding:
       return "UTF-32";
-    case SkPaint::kGlyphID_TextEncoding:
+    case kGlyphID_SkTextEncoding:
       return "GlyphID";
     default:
       NOTREACHED();
@@ -520,17 +520,17 @@ String StringForUTF32LEText(const void* text, size_t byte_length) {
 String StringForText(const void* text,
                      size_t byte_length,
                      const SkPaint& paint) {
-  SkPaint::TextEncoding encoding = paint.getTextEncoding();
+  SkTextEncoding encoding = paint.getTextEncoding();
   switch (encoding) {
-    case SkPaint::kUTF8_TextEncoding:
+    case kUTF8_SkTextEncoding:
       return WTF::TextEncoding("UTF-8").Decode(
           reinterpret_cast<const char*>(text), byte_length);
-    case SkPaint::kUTF16_TextEncoding:
+    case kUTF16_SkTextEncoding:
       return WTF::TextEncoding("UTF-16LE")
           .Decode(reinterpret_cast<const char*>(text), byte_length);
-    case SkPaint::kUTF32_TextEncoding:
+    case kUTF32_SkTextEncoding:
       return StringForUTF32LEText(text, byte_length);
-    case SkPaint::kGlyphID_TextEncoding: {
+    case kGlyphID_SkTextEncoding: {
       WTF::Vector<SkUnichar> data_vector(byte_length / 2);
       SkUnichar* text_data = data_vector.data();
       paint.glyphsToUnichars(static_cast<const uint16_t*>(text),

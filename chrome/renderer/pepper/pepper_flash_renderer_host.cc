@@ -256,7 +256,7 @@ int32_t PepperFlashRendererHost::OnDrawGlyphs(
 
   SkPaint paint;
   paint.setColor(params.color);
-  paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  paint.setTextEncoding(kGlyphID_SkTextEncoding);
   paint.setAntiAlias(true);
   paint.setHinting(SkFontHinting::kFull);
   paint.setTextSize(SkIntToScalar(params.font_desc.size));

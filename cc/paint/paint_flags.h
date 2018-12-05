@@ -100,10 +100,10 @@ class CC_PAINT_EXPORT PaintFlags {
     SetInternalFlag(dither, SkPaint::kDither_Flag);
   }
   enum TextEncoding {
-    kUTF8_TextEncoding = SkPaint::kUTF8_TextEncoding,
-    kUTF16_TextEncoding = SkPaint::kUTF16_TextEncoding,
-    kUTF32_TextEncoding = SkPaint::kUTF32_TextEncoding,
-    kGlyphID_TextEncoding = SkPaint::kGlyphID_TextEncoding
+    kUTF8_TextEncoding = static_cast<unsigned>(kUTF8_SkTextEncoding),
+    kUTF16_TextEncoding = static_cast<unsigned>(kUTF16_SkTextEncoding),
+    kUTF32_TextEncoding = static_cast<unsigned>(kUTF32_SkTextEncoding),
+    kGlyphID_TextEncoding = static_cast<unsigned>(kGlyphID_SkTextEncoding)
   };
   ALWAYS_INLINE TextEncoding getTextEncoding() const {
     return static_cast<TextEncoding>(bitfields_.text_encoding_);
