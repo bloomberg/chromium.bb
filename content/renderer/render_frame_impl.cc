@@ -3254,71 +3254,84 @@ void RenderFrameImpl::CommitNavigation(
         &item_for_history_navigation, &load_type);
   }
 
-  base::OnceClosure continue_navigation;
-  if (commit_status == blink::mojom::CommitResult::Ok) {
-    base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
-    // Check if the navigation being committed originated as a client redirect.
-    bool is_client_redirect =
-        !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-
-    // Perform a navigation for loadDataWithBaseURL if needed (for main frames).
-    // Note: the base URL might be invalid, so also check the data URL string.
-    bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
-#if defined(OS_ANDROID)
-    should_load_data_url |= !request_params.data_url_as_string.empty();
-#endif
-    if (is_main_frame_ && should_load_data_url) {
-      LoadDataURL(common_params, request_params, load_type,
-                  item_for_history_navigation, is_client_redirect,
-                  std::move(document_state));
-    } else {
-      WebURLRequest request = CreateURLRequestForCommit(
-          common_params, request_params, std::move(url_loader_client_endpoints),
-          head);
-      // Note: we cannot use base::AutoReset here, since |this| can be deleted
-      // in the next call and auto reset will introduce use-after-free bug.
-      committing_main_request_ = true;
-      frame_->CommitNavigation(
-          request, load_type, item_for_history_navigation, is_client_redirect,
-          devtools_navigation_token,
-          BuildNavigationParams(
-              common_params, request_params,
-              BuildServiceWorkerNetworkProviderForNavigation(
-                  &request_params, std::move(controller_service_worker_info))),
-          std::move(document_state));
-      // The commit can result in this frame being removed. Use a
-      // WeakPtr as an easy way to detect whether this has occured. If so, this
-      // method should return immediately and not touch any part of the object,
-      // otherwise it will result in a use-after-free bug.
-      if (!weak_this)
-        return;
-      committing_main_request_ = false;
-      RequestExtraData* extra_data =
-          static_cast<RequestExtraData*>(request.GetExtraData());
-      continue_navigation =
-          extra_data->TakeContinueNavigationFunctionOwnerShip();
-    }
-  } else {
+  if (commit_status != blink::mojom::CommitResult::Ok) {
     // The browser expects the frame to be loading this navigation. Inform it
     // that the load stopped if needed.
     if (frame_ && !frame_->IsLoading())
       Send(new FrameHostMsg_DidStopLoading(routing_id_));
+    return;
   }
 
-  // Reset the source location now that the commit checks have been processed.
-  frame_->GetDocumentLoader()->ResetSourceLocation();
-  if (frame_->GetProvisionalDocumentLoader())
-    frame_->GetProvisionalDocumentLoader()->ResetSourceLocation();
+  base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+  // Check if the navigation being committed originated as a client redirect.
+  bool is_client_redirect =
+      !!(common_params.transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 
-  // Continue the navigation.
-  // TODO(arthursonzogni): Pass the data needed to continue the navigation to
-  // this function instead of storing it in the
-  // NavigationResponseOverrideParameters. The architecture of committing the
-  // navigation in the renderer process should be simplified and avoid going
-  // through the ResourceFetcher for the main resource.
-  if (continue_navigation) {
-    base::AutoReset<bool> replaying(&replaying_main_response_, true);
-    std::move(continue_navigation).Run();
+  std::unique_ptr<blink::WebNavigationParams> navigation_params =
+      BuildNavigationParams(
+          common_params, request_params,
+          BuildServiceWorkerNetworkProviderForNavigation(
+              &request_params, std::move(controller_service_worker_info)));
+
+  // Perform a navigation to a data url if needed (for main frames).
+  // Note: the base URL might be invalid, so also check the data URL string.
+  bool should_load_data_url = !common_params.base_url_for_data_url.is_empty();
+#if defined(OS_ANDROID)
+  should_load_data_url |= !request_params.data_url_as_string.empty();
+#endif
+  if (is_main_frame_ && should_load_data_url) {
+    std::string mime_type;
+    std::string charset;
+    std::string data;
+    GURL base_url;
+    DecodeDataURL(common_params, request_params, &mime_type, &charset, &data,
+                  &base_url);
+    frame_->CommitDataNavigation(
+        WebURLRequest(base_url), WebData(data.c_str(), data.length()),
+        WebString::FromUTF8(mime_type), WebString::FromUTF8(charset),
+        // Needed so that history-url-only changes don't become reloads.
+        common_params.history_url_for_data_url, load_type,
+        item_for_history_navigation, is_client_redirect,
+        std::move(navigation_params), std::move(document_state));
+    // The commit can result in this frame being removed. Use a
+    // WeakPtr as an easy way to detect whether this has occured. If so, this
+    // method should return immediately and not touch any part of the object,
+    // otherwise it will result in a use-after-free bug.
+    if (!weak_this)
+      return;
+  } else {
+    WebURLRequest request =
+        CreateURLRequestForCommit(common_params, request_params,
+                                  std::move(url_loader_client_endpoints), head);
+    // Note: we cannot use base::AutoReset here, since |this| can be deleted
+    // in the next call and auto reset will introduce use-after-free bug.
+    committing_main_request_ = true;
+    frame_->CommitNavigation(request, load_type, item_for_history_navigation,
+                             is_client_redirect, devtools_navigation_token,
+                             std::move(navigation_params),
+                             std::move(document_state));
+    // The commit can result in this frame being removed. Use a
+    // WeakPtr as an easy way to detect whether this has occured. If so, this
+    // method should return immediately and not touch any part of the object,
+    // otherwise it will result in a use-after-free bug.
+    if (!weak_this)
+      return;
+    committing_main_request_ = false;
+
+    // Continue the navigation.
+    // TODO(arthursonzogni): Pass the data needed to continue the navigation to
+    // this function instead of storing it in the
+    // NavigationResponseOverrideParameters. The architecture of committing the
+    // navigation in the renderer process should be simplified and avoid going
+    // through the ResourceFetcher for the main resource.
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData());
+    base::OnceClosure continue_navigation =
+        extra_data->TakeContinueNavigationFunctionOwnerShip();
+    if (continue_navigation) {
+      base::AutoReset<bool> replaying(&replaying_main_response_, true);
+      std::move(continue_navigation).Run();
+    }
   }
 }
 
@@ -6835,22 +6848,23 @@ void RenderFrameImpl::BeginNavigationInternal(
   }
 }
 
-void RenderFrameImpl::LoadDataURL(
+void RenderFrameImpl::DecodeDataURL(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    blink::WebFrameLoadType load_type,
-    blink::WebHistoryItem item_for_history_navigation,
-    bool is_client_redirect,
-    std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data) {
+    std::string* mime_type,
+    std::string* charset,
+    std::string* data,
+    GURL* base_url) {
   // A loadData request with a specified base URL.
   GURL data_url = common_params.url;
 #if defined(OS_ANDROID)
   if (!request_params.data_url_as_string.empty()) {
 #if DCHECK_IS_ON()
     {
-      std::string mime_type, charset, data;
-      DCHECK(net::DataURL::Parse(data_url, &mime_type, &charset, &data));
-      DCHECK(data.empty());
+      std::string mime_type_tmp, charset_tmp, data_tmp;
+      DCHECK(net::DataURL::Parse(data_url, &mime_type_tmp, &charset_tmp,
+                                 &data_tmp));
+      DCHECK(data_tmp.empty());
     }
 #endif
     data_url = GURL(request_params.data_url_as_string);
@@ -6859,23 +6873,10 @@ void RenderFrameImpl::LoadDataURL(
     }
   }
 #endif
-  std::string mime_type, charset, data;
-  if (net::DataURL::Parse(data_url, &mime_type, &charset, &data)) {
-    const GURL base_url = common_params.base_url_for_data_url.is_empty()
-                              ? common_params.url
-                              : common_params.base_url_for_data_url;
-
-    frame_->CommitDataNavigation(
-        WebURLRequest(base_url), WebData(data.c_str(), data.length()),
-        WebString::FromUTF8(mime_type), WebString::FromUTF8(charset),
-        // Needed so that history-url-only changes don't become reloads.
-        common_params.history_url_for_data_url, load_type,
-        item_for_history_navigation, is_client_redirect,
-        BuildNavigationParams(
-            common_params, request_params,
-            BuildServiceWorkerNetworkProviderForNavigation(
-                &request_params, nullptr /* controller_service_worker_info */)),
-        std::move(navigation_data));
+  if (net::DataURL::Parse(data_url, mime_type, charset, data)) {
+    *base_url = common_params.base_url_for_data_url.is_empty()
+                    ? common_params.url
+                    : common_params.base_url_for_data_url;
   } else {
     CHECK(false) << "Invalid URL passed: "
                  << common_params.url.possibly_invalid_spec();

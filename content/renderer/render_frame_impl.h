@@ -1151,14 +1151,13 @@ class CONTENT_EXPORT RenderFrameImpl
   // Sends a FrameHostMsg_BeginNavigation to the browser
   void BeginNavigationInternal(std::unique_ptr<blink::WebNavigationInfo> info);
 
-  // Loads a data url.
-  void LoadDataURL(
-      const CommonNavigationParams& common_params,
-      const RequestNavigationParams& request_params,
-      blink::WebFrameLoadType load_type,
-      blink::WebHistoryItem item_for_history_navigation,
-      bool is_client_redirect,
-      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
+  // Decodes a data url for navigation commit.
+  void DecodeDataURL(const CommonNavigationParams& common_params,
+                     const RequestNavigationParams& request_params,
+                     std::string* mime_type,
+                     std::string* charset,
+                     std::string* data,
+                     GURL* base_url);
 
   // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for
   // the failed request |request|.

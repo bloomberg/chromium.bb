@@ -144,10 +144,6 @@ WebDocumentLoaderImpl::GetServiceWorkerNetworkProvider() {
   return DocumentLoader::GetServiceWorkerNetworkProvider();
 }
 
-void WebDocumentLoaderImpl::ResetSourceLocation() {
-  DocumentLoader::ResetSourceLocation();
-}
-
 void WebDocumentLoaderImpl::BlockParser() {
   DocumentLoader::BlockParser();
 }
