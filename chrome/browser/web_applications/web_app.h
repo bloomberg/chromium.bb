@@ -7,6 +7,7 @@
 
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -29,11 +30,19 @@ class WebApp {
   const GURL& scope() const { return scope_; }
   const base::Optional<SkColor>& theme_color() const { return theme_color_; }
 
+  struct IconInfo {
+    GURL url;
+    int size_in_px;
+  };
+  using Icons = std::vector<IconInfo>;
+  const Icons& icons() const { return icons_; }
+
   void SetName(const std::string& name);
   void SetDescription(const std::string& description);
   void SetLaunchUrl(const GURL& launch_url);
   void SetScope(const GURL& scope);
   void SetThemeColor(base::Optional<SkColor> theme_color);
+  void SetIcons(Icons icons);
 
  private:
   const AppId app_id_;
@@ -45,6 +54,7 @@ class WebApp {
   // is within the scope.
   GURL scope_;
   base::Optional<SkColor> theme_color_;
+  Icons icons_;
 
   DISALLOW_COPY_AND_ASSIGN(WebApp);
 };

@@ -19,6 +19,30 @@
 
 namespace web_app {
 
+namespace {
+
+void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
+  WebApp::Icons web_app_icons;
+
+  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info.icons) {
+    // Skip unfetched bitmaps.
+    if (icon_info.data.colorType() == kUnknown_SkColorType)
+      continue;
+
+    DCHECK_EQ(icon_info.width, icon_info.height);
+
+    WebApp::IconInfo web_app_icon_info;
+    web_app_icon_info.url = icon_info.url;
+    web_app_icon_info.size_in_px = icon_info.width;
+
+    web_app_icons.push_back(web_app_icon_info);
+  }
+
+  web_app->SetIcons(std::move(web_app_icons));
+}
+
+}  // namespace
+
 WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppRegistrar* registrar,
                                                WebAppIconManager* icon_manager)
     : registrar_(registrar), icon_manager_(icon_manager) {}
@@ -43,6 +67,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
   web_app->SetLaunchUrl(web_app_info->app_url);
   web_app->SetScope(web_app_info->scope);
   web_app->SetThemeColor(web_app_info->theme_color);
+  SetIcons(*web_app_info, web_app.get());
 
   icon_manager_->WriteData(
       std::move(app_id), std::move(web_app_info),
@@ -59,9 +84,6 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
     std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
     return;
   }
-
-  // TODO(loyso): Add |Icons| object into WebApp to iterate over icons and to
-  // load SkBitmap pixels asynchronously (save memory).
 
   AppId app_id = web_app->app_id();
 
