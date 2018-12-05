@@ -330,10 +330,13 @@ AppCacheSubresourceURLFactory::~AppCacheSubresourceURLFactory() {}
 
 // static
 void AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     base::WeakPtr<AppCacheHost> host,
     network::mojom::URLLoaderFactoryPtr* loader_factory) {
   DCHECK(host.get());
+  scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory =
+      host->service()
+          ->url_loader_factory_getter()
+          ->GetNetworkFactoryWithCORBEnabled();
   // This instance is effectively reference counted by the number of pipes open
   // to it and will get deleted when all clients drop their connections.
   // Please see OnConnectionError() for details.
