@@ -89,6 +89,7 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
                          forState:UIControlStateNormal];
   self.titleButton.enabled = YES;
+  self.grayLine.hidden = YES;
 }
 
 - (void)setUpWithTitle:(NSString*)title
@@ -113,10 +114,7 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   [verticalLeadViews addObject:self.titleButton];
 
   if (showSeparator) {
-    [verticalLeadViews addObject:self.grayLine];
     self.grayLine.hidden = NO;
-  } else {
-    self.grayLine.hidden = YES;
   }
 
   self.verticalConstraints =
