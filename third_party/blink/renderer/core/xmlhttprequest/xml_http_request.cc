@@ -1807,6 +1807,8 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   if (!final_response_charset.IsEmpty()) {
     // If the final charset is given, use the charset without sniffing the
     // content.
+    // TODO(crbug/905968): If WTF::TextEncoding::IsValid() is false, this
+    // currently falls back to Latin1Encoding(). Fallback to UTF-8 instead.
     return TextResourceDecoder::Create(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         WTF::TextEncoding(final_response_charset)));

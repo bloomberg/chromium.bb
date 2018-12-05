@@ -203,6 +203,12 @@ static int FindXMLEncoding(const char* str, int len, int& encoding_length) {
 wtf_size_t TextResourceDecoder::CheckForBOM(const char* data, wtf_size_t len) {
   // Check for UTF-16 or UTF-8 BOM mark at the beginning, which is a sure
   // sign of a Unicode encoding. We let it override even a user-chosen encoding.
+
+  // if |options_|'s value corresponds to #decode or #utf-8-decode,
+  // CheckForBOM() corresponds to
+  // - Steps 1-6 of https://encoding.spec.whatwg.org/#decode or
+  // - Steps 1-3 of https://encoding.spec.whatwg.org/#utf-8-decode,
+  // respectively.
   DCHECK(!checked_for_bom_);
 
   wtf_size_t length_of_bom = 0;

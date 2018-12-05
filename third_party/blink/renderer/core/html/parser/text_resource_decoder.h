@@ -36,6 +36,10 @@ namespace blink {
 
 class HTMLMetaCharsetParser;
 
+// Implements https://encoding.spec.whatwg.org/#decode or
+// https://encoding.spec.whatwg.org/#utf-8-decode when an appropriate
+// TextResourceDecoderOptions is given.
+// See comments in text_resource_decoder_options.h.
 class CORE_EXPORT TextResourceDecoder {
   USING_FAST_MALLOC(TextResourceDecoder);
 
