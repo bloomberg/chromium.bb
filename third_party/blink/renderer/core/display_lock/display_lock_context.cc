@@ -97,7 +97,9 @@ int DisplayLockScopedLogger::s_indent_ = 0;
 
 DisplayLockContext::DisplayLockContext(Element* element,
                                        ExecutionContext* context)
-    : ContextLifecycleObserver(context), element_(element) {
+    : ContextLifecycleObserver(context),
+      element_(element),
+      weak_element_handle_(element) {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
 }
 
@@ -112,6 +114,7 @@ void DisplayLockContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(callbacks_);
   visitor->Trace(resolver_);
   visitor->Trace(element_);
+  visitor->Trace(weak_element_handle_);
   ScriptWrappable::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -119,6 +122,17 @@ void DisplayLockContext::Trace(blink::Visitor* visitor) {
 
 void DisplayLockContext::Dispose() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  // Note that if we have a resolver_ at dispose time, then it's too late to
+  // reject the promise, since we are not allowed to create new strong
+  // references to objects already set for destruction (and rejecting would do
+  // this since the rejection has to be deferred). We need to detach instead.
+  // TODO(vmpstr): See if there is another earlier time we can detect that we're
+  // going to be disposed.
+  if (resolver_) {
+    resolver_->Detach();
+    resolver_ = nullptr;
+    state_ = kResolved;
+  }
   RejectAndCleanUp();
 }
 
@@ -130,7 +144,8 @@ void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
 bool DisplayLockContext::HasPendingActivity() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   // If we haven't resolved it, we should stick around.
-  return !IsResolved();
+  // Note that if the element we're locking is gone, then we can also be GCed.
+  return !IsResolved() && weak_element_handle_;
 }
 
 void DisplayLockContext::ScheduleCallback(V8DisplayLockCallback* callback) {
@@ -170,7 +185,7 @@ DisplayLockSuspendedHandle* DisplayLockContext::suspend() {
 }
 
 Element* DisplayLockContext::lockedElement() const {
-  return element_;
+  return GetElement();
 }
 
 void DisplayLockContext::ProcessQueue() {
@@ -214,10 +229,10 @@ void DisplayLockContext::ProcessQueue() {
   }
 
   if (callbacks_.IsEmpty() && state_ != kSuspended) {
-    if (element_->isConnected()) {
+    if (GetElement()->isConnected()) {
       StartCommit();
     } else {
-      state_ = kDisconnected;
+      MarkAsDisconnected();
     }
   }
 }
@@ -235,8 +250,10 @@ void DisplayLockContext::RejectAndCleanUp() {
   // ancestor tree. Since we're now rejecting the promise and unlocking the
   // element, ensure that we can reach both style and layout subtrees if they
   // are dirty by propagating the bit.
-  MarkAncestorsForStyleRecalcIfNeeded();
-  MarkAncestorsForLayoutIfNeeded();
+  if (weak_element_handle_) {
+    MarkAncestorsForStyleRecalcIfNeeded();
+    MarkAncestorsForLayoutIfNeeded();
+  }
 }
 
 void DisplayLockContext::Resume() {
@@ -250,10 +267,10 @@ void DisplayLockContext::Resume() {
     // - Otherwise, we can start committing.
     if (!callbacks_.IsEmpty()) {
       state_ = kCallbacksPending;
-    } else if (element_->isConnected()) {
+    } else if (GetElement()->isConnected()) {
       StartCommit();
     } else {
-      state_ = kDisconnected;
+      MarkAsDisconnected();
     }
   }
   ScheduleTaskIfNeeded();
@@ -269,6 +286,7 @@ void DisplayLockContext::NotifyWillNotResume() {
   DCHECK_EQ(state_, kSuspended);
   resolver_->Detach();
   resolver_ = nullptr;
+  element_ = nullptr;
 }
 
 void DisplayLockContext::ScheduleTaskIfNeeded() {
@@ -287,16 +305,19 @@ void DisplayLockContext::ScheduleTaskIfNeeded() {
 
 void DisplayLockContext::NotifyConnectedMayHaveChanged() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  if (element_->isConnected()) {
+  if (GetElement()->isConnected()) {
     if (state_ == kDisconnected)
       StartCommit();
+    // Now that we're connected, we can hold a strong reference. See comment on
+    // |element_| in the header.
+    element_ = weak_element_handle_;
     return;
   }
   // All other states should remain as they are. Specifically, if we're
   // acquiring the lock then we should finish doing so; if we're resolving, then
   // we should finish that as well.
   if (state_ == kCommitting)
-    state_ = kDisconnected;
+    MarkAsDisconnected();
 }
 
 bool DisplayLockContext::ShouldStyle() const {
@@ -310,7 +331,7 @@ void DisplayLockContext::DidStyle() {
     return;
 
   // We must have contain: content for display locking.
-  auto* style = element_->GetComputedStyle();
+  auto* style = GetElement()->GetComputedStyle();
   if (!style || !style->ContainsContent()) {
     RejectAndCleanUp();
     return;
@@ -354,7 +375,7 @@ void DisplayLockContext::DidPrePaint() {
 
   // Since we should be under containment, we should have a layer. If we don't,
   // then paint might not happen and we'll never resolve.
-  DCHECK(element_->GetLayoutObject()->HasLayer());
+  DCHECK(GetElement()->GetLayoutObject()->HasLayer());
   if (lifecycle_update_state_ <= kNeedsPrePaint)
     lifecycle_update_state_ = kNeedsPaint;
 }
@@ -391,7 +412,7 @@ void DisplayLockContext::DidAttachLayoutTree() {
   // "contain: content", it might not actually apply the containment (e.g. see
   // ShouldApplyContentContainment()). This confirms that containment should
   // apply.
-  auto* layout_object = element_->GetLayoutObject();
+  auto* layout_object = GetElement()->GetLayoutObject();
   if (!layout_object || !layout_object->ShouldApplyContentContainment())
     RejectAndCleanUp();
 }
@@ -416,26 +437,35 @@ void DisplayLockContext::StartCommit() {
     return;
 
   // Schedule an animation to perform the lifecycle phases.
-  element_->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
-      element_->GetDocument().GetFrame());
+  GetElement()->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
+      GetElement()->GetDocument().GetFrame());
 }
 
 bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
-  if (element_->NeedsStyleRecalc() || element_->ChildNeedsStyleRecalc()) {
-    element_->MarkAncestorsWithChildNeedsStyleRecalc();
+  if (GetElement()->NeedsStyleRecalc() ||
+      GetElement()->ChildNeedsStyleRecalc()) {
+    GetElement()->MarkAncestorsWithChildNeedsStyleRecalc();
     return true;
   }
   return false;
 }
 
 bool DisplayLockContext::MarkAncestorsForLayoutIfNeeded() {
-  if (auto* layout_object = element_->GetLayoutObject()) {
+  if (auto* layout_object = GetElement()->GetLayoutObject()) {
     if (layout_object->NeedsLayout()) {
       layout_object->MarkContainerChainForLayout();
       return true;
     }
   }
   return false;
+}
+
+void DisplayLockContext::MarkAsDisconnected() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  state_ = kDisconnected;
+  // Let go of the strong reference to the element, allowing it to be GCed. See
+  // the comment on |element_| in the header.
+  element_ = nullptr;
 }
 
 }  // namespace blink

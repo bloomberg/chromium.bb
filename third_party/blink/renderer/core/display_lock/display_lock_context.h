@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -22,6 +23,7 @@ class CORE_EXPORT DisplayLockContext final
       public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
+  USING_PRE_FINALIZER(DisplayLockContext, Dispose);
 
  public:
   // Conceptually the states are private, but made public for debugging /
@@ -100,6 +102,7 @@ class CORE_EXPORT DisplayLockContext final
   void DidAttachLayoutTree();
 
  private:
+  friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
 
   // Schedules a new callback. If this is the first callback to be scheduled,
@@ -138,9 +141,45 @@ class CORE_EXPORT DisplayLockContext final
   bool MarkAncestorsForStyleRecalcIfNeeded();
   bool MarkAncestorsForLayoutIfNeeded();
 
+  // Marks the display lock as being disconnected. Note that this removes the
+  // strong reference to the element in case the element is deleted. Once we're
+  // disconnected, there are will be no calls to the context until we reconnect,
+  // so we should allow for the element to get GCed meanwhile.
+  void MarkAsDisconnected();
+
+  // Returns the element asserting that it exists.
+  ALWAYS_INLINE Element* GetElement() const {
+    DCHECK(weak_element_handle_);
+    return weak_element_handle_;
+  }
+
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
+
+  // Note that we hold both a weak and a strong reference to the element. The
+  // strong reference is sometimes set to nullptr, meaning that we can GC it if
+  // nothing else is holding a strong reference. We use weak_element_handle_ to
+  // detect such a case so that we don't also keep the context alive needlessly.
+  //
+  // We need a strong reference, since the element can be accessed from script
+  // via this context. Specifically DisplayLockContext::lockedElement() returns
+  // the element to script. This means that callbacks pending in the context can
+  // actually append the element to the tree. This means a strong reference is
+  // needed to prevent GC from destroying the element.
+  //
+  // However, once we're in kDisconnected state, it means that we have no
+  // callbacks pending and we haven't been connected to the DOM tree. It's also
+  // possible that the script has lost the reference to the locked element. This
+  // means the element should be GCed, so we need to let go of the strong
+  // reference. If we don't, we can cause a leak of an element and a display
+  // lock context.
+  //
+  // In case the script did not lose the element handle and will connect it in
+  // the future, we do retain a weak handle. We also use the weak handle to
+  // check if the element was destroyed for the purposes of allowing this
+  // context to be GCed as well.
   Member<Element> element_;
+  WeakMember<Element> weak_element_handle_;
 
   bool process_queue_task_scheduled_ = false;
   unsigned suspended_count_ = 0;
