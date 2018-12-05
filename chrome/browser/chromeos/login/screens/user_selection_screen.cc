@@ -39,6 +39,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/components/proximity_auth/smart_lock_metrics_recorder.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -728,6 +729,10 @@ void UserSelectionScreen::AttemptEasySignin(const AccountId& account_id,
   if (LoginDisplayHost::default_host()) {
     LoginDisplayHost::default_host()->GetLoginDisplay()->delegate()->Login(
         user_context, SigninSpecifics());
+  } else {
+    SmartLockMetricsRecorder::RecordAuthResultSignInFailure(
+        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+            kLoginDisplayHostDoesNotExist);
   }
 }
 

@@ -64,6 +64,15 @@ PrefService* GetLocalState() {
   return g_browser_process ? g_browser_process->local_state() : NULL;
 }
 
+void RecordAuthResultFailure(
+    EasyUnlockAuthAttempt::Type auth_attempt_type,
+    SmartLockMetricsRecorder::SmartLockAuthResultFailureReason failure_reason) {
+  if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK)
+    SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(failure_reason);
+  else if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_SIGNIN)
+    SmartLockMetricsRecorder::RecordAuthResultSignInFailure(failure_reason);
+}
+
 }  // namespace
 
 // static
@@ -360,30 +369,28 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
                                 : EasyUnlockAuthAttempt::TYPE_SIGNIN;
   if (auth_attempt_) {
     PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
-    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
-      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
-          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-              kAlreadyAttemptingAuth);
-    }
+    RecordAuthResultFailure(
+        auth_attempt_type,
+        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+            kAlreadyAttemptingAuth);
     return;
   }
 
   if (!GetAccountId().is_valid()) {
     PA_LOG(ERROR) << "Empty user account. Auth attempt failed.";
-    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
-      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
-          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-              kEmptyUserAccount);
-    }
+    RecordAuthResultFailure(
+        auth_attempt_type,
+        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+            kEmptyUserAccount);
     return;
   }
 
   if (GetAccountId() != account_id) {
-    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
-      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
-          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-              kInvalidAccoundId);
-    }
+    RecordAuthResultFailure(
+        auth_attempt_type,
+        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+            kInvalidAccoundId);
+
     PA_LOG(ERROR) << "Check failed: " << GetAccountId().Serialize() << " vs "
                   << account_id.Serialize();
     return;
@@ -391,11 +398,10 @@ void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
 
   auth_attempt_.reset(new EasyUnlockAuthAttempt(account_id, auth_attempt_type));
   if (!auth_attempt_->Start()) {
-    if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK) {
-      SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
-          SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
-              kAuthAttemptCannotStart);
-    }
+    RecordAuthResultFailure(
+        auth_attempt_type,
+        SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+            kAuthAttemptCannotStart);
     auth_attempt_.reset();
   }
 
@@ -441,6 +447,10 @@ void EasyUnlockService::FinalizeSignin(const std::string& key) {
 }
 
 void EasyUnlockService::HandleAuthFailure(const AccountId& account_id) {
+  SmartLockMetricsRecorder::RecordAuthResultSignInFailure(
+      SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
+          kUserControllerSignInFailure);
+
   if (account_id != GetAccountId())
     return;
 
