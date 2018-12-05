@@ -251,8 +251,6 @@ const TestParams kAppListViewFocusTestParams[] = {
     {true, true},
 };
 
-// TODO(weidongg/766807) Remove all old focus tests after the flag is enabled
-// by default.
 class AppListViewFocusTest : public views::ViewsTestBase,
                              public testing::WithParamInterface<TestParams> {
  public:
