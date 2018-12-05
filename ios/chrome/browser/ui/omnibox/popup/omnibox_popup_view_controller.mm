@@ -559,8 +559,17 @@ UIColor* BackgroundColorIncognito() {
   if (!scrollView.dragging)
     return;
 
+  if (!_currentResult.count) {
+    // No need to dismiss the keyboard when there are no results.
+    return;
+  }
+
+  // TODO(crbug.com/911534): The following call chain ultimately just dismisses
+  // the keyboard, but involves many layers of plumbing, and should be
+  // refactored.
   if (self.forwardsScrollEvents)
     [self.delegate autocompleteResultConsumerDidScroll:self];
+
   for (OmniboxPopupRow* row in _rows) {
     row.highlighted = NO;
   }
