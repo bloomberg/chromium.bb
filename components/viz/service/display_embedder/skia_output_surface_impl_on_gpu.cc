@@ -265,6 +265,7 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(OutputSurfaceFrame frame) {
     latency.AddLatencyNumberWithTimestamp(
         ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, swap_end, 1);
   }
+  latency_tracker_.OnGpuSwapBuffersCompleted(frame.latency_info);
 }
 
 void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(

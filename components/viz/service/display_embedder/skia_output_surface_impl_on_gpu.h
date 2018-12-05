@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_ON_GPU_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_ON_GPU_H_
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -19,6 +23,7 @@
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "ui/latency/latency_tracker.h"
 
 class SkDeferredDisplayList;
 
@@ -171,6 +176,8 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   base::circular_deque<std::pair<uint64_t, gfx::Size>>
       pending_swap_completed_params_;
   uint64_t swap_id_ = 0;
+
+  ui::LatencyTracker latency_tracker_;
 
   THREAD_CHECKER(thread_checker_);
 
