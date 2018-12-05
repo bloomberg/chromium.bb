@@ -18,23 +18,16 @@
 namespace blink {
 
 // Parses and stores mappings from part name to ordered set of part names as in
-// http://drafts.csswg.org/css-shadow-parts/ (with modifications).
+// http://drafts.csswg.org/css-shadow-parts/.
 // TODO(crbug/805271): Deduplicate identical maps as SpaceSplitString does so
-// that elements with identical partmap attributes share instances.
+// that elements with identical exportparts attributes share instances.
 class CORE_EXPORT NamesMap {
  public:
   NamesMap() = default;
   explicit NamesMap(const AtomicString& string);
 
   // Clears any existing mapping, parses the string and sets the mapping from
-  // that.  This implements a modified version from the spec, where the key is
-  // first and the value is second and "=>" is not used to separate key and
-  // value. It also allows an ident token on its own as a short-hand for
-  // forwarding with the same name. So "a b, a c, d e, f" becomes
-  //
-  // a: {b, c}
-  // d: {e}
-  // f: {f}
+  // that.
   void Set(const AtomicString&);
   void Clear() { data_.clear(); };
   // Inserts value into the ordered set under key.
