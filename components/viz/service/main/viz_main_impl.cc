@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
@@ -15,9 +14,8 @@
 #include "build/build_config.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
-#include "gpu/config/gpu_preferences.h"
-#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
+#include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "media/gpu/buildflags.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
@@ -25,10 +23,6 @@
 #include "services/metrics/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
-
-#if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi/vaapi_wrapper.h"
-#endif
 
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
@@ -74,38 +68,14 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       gpu_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       associated_binding_(this) {
+  DCHECK(gpu_init_);
+
   // TODO(crbug.com/609317): Remove this when Mus Window Server and GPU are
   // split into separate processes. Until then this is necessary to be able to
   // run Mushrome (chrome with mus) with Mus running in the browser process.
   if (!base::PowerMonitor::Get()) {
     power_monitor_ = std::make_unique<base::PowerMonitor>(
         std::make_unique<base::PowerMonitorDeviceSource>());
-  }
-
-  if (!gpu_init_) {
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    gpu::GpuPreferences gpu_preferences;
-    if (command_line->HasSwitch(switches::kGpuPreferences)) {
-      std::string value =
-          command_line->GetSwitchValueASCII(switches::kGpuPreferences);
-      bool success = gpu_preferences.FromSwitchValue(value);
-      CHECK(success);
-    }
-#if defined(OS_CHROMEOS) && BUILDFLAG(USE_VAAPI)
-    // Initialize media codec. The UI service is running in a priviliged
-    // process. We don't need care when to initialize media codec. When we have
-    // a separate GPU (or VIZ) service process, we should initialize them
-    // before sandboxing
-    media::VaapiWrapper::PreSandboxInitialization();
-#endif
-
-    // Initialize GpuInit before starting the IO or compositor threads.
-    gpu_init_ = std::make_unique<gpu::GpuInit>();
-    gpu_init_->set_sandbox_helper(this);
-
-    // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
-    // split into a separate process.
-    gpu_init_->InitializeInProcess(command_line, gpu_preferences);
   }
 
   if (!dependencies_.io_thread_task_runner)
@@ -293,18 +263,6 @@ void VizMainImpl::ExitProcess() {
   } else {
     delegate_->QuitMainMessageLoop();
   }
-}
-
-void VizMainImpl::PreSandboxStartup() {
-  // TODO(sad): https://crbug.com/645602
-}
-
-bool VizMainImpl::EnsureSandboxInitialized(
-    gpu::GpuWatchdogThread* watchdog_thread,
-    const gpu::GPUInfo* gpu_info,
-    const gpu::GpuPreferences& gpu_prefs) {
-  // TODO(sad): https://crbug.com/645602
-  return true;
 }
 
 }  // namespace viz

@@ -13,6 +13,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/gpu_host_impl_test_api.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "services/ws/gpu_host/gpu_host_delegate.h"
 #include "services/ws/gpu_host/gpu_host_test_api.h"
 #include "services/ws/public/mojom/gpu.mojom.h"

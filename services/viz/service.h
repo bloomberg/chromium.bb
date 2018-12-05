@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIZ_SERVICE_H_
 #define SERVICES_VIZ_SERVICE_H_
 
+#include "gpu/ipc/service/gpu_init.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -15,7 +16,7 @@ namespace viz {
 
 class VizMainImpl;
 
-class Service : public service_manager::Service {
+class Service : public service_manager::Service, public gpu::GpuSandboxHelper {
  public:
   explicit Service(service_manager::mojom::ServiceRequest request);
   ~Service() override;
@@ -28,6 +29,12 @@ class Service : public service_manager::Service {
   void OnBindInterface(const service_manager::BindSourceInfo& source_info,
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override;
+
+  // gpu::GpuSandboxHelper:
+  void PreSandboxStartup() override;
+  bool EnsureSandboxInitialized(gpu::GpuWatchdogThread* watchdog_thread,
+                                const gpu::GPUInfo* gpu_info,
+                                const gpu::GpuPreferences& gpu_prefs) override;
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;

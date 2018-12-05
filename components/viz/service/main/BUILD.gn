@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//components/ui_devtools/devtools.gni")
-import("//media/gpu/args.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
@@ -32,7 +31,6 @@ source_set("main") {
     "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//ipc",
-    "//media/gpu:buildflags",
     "//mojo/public/cpp/system",
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/mojom",
@@ -52,10 +50,6 @@ source_set("main") {
 
   if (is_chromeos) {
     deps += [ "//media/gpu" ]
-  }
-
-  if (use_vaapi) {
-    deps += [ "//media/gpu/vaapi" ]
   }
 
   if (use_viz_devtools) {
