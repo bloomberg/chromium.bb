@@ -1,5 +1,7 @@
 <html>
   <head>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
     <style>
       #a {
         background-color: red;
@@ -17,22 +19,15 @@
       }
     </style>
     <script>
-      if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-      }
+      const testObject = async_test("Removed transition on #b doesn't affect transition on #a");
 
-      function endTest() {
-        if (window.testRunner) {
-          testRunner.notifyDone();
-        }
-      }
-      
       function startTest() {
         var a = document.getElementById("a");
         var b = document.getElementById("b");
-        a.addEventListener("transitionend", endTest, false);
-        
+        a.addEventListener("transitionend", testObject.step_func_done(() => {
+          assert_equals(getComputedStyle(a).height, "0px");
+        }));
+
         // Trigger transitions.
         a.style.height = "0px";
         b.style.transform = "translateX(10px)";
