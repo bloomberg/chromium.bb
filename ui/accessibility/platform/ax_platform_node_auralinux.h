@@ -89,6 +89,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnSelected();
   void OnValueChanged();
 
+  bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
 
   // AXPlatformNode overrides.

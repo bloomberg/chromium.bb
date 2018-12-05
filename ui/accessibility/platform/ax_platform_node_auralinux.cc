@@ -20,6 +20,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_mode_observer.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
@@ -963,10 +964,204 @@ static const GInterfaceInfo TextInfo = {
     reinterpret_cast<GInterfaceInitFunc>(AXTextInterfaceBaseInit), nullptr,
     nullptr};
 
+//
+// AtkWindow interface.
+//
 static void AXWindowInterfaceBaseInit(AtkWindowIface* iface) {}
 
 static const GInterfaceInfo WindowInfo = {
     reinterpret_cast<GInterfaceInitFunc>(AXWindowInterfaceBaseInit), nullptr,
+    nullptr};
+
+//
+// AtkSelection interface.
+//
+static gboolean AXPlatformNodeAuraLinuxAddSelection(AtkSelection* selection,
+                                                    gint index) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return FALSE;
+  if (index < 0 || index >= obj->GetChildCount())
+    return FALSE;
+
+  AXPlatformNodeAuraLinux* child =
+      AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(index));
+  DCHECK(child);
+
+  if (!child->SupportsSelectionWithAtkSelection())
+    return FALSE;
+
+  bool selected = child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+  if (selected)
+    return TRUE;
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kDoDefault;
+  return child->GetDelegate()->AccessibilityPerformAction(data);
+}
+
+static gboolean AXPlatformNodeAuraLinuxClearSelection(AtkSelection* selection) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return FALSE;
+
+  int child_count = obj->GetChildCount();
+  bool success = true;
+  for (int i = 0; i < child_count; ++i) {
+    AXPlatformNodeAuraLinux* child =
+        AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
+    DCHECK(child);
+
+    if (!child->SupportsSelectionWithAtkSelection())
+      continue;
+
+    bool selected =
+        child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+    if (!selected)
+      continue;
+
+    AXActionData data;
+    data.action = ax::mojom::Action::kDoDefault;
+    success = success && child->GetDelegate()->AccessibilityPerformAction(data);
+  }
+
+  return success;
+}
+
+static AtkObject* AXPlatformNodeAuraLinuxRefSelection(
+    AtkSelection* selection,
+    gint requested_child_index) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return nullptr;
+
+  int child_count = obj->GetChildCount();
+  gint selected_count = 0;
+  for (int i = 0; i < child_count; ++i) {
+    AtkObject* child = obj->ChildAtIndex(i);
+    AXPlatformNodeAuraLinux* child_ax_node =
+        AtkObjectToAXPlatformNodeAuraLinux(child);
+    DCHECK(child_ax_node);
+
+    if (child_ax_node->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected)) {
+      if (selected_count == requested_child_index)
+        return static_cast<AtkObject*>(g_object_ref(child));
+      ++selected_count;
+    }
+  }
+
+  return nullptr;
+}
+
+static gint AXPlatformNodeAuraLinuxGetSelectionCount(AtkSelection* selection) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return 0;
+
+  int child_count = obj->GetChildCount();
+  gint selected_count = 0;
+  for (int i = 0; i < child_count; ++i) {
+    AXPlatformNodeAuraLinux* child =
+        AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
+    DCHECK(child);
+
+    if (child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+      ++selected_count;
+  }
+
+  return selected_count;
+}
+
+static gboolean AXPlatformNodeAuraLinuxIsChildSelected(AtkSelection* selection,
+                                                       gint index) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return FALSE;
+  if (index < 0 || index >= obj->GetChildCount())
+    return FALSE;
+
+  AXPlatformNodeAuraLinux* child =
+      AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(index));
+  DCHECK(child);
+  return child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+}
+
+static gboolean AXPlatformNodeAuraLinuxRemoveSelection(
+    AtkSelection* selection,
+    gint index_into_selected_children) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+
+  int child_count = obj->GetChildCount();
+  for (int i = 0; i < child_count; ++i) {
+    AXPlatformNodeAuraLinux* child =
+        AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
+    DCHECK(child);
+
+    bool selected =
+        child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+    if (selected && index_into_selected_children == 0) {
+      if (!child->SupportsSelectionWithAtkSelection())
+        return FALSE;
+
+      AXActionData data;
+      data.action = ax::mojom::Action::kDoDefault;
+      return child->GetDelegate()->AccessibilityPerformAction(data);
+    } else if (selected) {
+      index_into_selected_children--;
+    }
+  }
+
+  return FALSE;
+}
+
+static gboolean AXPlatformNodeAuraLinuxSelectAllSelection(
+    AtkSelection* selection) {
+  AXPlatformNodeAuraLinux* obj =
+      AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(selection));
+  if (!obj)
+    return FALSE;
+
+  int child_count = obj->GetChildCount();
+  bool success = true;
+  for (int i = 0; i < child_count; ++i) {
+    AXPlatformNodeAuraLinux* child =
+        AtkObjectToAXPlatformNodeAuraLinux(obj->ChildAtIndex(i));
+    DCHECK(child);
+
+    if (!child->SupportsSelectionWithAtkSelection())
+      continue;
+
+    bool selected =
+        child->GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+    if (selected)
+      continue;
+
+    AXActionData data;
+    data.action = ax::mojom::Action::kDoDefault;
+    success = success && child->GetDelegate()->AccessibilityPerformAction(data);
+  }
+
+  return success;
+}
+
+static void AXSelectionInterfaceBaseInit(AtkSelectionIface* iface) {
+  iface->add_selection = AXPlatformNodeAuraLinuxAddSelection;
+  iface->clear_selection = AXPlatformNodeAuraLinuxClearSelection;
+  iface->ref_selection = AXPlatformNodeAuraLinuxRefSelection;
+  iface->get_selection_count = AXPlatformNodeAuraLinuxGetSelectionCount;
+  iface->is_child_selected = AXPlatformNodeAuraLinuxIsChildSelected;
+  iface->remove_selection = AXPlatformNodeAuraLinuxRemoveSelection;
+  iface->select_all_selection = AXPlatformNodeAuraLinuxSelectAllSelection;
+}
+
+static const GInterfaceInfo SelectionInfo = {
+    reinterpret_cast<GInterfaceInitFunc>(AXSelectionInterfaceBaseInit), nullptr,
     nullptr};
 
 //
@@ -1167,6 +1362,9 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (role == ATK_ROLE_FRAME)
     interface_mask |= 1 << ATK_WINDOW_INTERFACE;
 
+  if (IsContainerWithSelectableChildren(GetData().role))
+    interface_mask |= 1 << ATK_SELECTION_INTERFACE;
+
   return interface_mask;
 }
 
@@ -1210,6 +1408,8 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
     g_type_add_interface_static(type, ATK_TYPE_TEXT, &TextInfo);
   if (interface_mask_ & (1 << ATK_WINDOW_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_WINDOW, &WindowInfo);
+  if (interface_mask_ & (1 << ATK_SELECTION_INTERFACE))
+    g_type_add_interface_static(type, ATK_TYPE_SELECTION, &SelectionInfo);
 
   return type;
 }
@@ -2031,6 +2231,11 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   }
 
   return false;
+}
+
+bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
+  return SupportsToggle(GetData().role) ||
+         GetData().role == ax::mojom::Role::kListBoxOption;
 }
 
 void AXPlatformNodeAuraLinux::OnValueChanged() {

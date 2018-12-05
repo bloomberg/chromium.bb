@@ -194,6 +194,19 @@ void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
   node->SetData(new_data);
 }
 
+void TestAXNodeWrapper::ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute,
+                                             bool value) {
+  AXNodeData new_data = GetData();
+  std::vector<std::pair<ax::mojom::BoolAttribute, bool>>& attributes =
+      new_data.bool_attributes;
+
+  base::EraseIf(attributes,
+                [attribute](auto& pair) { return pair.first == attribute; });
+
+  new_data.AddBoolAttribute(attribute, value);
+  node_->SetData(new_data);
+}
+
 int TestAXNodeWrapper::GetTableRowCount() const {
   return node_->GetTableRowCount();
 }
@@ -259,6 +272,13 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
     auto offset = node_->data().relative_bounds.bounds.OffsetFromOrigin();
     g_offset = gfx::Vector2d(-offset.x(), -offset.y());
     return true;
+  }
+
+  if (GetData().role == ax::mojom::Role::kListBoxOption &&
+      data.action == ax::mojom::Action::kDoDefault) {
+    bool current_value =
+        GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kSelected);
+    ReplaceBoolAttribute(ax::mojom::BoolAttribute::kSelected, !current_value);
   }
 
   if (data.action == ax::mojom::Action::kSetSelection) {

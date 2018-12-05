@@ -65,6 +65,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   void ReplaceIntAttribute(int32_t node_id,
                            ax::mojom::IntAttribute attribute,
                            int32_t value);
+  void ReplaceBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
 
   TestAXNodeWrapper* HitTestSyncInternal(int x, int y);
 
