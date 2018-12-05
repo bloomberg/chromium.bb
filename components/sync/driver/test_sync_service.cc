@@ -59,6 +59,10 @@ void TestSyncService::SetAuthenticatedAccountInfo(
   account_info_ = account_info;
 }
 
+void TestSyncService::SetSetupInProgress(bool in_progress) {
+  setup_in_progress_ = in_progress;
+}
+
 void TestSyncService::SetIsAuthenticatedAccountPrimary(bool is_primary) {
   account_is_primary_ = is_primary;
 }
@@ -93,6 +97,20 @@ void TestSyncService::SetEmptyLastCycleSnapshot() {
 
 void TestSyncService::SetNonEmptyLastCycleSnapshot() {
   SetLastCycleSnapshot(MakeDefaultCycleSnapshot());
+}
+
+void TestSyncService::SetDetailedSyncStatus(bool engine_available,
+                                            SyncStatus status) {
+  detailed_sync_status_engine_available_ = engine_available;
+  detailed_sync_status_ = status;
+}
+
+void TestSyncService::SetPassphraseRequired(bool required) {
+  passphrase_required_ = required;
+}
+
+void TestSyncService::SetPassphraseRequiredForDecryption(bool required) {
+  passphrase_required_for_decryption_ = required;
 }
 
 SyncUserSettings* TestSyncService::GetUserSettings() {
@@ -133,7 +151,7 @@ TestSyncService::GetSetupInProgressHandle() {
 }
 
 bool TestSyncService::IsSetupInProgress() const {
-  return false;
+  return setup_in_progress_;
 }
 
 ModelTypeSet TestSyncService::GetPreferredDataTypes() const {
@@ -163,7 +181,7 @@ bool TestSyncService::HasObserver(const SyncServiceObserver* observer) const {
 }
 
 bool TestSyncService::IsPassphraseRequiredForDecryption() const {
-  return false;
+  return passphrase_required_for_decryption_;
 }
 
 base::Time TestSyncService::GetExplicitPassphraseTime() const {
@@ -203,7 +221,8 @@ SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
 }
 
 bool TestSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
-  return false;
+  *result = detailed_sync_status_;
+  return detailed_sync_status_engine_available_;
 }
 
 base::Time TestSyncService::GetLastSyncedTime() const {
@@ -252,7 +271,7 @@ void TestSyncService::GetAllNodes(
 void TestSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
 
 bool TestSyncService::IsPassphraseRequired() const {
-  return false;
+  return passphrase_required_;
 }
 
 ModelTypeSet TestSyncService::GetEncryptedDataTypes() const {
