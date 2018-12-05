@@ -59,7 +59,8 @@ bool ShouldShowCookieException(Profile* profile) {
     // TODO(http://crbug.com/890796): Migrate this part once sync_ui_util has
     // been migrated to the IdentityManager.
     sync_ui_util::MessageType sync_status = sync_ui_util::GetStatus(
-        profile, ProfileSyncServiceFactory::GetForProfile(profile),
+        profile,
+        ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile),
         *SigninManagerFactory::GetForProfile(profile));
     return sync_status == sync_ui_util::SYNCED;
   }

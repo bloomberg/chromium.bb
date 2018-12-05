@@ -11,11 +11,9 @@
 #include <string>
 #include <utility>
 
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "content/public/browser/browser_task_traits.h"
-
-#include "base/task/post_task.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/plugins/plugin_data_remover_helper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
@@ -29,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "extensions/common/error_utils.h"
@@ -131,8 +130,8 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 // Returns true if Sync is currently running (i.e. enabled and not in error).
 bool IsSyncRunning(Profile* profile) {
-  browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   sync_ui_util::MessageType sync_status =
