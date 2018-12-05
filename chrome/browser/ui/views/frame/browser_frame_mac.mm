@@ -251,6 +251,40 @@ void BrowserFrameMac::ValidateUserInterfaceItem(
   }
 }
 
+bool BrowserFrameMac::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder) {
+  Browser* browser = browser_view_->browser();
+
+  if (is_before_first_responder) {
+    // The specification for this private extensions API is incredibly vague.
+    // For now, we avoid triggering chrome commands prior to giving the
+    // firstResponder a chance to handle the event.
+    if (extensions::GlobalShortcutListener::GetInstance()
+            ->IsShortcutHandlingSuspended()) {
+      return false;
+    }
+
+    // If a command is reserved, then we also have it bypass the main menu.
+    // This is based on the rough approximation that reserved commands are
+    // also the ones that we want to be quickly repeatable.
+    // https://crbug.com/836947.
+    // The function IsReservedCommandOrKey does not examine its event argument
+    // on macOS.
+    content::NativeWebKeyboardEvent dummy_event(blink::WebInputEvent::kKeyDown,
+                                                0, base::TimeTicks());
+    if (!browser->command_controller()->IsReservedCommandOrKey(command,
+                                                               dummy_event)) {
+      return false;
+    }
+  }
+
+  chrome::ExecuteCommandWithDisposition(browser, command,
+                                        window_open_disposition);
+  return true;
+}
+
 void BrowserFrameMac::InitNativeWidget(
     const views::Widget::InitParams& params) {
   views::NativeWidgetMac::InitNativeWidget(params);

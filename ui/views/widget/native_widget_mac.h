@@ -6,6 +6,7 @@
 #define UI_VIEWS_WIDGET_NATIVE_WIDGET_MAC_H_
 
 #include "base/macros.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/native_widget_private.h"
 
@@ -69,6 +70,15 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   virtual void ValidateUserInterfaceItem(
       int32_t command,
       views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result) {}
+
+  // Execute the chrome command |command| with |window_open_disposition|. If
+  // |is_before_first_responder| then only call ExecuteCommand if the command
+  // is reserved and extension shortcut handling is not suspended. Returns in
+  // |was_executed| whether or not ExecuteCommand was called (regardless of what
+  // the return value for ExecuteCommand was).
+  virtual bool ExecuteCommand(int32_t command,
+                              WindowOpenDisposition window_open_disposition,
+                              bool is_before_first_responder);
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override;

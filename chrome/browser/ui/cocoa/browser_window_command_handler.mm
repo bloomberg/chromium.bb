@@ -42,13 +42,15 @@ void SetToggleState(bool toggled, id item) {
 // Some senders don't have this problem (for example, menus only operate on the
 // foreground window), so this is only an issue for senders that are part of
 // windows.
-Browser* FindBrowserForSender(id sender, NSWindow* window) {
+views::BridgedNativeWidgetImpl* FindBridgeForSender(id sender,
+                                                    NSWindow* window) {
   NSWindow* targetWindow = window;
   if ([sender respondsToSelector:@selector(window)])
     targetWindow = [sender window];
-  Browser* browser = chrome::FindBrowserWithWindow(targetWindow);
-  DCHECK(browser);
-  return browser;
+  auto* bridge =
+      views::BridgedNativeWidgetImpl::GetFromNativeWindow(targetWindow);
+  DCHECK(bridge);
+  return bridge;
 }
 
 }  // namespace
@@ -97,7 +99,12 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
 - (void)commandDispatch:(id)sender window:(NSWindow*)window {
   DCHECK(sender);
   int command = [sender tag];
-  chrome::ExecuteCommand(FindBrowserForSender(sender, window), command);
+  bool was_executed = false;
+  FindBridgeForSender(sender, window)
+      ->host()
+      ->ExecuteCommand(command, WindowOpenDisposition::CURRENT_TAB,
+                       false /* is_before_first_responder */, &was_executed);
+  DCHECK(was_executed);
 }
 
 - (void)commandDispatchUsingKeyModifiers:(id)sender window:(NSWindow*)window {
@@ -123,10 +130,15 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
     // the background" in this case.
     modifierFlags &= ~NSCommandKeyMask;
   }
-  chrome::ExecuteCommandWithDisposition(
-      FindBrowserForSender(sender, window), command,
-      ui::WindowOpenDispositionFromNSEventWithFlags([NSApp currentEvent],
-                                                    modifierFlags));
+
+  bool was_executed = false;
+  FindBridgeForSender(sender, window)
+      ->host()
+      ->ExecuteCommand(command,
+                       ui::WindowOpenDispositionFromNSEventWithFlags(
+                           [NSApp currentEvent], modifierFlags),
+                       false /* is_before_first_responder */, &was_executed);
+  DCHECK(was_executed);
 }
 
 @end

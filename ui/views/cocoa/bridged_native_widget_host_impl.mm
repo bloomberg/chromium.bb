@@ -900,6 +900,16 @@ bool BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
   return true;
 }
 
+bool BridgedNativeWidgetHostImpl::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder,
+    bool* was_executed) {
+  *was_executed = native_widget_mac_->ExecuteCommand(
+      command, window_open_disposition, is_before_first_responder);
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidgetHostImpl,
 // views_bridge_mac::mojom::BridgedNativeWidgetHost synchronous callbacks:
@@ -1034,6 +1044,17 @@ void BridgedNativeWidgetHostImpl::ValidateUserInterfaceItem(
   views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr result;
   ValidateUserInterfaceItem(command, &result);
   std::move(callback).Run(std::move(result));
+}
+
+void BridgedNativeWidgetHostImpl::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder,
+    ExecuteCommandCallback callback) {
+  bool was_executed = false;
+  ExecuteCommand(command, window_open_disposition, is_before_first_responder,
+                 &was_executed);
+  std::move(callback).Run(was_executed);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
