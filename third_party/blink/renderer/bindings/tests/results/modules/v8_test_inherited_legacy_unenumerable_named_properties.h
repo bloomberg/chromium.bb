@@ -25,6 +25,8 @@
 
 namespace blink {
 
+MODULES_EXPORT extern const WrapperTypeInfo v8_test_inherited_legacy_unenumerable_named_properties_wrapper_type_info;
+
 class V8TestInheritedLegacyUnenumerableNamedProperties {
   STATIC_ONLY(V8TestInheritedLegacyUnenumerableNamedProperties);
  public:
@@ -35,7 +37,11 @@ class V8TestInheritedLegacyUnenumerableNamedProperties {
     return ToScriptWrappable(object)->ToImpl<TestInheritedLegacyUnenumerableNamedProperties>();
   }
   MODULES_EXPORT static TestInheritedLegacyUnenumerableNamedProperties* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  MODULES_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  MODULES_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_inherited_legacy_unenumerable_named_properties_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

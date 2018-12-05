@@ -24,6 +24,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_test_special_operations_not_enumerable_wrapper_type_info;
+
 class V8TestSpecialOperationsNotEnumerable {
   STATIC_ONLY(V8TestSpecialOperationsNotEnumerable);
  public:
@@ -34,7 +36,11 @@ class V8TestSpecialOperationsNotEnumerable {
     return ToScriptWrappable(object)->ToImpl<TestSpecialOperationsNotEnumerable>();
   }
   CORE_EXPORT static TestSpecialOperationsNotEnumerable* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_special_operations_not_enumerable_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

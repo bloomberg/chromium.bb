@@ -535,7 +535,7 @@ static void {{method.camel_case_name}}OriginSafeMethodGetter{{world_suffix}}(con
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
-      data->FindInterfaceTemplate(world, &{{v8_class}}::wrapper_type_info);
+      data->FindInterfaceTemplate(world, {{v8_class}}::GetWrapperTypeInfo());
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
@@ -618,7 +618,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
                                        if constructor.is_named_constructor else
                                        '') %}
 v8::Local<v8::Object> wrapper = info.Holder();
-wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &{{constructor_class}}::wrapper_type_info, wrapper);
+wrapper = impl->AssociateWithWrapper(info.GetIsolate(), {{constructor_class}}::GetWrapperTypeInfo(), wrapper);
 V8SetReturnValue(info, wrapper);
 {% endmacro %}
 

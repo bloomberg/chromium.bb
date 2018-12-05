@@ -20,7 +20,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo {{v8_class}}::wrapper_type_info = {
+const WrapperTypeInfo {{snake_case_v8_class}}_wrapper_type_info = {
     gin::kEmbedderBlink,
     {{v8_class}}::DomTemplate,
     nullptr,
@@ -42,7 +42,7 @@ static void Install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(
       isolate, interface_template,
-      {{v8_class}}::wrapper_type_info.interface_name,
+      {{v8_class}}::GetWrapperTypeInfo()->interface_name,
       v8::Local<v8::FunctionTemplate>(),
       kV8DefaultWrapperInternalFieldCount);
   interface_template->SetLength(0);
@@ -59,7 +59,7 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::DomTemplate(v8::Isolate* isolate, 
   return V8DOMConfiguration::DomClassTemplate(
       isolate,
       world,
-      const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      const_cast<WrapperTypeInfo*>(GetWrapperTypeInfo()),
       Install{{v8_class}}Template);
 }
 {% endif %}{# is_legacy_callback_interface #}

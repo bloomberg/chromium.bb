@@ -35,7 +35,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-WrapperTypeInfo V8TestInterface2::wrapper_type_info = {
+WrapperTypeInfo v8_test_interface_2_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterface2::DomTemplate,
     nullptr,
@@ -52,7 +52,7 @@ WrapperTypeInfo V8TestInterface2::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterface2.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterface2::wrapper_type_info_ = V8TestInterface2::wrapper_type_info;
+const WrapperTypeInfo& TestInterface2::wrapper_type_info_ = v8_test_interface_2_wrapper_type_info;
 
 // [ActiveScriptWrappable]
 static_assert(
@@ -337,7 +337,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestInterface2* impl = TestInterface2::Create();
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterface2::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestInterface2::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -746,7 +746,7 @@ void V8TestInterface2::InstallV8TestInterface2Template(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterface2::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterface2::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterface2::kInternalFieldCount);
   interface_template->SetCallHandler(test_interface_2_v8_internal::ConstructorCallback);
   interface_template->SetLength(0);
 
@@ -828,18 +828,18 @@ void V8TestInterface2::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterface2::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterface2::GetWrapperTypeInfo()),
       V8TestInterface2::install_v8_test_interface_2_template_function_);
 }
 
 bool V8TestInterface2::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterface2::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterface2::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterface2::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterface2* V8TestInterface2::ToImplWithTypeCheck(
@@ -878,7 +878,7 @@ void V8TestInterface2::UpdateWrapperTypeInfo(
       install_runtime_enabled_features_on_template_function;
 
   if (install_conditional_features_function) {
-    V8TestInterface2::wrapper_type_info.install_conditional_features_function =
+    V8TestInterface2::GetWrapperTypeInfo()->install_conditional_features_function =
         install_conditional_features_function;
   }
 }

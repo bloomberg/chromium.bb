@@ -32,7 +32,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestConstants::wrapper_type_info = {
+const WrapperTypeInfo v8_test_constants_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestConstants::DomTemplate,
     nullptr,
@@ -49,7 +49,7 @@ const WrapperTypeInfo V8TestConstants::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestConstants.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestConstants::wrapper_type_info_ = V8TestConstants::wrapper_type_info;
+const WrapperTypeInfo& TestConstants::wrapper_type_info_ = v8_test_constants_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -87,7 +87,7 @@ static void InstallV8TestConstantsTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestConstants::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestConstants::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestConstants::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestConstants::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -215,9 +215,9 @@ void V8TestConstants::InstallFeatureName1(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      &V8TestConstants::wrapper_type_info);
+      V8TestConstants::GetWrapperTypeInfo());
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      &V8TestConstants::wrapper_type_info);
+      V8TestConstants::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
   InstallFeatureName1(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
@@ -246,9 +246,9 @@ void V8TestConstants::InstallFeatureName2(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      &V8TestConstants::wrapper_type_info);
+      V8TestConstants::GetWrapperTypeInfo());
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      &V8TestConstants::wrapper_type_info);
+      V8TestConstants::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
   InstallFeatureName2(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }
@@ -260,18 +260,18 @@ void V8TestConstants::InstallFeatureName2(ScriptState* script_state) {
 v8::Local<v8::FunctionTemplate> V8TestConstants::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestConstants::GetWrapperTypeInfo()),
       InstallV8TestConstantsTemplate);
 }
 
 bool V8TestConstants::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestConstants::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestConstants::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestConstants::GetWrapperTypeInfo(), v8_value);
 }
 
 TestConstants* V8TestConstants::ToImplWithTypeCheck(

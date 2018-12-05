@@ -25,6 +25,9 @@
 namespace blink {
 
 class ScriptState;
+
+CORE_EXPORT extern const WrapperTypeInfo v8_test_constants_wrapper_type_info;
+
 class V8TestConstants {
   STATIC_ONLY(V8TestConstants);
  public:
@@ -35,7 +38,11 @@ class V8TestConstants {
     return ToScriptWrappable(object)->ToImpl<TestConstants>();
   }
   CORE_EXPORT static TestConstants* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_constants_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   static void InstallFeatureName1(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);

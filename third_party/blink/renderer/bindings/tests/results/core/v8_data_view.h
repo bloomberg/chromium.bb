@@ -27,12 +27,18 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_data_view_wrapper_type_info;
+
 class V8DataView {
   STATIC_ONLY(V8DataView);
  public:
   CORE_EXPORT static TestDataView* ToImpl(v8::Local<v8::Object> object);
   CORE_EXPORT static TestDataView* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_data_view_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

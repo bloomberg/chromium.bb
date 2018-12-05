@@ -9,7 +9,7 @@
 
 namespace blink {
 {% set dom_template = '%s::DomTemplate' % v8_class if not is_array_buffer_or_view else 'nullptr' %}
-{% set parent_wrapper_type_info = '&V8%s::wrapper_type_info' % parent_interface
+{% set parent_wrapper_type_info = 'V8%s::GetWrapperTypeInfo()' % parent_interface
                                   if parent_interface else 'nullptr' %}
 {% set active_scriptwrappable_inheritance =
     'kInheritFromActiveScriptWrappable'
@@ -24,7 +24,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapper_type_info = {
+{{wrapper_type_info_const}}WrapperTypeInfo {{snake_case_v8_class}}_wrapper_type_info = {
     gin::kEmbedderBlink,
     {{dom_template}},
     {{install_conditional_features_func or 'nullptr'}},
@@ -42,7 +42,7 @@ namespace blink {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& {{cpp_class}}::wrapper_type_info_ = {{v8_class}}::wrapper_type_info;
+const WrapperTypeInfo& {{cpp_class}}::wrapper_type_info_ = {{snake_case_v8_class}}_wrapper_type_info;
 {% endif %}
 
 {% if active_scriptwrappable %}
@@ -292,7 +292,7 @@ void {{v8_class_or_partial}}::CrossOriginNamedGetter(v8::Local<v8::Name> name, c
 
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      &{{v8_class}}::wrapper_type_info,
+      {{v8_class}}::GetWrapperTypeInfo(),
       info.Holder());
   {% endif %}
 }
@@ -318,7 +318,7 @@ void {{v8_class_or_partial}}::CrossOriginNamedSetter(v8::Local<v8::Name> name, v
 
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      &{{v8_class}}::wrapper_type_info,
+      {{v8_class}}::GetWrapperTypeInfo(),
       info.Holder());
 }
 {% endif %}
@@ -428,7 +428,7 @@ static void Install{{v8_class}}Template(
          'V8%s::DomTemplate(isolate, world)' % parent_interface
          if parent_interface else
          'v8::Local<v8::FunctionTemplate>()' %}
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, {{v8_class}}::wrapper_type_info.interface_name, {{parent_interface_template}}, {{v8_class}}::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, {{v8_class}}::GetWrapperTypeInfo()->interface_name, {{parent_interface_template}}, {{v8_class}}::kInternalFieldCount);
   {% if constructors or has_custom_constructor or has_html_constructor %}
   interface_template->SetCallHandler({{internal_namespace}}::ConstructorCallback);
   interface_template->SetLength({{interface_length}});
@@ -497,7 +497,7 @@ static void Install{{v8_class}}Template(
           nullptr,
           {{cross_origin_named_enumerator}}),
       v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}),
-      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapper_type_info)));
+      v8::External::New(isolate, const_cast<WrapperTypeInfo*>({{v8_class}}::GetWrapperTypeInfo())));
   {% endif %}
 
   {% if (indexed_property_getter or named_property_getter) and not is_partial %}
@@ -793,7 +793,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
 #error "We don't expect a runtime enabled interface {{v8_class_or_partial}} to have InstallRuntimeEnabledFeatures()."
   {% endif %}
 
-  v8::Local<v8::FunctionTemplate> interface_template = {{v8_class}}::wrapper_type_info.DomTemplate(isolate, world);
+  v8::Local<v8::FunctionTemplate> interface_template = {{v8_class}}::GetWrapperTypeInfo()->DomTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
 
@@ -865,7 +865,7 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
     v8::Local<v8::Function> interface) {
   {% if feature.attributes or feature.methods %}
   v8::Local<v8::FunctionTemplate> interface_template =
-      {{v8_class}}::wrapper_type_info.DomTemplate(isolate, world);
+      {{v8_class}}::GetWrapperTypeInfo()->DomTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
   {% endif %}
@@ -923,9 +923,9 @@ void {{v8_class_or_partial}}::Install{{feature.name}}(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      &{{v8_class}}::wrapper_type_info);
+      {{v8_class}}::GetWrapperTypeInfo());
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      &{{v8_class}}::wrapper_type_info);
+      {{v8_class}}::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
   Install{{feature.name}}(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }

@@ -24,6 +24,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_test_integer_indexed_global_wrapper_type_info;
+
 class V8TestIntegerIndexedGlobal {
   STATIC_ONLY(V8TestIntegerIndexedGlobal);
  public:
@@ -35,7 +37,11 @@ class V8TestIntegerIndexedGlobal {
     return ToScriptWrappable(object)->ToImpl<TestIntegerIndexedGlobal>();
   }
   CORE_EXPORT static TestIntegerIndexedGlobal* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_integer_indexed_global_wrapper_type_info;
+  }
+
   static void IndexedPropertyGetterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Value>&);
   static void IndexedPropertySetterCustom(uint32_t, v8::Local<v8::Value>, const v8::PropertyCallbackInfo<v8::Value>&);
   static void IndexedPropertyDeleterCustom(uint32_t, const v8::PropertyCallbackInfo<v8::Boolean>&);

@@ -27,7 +27,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_custom_constructor_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceCustomConstructor::DomTemplate,
     nullptr,
@@ -44,7 +44,7 @@ const WrapperTypeInfo V8TestInterfaceCustomConstructor::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCustomConstructor.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceCustomConstructor::wrapper_type_info_ = V8TestInterfaceCustomConstructor::wrapper_type_info;
+const WrapperTypeInfo& TestInterfaceCustomConstructor::wrapper_type_info_ = v8_test_interface_custom_constructor_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -86,7 +86,7 @@ static void InstallV8TestInterfaceCustomConstructorTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceCustomConstructor::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceCustomConstructor::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCustomConstructor::kInternalFieldCount);
   interface_template->SetCallHandler(test_interface_custom_constructor_v8_internal::ConstructorCallback);
   interface_template->SetLength(0);
 
@@ -124,18 +124,18 @@ void V8TestInterfaceCustomConstructor::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterfaceCustomConstructor::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterfaceCustomConstructor::GetWrapperTypeInfo()),
       InstallV8TestInterfaceCustomConstructorTemplate);
 }
 
 bool V8TestInterfaceCustomConstructor::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterfaceCustomConstructor::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceCustomConstructor::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterfaceCustomConstructor::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterfaceCustomConstructor* V8TestInterfaceCustomConstructor::ToImplWithTypeCheck(

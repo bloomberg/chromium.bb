@@ -511,7 +511,7 @@ void V8TestInterfacePartial::InstallOriginTrialPartialFeature(
     v8::Local<v8::Object> prototype,
     v8::Local<v8::Function> interface) {
   v8::Local<v8::FunctionTemplate> interface_template =
-      V8TestInterface::wrapper_type_info.DomTemplate(isolate, world);
+      V8TestInterface::GetWrapperTypeInfo()->DomTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
   ExecutionContext* execution_context = ToExecutionContext(isolate->GetCurrentContext());
@@ -568,9 +568,9 @@ void V8TestInterfacePartial::InstallOriginTrialPartialFeature(
     ScriptState* script_state, v8::Local<v8::Object> instance) {
   V8PerContextData* per_context_data = script_state->PerContextData();
   v8::Local<v8::Object> prototype = per_context_data->PrototypeForType(
-      &V8TestInterface::wrapper_type_info);
+      V8TestInterface::GetWrapperTypeInfo());
   v8::Local<v8::Function> interface = per_context_data->ConstructorForType(
-      &V8TestInterface::wrapper_type_info);
+      V8TestInterface::GetWrapperTypeInfo());
   ALLOW_UNUSED_LOCAL(interface);
   InstallOriginTrialPartialFeature(script_state->GetIsolate(), script_state->World(), instance, prototype, interface);
 }

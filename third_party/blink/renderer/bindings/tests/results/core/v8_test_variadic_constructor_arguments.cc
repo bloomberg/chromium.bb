@@ -29,7 +29,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestVariadicConstructorArguments::wrapper_type_info = {
+const WrapperTypeInfo v8_test_variadic_constructor_arguments_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestVariadicConstructorArguments::DomTemplate,
     nullptr,
@@ -46,7 +46,7 @@ const WrapperTypeInfo V8TestVariadicConstructorArguments::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestVariadicConstructorArguments.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestVariadicConstructorArguments::wrapper_type_info_ = V8TestVariadicConstructorArguments::wrapper_type_info;
+const WrapperTypeInfo& TestVariadicConstructorArguments::wrapper_type_info_ = v8_test_variadic_constructor_arguments_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -75,7 +75,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestVariadicConstructorArguments* impl = TestVariadicConstructorArguments::Create(args);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestVariadicConstructorArguments::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestVariadicConstructorArguments::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -104,7 +104,7 @@ static void InstallV8TestVariadicConstructorArgumentsTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestVariadicConstructorArguments::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestVariadicConstructorArguments::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestVariadicConstructorArguments::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestVariadicConstructorArguments::kInternalFieldCount);
   interface_template->SetCallHandler(test_variadic_constructor_arguments_v8_internal::ConstructorCallback);
   interface_template->SetLength(0);
 
@@ -142,18 +142,18 @@ void V8TestVariadicConstructorArguments::InstallRuntimeEnabledFeaturesOnTemplate
 v8::Local<v8::FunctionTemplate> V8TestVariadicConstructorArguments::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestVariadicConstructorArguments::GetWrapperTypeInfo()),
       InstallV8TestVariadicConstructorArgumentsTemplate);
 }
 
 bool V8TestVariadicConstructorArguments::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestVariadicConstructorArguments::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestVariadicConstructorArguments::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestVariadicConstructorArguments::GetWrapperTypeInfo(), v8_value);
 }
 
 TestVariadicConstructorArguments* V8TestVariadicConstructorArguments::ToImplWithTypeCheck(

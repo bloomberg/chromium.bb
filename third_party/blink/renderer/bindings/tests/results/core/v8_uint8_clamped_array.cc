@@ -28,12 +28,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8Uint8ClampedArray::wrapper_type_info = {
+const WrapperTypeInfo v8_uint8_clamped_array_wrapper_type_info = {
     gin::kEmbedderBlink,
     nullptr,
     nullptr,
     "Uint8ClampedArray",
-    &V8ArrayBufferView::wrapper_type_info,
+    V8ArrayBufferView::GetWrapperTypeInfo(),
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,

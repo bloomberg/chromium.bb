@@ -24,6 +24,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern WrapperTypeInfo v8_test_interface_2_wrapper_type_info;
+
 class V8TestInterface2 {
   STATIC_ONLY(V8TestInterface2);
  public:
@@ -34,7 +36,11 @@ class V8TestInterface2 {
     return ToScriptWrappable(object)->ToImpl<TestInterface2>();
   }
   CORE_EXPORT static TestInterface2* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_interface_2_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   CORE_EXPORT static void InstallConditionalFeatures(

@@ -44,7 +44,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8ArrayBufferView::wrapper_type_info = {
+const WrapperTypeInfo v8_array_buffer_view_wrapper_type_info = {
     gin::kEmbedderBlink,
     nullptr,
     nullptr,
@@ -61,7 +61,7 @@ const WrapperTypeInfo V8ArrayBufferView::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestArrayBufferView.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestArrayBufferView::wrapper_type_info_ = V8ArrayBufferView::wrapper_type_info;
+const WrapperTypeInfo& TestArrayBufferView::wrapper_type_info_ = v8_array_buffer_view_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(

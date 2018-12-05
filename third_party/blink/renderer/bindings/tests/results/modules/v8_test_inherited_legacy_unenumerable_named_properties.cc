@@ -29,12 +29,12 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInheritedLegacyUnenumerableNamedProperties::wrapper_type_info = {
+const WrapperTypeInfo v8_test_inherited_legacy_unenumerable_named_properties_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInheritedLegacyUnenumerableNamedProperties::DomTemplate,
     nullptr,
     "TestInheritedLegacyUnenumerableNamedProperties",
-    &V8TestSpecialOperationsNotEnumerable::wrapper_type_info,
+    V8TestSpecialOperationsNotEnumerable::GetWrapperTypeInfo(),
     WrapperTypeInfo::kWrapperTypeObjectPrototype,
     WrapperTypeInfo::kObjectClassId,
     WrapperTypeInfo::kNotInheritFromActiveScriptWrappable,
@@ -46,7 +46,7 @@ const WrapperTypeInfo V8TestInheritedLegacyUnenumerableNamedProperties::wrapper_
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInheritedLegacyUnenumerableNamedProperties.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInheritedLegacyUnenumerableNamedProperties::wrapper_type_info_ = V8TestInheritedLegacyUnenumerableNamedProperties::wrapper_type_info;
+const WrapperTypeInfo& TestInheritedLegacyUnenumerableNamedProperties::wrapper_type_info_ = v8_test_inherited_legacy_unenumerable_named_properties_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -207,7 +207,7 @@ static void InstallV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInheritedLegacyUnenumerableNamedProperties::wrapper_type_info.interface_name, V8TestSpecialOperationsNotEnumerable::DomTemplate(isolate, world), V8TestInheritedLegacyUnenumerableNamedProperties::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInheritedLegacyUnenumerableNamedProperties::GetWrapperTypeInfo()->interface_name, V8TestSpecialOperationsNotEnumerable::DomTemplate(isolate, world), V8TestInheritedLegacyUnenumerableNamedProperties::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -261,18 +261,18 @@ void V8TestInheritedLegacyUnenumerableNamedProperties::InstallRuntimeEnabledFeat
 v8::Local<v8::FunctionTemplate> V8TestInheritedLegacyUnenumerableNamedProperties::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInheritedLegacyUnenumerableNamedProperties::GetWrapperTypeInfo()),
       InstallV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate);
 }
 
 bool V8TestInheritedLegacyUnenumerableNamedProperties::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInheritedLegacyUnenumerableNamedProperties::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInheritedLegacyUnenumerableNamedProperties::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInheritedLegacyUnenumerableNamedProperties::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInheritedLegacyUnenumerableNamedProperties* V8TestInheritedLegacyUnenumerableNamedProperties::ToImplWithTypeCheck(
