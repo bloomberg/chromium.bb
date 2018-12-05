@@ -107,7 +107,8 @@ const CGFloat kButtonTrailingSpacing = 10;
 
 - (void)setHighlighted:(BOOL)highlighted {
   [super setHighlighted:highlighted];
-  [UIView animateWithDuration:0.1
+  CGFloat duration = highlighted ? 0.1 : 0.2;
+  [UIView animateWithDuration:duration
                         delay:0
                       options:UIViewAnimationOptionBeginFromCurrentState
                    animations:^{
