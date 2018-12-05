@@ -38,15 +38,12 @@ class FeedLoggingBridge {
   void OnContentSwiped(JNIEnv* j_env,
                        const base::android::JavaRef<jobject>& j_this);
 
-  void OnContentClicked(JNIEnv* j_env,
-                        const base::android::JavaRef<jobject>& j_this,
-                        const jint j_position,
-                        const jlong j_publishedTimeMs,
-                        const jfloat j_score);
-
   void OnClientAction(JNIEnv* j_env,
                       const base::android::JavaRef<jobject>& j_this,
-                      const jint j_window_open_disposition);
+                      const jint j_window_open_disposition,
+                      const jint j_position,
+                      const jlong j_publishedTimeMs,
+                      const jfloat j_score);
 
   void OnContentContextMenuOpened(JNIEnv* j_env,
                                   const base::android::JavaRef<jobject>& j_this,

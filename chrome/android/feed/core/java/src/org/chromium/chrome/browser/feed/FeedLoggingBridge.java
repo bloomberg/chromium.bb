@@ -79,12 +79,10 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onContentClicked(ContentLoggingData data) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeFeedLoggingBridge == 0) return;
-
-        nativeOnContentClicked(mNativeFeedLoggingBridge, data.getPositionInStream(),
-                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore());
+        // Records content's clicks in onClientAction. When a user clicks on content, Feed libraries
+        // will call both onClientAction and onContentClicked, and onClientAction will receive
+        // ActionType.OPEN_URL in this case. so to avoid double counts, we records content's clicks
+        // in onClientAction.
     }
 
     @Override
@@ -94,8 +92,9 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         if (mNativeFeedLoggingBridge == 0) return;
 
         recordUserAction(actionType);
-        nativeOnClientAction(
-                mNativeFeedLoggingBridge, feedActionToWindowOpenDisposition(actionType));
+        nativeOnClientAction(mNativeFeedLoggingBridge,
+                feedActionToWindowOpenDisposition(actionType), data.getPositionInStream(),
+                TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore());
     }
 
     @Override
@@ -184,7 +183,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             case ActionType.OPEN_URL:
                 return WindowOpenDisposition.CURRENT_TAB;
             case ActionType.OPEN_URL_INCOGNITO:
-                return WindowOpenDisposition.IGNORE_ACTION;
+                return WindowOpenDisposition.OFF_THE_RECORD;
             case ActionType.OPEN_URL_NEW_TAB:
                 return WindowOpenDisposition.NEW_BACKGROUND_TAB;
             case ActionType.OPEN_URL_NEW_WINDOW:
@@ -256,10 +255,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     private native void nativeOnContentDismissed(
             long nativeFeedLoggingBridge, int position, String uri);
     private native void nativeOnContentSwiped(long nativeFeedLoggingBridge);
-    private native void nativeOnContentClicked(
-            long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
-    private native void nativeOnClientAction(
-            long nativeFeedLoggingBridge, int windowOpenDisposition);
+    private native void nativeOnClientAction(long nativeFeedLoggingBridge,
+            int windowOpenDisposition, int position, long publishedTimeMs, float score);
     private native void nativeOnContentContextMenuOpened(
             long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
     private native void nativeOnMoreButtonViewed(long nativeFeedLoggingBridge, int position);
