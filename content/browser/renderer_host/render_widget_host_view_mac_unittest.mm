@@ -187,9 +187,10 @@ requestCandidatesForSelectedRange:(NSRange)selectedRange
   return sequenceNumber_;
 }
 
-- (void (^)(NSInteger sequenceNumber,
-            NSArray<NSTextCheckingResult*>* candidates))lastCompletionHandler {
-  return lastCompletionHandler_;
+- (base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
+                                   NSArray<NSTextCheckingResult*>* candidates)>)
+    takeCompletionHandler {
+  return std::move(lastCompletionHandler_);
 }
 
 @end
@@ -2123,9 +2124,7 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
     tab_view()->SelectionChanged(kOriginalString, 3, gfx::Range(3, 3));
 
     NSInteger firstSequenceNumber = [spellChecker sequenceNumber];
-    base::mac::ScopedBlock<void (^)(NSInteger sequenceNumber,
-                                    NSArray<NSTextCheckingResult*>* candidates)>
-        firstCompletionHandler([[spellChecker lastCompletionHandler] retain]);
+    auto firstCompletionHandler = [spellChecker takeCompletionHandler];
 
     EXPECT_NE(nil, (id)firstCompletionHandler.get());
     EXPECT_EQ(0U, candidate_list_item().candidates.count);
@@ -2143,7 +2142,7 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
     EXPECT_EQ(0U, candidate_list_item().candidates.count);
 
     // But calling the current handler should work.
-    [spellChecker lastCompletionHandler](
+    [spellChecker takeCompletionHandler].get()(
         [spellChecker sequenceNumber],
         @[ static_cast<NSTextCheckingResult*>(fakeResult) ]);
     base::RunLoop().RunUntilIdle();
@@ -2178,6 +2177,11 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsInvalidSelection) {
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
     candidate_list_item().allowsCollapsing = NO;
 
+    if (auto completionHandler = [spellChecker takeCompletionHandler]) {
+      completionHandler.get()([spellChecker sequenceNumber], @[]);
+      base::RunLoop().RunUntilIdle();
+    }
+
     FakeTextCheckingResult* fakeResult =
         [FakeTextCheckingResult resultWithRange:NSMakeRange(0, 3)
                               replacementString:@"foo"];
@@ -2187,10 +2191,12 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsInvalidSelection) {
     tab_view()->SelectionChanged(kOriginalString, 3,
                                  gfx::Range::InvalidRange());
 
-    [spellChecker lastCompletionHandler](
-        [spellChecker sequenceNumber],
-        @[ static_cast<NSTextCheckingResult*>(fakeResult) ]);
-    base::RunLoop().RunUntilIdle();
+    if (auto completionHandler = [spellChecker takeCompletionHandler]) {
+      completionHandler.get()(
+          [spellChecker sequenceNumber],
+          @[ static_cast<NSTextCheckingResult*>(fakeResult) ]);
+      base::RunLoop().RunUntilIdle();
+    }
 
     EXPECT_NE(nil, candidate_list_item().candidates);
     EXPECT_EQ(0U, candidate_list_item().candidates.count);
