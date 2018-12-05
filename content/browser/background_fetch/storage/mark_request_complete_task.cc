@@ -13,7 +13,6 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "storage/browser/blob/blob_data_builder.h"
@@ -188,9 +187,8 @@ void MarkRequestCompleteTask::DidOpenCache(
 
   DCHECK(handle.value());
 
-  auto request = std::make_unique<ServiceWorkerFetchRequest>(
-      mojo::ConvertTo<ServiceWorkerFetchRequest>(
-          request_info_->fetch_request()));
+  blink::mojom::FetchAPIRequestPtr request =
+      BackgroundFetchSettledFetch::CloneRequest(request_info_->fetch_request());
 
   // We need to keep the handle refcounted while the write is happening,
   // so it's passed along to the callback.
@@ -216,7 +214,7 @@ void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(
   completed_request_.set_request_index(request_info_->request_index());
   completed_request_.set_serialized_request(
       ServiceWorkerUtils::SerializeFetchRequestToString(
-          request_info_->fetch_request()));
+          *(request_info_->fetch_request())));
   completed_request_.set_download_guid(request_info_->download_guid());
   completed_request_.set_failure_reason(failure_reason_);
 

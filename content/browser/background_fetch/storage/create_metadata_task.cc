@@ -18,7 +18,6 @@
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_type_converter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"

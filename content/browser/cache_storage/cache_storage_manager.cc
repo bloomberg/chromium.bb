@@ -228,7 +228,7 @@ void CacheStorageManager::MatchCache(
     const url::Origin& origin,
     CacheStorageOwner owner,
     const std::string& cache_name,
-    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::QueryParamsPtr match_params,
     CacheStorageCache::ResponseCallback callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
@@ -240,7 +240,7 @@ void CacheStorageManager::MatchCache(
 void CacheStorageManager::MatchAllCaches(
     const url::Origin& origin,
     CacheStorageOwner owner,
-    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::QueryParamsPtr match_params,
     CacheStorageCache::ResponseCallback callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
@@ -253,7 +253,7 @@ void CacheStorageManager::WriteToCache(
     const url::Origin& origin,
     CacheStorageOwner owner,
     const std::string& cache_name,
-    std::unique_ptr<ServiceWorkerFetchRequest> request,
+    blink::mojom::FetchAPIRequestPtr request,
     blink::mojom::FetchAPIResponsePtr response,
     CacheStorage::ErrorCallback callback) {
   // Cache API should write through the dispatcher.

@@ -3201,8 +3201,7 @@ class CacheStorageSideDataSizeChecker
                                   CacheStorageCacheHandle cache_handle,
                                   CacheStorageError error) {
     ASSERT_EQ(CacheStorageError::kSuccess, error);
-    std::unique_ptr<ServiceWorkerFetchRequest> scoped_request(
-        new ServiceWorkerFetchRequest());
+    auto scoped_request = blink::mojom::FetchAPIRequest::New();
     scoped_request->url = url_;
     CacheStorageCache* cache = cache_handle.value();
     cache->Match(

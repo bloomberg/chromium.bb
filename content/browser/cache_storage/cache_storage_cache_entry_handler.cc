@@ -38,7 +38,7 @@ CacheStorageCacheEntryHandler::BlobDataHandle::~BlobDataHandle() {
     entry_handler_->EraseBlobDataHandle(this);
 }
 
-PutContext::PutContext(std::unique_ptr<ServiceWorkerFetchRequest> request,
+PutContext::PutContext(blink::mojom::FetchAPIRequestPtr request,
                        blink::mojom::FetchAPIResponsePtr response,
                        blink::mojom::BlobPtr blob,
                        uint64_t blob_size,
@@ -62,7 +62,7 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
   ~CacheStorageCacheEntryHandlerImpl() override = default;
 
   std::unique_ptr<PutContext> CreatePutContext(
-      std::unique_ptr<ServiceWorkerFetchRequest> request,
+      blink::mojom::FetchAPIRequestPtr request,
       blink::mojom::FetchAPIResponsePtr response) override {
     blink::mojom::BlobPtr blob;
     uint64_t blob_size = blink::BlobUtils::kUnknownSize;

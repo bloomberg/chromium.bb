@@ -61,58 +61,7 @@ static const int64_t kInvalidServiceWorkerResourceId = -1;
 static constexpr base::TimeDelta kServiceWorkerScriptMaxCacheAge =
     base::TimeDelta::FromHours(24);
 
-struct ServiceWorkerCaseInsensitiveCompare {
-  bool operator()(const std::string& lhs, const std::string& rhs) const {
-    return base::CompareCaseInsensitiveASCII(lhs, rhs) < 0;
-  }
-};
-
-using ServiceWorkerHeaderMap =
-    std::map<std::string, std::string, ServiceWorkerCaseInsensitiveCompare>;
-
 using ServiceWorkerHeaderList = std::vector<std::string>;
-
-// Roughly corresponds to Fetch API's Request type. This struct is no longer
-// used by the core Service Worker API. Background Fetch and Cache Storage APIs
-// use it.
-// TODO(falken): Move this out of service_worker_types.h and rename it.
-struct CONTENT_EXPORT ServiceWorkerFetchRequest {
-  ServiceWorkerFetchRequest();
-  ServiceWorkerFetchRequest(const GURL& url,
-                            const std::string& method,
-                            const ServiceWorkerHeaderMap& headers,
-                            const Referrer& referrer,
-                            bool is_reload);
-  ServiceWorkerFetchRequest(const ServiceWorkerFetchRequest& other);
-  ServiceWorkerFetchRequest& operator=(const ServiceWorkerFetchRequest& other);
-  ~ServiceWorkerFetchRequest();
-  size_t EstimatedStructSize();
-
-  // Be sure to update EstimatedStructSize(), Serialize(), and ParseFromString()
-  // when adding members.
-  network::mojom::FetchRequestMode mode =
-      network::mojom::FetchRequestMode::kNoCors;
-  bool is_main_resource_load = false;
-  blink::mojom::RequestContextType request_context_type =
-      blink::mojom::RequestContextType::UNSPECIFIED;
-  network::mojom::RequestContextFrameType frame_type =
-      network::mojom::RequestContextFrameType::kNone;
-  GURL url;
-  std::string method;
-  ServiceWorkerHeaderMap headers;
-  Referrer referrer;
-  network::mojom::FetchCredentialsMode credentials_mode =
-      network::mojom::FetchCredentialsMode::kOmit;
-  blink::mojom::FetchCacheMode cache_mode =
-      blink::mojom::FetchCacheMode::kDefault;
-  network::mojom::FetchRedirectMode redirect_mode =
-      network::mojom::FetchRedirectMode::kFollow;
-  std::string integrity;
-  bool keepalive = false;
-  std::string client_id;
-  bool is_reload = false;
-  bool is_history_navigation = false;
-};
 
 }  // namespace content
 
