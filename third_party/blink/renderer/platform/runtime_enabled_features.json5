@@ -365,6 +365,7 @@
     // without native Custom Elements v0 support.
     {
       name: "CustomElementsV0",
+      origin_trial_feature_name: "WebComponentsV0",
       status: "stable",
     },
     {
