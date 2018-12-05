@@ -272,6 +272,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
       int32_t command,
       views_bridge_mac::mojom::ValidateUserInterfaceItemResultPtr* out_result)
       override;
+  bool ExecuteCommand(int32_t command,
+                      WindowOpenDisposition window_open_disposition,
+                      bool is_before_first_responder,
+                      bool* was_executed) override;
 
   // views_bridge_mac::mojom::BridgedNativeWidgetHost, synchronous callbacks:
   void DispatchKeyEventRemote(std::unique_ptr<ui::Event> event,
@@ -306,6 +310,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void ValidateUserInterfaceItem(
       int32_t command,
       ValidateUserInterfaceItemCallback callback) override;
+  void ExecuteCommand(int32_t command,
+                      WindowOpenDisposition window_open_disposition,
+                      bool is_before_first_responder,
+                      ExecuteCommandCallback callback) override;
 
   // DialogObserver:
   void OnDialogChanged() override;

@@ -57,6 +57,9 @@ class BrowserFrameMac : public views::NativeWidgetMac,
       int32_t command,
       views_bridge_mac::mojom::ValidateUserInterfaceItemResult* result)
       override;
+  bool ExecuteCommand(int32_t command,
+                      WindowOpenDisposition window_open_disposition,
+                      bool is_before_first_responder) override;
   void PopulateCreateWindowParams(
       const views::Widget::InitParams& widget_params,
       views_bridge_mac::mojom::CreateWindowParams* params) override;

@@ -109,6 +109,15 @@ void NativeWidgetMac::GetWindowFrameTitlebarHeight(
   *titlebar_height = 0;
 }
 
+bool NativeWidgetMac::ExecuteCommand(
+    int32_t command,
+    WindowOpenDisposition window_open_disposition,
+    bool is_before_first_responder) {
+  // This is supported only by subclasses in chrome/browser/ui.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMac, internal::NativeWidgetPrivate implementation:
 

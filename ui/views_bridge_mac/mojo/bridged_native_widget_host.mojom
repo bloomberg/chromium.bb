@@ -6,6 +6,7 @@ module views_bridge_mac.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
+import "ui/base/mojo/window_open_disposition.mojom";
 import "ui/display/mojo/display.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
@@ -205,4 +206,14 @@ interface BridgedNativeWidgetHost {
   [Sync]
   ValidateUserInterfaceItem(int32 command) =>
       (ValidateUserInterfaceItemResult result);
+
+  // Execute the chrome command |command| with |window_open_disposition|. If
+  // |is_before_first_responder| then only call ExecuteCommand if the command
+  // is reserved and extension shortcut handling is not suspended. Returns in
+  // |was_executed| whether or not ExecuteCommand was called (regardless of what
+  // the return value for ExecuteCommand was).
+  [Sync]
+  ExecuteCommand(int32 command,
+                 ui.mojom.WindowOpenDisposition window_open_disposition,
+                 bool is_before_first_responder) => (bool was_executed);
 };
