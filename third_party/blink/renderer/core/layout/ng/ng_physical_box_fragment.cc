@@ -173,30 +173,18 @@ void NGPhysicalBoxFragment::AddSelfOutlineRects(
   const LayoutObject* layout_object = GetLayoutObject();
   DCHECK(layout_object);
   if (layout_object->IsLayoutInline()) {
-    Vector<LayoutRect> blockflow_outline_rects;
-    ToLayoutInline(layout_object)
-        ->AddOutlineRects(blockflow_outline_rects, LayoutPoint(), outline_type);
+    Vector<LayoutRect> blockflow_outline_rects =
+        layout_object->PhysicalOutlineRects(LayoutPoint(), outline_type);
     // The rectangles returned are offset from the containing block. We need the
-    // offset from this fragment. Additionally, the rectangles are offset
-    // relatively to the block-start of the container (this matters when
-    // writing-mode is vertical-rl). We want them to be purely physical. Apply
-    // correction.
+    // offset from this fragment.
     if (blockflow_outline_rects.size() > 0) {
-      const LayoutBlock* block_for_flipping = nullptr;
       LayoutPoint first_fragment_offset = blockflow_outline_rects[0].Location();
-      if (UNLIKELY(layout_object->HasFlippedBlocksWritingMode())) {
-        block_for_flipping = layout_object->ContainingBlock();
-        first_fragment_offset.SetX(block_for_flipping->FlipForWritingMode(
-            blockflow_outline_rects[0].MaxX()));
-      }
       LayoutSize corrected_offset = additional_offset - first_fragment_offset;
       for (auto& outline : blockflow_outline_rects) {
         // Skip if both width and height are zero. Contaning blocks in empty
         // linebox is one such case.
         if (outline.Size().IsZero())
           continue;
-        if (UNLIKELY(block_for_flipping))
-          block_for_flipping->FlipForWritingMode(outline);
         outline.Move(corrected_offset);
         outline_rects->push_back(outline);
       }
