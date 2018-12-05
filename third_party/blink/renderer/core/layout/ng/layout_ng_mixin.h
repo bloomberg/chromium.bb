@@ -39,6 +39,7 @@ class LayoutNGMixin : public Base {
   NGInlineNodeData* TakeNGInlineNodeData() final;
   NGInlineNodeData* GetNGInlineNodeData() const final;
   void ResetNGInlineNodeData() final;
+  void ClearNGInlineNodeData() final;
   bool HasNGInlineNodeData() const final { return ng_inline_node_data_.get(); }
 
   LayoutUnit FirstLineBoxBaseline() const final;

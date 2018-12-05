@@ -54,6 +54,11 @@ void LayoutNGMixin<Base>::ResetNGInlineNodeData() {
   ng_inline_node_data_ = std::make_unique<NGInlineNodeData>();
 }
 
+template <typename Base>
+void LayoutNGMixin<Base>::ClearNGInlineNodeData() {
+  ng_inline_node_data_.reset();
+}
+
 // The current fragment from the last layout cycle for this box.
 // When pre-NG layout calls functions of this block flow, fragment and/or
 // LayoutResult are required to compute the result.

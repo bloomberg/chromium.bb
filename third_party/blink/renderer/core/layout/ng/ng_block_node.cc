@@ -186,6 +186,9 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     block_flow->IncrementLayoutPassCount();
 
   NGLayoutInputNode first_child = FirstChild();
+  if (block_flow && !first_child)
+    block_flow->ClearNGInlineNodeData();
+
   scoped_refptr<NGLayoutResult> layout_result;
   if (block_flow) {
     layout_result =
