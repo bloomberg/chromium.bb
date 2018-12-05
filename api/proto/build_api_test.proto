@@ -1,0 +1,43 @@
+syntax = 'proto3';
+package chromite.api;
+import "build_api.proto";
+import "google/protobuf/empty.proto";
+
+// Messages used to test build_api message and service handling.
+
+// Simple input message.
+message TestRequestMessage {
+  string id = 1;
+}
+
+// Simple output message.
+message TestResultMessage {
+  string result = 1;
+}
+
+
+// The test service.
+service TestApiService {
+  // Mocking the method returns means we don't have an implementation of this
+  // module, but we do require it.
+  option (service_options) = {
+    module: "build_api_test",
+  };
+
+  // Method that has input and output messages.
+  rpc InputOutputMethod(TestRequestMessage) returns (TestResultMessage) {
+
+  };
+  // Method with only input message.
+  rpc InputMethod(TestRequestMessage) returns (google.protobuf.Empty) {
+
+  };
+  // Method with only output message.
+  rpc OutputMethod(google.protobuf.Empty) returns (TestResultMessage) {
+
+  };
+  // Method with no input or output message.
+  rpc NoIoMethod(google.protobuf.Empty) returns (google.protobuf.Empty) {
+
+  };
+}

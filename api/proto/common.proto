@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+// Common message definitions.
+
+// BuildTarget encapsulates a number of related arguments. At the moment, the
+// usage of specific arguments is on a per endpoint basis, but will converge
+// to support a standard set as time goes on.
+// BuildTarget is a more appropriate name going forward for what we currently
+// call "board".
+message BuildTarget {
+  // The name of the build target (a.k.a. board name).
+  string name = 1;
+  // The variant name. It can either be explicitly specified here, or
+  // supplied in the name (as name_variant).
+  string variant = 2;
+  // The absolute path to the build target's sysroot.
+  string sysroot = 3;
+  // The portage profile selected for the build target.
+  string profile = 4;
+}

@@ -1,0 +1,26 @@
+// Custom option defs must be proto2 syntax.
+syntax = "proto2";
+import "google/protobuf/descriptor.proto";
+
+// Build API custom Service and Method options.
+
+// Custom Service options.
+message BuildApiServiceOptions {
+  // The name of the module implementing the service.
+  required string module = 1;
+}
+
+// Custom Method options.
+message BuildApiMethodOptions {
+  // The name of the function implementing the method if different than the
+  // method name defined in the .proto.
+  optional string implementation_name = 1;
+}
+
+extend google.protobuf.ServiceOptions {
+  optional BuildApiServiceOptions service_options = 55000;
+}
+
+extend google.protobuf.MethodOptions {
+  optional BuildApiMethodOptions method_options = 55000;
+}
