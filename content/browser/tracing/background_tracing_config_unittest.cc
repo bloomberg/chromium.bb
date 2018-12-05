@@ -6,24 +6,20 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 class BackgroundTracingConfigTest : public testing::Test {
  public:
-  BackgroundTracingConfigTest()
-      : ui_thread_(BrowserThread::UI, base::ThreadTaskRunnerHandle::Get()) {}
+  BackgroundTracingConfigTest() = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
-  TestBrowserThread ui_thread_;
+  TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 std::unique_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(

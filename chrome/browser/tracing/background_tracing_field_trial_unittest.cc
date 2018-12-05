@@ -8,32 +8,25 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/tracing/common/trace_startup.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/background_tracing_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BackgroundTracingTest : public testing::Test {
  public:
-  BackgroundTracingTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        ui_thread_(content::BrowserThread::UI,
-                   base::ThreadTaskRunnerHandle::Get()) {}
-  ~BackgroundTracingTest() override {}
+  BackgroundTracingTest() = default;
 
   void TearDown() override {
     content::BackgroundTracingManager::GetInstance()->AbortScenario();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  content::TestBrowserThread ui_thread_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 };
 
 namespace {
