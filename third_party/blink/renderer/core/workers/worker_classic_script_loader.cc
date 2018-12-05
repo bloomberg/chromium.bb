@@ -53,9 +53,11 @@ WorkerClassicScriptLoader::WorkerClassicScriptLoader()
 
 void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
     mojom::RequestContextType request_context,
     mojom::IPAddressSpace creation_address_space) {
+  DCHECK(fetch_client_settings_object_fetcher);
   url_ = url;
   execution_context_ = &execution_context;
 
@@ -77,12 +79,14 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   resource_loader_options.synchronous_policy = kRequestSynchronously;
 
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
-      execution_context, this, resource_loader_options);
+      execution_context, this, resource_loader_options,
+      fetch_client_settings_object_fetcher);
   threadable_loader_->Start(request);
 }
 
 void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     ExecutionContext& execution_context,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     const KURL& url,
     mojom::RequestContextType request_context,
     network::mojom::FetchRequestMode fetch_request_mode,
@@ -91,6 +95,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     bool is_nested_worker,
     base::OnceClosure response_callback,
     base::OnceClosure finished_callback) {
+  DCHECK(fetch_client_settings_object_fetcher);
   DCHECK(response_callback || finished_callback);
   response_callback_ = std::move(response_callback);
   finished_callback_ = std::move(finished_callback);
@@ -132,7 +137,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
 
   need_to_cancel_ = true;
   threadable_loader_ = MakeGarbageCollected<ThreadableLoader>(
-      execution_context, this, ResourceLoaderOptions());
+      execution_context, this, ResourceLoaderOptions(),
+      fetch_client_settings_object_fetcher);
   threadable_loader_->Start(request);
   if (failed_)
     NotifyFinished();

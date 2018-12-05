@@ -97,9 +97,13 @@ class CORE_EXPORT ThreadableLoader final
   // also for cancellation happened inside the loader.)
   //
   // ThreadableLoaderClient methods may call Cancel().
+  //
+  // The specified ResourceFetcher if non-null, or otherwise
+  // ExecutionContext::Fetcher() is used.
   ThreadableLoader(ExecutionContext&,
                    ThreadableLoaderClient*,
-                   const ResourceLoaderOptions&);
+                   const ResourceLoaderOptions&,
+                   ResourceFetcher* = nullptr);
   ~ThreadableLoader() override;
 
   // Exposed for testing. Code outside this class should not call this function.
@@ -209,6 +213,7 @@ class CORE_EXPORT ThreadableLoader final
 
   Member<ThreadableLoaderClient> client_;
   Member<ExecutionContext> execution_context_;
+  Member<ResourceFetcher> resource_fetcher_;
 
   TimeDelta timeout_;
   // Some items may be overridden by m_forceDoNotAllowStoredCredentials and
