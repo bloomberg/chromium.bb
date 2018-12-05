@@ -193,8 +193,10 @@ Channel::MessagePtr Channel::Message::Deserialize(
     return nullptr;
   }
 
+  // If a message isn't explicitly identified as type NORMAL_LEGACY, it is
+  // expected to have a full-size header.
   const Header* header = nullptr;
-  if (legacy_header->message_type == MessageType::NORMAL)
+  if (legacy_header->message_type != MessageType::NORMAL_LEGACY)
     header = reinterpret_cast<const Header*>(data);
 
   uint32_t extra_header_size = 0;
