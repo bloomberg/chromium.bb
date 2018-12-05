@@ -18,8 +18,6 @@ class ReportingPermissionsChecker;
 
 namespace net {
 class CookieStore;
-struct ReportingPolicy;
-class ReportingService;
 class URLRequestContextBuilder;
 }  // namespace net
 
@@ -148,17 +146,6 @@ class ProfileImplIOData : public ProfileIOData {
       net::URLRequestContext* app_context,
       const StoragePartitionDescriptor& partition_descriptor) const override;
   net::CookieStore* GetExtensionsCookieStore() const override;
-
-  // Returns a net::ReportingService, if reporting should be enabled. Otherwise,
-  // returns nullptr.
-  // TODO(mmenke): Remove once URLRequestContextBuilders are always used to
-  // create URLRequestContexts.
-  std::unique_ptr<net::ReportingService> MaybeCreateReportingService(
-      net::URLRequestContext* url_request_context) const;
-
-  // Returns a net::ReportingPolicy, if reporting should be enabled. Otherwise,
-  // returns nullptr.
-  static std::unique_ptr<net::ReportingPolicy> MaybeCreateReportingPolicy();
 
   // Lazy initialization params.
   mutable std::unique_ptr<LazyParams> lazy_params_;

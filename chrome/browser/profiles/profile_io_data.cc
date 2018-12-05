@@ -162,11 +162,6 @@
 #include "net/ssl/client_cert_store_mac.h"
 #endif  // defined(OS_MACOSX)
 
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_service.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
 #if (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
 #include "chrome/browser/net/trial_comparison_cert_verifier.h"
 #include "net/cert/cert_verify_proc_builtin.h"
@@ -540,26 +535,7 @@ void ProfileIOData::AppRequestContext::SetJobFactory(
   set_job_factory(job_factory_.get());
 }
 
-#if BUILDFLAG(ENABLE_REPORTING)
-void ProfileIOData::AppRequestContext::SetReportingService(
-    std::unique_ptr<net::ReportingService> reporting_service) {
-  reporting_service_ = std::move(reporting_service);
-  set_reporting_service(reporting_service_.get());
-}
-
-void ProfileIOData::AppRequestContext::SetNetworkErrorLoggingService(
-    std::unique_ptr<net::NetworkErrorLoggingService>
-        network_error_logging_service) {
-  network_error_logging_service_ = std::move(network_error_logging_service);
-  set_network_error_logging_service(network_error_logging_service_.get());
-}
-#endif  // BUILDFLAG(ENABLE_REPORTING)
-
 ProfileIOData::AppRequestContext::~AppRequestContext() {
-#if BUILDFLAG(ENABLE_REPORTING)
-  SetNetworkErrorLoggingService(nullptr);
-  SetReportingService(nullptr);
-#endif  // BUILDFLAG(ENABLE_REPORTING)
   AssertNoURLRequests();
 }
 
