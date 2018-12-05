@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -289,7 +288,6 @@ ChromeLauncherController::~ChromeLauncherController() {
 void ChromeLauncherController::Init() {
   CreateBrowserShortcutLauncherItem();
   UpdateAppLaunchersFromPref();
-  SetVirtualKeyboardBehaviorFromPrefs();
 }
 
 ash::ShelfID ChromeLauncherController::CreateAppLauncherItem(
@@ -556,7 +554,6 @@ void ChromeLauncherController::ActiveUserChanged(
   // Update the user specific shell properties from the new user profile.
   // Shelf preferences are loaded in ChromeLauncherController::AttachProfile.
   UpdateAppLaunchersFromPref();
-  SetVirtualKeyboardBehaviorFromPrefs();
 
   // Restore the order of running, but unpinned applications for the activated
   // user.
@@ -994,24 +991,6 @@ void ChromeLauncherController::UpdatePolicyPinnedAppsFromPrefs() {
   }
 }
 
-void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
-  using keyboard::mojom::KeyboardEnableFlag;
-  if (!ChromeKeyboardControllerClient::HasInstance())  // May be null in tests
-    return;
-  auto* client = ChromeKeyboardControllerClient::Get();
-  const PrefService* service = profile()->GetPrefs();
-  if (service->HasPrefPath(prefs::kTouchVirtualKeyboardEnabled)) {
-    // Since these flags are mutually exclusive, setting one clears the other.
-    client->SetEnableFlag(
-        service->GetBoolean(prefs::kTouchVirtualKeyboardEnabled)
-            ? KeyboardEnableFlag::kPolicyEnabled
-            : KeyboardEnableFlag::kPolicyDisabled);
-  } else {
-    client->ClearEnableFlag(KeyboardEnableFlag::kPolicyDisabled);
-    client->ClearEnableFlag(KeyboardEnableFlag::kPolicyEnabled);
-  }
-}
-
 ash::ShelfItemStatus ChromeLauncherController::GetAppState(
     const std::string& app_id) {
   for (auto& it : web_contents_to_app_id_) {
@@ -1164,10 +1143,6 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
   pref_change_registrar_.Add(
       arc::prefs::kArcEnabled,
       base::Bind(&ChromeLauncherController::ScheduleUpdateAppLaunchersFromPref,
-                 base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kTouchVirtualKeyboardEnabled,
-      base::Bind(&ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs,
                  base::Unretained(this)));
 
   std::unique_ptr<LauncherAppUpdater> extension_app_updater(

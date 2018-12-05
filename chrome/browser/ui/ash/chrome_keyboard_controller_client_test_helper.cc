@@ -113,7 +113,7 @@ void ChromeKeyboardControllerClientTestHelper::Initialize(
 
   // Provide the local connector to ChromeKeyboardControllerClient.
   chrome_keyboard_controller_client_ =
-      std::make_unique<ChromeKeyboardControllerClient>(connector_.get());
+      ChromeKeyboardControllerClient::CreateForTest(connector_.get());
 }
 
 ChromeKeyboardControllerClientTestHelper::

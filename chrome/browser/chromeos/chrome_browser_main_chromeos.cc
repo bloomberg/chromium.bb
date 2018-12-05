@@ -687,9 +687,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // keyboard::KeyboardController initializes ChromeKeyboardUI which depends
   // on ChromeKeyboardControllerClient.
-  chrome_keyboard_controller_client_ =
-      std::make_unique<ChromeKeyboardControllerClient>(
-          content::ServiceManagerConnection::GetForProcess()->GetConnector());
+  chrome_keyboard_controller_client_ = ChromeKeyboardControllerClient::Create(
+      content::ServiceManagerConnection::GetForProcess()->GetConnector());
 
   // ProfileHelper has to be initialized after UserManager instance is created.
   ProfileHelper::Get()->Initialize();
@@ -1124,7 +1123,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
       ->browser_policy_connector_chromeos()
       ->PreShutdown();
 
-  // Shutdown any keyboard UI before ash::Shell.
+  // Shutdown the virtual keyboard UI before destroying ash::Shell or the
+  // primary profile.
   chrome_keyboard_controller_client_->Shutdown();
 
   // NOTE: Closes ash and destroys ash::Shell.

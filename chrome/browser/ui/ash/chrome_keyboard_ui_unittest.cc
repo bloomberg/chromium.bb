@@ -24,8 +24,7 @@ class ChromeKeyboardUITest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     chrome_keyboard_controller_client_ =
-        std::make_unique<ChromeKeyboardControllerClient>(
-            nullptr /* connector */);
+        ChromeKeyboardControllerClient::CreateForTest(nullptr /* connector */);
     chrome_keyboard_ui_ = std::make_unique<ChromeKeyboardUI>(profile());
   }
 
