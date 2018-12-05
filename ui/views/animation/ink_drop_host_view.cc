@@ -37,7 +37,7 @@ class InkDropHostView::InkDropEventHandler : public ui::EventHandler {
 
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override {
-    if (!host_view_->enabled())
+    if (!host_view_->enabled() || host_view_->ink_drop_mode_ != InkDropMode::ON)
       return;
 
     InkDropState current_ink_drop_state =
@@ -112,7 +112,8 @@ class InkDropHostView::InkDropEventHandler : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(InkDropEventHandler);
 };
 
-InkDropHostView::InkDropHostView() = default;
+InkDropHostView::InkDropHostView()
+    : ink_drop_event_handler_(std::make_unique<InkDropEventHandler>(this)) {}
 
 InkDropHostView::~InkDropHostView() {
   // TODO(bruthig): Improve InkDropImpl to be safer about calling back to
@@ -185,11 +186,6 @@ SkColor InkDropHostView::GetInkDropBaseColor() const {
 void InkDropHostView::SetInkDropMode(InkDropMode ink_drop_mode) {
   ink_drop_mode_ = ink_drop_mode;
   ink_drop_ = nullptr;
-
-  if (ink_drop_mode_ != InkDropMode::ON)
-    ink_drop_event_handler_ = nullptr;
-  else if (!ink_drop_event_handler_)
-    ink_drop_event_handler_ = std::make_unique<InkDropEventHandler>(this);
 }
 
 void InkDropHostView::AnimateInkDrop(InkDropState state,
