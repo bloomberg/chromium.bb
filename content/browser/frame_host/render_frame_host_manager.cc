@@ -2191,15 +2191,12 @@ void RenderFrameHostManager::CommitPending() {
   // TODO(danakj): For subframes the old_render_frame_host will get swapped out
   // and eventually deleted on SwapOutACK. So why would we want to Hide() it
   // here anyways?
-  // TODO(danakj): But regardless if this old frame was a local root, why dont
-  // just go through RFH::GetView() and not need to involve RVH?
-  if (is_main_frame &&
-      old_render_frame_host->render_view_host()->GetWidget()->GetView()) {
-    // TODO(crbug.com/908582): Note that this hides the RenderWidget but does
-    // not hide the Page. If it did hide the Page then making a new
-    // RenderFrameHost on another call to here would need to make sure it showed
-    // the RenderView when the RenderWidget was created as visible.
-    old_render_frame_host->render_view_host()->GetWidget()->GetView()->Hide();
+  if (is_main_frame && old_render_frame_host->GetView()) {
+    // Note that this hides the RenderWidget but does not hide the Page. If it
+    // did hide the Page then making a new RenderFrameHost on another call to
+    // here would need to make sure it showed the RenderView when the
+    // RenderWidget was created as visible.
+    old_render_frame_host->GetView()->Hide();
   }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
