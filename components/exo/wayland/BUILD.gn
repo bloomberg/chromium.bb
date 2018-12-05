@@ -399,6 +399,7 @@ test("wayland_client_perftests") {
     "//components/exo",
     "//components/viz/test:test_support",
     "//mojo/core/embedder",
+    "//testing/gtest",
     "//testing/perf",
     "//ui/aura",
     "//ui/aura:test_support",
