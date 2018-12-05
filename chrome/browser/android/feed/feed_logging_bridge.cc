@@ -48,12 +48,12 @@ void FeedLoggingBridge::OnContentViewed(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
     const jint j_position,
-    const jlong j_publishedTimeSeconds,
-    const jlong j_timeContentBecameAvailableSeconds,
+    const jlong j_publishedTimeMs,
+    const jlong j_timeContentBecameAvailableMs,
     const jfloat j_score) {
   feed_logging_metrics_->OnSuggestionShown(
-      j_position, base::Time::FromJavaTime(j_publishedTimeSeconds), j_score,
-      base::Time::FromJavaTime(j_timeContentBecameAvailableSeconds));
+      j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score,
+      base::Time::FromJavaTime(j_timeContentBecameAvailableMs));
 }
 
 void FeedLoggingBridge::OnContentDismissed(
@@ -71,20 +71,15 @@ void FeedLoggingBridge::OnContentSwiped(
   feed_logging_metrics_->OnSuggestionSwiped();
 }
 
-void FeedLoggingBridge::OnContentClicked(
-    JNIEnv* j_env,
-    const base::android::JavaRef<jobject>& j_this,
-    const jint j_position,
-    const jlong j_publishedTimeSeconds,
-    const jfloat j_score) {
-  feed_logging_metrics_->OnSuggestionOpened(
-      j_position, base::Time::FromJavaTime(j_publishedTimeSeconds), j_score);
-}
-
 void FeedLoggingBridge::OnClientAction(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
-    const jint j_window_open_disposition) {
+    const jint j_window_open_disposition,
+    const jint j_position,
+    const jlong j_publishedTimeMs,
+    const jfloat j_score) {
+  feed_logging_metrics_->OnSuggestionOpened(
+      j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score);
   feed_logging_metrics_->OnSuggestionWindowOpened(
       static_cast<WindowOpenDisposition>(j_window_open_disposition));
 }
@@ -93,10 +88,10 @@ void FeedLoggingBridge::OnContentContextMenuOpened(
     JNIEnv* j_env,
     const base::android::JavaRef<jobject>& j_this,
     const jint j_position,
-    const jlong j_publishedTimeSeconds,
+    const jlong j_publishedTimeMs,
     const jfloat j_score) {
   feed_logging_metrics_->OnSuggestionMenuOpened(
-      j_position, base::Time::FromJavaTime(j_publishedTimeSeconds), j_score);
+      j_position, base::Time::FromJavaTime(j_publishedTimeMs), j_score);
 }
 
 void FeedLoggingBridge::OnMoreButtonViewed(JNIEnv* j_env,
