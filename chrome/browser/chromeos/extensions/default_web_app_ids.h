@@ -13,7 +13,7 @@ constexpr char kYoutubeTVAppId[] = "kiemjbkkegajmpbobdfngbmjccjhnofh";
 
 // Generated as
 // web_app::GenerateAppIdFromURL(GURL("https://www.showtime.com/")).
-constexpr char kShowtimeAppId[] = "https://canvas-internal.googleplex.com/";
+constexpr char kShowtimeAppId[] = "eoccpgmpiempcflglfokeengliildkag";
 
 // Generated as
 // web_app::GenerateAppIdFromURL(GURL("https://canvas.apps.chrome/index.html)).
