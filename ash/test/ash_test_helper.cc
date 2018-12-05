@@ -242,9 +242,9 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   CreateWindowService();
 
   // Create the test keyboard controller observer to respond to
-  // OnKeyboardLoadContents() and enable the virtual keyboard. Note: enabling
-  // the keyboard just makes it available, it does not show it or otherwise
-  // affect behavior.
+  // OnLoadKeyboardContentsRequested() and enable the virtual keyboard. Note:
+  // enabling the keyboard just makes it available, it does not show it or
+  // otherwise affect behavior.
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
           shell->ash_keyboard_controller());

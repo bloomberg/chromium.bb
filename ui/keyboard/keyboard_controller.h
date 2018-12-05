@@ -240,6 +240,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   bool IsKeyboardVisible();
 
+  aura::Window* parent_container() { return parent_container_; }
+
   ui::InputMethodKeyboardController* input_method_keyboard_controller() {
     return input_method_keyboard_controller_.get();
   }

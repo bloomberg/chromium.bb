@@ -1,22 +1,31 @@
 # These tests currently fail with SingleProcessMash enabled.
 # Bug: crbug.com/877118
 
-# Virtual keyboard not supported. https://crbug.com/646565
--DefaultKeyboardExtensionBrowserTest.*
--KeyboardControllerAppWindowTest.*
--KeyboardControllerStateTest.*
--KeyboardControllerWebContentTest.*
--KeyboardEndToEndFocusTest.*
--KeyboardEndToEndFormTest.*
--KeyboardEndToEndOverscrollTest.*
--KioskVirtualKeyboardTest.*
--PolicyTest.VirtualKeyboardEnabled
+# Changing the Chrome keyboard window size does not change the Ash keyboard
+# window size. These tests may require a test mojo interface for Mash.
+# https://crbug.com/843332.
+-KeyboardControllerAppWindowTest.DisableOverscrollForImeWindow
+-KeyboardEndToEndOverscrollTest.ToggleKeyboardOnMaximizedWindowAffectsViewport
 
-# Also depends on keyboard. Test hangs in single process mash crbug.com/897012
--SelectFileDialogExtensionBrowserTest.SelectFileVirtualKeyboard_TabletMode
+# Keyboard window does not move browser windows. https://crbug.com/906888.
+-KeyboardEndToEndOverscrollTest.ToggleKeyboardOnShortOverlappingWindowMovesWindowUpwards
+-KeyboardEndToEndOverscrollTest.ToggleKeyboardOnTallOverlappingWindowMovesWindowUpwardsAndAffectsViewport
 
-# Also depends on keyboard. https://crbug.com/899862
--ShutdownPolicyLockerTest.*
+# Mouse move events are not handled correctly in tests.
+# TODO(stevenjb): Determine why this works in practice but fails in the test.
+-KeyboardControllerWebContentTest.CanDragFloatingKeyboardWithMouse
+
+# RemoteTextInputClient is not forwarding focus requests to show/hide the
+# virtual keyboard: https://crbug.com/631527
+-KeyboardEndToEndFormTest.ChangeInputModeToNoneHidesKeyboard
+-KeyboardEndToEndFocusTest.TriggerAsyncInputFocusFromUserGestureAfterBlurShowsKeyboard
+
+# Crash in media::AudioOutputController::Create()
+-KioskVirtualKeyboardTest.RestrictFeatures
+
+# Crash in Window::AddChild(), https://crbug.com/899862
+-ShutdownPolicyLockerTest.PolicyChange
+-ShutdownPolicyLockerTest.TestBasic
 
 # AutomationManagerAura::Enable() uses ash to get active window. More generally,
 # chrome a11y code directly accesses ash system UI widgets and views.
@@ -32,9 +41,6 @@
 
 # Failing on ASAN bot. crbug.com/882631
 -ExtensionWebRequestApiTest.WebRequestTypes
-
-# Flaky on ASAN bot. crbug.com/884216
--KeyboardOverlayUIBrowserTest.*
 
 # Flaky https://crbug.com/887175
 -PrerenderBrowserTest.PrerenderHTML5VideoJs

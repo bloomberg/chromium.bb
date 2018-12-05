@@ -398,6 +398,8 @@ component("ash") {
     "ime/mode_indicator_observer.h",
     "keyboard/ash_keyboard_controller.cc",
     "keyboard/ash_keyboard_controller.h",
+    "keyboard/ash_keyboard_ui.cc",
+    "keyboard/ash_keyboard_ui.h",
     "keyboard/virtual_keyboard_container_layout_manager.cc",
     "keyboard/virtual_keyboard_container_layout_manager.h",
     "keyboard/virtual_keyboard_controller.cc",

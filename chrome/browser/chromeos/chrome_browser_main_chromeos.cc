@@ -1124,6 +1124,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
       ->browser_policy_connector_chromeos()
       ->PreShutdown();
 
+  // Shutdown any keyboard UI before ash::Shell.
+  chrome_keyboard_controller_client_->Shutdown();
+
   // NOTE: Closes ash and destroys ash::Shell.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 

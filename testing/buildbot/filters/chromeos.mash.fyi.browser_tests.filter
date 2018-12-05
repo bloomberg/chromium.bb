@@ -148,9 +148,6 @@
 # http://crbug.com/831826
 -PolicyTest.UnifiedDesktopEnabledByDefault
 
-# KeyboardOverlayUI uses ash::Shell.
--KeyboardOverlayUIBrowserTest.*
-
 # Kiosk mode has a variety of failures:
 # termination_observer_->terminated() is false.
 # Value of: login_display_host == NULL || login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() == 0.0f

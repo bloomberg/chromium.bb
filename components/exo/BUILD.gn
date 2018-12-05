@@ -257,9 +257,7 @@ test("exo_unittests") {
     "//ui/gl:test_support",
   ]
 
-  data_deps = [
-    "//testing/buildbot/filters:exo_unittests_filters",
-  ]
+  data_deps = []
 
   if (is_linux) {
     deps += [ "//components/exo/wayland:unit_tests" ]

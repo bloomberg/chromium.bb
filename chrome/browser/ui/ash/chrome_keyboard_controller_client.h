@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 
+class ChromeKeyboardWebContents;
 class Profile;
 
 namespace aura {
@@ -40,9 +41,10 @@ class ChromeKeyboardControllerClient
     virtual void OnKeyboardVisibilityChanged(bool visible) {}
 
     // Forwards the 'OnKeyboardOccludedBoundsChanged' mojo observer method.
-    // This is used by overscrolling.
-    virtual void OnKeyboardOccludedBoundsChanged(
-        const gfx::Rect& screen_bounds) {}
+    // This is used to update the insets of browser and app windows when the
+    // keyboard is shown. |bounds| is in the frame of reference of the
+    // keyboard window.
+    virtual void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) {}
 
     // Notifies observers when the keyboard content (i.e. the extension) has
     // loaded. Note: if the content is already loaded when the observer is
@@ -60,6 +62,9 @@ class ChromeKeyboardControllerClient
 
   // Used in tests to determine whether this has been instantiated.
   static bool HasInstance();
+
+  // Called before Shell is destroyed
+  void Shutdown();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -128,13 +133,23 @@ class ChromeKeyboardControllerClient
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& screen_bounds) override;
   void OnKeyboardOccludedBoundsChanged(const gfx::Rect& screen_bounds) override;
+  void OnLoadKeyboardContentsRequested() override;
+  void OnKeyboardUIDestroyed() override;
+
+  void OnKeyboardContentsLoaded(const base::UnguessableToken& token,
+                                const gfx::Size& size);
 
   // Returns either the test profile or the active user profile.
   Profile* GetProfile();
 
+  gfx::Rect BoundsFromScreen(const gfx::Rect& screen_bounds);
+
   ash::mojom::KeyboardControllerPtr keyboard_controller_ptr_;
   mojo::AssociatedBinding<ash::mojom::KeyboardControllerObserver>
       keyboard_controller_observer_binding_{this};
+
+  // Set when the WS is used and OnLoadKeyboardContentsRequested is called.
+  std::unique_ptr<ChromeKeyboardWebContents> keyboard_contents_;
 
   // Cached copy of the latest config provided by mojom::KeyboardController.
   keyboard::mojom::KeyboardConfigPtr cached_keyboard_config_;

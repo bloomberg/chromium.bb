@@ -29,6 +29,8 @@ class TestKeyboardControllerObserver
   void OnKeyboardVisibilityChanged(bool visible) override;
   void OnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds) override;
   void OnKeyboardOccludedBoundsChanged(const gfx::Rect& bounds) override;
+  void OnLoadKeyboardContentsRequested() override;
+  void OnKeyboardUIDestroyed() override;
 
   const keyboard::mojom::KeyboardConfig& config() const { return config_; }
   void set_config(const keyboard::mojom::KeyboardConfig& config) {

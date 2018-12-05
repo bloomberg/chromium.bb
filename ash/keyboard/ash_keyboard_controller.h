@@ -25,6 +25,7 @@ class KeyboardController;
 
 namespace ash {
 
+class AshKeyboardUI;
 class RootWindowController;
 class SessionController;
 class VirtualKeyboardController;
@@ -42,6 +43,7 @@ class ASH_EXPORT AshKeyboardController
   explicit AshKeyboardController(SessionController* session_controller);
   ~AshKeyboardController() override;
 
+  // Called from RegisterInterfaces to bind this to the Ash service.
   void BindRequest(mojom::KeyboardControllerRequest request);
 
   // Enables the keyboard controller if enabling has been requested. If already
@@ -57,7 +59,14 @@ class ASH_EXPORT AshKeyboardController
   void CreateVirtualKeyboard();
   void DestroyVirtualKeyboard();
 
+  // Forwards events to mojo observers.
+  void SendOnKeyboardVisibleBoundsChanged(const gfx::Rect& bounds);
+  void SendOnLoadKeyboardContentsRequested();
+  void SendOnKeyboardUIDestroyed();
+
   // mojom::KeyboardController:
+  void KeyboardContentsLoaded(const base::UnguessableToken& token,
+                              const gfx::Size& size) override;
   void GetKeyboardConfig(GetKeyboardConfigCallback callback) override;
   void SetKeyboardConfig(
       keyboard::mojom::KeyboardConfigPtr keyboard_config) override;
@@ -120,6 +129,7 @@ class ASH_EXPORT AshKeyboardController
 
   SessionController* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardController> keyboard_controller_;
+  AshKeyboardUI* ash_keyboard_ui_ = nullptr;  // Owned by keyboard_controller_.
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   mojo::BindingSet<mojom::KeyboardController> bindings_;
   mojo::AssociatedInterfacePtrSet<mojom::KeyboardControllerObserver> observers_;
