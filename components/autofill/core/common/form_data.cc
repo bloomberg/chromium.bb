@@ -72,7 +72,7 @@ FormData::FormData() : is_form_tag(true), is_formless_checkout(false) {}
 
 FormData::FormData(const FormData& data)
     : name(data.name),
-      button_title(data.button_title),
+      button_titles(data.button_titles),
       origin(data.origin),
       action(data.action),
       main_frame_origin(data.main_frame_origin),

@@ -527,6 +527,51 @@ bool EnumTraits<autofill::mojom::FillingStatus, autofill::FillingStatus>::
 }
 
 // static
+autofill::mojom::ButtonTitleType EnumTraits<
+    autofill::mojom::ButtonTitleType,
+    autofill::ButtonTitleType>::ToMojom(autofill::ButtonTitleType input) {
+  switch (input) {
+    case autofill::ButtonTitleType::NONE:
+      return autofill::mojom::ButtonTitleType::NONE;
+    case autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE:
+      return autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE;
+    case autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE:
+      return autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE;
+    case autofill::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE:
+      return autofill::mojom::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE;
+    case autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
+      return autofill::mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE;
+  }
+  NOTREACHED();
+  return autofill::mojom::ButtonTitleType::NONE;
+}
+
+// static
+bool EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType>::
+    FromMojom(autofill::mojom::ButtonTitleType input,
+              autofill::ButtonTitleType* output) {
+  switch (input) {
+    case autofill::mojom::ButtonTitleType::NONE:
+      *output = autofill::ButtonTitleType::NONE;
+      return true;
+    case autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE:
+      *output = autofill::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE;
+      return true;
+    case autofill::mojom::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE:
+      *output = autofill::ButtonTitleType::BUTTON_ELEMENT_BUTTON_TYPE;
+      return true;
+    case autofill::mojom::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE:
+      *output = autofill::ButtonTitleType::INPUT_ELEMENT_SUBMIT_TYPE;
+      return true;
+    case autofill::mojom::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE:
+      *output = autofill::ButtonTitleType::INPUT_ELEMENT_BUTTON_TYPE;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<
     autofill::mojom::FormFieldDataDataView,
     autofill::FormFieldData>::Read(autofill::mojom::FormFieldDataDataView data,
@@ -596,6 +641,14 @@ bool StructTraits<
 }
 
 // static
+bool StructTraits<autofill::mojom::ButtonTitleInfoDataView,
+                  autofill::ButtonTitleInfo>::
+    Read(autofill::mojom::ButtonTitleInfoDataView data,
+         autofill::ButtonTitleInfo* out) {
+  return data.ReadTitle(&out->first) && data.ReadType(&out->second);
+}
+
+// static
 bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     autofill::mojom::FormDataDataView data,
     autofill::FormData* out) {
@@ -605,7 +658,7 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
     return false;
   if (!data.ReadName(&out->name))
     return false;
-  if (!data.ReadButtonTitle(&out->button_title))
+  if (!data.ReadButtonTitles(&out->button_titles))
     return false;
   if (!data.ReadOrigin(&out->origin))
     return false;

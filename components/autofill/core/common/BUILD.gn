@@ -25,6 +25,7 @@ jumbo_static_library("common") {
     "autofill_switches.h",
     "autofill_util.cc",
     "autofill_util.h",
+    "button_title_type.h",
     "filling_status.h",
     "form_data.cc",
     "form_data.h",

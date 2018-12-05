@@ -119,6 +119,14 @@ struct EnumTraits<autofill::mojom::FillingStatus, autofill::FillingStatus> {
 };
 
 template <>
+struct EnumTraits<autofill::mojom::ButtonTitleType, autofill::ButtonTitleType> {
+  static autofill::mojom::ButtonTitleType ToMojom(
+      autofill::ButtonTitleType input);
+  static bool FromMojom(autofill::mojom::ButtonTitleType input,
+                        autofill::ButtonTitleType* output);
+};
+
+template <>
 struct StructTraits<autofill::mojom::FormFieldDataDataView,
                     autofill::FormFieldData> {
   static const base::string16& label(const autofill::FormFieldData& r) {
@@ -244,6 +252,22 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
 };
 
 template <>
+struct StructTraits<autofill::mojom::ButtonTitleInfoDataView,
+                    autofill::ButtonTitleInfo> {
+  static const base::string16& title(const autofill::ButtonTitleInfo& r) {
+    return r.first;
+  }
+
+  static const autofill::ButtonTitleType& type(
+      const autofill::ButtonTitleInfo& r) {
+    return r.second;
+  }
+
+  static bool Read(autofill::mojom::ButtonTitleInfoDataView data,
+                   autofill::ButtonTitleInfo* out);
+};
+
+template <>
 struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
   static const base::string16& id_attribute(const autofill::FormData& r) {
     return r.id_attribute;
@@ -257,8 +281,9 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
     return r.name;
   }
 
-  static const base::string16& button_title(const autofill::FormData& r) {
-    return r.button_title;
+  static const autofill::ButtonTitleList& button_titles(
+      const autofill::FormData& r) {
+    return r.button_titles;
   }
 
   static const GURL& origin(const autofill::FormData& r) { return r.origin; }

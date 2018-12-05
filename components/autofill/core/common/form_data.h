@@ -9,12 +9,20 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "components/autofill/core/common/button_title_type.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/submission_indicator_event.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 namespace autofill {
+
+// Pair of a button title (e.g. "Register") and its type (e.g.
+// INPUT_ELEMENT_SUBMIT_TYPE).
+using ButtonTitleInfo = std::pair<base::string16, ButtonTitleType>;
+
+// List of button titles of a given form.
+using ButtonTitleList = std::vector<ButtonTitleInfo>;
 
 // Holds information about a form to be filled and/or submitted.
 struct FormData {
@@ -56,8 +64,8 @@ struct FormData {
   // form signatures.
   // TODO(crbug/896689): remove this and use attributes/unique_id instead.
   base::string16 name;
-  // The form submission button's title.
-  base::string16 button_title;
+  // Titles of form's buttons.
+  ButtonTitleList button_titles;
   // The URL (minus query parameters) containing the form.
   GURL origin;
   // The action target of the form.
