@@ -2085,7 +2085,8 @@ TEST_P(WebStateObserverTest, RestoreSession) {
     return navigation_manager->GetItemCount() == 1;
   }));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return navigation_manager->GetLastCommittedItem()->GetURL() == url;
+    web::NavigationItem* item = navigation_manager->GetLastCommittedItem();
+    return item && item->GetURL() == url;
   }));
 
   // Wait until the page finishes loading.

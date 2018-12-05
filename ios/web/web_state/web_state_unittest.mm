@@ -352,15 +352,15 @@ TEST_P(WebStateTest, RestoreLargeSession) {
     bool restored = navigation_manager->GetItemCount() == kExpectedItemCount &&
                     navigation_manager->CanGoForward();
     if (!restored) {
+      EXPECT_FALSE(navigation_manager->GetLastCommittedItem());
+      EXPECT_EQ(-1, navigation_manager->GetLastCommittedItemIndex());
+      EXPECT_TRUE(web_state_ptr->GetLastCommittedURL().is_empty());
       EXPECT_FALSE(navigation_manager->CanGoForward());
       EXPECT_TRUE(navigation_manager->GetBackwardItems().empty());
       EXPECT_TRUE(navigation_manager->GetForwardItems().empty());
       DCHECK_EQ(0.0, web_state_ptr->GetLoadingProgress());
       // TODO(crbug.com/877671): Ensure that the following API work correctly:
-      //  - WebState::GetLastCommittedURL
-      //  - NavigationManager::GetLastCommittedItem
       //  - NavigationManager::GetPendingItem
-      //  - NavigationManager::GetLastCommittedItemIndex
       //  - NavigationManager::GetPendingItemIndex
     } else {
       EXPECT_EQ("http://www.0.com/", web_state_ptr->GetLastCommittedURL());

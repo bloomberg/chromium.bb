@@ -185,6 +185,7 @@ class NavigationManagerImpl : public NavigationManager {
 
   // NavigationManager:
   NavigationItem* GetLastCommittedItem() const final;
+  int GetLastCommittedItemIndex() const final;
   NavigationItem* GetPendingItem() const final;
   NavigationItem* GetTransientItem() const final;
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) final;
@@ -198,7 +199,13 @@ class NavigationManagerImpl : public NavigationManager {
   // Implementation for corresponding NavigationManager getters.
   virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
   virtual NavigationItemImpl* GetTransientItemImpl() const = 0;
-  virtual NavigationItemImpl* GetLastCommittedItemImpl() const = 0;
+  // Unlike GetLastCommittedItem(), this method does not return null during
+  // session restoration (and returns last known committed item instead).
+  virtual NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession()
+      const = 0;
+  // Unlike GetLastCommittedItemIndex(), this method does not return -1 during
+  // session restoration (and returns last known committed item index instead).
+  virtual int GetLastCommittedItemIndexInCurrentOrRestoredSession() const = 0;
 
   // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl
   // instead of the public NavigationItem interface.

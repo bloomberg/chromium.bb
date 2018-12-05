@@ -123,7 +123,6 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItem* GetItemAtIndex(size_t index) const override;
   int GetIndexOfItem(const NavigationItem* item) const override;
   int GetPendingItemIndex() const override;
-  int GetLastCommittedItemIndex() const override;
   bool RemoveItemAtIndex(int index) override;
   bool CanGoBack() const override;
   bool CanGoForward() const override;
@@ -201,7 +200,9 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
 
   // NavigationManagerImpl:
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
-  NavigationItemImpl* GetLastCommittedItemImpl() const override;
+  NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession()
+      const override;
+  int GetLastCommittedItemIndexInCurrentOrRestoredSession() const override;
   // Returns the pending navigation item in the main frame.
   NavigationItemImpl* GetPendingItemImpl() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;

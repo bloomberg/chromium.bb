@@ -100,7 +100,7 @@ class NavigationManager {
   virtual NavigationItem* GetVisibleItem() const = 0;
 
   // Returns the last committed NavigationItem, which may be null if there
-  // are no committed entries.
+  // are no committed entries or session restoration is in-progress.
   virtual NavigationItem* GetLastCommittedItem() const = 0;
 
   // Returns the pending item corresponding to the navigation that is currently
@@ -145,7 +145,8 @@ class NavigationManager {
   virtual int GetIndexOfItem(const NavigationItem* item) const = 0;
 
   // Returns the index of the last committed item or -1 if the last
-  // committed item correspond to a new navigation.
+  // committed item correspond to a new navigation  or session restoration is
+  // in-progress.
   // TODO(crbug.com/533848): Update to return size_t.
   virtual int GetLastCommittedItemIndex() const = 0;
 
