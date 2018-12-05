@@ -300,16 +300,11 @@
             </paper-icon-button-light>
           </div>
         </template>
-</if>
 
-        <div id="manage-other-people-subpage-trigger"
-            class="settings-box" on-click="onManageOtherPeople_" actionable
-            hidden="[[isChild_]]">
-          <div class="start">$i18n{manageOtherPeople}</div>
-          <paper-icon-button-light class="subpage-arrow">
-            <button aria-label="$i18n{manageOtherPeople}"></button>
-          </paper-icon-button-light>
-        </div>
+        <cr-link-row id="manage-other-people-subpage-trigger"
+            label="$i18n{manageOtherPeople}" icon-class="subpage-arrow"
+            on-click="onManageOtherPeople_"></cr-link-row>
+</if>
 
 <if expr="not chromeos">
         <div class="settings-box" on-click="onImportDataTap_" actionable>

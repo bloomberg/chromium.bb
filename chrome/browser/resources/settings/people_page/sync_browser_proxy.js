@@ -141,11 +141,6 @@ cr.define('settings', function() {
     pauseSync() {}
 
     /**
-     * Opens the multi-profile user manager.
-     */
-    manageOtherPeople() {}
-
-    /**
      * @return {number} the number of times the sync account promo was shown.
      */
     getPromoImpressionCount() {}
@@ -238,11 +233,6 @@ cr.define('settings', function() {
     /** @override */
     pauseSync() {
       chrome.send('SyncSetupPauseSync');
-    }
-
-    /** @override */
-    manageOtherPeople() {
-      chrome.send('SyncSetupManageOtherPeople');
     }
 
     /** @override */
