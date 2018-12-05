@@ -327,5 +327,11 @@ void QuicConnectionPeer::SetNoVersionNegotiation(QuicConnection* connection,
       no_version_negotiation;
 }
 
+// static
+QuicConnection::PacketContent QuicConnectionPeer::GetCurrentPacketContent(
+    QuicConnection* connection) {
+  return connection->current_packet_content_;
+}
+
 }  // namespace test
 }  // namespace quic

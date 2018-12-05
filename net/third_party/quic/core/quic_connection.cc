@@ -1182,10 +1182,13 @@ bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
 }
 
 bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
-  if (transmitted_connectivity_probe_payload_ != frame.data_buffer) {
+  if (!transmitted_connectivity_probe_payload_ ||
+      *transmitted_connectivity_probe_payload_ != frame.data_buffer) {
     // Is not for the probe we sent, ignore it.
     return true;
   }
+  // Have received the matching PATH RESPONSE, saved payload no longer valid.
+  transmitted_connectivity_probe_payload_ = nullptr;
   UpdatePacketContent(FIRST_FRAME_IS_PING);
   should_last_packet_instigate_acks_ = true;
   return true;
@@ -3098,9 +3101,14 @@ bool QuicConnection::SendGenericPathProbePacket(
       }
     } else {
       // Request using IETF QUIC PATH_CHALLENGE frame
+      transmitted_connectivity_probe_payload_ =
+          QuicMakeUnique<QuicPathFrameBuffer>();
       probing_packet =
           packet_generator_.SerializePathChallengeConnectivityProbingPacket(
-              &transmitted_connectivity_probe_payload_);
+              transmitted_connectivity_probe_payload_.get());
+      if (!probing_packet) {
+        transmitted_connectivity_probe_payload_ = nullptr;
+      }
     }
   }
 

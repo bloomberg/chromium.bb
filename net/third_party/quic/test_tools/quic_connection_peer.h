@@ -136,6 +136,8 @@ class QuicConnectionPeer {
       size_t new_value);
   static void SetNoVersionNegotiation(QuicConnection* connection,
                                       bool no_version_negotiation);
+  static QuicConnection::PacketContent GetCurrentPacketContent(
+      QuicConnection* connection);
 };
 
 }  // namespace test
