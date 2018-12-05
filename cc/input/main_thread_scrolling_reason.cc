@@ -35,8 +35,8 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Threaded scrolling is disabled");
   if (reasons & kScrollbarScrolling)
     traced_value.AppendString("Scrollbar scrolling");
-  if (reasons & kPageOverlay)
-    traced_value.AppendString("Page overlay");
+  if (reasons & kFrameOverlay)
+    traced_value.AppendString("Frame overlay");
   if (reasons & kHandlingScrollFromMainThread)
     traced_value.AppendString("Handling scroll from main thread");
   if (reasons & kCustomScrollbarScrolling)

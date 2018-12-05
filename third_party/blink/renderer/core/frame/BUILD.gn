@@ -56,6 +56,8 @@ blink_core_sources("frame") {
     "frame_console.h",
     "frame_lifecycle.cc",
     "frame_lifecycle.h",
+    "frame_overlay.cc",
+    "frame_overlay.h",
     "frame_owner.h",
     "frame_serializer.cc",
     "frame_serializer.h",

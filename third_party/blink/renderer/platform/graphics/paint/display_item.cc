@@ -82,7 +82,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(LinkHighlight);
     DEBUG_STRING_CASE(ImageAreaFocusRing);
     DEBUG_STRING_CASE(OverflowControls);
-    DEBUG_STRING_CASE(PageOverlay);
+    DEBUG_STRING_CASE(FrameOverlay);
     DEBUG_STRING_CASE(PopupContainerBorder);
     DEBUG_STRING_CASE(PopupListBoxBackground);
     DEBUG_STRING_CASE(PopupListBoxRow);

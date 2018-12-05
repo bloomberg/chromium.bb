@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_OVERLAY_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_OVERLAY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OVERLAY_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_OVERLAY_H_
 
 #include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
@@ -42,31 +42,31 @@ class GraphicsContext;
 class LocalFrame;
 
 // Manages a layer that is overlaid on a WebLocalFrame's content.
-class CORE_EXPORT PageOverlay : public GraphicsLayerClient,
-                                public DisplayItemClient {
+class CORE_EXPORT FrameOverlay : public GraphicsLayerClient,
+                                 public DisplayItemClient {
  public:
   class Delegate {
    public:
     virtual ~Delegate() = default;
 
     // Paints page overlay contents.
-    virtual void PaintPageOverlay(const PageOverlay&,
-                                  GraphicsContext&,
-                                  const IntSize& web_view_size) const = 0;
+    virtual void PaintFrameOverlay(const FrameOverlay&,
+                                   GraphicsContext&,
+                                   const IntSize& web_view_size) const = 0;
   };
 
-  static std::unique_ptr<PageOverlay> Create(
+  static std::unique_ptr<FrameOverlay> Create(
       LocalFrame*,
-      std::unique_ptr<PageOverlay::Delegate>);
+      std::unique_ptr<FrameOverlay::Delegate>);
 
-  ~PageOverlay() override;
+  ~FrameOverlay() override;
 
   void Update();
 
   GraphicsLayer* GetGraphicsLayer() const { return layer_.get(); }
 
   // DisplayItemClient methods.
-  String DebugName() const final { return "PageOverlay"; }
+  String DebugName() const final { return "FrameOverlay"; }
   LayoutRect VisualRect() const override;
 
   // GraphicsLayerClient implementation
@@ -80,10 +80,10 @@ class CORE_EXPORT PageOverlay : public GraphicsLayerClient,
   String DebugName(const GraphicsLayer*) const override;
 
  private:
-  PageOverlay(LocalFrame*, std::unique_ptr<PageOverlay::Delegate>);
+  FrameOverlay(LocalFrame*, std::unique_ptr<FrameOverlay::Delegate>);
 
   Persistent<LocalFrame> frame_;
-  std::unique_ptr<PageOverlay::Delegate> delegate_;
+  std::unique_ptr<FrameOverlay::Delegate> delegate_;
   std::unique_ptr<GraphicsLayer> layer_;
 };
 

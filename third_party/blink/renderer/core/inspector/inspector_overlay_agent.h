@@ -56,7 +56,7 @@ class InspectorDOMAgent;
 class LocalFrame;
 class Node;
 class Page;
-class PageOverlay;
+class FrameOverlay;
 class WebGestureEvent;
 class WebMouseEvent;
 class WebLocalFrameImpl;
@@ -210,7 +210,7 @@ class CORE_EXPORT InspectorOverlayAgent final
   bool needs_update_;
   v8_inspector::V8InspectorSession* v8_session_;
   Member<InspectorDOMAgent> dom_agent_;
-  std::unique_ptr<PageOverlay> page_overlay_;
+  std::unique_ptr<FrameOverlay> frame_overlay_;
   Member<Node> hovered_node_for_inspect_mode_;
   bool swallow_next_mouse_up_;
   SearchMode inspect_mode_;

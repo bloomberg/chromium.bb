@@ -75,7 +75,7 @@ class PLATFORM_EXPORT DisplayItem {
     kLinkHighlight,
     kImageAreaFocusRing,
     kOverflowControls,
-    kPageOverlay,
+    kFrameOverlay,
     kPopupContainerBorder,
     kPopupListBoxBackground,
     kPopupListBoxRow,

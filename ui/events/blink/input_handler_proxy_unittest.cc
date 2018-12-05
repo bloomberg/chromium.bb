@@ -2186,7 +2186,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
       blink::kWebGestureDeviceTouchpad,
       cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects |
           cc::MainThreadScrollingReason::kThreadedScrollingDisabled |
-          cc::MainThreadScrollingReason::kPageOverlay |
+          cc::MainThreadScrollingReason::kFrameOverlay |
           cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
 
   EXPECT_THAT(
@@ -2201,7 +2201,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
                   cc::MainThreadScrollingReason::kThreadedScrollingDisabled),
               1),
           base::Bucket(
-              GetBucketSample(cc::MainThreadScrollingReason::kPageOverlay),
+              GetBucketSample(cc::MainThreadScrollingReason::kFrameOverlay),
               1)));
 
   // We only want to record "Handling scroll from main thread" reason if it's
@@ -2225,7 +2225,7 @@ TEST_P(InputHandlerProxyMainThreadScrollingReasonTest, WheelScrollHistogram) {
                   cc::MainThreadScrollingReason::kThreadedScrollingDisabled),
               1),
           base::Bucket(
-              GetBucketSample(cc::MainThreadScrollingReason::kPageOverlay), 1),
+              GetBucketSample(cc::MainThreadScrollingReason::kFrameOverlay), 1),
           base::Bucket(
               GetBucketSample(
                   cc::MainThreadScrollingReason::kHandlingScrollFromMainThread),

@@ -17,7 +17,7 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Has non-layer viewport-constrained objects,"
       "Threaded scrolling is disabled,"
       "Scrollbar scrolling,"
-      "Page overlay,"
+      "Frame overlay,"
       "Handling scroll from main thread,"
       "Custom scrollbar scrolling,"
       "Has opacity and LCD text,"

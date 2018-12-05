@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/graphics/subtree_paint_property_update_reason.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {
 
@@ -60,6 +61,7 @@ class ElementVisibilityObserver;
 class FloatRect;
 class FloatSize;
 class Frame;
+class FrameOverlay;
 class FrameViewAutoSizeInfo;
 class JSONObject;
 class JankTracker;
@@ -244,6 +246,14 @@ class CORE_EXPORT LocalFrameView final
   Color BaseBackgroundColor() const;
   void SetBaseBackgroundColor(const Color&);
   void UpdateBaseBackgroundColorRecursively(const Color&);
+
+  // Overlays a color on top of this LocalFrameView if it is associated with
+  // the main frame. Should not have multiple consumers.
+  void SetMainFrameColorOverlay(SkColor color);
+
+  // Overlays a color on top of this LocalFrameView if it is associated with
+  // a subframe. Should not have multiple consumers.
+  void SetSubframeColorOverlay(SkColor color);
 
   void AdjustViewSize();
   void AdjustViewSizeAndLayout();
@@ -829,6 +839,12 @@ class CORE_EXPORT LocalFrameView final
 
   void NotifyResizeObservers();
 
+  // Overlays a solid color on top of this view.
+  void SetFrameColorOverlay(SkColor color);
+  void RemoveFrameColorOverlay();
+  void UpdateFrameColorOverlay();
+  void PaintFrameColorOverlay();
+
   bool CheckLayoutInvalidationIsAllowed() const;
 
   PaintController* GetPaintController() { return paint_controller_.get(); }
@@ -978,6 +994,8 @@ class CORE_EXPORT LocalFrameView final
   UniqueObjectId unique_id_;
   std::unique_ptr<JankTracker> jank_tracker_;
   Member<PaintTimingDetector> paint_timing_detector_;
+
+  std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
