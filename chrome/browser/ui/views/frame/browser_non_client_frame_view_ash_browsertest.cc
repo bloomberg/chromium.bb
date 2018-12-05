@@ -15,7 +15,9 @@
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/interfaces/shelf_test_api.mojom.h"
 #include "ash/public/interfaces/shell_test_api.mojom.h"
+#include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"                                   // mash-ok
 #include "ash/wm/overview/window_selector_controller.h"  // mash-ok
 #include "ash/wm/splitview/split_view_controller.h"      // mash-ok
@@ -52,6 +54,7 @@
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
@@ -147,6 +150,17 @@ void ToggleOverview() {
   }
 }
 
+bool IsShelfVisible() {
+  ash::mojom::ShelfTestApiPtr shelf_test_api;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(ash::mojom::kServiceName, &shelf_test_api);
+  ash::mojom::ShelfTestApiAsyncWaiter shelf(shelf_test_api.get());
+  bool shelf_visible = true;
+  shelf.IsVisible(&shelf_visible);
+  return shelf_visible;
+}
+
 BrowserNonClientFrameViewAsh* GetFrameViewAsh(BrowserView* browser_view) {
   // We know we're using Ash, so static cast.
   auto* frame_view = static_cast<BrowserNonClientFrameViewAsh*>(
@@ -174,11 +188,6 @@ class TopChromeMdParamTest : public BaseTest,
 class ImmersiveModeTester : public ImmersiveModeController::Observer {
  public:
   explicit ImmersiveModeTester(Browser* browser) : browser_(browser) {
-    ash::ImmersiveFullscreenControllerTestApi(
-        static_cast<ImmersiveModeControllerAsh*>(
-            GetBrowserView()->immersive_mode_controller())
-            ->controller())
-        .SetupForTest();
     scoped_observer_.Add(GetBrowserView()->immersive_mode_controller());
   }
   ~ImmersiveModeTester() override = default;
@@ -306,16 +315,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   // No painting should occur in non-immersive fullscreen. (We enter into tab
   // fullscreen here because tab fullscreen is non-immersive even on ChromeOS).
-  {
-    // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
-    std::unique_ptr<FullscreenNotificationObserver> waiter(
-        new FullscreenNotificationObserver());
-    browser()
-        ->exclusive_access_manager()
-        ->fullscreen_controller()
-        ->EnterFullscreenModeForTab(web_contents, GURL());
-    waiter->Wait();
-  }
+  EnterFullscreenModeForTabAndWait(browser(), web_contents);
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
   EXPECT_FALSE(frame_view->ShouldPaint());
 
@@ -326,82 +326,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // buttons should be visible.
   ToggleFullscreenModeAndWait(browser());
   EXPECT_TRUE(frame_view->ShouldPaint());
-}
-
-IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, ImmersiveFullscreen) {
-  // Move mouse cursor beyond immersive UI to avoid affecting tests.
-  UpdateMouseLocation(browser()->window()->GetNativeWindow(),
-                      gfx::Point(0, 100));
-
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  content::WebContents* web_contents = browser_view->GetActiveWebContents();
-  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
-
-  ImmersiveModeController* immersive_mode_controller =
-      browser_view->immersive_mode_controller();
-  ASSERT_EQ(ImmersiveModeController::Type::ASH,
-            immersive_mode_controller->type());
-
-  ash::ImmersiveFullscreenControllerTestApi(
-      static_cast<ImmersiveModeControllerAsh*>(immersive_mode_controller)
-          ->controller())
-      .SetupForTest();
-
-  // Immersive fullscreen starts disabled.
-  ASSERT_FALSE(browser_view->GetWidget()->IsFullscreen());
-  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
-
-  // Frame paints by default.
-  EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
-
-  // Enter both browser fullscreen and tab fullscreen. Entering browser
-  // fullscreen should enable immersive fullscreen.
-  ToggleFullscreenModeAndWait(browser());
-  EnterFullscreenModeForTabAndWait(browser(), web_contents);
-  EXPECT_TRUE(immersive_mode_controller->IsEnabled());
-
-  // An immersive reveal shows the buttons and the top of the frame.
-  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
-      immersive_mode_controller->GetRevealedLock(
-          ImmersiveModeController::ANIMATE_REVEAL_NO));
-  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
-  EXPECT_TRUE(frame_view->ShouldPaint());
-
-  // End the reveal. When in both immersive browser fullscreen and tab
-  // fullscreen.
-  revealed_lock.reset();
-  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
-  EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
-
-  // Repeat test but without tab fullscreen.
-  ExitFullscreenModeForTabAndWait(browser(), web_contents);
-
-  // Immersive reveal should have same behavior as before.
-  revealed_lock.reset(immersive_mode_controller->GetRevealedLock(
-      ImmersiveModeController::ANIMATE_REVEAL_NO));
-  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
-  EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
-
-  // Ending the reveal. Immersive browser should have the same behavior as full
-  // screen, i.e., having an origin of (0,0).
-  revealed_lock.reset();
-  EXPECT_FALSE(frame_view->ShouldPaint());
-  EXPECT_EQ(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
-
-  // Exiting immersive fullscreen should make the caption buttons and the frame
-  // visible again.
-  ExitFullscreenModeAndWait(browser_view);
-  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
-  EXPECT_TRUE(frame_view->ShouldPaint());
-  EXPECT_LT(
-      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
 }
 
 // Tests that Avatar icon should show on the top left corner of the teleported
@@ -552,6 +476,13 @@ class ImmersiveModeBrowserViewTest
                         gfx::Point(0, 100));
 
     BrowserView::SetDisableRevealerDelayForTesting(true);
+
+    ash::ImmersiveFullscreenControllerTestApi(
+        static_cast<ImmersiveModeControllerAsh*>(
+            BrowserView::GetBrowserViewForBrowser(browser())
+                ->immersive_mode_controller())
+            ->controller())
+        .SetupForTest();
   }
 
  private:
@@ -559,6 +490,73 @@ class ImmersiveModeBrowserViewTest
 };
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, ImmersiveFullscreen) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  content::WebContents* web_contents = browser_view->GetActiveWebContents();
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
+
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view->immersive_mode_controller();
+  ASSERT_EQ(ImmersiveModeController::Type::ASH,
+            immersive_mode_controller->type());
+
+  // Immersive fullscreen starts disabled.
+  ASSERT_FALSE(browser_view->GetWidget()->IsFullscreen());
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+
+  // Frame paints by default.
+  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_LT(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+
+  // Enter both browser fullscreen and tab fullscreen. Entering browser
+  // fullscreen should enable immersive fullscreen.
+  ToggleFullscreenModeAndWait(browser());
+  EnterFullscreenModeForTabAndWait(browser(), web_contents);
+  EXPECT_TRUE(immersive_mode_controller->IsEnabled());
+
+  // An immersive reveal shows the buttons and the top of the frame.
+  std::unique_ptr<ImmersiveRevealedLock> revealed_lock(
+      immersive_mode_controller->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+  EXPECT_TRUE(frame_view->ShouldPaint());
+
+  // End the reveal. When in both immersive browser fullscreen and tab
+  // fullscreen.
+  revealed_lock.reset();
+  EXPECT_FALSE(immersive_mode_controller->IsRevealed());
+  EXPECT_FALSE(frame_view->ShouldPaint());
+  EXPECT_EQ(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+
+  // Repeat test but without tab fullscreen.
+  ExitFullscreenModeForTabAndWait(browser(), web_contents);
+
+  // Immersive reveal should have same behavior as before.
+  revealed_lock.reset(immersive_mode_controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
+  EXPECT_TRUE(immersive_mode_controller->IsRevealed());
+  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_LT(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+
+  // Ending the reveal. Immersive browser should have the same behavior as full
+  // screen, i.e., having an origin of (0,0).
+  revealed_lock.reset();
+  EXPECT_FALSE(frame_view->ShouldPaint());
+  EXPECT_EQ(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+
+  // Exiting immersive fullscreen should make the caption buttons and the frame
+  // visible again.
+  ExitFullscreenModeAndWait(browser_view);
+  EXPECT_FALSE(immersive_mode_controller->IsEnabled());
+  EXPECT_TRUE(frame_view->ShouldPaint());
+  EXPECT_LT(
+      0, frame_view->GetBoundsForTabStrip(browser_view->tabstrip()).bottom());
+}
 
 // Tests IDC_SELECT_TAB_0, IDC_SELECT_NEXT_TAB, IDC_SELECT_PREVIOUS_TAB and
 // IDC_SELECT_LAST_TAB when the browser is in immersive fullscreen mode.
@@ -605,11 +603,6 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
                        TestCaptionButtonsReceiveEventsInBrowserImmersiveMode) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-  ash::ImmersiveFullscreenControllerTestApi(
-      static_cast<ImmersiveModeControllerAsh*>(
-          browser_view->immersive_mode_controller())
-          ->controller())
-      .SetupForTest();
 
   // Make sure that the focus is on the webcontents rather than on the omnibox,
   // because if the focus is on the omnibox, the tab strip will remain revealed
@@ -703,6 +696,104 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
 
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
   EXPECT_FALSE(browser->window()->IsFullscreen());
+}
+
+// Regression test for crbug.com/796171.  Make sure that going from regular
+// fullscreen to locked fullscreen does not cause a crash.
+// Also test that the immersive mode is disabled afterwards (and the shelf is
+// hidden, and the fullscreen control popup doesn't show up).
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
+                       RegularToLockedFullscreenDisablesImmersive) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+
+  // Toggle fullscreen mode.
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());
+
+  // Set locked fullscreen state.
+  browser()->window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+
+  // We're fullscreen, immersive is disabled in locked fullscreen, and while
+  // we're at it, also make sure that the shelf is hidden.
+  EXPECT_TRUE(browser_view->GetWidget()->IsFullscreen());
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(IsShelfVisible());
+
+  // Make sure the fullscreen control popup doesn't show up.
+  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
+                            base::TimeTicks(), 0, 0);
+  ASSERT_TRUE(browser_view->fullscreen_control_host_for_test());
+  browser_view->fullscreen_control_host_for_test()->OnMouseEvent(mouse_move);
+  EXPECT_FALSE(browser_view->fullscreen_control_host_for_test()->IsVisible());
+}
+
+// Regression test for crbug.com/883104.  Make sure that immersive fullscreen is
+// disabled in locked fullscreen mode (also the shelf is hidden, and the
+// fullscreen control popup doesn't show up).
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
+                       LockedFullscreenDisablesImmersive) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  EXPECT_FALSE(browser_view->GetWidget()->IsFullscreen());
+
+  // Set locked fullscreen state.
+  browser()->window()->GetNativeWindow()->SetProperty(
+      ash::kWindowPinTypeKey, ash::mojom::WindowPinType::TRUSTED_PINNED);
+  // In Mash, there may be several notifications due to ordering of the
+  // various window property (kWindowPinTypeKey, kShowStateKey) change
+  // notifications, but we should eventually land on fullscreen.
+  if (features::IsUsingWindowService()) {
+    while (!browser_view->GetWidget()->IsFullscreen())
+      FullscreenNotificationObserver().Wait();
+  }
+
+  // We're fullscreen, immersive is disabled in locked fullscreen, and while
+  // we're at it, also make sure that the shelf is hidden.
+  EXPECT_TRUE(browser_view->GetWidget()->IsFullscreen());
+  EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(IsShelfVisible());
+
+  // Make sure the fullscreen control popup doesn't show up.
+  ui::MouseEvent mouse_move(ui::ET_MOUSE_MOVED, gfx::Point(1, 1), gfx::Point(),
+                            base::TimeTicks(), 0, 0);
+  ASSERT_TRUE(browser_view->fullscreen_control_host_for_test());
+  browser_view->fullscreen_control_host_for_test()->OnMouseEvent(mouse_move);
+  EXPECT_FALSE(browser_view->fullscreen_control_host_for_test()->IsVisible());
+}
+
+// Test the shelf visibility affected by entering and exiting tab fullscreen and
+// immersive fullscreen.
+IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest, TabAndBrowserFullscreen) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+
+  AddTabAtIndex(0, GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED);
+
+  // The shelf should start out as visible.
+  EXPECT_TRUE(IsShelfVisible());
+
+  // 1) Test that entering tab fullscreen from immersive fullscreen hides the
+  // shelf.
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(IsShelfVisible());
+
+  content::WebContents* web_contents = browser_view->GetActiveWebContents();
+  EnterFullscreenModeForTabAndWait(browser(), web_contents);
+  ASSERT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(IsShelfVisible());
+
+  // 2) Test that exiting tab fullscreen autohides the shelf.
+  ExitFullscreenModeForTabAndWait(browser(), web_contents);
+  ASSERT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_FALSE(IsShelfVisible());
+
+  // 3) Test that exiting tab fullscreen and immersive fullscreen correctly
+  // updates the shelf visibility.
+  EnterFullscreenModeForTabAndWait(browser(), web_contents);
+  ASSERT_TRUE(browser_view->immersive_mode_controller()->IsEnabled());
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
+  EXPECT_TRUE(IsShelfVisible());
 }
 
 namespace {
