@@ -148,12 +148,6 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   explicit OverlayWindowWidgetDelegate(views::Widget* widget)
       : widget_(widget) {
     DCHECK(widget_);
-#if defined(OS_CHROMEOS)
-    // PIP windows on ChromeOS are not activatable by default.
-    // It'll be explicitly made activatable when necessary for
-    // accessibility.
-    set_can_activate(false);
-#endif
   }
   ~OverlayWindowWidgetDelegate() override = default;
 
