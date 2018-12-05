@@ -121,6 +121,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   virtual BaseAudioContext* Context() const;
   void ClearContext() { context_ = nullptr; }
 
+  DeferredTaskHandler& GetDeferredTaskHandler() const {
+    return *deferred_task_handler_;
+  }
+
   enum ChannelCountMode { kMax, kClampedMax, kExplicit };
 
   NodeType GetNodeType() const { return node_type_; }
@@ -274,6 +278,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // directly, use context() instead.
   // See http://crbug.com/404527 for the detail.
   UntracedMember<BaseAudioContext> context_;
+
+  // Legal to access even when |context_| may be gone, such as during the
+  // destructor.
+  const scoped_refptr<DeferredTaskHandler> deferred_task_handler_;
 
   Vector<std::unique_ptr<AudioNodeInput>> inputs_;
   Vector<std::unique_ptr<AudioNodeOutput>> outputs_;

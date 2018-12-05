@@ -100,7 +100,7 @@ class MODULES_EXPORT AudioNodeOutput final {
   // Can be called from any thread.
   AudioHandler& Handler() const { return handler_; }
   DeferredTaskHandler& GetDeferredTaskHandler() const {
-    return handler_.Context()->GetDeferredTaskHandler();
+    return handler_.GetDeferredTaskHandler();
   }
 
   // This reference is safe because the AudioHandler owns this AudioNodeOutput
