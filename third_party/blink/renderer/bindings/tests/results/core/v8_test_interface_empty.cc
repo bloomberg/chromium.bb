@@ -26,7 +26,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceEmpty::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_empty_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceEmpty::DomTemplate,
     nullptr,
@@ -43,7 +43,7 @@ const WrapperTypeInfo V8TestInterfaceEmpty::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceEmpty.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceEmpty::wrapper_type_info_ = V8TestInterfaceEmpty::wrapper_type_info;
+const WrapperTypeInfo& TestInterfaceEmpty::wrapper_type_info_ = v8_test_interface_empty_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -67,7 +67,7 @@ static void InstallV8TestInterfaceEmptyTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceEmpty::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceEmpty::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceEmpty::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -103,18 +103,18 @@ void V8TestInterfaceEmpty::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterfaceEmpty::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterfaceEmpty::GetWrapperTypeInfo()),
       InstallV8TestInterfaceEmptyTemplate);
 }
 
 bool V8TestInterfaceEmpty::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterfaceEmpty::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceEmpty::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterfaceEmpty::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterfaceEmpty* V8TestInterfaceEmpty::ToImplWithTypeCheck(

@@ -24,13 +24,19 @@
 
 namespace blink {
 
+extern const WrapperTypeInfo v8_test_interface_named_constructor_2_constructor_wrapper_type_info;
+
 class V8TestInterfaceNamedConstructor2Constructor {
   STATIC_ONLY(V8TestInterfaceNamedConstructor2Constructor);
  public:
   static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
   static void NamedConstructorAttributeGetter(v8::Local<v8::Name> property_name, const v8::PropertyCallbackInfo<v8::Value>& info);
-  static const WrapperTypeInfo wrapper_type_info;
+  static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_interface_named_constructor_2_constructor_wrapper_type_info;
+  }
 };
+
+CORE_EXPORT extern const WrapperTypeInfo v8_test_interface_named_constructor_2_wrapper_type_info;
 
 class V8TestInterfaceNamedConstructor2 {
   STATIC_ONLY(V8TestInterfaceNamedConstructor2);
@@ -42,7 +48,11 @@ class V8TestInterfaceNamedConstructor2 {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceNamedConstructor2>();
   }
   CORE_EXPORT static TestInterfaceNamedConstructor2* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_interface_named_constructor_2_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

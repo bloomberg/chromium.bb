@@ -28,7 +28,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapper_type_info = {
+const WrapperTypeInfo v8_test_special_operations_not_enumerable_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestSpecialOperationsNotEnumerable::DomTemplate,
     nullptr,
@@ -45,7 +45,7 @@ const WrapperTypeInfo V8TestSpecialOperationsNotEnumerable::wrapper_type_info = 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestSpecialOperationsNotEnumerable.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::wrapper_type_info_ = V8TestSpecialOperationsNotEnumerable::wrapper_type_info;
+const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::wrapper_type_info_ = v8_test_special_operations_not_enumerable_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -231,7 +231,7 @@ static void InstallV8TestSpecialOperationsNotEnumerableTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestSpecialOperationsNotEnumerable::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestSpecialOperationsNotEnumerable::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestSpecialOperationsNotEnumerable::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -282,18 +282,18 @@ void V8TestSpecialOperationsNotEnumerable::InstallRuntimeEnabledFeaturesOnTempla
 v8::Local<v8::FunctionTemplate> V8TestSpecialOperationsNotEnumerable::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestSpecialOperationsNotEnumerable::GetWrapperTypeInfo()),
       InstallV8TestSpecialOperationsNotEnumerableTemplate);
 }
 
 bool V8TestSpecialOperationsNotEnumerable::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestSpecialOperationsNotEnumerable::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestSpecialOperationsNotEnumerable::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestSpecialOperationsNotEnumerable::GetWrapperTypeInfo(), v8_value);
 }
 
 TestSpecialOperationsNotEnumerable* V8TestSpecialOperationsNotEnumerable::ToImplWithTypeCheck(

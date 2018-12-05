@@ -14,12 +14,19 @@ namespace blink {
 class {{forward_declaration}};
 {% endfor %}
 
+{% if is_legacy_callback_interface %}
+{{exported}}extern const WrapperTypeInfo {{snake_case_v8_class}}_wrapper_type_info;
+{% endif %}
+
 class {{exported}}{{v8_class}} final : public CallbackInterfaceBase {
  public:
 {% if is_legacy_callback_interface %}
   // Support of "legacy callback interface"
   static v8::Local<v8::FunctionTemplate> DomTemplate(v8::Isolate*, const DOMWrapperWorld&);
-  static const WrapperTypeInfo wrapper_type_info;
+  static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &{{snake_case_v8_class}}_wrapper_type_info;
+  }
+
   // Constants
 {% for constant in constants %}
   static constexpr {{constant.cpp_type}} {{constant.name}} = {{constant.value}};

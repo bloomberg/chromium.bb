@@ -75,7 +75,7 @@ const intptr_t* {{class}}::GetTable() {
     {%   endif %}
     {%   if interface.has_security_check %}
     reinterpret_cast<intptr_t>({{v8_class}}::SecurityCheck),
-    reinterpret_cast<intptr_t>(&{{v8_class}}::wrapper_type_info),
+    reinterpret_cast<intptr_t>({{v8_class}}::GetWrapperTypeInfo()),
     {%  endif %}
     {# Other properties #}
     {%   if interface.has_constructor_callback %}

@@ -24,6 +24,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_test_interface_custom_constructor_wrapper_type_info;
+
 class V8TestInterfaceCustomConstructor {
   STATIC_ONLY(V8TestInterfaceCustomConstructor);
  public:
@@ -34,7 +36,11 @@ class V8TestInterfaceCustomConstructor {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceCustomConstructor>();
   }
   CORE_EXPORT static TestInterfaceCustomConstructor* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_interface_custom_constructor_wrapper_type_info;
+  }
+
   static void ConstructorCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 

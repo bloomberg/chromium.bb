@@ -24,6 +24,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_svg_test_interface_wrapper_type_info;
+
 class V8SVGTestInterface {
   STATIC_ONLY(V8SVGTestInterface);
  public:
@@ -34,7 +36,11 @@ class V8SVGTestInterface {
     return ToScriptWrappable(object)->ToImpl<SVGTestInterface>();
   }
   CORE_EXPORT static SVGTestInterface* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_svg_test_interface_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

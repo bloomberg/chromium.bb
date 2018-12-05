@@ -57,7 +57,7 @@ void V8MessageChannel::ConstructorCustom(
       wrapper, ToV8(channel->port2(), wrapper, isolate));
 
   V8SetReturnValue(info, V8DOMWrapper::AssociateObjectWithWrapper(
-                             isolate, channel, &wrapper_type_info, wrapper));
+                             isolate, channel, GetWrapperTypeInfo(), wrapper));
 }
 
 }  // namespace blink

@@ -25,6 +25,8 @@
 
 namespace blink {
 
+CORE_EXPORT extern const WrapperTypeInfo v8_test_interface_event_init_constructor_wrapper_type_info;
+
 class V8TestInterfaceEventInitConstructor {
   STATIC_ONLY(V8TestInterfaceEventInitConstructor);
  public:
@@ -35,7 +37,11 @@ class V8TestInterfaceEventInitConstructor {
     return ToScriptWrappable(object)->ToImpl<TestInterfaceEventInitConstructor>();
   }
   CORE_EXPORT static TestInterfaceEventInitConstructor* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_interface_event_init_constructor_wrapper_type_info;
+  }
+
   static constexpr int kInternalFieldCount = kV8DefaultWrapperInternalFieldCount;
 
   // Callback functions

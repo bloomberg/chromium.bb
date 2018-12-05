@@ -42,7 +42,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestTypedefs::wrapper_type_info = {
+const WrapperTypeInfo v8_test_typedefs_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestTypedefs::DomTemplate,
     nullptr,
@@ -59,7 +59,7 @@ const WrapperTypeInfo V8TestTypedefs::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestTypedefs.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestTypedefs::wrapper_type_info_ = V8TestTypedefs::wrapper_type_info;
+const WrapperTypeInfo& TestTypedefs::wrapper_type_info_ = v8_test_typedefs_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -398,7 +398,7 @@ static void Constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   TestTypedefs* impl = TestTypedefs::Create(string_arg);
   v8::Local<v8::Object> wrapper = info.Holder();
-  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestTypedefs::wrapper_type_info, wrapper);
+  wrapper = impl->AssociateWithWrapper(info.GetIsolate(), V8TestTypedefs::GetWrapperTypeInfo(), wrapper);
   V8SetReturnValue(info, wrapper);
 }
 
@@ -456,7 +456,7 @@ void V8TestTypedefs::TAttributeConstructorGetterCallback(
     v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestTypedefs_tAttribute_ConstructorGetterCallback");
 
-  V8ConstructorAttributeGetter(property, info, &V8TestInterface::wrapper_type_info);
+  V8ConstructorAttributeGetter(property, info, V8TestInterface::GetWrapperTypeInfo());
 }
 
 void V8TestTypedefs::DOMStringOrDoubleOrNullAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -592,7 +592,7 @@ static void InstallV8TestTypedefsTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestTypedefs::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestTypedefs::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::kInternalFieldCount);
   interface_template->SetCallHandler(test_typedefs_v8_internal::ConstructorCallback);
   interface_template->SetLength(1);
 
@@ -639,18 +639,18 @@ void V8TestTypedefs::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestTypedefs::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestTypedefs::GetWrapperTypeInfo()),
       InstallV8TestTypedefsTemplate);
 }
 
 bool V8TestTypedefs::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestTypedefs::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestTypedefs::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestTypedefs::GetWrapperTypeInfo(), v8_value);
 }
 
 TestTypedefs* V8TestTypedefs::ToImplWithTypeCheck(

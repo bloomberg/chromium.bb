@@ -33,7 +33,7 @@ namespace blink {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
-const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapper_type_info = {
+const WrapperTypeInfo v8_test_interface_check_security_wrapper_type_info = {
     gin::kEmbedderBlink,
     V8TestInterfaceCheckSecurity::DomTemplate,
     V8TestInterfaceCheckSecurity::InstallConditionalFeatures,
@@ -50,7 +50,7 @@ const WrapperTypeInfo V8TestInterfaceCheckSecurity::wrapper_type_info = {
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceCheckSecurity.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // platform/bindings/ScriptWrappable.h.
-const WrapperTypeInfo& TestInterfaceCheckSecurity::wrapper_type_info_ = V8TestInterfaceCheckSecurity::wrapper_type_info;
+const WrapperTypeInfo& TestInterfaceCheckSecurity::wrapper_type_info_ = v8_test_interface_check_security_wrapper_type_info;
 
 // not [ActiveScriptWrappable]
 static_assert(
@@ -194,7 +194,7 @@ static void DoNotCheckSecurityVoidMethodOriginSafeMethodGetter(const v8::Propert
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
-      data->FindInterfaceTemplate(world, &V8TestInterfaceCheckSecurity::wrapper_type_info);
+      data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
@@ -237,7 +237,7 @@ static void DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetter(c
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
-      data->FindInterfaceTemplate(world, &V8TestInterfaceCheckSecurity::wrapper_type_info);
+      data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
@@ -280,7 +280,7 @@ static void DoNotCheckSecurityPerWorldBindingsVoidMethodOriginSafeMethodGetterFo
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
-      data->FindInterfaceTemplate(world, &V8TestInterfaceCheckSecurity::wrapper_type_info);
+      data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
@@ -323,7 +323,7 @@ static void DoNotCheckSecurityUnforgeableVoidMethodOriginSafeMethodGetter(const 
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
-      data->FindInterfaceTemplate(world, &V8TestInterfaceCheckSecurity::wrapper_type_info);
+      data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
@@ -461,7 +461,7 @@ static void DoNotCheckSecurityVoidOverloadMethodOriginSafeMethodGetter(const v8:
   V8PerIsolateData* data = V8PerIsolateData::From(info.GetIsolate());
   const DOMWrapperWorld& world = DOMWrapperWorld::World(info.GetIsolate()->GetCurrentContext());
   v8::Local<v8::FunctionTemplate> interface_template =
-      data->FindInterfaceTemplate(world, &V8TestInterfaceCheckSecurity::wrapper_type_info);
+      data->FindInterfaceTemplate(world, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo());
   v8::Local<v8::Signature> signature = v8::Signature::New(info.GetIsolate(), interface_template);
 
   v8::Local<v8::FunctionTemplate> method_template =
@@ -746,7 +746,7 @@ void V8TestInterfaceCheckSecurity::CrossOriginNamedGetter(v8::Local<v8::Name> na
 
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      &V8TestInterfaceCheckSecurity::wrapper_type_info,
+      V8TestInterfaceCheckSecurity::GetWrapperTypeInfo(),
       info.Holder());
 }
 
@@ -766,7 +766,7 @@ void V8TestInterfaceCheckSecurity::CrossOriginNamedSetter(v8::Local<v8::Name> na
 
   BindingSecurity::FailedAccessCheckFor(
       info.GetIsolate(),
-      &V8TestInterfaceCheckSecurity::wrapper_type_info,
+      V8TestInterfaceCheckSecurity::GetWrapperTypeInfo(),
       info.Holder());
 }
 
@@ -812,7 +812,7 @@ static void InstallV8TestInterfaceCheckSecurityTemplate(
     const DOMWrapperWorld& world,
     v8::Local<v8::FunctionTemplate> interface_template) {
   // Initialize the interface object's template.
-  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceCheckSecurity::wrapper_type_info.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCheckSecurity::kInternalFieldCount);
+  V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interface_template, V8TestInterfaceCheckSecurity::GetWrapperTypeInfo()->interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceCheckSecurity::kInternalFieldCount);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
@@ -848,7 +848,7 @@ static void InstallV8TestInterfaceCheckSecurityTemplate(
           nullptr,
           V8TestInterfaceCheckSecurity::CrossOriginNamedEnumerator),
       v8::IndexedPropertyHandlerConfiguration(nullptr),
-      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestInterfaceCheckSecurity::wrapper_type_info)));
+      v8::External::New(isolate, const_cast<WrapperTypeInfo*>(V8TestInterfaceCheckSecurity::GetWrapperTypeInfo())));
 
   // Custom signature
   static const V8DOMConfiguration::AttributeConfiguration doNotCheckSecurityVoidMethodOriginSafeAttributeConfiguration[] = {
@@ -896,18 +896,18 @@ void V8TestInterfaceCheckSecurity::InstallRuntimeEnabledFeaturesOnTemplate(
 v8::Local<v8::FunctionTemplate> V8TestInterfaceCheckSecurity::DomTemplate(
     v8::Isolate* isolate, const DOMWrapperWorld& world) {
   return V8DOMConfiguration::DomClassTemplate(
-      isolate, world, const_cast<WrapperTypeInfo*>(&wrapper_type_info),
+      isolate, world, const_cast<WrapperTypeInfo*>(V8TestInterfaceCheckSecurity::GetWrapperTypeInfo()),
       InstallV8TestInterfaceCheckSecurityTemplate);
 }
 
 bool V8TestInterfaceCheckSecurity::HasInstance(v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
-  return V8PerIsolateData::From(isolate)->HasInstance(&wrapper_type_info, v8_value);
+  return V8PerIsolateData::From(isolate)->HasInstance(V8TestInterfaceCheckSecurity::GetWrapperTypeInfo(), v8_value);
 }
 
 v8::Local<v8::Object> V8TestInterfaceCheckSecurity::FindInstanceInPrototypeChain(
     v8::Local<v8::Value> v8_value, v8::Isolate* isolate) {
   return V8PerIsolateData::From(isolate)->FindInstanceInPrototypeChain(
-      &wrapper_type_info, v8_value);
+      V8TestInterfaceCheckSecurity::GetWrapperTypeInfo(), v8_value);
 }
 
 TestInterfaceCheckSecurity* V8TestInterfaceCheckSecurity::ToImplWithTypeCheck(

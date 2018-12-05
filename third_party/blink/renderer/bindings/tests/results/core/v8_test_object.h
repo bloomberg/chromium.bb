@@ -38,6 +38,9 @@
 namespace blink {
 
 class ScriptState;
+
+CORE_EXPORT extern const WrapperTypeInfo v8_test_object_wrapper_type_info;
+
 class V8TestObject {
   STATIC_ONLY(V8TestObject);
  public:
@@ -48,7 +51,11 @@ class V8TestObject {
     return ToScriptWrappable(object)->ToImpl<TestObject>();
   }
   CORE_EXPORT static TestObject* ToImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
-  CORE_EXPORT static const WrapperTypeInfo wrapper_type_info;
+
+  CORE_EXPORT static constexpr const WrapperTypeInfo* GetWrapperTypeInfo() {
+    return &v8_test_object_wrapper_type_info;
+  }
+
   static void CustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
   static void CustomCallPrologueVoidMethodMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
   static void CustomCallEpilogueVoidMethodMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
