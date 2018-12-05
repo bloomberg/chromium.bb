@@ -64,12 +64,13 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool TypeMismatch() const override;
   bool ValueMissing() const override;
   bool CustomError() const override;
+  void DisabledStateMightBeChanged() override;
 
   Member<HTMLElement> target_;
 
   FileOrUSVString value_;
   Member<FormData> entry_source_;
-
+  bool is_disabled_ = false;
   Member<ValidityStateFlags> validity_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementInternals);

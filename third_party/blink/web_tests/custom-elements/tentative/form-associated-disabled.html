@@ -36,6 +36,8 @@ test(() => {
   control.removeAttribute('disabled', '');
   assert_true(control.matches(':enabled'));
   assert_false(control.matches(':disabled'));
+
+  assert_array_equals(control.disabledHistory(), [true, false]);
 }, 'Adding/removing disabled content attribute');
 
 test(() => {
@@ -65,6 +67,8 @@ test(() => {
   middleFieldset.appendChild(control);
   assert_false(control.matches(':enabled'));
   assert_true(control.matches(':disabled'));
+
+  assert_array_equals(control.disabledHistory(), [true, false, true, false, true]);
 }, 'Relationship with FIELDSET');
 
 test(() => {
@@ -87,5 +91,16 @@ test(() => {
   control.focus();
   assert_equals(document.activeElement, control);
 }, 'Disabled attribute affects focus-capability');
+
+test(() => {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  // inneHTML upgrades my-control at its CEReacions timing.
+  container.innerHTML = '<my-control disabled>';
+  assert_array_equals(container.firstChild.disabledHistory(), [true]);
+
+  container.innerHTML = '<fieldset disabled><my-control>';
+  assert_array_equals(container.querySelector('my-control').disabledHistory(), [true]);
+}, 'Upgrading an element with disabled content attribute');
 </script>
 </body>
