@@ -34,24 +34,21 @@ class DummyModulator : public Modulator {
   ScriptState* GetScriptState() override;
   bool IsScriptingDisabled() const override;
 
-  void FetchTree(
-      const KURL&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      const ScriptFetchOptions&,
-      ModuleScriptCustomFetchType,
-      ModuleTreeClient*) override;
-  void FetchSingle(
-      const ModuleScriptFetchRequest&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptCustomFetchType,
-      SingleModuleClient*) override;
-  void FetchDescendantsForInlineScript(
-      ModuleScript*,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      ModuleTreeClient*) override;
+  void FetchTree(const KURL&,
+                 ResourceFetcher*,
+                 mojom::RequestContextType destination,
+                 const ScriptFetchOptions&,
+                 ModuleScriptCustomFetchType,
+                 ModuleTreeClient*) override;
+  void FetchSingle(const ModuleScriptFetchRequest&,
+                   ResourceFetcher*,
+                   ModuleGraphLevel,
+                   ModuleScriptCustomFetchType,
+                   SingleModuleClient*) override;
+  void FetchDescendantsForInlineScript(ModuleScript*,
+                                       ResourceFetcher*,
+                                       mojom::RequestContextType destination,
+                                       ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   KURL ResolveModuleSpecifier(const String&, const KURL&, String*) override;
   bool HasValidContext() override;

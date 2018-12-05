@@ -23,11 +23,11 @@
 
 namespace blink {
 
-class FetchClientSettingsObjectSnapshot;
 class ModuleScript;
 class ModuleScriptFetchRequest;
 class ModuleScriptFetcher;
 class ReferrerScriptInfo;
+class ResourceFetcher;
 class ScriptModuleResolver;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -118,30 +118,33 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
-  // Note that |this| is the "module map settings object" used in the "fetch a
-  // module worker script graph" algorithm.
-  virtual void FetchTree(
-      const KURL&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      const ScriptFetchOptions&,
-      ModuleScriptCustomFetchType,
-      ModuleTreeClient*) = 0;
+  // Note that |this| is the "module map settings object" and
+  // ResourceFetcher represents "fetch client settings object"
+  // used in the "fetch a module worker script graph" algorithm.
+  virtual void FetchTree(const KURL&,
+                         ResourceFetcher* fetch_client_settings_object_fetcher,
+                         mojom::RequestContextType destination,
+                         const ScriptFetchOptions&,
+                         ModuleScriptCustomFetchType,
+                         ModuleTreeClient*) = 0;
 
   // Asynchronously retrieve a module script from the module map, or fetch it
   // and put it in the map if it's not there already.
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
-  // Note that |this| is the "module map settings object".
+  // Note that |this| is the "module map settings object" and
+  // |fetch_client_settings_object_fetcher| represents
+  // "fetch client settings object", which can be different from the
+  // ResourceFetcher associated with |this|.
   virtual void FetchSingle(
       const ModuleScriptFetchRequest&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
       ModuleGraphLevel,
       ModuleScriptCustomFetchType,
       SingleModuleClient*) = 0;
 
   virtual void FetchDescendantsForInlineScript(
       ModuleScript*,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
       mojom::RequestContextType destination,
       ModuleTreeClient*) = 0;
 

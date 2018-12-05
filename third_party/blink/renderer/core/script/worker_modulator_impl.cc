@@ -26,8 +26,7 @@ ModuleScriptFetcher* WorkerModulatorImpl::CreateModuleScriptFetcher(
   auto* global_scope = To<WorkerGlobalScope>(GetExecutionContext());
   switch (custom_fetch_type) {
     case ModuleScriptCustomFetchType::kNone:
-      return MakeGarbageCollected<DocumentModuleScriptFetcher>(
-          global_scope->EnsureFetcher());
+      return MakeGarbageCollected<DocumentModuleScriptFetcher>();
     case ModuleScriptCustomFetchType::kWorkerConstructor:
       return MakeGarbageCollected<WorkerModuleScriptFetcher>(global_scope);
     case ModuleScriptCustomFetchType::kWorkletAddModule:

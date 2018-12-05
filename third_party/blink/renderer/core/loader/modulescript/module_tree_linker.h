@@ -25,6 +25,10 @@ class ModuleTreeLinkerRegistry;
 // a top-level [FDaI] "fetch the descendants of and instantiate", and all the
 // invocations of [IMSGF] and [FD] "fetch the descendants" under that.
 //
+// Modulator represents "a module map settings object" and
+// ResourceFetcher represents "a fetch client settings object"
+// by its |Context()->GetFetchClientSettingsObject()|.
+//
 // Spec links:
 // [IMSGF]
 // https://html.spec.whatwg.org/#internal-module-script-graph-fetching-procedure
@@ -37,33 +41,31 @@ class ModuleTreeLinkerRegistry;
 class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
  public:
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
-  static void Fetch(
-      const KURL&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      const ScriptFetchOptions&,
-      Modulator*,
-      ModuleScriptCustomFetchType,
-      ModuleTreeLinkerRegistry*,
-      ModuleTreeClient*);
+  static void Fetch(const KURL&,
+                    ResourceFetcher* fetch_client_settings_object_fetcher,
+                    mojom::RequestContextType destination,
+                    const ScriptFetchOptions&,
+                    Modulator*,
+                    ModuleScriptCustomFetchType,
+                    ModuleTreeLinkerRegistry*,
+                    ModuleTreeClient*);
 
   // [FDaI] for an inline script.
   static void FetchDescendantsForInlineScript(
       ModuleScript*,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
       mojom::RequestContextType destination,
       Modulator*,
       ModuleScriptCustomFetchType,
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
 
-  ModuleTreeLinker(
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      Modulator*,
-      ModuleScriptCustomFetchType,
-      ModuleTreeLinkerRegistry*,
-      ModuleTreeClient*);
+  ModuleTreeLinker(ResourceFetcher* fetch_client_settings_object_fetcher,
+                   mojom::RequestContextType destination,
+                   Modulator*,
+                   ModuleScriptCustomFetchType,
+                   ModuleTreeLinkerRegistry*,
+                   ModuleTreeClient*);
   ~ModuleTreeLinker() override = default;
   void Trace(blink::Visitor*) override;
 
@@ -111,7 +113,8 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   ScriptValue FindFirstParseError(ModuleScript*,
                                   HeapHashSet<Member<ModuleScript>>*) const;
 
-  const Member<FetchClientSettingsObjectSnapshot> fetch_client_settings_object_;
+  const Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
+
   const mojom::RequestContextType destination_;
   const Member<Modulator> modulator_;
   const ModuleScriptCustomFetchType custom_fetch_type_;

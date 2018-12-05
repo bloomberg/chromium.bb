@@ -22,7 +22,7 @@ ModuleScriptFetcher* WorkletModulatorImpl::CreateModuleScriptFetcher(
   WorkletGlobalScope* global_scope =
       To<WorkletGlobalScope>(GetExecutionContext());
   return MakeGarbageCollected<WorkletModuleScriptFetcher>(
-      global_scope->EnsureFetcher(), global_scope->GetModuleResponsesMap());
+      global_scope->GetModuleResponsesMap());
 }
 
 bool WorkletModulatorImpl::IsDynamicImportForbidden(String* reason) {

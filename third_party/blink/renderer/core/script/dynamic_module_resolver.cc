@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetch_request.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -240,10 +241,11 @@ void DynamicModuleResolver::ResolveDynamically(
   // highly discouraged since it breaks layering. Rewrite this.
   auto* execution_context =
       ExecutionContext::From(modulator_->GetScriptState());
-  modulator_->FetchTree(
-      url, execution_context->CreateFetchClientSettingsObjectSnapshot(),
-      mojom::RequestContextType::SCRIPT, options,
-      ModuleScriptCustomFetchType::kNone, tree_client);
+  if (auto* scope = DynamicTo<WorkerGlobalScope>(*execution_context))
+    scope->EnsureFetcher();
+  modulator_->FetchTree(url, execution_context->Fetcher(),
+                        mojom::RequestContextType::SCRIPT, options,
+                        ModuleScriptCustomFetchType::kNone, tree_client);
 
   // Steps 2.[5-8] are implemented at
   // DynamicImportTreeClient::NotifyModuleLoadFinished.

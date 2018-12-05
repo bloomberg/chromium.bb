@@ -416,9 +416,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="23">Let settings object be the element's node document's
   // relevant settings object.</spec>
   //
-  // Note: We use |element_document| as "settings object" in the steps below.
-  auto* settings_object =
-      element_document.CreateFetchClientSettingsObjectSnapshot();
+  // In some cases (mainly for classic scripts) |element_document| is used as
+  // the "settings object", while in other cases (mainly for module scripts)
+  // |content_document| is used.
+  // TODO(hiroshige): Use a consistent Document everywhere.
+  auto* fetch_client_settings_object_fetcher = context_document->Fetcher();
 
   // <spec step="24">If the element has a src content attribute, then:</spec>
   if (element_->HasSourceAttribute()) {
@@ -490,7 +492,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       // options.</spec>
       Modulator* modulator = Modulator::From(
           ToScriptStateForMainWorld(context_document->GetFrame()));
-      FetchModuleScriptTree(url, settings_object, modulator, options);
+      FetchModuleScriptTree(url, fetch_client_settings_object_fetcher,
+                            modulator, options);
     }
     // <spec step="24.6">When the chosen algorithm asynchronously completes, set
     // the script's script to the result. At that time, the script is ready.
@@ -575,8 +578,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // that time, the script is ready.</spec>
         auto* module_tree_client = ModulePendingScriptTreeClient::Create();
         modulator->FetchDescendantsForInlineScript(
-            module_script, settings_object, mojom::RequestContextType::SCRIPT,
-            module_tree_client);
+            module_script, fetch_client_settings_object_fetcher,
+            mojom::RequestContextType::SCRIPT, module_tree_client);
         prepared_pending_script_ = ModulePendingScript::Create(
             element_, module_tree_client, is_external_script_);
         break;
@@ -756,7 +759,7 @@ void ScriptLoader::FetchClassicScript(const KURL& url,
 // <specdef href="https://html.spec.whatwg.org/#prepare-a-script">
 void ScriptLoader::FetchModuleScriptTree(
     const KURL& url,
-    FetchClientSettingsObjectSnapshot* settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     Modulator* modulator,
     const ScriptFetchOptions& options) {
   // <spec step="24.6.B">"module"
@@ -764,9 +767,9 @@ void ScriptLoader::FetchModuleScriptTree(
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
   auto* module_tree_client = ModulePendingScriptTreeClient::Create();
-  modulator->FetchTree(url, settings_object, mojom::RequestContextType::SCRIPT,
-                       options, ModuleScriptCustomFetchType::kNone,
-                       module_tree_client);
+  modulator->FetchTree(url, fetch_client_settings_object_fetcher,
+                       mojom::RequestContextType::SCRIPT, options,
+                       ModuleScriptCustomFetchType::kNone, module_tree_client);
   prepared_pending_script_ = ModulePendingScript::Create(
       element_, module_tree_client, is_external_script_);
 }

@@ -26,6 +26,7 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
+             ResourceFetcher*,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 

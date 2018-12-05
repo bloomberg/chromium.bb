@@ -70,7 +70,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   }
 
   void FetchTree(const KURL& url,
-                 FetchClientSettingsObjectSnapshot*,
+                 ResourceFetcher*,
                  mojom::RequestContextType,
                  const ScriptFetchOptions&,
                  ModuleScriptCustomFetchType custom_fetch_type,

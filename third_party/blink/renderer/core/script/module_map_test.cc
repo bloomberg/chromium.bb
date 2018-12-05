@@ -110,6 +110,7 @@ class ModuleMapTestModulator final : public DummyModulator {
     explicit TestModuleScriptFetcher(ModuleMapTestModulator* modulator)
         : modulator_(modulator) {}
     void Fetch(FetchParameters& request,
+               ResourceFetcher*,
                ModuleGraphLevel,
                ModuleScriptFetcher::Client* client) override {
       TestRequest* test_request = MakeGarbageCollected<TestRequest>(
@@ -209,14 +210,12 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  auto* settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   // First request
   TestSingleModuleClient* client =
       MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client);
   Modulator()->ResolveFetches();
@@ -235,7 +234,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   TestSingleModuleClient* client2 =
       MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client2);
   Modulator()->ResolveFetches();
@@ -258,14 +257,12 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
 
   KURL url(NullURL(), "https://example.com/foo.js");
-  auto* settings_object =
-      GetDocument().CreateFetchClientSettingsObjectSnapshot();
 
   // First request
   TestSingleModuleClient* client =
       MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client);
 
@@ -273,7 +270,7 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   TestSingleModuleClient* client2 =
       MakeGarbageCollected<TestSingleModuleClient>();
   Map()->FetchSingleModuleScript(ModuleScriptFetchRequest::CreateForTest(url),
-                                 settings_object,
+                                 GetDocument().Fetcher(),
                                  ModuleGraphLevel::kTopLevelModuleFetch,
                                  ModuleScriptCustomFetchType::kNone, client2);
 

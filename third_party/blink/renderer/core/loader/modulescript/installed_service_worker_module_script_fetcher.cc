@@ -17,6 +17,7 @@ InstalledServiceWorkerModuleScriptFetcher::
 
 void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
+    ResourceFetcher*,
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
   DCHECK(global_scope_->IsContextThread());

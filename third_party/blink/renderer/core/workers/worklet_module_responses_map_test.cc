@@ -39,10 +39,9 @@ class WorkletModuleResponsesMapTest : public testing::Test {
     resource_request.SetRequestContext(mojom::RequestContextType::SCRIPT);
     FetchParameters fetch_params(resource_request);
     WorkletModuleScriptFetcher* module_fetcher =
-        MakeGarbageCollected<WorkletModuleScriptFetcher>(fetcher_.Get(),
-                                                         map_.Get());
-    module_fetcher->Fetch(fetch_params, ModuleGraphLevel::kTopLevelModuleFetch,
-                          client);
+        MakeGarbageCollected<WorkletModuleScriptFetcher>(map_.Get());
+    module_fetcher->Fetch(fetch_params, fetcher_.Get(),
+                          ModuleGraphLevel::kTopLevelModuleFetch, client);
   }
 
   void RunUntilIdle() {

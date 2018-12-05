@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -238,8 +239,10 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."
-  modulator->FetchTree(module_url_record, fetch_client_settings_object,
-                       destination, options, custom_fetch_type, client);
+  modulator->FetchTree(
+      module_url_record,
+      CreateOutsideSettingsFetcher(fetch_client_settings_object), destination,
+      options, custom_fetch_type, client);
 }
 
 void WorkerOrWorkletGlobalScope::TasksWerePaused() {

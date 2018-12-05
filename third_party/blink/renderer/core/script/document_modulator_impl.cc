@@ -9,28 +9,17 @@
 
 namespace blink {
 
-ModulatorImplBase* DocumentModulatorImpl::Create(
-    ScriptState* script_state,
-    ResourceFetcher* resource_fetcher) {
-  return MakeGarbageCollected<DocumentModulatorImpl>(script_state,
-                                                     resource_fetcher);
+ModulatorImplBase* DocumentModulatorImpl::Create(ScriptState* script_state) {
+  return MakeGarbageCollected<DocumentModulatorImpl>(script_state);
 }
+
+DocumentModulatorImpl::DocumentModulatorImpl(ScriptState* script_state)
+    : ModulatorImplBase(script_state) {}
 
 ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher(
     ModuleScriptCustomFetchType custom_fetch_type) {
   DCHECK_EQ(ModuleScriptCustomFetchType::kNone, custom_fetch_type);
-  return MakeGarbageCollected<DocumentModuleScriptFetcher>(fetcher_);
-}
-
-void DocumentModulatorImpl::Trace(blink::Visitor* visitor) {
-  visitor->Trace(fetcher_);
-  ModulatorImplBase::Trace(visitor);
-}
-
-DocumentModulatorImpl::DocumentModulatorImpl(ScriptState* script_state,
-                                             ResourceFetcher* resource_fetcher)
-    : ModulatorImplBase(script_state), fetcher_(resource_fetcher) {
-  DCHECK(fetcher_);
+  return MakeGarbageCollected<DocumentModuleScriptFetcher>();
 }
 
 bool DocumentModulatorImpl::IsDynamicImportForbidden(String* reason) {

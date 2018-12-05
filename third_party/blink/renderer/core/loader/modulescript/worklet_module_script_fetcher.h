@@ -28,21 +28,18 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
 
  public:
-  WorkletModuleScriptFetcher(ResourceFetcher*, WorkletModuleResponsesMap*);
+  explicit WorkletModuleScriptFetcher(WorkletModuleResponsesMap*);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
+             ResourceFetcher*,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
-
-  void Trace(blink::Visitor*) override;
 
  private:
   // Implements ResourceClient
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "WorkletModuleScriptFetcher"; }
-
-  const Member<ResourceFetcher> fetcher_;
 
   // TODO(nhiroki): In general, CrossThreadPersistent is heavy and should not be
   // owned by objects that can frequently be created like this class. Instead of

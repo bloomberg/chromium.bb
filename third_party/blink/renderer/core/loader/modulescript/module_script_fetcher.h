@@ -16,6 +16,7 @@
 namespace blink {
 
 class ConsoleMessage;
+class ResourceFetcher;
 
 // ModuleScriptFetcher is an abstract class to fetch module scripts. Derived
 // classes are expected to fetch a module script for the given FetchParameters
@@ -36,7 +37,10 @@ class CORE_EXPORT ModuleScriptFetcher : public ResourceClient {
 
   // Takes a non-const reference to FetchParameters because
   // ScriptResource::Fetch() requires it.
-  virtual void Fetch(FetchParameters&, ModuleGraphLevel, Client*) = 0;
+  virtual void Fetch(FetchParameters&,
+                     ResourceFetcher*,
+                     ModuleGraphLevel,
+                     Client*) = 0;
 
  protected:
   static bool WasModuleLoadSuccessful(

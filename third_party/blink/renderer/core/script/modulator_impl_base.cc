@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver_impl.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 
 namespace blink {
 
@@ -51,7 +50,7 @@ bool ModulatorImplBase::IsScriptingDisabled() const {
 // href="https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree">
 void ModulatorImplBase::FetchTree(
     const KURL& url,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     const ScriptFetchOptions& options,
     ModuleScriptCustomFetchType custom_fetch_type,
@@ -69,8 +68,8 @@ void ModulatorImplBase::FetchTree(
   // of this algorithm specified custom perform the fetch steps, pass those
   // along as well.</spec>
 
-  ModuleTreeLinker::Fetch(url, fetch_client_settings_object, destination,
-                          options, this, custom_fetch_type,
+  ModuleTreeLinker::Fetch(url, fetch_client_settings_object_fetcher,
+                          destination, options, this, custom_fetch_type,
                           tree_linker_registry_, client);
 
   // <spec label="fetch-a-module-script-tree" step="3">When the internal module
@@ -86,22 +85,22 @@ void ModulatorImplBase::FetchTree(
 
 void ModulatorImplBase::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     mojom::RequestContextType destination,
     ModuleTreeClient* client) {
   ModuleTreeLinker::FetchDescendantsForInlineScript(
-      module_script, fetch_client_settings_object, destination, this,
+      module_script, fetch_client_settings_object_fetcher, destination, this,
       ModuleScriptCustomFetchType::kNone, tree_linker_registry_, client);
 }
 
 void ModulatorImplBase::FetchSingle(
     const ModuleScriptFetchRequest& request,
-    FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+    ResourceFetcher* fetch_client_settings_object_fetcher,
     ModuleGraphLevel level,
     ModuleScriptCustomFetchType custom_fetch_type,
     SingleModuleClient* client) {
-  map_->FetchSingleModuleScript(request, fetch_client_settings_object, level,
-                                custom_fetch_type, client);
+  map_->FetchSingleModuleScript(request, fetch_client_settings_object_fetcher,
+                                level, custom_fetch_type, client);
 }
 
 ModuleScript* ModulatorImplBase::GetFetchedModuleScript(const KURL& url) {

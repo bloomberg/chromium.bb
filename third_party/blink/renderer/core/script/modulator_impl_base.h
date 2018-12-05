@@ -49,24 +49,22 @@ class ModulatorImplBase : public Modulator {
     return task_runner_.get();
   }
 
-  void FetchTree(
-      const KURL&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      mojom::RequestContextType destination,
-      const ScriptFetchOptions&,
-      ModuleScriptCustomFetchType,
-      ModuleTreeClient*) override;
+  void FetchTree(const KURL&,
+                 ResourceFetcher* fetch_client_settings_object_fetcher,
+                 mojom::RequestContextType destination,
+                 const ScriptFetchOptions&,
+                 ModuleScriptCustomFetchType,
+                 ModuleTreeClient*) override;
   void FetchDescendantsForInlineScript(
       ModuleScript*,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
+      ResourceFetcher* fetch_client_settings_object_fetcher,
       mojom::RequestContextType destination,
       ModuleTreeClient*) override;
-  void FetchSingle(
-      const ModuleScriptFetchRequest&,
-      FetchClientSettingsObjectSnapshot* fetch_client_settings_object,
-      ModuleGraphLevel,
-      ModuleScriptCustomFetchType,
-      SingleModuleClient*) override;
+  void FetchSingle(const ModuleScriptFetchRequest&,
+                   ResourceFetcher* fetch_client_settings_object_fetcher,
+                   ModuleGraphLevel,
+                   ModuleScriptCustomFetchType,
+                   SingleModuleClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   bool HasValidContext() override;
   KURL ResolveModuleSpecifier(const String& module_request,
