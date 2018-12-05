@@ -23,11 +23,8 @@ RemoteTextInputClient::RemoteTextInputClient(
       caret_bounds_(caret_bounds) {}
 
 RemoteTextInputClient::~RemoteTextInputClient() {
-  while (!pending_callbacks_.empty()) {
-    auto callback = std::move(pending_callbacks_.front());
-    pending_callbacks_.pop();
-    std::move(callback).Run(false);
-  }
+  while (!pending_callbacks_.empty())
+    RunNextPendingCallback(false);
 }
 
 void RemoteTextInputClient::SetTextInputType(
@@ -40,12 +37,7 @@ void RemoteTextInputClient::SetCaretBounds(const gfx::Rect& caret_bounds) {
 }
 
 void RemoteTextInputClient::OnDispatchKeyEventPostIMECompleted(bool completed) {
-  DCHECK(!pending_callbacks_.empty());
-  base::OnceCallback<void(bool)> callback =
-      std::move(pending_callbacks_.front());
-  pending_callbacks_.pop();
-  if (callback)
-    std::move(callback).Run(completed);
+  RunNextPendingCallback(completed);
 }
 
 void RemoteTextInputClient::SetCompositionText(
@@ -210,4 +202,13 @@ ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
       base::BindOnce(&RemoteTextInputClient::OnDispatchKeyEventPostIMECompleted,
                      weak_ptr_factory_.GetWeakPtr()));
   return ui::EventDispatchDetails();
+}
+
+void RemoteTextInputClient::RunNextPendingCallback(bool completed) {
+  DCHECK(!pending_callbacks_.empty());
+  base::OnceCallback<void(bool)> callback =
+      std::move(pending_callbacks_.front());
+  pending_callbacks_.pop();
+  if (callback)
+    std::move(callback).Run(completed);
 }
