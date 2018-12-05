@@ -970,12 +970,6 @@ const char kExperimentalExtensionApisDescription[] =
     "Enables experimental extension APIs. Note that the extension gallery "
     "doesn't allow you to upload extensions that use experimental APIs.";
 
-const char kExperimentalFullscreenExitUIName[] =
-    "Experimental fullscreen exit UI";
-const char kExperimentalFullscreenExitUIDescription[] =
-    "Displays experimental UI to allow mouse and touch input methods to exit "
-    "fullscreen mode.";
-
 const char kExperimentalProductivityFeaturesName[] =
     "Experimental Productivity Features";
 const char kExperimentalProductivityFeaturesDescription[] =

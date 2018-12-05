@@ -3337,14 +3337,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(media::kPictureInPicture)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(TOOLKIT_VIEWS)
-    {"enable-experimental-fullscreen-exit-ui",
-     flag_descriptions::kExperimentalFullscreenExitUIName,
-     flag_descriptions::kExperimentalFullscreenExitUIDescription,
-     kOsWin | kOsLinux | kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kFullscreenExitUI)},
-#endif  // defined(TOOLKIT_VIEWS)
-
     {"network-service", flag_descriptions::kEnableNetworkServiceName,
      flag_descriptions::kEnableNetworkServiceDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kNetworkService)},
