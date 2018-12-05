@@ -797,8 +797,6 @@ class CORE_EXPORT Node : public EventTarget {
       const Node*,
       ShadowTreesTreatment = kTreatShadowTreesAsDisconnected) const;
 
-  Node* ToNode() final;
-
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const final;
 
@@ -1021,6 +1019,8 @@ class CORE_EXPORT Node : public EventTarget {
   // it is not safe to cache AtomicStrings because those are
   // per-thread.
   virtual String DebugNodeName() const;
+
+  Node* ToNode() final;
 
   bool IsUserActionElementActive() const;
   bool IsUserActionElementInActiveChain() const;
