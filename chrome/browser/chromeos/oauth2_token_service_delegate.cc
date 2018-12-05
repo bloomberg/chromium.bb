@@ -144,7 +144,6 @@ GoogleServiceAuthError ChromeOSOAuth2TokenServiceDelegate::GetAuthError(
 
 std::vector<std::string> ChromeOSOAuth2TokenServiceDelegate::GetAccounts() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
 
   std::vector<std::string> accounts;
   for (auto& account_key : account_keys_) {
