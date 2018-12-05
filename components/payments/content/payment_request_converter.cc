@@ -124,11 +124,13 @@ PaymentDetails ConvertPaymentDetails(
        details_entry->display_items) {
     details.display_items.push_back(ConvertPaymentItem(display_item));
   }
-  details.shipping_options.reserve(details_entry->shipping_options.size());
-  for (const mojom::PaymentShippingOptionPtr& shipping_option :
-       details_entry->shipping_options) {
-    details.shipping_options.push_back(
-        ConvertPaymentShippingOption(shipping_option));
+  if (details_entry->shipping_options) {
+    details.shipping_options.reserve(details_entry->shipping_options->size());
+    for (const mojom::PaymentShippingOptionPtr& shipping_option :
+         *details_entry->shipping_options) {
+      details.shipping_options.push_back(
+          ConvertPaymentShippingOption(shipping_option));
+    }
   }
   details.modifiers.reserve(details_entry->modifiers.size());
   for (const mojom::PaymentDetailsModifierPtr& modifier :

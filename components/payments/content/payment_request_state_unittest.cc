@@ -258,7 +258,7 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   // Simulate that the website validates the shipping option.
   state()->SetSelectedShippingOption("option:1");
   auto details = CreateDefaultDetails();
-  details->shipping_options[0]->selected = true;
+  (*details->shipping_options)[0]->selected = true;
   spec()->UpdateWith(std::move(details));
   EXPECT_EQ(2, num_on_selected_information_changed_called());
   EXPECT_TRUE(state()->is_ready_to_pay());
@@ -425,7 +425,7 @@ TEST_F(PaymentRequestStateTest, RetryWithShippingAddressErrors) {
   // Simulate that the website validates the shipping option.
   state()->SetSelectedShippingOption("option:1");
   auto details = CreateDefaultDetails();
-  details->shipping_options[0]->selected = true;
+  (*details->shipping_options)[0]->selected = true;
   spec()->UpdateWith(std::move(details));
   EXPECT_EQ(2, num_on_selected_information_changed_called());
   EXPECT_TRUE(state()->is_ready_to_pay());
