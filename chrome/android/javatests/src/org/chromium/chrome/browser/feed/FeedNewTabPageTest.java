@@ -11,6 +11,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
@@ -210,6 +211,8 @@ public class FeedNewTabPageTest {
 
         // Toggle header on the current tab.
         onView(withId(R.id.header_title)).perform(click());
+        waitForView((ViewGroup) ntp1.getStream().getView(),
+                allOf(withId(R.id.header_status), withText(R.string.show)));
 
         // Check header is collapsed.
         Assert.assertTrue(firstHeader.isExpandable() && !firstHeader.isExpanded());
@@ -229,6 +232,8 @@ public class FeedNewTabPageTest {
 
         // Toggle header on the second tab.
         onView(withId(R.id.header_title)).perform(click());
+        waitForView((ViewGroup) ntp2.getStream().getView(),
+                allOf(withId(R.id.header_status), withText(R.string.hide)));
 
         // Check header on the second tab is expanded.
         Assert.assertTrue(secondHeader.isExpandable() && secondHeader.isExpanded());
