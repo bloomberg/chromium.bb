@@ -533,6 +533,16 @@ void ShelfView::ButtonPressed(views::Button* sender,
   if (!ShouldEventActivateButton(sender, event))
     return;
 
+  // Prevent concurrent requests that may show application or context menus.
+  // If a second request is sent before the first one can respond, the Chrome
+  // side ShelfItemDelegate may become unresponsive: https://crbug.com/881886
+  if (!item_awaiting_response_.IsNull()) {
+    const ShelfItem* item = ShelfItemForView(sender);
+    if (item && item->id != item_awaiting_response_)
+      ink_drop->AnimateToState(views::InkDropState::DEACTIVATED);
+    return;
+  }
+
   // Ensure the keyboard is hidden and stays hidden (as long as it isn't locked)
   if (keyboard::KeyboardController::Get()->IsEnabled())
     keyboard::KeyboardController::Get()->HideKeyboardExplicitlyBySystem();
@@ -592,6 +602,7 @@ void ShelfView::ButtonPressed(views::Button* sender,
   }
 
   // Notify the item of its selection; handle the result in AfterItemSelected.
+  item_awaiting_response_ = item.id;
   model_->GetShelfItemDelegate(item.id)->ItemSelected(
       ui::Event::Clone(event), GetDisplayIdForView(this), LAUNCH_FROM_UNKNOWN,
       base::BindOnce(&ShelfView::AfterItemSelected, weak_factory_.GetWeakPtr(),
@@ -1982,6 +1993,7 @@ void ShelfView::AfterItemSelected(
     views::InkDrop* ink_drop,
     ShelfAction action,
     base::Optional<std::vector<mojom::MenuItemPtr>> menu_items) {
+  item_awaiting_response_ = ShelfID();
   shelf_button_pressed_metric_tracker_.ButtonPressed(*event, sender, action);
 
   // The app list handles its own ink drop effect state changes.
@@ -2023,14 +2035,18 @@ void ShelfView::AfterGetContextMenuItems(
 void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
-  // Prevent multiple requests for context menus before the current request
-  // completes. If a second request is sent before the first one can respond,
-  // the Chrome side ShelfItemDelegate will become unresponsive
-  // (https://crbug.com/881886).
-  if (waiting_for_context_menu_options_)
-    return;
-  last_pressed_index_ = -1;
+  // Prevent concurrent requests that may show application or context menus.
+  // If a second request is sent before the first one can respond, the Chrome
+  // side ShelfItemDelegate may become unresponsive: https://crbug.com/881886
   const ShelfItem* item = ShelfItemForView(source);
+  if (!item_awaiting_response_.IsNull()) {
+    if (item && item->id != item_awaiting_response_) {
+      static_cast<views::Button*>(source)->AnimateInkDrop(
+          views::InkDropState::DEACTIVATED, nullptr);
+    }
+    return;
+  }
+  last_pressed_index_ = -1;
   const int64_t display_id = GetDisplayIdForView(this);
   if (!item || !model_->GetShelfItemDelegate(item->id)) {
     context_menu_id_ = ShelfID();
@@ -2041,7 +2057,7 @@ void ShelfView::ShowContextMenuForView(views::View* source,
     return;
   }
 
-  waiting_for_context_menu_options_ = true;
+  item_awaiting_response_ = item->id;
   // Get any custom entries; show the context menu in AfterGetContextMenuItems.
   model_->GetShelfItemDelegate(item->id)->GetContextMenuItems(
       display_id, base::Bind(&ShelfView::AfterGetContextMenuItems,
@@ -2054,8 +2070,12 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                          const gfx::Point& click_point,
                          bool context_menu,
                          ui::MenuSourceType source_type) {
-  DCHECK(!IsShowingMenu());
-  waiting_for_context_menu_options_ = false;
+  // Delayed callbacks to show context and application menus may conflict; hide
+  // the old menu before showing a new menu in that case.
+  if (IsShowingMenu())
+    shelf_menu_model_adapter_->Cancel();
+
+  item_awaiting_response_ = ShelfID();
   if (menu_model->GetItemCount() == 0)
     return;
   menu_owner_ = source;

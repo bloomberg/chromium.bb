@@ -447,12 +447,13 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
   bool destroyed = false;
   destroyed_flag_ = &destroyed;
 
-  Button::ShowContextMenu(p, source_type);
-
   if (source_type == ui::MenuSourceType::MENU_SOURCE_MOUSE ||
       source_type == ui::MenuSourceType::MENU_SOURCE_KEYBOARD) {
     GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
   }
+
+  Button::ShowContextMenu(p, source_type);
+
   if (!destroyed) {
     destroyed_flag_ = nullptr;
     // The menu will not propagate mouse events while its shown. To address,
