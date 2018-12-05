@@ -1848,13 +1848,14 @@ void RTCPeerConnectionHandler::StartEventLog(IPC::PlatformFileForTransit file,
 
 void RTCPeerConnectionHandler::StartEventLog() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  constexpr int64_t kOutputPeriodMs = 5000;
   // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
   // or find a way to be able to use it.
   // https://crbug.com/775415
   native_peer_connection_->StartRtcEventLog(
       std::make_unique<RtcEventLogOutputSinkProxy>(
           peer_connection_observer_.get()),
-      webrtc::RtcEventLog::kImmediateOutput);
+      kOutputPeriodMs);
 }
 
 void RTCPeerConnectionHandler::StopEventLog() {
