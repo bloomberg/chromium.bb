@@ -70,6 +70,10 @@ class RemoteTextInputClient : public ui::TextInputClient,
       ui::KeyEvent* event,
       base::OnceCallback<void(bool)> ack_callback) override;
 
+  // Removes the callback at the front of |pending_callbacks_| and runs it with
+  // |completed| as the argument.
+  void RunNextPendingCallback(bool completed);
+
   ws::mojom::TextInputClientPtr remote_client_;
   ui::TextInputType text_input_type_;
   ui::TextInputMode text_input_mode_;
