@@ -208,6 +208,14 @@ MATCHER(IsEndOfStream, "") {
   return arg.get() && arg->end_of_stream();
 }
 
+MATCHER(EosBeforeHaveMetadata, "") {
+  return CONTAINS_STRING(
+      arg,
+      "MediaSource endOfStream before demuxer initialization completes (before "
+      "HAVE_METADATA) is treated as an error. This may also occur as "
+      "consequence of other MediaSource errors before HAVE_METADATA.");
+}
+
 MATCHER_P(SegmentMissingFrames, track_id, "") {
   return CONTAINS_STRING(
       arg, "Media segment did not contain any coded frames for track " +
