@@ -12,18 +12,6 @@
 namespace mojo {
 
 // static
-bool StructTraits<blink::mojom::BackgroundFetchOptionsDataView,
-                  content::BackgroundFetchOptions>::
-    Read(blink::mojom::BackgroundFetchOptionsDataView data,
-         content::BackgroundFetchOptions* options) {
-  if (!data.ReadIcons(&options->icons) || !data.ReadTitle(&options->title))
-    return false;
-
-  options->download_total = data.download_total();
-  return true;
-}
-
-// static
 bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
                   content::BackgroundFetchRegistration>::
     Read(blink::mojom::BackgroundFetchRegistrationDataView data,

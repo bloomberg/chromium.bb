@@ -32,14 +32,15 @@ class FakeController : public BackgroundFetchJobController {
                  const BackgroundFetchRegistrationId& registration_id,
                  std::vector<std::string>* controller_sequence_list,
                  FinishedCallback finished_callback)
-      : BackgroundFetchJobController(data_manager,
-                                     delegate_proxy,
-                                     registration_id,
-                                     BackgroundFetchOptions(),
-                                     SkBitmap(),
-                                     0ul,
-                                     base::DoNothing(),
-                                     std::move(finished_callback)),
+      : BackgroundFetchJobController(
+            data_manager,
+            delegate_proxy,
+            registration_id,
+            blink::mojom::BackgroundFetchOptions::New(),
+            SkBitmap(),
+            0ul,
+            base::DoNothing(),
+            std::move(finished_callback)),
         controller_sequence_list_(controller_sequence_list) {
     DCHECK(controller_sequence_list_);
   }
@@ -106,8 +107,8 @@ class BackgroundFetchSchedulerTest : public BackgroundFetchTestBase {
     BackgroundFetchRegistrationId registration_id(
         sw_id, origin(), base::GenerateGUID(), base::GenerateGUID());
     data_manager_->CreateRegistration(
-        registration_id, std::move(fetch_requests), BackgroundFetchOptions(),
-        SkBitmap(),
+        registration_id, std::move(fetch_requests),
+        blink::mojom::BackgroundFetchOptions::New(), SkBitmap(),
         /* start_paused= */ false, base::DoNothing());
     thread_bundle_.RunUntilIdle();
 

@@ -10,12 +10,12 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 class SkBitmap;
 
 namespace content {
 
-struct BackgroundFetchOptions;
 struct BackgroundFetchRegistration;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRequestInfo;
@@ -29,7 +29,7 @@ class BackgroundFetchDataManagerObserver {
   virtual void OnRegistrationCreated(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchRegistration& registration,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_requests,
       bool start_paused) = 0;
@@ -38,7 +38,7 @@ class BackgroundFetchDataManagerObserver {
   virtual void OnRegistrationLoadedAtStartup(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchRegistration& registration,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
       int num_requests,

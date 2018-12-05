@@ -95,15 +95,15 @@ void BackgroundFetchDataManager::GetInitializationData(
 void BackgroundFetchDataManager::CreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     bool start_paused,
     GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(
-      this, registration_id, std::move(requests), options, icon, start_paused,
-      std::move(callback)));
+      this, registration_id, std::move(requests), std::move(options), icon,
+      start_paused, std::move(callback)));
 }
 
 void BackgroundFetchDataManager::GetRegistration(

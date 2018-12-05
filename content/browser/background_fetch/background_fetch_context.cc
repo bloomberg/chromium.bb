@@ -84,8 +84,8 @@ void BackgroundFetchContext::DidGetInitializationData(
   for (auto& data : initialization_data) {
     for (auto& observer : data_manager_->observers()) {
       observer.OnRegistrationLoadedAtStartup(
-          data.registration_id, data.registration, data.options, data.icon,
-          data.num_completed_requests, data.num_requests,
+          data.registration_id, data.registration, data.options.Clone(),
+          data.icon, data.num_completed_requests, data.num_requests,
           data.active_fetch_requests);
     }
   }
@@ -136,7 +136,7 @@ void BackgroundFetchContext::DidGetRegistration(
 void BackgroundFetchContext::StartFetch(
     const BackgroundFetchRegistrationId& registration_id,
     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     RenderFrameHost* render_frame_host,
@@ -156,8 +156,8 @@ void BackgroundFetchContext::StartFetch(
       registration_id.origin(), render_frame_host,
       base::BindOnce(&BackgroundFetchContext::DidGetPermission,
                      weak_factory_.GetWeakPtr(), registration_id,
-                     std::move(requests), options, icon, std::move(ukm_data),
-                     frame_tree_node_id));
+                     std::move(requests), std::move(options), icon,
+                     std::move(ukm_data), frame_tree_node_id));
 }
 
 void BackgroundFetchContext::GetPermissionForOrigin(
@@ -181,7 +181,7 @@ void BackgroundFetchContext::GetPermissionForOrigin(
 void BackgroundFetchContext::DidGetPermission(
     const BackgroundFetchRegistrationId& registration_id,
     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
@@ -191,12 +191,13 @@ void BackgroundFetchContext::DidGetPermission(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&background_fetch::RecordBackgroundFetchUkmEvent,
-                     registration_id.origin(), requests.size(), options, icon,
-                     std::move(ukm_data), frame_tree_node_id, permission));
+                     registration_id.origin(), requests.size(), options.Clone(),
+                     icon, std::move(ukm_data), frame_tree_node_id,
+                     permission));
 
   if (permission != BackgroundFetchPermission::BLOCKED) {
     data_manager_->CreateRegistration(
-        registration_id, std::move(requests), options, icon,
+        registration_id, std::move(requests), std::move(options), icon,
         permission == BackgroundFetchPermission::ASK /* start_paused */,
         base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                        weak_factory_.GetWeakPtr(), registration_id));

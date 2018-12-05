@@ -27,7 +27,7 @@ void RecordRegistrationsOnStartup(int num_registrations) {
 void RecordBackgroundFetchUkmEvent(
     const url::Origin& origin,
     int requests_size,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,
@@ -48,11 +48,11 @@ void RecordBackgroundFetchUkmEvent(
                                 ->GetUkmSourceIdForLastCommittedSource();
 
   ukm::builders::BackgroundFetch(source_id)
-      .SetHasTitle(!options.title.empty())
-      .SetNumIcons(options.icons.size())
+      .SetHasTitle(!options->title.empty())
+      .SetNumIcons(options->icons.size())
       .SetRatioOfIdealToChosenIconSize(ukm_data->ideal_to_chosen_icon_size)
       .SetDownloadTotal(ukm::GetExponentialBucketMin(
-          options.download_total, kUkmEventDataBucketSpacing))
+          options->download_total, kUkmEventDataBucketSpacing))
       .SetNumRequestsInFetch(ukm::GetExponentialBucketMin(
           requests_size, kUkmEventDataBucketSpacing))
       .SetDeniedDueToPermissions(permission ==

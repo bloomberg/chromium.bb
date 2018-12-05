@@ -28,7 +28,6 @@ class QuotaManagerProxy;
 namespace content {
 
 class BackgroundFetchDataManager;
-struct BackgroundFetchOptions;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRegistrationNotifier;
 class BackgroundFetchRequestMatchParams;
@@ -81,7 +80,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // been registered, or an error occurred that prevents it from doing so.
   void StartFetch(const BackgroundFetchRegistrationId& registration_id,
                   std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-                  const BackgroundFetchOptions& options,
+                  blink::mojom::BackgroundFetchOptionsPtr options,
                   const SkBitmap& icon,
                   blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                   RenderFrameHost* render_frame_host,
@@ -180,7 +179,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Callback for GetPermissionForOrigin.
   void DidGetPermission(const BackgroundFetchRegistrationId& registration_id,
                         std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-                        const BackgroundFetchOptions& options,
+                        blink::mojom::BackgroundFetchOptionsPtr options,
                         const SkBitmap& icon,
                         blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
                         int frame_tree_node_id,

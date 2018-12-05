@@ -22,7 +22,6 @@ namespace content {
 class BackgroundFetchContext;
 class RenderFrameHost;
 class RenderProcessHost;
-struct BackgroundFetchOptions;
 
 class CONTENT_EXPORT BackgroundFetchServiceImpl
     : public blink::mojom::BackgroundFetchService {
@@ -47,7 +46,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
   void Fetch(int64_t service_worker_registration_id,
              const std::string& developer_id,
              std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-             const BackgroundFetchOptions& options,
+             blink::mojom::BackgroundFetchOptionsPtr options,
              const SkBitmap& icon,
              blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
              FetchCallback callback) override;

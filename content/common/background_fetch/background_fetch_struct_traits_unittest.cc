@@ -34,26 +34,6 @@ blink::Manifest::ImageResource CreateIcon(const std::string& src,
 
 }  // namespace
 
-TEST(BackgroundFetchStructTraitsTest, BackgroundFetchOptionsRoundtrip) {
-  BackgroundFetchOptions options;
-  options.icons = {CreateIcon("my_icon.png", {{256, 256}}, "image/png"),
-                   CreateIcon("my_small_icon.jpg", {{128, 128}}, "image/jpg")};
-  options.title = "My Background Fetch";
-  options.download_total = 9001;
-
-  BackgroundFetchOptions roundtrip_options;
-  ASSERT_TRUE(blink::mojom::BackgroundFetchOptions::Deserialize(
-      blink::mojom::BackgroundFetchOptions::Serialize(&options),
-      &roundtrip_options));
-
-  ASSERT_EQ(roundtrip_options.icons.size(), options.icons.size());
-  for (size_t i = 0; i < options.icons.size(); ++i)
-    EXPECT_EQ(options.icons[i], roundtrip_options.icons[i]);
-
-  EXPECT_EQ(roundtrip_options.title, options.title);
-  EXPECT_EQ(roundtrip_options.download_total, options.download_total);
-}
-
 TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
   BackgroundFetchRegistration registration;
   registration.developer_id = "my_id";

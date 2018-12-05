@@ -150,7 +150,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
     auto controller = std::make_unique<BackgroundFetchJobController>(
         nullptr /* data_manager */, delegate_proxy_.get(), registration_id,
-        BackgroundFetchOptions(), SkBitmap(), 0 /* bytes_downloaded */,
+        blink::mojom::BackgroundFetchOptions::New(), SkBitmap(),
+        0 /* bytes_downloaded */,
         base::BindRepeating(
             &BackgroundFetchJobControllerTest::DidUpdateProgress,
             base::Unretained(this)),

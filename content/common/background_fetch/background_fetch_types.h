@@ -23,19 +23,6 @@ enum class BackgroundFetchResult;
 
 namespace content {
 
-// Represents the optional options a developer can provide when starting a new
-// Background Fetch fetch. Analogous to the following structure in the spec:
-// https://wicg.github.io/background-fetch/#background-fetch-manager
-struct CONTENT_EXPORT BackgroundFetchOptions {
-  BackgroundFetchOptions();
-  BackgroundFetchOptions(const BackgroundFetchOptions& other);
-  ~BackgroundFetchOptions();
-
-  std::vector<blink::Manifest::ImageResource> icons;
-  std::string title;
-  uint64_t download_total = 0;
-};
-
 // Represents the information associated with a Background Fetch registration.
 // Analogous to the following structure in the spec:
 // https://wicg.github.io/background-fetch/#background-fetch-registration

@@ -21,13 +21,6 @@ blink::mojom::SerializedBlobPtr CloneSerializedBlob(
 
 namespace content {
 
-BackgroundFetchOptions::BackgroundFetchOptions() = default;
-
-BackgroundFetchOptions::BackgroundFetchOptions(
-    const BackgroundFetchOptions& other) = default;
-
-BackgroundFetchOptions::~BackgroundFetchOptions() = default;
-
 BackgroundFetchRegistration::BackgroundFetchRegistration()
     : result(blink::mojom::BackgroundFetchResult::UNSET),
       failure_reason(blink::mojom::BackgroundFetchFailureReason::NONE) {}

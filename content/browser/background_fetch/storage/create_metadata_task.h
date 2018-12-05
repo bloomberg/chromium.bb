@@ -33,7 +33,7 @@ class CreateMetadataTask : public DatabaseTask {
   CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,
                      std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-                     const BackgroundFetchOptions& options,
+                     blink::mojom::BackgroundFetchOptionsPtr options,
                      const SkBitmap& icon,
                      bool start_paused,
                      CreateMetadataCallback callback);
@@ -73,7 +73,7 @@ class CreateMetadataTask : public DatabaseTask {
 
   BackgroundFetchRegistrationId registration_id_;
   std::vector<blink::mojom::FetchAPIRequestPtr> requests_;
-  BackgroundFetchOptions options_;
+  blink::mojom::BackgroundFetchOptionsPtr options_;
   SkBitmap icon_;
   bool start_paused_;
   CreateMetadataCallback callback_;
