@@ -17,6 +17,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 
 namespace ash {
 
@@ -107,14 +108,14 @@ void CaptionBar::InitLayout() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Minimize.
-  auto* minimize_button =
-      CreateCaptionButton(kWindowControlMinimizeIcon, IDS_APP_ACCNAME_MINIMIZE,
-                          AssistantButtonId::kMinimize, this);
+  auto* minimize_button = CreateCaptionButton(
+      views::kWindowControlMinimizeIcon, IDS_APP_ACCNAME_MINIMIZE,
+      AssistantButtonId::kMinimize, this);
   AddChildView(minimize_button);
 
   // Close.
   auto* close_button =
-      CreateCaptionButton(kWindowControlCloseIcon, IDS_APP_ACCNAME_CLOSE,
+      CreateCaptionButton(views::kWindowControlCloseIcon, IDS_APP_ACCNAME_CLOSE,
                           AssistantButtonId::kClose, this);
   AddChildView(close_button);
 

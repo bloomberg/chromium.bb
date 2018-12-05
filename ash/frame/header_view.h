@@ -24,6 +24,7 @@ class ImageSkia;
 }
 
 namespace views {
+class FrameCaptionButton;
 class ImageView;
 class Widget;
 }
@@ -31,7 +32,6 @@ class Widget;
 namespace ash {
 
 class DefaultFrameHeader;
-class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 enum class FrameBackButtonState;
 
@@ -101,7 +101,7 @@ class ASH_EXPORT HeaderView : public views::View,
 
   void SetShouldPaintHeader(bool paint);
 
-  FrameCaptionButton* GetBackButton();
+  views::FrameCaptionButton* GetBackButton();
 
   // ImmersiveFullscreenControllerDelegate:
   void OnImmersiveRevealStarted() override;

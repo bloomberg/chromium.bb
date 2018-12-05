@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
+#include "ui/views/window/frame_caption_button.h"
 
-#include "ash/public/cpp/ash_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -19,7 +18,7 @@
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/window/hit_test_utils.h"
 
-namespace ash {
+namespace views {
 
 namespace {
 
@@ -287,4 +286,4 @@ void FrameCaptionButton::UpdateInkDropBaseColor() {
           : SK_ColorWHITE);
 }
 
-}  // namespace ash
+}  // namespace views

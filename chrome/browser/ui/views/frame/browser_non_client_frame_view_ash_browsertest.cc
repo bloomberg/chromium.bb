@@ -7,9 +7,7 @@
 #include <string>
 
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_header.h"
@@ -93,6 +91,8 @@
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/caption_button_layout_constants.h"
+#include "ui/views/window/frame_caption_button.h"
 
 namespace {
 
@@ -635,8 +635,8 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
   // Clicking the "restore" caption button should exit the immersive mode.
   aura::Window* window = browser()->window()->GetNativeWindow();
   ui::test::EventGenerator event_generator(window->GetRootWindow());
-  gfx::Size button_size =
-      ash::GetAshLayoutSize(ash::AshLayoutSize::kBrowserCaptionMaximized);
+  gfx::Size button_size = views::GetCaptionButtonLayoutSize(
+      views::CaptionButtonLayoutSize::kBrowserCaptionMaximized);
   gfx::Point point_in_restore_button(window->GetBoundsInScreen().top_right());
   point_in_restore_button.Offset(-2 * button_size.width(),
                                  button_size.height() / 2);
@@ -689,8 +689,8 @@ IN_PROC_BROWSER_TEST_P(ImmersiveModeBrowserViewTest,
   // Clicking the "restore" caption button should exit the immersive mode.
   aura::Window* window = browser->window()->GetNativeWindow();
   ui::test::EventGenerator event_generator(window->GetRootWindow(), window);
-  gfx::Size button_size =
-      ash::GetAshLayoutSize(ash::AshLayoutSize::kBrowserCaptionMaximized);
+  gfx::Size button_size = views::GetCaptionButtonLayoutSize(
+      views::CaptionButtonLayoutSize::kBrowserCaptionMaximized);
   gfx::Point point_in_restore_button(
       window->GetBoundsInRootWindow().top_right());
   point_in_restore_button.Offset(-2 * button_size.width(),
@@ -899,8 +899,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
   SetUpHostedApp();
   const int inset = GetFrameViewAsh(browser_view_)->GetTopInset(false);
-  EXPECT_EQ(inset,
-            GetAshLayoutSize(ash::AshLayoutSize::kNonBrowserCaption).height());
+  EXPECT_EQ(inset, views::GetCaptionButtonLayoutSize(
+                       views::CaptionButtonLayoutSize::kNonBrowserCaption)
+                       .height());
   EXPECT_GE(inset, app_menu_button_->size().height());
   EXPECT_GE(inset, hosted_app_button_container_->size().height());
 }

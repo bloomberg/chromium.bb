@@ -6,7 +6,6 @@
 
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/window_properties.h"
@@ -18,6 +17,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/caption_button_layout_constants.h"
 
 namespace ash {
 namespace {
@@ -56,7 +56,9 @@ class WideFrameTargeter : public aura::WindowTargeter {
 // static
 gfx::Rect WideFrameView::GetFrameBounds(views::Widget* target) {
   static const int kFrameHeight =
-      GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height();
+      views::GetCaptionButtonLayoutSize(
+          views::CaptionButtonLayoutSize::kNonBrowserCaption)
+          .height();
   display::Screen* screen = display::Screen::GetScreen();
   aura::Window* target_window = target->GetNativeWindow();
   gfx::Rect bounds =

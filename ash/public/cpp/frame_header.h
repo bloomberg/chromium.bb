@@ -6,13 +6,13 @@
 #define ASH_PUBLIC_CPP_FRAME_HEADER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/views/window/frame_caption_button.h"
 
 namespace gfx {
 class Canvas;
@@ -20,13 +20,12 @@ class Rect;
 }  // namespace gfx
 
 namespace views {
+enum class CaptionButtonLayoutSize;
 class View;
 class Widget;
 }  // namespace views
 
 namespace ash {
-
-enum class AshLayoutSize;
 
 // Helper class for managing the window header.
 class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
@@ -64,8 +63,8 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
   void OnShowStateChanged(ui::WindowShowState show_state);
 
   void SetLeftHeaderView(views::View* view);
-  void SetBackButton(FrameCaptionButton* view);
-  FrameCaptionButton* GetBackButton() const;
+  void SetBackButton(views::FrameCaptionButton* view);
+  views::FrameCaptionButton* GetBackButton() const;
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
@@ -78,7 +77,8 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  void set_button_color_mode(FrameCaptionButton::ColorMode button_color_mode) {
+  void set_button_color_mode(
+      views::FrameCaptionButton::ColorMode button_color_mode) {
     button_color_mode_ = button_color_mode;
   }
 
@@ -118,7 +118,7 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
   // window properties, as is done with CustomFrameHeader.
   virtual void DoSetFrameColors(SkColor active_frame_color,
                                 SkColor inactive_frame_color) = 0;
-  virtual AshLayoutSize GetButtonLayoutSize() const = 0;
+  virtual views::CaptionButtonLayoutSize GetButtonLayoutSize() const = 0;
   virtual SkColor GetTitleColor() const = 0;
   virtual SkColor GetCurrentFrameColor() const = 0;
 
@@ -131,8 +131,8 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   gfx::Rect GetTitleBounds() const;
 
-  FrameCaptionButton::ColorMode button_color_mode_ =
-      FrameCaptionButton::ColorMode::kDefault;
+  views::FrameCaptionButton::ColorMode button_color_mode_ =
+      views::FrameCaptionButton::ColorMode::kDefault;
 
   // The widget that the caption buttons act on. This can be different from
   // |view_|'s widget.
@@ -140,7 +140,7 @@ class ASH_PUBLIC_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   // The view into which |this| paints.
   views::View* view_;
-  FrameCaptionButton* back_button_ = nullptr;  // May remain nullptr.
+  views::FrameCaptionButton* back_button_ = nullptr;  // May remain nullptr.
   views::View* left_header_view_ = nullptr;    // May remain nullptr.
   FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 

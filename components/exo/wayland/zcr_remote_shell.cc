@@ -8,7 +8,6 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
-#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
@@ -31,6 +30,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/caption_button_types.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -122,17 +122,18 @@ int Component(uint32_t direction) {
 uint32_t CaptionButtonMask(uint32_t mask) {
   uint32_t caption_button_icon_mask = 0;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_BACK)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_BACK;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_BACK;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MENU)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MENU;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_MENU;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MINIMIZE)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MINIMIZE;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_MINIMIZE;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_MAXIMIZE_RESTORE)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE;
+    caption_button_icon_mask |= 1
+                                << views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_CLOSE)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_CLOSE;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_CLOSE;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_ZOOM)
-    caption_button_icon_mask |= 1 << ash::CAPTION_BUTTON_ICON_ZOOM;
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_ZOOM;
   return caption_button_icon_mask;
 }
 

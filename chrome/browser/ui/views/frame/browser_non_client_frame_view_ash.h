@@ -35,9 +35,12 @@ class TabIconView;
 namespace ash {
 class AshFrameCaptionController;
 class DefaultFrameHeader;
-class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 }  // namespace ash
+
+namespace views {
+class FrameCaptionButton;
+}  // namespace views
 
 // Provides the BrowserNonClientFrameView for Chrome OS.
 class BrowserNonClientFrameViewAsh
@@ -228,7 +231,7 @@ class BrowserNonClientFrameViewAsh
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 
-  ash::FrameCaptionButton* back_button_ = nullptr;
+  views::FrameCaptionButton* back_button_ = nullptr;
 
   // For popups, the window icon.
   TabIconView* window_icon_ = nullptr;

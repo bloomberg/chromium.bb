@@ -9,7 +9,6 @@
 #include "ash/frame/ash_frame_caption_controller.h"  // mash-ok
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/caption_buttons/frame_back_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
@@ -67,6 +66,7 @@
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/caption_button_layout_constants.h"
 
 namespace {
 
@@ -788,18 +788,19 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 
 void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
     ash::DefaultFrameHeader* header) {
-  SkColor active_color = ash::FrameCaptionButton::GetButtonColor(
-      ash::FrameCaptionButton::ColorMode::kDefault, ash::kDefaultFrameColor);
+  SkColor active_color = views::FrameCaptionButton::GetButtonColor(
+      views::FrameCaptionButton::ColorMode::kDefault, ash::kDefaultFrameColor);
 
   // Hosted apps apply a theme color if specified by the extension.
   Browser* browser = browser_view()->browser();
   base::Optional<SkColor> theme_color =
       browser->hosted_app_controller()->GetThemeColor();
   if (theme_color) {
-    header->set_button_color_mode(ash::FrameCaptionButton::ColorMode::kThemed);
+    header->set_button_color_mode(
+        views::FrameCaptionButton::ColorMode::kThemed);
     header->SetFrameColors(*theme_color, *theme_color);
-    active_color = ash::FrameCaptionButton::GetButtonColor(
-        ash::FrameCaptionButton::ColorMode::kThemed, *theme_color);
+    active_color = views::FrameCaptionButton::GetButtonColor(
+        views::FrameCaptionButton::ColorMode::kThemed, *theme_color);
   }
 
   if (!browser->hosted_app_controller()->ShouldShowHostedAppButtonContainer())
@@ -807,7 +808,7 @@ void BrowserNonClientFrameViewAsh::SetUpForHostedApp(
 
   // Add the container for extra hosted app buttons (e.g app menu button).
   const float inactive_alpha_ratio =
-      ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
+      views::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
   SkColor inactive_color =
       SkColorSetA(active_color, 255 * inactive_alpha_ratio);
   set_hosted_app_button_container(new HostedAppButtonContainer(
@@ -825,8 +826,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     active_color =
         browser_view()->browser()->hosted_app_controller()->GetThemeColor();
     frame_header_->set_button_color_mode(
-        active_color ? ash::FrameCaptionButton::ColorMode::kThemed
-                     : ash::FrameCaptionButton::ColorMode::kDefault);
+        active_color ? views::FrameCaptionButton::ColorMode::kThemed
+                     : views::FrameCaptionButton::ColorMode::kDefault);
   } else if (!browser_view()->browser()->is_app()) {
     active_color = kMdWebUiFrameColor;
   }

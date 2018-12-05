@@ -173,7 +173,7 @@ class ClientControlledShellSurface
 
   // Set the frame button state. The |visible_button_mask| and
   // |enabled_button_mask| is a bit mask whose position is defined
-  // in ash::CaptionButtonIcon enum.
+  // in views::CaptionButtonIcon enum.
   void SetFrameButtons(uint32_t frame_visible_button_mask,
                        uint32_t frame_enabled_button_mask);
 

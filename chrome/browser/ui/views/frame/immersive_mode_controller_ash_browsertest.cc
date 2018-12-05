@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -38,6 +37,7 @@
 #include "ui/aura/test/mus/change_completion_waiter.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/window/frame_caption_button.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
     : public extensions::ExtensionBrowserTest {

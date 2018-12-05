@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/caption_buttons/frame_caption_button.h"
 #include "ash/public/cpp/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
+#include "ui/views/window/frame_caption_button.h"
 
 namespace ash {
 
@@ -24,7 +24,7 @@ namespace ash {
 // When the drag terminates, the action for the button underneath the mouse
 // is executed. For the sake of simplicity, the size button is the event
 // handler for a click starting on the size button and the entire drag.
-class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
+class ASH_PUBLIC_EXPORT FrameSizeButton : public views::FrameCaptionButton {
  public:
   FrameSizeButton(views::ButtonListener* listener,
                   FrameSizeButtonDelegate* delegate);
@@ -60,7 +60,7 @@ class ASH_PUBLIC_EXPORT FrameSizeButton : public FrameCaptionButton {
 
   // Returns the button which should be hovered (if any) while in "snap mode"
   // for |event|.
-  const FrameCaptionButton* GetButtonToHover(
+  const views::FrameCaptionButton* GetButtonToHover(
       const ui::LocatedEvent& event) const;
 
   // Snaps the window based on |event|. Returns true if a snap occurred, false

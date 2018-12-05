@@ -6,15 +6,18 @@
 #define ASH_PUBLIC_CPP_CAPTION_BUTTONS_FRAME_SIZE_BUTTON_DELEGATE_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "ash/public/cpp/caption_buttons/caption_button_types.h"
 #include "ash/public/cpp/caption_buttons/frame_caption_delegate.h"
+#include "ui/views/window/caption_button_types.h"
 
 namespace gfx {
 class Point;
 }
 
-namespace ash {
+namespace views {
 class FrameCaptionButton;
+}
+
+namespace ash {
 
 // Delegate interface for FrameSizeButton.
 class ASH_PUBLIC_EXPORT FrameSizeButtonDelegate {
@@ -31,19 +34,19 @@ class ASH_PUBLIC_EXPORT FrameSizeButtonDelegate {
 
   // Sets the minimize and close button icons. The buttons will crossfade to
   // their new icons if |animate| is ANIMATE_YES.
-  virtual void SetButtonIcons(CaptionButtonIcon minimize_button_icon,
-                              CaptionButtonIcon close_button_icon,
+  virtual void SetButtonIcons(views::CaptionButtonIcon minimize_button_icon,
+                              views::CaptionButtonIcon close_button_icon,
                               Animate animate) = 0;
 
   // Returns the button closest to |position_in_screen|.
-  virtual const FrameCaptionButton* GetButtonClosestTo(
+  virtual const views::FrameCaptionButton* GetButtonClosestTo(
       const gfx::Point& position_in_screen) const = 0;
 
   // Sets |to_hover| and |to_pressed| to STATE_HOVERED and STATE_PRESSED
   // respectively. All other buttons are to set to STATE_NORMAL.
   virtual void SetHoveredAndPressedButtons(
-      const FrameCaptionButton* to_hover,
-      const FrameCaptionButton* to_press) = 0;
+      const views::FrameCaptionButton* to_hover,
+      const views::FrameCaptionButton* to_press) = 0;
 
   // Thunks to methods of the same name in FrameCaptionDelegate.
   virtual bool CanSnap() = 0;
