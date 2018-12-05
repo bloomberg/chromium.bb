@@ -139,17 +139,21 @@ async function saveFileDialogClickOkButton(volume, name) {
  * disabled.
  *
  * @param {!string} volume Volume name for openAndWaitForClosingDialog.
- * @param {!string} name File name to select in the dialog.
+ * @param {!string} name File name to select in the dialog where the OK button
+ *     should be disabled
+ * @param {!string} enabledName File name to select where the OK button should
+ *     be enabled, used to ensure that switching to |name| results in the OK
+ *     button becoming disabled.
+ * @param {!string} type The dialog type to open.
  * @return {!Promise} Promise to be fulfilled on success.
  */
-async function openFileDialogExpectOkButtonDisabled(volume, name, pinnedName) {
-  const type = {type: 'openFile'};
-
+async function openFileDialogExpectOkButtonDisabled(
+    volume, name, enabledName, type = 'openFile') {
   const okButton = '.button-panel button.ok:enabled';
   const disabledOkButton = '.button-panel button.ok:disabled';
   const cancelButton = '.button-panel button.cancel';
   let closer = async (dialog) => {
-    await remoteCall.callRemoteTestUtil('selectFile', dialog, [pinnedName]);
+    await remoteCall.callRemoteTestUtil('selectFile', dialog, [enabledName]);
     await remoteCall.waitForElement(dialog, okButton);
     await remoteCall.callRemoteTestUtil('selectFile', dialog, [name]);
     await remoteCall.waitForElement(dialog, disabledOkButton);
@@ -159,7 +163,7 @@ async function openFileDialogExpectOkButtonDisabled(volume, name, pinnedName) {
   const entrySet = await setUpFileEntrySet(volume);
   chrome.test.assertEq(
       undefined,
-      await openAndWaitForClosingDialog(type, volume, entrySet, closer));
+      await openAndWaitForClosingDialog({type}, volume, entrySet, closer));
 }
 
 /**
@@ -263,11 +267,21 @@ testcase.saveFileDialogDrive = function() {
 };
 
 /**
- * Tests opening file dialog on Drive and closing it with Ok button.
+ * Tests that an unpinned file cannot be selected in file open dialogs while
+ * offline.
  */
 testcase.openFileDialogDriveOffline = function() {
   return openFileDialogExpectOkButtonDisabled(
       'drive', TEST_DRIVE_FILE, TEST_DRIVE_PINNED_FILE);
+};
+
+/**
+ * Tests that an unpinned file cannot be selected in save file dialogs while
+ * offline.
+ */
+testcase.saveFileDialogDriveOffline = function() {
+  return openFileDialogExpectOkButtonDisabled(
+      'drive', TEST_DRIVE_FILE, TEST_DRIVE_PINNED_FILE, 'saveFile');
 };
 
 /**

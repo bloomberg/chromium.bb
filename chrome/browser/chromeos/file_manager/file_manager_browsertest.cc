@@ -761,6 +761,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
             .WithBrowser()
             .Offline()
             .EnableDriveFs(),
+        TestCase("saveFileDialogDriveOffline").WithBrowser().Offline(),
         TestCase("openFileDialogDriveOfflinePinned")
             .WithBrowser()
             .Offline()
