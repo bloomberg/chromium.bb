@@ -119,8 +119,6 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual WebServiceWorkerNetworkProvider*
   GetServiceWorkerNetworkProvider() = 0;
 
-  virtual void ResetSourceLocation() = 0;
-
   // Can be used to temporarily suspend feeding the parser with new data. The
   // parser will be allowed to read new data when ResumeParser() is called the
   // same number of time than BlockParser().

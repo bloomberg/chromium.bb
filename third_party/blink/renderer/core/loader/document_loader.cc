@@ -300,10 +300,6 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
   service_worker_network_provider_ = std::move(provider);
 }
 
-void DocumentLoader::ResetSourceLocation() {
-  source_location_ = nullptr;
-}
-
 std::unique_ptr<SourceLocation> DocumentLoader::CopySourceLocation() const {
   return source_location_ ? source_location_->Clone() : nullptr;
 }
@@ -966,8 +962,10 @@ void DocumentLoader::StartLoading() {
   DCHECK_EQ(state_, kNotStarted);
   state_ = kProvisional;
 
-  if (MaybeLoadEmpty())
+  if (MaybeLoadEmpty()) {
+    source_location_ = nullptr;
     return;
+  }
 
   DCHECK(!GetTiming().NavigationStart().is_null());
   // The fetch has already started in the browser,
@@ -984,6 +982,7 @@ void DocumentLoader::StartLoading() {
   // make some modification to the request, e.g. adding the referer header.
   request_ = GetResource()->IsLoading() ? GetResource()->GetResourceRequest()
                                         : fetch_params.GetResourceRequest();
+  source_location_ = nullptr;
 }
 
 void DocumentLoader::DidInstallNewDocument(Document* document) {
