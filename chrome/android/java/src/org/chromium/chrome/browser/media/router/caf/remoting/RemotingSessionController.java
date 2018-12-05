@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.media.router.caf.remoting;
 
-import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.framework.CastSession;
 
 import org.chromium.base.Log;
@@ -21,7 +20,6 @@ public class RemotingSessionController extends BaseSessionController {
     private FlingingControllerAdapter mFlingingControllerAdapter;
     RemotingSessionController(CafBaseMediaRouteProvider provider) {
         super(provider);
-        mFlingingControllerAdapter = new FlingingControllerAdapter(this);
     }
 
     @Override
@@ -40,8 +38,8 @@ public class RemotingSessionController extends BaseSessionController {
     @Override
     public void onSessionStarted() {
         super.onSessionStarted();
-        getRemoteMediaClient().load(
-                new MediaInfo.Builder(((RemotingMediaSource) getSource()).getMediaUrl()).build());
+        RemotingMediaSource source = (RemotingMediaSource) getSource();
+        mFlingingControllerAdapter = new FlingingControllerAdapter(this, source.getMediaUrl());
     }
 
     @Override

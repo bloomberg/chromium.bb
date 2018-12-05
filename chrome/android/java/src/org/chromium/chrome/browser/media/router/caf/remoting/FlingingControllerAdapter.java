@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.router.caf.remoting;
 
+import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
@@ -18,11 +19,14 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
     private static final String TAG = "FlingCtrlAdptr";
 
     private final RemotingSessionController mSessionController;
+    private final String mMediaUrl;
     private MediaStatusObserver mMediaStatusObserver;
     private long mCachedApproximateCurrentTime;
+    private boolean mLoaded;
 
-    FlingingControllerAdapter(RemotingSessionController sessionController) {
+    FlingingControllerAdapter(RemotingSessionController sessionController, String mediaUrl) {
         mSessionController = sessionController;
+        mMediaUrl = mediaUrl;
     }
 
     ////////////////////////////////////////////
@@ -59,6 +63,19 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
     // FlingingController implementation end
     ////////////////////////////////////////////
 
+    /** Starts loading the media URL, from the given position. */
+    public void load(long position) {
+        if (!mSessionController.isConnected()) return;
+
+        mLoaded = true;
+
+        MediaInfo mediaInfo = new MediaInfo.Builder(mMediaUrl)
+                                      .setContentType("*/*")
+                                      .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
+                                      .build();
+        mSessionController.getRemoteMediaClient().load(mediaInfo, /* autoplay= */ true, position);
+    }
+
     ////////////////////////////////////////////
     // MediaController implementation begin
     ////////////////////////////////////////////
@@ -66,6 +83,12 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
     @Override
     public void play() {
         if (!mSessionController.isConnected()) return;
+
+        if (!mLoaded) {
+            load(/* position= */ 0);
+            return;
+        }
+
         mSessionController.getRemoteMediaClient().play().setResultCallback(
                 this ::onMediaCommandResult);
     }
@@ -94,6 +117,12 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
     @Override
     public void seek(long position) {
         if (!mSessionController.isConnected()) return;
+
+        if (!mLoaded) {
+            load(position);
+            return;
+        }
+
         mSessionController.getRemoteMediaClient().seek(position).setResultCallback(
                 this ::onMediaCommandResult);
     }
