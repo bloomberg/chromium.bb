@@ -413,24 +413,16 @@ class DistributedBuilder(SimpleBuilder):
       else:
         sync_stage = self._GetStageInstance(sync_stages.CommitQueueSyncStage)
       self.completion_stage_class = completion_stages.CommitQueueCompletionStage
-    elif config_lib.IsPFQType(self._run.config.build_type):
-      sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
-      self.completion_stage_class = (
-          completion_stages.MasterSlaveSyncCompletionStage)
     elif config_lib.IsCanaryType(self._run.config.build_type):
       sync_stage = self._GetStageInstance(
           sync_stages.ManifestVersionedSyncStage)
       self.completion_stage_class = (
           completion_stages.CanaryCompletionStage)
-    elif self._run.config.build_type == constants.TOOLCHAIN_TYPE:
-      sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
-      self.completion_stage_class = (
-          completion_stages.MasterSlaveSyncCompletionStage)
-    elif self._run.config.build_type == constants.FULL_TYPE:
-      sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
-      self.completion_stage_class = (
-          completion_stages.MasterSlaveSyncCompletionStage)
-    elif self._run.config.build_type == constants.INCREMENTAL_TYPE:
+    elif (config_lib.IsPFQType(self._run.config.build_type) or
+          self._run.config.build_type in (constants.TOOLCHAIN_TYPE,
+                                          constants.FULL_TYPE,
+                                          constants.INCREMENTAL_TYPE,
+                                          constants.POSTSUBMIT_TYPE)):
       sync_stage = self._GetStageInstance(sync_stages.MasterSlaveLKGMSyncStage)
       self.completion_stage_class = (
           completion_stages.MasterSlaveSyncCompletionStage)
