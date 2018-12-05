@@ -24,7 +24,7 @@ FidoHidPacket::~FidoHidPacket() = default;
 std::unique_ptr<FidoHidInitPacket> FidoHidInitPacket::CreateFromSerializedData(
     base::span<const uint8_t> serialized,
     size_t* remaining_size) {
-  if (!remaining_size || serialized.size() != kHidPacketSize)
+  if (serialized.size() <= kHidInitPacketHeaderSize)
     return nullptr;
 
   size_t index = 0;
@@ -39,10 +39,11 @@ std::unique_ptr<FidoHidInitPacket> FidoHidInitPacket::CreateFromSerializedData(
 
   uint16_t payload_size = serialized[index++] << 8;
   payload_size |= serialized[index++];
+  DCHECK_EQ(index, kHidInitPacketHeaderSize);
 
   // Check to see if payload is less than maximum size and padded with 0s.
   uint16_t data_size =
-      std::min(payload_size, static_cast<uint16_t>(kHidPacketSize - index));
+      std::min(payload_size, static_cast<uint16_t>(serialized.size() - index));
 
   // Update remaining size to determine the payload size of follow on packets.
   *remaining_size = payload_size - data_size;
@@ -73,7 +74,7 @@ FidoHidInitPacket::~FidoHidInitPacket() = default;
 
 std::vector<uint8_t> FidoHidInitPacket::GetSerializedData() const {
   std::vector<uint8_t> serialized;
-  serialized.reserve(kHidPacketSize);
+  serialized.reserve(kHidMaxPacketSize);
   serialized.push_back((channel_id_ >> 24) & 0xff);
   serialized.push_back((channel_id_ >> 16) & 0xff);
   serialized.push_back((channel_id_ >> 8) & 0xff);
@@ -82,7 +83,6 @@ std::vector<uint8_t> FidoHidInitPacket::GetSerializedData() const {
   serialized.push_back((payload_length_ >> 8) & 0xff);
   serialized.push_back(payload_length_ & 0xff);
   serialized.insert(serialized.end(), data_.begin(), data_.end());
-  serialized.resize(kHidPacketSize, 0);
 
   return serialized;
 }
@@ -92,7 +92,7 @@ std::unique_ptr<FidoHidContinuationPacket>
 FidoHidContinuationPacket::CreateFromSerializedData(
     base::span<const uint8_t> serialized,
     size_t* remaining_size) {
-  if (!remaining_size || serialized.size() != kHidPacketSize)
+  if (serialized.size() <= kHidContinuationPacketHeaderSize)
     return nullptr;
 
   size_t index = 0;
@@ -101,10 +101,11 @@ FidoHidContinuationPacket::CreateFromSerializedData(
   channel_id |= (serialized[index++] & 0xff) << 8;
   channel_id |= serialized[index++] & 0xff;
   auto sequence = serialized[index++];
+  DCHECK_EQ(index, kHidContinuationPacketHeaderSize);
 
   // Check to see if packet payload is less than maximum size and padded with
   // 0s.
-  size_t data_size = std::min(*remaining_size, kHidPacketSize - index);
+  size_t data_size = std::min(*remaining_size, serialized.size() - index);
   *remaining_size -= data_size;
   auto data = std::vector<uint8_t>(serialized.begin() + index,
                                    serialized.begin() + index + data_size);
@@ -127,14 +128,13 @@ FidoHidContinuationPacket::~FidoHidContinuationPacket() = default;
 
 std::vector<uint8_t> FidoHidContinuationPacket::GetSerializedData() const {
   std::vector<uint8_t> serialized;
-  serialized.reserve(kHidPacketSize);
+  serialized.reserve(kHidMaxPacketSize);
   serialized.push_back((channel_id_ >> 24) & 0xff);
   serialized.push_back((channel_id_ >> 16) & 0xff);
   serialized.push_back((channel_id_ >> 8) & 0xff);
   serialized.push_back(channel_id_ & 0xff);
   serialized.push_back(sequence_);
   serialized.insert(serialized.end(), data_.begin(), data_.end());
-  serialized.resize(kHidPacketSize, 0);
 
   return serialized;
 }
