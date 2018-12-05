@@ -217,6 +217,22 @@ video playback looks like a still image. An image of 4 color blocks (.png file)
 is first created by Windows Paint.exe. This image is then used as a basic video
 frame in making this 2-second video from Mac iStopMotion.
 
+#### four-colors-aspect-4x3.mp4
+Actual video frames are the same as four-colors.mp4, except it specifies
+an aspect of 4x3 in mp4 meta data.
+
+#### four-colors-aspect-rot-90.mp4
+Actual video frames are the same as four-colors.mp4, except it specifies
+a rotation of 90 degrees in mp4 meta data.
+
+#### four-colors-aspect-rot-180.mp4
+Actual video frames are the same as four-colors.mp4, except it specifies
+a rotation of 180 degrees in mp4 meta data.
+
+#### four-colors-aspect-rot-270.mp4
+Actual video frames are the same as four-colors.mp4, except it specifies
+a rotation of 270 degrees in mp4 meta data.
+
 #### bear-320x180-hi10p.mp4
 #### bear-320x240-vp9_profile2.webm
 VP9 encoded video with profile 2 (10-bit, 4:2:0).

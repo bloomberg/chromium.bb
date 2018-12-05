@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+
 class PixelTestPage(object):
   """A wrapper class mimicking the functionality of the PixelTestsStorySet
   from the old-style GPU tests.
@@ -92,6 +94,12 @@ SCALE_FACTOR_OVERRIDES = {
 
 def DefaultPages(base_name):
   sw_compositing_args = ['--disable-gpu-compositing']
+
+  tolerance = 3
+  if sys.platform == 'darwin':
+    # On MacOSX, pixels are slightly off.
+    # https://crbug.com/911895
+    tolerance = 10
 
   return [
     PixelTestPage(
@@ -201,6 +209,192 @@ def DefaultPages(base_name):
       base_name + '_Video_MP4',
       test_rect=[0, 0, 300, 300],
       revision=10),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_aspect_4x3.html',
+      base_name + '_Video_MP4_FourColors_Aspect_4x3',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # This is not used.
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [211, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top left video, yellow',
+          'location': [35, 5],
+          'size': [80, 57],
+          'color': [255, 255, 15],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [125, 5],
+          'size': [80, 57],
+          'color': [255, 17, 24],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [35, 73],
+          'size': [80, 57],
+          'color': [12, 12, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [125, 73],
+          'size': [80, 57],
+          'color': [44, 255, 16],
+          'tolerance': tolerance
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_90.html',
+      base_name + '_Video_MP4_FourColors_Rot_90',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # This is not used.
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top left video, red',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top right video, green',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom left video, yellow',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom right video, blue',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+          'tolerance': tolerance
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_180.html',
+      base_name + '_Video_MP4_FourColors_Rot_180',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # This is not used.
+      expected_colors=[
+        {
+          'comment': 'top left video, green',
+          'location': [5, 5],
+          'size': [110, 57],
+          'color': [44, 255, 16],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top right video, blue',
+          'location': [125, 5],
+          'size': [110, 57],
+          'color': [12, 12, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom left video, red',
+          'location': [5, 72],
+          'size': [110, 57],
+          'color': [255, 17, 24],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom right video, yellow',
+          'location': [125, 72],
+          'size': [110, 57],
+          'color': [255, 255, 15],
+          'tolerance': tolerance
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_270.html',
+      base_name + '_Video_MP4_FourColors_Rot_270',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # This is not used.
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top left video, blue',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'top right video, yellow',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom left video, green',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+          'tolerance': tolerance
+        },
+        {
+          'comment': 'bottom right video, red',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+          'tolerance': tolerance
+        }
+      ]),
 
     PixelTestPage(
       'pixel_video_vp9.html',
@@ -806,6 +1000,196 @@ def DirectCompositionPages(base_name):
       test_rect=[0, 0, 300, 300],
       revision=8,
       browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_aspect_4x3.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Aspect_4x3',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [211, 1],
+          'size': [28, 133],
+          'color': [255, 255, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top left video, yellow',
+          'location': [35, 5],
+          'size': [80, 57],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top right video, red',
+          'location': [125, 5],
+          'size': [80, 57],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom left video, blue',
+          'location': [35, 73],
+          'size': [80, 57],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom right video, green',
+          'location': [125, 73],
+          'size': [80, 57],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_90.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Rot_90',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top left video, red',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top right video, green',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom left video, yellow',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom right video, blue',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_180.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Rot_180',
+      test_rect=[0, 0, 240, 135],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        {
+          'comment': 'top left video, green',
+          'location': [5, 5],
+          'size': [110, 57],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top right video, blue',
+          'location': [125, 5],
+          'size': [110, 57],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom left video, red',
+          'location': [5, 72],
+          'size': [110, 57],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom right video, yellow',
+          'location': [125, 72],
+          'size': [110, 57],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        }
+      ]),
+
+    PixelTestPage(
+      'pixel_video_mp4_four_colors_rot_270.html',
+      base_name + '_DirectComposition_Video_MP4_FourColors_Rot_270',
+      test_rect=[0, 0, 427, 240],
+      revision=0, # This is not used.
+      browser_args=browser_args,
+      expected_colors=[
+        {
+          'comment': 'outside video content, left side, white',
+          'location': [1, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'outside video content, right side, white',
+          'location': [282, 1],
+          'size': [144, 238],
+          'color': [255, 255, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top left video, blue',
+          'location': [152, 5],
+          'size': [55, 110],
+          'color': [12, 12, 255],
+          'tolerance': 3
+        },
+        {
+          'comment': 'top right video, yellow',
+          'location': [220, 5],
+          'size': [55, 110],
+          'color': [255, 255, 15],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom left video, green',
+          'location': [152, 125],
+          'size': [55, 110],
+          'color': [44, 255, 16],
+          'tolerance': 3
+        },
+        {
+          'comment': 'bottom right video, red',
+          'location': [220, 125],
+          'size': [55, 110],
+          'color': [255, 17, 24],
+          'tolerance': 3
+        }
+      ]),
 
     PixelTestPage(
       'pixel_video_vp9.html',
