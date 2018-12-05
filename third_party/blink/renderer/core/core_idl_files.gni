@@ -656,6 +656,7 @@ core_dictionary_idl_files =
                     "html/canvas/baselines.idl",
                     "html/canvas/image_data_color_settings.idl",
                     "html/canvas/image_encode_options.idl",
+                    "html/custom/validity_state_flags.idl",
                     "html/track/track_event_init.idl",
                     "imagebitmap/image_bitmap_options.idl",
                     "input/input_device_capabilities_init.idl",

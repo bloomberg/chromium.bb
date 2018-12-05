@@ -79,7 +79,7 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   bool WillValidate() const;
 
   // ValidityState attribute implementations
-  bool CustomError() const;
+  virtual bool CustomError() const;
 
   // Functions for ValidityState interface methods.
   // Override functions for PatterMismatch, RangeOverflow, RangerUnderflow,
@@ -161,6 +161,8 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual bool RecalcWillValidate() const;
 
   String CustomValidationMessage() const;
+  // This is just a setter. This doesn't set |customError| flag.
+  void SetCustomValidationMessage(const String& message);
 
   // False; There are no FIELDSET ancestors.
   // True; There might be a FIELDSET ancestor, and thre might be no

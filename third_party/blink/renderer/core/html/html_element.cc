@@ -1509,6 +1509,15 @@ bool HTMLElement::MatchesEnabledPseudoClass() const {
                                                  .IsActuallyDisabled();
 }
 
+bool HTMLElement::MatchesValidityPseudoClasses() const {
+  return IsFormAssociatedCustomElement();
+}
+
+bool HTMLElement::IsValidElement() {
+  return IsFormAssociatedCustomElement() &&
+         EnsureElementInternals().IsValidElement();
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG

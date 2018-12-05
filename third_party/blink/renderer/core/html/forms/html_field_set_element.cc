@@ -57,6 +57,11 @@ bool HTMLFieldSetElement::IsValidElement() {
       if (!ToHTMLFormControlElement(element)->checkValidity(
               nullptr, kCheckValidityDispatchNoEvent))
         return false;
+    } else if (element->IsHTMLElement() &&
+               ToHTMLElement(element)->IsFormAssociatedCustomElement()) {
+      if (!element->EnsureElementInternals().ListedElement::checkValidity(
+              nullptr, kCheckValidityDispatchNoEvent))
+        return false;
     }
   }
   return true;

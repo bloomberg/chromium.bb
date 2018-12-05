@@ -348,6 +348,10 @@ String ListedElement::CustomValidationMessage() const {
   return custom_validation_message_;
 }
 
+void ListedElement::SetCustomValidationMessage(const String& message) {
+  custom_validation_message_ = message;
+}
+
 String ListedElement::validationMessage() const {
   return CustomError() ? custom_validation_message_ : String();
 }
@@ -357,7 +361,7 @@ String ListedElement::ValidationSubMessage() const {
 }
 
 void ListedElement::setCustomValidity(const String& error) {
-  custom_validation_message_ = error;
+  SetCustomValidationMessage(error);
   SetNeedsValidityCheck();
 }
 
