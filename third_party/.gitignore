@@ -79,7 +79,6 @@
 /gles2_conform
 /glfw/src
 /glslang/src
-/glslang-angle/src
 /gn/
 /gnu_binutils/
 /google_android_play_core/core-*.aar
@@ -204,7 +203,6 @@
 /spirv-cross/spirv-cross
 /spirv-headers/src
 /SPIRV-Tools/src
-/spirv-tools-angle/src
 /sqlite4java/lib/
 /swiftshader/
 /syzygy
