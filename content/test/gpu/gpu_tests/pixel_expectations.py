@@ -132,3 +132,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_BackgroundImage',
         ['android', ('qualcomm', 'Adreno (TM) 430')], bug=883500)
 
+    # Fails on android-marshmallow-arm64-rel
+    self.Fail('Pixel_Video_MP4_FourColors_Aspect_4x3', ['android'], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_90', ['android'], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_180', ['android'], bug=911898)
+    self.Fail('Pixel_Video_MP4_FourColors_Rot_270', ['android'], bug=911898)
