@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/feature_list.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -177,8 +178,8 @@ GURL GetGooglePasswordManagerURL(ManagePasswordsReferrer referrer) {
         return "password_context_menu";
       case ManagePasswordsReferrer::kPasswordDropdown:
         return "password_dropdown";
-      case ManagePasswordsReferrer::kPasswordSaveConfirmation:
-        return "password_save_confirmation";
+      case ManagePasswordsReferrer::kPasswordGenerationConfirmation:
+        return "password_generation_confirmation";
       case ManagePasswordsReferrer::kProfileChooser:
         return "profile_chooser";
     }
@@ -210,6 +211,8 @@ void NavigateToGooglePasswordManager(Profile* profile,
 
 void NavigateToManagePasswordsPage(Browser* browser,
                                    ManagePasswordsReferrer referrer) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ManagePasswordsReferrer",
+                            referrer);
   if (ShouldManagePasswordsinGooglePasswordManager(browser->profile())) {
     NavigateToGooglePasswordManager(browser->profile(), referrer);
   } else {

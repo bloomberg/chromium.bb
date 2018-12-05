@@ -59,6 +59,7 @@ Polymer({
    * @private
    */
   onPasswordsClick_: function() {
+    PasswordManagerImpl.getInstance().recordPasswordsPageAccessInSettings();
     loadTimeData.getBoolean('navigateToGooglePasswordManager') ?
         settings.OpenWindowProxyImpl.getInstance().openURL(
             loadTimeData.getString('googlePasswordManagerUrl')) :

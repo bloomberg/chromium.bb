@@ -48,7 +48,8 @@ void PasswordSaveConfirmationView::StyledLabelLinkClicked(
     int event_flags) {
   DCHECK_EQ(range, model()->save_confirmation_link_range());
   model()->OnNavigateToPasswordManagerAccountDashboardLinkClicked(
-      password_manager::ManagePasswordsReferrer::kPasswordSaveConfirmation);
+      password_manager::ManagePasswordsReferrer::
+          kPasswordGenerationConfirmation);
   CloseBubble();
 }
 
