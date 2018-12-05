@@ -62,8 +62,6 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @Override
     public int shouldSessionRequestData(SessionManagerState sessionManagerState) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
         if (mNativeBridge == 0) return SchedulerApi.RequestBehavior.UNKNOWN;
 
         @NativeRequestBehavior
@@ -95,20 +93,16 @@ public class FeedSchedulerBridge implements FeedScheduler {
 
     @Override
     public void onReceiveNewContent(long contentCreationDateTimeMs) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeBridge != 0) return;
-
-        nativeOnReceiveNewContent(mNativeBridge, contentCreationDateTimeMs);
+        if (mNativeBridge != 0) {
+            nativeOnReceiveNewContent(mNativeBridge, contentCreationDateTimeMs);
+        }
     }
 
     @Override
     public void onRequestError(int networkResponseCode) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeBridge != 0) return;
-
-        nativeOnRequestError(mNativeBridge, networkResponseCode);
+        if (mNativeBridge != 0) {
+            nativeOnRequestError(mNativeBridge, networkResponseCode);
+        }
     }
 
     @Override
