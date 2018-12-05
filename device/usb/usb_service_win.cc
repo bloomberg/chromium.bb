@@ -82,7 +82,7 @@ bool GetDeviceStringProperty(HDEVINFO dev_info,
 bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
                                SP_DEVICE_INTERFACE_DATA* device_interface_data,
                                std::string* device_path,
-                               uint32_t* port_number,
+                               uint32_t* bus_number, uint32_t* port_number,
                                std::string* parent_instance_id,
                                std::string* service_name) {
   DWORD required_size = 0;
@@ -110,6 +110,14 @@ bool GetDeviceInterfaceDetails(HDEVINFO dev_info,
   if (device_path) {
     *device_path =
         base::SysWideToUTF8(device_interface_detail_data->DevicePath);
+  }
+
+  if (bus_number) {
+    if (!GetDeviceUint32Property(dev_info, &dev_info_data,
+                                 DEVPKEY_Device_BusNumber, bus_number)) {
+      USB_PLOG(ERROR) << "Failed to get device bus number";
+      return false;
+    }
   }
 
   if (port_number) {
@@ -165,7 +173,8 @@ bool GetHubDevicePath(const std::string& instance_id,
   }
 
   return GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
-                                   device_path, nullptr, nullptr, nullptr);
+                                   device_path, nullptr, nullptr, nullptr,
+                                   nullptr);
 }
 
 }  // namespace
@@ -195,11 +204,12 @@ class UsbServiceWin::BlockingTaskHelper {
                                                   i, &device_interface_data);
          ++i) {
       std::string device_path;
+      uint32_t bus_number;
       uint32_t port_number;
       std::string parent_instance_id;
       std::string service_name;
       if (!GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
-                                     &device_path, &port_number,
+                                     &device_path, &bus_number, &port_number,
                                      &parent_instance_id, &service_name)) {
         continue;
       }
@@ -216,7 +226,7 @@ class UsbServiceWin::BlockingTaskHelper {
       service_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&UsbServiceWin::CreateDeviceObject, service_, device_path,
-                     hub_path, port_number, service_name));
+                     hub_path, bus_number, port_number, service_name));
     }
 
     if (GetLastError() != ERROR_NO_MORE_ITEMS)
@@ -243,12 +253,13 @@ class UsbServiceWin::BlockingTaskHelper {
       return;
     }
 
+    uint32_t bus_number;
     uint32_t port_number;
     std::string parent_instance_id;
     std::string service_name;
     if (!GetDeviceInterfaceDetails(dev_info.get(), &device_interface_data,
-                                   nullptr, &port_number, &parent_instance_id,
-                                   &service_name)) {
+                                   nullptr, &bus_number, &port_number,
+                                   &parent_instance_id, &service_name)) {
       return;
     }
 
@@ -264,7 +275,7 @@ class UsbServiceWin::BlockingTaskHelper {
     service_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&UsbServiceWin::CreateDeviceObject, service_, device_path,
-                   hub_path, port_number, service_name));
+                   hub_path, bus_number, port_number, service_name));
   }
 
  private:
@@ -347,7 +358,8 @@ void UsbServiceWin::HelperStarted() {
 
 void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
                                        const std::string& hub_path,
-                                       int port_number,
+                                       uint32_t bus_number,
+                                       uint32_t port_number,
                                        const std::string& driver_name) {
   // Devices that appear during initial enumeration are gathered into the first
   // result returned by GetDevices() and prevent device add/remove notifications
@@ -355,8 +367,9 @@ void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
   if (!enumeration_ready())
     ++first_enumeration_countdown_;
 
-  scoped_refptr<UsbDeviceWin> device(new UsbDeviceWin(
-      device_path, hub_path, port_number, driver_name, blocking_task_runner()));
+  scoped_refptr<UsbDeviceWin> device(
+      new UsbDeviceWin(device_path, hub_path, bus_number, port_number,
+                       driver_name, blocking_task_runner()));
   devices_by_path_[device->device_path()] = device;
   device->ReadDescriptors(base::Bind(&UsbServiceWin::DeviceReady,
                                      weak_factory_.GetWeakPtr(), device));

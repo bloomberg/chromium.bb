@@ -37,7 +37,8 @@ class UsbServiceLinux : public UsbService {
                      const std::string& manufacturer,
                      const std::string& product,
                      const std::string& serial_number,
-                     uint8_t active_configuration);
+                     uint8_t active_configuration,
+                     uint32_t bus_number, uint32_t port_number);
   void DeviceReady(scoped_refptr<UsbDeviceLinux> device, bool success);
   void OnDeviceRemoved(const std::string& device_path);
   void HelperStarted();

@@ -32,11 +32,13 @@ UsbDeviceLinux::UsbDeviceLinux(const std::string& device_path,
                                const std::string& manufacturer_string,
                                const std::string& product_string,
                                const std::string& serial_number,
-                               uint8_t active_configuration)
+                               uint8_t active_configuration,
+                               uint32_t bus_number, uint32_t port_number)
     : UsbDevice(descriptor,
                 base::UTF8ToUTF16(manufacturer_string),
                 base::UTF8ToUTF16(product_string),
-                base::UTF8ToUTF16(serial_number)),
+                base::UTF8ToUTF16(serial_number),
+                bus_number, port_number),
       device_path_(device_path) {
   ActiveConfigurationChanged(active_configuration);
 }
