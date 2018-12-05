@@ -104,7 +104,13 @@ TEST_F(GeolocationServiceUnitTest, UrlWithApiKey) {
 }
 #endif
 
-TEST_F(GeolocationServiceUnitTest, GeolocationConfig) {
+// TODO(https://crbug.com/912057): Flaky on Chrome OS / Fails often on *San.
+#if defined(OS_CHROMEOS)
+#define MAYBE_GeolocationConfig DISABLED_GeolocationConfig
+#else
+#define MAYBE_GeolocationConfig GeolocationConfig
+#endif
+TEST_F(GeolocationServiceUnitTest, MAYBE_GeolocationConfig) {
   BindGeolocationConfig();
   {
     base::RunLoop run_loop;
