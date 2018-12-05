@@ -982,15 +982,6 @@ void RenderWidget::RequestNewLayerTreeFrameSink(
     return;
   }
 
-  // TODO(crbug.com/896836): CHECK to try track down why we make a frame sink
-  // for a RenderWidget without a main frame. If there's no frame widget then
-  // there is no main frame. This only applies for widgets for frames.
-  CHECK(!is_frozen_);
-  if (owner_delegate_)
-    CHECK(GetFrameWidget());
-  if (for_child_local_root_frame_)
-    CHECK(GetFrameWidget());
-
   // If we have a warmup in progress, wait for that and store the callback
   // to be run when the warmup completes.
   if (warmup_frame_sink_request_pending_) {
@@ -1020,7 +1011,11 @@ void RenderWidget::DoRequestNewLayerTreeFrameSink(
                                                         std::move(client_info));
   layer_tree_view_->SetRenderFrameObserver(
       std::move(render_frame_metadata_observer));
-  GURL url = GetWebWidget()->GetURLForDebugTrace();
+  GURL url;
+  // TODO(crbug.com/896836): Sometimes there's no valid widget, for main frame
+  // widgets.
+  if (!owner_delegate_ || GetFrameWidget())
+    url = GetWebWidget()->GetURLForDebugTrace();
   // The |url| is not always available, fallback to a fixed string.
   if (url.is_empty())
     url = GURL("chrome://gpu/RenderWidget::RequestNewLayerTreeFrameSink");
