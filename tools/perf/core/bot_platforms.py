@@ -175,7 +175,6 @@ ANDROID_NEXUS5X_PERF_FYI =  PerfPlatform(
       'heap_profiling.mobile.disabled',
       'heap_profiling.mobile.native',
       'heap_profiling.mobile.pseudo',
-      'rendering.oopd.mobile',
     })
 
 # TODO(crbug.com/902089): Add linux-perf-fyi once the bot is configured to use

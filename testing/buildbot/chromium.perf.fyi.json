@@ -301,7 +301,7 @@
       },
       {
         "args": [
-          "--benchmarks=loading.desktop.network_service,rendering.oopd.desktop",
+          "--benchmarks=loading.desktop.network_service",
           "-v",
           "--upload-results",
           "--output-format=chartjson",
