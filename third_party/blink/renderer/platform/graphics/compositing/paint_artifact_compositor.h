@@ -21,6 +21,7 @@
 namespace cc {
 struct ElementId;
 class Layer;
+class LayerTreeHost;
 }
 
 namespace gfx {
@@ -221,6 +222,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       const ClipPaintPropertyNode*,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;
+
+  static void UpdateRenderSurfaceForEffects(cc::LayerTreeHost&,
+                                            const cc::LayerList&);
 
   // Provides a callback for notifying blink of composited scrolling.
   base::RepeatingCallback<void(const gfx::ScrollOffset&, const cc::ElementId&)>

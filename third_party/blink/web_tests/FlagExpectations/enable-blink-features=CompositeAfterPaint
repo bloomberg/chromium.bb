@@ -418,9 +418,6 @@ crbug.com/589265 fast/borders/border-radius-with-composited-child.html [ Failure
 crbug.com/589265 fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
 crbug.com/589265 fast/clip/overflow-border-radius-composited.html [ Failure ]
 
-# Opacity not applied to descendant of animated filter node.
-crbug.com/905859 transitions/opacity-transform-transitions-inside-iframe.html [ Failure ]
-
 # Subpixel adjustments due to differences in compositing
 crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure Crash ]
 crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Failure Crash ]

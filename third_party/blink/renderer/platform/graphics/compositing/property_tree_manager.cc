@@ -32,6 +32,12 @@ static constexpr int kSecondaryRootNodeId = 1;
 
 }  // namespace
 
+inline const TransformPaintPropertyNode*
+PropertyTreeManager::EffectState::Transform() const {
+  return effect_type == CcEffectType::kEffect ? effect->LocalTransformSpace()
+                                              : clip->LocalTransformSpace();
+}
+
 PropertyTreeManager::PropertyTreeManager(PropertyTreeManagerClient& client,
                                          cc::PropertyTrees& property_trees,
                                          cc::Layer* root_layer,
@@ -154,26 +160,39 @@ void PropertyTreeManager::SetupRootScrollNode() {
   root_layer_->SetScrollTreeIndex(scroll_node.id);
 }
 
+static bool TransformsAre2dAxisAligned(const TransformPaintPropertyNode* a,
+                                       const TransformPaintPropertyNode* b) {
+  return a == b || GeometryMapper::SourceToDestinationProjection(a, b)
+                       .Preserves2dAxisAlignment();
+}
+
 void PropertyTreeManager::SetCurrentEffectState(
     const cc::EffectNode& cc_effect_node,
     CcEffectType effect_type,
     const EffectPaintPropertyNode* effect,
     const ClipPaintPropertyNode* clip) {
+  const auto* previous_transform =
+      effect->IsRoot() ? nullptr : current_.Transform();
   current_.effect_id = cc_effect_node.id;
   current_.effect_type = effect_type;
   DCHECK(!effect->IsParentAlias() || !effect->Parent());
   current_.effect = effect;
   DCHECK(!clip->IsParentAlias() || !clip->Parent());
   current_.clip = clip;
-  if (cc_effect_node.has_render_surface)
-    current_.render_surface_transform = effect->LocalTransformSpace();
+
+  if (cc_effect_node.has_render_surface) {
+    current_.may_be_2d_axis_misaligned_to_render_surface = false;
+  } else if (previous_transform &&
+             !current_.may_be_2d_axis_misaligned_to_render_surface) {
+    current_.may_be_2d_axis_misaligned_to_render_surface =
+        !TransformsAre2dAxisAligned(current_.Transform(), previous_transform);
+  }
 }
 
 // TODO(crbug.com/504464): Remove this when move render surface decision logic
 // into cc compositor thread.
 void PropertyTreeManager::SetCurrentEffectHasRenderSurface() {
   GetEffectTree().Node(current_.effect_id)->has_render_surface = true;
-  current_.render_surface_transform = current_.effect->LocalTransformSpace();
 }
 
 int PropertyTreeManager::EnsureCompositorTransformNode(
@@ -458,12 +477,6 @@ void PropertyTreeManager::CloseCcEffect() {
   }
 }
 
-static bool TransformsAre2dAxisAligned(const TransformPaintPropertyNode* a,
-                                       const TransformPaintPropertyNode* b) {
-  return a == b || GeometryMapper::SourceToDestinationProjection(a, b)
-                       .Preserves2dAxisAlignment();
-}
-
 int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
     const EffectPaintPropertyNode& next_effect,
     const ClipPaintPropertyNode& next_clip) {
@@ -519,9 +532,8 @@ int PropertyTreeManager::SwitchToEffectNodeWithSynthesizedClip(
   while (current_.effect != &ancestor)
     CloseCcEffect();
 
-  bool newly_built = BuildEffectNodesRecursively(&next_effect);
-  SynthesizeCcEffectsForClipsIfNeeded(&next_clip, SkBlendMode::kSrcOver,
-                                      newly_built);
+  BuildEffectNodesRecursively(&next_effect);
+  SynthesizeCcEffectsForClipsIfNeeded(&next_clip, SkBlendMode::kSrcOver);
   return current_.effect_id;
 }
 
@@ -549,8 +561,9 @@ PropertyTreeManager::NeedsSyntheticEffect(
 
   // Cc requires that a rectangluar clip is 2d-axis-aligned with the render
   // surface to correctly apply the clip.
-  if (!TransformsAre2dAxisAligned(clip.LocalTransformSpace(),
-                                  current_.render_surface_transform))
+  if (current_.may_be_2d_axis_misaligned_to_render_surface ||
+      !TransformsAre2dAxisAligned(clip.LocalTransformSpace(),
+                                  current_.Transform()))
     return CcEffectType::kSyntheticFor2dAxisAlignment;
 
   return base::nullopt;
@@ -558,8 +571,7 @@ PropertyTreeManager::NeedsSyntheticEffect(
 
 SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const ClipPaintPropertyNode* target_clip,
-    SkBlendMode delegated_blend,
-    bool effect_is_newly_built) {
+    SkBlendMode delegated_blend) {
   auto* unaliased_target_clip = target_clip->Unalias();
   if (delegated_blend != SkBlendMode::kSrcOver) {
     // Exit all synthetic effect node if the next child has exotic blending mode
@@ -585,16 +597,6 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       if (IsNodeOnAncestorChain(lca, *pre_exit_clip, *current_.clip))
         break;
     }
-
-    // If the effect is an existing node, i.e. already has at least one paint
-    // chunk or child effect, and by reaching here it implies we are going to
-    // attach either another paint chunk or child effect to it. We can no longer
-    // omit render surface for it even for opacity-only node.
-    // See comments in PropertyTreeManager::BuildEffectNodesRecursively().
-    // TODO(crbug.com/504464): Remove premature optimization here.
-    if (!effect_is_newly_built && !IsCurrentCcEffectSynthetic() &&
-        current_.effect->Opacity() != 1.f)
-      SetCurrentEffectHasRenderSurface();
   }
 
   DCHECK(current_.clip->IsAncestorOf(*unaliased_target_clip));
@@ -649,21 +651,19 @@ SkBlendMode PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     effect_stack_.emplace_back(current_);
     SetCurrentEffectState(synthetic_effect, pending_clip.type, current_.effect,
                           pending_clip.clip);
-    current_.render_surface_transform =
-        pending_clip.clip->LocalTransformSpace();
   }
 
   return delegated_blend;
 }
 
-bool PropertyTreeManager::BuildEffectNodesRecursively(
+void PropertyTreeManager::BuildEffectNodesRecursively(
     const EffectPaintPropertyNode* next_effect) {
   next_effect = SafeUnalias(next_effect);
   if (next_effect == current_.effect)
-    return false;
+    return;
   DCHECK(next_effect);
 
-  bool newly_built = BuildEffectNodesRecursively(next_effect->Parent());
+  BuildEffectNodesRecursively(next_effect->Parent());
   DCHECK_EQ(next_effect->Parent()->Unalias(), current_.effect);
 
 #if DCHECK_IS_ON()
@@ -678,16 +678,15 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   const auto* output_clip = SafeUnalias(next_effect->OutputClip());
   if (output_clip) {
     used_blend_mode = SynthesizeCcEffectsForClipsIfNeeded(
-        output_clip, next_effect->BlendMode(), newly_built);
+        output_clip, next_effect->BlendMode());
     output_clip_id = EnsureCompositorClipNode(output_clip);
   } else {
     while (IsCurrentCcEffectSynthetic())
       CloseCcEffect();
     // An effect node can't omit render surface if it has child with exotic
-    // blending mode, nor being opacity-only node with more than one child.
+    // blending mode.
     // TODO(crbug.com/504464): Remove premature optimization here.
-    if (next_effect->BlendMode() != SkBlendMode::kSrcOver ||
-        (!newly_built && current_.effect->Opacity() != 1.f))
+    if (next_effect->BlendMode() != SkBlendMode::kSrcOver)
       SetCurrentEffectHasRenderSurface();
 
     used_blend_mode = next_effect->BlendMode();
@@ -701,16 +700,10 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   effect_node.stable_id =
       next_effect->GetCompositorElementId().GetInternalValue();
   effect_node.clip_id = output_clip_id;
-  // Every effect is supposed to have render surface enabled for grouping,
-  // but we can get away without one if the effect is opacity-only and has only
-  // one compositing child with kSrcOver blend mode. This is both for
-  // optimization and not introducing sub-pixel differences in layout tests.
-  // See PropertyTreeManager::switchToEffectNode() and above where we
-  // retrospectively enable render surface when more than one compositing child
-  // or a child with exotic blend mode is detected.
-  // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
-  // decision until later phase of the pipeline. Remove premature optimization
-  // here once the work is ready.
+
+  // An effect with filters, backdrop filters or non-kSrcOver blend mode needs
+  // a render surface. The render surface status of opacity-only effects will be
+  // updated in PaintArtifactCompositor::UpdateRenderSurfaceForEffects().
   if (!next_effect->Filter().IsEmpty() ||
       !next_effect->BackdropFilter().IsEmpty() ||
       used_blend_mode != SkBlendMode::kSrcOver)
@@ -749,8 +742,6 @@ bool PropertyTreeManager::BuildEffectNodesRecursively(
   effect_stack_.emplace_back(current_);
   SetCurrentEffectState(effect_node, CcEffectType::kEffect, next_effect,
                         output_clip);
-
-  return true;
 }
 
 }  // namespace blink

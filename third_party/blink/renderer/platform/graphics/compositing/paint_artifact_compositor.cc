@@ -10,6 +10,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
@@ -885,13 +886,18 @@ void PaintArtifactCompositor::Update(
     }
   }
 
-  root_layer_->SetChildLayerList(layer_list_builder.Finalize());
+  // This should be done before UpdateRenderSurfaceForEffects() for which to
+  // get property tree node ids from the layers.
+  host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
+
+  auto layers = layer_list_builder.Finalize();
+  UpdateRenderSurfaceForEffects(*host, layers);
+  root_layer_->SetChildLayerList(std::move(layers));
 
   // Update the host's active registered element ids.
   host->SetActiveRegisteredElementIds(composited_element_ids);
 
   // Mark the property trees as having been rebuilt.
-  host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
   host->property_trees()->needs_rebuild = false;
   host->property_trees()->ResetCachedData();
 
@@ -910,6 +916,33 @@ void PaintArtifactCompositor::Update(
     }
   }
 #endif
+}
+
+// Every effect is supposed to have render surface enabled for grouping, but we
+// can omit one if the effect is opacity-only, render surface is not forced,
+// and the effect has only one compositing child. This is both for optimization
+// and not introducing sub-pixel differences in layout tests.
+// TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
+// decision until later phase of the pipeline. Remove premature optimization
+// here once the work is ready.
+void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
+    cc::LayerTreeHost& host,
+    const cc::LayerList& layers) {
+  HashSet<int> pending_render_surfaces;
+  auto& effect_tree = host.property_trees()->effect_tree;
+  for (const auto& layer : layers) {
+    for (auto* effect = effect_tree.Node(layer->effect_tree_index());
+         !effect->has_render_surface;
+         effect = effect_tree.Node(effect->parent_id)) {
+      if (effect->opacity != 1.f &&
+          !pending_render_surfaces.insert(effect->id).is_new_entry) {
+        // The opacity-only effect is seen the second time, which means that it
+        // has more than one compositing child and needs a render surface.
+        effect->has_render_surface = true;
+        break;
+      }
+    }
+  }
 }
 
 void LayerListBuilder::Add(scoped_refptr<cc::Layer> layer) {
