@@ -817,6 +817,16 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Attempts to process any queued undecryptable packets.
   void MaybeProcessUndecryptablePackets();
 
+  enum PacketContent : uint8_t {
+    NO_FRAMES_RECEIVED,
+    // TODO(fkastenholz): Change name when we get rid of padded ping/
+    // pre-version-99.
+    // Also PATH CHALLENGE and PATH RESPONSE.
+    FIRST_FRAME_IS_PING,
+    SECOND_FRAME_IS_PADDING,
+    NOT_PADDED_PING,  // Set if the packet is not {PING, PADDING}.
+  };
+
  protected:
   // Calls cancel() on all the alarms owned by this connection.
   void CancelAllAlarms();
@@ -898,16 +908,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   friend class test::QuicConnectionPeer;
 
   typedef std::list<SerializedPacket> QueuedPacketList;
-
-  enum PacketContent : uint8_t {
-    NO_FRAMES_RECEIVED,
-    // TODO(fkastenholz): Change name when we get rid of padded ping/
-    // pre-version-99.
-    // Also PATH CHALLENGE and PATH RESPONSE.
-    FIRST_FRAME_IS_PING,
-    SECOND_FRAME_IS_PADDING,
-    NOT_PADDED_PING,  // Set if the packet is not {PING, PADDING}.
-  };
 
   // Notifies the visitor of the close and marks the connection as disconnected.
   // Does not send a connection close frame to the peer.
@@ -1370,7 +1370,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // probe packet (the PATH_CHALLENGE payload). This implementation transmits
   // only one PATH_CHALLENGE per connectivity probe, so only one
   // QuicPathFrameBuffer is needed.
-  QuicPathFrameBuffer transmitted_connectivity_probe_payload_;
+  std::unique_ptr<QuicPathFrameBuffer> transmitted_connectivity_probe_payload_;
 
   // Payloads that were received in the most recent probe. This needs to be a
   // Deque because the peer might no be using this implementation, and others

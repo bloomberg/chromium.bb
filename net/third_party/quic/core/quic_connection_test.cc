@@ -7527,6 +7527,22 @@ TEST_P(QuicConnectionTest, DoNotScheduleSpuriousAckAlarm) {
   EXPECT_FALSE(ack_alarm->IsSet());
 }
 
+// Regression test for b/110259444
+// Get a path response without having issued a path challenge...
+TEST_P(QuicConnectionTest, OrphanPathResponse) {
+  QuicPathFrameBuffer data = {{0, 1, 2, 3, 4, 5, 6, 7}};
+
+  QuicPathResponseFrame frame(99, data);
+  EXPECT_TRUE(connection_.OnPathResponseFrame(frame));
+  // If PATH_RESPONSE was accepted (payload matches the payload saved
+  // in QuicConnection::transmitted_connectivity_probe_payload_) then
+  // current_packet_content_ would be set to FIRST_FRAME_IS_PING.
+  // Since this PATH_RESPONSE does not match, current_packet_content_
+  // must not be FIRST_FRAME_IS_PING.
+  EXPECT_NE(QuicConnection::FIRST_FRAME_IS_PING,
+            QuicConnectionPeer::GetCurrentPacketContent(&connection_));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic
