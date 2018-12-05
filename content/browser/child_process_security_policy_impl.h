@@ -96,8 +96,31 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool HasWebUIBindings(int child_id) override;
   void GrantSendMidiSysExMessage(int child_id) override;
   bool CanAccessDataForOrigin(int child_id, const GURL& url) override;
+
+  // This function will check whether |origin| requires process isolation, and
+  // if so, it will return true and put the most specific matching isolated
+  // origin into |result|.
+  //
+  // Such origins may be registered with the --isolate-origins command-line
+  // flag, via features::IsolateOrigins, via an IsolateOrigins enterprise
+  // policy, or by a content/ embedder using
+  // ContentBrowserClient::GetOriginsRequiringDedicatedProcess().
+  //
+  // If |origin| does not require process isolation, this function will return
+  // false, and |result| will be a unique origin. This means that neither
+  // |origin|, nor any origins for which |origin| is a subdomain, have been
+  // registered as isolated origins.
+  //
+  // For example, if both https://isolated.com/ and
+  // https://bar.foo.isolated.com/ are registered as isolated origins, then the
+  // values returned in |result| are:
+  //   https://isolated.com/             -->  https://isolated.com/
+  //   https://foo.isolated.com/         -->  https://isolated.com/
+  //   https://bar.foo.isolated.com/     -->  https://bar.foo.isolated.com/
+  //   https://baz.bar.foo.isolated.com/ -->  https://bar.foo.isolated.com/
+  //   https://unisolated.com/           -->  (unique origin)
   bool GetMatchingIsolatedOrigin(const url::Origin& origin,
-                                 url::Origin* result) override;
+                                 url::Origin* result);
 
   // A version of GetMatchingIsolatedOrigin that takes in both the |origin| and
   // the |site_url| that |origin| corresponds to.  |site_url| is the key by
