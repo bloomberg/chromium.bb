@@ -54,14 +54,14 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   void OnRegistrationCreated(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchRegistration& registration,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_requests,
       bool start_paused) override;
   void OnRegistrationLoadedAtStartup(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchRegistration& registration,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
       int num_requests,
@@ -91,7 +91,7 @@ class CONTENT_EXPORT BackgroundFetchScheduler
   std::unique_ptr<BackgroundFetchJobController> CreateInitializedController(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchRegistration& registration,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
       int num_requests,

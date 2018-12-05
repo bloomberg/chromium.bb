@@ -22,7 +22,7 @@ void RecordRegistrationsOnStartup(int num_registrations);
 void RecordBackgroundFetchUkmEvent(
     const url::Origin& origin,
     int requests_size,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     blink::mojom::BackgroundFetchUkmDataPtr ukm_data,
     int frame_tree_node_id,

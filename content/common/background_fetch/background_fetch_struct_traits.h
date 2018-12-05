@@ -17,26 +17,6 @@
 namespace mojo {
 
 template <>
-struct CONTENT_EXPORT StructTraits<blink::mojom::BackgroundFetchOptionsDataView,
-                                   content::BackgroundFetchOptions> {
-  static const std::vector<blink::Manifest::ImageResource>& icons(
-      const content::BackgroundFetchOptions& options) {
-    return options.icons;
-  }
-  static const std::string& title(
-      const content::BackgroundFetchOptions& options) {
-    return options.title;
-  }
-  static uint64_t download_total(
-      const content::BackgroundFetchOptions& options) {
-    return options.download_total;
-  }
-
-  static bool Read(blink::mojom::BackgroundFetchOptionsDataView data,
-                   content::BackgroundFetchOptions* options);
-};
-
-template <>
 struct CONTENT_EXPORT
     StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
                  content::BackgroundFetchRegistration> {

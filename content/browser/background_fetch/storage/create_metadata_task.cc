@@ -129,14 +129,14 @@ CreateMetadataTask::CreateMetadataTask(
     DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     bool start_paused,
     CreateMetadataCallback callback)
     : DatabaseTask(host),
       registration_id_(registration_id),
       requests_(std::move(requests)),
-      options_(options),
+      options_(std::move(options)),
       icon_(icon),
       start_paused_(start_paused),
       callback_(std::move(callback)),
@@ -169,8 +169,8 @@ void CreateMetadataTask::DidGetCanCreateRegistration(
   }
 
   // Check if there is enough quota to download the data first.
-  if (options_.download_total > 0) {
-    IsQuotaAvailable(registration_id_.origin(), options_.download_total,
+  if (options_->download_total > 0) {
+    IsQuotaAvailable(registration_id_.origin(), options_->download_total,
                      base::BindOnce(&CreateMetadataTask::DidGetIsQuotaAvailable,
                                     weak_factory_.GetWeakPtr()));
   } else {
@@ -231,7 +231,7 @@ void CreateMetadataTask::InitializeMetadataProto() {
   auto* registration_proto = metadata_proto_->mutable_registration();
   registration_proto->set_unique_id(registration_id_.unique_id());
   registration_proto->set_developer_id(registration_id_.developer_id());
-  registration_proto->set_download_total(options_.download_total);
+  registration_proto->set_download_total(options_->download_total);
   registration_proto->set_result(
       proto::BackgroundFetchRegistration_BackgroundFetchResult_UNSET);
   registration_proto->set_failure_reason(
@@ -244,9 +244,9 @@ void CreateMetadataTask::InitializeMetadataProto() {
 
   // Set Options fields.
   auto* options_proto = metadata_proto_->mutable_options();
-  options_proto->set_title(options_.title);
-  options_proto->set_download_total(options_.download_total);
-  for (const auto& icon : options_.icons) {
+  options_proto->set_title(options_->title);
+  options_proto->set_download_total(options_->download_total);
+  for (const auto& icon : options_->icons) {
     auto* image_resource_proto = options_proto->add_icons();
 
     image_resource_proto->set_src(icon.src.spec());
@@ -308,7 +308,7 @@ void CreateMetadataTask::StoreMetadata() {
 
   std::string serialized_ui_options_proto;
   proto::BackgroundFetchUIOptions ui_options;
-  ui_options.set_title(options_.title);
+  ui_options.set_title(options_->title);
   if (!serialized_icon_.empty())
     ui_options.set_icon(std::move(serialized_icon_));
 
@@ -424,8 +424,9 @@ void CreateMetadataTask::FinishWithError(
     }
 
     for (auto& observer : data_manager()->observers()) {
-      observer.OnRegistrationCreated(registration_id_, registration, options_,
-                                     icon_, requests_.size(), start_paused_);
+      observer.OnRegistrationCreated(registration_id_, registration,
+                                     options_.Clone(), icon_, requests_.size(),
+                                     start_paused_);
     }
   }
 

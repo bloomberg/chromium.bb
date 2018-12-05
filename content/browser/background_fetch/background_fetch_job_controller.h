@@ -55,7 +55,7 @@ class CONTENT_EXPORT BackgroundFetchJobController
       BackgroundFetchDataManager* data_manager,
       BackgroundFetchDelegateProxy* delegate_proxy,
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       uint64_t bytes_downloaded,
       ProgressCallback progress_callback,
@@ -144,7 +144,7 @@ class CONTENT_EXPORT BackgroundFetchJobController
   BackgroundFetchRegistrationId registration_id_;
 
   // Options for the represented background fetch registration.
-  BackgroundFetchOptions options_;
+  blink::mojom::BackgroundFetchOptionsPtr options_;
 
   // Icon for the represented background fetch registration.
   SkBitmap icon_;

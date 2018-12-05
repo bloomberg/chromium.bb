@@ -70,7 +70,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     BackgroundFetchDataManager* data_manager,
     BackgroundFetchDelegateProxy* delegate_proxy,
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     uint64_t bytes_downloaded,
     ProgressCallback progress_callback,
@@ -78,7 +78,7 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     : data_manager_(data_manager),
       delegate_proxy_(delegate_proxy),
       registration_id_(registration_id),
-      options_(options),
+      options_(std::move(options)),
       icon_(icon),
       complete_requests_downloaded_bytes_cache_(bytes_downloaded),
       progress_callback_(std::move(progress_callback)),
@@ -108,9 +108,9 @@ void BackgroundFetchJobController::InitializeRequestStatus(
     active_guids.push_back(request_info->download_guid());
 
   auto fetch_description = std::make_unique<BackgroundFetchDescription>(
-      registration_id().unique_id(), options_.title, registration_id().origin(),
-      icon_, completed_downloads, total_downloads,
-      complete_requests_downloaded_bytes_cache_, options_.download_total,
+      registration_id().unique_id(), options_->title,
+      registration_id().origin(), icon_, completed_downloads, total_downloads,
+      complete_requests_downloaded_bytes_cache_, options_->download_total,
       std::move(active_guids), start_paused);
 
   delegate_proxy_->CreateDownloadJob(GetWeakPtr(), std::move(fetch_description),
@@ -196,7 +196,7 @@ std::unique_ptr<BackgroundFetchRegistration>
 BackgroundFetchJobController::NewRegistration() const {
   return std::make_unique<BackgroundFetchRegistration>(
       registration_id().developer_id(), registration_id().unique_id(),
-      0 /* upload_total */, 0 /* uploaded */, options_.download_total,
+      0 /* upload_total */, 0 /* uploaded */, options_->download_total,
       complete_requests_downloaded_bytes_cache_,
       blink::mojom::BackgroundFetchResult::UNSET, failure_reason_);
 }

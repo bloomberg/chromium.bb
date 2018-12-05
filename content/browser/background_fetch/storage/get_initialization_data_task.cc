@@ -341,12 +341,11 @@ class FillFromMetadataTask : public InitializationSubTask {
 
     // Total number of requests.
     sub_task_init().initialization_data->num_requests = metadata.num_fetches();
-
     // Fill BackgroundFetchOptions.
     auto& options = sub_task_init().initialization_data->options;
-    options.title = metadata.options().title();
-    options.download_total = metadata.options().download_total();
-    options.icons.reserve(metadata.options().icons_size());
+    options->title = metadata.options().title();
+    options->download_total = metadata.options().download_total();
+    options->icons.reserve(metadata.options().icons_size());
     for (const auto& icon : metadata.options().icons()) {
       blink::Manifest::ImageResource ir;
       ir.src = GURL(icon.src());

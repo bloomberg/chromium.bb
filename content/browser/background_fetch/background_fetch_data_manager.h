@@ -103,7 +103,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   void CreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       std::vector<blink::mojom::FetchAPIRequestPtr> requests,
-      const BackgroundFetchOptions& options,
+      blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       bool start_paused,
       GetRegistrationCallback callback);

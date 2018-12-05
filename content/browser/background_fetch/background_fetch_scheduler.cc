@@ -194,7 +194,7 @@ std::unique_ptr<BackgroundFetchJobController>
 BackgroundFetchScheduler::CreateInitializedController(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchRegistration& registration,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_completed_requests,
     int num_requests,
@@ -203,7 +203,7 @@ BackgroundFetchScheduler::CreateInitializedController(
     bool start_paused) {
   // TODO(rayankans): Only create a controller when the fetch starts.
   auto controller = std::make_unique<BackgroundFetchJobController>(
-      data_manager_, delegate_proxy_, registration_id, options, icon,
+      data_manager_, delegate_proxy_, registration_id, std::move(options), icon,
       registration.downloaded,
       // Safe because JobControllers are destroyed before RegistrationNotifier.
       base::BindRepeating(&BackgroundFetchRegistrationNotifier::Notify,
@@ -221,14 +221,15 @@ BackgroundFetchScheduler::CreateInitializedController(
 void BackgroundFetchScheduler::OnRegistrationCreated(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchRegistration& registration,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_requests,
     bool start_paused) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   auto controller = CreateInitializedController(
-      registration_id, registration, options, icon, 0 /* completed_requests */,
-      num_requests, {} /* active_fetch_requests */, start_paused);
+      registration_id, registration, std::move(options), icon,
+      0 /* completed_requests */, num_requests, {} /* active_fetch_requests */,
+      start_paused);
 
   DCHECK_EQ(job_controllers_.count(registration_id.unique_id()), 0u);
   job_controllers_[registration_id.unique_id()] = std::move(controller);
@@ -240,7 +241,7 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
 void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchRegistration& registration,
-    const BackgroundFetchOptions& options,
+    blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_completed_requests,
     int num_requests,
@@ -249,8 +250,9 @@ void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto controller = CreateInitializedController(
-      registration_id, registration, options, icon, num_completed_requests,
-      num_requests, active_fetch_requests, /* start_paused= */ false);
+      registration_id, registration, std::move(options), icon,
+      num_completed_requests, num_requests, active_fetch_requests,
+      /* start_paused= */ false);
 
   // The current assumption is that there can be only one active job with one
   // active fetch.
