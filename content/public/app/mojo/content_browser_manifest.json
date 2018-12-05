@@ -165,6 +165,7 @@
           "blink.mojom.BackgroundFetchService",
           "blink.mojom.CacheStorage",
           "blink.mojom.ColorChooserFactory",
+          "blink.mojom.ContactsManager",
           "blink.mojom.CredentialManager",
           "blink.mojom.DisplayCutoutHost",
           "blink.mojom.DedicatedWorkerFactory",
