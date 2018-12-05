@@ -115,8 +115,8 @@ TEST_F(GuardedPageAllocatorTest, AllocationAlignment) {
   // But only up to 16 bytes.
   EXPECT_EQ(GetRightAlignedAllocationOffset(513, 0), page_size - (512 + 16));
 
-  EXPECT_DEATH(GetRightAlignedAllocationOffset(5, 8), "");
-  EXPECT_DEATH(GetRightAlignedAllocationOffset(5, 3), "");
+  // We don't support aligning by more than a page.
+  EXPECT_EQ(GetAlignedAllocation(false, 5, page_size * 2), nullptr);
 }
 
 class GuardedPageAllocatorParamTest

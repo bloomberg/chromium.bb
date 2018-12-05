@@ -53,7 +53,7 @@ GuardedPageAllocator::~GuardedPageAllocator() {
 }
 
 void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
-  if (!size || size > state_.page_size)
+  if (!size || size > state_.page_size || align > state_.page_size)
     return nullptr;
 
   // Default alignment is size's next smallest power-of-two, up to
@@ -62,7 +62,6 @@ void* GuardedPageAllocator::Allocate(size_t size, size_t align) {
     align =
         std::min(size_t{1} << base::bits::Log2Floor(size), kGpaAllocAlignment);
   }
-  CHECK_LE(align, size);
   CHECK(base::bits::IsPowerOfTwo(align));
 
   size_t free_slot = ReserveSlot();
