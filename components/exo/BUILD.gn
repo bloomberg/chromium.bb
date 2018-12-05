@@ -128,6 +128,11 @@ source_set("exo") {
 source_set("test_support") {
   testonly = true
 
+  sources = [
+    "test/exo_test_base_aura.cc",
+    "test/exo_test_base_aura.h",
+  ]
+
   deps = [
     ":exo",
     "//base",
@@ -145,7 +150,7 @@ source_set("test_support") {
   ]
 
   if (is_chromeos) {
-    sources = [
+    sources += [
       "test/exo_test_base.cc",
       "test/exo_test_base.h",
       "test/exo_test_helper.cc",
@@ -156,13 +161,6 @@ source_set("test_support") {
     deps += [
       "//ash:test_support_without_content",
       "//ash/public/cpp",
-    ]
-  }
-
-  if (is_chromecast) {
-    sources = [
-      "test/exo_test_base_cast.cc",
-      "test/exo_test_base_cast.h",
     ]
   }
 }
