@@ -29,7 +29,6 @@
 import errno
 import logging
 import os
-import shlex
 
 from blinkpy.web_tests.breakpad.dump_reader import DumpReader
 
@@ -110,15 +109,6 @@ class DumpReaderWin(DumpReader):
         for template in CDB_LOCATION_TEMPLATES:
             for program_files in program_files_directories:
                 possible_cdb_locations.append(template % program_files)
-
-        gyp_defines = self._host.environ.get('GYP_DEFINES', [])
-        if gyp_defines:
-            gyp_defines = shlex.split(gyp_defines)
-        if 'windows_sdk_path' in gyp_defines:
-            possible_cdb_locations.extend([
-                '%s\\Debuggers\\x86' % gyp_defines['windows_sdk_path'],
-                '%s\\Debuggers\\x64' % gyp_defines['windows_sdk_path'],
-            ])
 
         # Look in depot_tools win_toolchain too.
         depot_tools = self._find_depot_tools_path()
