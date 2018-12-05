@@ -111,6 +111,7 @@ void OnGotAllPaymentApps(
             ? nullptr
             : gfx::ConvertToJavaBitmap(installable_app.second->icon.get()),
         ConvertUTF8ToJavaString(env, installable_app.first.spec()),
+        ToJavaArrayOfStrings(env, installable_app.second->preferred_app_ids),
         jweb_contents, jcallback);
   }
 

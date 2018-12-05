@@ -39,6 +39,10 @@ struct WebAppInstallationInfo {
   std::string sw_js_url;
   std::string sw_scope;
   bool sw_use_cache = false;
+
+  // If "prefer_related_applications" is true in web app manifest, this is the
+  // list of all "related_applications.id" values where "platform" is "play".
+  std::vector<std::string> preferred_app_ids;
 };
 
 }  // namespace payments

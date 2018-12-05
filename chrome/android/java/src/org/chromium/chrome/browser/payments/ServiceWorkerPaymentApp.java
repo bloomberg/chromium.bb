@@ -157,18 +157,20 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      * Build a service worker payment app instance which has not been installed yet.
      * The payment app will be installed when paying with it.
      *
-     * @param webContents The web contents where PaymentRequest was invoked.
-     * @param name        The name of the payment app.
-     * @param origin      The origin of the payment app.
-     * @param swUri       The URI to get the service worker js script.
-     * @param scope       The registration scope of the corresponding service worker.
-     * @param useCache    Whether cache is used to register the service worker.
-     * @param icon        The drawable icon of the payment app.
-     * @param methodName  The supported method name.
+     * @param webContents                     The web contents where PaymentRequest was invoked.
+     * @param name                            The name of the payment app.
+     * @param origin                          The origin of the payment app.
+     * @param swUri                           The URI to get the service worker js script.
+     * @param scope                           The registration scope of the corresponding service
+     *                                        worker.
+     * @param useCache                        Whether cache is used to register the service worker.
+     * @param icon                            The drawable icon of the payment app.
+     * @param methodName                      The supported method name.
+     * @param preferredRelatedApplicationIds  A set of preferred related application Ids.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, @Nullable String name, String origin,
             URI swUri, URI scope, boolean useCache, @Nullable BitmapDrawable icon,
-            String methodName) {
+            String methodName, String[] preferredRelatedApplicationIds) {
         // Do not display duplicate information.
         super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, null,
                 TextUtils.isEmpty(name) ? null : origin, icon);
@@ -185,6 +187,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mExplicitlyVerified = true;
         mCapabilities = new Capabilities[0];
         mPreferredRelatedApplicationIds = new HashSet<>();
+        Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel() != null

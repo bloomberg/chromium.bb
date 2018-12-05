@@ -25,20 +25,28 @@ namespace payments {
 namespace {
 
 const size_t kMaximumNumberOfItems = 100U;
+const size_t kMaximumNumberOfSupportedOrigins = 100000;
 
 const char* const kDefaultApplications = "default_applications";
+const char* const kFingerprints = "fingerprints";
 const char* const kHttpPrefix = "http://";
 const char* const kHttpsPrefix = "https://";
-const char* const kSupportedOrigins = "supported_origins";
+const char* const kId = "id";
+const char* const kMinVersion = "min_version";
+const char* const kPlatform = "platform";
+const char* const kPlay = "play";
+const char* const kPreferRelatedApplications = "prefer_related_applications";
+const char* const kRelatedApplications = "related_applications";
+const char* const kServiceWorkerScope = "scope";
 const char* const kServiceWorker = "serviceworker";
 const char* const kServiceWorkerSrc = "src";
-const char* const kServiceWorkerScope = "scope";
 const char* const kServiceWorkerUseCache = "use_cache";
-const char* const kWebAppName = "name";
+const char* const kSupportedOrigins = "supported_origins";
 const char* const kWebAppIcons = "icons";
-const char* const kWebAppIconSrc = "src";
 const char* const kWebAppIconSizes = "sizes";
+const char* const kWebAppIconSrc = "src";
 const char* const kWebAppIconType = "type";
+const char* const kWebAppName = "name";
 
 // Parses the "default_applications": ["https://some/url"] from |dict| into
 // |web_app_manifest_urls|. Returns 'false' for invalid data.
@@ -132,7 +140,6 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
   }
 
   size_t supported_origins_number = list->GetSize();
-  const size_t kMaximumNumberOfSupportedOrigins = 100000;
   if (supported_origins_number > kMaximumNumberOfSupportedOrigins) {
     log.Error(base::StringPrintf("\"%s\" must contain at most %zu entires.",
                                  kSupportedOrigins,
@@ -172,6 +179,145 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
   }
 
   return true;
+}
+
+void ParseIcons(const base::DictionaryValue& dict,
+                const ErrorLogger& log,
+                std::vector<PaymentManifestParser::WebAppIcon>* icons) {
+  DCHECK(icons);
+
+  const base::ListValue* icons_list = nullptr;
+  if (!dict.GetList(kWebAppIcons, &icons_list)) {
+    log.Warn(
+        base::StringPrintf("No \"%s\" list in the manifest.", kWebAppIcons));
+    return;
+  }
+
+  for (const auto& icon : *icons_list) {
+    if (!icon.is_dict()) {
+      log.Warn(base::StringPrintf(
+          "Each item in the list \"%s\" should be a dictionary.",
+          kWebAppIcons));
+      continue;
+    }
+
+    PaymentManifestParser::WebAppIcon web_app_icon;
+    const base::Value* icon_src =
+        icon.FindKeyOfType(kWebAppIconSrc, base::Value::Type::STRING);
+    if (!icon_src || icon_src->GetString().empty() ||
+        !base::IsStringUTF8(icon_src->GetString())) {
+      log.Warn(
+          base::StringPrintf("Each dictionary in the list \"%s\" should "
+                             "contain a non-empty UTF8 string field \"%s\".",
+                             kWebAppIcons, kWebAppIconSrc));
+      continue;
+    }
+    web_app_icon.src = icon_src->GetString();
+
+    const base::Value* icon_sizes =
+        icon.FindKeyOfType(kWebAppIconSizes, base::Value::Type::STRING);
+    if (!icon_sizes || icon_sizes->GetString().empty() ||
+        !base::IsStringUTF8(icon_sizes->GetString())) {
+      log.Warn(
+          base::StringPrintf("Each dictionary in the list \"%s\" should "
+                             "contain a non-empty UTF8 string field \"%s\".",
+                             kWebAppIcons, kWebAppIconSizes));
+    } else {
+      web_app_icon.sizes = icon_sizes->GetString();
+    }
+
+    const base::Value* icon_type =
+        icon.FindKeyOfType(kWebAppIconType, base::Value::Type::STRING);
+    if (!icon_type || icon_type->GetString().empty() ||
+        !base::IsStringUTF8(icon_type->GetString())) {
+      log.Warn(
+          base::StringPrintf("Each dictionary in the list \"%s\" should "
+                             "contain a non-empty UTF8 string field \"%s\".",
+                             kWebAppIcons, kWebAppIconType));
+    } else {
+      web_app_icon.type = icon_type->GetString();
+    }
+
+    icons->emplace_back(web_app_icon);
+  }
+}
+
+void ParsePreferredRelatedApplicationIdentifiers(
+    const base::DictionaryValue& dict,
+    const ErrorLogger& log,
+    std::vector<std::string>* ids) {
+  DCHECK(ids);
+
+  if (!dict.HasKey(kPreferRelatedApplications))
+    return;
+
+  bool prefer_related_applications = false;
+  if (!dict.GetBoolean(kPreferRelatedApplications,
+                       &prefer_related_applications)) {
+    log.Warn(base::StringPrintf("The \"%s\" field should be a boolean.",
+                                kPreferRelatedApplications));
+    return;
+  }
+
+  if (!prefer_related_applications)
+    return;
+
+  const base::ListValue* related_applications = nullptr;
+  if (!dict.GetList(kRelatedApplications, &related_applications)) {
+    log.Warn(
+        base::StringPrintf("The \"%s\" field should be a list of dictionaries.",
+                           kRelatedApplications));
+    return;
+  }
+
+  size_t size = related_applications->GetSize();
+  if (size == 0) {
+    log.Warn(base::StringPrintf(
+        "Did not find any entries in \"%s\", even though \"%s\" is true.",
+        kRelatedApplications, kPreferRelatedApplications));
+    return;
+  }
+
+  for (size_t i = 0; i < size; ++i) {
+    const base::DictionaryValue* related_application = nullptr;
+    if (!related_applications->GetDictionary(i, &related_application)) {
+      log.Warn(
+          base::StringPrintf("Element #%zu in \"%s\" should be a dictionary.",
+                             i, kRelatedApplications));
+      continue;
+    }
+
+    std::string platform;
+    if (!related_application->GetString(kPlatform, &platform) ||
+        platform != kPlay) {
+      continue;
+    }
+
+    if (ids->size() >= kMaximumNumberOfItems) {
+      log.Warn(base::StringPrintf(
+          "The maximum number of items in \"%s\" with \"%s\":\"%s\" should not "
+          "exceed %zu.",
+          kRelatedApplications, kPlatform, kPlay, kMaximumNumberOfItems));
+      break;
+    }
+
+    std::string id;
+    if (!related_application->GetString(kId, &id)) {
+      log.Warn(base::StringPrintf(
+          "Elements in \"%s\" with \"%s\":\"%s\" should have \"%s\" field.",
+          kRelatedApplications, kPlatform, kPlay, kId));
+      continue;
+    }
+
+    if (id.empty() || !base::IsStringASCII(id)) {
+      log.Warn(base::StringPrintf(
+          "\"%s\".\"%s\" should be a non-empty ASCII string.",
+          kRelatedApplications, kId));
+      continue;
+    }
+
+    ids->emplace_back(id);
+  }
 }
 
 // An object that allows both SafeJsonParser's callbacks (error/success) to run
@@ -328,8 +474,9 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
   }
 
   base::ListValue* list = nullptr;
-  if (!dict->GetList("related_applications", &list)) {
-    log.Error("\"related_applications\" must be a list.");
+  if (!dict->GetList(kRelatedApplications, &list)) {
+    log.Error(
+        base::StringPrintf("\"%s\" must be a list.", kRelatedApplications));
     return false;
   }
 
@@ -337,36 +484,34 @@ bool PaymentManifestParser::ParseWebAppManifestIntoVector(
   for (size_t i = 0; i < related_applications_size; ++i) {
     base::DictionaryValue* related_application = nullptr;
     if (!list->GetDictionary(i, &related_application) || !related_application) {
-      log.Error("\"related_applications\" must be a list of dictionaries.");
+      log.Error(base::StringPrintf("\"%s\" must be a list of dictionaries.",
+                                   kRelatedApplications));
       output->clear();
       return false;
     }
 
     std::string platform;
-    if (!related_application->GetString("platform", &platform) ||
-        platform != "play") {
+    if (!related_application->GetString(kPlatform, &platform) ||
+        platform != kPlay) {
       continue;
     }
 
     if (output->size() >= kMaximumNumberOfItems) {
       log.Error(base::StringPrintf(
-          "\"related_applications\" must contain at most %zu entries with "
-          "\"platform\": \"play\".",
-          kMaximumNumberOfItems));
+          "\"%s\" must contain at most %zu entries with \"%s\": \"%s\".",
+          kRelatedApplications, kMaximumNumberOfItems, kPlatform, kPlay));
       output->clear();
       return false;
     }
 
-    const char* const kId = "id";
-    const char* const kMinVersion = "min_version";
-    const char* const kFingerprints = "fingerprints";
     if (!related_application->HasKey(kId) ||
         !related_application->HasKey(kMinVersion) ||
         !related_application->HasKey(kFingerprints)) {
-      log.Error(base::StringPrintf(
-          "Each \"platform\": \"play\" entry in \"related_applications\" must "
-          "contain \"%s\", \"%s\", and \"%s\".",
-          kId, kMinVersion, kFingerprints));
+      log.Error(
+          base::StringPrintf("Each \"%s\": \"%s\" entry in \"%s\" must contain "
+                             "\"%s\", \"%s\", and \"%s\".",
+                             kPlatform, kPlay, kRelatedApplications, kId,
+                             kMinVersion, kFingerprints));
       return false;
     }
 
@@ -487,61 +632,9 @@ bool PaymentManifestParser::ParseWebAppInstallationInfoIntoStructs(
         base::StringPrintf("No \"%s\" string in the manifest.", kWebAppName));
   }
 
-  // Extract icons.
-  base::ListValue* icons_list = nullptr;
-  if (!dict->GetList(kWebAppIcons, &icons_list)) {
-    log.Warn(
-        base::StringPrintf("No \"%s\" list in the manifest.", kWebAppIcons));
-    return true;
-  }
-
-  for (const auto& icon : *icons_list) {
-    if (!icon.is_dict()) {
-      log.Warn(base::StringPrintf(
-          "Each item in the list \"%s\" should be a dictionary.",
-          kWebAppIcons));
-      continue;
-    }
-
-    WebAppIcon web_app_icon;
-    const base::Value* icon_src =
-        icon.FindKeyOfType(kWebAppIconSrc, base::Value::Type::STRING);
-    if (!icon_src || icon_src->GetString().empty() ||
-        !base::IsStringUTF8(icon_src->GetString())) {
-      log.Warn(base::StringPrintf(
-          "Each dictionary in the list \"%s\" should contain a non-empty UTF8 "
-          "string field \"%s\".",
-          kWebAppIcons, kWebAppIconSrc));
-      continue;
-    }
-    web_app_icon.src = icon_src->GetString();
-
-    const base::Value* icon_sizes =
-        icon.FindKeyOfType(kWebAppIconSizes, base::Value::Type::STRING);
-    if (!icon_sizes || icon_sizes->GetString().empty() ||
-        !base::IsStringUTF8(icon_sizes->GetString())) {
-      log.Warn(base::StringPrintf(
-          "Each dictionary in the list \"%s\" should contain a non-empty UTF8 "
-          "string field \"%s\".",
-          kWebAppIcons, kWebAppIconSizes));
-    } else {
-      web_app_icon.sizes = icon_sizes->GetString();
-    }
-
-    const base::Value* icon_type =
-        icon.FindKeyOfType(kWebAppIconType, base::Value::Type::STRING);
-    if (!icon_type || icon_type->GetString().empty() ||
-        !base::IsStringUTF8(icon_type->GetString())) {
-      log.Warn(base::StringPrintf(
-          "Each dictionary in the list \"%s\" should contain a non-empty UTF8 "
-          "string field \"%s\".",
-          kWebAppIcons, kWebAppIconType));
-    } else {
-      web_app_icon.type = icon_type->GetString();
-    }
-
-    icons->emplace_back(web_app_icon);
-  }
+  ParseIcons(*dict, log, icons);
+  ParsePreferredRelatedApplicationIdentifiers(
+      *dict, log, &installation_info->preferred_app_ids);
 
   return true;
 }
