@@ -924,6 +924,37 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
                           script_state->GetIsolate(), error_message));
   }
 
+  if (!options_->requestPayerName() && errors->hasPayer() &&
+      errors->payer()->hasName()) {
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "The payer.name passed to retry() may not be "
+                               "shown because requestPayerName is false"));
+  }
+
+  if (!options_->requestPayerEmail() && errors->hasPayer() &&
+      errors->payer()->hasEmail()) {
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "The payer.email passed to retry() may not be "
+                               "shown because requestPayerEmail is false"));
+  }
+
+  if (!options_->requestPayerPhone() && errors->hasPayer() &&
+      errors->payer()->hasPhone()) {
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "The payer.phone passed to retry() may not be "
+                               "shown because requestPayerPhone is false"));
+  }
+
+  if (!options_->requestShipping() && errors->hasShippingAddress()) {
+    GetExecutionContext()->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                               "The shippingAddress passed to retry() may not "
+                               "be shown because requestShipping is false"));
+  }
+
   complete_timer_.Stop();
 
   // The payment provider should respond in PaymentRequest::OnPaymentResponse().
