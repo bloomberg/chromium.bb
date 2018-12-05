@@ -1167,7 +1167,9 @@ void SkiaRenderer::CopyDrawnRenderPass(
       RenderPassId render_pass_id = 0;
       // If we are in child render pass and we don't have overdraw, copy the
       // current render pass.
-      if (root_canvas_ != current_canvas_ && !settings_->show_overdraw_feedback)
+      if (current_frame()->root_render_pass !=
+              current_frame()->current_render_pass &&
+          !settings_->show_overdraw_feedback)
         render_pass_id = current_frame()->current_render_pass->id;
       skia_output_surface_->CopyOutput(render_pass_id, window_copy_rect,
                                        std::move(request));
