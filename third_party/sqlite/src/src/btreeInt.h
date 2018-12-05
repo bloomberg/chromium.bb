@@ -412,7 +412,6 @@ struct BtShared {
   u8 openFlags;         /* Flags to sqlite3BtreeOpen() */
 #ifndef SQLITE_OMIT_AUTOVACUUM
   u8 autoVacuum;        /* True if auto-vacuum is enabled */
-  u8 autoVacuumSlack;   /* Optional pages of slack for auto-vacuum */
   u8 incrVacuum;        /* True if incr-vacuum is enabled */
   u8 bDoTruncate;       /* True to truncate db on commit */
 #endif
