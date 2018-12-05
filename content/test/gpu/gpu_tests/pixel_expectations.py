@@ -68,12 +68,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_DirectComposition_Video_MP4', bug=869677)
     self.Fail('Pixel_DirectComposition_Video_VP9', bug=869677)
 
-    # TODO(junov): rebaselining
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
-              ['mac', 'linux', 'win', 'chromeos'], bug=788439)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              ['mac', 'linux', 'win', 'chromeos'], bug=788439)
-
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
@@ -103,12 +97,15 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
               ['android', 'nvidia'], bug=791733)
 
-    # TODO(zmo): temporarily suppress these two tests until new
-    # reference images with new names are generated.
+    # Failing on retina Macs
     self.Fail('Pixel_Canvas2DRedBox_NoGpuProcess',
-              ['linux', 'mac', 'win'], bug=744658)
+              ['mac', ('amd', 0x6821)], bug=744658)
+    self.Fail('Pixel_Canvas2DRedBox_NoGpuProcess',
+              ['mac', ('nvidia', 0xfe9)], bug=744658)
     self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
-              ['linux', 'mac', 'win'], bug=744658)
+              ['mac', ('amd', 0x6821)], bug=744658)
+    self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
+              ['mac', ('nvidia', 0xfe9)], bug=744658)
 
     # TODO(fserb): temporarily suppress this test.
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker',
