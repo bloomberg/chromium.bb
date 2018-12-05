@@ -61,6 +61,7 @@ public class ClearBrowsingDataPreferencesBasicTest {
     @After
     public void tearDown() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+        SigninTestUtil.tearDownAuthForTest();
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
