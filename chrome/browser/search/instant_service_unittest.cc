@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/search/background/ntp_background_service.h"
 #include "chrome/browser/search/instant_unittest_base.h"
@@ -78,6 +79,36 @@ TEST_F(InstantServiceTest, GetNTPTileSuggestion) {
   ASSERT_EQ(1, (int)items.size());
   EXPECT_EQ(ntp_tiles::TileSource::TOP_SITES, items[0].source);
   EXPECT_EQ(ntp_tiles::TileTitleSource::TITLE_TAG, items[0].title_source);
+}
+
+TEST_F(InstantServiceTest, DeleteThumbnailDataIfExists) {
+  const std::string kTestData("test");
+  base::FilePath database_dir =
+      profile()->GetPath().Append(FILE_PATH_LITERAL("Thumbnails"));
+
+  if (!base::PathExists(database_dir))
+    ASSERT_TRUE(base::CreateDirectory(database_dir));
+  ASSERT_NE(-1, base::WriteFile(
+                    database_dir.Append(FILE_PATH_LITERAL("test_thumbnail")),
+                    kTestData.c_str(), kTestData.length()));
+
+  // Delete the thumbnail directory.
+  base::MockCallback<base::OnceCallback<void(bool)>> result;
+  EXPECT_CALL(result, Run(true));
+  instant_service_->DeleteThumbnailDataIfExists(
+      profile()->GetPath(),
+      base::Optional<base::OnceCallback<void(bool)>>(result.Get()));
+  thread_bundle()->RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(database_dir));
+
+  // Delete should fail since the path does not exist.
+  base::MockCallback<base::OnceCallback<void(bool)>> result2;
+  EXPECT_CALL(result2, Run(false));
+  instant_service_->DeleteThumbnailDataIfExists(
+      profile()->GetPath(),
+      base::Optional<base::OnceCallback<void(bool)>>(result2.Get()));
+  thread_bundle()->RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(database_dir));
 }
 
 TEST_F(InstantServiceTestCustomLinksEnabled,

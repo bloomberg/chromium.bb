@@ -104,6 +104,18 @@ bool CheckLocalBackgroundImageExists(const base::FilePath& profile_path) {
   return base::PathExists(profile_image);
 }
 
+void DoDeleteThumbnailDataIfExists(
+    const base::FilePath& database_dir,
+    base::Optional<base::OnceCallback<void(bool)>> callback) {
+  bool result = false;
+  if (base::PathExists(database_dir)) {
+    base::DeleteFile(database_dir, true);
+    result = true;
+  }
+  if (callback.has_value())
+    std::move(*callback).Run(result);
+}
+
 bool IsLocalFileUrl(GURL url) {
   return base::StartsWith(url.spec(),
                           chrome::kChromeSearchLocalNtpBackgroundUrl,
@@ -196,11 +208,15 @@ InstantService::InstantService(Profile* profile)
     most_visited_sites_->EnableCustomLinks(custom_links_enabled);
   }
 
-  if (profile_ && profile_->GetResourceContext()) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InstantIOContext::SetUserDataOnIO,
-                       profile->GetResourceContext(), instant_io_context_));
+  if (profile_) {
+    DeleteThumbnailDataIfExists(profile_->GetPath(), base::nullopt);
+
+    if (profile_->GetResourceContext()) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {content::BrowserThread::IO},
+          base::BindOnce(&InstantIOContext::SetUserDataOnIO,
+                         profile->GetResourceContext(), instant_io_context_));
+    }
   }
 
   background_service_ = NtpBackgroundServiceFactory::GetForProfile(profile_);
@@ -744,6 +760,17 @@ void InstantService::RemoveLocalBackgroundImageCopy() {
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
+}
+
+void InstantService::DeleteThumbnailDataIfExists(
+    const base::FilePath& profile_path,
+    base::Optional<base::OnceCallback<void(bool)>> callback) {
+  base::FilePath database_dir(
+      profile_path.Append(FILE_PATH_LITERAL("Thumbnails")));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+                           base::BindOnce(&DoDeleteThumbnailDataIfExists,
+                                          database_dir, std::move(callback)));
 }
 
 void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {
