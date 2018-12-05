@@ -6,9 +6,10 @@
 
 #include "base/trace_event/trace_event.h"
 #include "components/exo/surface.h"
+#include "components/exo/wm_helper.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -62,7 +63,8 @@ Surface* GetShellMainSurface(const aura::Window* window) {
 }
 
 Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
-  aura::Window* window = wm::CaptureController::Get()->GetCaptureWindow();
+  aura::Window* window =
+      WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow();
   gfx::PointF location_in_target = event->location_f();
 
   if (!window)

@@ -25,6 +25,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
@@ -36,7 +37,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -676,7 +676,7 @@ TEST_F(ShellSurfaceTest, Popup) {
   // Verify that created shell surface is popup and has capture.
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
             popup_shell_surface->GetWidget()->GetNativeWindow()->type());
-  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
 
   // Setting frame type on popup should have no effect.
@@ -696,7 +696,7 @@ TEST_F(ShellSurfaceTest, Popup) {
             sub_popup_shell_surface->GetWidget()->GetWindowBoundsInScreen());
 
   // The capture should be on sub_popup_shell_surface.
-  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             sub_popup_shell_surface->GetWidget()->GetNativeWindow());
   EXPECT_EQ(aura::client::WINDOW_TYPE_POPUP,
             sub_popup_shell_surface->GetWidget()->GetNativeWindow()->type());
@@ -722,7 +722,7 @@ TEST_F(ShellSurfaceTest, Popup) {
 
   // Removing top most popup moves the grab to parent popup.
   sub_popup_shell_surface.reset();
-  EXPECT_EQ(wm::CaptureController::Get()->GetCaptureWindow(),
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
             popup_shell_surface->GetWidget()->GetNativeWindow());
   {
     // Targetting should still work.

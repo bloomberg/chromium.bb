@@ -16,6 +16,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/wm/public/activation_client.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace exo {
 namespace {
@@ -222,6 +223,10 @@ double WMHelperChromeOS::GetDefaultDeviceScaleFactor() const {
 
 WMHelper::LifetimeManager* WMHelperChromeOS::GetLifetimeManager() {
   return &lifetime_manager_;
+}
+
+aura::client::CaptureClient* WMHelperChromeOS::GetCaptureClient() {
+  return wm::CaptureController::Get();
 }
 
 }  // namespace exo

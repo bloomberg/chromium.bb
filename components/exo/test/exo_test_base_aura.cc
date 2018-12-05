@@ -68,6 +68,7 @@ class WMHelperTester : public WMHelper {
   double GetDefaultDeviceScaleFactor() const override { return 1.0; }
 
   LifetimeManager* GetLifetimeManager() override { return &lifetime_manager_; }
+  aura::client::CaptureClient* GetCaptureClient() override { return nullptr; }
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override {}

@@ -167,6 +167,10 @@ WMHelper::LifetimeManager* WMHelperCastShell::GetLifetimeManager() {
   return &lifetime_manager_;
 }
 
+aura::client::CaptureClient* WMHelperCastShell::GetCaptureClient() {
+  return cast_window_manager_aura_->capture_client();
+}
+
 WMHelperCastShell::CastDisplayObserver::CastDisplayObserver() {}
 
 WMHelperCastShell::CastDisplayObserver::~CastDisplayObserver() {}
