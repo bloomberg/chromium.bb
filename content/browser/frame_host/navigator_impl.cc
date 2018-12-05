@@ -176,8 +176,9 @@ bool NavigatorImpl::StartHistoryNavigationInNewSubframe(
 void NavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    std::unique_ptr<NavigationHandleImpl> navigation_handle,
+    std::unique_ptr<NavigationRequest> navigation_request,
     bool was_within_same_document) {
+  DCHECK(navigation_request);
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
   FrameTree* frame_tree = frame_tree_node->frame_tree();
 
@@ -268,7 +269,7 @@ void NavigatorImpl::DidNavigate(
   LoadCommittedDetails details;
   bool did_navigate = controller_->RendererDidNavigate(
       render_frame_host, params, &details, is_same_document_navigation,
-      navigation_handle.get());
+      navigation_request.get());
 
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.
@@ -290,10 +291,10 @@ void NavigatorImpl::DidNavigate(
   if (details.type != NAVIGATION_TYPE_NAV_IGNORE && delegate_) {
     DCHECK_EQ(!render_frame_host->GetParent(),
               did_navigate ? details.is_main_frame : false);
-    navigation_handle->DidCommitNavigation(
+    navigation_request->navigation_handle()->DidCommitNavigation(
         params, did_navigate, details.did_replace_entry, details.previous_url,
         details.type, render_frame_host);
-    navigation_handle.reset();
+    navigation_request.reset();
   }
 
   if (!did_navigate)

@@ -31,16 +31,16 @@ NavigationController* InterstitialPageNavigatorImpl::GetController() {
 void InterstitialPageNavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,
-    std::unique_ptr<NavigationHandleImpl> navigation_handle,
+    std::unique_ptr<NavigationRequest> navigation_request,
     bool was_within_same_document) {
   // Do not proceed if the interstitial itself has been disabled.
   if (!enabled_)
     return;
 
-  navigation_handle->DidCommitNavigation(
+  navigation_request->navigation_handle()->DidCommitNavigation(
       input_params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
       render_frame_host);
-  navigation_handle.reset();
+  navigation_request.reset();
 
   // TODO(nasko): Move implementation here, but for the time being call out
   // to the interstitial page code.

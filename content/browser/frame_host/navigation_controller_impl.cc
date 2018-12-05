@@ -887,7 +887,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     LoadCommittedDetails* details,
     bool is_same_document_navigation,
-    NavigationHandleImpl* navigation_handle) {
+    NavigationRequest* navigation_request) {
+  DCHECK(navigation_request);
   is_initial_navigation_ = false;
 
   // Save the previous state before we clobber it.
@@ -942,6 +943,9 @@ bool NavigationControllerImpl::RendererDidNavigate(
 
   // Save reload type and timestamp for a reload navigation to detect
   // consecutive reloads when the next reload is requested.
+  NavigationHandleImpl* navigation_handle =
+      navigation_request->navigation_handle();
+  DCHECK(navigation_handle);
   if (PendingEntryMatchesHandle(navigation_handle)) {
     if (pending_entry_->reload_type() != ReloadType::NONE) {
       last_committed_reload_type_ = pending_entry_->reload_type();

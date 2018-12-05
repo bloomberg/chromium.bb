@@ -111,6 +111,18 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
       blink::mojom::NavigationInitiatorPtr navigation_initiator);
 
+  // Creates a request at commit time. This should only be used for
+  // renderer-initiated same-document navigations, and navigations whose
+  // original NavigationRequest has been destroyed by race-conditions.
+  // TODO(clamy): Eventually, this should only be called for same-document
+  // renderer-initiated navigations.
+  static std::unique_ptr<NavigationRequest> CreateForCommit(
+      FrameTreeNode* frame_tree_node,
+      NavigationEntryImpl* entry,
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool is_renderer_initiated,
+      bool is_same_document);
+
   ~NavigationRequest() override;
 
   // Called on the UI thread by the Navigator to start the navigation.
@@ -174,8 +186,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void SetWaitingForRendererResponse();
 
   // Creates a NavigationHandle. This should be called after any previous
-  // NavigationRequest for the FrameTreeNode has been destroyed.
-  void CreateNavigationHandle();
+  // NavigationRequest for the FrameTreeNode has been destroyed. |is_for_commit|
+  // should only be true when creating a NavigationHandle at commit time (this
+  // happens for renderer-initiated same-document navigations).
+  void CreateNavigationHandle(bool is_for_commit);
 
   // Returns ownership of the navigation handle.
   std::unique_ptr<NavigationHandleImpl> TakeNavigationHandle();
@@ -221,6 +235,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     const RequestNavigationParams& request_params,
                     bool browser_initiated,
                     bool from_begin_navigation,
+                    bool is_for_commit,
                     const FrameNavigationEntry* frame_navigation_entry,
                     const NavigationEntryImpl* navitation_entry,
                     std::unique_ptr<NavigationUIData> navigation_ui_data,
