@@ -72,7 +72,20 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
     UMA_HISTOGRAM_COUNTS_100("ManualFallback.PresentedOptions.Passwords",
                              credentials.count);
   }
-  [self presentDataItems:(NSArray<TableViewItem*>*)credentials];
+  // If no items were posted and there is no search bar, present the empty item
+  // and return.
+  if (!credentials.count && !self.searchController) {
+    ManualFillActionItem* emptyCredentialItem = [[ManualFillActionItem alloc]
+        initWithTitle:l10n_util::GetNSString(
+                          IDS_IOS_MANUAL_FALLBACK_NO_PASSWORDS_FOR_SITE)
+               action:nil];
+    emptyCredentialItem.enabled = NO;
+    emptyCredentialItem.showSeparator = YES;
+    [self presentDataItems:@[ emptyCredentialItem ]];
+    return;
+  }
+
+  [self presentDataItems:credentials];
 }
 
 - (void)presentActions:(NSArray<ManualFillActionItem*>*)actions {
