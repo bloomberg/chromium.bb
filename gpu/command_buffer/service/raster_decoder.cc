@@ -72,17 +72,16 @@
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
-  ERRORSTATE_SET_GL_ERROR(state_.GetErrorState(), error, function_name, msg)
-#define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label)          \
-  ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(state_.GetErrorState(), function_name, \
+  ERRORSTATE_SET_GL_ERROR(GetErrorState(), error, function_name, msg)
+#define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label)   \
+  ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(GetErrorState(), function_name, \
                                        static_cast<uint32_t>(value), label)
-#define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name)         \
-  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(state_.GetErrorState(), \
-                                            function_name)
+#define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name) \
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(GetErrorState(), function_name)
 #define LOCAL_PEEK_GL_ERROR(function_name) \
-  ERRORSTATE_PEEK_GL_ERROR(state_.GetErrorState(), function_name)
+  ERRORSTATE_PEEK_GL_ERROR(GetErrorState(), function_name)
 #define LOCAL_CLEAR_REAL_GL_ERRORS(function_name) \
-  ERRORSTATE_CLEAR_REAL_GL_ERRORS(state_.GetErrorState(), function_name)
+  ERRORSTATE_CLEAR_REAL_GL_ERRORS(GetErrorState(), function_name)
 #define LOCAL_PERFORMANCE_WARNING(msg) \
   PerformanceWarning(__FILE__, __LINE__, msg)
 #define LOCAL_RENDER_WARNING(msg) RenderWarning(__FILE__, __LINE__, msg)
@@ -606,6 +605,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   gles2::DebugMarkerManager debug_marker_manager_;
   gles2::Logger logger_;
+  std::unique_ptr<gles2::ErrorState> error_state_;
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<gles2::ContextGroup> group_;
@@ -731,13 +731,12 @@ RasterDecoderImpl::RasterDecoderImpl(
               base::BindRepeating(&DecoderClient::OnConsoleMessage,
                                   base::Unretained(client_),
                                   0)),
+      error_state_(gles2::ErrorState::Create(this, &logger_)),
       group_(group),
       raster_decoder_context_state_(std::move(raster_decoder_context_state)),
       validators_(new Validators),
       feature_info_(group_->feature_info()),
       state_(group_->feature_info(),
-             this,
-             &logger_,
              false /* track_texture_and_sampler_units */),
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
@@ -1369,7 +1368,7 @@ gles2::ContextGroup* RasterDecoderImpl::GetContextGroup() {
 }
 
 gles2::ErrorState* RasterDecoderImpl::GetErrorState() {
-  return state_.GetErrorState();
+  return error_state_.get();
 }
 
 std::unique_ptr<gles2::AbstractTexture>
