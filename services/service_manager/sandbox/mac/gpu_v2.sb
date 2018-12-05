@@ -37,5 +37,4 @@
 (if (>= os-version 1013)
   (allow mach-lookup (global-name "com.apple.coremedia.videodecoder")))
 
-(if (> os-version 1009)
-  (allow sysctl-read (sysctl-name "hw.model")))
+(allow sysctl-read (sysctl-name "hw.model"))
