@@ -2051,6 +2051,7 @@ interface Element : Node
 interface ElementInternals
     attribute @@toStringTag
     getter form
+    getter labels
     getter validationMessage
     getter validity
     getter willValidate

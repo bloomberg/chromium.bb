@@ -13,6 +13,7 @@
 namespace blink {
 
 class HTMLElement;
+class LabelsNodeList;
 class ValidityStateFlags;
 
 class ElementInternals : public ScriptWrappable, public ListedElement {
@@ -42,6 +43,7 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   String ValidationMessageForBinding(ExceptionState& exception_state);
   bool checkValidity(ExceptionState& exception_state);
   bool reportValidity(ExceptionState& exception_state);
+  LabelsNodeList* labels();
 
  private:
   bool IsTargetFormAssociated() const;

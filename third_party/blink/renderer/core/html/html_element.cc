@@ -1518,6 +1518,10 @@ bool HTMLElement::IsValidElement() {
          EnsureElementInternals().IsValidElement();
 }
 
+bool HTMLElement::IsLabelable() const {
+  return IsFormAssociatedCustomElement();
+}
+
 }  // namespace blink
 
 #ifndef NDEBUG
