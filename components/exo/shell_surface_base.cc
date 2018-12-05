@@ -834,7 +834,7 @@ void ShellSurfaceBase::OnWindowActivated(ActivationReason reason,
 
   if (gained_active == widget_->GetNativeWindow() ||
       lost_active == widget_->GetNativeWindow()) {
-    DCHECK(CanActivate());
+    DCHECK(gained_active != widget_->GetNativeWindow() || CanActivate());
     UpdateShadow();
   }
 }
