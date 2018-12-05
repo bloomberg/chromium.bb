@@ -378,7 +378,7 @@ const base::Feature kLowDelayVideoRenderingOnLiveStream{
 // autoplay policy will be hardcoded to be the legacy one on based on the
 // platform
 const base::Feature kAutoplayIgnoreWebAudio{"AutoplayIgnoreWebAudio",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether we should show a setting to disable autoplay policy.
 const base::Feature kAutoplayDisableSettings{"AutoplayDisableSettings",
@@ -386,7 +386,7 @@ const base::Feature kAutoplayDisableSettings{"AutoplayDisableSettings",
 
 // Whether we should allow autoplay whitelisting via sounds settings.
 const base::Feature kAutoplayWhitelistSettings{
-    "AutoplayWhitelistSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AutoplayWhitelistSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.

@@ -134,7 +134,6 @@ crbug.com/887140 hdr/video-canvas-alpha.html [ Failure ]
 # TODO(lukasza, alexmos): Burn down this list.
 crbug.com/606594 http/tests/local/serviceworker/fetch-request-body-file.html [ Skip ]
 crbug.com/645641 external/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
-crbug.com/650348 http/tests/webaudio/autoplay-crossorigin.html [ Timeout ]
 crbug.com/665058 http/tests/local/drag-over-remote-content.html [ Crash ]
 crbug.com/771003 http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
 crbug.com/771003 virtual/outofblink-cors-ns/http/tests/security/mixedContent/insecure-iframe-in-main-frame.html [ Failure ]
@@ -5147,9 +5146,6 @@ crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Time
 crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-appearance.html [ Failure ]
 
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
-
-# This will break for now
-crbug.com/841933 virtual/not-site-per-process/http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
 
 # Sheriff 2018-05-22
 crbug.com/845610 [ Win ] http/tests/inspector-protocol/target/target-browser-context.js [ Pass Failure ]

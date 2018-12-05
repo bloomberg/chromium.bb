@@ -1,12 +1,26 @@
 <!DOCTYPE html>
 <body><span>click me</span></body>
 <script>
-if ('internals' in window)
-  internals.settings.setAutoplayPolicy('user-gesture-required');
+// Setup the flags before the test is run.
+internals.settings.setAutoplayPolicy('document-user-activation-required');
+internals.runtimeFlags.autoplayIgnoresWebAudioEnabled = false;
 
 function synthesizeClick(callback) {
-  document.onclick = callback;
-  window.parent.postMessage({ msg: 'clickme' }, '*');
+  const elementBoundingRect = document.body.getBoundingClientRect();
+  const xPos = elementBoundingRect.left + elementBoundingRect.width / 2;
+  const yPos = elementBoundingRect.top + elementBoundingRect.height / 2;
+  const leftButton = 0;
+
+  chrome.gpuBenchmarking.pointerActionSequence([
+    {
+      source: 'mouse',
+      actions: [
+        { name: 'pointerMove', x: xPos, y: yPos },
+        { name: 'pointerDown', x: xPos, y: yPos, button: leftButton },
+        { name: 'pointerUp', button: leftButton }
+      ]
+    }
+  ], callback);
 }
 
 // AudioContext will start as suspended when lacking a user gesture.
@@ -35,9 +49,9 @@ window.parent.postMessage({ msg: 'afterOscillator', value: audioContext.state },
 
 var otherAudioContext = new AudioContext();
 
-synthesizeClick(_ => {
+synthesizeClick(async _ => {
   // Calling 'resume()' from a click event will start the audio context.
-  audioContext.resume();
+  await audioContext.resume();
   window.parent.postMessage({ msg: 'stateAfterClick',
                               value: audioContext.state }, '*');
 
@@ -49,20 +63,13 @@ synthesizeClick(_ => {
     oscillator.type = 'square';
     oscillator.frequency.value = 2000;
     oscillator.connect(otherAudioContext.destination);
-    // Calling 'start()' from a click event will not start the audio context.
-    oscillator.start();
 
-    window.parent.postMessage({ msg: 'stateOtherContextAfterSecondClick',
-                                value: otherAudioContext.state }, '*');
+    // Creating an AudioContext from a click event will start it.
+    var lastAudioContext = new AudioContext();
+    window.parent.postMessage({ msg: 'stateCreatedAfterClick',
+                                value: lastAudioContext.state }, '*');
 
-    synthesizeClick(_ => {
-      // Creating an AudioContext from a click event will start it.
-      var lastAudioContext = new AudioContext();
-      window.parent.postMessage({ msg: 'stateCreatedAfterClick',
-                                  value: lastAudioContext.state }, '*');
-
-      window.parent.postMessage({ msg: 'done' }, '*');
-    });
+    window.parent.postMessage({ msg: 'done' }, '*');
   });
 });
 </script>
