@@ -1316,7 +1316,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testSendCommandNoParams(self):
     """Sends a custom command to the DevTools debugger without params"""
     self.assertRaisesRegexp(
-            chromedriver.UnknownError, "params not passed",
+            chromedriver.InvalidArgument, "params not passed",
             self._driver.SendCommandAndGetResult, 'CSS.enable', None)
 
   def testSendCommandAndGetResult(self):

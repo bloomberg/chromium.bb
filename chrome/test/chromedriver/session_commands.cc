@@ -523,7 +523,7 @@ Status ExecuteLaunchApp(Session* session,
                         std::unique_ptr<base::Value>* value) {
   std::string id;
   if (!params.GetString("id", &id))
-    return Status(kUnknownError, "'id' must be a string");
+    return Status(kInvalidArgument, "'id' must be a string");
 
   ChromeDesktopImpl* desktop = NULL;
   Status status = session->chrome->GetAsDesktop(&desktop);
@@ -595,7 +595,7 @@ Status ExecuteSwitchToWindow(Session* session,
       return Status(kInvalidArgument, "'handle' must be a string");
   } else {
     if (!params.GetString("name", &name))
-      return Status(kUnknownError, "'name' must be a string");
+      return Status(kInvalidArgument, "'name' must be a string");
   }
 
   std::list<std::string> web_view_ids;
@@ -690,10 +690,10 @@ Status ExecuteSetTimeoutLegacy(Session* session,
                                std::unique_ptr<base::Value>* value) {
   double ms_double;
   if (!params.GetDouble("ms", &ms_double))
-    return Status(kUnknownError, "'ms' must be a double");
+    return Status(kInvalidArgument, "'ms' must be a double");
   std::string type;
   if (!params.GetString("type", &type))
-    return Status(kUnknownError, "'type' must be a string");
+    return Status(kInvalidArgument, "'type' must be a string");
 
   base::TimeDelta timeout =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms_double));
@@ -706,7 +706,7 @@ Status ExecuteSetTimeoutLegacy(Session* session,
         ((timeout < base::TimeDelta()) ? Session::kDefaultPageLoadTimeout
                                        : timeout);
   } else {
-    return Status(kUnknownError, "unknown type of timeout:" + type);
+    return Status(kInvalidArgument, "unknown type of timeout:" + type);
   }
   return Status(kOk);
 }
@@ -763,7 +763,7 @@ Status ExecuteSetScriptTimeout(Session* session,
                                std::unique_ptr<base::Value>* value) {
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative number");
+    return Status(kInvalidArgument, "'ms' must be a non-negative number");
   session->script_timeout =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
   return Status(kOk);
@@ -774,7 +774,7 @@ Status ExecuteImplicitlyWait(Session* session,
                              std::unique_ptr<base::Value>* value) {
   double ms;
   if (!params.GetDouble("ms", &ms) || ms < 0)
-    return Status(kUnknownError, "'ms' must be a non-negative number");
+    return Status(kInvalidArgument, "'ms' must be a non-negative number");
   session->implicit_wait =
       base::TimeDelta::FromMilliseconds(static_cast<int>(ms));
   return Status(kOk);
@@ -870,7 +870,7 @@ Status ExecuteSetNetworkConnection(Session* session,
 
   int connection_type;
   if (!params.GetInteger("parameters.type", &connection_type))
-    return Status(kUnknownError, "invalid connection_type");
+    return Status(kInvalidArgument, "invalid connection_type");
 
   desktop->SetNetworkConnection(connection_type);
 
@@ -951,7 +951,7 @@ Status ExecuteSetWindowPosition(Session* session,
   double x = 0;
   double y = 0;
   if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
-    return Status(kUnknownError, "missing or invalid 'x' or 'y'");
+    return Status(kInvalidArgument, "missing or invalid 'x' or 'y'");
 
   return session->chrome->SetWindowPosition(session->window,
                                             static_cast<int>(x),
@@ -982,7 +982,7 @@ Status ExecuteSetWindowSize(Session* session,
   double height = 0;
   if (!params.GetDouble("width", &width) ||
       !params.GetDouble("height", &height))
-    return Status(kUnknownError, "missing or invalid 'width' or 'height'");
+    return Status(kInvalidArgument, "missing or invalid 'width' or 'height'");
 
   return session->chrome->SetWindowSize(session->window,
                                         static_cast<int>(width),
@@ -1008,7 +1008,7 @@ Status ExecuteGetLog(Session* session,
                      std::unique_ptr<base::Value>* value) {
   std::string log_type;
   if (!params.GetString("type", &log_type)) {
-    return Status(kUnknownError, "missing or invalid 'type'");
+    return Status(kInvalidArgument, "missing or invalid 'type'");
   }
 
   // Evaluate a JavaScript in the renderer process for the current tab, to flush
@@ -1031,7 +1031,7 @@ Status ExecuteGetLog(Session* session,
       return Status(kOk);
     }
   }
-  return Status(kUnknownError, "log type '" + log_type + "' not found");
+  return Status(kInvalidArgument, "log type '" + log_type + "' not found");
 }
 
 Status ExecuteUploadFile(Session* session,
@@ -1039,7 +1039,7 @@ Status ExecuteUploadFile(Session* session,
                          std::unique_ptr<base::Value>* value) {
   std::string base64_zip_data;
   if (!params.GetString("file", &base64_zip_data))
-    return Status(kUnknownError, "missing or invalid 'file'");
+    return Status(kInvalidArgument, "missing or invalid 'file'");
   std::string zip_data;
   if (!Base64Decode(base64_zip_data, &zip_data))
     return Status(kUnknownError, "unable to decode 'file'");
@@ -1076,7 +1076,7 @@ Status ExecuteSetAutoReporting(Session* session,
                                std::unique_ptr<base::Value>* value) {
   bool enabled;
   if (!params.GetBoolean("enabled", &enabled))
-    return Status(kUnknownError, "missing parameter 'enabled'");
+    return Status(kInvalidArgument, "missing parameter 'enabled'");
   session->auto_reporting_enabled = enabled;
   return Status(kOk);
 }

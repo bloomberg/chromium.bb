@@ -59,7 +59,7 @@ Status GetMouseButton(const base::DictionaryValue& params,
   if (!params.GetInteger("button", &button_num)) {
     button_num = 0;  // Default to left mouse button.
   } else if (button_num < 0 || button_num > 2) {
-    return Status(kUnknownError,
+    return Status(kInvalidArgument,
                   base::StringPrintf("invalid button: %d", button_num));
   }
   *button = static_cast<MouseButton>(button_num);
@@ -248,9 +248,9 @@ Status ExecuteTouchEvent(
     const base::DictionaryValue& params) {
   int x, y;
   if (!params.GetInteger("x", &x))
-    return Status(kUnknownError, "'x' must be an integer");
+    return Status(kInvalidArgument, "'x' must be an integer");
   if (!params.GetInteger("y", &y))
-    return Status(kUnknownError, "'y' must be an integer");
+    return Status(kInvalidArgument, "'y' must be an integer");
   int relative_x = x;
   int relative_y = y;
   Status status = ScrollCoordinateInToView(
@@ -417,7 +417,7 @@ Status ExecuteSwitchToFrame(Session* session,
                             Timeout* timeout) {
   const base::Value* id;
   if (!params.Get("id", &id))
-    return Status(kUnknownError, "missing 'id'");
+    return Status(kInvalidArgument, "missing 'id'");
 
   if (id->is_none()) {
     session->SwitchToTopFrame();
@@ -430,7 +430,7 @@ Status ExecuteSwitchToFrame(Session* session,
   if (id->GetAsDictionary(&id_dict)) {
     std::string element_id;
     if (!id_dict->GetString(GetElementKey(), &element_id))
-      return Status(kUnknownError, "missing 'ELEMENT'");
+      return Status(kInvalidArgument, "missing 'ELEMENT'");
     bool is_displayed = false;
     Status status = IsElementDisplayed(
           session, web_view, element_id, true, &is_displayed);
@@ -453,7 +453,7 @@ Status ExecuteSwitchToFrame(Session* session,
     } else if (id->GetAsInteger(&id_int)) {
       xpath += base::StringPrintf("[%d]", id_int + 1);
     } else {
-      return Status(kUnknownError, "invalid 'id'");
+      return Status(kInvalidArgument, "invalid 'id'");
     }
     args.AppendString(xpath);
   }
@@ -633,7 +633,8 @@ Status ExecuteMouseMoveTo(Session* session,
   bool has_offset = params.GetInteger("xoffset", &x_offset) &&
       params.GetInteger("yoffset", &y_offset);
   if (!has_element && !has_offset)
-    return Status(kUnknownError, "at least an element or offset should be set");
+    return Status(kInvalidArgument,
+                  "at least an element or offset should be set");
 
   WebPoint location;
   if (has_element) {
@@ -778,10 +779,10 @@ Status ExecuteTouchScroll(Session* session,
   }
   int xoffset;
   if (!params.GetInteger("xoffset", &xoffset))
-    return Status(kUnknownError, "'xoffset' must be an integer");
+    return Status(kInvalidArgument, "'xoffset' must be an integer");
   int yoffset;
   if (!params.GetInteger("yoffset", &yoffset))
-    return Status(kUnknownError, "'yoffset' must be an integer");
+    return Status(kInvalidArgument, "'yoffset' must be an integer");
   return web_view->SynthesizeScrollGesture(
       location.x, location.y, xoffset, yoffset);
 }
@@ -793,12 +794,12 @@ Status ExecuteTouchPinch(Session* session,
                          Timeout* timeout) {
   WebPoint location;
   if (!params.GetInteger("x", &location.x))
-    return Status(kUnknownError, "'x' must be an integer");
+    return Status(kInvalidArgument, "'x' must be an integer");
   if (!params.GetInteger("y", &location.y))
-    return Status(kUnknownError, "'y' must be an integer");
+    return Status(kInvalidArgument, "'y' must be an integer");
   double scale_factor;
   if (!params.GetDouble("scale", &scale_factor))
-    return Status(kUnknownError, "'scale' must be an integer");
+    return Status(kInvalidArgument, "'scale' must be an integer");
   return web_view->SynthesizePinchGesture(location.x, location.y, scale_factor);
 }
 
@@ -1200,11 +1201,11 @@ Status ExecuteSendCommand(Session* session,
                           Timeout* timeout) {
   std::string cmd;
   if (!params.GetString("cmd", &cmd)) {
-    return Status(kUnknownError, "command not passed");
+    return Status(kInvalidArgument, "command not passed");
   }
   const base::DictionaryValue* cmdParams;
   if (!params.GetDictionary("params", &cmdParams)) {
-    return Status(kUnknownError, "params not passed");
+    return Status(kInvalidArgument, "params not passed");
   }
   return web_view->SendCommand(cmd, *cmdParams);
 }
@@ -1216,11 +1217,11 @@ Status ExecuteSendCommandAndGetResult(Session* session,
                                       Timeout* timeout) {
   std::string cmd;
   if (!params.GetString("cmd", &cmd)) {
-    return Status(kUnknownError, "command not passed");
+    return Status(kInvalidArgument, "command not passed");
   }
   const base::DictionaryValue* cmdParams;
   if (!params.GetDictionary("params", &cmdParams)) {
-    return Status(kUnknownError, "params not passed");
+    return Status(kInvalidArgument, "params not passed");
   }
   return web_view->SendCommandAndGetResult(cmd, *cmdParams, value);
 }
@@ -1240,7 +1241,7 @@ Status ExecuteSendKeysToActiveElement(Session* session,
                                       Timeout* timeout) {
   const base::ListValue* key_list;
   if (!params.GetList("value", &key_list))
-    return Status(kUnknownError, "'value' must be a list");
+    return Status(kInvalidArgument, "'value' must be a list");
   return SendKeysOnWindow(
       web_view, key_list, false, &session->sticky_modifiers);
 }
@@ -1275,7 +1276,7 @@ Status ExecuteGetStorageItem(const char* storage,
                              Timeout* timeout) {
   std::string key;
   if (!params.GetString("key", &key))
-    return Status(kUnknownError, "'key' must be a string");
+    return Status(kInvalidArgument, "'key' must be a string");
   base::ListValue args;
   args.AppendString(key);
   return web_view->CallFunction(
@@ -1312,10 +1313,10 @@ Status ExecuteSetStorageItem(const char* storage,
                              Timeout* timeout) {
   std::string key;
   if (!params.GetString("key", &key))
-    return Status(kUnknownError, "'key' must be a string");
+    return Status(kInvalidArgument, "'key' must be a string");
   std::string storage_value;
   if (!params.GetString("value", &storage_value))
-    return Status(kUnknownError, "'value' must be a string");
+    return Status(kInvalidArgument, "'value' must be a string");
   base::ListValue args;
   args.AppendString(key);
   args.AppendString(storage_value);
@@ -1334,7 +1335,7 @@ Status ExecuteRemoveStorageItem(const char* storage,
                                 Timeout* timeout) {
   std::string key;
   if (!params.GetString("key", &key))
-    return Status(kUnknownError, "'key' must be a string");
+    return Status(kInvalidArgument, "'key' must be a string");
   base::ListValue args;
   args.AppendString(key);
   return web_view->CallFunction(
@@ -1430,7 +1431,7 @@ Status ExecuteGetNamedCookie(Session* session,
                              Timeout* timeout) {
   std::string name;
   if (!params.GetString("name", &name))
-    return Status(kUnknownError, "missing 'cookie name'");
+    return Status(kInvalidArgument, "missing 'cookie name'");
 
   std::list<Cookie> cookies;
   Status status = GetVisibleCookies(web_view, &cookies);
@@ -1454,7 +1455,7 @@ Status ExecuteAddCookie(Session* session,
                         Timeout* timeout) {
   const base::DictionaryValue* cookie;
   if (!params.GetDictionary("cookie", &cookie))
-    return Status(kUnknownError, "missing 'cookie'");
+    return Status(kInvalidArgument, "missing 'cookie'");
   std::string name;
   std::string cookie_value;
   if (!cookie->GetString("name", &name))
@@ -1488,7 +1489,7 @@ Status ExecuteDeleteCookie(Session* session,
                            Timeout* timeout) {
   std::string name;
   if (!params.GetString("name", &name))
-    return Status(kUnknownError, "missing 'name'");
+    return Status(kInvalidArgument, "missing 'name'");
   base::DictionaryValue params_url;
   std::unique_ptr<base::Value> value_url;
   std::string url;
@@ -1550,10 +1551,10 @@ Status ExecuteSetLocation(Session* session,
   if (!params.GetDictionary("location", &location) ||
       !location->GetDouble("latitude", &geoposition.latitude) ||
       !location->GetDouble("longitude", &geoposition.longitude))
-    return Status(kUnknownError, "missing or invalid 'location'");
+    return Status(kInvalidArgument, "missing or invalid 'location'");
   if (location->HasKey("accuracy") &&
       !location->GetDouble("accuracy", &geoposition.accuracy)) {
-    return Status(kUnknownError, "invalid 'accuracy'");
+    return Status(kInvalidArgument, "invalid 'accuracy'");
   } else {
     // |accuracy| is not part of the WebDriver spec yet, so if it is not given
     // default to 100 meters accuracy.
@@ -1583,7 +1584,7 @@ Status ExecuteSetNetworkConditions(Session* session,
   } else if (params.GetDictionary("network_conditions", &conditions)) {
     // |latency| is required.
     if (!conditions->GetDouble("latency", &network_conditions->latency))
-      return Status(kUnknownError,
+      return Status(kInvalidArgument,
                     "invalid 'network_conditions' is missing 'latency'");
 
     // Either |throughput| or the pair |download_throughput| and
@@ -1591,7 +1592,7 @@ Status ExecuteSetNetworkConditions(Session* session,
     if (conditions->HasKey("throughput")) {
       if (!conditions->GetDouble("throughput",
                                  &network_conditions->download_throughput))
-        return Status(kUnknownError, "invalid 'throughput'");
+        return Status(kInvalidArgument, "invalid 'throughput'");
       conditions->GetDouble("throughput",
                             &network_conditions->upload_throughput);
     } else if (conditions->HasKey("download_throughput") &&
@@ -1600,10 +1601,10 @@ Status ExecuteSetNetworkConditions(Session* session,
                                  &network_conditions->download_throughput) ||
           !conditions->GetDouble("upload_throughput",
                                  &network_conditions->upload_throughput))
-        return Status(kUnknownError,
+        return Status(kInvalidArgument,
                       "invalid 'download_throughput' or 'upload_throughput'");
     } else {
-      return Status(kUnknownError,
+      return Status(kInvalidArgument,
                     "invalid 'network_conditions' is missing 'throughput' or "
                     "'download_throughput'/'upload_throughput' pair");
     }
@@ -1611,12 +1612,12 @@ Status ExecuteSetNetworkConditions(Session* session,
     // |offline| is optional.
     if (conditions->HasKey("offline")) {
       if (!conditions->GetBoolean("offline", &network_conditions->offline))
-        return Status(kUnknownError, "invalid 'offline'");
+        return Status(kInvalidArgument, "invalid 'offline'");
     } else {
       network_conditions->offline = false;
     }
   } else {
-    return Status(kUnknownError,
+    return Status(kInvalidArgument,
                   "either 'network_conditions' or 'network_name' must be "
                   "supplied");
   }
