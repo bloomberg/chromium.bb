@@ -1186,12 +1186,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                  bool success,
                                  const base::string16& user_input);
 
-  // Returns ownership of the NavigationHandle associated with a navigation that
-  // just committed.
-  std::unique_ptr<NavigationHandleImpl>
-  TakeNavigationHandleForSameDocumentCommit(
+  // Returns ownership of the NavigationRequest associated with a navigation
+  // that just committed.
+  std::unique_ptr<NavigationRequest> TakeNavigationRequestForSameDocumentCommit(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
-  std::unique_ptr<NavigationHandleImpl> TakeNavigationHandleForCommit(
+  std::unique_ptr<NavigationRequest> TakeNavigationRequestForCommit(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params);
 
   // Helper to process the beforeunload ACK. |proceed| indicates whether the

@@ -50,7 +50,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                             const base::string16& error_description) override;
   void DidNavigate(RenderFrameHostImpl* render_frame_host,
                    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-                   std::unique_ptr<NavigationHandleImpl> navigation_handle,
+                   std::unique_ptr<NavigationRequest> navigation_request,
                    bool was_within_same_document) override;
   bool StartHistoryNavigationInNewSubframe(
       RenderFrameHostImpl* render_frame_host,
