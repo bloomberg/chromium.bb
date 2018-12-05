@@ -267,8 +267,109 @@
 
 == postsubmit ==
   master-postsubmit
+    arkham-postsubmit
+    asuka-postsubmit
+    atlas-postsubmit
+    auron_paine-postsubmit
+    auron_yuna-postsubmit
+    banjo-postsubmit
+    banon-postsubmit
+    beaglebone-postsubmit
+    beaglebone_servo-postsubmit
+    betty-arc64-postsubmit
+    betty-postsubmit
+    bob-postsubmit
+    buddy-postsubmit
+    candy-postsubmit
+    caroline-arcnext-postsubmit
+    caroline-postsubmit
+    cave-postsubmit
+    celes-postsubmit
+    chell-postsubmit
+    cheza-postsubmit
+    clapper-postsubmit
+    coral-postsubmit
+    cyan-postsubmit
+    daisy-postsubmit
+    daisy_skate-postsubmit
+    edgar-postsubmit
+    elm-postsubmit
+    enguarde-postsubmit
+    eve-arcnext-postsubmit
+    eve-postsubmit
+    expresso-postsubmit
+    falco-postsubmit
+    falco_li-postsubmit
+    fizz-postsubmit
+    gale-postsubmit
+    gandof-postsubmit
+    glimmer-postsubmit
+    gnawty-postsubmit
+    gru-postsubmit
     grunt-postsubmit
+    guado-postsubmit
+    hana-postsubmit
+    heli-postsubmit
+    jecht-postsubmit
+    kefka-postsubmit
+    kevin-arcnext-postsubmit
+    kevin-postsubmit
+    kip-postsubmit
+    lars-postsubmit
+    leon-postsubmit
+    lulu-postsubmit
+    mccloud-postsubmit
+    monroe-postsubmit
+    nami-postsubmit
+    nautilus-postsubmit
+    ninja-postsubmit
+    novato-arc64-postsubmit
+    novato-postsubmit
+    nyan_big-postsubmit
+    nyan_kitty-postsubmit
+    oak-postsubmit
+    octopus-postsubmit
+    orco-postsubmit
+    panther-postsubmit
+    peach_pi-postsubmit
+    peach_pit-postsubmit
+    peppy-postsubmit
+    poppy-postsubmit
+    pyro-postsubmit
+    quawks-postsubmit
+    rammus-postsubmit
+    reef-postsubmit
+    reks-postsubmit
+    relm-postsubmit
+    rikku-postsubmit
     samus-postsubmit
+    sand-postsubmit
+    scarlet-postsubmit
+    sentry-postsubmit
+    setzer-postsubmit
+    snappy-postsubmit
+    soraka-postsubmit
+    squawks-postsubmit
+    sumo-postsubmit
+    swanky-postsubmit
+    terra-postsubmit
+    tidus-postsubmit
+    tricky-postsubmit
+    ultima-postsubmit
+    veyron_fievel-postsubmit
+    veyron_jaq-postsubmit
+    veyron_jerry-postsubmit
+    veyron_mickey-postsubmit
+    veyron_mighty-postsubmit
+    veyron_minnie-postsubmit
+    veyron_rialto-postsubmit
+    veyron_speedy-postsubmit
+    veyron_tiger-postsubmit
+    whirlwind-postsubmit
+    winky-postsubmit
+    wizpig-postsubmit
+    wolf-postsubmit
+    zako-postsubmit
 
 == pre_cq ==
   pre-cq-launcher
@@ -483,6 +584,7 @@
   arkham-no-vmtest-pre-cq
   arkham-paladin-tryjob
   arkham-payloads-tryjob
+  arkham-postsubmit-tryjob
   arkham-pre-cq
   arkham-release-tryjob
   arkham-unittest-stress
@@ -530,6 +632,7 @@
   asuka-no-vmtest-pre-cq
   asuka-paladin-tryjob
   asuka-payloads-tryjob
+  asuka-postsubmit-tryjob
   asuka-pre-cq
   asuka-release-afdo-generate-tryjob
   asuka-release-afdo-tryjob
@@ -549,6 +652,7 @@
   atlas-no-vmtest-pre-cq
   atlas-paladin-tryjob
   atlas-payloads-tryjob
+  atlas-postsubmit-tryjob
   atlas-pre-cq
   atlas-release-afdo-generate-tryjob
   atlas-release-afdo-tryjob
@@ -568,6 +672,7 @@
   auron_paine-no-vmtest-pre-cq
   auron_paine-paladin-tryjob
   auron_paine-payloads-tryjob
+  auron_paine-postsubmit-tryjob
   auron_paine-pre-cq
   auron_paine-release-afdo-generate-tryjob
   auron_paine-release-afdo-tryjob
@@ -587,6 +692,7 @@
   auron_yuna-no-vmtest-pre-cq
   auron_yuna-paladin-tryjob
   auron_yuna-payloads-tryjob
+  auron_yuna-postsubmit-tryjob
   auron_yuna-pre-cq
   auron_yuna-release-afdo-generate-tryjob
   auron_yuna-release-afdo-tryjob
@@ -606,6 +712,7 @@
   banjo-no-vmtest-pre-cq
   banjo-paladin-tryjob
   banjo-payloads-tryjob
+  banjo-postsubmit-tryjob
   banjo-pre-cq
   banjo-release-afdo-generate-tryjob
   banjo-release-afdo-tryjob
@@ -625,6 +732,7 @@
   banon-no-vmtest-pre-cq
   banon-paladin-tryjob
   banon-payloads-tryjob
+  banon-postsubmit-tryjob
   banon-pre-cq
   banon-release-afdo-generate-tryjob
   banon-release-afdo-tryjob
@@ -642,6 +750,7 @@
   beaglebone-llvm-toolchain-tryjob
   beaglebone-no-vmtest-pre-cq
   beaglebone-paladin-tryjob
+  beaglebone-postsubmit-tryjob
   beaglebone-pre-cq
   beaglebone-release-tryjob
   beaglebone-unittest-stress
@@ -653,6 +762,7 @@
   beaglebone_servo-llvm-toolchain-tryjob
   beaglebone_servo-no-vmtest-pre-cq
   beaglebone_servo-paladin-tryjob
+  beaglebone_servo-postsubmit-tryjob
   beaglebone_servo-pre-cq
   beaglebone_servo-release-tryjob
   beaglebone_servo-unittest-stress
@@ -668,6 +778,7 @@
   betty-arc64-nyc-android-pfq-tryjob
   betty-arc64-paladin-tryjob
   betty-arc64-payloads-tryjob
+  betty-arc64-postsubmit-tryjob
   betty-arc64-pre-cq
   betty-arc64-release-afdo-generate-tryjob
   betty-arc64-release-afdo-tryjob
@@ -723,6 +834,7 @@
   betty-nyc-android-pfq-tryjob
   betty-paladin-tryjob
   betty-payloads-tryjob
+  betty-postsubmit-tryjob
   betty-pre-cq
   betty-release-afdo-generate-tryjob
   betty-release-afdo-tryjob
@@ -748,6 +860,7 @@
   bob-nyc-android-pfq-tryjob
   bob-paladin-tryjob
   bob-payloads-tryjob
+  bob-postsubmit-tryjob
   bob-pre-cq
   bob-release-afdo-generate-tryjob
   bob-release-afdo-tryjob
@@ -768,6 +881,7 @@
   buddy-no-vmtest-pre-cq
   buddy-paladin-tryjob
   buddy-payloads-tryjob
+  buddy-postsubmit-tryjob
   buddy-pre-cq
   buddy-release-afdo-generate-tryjob
   buddy-release-afdo-tryjob
@@ -787,6 +901,7 @@
   candy-no-vmtest-pre-cq
   candy-paladin-tryjob
   candy-payloads-tryjob
+  candy-postsubmit-tryjob
   candy-pre-cq
   candy-release-afdo-generate-tryjob
   candy-release-afdo-tryjob
@@ -840,6 +955,7 @@
   caroline-arcnext-paladin-tryjob
   caroline-arcnext-payloads-tryjob
   caroline-arcnext-pi-android-pfq-tryjob
+  caroline-arcnext-postsubmit-tryjob
   caroline-arcnext-pre-cq
   caroline-arcnext-release-afdo-generate-tryjob
   caroline-arcnext-release-afdo-tryjob
@@ -871,6 +987,7 @@
   caroline-nyc-android-pfq-tryjob
   caroline-paladin-tryjob
   caroline-payloads-tryjob
+  caroline-postsubmit-tryjob
   caroline-pre-cq
   caroline-release-afdo-generate-tryjob
   caroline-release-afdo-tryjob
@@ -901,6 +1018,7 @@
   cave-no-vmtest-pre-cq
   cave-paladin-tryjob
   cave-payloads-tryjob
+  cave-postsubmit-tryjob
   cave-pre-cq
   cave-release-afdo-generate-tryjob
   cave-release-afdo-tryjob
@@ -921,6 +1039,7 @@
   celes-no-vmtest-pre-cq
   celes-paladin-tryjob
   celes-payloads-tryjob
+  celes-postsubmit-tryjob
   celes-pre-cq
   celes-release-afdo-generate-tryjob
   celes-release-afdo-tryjob
@@ -942,6 +1061,7 @@
   chell-nowithdebug-paladin-tryjob
   chell-paladin-tryjob
   chell-payloads-tryjob
+  chell-postsubmit-tryjob
   chell-pre-cq
   chell-release-afdo-generate-tryjob
   chell-release-afdo-tryjob
@@ -972,6 +1092,7 @@
   cheza-no-vmtest-pre-cq
   cheza-paladin-tryjob
   cheza-payloads-tryjob
+  cheza-postsubmit-tryjob
   cheza-pre-cq
   cheza-release-afdo-generate-tryjob
   cheza-release-afdo-tryjob
@@ -997,6 +1118,7 @@
   clapper-no-vmtest-pre-cq
   clapper-paladin-tryjob
   clapper-payloads-tryjob
+  clapper-postsubmit-tryjob
   clapper-pre-cq
   clapper-release-afdo-generate-tryjob
   clapper-release-afdo-tryjob
@@ -1029,6 +1151,7 @@
   coral-nyc-android-pfq-tryjob
   coral-paladin-tryjob
   coral-payloads-tryjob
+  coral-postsubmit-tryjob
   coral-pre-cq
   coral-release-afdo-generate-tryjob
   coral-release-afdo-tryjob
@@ -1049,6 +1172,7 @@
   cyan-nyc-android-pfq-tryjob
   cyan-paladin-tryjob
   cyan-payloads-tryjob
+  cyan-postsubmit-tryjob
   cyan-pre-cq
   cyan-release-afdo-generate-tryjob
   cyan-release-afdo-tryjob
@@ -1071,6 +1195,7 @@
   daisy-no-vmtest-pre-cq
   daisy-paladin-tryjob
   daisy-payloads-tryjob
+  daisy-postsubmit-tryjob
   daisy-pre-cq
   daisy-release-afdo-generate-tryjob
   daisy-release-afdo-tryjob
@@ -1091,6 +1216,7 @@
   daisy_skate-no-vmtest-pre-cq
   daisy_skate-paladin-tryjob
   daisy_skate-payloads-tryjob
+  daisy_skate-postsubmit-tryjob
   daisy_skate-pre-cq
   daisy_skate-release-afdo-generate-tryjob
   daisy_skate-release-afdo-tryjob
@@ -1148,6 +1274,7 @@
   edgar-no-vmtest-pre-cq
   edgar-paladin-tryjob
   edgar-payloads-tryjob
+  edgar-postsubmit-tryjob
   edgar-pre-cq
   edgar-release-afdo-generate-tryjob
   edgar-release-afdo-tryjob
@@ -1167,6 +1294,7 @@
   elm-no-vmtest-pre-cq
   elm-paladin-tryjob
   elm-payloads-tryjob
+  elm-postsubmit-tryjob
   elm-pre-cq
   elm-release-afdo-generate-tryjob
   elm-release-afdo-tryjob
@@ -1187,6 +1315,7 @@
   enguarde-no-vmtest-pre-cq
   enguarde-paladin-tryjob
   enguarde-payloads-tryjob
+  enguarde-postsubmit-tryjob
   enguarde-pre-cq
   enguarde-release-afdo-generate-tryjob
   enguarde-release-afdo-tryjob
@@ -1206,6 +1335,7 @@
   eve-arcnext-no-vmtest-pre-cq
   eve-arcnext-paladin-tryjob
   eve-arcnext-payloads-tryjob
+  eve-arcnext-postsubmit-tryjob
   eve-arcnext-pre-cq
   eve-arcnext-release-afdo-generate-tryjob
   eve-arcnext-release-afdo-tryjob
@@ -1275,6 +1405,7 @@
   eve-paladin-tryjob
   eve-payloads-tryjob
   eve-pi-android-pfq-tryjob
+  eve-postsubmit-tryjob
   eve-pre-cq
   eve-release-afdo-generate-tryjob
   eve-release-afdo-tryjob
@@ -1316,6 +1447,7 @@
   expresso-no-vmtest-pre-cq
   expresso-paladin-tryjob
   expresso-payloads-tryjob
+  expresso-postsubmit-tryjob
   expresso-pre-cq
   expresso-release-afdo-generate-tryjob
   expresso-release-afdo-tryjob
@@ -1366,6 +1498,7 @@
   falco-no-vmtest-pre-cq
   falco-paladin-tryjob
   falco-payloads-tryjob
+  falco-postsubmit-tryjob
   falco-pre-cq
   falco-release-afdo-generate-tryjob
   falco-release-afdo-tryjob
@@ -1385,6 +1518,7 @@
   falco_li-no-vmtest-pre-cq
   falco_li-paladin-tryjob
   falco_li-payloads-tryjob
+  falco_li-postsubmit-tryjob
   falco_li-pre-cq
   falco_li-release-afdo-generate-tryjob
   falco_li-release-afdo-tryjob
@@ -1509,6 +1643,7 @@
   fizz-no-vmtest-pre-cq
   fizz-paladin-tryjob
   fizz-payloads-tryjob
+  fizz-postsubmit-tryjob
   fizz-pre-cq
   fizz-release-afdo-generate-tryjob
   fizz-release-afdo-tryjob
@@ -1526,6 +1661,7 @@
   gale-no-vmtest-pre-cq
   gale-paladin-tryjob
   gale-payloads-tryjob
+  gale-postsubmit-tryjob
   gale-pre-cq
   gale-release-tryjob
   gale-test-ap-tryjob
@@ -1541,6 +1677,7 @@
   gandof-no-vmtest-pre-cq
   gandof-paladin-tryjob
   gandof-payloads-tryjob
+  gandof-postsubmit-tryjob
   gandof-pre-cq
   gandof-release-afdo-generate-tryjob
   gandof-release-afdo-tryjob
@@ -1579,6 +1716,7 @@
   glimmer-no-vmtest-pre-cq
   glimmer-paladin-tryjob
   glimmer-payloads-tryjob
+  glimmer-postsubmit-tryjob
   glimmer-pre-cq
   glimmer-release-afdo-generate-tryjob
   glimmer-release-afdo-tryjob
@@ -1598,6 +1736,7 @@
   gnawty-no-vmtest-pre-cq
   gnawty-paladin-tryjob
   gnawty-payloads-tryjob
+  gnawty-postsubmit-tryjob
   gnawty-pre-cq
   gnawty-release-afdo-generate-tryjob
   gnawty-release-afdo-tryjob
@@ -1628,6 +1767,7 @@
   gru-no-vmtest-pre-cq
   gru-paladin-tryjob
   gru-payloads-tryjob
+  gru-postsubmit-tryjob
   gru-pre-cq
   gru-release-afdo-generate-tryjob
   gru-release-afdo-tryjob
@@ -1696,6 +1836,7 @@
   guado-no-vmtest-pre-cq
   guado-paladin-tryjob
   guado-payloads-tryjob
+  guado-postsubmit-tryjob
   guado-pre-cq
   guado-release-afdo-generate-tryjob
   guado-release-afdo-tryjob
@@ -1754,6 +1895,7 @@
   hana-nyc-android-pfq-tryjob
   hana-paladin-tryjob
   hana-payloads-tryjob
+  hana-postsubmit-tryjob
   hana-pre-cq
   hana-release-afdo-generate-tryjob
   hana-release-afdo-tryjob
@@ -1792,6 +1934,7 @@
   heli-no-vmtest-pre-cq
   heli-paladin-tryjob
   heli-payloads-tryjob
+  heli-postsubmit-tryjob
   heli-pre-cq
   heli-release-afdo-generate-tryjob
   heli-release-afdo-tryjob
@@ -1812,6 +1955,7 @@
   jecht-no-vmtest-pre-cq
   jecht-paladin-tryjob
   jecht-payloads-tryjob
+  jecht-postsubmit-tryjob
   jecht-pre-cq
   jecht-release-afdo-generate-tryjob
   jecht-release-afdo-tryjob
@@ -1850,6 +1994,7 @@
   kefka-no-vmtest-pre-cq
   kefka-paladin-tryjob
   kefka-payloads-tryjob
+  kefka-postsubmit-tryjob
   kefka-pre-cq
   kefka-release-afdo-generate-tryjob
   kefka-release-afdo-tryjob
@@ -1870,6 +2015,7 @@
   kevin-arcnext-paladin-tryjob
   kevin-arcnext-payloads-tryjob
   kevin-arcnext-pi-android-pfq-tryjob
+  kevin-arcnext-postsubmit-tryjob
   kevin-arcnext-pre-cq
   kevin-arcnext-release-afdo-generate-tryjob
   kevin-arcnext-release-afdo-tryjob
@@ -1889,6 +2035,7 @@
   kevin-no-vmtest-pre-cq
   kevin-paladin-tryjob
   kevin-payloads-tryjob
+  kevin-postsubmit-tryjob
   kevin-pre-cq
   kevin-release-afdo-generate-tryjob
   kevin-release-afdo-tryjob
@@ -1919,6 +2066,7 @@
   kip-no-vmtest-pre-cq
   kip-paladin-tryjob
   kip-payloads-tryjob
+  kip-postsubmit-tryjob
   kip-pre-cq
   kip-release-afdo-generate-tryjob
   kip-release-afdo-tryjob
@@ -2017,6 +2165,7 @@
   lars-no-vmtest-pre-cq
   lars-paladin-tryjob
   lars-payloads-tryjob
+  lars-postsubmit-tryjob
   lars-pre-cq
   lars-release-afdo-generate-tryjob
   lars-release-afdo-tryjob
@@ -2047,6 +2196,7 @@
   leon-no-vmtest-pre-cq
   leon-paladin-tryjob
   leon-payloads-tryjob
+  leon-postsubmit-tryjob
   leon-pre-cq
   leon-release-afdo-generate-tryjob
   leon-release-afdo-tryjob
@@ -2089,6 +2239,7 @@
   lulu-no-vmtest-pre-cq
   lulu-paladin-tryjob
   lulu-payloads-tryjob
+  lulu-postsubmit-tryjob
   lulu-pre-cq
   lulu-release-afdo-generate-tryjob
   lulu-release-afdo-tryjob
@@ -2276,8 +2427,109 @@
     grunt-pi-android-pfq
     kevin-arcnext-pi-android-pfq
   master-postsubmit-tryjob
+    arkham-postsubmit
+    asuka-postsubmit
+    atlas-postsubmit
+    auron_paine-postsubmit
+    auron_yuna-postsubmit
+    banjo-postsubmit
+    banon-postsubmit
+    beaglebone-postsubmit
+    beaglebone_servo-postsubmit
+    betty-arc64-postsubmit
+    betty-postsubmit
+    bob-postsubmit
+    buddy-postsubmit
+    candy-postsubmit
+    caroline-arcnext-postsubmit
+    caroline-postsubmit
+    cave-postsubmit
+    celes-postsubmit
+    chell-postsubmit
+    cheza-postsubmit
+    clapper-postsubmit
+    coral-postsubmit
+    cyan-postsubmit
+    daisy-postsubmit
+    daisy_skate-postsubmit
+    edgar-postsubmit
+    elm-postsubmit
+    enguarde-postsubmit
+    eve-arcnext-postsubmit
+    eve-postsubmit
+    expresso-postsubmit
+    falco-postsubmit
+    falco_li-postsubmit
+    fizz-postsubmit
+    gale-postsubmit
+    gandof-postsubmit
+    glimmer-postsubmit
+    gnawty-postsubmit
+    gru-postsubmit
     grunt-postsubmit
+    guado-postsubmit
+    hana-postsubmit
+    heli-postsubmit
+    jecht-postsubmit
+    kefka-postsubmit
+    kevin-arcnext-postsubmit
+    kevin-postsubmit
+    kip-postsubmit
+    lars-postsubmit
+    leon-postsubmit
+    lulu-postsubmit
+    mccloud-postsubmit
+    monroe-postsubmit
+    nami-postsubmit
+    nautilus-postsubmit
+    ninja-postsubmit
+    novato-arc64-postsubmit
+    novato-postsubmit
+    nyan_big-postsubmit
+    nyan_kitty-postsubmit
+    oak-postsubmit
+    octopus-postsubmit
+    orco-postsubmit
+    panther-postsubmit
+    peach_pi-postsubmit
+    peach_pit-postsubmit
+    peppy-postsubmit
+    poppy-postsubmit
+    pyro-postsubmit
+    quawks-postsubmit
+    rammus-postsubmit
+    reef-postsubmit
+    reks-postsubmit
+    relm-postsubmit
+    rikku-postsubmit
     samus-postsubmit
+    sand-postsubmit
+    scarlet-postsubmit
+    sentry-postsubmit
+    setzer-postsubmit
+    snappy-postsubmit
+    soraka-postsubmit
+    squawks-postsubmit
+    sumo-postsubmit
+    swanky-postsubmit
+    terra-postsubmit
+    tidus-postsubmit
+    tricky-postsubmit
+    ultima-postsubmit
+    veyron_fievel-postsubmit
+    veyron_jaq-postsubmit
+    veyron_jerry-postsubmit
+    veyron_mickey-postsubmit
+    veyron_mighty-postsubmit
+    veyron_minnie-postsubmit
+    veyron_rialto-postsubmit
+    veyron_speedy-postsubmit
+    veyron_tiger-postsubmit
+    whirlwind-postsubmit
+    winky-postsubmit
+    wizpig-postsubmit
+    wolf-postsubmit
+    zako-postsubmit
   master-release-tryjob
     amd64-generic-cheets-release
     arkham-release
@@ -2430,6 +2682,7 @@
   mccloud-no-vmtest-pre-cq
   mccloud-paladin-tryjob
   mccloud-payloads-tryjob
+  mccloud-postsubmit-tryjob
   mccloud-pre-cq
   mccloud-release-afdo-generate-tryjob
   mccloud-release-afdo-tryjob
@@ -2460,6 +2713,7 @@
   monroe-no-vmtest-pre-cq
   monroe-paladin-tryjob
   monroe-payloads-tryjob
+  monroe-postsubmit-tryjob
   monroe-pre-cq
   monroe-release-afdo-generate-tryjob
   monroe-release-afdo-tryjob
@@ -2479,6 +2733,7 @@
   nami-no-vmtest-pre-cq
   nami-paladin-tryjob
   nami-payloads-tryjob
+  nami-postsubmit-tryjob
   nami-pre-cq
   nami-release-afdo-generate-tryjob
   nami-release-afdo-tryjob
@@ -2498,6 +2753,7 @@
   nautilus-no-vmtest-pre-cq
   nautilus-paladin-tryjob
   nautilus-payloads-tryjob
+  nautilus-postsubmit-tryjob
   nautilus-pre-cq
   nautilus-release-afdo-generate-tryjob
   nautilus-release-afdo-tryjob
@@ -2517,6 +2773,7 @@
   ninja-no-vmtest-pre-cq
   ninja-paladin-tryjob
   ninja-payloads-tryjob
+  ninja-postsubmit-tryjob
   ninja-pre-cq
   ninja-release-afdo-generate-tryjob
   ninja-release-afdo-tryjob
@@ -2555,6 +2812,7 @@
   novato-arc64-no-vmtest-pre-cq
   novato-arc64-paladin-tryjob
   novato-arc64-payloads-tryjob
+  novato-arc64-postsubmit-tryjob
   novato-arc64-pre-cq
   novato-arc64-release-afdo-generate-tryjob
   novato-arc64-release-afdo-tryjob
@@ -2574,6 +2832,7 @@
   novato-no-vmtest-pre-cq
   novato-paladin-tryjob
   novato-payloads-tryjob
+  novato-postsubmit-tryjob
   novato-pre-cq
   novato-release-afdo-generate-tryjob
   novato-release-afdo-tryjob
@@ -2593,6 +2852,7 @@
   nyan_big-no-vmtest-pre-cq
   nyan_big-paladin-tryjob
   nyan_big-payloads-tryjob
+  nyan_big-postsubmit-tryjob
   nyan_big-pre-cq
   nyan_big-release-afdo-generate-tryjob
   nyan_big-release-afdo-tryjob
@@ -2632,6 +2892,7 @@
   nyan_kitty-no-vmtest-pre-cq
   nyan_kitty-paladin-tryjob
   nyan_kitty-payloads-tryjob
+  nyan_kitty-postsubmit-tryjob
   nyan_kitty-pre-cq
   nyan_kitty-release-afdo-generate-tryjob
   nyan_kitty-release-afdo-tryjob
@@ -2651,6 +2912,7 @@
   oak-no-vmtest-pre-cq
   oak-paladin-tryjob
   oak-payloads-tryjob
+  oak-postsubmit-tryjob
   oak-pre-cq
   oak-release-afdo-generate-tryjob
   oak-release-afdo-tryjob
@@ -2681,6 +2943,7 @@
   octopus-no-vmtest-pre-cq
   octopus-paladin-tryjob
   octopus-payloads-tryjob
+  octopus-postsubmit-tryjob
   octopus-pre-cq
   octopus-release-afdo-generate-tryjob
   octopus-release-afdo-tryjob
@@ -2700,6 +2963,7 @@
   orco-no-vmtest-pre-cq
   orco-paladin-tryjob
   orco-payloads-tryjob
+  orco-postsubmit-tryjob
   orco-pre-cq
   orco-release-afdo-generate-tryjob
   orco-release-afdo-tryjob
@@ -2719,6 +2983,7 @@
   panther-no-vmtest-pre-cq
   panther-paladin-tryjob
   panther-payloads-tryjob
+  panther-postsubmit-tryjob
   panther-pre-cq
   panther-release-afdo-generate-tryjob
   panther-release-afdo-tryjob
@@ -2758,6 +3023,7 @@
   peach_pi-no-vmtest-pre-cq
   peach_pi-paladin-tryjob
   peach_pi-payloads-tryjob
+  peach_pi-postsubmit-tryjob
   peach_pi-pre-cq
   peach_pi-release-afdo-generate-tryjob
   peach_pi-release-afdo-tryjob
@@ -2777,6 +3043,7 @@
   peach_pit-no-vmtest-pre-cq
   peach_pit-paladin-tryjob
   peach_pit-payloads-tryjob
+  peach_pit-postsubmit-tryjob
   peach_pit-pre-cq
   peach_pit-release-afdo-generate-tryjob
   peach_pit-release-afdo-tryjob
@@ -2796,6 +3063,7 @@
   peppy-no-vmtest-pre-cq
   peppy-paladin-tryjob
   peppy-payloads-tryjob
+  peppy-postsubmit-tryjob
   peppy-pre-cq
   peppy-release-afdo-generate-tryjob
   peppy-release-afdo-tryjob
@@ -2815,6 +3083,7 @@
   poppy-no-vmtest-pre-cq
   poppy-paladin-tryjob
   poppy-payloads-tryjob
+  poppy-postsubmit-tryjob
   poppy-pre-cq
   poppy-release-afdo-generate-tryjob
   poppy-release-afdo-tryjob
@@ -2836,6 +3105,7 @@
   pyro-no-vmtest-pre-cq
   pyro-paladin-tryjob
   pyro-payloads-tryjob
+  pyro-postsubmit-tryjob
   pyro-pre-cq
   pyro-release-afdo-generate-tryjob
   pyro-release-afdo-tryjob
@@ -2855,6 +3125,7 @@
   quawks-no-vmtest-pre-cq
   quawks-paladin-tryjob
   quawks-payloads-tryjob
+  quawks-postsubmit-tryjob
   quawks-pre-cq
   quawks-release-afdo-generate-tryjob
   quawks-release-afdo-tryjob
@@ -2874,6 +3145,7 @@
   rammus-no-vmtest-pre-cq
   rammus-paladin-tryjob
   rammus-payloads-tryjob
+  rammus-postsubmit-tryjob
   rammus-pre-cq
   rammus-release-afdo-generate-tryjob
   rammus-release-afdo-tryjob
@@ -2896,6 +3168,7 @@
   reef-nyc-android-pfq-tryjob
   reef-paladin-tryjob
   reef-payloads-tryjob
+  reef-postsubmit-tryjob
   reef-pre-cq
   reef-release-afdo-generate-tryjob
   reef-release-afdo-tryjob
@@ -2915,6 +3188,7 @@
   reks-no-vmtest-pre-cq
   reks-paladin-tryjob
   reks-payloads-tryjob
+  reks-postsubmit-tryjob
   reks-pre-cq
   reks-release-afdo-generate-tryjob
   reks-release-afdo-tryjob
@@ -2934,6 +3208,7 @@
   relm-no-vmtest-pre-cq
   relm-paladin-tryjob
   relm-payloads-tryjob
+  relm-postsubmit-tryjob
   relm-pre-cq
   relm-release-afdo-generate-tryjob
   relm-release-afdo-tryjob
@@ -2953,6 +3228,7 @@
   rikku-no-vmtest-pre-cq
   rikku-paladin-tryjob
   rikku-payloads-tryjob
+  rikku-postsubmit-tryjob
   rikku-pre-cq
   rikku-release-afdo-generate-tryjob
   rikku-release-afdo-tryjob
@@ -3005,6 +3281,7 @@
   sand-no-vmtest-pre-cq
   sand-paladin-tryjob
   sand-payloads-tryjob
+  sand-postsubmit-tryjob
   sand-pre-cq
   sand-release-afdo-generate-tryjob
   sand-release-afdo-tryjob
@@ -3046,6 +3323,7 @@
   scarlet-no-vmtest-pre-cq
   scarlet-paladin-tryjob
   scarlet-payloads-tryjob
+  scarlet-postsubmit-tryjob
   scarlet-pre-cq
   scarlet-release-afdo-generate-tryjob
   scarlet-release-afdo-tryjob
@@ -3065,6 +3343,7 @@
   sentry-no-vmtest-pre-cq
   sentry-paladin-tryjob
   sentry-payloads-tryjob
+  sentry-postsubmit-tryjob
   sentry-pre-cq
   sentry-release-afdo-generate-tryjob
   sentry-release-afdo-tryjob
@@ -3084,6 +3363,7 @@
   setzer-no-vmtest-pre-cq
   setzer-paladin-tryjob
   setzer-payloads-tryjob
+  setzer-postsubmit-tryjob
   setzer-pre-cq
   setzer-release-afdo-generate-tryjob
   setzer-release-afdo-tryjob
@@ -3104,6 +3384,7 @@
   snappy-no-vmtest-pre-cq
   snappy-paladin-tryjob
   snappy-payloads-tryjob
+  snappy-postsubmit-tryjob
   snappy-pre-cq
   snappy-release-afdo-generate-tryjob
   snappy-release-afdo-tryjob
@@ -3123,6 +3404,7 @@
   soraka-no-vmtest-pre-cq
   soraka-paladin-tryjob
   soraka-payloads-tryjob
+  soraka-postsubmit-tryjob
   soraka-pre-cq
   soraka-release-afdo-generate-tryjob
   soraka-release-afdo-tryjob
@@ -3142,6 +3424,7 @@
   squawks-no-vmtest-pre-cq
   squawks-paladin-tryjob
   squawks-payloads-tryjob
+  squawks-postsubmit-tryjob
   squawks-pre-cq
   squawks-release-afdo-generate-tryjob
   squawks-release-afdo-tryjob
@@ -3181,6 +3464,7 @@
   sumo-no-vmtest-pre-cq
   sumo-paladin-tryjob
   sumo-payloads-tryjob
+  sumo-postsubmit-tryjob
   sumo-pre-cq
   sumo-release-afdo-generate-tryjob
   sumo-release-afdo-tryjob
@@ -3200,6 +3484,7 @@
   swanky-no-vmtest-pre-cq
   swanky-paladin-tryjob
   swanky-payloads-tryjob
+  swanky-postsubmit-tryjob
   swanky-pre-cq
   swanky-release-afdo-generate-tryjob
   swanky-release-afdo-tryjob
@@ -3236,6 +3521,7 @@
   terra-no-vmtest-pre-cq
   terra-paladin-tryjob
   terra-payloads-tryjob
+  terra-postsubmit-tryjob
   terra-pre-cq
   terra-release-afdo-generate-tryjob
   terra-release-afdo-tryjob
@@ -3256,6 +3542,7 @@
   tidus-no-vmtest-pre-cq
   tidus-paladin-tryjob
   tidus-payloads-tryjob
+  tidus-postsubmit-tryjob
   tidus-pre-cq
   tidus-release-afdo-generate-tryjob
   tidus-release-afdo-tryjob
@@ -3275,6 +3562,7 @@
   tricky-no-vmtest-pre-cq
   tricky-paladin-tryjob
   tricky-payloads-tryjob
+  tricky-postsubmit-tryjob
   tricky-pre-cq
   tricky-release-afdo-generate-tryjob
   tricky-release-afdo-tryjob
@@ -3294,6 +3582,7 @@
   ultima-no-vmtest-pre-cq
   ultima-paladin-tryjob
   ultima-payloads-tryjob
+  ultima-postsubmit-tryjob
   ultima-pre-cq
   ultima-release-afdo-generate-tryjob
   ultima-release-afdo-tryjob
@@ -3313,6 +3602,7 @@
   veyron_fievel-no-vmtest-pre-cq
   veyron_fievel-paladin-tryjob
   veyron_fievel-payloads-tryjob
+  veyron_fievel-postsubmit-tryjob
   veyron_fievel-pre-cq
   veyron_fievel-release-afdo-generate-tryjob
   veyron_fievel-release-afdo-tryjob
@@ -3332,6 +3622,7 @@
   veyron_jaq-no-vmtest-pre-cq
   veyron_jaq-paladin-tryjob
   veyron_jaq-payloads-tryjob
+  veyron_jaq-postsubmit-tryjob
   veyron_jaq-pre-cq
   veyron_jaq-release-afdo-generate-tryjob
   veyron_jaq-release-afdo-tryjob
@@ -3351,6 +3642,7 @@
   veyron_jerry-no-vmtest-pre-cq
   veyron_jerry-paladin-tryjob
   veyron_jerry-payloads-tryjob
+  veyron_jerry-postsubmit-tryjob
   veyron_jerry-pre-cq
   veyron_jerry-release-afdo-generate-tryjob
   veyron_jerry-release-afdo-tryjob
@@ -3371,6 +3663,7 @@
   veyron_mickey-no-vmtest-pre-cq
   veyron_mickey-paladin-tryjob
   veyron_mickey-payloads-tryjob
+  veyron_mickey-postsubmit-tryjob
   veyron_mickey-pre-cq
   veyron_mickey-release-afdo-generate-tryjob
   veyron_mickey-release-afdo-tryjob
@@ -3390,6 +3683,7 @@
   veyron_mighty-no-vmtest-pre-cq
   veyron_mighty-paladin-tryjob
   veyron_mighty-payloads-tryjob
+  veyron_mighty-postsubmit-tryjob
   veyron_mighty-pre-cq
   veyron_mighty-release-afdo-generate-tryjob
   veyron_mighty-release-afdo-tryjob
@@ -3410,6 +3704,7 @@
   veyron_minnie-nyc-android-pfq-tryjob
   veyron_minnie-paladin-tryjob
   veyron_minnie-payloads-tryjob
+  veyron_minnie-postsubmit-tryjob
   veyron_minnie-pre-cq
   veyron_minnie-release-afdo-generate-tryjob
   veyron_minnie-release-afdo-tryjob
@@ -3429,6 +3724,7 @@
   veyron_rialto-no-vmtest-pre-cq
   veyron_rialto-paladin-tryjob
   veyron_rialto-payloads-tryjob
+  veyron_rialto-postsubmit-tryjob
   veyron_rialto-pre-cq
   veyron_rialto-release-afdo-generate-tryjob
   veyron_rialto-release-afdo-tryjob
@@ -3448,6 +3744,7 @@
   veyron_speedy-no-vmtest-pre-cq
   veyron_speedy-paladin-tryjob
   veyron_speedy-payloads-tryjob
+  veyron_speedy-postsubmit-tryjob
   veyron_speedy-pre-cq
   veyron_speedy-release-afdo-generate-tryjob
   veyron_speedy-release-afdo-tryjob
@@ -3468,6 +3765,7 @@
   veyron_tiger-no-vmtest-pre-cq
   veyron_tiger-paladin-tryjob
   veyron_tiger-payloads-tryjob
+  veyron_tiger-postsubmit-tryjob
   veyron_tiger-pre-cq
   veyron_tiger-release-afdo-generate-tryjob
   veyron_tiger-release-afdo-tryjob
@@ -3485,6 +3783,7 @@
   whirlwind-no-vmtest-pre-cq
   whirlwind-paladin-tryjob
   whirlwind-payloads-tryjob
+  whirlwind-postsubmit-tryjob
   whirlwind-pre-cq
   whirlwind-release-tryjob
   whirlwind-test-ap-tryjob
@@ -3500,6 +3799,7 @@
   winky-no-vmtest-pre-cq
   winky-paladin-tryjob
   winky-payloads-tryjob
+  winky-postsubmit-tryjob
   winky-pre-cq
   winky-release-afdo-generate-tryjob
   winky-release-afdo-tryjob
@@ -3520,6 +3820,7 @@
   wizpig-no-vmtest-pre-cq
   wizpig-paladin-tryjob
   wizpig-payloads-tryjob
+  wizpig-postsubmit-tryjob
   wizpig-pre-cq
   wizpig-release-afdo-generate-tryjob
   wizpig-release-afdo-tryjob
@@ -3539,6 +3840,7 @@
   wolf-no-vmtest-pre-cq
   wolf-paladin-tryjob
   wolf-payloads-tryjob
+  wolf-postsubmit-tryjob
   wolf-pre-cq
   wolf-release-afdo-generate-tryjob
   wolf-release-afdo-tryjob
@@ -3580,6 +3882,7 @@
   zako-no-vmtest-pre-cq
   zako-paladin-tryjob
   zako-payloads-tryjob
+  zako-postsubmit-tryjob
   zako-pre-cq
   zako-release-afdo-generate-tryjob
   zako-release-afdo-tryjob

@@ -2147,10 +2147,12 @@ def PostSubmitBuilders(site_config, boards_dict, ge_build_config):
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
-  postsubmit_boards = frozenset([
-      'samus',
-      'grunt',
-  ])
+  # Create a postsubmit builder for every important release builder.
+  postsubmit_boards = set()
+  for child_name in site_config['master-release'].slave_configs:
+    child_config = site_config[child_name]
+    if child_config.important:
+      postsubmit_boards |= set(child_config.boards)
 
   site_config.AddTemplate(
       'postsubmit',
