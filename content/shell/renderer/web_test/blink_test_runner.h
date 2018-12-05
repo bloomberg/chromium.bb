@@ -114,7 +114,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetBlockThirdPartyCookies(bool block) override;
   std::string PathToLocalResource(const std::string& resource) override;
   void SetLocale(const std::string& locale) override;
-  void OnLayoutTestRuntimeFlagsChanged(
+  void OnWebTestRuntimeFlagsChanged(
       const base::DictionaryValue& changed_values) override;
   void TestFinished() override;
   void CloseRemainingWindows() override;

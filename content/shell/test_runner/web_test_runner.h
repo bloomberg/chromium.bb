@@ -65,10 +65,10 @@ class WebTestRunner {
       blink::WebLocalFrame* frame,
       base::OnceCallback<void(const SkBitmap&)> callback) = 0;
 
-  // Replicates changes to layout test runtime flags
+  // Replicates changes to web test runtime flags
   // (i.e. changes that happened in another renderer).
-  // See also WebTestDelegate::OnLayoutTestRuntimeFlagsChanged.
-  virtual void ReplicateLayoutTestRuntimeFlagsChanges(
+  // See also WebTestDelegate::OnWebTestRuntimeFlagsChanged.
+  virtual void ReplicateWebTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) = 0;
 
   // If custom text dump is present (i.e. if testRunner.setCustomTextOutput has

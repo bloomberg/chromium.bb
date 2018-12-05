@@ -35,7 +35,7 @@ WebTestMessageFilter::WebTestMessageFilter(
     storage::DatabaseTracker* database_tracker,
     storage::QuotaManager* quota_manager,
     network::mojom::NetworkContext* network_context)
-    : BrowserMessageFilter(LayoutTestMsgStart),
+    : BrowserMessageFilter(WebTestMsgStart),
       render_process_id_(render_process_id),
       database_tracker_(database_tracker),
       quota_manager_(quota_manager) {
@@ -52,17 +52,17 @@ void WebTestMessageFilter::OnDestruct() const {
 base::TaskRunner* WebTestMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
-    case LayoutTestHostMsg_ClearAllDatabases::ID:
+    case WebTestHostMsg_ClearAllDatabases::ID:
       return database_tracker_->task_runner();
-    case LayoutTestHostMsg_SimulateWebNotificationClick::ID:
-    case LayoutTestHostMsg_SimulateWebNotificationClose::ID:
-    case LayoutTestHostMsg_SetPermission::ID:
-    case LayoutTestHostMsg_ResetPermissions::ID:
-    case LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged::ID:
-    case LayoutTestHostMsg_TestFinishedInSecondaryRenderer::ID:
-    case LayoutTestHostMsg_InitiateCaptureDump::ID:
-    case LayoutTestHostMsg_InspectSecondaryWindow::ID:
-    case LayoutTestHostMsg_DeleteAllCookies::ID:
+    case WebTestHostMsg_SimulateWebNotificationClick::ID:
+    case WebTestHostMsg_SimulateWebNotificationClose::ID:
+    case WebTestHostMsg_SetPermission::ID:
+    case WebTestHostMsg_ResetPermissions::ID:
+    case WebTestHostMsg_WebTestRuntimeFlagsChanged::ID:
+    case WebTestHostMsg_TestFinishedInSecondaryRenderer::ID:
+    case WebTestHostMsg_InitiateCaptureDump::ID:
+    case WebTestHostMsg_InspectSecondaryWindow::ID:
+    case WebTestHostMsg_DeleteAllCookies::ID:
       return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
           .get();
   }
@@ -72,26 +72,25 @@ base::TaskRunner* WebTestMessageFilter::OverrideTaskRunnerForMessage(
 bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebTestMessageFilter, message)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ReadFileToString, OnReadFileToString)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_RegisterIsolatedFileSystem,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_ReadFileToString, OnReadFileToString)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ClearAllDatabases,
-                        OnClearAllDatabases)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClick,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_ClearAllDatabases, OnClearAllDatabases)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClose,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClose,
                         OnSimulateWebNotificationClose)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ResetPermissions, OnResetPermissions)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged,
-                        OnLayoutTestRuntimeFlagsChanged)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_TestFinishedInSecondaryRenderer,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_SetPermission, OnSetPermission)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_ResetPermissions, OnResetPermissions)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_WebTestRuntimeFlagsChanged,
+                        OnWebTestRuntimeFlagsChanged)
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_TestFinishedInSecondaryRenderer,
                         OnTestFinishedInSecondaryRenderer)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_InitiateCaptureDump,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
                         OnInitiateCaptureDump);
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_InspectSecondaryWindow,
+    IPC_MESSAGE_HANDLER(WebTestHostMsg_InspectSecondaryWindow,
                         OnInspectSecondaryWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -222,12 +221,12 @@ void WebTestMessageFilter::OnResetPermissions() {
       ->ResetPermissions();
 }
 
-void WebTestMessageFilter::OnLayoutTestRuntimeFlagsChanged(
-    const base::DictionaryValue& changed_layout_test_runtime_flags) {
+void WebTestMessageFilter::OnWebTestRuntimeFlagsChanged(
+    const base::DictionaryValue& changed_web_test_runtime_flags) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (BlinkTestController::Get()) {
-    BlinkTestController::Get()->OnLayoutTestRuntimeFlagsChanged(
-        render_process_id_, changed_layout_test_runtime_flags);
+    BlinkTestController::Get()->OnWebTestRuntimeFlagsChanged(
+        render_process_id_, changed_web_test_runtime_flags);
   }
 }
 

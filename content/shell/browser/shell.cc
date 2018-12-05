@@ -597,7 +597,7 @@ bool Shell::ShouldAllowRunningInsecureContent(
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
   if (blink_test_controller && switches::IsRunWebTestsSwitchPresent()) {
     const base::DictionaryValue& test_flags =
-        blink_test_controller->accumulated_layout_test_runtime_flags_changes();
+        blink_test_controller->accumulated_web_test_runtime_flags_changes();
     test_flags.GetBoolean("running_insecure_content_allowed", &allowed_by_test);
   }
 

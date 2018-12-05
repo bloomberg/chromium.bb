@@ -120,9 +120,9 @@ class BlinkTestController : public WebContentsObserver,
   bool ResetAfterWebTest();
 
   // IPC messages forwarded from elsewhere.
-  void OnLayoutTestRuntimeFlagsChanged(
+  void OnWebTestRuntimeFlagsChanged(
       int sender_process_host_id,
-      const base::DictionaryValue& changed_layout_test_runtime_flags);
+      const base::DictionaryValue& changed_web_test_runtime_flags);
   void OnTestFinishedInSecondaryRenderer();
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
@@ -168,9 +168,9 @@ class BlinkTestController : public WebContentsObserver,
   // GpuDataManagerObserver implementation.
   void OnGpuProcessCrashed(base::TerminationStatus exit_code) override;
 
-  const base::DictionaryValue& accumulated_layout_test_runtime_flags_changes()
+  const base::DictionaryValue& accumulated_web_test_runtime_flags_changes()
       const {
-    return accumulated_layout_test_runtime_flags_changes_;
+    return accumulated_web_test_runtime_flags_changes_;
   }
 
  private:
@@ -307,10 +307,10 @@ class BlinkTestController : public WebContentsObserver,
   std::set<RenderProcessHost*> all_observed_render_process_hosts_;
   std::set<RenderProcessHost*> main_window_render_process_hosts_;
 
-  // Changes reported by OnLayoutTestRuntimeFlagsChanged that have accumulated
+  // Changes reported by OnWebTestRuntimeFlagsChanged that have accumulated
   // since PrepareForWebTest (i.e. changes that need to be send to a fresh
   // renderer created while test is in progress).
-  base::DictionaryValue accumulated_layout_test_runtime_flags_changes_;
+  base::DictionaryValue accumulated_web_test_runtime_flags_changes_;
 
   std::string navigation_history_dump_;
   base::Optional<SkBitmap> pixel_dump_;

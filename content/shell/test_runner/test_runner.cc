@@ -1747,7 +1747,7 @@ bool TestRunner::DumpPixelsAsync(
   return false;
 }
 
-void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(
+void TestRunner::ReplicateWebTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_values) {
   if (test_is_running_) {
     layout_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
@@ -2596,7 +2596,7 @@ void TestRunner::OnLayoutTestRuntimeFlagsChanged() {
   if (!test_is_running_)
     return;
 
-  delegate_->OnLayoutTestRuntimeFlagsChanged(
+  delegate_->OnWebTestRuntimeFlagsChanged(
       layout_test_runtime_flags_.tracked_dictionary().changed_values());
   layout_test_runtime_flags_.tracked_dictionary().ResetChangeTracking();
 }

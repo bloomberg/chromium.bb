@@ -53,7 +53,7 @@ enum IPCMessageStart {
   ChromeUtilityPrintingMsgStart,
   AecDumpMsgStart,
   OzoneGpuMsgStart,
-  LayoutTestMsgStart,
+  WebTestMsgStart,
   NetworkHintsMsgStart,
   CastMediaMsgStart,
   SyncCompositorMsgStart,
