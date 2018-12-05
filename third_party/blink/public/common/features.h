@@ -30,6 +30,7 @@ BLINK_COMMON_EXPORT extern const base::Feature kRTCGetDisplayMedia;
 BLINK_COMMON_EXPORT extern const base::Feature kRTCUnifiedPlanByDefault;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsClicked;
 BLINK_COMMON_EXPORT extern const base::Feature kRecordAnchorMetricsVisible;
+BLINK_COMMON_EXPORT extern const base::Feature kResourceLoadViaDataPipe;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerImportedScriptUpdateCheck;
 BLINK_COMMON_EXPORT extern const base::Feature
