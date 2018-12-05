@@ -13,10 +13,12 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
+import org.chromium.chrome.browser.invalidation.SessionsInvalidationManager;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSession;
 import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionTab;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -116,7 +118,12 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mForeignSessionHelper.triggerSessionSync();
         registerObservers();
 
-        InvalidationController.get().onRecentTabsPageOpened();
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
+            SessionsInvalidationManager.get(mForeignSessionHelper).onRecentTabsPageOpened();
+        } else {
+            InvalidationController.get().onRecentTabsPageOpened();
+        }
     }
 
     /**
@@ -138,15 +145,21 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
         mRecentlyClosedTabManager.destroy();
         mRecentlyClosedTabManager = null;
 
-        mForeignSessionHelper.destroy();
-        mForeignSessionHelper = null;
 
         mUpdatedCallback = null;
 
         mPrefs.destroy();
         mPrefs = null;
 
-        InvalidationController.get().onRecentTabsPageClosed();
+        if (ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.FCM_INVALIDATIONS)) {
+            SessionsInvalidationManager.get(mForeignSessionHelper).onRecentTabsPageClosed();
+        } else {
+            InvalidationController.get().onRecentTabsPageClosed();
+        }
+
+        mForeignSessionHelper.destroy();
+        mForeignSessionHelper = null;
     }
 
     private void registerForForeignSessionUpdates() {
