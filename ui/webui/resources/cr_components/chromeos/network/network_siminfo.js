@@ -96,19 +96,19 @@ Polymer({
      */
     pin_: {
       type: String,
-      observer: 'pinOrProgressChange_',
+      observer: 'pinOrPukChange_',
     },
     pin_new1_: {
       type: String,
-      observer: 'pinOrProgressChange_',
+      observer: 'pinOrPukChange_',
     },
     pin_new2_: {
       type: String,
-      observer: 'pinOrProgressChange_',
+      observer: 'pinOrPukChange_',
     },
     puk_: {
       type: String,
-      observer: 'pinOrProgressChange_',
+      observer: 'pinOrPukChange_',
     },
   },
 
@@ -204,6 +204,15 @@ Polymer({
         !!this.pin_new1_ && !!this.pin_new2_;
     this.changePukEnabled_ = !this.inProgress_ && !!this.puk_ &&
         !!this.pin_new1_ && !!this.pin_new2_;
+  },
+
+  /**
+   * Clears error message on user interacion.
+   * @private
+   */
+  pinOrPukChange_: function() {
+    this.error_ = ErrorType.NONE;
+    this.pinOrProgressChange_();
   },
 
   /** @private */
