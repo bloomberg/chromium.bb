@@ -11,6 +11,7 @@
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
@@ -107,7 +108,7 @@ void* AllocPages(void* address,
   DCHECK(!(length & kPageAllocationGranularityOffsetMask));
   DCHECK(align >= kPageAllocationGranularity);
   // Alignment must be power of 2 for masking math to work.
-  DCHECK_EQ(align & (align - 1), 0UL);
+  DCHECK(base::bits::IsPowerOfTwo(align));
   DCHECK(!(reinterpret_cast<uintptr_t>(address) &
            kPageAllocationGranularityOffsetMask));
   uintptr_t align_offset_mask = align - 1;

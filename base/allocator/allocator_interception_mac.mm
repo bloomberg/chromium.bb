@@ -30,6 +30,7 @@
 #include "base/allocator/buildflags.h"
 #include "base/allocator/malloc_zone_functions_mac.h"
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
@@ -147,7 +148,7 @@ void* oom_killer_memalign(struct _malloc_zone_t* zone,
   // other reasons why NULL might be returned (see
   // http://opensource.apple.com/source/Libc/Libc-583/gen/malloc.c ).
   if (!result && size && alignment >= sizeof(void*) &&
-      (alignment & (alignment - 1)) == 0) {
+      base::bits::IsPowerOfTwo(alignment)) {
     TerminateBecauseOutOfMemory(size);
   }
   return result;
@@ -197,7 +198,7 @@ void* oom_killer_memalign_purgeable(struct _malloc_zone_t* zone,
   // other reasons why NULL might be returned (see
   // http://opensource.apple.com/source/Libc/Libc-583/gen/malloc.c ).
   if (!result && size && alignment >= sizeof(void*) &&
-      (alignment & (alignment - 1)) == 0) {
+      base::bits::IsPowerOfTwo(alignment)) {
     TerminateBecauseOutOfMemory(size);
   }
   return result;
