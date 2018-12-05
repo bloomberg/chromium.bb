@@ -78,6 +78,7 @@ class TestWindowService : public service_manager::Service,
                    ui::DragDropTypes::DragEventSource source,
                    DragDropCompletedCallback callback) override;
   void CancelDragLoop(aura::Window* window) override;
+  ui::EventTarget* GetGlobalEventTarget() override;
 
   // service_manager::Service:
   void OnStart() override;

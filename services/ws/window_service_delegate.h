@@ -34,6 +34,7 @@ class ScopedInterfaceEndpointHandle;
 }
 
 namespace ui {
+class EventTarget;
 class KeyEvent;
 class OSExchangeData;
 class SystemInputInjector;
@@ -116,6 +117,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // remote client. A return value of null (the default) results in disallowing
   // injection.
   virtual ui::SystemInputInjector* GetSystemInputInjector();
+
+  // Returns the EventTarget which can process all of the events on the system.
+  virtual ui::EventTarget* GetGlobalEventTarget() = 0;
 
   // Returns the topmost visible window at the location in screen coordinate,
   // excluding |ignore|. |real_topmost| is updated to the topmost visible window

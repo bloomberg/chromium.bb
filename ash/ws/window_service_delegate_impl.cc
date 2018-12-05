@@ -219,6 +219,10 @@ ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
   return system_input_injector_.get();
 }
 
+ui::EventTarget* WindowServiceDelegateImpl::GetGlobalEventTarget() {
+  return Shell::Get();
+}
+
 aura::Window* WindowServiceDelegateImpl::GetTopmostWindowAtPoint(
     const gfx::Point& location_in_screen,
     const std::set<aura::Window*>& ignore,
