@@ -56,9 +56,11 @@ class ErrorHandler
     void SetSignalHandlers(bool Enable);
     void Throw(RAR_EXIT Code);
     void SetSilent(bool Mode) {Silent=Mode;};
+    bool GetSysErrMsg(wchar *Msg,size_t Size);
     void SysErrMsg();
     int GetSystemErrorCode();
     void SetSystemErrorCode(int Code);
+    void SetDisableShutdown() {DisableShutdown=true;}
     bool IsShutdownEnabled() {return !DisableShutdown;}
 
     bool UserBreak = false; // Ctrl+Break is pressed.
