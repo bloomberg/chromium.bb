@@ -122,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="bottom|center"
                 android:orientation="horizontal"
-                android:paddingTop="20dp">
+                android:paddingTop="32dp">
 
                 <!-- 'No' button -->
                 <org.chromium.ui.widget.ButtonCompat
@@ -157,7 +157,7 @@
                     android:text="@string/init_ok"
                     style="FilledButton" />
             </LinearLayout>
-            <Space android:layout_width="0dp" android:layout_height="5dp"/>
+            <Space android:layout_width="0dp" android:layout_height="24dp"/>
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>
