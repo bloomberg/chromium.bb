@@ -394,6 +394,21 @@ TEST_P(GeometryMapperTest, SimpleClipInclusiveIntersect) {
   EXPECT_CLIP_RECT_EQ(FloatClipRect(FloatRect()), actual_clip_rect);
 }
 
+TEST_P(GeometryMapperTest, SimpleClipPlusOpacity) {
+  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(10, 10, 50, 50));
+  local_state.SetClip(clip.get());
+
+  auto opacity = CreateOpacityEffect(e0(), 0.99);
+  local_state.SetEffect(opacity.get());
+
+  FloatClipRect actual_clip_rect(FloatRect(60, 10, 10, 10));
+  auto intersects = GeometryMapper::LocalToAncestorVisualRect(
+      local_state, ancestor_state, actual_clip_rect);
+
+  EXPECT_TRUE(actual_clip_rect.Rect().IsEmpty());
+  EXPECT_FALSE(intersects);
+}
+
 TEST_P(GeometryMapperTest, RoundedClip) {
   FloatRoundedRect rect(FloatRect(10, 10, 50, 50),
                         FloatRoundedRect::Radii(FloatSize(1, 1), FloatSize(),
