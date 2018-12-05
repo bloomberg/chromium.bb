@@ -336,10 +336,10 @@ class AbstractPaddablePayloadDecoderTest
   typedef AbstractPayloadDecoderTest<Decoder, DecoderPeer, Listener> Base;
 
  protected:
+  using Base::listener_;
   using Base::Random;
   using Base::RandStreamId;
   using Base::set_frame_header;
-  using Base::listener_;
   typedef typename Base::Validator Validator;
 
   AbstractPaddablePayloadDecoderTest() : total_pad_length_(GetParam()) {
