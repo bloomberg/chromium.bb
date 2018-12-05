@@ -19,7 +19,6 @@ import static org.mockito.Mockito.verify;
 import android.graphics.Bitmap;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -73,12 +72,6 @@ public class InMemoryCachedImageFetcherTest {
         mBitmapCache = new BitmapCache(mReferencePool, DEFAULT_CACHE_SIZE);
         mInMemoryCachedImageFetcher =
                 spy(new InMemoryCachedImageFetcher(mBitmapCache, mCachedImageFetcherImpl));
-    }
-
-    @After
-    public void tearDown() {
-        mBitmapCache.destroy();
-        mReferencePool.drain();
     }
 
     public void answerFetch(Bitmap bitmap, CachedImageFetcher cachedImageFetcher,
