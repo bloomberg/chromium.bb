@@ -241,6 +241,10 @@ const char kHistoryBatchUpdatesFilterDescription[] =
     "When enabled History inserts and deletes history items in the same "
     "BatchUpdates block.";
 
+const char kInfobarUIRebootName[] = "Infobar UI Reboot";
+const char kInfobarUIRebootDescription[] =
+    "When enabled, Infobar will use the new UI.";
+
 const char kInProductHelpDemoModeName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeDescription[] =
     "When enabled, in-product help promotions occur exactly once per cold "

@@ -24,6 +24,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/web/public/web_view_creation_util.h"
 
@@ -123,6 +124,10 @@ bool IsThirdPartyKeyboardWorkaroundEnabled() {
 
 bool IsBookmarksUIRebootEnabled() {
   return true;
+}
+
+bool IsInfobarUIRebootEnabled() {
+  return base::FeatureList::IsEnabled(kInfobarUIReboot);
 }
 
 }  // namespace experimental_flags
