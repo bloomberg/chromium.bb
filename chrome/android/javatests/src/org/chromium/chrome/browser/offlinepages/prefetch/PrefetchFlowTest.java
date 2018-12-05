@@ -33,7 +33,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskParameters;
-import org.chromium.components.download.internal.NetworkStatusListenerAndroid;
+import org.chromium.components.download.NetworkStatusListenerAndroid;
 import org.chromium.components.gcm_driver.instance_id.FakeInstanceIDWithSubtype;
 import org.chromium.components.offline_pages.core.prefetch.proto.StatusOuterClass;
 import org.chromium.net.NetworkChangeNotifier;

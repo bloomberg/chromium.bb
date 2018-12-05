@@ -27,13 +27,13 @@
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/background_service/android/battery_status_listener_android.h"
-#include "components/download/internal/background_service/android/network_status_listener_android.h"
+#include "components/download/network/android/network_status_listener_android.h"
 #elif defined(OS_MACOSX)
 #include "components/download/internal/background_service/scheduler/battery_status_listener_mac.h"
-#include "components/download/internal/background_service/scheduler/network_status_listener_mac.h"
+#include "components/download/network/network_status_listener_mac.h"
 #else
 #include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
-#include "components/download/internal/background_service/scheduler/network_status_listener_impl.h"
+#include "components/download/network/network_status_listener_impl.h"
 #endif
 
 namespace download {

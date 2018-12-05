@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_ANDROID_NETWORK_STATUS_LISTENER_ANDROID_H_
-#define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_ANDROID_NETWORK_STATUS_LISTENER_ANDROID_H_
+#ifndef COMPONENTS_DOWNLOAD_NETWORK_ANDROID_NETWORK_STATUS_LISTENER_ANDROID_H_
+#define COMPONENTS_DOWNLOAD_NETWORK_ANDROID_NETWORK_STATUS_LISTENER_ANDROID_H_
 
-#include "components/download/internal/background_service/scheduler/network_status_listener.h"
+#include "components/download/network/network_status_listener.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
@@ -41,4 +41,4 @@ class NetworkStatusListenerAndroid : public NetworkStatusListener {
 
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_ANDROID_NETWORK_STATUS_LISTENER_ANDROID_H_
+#endif  // COMPONENTS_DOWNLOAD_NETWORK_ANDROID_NETWORK_STATUS_LISTENER_ANDROID_H_

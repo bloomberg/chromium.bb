@@ -19,6 +19,7 @@ source_set("factory") {
     "//components/download/content/internal",
     "//components/download/internal/background_service:internal",
     "//components/download/internal/background_service/proto",
+    "//components/download/network",
     "//components/keyed_service/content",
     "//components/leveldb_proto",
     "//content/public/browser",

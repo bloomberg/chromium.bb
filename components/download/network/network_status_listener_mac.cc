@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/download/internal/background_service/scheduler/network_status_listener_mac.h"
+#include "components/download/network/network_status_listener_mac.h"
 
 namespace download {
 
