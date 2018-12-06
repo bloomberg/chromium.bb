@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -293,6 +294,21 @@ void Location::SetLocation(const String& url,
 
   if (dom_window_->IsInsecureScriptAccess(*current_window, completed_url))
     return;
+
+  // Check the source browsing context's CSP to fulfill the CSP check
+  // requirement of https://html.spec.whatwg.org/#navigate for javascript URLs.
+  // Although the spec states we should perform this check on task execution,
+  // we do this prior to dispatch since the parent frame's CSP may be
+  // inaccessible if the target frame is out of process.
+  Document* current_document = current_window->document();
+  if (current_document && completed_url.ProtocolIsJavaScript() &&
+      !ContentSecurityPolicy::ShouldBypassMainWorld(current_document)) {
+    String script_source = DecodeURLEscapeSequences(completed_url.GetString());
+    if (!current_document->GetContentSecurityPolicy()->AllowJavaScriptURLs(
+            nullptr, script_source, current_document->Url(), OrdinalNumber())) {
+      return;
+    }
+  }
 
   V8DOMActivityLogger* activity_logger =
       V8DOMActivityLogger::CurrentActivityLoggerIfIsolatedWorld();
