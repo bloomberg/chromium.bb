@@ -85,7 +85,7 @@ class VideoPainterTestForCAP : private ScopedCompositeAfterPaintForTest,
 
 TEST_F(VideoPainterTestForCAP, VideoLayerAppearsInLayerTree) {
   // Insert a <video> and allow it to begin loading.
-  SetBodyInnerHTML("<video width=300 height=200 src=test.ogv>");
+  SetBodyInnerHTML("<video width=300 height=300 src=test.ogv>");
   test::RunPendingTasks();
 
   // Force the page to paint.
@@ -100,7 +100,9 @@ TEST_F(VideoPainterTestForCAP, VideoLayerAppearsInLayerTree) {
   const cc::Layer* layer = player->GetCcLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
-  EXPECT_EQ(gfx::Size(300, 200), layer->bounds());
+  // The layer bounds reflects the aspectn ratio and object-fit of the video.
+  EXPECT_EQ(gfx::Vector2dF(8, 83), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(300, 150), layer->bounds());
 }
 
 }  // namespace

@@ -444,9 +444,6 @@ Bug(none) virtual/threaded/compositing/webgl/webgl-with-accelerated-background-c
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/synthetic_gestures/ [ Failure Crash ]
 
-crbug.com/866647 fast/borders/border-radius-mask-video-ratio.html [ Failure ]
-crbug.com/866647 fast/borders/border-radius-mask-video-shadow.html [ Failure ]
-
 Bug(none) fast/forms/validation-bubble-appearance-edge.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-iframe.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-rtl-ui.html [ Failure ]
