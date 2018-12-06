@@ -663,6 +663,10 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 		next = get_default_view(main_surface);
 
 	if (next) {
+		if (state->keyboard_focus) {
+			wl_list_remove(&state->surface_destroy_listener.link);
+			wl_list_init(&state->surface_destroy_listener.link);
+		}
 		state->keyboard_focus = NULL;
 		activate(state->shell, next, state->seat,
 			 WESTON_ACTIVATE_FLAG_CONFIGURE);
