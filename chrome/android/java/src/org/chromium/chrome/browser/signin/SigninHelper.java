@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.signin;
 import android.accounts.Account;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
 import com.google.android.gms.auth.AccountChangeEvent;
@@ -346,12 +347,6 @@ public class SigninHelper {
         }
     }
 
-    @VisibleForTesting
-    public static void resetAccountRenameEventIndex() {
-        ContextUtils.getAppSharedPreferences()
-                .edit().putInt(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY, 0).apply();
-    }
-
     public static boolean checkAndClearAccountsChangedPref() {
         if (ContextUtils.getAppSharedPreferences()
                 .getBoolean(ACCOUNTS_CHANGED_PREFS_KEY, false)) {
@@ -362,5 +357,14 @@ public class SigninHelper {
         } else {
             return false;
         }
+    }
+
+    @VisibleForTesting
+    public static void resetSharedPrefs() {
+        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
+        editor.remove(ACCOUNT_RENAME_EVENT_INDEX_PREFS_KEY);
+        editor.remove(ACCOUNT_RENAMED_PREFS_KEY);
+        editor.remove(ACCOUNTS_CHANGED_PREFS_KEY);
+        editor.apply();
     }
 }

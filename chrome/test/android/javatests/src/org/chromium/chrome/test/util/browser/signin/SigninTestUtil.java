@@ -12,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.signin.AccountTrackerService;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
+import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -47,6 +48,7 @@ public final class SigninTestUtil {
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
+        SigninHelper.resetSharedPrefs();
     }
 
     /**
@@ -59,6 +61,7 @@ public final class SigninTestUtil {
         }
         sAddedAccounts.clear();
         resetSigninState();
+        SigninHelper.resetSharedPrefs();
     }
 
     /**
