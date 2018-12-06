@@ -110,7 +110,8 @@ void TabIcon::SetData(const TabRendererData& data) {
   const bool was_showing_load = ShowingLoadingAnimation();
 
   inhibit_loading_animation_ = data.should_hide_throbber;
-  SetIcon(data.url, data.favicon);
+  SetIcon(data.url, data.favicon,
+          data.network_state == TabNetworkState::kWaiting);
   SetNetworkState(data.network_state, data.load_progress);
   SetIsCrashed(data.IsCrashed());
 
@@ -430,19 +431,28 @@ bool TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
   return true;
 }
 
-void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
+bool TabIcon::HasNonDefaultFavicon() const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return !favicon_.isNull() && !favicon_.BackedBySameObjectAs(
+                                   *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON));
+}
+
+void TabIcon::SetIcon(const GURL& url,
+                      const gfx::ImageSkia& icon,
+                      bool tab_is_waiting) {
   // Detect when updating to the same icon. This avoids re-theming and
   // re-painting.
   if (favicon_.BackedBySameObjectAs(icon))
     return;
+
   favicon_ = icon;
+  const bool is_default_favicon = !HasNonDefaultFavicon();
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const bool is_default_favicon =
-      icon.BackedBySameObjectAs(*rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON));
-
-  if (!is_default_favicon && !pending_animation_state_.favicon_fade_in_progress)
+  // Start fading in non-default favicons if we're not in the waiting state.
+  if (!is_default_favicon && !tab_is_waiting &&
+      !pending_animation_state_.favicon_fade_in_progress) {
     pending_animation_state_.favicon_fade_in_progress = 0.0;
+  }
 
   if (is_default_favicon || ShouldThemifyFaviconForUrl(url)) {
     themed_favicon_ = ThemeImage(icon);
@@ -468,7 +478,8 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
       pending_animation_state_.favicon_fade_in_progress.reset();
     }
 
-    if (!is_animated) {
+    if (!is_animated || (network_state_ == TabNetworkState::kLoading &&
+                         HasNonDefaultFavicon())) {
       // Start fading in the favicon if we're no longer animating.
       if (!pending_animation_state_.favicon_fade_in_progress)
         pending_animation_state_.favicon_fade_in_progress = 0.0;
