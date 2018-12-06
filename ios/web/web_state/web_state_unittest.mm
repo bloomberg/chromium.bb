@@ -358,11 +358,20 @@ TEST_P(WebStateTest, RestoreLargeSession) {
       EXPECT_FALSE(navigation_manager->CanGoForward());
       EXPECT_TRUE(navigation_manager->GetBackwardItems().empty());
       EXPECT_TRUE(navigation_manager->GetForwardItems().empty());
-      DCHECK_EQ(0.0, web_state_ptr->GetLoadingProgress());
+      EXPECT_EQ("Test0", base::UTF16ToASCII(web_state_ptr->GetTitle()));
+      EXPECT_EQ(0.0, web_state_ptr->GetLoadingProgress());
       // TODO(crbug.com/877671): Ensure that the following API work correctly:
       //  - NavigationManager::GetPendingItem
       //  - NavigationManager::GetPendingItemIndex
     } else {
+      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+        EXPECT_EQ("www.0.com", base::UTF16ToASCII(web_state_ptr->GetTitle()));
+      } else {
+        // This page never loads and does not actually have a title, so
+        // returning cached title is a bug. However there is not much value in
+        // fixing this bug for legacy navigation manager.
+        EXPECT_EQ("Test0", base::UTF16ToASCII(web_state_ptr->GetTitle()));
+      }
       EXPECT_EQ("http://www.0.com/", web_state_ptr->GetLastCommittedURL());
       NavigationItem* last_committed_item =
           navigation_manager->GetLastCommittedItem();
@@ -374,8 +383,6 @@ TEST_P(WebStateTest, RestoreLargeSession) {
       EXPECT_EQ(std::max(navigation_manager->GetItemCount() - 1, 0),
                 static_cast<int>(navigation_manager->GetForwardItems().size()));
     }
-    // TODO(crbug.com/877671): Ensure that the following API work correctly:
-    //  - WebState::GetTitle
     EXPECT_FALSE(web_state_ptr->IsCrashed());
     EXPECT_FALSE(web_state_ptr->IsEvicted());
     EXPECT_EQ("http://www.0.com/", web_state_ptr->GetVisibleURL());
