@@ -1147,7 +1147,6 @@ FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
 FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
 
 void FileManagerBrowserTestBase::SetUp() {
-  net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
   extensions::ExtensionApiTest::SetUp();
 }
 
