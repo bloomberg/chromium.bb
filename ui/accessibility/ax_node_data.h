@@ -93,17 +93,34 @@ struct AX_EXPORT AXNodeData {
   bool GetHtmlAttribute(const char* attribute, base::string16* value) const;
   bool GetHtmlAttribute(const char* attribute, std::string* value) const;
 
+  //
   // Setting accessibility attributes.
+  //
+  // Replaces an attribute if not present. This is safer than crashing via a
+  // DCHECK or doing nothing, because most likely that's what the caller would
+  // have wanted or what existing code already assumes.
+  //
+
   void AddStringAttribute(ax::mojom::StringAttribute attribute,
                           const std::string& value);
   void AddIntAttribute(ax::mojom::IntAttribute attribute, int32_t value);
-  void RemoveIntAttribute(ax::mojom::IntAttribute attribute);
   void AddFloatAttribute(ax::mojom::FloatAttribute attribute, float value);
   void AddBoolAttribute(ax::mojom::BoolAttribute attribute, bool value);
   void AddIntListAttribute(ax::mojom::IntListAttribute attribute,
                            const std::vector<int32_t>& value);
   void AddStringListAttribute(ax::mojom::StringListAttribute attribute,
                               const std::vector<std::string>& value);
+
+  //
+  // Removing accessibility attributes.
+  //
+
+  void RemoveStringAttribute(ax::mojom::StringAttribute attribute);
+  void RemoveIntAttribute(ax::mojom::IntAttribute attribute);
+  void RemoveFloatAttribute(ax::mojom::FloatAttribute attribute);
+  void RemoveBoolAttribute(ax::mojom::BoolAttribute attribute);
+  void RemoveIntListAttribute(ax::mojom::IntListAttribute attribute);
+  void RemoveStringListAttribute(ax::mojom::StringListAttribute attribute);
 
   //
   // Convenience functions.
