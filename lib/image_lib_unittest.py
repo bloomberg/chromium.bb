@@ -10,54 +10,75 @@ from __future__ import print_function
 import gc
 import glob
 import os
+import stat
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.lib import image_lib
 from chromite.lib import osutils
+from chromite.lib import retry_util
 from chromite.lib import partial_mock
 
+# pylint: disable=protected-access
 
 class FakeException(Exception):
   """Fake exception used for testing exception handling."""
 
 
-class LoopbackPartitions(object):
+FAKE_PATH = '/imaginary/file'
+LOOP_DEV = '/dev/loop9999'
+LOOP_PART_COUNT = 13
+LOOP_PARTITION_INFO = [
+    cros_build_lib.PartitionInfo(x, 0, 0, 0, '', 'my-%d' % x, '')
+    for x in range(1, LOOP_PART_COUNT)
+]
+LOOP_PARTS_DICT = {
+    p.number: '%sp%d' % (LOOP_DEV, p.number) for p in LOOP_PARTITION_INFO}
+LOOP_PARTS_LIST = LOOP_PARTS_DICT.values()
+
+class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
   """Mocked loopback partition class to use in unit tests.
 
   Args:
+    (shared with LoopbackPartitions)
     path: Path to the image file.
+    destination: destination directory.
+    util_path: path to use for finding losetup and friends.
+    (unique to LoopbackPartitionsMock)
     dev: Path for the base loopback device.
     part_count: How many partition device files to make up.
     part_overrides: A dict which is used to update self.parts.
   """
   # pylint: disable=dangerous-default-value
-  def __init__(self, path='/dev/loop9999', dev=None,
-               part_count=None, part_overrides={}):
+  # pylint: disable=super-init-not-called
+  def __init__(self, path, destination=None, util_path=None,
+               dev=LOOP_DEV, part_count=LOOP_PART_COUNT, part_overrides={}):
     self.path = path
     self.dev = dev
-    self.parts = {}
-    for i in xrange(part_count):
-      self.parts[i + 1] = path + 'p' + str(i + 1)
+    if destination:
+      self.destination = destination
+    else:
+      self.destination = osutils.TempDir()
+    self._gpt_table = [
+        cros_build_lib.PartitionInfo(num, 0, 0, 0, '', 'my-%d' % num, '')
+        for num in range(1, part_count + 1)
+    ]
+    self.parts = {p.number: '%sp%s' % (dev, p.number)
+                  for p in self._gpt_table}
     self.parts.update(part_overrides)
+
+  def _Mount(self, part, mount_opts):
+    """Stub out mount operations."""
+
+  def _Unmount(self, part):
+    """Stub out unmount operations."""
 
   def close(self):
     pass
 
-  def __enter__(self):
-    return self
 
-  def __exit__(self, exc_type, exc, tb):
-    pass
-
-
-FAKE_PATH = '/imaginary/file'
-LOOP_DEV = '/dev/loop9999'
-LOOP_PARTS_DICT = {num: '%sp%d' % (LOOP_DEV, num) for num in range(1, 13)}
-LOOP_PARTS_LIST = LOOP_PARTS_DICT.values()
-
-class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
+class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
   """Test the loopback partitions class"""
 
   def setUp(self):
@@ -65,7 +86,12 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
     self.StartPatcher(self.rc_mock)
     self.rc_mock.SetDefaultCmdResult()
 
+    self.PatchObject(cros_build_lib, 'GetImageDiskPartitionInfo',
+                     return_value=LOOP_PARTITION_INFO)
     self.PatchObject(glob, 'glob', return_value=LOOP_PARTS_LIST)
+    self.mount_mock = self.PatchObject(osutils, 'MountDir')
+    self.umount_mock = self.PatchObject(osutils, 'UmountDir')
+    self.retry_mock = self.PatchObject(retry_util, 'RetryException')
     def fake_which(val, *_arg, **_kwargs):
       return val
     self.PatchObject(osutils, 'Which', side_effect=fake_which)
@@ -80,6 +106,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
       self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                          expected=False)
       self.assertEquals(lb.parts, LOOP_PARTS_DICT)
+      self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
 
@@ -93,6 +120,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                        expected=False)
     self.assertEquals(lb.parts, LOOP_PARTS_DICT)
+    self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
     lb.close()
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
@@ -107,6 +135,7 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV],
                                        expected=False)
     self.assertEquals(lb.parts, LOOP_PARTS_DICT)
+    self.assertEquals(lb._gpt_table, LOOP_PARTITION_INFO)
 
   def testGarbageCollected(self):
     """Test using the loopback class closed by garbage collection."""
@@ -116,6 +145,61 @@ class LoopbackPartitionsTest(cros_test_lib.MockTestCase):
     gc.collect()
     self.rc_mock.assertCommandContains(['partx', '-d', LOOP_DEV])
     self.rc_mock.assertCommandContains(['losetup', '--detach', LOOP_DEV])
+
+  def testMountUnmount(self):
+    """Test Mount() and Unmount() entry points."""
+    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
+    lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
+    # Mount four partitions.
+    lb.Mount((1, 3, 'my-5', 'my-7'))
+    for p in (1, 3, 5, 7):
+      self.mount_mock.assert_any_call(
+          '%sp%d' % (LOOP_DEV, p), '%s/dir-%d' % (self.tempdir, p),
+          makedirs=True, skip_mtab=False, sudo=True, mount_opts=('ro',))
+      linkname = '%s/dir-my-%d' % (self.tempdir, p)
+      self.assertTrue(stat.S_ISLNK(os.lstat(linkname).st_mode))
+    self.assertEqual(4, self.mount_mock.call_count)
+    self.umount_mock.assert_not_called()
+
+    # Unmount half of them, confirm that they were unmounted.
+    lb.Unmount((1, 'my-5'))
+    for p in (1, 5):
+      self.umount_mock.assert_any_call('%s/dir-%d' % (self.tempdir, p),
+                                       cleanup=False)
+    self.assertEqual(2, self.umount_mock.call_count)
+    self.umount_mock.reset_mock()
+
+    # Close the object, so that we unmount the other half of them.
+    lb.close()
+    for p in (3, 7):
+      self.umount_mock.assert_any_call('%s/dir-%d' % (self.tempdir, p),
+                                       cleanup=False)
+    self.assertEqual(2, self.umount_mock.call_count)
+
+    # Verify that the directories were cleaned up.
+    for p in (1, 3):
+      self.retry_mock.assert_any_call(
+          cros_build_lib.RunCommandError, 60, osutils.RmDir,
+          '%s/dir-%d' % (self.tempdir, p), sudo=True, sleep=1)
+
+  def testGetPartitionDevName(self):
+    """Test GetPartitionDevName()."""
+    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
+    lb = image_lib.LoopbackPartitions(FAKE_PATH)
+    for part in LOOP_PARTITION_INFO:
+      self.assertEqual('%sp%d' % (LOOP_DEV, part.number),
+                       lb.GetPartitionDevName(part.number))
+      self.assertEqual('%sp%d' % (LOOP_DEV, part.number),
+                       lb.GetPartitionDevName(part.name))
+
+  def test_GetMountPointAndSymlink(self):
+    """Test _GetMountPointAndSymlink()."""
+    self.rc_mock.AddCmdResult(partial_mock.In('--show'), output=LOOP_DEV)
+    lb = image_lib.LoopbackPartitions(FAKE_PATH, destination=self.tempdir)
+    for part in LOOP_PARTITION_INFO:
+      expected = [os.path.join(lb.destination, 'dir-%s' % n)
+                  for n in (part.number, part.name)]
+      self.assertEqual(expected, list(lb._GetMountPointAndSymlink(part)))
 
 
 class LsbUtilsTest(cros_test_lib.MockTempDirTestCase):

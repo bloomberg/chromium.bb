@@ -1135,9 +1135,14 @@ def ChdirContext(target_dir):
 class MountImageContext(object):
   """A context manager to mount an image."""
 
+  # TODO(lamontjones): convert all users of this class to
+  # image_lib.LoopbackPartitions and remove this class.
   def __init__(self, image_file, destination, part_selects=(1, 3),
                mount_opts=('ro',)):
     """Construct a context manager object to actually do the job.
+
+    This class is deprecated.  Please use image_lib.LoopbackPartition, which
+    implements a superset of this class.  This class will be removed soon.
 
     Specified partitions will be mounted under |destination| according to the
     pattern:
