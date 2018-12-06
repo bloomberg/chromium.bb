@@ -135,7 +135,7 @@ class ScriptExecutor : public ActionDelegate {
                     const std::string& value,
                     base::OnceCallback<void(bool)> callback) override;
   void SendKeyboardInput(const Selector& selector,
-                         const std::string& text,
+                         const std::vector<std::string>& text_parts,
                          base::OnceCallback<void(bool)> callback) override;
   void GetOuterHtml(
       const Selector& selector,
