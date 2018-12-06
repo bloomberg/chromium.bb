@@ -28,7 +28,8 @@ class GPU_GLES2_EXPORT Logger {
   using LogMessageCallback = base::RepeatingCallback<void(const std::string&)>;
 
   Logger(const DebugMarkerManager* debug_marker_manager,
-         const LogMessageCallback& callback);
+         const LogMessageCallback& callback,
+         bool disable_gl_error_limit);
   ~Logger();
 
   void LogMessage(const char* filename, int line, const std::string& msg);
@@ -50,6 +51,7 @@ class GPU_GLES2_EXPORT Logger {
 
   int log_message_count_;
   bool log_synthesized_gl_errors_;
+  bool disable_gl_error_limit_;
 
   DISALLOW_COPY_AND_ASSIGN(Logger);
 };
