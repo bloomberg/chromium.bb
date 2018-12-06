@@ -710,6 +710,11 @@
     "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
   },
   {
+    "prefix": "omt-worker-fetch",
+    "base": "http/tests/workers",
+    "args": ["--enable-blink-features=OffMainThreadWorkerScriptFetch"]
+  },
+  {
     "prefix": "webrtc-wpt-unified-plan",
     "base": "external/wpt/webrtc",
     "args": ["--enable-features=RTCUnifiedPlanByDefault"]
