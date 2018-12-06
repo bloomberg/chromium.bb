@@ -1913,4 +1913,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-attribute.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       LanguageDetectionLangAttributeNested) {
+  RunLanguageDetectionTest(FILE_PATH_LITERAL("lang-attribute-nested.html"));
+}
+
 }  // namespace content
