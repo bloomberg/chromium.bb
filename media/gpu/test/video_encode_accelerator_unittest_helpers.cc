@@ -60,7 +60,7 @@ scoped_refptr<VideoFrame> CreateDmabufFrameFromVideoFrame(
       kDummyTextureId, base::DoNothing(), frame->format(), frame->coded_size(),
       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
   LOG_ASSERT(texture_ref);
-  dmabuf_frame = texture_ref->CreateVideoFrame(frame->visible_rect());
+  dmabuf_frame = texture_ref->ExportVideoFrame(frame->visible_rect());
   if (!dmabuf_frame) {
     LOG(ERROR) << "Failed to create video frame from texture_ref";
     return nullptr;

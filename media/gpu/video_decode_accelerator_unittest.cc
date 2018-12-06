@@ -603,7 +603,7 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
                  picture.picture_buffer_id()));
   pending_textures_.insert(*texture_it);
   if (video_frame_validator_) {
-    auto video_frame = texture_it->second->CreateVideoFrame(visible_rect);
+    auto video_frame = texture_it->second->ExportVideoFrame(visible_rect);
     ASSERT_NE(video_frame.get(), nullptr);
     video_frame_validator_->EvaluateVideoFrame(std::move(video_frame),
                                                frame_index_);
