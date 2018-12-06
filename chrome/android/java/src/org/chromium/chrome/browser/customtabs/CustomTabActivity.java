@@ -218,6 +218,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private int mDefaultToolbarShadowVisibility;
     // Whether the progress bar is enabled prior to any header customization.
     private boolean mDefaultIsProgressBarEnabled;
+    // Default height of the top control container prior to any header customization.
+    private int mDefaultTopControlContainerHeight;
 
     /**
      * Return true when the activity has been launched in a separate task. The default behavior is
@@ -409,7 +411,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                         new ActivityDelegatePostMessageBackend());
             }
             // Show CCT header (or top bar) if module fails (or succeeds) to load.
-            maybeUpdateCctHeaderVisibility(mIntentDataProvider.getUrlToLoad());
+            maybeCustomizeCctHeader(mIntentDataProvider.getUrlToLoad());
         }
     }
 
@@ -472,7 +474,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     public void setTopBarContentView(View view) {
         mTopBarDelegate.setTopBarContentView(view);
-        maybeUpdateCctHeaderVisibility(mIntentDataProvider.getUrlToLoad());
+        maybeCustomizeCctHeader(mIntentDataProvider.getUrlToLoad());
     }
 
     /**
@@ -509,6 +511,11 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         }
 
         return mDynamicModulePostMessageHandler.postMessageFromClientApp(message);
+    }
+
+    public void setTopBarHeight(int height) {
+        mTopBarDelegate.setTopBarHeight(height);
+        maybeCustomizeCctHeader(mIntentDataProvider.getUrlToLoad());
     }
 
     @Override
@@ -553,6 +560,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         mDefaultToolbarVisibility = getToolbarManager().getToolbarVisibility();
         mDefaultToolbarShadowVisibility = getToolbarManager().getToolbarShadowVisibility();
         mDefaultIsProgressBarEnabled = getToolbarManager().isProgressBarEnabled();
+        mDefaultTopControlContainerHeight = getFullscreenManager().getTopControlsHeight();
     }
 
     @Override
@@ -943,7 +951,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                     boolean isFragmentNavigation, @Nullable Integer pageTransition, int errorCode,
                     int httpStatusCode) {
                 if (!isInMainFrame || !hasCommitted) return;
-                maybeUpdateCctHeaderVisibility(url);
+                maybeCustomizeCctHeader(url);
             }
 
             /**
@@ -1721,7 +1729,19 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return false;
     }
 
-    private void maybeUpdateCctHeaderVisibility(String url) {
+    private int getTopBarHeight() {
+        Integer topBarHeight = mTopBarDelegate.getTopBarHeight();
+        // Custom top bar height must not be too small compared to the default top control container
+        // height, nor shall it be larger than the height of the web content.
+        if (topBarHeight != null && topBarHeight >= 0
+                && topBarHeight > mDefaultTopControlContainerHeight / 2 && getWindow() != null
+                && topBarHeight < getWindow().getDecorView().getHeight() / 2) {
+            return topBarHeight;
+        }
+        return mDefaultTopControlContainerHeight;
+    }
+
+    private void maybeCustomizeCctHeader(String url) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)
                 || (!isModuleLoaded() && !isModuleLoading())) {
             return;
@@ -1736,6 +1756,8 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                     isModuleManagedUrl ? View.GONE : mDefaultToolbarShadowVisibility);
             getToolbarManager().setProgressBarEnabled(
                     isModuleManagedUrl ? false : mDefaultIsProgressBarEnabled);
+            getFullscreenManager().setTopControlsHeight(
+                    isModuleManagedUrl ? getTopBarHeight() : mDefaultTopControlContainerHeight);
         }
     }
 

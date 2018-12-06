@@ -1523,6 +1523,69 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
+    @DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
+    public void testSetTopBarHeight_featureDisabled_heightNotChanged() throws Exception {
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
+            int newHeight = defaultHeight + 10;
+            cctActivity.setTopBarHeight(newHeight);
+            Assert.assertEquals(
+                    defaultHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarHeight_cctHeaderNotHidden_heightNotChanged() throws Exception {
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, false);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
+            int newHeight = defaultHeight + 10;
+            cctActivity.setTopBarHeight(newHeight);
+            Assert.assertEquals(
+                    defaultHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarHeight_withModuleAndExtras_heightUpdated() throws Exception {
+        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
+            int newHeight = defaultHeight + 10;
+            cctActivity.setTopBarHeight(newHeight);
+            Assert.assertEquals(
+                    newHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
+        });
+    }
+
+    @Test
+    @SmallTest
     @Feature({"UiCatalogue"})
     public void testRemoteViews() throws Exception {
         Intent intent = createMinimalCustomTabIntent();
