@@ -2386,6 +2386,14 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       context->DidLayout();
   }
 
+  DisplayLockContext* GetDisplayLockContext() const {
+    if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
+      return nullptr;
+    if (!GetNode() || !GetNode()->IsElementNode())
+      return nullptr;
+    return ToElement(GetNode())->GetDisplayLockContext();
+  }
+
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
   // given new style, without accessing the cache.
@@ -2468,14 +2476,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return AdjustVisualRectForInlineBox(PartialInvalidationVisualRect());
   }
   LayoutRect AdjustVisualRectForInlineBox(const LayoutRect&) const;
-
-  DisplayLockContext* GetDisplayLockContext() const {
-    if (!RuntimeEnabledFeatures::DisplayLockingEnabled())
-      return nullptr;
-    if (!GetNode() || !GetNode()->IsElementNode())
-      return nullptr;
-    return ToElement(GetNode())->GetDisplayLockContext();
-  }
 
   // This is set by Set[Subtree]ShouldDoFullPaintInvalidation, and cleared
   // during PrePaint in this object's InvalidatePaint(). It's different from

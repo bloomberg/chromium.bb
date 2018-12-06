@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -195,6 +196,20 @@ void DisplayLockContext::ProcessQueue() {
   // continue the work.
   process_queue_task_scheduled_ = false;
 
+  // This is the first operation we do on a locked subtree, and a guaranteed
+  // operation before we try to use it, so save off the locked_frame_rect_ here
+  // if we don't have one yet.
+  // TODO(vmpstr): In mode 1, we should add an explicit states for lock pending
+  // and lock acquired.
+  if (!locked_frame_rect_) {
+    auto* layout_object = GetElement()->GetLayoutObject();
+    if (layout_object && layout_object->IsBox()) {
+      locked_frame_rect_ = ToLayoutBox(layout_object)->FrameRect();
+    } else {
+      locked_frame_rect_ = LayoutRect();
+    }
+  }
+
   // If we're not in callbacks pending, then we shouldn't run anything at the
   // moment.
   if (state_ != kCallbacksPending)
@@ -245,6 +260,7 @@ void DisplayLockContext::RejectAndCleanUp() {
     resolver_ = nullptr;
   }
   callbacks_.clear();
+  locked_frame_rect_.reset();
 
   // We may have a dirty subtree and have not propagated the dirty bit up the
   // ancestor tree. Since we're now rejecting the promise and unlocking the
@@ -417,10 +433,58 @@ void DisplayLockContext::DidAttachLayoutTree() {
     RejectAndCleanUp();
 }
 
+DisplayLockContext::ScopedPendingFrameRect
+DisplayLockContext::GetScopedPendingFrameRect() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  if (IsResolved())
+    return ScopedPendingFrameRect(nullptr);
+  DCHECK(GetElement()->GetLayoutObject() && GetElement()->GetLayoutBox());
+  GetElement()->GetLayoutBox()->SetFrameRectForDisplayLock(pending_frame_rect_);
+  return ScopedPendingFrameRect(this);
+}
+
+void DisplayLockContext::NotifyPendingFrameRectScopeEnded() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  DCHECK(GetElement()->GetLayoutObject() && GetElement()->GetLayoutBox());
+  DCHECK(locked_frame_rect_);
+  pending_frame_rect_ = GetElement()->GetLayoutBox()->FrameRect();
+  GetElement()->GetLayoutBox()->SetFrameRectForDisplayLock(*locked_frame_rect_);
+}
+
 void DisplayLockContext::FinishResolution() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
   if (state_ == kResolving)
     state_ = kResolved;
+  locked_frame_rect_.reset();
+
+  // Update the pending frame rect if we still have a layout object.
+
+  // First, if the element is gone, then there's nothing to do.
+  if (!weak_element_handle_)
+    return;
+  auto* layout_object = GetElement()->GetLayoutObject();
+  // The resolution could have disconnected us, which would destroy the layout
+  // object.
+  if (!layout_object || !layout_object->IsBox())
+    return;
+  bool frame_rect_changed =
+      ToLayoutBox(layout_object)->FrameRect() != pending_frame_rect_;
+  // If the frame rect hasn't actually changed then we don't need to do
+  // anything.
+  // TODO(vmpstr): Is this true? What about things like paint? This also needs
+  // to be updated if there are more "stashed" things.
+  if (!frame_rect_changed)
+    return;
+
+  // Set the pending frame rect as the new one, and ensure to schedule a layout
+  // for just the box itself. Note that we use the non-display locked version to
+  // ensure all the hooks are property invoked.
+  ToLayoutBox(layout_object)->SetFrameRect(pending_frame_rect_);
+  layout_object->SetNeedsLayout(
+      layout_invalidation_reason::kDisplayLockCommitting);
+  // Schedule an animation to perform the lifecycle phases.
+  GetElement()->GetDocument().GetPage()->Animator().ScheduleVisualUpdate(
+      GetElement()->GetDocument().GetFrame());
 }
 
 void DisplayLockContext::StartCommit() {
@@ -466,6 +530,21 @@ void DisplayLockContext::MarkAsDisconnected() {
   // Let go of the strong reference to the element, allowing it to be GCed. See
   // the comment on |element_| in the header.
   element_ = nullptr;
+}
+
+DisplayLockContext::ScopedPendingFrameRect::ScopedPendingFrameRect(
+    DisplayLockContext* context)
+    : context_(context) {}
+
+DisplayLockContext::ScopedPendingFrameRect::ScopedPendingFrameRect(
+    ScopedPendingFrameRect&& other)
+    : context_(other.context_) {
+  other.context_ = nullptr;
+}
+
+DisplayLockContext::ScopedPendingFrameRect::~ScopedPendingFrameRect() {
+  if (context_)
+    context_->NotifyPendingFrameRectScopeEnded();
 }
 
 }  // namespace blink

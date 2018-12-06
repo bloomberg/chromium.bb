@@ -434,8 +434,21 @@ void LayoutBlock::UpdateLayout() {
 
   LayoutAnalyzer::Scope analyzer(*this);
 
-  if (LayoutBlockedByDisplayLock())
-    return;
+  base::Optional<DisplayLockContext::ScopedPendingFrameRect>
+      scoped_pending_frame_rect;
+  if (auto* context = GetDisplayLockContext()) {
+    // In a display locked element, we might be prevented from doing layout in
+    // which case we should abort.
+    if (LayoutBlockedByDisplayLock())
+      return;
+    // If we're display locked, then our layout should go into a pending frame
+    // rect without updating the frame rect visible to the ancestors. The
+    // following scoped object provides this functionality: it puts in place the
+    // (previously updated) pending frame rect. When the object is destroyed, it
+    // saves the pending frame rect in the DisplayLockContext and restores the
+    // frame rect that was in place at the time the lock was acquired.
+    scoped_pending_frame_rect.emplace(context->GetScopedPendingFrameRect());
+  }
 
   bool needs_scroll_anchoring =
       HasOverflowClip() && GetScrollableArea()->ShouldPerformScrollAnchoring();
