@@ -62,9 +62,28 @@ std::unique_ptr<content::NavigationEntry> CreateNavigationEntry() {
   return entry;
 }
 
+class AndroidWebViewStateSerializerTest : public testing::Test {
+ public:
+  AndroidWebViewStateSerializerTest() {
+    content::SetContentClient(&content_client_);
+    content::SetBrowserClientForTesting(&browser_client_);
+  }
+
+  ~AndroidWebViewStateSerializerTest() override {
+    content::SetBrowserClientForTesting(nullptr);
+    content::SetContentClient(nullptr);
+  }
+
+ private:
+  content::ContentClient content_client_;
+  content::ContentBrowserClient browser_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(AndroidWebViewStateSerializerTest);
+};
+
 }  // namespace
 
-TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
+TEST_F(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
   base::Pickle pickle;
   internal::WriteHeaderToPickle(&pickle);
 
@@ -73,7 +92,8 @@ TEST(AndroidWebViewStateSerializerTest, TestHeaderSerialization) {
   EXPECT_GT(version, 0U);
 }
 
-TEST(AndroidWebViewStateSerializerTest, TestLegacyVersionHeaderSerialization) {
+TEST_F(AndroidWebViewStateSerializerTest,
+       TestLegacyVersionHeaderSerialization) {
   base::Pickle pickle;
   internal::WriteHeaderToPickle(internal::AW_STATE_VERSION_INITIAL, &pickle);
 
@@ -82,8 +102,8 @@ TEST(AndroidWebViewStateSerializerTest, TestLegacyVersionHeaderSerialization) {
   EXPECT_EQ(version, internal::AW_STATE_VERSION_INITIAL);
 }
 
-TEST(AndroidWebViewStateSerializerTest,
-     TestUnsupportedVersionHeaderSerialization) {
+TEST_F(AndroidWebViewStateSerializerTest,
+       TestUnsupportedVersionHeaderSerialization) {
   base::Pickle pickle;
   internal::WriteHeaderToPickle(20000101, &pickle);
 
@@ -92,13 +112,7 @@ TEST(AndroidWebViewStateSerializerTest,
   EXPECT_EQ(version, 0U);
 }
 
-TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
-  // This is required for NavigationEntry::Create.
-  content::ContentClient content_client;
-  content::SetContentClient(&content_client);
-  content::ContentBrowserClient browser_client;
-  content::SetBrowserClientForTesting(&browser_client);
-
+TEST_F(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   std::unique_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
@@ -128,14 +142,8 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   EXPECT_EQ(entry->GetHttpStatusCode(), copy->GetHttpStatusCode());
 }
 
-TEST(AndroidWebViewStateSerializerTest,
-     TestLegacyNavigationEntrySerialization) {
-  // This is required for NavigationEntry::Create.
-  content::ContentClient content_client;
-  content::SetContentClient(&content_client);
-  content::ContentBrowserClient browser_client;
-  content::SetBrowserClientForTesting(&browser_client);
-
+TEST_F(AndroidWebViewStateSerializerTest,
+       TestLegacyNavigationEntrySerialization) {
   std::unique_ptr<content::NavigationEntry> entry(CreateNavigationEntry());
 
   base::Pickle pickle;
@@ -166,13 +174,7 @@ TEST(AndroidWebViewStateSerializerTest,
   EXPECT_EQ(entry->GetHttpStatusCode(), copy->GetHttpStatusCode());
 }
 
-TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
-  // This is required for NavigationEntry::Create.
-  content::ContentClient content_client;
-  content::SetContentClient(&content_client);
-  content::ContentBrowserClient browser_client;
-  content::SetBrowserClientForTesting(&browser_client);
-
+TEST_F(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   EXPECT_FALSE(entry->GetDataURLAsString());
@@ -189,13 +191,7 @@ TEST(AndroidWebViewStateSerializerTest, TestEmptyDataURLSerialization) {
   EXPECT_FALSE(entry->GetDataURLAsString());
 }
 
-TEST(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
-  // This is required for NavigationEntry::Create.
-  content::ContentClient content_client;
-  content::SetContentClient(&content_client);
-  content::ContentBrowserClient browser_client;
-  content::SetBrowserClientForTesting(&browser_client);
-
+TEST_F(AndroidWebViewStateSerializerTest, TestHugeDataURLSerialization) {
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationEntry::Create());
   string huge_data_url(1024 * 1024 * 20 - 1, 'd');
