@@ -69,10 +69,15 @@ class TabIcon : public views::View {
   // last-painted state to know to redraw the final frame as the animation
   // finishes.
   struct LoadingAnimationState {
+    LoadingAnimationState();
+
     base::TimeDelta elapsed_time;
-    double loading_progress;
-    SkAlpha loading_progress_alpha;
-    double favicon_fade_in_progress;
+    base::Optional<double> loading_progress;
+    base::Optional<double> loading_progress_fade_out;
+    // TODO(pbos): Make this a type that can represent "not started" and "ended"
+    // separately. Right now the value 1.0 is used to indicate that the
+    // animation has ended (and we're not waiting for it to start).
+    base::Optional<double> favicon_fade_in_progress = 1.0;
   };
 
   // views::View:
@@ -94,10 +99,7 @@ class TabIcon : public views::View {
   // current tab state.
   void PaintLoadingAnimation(gfx::Canvas* canvas, const gfx::Rect& bounds);
 
-  void UpdateLoadingAnimationState();
-  LoadingAnimationState GetLoadingAnimationState() const;
-
-  void RewindLoadingProgressTimerIfNecessary(double progress);
+  void UpdatePendingAnimationState();
 
   // Returns false if painting the loading animation would paint the same thing
   // that's already painted.
@@ -171,13 +173,9 @@ class TabIcon : public views::View {
   // Loading progress used for drawing the progress indicator.
   double target_loading_progress_ = 1.0;
 
+  base::TimeTicks last_animation_update_time_;
   LoadingAnimationState animation_state_;
-
-  base::Optional<base::TimeTicks> loading_progress_timer_;
-
-  // Fade-in animation for the favicon. Starts when a favicon loads or the tab
-  // is no longer loading. The latter case will fade into a placeholder icon.
-  base::Optional<base::TimeTicks> favicon_fade_in_animation_;
+  LoadingAnimationState pending_animation_state_;
 
   // Crash animation (in place of favicon). Lazily created since most of the
   // time it will be unneeded.
