@@ -217,6 +217,16 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
                                            &header);
 }
 
+webrtc::VideoEncoder::EncoderInfo WebrtcDummyVideoEncoder::GetEncoderInfo()
+    const {
+  EncoderInfo info;
+  // TODO(mirtad): Set this flag correctly per encoder.
+  info.is_hardware_accelerated = true;
+  // Set internal source to true to directly provide encoded frames to webrtc.
+  info.has_internal_source = true;
+  return info;
+}
+
 WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   formats_.push_back(webrtc::SdpVideoFormat("VP8"));

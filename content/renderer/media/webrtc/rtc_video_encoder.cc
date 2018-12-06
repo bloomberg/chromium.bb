@@ -965,6 +965,8 @@ webrtc::VideoEncoder::EncoderInfo RTCVideoEncoder::GetEncoderInfo() const {
   EncoderInfo info;
   info.implementation_name = RTCVideoEncoder::Impl::ImplementationName();
   info.supports_native_handle = true;
+  info.is_hardware_accelerated = true;
+  info.has_internal_source = false;
   return info;
 }
 
