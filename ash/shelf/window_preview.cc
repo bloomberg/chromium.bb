@@ -5,6 +5,7 @@
 #include "ash/shelf/window_preview.h"
 
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -33,12 +34,12 @@ WindowPreview::WindowPreview(aura::Window* window,
                              Delegate* delegate,
                              const ui::NativeTheme* theme)
     : delegate_(delegate) {
-  mirror_ =
-      new wm::WindowMirrorView(window, /* trilinear_filtering_on_init=*/false);
+  preview_view_ =
+      new wm::WindowPreviewView(window, /*trilinear_filtering_on_init=*/false);
   title_ = new views::Label(window->GetTitle());
   close_button_ = new views::ImageButton(this);
 
-  AddChildView(mirror_);
+  AddChildView(preview_view_);
   AddChildView(title_);
   AddChildView(close_button_);
 
@@ -67,7 +68,7 @@ void WindowPreview::SetStyling(const ui::NativeTheme* theme) {
 }
 
 gfx::Size WindowPreview::CalculatePreferredSize() const {
-  gfx::Size mirror_size = mirror_->CalculatePreferredSize();
+  gfx::Size mirror_size = preview_view_->CalculatePreferredSize();
   float ratio = static_cast<float>(mirror_size.width()) /
                 static_cast<float>(mirror_size.height());
   int preview_width;
@@ -103,21 +104,21 @@ void WindowPreview::Layout() {
   close_button_->SetBoundsRect(
       gfx::Rect(content_rect.right() - kCloseButtonSize + kCloseButtonSideBleed,
                 content_rect.y(), kCloseButtonSize, kCloseButtonSize));
-  mirror_->SetBoundsRect(
+  preview_view_->SetBoundsRect(
       gfx::Rect(content_rect.x(), content_rect.y() + title_height_with_padding,
                 tooltip_width, tooltip_height - title_height_with_padding));
 }
 
 bool WindowPreview::OnMousePressed(const ui::MouseEvent& event) {
-  if (!mirror_->bounds().Contains(event.location()))
+  if (!preview_view_->bounds().Contains(event.location()))
     return false;
 
-  aura::Window* source = mirror_->source();
-  if (source) {
+  aura::Window* target = preview_view_->window();
+  if (target) {
     // The window might have been closed in the mean time.
     // TODO: Use WindowObserver to listen to when previewed windows are
     // being closed and remove this condition.
-    wm::ActivateWindow(source);
+    wm::ActivateWindow(target);
 
     // This will have the effect of deleting this view.
     delegate_->OnPreviewActivated(this);
@@ -128,14 +129,15 @@ bool WindowPreview::OnMousePressed(const ui::MouseEvent& event) {
 void WindowPreview::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // The close button was pressed.
-  aura::Window* source = mirror_->source();
+  DCHECK_EQ(sender, close_button_);
+  aura::Window* target = preview_view_->window();
 
   // The window might have been closed in the mean time.
   // TODO: Use WindowObserver to listen to when previewed windows are
   // being closed and remove this condition.
-  if (!source)
+  if (!target)
     return;
-  wm::CloseWidgetForWindow(source);
+  wm::CloseWidgetForWindow(target);
 
   // This will have the effect of deleting this view.
   delegate_->OnPreviewDismissed(this);
