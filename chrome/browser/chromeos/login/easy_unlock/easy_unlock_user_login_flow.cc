@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_user_login_flow.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
@@ -31,6 +32,9 @@ bool EasyUnlockUserLoginFlow::ShouldSkipPostLoginScreens() {
 }
 
 bool EasyUnlockUserLoginFlow::HandleLoginFailure(const AuthFailure& failure) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SmartLock.AuthResult.SignIn.Failure.UserControllerAuth",
+      failure.reason(), AuthFailure::FailureReason::NUM_FAILURE_REASONS);
   Profile* profile = ProfileHelper::GetSigninProfile();
   EasyUnlockService* service = EasyUnlockService::Get(profile);
   if (!service)
