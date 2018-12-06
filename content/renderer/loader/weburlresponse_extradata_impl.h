@@ -49,11 +49,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl
     was_alternate_protocol_available_ = was_alternate_protocol_available;
   }
 
-  bool is_ftp_directory_listing() const { return is_ftp_directory_listing_; }
-  void set_is_ftp_directory_listing(bool is_ftp_directory_listing) {
-    is_ftp_directory_listing_ = is_ftp_directory_listing;
-  }
-
   net::EffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
@@ -63,7 +58,6 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl
   }
 
  private:
-  bool is_ftp_directory_listing_;
   bool was_fetched_via_spdy_;
   bool was_alpn_negotiated_;
   bool was_alternate_protocol_available_;

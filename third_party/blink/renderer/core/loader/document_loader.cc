@@ -87,6 +87,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/ftp_directory_listing.h"
 #include "third_party/blink/renderer/platform/mhtml/archive_resource.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
@@ -510,6 +511,13 @@ void DocumentLoader::FinishedLoading(TimeTicks finish_time) {
          !frame_->GetPage()->Paused() ||
          MainThreadDebugger::Instance()->IsPaused());
 
+  if (listing_ftp_directory_) {
+    scoped_refptr<SharedBuffer> buffer = GenerateFtpDirectoryListingHtml(
+        response_.CurrentRequestUrl(), data_buffer_.get());
+    for (const auto& span : *buffer)
+      ProcessData(span.data(), span.size());
+  }
+
   TimeTicks response_end_time = finish_time;
   if (response_end_time.is_null())
     response_end_time = time_of_last_data_received_;
@@ -725,6 +733,18 @@ void DocumentLoader::ResponseReceived(
 
   response_ = response;
 
+  if (response.CurrentRequestUrl().ProtocolIs("ftp") &&
+      response.MimeType() == "text/vnd.chromium.ftp-dir") {
+    if (response.CurrentRequestUrl().Query() == "raw") {
+      // Interpret the FTP LIST command result as text.
+      response_.SetMimeType("text/plain");
+    } else {
+      // FTP directory listing: Make up an HTML for the entries.
+      listing_ftp_directory_ = true;
+      response_.SetMimeType("text/html");
+    }
+  }
+
   if (IsArchiveMIMEType(response_.MimeType()) &&
       resource->GetDataBufferingPolicy() != kBufferData)
     resource->SetDataBufferingPolicy(kBufferData);
@@ -826,6 +846,11 @@ void DocumentLoader::DataReceived(Resource* resource,
   DCHECK_EQ(resource, GetResource());
   DCHECK(!response_.IsNull());
   DCHECK(!frame_->GetPage()->Paused());
+
+  if (listing_ftp_directory_) {
+    data_buffer_->Append(data, length);
+    return;
+  }
 
   if (in_data_received_) {
     // If this function is reentered, defer processing of the additional data to

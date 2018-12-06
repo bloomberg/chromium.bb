@@ -7,8 +7,7 @@
 namespace content {
 
 WebURLResponseExtraDataImpl::WebURLResponseExtraDataImpl()
-    : is_ftp_directory_listing_(false),
-      effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
+    : effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {}
 
 WebURLResponseExtraDataImpl::~WebURLResponseExtraDataImpl() {
 }
