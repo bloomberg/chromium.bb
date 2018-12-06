@@ -2175,3 +2175,4 @@ Bug(none) external/wpt/wasm/serialization/window-similar-but-cross-origin-succes
 Bug(none) http/tests/devtools/isolated-code-cache/cross-origin-test.js [ WontFix ]
 
 # ====== Tests incompatible with the default Site Isolation until here ======
+external/wpt/css/css-overscroll-behavior/overscrollBehavior-manual.html [ WontFix ]
