@@ -1016,7 +1016,7 @@ TEST_P(AppsGridViewDragTest, MouseDragFlipPage) {
   gfx::Point from = GetItemRectOnCurrentPageAt(0, 0).CenterPoint();
   gfx::Point to;
   const gfx::Rect apps_grid_bounds = apps_grid_view_->GetLocalBounds();
-  to = gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom());
+  to = gfx::Point(apps_grid_bounds.width() / 2, apps_grid_bounds.bottom() + 1);
 
   // For fullscreen/bubble launcher, drag to the bottom/right of bounds.
   page_flip_waiter.Reset();
@@ -1113,7 +1113,7 @@ class AppsGridGapTest : public AppsGridViewTest {
     const gfx::Rect apps_grid_bounds = apps_grid_view_->GetLocalBounds();
     gfx::Point point_in_page_flip_buffer =
         gfx::Point(apps_grid_bounds.width() / 2,
-                   next_page ? apps_grid_bounds.bottom() : 0);
+                   next_page ? apps_grid_bounds.bottom() + 1 : 0);
 
     // Build the drag event which will be triggered after page flip.
     gfx::Point root_to(to);

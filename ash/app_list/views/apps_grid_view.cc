@@ -2194,14 +2194,20 @@ bool AppsGridView::IsPointWithinBottomDragBuffer(
       display::Screen::GetScreen()->GetDisplayNearestView(
           GetWidget()->GetNativeView());
 
-  const int kBottomDragBufferMin =
-      GetBoundsInScreen().bottom() -
-      (AppListConfig::instance().page_flip_zone_size());
   const int kBottomDragBufferMax =
       display.bounds().bottom() -
       (contents_view_->app_list_view()->is_side_shelf()
            ? 0
            : (display.bounds().bottom() - display.work_area().bottom()));
+
+  // The minimum y position is the bottom of this view, which is sometimes
+  // transformed for display zoom.
+  gfx::RectF transformed_bounds_in_screen = gfx::RectF(GetBoundsInScreen());
+  GetTransform().TransformRect(&transformed_bounds_in_screen);
+  const int kBottomDragBufferMin = transformed_bounds_in_screen.bottom();
+
+  DCHECK_GE(kBottomDragBufferMax - kBottomDragBufferMin,
+            AppListConfig::instance().page_flip_zone_size());
 
   return point_in_screen.y() > kBottomDragBufferMin &&
          point_in_screen.y() < kBottomDragBufferMax;
