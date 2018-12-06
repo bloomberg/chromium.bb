@@ -461,6 +461,20 @@ void ArcAuthService::OnTokenUpserted(
   if (!arc::IsArcProvisioned(profile_))
     return;
 
+  // We may have received |OnTokenUpserted| for a variety of cases where a valid
+  // Gaia LST is not available for the account: The account could have just been
+  // migrated to Account Manager with a dummy initial token, the LST update
+  // could be an update to mark the LST as invalid etc. In all of these cases,
+  // we should ignore the notification. If and when Account Manager gets updated
+  // with a valid token, we would receive another notification and we can
+  // process the account update then. See |AccountManager::IsTokenAvailable| for
+  // details.
+  if (!account_manager_->IsTokenAvailable(account_key)) {
+    VLOG(1) << "Ignoring account update due to lack of a valid token: "
+            << account_key;
+    return;
+  }
+
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
                                                OnAccountUpdated);
   if (!instance)
@@ -481,6 +495,9 @@ void ArcAuthService::OnAccountRemoved(
 
 void ArcAuthService::OnAccountRemoved(const AccountInfo& account_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!chromeos::switches::IsAccountManagerEnabled())
+    return;
 
   DCHECK(!account_info.gaia.empty());
   DCHECK(!IsPrimaryAccount(chromeos::AccountManager::AccountKey{
