@@ -344,6 +344,18 @@ TEST_P(WebStateTest, RestoreLargeSession) {
   // LoadIfNecessary call. Fix the bug and remove extra call.
   navigation_manager->LoadIfNecessary();
 
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // After restoration is started GetPendingItemIndex() will return -1 and
+    // GetPendingItem() will return null. Pending item will be returned after
+    // the first post-restore navigation is started, but before session
+    // restoration is complete. Session restoration will be completed when the
+    // fist post-restore navigation is finished. This is why it is not possible
+    // to assert that pending item does not exist during the session
+    // restoration.
+    EXPECT_EQ(-1, navigation_manager->GetPendingItemIndex());
+    EXPECT_FALSE(navigation_manager->GetPendingItem());
+  }
+
   // Verify that session was fully restored.
   int kExpectedItemCount = web::GetWebClient()->IsSlimNavigationManagerEnabled()
                                ? wk_navigation_util::kMaxSessionSize
@@ -360,9 +372,14 @@ TEST_P(WebStateTest, RestoreLargeSession) {
       EXPECT_TRUE(navigation_manager->GetForwardItems().empty());
       EXPECT_EQ("Test0", base::UTF16ToASCII(web_state_ptr->GetTitle()));
       EXPECT_EQ(0.0, web_state_ptr->GetLoadingProgress());
-      // TODO(crbug.com/877671): Ensure that the following API work correctly:
-      //  - NavigationManager::GetPendingItem
-      //  - NavigationManager::GetPendingItemIndex
+      NavigationItem* pendig_item = navigation_manager->GetPendingItem();
+      if (pendig_item) {
+        // Pending item is non-null after the first post-restore navigation is
+        // started (when happens before session restoration is complete). But
+        // pending item should never be an internal placeholder or session
+        // restoration URL.
+        EXPECT_FALSE(IsWKInternalUrl(pendig_item->GetURL()));
+      }
     } else {
       if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
         EXPECT_EQ("www.0.com", base::UTF16ToASCII(web_state_ptr->GetTitle()));

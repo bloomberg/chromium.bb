@@ -613,8 +613,10 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionWithHistory) {
   manager_->Restore(1 /* last_committed_item_index */, std::move(items));
   EXPECT_TRUE(manager_->IsRestoreSessionInProgress());
 
-  NavigationItem* pending_item = manager_->GetPendingItem();
-  ASSERT_TRUE(pending_item != nullptr);
+  ASSERT_FALSE(manager_->GetPendingItem());
+  NavigationItem* pending_item =
+      manager_->GetPendingItemInCurrentOrRestoredSession();
+  ASSERT_TRUE(pending_item);
   GURL pending_url = pending_item->GetURL();
   EXPECT_TRUE(pending_url.SchemeIsFile());
   EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
@@ -689,7 +691,9 @@ TEST_F(WKBasedNavigationManagerTest, RestoreSessionResetsHistory) {
   EXPECT_EQ(-1, manager_->GetPendingItemIndex());
 
   // Check that the only pending item is restore_session.html.
-  NavigationItem* pending_item = manager_->GetPendingItem();
+  ASSERT_FALSE(manager_->GetPendingItem());
+  NavigationItem* pending_item =
+      manager_->GetPendingItemInCurrentOrRestoredSession();
   ASSERT_TRUE(pending_item != nullptr);
   GURL pending_url = pending_item->GetURL();
   EXPECT_TRUE(pending_url.SchemeIsFile());
@@ -896,11 +900,14 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, Reload) {
   delegate_.RemoveWebView();
 
   manager_->Reload(web::ReloadType::NORMAL, false /* check_for_repost */);
+  NavigationItem* pending_item =
+      manager_->GetPendingItemInCurrentOrRestoredSession();
   EXPECT_EQ(
       "{\"offset\":-1,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
       "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
-      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
-  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+      ExtractRestoredSession(pending_item->GetURL()));
+
+  EXPECT_EQ(url0_, pending_item->GetVirtualURL());
   EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
@@ -914,11 +921,14 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, GoToIndex) {
   delegate_.RemoveWebView();
 
   manager_->GoToIndex(0);
+  NavigationItem* pending_item =
+      manager_->GetPendingItemInCurrentOrRestoredSession();
+
   EXPECT_EQ(
       "{\"offset\":-2,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
       "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
-      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
-  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+      ExtractRestoredSession(pending_item->GetURL()));
+  EXPECT_EQ(url0_, pending_item->GetVirtualURL());
   EXPECT_EQ(url0_, manager_->GetVisibleItem()->GetURL());
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
@@ -931,11 +941,14 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadIfNecessary) {
   delegate_.RemoveWebView();
 
   manager_->LoadIfNecessary();
+  NavigationItem* pending_item =
+      manager_->GetPendingItemInCurrentOrRestoredSession();
+
   EXPECT_EQ(
       "{\"offset\":-1,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
       "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
-      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
-  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+      ExtractRestoredSession(pending_item->GetURL()));
+  EXPECT_EQ(url0_, pending_item->GetVirtualURL());
   EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);
@@ -951,11 +964,13 @@ TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadURLWithParams) {
   GURL url("http://www.3.com");
   NavigationManager::WebLoadParams params(url);
   manager_->LoadURLWithParams(params);
+  NavigationItem* pending_item =
+      manager_->GetPendingItemInCurrentOrRestoredSession();
   EXPECT_EQ(
       "{\"offset\":0,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
       "\",\"http://www.1.com/\",\"http://www.3.com/\"]}",
-      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
-  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+      ExtractRestoredSession(pending_item->GetURL()));
+  EXPECT_EQ(url0_, pending_item->GetVirtualURL());
   EXPECT_EQ(url, manager_->GetVisibleItem()->GetURL());
 
   histogram_tester_.ExpectTotalCount(kRestoreNavigationItemCount, 1);

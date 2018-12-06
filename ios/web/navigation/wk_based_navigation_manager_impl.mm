@@ -320,7 +320,7 @@ NavigationItem* WKBasedNavigationManagerImpl::GetVisibleItem() const {
 
   // Only return pending_item_ for new (non-history), user-initiated
   // navigations in order to prevent URL spoof attacks.
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (pending_item) {
     bool is_user_initiated = pending_item->NavigationInitiationType() ==
                              NavigationInitiationType::BROWSER_INITIATED;
@@ -516,7 +516,7 @@ void WKBasedNavigationManagerImpl::Restore(
 
   // On restore prime the first navigation item with the title.  The remaining
   // navItem titles will be set from the WKBackForwardListItem title value.
-  NavigationItemImpl* pendingItem = GetPendingItemImpl();
+  NavigationItemImpl* pendingItem = GetPendingItemInCurrentOrRestoredSession();
   if (pendingItem) {
     pendingItem->SetTitle(firstTitle);
   }
@@ -586,7 +586,8 @@ int WKBasedNavigationManagerImpl::
   return web_view_cache_.GetCurrentItemIndex();
 }
 
-NavigationItemImpl* WKBasedNavigationManagerImpl::GetPendingItemImpl() const {
+NavigationItemImpl*
+WKBasedNavigationManagerImpl::GetPendingItemInCurrentOrRestoredSession() const {
   return (pending_item_index_ == -1)
              ? pending_item_.get()
              : GetNavigationItemImplAtIndex(pending_item_index_);

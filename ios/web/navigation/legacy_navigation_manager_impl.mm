@@ -108,13 +108,13 @@ void LegacyNavigationManagerImpl::AddPendingItem(
                        initiationType:initiation_type
               userAgentOverrideOption:user_agent_override_option];
 
-  if (!GetPendingItem()) {
+  if (!GetPendingItemInCurrentOrRestoredSession()) {
     return;
   }
 
   UpdatePendingItemUserAgentType(user_agent_override_option,
                                  GetLastCommittedItemWithUserAgentType(),
-                                 GetPendingItem());
+                                 GetPendingItemInCurrentOrRestoredSession());
 }
 
 void LegacyNavigationManagerImpl::CommitPendingItem() {
@@ -302,7 +302,8 @@ LegacyNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
   return [session_controller_ lastCommittedItem];
 }
 
-NavigationItemImpl* LegacyNavigationManagerImpl::GetPendingItemImpl() const {
+NavigationItemImpl*
+LegacyNavigationManagerImpl::GetPendingItemInCurrentOrRestoredSession() const {
   return [session_controller_ pendingItem];
 }
 
