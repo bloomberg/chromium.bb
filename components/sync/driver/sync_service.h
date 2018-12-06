@@ -282,6 +282,14 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // started again.
   virtual void ReadyForStartChanged(ModelType type) = 0;
 
+  // Enables/disables invalidations for session sync related datatypes.
+  // The session sync generates a lot of changes, which results into many
+  // invalidations. This can negatively affect the
+  // battery life on Android. For that reason, on Android, the invalidations for
+  // the Sessions should be received only when user is interested in session
+  // sync data, e.g. the history sync page is opened.
+  virtual void SetInvalidationsForSessionsEnabled(bool enabled) = 0;
+
   //////////////////////////////////////////////////////////////////////////////
   // OBSERVERS
   //////////////////////////////////////////////////////////////////////////////

@@ -93,6 +93,7 @@ class TestSyncService : public SyncService {
   base::WeakPtr<JsController> GetJsController() override;
   void GetAllNodes(const base::Callback<void(std::unique_ptr<base::ListValue>)>&
                        callback) override;
+  void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
   // DataTypeEncryptionHandler implementation.
   bool IsPassphraseRequired() const override;

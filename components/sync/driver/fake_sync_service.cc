@@ -165,6 +165,8 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
 void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
+void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}
+
 bool FakeSyncService::IsPassphraseRequired() const {
   return false;
 }

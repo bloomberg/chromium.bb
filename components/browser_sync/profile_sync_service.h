@@ -276,6 +276,7 @@ class ProfileSyncService : public syncer::SyncService,
                        callback) override;
   AccountInfo GetAuthenticatedAccountInfo() const override;
   bool IsAuthenticatedAccountPrimary() const override;
+  void SetInvalidationsForSessionsEnabled(bool enabled) override;
 
   // Add a sync type preference provider. Each provider may only be added once.
   void AddPreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
