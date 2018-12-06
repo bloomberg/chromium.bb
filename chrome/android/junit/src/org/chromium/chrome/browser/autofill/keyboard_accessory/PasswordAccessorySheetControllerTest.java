@@ -13,6 +13,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.Type.FOOTER_COMMAND;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.Type.PASSWORD_INFO;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.Type.TITLE;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.getType;
+
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
@@ -27,7 +32,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.PropertyProvider;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 
@@ -44,7 +54,8 @@ public class PasswordAccessorySheetControllerTest {
     private ListObservable.ListObserver<Void> mMockItemListObserver;
 
     private PasswordAccessorySheetCoordinator mCoordinator;
-    private ListModel<Item> mModel;
+    private ListModel<Item> mItemList;
+    private ListModel<AccessorySheetDataPiece> mSheetDataPieces;
 
     @Before
     public void setUp() {
@@ -52,7 +63,8 @@ public class PasswordAccessorySheetControllerTest {
         MockitoAnnotations.initMocks(this);
         mCoordinator = new PasswordAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
-        mModel = mCoordinator.getModelForTesting();
+        mItemList = mCoordinator.getItemsForTesting();
+        mSheetDataPieces = mCoordinator.getSheetDataPiecesForTesting();
     }
 
     @Test
@@ -75,35 +87,80 @@ public class PasswordAccessorySheetControllerTest {
 
     @Test
     public void testModelNotifiesAboutActionsChangedByProvider() {
-        final KeyboardAccessoryData
-                .PropertyProvider<KeyboardAccessoryData.AccessorySheetData> testProvider =
-                new KeyboardAccessoryData.PropertyProvider<>();
-        final KeyboardAccessoryData.AccessorySheetData testData =
-                new KeyboardAccessoryData.AccessorySheetData("Passwords");
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
 
-        mModel.addObserver(mMockItemListObserver);
+        mItemList.addObserver(mMockItemListObserver);
         mCoordinator.registerDataProvider(testProvider);
 
         // If the coordinator receives an initial items, the model should report an insertion.
-        testProvider.notifyObservers(testData);
-        verify(mMockItemListObserver).onItemRangeInserted(mModel, 0, 2);
-        assertThat(mModel.size(), is(2));
-        assertThat(mModel.get(1).getCaption(), is(equalTo("Passwords")));
+        testProvider.notifyObservers(new AccessorySheetData("Passwords"));
+        verify(mMockItemListObserver).onItemRangeInserted(mItemList, 0, 2);
+        assertThat(mItemList.size(), is(2));
+        assertThat(mItemList.get(1).getCaption(), is(equalTo("Passwords")));
 
         // If the coordinator receives a new set of items, the model should report a change.
-        testProvider.notifyObservers(testData);
-        verify(mMockItemListObserver).onItemRangeChanged(mModel, 0, 2, null);
-        assertThat(mModel.size(), is(2));
-        assertThat(mModel.get(1).getCaption(), is(equalTo("Passwords")));
+        testProvider.notifyObservers(new AccessorySheetData("Other Passwords"));
+        verify(mMockItemListObserver).onItemRangeChanged(mItemList, 0, 2, null);
+        assertThat(mItemList.size(), is(2));
+        assertThat(mItemList.get(1).getCaption(), is(equalTo("Other Passwords")));
 
         // If the coordinator receives an empty set of items, the model should report a deletion.
         testProvider.notifyObservers(null);
-        verify(mMockItemListObserver).onItemRangeRemoved(mModel, 0, 2);
-        assertThat(mModel.size(), is(0));
+        verify(mMockItemListObserver).onItemRangeRemoved(mItemList, 0, 2);
+        assertThat(mItemList.size(), is(0));
 
         // There should be no notification if no item are reported repeatedly.
         testProvider.notifyObservers(null);
         verifyNoMoreInteractions(mMockItemListObserver);
+    }
+
+    @Test
+    public void testModelNotifiesAboutTabDataChangedByProvider() {
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+
+        mSheetDataPieces.addObserver(mMockItemListObserver);
+        mCoordinator.registerDataProvider(testProvider);
+
+        // If the coordinator receives a set of initial items, the model should report an insertion.
+        testProvider.notifyObservers(new AccessorySheetData("Passwords"));
+        verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
+        assertThat(mSheetDataPieces.size(), is(1));
+
+        // If the coordinator receives a new set of items, the model should report a change.
+        testProvider.notifyObservers(new AccessorySheetData("Other Passwords"));
+        verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
+        assertThat(mSheetDataPieces.size(), is(1));
+
+        // If the coordinator receives an empty set of items, the model should report a deletion.
+        testProvider.notifyObservers(null);
+        verify(mMockItemListObserver).onItemRangeRemoved(mSheetDataPieces, 0, 1);
+        assertThat(mSheetDataPieces.size(), is(0));
+
+        // There should be no notification if no item are reported repeatedly.
+        testProvider.notifyObservers(null);
+        verifyNoMoreInteractions(mMockItemListObserver);
+    }
+
+    @Test
+    public void testWrapsTabDataToElements() {
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        final AccessorySheetData testData = new AccessorySheetData("Passwords for this site");
+        testData.getUserInfoList().add(new UserInfo(null));
+        testData.getUserInfoList().get(0).addField(new UserInfo.Field("Name", "Name", false, null));
+        testData.getUserInfoList().get(0).addField(
+                new UserInfo.Field("Password", "Password for Name", true, field -> {}));
+        testData.getFooterCommands().add(new FooterCommand("Manage passwords", result -> {}));
+
+        mCoordinator.registerDataProvider(testProvider);
+        testProvider.notifyObservers(testData);
+
+        assertThat(mSheetDataPieces.size(), is(3));
+        assertThat(getType(mSheetDataPieces.get(0)), is(TITLE));
+        assertThat(getType(mSheetDataPieces.get(1)), is(PASSWORD_INFO));
+        assertThat(getType(mSheetDataPieces.get(2)), is(FOOTER_COMMAND));
+        assertThat(mSheetDataPieces.get(0).getDataPiece(), is(equalTo("Passwords for this site")));
+        assertThat(mSheetDataPieces.get(1).getDataPiece(), is(testData.getUserInfoList().get(0)));
+        assertThat(mSheetDataPieces.get(2).getDataPiece(), is(testData.getFooterCommands().get(0)));
     }
 
     @Test
@@ -126,7 +183,7 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(0));
 
         // If the tab is shown without interactive item, log "0" samples.
-        mModel.set(new Item[] {Item.createLabel("No passwords!", ""), Item.createDivider(),
+        mItemList.set(new Item[] {Item.createLabel("No passwords!", ""), Item.createDivider(),
                 Item.createOption("Manage all passwords", "", null),
                 Item.createOption("Generate password", "", null)});
         mCoordinator.onTabShown();
@@ -135,7 +192,7 @@ public class PasswordAccessorySheetControllerTest {
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(1));
 
         // If the tab is shown with X interactive item, record "X" samples.
-        mModel.set(new Item[] {Item.createLabel("Your passwords", ""),
+        mItemList.set(new Item[] {Item.createLabel("Your passwords", ""),
                 Item.createSuggestion("Interactive 1", "", false, (v) -> {}, null),
                 Item.createSuggestion("Non-interactive 1", "", true, null, null),
                 Item.createSuggestion("Interactive 2", "", false, (v) -> {}, null),

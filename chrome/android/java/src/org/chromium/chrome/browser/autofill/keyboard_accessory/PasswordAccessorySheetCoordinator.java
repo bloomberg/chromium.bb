@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.PASSWORD_SHEET_DATA;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
 
 import android.content.Context;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetViewBinder.ItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
@@ -29,10 +31,12 @@ import org.chromium.chrome.browser.modelutil.SimpleRecyclerViewMcp;
  * as bottom sheet below the keyboard accessory.
  */
 public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.Tab.Listener {
-    private final PropertyModel mModel = new PropertyModel.Builder(CREDENTIALS, SCROLL_LISTENER)
-                                                 .with(CREDENTIALS, new ListModel<>())
-                                                 .with(SCROLL_LISTENER, null)
-                                                 .build();
+    private final PropertyModel mModel =
+            new PropertyModel.Builder(CREDENTIALS, PASSWORD_SHEET_DATA, SCROLL_LISTENER)
+                    .with(CREDENTIALS, new ListModel<>())
+                    .with(PASSWORD_SHEET_DATA, new ListModel<>())
+                    .with(SCROLL_LISTENER, null)
+                    .build();
     private final PasswordAccessorySheetMediator mMediator;
     private final KeyboardAccessoryData.Tab mTab;
 
@@ -123,7 +127,12 @@ public class PasswordAccessorySheetCoordinator implements KeyboardAccessoryData.
     }
 
     @VisibleForTesting
-    ListModel<Item> getModelForTesting() {
-        return mMediator.getModelForTesting();
+    ListModel<Item> getItemsForTesting() {
+        return mModel.get(CREDENTIALS);
+    }
+
+    @VisibleForTesting
+    ListModel<AccessorySheetDataPiece> getSheetDataPiecesForTesting() {
+        return mModel.get(PASSWORD_SHEET_DATA);
     }
 }

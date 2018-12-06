@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createEmptyCredentials;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.createUserInfo;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
@@ -128,6 +129,11 @@ public class PasswordAccessoryIntegrationTest {
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
 
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+
         AccessorySheetData accessorySheetData = new AccessorySheetData("Passwords");
         accessorySheetData.getUserInfoList().add(
                 createUserInfo("mayapark@gmail.com", "SomeHiddenPassword"));
@@ -135,11 +141,6 @@ public class PasswordAccessoryIntegrationTest {
                 createUserInfo("mayaelisabethmercedesgreenepark@googlemail.com",
                         "ExtremelyLongPasswordThatUsesQuiteSomeSpaceInTheSheet"));
         mHelper.sendCredentials(accessorySheetData);
-
-        // Focus the field to bring up the accessory.
-        mHelper.clickPasswordField();
-        mHelper.waitForKeyboard();
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
 
         // Check that the provided elements are there.
         whenDisplayed(withText("Passwords"));
@@ -155,6 +156,12 @@ public class PasswordAccessoryIntegrationTest {
             throws InterruptedException, TimeoutException {
         mHelper.loadTestPage(false);
         final AtomicReference<FooterCommand> clicked = new AtomicReference<>();
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+
         AccessorySheetData accessorySheetData =
                 new AccessorySheetData("No saved passwords for abc.com");
         accessorySheetData.getFooterCommands().add(
@@ -162,11 +169,6 @@ public class PasswordAccessoryIntegrationTest {
         accessorySheetData.getFooterCommands().add(
                 new FooterCommand("Manage passwords...", clicked::set));
         mHelper.sendCredentials(accessorySheetData);
-
-        // Focus the field to bring up the accessory.
-        mHelper.clickPasswordField();
-        mHelper.waitForKeyboard();
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
 
         // Scroll down and click the suggestion.
         whenDisplayed(withChild(withText("Suggest strong password...")))
@@ -185,6 +187,11 @@ public class PasswordAccessoryIntegrationTest {
         mHelper.loadTestPage(false);
         final AtomicReference<Field> clicked = new AtomicReference<>();
 
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+
         AccessorySheetData accessorySheetData = new AccessorySheetData("Passwords");
         accessorySheetData.getUserInfoList().add(
                 createUserInfo("mpark@abc.com", "ShorterPassword", clicked::set));
@@ -193,11 +200,6 @@ public class PasswordAccessoryIntegrationTest {
         accessorySheetData.getUserInfoList().add(
                 createUserInfo("mayapark@gmail.com", "SomeHiddenLongPassword"));
         mHelper.sendCredentials(accessorySheetData);
-
-        // Focus the field to bring up the accessory.
-        mHelper.clickPasswordField();
-        mHelper.waitForKeyboard();
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
 
         // Click the suggestion.
         whenDisplayed(withText("mpark@abc.com")).perform(click());
@@ -216,14 +218,14 @@ public class PasswordAccessoryIntegrationTest {
 
         // Focus the field to bring up the accessory.
         mHelper.clickPasswordField();
+        mHelper.sendCredentials(createEmptyCredentials());
         mHelper.waitForKeyboard();
 
         // Click the tab to show the sheet and hide the keyboard.
         whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withId(R.id.keyboard_accessory_sheet));
-        onView(withText(containsString("No Saved passwords for this site")))
-                .check(matches(isDisplayed()));
+        onView(withText(containsString("No Saved passwords"))).check(matches(isDisplayed()));
     }
 
     /**
