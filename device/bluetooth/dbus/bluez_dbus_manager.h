@@ -126,6 +126,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
 
   // See "Alternate D-Bus Client" note above.
   BluetoothAdapterClient* GetAlternateBluetoothAdapterClient();
+  BluetoothDeviceClient* GetAlternateBluetoothDeviceClient();
 
  private:
   friend class BluezDBusManagerSetter;
@@ -201,6 +202,8 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManagerSetter {
 
   void SetAlternateBluetoothAdapterClient(
       std::unique_ptr<BluetoothAdapterClient> client);
+  void SetAlternateBluetoothDeviceClient(
+      std::unique_ptr<BluetoothDeviceClient> client);
 
  private:
   friend class BluezDBusManager;
