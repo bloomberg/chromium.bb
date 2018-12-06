@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "components/drive/chromeos/team_drive_change_list_loader.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -12,7 +13,6 @@
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
-#include "components/drive/chromeos/team_drive_change_list_loader.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_system_core_util.h"
@@ -22,7 +22,6 @@
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -84,11 +83,8 @@ class TeamDriveChangeListLoaderTest : public testing::Test {
     ASSERT_TRUE(test_util::SetUpTeamDriveTestEntries(
         drive_service_.get(), kTeamDriveId, kTeamDriveName));
 
-    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
-        network::mojom::ConnectionType::CONNECTION_WIFI);
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
-        network::TestNetworkConnectionTracker::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(), nullptr);
     metadata_storage_.reset(new ResourceMetadataStorage(
         temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));

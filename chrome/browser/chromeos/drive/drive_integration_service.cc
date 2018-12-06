@@ -701,8 +701,7 @@ DriveIntegrationService::DriveIntegrationService(
 
   scheduler_ = std::make_unique<JobScheduler>(
       profile_->GetPrefs(), logger_.get(), drive_service_.get(),
-      content::GetNetworkConnectionTracker(), blocking_task_runner_.get(),
-      std::move(wake_lock_provider));
+      blocking_task_runner_.get(), std::move(wake_lock_provider));
   cache_.reset(new internal::FileCache(
       metadata_storage_.get(),
       cache_root_directory_.Append(kCacheFileDirectory),
