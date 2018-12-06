@@ -1569,11 +1569,53 @@ TEST_P(SequenceManagerTest, ImmediateAndDelayedTaskInterleaving) {
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  // Delayed tasks are not allowed to starve out immediate work which is why
-  // some of the immediate tasks run out of order.
-  uint64_t expected_run_order[] = {10u, 11u, 12u, 13u, 0u, 14u, 15u, 16u, 1u,
-                                   17u, 18u, 2u,  3u,  4u, 5u,  6u,  7u,  8u};
+  // There is a strict round robin between ready delayed and non-delayed tasks.
+  uint64_t expected_run_order[] = {10u, 0u,  11u, 1u,  12u, 2u,  13u, 3u,  14u,
+                                   4u,  15u, 5u,  16u, 6u,  17u, 7u,  18u, 8u};
   EXPECT_THAT(run_order, ElementsAreArray(expected_run_order));
+}
+
+TEST_P(SequenceManagerTest, ImmediateAndDelayedTaskInterleaving2) {
+  CreateTaskQueues(1u);
+
+  // Tests the interleaving of ready delayed tasks and immediate tasks posted
+  // by them.
+  std::vector<EnqueueOrder> run_order;
+  queues_[0]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        run_order.push_back(EnqueueOrder::FromIntForTesting(1u));
+        queues_[0]->task_runner()->PostTask(
+            FROM_HERE, BindOnce(&TestTask, 10, &run_order));
+        queues_[0]->task_runner()->PostTask(
+            FROM_HERE, BindOnce(&TestTask, 11, &run_order));
+      }),
+      TimeDelta::FromMilliseconds(10));
+
+  queues_[0]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        run_order.push_back(EnqueueOrder::FromIntForTesting(2u));
+        queues_[0]->task_runner()->PostTask(
+            FROM_HERE, BindOnce(&TestTask, 12, &run_order));
+        queues_[0]->task_runner()->PostTask(
+            FROM_HERE, BindOnce(&TestTask, 13, &run_order));
+      }),
+      TimeDelta::FromMilliseconds(20));
+
+  queues_[0]->task_runner()->PostDelayedTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        run_order.push_back(EnqueueOrder::FromIntForTesting(3u));
+        queues_[0]->task_runner()->PostTask(
+            FROM_HERE, BindOnce(&TestTask, 14, &run_order));
+        queues_[0]->task_runner()->PostTask(
+            FROM_HERE, BindOnce(&TestTask, 15, &run_order));
+      }),
+      TimeDelta::FromMilliseconds(30));
+
+  test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMilliseconds(40));
+  RunLoop().RunUntilIdle();
+
+  // There is a strict round robin between ready delayed and non-delayed tasks.
+  EXPECT_THAT(run_order, ElementsAre(1u, 10u, 2u, 11u, 3u, 12u, 13u, 14u, 15u));
 }
 
 TEST_P(SequenceManagerTest,
@@ -2355,8 +2397,7 @@ bool ShouldExit(QuadraticTask* quadratic_task, LinearTask* linear_task) {
 
 }  // namespace
 
-TEST_P(SequenceManagerTest,
-       DelayedTasksDontBadlyStarveNonDelayedWork_SameQueue) {
+TEST_P(SequenceManagerTest, DelayedTasksDontStarveNonDelayedWork_SameQueue) {
   CreateTaskQueues(1u);
 
   QuadraticTask quadratic_delayed_task(
@@ -2372,14 +2413,12 @@ TEST_P(SequenceManagerTest,
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  double ratio = static_cast<double>(linear_immediate_task.Count()) /
-                 static_cast<double>(quadratic_delayed_task.Count());
-
-  EXPECT_GT(ratio, 0.333);
-  EXPECT_LT(ratio, 1.1);
+  EXPECT_EQ(1000, linear_immediate_task.Count());
+  EXPECT_EQ(998, quadratic_delayed_task.Count());
 }
 
-TEST_P(SequenceManagerTest, ImmediateWorkCanStarveDelayedTasks_SameQueue) {
+TEST_P(SequenceManagerTest,
+       ImmediateTasksCanPartiallyStarveDelayedTasks_SameQueue) {
   CreateTaskQueues(1u);
 
   QuadraticTask quadratic_immediate_task(queues_[0], TimeDelta(),
@@ -2397,17 +2436,17 @@ TEST_P(SequenceManagerTest, ImmediateWorkCanStarveDelayedTasks_SameQueue) {
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  double ratio = static_cast<double>(linear_delayed_task.Count()) /
-                 static_cast<double>(quadratic_immediate_task.Count());
-
-  // This is by design, we want to enforce a strict ordering in task execution
-  // where by delayed tasks can not skip ahead of non-delayed work.
-  EXPECT_GT(ratio, 0.0);
-  EXPECT_LT(ratio, 0.1);
+  // This enforces the policy the MessageLoop had, which tests rely on, which is
+  // to round robin between readied delayed and non-delayed tasks without
+  // letting delayed tasks skip ahead of non-delayed tasks.  This means
+  // non-delayed tasks run first if they're posted first, so it's not possible
+  // for them to completely starve out delayed tasks.
+  EXPECT_EQ(1000, quadratic_immediate_task.Count());
+  EXPECT_EQ(8, linear_delayed_task.Count());
 }
 
 TEST_P(SequenceManagerTest,
-       DelayedTasksDontBadlyStarveNonDelayedWork_DifferentQueue) {
+       DelayedTasksDontStarveNonDelayedWork_DifferentQueue) {
   CreateTaskQueues(2u);
 
   QuadraticTask quadratic_delayed_task(
@@ -2423,14 +2462,12 @@ TEST_P(SequenceManagerTest,
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  double ratio = static_cast<double>(linear_immediate_task.Count()) /
-                 static_cast<double>(quadratic_delayed_task.Count());
-
-  EXPECT_GT(ratio, 0.333);
-  EXPECT_LT(ratio, 1.1);
+  EXPECT_EQ(1000, linear_immediate_task.Count());
+  EXPECT_EQ(998, quadratic_delayed_task.Count());
 }
 
-TEST_P(SequenceManagerTest, ImmediateWorkCanStarveDelayedTasks_DifferentQueue) {
+TEST_P(SequenceManagerTest,
+       ImmediateTasksCanPartiallyStarveDelayedTasks_DifferentQueue) {
   CreateTaskQueues(2u);
 
   QuadraticTask quadratic_immediate_task(queues_[0], TimeDelta(),
@@ -2448,13 +2485,13 @@ TEST_P(SequenceManagerTest, ImmediateWorkCanStarveDelayedTasks_DifferentQueue) {
 
   test_task_runner_->FastForwardUntilNoTasksRemain();
 
-  double ratio = static_cast<double>(linear_delayed_task.Count()) /
-                 static_cast<double>(quadratic_immediate_task.Count());
-
-  // This is by design, we want to enforce a strict ordering in task execution
-  // where by delayed tasks can not skip ahead of non-delayed work.
-  EXPECT_GT(ratio, 0.0);
-  EXPECT_LT(ratio, 0.1);
+  // This enforces the policy the MessageLoop had, which tests rely on, which is
+  // to round robin between readied delayed and non-delayed tasks without
+  // letting delayed tasks skip ahead of non-delayed tasks.  This means
+  // non-delayed tasks run first if they're posted first, so it's not possible
+  // for them to completely starve out delayed tasks.
+  EXPECT_EQ(1000, quadratic_immediate_task.Count());
+  EXPECT_EQ(8, linear_delayed_task.Count());
 }
 
 TEST_P(SequenceManagerTest, CurrentlyExecutingTaskQueue_NoTaskRunning) {
