@@ -33,10 +33,10 @@ namespace content {
 
 class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
  public:
-  mojom::SharedWorkerConnectorPtr MakeSharedWorkerConnector(
+  blink::mojom::SharedWorkerConnectorPtr MakeSharedWorkerConnector(
       RenderProcessHost* process_host,
       int frame_id) {
-    mojom::SharedWorkerConnectorPtr connector;
+    blink::mojom::SharedWorkerConnectorPtr connector;
     SharedWorkerConnectorImpl::Create(process_host->GetID(), frame_id,
                                       mojo::MakeRequest(&connector));
     return connector;
@@ -102,7 +102,7 @@ std::queue<mojom::SharedWorkerFactoryRequest>
 
 namespace {
 
-void ConnectToSharedWorker(mojom::SharedWorkerConnectorPtr connector,
+void ConnectToSharedWorker(blink::mojom::SharedWorkerConnectorPtr connector,
                            const GURL& url,
                            const std::string& name,
                            MockSharedWorkerClient* client,

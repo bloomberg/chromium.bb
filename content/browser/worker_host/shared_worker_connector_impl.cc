@@ -19,7 +19,7 @@ namespace content {
 void SharedWorkerConnectorImpl::Create(
     int process_id,
     int frame_id,
-    mojom::SharedWorkerConnectorRequest request) {
+    blink::mojom::SharedWorkerConnectorRequest request) {
   mojo::MakeStrongBinding(
       base::WrapUnique(new SharedWorkerConnectorImpl(process_id, frame_id)),
       std::move(request));

@@ -10,11 +10,11 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/common/shared_worker/shared_worker_connector.mojom.h"
 #include "content/renderer/shared_worker/shared_worker_client_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 #include "third_party/blink/public/web/web_shared_worker_repository_client.h"
 
 namespace blink {
@@ -55,7 +55,7 @@ class SharedWorkerRepository final
 
   service_manager::InterfaceProvider* interface_provider_;
 
-  mojom::SharedWorkerConnectorPtr connector_;
+  blink::mojom::SharedWorkerConnectorPtr connector_;
 
   using ClientSet = mojo::StrongBindingSet<blink::mojom::SharedWorkerClient>;
   using ClientMap = std::map<DocumentID, std::unique_ptr<ClientSet>>;

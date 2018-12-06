@@ -6,23 +6,23 @@
 #define CONTENT_BROWSER_WORKER_HOST_SHARED_WORKER_CONNECTOR_IMPL_H_
 
 #include "content/common/content_export.h"
-#include "content/common/shared_worker/shared_worker_connector.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom.h"
 
 namespace content {
 
 // Instances of this class live on the UI thread and have their lifetime bound
 // to a Mojo connection.
 class CONTENT_EXPORT SharedWorkerConnectorImpl
-    : public mojom::SharedWorkerConnector {
+    : public blink::mojom::SharedWorkerConnector {
  public:
   static void Create(int process_id,
                      int frame_id,
-                     mojom::SharedWorkerConnectorRequest request);
+                     blink::mojom::SharedWorkerConnectorRequest request);
 
  private:
   SharedWorkerConnectorImpl(int process_id, int frame_id);
 
-  // mojom::SharedWorkerConnector methods:
+  // blink::mojom::SharedWorkerConnector methods:
   void Connect(
       blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::SharedWorkerClientPtr client,

@@ -43927,7 +43927,7 @@ Called by update_net_trust_anchors.py.-->
   </summary>
   <int value="39256405" label="device.mojom.Geolocation"/>
   <int value="81966276" label="blink.mojom.KeyboardLockService"/>
-  <int value="112672197" label="content.mojom.SharedWorkerConnector"/>
+  <int value="112672197" label="blink.mojom.SharedWorkerConnector"/>
   <int value="141486647" label="webauth.mojom.Authenticator"/>
   <int value="155545232" label="blink.mojom.GeolocationService"/>
   <int value="188516542" label="content.mojom.MediaStreamDispatcherHost"/>
