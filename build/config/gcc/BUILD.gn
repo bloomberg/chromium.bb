@@ -84,20 +84,24 @@ config("rpath_for_built_shared_libraries") {
   }
 }
 
+if (is_component_build && !is_android) {
+  # See the rpath_for... config above for why this is necessary for component
+  # builds.
+  executable_and_shared_library_configs_ =
+      [ ":rpath_for_built_shared_libraries" ]
+} else {
+  executable_and_shared_library_configs_ = []
+}
+
 # Settings for executables.
 config("executable_config") {
+  configs = executable_and_shared_library_configs_
   ldflags = [ "-pie" ]
   if (is_android) {
     ldflags += [
       "-Bdynamic",
       "-Wl,-z,nocopyreloc",
     ]
-  } else {
-    # See the rpath_for... config above for why this is necessary for component
-    # builds.
-    if (is_component_build) {
-      configs = [ ":rpath_for_built_shared_libraries" ]
-    }
   }
 
   if (!is_android && current_os != "aix") {
@@ -115,4 +119,9 @@ config("executable_config") {
       "-Wl,--disable-new-dtags",
     ]
   }
+}
+
+# Settings for shared libraries.
+config("shared_library_config") {
+  configs = executable_and_shared_library_configs_
 }
