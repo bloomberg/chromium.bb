@@ -603,9 +603,9 @@ void LinkLoader::LoadLinksFromHeader(
     if (!header.Valid() || header.Url().IsEmpty() || header.Rel().IsEmpty())
       continue;
 
-    if (media_policy == kOnlyLoadMedia && header.Media().IsEmpty())
+    if (media_policy == kOnlyLoadMedia && !header.IsViewportDependent())
       continue;
-    if (media_policy == kOnlyLoadNonMedia && !header.Media().IsEmpty())
+    if (media_policy == kOnlyLoadNonMedia && header.IsViewportDependent())
       continue;
 
     const LinkLoadParameters params(header, base_url);

@@ -26,6 +26,10 @@ class LinkHeader {
   const String& ImageSrcset() const { return image_srcset_; }
   const String& ImageSizes() const { return image_sizes_; }
   bool Valid() const { return is_valid_; }
+  bool IsViewportDependent() const {
+    return !Media().IsEmpty() || !ImageSrcset().IsEmpty() ||
+           !ImageSizes().IsEmpty();
+  }
 
   enum LinkParameterName {
     kLinkParameterRel,
