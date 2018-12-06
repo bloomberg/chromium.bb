@@ -23,17 +23,17 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_H_
 
 #include <memory>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -45,9 +45,9 @@ class WebIDBKeyView;
 // See WebIDBKeyView for the rationale behind this class' existence.
 class WebIDBKeyArrayView {
  public:
-  BLINK_EXPORT size_t size() const;
+  MODULES_EXPORT size_t size() const;
 
-  BLINK_EXPORT WebIDBKeyView operator[](size_t index) const;
+  MODULES_EXPORT WebIDBKeyView operator[](size_t index) const;
 
  private:
   // Only WebIDBKeyView can vend WebIDBArrayKeyView instances.
@@ -75,31 +75,31 @@ class WebIDBKeyView {
 
   explicit WebIDBKeyView(const IDBKey* idb_key) noexcept : private_(idb_key) {}
 
-  BLINK_EXPORT mojom::IDBKeyType KeyType() const;
+  MODULES_EXPORT mojom::IDBKeyType KeyType() const;
 
-  BLINK_EXPORT bool IsValid() const;
+  MODULES_EXPORT bool IsValid() const;
 
   // Only valid for ArrayType.
   //
   // The caller is responsible for ensuring that the WebIDBKeyView is valid for
   // the lifetime of the returned WeIDBKeyArrayView.
-  BLINK_EXPORT const WebIDBKeyArrayView ArrayView() const {
+  MODULES_EXPORT const WebIDBKeyArrayView ArrayView() const {
     return WebIDBKeyArrayView(private_);
   }
 
   // Only valid for BinaryType.
-  BLINK_EXPORT WebData Binary() const;
+  MODULES_EXPORT WebData Binary() const;
 
   // Only valid for StringType.
-  BLINK_EXPORT WebString String() const;
+  MODULES_EXPORT WebString String() const;
 
   // Only valid for DateType.
-  BLINK_EXPORT double Date() const;
+  MODULES_EXPORT double Date() const;
 
   // Only valid for NumberType.
-  BLINK_EXPORT double Number() const;
+  MODULES_EXPORT double Number() const;
 
-  BLINK_EXPORT size_t SizeEstimate() const;
+  MODULES_EXPORT size_t SizeEstimate() const;
 
   // TODO(cmp): Ensure |private_| can never be null.
   //
@@ -110,7 +110,7 @@ class WebIDBKeyView {
   // a non-null |private_|.  At that time, this null check can change to a
   // DCHECK that |private_| is not null and the special null case handling can
   // be removed.
-  BLINK_EXPORT bool IsNull() const { return !private_; }
+  MODULES_EXPORT bool IsNull() const { return !private_; }
 
  private:
   const IDBKey* const private_;
@@ -128,33 +128,33 @@ class WebIDBKeyView {
 // ends up at its final destination.
 class WebIDBKey {
  public:
-  BLINK_EXPORT static WebIDBKey CreateArray(WebVector<WebIDBKey>);
-  BLINK_EXPORT static WebIDBKey CreateBinary(const WebData&);
-  BLINK_EXPORT static WebIDBKey CreateString(const WebString&);
-  BLINK_EXPORT static WebIDBKey CreateDate(double);
-  BLINK_EXPORT static WebIDBKey CreateNumber(double);
-  BLINK_EXPORT static WebIDBKey CreateInvalid();
-  BLINK_EXPORT static WebIDBKey CreateNull() noexcept { return WebIDBKey(); }
+  MODULES_EXPORT static WebIDBKey CreateArray(WebVector<WebIDBKey>);
+  MODULES_EXPORT static WebIDBKey CreateBinary(const WebData&);
+  MODULES_EXPORT static WebIDBKey CreateString(const WebString&);
+  MODULES_EXPORT static WebIDBKey CreateDate(double);
+  MODULES_EXPORT static WebIDBKey CreateNumber(double);
+  MODULES_EXPORT static WebIDBKey CreateInvalid();
+  MODULES_EXPORT static WebIDBKey CreateNull() noexcept { return WebIDBKey(); }
 
   // The default constructor must not be used explicitly.
   // It is only provided for WebVector and Mojo's use.
-  BLINK_EXPORT WebIDBKey() noexcept;
+  MODULES_EXPORT WebIDBKey() noexcept;
 
-  BLINK_EXPORT WebIDBKey(WebIDBKey&&) noexcept;
-  BLINK_EXPORT WebIDBKey& operator=(WebIDBKey&&) noexcept;
+  MODULES_EXPORT WebIDBKey(WebIDBKey&&) noexcept;
+  MODULES_EXPORT WebIDBKey& operator=(WebIDBKey&&) noexcept;
 
   // TODO(cmp): Remove copy and assignment constructors when Vector<->WebVector
   //            conversions are no longer needed.
-  BLINK_EXPORT WebIDBKey(const WebIDBKey& rkey);
-  BLINK_EXPORT WebIDBKey& operator=(const WebIDBKey& rkey);
+  MODULES_EXPORT WebIDBKey(const WebIDBKey& rkey);
+  MODULES_EXPORT WebIDBKey& operator=(const WebIDBKey& rkey);
 
-  BLINK_EXPORT ~WebIDBKey();
+  MODULES_EXPORT ~WebIDBKey();
 
-  BLINK_EXPORT WebIDBKeyView View() const {
+  MODULES_EXPORT WebIDBKeyView View() const {
     return WebIDBKeyView(private_.get());
   }
 
-  BLINK_EXPORT size_t SizeEstimate() const { return View().SizeEstimate(); }
+  MODULES_EXPORT size_t SizeEstimate() const { return View().SizeEstimate(); }
 
 #if INSIDE_BLINK
   explicit WebIDBKey(std::unique_ptr<IDBKey>) noexcept;
@@ -165,7 +165,6 @@ class WebIDBKey {
 #endif  // INSIDE_BLINK
 
  private:
-
   std::unique_ptr<IDBKey> private_;
 };
 
@@ -173,4 +172,4 @@ using WebIDBIndexKeys = std::pair<int64_t, WebVector<WebIDBKey>>;
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_H_

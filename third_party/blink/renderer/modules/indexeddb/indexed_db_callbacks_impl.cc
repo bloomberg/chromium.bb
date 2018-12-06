@@ -5,15 +5,15 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 
 using blink::IndexedDBDatabaseMetadata;
 using blink::WebBlobInfo;
