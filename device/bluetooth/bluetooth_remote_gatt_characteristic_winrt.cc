@@ -25,6 +25,7 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode_Uncached;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCharacteristicProperties;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -41,9 +42,9 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus_Success;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattReadResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    GattWriteOption_WriteWithResponse;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteOption_WriteWithoutResponse;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattWriteOption_WriteWithResponse;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattWriteResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -163,9 +164,10 @@ void BluetoothRemoteGattCharacteristicWinrt::ReadRemoteCharacteristic(
   }
 
   ComPtr<IAsyncOperation<GattReadResult*>> read_value_op;
-  HRESULT hr = characteristic_->ReadValueAsync(&read_value_op);
+  HRESULT hr = characteristic_->ReadValueWithCacheModeAsync(
+      BluetoothCacheMode_Uncached, &read_value_op);
   if (FAILED(hr)) {
-    VLOG(2) << "GattCharacteristic::ReadValueAsync failed: "
+    VLOG(2) << "GattCharacteristic::ReadValueWithCacheModeAsync failed: "
             << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
