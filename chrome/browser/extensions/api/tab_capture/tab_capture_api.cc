@@ -234,7 +234,7 @@ ExtensionFunction::ResponseAction TabCaptureCaptureFunction::Run() {
   const bool match_incognito_profile = include_incognito_information();
   Browser* target_browser =
       GetLastActiveBrowser(profile, match_incognito_profile);
-  if (!target_browser || target_browser->type() != Browser::TYPE_TABBED)
+  if (!target_browser)
     return RespondNow(Error(kFindingTabError));
 
   content::WebContents* target_contents =
@@ -421,7 +421,7 @@ ExtensionFunction::ResponseAction TabCaptureGetMediaStreamIdFunction::Run() {
     const bool match_incognito_profile = include_incognito_information();
     Browser* target_browser =
         GetLastActiveBrowser(profile, match_incognito_profile);
-    if (!target_browser || target_browser->type() != Browser::TYPE_TABBED)
+    if (!target_browser)
       return RespondNow(Error(kFindingTabError));
 
     target_contents = target_browser->tab_strip_model()->GetActiveWebContents();
