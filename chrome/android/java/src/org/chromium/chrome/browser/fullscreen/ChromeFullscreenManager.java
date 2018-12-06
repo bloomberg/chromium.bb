@@ -109,15 +109,9 @@ public class ChromeFullscreenManager
         public void onToggleOverlayVideoMode(boolean enabled);
 
         /**
-         * Called when the height of the bottom controls are changed.
+         * Called when the height of the controls are changed.
          */
         public void onBottomControlsHeightChanged(int bottomControlsHeight);
-
-        /**
-         * Called when the height of the top controls are changed.
-         */
-        public default void onTopControlsHeightChanged(
-                int topControlsHeight, boolean controlsResizeView) {}
 
         /**
          * Called when the viewport size of the active content is updated.
@@ -354,18 +348,6 @@ public class ChromeFullscreenManager
      */
     public boolean drawControlsAsTexture() {
         return getBrowserControlHiddenRatio() > 0;
-    }
-
-    /**
-     * Sets the height of the top controls.
-     */
-    public void setTopControlsHeight(int topControlsHeight) {
-        if (mTopControlContainerHeight == topControlsHeight) return;
-        mTopControlContainerHeight = topControlsHeight;
-        for (int i = 0; i < mListeners.size(); i++) {
-            mListeners.get(i).onTopControlsHeightChanged(
-                    mTopControlContainerHeight, mControlsResizeView);
-        }
     }
 
     /**

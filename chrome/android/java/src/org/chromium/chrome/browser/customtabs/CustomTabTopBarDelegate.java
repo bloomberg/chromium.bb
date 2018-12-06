@@ -16,12 +16,10 @@ import org.chromium.chrome.browser.ChromeActivity;
  * Delegate that manages top bar area inside of {@link CustomTabActivity}.
  */
 class CustomTabTopBarDelegate {
-    private final ChromeActivity mActivity;
+    private ChromeActivity mActivity;
     private ViewGroup mTopBarView;
     @Nullable
     private View mTopBarContentView;
-    @Nullable
-    private Integer mTopBarHeight;
 
     public CustomTabTopBarDelegate(ChromeActivity activity) {
         mActivity = activity;
@@ -44,21 +42,6 @@ class CustomTabTopBarDelegate {
      */
     public void setTopBarContentView(View view) {
         mTopBarContentView = view;
-    }
-
-    /**
-     * Sets the height of the top bar.
-     */
-    public void setTopBarHeight(int height) {
-        mTopBarHeight = height;
-    }
-
-    /**
-     * Gets the height of the top bar, or null if it is not specified.
-     */
-    @Nullable
-    public Integer getTopBarHeight() {
-        return mTopBarHeight;
     }
 
     /**
