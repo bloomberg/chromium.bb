@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_BOUNDS_OBSERVER_H_
-#define CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_BOUNDS_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_BOUNDS_OBSERVER_H_
+#define CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_BOUNDS_OBSERVER_H_
 
 #include <set>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -56,4 +56,4 @@ class ChromeKeyboardBoundsObserver
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardBoundsObserver);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_BOUNDS_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_BOUNDS_OBSERVER_H_

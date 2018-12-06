@@ -1,0 +1,20 @@
+specific_include_rules = {
+  # Only for !features::IsUsingWindowService().
+  "chrome_keyboard_bounds_observer\.cc": [
+    "+ash/root_window_controller.h",
+  ],
+  # For classic Ash mode.
+  "chrome_keyboard_controller_client\.cc": [
+    "+ui/keyboard",
+  ],
+  # This code is only used in classic Ash mode.
+  "chrome_keyboard_ui.*": [
+    "+ash/shell.h",
+    "+ui/keyboard",
+  ],
+  # These should be moved to unit tests in ui/keyboard, or re-factored to use
+  # ChromeKeyboardControllerClient. https://crbug.com/849995.
+  "(keyboard_controller_browsertest|keyboard_end_to_end_browsertest)\.cc": [
+    "+ui/keyboard",
+  ],
+}

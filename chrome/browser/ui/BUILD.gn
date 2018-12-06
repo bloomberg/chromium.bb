@@ -1322,14 +1322,6 @@ jumbo_split_static_library("ui") {
       "ash/chrome_accessibility_delegate.h",
       "ash/chrome_browser_main_extra_parts_ash.cc",
       "ash/chrome_browser_main_extra_parts_ash.h",
-      "ash/chrome_keyboard_bounds_observer.cc",
-      "ash/chrome_keyboard_bounds_observer.h",
-      "ash/chrome_keyboard_controller_client.cc",
-      "ash/chrome_keyboard_controller_client.h",
-      "ash/chrome_keyboard_ui.cc",
-      "ash/chrome_keyboard_ui.h",
-      "ash/chrome_keyboard_web_contents.cc",
-      "ash/chrome_keyboard_web_contents.h",
       "ash/chrome_launcher_prefs.cc",
       "ash/chrome_launcher_prefs.h",
       "ash/chrome_new_window_client.cc",
@@ -1343,6 +1335,14 @@ jumbo_split_static_library("ui") {
       "ash/contained_shell_client.h",
       "ash/ime_controller_client.cc",
       "ash/ime_controller_client.h",
+      "ash/keyboard/chrome_keyboard_bounds_observer.cc",
+      "ash/keyboard/chrome_keyboard_bounds_observer.h",
+      "ash/keyboard/chrome_keyboard_controller_client.cc",
+      "ash/keyboard/chrome_keyboard_controller_client.h",
+      "ash/keyboard/chrome_keyboard_ui.cc",
+      "ash/keyboard/chrome_keyboard_ui.h",
+      "ash/keyboard/chrome_keyboard_web_contents.cc",
+      "ash/keyboard/chrome_keyboard_web_contents.h",
       "ash/ksv/keyboard_shortcut_viewer_util.cc",
       "ash/ksv/keyboard_shortcut_viewer_util.h",
       "ash/launcher/app_shortcut_launcher_item_controller.cc",
@@ -3661,8 +3661,8 @@ if (is_chromeos) {
   source_set("ash_test_support") {
     check_includes = false
     sources = [
-      "ash/chrome_keyboard_controller_client_test_helper.cc",
-      "ash/chrome_keyboard_controller_client_test_helper.h",
+      "ash/keyboard/chrome_keyboard_controller_client_test_helper.cc",
+      "ash/keyboard/chrome_keyboard_controller_client_test_helper.h",
     ]
     deps = [
       "//ash",

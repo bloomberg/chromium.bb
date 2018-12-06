@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/chrome_keyboard_ui.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
 
 #include <string>
 #include <utility>
@@ -10,9 +10,9 @@
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_bounds_observer.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_web_contents.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"

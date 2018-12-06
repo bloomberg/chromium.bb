@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/chrome_keyboard_web_contents.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_web_contents.h"
 
 #include "base/feature_list.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_bounds_observer.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

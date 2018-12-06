@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/chrome_keyboard_bounds_observer.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_bounds_observer.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
