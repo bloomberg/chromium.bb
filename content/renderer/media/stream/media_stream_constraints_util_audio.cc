@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "content/common/media/media_stream_controls.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/stream/media_stream_audio_source.h"
@@ -18,6 +19,7 @@
 #include "content/renderer/media/stream/media_stream_constraints_util_sets.h"
 #include "content/renderer/media/stream/media_stream_video_source.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
+#include "media/audio/audio_features.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -271,6 +273,20 @@ class EchoCancellationContainer {
  private:
   static DiscreteSet<std::string> GetEchoCancellationTypesFromParameters(
       const media::AudioParameters& audio_parameters) {
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    // If force system echo cancellation feature is enabled: only expose that
+    // type if available, otherwise expose no type.
+    if (base::FeatureList::IsEnabled(features::kForceEnableSystemAec)) {
+      std::vector<std::string> types;
+      if (audio_parameters.effects() &
+          (media::AudioParameters::EXPERIMENTAL_ECHO_CANCELLER |
+           media::AudioParameters::ECHO_CANCELLER)) {
+        types.push_back(blink::kEchoCancellationTypeSystem);
+      }
+      return DiscreteSet<std::string>(types);
+    }
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
     // The browser and AEC3 echo cancellers are always available.
     std::vector<std::string> types = {blink::kEchoCancellationTypeBrowser,
                                       blink::kEchoCancellationTypeAec3};
@@ -681,7 +697,9 @@ class CandidatesContainer {
                       std::string& default_device_id)
       : default_device_id_(default_device_id) {
     for (const auto& capability : capabilities) {
-      devices_.emplace_back(capability, media_stream_source.empty());
+      DeviceContainer device(capability, media_stream_source.empty());
+      if (!device.IsEmpty())
+        devices_.push_back(std::move(device));
     }
   }
 
@@ -782,6 +800,9 @@ AudioCaptureSettings SelectSettingsAudioCapture(
 
   CandidatesContainer candidates(capabilities, media_stream_source,
                                  default_device_id);
+  if (candidates.IsEmpty())
+    return AudioCaptureSettings();
+
   auto* failed_constraint_name =
       candidates.ApplyConstraintSet(constraints.Basic());
   if (failed_constraint_name)

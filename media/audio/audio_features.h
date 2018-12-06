@@ -21,6 +21,10 @@ MEDIA_EXPORT extern const base::Feature kCrOSSystemAECDeactivatedGroups;
 MEDIA_EXPORT extern const base::Feature kIncreaseInputAudioBufferSize;
 #endif
 
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+MEDIA_EXPORT extern const base::Feature kForceEnableSystemAec;
+#endif
+
 }  // namespace features
 
 #endif  // MEDIA_AUDIO_AUDIO_FEATURES_H_

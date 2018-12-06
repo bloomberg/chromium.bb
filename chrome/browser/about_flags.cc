@@ -4432,6 +4432,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chromeos::assistant::features::kEnableStereoAudioInput)},
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    {"force-enable-system-aec", flag_descriptions::kForceEnableSystemAecName,
+     flag_descriptions::kForceEnableSystemAecDescription, kOsMac | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kForceEnableSystemAec)},
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 };
 
 class FlagsStateSingleton {

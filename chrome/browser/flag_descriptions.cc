@@ -3704,6 +3704,16 @@ const char kDirectManipulationStylusDescription[] =
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
+const char kForceEnableSystemAecName[] = "Force enable system AEC";
+const char kForceEnableSystemAecDescription[] =
+    "Use system echo canceller instead of WebRTC echo canceller. If there is "
+    "no system echo canceller available, getUserMedia with echo cancellation "
+    "enabled will fail.";
+
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
 const char kExperimentalUiName[] = "Use all upcoming UI features";
 const char kExperimentalUiDescription[] = "Use all upcoming UI features.";
 
