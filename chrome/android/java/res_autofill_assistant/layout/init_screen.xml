@@ -94,7 +94,7 @@
             <Space android:layout_width="0dp" android:layout_height="25dp"/>
 
             <!-- Terms and Conditions message and link -->
-            <FrameLayout
+            <LinearLayout
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:paddingStart="12dp"
@@ -113,16 +113,17 @@
                     android:layout_gravity="center"
                     android:textAppearance="@style/BlackBodyDefault"
                     android:text="@string/autofill_assistant_google_terms_description" />
-            </FrameLayout>
+            </LinearLayout>
 
-
-            <!-- Horizontal layout for the buttons -->
+            <!-- Layout for the buttons -->
+            <Space android:layout_width="0dp" android:layout_height="32dp"/>
             <LinearLayout
                 android:layout_width="match_parent"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
                 android:layout_height="wrap_content"
                 android:gravity="bottom|center"
-                android:orientation="horizontal"
-                android:paddingTop="32dp">
+                android:orientation="horizontal">
 
                 <!-- 'No' button -->
                 <org.chromium.ui.widget.ButtonCompat
@@ -139,6 +140,11 @@
                     android:paddingBottom="9dp"
                     android:text="@string/no_thanks"
                     style="@style/TextButton" />
+
+                <Space
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"/>
 
                 <!-- 'Yes' button -->
                 <org.chromium.ui.widget.ButtonCompat
