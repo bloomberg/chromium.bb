@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.autofill_assistant;
 
 import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import org.chromium.base.Callback;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
@@ -33,20 +35,15 @@ class FirstRunScreen {
         String termsString = activity.getApplicationContext().getString(
                 R.string.autofill_assistant_google_terms_description);
 
-        NoUnderlineClickableSpan termsDescriptionSpan = new NoUnderlineClickableSpan(
+        NoUnderlineClickableSpan termsSpan = new NoUnderlineClickableSpan(
                 (widget)
-                        -> {
-                                // TODO(crbug.com/806868) enable when the URL for our terms &
-                                // conditions is up.
-                                /*
-                                CustomTabActivity.showInfoPage(context,
-                                        activity.getApplicationContext().getString(
-                                                R.string.autofill_assistant_google_terms_url));
-                                */
-                        });
+                        -> CustomTabActivity.showInfoPage(activity.getApplicationContext(),
+                                activity.getApplicationContext().getString(
+                                        R.string.autofill_assistant_google_terms_url)));
         SpannableString spannableMessage = SpanApplier.applySpans(
-                termsString, new SpanApplier.SpanInfo("<link>", "</link>", termsDescriptionSpan));
+                termsString, new SpanApplier.SpanInfo("<link>", "</link>", termsSpan));
         termsTextView.setText(spannableMessage);
+        termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Set focusable for accessibility.
         initView.findViewById(R.id.init).setFocusable(true);

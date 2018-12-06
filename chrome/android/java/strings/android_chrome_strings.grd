@@ -4009,6 +4009,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Fast Checkout.">
         By continuing you agree to the Google terms and conditions for Fast Checkout. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Read more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_URL" desc="URL for Google Autofill Assistant Terms of Service" translateable="false">
+        https://support.google.com/assistant/answer/9201753
+      </message>
     </messages>
   </release>
 </grit>
