@@ -18,10 +18,10 @@ itself. Let's break that down.
 that allows an object to observe events in the life of a `WebContents`. As an
 example, if we look at the `TabStripModel`, there are times when it need to
 watch out for WebContents being deleted. So it creates a
-[DeletionObserver](https://code.google.com/p/chromium/codesearch#chromium/src/chrome/browser/ui/tabs/tab_strip_model.cc&q=DeletionObserver).
-The `DeletionObserver` overrides `WebContentsDestroyed()`, and when a
-`WebContents` gets destroyed, the callback is called and the `DeletionObserver`
-processes the message. Note that `DeletionObserver` is not owned by the
+[TabStripModel::WebContentsData](https://code.google.com/p/chromium/codesearch#chromium/src/chrome/browser/ui/tabs/tab_strip_model.cc&q=TabStripModel::WebContentsData).
+That object overrides `WebContentsDestroyed()`, and when a
+`WebContents` gets destroyed, the callback is called and the object
+processes the message. Note that `TabStripModel::WebContentsData` object is not owned by the
 `WebContents`. It is owned indirectly by the `TabStripModel`.
 
 ## `SupportsUserData` and `WebContentsUserData`
