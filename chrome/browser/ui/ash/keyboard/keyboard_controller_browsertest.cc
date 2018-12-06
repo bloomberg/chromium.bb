@@ -378,6 +378,9 @@ IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
 // See crbug.com/755354.
 IN_PROC_BROWSER_TEST_F(KeyboardControllerStateTest,
                        DisablingKeyboardGoesToInitialState) {
+  if (::features::IsMultiProcessMash())
+    return;
+
   auto* controller = keyboard::KeyboardController::Get();
 
   controller->LoadKeyboardWindowInBackground();
