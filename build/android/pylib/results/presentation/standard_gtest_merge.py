@@ -48,7 +48,8 @@ def merge_shard_results(summary_json, jsons_to_merge):
             'Either it ran for too long (hard timeout) or it didn\'t produce '
             'I/O for an extended period of time (I/O timeout)')
       elif state == u'COMPLETED':
-        json_data, err_msg = load_shard_json(index, jsons_to_merge)
+        json_data, err_msg = load_shard_json(index, result.get('task_id'),
+                                             jsons_to_merge)
         if json_data:
           # Set-like fields.
           for key in ('all_tests', 'disabled_tests', 'global_tags', 'links'):
@@ -84,12 +85,13 @@ def merge_shard_results(summary_json, jsons_to_merge):
 OUTPUT_JSON_SIZE_LIMIT = 100 * 1024 * 1024  # 100 MB
 
 
-def load_shard_json(index, jsons_to_merge):
+def load_shard_json(index, task_id, jsons_to_merge):
   """Reads JSON output of the specified shard.
 
   Args:
-    jsons_to_merge: List of json files to be merge.
-    index: The index of the shard to load data for.
+    output_dir: The directory in which to look for the JSON output to load.
+    index: The index of the shard to load data for, this is for old api.
+    task_id: The directory of the shard to load data for, this is for new api.
 
   Returns: A tuple containing:
     * The contents of path, deserialized into a python object.
@@ -98,8 +100,9 @@ def load_shard_json(index, jsons_to_merge):
   """
   matching_json_files = [
       j for j in jsons_to_merge
-      if (os.path.basename(j) == 'output.json'
-          and os.path.basename(os.path.dirname(j)) == str(index))]
+      if (os.path.basename(j) == 'output.json' and
+          (os.path.basename(os.path.dirname(j)) == str(index) or
+           os.path.basename(os.path.dirname(j)) == task_id))]
 
   if not matching_json_files:
     print >> sys.stderr, 'shard %s test output missing' % index
