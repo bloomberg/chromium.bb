@@ -595,7 +595,7 @@ class LocalNTPCustomLinksTest : public LocalNTPTest {
   LocalNTPCustomLinksTest()
       : LocalNTPTest(
             /*enabled_features=*/{features::kUseGoogleLocalNtp,
-                                  features::kNtpUIMd, features::kNtpIcons,
+                                  features::kNtpIcons,
                                   ntp_tiles::kNtpCustomLinks},
             /*disabled_features=*/{}) {}
 
