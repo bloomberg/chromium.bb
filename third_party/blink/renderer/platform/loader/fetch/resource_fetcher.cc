@@ -822,7 +822,7 @@ Resource* ResourceFetcher::RequestResource(
   if (context_) {
     const KURL& url = params.Url();
     if (url.HasFragmentIdentifier() && url.ProtocolIsData()) {
-      context_->RecordDataUriWithOctothorpe();
+      context_->CountUsage(mojom::WebFeature::kDataUriHasOctothorpe);
     }
   }
 

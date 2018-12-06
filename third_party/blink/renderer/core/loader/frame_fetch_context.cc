@@ -1467,10 +1467,6 @@ void FrameFetchContext::Trace(blink::Visitor* visitor) {
   BaseFetchContext::Trace(visitor);
 }
 
-void FrameFetchContext::RecordDataUriWithOctothorpe() {
-  UseCounter::Count(GetFrame(), WebFeature::kDataUriHasOctothorpe);
-}
-
 ResourceLoadPriority FrameFetchContext::ModifyPriorityForExperiments(
     ResourceLoadPriority priority) const {
   if (!GetSettings())
