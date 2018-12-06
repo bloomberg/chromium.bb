@@ -1114,6 +1114,10 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  // The exact ordering of delayed vs non-delayed tasks is not defined.
+  // Make sure we run all non-delayed tasks (E.G. CheckForFrameChanges) before
+  // testing state.
+  base::RunLoop().RunUntilIdle();
   blink::WebSize natural_size = player_->NaturalSize();
   // Check that height and width are flipped.
   EXPECT_EQ(kStandardHeight, natural_size.width);
@@ -1132,6 +1136,7 @@ TEST_P(WebMediaPlayerMSTest, RotationChange) {
   }
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  base::RunLoop().RunUntilIdle();
   natural_size = player_->NaturalSize();
   EXPECT_EQ(kStandardHeight, natural_size.height);
   EXPECT_EQ(kStandardWidth, natural_size.width);
