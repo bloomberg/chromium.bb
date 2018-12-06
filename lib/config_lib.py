@@ -552,14 +552,27 @@ class HWTestConfig(object):
     # from Skylab even if the build config is migrated to Skylab.
     self.enable_skylab = enable_skylab
 
-  def SetBranchedValues(self):
-    """Changes the HW Test timeout/priority values to branched values."""
+  def _SetCommonBranchedValues(self):
+    """Set the common values for branched builds."""
     self.timeout = max(HWTestConfig.BRANCHED_HW_TEST_TIMEOUT, self.timeout)
 
     # Set minimum_duts default to 0, which means that lab will not check the
     # number of available duts to meet the minimum requirement before creating
     # a suite job for branched build.
     self.minimum_duts = 0
+
+  def SetBranchedValuesForSkylab(self):
+    """Set suite values for branched builds for skylab."""
+    self._SetCommonBranchedValues()
+
+    if (constants.SKYLAB_HWTEST_PRIORITIES_MAP[self.priority] <
+        constants.SKYLAB_HWTEST_PRIORITIES_MAP[
+            constants.HWTEST_DEFAULT_PRIORITY]):
+      self.priority = constants.HWTEST_DEFAULT_PRIORITY
+
+  def SetBranchedValues(self):
+    """Changes the HW Test timeout/priority values to branched values."""
+    self._SetCommonBranchedValues()
 
     # Only reduce priority if it's lower.
     new_priority = constants.HWTEST_PRIORITIES_MAP[

@@ -113,13 +113,16 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
                                       suffix=suffix,
                                       **kwargs)
     if not self._run.IsToTBuild():
-      suite_config.SetBranchedValues()
+      self._SetBranchedSuiteConfig(suite_config)
 
     self.suite_config = suite_config
     self.wait_for_results = True
 
     self._model = model
     self._board_name = lab_board_name or board
+
+  def _SetBranchedSuiteConfig(self, suite_config):
+    suite_config.SetBranchedValues()
 
   # Disable complaint about calling _HandleStageException.
   # pylint: disable=protected-access
@@ -285,6 +288,9 @@ class SkylabHWTestStage(HWTestStage):
   """Stage that runs tests in the Autotest lab with Skylab."""
 
   category = constants.TEST_INFRA_STAGE
+
+  def _SetBranchedSuiteConfig(self, suite_config):
+    suite_config.SetBranchedValuesForSkylab()
 
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
