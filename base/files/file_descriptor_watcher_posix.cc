@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
@@ -214,5 +213,11 @@ FileDescriptorWatcher::WatchWritable(int fd, const Closure& callback) {
   return WrapUnique(
       new Controller(MessagePumpForIO::WATCH_WRITE, fd, callback));
 }
+
+#if DCHECK_IS_ON()
+void FileDescriptorWatcher::AssertAllowed() {
+  DCHECK(tls_fd_watcher.Get().Get());
+}
+#endif
 
 }  // namespace base
