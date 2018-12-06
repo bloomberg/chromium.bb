@@ -16,7 +16,7 @@ ScriptPromisePropertyBase::ScriptPromisePropertyBase(
     ExecutionContext* execution_context,
     Name name)
     : ContextClient(execution_context),
-      isolate_(ToIsolate(execution_context)),
+      isolate_(execution_context->GetIsolate()),
       name_(name),
       state_(kPending) {}
 

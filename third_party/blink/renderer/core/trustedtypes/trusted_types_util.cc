@@ -90,7 +90,7 @@ String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
   }
 
   TrustedHTML* result = default_policy->CreateHTML(
-      ToIsolate(doc), string_or_trusted_html.GetAsString(), exception_state);
+      doc->GetIsolate(), string_or_trusted_html.GetAsString(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     exception_state.ThrowTypeError(
@@ -146,7 +146,7 @@ String GetStringFromTrustedScript(
           ? g_empty_string
           : string_or_trusted_script.GetAsString();
   TrustedScript* result = default_policy->CreateScript(
-      ToIsolate(doc), string_value_or_empty, exception_state);
+      doc->GetIsolate(), string_value_or_empty, exception_state);
   DCHECK_EQ(!result, exception_state.HadException());
   if (exception_state.HadException()) {
     exception_state.ClearException();
@@ -186,7 +186,7 @@ String GetStringFromTrustedScriptURL(
   }
 
   TrustedScriptURL* result = default_policy->CreateScriptURL(
-      ToIsolate(doc), string_or_trusted_script_url.GetAsString(),
+      doc->GetIsolate(), string_or_trusted_script_url.GetAsString(),
       exception_state);
 
   if (exception_state.HadException()) {
@@ -226,7 +226,8 @@ String GetStringFromTrustedURL(USVStringOrTrustedURL string_or_trusted_url,
   }
 
   TrustedURL* result = default_policy->CreateURL(
-      ToIsolate(doc), string_or_trusted_url.GetAsUSVString(), exception_state);
+      doc->GetIsolate(), string_or_trusted_url.GetAsUSVString(),
+      exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     exception_state.ThrowTypeError(

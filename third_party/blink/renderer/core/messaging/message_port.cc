@@ -313,7 +313,7 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
     evt = MessageEvent::CreateError();
   }
 
-  v8::Isolate* isolate = ToIsolate(GetExecutionContext());
+  v8::Isolate* isolate = GetExecutionContext()->GetIsolate();
   ThreadDebugger* debugger = ThreadDebugger::From(isolate);
   if (debugger)
     debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);

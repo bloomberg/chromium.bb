@@ -872,22 +872,6 @@ bool HasCallableIteratorSymbol(v8::Isolate* isolate,
   return iterator_getter->IsFunction();
 }
 
-v8::Isolate* ToIsolate(const ExecutionContext* context) {
-  if (!context)
-    return nullptr;
-
-#if DCHECK_IS_ON()
-  v8::Isolate* isolate;
-  if (context && context->IsDocument())
-    isolate = V8PerIsolateData::MainThreadIsolate();
-  else
-    isolate = v8::Isolate::GetCurrent();
-  DCHECK(context->GetIsolate() == isolate);
-#endif
-
-  return context->GetIsolate();
-}
-
 v8::Isolate* ToIsolate(const LocalFrame* frame) {
   DCHECK(frame);
   return frame->GetWindowProxyManager()->GetIsolate();
