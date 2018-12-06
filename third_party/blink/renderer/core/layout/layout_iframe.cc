@@ -54,7 +54,7 @@ void LayoutIFrame::UpdateLayout() {
   // No kids to layout as a replaced element.
   UpdateLogicalHeight();
 
-  overflow_.reset();
+  ClearAllOverflows();
   AddVisualEffectOverflow();
   UpdateAfterLayout();
 

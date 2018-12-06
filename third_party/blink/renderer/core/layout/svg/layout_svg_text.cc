@@ -283,7 +283,7 @@ void LayoutSVGText::UpdateLayout() {
     update_parent_boundaries = true;
   }
 
-  overflow_.reset();
+  ClearAllOverflows();
   AddSelfVisualOverflow(LayoutRect(new_boundaries));
   AddVisualEffectOverflow();
 

@@ -156,11 +156,19 @@ class BoxOverflowModel {
     UniteLayoutOverflowRect(layout_overflow_, rect);
   }
 
+  void SetSelfVisualOverflow(const LayoutRect& rect) {
+    self_visual_overflow_ = rect;
+  }
+
   const LayoutRect& SelfVisualOverflowRect() const {
     return self_visual_overflow_;
   }
   void AddSelfVisualOverflow(const LayoutRect& rect) {
     self_visual_overflow_.Unite(rect);
+  }
+
+  void ClearContentsVisualOverflow() {
+    contents_visual_overflow_ = LayoutRect();
   }
 
   const LayoutRect& ContentsVisualOverflowRect() const {

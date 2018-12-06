@@ -205,7 +205,7 @@ void LayoutTableRow::UpdateLayout() {
       Section()->UpdateFragmentationInfoForChild(*cell);
   }
 
-  overflow_.reset();
+  ClearAllOverflows();
   AddVisualEffectOverflow();
   // We do not call addOverflowFromCell here. The cell are laid out to be
   // measured above and will be sized correctly in a follow-up phase.

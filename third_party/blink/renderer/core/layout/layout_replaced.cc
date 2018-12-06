@@ -99,7 +99,7 @@ void LayoutReplaced::UpdateLayout() {
   UpdateLogicalWidth();
   UpdateLogicalHeight();
 
-  overflow_.reset();
+  ClearAllOverflows();
   AddVisualEffectOverflow();
   UpdateAfterLayout();
 
