@@ -87,7 +87,7 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItemImpl* GetNavigationItemImplAtIndex(size_t index) const override;
   NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession()
       const override;
-  NavigationItemImpl* GetPendingItemImpl() const override;
+  NavigationItemImpl* GetPendingItemInCurrentOrRestoredSession() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;
   void FinishGoToIndex(int index,
                        NavigationInitiationType type,

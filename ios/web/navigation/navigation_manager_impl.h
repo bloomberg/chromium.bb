@@ -143,7 +143,10 @@ class NavigationManagerImpl : public NavigationManager {
                                            NSString* state_object,
                                            ui::PageTransition transition) = 0;
 
-  // Returns true if session restoration is in progress.
+  // Returns true after session restoration has started, until the first
+  // post-restore navigation is finished. Returns true when first post-restore
+  // navigation is started, even though technically session restoration is
+  // complete.
   virtual bool IsRestoreSessionInProgress() const = 0;
 
   // Resets the transient url rewriter list.
@@ -197,7 +200,8 @@ class NavigationManagerImpl : public NavigationManager {
   void AddRestoreCompletionCallback(base::OnceClosure callback) override;
 
   // Implementation for corresponding NavigationManager getters.
-  virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
+  virtual NavigationItemImpl* GetPendingItemInCurrentOrRestoredSession()
+      const = 0;
   virtual NavigationItemImpl* GetTransientItemImpl() const = 0;
   // Unlike GetLastCommittedItem(), this method does not return null during
   // session restoration (and returns last known committed item instead).

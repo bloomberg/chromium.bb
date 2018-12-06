@@ -158,7 +158,7 @@ std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
 void NavigationManagerImpl::UpdatePendingItemUrl(const GURL& url) const {
   // If there is no pending item, navigation is probably happening within the
   // back forward history. Don't modify the item list.
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (!pending_item || url == pending_item->GetURL())
     return;
 
@@ -178,7 +178,7 @@ NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
   if (transient_item)
     return transient_item;
 
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (pending_item)
     return pending_item;
 
@@ -236,6 +236,10 @@ void NavigationManagerImpl::GoToIndex(int index) {
 }
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
+  // GetLastCommittedItem() should return null while session restoration is in
+  // progress and real item after the first post-restore navigation is
+  // finished. IsRestoreSessionInProgress(), will return true until the first
+  // post-restore is finished.
   if (IsRestoreSessionInProgress())
     return nullptr;
 
@@ -243,6 +247,10 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {
 }
 
 int NavigationManagerImpl::GetLastCommittedItemIndex() const {
+  // GetLastCommittedItemIndex() should return -1 while session restoration is
+  // in progress and real item after the first post-restore navigation is
+  // finished. IsRestoreSessionInProgress(), will return true until the first
+  // post-restore is finished.
   if (IsRestoreSessionInProgress())
     return -1;
 
@@ -250,7 +258,18 @@ int NavigationManagerImpl::GetLastCommittedItemIndex() const {
 }
 
 NavigationItem* NavigationManagerImpl::GetPendingItem() const {
-  return GetPendingItemImpl();
+  NavigationItem* item = GetPendingItemInCurrentOrRestoredSession();
+
+  // GetPendingItem() should return null while session restoration is in
+  // progress and real item when the first post-restore navigation has started.
+  // It's not possible to rely on IsRestoreSessionInProgress(), because this
+  // method may return true until the first post-restore is finished, hence
+  // this code relies on actual navigation URL to determine if restoration is
+  // complete.
+  if (item && wk_navigation_util::IsRestoreSessionUrl(item->GetURL()))
+    return nullptr;
+
+  return item;
 }
 
 NavigationItem* NavigationManagerImpl::GetTransientItem() const {
@@ -272,7 +291,7 @@ void NavigationManagerImpl::LoadURLWithParams(
 
   // Mark pending item as created from hash change if necessary. This is needed
   // because window.hashchange message may not arrive on time.
-  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  NavigationItemImpl* pending_item = GetPendingItemInCurrentOrRestoredSession();
   if (pending_item) {
     NavigationItem* last_committed_item =
         GetLastCommittedItemInCurrentOrRestoredSession();

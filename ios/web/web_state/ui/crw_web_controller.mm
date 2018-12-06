@@ -1403,7 +1403,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   // Add or update pending item before any WebStateObserver callbacks.
   // See https://crbug.com/842151 for a scenario where this is important.
-  web::NavigationItem* item = self.navigationManagerImpl->GetPendingItem();
+  web::NavigationItem* item =
+      self.navigationManagerImpl->GetPendingItemInCurrentOrRestoredSession();
   if (item) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
@@ -1422,7 +1423,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         requestURL, referrer, transition,
         web::NavigationInitiationType::RENDERER_INITIATED,
         NavigationManager::UserAgentOverrideOption::INHERIT);
-    item = self.navigationManagerImpl->GetPendingItem();
+    item =
+        self.navigationManagerImpl->GetPendingItemInCurrentOrRestoredSession();
   }
 
   bool redirect = transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;

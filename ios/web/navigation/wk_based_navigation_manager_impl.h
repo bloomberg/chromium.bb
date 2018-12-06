@@ -203,8 +203,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItemImpl* GetLastCommittedItemInCurrentOrRestoredSession()
       const override;
   int GetLastCommittedItemIndexInCurrentOrRestoredSession() const override;
-  // Returns the pending navigation item in the main frame.
-  NavigationItemImpl* GetPendingItemImpl() const override;
+  // Returns the pending navigation item in the main frame. Unlike
+  // GetPendingItem(), this method does not return null during session
+  // restoration (and returns last known pending item instead).
+  NavigationItemImpl* GetPendingItemInCurrentOrRestoredSession() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;
   void FinishGoToIndex(int index,
                        NavigationInitiationType initiation_type,
