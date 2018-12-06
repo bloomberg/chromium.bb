@@ -57,6 +57,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "content/public/common/content_features.h"
@@ -1709,6 +1710,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   non_network_url_loader_factories_[url::kFileScheme] =
       std::make_unique<FileURLLoaderFactory>(
           partition->browser_context()->GetPath(),
+          BrowserContext::GetSharedCorsOriginAccessList(
+              partition->browser_context()),
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));

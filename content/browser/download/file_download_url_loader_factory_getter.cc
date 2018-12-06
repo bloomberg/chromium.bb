@@ -17,8 +17,13 @@ namespace content {
 
 FileDownloadURLLoaderFactoryGetter::FileDownloadURLLoaderFactoryGetter(
     const GURL& url,
-    const base::FilePath& profile_path)
-    : url_(url), profile_path_(profile_path) {
+    const base::FilePath& profile_path,
+    scoped_refptr<const SharedCorsOriginAccessList>
+        shared_cors_origin_access_list)
+    : url_(url),
+      profile_path_(profile_path),
+      shared_cors_origin_access_list_(
+          std::move(shared_cors_origin_access_list)) {
   DCHECK(url.SchemeIs(url::kFileScheme));
 }
 
@@ -32,9 +37,10 @@ FileDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
   mojo::MakeStrongBinding(
       std::make_unique<FileURLLoaderFactory>(
-          profile_path_, base::CreateSequencedTaskRunnerWithTraits(
-                             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+          profile_path_, shared_cors_origin_access_list_,
+          base::CreateSequencedTaskRunnerWithTraits(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       MakeRequest(&url_loader_factory_ptr_info));
 
   return base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(

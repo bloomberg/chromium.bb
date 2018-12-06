@@ -1240,7 +1240,8 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
   } else if (params->url().SchemeIsFile()) {
     url_loader_factory_getter =
         base::MakeRefCounted<FileDownloadURLLoaderFactoryGetter>(
-            params->url(), browser_context_->GetPath());
+            params->url(), browser_context_->GetPath(),
+            BrowserContext::GetSharedCorsOriginAccessList(browser_context_));
   } else if (params->url().SchemeIs(content::kChromeUIScheme)) {
     url_loader_factory_getter =
         base::MakeRefCounted<WebUIDownloadURLLoaderFactoryGetter>(
