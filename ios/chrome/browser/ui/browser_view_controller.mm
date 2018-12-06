@@ -4085,6 +4085,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
         prerenderService->ReleasePrerenderContents();
     DCHECK(newWebState);
 
+    int lastIndex = self.currentWebState->GetNavigationManager()
+                        ->GetLastCommittedItemIndex();
+    UMA_HISTOGRAM_COUNTS_100("Prerender.PrerenderLoadedOnIndex", lastIndex);
+
+    BOOL onFirstNTP =
+        IsVisibleURLNewTabPage(self.currentWebState) && lastIndex == 0;
+    UMA_HISTOGRAM_BOOLEAN("Prerender.PrerenderLoadedOnFirstNTP", onFirstNTP);
+
     Tab* oldTab = self.tabModel.currentTab;
     Tab* newTab = LegacyTabHelper::GetTabForWebState(newWebState.get());
     DCHECK(oldTab);
