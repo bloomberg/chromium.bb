@@ -25,7 +25,6 @@ import org.chromium.components.signin.ChromeSigninController;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class ChromeSigninUtilsTest {
     private static final String FAKE_ACCOUNT_USERNAME = "test@google.com";
-    private static final String FAKE_ACCOUNT_PASSWORD = "$3cr3t";
     private static final String GOOGLE_ACCOUNT_USERNAME = "chromiumforandroid01@gmail.com";
     private static final String GOOGLE_ACCOUNT_PASSWORD = "chromeforandroid";
     private static final String GOOGLE_ACCOUNT_TYPE = "mail";
@@ -66,7 +65,7 @@ public class ChromeSigninUtilsTest {
     @Test
     @SmallTest
     public void testIsSignedInOnFakeOS() {
-        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME, FAKE_ACCOUNT_PASSWORD);
+        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME);
         Assert.assertFalse("Should not be signed in on app.", mSigninController.isSignedIn());
         Assert.assertTrue("Should be signed in on OS with fake account.",
                 mSigninUtil.isExistingFakeAccountOnOs(FAKE_ACCOUNT_USERNAME));
@@ -92,7 +91,7 @@ public class ChromeSigninUtilsTest {
     @SmallTest
     public void testIsSignedInOnFakeOSandApp() {
         mSigninUtil.addAccountToApp(FAKE_ACCOUNT_USERNAME);
-        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME, FAKE_ACCOUNT_PASSWORD);
+        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME);
         Assert.assertTrue("Should be signed in on app.", mSigninController.isSignedIn());
         Assert.assertTrue("Should be signed in on OS with fake account.",
                 mSigninUtil.isExistingFakeAccountOnOs(FAKE_ACCOUNT_USERNAME));
@@ -120,7 +119,7 @@ public class ChromeSigninUtilsTest {
     @EnormousTest
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnFakeOSandGoogleOS() {
-        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME, FAKE_ACCOUNT_PASSWORD);
+        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME);
         mSigninUtil.addGoogleAccountToOs(GOOGLE_ACCOUNT_USERNAME, GOOGLE_ACCOUNT_PASSWORD,
                 GOOGLE_ACCOUNT_TYPE);
         Assert.assertFalse("Should not be signed into app.", mSigninController.isSignedIn());
@@ -136,7 +135,7 @@ public class ChromeSigninUtilsTest {
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testIsSignedInOnAppAndFakeOSandGoogleOS() {
         mSigninUtil.addAccountToApp(FAKE_ACCOUNT_USERNAME);
-        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME, FAKE_ACCOUNT_PASSWORD);
+        mSigninUtil.addFakeAccountToOs(FAKE_ACCOUNT_USERNAME);
         mSigninUtil.addGoogleAccountToOs(GOOGLE_ACCOUNT_USERNAME, GOOGLE_ACCOUNT_PASSWORD,
                 GOOGLE_ACCOUNT_TYPE);
         Assert.assertTrue("Should be signed into app.", mSigninController.isSignedIn());

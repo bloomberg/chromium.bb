@@ -71,13 +71,13 @@ public class ChromeSigninUtils {
     /**
      * Adds a fake account to the OS.
      */
-    public void addFakeAccountToOs(String username, String password) {
+    public void addFakeAccountToOs(String username) {
         if (TextUtils.isEmpty(username)) {
             throw new IllegalArgumentException("ERROR: must specify account");
         }
 
         Account account = new Account(username, GOOGLE_ACCOUNT_TYPE);
-        AccountHolder accountHolder = AccountHolder.builder(account).password(password).build();
+        AccountHolder accountHolder = AccountHolder.builder(account).build();
         mFakeAccountManagerDelegate.addAccountHolderBlocking(accountHolder);
     }
 
