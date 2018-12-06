@@ -530,9 +530,6 @@
     'blink_spellcheck' : {
       'filepath': 'third_party/blink/renderer/core/editing/spellcheck'
     },
-    'blink_spv2_layout_tests': {
-      'filepath': 'third_party/blink/web_tests/virtual/spv2'
-    },
     'blink_streams': {
       'filepath': 'third_party/blink/renderer/core/streams/'
     },
@@ -2003,7 +2000,6 @@
     'blink_shadow_dom': ['hayato@chromium.org'],
     'blink_spellcheck' : ['timvolodine@chromium.org',
                           'xiaochengh+watch@chromium.org'],
-    'blink_spv2_layout_tests': ['pdr+virtualspv2watchlist@chromium.org'],
     'blink_streams': ['ricea+watch@chromium.org'],
     'blink_style': ['blink-reviews-style@chromium.org'],
     'blink_svg': ['dschulze@chromium.org',

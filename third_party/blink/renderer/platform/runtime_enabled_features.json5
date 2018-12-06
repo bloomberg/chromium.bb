@@ -210,7 +210,6 @@
     },
     {
       name: "CompositeAfterPaint",
-      implied_by: ["SlimmingPaintV2"],
     },
     {
       name: "CompositedSelectionUpdate",
@@ -1209,10 +1208,6 @@
     },
     {
       name: "SignedHTTPExchange",
-    },
-    {
-      name: "SlimmingPaintV2",
-      implied_by: ["CompositeAfterPaint"],
     },
     {
       name: "SmoothScrollJSIntervention",

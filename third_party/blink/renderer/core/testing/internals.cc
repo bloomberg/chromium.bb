@@ -1913,7 +1913,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     return nullptr;
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     auto* pac = document->View()->GetPaintArtifactCompositorForTesting();
     pac->EnableExtraDataForTesting();
     document->View()->UpdateAllLifecyclePhases(
