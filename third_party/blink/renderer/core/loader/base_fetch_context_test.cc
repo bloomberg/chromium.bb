@@ -45,17 +45,14 @@ class MockBaseFetchContext final : public BaseFetchContext {
   explicit MockBaseFetchContext(ExecutionContext* execution_context)
       : BaseFetchContext(
             execution_context->GetTaskRunner(blink::TaskType::kInternalTest)),
-        execution_context_(execution_context),
-        fetch_client_settings_object_(
-            MakeGarbageCollected<FetchClientSettingsObjectImpl>(
-                *execution_context)) {}
+        execution_context_(execution_context) {
+    SetFetchClientSettingsObject(
+        MakeGarbageCollected<FetchClientSettingsObjectImpl>(
+            *execution_context));
+  }
   ~MockBaseFetchContext() override = default;
 
   // BaseFetchContext overrides:
-  const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const override {
-    return fetch_client_settings_object_.Get();
-  }
   KURL GetSiteForCookies() const override { return KURL(); }
   bool AllowScriptFromSource(const KURL&) const override { return false; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
@@ -95,9 +92,6 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   const KURL& Url() const override { return execution_context_->Url(); }
 
-  const SecurityOrigin* GetSecurityOrigin() const override {
-    return fetch_client_settings_object_->GetSecurityOrigin();
-  }
   const SecurityOrigin* GetParentSecurityOrigin() const override {
     return nullptr;
   }

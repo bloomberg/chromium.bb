@@ -72,7 +72,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
     return CreateFetcher(nullptr, document);
   }
 
-  static void ProvideDocumentToContext(FetchContext&, Document*);
+  void ProvideDocumentToContext(Document*);
 
   FrameFetchContext(DocumentLoader*, Document*);
   ~FrameFetchContext() override;
@@ -150,8 +150,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   bool IsLoadComplete() const override;
   bool UpdateTimingInfoForIFrameNavigation(ResourceTimingInfo*) override;
 
-  const SecurityOrigin* GetSecurityOrigin() const override;
-
   void PopulateResourceRequest(ResourceType,
                                const ClientHintsPreferences&,
                                const FetchParameters::ResourceWidth&,
@@ -209,8 +207,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   CreateResourceLoadingTaskRunnerHandle() override;
 
   // BaseFetchContext overrides:
-  const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const override;
   KURL GetSiteForCookies() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
@@ -279,8 +275,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // Non-null only when detached.
   Member<const FrozenState> frozen_state_;
-
-  Member<FetchClientSettingsObject> fetch_client_settings_object_;
 };
 
 }  // namespace blink

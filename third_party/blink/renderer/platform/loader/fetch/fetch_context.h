@@ -86,6 +86,9 @@ class PLATFORM_EXPORT FetchContext
   WTF_MAKE_NONCOPYABLE(FetchContext);
 
  public:
+  explicit FetchContext(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
   // This enum corresponds to blink::MessageSource. We have this not to
   // introduce any dependency to core/.
   //
@@ -109,8 +112,7 @@ class PLATFORM_EXPORT FetchContext
 
   virtual void AddAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
 
-  virtual const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const = 0;
+  const FetchClientSettingsObject* GetFetchClientSettingsObject() const;
 
   // Called when the ResourceFetcher observes a data: URI load that contains an
   // octothorpe ('#') character. This is a temporary method to support an Intent
@@ -228,7 +230,7 @@ class PLATFORM_EXPORT FetchContext
   virtual void CountUsage(mojom::WebFeature) const = 0;
   virtual void CountDeprecation(mojom::WebFeature) const = 0;
 
-  virtual const SecurityOrigin* GetSecurityOrigin() const { return nullptr; }
+  const SecurityOrigin* GetSecurityOrigin() const;
 
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to
@@ -312,12 +314,12 @@ class PLATFORM_EXPORT FetchContext
   virtual void DispatchNetworkQuiet() {}
 
  protected:
-  explicit FetchContext(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void SetFetchClientSettingsObject(FetchClientSettingsObject*);
 
  private:
   Member<PlatformProbeSink> platform_probe_sink_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  Member<FetchClientSettingsObject> fetch_client_settings_object_;
 };
 
 }  // namespace blink

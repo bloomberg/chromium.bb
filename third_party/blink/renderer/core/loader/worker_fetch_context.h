@@ -40,8 +40,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
-  const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const override;
   KURL GetSiteForCookies() const override;
   SubresourceFilter* GetSubresourceFilter() const override;
   PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
@@ -75,7 +73,6 @@ class WorkerFetchContext final : public BaseFetchContext {
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:
-  const SecurityOrigin* GetSecurityOrigin() const override;
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest&,
       const ResourceLoaderOptions&) override;
@@ -138,8 +135,6 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   const scoped_refptr<WebWorkerFetchContext> web_context_;
   Member<SubresourceFilter> subresource_filter_;
-
-  const Member<FetchClientSettingsObject> fetch_client_settings_object_;
 
   // The value of |save_data_enabled_| is read once per frame from
   // NetworkStateNotifier, which is guarded by a mutex lock, and cached locally

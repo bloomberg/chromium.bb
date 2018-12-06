@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/loader/subresource_filter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
@@ -57,15 +56,10 @@ WorkerFetchContext::WorkerFetchContext(
       global_scope_(global_scope),
       web_context_(std::move(web_context)),
       subresource_filter_(subresource_filter),
-      fetch_client_settings_object_(fetch_client_settings_object),
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled()) {
   DCHECK(global_scope.IsContextThread());
   DCHECK(web_context_);
-}
-
-const FetchClientSettingsObject*
-WorkerFetchContext::GetFetchClientSettingsObject() const {
-  return fetch_client_settings_object_.Get();
+  SetFetchClientSettingsObject(fetch_client_settings_object);
 }
 
 KURL WorkerFetchContext::GetSiteForCookies() const {
@@ -189,10 +183,6 @@ const ContentSecurityPolicy* WorkerFetchContext::GetContentSecurityPolicy()
 
 void WorkerFetchContext::AddConsoleMessage(ConsoleMessage* message) const {
   return global_scope_->AddConsoleMessage(message);
-}
-
-const SecurityOrigin* WorkerFetchContext::GetSecurityOrigin() const {
-  return GetFetchClientSettingsObject()->GetSecurityOrigin();
 }
 
 std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
@@ -393,7 +383,6 @@ WorkerFetchContext::GetWorkerContentSettingsClient() const {
 void WorkerFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
   visitor->Trace(subresource_filter_);
-  visitor->Trace(fetch_client_settings_object_);
   BaseFetchContext::Trace(visitor);
 }
 

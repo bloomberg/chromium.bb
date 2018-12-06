@@ -293,19 +293,17 @@ FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
       save_data_enabled_(GetNetworkStateNotifier().SaveDataEnabled() &&
                          !GetSettings()->GetDataSaverHoldbackWebApi()) {
   if (document_) {
-    fetch_client_settings_object_ =
-        MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document_);
+    SetFetchClientSettingsObject(
+        MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document_));
   }
   DCHECK(GetFrame());
 }
 
-void FrameFetchContext::ProvideDocumentToContext(FetchContext& context,
-                                                 Document* document) {
+void FrameFetchContext::ProvideDocumentToContext(Document* document) {
   DCHECK(document);
-  CHECK(context.IsFrameFetchContext());
-  static_cast<FrameFetchContext&>(context).document_ = document;
-  static_cast<FrameFetchContext&>(context).fetch_client_settings_object_ =
-      MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document);
+  document_ = document;
+  SetFetchClientSettingsObject(
+      MakeGarbageCollected<FetchClientSettingsObjectImpl>(*document));
 }
 
 FrameFetchContext::~FrameFetchContext() {
@@ -361,12 +359,6 @@ FrameScheduler* FrameFetchContext::GetFrameScheduler() const {
   if (IsDetached())
     return nullptr;
   return GetFrame()->GetFrameScheduler();
-}
-
-const FetchClientSettingsObject*
-FrameFetchContext::GetFetchClientSettingsObject() const {
-  DCHECK(fetch_client_settings_object_);
-  return fetch_client_settings_object_.Get();
 }
 
 KURL FrameFetchContext::GetSiteForCookies() const {
@@ -935,13 +927,6 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
   return true;
 }
 
-const SecurityOrigin* FrameFetchContext::GetSecurityOrigin() const {
-  // This can be called before |fetch_client_settings_object_| is set.
-  if (!fetch_client_settings_object_)
-    return nullptr;
-  return fetch_client_settings_object_->GetSecurityOrigin();
-}
-
 void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   if (IsDetached())
     return;
@@ -1452,9 +1437,9 @@ FetchContext* FrameFetchContext::Detach() {
         GetContentSecurityPolicy(), GetSiteForCookies(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
-    fetch_client_settings_object_ =
+    SetFetchClientSettingsObject(
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-            *GetFetchClientSettingsObject());
+            *GetFetchClientSettingsObject()));
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = MakeGarbageCollected<FrozenState>(
@@ -1462,10 +1447,10 @@ FetchContext* FrameFetchContext::Detach() {
         GetContentSecurityPolicy(), GetSiteForCookies(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
-    fetch_client_settings_object_ =
+    SetFetchClientSettingsObject(
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
             NullURL(), nullptr, network::mojom::ReferrerPolicy::kDefault,
-            String(), HttpsState::kNone);
+            String(), HttpsState::kNone));
   }
 
   // This is needed to break a reference cycle in which off-heap
@@ -1479,7 +1464,6 @@ void FrameFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(frozen_state_);
-  visitor->Trace(fetch_client_settings_object_);
   BaseFetchContext::Trace(visitor);
 }
 
