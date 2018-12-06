@@ -8,13 +8,15 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller_test.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
 
 namespace blink {
 
 using ::testing::UnorderedElementsAre;
 
-class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase {
+class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase,
+                                         public PaintTestConfigurations {
  protected:
   DisplayItemRasterInvalidatorTest() : invalidator_([](const IntRect&) {}) {}
 
@@ -26,6 +28,10 @@ class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase {
         // invalidation rects.
         IntRect(0, 0, 20000, 20000), PropertyTreeState::Root());
     GetPaintController().FinishCycle();
+    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+      GetPaintController().ClearPropertyTreeChangedStateTo(
+          PropertyTreeState::Root());
+    }
 
     if (invalidator_.GetTracking())
       return invalidator_.GetTracking()->Invalidations();
@@ -37,7 +43,9 @@ class DisplayItemRasterInvalidatorTest : public PaintControllerTestBase {
   RasterInvalidator invalidator_;
 };
 
-TEST_F(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
+INSTANTIATE_PAINT_TEST_CASE_P(DisplayItemRasterInvalidatorTest);
+
+TEST_P(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 300, 300));
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
   GraphicsContext context(GetPaintController());
@@ -60,7 +68,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, RemoveItemInMiddle) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrder) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrder) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
   FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
@@ -91,7 +99,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrder) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
   FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
@@ -117,7 +125,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateFirst) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
   FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
@@ -143,7 +151,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderAndInvalidateSecond) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
   FakeDisplayItemClient unaffected("unaffected", LayoutRect(300, 300, 10, 10));
@@ -171,7 +179,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderWithIncrementalInvalidation) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, NewItemInMiddle) {
+TEST_P(DisplayItemRasterInvalidatorTest, NewItemInMiddle) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 50, 200));
   FakeDisplayItemClient third("third", LayoutRect(125, 100, 200, 50));
@@ -195,7 +203,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, NewItemInMiddle) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, Incremental) {
+TEST_P(DisplayItemRasterInvalidatorTest, Incremental) {
   LayoutRect initial_rect(100, 100, 100, 100);
   std::unique_ptr<FakeDisplayItemClient> clients[6];
   for (size_t i = 0; i < base::size(clients); i++) {
@@ -259,7 +267,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, Incremental) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
+TEST_P(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
   FakeDisplayItemClient chunk("chunk");
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
   FakeDisplayItemClient second("second", LayoutRect(200, 200, 50, 50));
@@ -304,7 +312,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, AddRemoveFirstAndInvalidateSecond) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
+TEST_P(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
   FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
   FakeDisplayItemClient second("second", LayoutRect(200, 200, 50, 50));
   GraphicsContext context(GetPaintController());
@@ -351,7 +359,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, InvalidateFirstAndAddRemoveSecond) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
   FakeDisplayItemClient container1("container1",
                                    LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
@@ -395,7 +403,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderWithChildren) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
   FakeDisplayItemClient container1("container1",
                                    LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
@@ -443,7 +451,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderWithChildrenAndInvalidation) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
+TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
   FakeDisplayItemClient container1("container1",
                                    LayoutRect(100, 100, 100, 100));
   FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
@@ -492,7 +500,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, SkipCache) {
+TEST_P(DisplayItemRasterInvalidatorTest, SkipCache) {
   FakeDisplayItemClient multicol("multicol", LayoutRect(100, 100, 200, 200));
   FakeDisplayItemClient content("content", LayoutRect(100, 100, 100, 100));
   GraphicsContext context(GetPaintController());
@@ -549,7 +557,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, SkipCache) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
+TEST_P(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
   FakeDisplayItemClient content("content", LayoutRect(100, 100, 250, 250));
   GraphicsContext context(GetPaintController());
 
@@ -581,7 +589,7 @@ TEST_F(DisplayItemRasterInvalidatorTest, PartialSkipCache) {
   invalidator_.SetTracksRasterInvalidations(false);
 }
 
-TEST_F(DisplayItemRasterInvalidatorTest, Partial) {
+TEST_P(DisplayItemRasterInvalidatorTest, Partial) {
   FakeDisplayItemClient client("client", LayoutRect(100, 100, 300, 300));
   GraphicsContext context(GetPaintController());
 
