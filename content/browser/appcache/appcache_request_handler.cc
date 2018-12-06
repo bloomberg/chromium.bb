@@ -228,14 +228,12 @@ void AppCacheRequestHandler::GetExtraResponseInfo(int64_t* cache_id,
 std::unique_ptr<AppCacheRequestHandler>
 AppCacheRequestHandler::InitializeForMainResourceNetworkService(
     const network::ResourceRequest& request,
-    base::WeakPtr<AppCacheHost> appcache_host,
-    scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory) {
+    base::WeakPtr<AppCacheHost> appcache_host) {
   std::unique_ptr<AppCacheRequestHandler> handler =
       appcache_host->CreateRequestHandler(
           AppCacheURLLoaderRequest::Create(request),
           static_cast<ResourceType>(request.resource_type),
           request.should_reset_appcache);
-  handler->network_loader_factory_ = std::move(network_loader_factory);
   handler->appcache_host_ = std::move(appcache_host);
   return handler;
 }
@@ -618,8 +616,9 @@ AppCacheRequestHandler::MaybeCreateSubresourceLoaderParams() {
 
   // The factory is destroyed when the renderer drops the connection.
   network::mojom::URLLoaderFactoryPtr factory_ptr;
-  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(
-      network_loader_factory_, appcache_host_, &factory_ptr);
+
+  AppCacheSubresourceURLFactory::CreateURLLoaderFactory(appcache_host_,
+                                                        &factory_ptr);
 
   SubresourceLoaderParams params;
   params.loader_factory_info = factory_ptr.PassInterface();

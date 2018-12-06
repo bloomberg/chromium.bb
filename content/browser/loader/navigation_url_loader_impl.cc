@@ -746,8 +746,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     if (appcache_handle_core) {
       std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
           AppCacheRequestHandler::InitializeForMainResourceNetworkService(
-              *resource_request_, appcache_handle_core->host()->GetWeakPtr(),
-              network_loader_factory_);
+              *resource_request_, appcache_handle_core->host()->GetWeakPtr());
       if (appcache_interceptor)
         interceptors_.push_back(std::move(appcache_interceptor));
     }
