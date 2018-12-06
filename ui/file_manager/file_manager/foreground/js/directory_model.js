@@ -1158,8 +1158,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // Fallback to the default volume's root if the current volume is unmounted,
   // or if there is no current root, which means that nothing is currently
   // selected.
-  if (this.hasCurrentDirEntryBeenUnmounted_(event.removed) ||
-      !this.getCurrentRootType()) {
+  if (this.hasCurrentDirEntryBeenUnmounted_(event.removed)) {
     this.volumeManager_.getDefaultDisplayRoot((displayRoot) => {
       if (displayRoot)
         this.changeDirectoryEntry(displayRoot);
