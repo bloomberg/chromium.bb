@@ -53,7 +53,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
 
   InitializeWorkerThread(
       std::move(creation_params),
-      CreateBackingThreadStartupData(GetExecutionContext()->GetIsolate()));
+      CreateBackingThreadStartupData(ToIsolate(GetExecutionContext())));
 
   // Step 13: "Obtain script by switching on the value of options's type
   // member:"
@@ -140,7 +140,7 @@ void DedicatedWorkerMessagingProxy::PostMessageToWorkerObject(
     return;
 
   ThreadDebugger* debugger =
-      ThreadDebugger::From(GetExecutionContext()->GetIsolate());
+      ThreadDebugger::From(ToIsolate(GetExecutionContext()));
   MessagePortArray* ports = MessagePort::EntanglePorts(
       *GetExecutionContext(), std::move(message.ports));
   debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);

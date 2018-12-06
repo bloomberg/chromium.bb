@@ -273,7 +273,7 @@ XMLHttpRequest* XMLHttpRequest::Create(ScriptState* script_state) {
 }
 
 XMLHttpRequest* XMLHttpRequest::Create(ExecutionContext* context) {
-  v8::Isolate* isolate = context->GetIsolate();
+  v8::Isolate* isolate = ToIsolate(context);
   CHECK(isolate);
 
   XMLHttpRequest* xml_http_request =

@@ -436,6 +436,7 @@ CORE_EXPORT bool HasCallableIteratorSymbol(v8::Isolate*,
                                            v8::Local<v8::Value>,
                                            ExceptionState&);
 
+CORE_EXPORT v8::Isolate* ToIsolate(const ExecutionContext*);
 CORE_EXPORT v8::Isolate* ToIsolate(const LocalFrame*);
 
 CORE_EXPORT DOMWindow* ToDOMWindow(v8::Isolate*, v8::Local<v8::Value>);

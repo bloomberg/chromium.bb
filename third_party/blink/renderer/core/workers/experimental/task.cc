@@ -170,7 +170,7 @@ scoped_refptr<SerializedScriptValue> TaskBase::GetSerializedResult() {
     DCHECK(v8_result_);
     ScriptState::Scope scope(
         worker_thread_->GlobalScope()->ScriptController()->GetScriptState());
-    v8::Isolate* isolate = worker_thread_->GlobalScope()->GetIsolate();
+    v8::Isolate* isolate = ToIsolate(worker_thread_->GlobalScope());
     serialized_result_ = SerializedScriptValue::SerializeAndSwallowExceptions(
         isolate, v8_result_->GetResult(isolate));
   }
@@ -250,7 +250,7 @@ void TaskBase::TaskCompletedOnWorkerThread(v8::Local<v8::Value> v8_result,
                                            State state) {
   DCHECK(worker_thread_->IsCurrentThread());
   v8_result_ = MakeGarbageCollected<V8ResultHolder>(
-      worker_thread_->GlobalScope()->GetIsolate(), v8_result);
+      ToIsolate(worker_thread_->GlobalScope()), v8_result);
   function_ = nullptr;
   arguments_.clear();
 
@@ -278,7 +278,7 @@ void TaskBase::RunTaskOnWorkerThread() {
   // so no mutex needed while actually running the task.
   WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
   ScriptState::Scope scope(global_scope->ScriptController()->GetScriptState());
-  v8::Isolate* isolate = global_scope->GetIsolate();
+  v8::Isolate* isolate = ToIsolate(global_scope);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   v8::Local<v8::Function> script_function;
@@ -401,7 +401,7 @@ void Task::StartTaskOnWorkerThread() {
   DCHECK(worker_thread_->IsCurrentThread());
   if (!WillStartTaskOnWorkerThread()) {
     WorkerOrWorkletGlobalScope* global_scope = worker_thread_->GlobalScope();
-    v8::Isolate* isolate = global_scope->GetIsolate();
+    v8::Isolate* isolate = ToIsolate(global_scope);
     ScriptState::Scope scope(
         global_scope->ScriptController()->GetScriptState());
     TaskCompletedOnWorkerThread(V8String(isolate, "Task aborted"),
