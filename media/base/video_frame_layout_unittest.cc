@@ -16,6 +16,7 @@
 #include "media/base/video_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 namespace media {
 
@@ -235,10 +236,13 @@ TEST(VideoFrameLayout, ToString) {
 
   std::ostringstream ostream;
   ostream << *layout;
+  const std::string kNoModifier =
+      std::to_string(gfx::NativePixmapPlane::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_I420, coded_size: 320x180, "
-            "planes (stride, offset): [(384, 0), (192, 0), (192, 0)], "
-            "buffer_sizes: [73728, 18432, 18432])");
+            "planes (stride, offset, modifier): [(384, 0, " +
+                kNoModifier + "), (192, 0, " + kNoModifier + "), (192, 0, " +
+                kNoModifier + ")], buffer_sizes: [73728, 18432, 18432])");
 }
 
 TEST(VideoFrameLayout, ToStringOneBuffer) {
@@ -253,9 +257,12 @@ TEST(VideoFrameLayout, ToStringOneBuffer) {
 
   std::ostringstream ostream;
   ostream << *layout;
+  const std::string kNoModifier =
+      std::to_string(gfx::NativePixmapPlane::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
-            "planes (stride, offset): [(384, 100)], buffer_sizes: [122880])");
+            "planes (stride, offset, modifier): [(384, 100, " +
+                kNoModifier + ")], buffer_sizes: [122880])");
 }
 
 TEST(VideoFrameLayout, ToStringNoBufferInfo) {
@@ -265,9 +272,13 @@ TEST(VideoFrameLayout, ToStringNoBufferInfo) {
 
   std::ostringstream ostream;
   ostream << *layout;
+  const std::string kNoModifier =
+      std::to_string(gfx::NativePixmapPlane::kNoModifier);
   EXPECT_EQ(ostream.str(),
             "VideoFrameLayout(format: PIXEL_FORMAT_NV12, coded_size: 320x180, "
-            "planes (stride, offset): [(0, 0), (0, 0)], buffer_sizes: [])");
+            "planes (stride, offset, modifier): [(0, 0, " +
+                kNoModifier + "), (0, 0, " + kNoModifier +
+                ")], buffer_sizes: [])");
 }
 
 TEST(VideoFrameLayout, EqualOperator) {

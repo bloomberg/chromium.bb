@@ -84,6 +84,8 @@ component("gpu") {
     "gpu_video_encode_accelerator_factory.cc",
     "gpu_video_encode_accelerator_factory.h",
     "image_processor.h",
+    "platform_video_frame.cc",
+    "platform_video_frame.h",
   ]
 
   public_deps = [
@@ -196,7 +198,6 @@ component("gpu") {
   }
 
   if (use_v4l2_codec) {
-    deps += [ "//ui/ozone" ]
     sources += [
       "v4l2/generic_v4l2_device.cc",
       "v4l2/generic_v4l2_device.h",
@@ -291,6 +292,10 @@ component("gpu") {
         "windows/d3d11_decryptor.h",
       ]
     }
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

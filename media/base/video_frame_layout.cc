@@ -4,6 +4,7 @@
 
 #include "media/base/video_frame_layout.h"
 
+#include <string.h>
 #include <numeric>
 #include <sstream>
 
@@ -141,13 +142,15 @@ size_t VideoFrameLayout::GetTotalBufferSize() const {
 
 std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout::Plane& plane) {
-  ostream << "(" << plane.stride << ", " << plane.offset << ")";
+  ostream << "(" << plane.stride << ", " << plane.offset << ", "
+          << plane.modifier << ")";
   return ostream;
 }
 
 bool VideoFrameLayout::Plane::operator==(
     const VideoFrameLayout::Plane& rhs) const {
-  return stride == rhs.stride && offset == rhs.offset;
+  return stride == rhs.stride && offset == rhs.offset &&
+         modifier == rhs.modifier;
 }
 
 bool VideoFrameLayout::Plane::operator!=(
@@ -168,7 +171,8 @@ std::ostream& operator<<(std::ostream& ostream,
                          const VideoFrameLayout& layout) {
   ostream << "VideoFrameLayout(format: " << layout.format()
           << ", coded_size: " << layout.coded_size().ToString()
-          << ", planes (stride, offset): " << VectorToString(layout.planes())
+          << ", planes (stride, offset, modifier): "
+          << VectorToString(layout.planes())
           << ", buffer_sizes: " << VectorToString(layout.buffer_sizes()) << ")";
   return ostream;
 }
