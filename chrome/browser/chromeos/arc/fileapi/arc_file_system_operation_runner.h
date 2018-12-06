@@ -76,6 +76,7 @@ class ArcFileSystemOperationRunner
       mojom::FileSystemInstance::GetChildDocumentsCallback;
   using GetRecentDocumentsCallback =
       mojom::FileSystemInstance::GetRecentDocumentsCallback;
+  using GetRootsCallback = mojom::FileSystemInstance::GetRootsCallback;
   using AddWatcherCallback = base::OnceCallback<void(int64_t watcher_id)>;
   using RemoveWatcherCallback = base::OnceCallback<void(bool success)>;
   using ChangeType = storage::WatcherManager::ChangeType;
@@ -130,6 +131,7 @@ class ArcFileSystemOperationRunner
   void GetRecentDocuments(const std::string& authority,
                           const std::string& root_id,
                           GetRecentDocumentsCallback callback);
+  void GetRoots(GetRootsCallback callback);
   void AddWatcher(const std::string& authority,
                   const std::string& document_id,
                   const WatcherCallback& watcher_callback,
