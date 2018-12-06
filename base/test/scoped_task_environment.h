@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/lazy_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -18,6 +19,7 @@ class ScopedSetSequenceLocalStorageMapForCurrentThread;
 class SequenceLocalStorageMap;
 }  // namespace internal
 
+class Clock;
 class FileDescriptorWatcher;
 class MessageLoop;
 class TaskScheduler;
@@ -136,10 +138,18 @@ class ScopedTaskEnvironment {
   // Short for FastForwardBy(TimeDelta::Max()).
   void FastForwardUntilNoTasksRemain();
 
-  // Only valid for instances with a MOCK_TIME MainThreadType.  Returns a
+  // Only valid for instances with a MOCK_TIME MainThreadType. Returns a
   // TickClock whose time is updated by FastForward(By|UntilNoTasksRemain).
-  const TickClock* GetMockTickClock();
+  const TickClock* GetMockTickClock() const;
   std::unique_ptr<TickClock> DeprecatedGetMockTickClock();
+
+  // Only valid for instances with a MOCK_TIME MainThreadType. Returns a
+  // Clock whose time is updated by FastForward(By|UntilNoTasksRemain). The
+  // initial value is implementation defined and should be queried by tests that
+  // depend on it.
+  // TickClock should be used instead of Clock to measure elapsed time in a
+  // process. See time.h.
+  const Clock* GetMockClock() const;
 
   // Only valid for instances with a MOCK_TIME MainThreadType.
   // Returns the current virtual tick time (initially starting at 0).
@@ -173,6 +183,9 @@ class ScopedTaskEnvironment {
   const std::unique_ptr<
       internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
       slsm_registration_for_mock_time_;
+
+  // Only set for instances with a MOCK_TIME MainThreadType.
+  const std::unique_ptr<Clock> mock_clock_;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Enables the FileDescriptorWatcher API iff running a MainThreadType::IO.
