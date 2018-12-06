@@ -497,9 +497,6 @@ def CheckPathLength(filename, exit_on_failure=True):
 # add parent directories. Rinse, repeat.
 class TempNameGen(object):
   def __init__(self, inputs, output):
-    inputs = [ pathtools.abspath(i) for i in inputs ]
-    output = pathtools.abspath(output)
-
     self.TempBase = output + '---linked'
     self.OutputDir = pathtools.dirname(output)
 
@@ -569,13 +566,12 @@ class TempNameGen(object):
     return temp
 
   def TempNameForInput(self, input, imtype):
-    fullpath = pathtools.abspath(input)
     # If input is already a temporary name, just change the extension
-    if fullpath.startswith(self.TempBase):
+    if input.startswith(self.TempBase):
       temp = self.TempBase + '.' + imtype
     else:
       # Source file
-      temp = self.TempMap[fullpath] + '.' + imtype
+      temp = self.TempMap[input] + '.' + imtype
 
     temp = self.ValidatePathLength(temp, imtype)
     TempFiles.add(temp)
