@@ -30,9 +30,5 @@ SimpleThreadImpl::~SimpleThreadImpl() {
   Join();
 }
 
-ThreadManager* SimpleThreadImpl::thread_manager() const {
-  return thread_manager_;
-}
-
 }  // namespace sequence_manager
 }  // namespace base

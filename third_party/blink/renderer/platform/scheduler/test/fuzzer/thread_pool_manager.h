@@ -10,6 +10,7 @@
 
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/simple_thread.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fuzzer/proto/sequence_manager_test_description.pb.h"
@@ -18,7 +19,6 @@ namespace base {
 namespace sequence_manager {
 
 class SequenceManagerFuzzerProcessor;
-class SimpleThreadImpl;
 class ThreadManager;
 
 // Used by the SequenceManagerFuzzerProcessor to manage threads and synchronize
@@ -58,11 +58,16 @@ class PLATFORM_EXPORT ThreadPoolManager {
   // the threads are not terminated until |this| gets destructed.
   void WaitForAllThreads();
 
+  // (Thread Safe)
+  std::vector<ThreadManager*> GetAllThreadManagers();
+
   // (Thread Safe) Used to return the thread manager of the |thread_id|'s entry
   // in |threads_| (modulo the number of entries).
+  // Note: not all threads created with CreateThread() might have had time to
+  // register their thread manager by the time this method is called as the
+  // ThreadManager creation happens on the new thread. This method will return
+  // nullptr if no ThreadManager was registered yet.
   ThreadManager* GetThreadManagerFor(uint64_t thread_id);
-
-  const std::vector<std::unique_ptr<SimpleThreadImpl>>& threads() const;
 
   SequenceManagerFuzzerProcessor* processor() const;
 
@@ -133,7 +138,14 @@ class PLATFORM_EXPORT ThreadPoolManager {
   // Threads that are being managed/synchronized. For unit testing purposes,
   // make sure not to create threads at the same time (if the ordering matters)
   // since in this case the order will not be deterministic.
-  std::vector<std::unique_ptr<SimpleThreadImpl>> threads_;
+  std::vector<std::unique_ptr<SimpleThread>> threads_;
+
+  // ThreadManager instances associated to the managed threads. Values are not
+  // stored in any particular order and there might not exist a manager for all
+  // managed threads at any point in time (SimpleThread instances are created
+  // before their corresponding ThreadManager, as this must happen on the actual
+  // thread).
+  std::vector<ThreadManager*> thread_managers_;
 };
 
 }  // namespace sequence_manager
