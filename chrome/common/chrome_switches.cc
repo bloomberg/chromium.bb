@@ -823,10 +823,6 @@ const char kAppsKeepChromeAliveInTests[]    = "apps-keep-chrome-alive-in-tests";
 // Disable the toolkit-views App Info dialog for Mac.
 const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
 
-// Disables tab detaching in fullscreen mode on Mac.
-const char kDisableFullscreenTabDetaching[] =
-    "disable-fullscreen-tab-detaching";
-
 // Disables app shim creation for hosted apps on Mac.
 const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 
@@ -843,9 +839,6 @@ const char kEnableUserMetrics[] = "enable-user-metrics";
 // Enable the toolkit-views App Info dialog for Mac. This is accessible from
 // chrome://apps and chrome://extensions and is already enabled on non-mac.
 const char kEnableAppInfoDialogMac[] = "enable-app-info-dialog-mac";
-
-// Enables tab detaching in fullscreen mode on Mac.
-const char kEnableFullscreenTabDetaching[] = "enable-fullscreen-tab-detaching";
 
 // Enables the fullscreen toolbar to reveal itself for tab strip changes.
 const char kEnableFullscreenToolbarReveal[] =

@@ -1204,11 +1204,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-fullscreen-in-tab-detaching",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-future-v8-vm-features",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
