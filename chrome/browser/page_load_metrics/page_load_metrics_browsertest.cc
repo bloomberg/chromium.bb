@@ -209,6 +209,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
         kv.second.get(),
         PageLoad::kPaintTiming_NavigationToFirstContentfulPaintName));
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(), PageLoad::kMainFrameResource_SocketReusedName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
         kv.second.get(), PageLoad::kMainFrameResource_DNSDelayName));
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
         kv.second.get(), PageLoad::kMainFrameResource_ConnectDelayName));

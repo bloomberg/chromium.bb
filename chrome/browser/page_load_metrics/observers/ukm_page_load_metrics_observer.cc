@@ -303,6 +303,8 @@ void UkmPageLoadMetricsObserver::ReportMainResourceTimingMetrics(
     ukm::builders::PageLoad* builder) {
   DCHECK(main_frame_timing_.has_value());
 
+  builder->SetMainFrameResource_SocketReused(main_frame_timing_->socket_reused);
+
   int64_t dns_start_ms =
       main_frame_timing_->connect_timing.dns_start.since_origin()
           .InMilliseconds();
