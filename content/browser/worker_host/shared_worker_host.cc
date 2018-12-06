@@ -210,7 +210,7 @@ void SharedWorkerHost::Start(
       instance_->url(), this, mojo::MakeRequest(&content_settings));
 
   // Set up host interface.
-  mojom::SharedWorkerHostPtr host;
+  blink::mojom::SharedWorkerHostPtr host;
   binding_.Bind(mojo::MakeRequest(&host));
 
   // Set up interface provider interface.

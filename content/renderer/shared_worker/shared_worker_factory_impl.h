@@ -36,7 +36,7 @@ class SharedWorkerFactoryImpl : public mojom::SharedWorkerFactory {
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      mojom::SharedWorkerHostPtr host,
+      blink::mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
 

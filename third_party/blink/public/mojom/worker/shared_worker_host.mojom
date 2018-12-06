@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "third_party/blink/public/platform/web_feature.mojom";
 
@@ -29,5 +29,5 @@ interface SharedWorkerHost {
 
   // Indicates that the shared worker used a feature. This is intended to be
   // logged by the client-side feature logging infrastructure.
-  OnFeatureUsed(blink.mojom.WebFeature feature);
+  OnFeatureUsed(WebFeature feature);
 };

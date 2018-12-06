@@ -169,7 +169,7 @@ TEST_F(SharedWorkerHostTest, Normal) {
   base::RunLoop().RunUntilIdle();
 
   // The factory should have gotten the CreateSharedWorker message.
-  mojom::SharedWorkerHostPtr worker_host;
+  blink::mojom::SharedWorkerHostPtr worker_host;
   mojom::SharedWorkerRequest worker_request;
   EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
       host->instance()->url(), host->instance()->name(),
@@ -266,7 +266,7 @@ TEST_F(SharedWorkerHostTest, TerminateAfterStarting) {
   base::RunLoop().RunUntilIdle();
 
   {
-    mojom::SharedWorkerHostPtr worker_host;
+    blink::mojom::SharedWorkerHostPtr worker_host;
     mojom::SharedWorkerRequest worker_request;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
         host->instance()->url(), host->instance()->name(),
@@ -308,7 +308,7 @@ TEST_F(SharedWorkerHostTest, OnContextClosed) {
   base::RunLoop().RunUntilIdle();
 
   {
-    mojom::SharedWorkerHostPtr worker_host;
+    blink::mojom::SharedWorkerHostPtr worker_host;
     mojom::SharedWorkerRequest worker_request;
     EXPECT_TRUE(factory_impl.CheckReceivedCreateSharedWorker(
         host->instance()->url(), host->instance()->name(),

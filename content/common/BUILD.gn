@@ -515,7 +515,6 @@ mojom("mojo_bindings") {
     "shared_worker/shared_worker.mojom",
     "shared_worker/shared_worker_connector.mojom",
     "shared_worker/shared_worker_factory.mojom",
-    "shared_worker/shared_worker_host.mojom",
     "url_loader_factory_bundle.mojom",
     "widget.mojom",
   ]

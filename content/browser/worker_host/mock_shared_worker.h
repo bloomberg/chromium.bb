@@ -60,7 +60,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       const std::string& expected_name,
       blink::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
-      mojom::SharedWorkerHostPtr* host,
+      blink::mojom::SharedWorkerHostPtr* host,
       mojom::SharedWorkerRequest* request);
 
  private:
@@ -80,7 +80,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      mojom::SharedWorkerHostPtr host,
+      blink::mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
 
@@ -90,7 +90,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
     blink::mojom::SharedWorkerInfoPtr info;
     bool pause_on_start;
     blink::mojom::WorkerContentSettingsProxyPtr content_settings;
-    mojom::SharedWorkerHostPtr host;
+    blink::mojom::SharedWorkerHostPtr host;
     mojom::SharedWorkerRequest request;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
   };
