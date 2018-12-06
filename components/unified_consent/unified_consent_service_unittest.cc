@@ -6,9 +6,10 @@
 
 #include <map>
 #include <memory>
+#include "base/run_loop.h"
 
-#include "base/message_loop/message_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/sync/base/sync_prefs.h"
@@ -183,7 +184,7 @@ class UnifiedConsentServiceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   identity::IdentityTestEnvironment identity_test_environment_;
   TestSyncService sync_service_;
