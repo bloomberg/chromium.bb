@@ -63,7 +63,7 @@ void ValidationMessageClientImpl::ShowValidationMessage(
     HideValidationMessage(anchor);
     return;
   }
-  if (!anchor.GetLayoutBox())
+  if (!anchor.GetLayoutObject())
     return;
   if (current_anchor_)
     HideValidationMessageImmediately(*current_anchor_);

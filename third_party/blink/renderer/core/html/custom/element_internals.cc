@@ -16,6 +16,19 @@
 
 namespace blink {
 
+namespace {
+bool IsValidityStateFlagsValid(const ValidityStateFlags* flags) {
+  if (!flags)
+    return true;
+  if (flags->badInput() || flags->customError() || flags->patternMismatch() ||
+      flags->rangeOverflow() || flags->rangeUnderflow() ||
+      flags->stepMismatch() || flags->tooLong() || flags->tooShort() ||
+      flags->typeMismatch() || flags->valueMissing())
+    return false;
+  return true;
+}
+}  // anonymous namespace
+
 ElementInternals::ElementInternals(HTMLElement& target) : target_(target) {
   value_.SetUSVString(String());
 }
@@ -78,11 +91,7 @@ void ElementInternals::setValidity(ValidityStateFlags* flags,
   }
   // Custom element authors should provide a message. They can omit the message
   // argument only if nothing if | flags| is true.
-  if ((flags->badInput() || flags->customError() || flags->patternMismatch() ||
-       flags->rangeOverflow() || flags->rangeUnderflow() ||
-       flags->stepMismatch() || flags->tooLong() || flags->tooShort() ||
-       flags->typeMismatch() || flags->valueMissing()) &&
-      message.IsEmpty()) {
+  if (!IsValidityStateFlagsValid(flags) && message.IsEmpty()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kTypeMismatchError,
         "The second argument should not be empty if one or more flags in the "
@@ -122,9 +131,19 @@ String ElementInternals::ValidationMessageForBinding(
         "The target element is not a form-associated custom element.");
     return String();
   }
-  if (ListedElement::validity()->valid())
+  return validationMessage();
+}
+
+String ElementInternals::validationMessage() const {
+  if (IsValidityStateFlagsValid(validity_flags_))
     return String();
   return CustomValidationMessage();
+}
+
+String ElementInternals::ValidationSubMessage() const {
+  if (PatternMismatch())
+    return Target().FastGetAttribute(html_names::kTitleAttr).GetString();
+  return String();
 }
 
 bool ElementInternals::checkValidity(ExceptionState& exception_state) {
