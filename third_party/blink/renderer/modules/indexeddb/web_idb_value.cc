@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h"
 
 namespace blink {
@@ -28,9 +27,9 @@ WebIDBValue& WebIDBValue::operator=(WebIDBValue&&) noexcept = default;
 
 WebIDBValue::~WebIDBValue() noexcept = default;
 
-void WebIDBValue::SetInjectedPrimaryKey(WebIDBKey primary_key,
+void WebIDBValue::SetInjectedPrimaryKey(std::unique_ptr<IDBKey> primary_key,
                                         const WebIDBKeyPath& primary_key_path) {
-  private_->SetInjectedPrimaryKey(primary_key.ReleaseIdbKey(),
+  private_->SetInjectedPrimaryKey(std::move(primary_key),
                                   IDBKeyPath(primary_key_path));
 }
 

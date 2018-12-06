@@ -4,35 +4,36 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_callbacks.h"
 
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+
 namespace blink {
 
 MockWebIDBCallbacks::MockWebIDBCallbacks() {}
 
 MockWebIDBCallbacks::~MockWebIDBCallbacks() {}
 
-void MockWebIDBCallbacks::OnSuccess(blink::WebIDBKey key,
-                                    blink::WebIDBKey primaryKey,
-                                    blink::WebIDBValue value) {
+void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBKey> key,
+                                    std::unique_ptr<IDBKey> primaryKey,
+                                    WebIDBValue value) {
   DoOnSuccess(key, primaryKey, value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(blink::WebIDBCursor* cursor,
-                                    blink::WebIDBKey key,
-                                    blink::WebIDBKey primaryKey,
-                                    blink::WebIDBValue value) {
+void MockWebIDBCallbacks::OnSuccess(WebIDBCursor* cursor,
+                                    std::unique_ptr<IDBKey> key,
+                                    std::unique_ptr<IDBKey> primaryKey,
+                                    WebIDBValue value) {
   DoOnSuccess(cursor, key, primaryKey, value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(blink::WebIDBKey key) {
+void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBKey> key) {
   DoOnSuccess(key);
 }
 
-void MockWebIDBCallbacks::OnSuccess(blink::WebIDBValue value) {
+void MockWebIDBCallbacks::OnSuccess(WebIDBValue value) {
   DoOnSuccess(value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(
-    blink::WebVector<blink::WebIDBValue> values) {
+void MockWebIDBCallbacks::OnSuccess(WebVector<WebIDBValue> values) {
   DoOnSuccess(values);
 }
 

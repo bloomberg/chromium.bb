@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
+#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
@@ -120,12 +121,10 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
                              long long object_store_id,
                              const WebData& value,
                              const Vector<WebBlobInfo>& web_blob_info,
-                             WebIDBKeyView web_primary_key,
+                             std::unique_ptr<IDBKey> primary_key,
                              mojom::IDBPutMode put_mode,
                              WebIDBCallbacks* callbacks,
-                             const Vector<WebIDBIndexKeys>& index_keys) {
-  WebIDBKey primary_key = WebIDBKeyBuilder::Build(web_primary_key);
-
+                             Vector<IDBIndexKeys> index_keys) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 
   auto mojo_value = mojom::blink::IDBValue::New();
@@ -168,12 +167,12 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   for (const auto& index_key : index_keys) {
     index_keys_size++;  // Account for index_key.first (int64_t).
     for (const auto& key : index_key.second) {
-      index_keys_size += key.SizeEstimate();
+      index_keys_size += key->SizeEstimate();
     }
   }
 
   size_t arg_size =
-      mojo_value->bits.size() + primary_key.SizeEstimate() + index_keys_size;
+      mojo_value->bits.size() + primary_key->SizeEstimate() + index_keys_size;
   if (arg_size >= max_put_value_size_) {
     callbacks->OnError(blink::WebIDBDatabaseError(
         blink::kWebIDBDatabaseExceptionUnknownError,
@@ -187,18 +186,16 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       base::WrapUnique(callbacks), transaction_id, nullptr);
   database_->Put(transaction_id, object_store_id, std::move(mojo_value),
-                 std::move(primary_key), put_mode, index_keys,
+                 std::move(primary_key), put_mode, std::move(index_keys),
                  GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
-void WebIDBDatabaseImpl::SetIndexKeys(
-    long long transaction_id,
-    long long object_store_id,
-    WebIDBKeyView primary_key,
-    const Vector<WebIDBIndexKeys>& index_keys) {
-  IndexedDBKey temp(IndexedDBKeyBuilder::Build(primary_key));
+void WebIDBDatabaseImpl::SetIndexKeys(long long transaction_id,
+                                      long long object_store_id,
+                                      std::unique_ptr<IDBKey> primary_key,
+                                      Vector<IDBIndexKeys> index_keys) {
   database_->SetIndexKeys(transaction_id, object_store_id,
-                          WebIDBKeyBuilder::Build(temp), std::move(index_keys));
+                          std::move(primary_key), std::move(index_keys));
 }
 
 void WebIDBDatabaseImpl::SetIndexesReady(long long transaction_id,
@@ -240,7 +237,7 @@ void WebIDBDatabaseImpl::Count(long long transaction_id,
 
 void WebIDBDatabaseImpl::Delete(long long transaction_id,
                                 long long object_store_id,
-                                WebIDBKeyView primary_key,
+                                const IDBKey* primary_key,
                                 WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
 

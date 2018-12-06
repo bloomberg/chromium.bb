@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
+#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/platform/mojo/string16_mojom_traits.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -51,8 +52,8 @@ bool StructTraits<blink::mojom::IDBDatabaseMetadataDataView,
 }
 
 // static
-bool StructTraits<blink::mojom::IDBIndexKeysDataView, blink::WebIDBIndexKeys>::
-    Read(blink::mojom::IDBIndexKeysDataView data, blink::WebIDBIndexKeys* out) {
+bool StructTraits<blink::mojom::IDBIndexKeysDataView, blink::IDBIndexKeys>::
+    Read(blink::mojom::IDBIndexKeysDataView data, blink::IDBIndexKeys* out) {
   out->first = data.index_id();
   if (!data.ReadIndexKeys(&out->second))
     return false;
@@ -81,9 +82,10 @@ bool StructTraits<blink::mojom::IDBIndexMetadataDataView,
 
 // static
 blink::mojom::IDBKeyDataDataView::Tag
-UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::GetTag(
-    const blink::WebIDBKey& key) {
-  switch (key.View().KeyType()) {
+UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
+    GetTag(const std::unique_ptr<blink::IDBKey>& key) {
+  DCHECK(key.get());
+  switch (key->GetType()) {
     case blink::mojom::IDBKeyType::Invalid:
       return blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID;
     case blink::mojom::IDBKeyType::Array:
@@ -107,26 +109,22 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::GetTag(
 }
 
 // static
-bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::Read(
-    blink::mojom::IDBKeyDataDataView data,
-    blink::WebIDBKey* out) {
+bool UnionTraits<
+    blink::mojom::IDBKeyDataDataView,
+    std::unique_ptr<blink::IDBKey>>::Read(blink::mojom::IDBKeyDataDataView data,
+                                          std::unique_ptr<blink::IDBKey>* out) {
   switch (data.tag()) {
     case blink::mojom::IDBKeyDataDataView::Tag::KEY_ARRAY: {
-      Vector<blink::WebIDBKey> array;
+      Vector<std::unique_ptr<blink::IDBKey>> array;
       if (!data.ReadKeyArray(&array))
         return false;
-      blink::WebVector<blink::WebIDBKey> webvector_array;
-      for (const auto& item : array) {
-        webvector_array.emplace_back(
-            blink::WebIDBKeyBuilder::Build(item.View()));
-      }
-      *out = blink::WebIDBKey::CreateArray(std::move(webvector_array));
+      *out = blink::IDBKey::CreateArray(std::move(array));
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::BINARY: {
       ArrayDataView<uint8_t> bytes;
       data.GetBinaryDataView(&bytes);
-      *out = blink::WebIDBKey::CreateBinary(blink::WebData(
+      *out = blink::IDBKey::CreateBinary(blink::WebData(
           reinterpret_cast<const char*>(bytes.data()), bytes.size()));
       return true;
     }
@@ -134,20 +132,20 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::Read(
       String string;
       if (!data.ReadString(&string))
         return false;
-      *out = blink::WebIDBKey::CreateString(blink::WebString(string));
+      *out = blink::IDBKey::CreateString(blink::WebString(string));
       return true;
     }
     case blink::mojom::IDBKeyDataDataView::Tag::DATE:
-      *out = blink::WebIDBKey::CreateDate(data.date());
+      *out = blink::IDBKey::CreateDate(data.date());
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::NUMBER:
-      *out = blink::WebIDBKey::CreateNumber(data.number());
+      *out = blink::IDBKey::CreateNumber(data.number());
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::OTHER_INVALID:
-      *out = blink::WebIDBKey::CreateInvalid();
+      *out = blink::IDBKey::CreateInvalid();
       return true;
     case blink::mojom::IDBKeyDataDataView::Tag::OTHER_NULL:
-      *out = blink::WebIDBKey::CreateNull();
+      *out = blink::IDBKey::CreateNull();
       return true;
   }
 
@@ -155,26 +153,17 @@ bool UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::Read(
 }
 
 // static
-const blink::WebVector<blink::WebIDBKey>
-UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::key_array(
-    const blink::WebIDBKey& key) {
-  const auto& array_view = key.View().ArrayView();
-  const size_t array_size = array_view.size();
-  Vector<blink::WebIDBKey> result;
-  result.ReserveInitialCapacity(SafeCast<wtf_size_t>(array_view.size()));
-  // |array_view| is of type WebIDBKeyArrayView which only implements size()
-  // and operator[].  Since it doesn't have other typical array functions, we
-  // must use an iterator-style for loop.
-  for (size_t i = 0; i < array_size; ++i)
-    result.emplace_back(blink::WebIDBKeyBuilder::Build(array_view[i]));
-  return result;
+const Vector<std::unique_ptr<blink::IDBKey>>&
+UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
+    key_array(const std::unique_ptr<blink::IDBKey>& key) {
+  return key->Array();
 }
 
 // static
-const Vector<uint8_t>
-UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::binary(
-    const blink::WebIDBKey& key) {
-  const auto& data = key.View().Binary();
+Vector<uint8_t>
+UnionTraits<blink::mojom::IDBKeyDataDataView, std::unique_ptr<blink::IDBKey>>::
+    binary(const std::unique_ptr<blink::IDBKey>& key) {
+  const blink::WebData& data = key->Binary();
   Vector<uint8_t> result;
   result.ReserveInitialCapacity(SafeCast<wtf_size_t>(data.size()));
   data.ForEachSegment([&result](const char* segment, size_t segment_size,
@@ -187,16 +176,17 @@ UnionTraits<blink::mojom::IDBKeyDataDataView, blink::WebIDBKey>::binary(
 }
 
 // static
-const blink::WebIDBKey&
-StructTraits<blink::mojom::IDBKeyDataView, blink::WebIDBKey>::data(
-    const blink::WebIDBKey& key) {
+const std::unique_ptr<blink::IDBKey>&
+StructTraits<blink::mojom::IDBKeyDataView, std::unique_ptr<blink::IDBKey>>::
+    data(const std::unique_ptr<blink::IDBKey>& key) {
   return key;
 }
 
 // static
-bool StructTraits<blink::mojom::IDBKeyDataView, blink::WebIDBKey>::Read(
-    blink::mojom::IDBKeyDataView data,
-    blink::WebIDBKey* out) {
+bool StructTraits<
+    blink::mojom::IDBKeyDataView,
+    std::unique_ptr<blink::IDBKey>>::Read(blink::mojom::IDBKeyDataView data,
+                                          std::unique_ptr<blink::IDBKey>* out) {
   return data.ReadData(out);
 }
 
@@ -268,15 +258,13 @@ bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::Read(
 // static
 bool StructTraits<blink::mojom::IDBKeyRangeDataView, blink::WebIDBKeyRange>::
     Read(blink::mojom::IDBKeyRangeDataView data, blink::WebIDBKeyRange* out) {
-  // TODO(cmp): Use WebIDBKey and WebIDBKeyRange directly.
-  blink::IndexedDBKey lower;
-  blink::IndexedDBKey upper;
+  std::unique_ptr<blink::IDBKey> lower;
+  std::unique_ptr<blink::IDBKey> upper;
   if (!data.ReadLower(&lower) || !data.ReadUpper(&upper))
     return false;
 
-  blink::IndexedDBKeyRange temp(lower, upper, data.lower_open(),
-                                data.upper_open());
-  *out = blink::WebIDBKeyRangeBuilder::Build(temp);
+  *out = blink::WebIDBKeyRange(std::move(lower), std::move(upper),
+                               data.lower_open(), data.upper_open());
   return true;
 }
 

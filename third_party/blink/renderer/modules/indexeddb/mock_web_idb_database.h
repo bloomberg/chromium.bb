@@ -89,16 +89,16 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long object_store_id,
                     const WebData& value,
                     const Vector<WebBlobInfo>&,
-                    WebIDBKeyView primary_key,
+                    std::unique_ptr<IDBKey> primary_key,
                     mojom::IDBPutMode,
                     WebIDBCallbacks*,
-                    const Vector<WebIDBIndexKeys>&));
+                    Vector<IDBIndexKeys>));
 
   MOCK_METHOD4(SetIndexKeys,
                void(long long transaction_id,
                     long long object_store_id,
-                    WebIDBKeyView primary_key,
-                    const Vector<WebIDBIndexKeys>&));
+                    std::unique_ptr<IDBKey> primary_key,
+                    Vector<IDBIndexKeys>));
   MOCK_METHOD3(SetIndexesReady,
                void(long long transaction_id,
                     long long object_store_id,
@@ -121,7 +121,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
   MOCK_METHOD4(Delete,
                void(long long transaction_id,
                     long long object_store_id,
-                    WebIDBKeyView primary_key,
+                    const IDBKey* primary_key,
                     WebIDBCallbacks*));
   MOCK_METHOD4(DeleteRange,
                void(long long transaction_id,

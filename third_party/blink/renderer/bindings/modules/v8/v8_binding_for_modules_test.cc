@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -182,7 +181,7 @@ std::unique_ptr<IDBValue> CreateIDBValue(v8::Isolate* isolate,
                                          const WebString& key_path) {
   WebData web_data(SharedBuffer::AdoptVector(wire_bytes));
   WebIDBValue web_idb_value(web_data, Vector<WebBlobInfo>());
-  web_idb_value.SetInjectedPrimaryKey(WebIDBKey::CreateNumber(primary_key),
+  web_idb_value.SetInjectedPrimaryKey(IDBKey::CreateNumber(primary_key),
                                       WebIDBKeyPath(key_path));
 
   std::unique_ptr<IDBValue> idb_value = web_idb_value.ReleaseIdbValue();

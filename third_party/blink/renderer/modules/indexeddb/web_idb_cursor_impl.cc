@@ -19,8 +19,6 @@
 using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
-using blink::WebIDBKey;
-using blink::WebIDBKeyView;
 using blink::WebIDBValue;
 using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
 using blink::mojom::blink::IDBCursorAssociatedPtrInfo;
@@ -64,13 +62,14 @@ void WebIDBCursorImpl::Advance(uint32_t count, WebIDBCallbacks* callbacks_ptr) {
   cursor_->Advance(count, GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
-void WebIDBCursorImpl::CursorContinue(WebIDBKeyView key,
-                                      WebIDBKeyView primary_key,
+void WebIDBCursorImpl::CursorContinue(const IDBKey* key,
+                                      const IDBKey* primary_key,
                                       WebIDBCallbacks* callbacks_ptr) {
+  DCHECK(key && primary_key);
   std::unique_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (key.KeyType() == mojom::IDBKeyType::Null &&
-      primary_key.KeyType() == mojom::IDBKeyType::Null) {
+  if (key->GetType() == mojom::IDBKeyType::Null &&
+      primary_key->GetType() == mojom::IDBKeyType::Null) {
     // No key(s), so this would qualify for a prefetch.
     ++continue_count_;
 
@@ -106,8 +105,7 @@ void WebIDBCursorImpl::CursorContinue(WebIDBKeyView key,
 
   auto callbacks_impl = std::make_unique<IndexedDBCallbacksImpl>(
       std::move(callbacks), transaction_id_, weak_factory_.GetWeakPtr());
-  cursor_->CursorContinue(WebIDBKeyBuilder::Build(key),
-                          WebIDBKeyBuilder::Build(primary_key),
+  cursor_->CursorContinue(IDBKey::Clone(key), IDBKey::Clone(primary_key),
                           GetCallbacksProxy(std::move(callbacks_impl)));
 }
 
@@ -124,9 +122,10 @@ void WebIDBCursorImpl::PostSuccessHandlerCallback() {
     ResetPrefetchCache();
 }
 
-void WebIDBCursorImpl::SetPrefetchData(Vector<WebIDBKey> keys,
-                                       Vector<WebIDBKey> primary_keys,
-                                       Vector<WebIDBValue> values) {
+void WebIDBCursorImpl::SetPrefetchData(
+    Vector<std::unique_ptr<IDBKey>> keys,
+    Vector<std::unique_ptr<IDBKey>> primary_keys,
+    Vector<WebIDBValue> values) {
   // Keys and values are stored in reverse order so that a cache'd continue can
   // pop a value off of the back and prevent new memory allocations.
   prefetch_keys_.AppendRange(std::make_move_iterator(keys.rbegin()),
@@ -165,8 +164,9 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
 
   // Keys and values are stored in reverse order so that a cache'd continue can
   // pop a value off of the back and prevent new memory allocations.
-  WebIDBKey key = std::move(prefetch_keys_.back());
-  WebIDBKey primary_key = std::move(prefetch_primary_keys_.back());
+  std::unique_ptr<IDBKey> key = std::move(prefetch_keys_.back());
+  std::unique_ptr<IDBKey> primary_key =
+      std::move(prefetch_primary_keys_.back());
   WebIDBValue value = std::move(prefetch_values_.back());
 
   prefetch_keys_.pop_back();

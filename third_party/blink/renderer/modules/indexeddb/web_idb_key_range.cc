@@ -27,7 +27,6 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 
 namespace blink {
 
@@ -35,14 +34,14 @@ void WebIDBKeyRange::Assign(const WebIDBKeyRange& other) {
   private_ = other.private_;
 }
 
-void WebIDBKeyRange::Assign(WebIDBKey lower,
-                            WebIDBKey upper,
+void WebIDBKeyRange::Assign(std::unique_ptr<IDBKey> lower,
+                            std::unique_ptr<IDBKey> upper,
                             bool lower_open,
                             bool upper_open) {
-  if (!lower.View().IsValid() && !upper.View().IsValid()) {
+  if (!lower->IsValid() && !upper->IsValid()) {
     private_.Reset();
   } else {
-    private_ = IDBKeyRange::Create(lower.ReleaseIdbKey(), upper.ReleaseIdbKey(),
+    private_ = IDBKeyRange::Create(std::move(lower), std::move(upper),
                                    lower_open ? IDBKeyRange::kLowerBoundOpen
                                               : IDBKeyRange::kLowerBoundClosed,
                                    upper_open ? IDBKeyRange::kUpperBoundOpen
@@ -54,16 +53,16 @@ void WebIDBKeyRange::Reset() {
   private_.Reset();
 }
 
-WebIDBKeyView WebIDBKeyRange::Lower() const {
+const IDBKey* WebIDBKeyRange::Lower() const {
   if (!private_.Get())
-    return WebIDBKeyView(nullptr);
-  return WebIDBKeyView(private_->Lower());
+    return nullptr;
+  return private_->Lower();
 }
 
-WebIDBKeyView WebIDBKeyRange::Upper() const {
+const IDBKey* WebIDBKeyRange::Upper() const {
   if (!private_.Get())
-    return WebIDBKeyView(nullptr);
-  return WebIDBKeyView(private_->Upper());
+    return nullptr;
+  return private_->Upper();
 }
 
 bool WebIDBKeyRange::LowerOpen() const {

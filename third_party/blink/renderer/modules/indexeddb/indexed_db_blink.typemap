@@ -5,7 +5,6 @@
 mojom = "//third_party/blink/public/mojom/indexeddb/indexeddb.mojom"
 public_headers = [
   "//third_party/blink/public/common/indexeddb/web_idb_types.h",
-  "//third_party/blink/renderer/modules/indexeddb/web_idb_key.h",
   "//third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h",
   "//third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h",
   "//third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h",
@@ -26,9 +25,9 @@ deps = [
 ]
 type_mappings = [
   "blink.mojom.IDBDatabaseMetadata=::blink::IDBDatabaseMetadata",
-  "blink.mojom.IDBIndexKeys=::blink::WebIDBIndexKeys",
+  "blink.mojom.IDBIndexKeys=::blink::IDBIndexKeys[move_only]",
   "blink.mojom.IDBIndexMetadata=scoped_refptr<::blink::IDBIndexMetadata>",
-  "blink.mojom.IDBKey=::blink::WebIDBKey[move_only]",
+  "blink.mojom.IDBKey=std::unique_ptr<::blink::IDBKey>[move_only]",
   "blink.mojom.IDBKeyPath=::blink::IDBKeyPath",
   "blink.mojom.IDBKeyRange=::blink::WebIDBKeyRange",
   "blink.mojom.IDBObjectStoreMetadata=scoped_refptr<::blink::IDBObjectStoreMetadata>",

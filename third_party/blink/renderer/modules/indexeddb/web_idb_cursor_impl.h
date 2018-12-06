@@ -14,7 +14,6 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
@@ -29,13 +28,13 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
   ~WebIDBCursorImpl() override;
 
   void Advance(uint32_t count, WebIDBCallbacks* callback) override;
-  void CursorContinue(WebIDBKeyView key,
-                      WebIDBKeyView primary_key,
+  void CursorContinue(const IDBKey* key,
+                      const IDBKey* primary_key,
                       WebIDBCallbacks* callback) override;
   void PostSuccessHandlerCallback() override;
 
-  void SetPrefetchData(Vector<WebIDBKey> keys,
-                       Vector<WebIDBKey> primary_keys,
+  void SetPrefetchData(Vector<std::unique_ptr<IDBKey>> keys,
+                       Vector<std::unique_ptr<IDBKey>> primary_keys,
                        Vector<WebIDBValue> values);
 
   void CachedAdvance(unsigned long count, WebIDBCallbacks* callbacks);
@@ -67,8 +66,8 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
   // Prefetch cache. Keys and values are stored in reverse order so that a
   // cache'd continue can pop a value off of the back and prevent new memory
   // allocations.
-  Vector<WebIDBKey> prefetch_keys_;
-  Vector<WebIDBKey> prefetch_primary_keys_;
+  Vector<std::unique_ptr<IDBKey>> prefetch_keys_;
+  Vector<std::unique_ptr<IDBKey>> prefetch_primary_keys_;
   Vector<WebIDBValue> prefetch_values_;
 
   // Number of continue calls that would qualify for a pre-fetch.

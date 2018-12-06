@@ -19,6 +19,7 @@ namespace blink {
 
 class BlobDataHandle;
 class SerializedScriptValue;
+class WebData;
 class WebBlobInfo;
 class WebIDBValue;
 
@@ -60,6 +61,9 @@ class MODULES_EXPORT IDBValue final {
   // Injects a primary key into a value coming from the backend.
   void SetInjectedPrimaryKey(std::unique_ptr<IDBKey> primary_key,
                              IDBKeyPath primary_key_path) {
+    // If the given key is type Null, ignore it.
+    if (primary_key && primary_key->GetType() == mojom::IDBKeyType::Null)
+      primary_key.reset();
     primary_key_ = std::move(primary_key);
     key_path_ = std::move(primary_key_path);
   }
