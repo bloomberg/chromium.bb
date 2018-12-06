@@ -636,6 +636,21 @@ def IncrementalBuilders(site_config):
   )
 
 
+def PostsubmitBuilders(site_config):
+  """Create all postsubmit test configs.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+  """
+  for config in site_config.itervalues():
+    if config.name.endswith('postsubmit'):
+      config.apply(
+          site_config.templates.no_vmtest_builder,
+          site_config.templates.no_hwtest_builder,
+      )
+
+
 def GeneralTemplates(site_config, ge_build_config):
   """Apply test config to general templates
 
@@ -934,6 +949,8 @@ def ApplyConfig(site_config, boards_dict, ge_build_config):
     InsertHwTestsOverrideDefaults(build)
 
   IncrementalBuilders(site_config)
+
+  PostsubmitBuilders(site_config)
 
   EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
 
