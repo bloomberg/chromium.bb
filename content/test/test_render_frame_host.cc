@@ -326,6 +326,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = nav_entry_id;
   params.url = url;
+  params.origin = url::Origin::Create(url);
   params.transition = transition;
   params.should_update_history = true;
   params.did_create_new_entry = did_create_new_entry;

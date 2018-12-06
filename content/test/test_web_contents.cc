@@ -178,7 +178,7 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.is_overriding_user_agent = false;
   params.history_list_was_cleared = false;
   params.render_view_routing_id = 0;
-  params.origin = url::Origin();
+  params.origin = url::Origin::Create(url);
   params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;
   params.has_potentially_trustworthy_unique_origin = false;
 

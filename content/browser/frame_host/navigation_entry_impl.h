@@ -232,6 +232,7 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       SiteInstanceImpl* site_instance,
       scoped_refptr<SiteInstanceImpl> source_site_instance,
       const GURL& url,
+      const url::Origin& origin,
       const Referrer& referrer,
       const std::vector<GURL>& redirect_chain,
       const PageState& page_state,
