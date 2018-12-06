@@ -1830,3 +1830,29 @@ TEST_F('ChromeVoxBackgroundTest', 'ReinsertedNodeRecovery', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxBackgroundTest', 'HoverTargetsLeafNode', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <div role=button><p>Washington</p></div>
+    <div role=button><p>Adams</p></div>
+    <div role=button><p>Jefferson</p></div>
+  */}, function(root) {
+    let button = root.find({role: RoleType.BUTTON,
+                            attributes: { name: 'Jefferson' }});
+    let buttonP = button.firstChild;
+    assertNotNullNorUndefined(buttonP);
+    let buttonText = buttonP.firstChild;
+    assertNotNullNorUndefined(buttonText);
+    var doHover = () => {
+      var event = new CustomAutomationEvent(
+          EventType.HOVER, buttonText, 'action');
+      DesktopAutomationHandler.instance.onHover(event);
+    };
+    mockFeedback
+        .call(doHover)
+        .expectSpeech('Jefferson')
+        .expectSpeech('Button')
+        .replay();
+  });
+});
