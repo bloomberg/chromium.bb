@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -101,6 +102,15 @@ class BASE_EXPORT FileDescriptorWatcher {
                                                    const Closure& callback);
   static std::unique_ptr<Controller> WatchWritable(int fd,
                                                    const Closure& callback);
+
+  // Asserts that usage of this API is allowed on this thread.
+  static void AssertAllowed()
+#if DCHECK_IS_ON()
+      ;
+#else
+  {
+  }
+#endif
 
  private:
   scoped_refptr<SingleThreadTaskRunner> io_thread_task_runner() const {
