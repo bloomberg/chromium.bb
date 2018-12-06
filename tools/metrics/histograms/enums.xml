@@ -3991,6 +3991,9 @@ uploading your change for review.  These are checked by presubmit scripts.
     31-bit hash of the service UUID. Values here are populated from
     https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
   </summary>
+  <obsolete>
+    No longer used by active histograms in M73.
+  </obsolete>
   <int value="27577045"
       label="SIM_Access; 0000112d-0000-1000-8000-00805f9b34fb"/>
   <int value="46048502"
