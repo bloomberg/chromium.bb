@@ -105,10 +105,10 @@ struct PrefetchItem {
   // item. It holds a negative value otherwise.
   int64_t archive_body_length = -1;
 
-  // The last time the URL was attempted to be added to the store. Normally this
-  // is just the time the item was added. If the same URL is added multiple
-  // times, this is the timestamp of the last time. creation_time
-  // is used as a proxy for priority.
+  // The last time the URL was suggested to be prefetched. Normally this is the
+  // time the item was initially added but if the same URL is suggested multiple
+  // times, it will be updated with the timestamp of the last time.
+  // |creation_time| is used as a proxy for priority.
   base::Time creation_time;
 
   // Time used for the expiration of the item depending on the applicable policy
