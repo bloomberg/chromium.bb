@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/task/sequence_manager/task_time_observer.h"
+#include "base/time/default_tick_clock.h"
 
 namespace base {
 namespace sequence_manager {
@@ -66,6 +67,7 @@ class SequenceManager {
 
     MessageLoop::Type message_loop_type = MessageLoop::Type::TYPE_DEFAULT;
     bool randomised_sampling_enabled = false;
+    const TickClock* clock = DefaultTickClock::GetInstance();
 
     DISALLOW_COPY_AND_ASSIGN(Settings);
   };
