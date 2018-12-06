@@ -74,6 +74,8 @@ class TabIcon : public views::View {
     base::TimeDelta elapsed_time;
     base::Optional<double> loading_progress;
     base::Optional<double> loading_progress_fade_out;
+
+    base::Optional<double> favicon_placeholder_alpha;
     // TODO(pbos): Make this a type that can represent "not started" and "ended"
     // separately. Right now the value 1.0 is used to indicate that the
     // animation has ended (and we're not waiting for it to start).
@@ -109,9 +111,10 @@ class TabIcon : public views::View {
   const gfx::ImageSkia& GetIconToPaint();
 
   // Paints a placeholder image for the favicon if one should be painted.
-  void PaintFaviconPlaceholder(gfx::Canvas* canvas, const gfx::Rect& bounds);
-  // Paint the favicon if it's available. Returns true if the icon was painted.
-  bool MaybePaintFavicon(gfx::Canvas* canvas,
+  void MaybePaintFaviconPlaceholder(gfx::Canvas* canvas,
+                                    const gfx::Rect& bounds);
+  // Paint the favicon if it's available.
+  void MaybePaintFavicon(gfx::Canvas* canvas,
                          const gfx::ImageSkia& icon,
                          const gfx::Rect& bounds);
   bool HasNonDefaultFavicon() const;
