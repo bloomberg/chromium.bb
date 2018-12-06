@@ -2592,11 +2592,15 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   EXPECT_EQ("0 1", IDString(browser()->tab_strip_model()));
 
-  // Move to the first tab and drag it enough so that it detaches.
+  // Move to the first tab and drag it enough so that it detaches. Drag it
+  // slightly more horizontally so that it does not generate a swipe down
+  // gesture that minimizes the detached browser window.
   gfx::Point tab_0_center(GetCenterInScreenCoordinates(tab_strip->tab_at(0)));
   ASSERT_TRUE(PressInput(tab_0_center));
+  const int touch_move_delta = GetDetachY(tab_strip);
   ASSERT_TRUE(DragInputToNotifyWhenDone(
-      tab_0_center.x(), tab_0_center.y() + GetDetachY(tab_strip),
+      tab_0_center.x() + touch_move_delta + 5,
+      tab_0_center.y() + touch_move_delta,
       base::Bind(&PressSecondFingerWhileDetachedStep2, this,
                  gfx::Point(tab_0_center.x(),
                             tab_0_center.y() + 2 * GetDetachY(tab_strip)))));

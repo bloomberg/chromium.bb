@@ -17,6 +17,7 @@
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/ui/browser_commands_mac.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #endif
 
 using views::FocusManager;
@@ -28,12 +29,17 @@ class BrowserViewTest : public InProcessBrowserTest {
   BrowserViewTest() = default;
   ~BrowserViewTest() override = default;
 
-  void InitPrefSettings() {
+  void SetUpOnMainThread() override {
 #if defined(OS_MACOSX)
     // Set the preference to true so we expect to see the top view in
     // fullscreen mode.
     PrefService* prefs = browser()->profile()->GetPrefs();
     prefs->SetBoolean(prefs::kShowFullscreenToolbar, true);
+
+    // Ensure that the browser window is activated. BrowserView::Show calls
+    // into BridgedNativeWidgetImpl::SetVisibilityState and makeKeyAndOrderFront
+    // there somehow does not change the window's key status on bot.
+    ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 #endif
   }
 
@@ -45,7 +51,6 @@ class BrowserViewTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenClearsFocus) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  InitPrefSettings();
   LocationBarView* location_bar_view = browser_view->GetLocationBarView();
   FocusManager* focus_manager = browser_view->GetFocusManager();
 
@@ -64,7 +69,6 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, FullscreenClearsFocus) {
 // correctly in browser fullscreen mode.
 IN_PROC_BROWSER_TEST_F(BrowserViewTest, BrowserFullscreenShowTopView) {
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  InitPrefSettings();
 
   // The top view should always show up in regular mode.
   EXPECT_FALSE(browser_view->IsFullscreen());

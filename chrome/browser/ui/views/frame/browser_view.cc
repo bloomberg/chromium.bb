@@ -127,6 +127,7 @@
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/version_info/channel.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/keyboard_event_processing_result.h"
 #include "content/public/browser/notification_service.h"
@@ -303,6 +304,15 @@ bool GetGestureCommand(ui::GestureEvent* event, int* command) {
   }
 #endif  // OS_MACOSX
   return false;
+}
+
+bool IsShowingWebContentsModalDialog(content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+
+  const web_modal::WebContentsModalDialogManager* manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);
+  return manager && manager->IsDialogActive();
 }
 
 // A view targeter for the overlay view, which makes sure the overlay view
@@ -671,27 +681,12 @@ void BrowserView::Show() {
     return;
   }
 
-  // Showing the window doesn't make the browser window active right away.
-  // This can cause SetFocusToLocationBar() to skip setting focus to the
-  // location bar. To avoid this we explicilty let SetFocusToLocationBar()
-  // know that it's ok to steal focus.
-  force_location_bar_focus_ = true;
-
-  // Setting the focus doesn't work when the window is invisible, so any focus
-  // initialization that happened before this will be lost.
-  //
-  // We really "should" restore the focus whenever the window becomes unhidden,
-  // but I think initializing is the only time where this can happen where
-  // there is some focus change we need to pick up, and this is easier than
-  // plumbing through an un-hide message all the way from the frame.
-  //
-  // If we do find there are cases where we need to restore the focus on show,
-  // that should be added and this should be removed.
-  RestoreFocus();
+  // Only set |restore_focus_on_activation_| when it is not set so that restore
+  // focus on activation only happen once for the very first Show() call.
+  if (!restore_focus_on_activation_.has_value())
+    restore_focus_on_activation_ = true;
 
   frame_->Show();
-
-  force_location_bar_focus_ = false;
 
   browser()->OnWindowDidShow();
 
@@ -1109,7 +1104,7 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   // even if the widget doens't have a focus. Either cases, we need to ignore
   // this when the browser window isn't active.
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-  if (!force_location_bar_focus_ && !IsActive())
+  if (!IsActive())
     return;
 #endif
 
@@ -2115,10 +2110,21 @@ void BrowserView::OnWidgetDestroying(views::Widget* widget) {
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   if (browser_->window()) {
-    if (active)
+    if (active) {
+      if (restore_focus_on_activation_.has_value() &&
+          restore_focus_on_activation_.value()) {
+        restore_focus_on_activation_ = false;
+
+        // Set initial focus change on the first activation if there is no
+        // tab modal dialog.
+        if (!IsShowingWebContentsModalDialog(GetActiveWebContents()))
+          RestoreFocus();
+      }
+
       BrowserList::SetLastActive(browser_.get());
-    else
+    } else {
       BrowserList::NotifyBrowserNoLongerActive(browser_.get());
+    }
   }
 
   if (!extension_keybinding_registry_ &&
