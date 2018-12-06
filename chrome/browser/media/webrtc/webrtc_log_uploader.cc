@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -189,6 +190,8 @@ void WebRtcLogUploader::UploadStoredLog(
   std::string compressed_log;
   if (!base::ReadFileToString(native_log_path, &compressed_log)) {
     DPLOG(WARNING) << "Could not read WebRTC log file.";
+    base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed",
+                             upload_data.web_app_id);
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(upload_data.callback, false, "", "Log doesn't exist."));
@@ -473,6 +476,9 @@ void WebRtcLogUploader::UploadCompressedLog(
 
   DecreaseLogCount();
 
+  // We don't log upload failure to UMA in case of shutting down for
+  // consistency, since there are other cases during shutdown were we don't get
+  // a chance to log.
   if (shutting_down_)
     return;
 
@@ -641,7 +647,12 @@ void WebRtcLogUploader::NotifyUploadDone(
   if (!upload_done_data.callback.is_null()) {
     bool success = response_code == net::HTTP_OK;
     std::string error_message;
-    if (!success) {
+    if (success) {
+      base::UmaHistogramSparse("WebRtcTextLogging.UploadSuccessful",
+                               upload_done_data.web_app_id);
+    } else {
+      base::UmaHistogramSparse("WebRtcTextLogging.UploadFailed",
+                               upload_done_data.web_app_id);
       error_message = "Uploading failed, response code: " +
                       base::IntToString(response_code);
     }

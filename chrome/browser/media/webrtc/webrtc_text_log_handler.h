@@ -133,6 +133,9 @@ class WebRtcTextLogHandler
                                bool success,
                                const std::string& error_message);
 
+  // Must be called on the IO thread.
+  void SetWebAppId(int web_app_id);
+
  private:
   friend class base::RefCountedThreadSafe<WebRtcTextLogHandler>;
   ~WebRtcTextLogHandler();
@@ -171,6 +174,11 @@ class WebRtcTextLogHandler
   // The system time in ms when logging is started. Reset when logging_state_
   // changes to STOPPED.
   base::Time logging_started_time_;
+
+  // Web app id used for statistics. See
+  // |WebRtcLoggingHandlerHost::web_app_id_|. Must only be accessed on the IO
+  // thread.
+  int web_app_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcTextLogHandler);
 };
