@@ -114,6 +114,11 @@ void RLZTrackerDelegateImpl::SetHomepageSearchCallback(
   NOTREACHED();
 }
 
+bool RLZTrackerDelegateImpl::ShouldUpdateExistingAccessPointRlz() {
+  NOTREACHED();
+  return false;
+}
+
 void RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   // In M-36, we made NOTIFICATION_OMNIBOX_OPENED_URL fire more often than
   // it did previously.  The RLZ folks want RLZ's "first search" detection
