@@ -1684,7 +1684,7 @@ bool ContentSecurityPolicy::ShouldBypassMainWorld(
   if (!context)
     return false;
 
-  v8::Isolate* isolate = context->GetIsolate();
+  v8::Isolate* isolate = ToIsolate(context);
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
   if (v8_context.IsEmpty())

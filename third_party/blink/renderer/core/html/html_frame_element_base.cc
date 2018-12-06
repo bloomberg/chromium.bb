@@ -63,7 +63,7 @@ bool HTMLFrameElementBase::IsURLAllowed() const {
     // frame. NB: This check can be invoked without any JS on the stack for some
     // parser operations. In such case, we use the origin of the frame element's
     // containing document as the caller context.
-    v8::Isolate* isolate = GetDocument().GetIsolate();
+    v8::Isolate* isolate = ToIsolate(&GetDocument());
     LocalDOMWindow* accessing_window = isolate->InContext()
                                            ? CurrentDOMWindow(isolate)
                                            : GetDocument().domWindow();

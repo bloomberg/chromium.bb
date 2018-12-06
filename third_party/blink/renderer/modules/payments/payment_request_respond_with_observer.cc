@@ -47,7 +47,7 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
                                  interface_name, property_name);
   PaymentHandlerResponse* response =
       NativeValueTraits<PaymentHandlerResponse>::NativeValue(
-          value.GetIsolate(), value.V8Value(), exception_state);
+          ToIsolate(GetExecutionContext()), value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     exception_state.ClearException();
     OnResponseRejected(mojom::ServiceWorkerResponseError::kNoV8Instance);
