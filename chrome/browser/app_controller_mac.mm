@@ -26,7 +26,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_window_registry_util.h"
@@ -179,7 +179,7 @@ void RecordLastRunAppBundlePath() {
   // real, user-visible app bundle directory. (The alternatives give either the
   // framework's path or the initial app's path, which may be an app mode shim
   // or a unit test.)
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath app_bundle_path =
       chrome::GetVersionedDirectory().DirName().DirName().DirName();
