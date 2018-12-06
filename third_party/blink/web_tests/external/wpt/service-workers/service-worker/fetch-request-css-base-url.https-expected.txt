@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS global setup
+FAIL base URL when service worker does respondWith(fetch(responseUrl)). assert_equals: request expected "https://web-platform.test:8444/service-workers/service-worker/resources/dummy.png" but got "https://web-platform.test:8444/service-workers/service-worker/resources/request-url-path/dummy.png"
+PASS base URL when service worker does respondWith(new Response()).
+PASS cleanup global state
+Harness: the test ran to completion.
+
