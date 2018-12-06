@@ -1088,8 +1088,20 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   }
 
   // Draw render pass with backdrop effects.
+  // Update the backdrop filter to include "regular" filters and opacity.
+  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
+  if (params.filters) {
+    for (const auto& filter_op : params.filters->operations())
+      backdrop_filters_plus_effects.Append(filter_op);
+  }
+  if (quad->shared_quad_state->opacity < 1.0) {
+    backdrop_filters_plus_effects.Append(
+        cc::FilterOperation::CreateOpacityFilter(
+            quad->shared_quad_state->opacity));
+  }
+
   auto background_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      *backdrop_filters,
+      backdrop_filters_plus_effects,
       gfx::SizeF(content_image->width(), content_image->height()));
   auto background_image_filter =
       background_paint_filter ? background_paint_filter->cached_sk_filter_
@@ -1120,6 +1132,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
   SkAutoCanvasRestore auto_canvas_restore_for_save_layer(current_canvas_,
                                                          false /* do_save */);
   current_canvas_->saveLayer(rec);
+  // TODO(masonfreed): need to draw the backdrop once first here
   current_canvas_->drawImageRect(content_image, content_rect, dest_visible_rect,
                                  paint);
 }
@@ -1255,10 +1268,6 @@ bool SkiaRenderer::ShouldApplyBackgroundFilters(
   if (!backdrop_filters)
     return false;
   DCHECK(!backdrop_filters->IsEmpty());
-
-  // TODO(hendrikw): Look into allowing background filters to see pixels from
-  // other render targets.  See crbug.com/314867.
-
   return true;
 }
 
