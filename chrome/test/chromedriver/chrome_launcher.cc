@@ -158,8 +158,11 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
     LOG(WARNING) << "excluding remote-debugging-port switch is not supported";
   }
   if (switches.HasSwitch("user-data-dir")) {
-    *user_data_dir =
-        base::FilePath(switches.GetSwitchValueNative("user-data-dir"));
+    base::FilePath::StringType userDataDir =
+      switches.GetSwitchValueNative("user-data-dir");
+    if (userDataDir.empty())
+      return Status(kInvalidArgument, "user data dir can not be empty");
+    *user_data_dir = base::FilePath(userDataDir);
   } else {
     command.AppendArg("data:,");
     if (!user_data_dir_temp_dir->CreateUniqueTempDir())
