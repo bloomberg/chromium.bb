@@ -20,6 +20,7 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.text.TextUtilsCompat;
@@ -93,6 +94,8 @@ class AutofillAssistantUiDelegate {
     private final View mFullContainer;
     private final TouchEventFilter mTouchEventFilter;
     private final LinearLayout mBottomBar;
+    private final View mSwipeIndicator;
+    private final View mBottomBarHeader;
     private final BottomSheetBehavior mBottomBarBehavior;
     private final HorizontalScrollView mCarouselScroll;
     private final ViewGroup mChipsViewContainer;
@@ -257,6 +260,8 @@ class AutofillAssistantUiDelegate {
         // TODO(crbug.com/806868): Set hint text on overlay.
         mTouchEventFilter = (TouchEventFilter) mFullContainer.findViewById(R.id.touch_event_filter);
         mBottomBar = mFullContainer.findViewById(R.id.autofill_assistant_bottombar);
+        mSwipeIndicator = mBottomBar.findViewById(R.id.swipe_indicator);
+        mBottomBarHeader = mBottomBar.findViewById(R.id.bottombar_header);
         mBottomBarBehavior = BottomSheetBehavior.from(mBottomBar);
         mBottomBar.findViewById(R.id.close_button)
                 .setOnClickListener(unusedView -> mClient.onDismiss());
@@ -773,7 +778,17 @@ class AutofillAssistantUiDelegate {
         assert mPaymentRequest == null;
         mPaymentRequest = new AutofillAssistantPaymentRequest(
                 webContents, paymentOptions, unusedTitle, supportedBasicCardNetworks, defaultEmail);
-        // Make sure we wrap content in the container.
+        // Disable BottomSheetBehavior such that user can scroll the Payment Request UI without
+        // swiping up/down the entire sheet.
+        allowSwipingBottomSheetBehavior(false);
+        mSwipeIndicator.setVisibility(View.GONE);
+        // Because swipe indicator is removed and added back when Payment Request UI is showing,
+        // we need to set top margin of bottombar header accordingly so it won't be too close
+        // to the edge of the sheet.
+        setBottomBarHeaderTopMargin(16);
+
+        // Make sure we wrap content in the container to accommodate added payment request
+        // UI. The original height is set to fixed in `mBottomBarAnimations`.
         mBottomBarAnimations.setBottomBarHeightToWrapContent();
         // Note: We show and hide (below) the carousel so that the margins are adjusted correctly.
         // This is an intermediate adjustment before the UI refactoring.
@@ -786,8 +801,35 @@ class AutofillAssistantUiDelegate {
     public void closePaymentRequest() {
         mPaymentRequest.close();
         mPaymentRequest = null;
+        // Restore bottom bar height to fixed value before showing Payment Request UI.
         mBottomBarAnimations.setBottomBarHeightToFixed();
         mBottomBarAnimations.hideCarousel();
+
+        // Restore BottomSheetBehavior after user is done with payment request UI:
+        // 1. Set bottom bar header margin to 0 because swipe indicator is back now.
+        // 2. Enabled default bottom sheet behavior.
+        setBottomBarHeaderTopMargin(0);
+        mSwipeIndicator.setVisibility(View.VISIBLE);
+        allowSwipingBottomSheetBehavior(true);
         disableProgressBarPulsing();
+    }
+
+    private void setBottomBarHeaderTopMargin(int margin) {
+        LinearLayout.LayoutParams layoutParams =
+                (LinearLayout.LayoutParams) mBottomBarHeader.getLayoutParams();
+        int topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, margin,
+                mBottomBarHeader.getContext().getResources().getDisplayMetrics());
+        layoutParams.setMargins(0, topMargin, 0, 0);
+        mBottomBarHeader.setLayoutParams(layoutParams);
+    }
+
+    private void allowSwipingBottomSheetBehavior(boolean enabled) {
+        CoordinatorLayout.LayoutParams params =
+                (CoordinatorLayout.LayoutParams) mBottomBar.getLayoutParams();
+        if (enabled) {
+            params.setBehavior(mBottomBarBehavior);
+            return;
+        }
+        params.setBehavior(null);
     }
 }
