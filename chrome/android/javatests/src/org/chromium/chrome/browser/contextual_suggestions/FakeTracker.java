@@ -49,7 +49,9 @@ class FakeTracker implements Tracker {
     }
 
     @Override
-    public void addOnInitializedCallback(Callback<Boolean> callback) {}
+    public void addOnInitializedCallback(Callback<Boolean> callback) {
+        callback.onResult(true);
+    }
 
     @Override
     public boolean wouldTriggerHelpUI(String feature) {
