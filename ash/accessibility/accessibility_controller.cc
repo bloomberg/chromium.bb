@@ -13,6 +13,7 @@
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/events/select_to_speak_event_handler.h"
+#include "ash/events/switch_access_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -290,6 +291,8 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
                                   false);
     registry->RegisterBooleanPref(prefs::kAccessibilityStickyKeysEnabled,
                                   false);
+    registry->RegisterBooleanPref(prefs::kAccessibilitySwitchAccessEnabled,
+                                  false);
     registry->RegisterBooleanPref(prefs::kAccessibilityVirtualKeyboardEnabled,
                                   false);
     registry->RegisterBooleanPref(
@@ -327,6 +330,7 @@ void AccessibilityController::RegisterProfilePrefs(PrefRegistrySimple* registry,
   registry->RegisterForeignPref(prefs::kAccessibilitySpokenFeedbackEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilitySelectToSpeakEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityStickyKeysEnabled);
+  registry->RegisterForeignPref(prefs::kAccessibilitySwitchAccessEnabled);
   registry->RegisterForeignPref(prefs::kAccessibilityVirtualKeyboardEnabled);
   registry->RegisterForeignPref(
       prefs::kHighContrastAcceleratorDialogHasBeenAccepted);
@@ -570,6 +574,33 @@ mojom::SelectToSpeakState AccessibilityController::GetSelectToSpeakState()
   return select_to_speak_state_;
 }
 
+void AccessibilityController::SetSwitchAccessEnabled(bool enabled) {
+  if (!active_user_prefs_)
+    return;
+  active_user_prefs_->SetBoolean(prefs::kAccessibilitySwitchAccessEnabled,
+                                 enabled);
+  active_user_prefs_->CommitPendingWrite();
+}
+
+void AccessibilityController::SetSwitchAccessKeysToCapture(
+    const std::vector<int>& keys_to_capture) {
+  // Forward the keys to capture to switch_access_event_handler_.
+  if (switch_access_event_handler_)
+    switch_access_event_handler_->set_keys_to_capture(keys_to_capture);
+  NotifyAccessibilityStatusChanged();
+}
+
+void AccessibilityController::SetSwitchAccessIgnoreVirtualKeyEvent(
+    bool should_ignore) {
+  switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
+}
+
+void AccessibilityController::SetSwitchAccessEventHandlerDelegate(
+    mojom::SwitchAccessEventHandlerDelegatePtr delegate) {
+  switch_access_event_handler_delegate_ptr_ = std::move(delegate);
+  MaybeCreateSwitchAccessEventHandler();
+}
+
 void AccessibilityController::SetStickyKeysEnabled(bool enabled) {
   if (!active_user_prefs_)
     return;
@@ -751,6 +782,8 @@ void AccessibilityController::FlushMojoForTest() {
     client_.FlushForTesting();
   if (select_to_speak_event_handler_)
     select_to_speak_event_handler_->FlushMojoForTest();
+  if (switch_access_event_handler_)
+    switch_access_event_handler_->FlushMojoForTest();
 }
 
 void AccessibilityController::OnTabletModeStarted() {
@@ -844,6 +877,10 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(&AccessibilityController::UpdateStickyKeysFromPref,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessEnabled,
+      base::BindRepeating(&AccessibilityController::UpdateSwitchAccessFromPref,
+                          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityVirtualKeyboardEnabled,
       base::BindRepeating(
           &AccessibilityController::UpdateVirtualKeyboardFromPref,
@@ -865,6 +902,7 @@ void AccessibilityController::ObservePrefs(PrefService* prefs) {
   UpdateSpokenFeedbackFromPref();
   UpdateSelectToSpeakFromPref();
   UpdateStickyKeysFromPref();
+  UpdateSwitchAccessFromPref();
   UpdateVirtualKeyboardFromPref();
 }
 
@@ -1129,6 +1167,37 @@ void AccessibilityController::UpdateStickyKeysFromPref() {
   NotifyAccessibilityStatusChanged();
 
   Shell::Get()->sticky_keys_controller()->Enable(enabled);
+}
+
+void AccessibilityController::UpdateSwitchAccessFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled =
+      active_user_prefs_->GetBoolean(prefs::kAccessibilitySwitchAccessEnabled);
+  if (switch_access_enabled_ == enabled)
+    return;
+
+  switch_access_enabled_ = enabled;
+
+  if (enabled)
+    MaybeCreateSwitchAccessEventHandler();
+  else
+    switch_access_event_handler_.reset();
+
+  NotifyAccessibilityStatusChanged();
+}
+
+void AccessibilityController::MaybeCreateSwitchAccessEventHandler() {
+  // Sometimes the handler is not yet created if the prefs change has taken
+  // longer to propogate than setting the delegate from Chrome.
+  // Create the handler here; we only set the delegate when Switch Access has
+  // been enabled.
+  if (!switch_access_enabled_ || switch_access_event_handler_ ||
+      !switch_access_event_handler_delegate_ptr_) {
+    return;
+  }
+
+  switch_access_event_handler_ = std::make_unique<SwitchAccessEventHandler>(
+      std::move(switch_access_event_handler_delegate_ptr_));
 }
 
 void AccessibilityController::UpdateVirtualKeyboardFromPref() {

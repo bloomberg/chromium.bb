@@ -112,6 +112,13 @@ interface SelectToSpeakEventHandlerDelegate {
   DispatchMouseEvent(ui.mojom.Event event);
 };
 
+// Allows a client to implement Switch Access.
+interface SwitchAccessEventHandlerDelegate {
+  // Sends a KeyEvent to the Switch Access extension in Chrome. The event
+  // is cast to a key event with a type CHECK.
+  DispatchKeyEvent(ui.mojom.Event event);
+};
+
 // Interface for ash client (e.g. Chrome) to control and query accessibility
 // features.
 interface AccessibilityController {
@@ -150,6 +157,13 @@ interface AccessibilityController {
   // Set the delegate used by the Select-to-Speak event handler.
   SetSelectToSpeakEventHandlerDelegate(
       SelectToSpeakEventHandlerDelegate delegate);
+
+  // Sets the key codes that Switch Access should capture.
+  SetSwitchAccessKeysToCapture(array<int32> keys_to_capture);
+
+  // Set the delegate used by the Switch Access event handler.
+  SetSwitchAccessEventHandlerDelegate(
+      SwitchAccessEventHandlerDelegate delegate);
 
   // Starts or stops dictation. Records metrics for toggling via SwitchAccess.
   ToggleDictationFromSource(DictationToggleSource source);
