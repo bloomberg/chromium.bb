@@ -88,14 +88,12 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   base::SequencedTaskRunner* TaskRunner() const override;
   std::vector<StorageUsageInfo> GetAllOriginsInfo() override;
   void DeleteForOrigin(const url::Origin& origin) override;
-  void CopyOriginData(const GURL& origin_url,
+  void CopyOriginData(const url::Origin& origin,
                       IndexedDBContext* dest_context) override;
   base::FilePath GetFilePathForTesting(const GURL& origin_url) const override;
   void ResetCachesForTesting() override;
 
   // TODO(jsbell): Replace IndexedDBContext members with these.
-  void CopyOriginData(const url::Origin& origin,
-                      IndexedDBContext* dest_context);
   base::FilePath GetFilePathForTesting(const url::Origin& origin) const;
 
   // Methods called by IndexedDBDispatcherHost for quota support.

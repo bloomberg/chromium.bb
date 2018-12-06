@@ -43,7 +43,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 
   // Copies the indexed db files from this context to another. The
   // indexed db directory in the destination context needs to be empty.
-  virtual void CopyOriginData(const GURL& origin_url,
+  virtual void CopyOriginData(const url::Origin& origin,
                               IndexedDBContext* dest_context) = 0;
 
   // Get the file name of the local storage file for the given origin.

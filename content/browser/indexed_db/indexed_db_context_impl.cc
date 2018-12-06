@@ -338,12 +338,6 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
   }
 }
 
-// TODO(jsbell): Update callers to use url::Origin overload and remove.
-void IndexedDBContextImpl::CopyOriginData(const GURL& origin_url,
-                                          IndexedDBContext* dest_context) {
-  CopyOriginData(Origin::Create(origin_url), dest_context);
-}
-
 void IndexedDBContextImpl::CopyOriginData(const Origin& origin,
                                           IndexedDBContext* dest_context) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
