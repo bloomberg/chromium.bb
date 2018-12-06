@@ -25,6 +25,7 @@ TEST_F(ManualFillCreditCardiOSTest, Creation) {
   ManualFillCreditCard* card =
       [[ManualFillCreditCard alloc] initWithGUID:GUID
                                          network:network
+                             issuerNetworkIconID:1
                                         bankName:bankName
                                       cardHolder:cardHolder
                                           number:number
@@ -34,6 +35,7 @@ TEST_F(ManualFillCreditCardiOSTest, Creation) {
   EXPECT_TRUE(card);
   EXPECT_TRUE([GUID isEqualToString:card.GUID]);
   EXPECT_TRUE([network isEqualToString:card.network]);
+  EXPECT_TRUE(card.issuerNetworkIconID == 1);
   EXPECT_TRUE([cardHolder isEqualToString:card.cardHolder]);
   EXPECT_TRUE([number isEqualToString:card.number]);
   EXPECT_TRUE([obfuscatedNumber isEqualToString:card.obfuscatedNumber]);
@@ -54,6 +56,7 @@ TEST_F(ManualFillCreditCardiOSTest, Equality) {
   ManualFillCreditCard* card =
       [[ManualFillCreditCard alloc] initWithGUID:GUID
                                          network:network
+                             issuerNetworkIconID:1
                                         bankName:bankName
                                       cardHolder:cardHolder
                                           number:number
@@ -64,6 +67,7 @@ TEST_F(ManualFillCreditCardiOSTest, Equality) {
   ManualFillCreditCard* equalCard =
       [[ManualFillCreditCard alloc] initWithGUID:GUID
                                          network:network
+                             issuerNetworkIconID:1
                                         bankName:bankName
                                       cardHolder:cardHolder
                                           number:number
@@ -76,6 +80,7 @@ TEST_F(ManualFillCreditCardiOSTest, Equality) {
   ManualFillCreditCard* differentGuidCredential =
       [[ManualFillCreditCard alloc] initWithGUID:@"wxyz-8765-4321"
                                          network:network
+                             issuerNetworkIconID:1
                                         bankName:bankName
                                       cardHolder:cardHolder
                                           number:number
