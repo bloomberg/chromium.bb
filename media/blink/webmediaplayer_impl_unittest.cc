@@ -337,6 +337,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         web_view_(blink::WebView::Create(/*client=*/nullptr,
                                          /*widget_client=*/nullptr,
                                          /*is_hidden=*/false,
+                                         /*compositing_enabled=*/false,
                                          nullptr)),
         web_local_frame_(
             blink::WebLocalFrame::CreateMainFrame(web_view_,

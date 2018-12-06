@@ -86,12 +86,6 @@ void WebWidgetTestClient::StartDragging(network::mojom::ReferrerPolicy policy,
   web_widget_test_proxy_base_->event_sender()->DoDragDrop(data, mask);
 }
 
-bool WebWidgetTestClient::AllowsBrokenNullLayerTreeView() const {
-  // This call should go to the production client, not here.
-  NOTREACHED();
-  return false;
-}
-
 TestRunnerForSpecificView* WebWidgetTestClient::view_test_runner() {
   return web_widget_test_proxy_base_->web_view_test_proxy_base()
       ->view_test_runner();

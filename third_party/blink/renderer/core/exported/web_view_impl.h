@@ -103,6 +103,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static WebViewImpl* Create(WebViewClient*,
                              WebWidgetClient*,
                              bool is_hidden,
+                             bool compositing_enabled,
                              WebViewImpl* opener);
   static HashSet<WebViewImpl*>& AllInstances();
   // Returns true if popup menus should be rendered by the browser, false if
@@ -484,6 +485,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebViewImpl(WebViewClient*,
               WebWidgetClient*,
               bool is_hidden,
+              bool does_composite,
               WebViewImpl* opener);
   ~WebViewImpl() override;
 

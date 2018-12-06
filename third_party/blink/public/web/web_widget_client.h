@@ -67,9 +67,6 @@ class WebWidgetClient {
   // Called when a region of the WebWidget needs to be re-painted.
   virtual void DidInvalidateRect(const WebRect&) {}
 
-  // FIXME: Remove all overrides of this.
-  virtual bool AllowsBrokenNullLayerTreeView() const { return false; }
-
   // Called when a call to WebWidget::animate is required
   virtual void ScheduleAnimation() {}
 

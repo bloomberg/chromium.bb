@@ -664,8 +664,7 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
 
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/nullptr, /*widget_client=*/nullptr,
-      /*is_hidden=*/false,
-      /*opener=*/nullptr);
+      /*is_hidden=*/false, /*compositing_enabled=*/false, /*opener=*/nullptr);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
 
   class HeaderAndFooterClient final : public blink::WebLocalFrameClient {
@@ -691,17 +690,11 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
     blink::WebNavigationControl* frame_ = nullptr;
   };
 
-  class NonCompositingWebWidgetClient : public blink::WebWidgetClient {
-   public:
-    // blink::WebWidgetClient implementation.
-    bool AllowsBrokenNullLayerTreeView() const override { return true; }
-  };
-
   HeaderAndFooterClient frame_client;
   blink::WebLocalFrame* frame = blink::WebLocalFrame::CreateMainFrame(
       web_view, &frame_client, nullptr, nullptr);
 
-  NonCompositingWebWidgetClient web_widget_client;
+  blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
 
   base::Value html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -785,9 +778,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
  private:
   // blink::WebViewClient:
   void DidStopLoading() override;
-  // TODO(ojan): Remove this override and have this class give a LayerTreeView
-  // to the WebWidget.
-  bool AllowsBrokenNullLayerTreeView() const override;
   blink::WebScreenInfo GetScreenInfo() override;
   WebWidgetClient* WidgetClient() override { return this; }
 
@@ -934,6 +924,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebView* web_view = blink::WebView::Create(
       /*client=*/this, /*widget_client=*/this,
       /*is_hidden=*/false,
+      /*compositing_enabled=*/false,
       /*opener=*/nullptr);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
@@ -947,10 +938,6 @@ void PrepareFrameAndViewForPrint::CopySelection(
   // actual printing.
   navigation_control_->LoadHTMLString(blink::WebData(html),
                                       blink::WebURL(GURL(url::kAboutBlankURL)));
-}
-
-bool PrepareFrameAndViewForPrint::AllowsBrokenNullLayerTreeView() const {
-  return true;
 }
 
 blink::WebScreenInfo PrepareFrameAndViewForPrint::GetScreenInfo() {

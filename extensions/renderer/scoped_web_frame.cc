@@ -14,6 +14,7 @@ ScopedWebFrame::ScopedWebFrame()
     : view_(blink::WebView::Create(/*client=*/nullptr,
                                    /*widget_client=*/nullptr,
                                    /*is_hidden=*/false,
+                                   /*compositing_enabled=*/false,
                                    /*opener=*/nullptr)),
       frame_(blink::WebLocalFrame::CreateMainFrame(view_,
                                                    &frame_client_,
