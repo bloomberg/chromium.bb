@@ -665,10 +665,6 @@ bool GLRenderer::ShouldApplyBackgroundFilters(
   if (!backdrop_filters)
     return false;
   DCHECK(!backdrop_filters->IsEmpty());
-
-  // TODO(hendrikw): Look into allowing background filters to see pixels from
-  // other render targets.  See crbug.com/314867.
-
   return true;
 }
 
@@ -812,19 +808,36 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect) {
 
 sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
-    const cc::FilterOperations& backdrop_filters,
+    const cc::FilterOperations* backdrop_filters,
+    const cc::FilterOperations* regular_filters,
     uint32_t background_texture,
     const gfx::Rect& rect,
     const gfx::Rect& unclipped_rect,
     const float backdrop_filter_quality) {
-  DCHECK(ShouldApplyBackgroundFilters(quad, &backdrop_filters));
+  DCHECK(ShouldApplyBackgroundFilters(quad, backdrop_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   gfx::Vector2d clipping_offset =
       (rect.top_right() - unclipped_rect.top_right()) +
       (rect.bottom_left() - unclipped_rect.bottom_left());
+
+  // Update the backdrop filter to include "regular" filters and opacity.
+  cc::FilterOperations backdrop_filters_plus_effects = *backdrop_filters;
+  bool need_prepaint = false;
+  if (regular_filters) {
+    need_prepaint = true;
+    for (const auto& filter_op : regular_filters->operations())
+      backdrop_filters_plus_effects.Append(filter_op);
+  }
+  if (quad->shared_quad_state->opacity < 1.0) {
+    need_prepaint = true;
+    backdrop_filters_plus_effects.Append(
+        cc::FilterOperation::CreateOpacityFilter(
+            quad->shared_quad_state->opacity));
+  }
+
   auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-      backdrop_filters, gfx::SizeF(rect.size()),
+      backdrop_filters_plus_effects, gfx::SizeF(rect.size()),
       gfx::Vector2dF(clipping_offset));
 
   // TODO(senorblanco): background filters should be moved to the
@@ -871,6 +884,16 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
   surface->getCanvas()->translate(-quality_adjusted_rect.x(),
                                   -quality_adjusted_rect.y());
+  if (need_prepaint) {
+    // If we have filters or opacity applied, in addition to the backdrop-
+    // filter, then first paint the backdrop (unfiltered) at full opacity. The
+    // backdrop-filtered content will not be blended with the backdrop later, it
+    // will be rastered over the top.
+    surface->getCanvas()->drawImageRect(
+        src_image, SkRect::MakeWH(rect.width(), rect.height()),
+        RectToSkRect(quality_adjusted_rect), nullptr);
+  }
+  // Then paint with the backdrop-filter, plus other filters and opacity.
   surface->getCanvas()->drawImageRect(
       src_image, SkRect::MakeWH(rect.width(), rect.height()),
       RectToSkRect(quality_adjusted_rect), &paint);
@@ -1053,8 +1076,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
-            quad, *params->backdrop_filters, params->background_texture,
-            params->background_rect, unclipped_rect,
+            quad, params->backdrop_filters, params->filters,
+            params->background_texture, params->background_rect, unclipped_rect,
             params->backdrop_filter_quality);
         if (params->background_image) {
           params->background_image_id =

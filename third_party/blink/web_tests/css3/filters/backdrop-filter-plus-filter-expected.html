@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <div class="container">
   <div class="orangebox"></div>
-  <div class="bluebox blur-bd" style="opacity: 0.0;"></div>
+  <div class="bluebox blur-bd" style="background:transparent;"></div>
   <div class="bluebox blur"></div>
 </div>
 
@@ -17,8 +17,8 @@ div {
   position:absolute;
 }
 .blur {
-  -webkit-filter: blur(5px);
-  filter: blur(5px);
+  -webkit-filter: blur(3px);
+  filter: blur(3px);
 }
 .blur-bd {
   backdrop-filter: blur(15px);
@@ -31,7 +31,6 @@ div {
 .bluebox {
   left: 60px;
   top: 110px;
-  background: blue;
-  opacity: 0.35;
+  background: #0000ff33;
 }
 </style>

@@ -481,22 +481,22 @@ class ImageBackdropFilter : public LayerTreeHostFiltersPixelTest {
     background->AddChild(layer);
 
     // Add a slightly transparent blue layer.
-    scoped_refptr<SolidColorLayer> filter =
-        CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), SK_ColorBLUE);
-    filter->SetOpacity(0.137f);
+    SkColor transparent_blue = SkColorSetARGB(0x23, 0x00, 0x00, 0xFF);
+    scoped_refptr<SolidColorLayer> filter_layer =
+        CreateSolidColorLayer(gfx::Rect(100, 0, 100, 200), transparent_blue);
 
     // Add some rotation so that we can see that it blurs only under the layer.
     gfx::Transform transform_filter;
     transform_filter.RotateAboutZAxis(10.0);
-    filter->SetTransform(transform_filter);
-
-    background->AddChild(filter);
+    filter_layer->SetTransform(transform_filter);
 
     // Add a blur filter to the blue layer.
     FilterOperations filters;
     filters.Append(FilterOperation::CreateBlurFilter(
         5.0f, SkBlurImageFilter::kClamp_TileMode));
-    filter->SetBackdropFilters(filters);
+    filter_layer->SetBackdropFilters(filters);
+
+    background->AddChild(filter_layer);
 
     // Allow some fuzziness so that this doesn't fail when Skia makes minor
     // changes to blur or rectangle rendering.
