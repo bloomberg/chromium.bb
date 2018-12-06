@@ -1461,20 +1461,34 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
   Document* focused_document = current_frame->GetDocument();
   if (!focused_document)
     return false;
+  focused_document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  Element* focused_element = focused_document->FocusedElement();
+  Node* focused_element = focused_document->FocusedElement();
+  if (!focused_element)  // An iframe's document is focused.
+    focused_element = focused_document;
+
   Node* container = focused_document;
-  if (auto* document = DynamicTo<Document>(container))
-    document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (focused_element)
     container = ScrollableAreaOrDocumentOf(focused_element);
 
   const LayoutRect visible_rect = RootViewport(current_frame);
   const LayoutRect start_box =
       SearchOrigin(visible_rect, focused_element, direction);
-
   bool consumed = false;
   Node* pruned_sub_tree_root = nullptr;
+
+  if (IsScrollableAreaOrDocument(focused_element) &&
+      !IsOffscreen(focused_element)) {
+    // A visible scroller is focused. Search inside of it from one of its edges.
+    LayoutRect edge = OppositeEdge(direction, start_box);
+    consumed = AdvanceFocusDirectionallyInContainer(focused_element, edge,
+                                                    direction, nullptr);
+    if (consumed)
+      return true;
+    // The scroller had nothing. Let's search outside of it.
+    pruned_sub_tree_root = focused_element;
+  }
+
   while (container) {
     consumed = AdvanceFocusDirectionallyInContainer(
         container, start_box, direction, pruned_sub_tree_root);

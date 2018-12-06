@@ -2,6 +2,7 @@
   "use strict";
 
   let gAsyncTest;
+  let gPostAssertsFunc;
 
   // TODO: Use WebDriver's API instead of eventSender.
   //       Hopefully something like:
@@ -60,6 +61,8 @@
 
   function stepAndAssertMoves(expectedMoves) {
     if (expectedMoves.length == 0) {
+      if (gPostAssertsFunc)
+        gAsyncTest.step(gPostAssertsFunc);
       gAsyncTest.done();
       return;
     }
@@ -95,9 +98,11 @@
       }, 'window.testRunner is present.');
     },
 
-    assertFocusMoves: function(expectedMoves, enableSpatnav=true) {
+    assertFocusMoves: function(expectedMoves, enableSpatnav=true, postAssertsFunc=null) {
       if (enableSpatnav)
         snav.assertSnavEnabledAndTestable();
+      if (postAssertsFunc)
+        gPostAssertsFunc = postAssertsFunc;
       gAsyncTest = async_test("Focus movements:\n" +
           JSON.stringify(expectedMoves).replace(/],/g, ']\n') + '\n');
 
