@@ -133,21 +133,6 @@ public final class AwBrowserProcess {
                     throw new RuntimeException("Cannot initialize WebView", e);
                 }
             });
-
-            // Only run cleanup task on N+ since on earlier versions there are no extra pak files.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                // Cleanup task to remove unnecessary extra pak files (crbug.com/752510).
-                // TODO(zpeng): Remove cleanup code after at least M64 (crbug.com/756580).
-                AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
-                    File extraPaksDir = new File(PathUtils.getDataDirectory(), "paks");
-                    if (extraPaksDir.exists()) {
-                        for (File pakFile : extraPaksDir.listFiles()) {
-                            pakFile.delete();
-                        }
-                        extraPaksDir.delete();
-                    }
-                });
-            }
         }
     }
 
