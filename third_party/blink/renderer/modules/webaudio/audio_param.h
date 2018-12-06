@@ -30,6 +30,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_PARAM_H_
 
 #include <sys/types.h>
+#include <atomic>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -197,7 +198,9 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   void Connect(AudioNodeOutput&);
   void Disconnect(AudioNodeOutput&);
 
-  float IntrinsicValue() const { return NoBarrierLoad(&intrinsic_value_); }
+  float IntrinsicValue() const {
+    return intrinsic_value_.load(std::memory_order_relaxed);
+  }
 
  private:
   AudioParamHandler(BaseAudioContext&,
@@ -228,7 +231,7 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   String custom_param_name_;
 
   // Intrinsic value
-  float intrinsic_value_;
+  std::atomic<float> intrinsic_value_;
   void SetIntrinsicValue(float new_value);
 
   float default_value_;
