@@ -444,8 +444,7 @@ body.warning #warning {
   transition: opacity 100ms;
 }
 
-body.settings .options-group,
-body.settings #switch-device {
+body.settings .left-stripe {
   opacity: 0;
 }
 
@@ -765,7 +764,7 @@ body.capturing.grid #preview-grid-vertical {
   left: 0px;
   height: 100%;
   min-width: 360px;
-  opacity: 0.9;
+  opacity: 0.85;
   -webkit-transform: translateX(-100%);
   transition: -webkit-transform 150ms ease-in;
 }
@@ -799,6 +798,8 @@ body.settings #settings .menu {
   width: 40px;
   height: 40px;
   margin-right: 4px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .menu-item.buttons {
@@ -813,6 +814,14 @@ body.settings #settings .menu {
 
 #settings-back {
   background-image: url(../images/settings_button_back.svg);
+}
+
+#settings-help .icon {
+  background-image: url(../images/settings_help.svg);
+}
+
+#settings-help button {
+  background-image: url(../images/settings_button_external.svg);
 }
 
 #warning,
