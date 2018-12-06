@@ -253,10 +253,8 @@ class StreamingUtf8ValidatorSingleSequenceTest : public ::testing::Test {
       StreamingUtf8Validator validator;
       base::StringPiece sequence = *it;
       StreamingUtf8Validator::State state = VALID_ENDPOINT;
-      for (base::StringPiece::const_iterator cit = sequence.begin();
-           cit != sequence.end();
-           ++cit) {
-        state = validator.AddBytes(&*cit, 1);
+      for (const auto& cit : sequence) {
+        state = validator.AddBytes(&cit, 1);
       }
       EXPECT_EQ(expected, state) << "Failed for \"" << sequence << "\"";
     }

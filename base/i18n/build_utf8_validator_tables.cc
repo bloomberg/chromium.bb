@@ -263,9 +263,9 @@ void MoveAllCharsToSets(PairVector* pairs) {
 // algorithm is working. Use the command-line option
 // --vmodule=build_utf8_validator_tables=1 to see this output.
 void LogStringSets(const PairVector& pairs) {
-  for (auto pair_it = pairs.begin(); pair_it != pairs.end(); ++pair_it) {
+  for (const auto& pair_it : pairs) {
     std::string set_as_string;
-    for (auto set_it = pair_it->set.begin(); set_it != pair_it->set.end();
+    for (auto set_it = pair_it.set.begin(); set_it != pair_it.set.end();
          ++set_it) {
       set_as_string += base::StringPrintf("[\\x%02x-\\x%02x]",
                                           static_cast<int>(set_it->from()),
@@ -373,13 +373,13 @@ void PrintStates(const std::vector<State>& states, FILE* stream) {
   std::vector<uint8_t> shifts;
   uint8_t pos = 0;
 
-  for (auto state_it = states.begin(); state_it != states.end(); ++state_it) {
+  for (const auto& state_it : states) {
     // We want to set |shift| to the (0-based) index of the least-significant
     // set bit in any of the ranges for this state, since this tells us how many
     // bits we can discard and still determine what range a byte lies in. Sadly
     // it appears that ffs() is not portable, so we do it clumsily.
     uint8_t shift = 7;
-    for (auto range_it = state_it->begin(); range_it != state_it->end();
+    for (auto range_it = state_it.begin(); range_it != state_it.end();
          ++range_it) {
       while (shift > 0 && range_it->from % (1 << shift) != 0) {
         --shift;
