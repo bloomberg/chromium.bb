@@ -1511,6 +1511,11 @@
           'scripts': 'chromium_linux_scripts',
         },
       },
+      'mac-hermetic-upgrade-rel': {
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
       'mac-mojo-rel': {
         'mixins': [
             'mac_10.13',
