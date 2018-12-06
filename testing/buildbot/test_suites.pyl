@@ -2047,6 +2047,41 @@
         ],
         'test': 'webview_instrumentation_test_apk',
       },
+      'network_service_in_process_content_browsertests': {
+        'args': [
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 5,
+        },
+        'test': 'content_browsertests',
+      },
+      'network_service_in_process_components_browsertests': {
+        'args': [
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+        ],
+        'test': 'components_browsertests',
+      },
+      'network_service_in_process_chrome_public_test_apk': {
+        'swarming': {
+          'shards': 20,
+        },
+        'args': [
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_chrome_public_test_apk.filter',
+        ],
+        'test': 'chrome_public_test_apk',
+      },
+      'network_service_in_process_content_shell_test_apk': {
+        'swarming': {
+          'shards': 5,
+        },
+        'args': [
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+        ],
+        'test': 'content_shell_test_apk',
+      },
     },
 
     'network_service_chromeos_fyi_gtests': {
@@ -2135,6 +2170,29 @@
           'shards': 3,
         },
         'test': 'interactive_ui_tests',
+      },
+    },
+
+    'network_service_in_process_gtests': {
+      'network_service_in_process_browser_tests': {
+        'args': [
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_browser_tests.filter',
+        ],
+        'swarming': {
+          'shards': 15,
+        },
+        'test': 'browser_tests',
+      },
+      'network_service_in_process_content_browsertests': {
+        'args': [
+          '--enable-features=NetworkService,NetworkServiceInProcess',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_content_browsertests.filter',
+        ],
+        'swarming': {
+          'shards': 2,
+        },
+        'test': 'content_browsertests',
       },
     },
 
@@ -3039,9 +3097,15 @@
       'viz_non_android_fyi_gtests',
     ],
 
+    'mojo_linux_gtests': [
+      'network_service_gtests',
+      'network_service_in_process_gtests',
+    ],
+
     'mojo_windows_gtests': [
       'mojo_windows_specific_gtests',
       'network_service_gtests',
+      'network_service_in_process_gtests',
       'non_viz_fyi_chromium_gtests',
       'non_viz_non_android_fyi_chromium_gtests',
       'viz_gtests',
