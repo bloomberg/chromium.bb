@@ -14,7 +14,6 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -198,12 +197,10 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       icon_(new IconImageView),
       title_(new views::Label),
       progress_bar_(new views::ProgressBar),
-      is_new_style_launcher_enabled_(
-          app_list_features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  if (is_new_style_launcher_enabled_ && is_folder_) {
+  if (is_folder_) {
     // Set background blur for folder icon and use mask layer to clip it into
     // circle. Note that blur is only enabled in tablet mode to improve dragging
     // smoothness.
@@ -214,7 +211,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
         gfx::Insets(AppListConfig::instance().folder_icon_insets()));
   }
 
-  if (is_new_style_launcher_enabled_ && !is_in_folder_ && !is_folder_) {
+  if (!is_in_folder_ && !is_folder_) {
     // To display shadow for icon while not affecting the icon's bounds, icon
     // shadow is behind the icon.
     icon_shadow_ = new views::ImageView;
@@ -232,7 +229,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetEnabledColor(apps_grid_view_->is_in_folder()
                               ? kFolderGridTitleColor
                               : AppListConfig::instance().grid_title_color());
-  if (is_new_style_launcher_enabled_ && !is_in_folder_) {
+  if (!is_in_folder_) {
     title_->SetShadows(
         gfx::ShadowValues(1, gfx::ShadowValue(gfx::Vector2d(), kTitleShadowBlur,
                                               kTitleShadowColor)));
@@ -760,17 +757,11 @@ void AppListItemView::ImageShadowAnimationProgressed(
 }
 
 void AppListItemView::OnDraggedViewEnter() {
-  if (!is_new_style_launcher_enabled_)
-    return;
-
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Show();
 }
 
 void AppListItemView::OnDraggedViewExit() {
-  if (!is_new_style_launcher_enabled_)
-    return;
-
   CreateDraggedViewHoverAnimation();
   dragged_view_hover_animation_->Hide();
 }
@@ -933,18 +924,7 @@ void AppListItemView::ItemBeingDestroyed() {
 }
 
 int AppListItemView::GetPreviewCircleRadius() const {
-  if (is_new_style_launcher_enabled_ && !is_folder_) {
-    // The preview circle animation is only enabled for new style launcher.
-    return preview_circle_radius_;
-  }
-
-  if (!is_new_style_launcher_enabled_ &&
-      ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
-    // Show a static preview circle when new style launcher is not enabled.
-    return AppListConfig::instance().folder_dropping_circle_radius();
-  }
-
-  return 0;
+  return is_folder_ ? 0 : preview_circle_radius_;
 }
 
 void AppListItemView::CreateDraggedViewHoverAnimation() {

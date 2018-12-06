@@ -196,6 +196,12 @@ void SuggestionChipView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     chip_mask_->layer()->SetBounds(GetContentsBounds());
 }
 
+bool SuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE)
+    return false;
+  return Button::OnKeyPressed(event);
+}
+
 std::unique_ptr<views::InkDrop> SuggestionChipView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       Button::CreateDefaultInkDropImpl();

@@ -126,9 +126,6 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
 
   ContentsView* contents_view_;  // Not owned.
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
-
   // The views below are owned by views hierarchy.
   SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;
   AppsGridView* apps_grid_view_ = nullptr;

@@ -45,9 +45,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
 // Enables the apps grid gap feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppsGridGapFeature;
 
-// Enables the new style launcher (See details at http://crbug.com/857206).
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableNewStyleLauncher;
-
 // Enables the feature to allow users to seamlessly continue reading a web page
 // when they switch from phones or tablets to Chromebook.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableContinueReading;
@@ -69,7 +66,6 @@ bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherGesturesEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();
-bool ASH_PUBLIC_EXPORT IsNewStyleLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsContinueReadingEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();

@@ -271,9 +271,6 @@ class APP_LIST_EXPORT AppListItemView
   // A timer to defer showing drag UI when the app item is touch pressed.
   base::OneShotTimer touch_drag_timer_;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
-
   base::WeakPtrFactory<AppListItemView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);

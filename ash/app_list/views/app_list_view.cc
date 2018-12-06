@@ -290,8 +290,6 @@ AppListView::AppListView(AppListViewDelegate* delegate)
           std::make_unique<TransitionAnimationObserver>(this)),
       state_animation_metrics_reporter_(
           std::make_unique<StateAnimationMetricsReporter>()),
-      is_new_style_launcher_enabled_(
-          app_list_features::IsNewStyleLauncherEnabled()),
       weak_ptr_factory_(this) {
   CHECK(delegate);
 }

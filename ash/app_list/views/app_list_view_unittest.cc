@@ -39,7 +39,6 @@
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -94,18 +93,8 @@ class TestStartPageSearchResult : public TestSearchResult {
   DISALLOW_COPY_AND_ASSIGN(TestStartPageSearchResult);
 };
 
-struct TestParams {
-  bool is_rtl_enabled;
-  bool is_new_style_launcher_enabled;
-};
-
-const TestParams kAppListViewTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_new_style_launcher_enabled */},
-    {false, true},
-};
-
 class AppListViewTest : public views::ViewsTestBase,
-                        public testing::WithParamInterface<TestParams> {
+                        public testing::WithParamInterface<bool> {
  public:
   AppListViewTest() = default;
   ~AppListViewTest() override = default;
@@ -114,18 +103,9 @@ class AppListViewTest : public views::ViewsTestBase,
     AppListView::SetShortAnimationForTesting(true);
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
       // Setup right to left environment if necessary.
-      is_rtl_ = GetParam().is_rtl_enabled;
+      is_rtl_ = GetParam();
       if (is_rtl_)
         base::i18n::SetICUDefaultLocale("he");
-
-      is_new_style_launcher_enabled_ = GetParam().is_new_style_launcher_enabled;
-    }
-    if (is_new_style_launcher_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          app_list_features::kEnableNewStyleLauncher);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          app_list_features::kEnableNewStyleLauncher);
     }
     views::ViewsTestBase::SetUp();
   }
@@ -231,28 +211,12 @@ class AppListViewTest : public views::ViewsTestBase,
   keyboard::KeyboardController keyboard_controller_;
 
   bool is_rtl_ = false;
-  bool is_new_style_launcher_enabled_ = false;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewTest);
 };
 
-// Instantiate the parameters which is used to toggle RTL and new style launcher
-// flag in the parameterized tests.
-INSTANTIATE_TEST_CASE_P(,
-                        AppListViewTest,
-                        testing::ValuesIn(kAppListViewTestParams));
-
-const TestParams kAppListViewFocusTestParams[] = {
-    {false /* is_rtl_enabled */, false /* is_new_style_launcher_enabled */},
-    {false, true},
-    {true, false},
-    {true, true},
-};
-
 class AppListViewFocusTest : public views::ViewsTestBase,
-                             public testing::WithParamInterface<TestParams> {
+                             public testing::WithParamInterface<bool> {
  public:
   AppListViewFocusTest() = default;
   ~AppListViewFocusTest() override = default;
@@ -261,18 +225,9 @@ class AppListViewFocusTest : public views::ViewsTestBase,
   void SetUp() override {
     if (testing::UnitTest::GetInstance()->current_test_info()->value_param()) {
       // Setup right to left environment if necessary.
-      is_rtl_ = GetParam().is_rtl_enabled;
+      is_rtl_ = GetParam();
       if (is_rtl_)
         base::i18n::SetICUDefaultLocale("he");
-
-      is_new_style_launcher_enabled_ = GetParam().is_new_style_launcher_enabled;
-    }
-    if (is_new_style_launcher_enabled_) {
-      scoped_feature_list_.InitAndEnableFeature(
-          app_list_features::kEnableNewStyleLauncher);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          app_list_features::kEnableNewStyleLauncher);
     }
 
     views::ViewsTestBase::SetUp();
@@ -287,16 +242,10 @@ class AppListViewFocusTest : public views::ViewsTestBase,
     params.parent = GetContext();
     view_->Initialize(params);
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
-    if (is_new_style_launcher_enabled_) {
-      suggestions_container_ = contents_view()
-                                   ->GetAppsContainerView()
-                                   ->suggestion_chip_container_view_for_test();
-      expand_arrow_view_ = contents_view()->expand_arrow_view();
-    } else {
-      suggestions_container_ =
-          apps_grid_view()->suggestions_container_for_test();
-      expand_arrow_view_ = apps_grid_view()->expand_arrow_view_for_test();
-    }
+    suggestions_container_ = contents_view()
+                                 ->GetAppsContainerView()
+                                 ->suggestion_chip_container_view_for_test();
+    expand_arrow_view_ = contents_view()->expand_arrow_view();
 
     // Add suggestion apps, a folder with apps and other app list items.
     const int kSuggestionAppNum = 3;
@@ -548,20 +497,12 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   std::vector<views::View*> GetAllSuggestions() {
     std::vector<views::View*> suggestions;
-    if (is_new_style_launcher_enabled_) {
-      for (int i = 0; i < suggestions_container()->child_count(); ++i) {
-        SearchResultSuggestionChipView* view =
-            static_cast<SearchResultSuggestionChipView*>(
-                suggestions_container()->child_at(i));
-        if (view->visible())
-          suggestions.emplace_back(view->suggestion_chip_view());
-      }
-      return suggestions;
-    }
-
-    for (auto* v :
-         apps_grid_view()->suggestions_container_for_test()->tile_views()) {
-      suggestions.emplace_back(v);
+    for (int i = 0; i < suggestions_container()->child_count(); ++i) {
+      SearchResultSuggestionChipView* view =
+          static_cast<SearchResultSuggestionChipView*>(
+              suggestions_container()->child_at(i));
+      if (view->visible())
+        suggestions.emplace_back(view->suggestion_chip_view());
     }
     return suggestions;
   }
@@ -580,7 +521,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
  protected:
   bool is_rtl_ = false;
-  bool is_new_style_launcher_enabled_ = false;
 
  private:
   AppListView* view_ = nullptr;  // Owned by native widget.
@@ -601,12 +541,6 @@ class AppListViewFocusTest : public views::ViewsTestBase,
 
   DISALLOW_COPY_AND_ASSIGN(AppListViewFocusTest);
 };
-
-// Instantiate the parameters which is used to toggle RTL and new style launcher
-// flag in the parameterized tests.
-INSTANTIATE_TEST_CASE_P(,
-                        AppListViewFocusTest,
-                        testing::ValuesIn(kAppListViewFocusTestParams));
 
 }  // namespace
 
@@ -818,11 +752,7 @@ TEST_P(AppListViewFocusTest, VerticalFocusTraversalInFullscreenAllAppsState) {
     backward_view_list.push_back(view_model->view_at(i));
   // Up key will always move focus to the last suggestion chip from first row
   // apps.
-  const int index =
-      is_new_style_launcher_enabled_
-          ? suggestions.size() - 1
-          : std::min((view_model->view_size() - 1) % apps_grid_view()->cols(),
-                     static_cast<int>(suggestions.size()) - 1);
+  const int index = suggestions.size() - 1;
   backward_view_list.push_back(suggestions[index]);
   backward_view_list.push_back(search_box_view()->search_box());
 
@@ -891,8 +821,9 @@ TEST_F(AppListViewFocusTest, VerticalFocusTraversalInFirstPageOfFolder) {
   const views::ViewModelT<AppListItemView>* view_model =
       app_list_folder_view()->items_grid_view()->view_model();
   for (size_t i = 0; i < kMaxFolderItemsPerPage;
-       i += app_list_folder_view()->items_grid_view()->cols())
+       i += app_list_folder_view()->items_grid_view()->cols()) {
     forward_view_list.push_back(view_model->view_at(i));
+  }
   forward_view_list.push_back(
       app_list_folder_view()->folder_header_view()->GetFolderNameViewForTest());
   forward_view_list.push_back(search_box_view()->search_box());
@@ -1300,32 +1231,6 @@ TEST_P(AppListViewFocusTest, HittingLeftRightWhenFocusOnTextfield) {
   // Test search box.
   TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), false);
   TestLeftAndRightKeyOnTextfield(search_box_view()->search_box(), true);
-}
-
-TEST_F(AppListViewFocusTest, ItemFocusedWhenContextMenuOpened) {
-  Show();
-
-  // Initial focus is on the search box.
-  EXPECT_TRUE(search_box_view()->search_box()->HasFocus());
-
-  // Right click on the first suggestion app to trigger context menu.
-  const std::vector<views::View*> suggestions = GetAllSuggestions();
-  ASSERT_GE(suggestions.size(), 2u);
-  views::View* first_suggestion_app = suggestions[0];
-  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_RIGHT_MOUSE_BUTTON,
-                             ui::EF_RIGHT_MOUSE_BUTTON);
-  first_suggestion_app->OnMouseEvent(&press_event);
-
-  // Focus is moved to the first suggestion app.
-  EXPECT_TRUE(first_suggestion_app->HasFocus());
-
-  // Right click on the second suggestion app to trigger context menu.
-  views::View* second_suggestion_app = suggestions[1];
-  second_suggestion_app->OnMouseEvent(&press_event);
-
-  // Focus is moved to the second suggestion app.
-  EXPECT_TRUE(second_suggestion_app->HasFocus());
 }
 
 // Tests that the focus is reset onto the search box and the folder exits after

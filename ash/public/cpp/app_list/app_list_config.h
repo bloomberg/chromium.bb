@@ -145,125 +145,122 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
  private:
   // The tile view's width and height of the item in apps grid view.
-  int grid_tile_width_;
-  int grid_tile_height_;
+  const int grid_tile_width_;
+  const int grid_tile_height_;
 
   // The spacing between tile views in apps grid view.
-  int grid_tile_spacing_;
+  const int grid_tile_spacing_;
 
   // The icon dimension of tile views in apps grid view.
-  int grid_icon_dimension_;
+  const int grid_icon_dimension_;
 
   // The icon bottom padding in tile views in apps grid view.
-  int grid_icon_bottom_padding_;
+  const int grid_icon_bottom_padding_;
 
   // The title top and horizontal padding in tile views in apps grid view.
-  int grid_title_top_padding_;
-  int grid_title_horizontal_padding_;
+  const int grid_title_top_padding_;
+  const int grid_title_horizontal_padding_;
 
   // The title width and color of tile views in apps grid view.
-  int grid_title_width_;
-  SkColor grid_title_color_;
+  const int grid_title_width_;
+  const SkColor grid_title_color_;
 
   // The focus dimension and corner radius of tile views in apps grid view.
-  int grid_focus_dimension_;
-  int grid_focus_corner_radius_;
+  const int grid_focus_dimension_;
+  const int grid_focus_corner_radius_;
 
   // The icon dimension of tile views in search result page view.
-  int search_tile_icon_dimension_;
+  const int search_tile_icon_dimension_;
 
   // The badge icon dimension of tile views in search result page view.
-  int search_tile_badge_icon_dimension_;
+  const int search_tile_badge_icon_dimension_;
 
   // The badge icon offset of tile views in search result page view.
-  int search_tile_badge_icon_offset_;
+  const int search_tile_badge_icon_offset_;
 
   // The icon dimension of list views in search result page view.
-  int search_list_icon_dimension_;
+  const int search_list_icon_dimension_;
 
   // The badge background corner radius of list views in search result page
   // view.
-  int search_list_badge_icon_dimension_;
+  const int search_list_badge_icon_dimension_;
 
   // The suggestion chip icon dimension.
-  int suggestion_chip_icon_dimension_;
+  const int suggestion_chip_icon_dimension_;
 
   // The maximum line height for app title in app list.
-  int app_title_max_line_height_;
+  const int app_title_max_line_height_;
 
   // The font for app title in app list.
-  gfx::FontList app_title_font_;
+  const gfx::FontList app_title_font_;
 
   // The height of app list in peeking mode.
-  int peeking_app_list_height_;
+  const int peeking_app_list_height_;
 
   // The top padding of search box in closed state.
-  int search_box_closed_top_padding_;
+  const int search_box_closed_top_padding_;
 
   // The top padding of search box in peeking state.
-  int search_box_peeking_top_padding_;
+  const int search_box_peeking_top_padding_;
 
   // The top padding of search box in fullscreen state.
-  int search_box_fullscreen_top_padding_;
+  const int search_box_fullscreen_top_padding_;
 
   // Preferred number of columns and rows in apps grid.
-  int preferred_cols_;
-  int preferred_rows_;
+  const int preferred_cols_;
+  const int preferred_rows_;
 
   // The spacing between each page.
-  int page_spacing_;
+  const int page_spacing_;
 
   // The tile height of expand arrow.
-  int expand_arrow_tile_height_;
+  const int expand_arrow_tile_height_;
 
   // The folder image bubble radius.
-  int folder_bubble_radius_;
+  const int folder_bubble_radius_;
 
   // The y offset of folder image bubble center.
-  int folder_bubble_y_offset_;
+  const int folder_bubble_y_offset_;
 
   // The icon dimension of folder.
-  int folder_icon_dimension_;
+  const int folder_icon_dimension_;
 
   // The unclipped icon dimension of folder.
-  int folder_unclipped_icon_dimension_;
+  const int folder_unclipped_icon_dimension_;
 
   // The corner radius of folder icon.
-  int folder_icon_radius_;
+  const int folder_icon_radius_;
 
   // The corner radius of folder background.
-  int folder_background_radius_;
+  const int folder_background_radius_;
 
   // The color of folder bubble.
-  int folder_bubble_color_;
+  const int folder_bubble_color_;
 
   // The dimension of the item icon in folder icon.
-  int item_icon_in_folder_icon_dimension_;
+  const int item_icon_in_folder_icon_dimension_;
 
   // Radius of the circle, in which if entered, show folder dropping preview
   // UI.
-  int folder_dropping_circle_radius_;
+  const int folder_dropping_circle_radius_;
 
   // Delays in milliseconds to show folder dropping preview circle.
-  int folder_dropping_delay_;
+  const int folder_dropping_delay_;
 
   // The background color of folder.
-  SkColor folder_background_color_;
+  const SkColor folder_background_color_;
 
   // Width in pixels of the area on the sides that triggers a page flip.
-  int page_flip_zone_size_;
+  const int page_flip_zone_size_;
 
   // The spacing between tile views in folder.
-  int grid_tile_spacing_in_folder_;
+  const int grid_tile_spacing_in_folder_;
 
   // The height/width of the shelf from the bottom/side of the screen.
-  int shelf_height_;
+  const int shelf_height_;
 
   // The blur radius used in the app list.
-  int blur_radius_ = 30;
-
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
+  const int blur_radius_ = 30;
 };
 
 }  // namespace app_list
