@@ -207,21 +207,8 @@ AccessibilityPrivateSetSwitchAccessKeysFunction::Run() {
       accessibility_private::SetSwitchAccessKeys::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  // For now, only accept key code if it represents an alphanumeric character.
-  std::set<int> key_codes;
-  for (auto key_code : params->key_codes) {
-    EXTENSION_FUNCTION_VALIDATE(key_code >= ui::VKEY_0 &&
-                                key_code <= ui::VKEY_Z);
-    key_codes.insert(key_code);
-  }
+  GetAccessibilityController()->SetSwitchAccessKeysToCapture(params->key_codes);
 
-  chromeos::AccessibilityManager* manager =
-      chromeos::AccessibilityManager::Get();
-
-  // AccessibilityManager can be null during system shut down, but no need to
-  // return error in this case, so just check that manager is not null.
-  if (manager)
-    manager->SetSwitchAccessKeys(key_codes);
   return RespondNow(NoArguments());
 }
 

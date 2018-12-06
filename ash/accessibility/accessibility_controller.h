@@ -28,6 +28,7 @@ class AccessibilityHighlightController;
 class AccessibilityObserver;
 class ScopedBacklightsForcedOff;
 class SelectToSpeakEventHandler;
+class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationVisibility {
   A11Y_NOTIFICATION_NONE,
@@ -108,6 +109,11 @@ class ASH_EXPORT AccessibilityController
   void SetStickyKeysEnabled(bool enabled);
   bool sticky_keys_enabled() const { return sticky_keys_enabled_; }
 
+  void SetSwitchAccessEnabled(bool enabled);
+  bool switch_access_enabled() const { return switch_access_enabled_; }
+
+  void SetSwitchAccessIgnoreVirtualKeyEvent(bool should_ignore);
+
   void SetVirtualKeyboardEnabled(bool enabled);
   bool virtual_keyboard_enabled() const { return virtual_keyboard_enabled_; }
 
@@ -170,6 +176,10 @@ class ASH_EXPORT AccessibilityController
   void SetSelectToSpeakState(mojom::SelectToSpeakState state) override;
   void SetSelectToSpeakEventHandlerDelegate(
       mojom::SelectToSpeakEventHandlerDelegatePtr delegate) override;
+  void SetSwitchAccessKeysToCapture(
+      const std::vector<int>& keys_to_capture) override;
+  void SetSwitchAccessEventHandlerDelegate(
+      mojom::SwitchAccessEventHandlerDelegatePtr delegate) override;
   void ToggleDictationFromSource(mojom::DictationToggleSource source) override;
 
   // SessionObserver:
@@ -203,10 +213,12 @@ class ASH_EXPORT AccessibilityController
   void UpdateSpokenFeedbackFromPref();
   void UpdateSelectToSpeakFromPref();
   void UpdateStickyKeysFromPref();
+  void UpdateSwitchAccessFromPref();
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
 
   void MaybeCreateSelectToSpeakEventHandler();
+  void MaybeCreateSwitchAccessEventHandler();
 
   // The pref service of the currently active user or the signin profile before
   // user logs in. Can be null in ash_unittests.
@@ -233,6 +245,7 @@ class ASH_EXPORT AccessibilityController
   bool spoken_feedback_enabled_ = false;
   bool select_to_speak_enabled_ = false;
   bool sticky_keys_enabled_ = false;
+  bool switch_access_enabled_ = false;
   bool virtual_keyboard_enabled_ = false;
   bool dictation_active_ = false;
 
@@ -241,6 +254,12 @@ class ASH_EXPORT AccessibilityController
   std::unique_ptr<SelectToSpeakEventHandler> select_to_speak_event_handler_;
   mojom::SelectToSpeakEventHandlerDelegatePtr
       select_to_speak_event_handler_delegate_ptr_;
+
+  // List of key codes that Switch Access should capture.
+  std::vector<int> switch_access_keys_to_capture_;
+  std::unique_ptr<SwitchAccessEventHandler> switch_access_event_handler_;
+  mojom::SwitchAccessEventHandlerDelegatePtr
+      switch_access_event_handler_delegate_ptr_;
 
   // Used to control the highlights of caret, cursor and focus.
   std::unique_ptr<AccessibilityHighlightController>

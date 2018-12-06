@@ -33,6 +33,7 @@
 
 class Browser;
 class Profile;
+class SwitchAccessEventHandlerDelegate;
 
 namespace gfx {
 class Rect;
@@ -43,7 +44,6 @@ namespace chromeos {
 class AccessibilityExtensionLoader;
 class DictationChromeos;
 class SelectToSpeakEventHandlerDelegate;
-class SwitchAccessEventHandler;
 
 enum AccessibilityNotificationType {
   ACCESSIBILITY_MANAGER_SHUTDOWN,
@@ -53,6 +53,7 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER,
   ACCESSIBILITY_TOGGLE_SPOKEN_FEEDBACK,
   ACCESSIBILITY_TOGGLE_SELECT_TO_SPEAK,
+  ACCESSIBILITY_TOGGLE_SWITCH_ACCESS,
   ACCESSIBILITY_TOGGLE_VIRTUAL_KEYBOARD,
   ACCESSIBILITY_TOGGLE_MONO_AUDIO,
   ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
@@ -272,9 +273,6 @@ class AccessibilityManager
     return keyboard_listener_extension_id_;
   }
 
-  // Set the keys to be captured by Switch Access.
-  void SetSwitchAccessKeys(const std::set<int>& key_codes);
-
   // Starts or stops dictation (type what you speak).
   bool ToggleDictation();
 
@@ -441,8 +439,8 @@ class AccessibilityManager
 
   std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
 
-  std::unique_ptr<chromeos::SwitchAccessEventHandler>
-      switch_access_event_handler_;
+  std::unique_ptr<SwitchAccessEventHandlerDelegate>
+      switch_access_event_handler_delegate_;
 
   // Ash's mojom::AccessibilityController used to request Ash's a11y feature.
   ash::mojom::AccessibilityControllerPtr accessibility_controller_;
