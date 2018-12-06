@@ -28,10 +28,6 @@ namespace cast {
 class CastTransportHostFilter;
 }
 
-namespace extensions {
-class MessagePropertyProvider;
-}
-
 namespace storage {
 class FileSystemContext;
 }
@@ -79,8 +75,6 @@ class CONTENT_EXPORT ScopedAllowGetURLRequestContext {
  private:
   // https://crbug.com/806817
   friend class cast::CastTransportHostFilter;
-  // ChannelID is being removed now.
-  friend class extensions::MessagePropertyProvider;
   // Uses URLRequestContextGetter to cast to a derived class.
   friend class ::ChromeURLRequestContextGetter;
   ScopedAllowGetURLRequestContext();
