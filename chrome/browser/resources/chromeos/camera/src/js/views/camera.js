@@ -435,25 +435,25 @@ cca.views.Camera.prototype.constraintsCandidates_ = function() {
   var deviceConstraints = (deviceId, recordMode) => {
     var videoConstraints =
         [{
-          aspectRatio: { ideal: recordMode ? 1.7777777778 : 1.3333333333 },
-          width: { min: 1280 },
-          frameRate: { min: 24 },
+          aspectRatio: {ideal: recordMode ? 1.7777777778 : 1.3333333333},
+          width: {min: 1280},
+          frameRate: {min: 24},
         },
         {
-          width: { min: 640 },
-          frameRate: { min: 24 },
+          width: {min: 640},
+          frameRate: {min: 24},
         }];
 
     // Constraints are ordered by priority.
     return videoConstraints.map((constraint) => {
       // Each passed-in video-constraint will be modified here.
       if (deviceId) {
-        constraint.deviceId = { exact: deviceId };
+        constraint.deviceId = {exact: deviceId};
       } else {
         // As a default camera use the one which is facing the user.
-        constraint.facingMode = { exact: 'user' };
+        constraint.facingMode = {exact: 'user'};
       }
-      return { audio: recordMode, video: constraint };
+      return {audio: recordMode, video: constraint};
     });
   };
 
