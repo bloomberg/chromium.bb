@@ -30,7 +30,7 @@ void NotifyTimezoneChangeToV8(v8::Isolate* isolate) {
 
 void NotifyTimezoneChangeOnWorkerThread(WorkerThread* worker_thread) {
   DCHECK(worker_thread->IsCurrentThread());
-  NotifyTimezoneChangeToV8(ToIsolate(worker_thread->GlobalScope()));
+  NotifyTimezoneChangeToV8(worker_thread->GlobalScope()->GetIsolate());
 }
 
 }  // namespace

@@ -233,13 +233,12 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     const char* interface_name,
     const char* property_name) {
   DCHECK(GetExecutionContext());
-  if (!V8Response::HasInstance(value.V8Value(),
-                               ToIsolate(GetExecutionContext()))) {
+  if (!V8Response::HasInstance(value.V8Value(), value.GetIsolate())) {
     OnResponseRejected(ServiceWorkerResponseError::kNoV8Instance);
     return;
   }
-  Response* response = V8Response::ToImplWithTypeCheck(
-      ToIsolate(GetExecutionContext()), value.V8Value());
+  Response* response =
+      V8Response::ToImplWithTypeCheck(value.GetIsolate(), value.V8Value());
   // "If one of the following conditions is true, return a network error:
   //   - |response|'s type is |error|.
   //   - |request|'s mode is |same-origin| and |response|'s type is |cors|.
