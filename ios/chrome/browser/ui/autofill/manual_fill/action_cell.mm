@@ -16,10 +16,10 @@
 namespace {
 
 // The multiplier for the base system spacing at the top margin.
-static const CGFloat TopBaseSystemSpacingMultiplier = 1.1;
+static const CGFloat TopBaseSystemSpacingMultiplier = 0.8;
 
 // The multiplier for the base system spacing at the bottom margin.
-static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
+static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
 
 }  // namespace
 
@@ -89,6 +89,7 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   [self.titleButton setTitleColor:UIColor.cr_manualFillTintColor
                          forState:UIControlStateNormal];
   self.titleButton.enabled = YES;
+  self.grayLine.hidden = YES;
 }
 
 - (void)setUpWithTitle:(NSString*)title
@@ -114,10 +115,17 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.5;
   NSMutableArray<UIView*>* verticalLeadViews = [[NSMutableArray alloc] init];
   [verticalLeadViews addObject:self.titleButton];
 
+  // When disabled, the label is in 'message' mode, and needs to be centered
+  // differently because it is in the data area rather than in the action area.
+  CGFloat topMultiplier =
+      enabled ? TopBaseSystemSpacingMultiplier : TopSystemSpacingMultiplier;
+  CGFloat bottomMultiplier = enabled ? BottomBaseSystemSpacingMultiplier
+                                     : MiddleSystemSpacingMultiplier;
+
   self.verticalConstraints =
       VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
-          verticalLeadViews, self.contentView, TopBaseSystemSpacingMultiplier,
-          BottomBaseSystemSpacingMultiplier, BottomBaseSystemSpacingMultiplier);
+          verticalLeadViews, self.contentView, topMultiplier,
+          MiddleSystemSpacingMultiplier, bottomMultiplier);
 }
 
 #pragma mark - Private
