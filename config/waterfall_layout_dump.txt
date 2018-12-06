@@ -421,6 +421,7 @@
     elm-release
     enguarde-release
     eve-arcnext-release
+    eve-arcvm-release
     eve-campfire-release
     eve-kvm-release
     eve-release
@@ -2570,6 +2571,7 @@
     elm-release
     enguarde-release
     eve-arcnext-release
+    eve-arcvm-release
     eve-campfire-release
     eve-kvm-release
     eve-release
