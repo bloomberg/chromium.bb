@@ -139,7 +139,9 @@ FidoHidMessage::FidoHidMessage(uint32_t channel_id,
                                size_t max_report_size,
                                base::span<const uint8_t> data)
     : channel_id_(channel_id) {
-  DCHECK_GE(kHidInitPacketHeaderSize, kHidContinuationPacketHeaderSize);
+  static_assert(
+      kHidInitPacketHeaderSize >= kHidContinuationPacketHeaderSize,
+      "init header is expected to be larger than continuation header");
   DCHECK_GT(max_report_size, kHidInitPacketHeaderSize);
 
   const size_t init_packet_data_size =
