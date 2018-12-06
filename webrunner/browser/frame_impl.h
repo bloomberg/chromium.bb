@@ -63,15 +63,6 @@ class FrameImpl : public chromium::web::Frame,
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)
       override;
   void SetJavaScriptLogLevel(chromium::web::LogLevel level) override;
-
-  // chromium::web::NavigationController implementation.
-  void LoadUrl(fidl::StringPtr url,
-               std::unique_ptr<chromium::web::LoadUrlParams> params) override;
-  void GoBack() override;
-  void GoForward() override;
-  void Stop() override;
-  void Reload(chromium::web::ReloadType type) override;
-  void GetVisibleEntry(GetVisibleEntryCallback callback) override;
   void SetNavigationEventObserver(
       fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
       override;
@@ -100,6 +91,15 @@ class FrameImpl : public chromium::web::Frame,
    private:
     DISALLOW_COPY_AND_ASSIGN(OriginScopedScript);
   };
+
+  // chromium::web::NavigationController implementation.
+  void LoadUrl(fidl::StringPtr url,
+               std::unique_ptr<chromium::web::LoadUrlParams> params) override;
+  void GoBack() override;
+  void GoForward() override;
+  void Stop() override;
+  void Reload(chromium::web::ReloadType type) override;
+  void GetVisibleEntry(GetVisibleEntryCallback callback) override;
 
   aura::Window* root_window() const { return window_tree_host_->window(); }
 
