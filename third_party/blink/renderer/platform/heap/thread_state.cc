@@ -1402,32 +1402,32 @@ void ThreadState::InvokePreFinalizers() {
 }
 
 // static
-base::subtle::AtomicWord ThreadState::incremental_marking_counter_ = 0;
+AtomicEntryFlag ThreadState::incremental_marking_flag_;
 
 // static
-base::subtle::AtomicWord ThreadState::wrapper_tracing_counter_ = 0;
+AtomicEntryFlag ThreadState::wrapper_tracing_flag_;
 
 void ThreadState::EnableIncrementalMarkingBarrier() {
   CHECK(!IsIncrementalMarking());
-  base::subtle::Barrier_AtomicIncrement(&incremental_marking_counter_, 1);
+  incremental_marking_flag_.Enter();
   SetIncrementalMarking(true);
 }
 
 void ThreadState::DisableIncrementalMarkingBarrier() {
   CHECK(IsIncrementalMarking());
-  base::subtle::Barrier_AtomicIncrement(&incremental_marking_counter_, -1);
+  incremental_marking_flag_.Exit();
   SetIncrementalMarking(false);
 }
 
 void ThreadState::EnableWrapperTracingBarrier() {
   CHECK(!IsWrapperTracing());
-  base::subtle::Barrier_AtomicIncrement(&wrapper_tracing_counter_, 1);
+  wrapper_tracing_flag_.Enter();
   SetWrapperTracing(true);
 }
 
 void ThreadState::DisableWrapperTracingBarrier() {
   CHECK(IsWrapperTracing());
-  base::subtle::Barrier_AtomicIncrement(&wrapper_tracing_counter_, -1);
+  wrapper_tracing_flag_.Exit();
   SetWrapperTracing(false);
 }
 
