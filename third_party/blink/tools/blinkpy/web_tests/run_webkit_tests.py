@@ -467,6 +467,16 @@ def parse_args(args):
                 ' Used on trybots when layout tests are retried without patch.')
         ]))
 
+    option_group_definitions.append(
+        ('web-platform-tests (WPT) Options', [
+            optparse.make_option(
+                '--no-manifest-update',
+                dest='manifest_update',
+                action='store_false',
+                default=True,
+                help=('Do update the web-platform-tests MANIFEST.json.')),
+        ]))
+
     # FIXME: Move these into json_results_generator.py.
     option_group_definitions.append(
         ('Result JSON Options', [
