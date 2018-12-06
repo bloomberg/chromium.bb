@@ -155,13 +155,19 @@ id<GREYAction> ScrollDown() {
 }
 
 + (void)focusOmniboxAndType:(NSString*)text {
-  if (IsRefreshLocationBarEnabled()) {
     [[EarlGrey
         selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
         performAction:grey_tap()];
-  }
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
-      performAction:grey_typeText(text)];
+
+    if (text.length) {
+      [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+          performAction:grey_typeText(text)];
+    }
+}
+
++ (void)focusOmnibox {
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::DefocusedLocationView()]
+      performAction:grey_tap()];
 }
 
 + (void)openNewTab {
