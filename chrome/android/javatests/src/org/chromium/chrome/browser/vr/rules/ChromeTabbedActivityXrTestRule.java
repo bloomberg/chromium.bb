@@ -8,6 +8,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActivity;
+import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 /**
@@ -21,6 +22,7 @@ public class ChromeTabbedActivityXrTestRule
         return super.apply(new Statement() {
             @Override
             public void evaluate() throws Throwable {
+                XrTestRuleUtils.maybeWorkaroundWebContentFlakiness(desc);
                 startMainActivityOnBlankPage();
                 base.evaluate();
             }
