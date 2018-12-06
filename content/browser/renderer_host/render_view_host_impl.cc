@@ -474,9 +474,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
              switches::autoplay::kUserGestureRequiredPolicy) {
     prefs.autoplay_policy = AutoplayPolicy::kUserGestureRequired;
   } else if (autoplay_policy ==
-             switches::autoplay::kUserGestureRequiredForCrossOriginPolicy) {
-    prefs.autoplay_policy = AutoplayPolicy::kUserGestureRequiredForCrossOrigin;
-  } else if (autoplay_policy ==
              switches::autoplay::kDocumentUserActivationRequiredPolicy) {
     prefs.autoplay_policy = AutoplayPolicy::kDocumentUserActivationRequired;
   } else {

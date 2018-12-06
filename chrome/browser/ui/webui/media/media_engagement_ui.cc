@@ -95,8 +95,6 @@ class MediaEngagementScoreDetailsProviderImpl
         return "no-user-gesture-required";
       case content::AutoplayPolicy::kUserGestureRequired:
         return "user-gesture-required";
-      case content::AutoplayPolicy::kUserGestureRequiredForCrossOrigin:
-        return "user-gesture-required-for-cross-origin";
       case content::AutoplayPolicy::kDocumentUserActivationRequired:
         return "document-user-activation-required";
     }
