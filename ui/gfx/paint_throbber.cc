@@ -186,12 +186,13 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
                                         const RectF& throbber_container_bounds,
                                         SkColor color,
                                         const base::TimeDelta& elapsed_time) {
-  constexpr int kAnimationCycleMs = 1000;
   // The throbber bounces back and forth. We map the elapsed time to 0->2. Time
   // 0->1 represents when the throbber moves left to right, time 1->2 represents
   // right to left.
-  float time = 2.0f * (elapsed_time.InMilliseconds() % kAnimationCycleMs) /
-               kAnimationCycleMs;
+  float time =
+      2.0f *
+      (elapsed_time.InMilliseconds() % kNewThrobberWaitingAnimationCycleMs) /
+      kNewThrobberWaitingAnimationCycleMs;
   // 1 -> 2 values mirror back to 1 -> 0 values to represent right-to-left.
   const bool going_back = time > 1.0f;
   if (going_back)

@@ -72,6 +72,7 @@ class TabIcon : public views::View {
     LoadingAnimationState();
 
     base::TimeDelta elapsed_time;
+    bool loading_progress_animation_pending = false;
     base::Optional<double> loading_progress;
     base::Optional<double> loading_progress_fade_out;
 
@@ -119,12 +120,10 @@ class TabIcon : public views::View {
                          const gfx::Rect& bounds);
   bool HasNonDefaultFavicon() const;
 
+  void MaybeStartFaviconFadeIn();
+
   // Sets the icon. Depending on the URL the icon may be automatically themed.
-  // The |tab_is_waiting| flag is used to check if we're allowed to start fading
-  // in the new icon.
-  void SetIcon(const GURL& url,
-               const gfx::ImageSkia& favicon,
-               bool tab_is_waiting);
+  void SetIcon(const GURL& url, const gfx::ImageSkia& favicon);
 
   // For certain types of tabs the loading animation is not desired so the
   // caller can set inhibit_loading_animation to true. When false, the loading
