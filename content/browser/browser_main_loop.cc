@@ -1318,6 +1318,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     midi_service_.reset(new midi::MidiService);
   }
 
+  {
+    TRACE_EVENT0("startup", "BrowserThreadsStarted::Subsystem:GamepadService");
+    device::GamepadService::GetInstance()->StartUp(
+        content::ServiceManagerConnection::GetForProcess()
+            ->GetConnector()
+            ->Clone());
+  }
+
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kHighDynamicRange))
     HDRProxy::Initialize();

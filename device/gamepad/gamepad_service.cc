@@ -15,6 +15,7 @@
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_provider.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
 
@@ -54,6 +55,15 @@ GamepadService* GamepadService::GetInstance() {
   if (!g_gamepad_service)
     g_gamepad_service = new GamepadService;
   return g_gamepad_service;
+}
+
+void GamepadService::StartUp(
+    std::unique_ptr<service_manager::Connector> service_manager_connector) {
+  service_manager_connector_ = std::move(service_manager_connector);
+}
+
+service_manager::Connector* GamepadService::GetConnector() {
+  return service_manager_connector_.get();
 }
 
 void GamepadService::ConsumerBecameActive(device::GamepadConsumer* consumer) {

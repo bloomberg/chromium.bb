@@ -26,6 +26,10 @@ namespace content {
 class GamepadServiceTestConstructor;
 }
 
+namespace service_manager {
+class Connector;
+}
+
 namespace device {
 class GamepadConsumer;
 class GamepadDataFetcher;
@@ -39,6 +43,11 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
  public:
   // Returns the GamepadService singleton.
   static GamepadService* GetInstance();
+
+  void StartUp(
+      std::unique_ptr<service_manager::Connector> service_manager_connector);
+
+  service_manager::Connector* GetConnector();
 
   // Increments the number of users of the provider. The Provider is running
   // when there's > 0 users, and is paused when the count drops to 0.
@@ -149,6 +158,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   int num_active_consumers_;
 
   bool gesture_callback_pending_;
+
+  std::unique_ptr<service_manager::Connector> service_manager_connector_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadService);
 };
