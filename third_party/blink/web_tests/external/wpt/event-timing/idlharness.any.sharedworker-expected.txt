@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS idl_test setup
-PASS Partial interface Performance: original interface defined
-PASS PerformanceEventTiming interface: existence and properties of interface object
-PASS EventCounts interface: existence and properties of interface object
-FAIL Performance interface: attribute eventCounts assert_true: The prototype object must have a property "eventCounts" expected true got false
-FAIL Performance interface: performance must inherit property "eventCounts" with the proper type assert_inherits: property "eventCounts" not found in prototype chain
-Harness: the test ran to completion.
-
