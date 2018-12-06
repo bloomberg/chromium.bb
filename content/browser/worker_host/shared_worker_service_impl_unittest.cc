@@ -107,7 +107,7 @@ void ConnectToSharedWorker(mojom::SharedWorkerConnectorPtr connector,
                            const std::string& name,
                            MockSharedWorkerClient* client,
                            MessagePortChannel* local_port) {
-  mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
+  blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       url, name, std::string(),
       blink::mojom::ContentSecurityPolicyType::kReport,
       blink::mojom::IPAddressSpace::kPublic));

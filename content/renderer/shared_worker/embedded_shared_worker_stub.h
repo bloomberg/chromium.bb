@@ -13,13 +13,13 @@
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
-#include "content/common/shared_worker/shared_worker_info.mojom.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -59,7 +59,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
                                  public mojom::SharedWorker {
  public:
   EmbeddedSharedWorkerStub(
-      mojom::SharedWorkerInfoPtr info,
+      blink::mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const RendererPreferences& renderer_preferences,

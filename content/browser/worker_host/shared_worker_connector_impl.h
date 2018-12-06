@@ -24,7 +24,7 @@ class CONTENT_EXPORT SharedWorkerConnectorImpl
 
   // mojom::SharedWorkerConnector methods:
   void Connect(
-      mojom::SharedWorkerInfoPtr info,
+      blink::mojom::SharedWorkerInfoPtr info,
       blink::mojom::SharedWorkerClientPtr client,
       blink::mojom::SharedWorkerCreationContextType creation_context_type,
       mojo::ScopedMessagePipeHandle message_port,

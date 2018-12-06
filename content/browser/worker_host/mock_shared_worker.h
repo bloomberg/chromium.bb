@@ -66,7 +66,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
  private:
   // mojom::SharedWorkerFactory methods:
   void CreateSharedWorker(
-      mojom::SharedWorkerInfoPtr info,
+      blink::mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       const RendererPreferences& renderer_preferences,
@@ -87,7 +87,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
   struct CreateParams {
     CreateParams();
     ~CreateParams();
-    mojom::SharedWorkerInfoPtr info;
+    blink::mojom::SharedWorkerInfoPtr info;
     bool pause_on_start;
     blink::mojom::WorkerContentSettingsProxyPtr content_settings;
     mojom::SharedWorkerHostPtr host;

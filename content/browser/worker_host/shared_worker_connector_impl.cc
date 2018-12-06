@@ -30,7 +30,7 @@ SharedWorkerConnectorImpl::SharedWorkerConnectorImpl(int process_id,
     : process_id_(process_id), frame_id_(frame_id) {}
 
 void SharedWorkerConnectorImpl::Connect(
-    mojom::SharedWorkerInfoPtr info,
+    blink::mojom::SharedWorkerInfoPtr info,
     blink::mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     mojo::ScopedMessagePipeHandle message_port,

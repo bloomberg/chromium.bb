@@ -107,7 +107,7 @@ void SharedWorkerServiceImpl::SetWorkerTerminationCallbackForTesting(
 void SharedWorkerServiceImpl::ConnectToWorker(
     int process_id,
     int frame_id,
-    mojom::SharedWorkerInfoPtr info,
+    blink::mojom::SharedWorkerInfoPtr info,
     blink::mojom::SharedWorkerClientPtr client,
     blink::mojom::SharedWorkerCreationContextType creation_context_type,
     const blink::MessagePortChannel& message_port,

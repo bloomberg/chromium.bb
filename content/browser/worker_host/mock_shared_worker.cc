@@ -97,7 +97,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
 }
 
 void MockSharedWorkerFactory::CreateSharedWorker(
-    mojom::SharedWorkerInfoPtr info,
+    blink::mojom::SharedWorkerInfoPtr info,
     bool pause_on_start,
     const base::UnguessableToken& devtools_worker_token,
     const RendererPreferences& renderer_preferences,

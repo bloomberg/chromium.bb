@@ -32,7 +32,7 @@ void SharedWorkerRepository::Connect(
   if (!connector_)
     interface_provider_->GetInterface(mojo::MakeRequest(&connector_));
 
-  mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
+  blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
       url, name.Utf8(), content_security_policy.Utf8(),
       content_security_policy_type, creation_address_space));
 
