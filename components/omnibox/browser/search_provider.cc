@@ -134,12 +134,13 @@ SearchProvider::SearchProvider(AutocompleteProviderClient* client,
     : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH, client),
       listener_(listener),
       providers_(client->GetTemplateURLService()),
-      answers_cache_(10) {
+      answers_cache_(10),
+      observer_(this) {
   TemplateURLService* template_url_service = client->GetTemplateURLService();
 
   // |template_url_service| can be null in tests.
   if (template_url_service)
-    template_url_service->AddObserver(this);
+    observer_.Add(template_url_service);
 }
 
 // static
@@ -189,9 +190,6 @@ void SearchProvider::ResetSession() {
 }
 
 SearchProvider::~SearchProvider() {
-  TemplateURLService* template_url_service = client()->GetTemplateURLService();
-  if (template_url_service)
-    template_url_service->RemoveObserver(this);
 }
 
 // static
