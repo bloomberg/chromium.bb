@@ -130,7 +130,7 @@ class InlineLoginHandlerImpl : public InlineLoginHandler,
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerImpl);
 };
 
-// Handles details of signing the user in with SigninManager and turning on
+// Handles details of signing the user in with IdentityManager and turning on
 // sync after InlineLoginHandlerImpl has acquired the auth tokens from GAIA.
 // This is a separate class from InlineLoginHandlerImpl because the full signin
 // process is asynchronous and can outlive the signin UI.
