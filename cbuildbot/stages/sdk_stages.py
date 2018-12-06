@@ -337,6 +337,8 @@ class SDKUprevStage(generic_stages.BuilderStage):
     self._version = version
 
   def PerformStage(self):
+    logging.PrintBuildbotStepText(self._version)
+
     if self._run.config.prebuilts == constants.PUBLIC:
       binhost_conf_dir = prebuilts.PUBLIC_BINHOST_CONF_DIR
     else:
