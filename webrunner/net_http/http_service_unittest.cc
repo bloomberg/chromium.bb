@@ -94,6 +94,39 @@ class HttpServiceTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(HttpServiceTest);
 };
 
+class TestZxHandleWatcher : public base::MessagePumpFuchsia::ZxHandleWatcher {
+ public:
+  explicit TestZxHandleWatcher(base::OnceClosure on_signaled)
+      : on_signaled_(std::move(on_signaled)) {}
+  ~TestZxHandleWatcher() override = default;
+
+  // ZxHandleWatcher implementation.
+  void OnZxHandleSignalled(zx_handle_t handle, zx_signals_t signals) override {
+    signals_ = signals;
+    std::move(on_signaled_).Run();
+  }
+
+  zx_signals_t signals() { return signals_; }
+
+ protected:
+  base::OnceClosure on_signaled_;
+  zx_signals_t signals_ = 0;
+};
+
+// Runs MessageLoop until one of the specified |signals| is signaled on the
+// |handle|. Return observed signals.
+zx_signals_t RunLoopUntilSignal(zx_handle_t handle, zx_signals_t signals) {
+  base::RunLoop run_loop;
+  TestZxHandleWatcher watcher(run_loop.QuitClosure());
+  base::MessagePumpForIO::ZxHandleWatchController watch_contoller(FROM_HERE);
+
+  base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
+      handle, /*persistent=*/false, signals, &watch_contoller, &watcher);
+  run_loop.Run();
+
+  return watcher.signals();
+}
+
 void CheckResponseStream(const oldhttp::URLResponse& response,
                          const std::string& expected_response) {
   EXPECT_TRUE(response.body->is_stream());
@@ -107,13 +140,13 @@ void CheckResponseStream(const oldhttp::URLResponse& response,
     zx_status_t result = stream.read(0, buffer.data(), kBufferCapacity, &size);
 
     if (result == ZX_ERR_SHOULD_WAIT) {
-      zx_signals_t observed;
-      stream.wait_one(ZX_SOCKET_READABLE | ZX_SOCKET_PEER_CLOSED,
-                      zx::time::infinite(), &observed);
-      if (observed & ZX_SOCKET_READABLE) {
+      zx_signals_t signals = RunLoopUntilSignal(
+          stream.get(), ZX_SOCKET_READABLE | ZX_SOCKET_PEER_CLOSED);
+
+      if (signals & ZX_SOCKET_READABLE) {
         // Attempt to read again now that the socket is readable.
         continue;
-      } else if (observed & ZX_SOCKET_PEER_CLOSED) {
+      } else if (signals & ZX_SOCKET_PEER_CLOSED) {
         // Done reading.
         break;
       } else {
@@ -211,8 +244,7 @@ TEST_F(HttpServiceTest, BasicRequestBuffer) {
 }
 
 // Check network request headers are received properly.
-// TODO(https://crbug.com/898938): Disabled due to flake.
-TEST_F(HttpServiceTest, DISABLED_RequestWithHeaders) {
+TEST_F(HttpServiceTest, RequestWithHeaders) {
   oldhttp::URLLoaderPtr url_loader;
   http_service()->CreateURLLoader(url_loader.NewRequest());
 
@@ -236,8 +268,7 @@ TEST_F(HttpServiceTest, DISABLED_RequestWithHeaders) {
 }
 
 // Check duplicate network request headers are received properly.
-// TODO(https://crbug.com/898938): Disabled due to flake.
-TEST_F(HttpServiceTest, DISABLED_RequestWithDuplicateHeaders) {
+TEST_F(HttpServiceTest, RequestWithDuplicateHeaders) {
   oldhttp::URLLoaderPtr url_loader;
   http_service()->CreateURLLoader(url_loader.NewRequest());
 
