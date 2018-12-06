@@ -46048,6 +46048,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Write data error"/>
 </enum>
 
+<enum name="ServicificationStartupMode">
+  <int value="0" label="Cold start of Chrome as a full browser"/>
+  <int value="1"
+      label="Half warm start of Chrome with ServiceManager already running"/>
+  <int value="2" label="Cold start of ServiceManager only"/>
+  <int value="3" label="Warm start of ServiceManager only"/>
+</enum>
+
 <enum name="SessionCrashedBubbleUserAction">
   <int value="0" label="The bubble was shown"/>
   <int value="1" label="There was an error when showing the bubble."/>
