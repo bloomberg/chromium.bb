@@ -168,12 +168,70 @@ bool KeyframeModel::IsFinishedAt(base::TimeTicks monotonic_time) const {
              (ConvertMonotonicTimeToLocalTime(monotonic_time) + time_offset_);
 }
 
-bool KeyframeModel::InEffect(base::TimeTicks monotonic_time) const {
-  return ConvertMonotonicTimeToLocalTime(monotonic_time) + time_offset_ >=
-             base::TimeDelta() ||
-         (fill_mode_ == FillMode::BOTH || fill_mode_ == FillMode::BACKWARDS);
+KeyframeModel::Phase KeyframeModel::CalculatePhase(
+    base::TimeDelta local_time) const {
+  base::TimeDelta before_active_boundary_time =
+      std::max(-time_offset_, base::TimeDelta());
+  if (local_time < before_active_boundary_time ||
+      (local_time == before_active_boundary_time && playback_rate_ < 0)) {
+    return KeyframeModel::Phase::BEFORE;
+  }
+  // Scaling the duration is against spec but needed to comply with the cc
+  // implementation. By spec (in blink) the playback rate is an Animation level
+  // concept but in cc it's per KeyframeModel. We grab the active time
+  // calculated here and later scale it with the playback rate in order to get a
+  // proper progress. Therefore we need to un-scale it here. This can be fixed
+  // once we scale the local time by playback rate. See
+  // https://crbug.com/912407.
+  base::TimeDelta active_duration =
+      curve_->Duration() * iterations_ / std::abs(playback_rate_);
+  // TODO(crbug.com/909794): By spec end time = max(start delay + duration +
+  // end delay, 0). The logic should be updated once "end delay" is supported.
+  base::TimeDelta active_after_boundary_time =
+      // Negative iterations_ represents "infinite iterations".
+      iterations_ >= 0
+          ? std::max(-time_offset_ + active_duration, base::TimeDelta())
+          : base::TimeDelta::Max();
+  if (local_time > active_after_boundary_time ||
+      (local_time == active_after_boundary_time && playback_rate_ > 0)) {
+    return KeyframeModel::Phase::AFTER;
+  }
+  return KeyframeModel::Phase::ACTIVE;
 }
 
+base::Optional<base::TimeDelta> KeyframeModel::CalculateActiveTime(
+    base::TimeTicks monotonic_time) const {
+  base::TimeDelta local_time = ConvertMonotonicTimeToLocalTime(monotonic_time);
+  KeyframeModel::Phase phase = CalculatePhase(local_time);
+  DCHECK(playback_rate_);
+  switch (phase) {
+    case KeyframeModel::Phase::BEFORE:
+      if (fill_mode_ == FillMode::BACKWARDS || fill_mode_ == FillMode::BOTH)
+        return std::max(local_time + time_offset_, base::TimeDelta());
+      return base::nullopt;
+    case KeyframeModel::Phase::ACTIVE:
+      return local_time + time_offset_;
+    case KeyframeModel::Phase::AFTER:
+      if (fill_mode_ == FillMode::FORWARDS || fill_mode_ == FillMode::BOTH) {
+        DCHECK_GE(iterations_, 0);
+        base::TimeDelta active_duration =
+            curve_->Duration() * iterations_ / std::abs(playback_rate_);
+        return std::max(std::min(local_time + time_offset_, active_duration),
+                        base::TimeDelta());
+      }
+      return base::nullopt;
+    default:
+      NOTREACHED();
+      return base::nullopt;
+  }
+}
+
+bool KeyframeModel::InEffect(base::TimeTicks monotonic_time) const {
+  return CalculateActiveTime(monotonic_time).has_value();
+}
+
+// TODO(yigu): Local time should be scaled by playback rate by spec.
+// https://crbug.com/912407.
 base::TimeDelta KeyframeModel::ConvertMonotonicTimeToLocalTime(
     base::TimeTicks monotonic_time) const {
   // When waiting on receiving a start time, then our global clock is 'stuck' at
@@ -190,17 +248,11 @@ base::TimeDelta KeyframeModel::ConvertMonotonicTimeToLocalTime(
 
 base::TimeDelta KeyframeModel::TrimTimeToCurrentIteration(
     base::TimeTicks monotonic_time) const {
-  base::TimeDelta local_time = ConvertMonotonicTimeToLocalTime(monotonic_time);
-  return TrimLocalTimeToCurrentIteration(local_time);
-}
-
-base::TimeDelta KeyframeModel::TrimLocalTimeToCurrentIteration(
-    base::TimeDelta local_time) const {
-  // Check for valid parameters
   DCHECK(playback_rate_);
   DCHECK_GE(iteration_start_, 0);
 
-  base::TimeDelta active_time = local_time + time_offset_;
+  DCHECK(InEffect(monotonic_time));
+  base::TimeDelta active_time = CalculateActiveTime(monotonic_time).value();
   base::TimeDelta start_offset = curve_->Duration() * iteration_start_;
 
   // Return start offset if we are before the start of the keyframe model
@@ -217,10 +269,6 @@ base::TimeDelta KeyframeModel::TrimLocalTimeToCurrentIteration(
   base::TimeDelta repeated_duration = curve_->Duration() * iterations_;
   base::TimeDelta active_duration =
       repeated_duration / std::abs(playback_rate_);
-
-  // Check if we are past active duration
-  if (iterations_ > 0 && active_time >= active_duration)
-    active_time = active_duration;
 
   // Calculate the scaled active time
   base::TimeDelta scaled_active_time;
