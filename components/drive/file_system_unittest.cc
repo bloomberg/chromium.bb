@@ -34,6 +34,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -153,8 +154,11 @@ class FileSystemTest : public testing::Test {
 
     fake_free_disk_space_getter_ = std::make_unique<FakeFreeDiskSpaceGetter>();
 
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), fake_drive_service_.get(),
+        network::TestNetworkConnectionTracker::GetInstance(),
         task_runner_.get(), nullptr);
 
     mock_directory_observer_ = std::make_unique<MockDirectoryChangeObserver>();

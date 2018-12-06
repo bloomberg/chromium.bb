@@ -25,6 +25,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 
 namespace drive {
 namespace file_system {
@@ -78,8 +79,11 @@ void OperationTestBase::SetUp() {
   fake_drive_service_ = std::make_unique<FakeDriveService>();
   ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
+  network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
   scheduler_ = std::make_unique<JobScheduler>(
       pref_service_.get(), logger_.get(), fake_drive_service_.get(),
+      network::TestNetworkConnectionTracker::GetInstance(),
       blocking_task_runner_.get(), nullptr);
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(

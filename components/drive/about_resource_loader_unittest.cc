@@ -19,6 +19,7 @@
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
 #include "components/prefs/testing_pref_service.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -53,8 +54,11 @@ class AboutResourceLoaderTest : public testing::Test {
     drive_service_ = std::make_unique<FakeDriveService>();
     ASSERT_TRUE(test_util::SetUpTestEntries(drive_service_.get()));
 
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
     scheduler_ = std::make_unique<JobScheduler>(
         pref_service_.get(), logger_.get(), drive_service_.get(),
+        network::TestNetworkConnectionTracker::GetInstance(),
         task_runner_.get(), nullptr);
     metadata_storage_.reset(
         new ResourceMetadataStorage(temp_dir_.GetPath(), task_runner_.get()));
