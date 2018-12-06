@@ -144,6 +144,11 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
     [self setSmartQuotesType:UITextSmartQuotesTypeNo];
 
+    // Disable drag on iPhone because there's nowhere to drag to
+    if (!IsIPadIdiom()) {
+      self.textDragInteraction.enabled = NO;
+    }
+
     // Sanity check:
     DCHECK([self conformsToProtocol:@protocol(UITextInput)]);
 
