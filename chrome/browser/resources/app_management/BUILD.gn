@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
   deps = [
     ":app",
     ":browser_proxy",
+    ":fake_page_handler",
     ":main_view",
   ]
 }
@@ -23,6 +24,7 @@ js_library("app") {
 js_library("browser_proxy") {
   deps = [
     ":externs",
+    ":fake_page_handler",
     "//ui/webui/resources/js:cr",
   ]
 }
@@ -33,6 +35,13 @@ js_library("externs") {
   externs_list = [
     "$root_gen_dir/chrome/browser/ui/webui/app_management/app_management.mojom-lite.externs.js",
     "$externs_path/mojo.js",
+  ]
+}
+
+js_library("fake_page_handler") {
+  deps = [
+    ":externs",
+    "//ui/webui/resources/js:cr",
   ]
 }
 
