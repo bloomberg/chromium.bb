@@ -40,6 +40,8 @@ enum WebGLExtensionName {
   kWebGLDrawBuffersName,
   kWebGLGetBufferSubDataAsyncName,
   kWebGLLoseContextName,
+  kWebGLMultiDrawName,
+  kWebGLMultiDrawInstancedName,
   kWebGLMultiviewName,
   kWebGLExtensionNameCount,  // Must be the last entry
 };

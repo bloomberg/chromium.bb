@@ -17,6 +17,8 @@ class EXTTextureFilterAnisotropic;
 class OESTextureFloatLinear;
 class WebGLDebugRendererInfo;
 class WebGLLoseContext;
+class WebGLMultiDraw;
+class WebGLMultiDrawInstanced;
 class WebGLMultiview;
 class KHRParallelShaderCompile;
 
@@ -72,6 +74,8 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<WebGLDebugRendererInfo> webgl_debug_renderer_info_;
   Member<WebGLDebugShaders> webgl_debug_shaders_;
   Member<WebGLLoseContext> webgl_lose_context_;
+  Member<WebGLMultiDraw> webgl_multi_draw_;
+  Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
   Member<WebGLMultiview> webgl_multiview_;
 };
 

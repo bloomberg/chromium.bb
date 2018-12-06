@@ -44,6 +44,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     self.Fail('WebglExtension_EXT_color_buffer_float',
         ['win', 'mac'])
+    self.Fail('WebglExtension_WEBGL_multi_draw_instanced',
+        ['passthrough', 'vulkan'], bug=2672) # angle bug ID
     # Skip these, rather than expect them to fail, to speed up test
     # execution. The browser is restarted even after expected test
     # failures.

@@ -632,6 +632,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class WebGLCompressedTexturePVRTC;
   friend class WebGLCompressedTextureS3TC;
   friend class WebGLCompressedTextureS3TCsRGB;
+  friend class WebGLMultiDraw;
+  friend class WebGLMultiDrawCommon;
+  friend class WebGLMultiDrawInstanced;
   friend class WebGLMultiview;
   friend class WebGLRenderingContextErrorMessageCallback;
   friend class WebGLVertexArrayObjectBase;
