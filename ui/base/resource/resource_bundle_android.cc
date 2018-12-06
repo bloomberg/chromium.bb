@@ -83,13 +83,13 @@ void ResourceBundle::LoadCommonResources() {
   base::FilePath disk_path;
   base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &disk_path);
   disk_path = disk_path.AppendASCII("chrome_100_percent.pak");
-  if (LoadFromApkOrFile("assets/chrome_100_percent.pak",
-                        &disk_path,
-                        &g_chrome_100_percent_fd,
-                        &g_chrome_100_percent_region)) {
-    AddDataPackFromFileRegion(base::File(g_chrome_100_percent_fd),
-                              g_chrome_100_percent_region, SCALE_FACTOR_100P);
-  }
+  bool success =
+      LoadFromApkOrFile("assets/chrome_100_percent.pak", &disk_path,
+                        &g_chrome_100_percent_fd, &g_chrome_100_percent_region);
+  DCHECK(success);
+
+  AddDataPackFromFileRegion(base::File(g_chrome_100_percent_fd),
+                            g_chrome_100_percent_region, SCALE_FACTOR_100P);
 }
 
 // static

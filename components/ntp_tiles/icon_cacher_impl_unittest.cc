@@ -187,7 +187,7 @@ class IconCacherTestPopularSites : public IconCacherTestBase {
         .WillByDefault(ReturnArg<0>());
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", &mock_resource_delegate_,
-        ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   void TearDown() override {

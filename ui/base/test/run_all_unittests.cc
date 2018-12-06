@@ -67,7 +67,7 @@ void UIBaseTestSuite::Initialize() {
   // resources built in. On Android, ui_base_unittests_apk provides the
   // necessary framework.
   ui::ResourceBundle::InitSharedInstanceWithLocale(
-      "en-US", NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+      "en-US", NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
 
 #else
   // On other platforms, the (hardcoded) paths for chrome_100_percent.pak and
