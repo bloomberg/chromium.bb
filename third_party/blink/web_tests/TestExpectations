@@ -5548,9 +5548,6 @@ crbug.com/899303 http/tests/inspector-protocol/fetch/fetch-basic.js [ Timeout ]
 crbug.com/902591 [ Linux ] svg/zoom/page/zoom-svg-float-border-padding.xml [ Failure ]
 crbug.com/902591 [ Linux ] tables/mozilla/bugs/bug2973.html [ Failure ]
 
-# Sheriff 2018-09-13
-crbug.com/883591 [ Android ] fullscreen/full-screen-inline-split-crash.html [ Pass Crash ]
-
 # Sheriff 2018-09-18
 crbug.com/884445 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
 crbug.com/884445 virtual/video-surface-layer/external/wpt/feature-policy/feature-policy-nested-header-policy-disallowed-for-all.https.sub.html [ Pass Timeout ]
