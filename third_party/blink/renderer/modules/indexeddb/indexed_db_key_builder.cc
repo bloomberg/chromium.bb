@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
 
 #include <stddef.h>
 
@@ -13,12 +13,12 @@
 
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_range.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_path.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_path.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h"
 
 namespace blink {
 

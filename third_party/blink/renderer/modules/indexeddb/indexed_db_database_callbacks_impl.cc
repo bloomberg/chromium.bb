@@ -7,12 +7,12 @@
 #include <unordered_map>
 #include <utility>
 
-#include "third_party/blink/public/platform/modules/indexeddb/indexed_db_key_builder.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_callbacks.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_observation.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
 
 using blink::WebVector;
 using blink::WebIDBDatabaseCallbacks;

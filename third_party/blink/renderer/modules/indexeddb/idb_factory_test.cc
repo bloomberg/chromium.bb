@@ -9,8 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_error.h"
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -19,6 +17,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_factory.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 

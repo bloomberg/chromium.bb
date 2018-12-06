@@ -7,10 +7,10 @@
 
 #include <gmock/gmock.h>
 #include <memory>
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h"
 
 namespace blink {
 

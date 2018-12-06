@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
 
-#include "third_party/blink/public/platform/modules/indexeddb/web_idb_key.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
@@ -47,23 +47,23 @@ class WebIDBKeyRange {
     Assign(std::move(lower), std::move(upper), lower_open, upper_open);
   }
 
-  BLINK_EXPORT WebIDBKeyView Lower() const;
-  BLINK_EXPORT WebIDBKeyView Upper() const;
-  BLINK_EXPORT bool LowerOpen() const;
-  BLINK_EXPORT bool UpperOpen() const;
+  MODULES_EXPORT WebIDBKeyView Lower() const;
+  MODULES_EXPORT WebIDBKeyView Upper() const;
+  MODULES_EXPORT bool LowerOpen() const;
+  MODULES_EXPORT bool UpperOpen() const;
 
-  BLINK_EXPORT void Assign(const WebIDBKeyRange&);
-  BLINK_EXPORT void Assign(WebIDBKey lower,
-                           WebIDBKey upper,
-                           bool lower_open,
-                           bool upper_open);
+  MODULES_EXPORT void Assign(const WebIDBKeyRange&);
+  MODULES_EXPORT void Assign(WebIDBKey lower,
+                             WebIDBKey upper,
+                             bool lower_open,
+                             bool upper_open);
 
   WebIDBKeyRange& operator=(const WebIDBKeyRange& e) {
     Assign(e);
     return *this;
   }
 
-  BLINK_EXPORT void Reset();
+  MODULES_EXPORT void Reset();
 
 #if INSIDE_BLINK
   WebIDBKeyRange(IDBKeyRange* value) : private_(value) {}
@@ -80,4 +80,4 @@ class WebIDBKeyRange {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
