@@ -70,6 +70,9 @@ void RecursivelyGenerateFrameEntries(
       UTF16ToUTF8(state.target.value_or(base::string16())),
       state.item_sequence_number, state.document_sequence_number, nullptr,
       nullptr, GURL(state.url_string.value_or(base::string16())),
+      // TODO(nasko): Supply valid origin once the value is persisted across
+      // session restore.
+      nullptr /* origin */,
       Referrer(GURL(state.referrer.value_or(base::string16())),
                state.referrer_policy),
       std::vector<GURL>(), PageState::CreateFromEncodedData(data), "GET", -1,
@@ -264,6 +267,7 @@ NavigationEntryImpl::NavigationEntryImpl(
                                    std::move(instance),
                                    nullptr,
                                    url,
+                                   nullptr /* origin */,
                                    referrer,
                                    std::vector<GURL>(),
                                    PageState(),
@@ -786,6 +790,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     SiteInstanceImpl* site_instance,
     scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
+    const url::Origin& origin,
     const Referrer& referrer,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
@@ -804,7 +809,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     root_node()->frame_entry->UpdateEntry(
         frame_tree_node->unique_name(), item_sequence_number,
         document_sequence_number, site_instance,
-        std::move(source_site_instance), url, referrer, redirect_chain,
+        std::move(source_site_instance), url, origin, referrer, redirect_chain,
         page_state, method, post_id, std::move(blob_url_loader_factory));
     return;
   }
@@ -832,7 +837,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
       child->frame_entry->UpdateEntry(
           unique_name, item_sequence_number, document_sequence_number,
-          site_instance, std::move(source_site_instance), url, referrer,
+          site_instance, std::move(source_site_instance), url, origin, referrer,
           redirect_chain, page_state, method, post_id,
           std::move(blob_url_loader_factory));
       return;
@@ -844,7 +849,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   // or unique name.
   FrameNavigationEntry* frame_entry = new FrameNavigationEntry(
       unique_name, item_sequence_number, document_sequence_number,
-      site_instance, std::move(source_site_instance), url, referrer,
+      site_instance, std::move(source_site_instance), url, &origin, referrer,
       redirect_chain, page_state, method, post_id,
       std::move(blob_url_loader_factory));
   parent_node->children.push_back(

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
 
@@ -21,6 +22,7 @@ FrameNavigationEntry::FrameNavigationEntry(
     scoped_refptr<SiteInstanceImpl> site_instance,
     scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
+    const url::Origin* origin,
     const Referrer& referrer,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
@@ -38,7 +40,10 @@ FrameNavigationEntry::FrameNavigationEntry(
       page_state_(page_state),
       method_(method),
       post_id_(post_id),
-      blob_url_loader_factory_(std::move(blob_url_loader_factory)) {}
+      blob_url_loader_factory_(std::move(blob_url_loader_factory)) {
+  if (origin)
+    origin_ = *origin;
+}
 
 FrameNavigationEntry::~FrameNavigationEntry() {
 }
@@ -47,10 +52,11 @@ FrameNavigationEntry* FrameNavigationEntry::Clone() const {
   FrameNavigationEntry* copy = new FrameNavigationEntry();
 
   // Omit any fields cleared at commit time.
-  copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
-                    document_sequence_number_, site_instance_.get(), nullptr,
-                    url_, referrer_, redirect_chain_, page_state_, method_,
-                    post_id_, nullptr /* blob_url_loader_factory */);
+  copy->UpdateEntryInternal(frame_unique_name_, item_sequence_number_,
+                            document_sequence_number_, site_instance_.get(),
+                            nullptr, url_, base::OptionalOrNullptr(origin_),
+                            referrer_, redirect_chain_, page_state_, method_,
+                            post_id_, nullptr /* blob_url_loader_factory */);
   return copy;
 }
 
@@ -61,6 +67,28 @@ void FrameNavigationEntry::UpdateEntry(
     SiteInstanceImpl* site_instance,
     scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
+    const url::Origin& origin,
+    const Referrer& referrer,
+    const std::vector<GURL>& redirect_chain,
+    const PageState& page_state,
+    const std::string& method,
+    int64_t post_id,
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+  UpdateEntryInternal(frame_unique_name, item_sequence_number,
+                      document_sequence_number, site_instance,
+                      std::move(source_site_instance), url, &origin, referrer,
+                      redirect_chain, page_state, method, post_id,
+                      std::move(blob_url_loader_factory));
+}
+
+void FrameNavigationEntry::UpdateEntryInternal(
+    const std::string& frame_unique_name,
+    int64_t item_sequence_number,
+    int64_t document_sequence_number,
+    SiteInstanceImpl* site_instance,
+    scoped_refptr<SiteInstanceImpl> source_site_instance,
+    const GURL& url,
+    const url::Origin* origin,
     const Referrer& referrer,
     const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
@@ -79,6 +107,11 @@ void FrameNavigationEntry::UpdateEntry(
   method_ = method;
   post_id_ = post_id;
   blob_url_loader_factory_ = std::move(blob_url_loader_factory);
+
+  if (origin)
+    origin_ = *origin;
+  else
+    origin_.reset();
 }
 
 void FrameNavigationEntry::set_item_sequence_number(
