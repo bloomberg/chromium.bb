@@ -156,10 +156,20 @@ class ManifestTest(cros_test_lib.TempDirTestCase, XMLTestCase):
     project = self.manifest.GetUniqueProject('simple/project')
     self.assertEqual(project.name, 'simple/project')
 
+  def testGetUniqueProjectBranch(self):
+    """Test Manifest.GetUniqueProject with an explicit branch."""
+    project = self.manifest.GetUniqueProject('complex/project', 'cafe')
+    self.assertEqual(project.name, 'complex/project')
+
   def testGetUniqueProjectMissing(self):
     """Test Manifest.GetUniqueProject without named <project>."""
     with self.assertRaises(ValueError):
       self.manifest.GetUniqueProject('missing/project')
+
+  def testGetUniqueProjectMissingBranch(self):
+    """Test Manifest.GetUniqueProject with valid project, missing <branch>."""
+    with self.assertRaises(ValueError):
+      self.manifest.GetUniqueProject('complex/project', 'wrong_branch')
 
 
 class ManifestElementExample(repo_manifest._ManifestElement):

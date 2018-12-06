@@ -124,15 +124,27 @@ class Manifest(object):
     for project_element in self._etree.iterfind('project'):
       yield Project(self, project_element)
 
-  def GetUniqueProject(self, name):
-    """Return the unique Project with the given name.
+  def GetUniqueProject(self, name, branch=None):
+    """Return the unique Project with the given name and optional branch.
+
+    Args:
+      name: The name of the project to search for.
+      branch: The optional branch to search (without the 'refs/heads/').
 
     Raises:
-      ValueError: If there is not exactly one Project with the given name.
+      ValueError: If there is not exactly one Project with the given name/branch
     """
-    projects = [x for x in self.Projects() if x.name == name]
+    projects = []
+    for project in self.Projects():
+      # Strip the 'refs/heads/' from the branch name
+      stripped_branch = project.Revision() or 'master'
+      if stripped_branch.startswith('refs/heads/'):
+        stripped_branch = stripped_branch[len('refs/heads/'):]
+      if (branch is None or stripped_branch == branch) and project.name == name:
+        projects.append(project)
     if len(projects) != 1:
-      raise ValueError('%s projects named %s' % (len(projects), name))
+      raise ValueError(
+          '%s projects named %s on branch %s' % (len(projects), name, branch))
     return projects[0]
 
 
