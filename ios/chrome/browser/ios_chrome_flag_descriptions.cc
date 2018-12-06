@@ -379,6 +379,10 @@ const char kCustomSearchEnginesName[] = "Custom Search Engines";
 const char kCustomSearchEnginesDescription[] =
     "When enabled, user can add custom search engines in settings.";
 
+const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
+const char kFindInPageiFrameDescription[] =
+    "When enabled, Find In Page will search in iFrames.";
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions

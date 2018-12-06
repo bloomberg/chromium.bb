@@ -48,6 +48,7 @@
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
+#include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
 #include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/search_engines/feature_flags.h"
@@ -490,6 +491,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"infobar-ui-reboot", flag_descriptions::kInfobarUIRebootName,
      flag_descriptions::kInfobarUIRebootDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kInfobarUIReboot)},
+    {"find-in-page-iframe", flag_descriptions::kFindInPageiFrameName,
+     flag_descriptions::kFindInPageiFrameDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kFindInPageiFrame)},
 };
 
 // Add all switches from experimental flags to |command_line|.

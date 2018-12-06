@@ -315,6 +315,10 @@ extern const char kWKWebViewSnapshotsDescription[];
 extern const char kCustomSearchEnginesName[];
 extern const char kCustomSearchEnginesDescription[];
 
+// Title and description for the flag to search in iFrames in Find In Page.
+extern const char kFindInPageiFrameName[];
+extern const char kFindInPageiFrameDescription[];
+
 // Please insert your name/description above in alphabetical order.
 
 }  // namespace flag_descriptions
