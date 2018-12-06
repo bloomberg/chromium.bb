@@ -209,6 +209,8 @@ class ArcAppListPrefs : public KeyedService,
   // It is called from chrome/browser/prefs/browser_prefs.cc.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  static void UprevCurrentIconsVersionForTesting();
+
   ~ArcAppListPrefs() override;
 
   // Returns a list of all app ids, including ready and non-ready apps.
