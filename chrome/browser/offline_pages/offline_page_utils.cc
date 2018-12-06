@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
@@ -29,6 +30,7 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -125,7 +127,7 @@ void CheckDuplicateOngoingDownloads(
           // samples in seconds rather than milliseconds.
           UMA_HISTOGRAM_CUSTOM_COUNTS(
               "OfflinePages.DownloadRequestTimeSinceDuplicateRequested",
-              (base::Time::Now() - latest_request_time).InSeconds(),
+              (OfflineClock()->Now() - latest_request_time).InSeconds(),
               base::TimeDelta::FromSeconds(1).InSeconds(),
               base::TimeDelta::FromDays(7).InSeconds(), 50);
 
@@ -320,7 +322,7 @@ void OfflinePageUtils::CheckDuplicateDownloads(
       // samples in seconds rather than milliseconds.
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "OfflinePages.DownloadRequestTimeSinceDuplicateSaved",
-          (base::Time::Now() - latest_saved_time).InSeconds(),
+          (OfflineClock()->Now() - latest_saved_time).InSeconds(),
           base::TimeDelta::FromSeconds(1).InSeconds(),
           base::TimeDelta::FromDays(7).InSeconds(), 50);
 
