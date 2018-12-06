@@ -235,9 +235,9 @@ void ScriptExecutor::SetAttribute(const Selector& selector,
 
 void ScriptExecutor::SendKeyboardInput(
     const Selector& selector,
-    const std::string& text,
+    const std::vector<std::string>& text_parts,
     base::OnceCallback<void(bool)> callback) {
-  delegate_->GetWebController()->SendKeyboardInput(selector, text,
+  delegate_->GetWebController()->SendKeyboardInput(selector, text_parts,
                                                    std::move(callback));
 }
 

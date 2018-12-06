@@ -11,8 +11,10 @@
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -1036,17 +1038,31 @@ void WebController::SetFieldValue(const Selector& selector,
                                   bool simulate_key_presses,
                                   base::OnceCallback<void(bool)> callback) {
   if (simulate_key_presses) {
+    std::vector<std::string> utf8_chars;
+    base::i18n::UTF8CharIterator iter(&value);
+    while (!iter.end()) {
+      wchar_t wide_char = iter.get();
+      std::string utf8_char;
+      if (!base::WideToUTF8(&wide_char, 1, &utf8_char)) {
+        DLOG(ERROR) << "Failed to convert character to UTF-8: " << wide_char;
+        OnResult(false, std::move(callback));
+        return;
+      }
+
+      utf8_chars.push_back(utf8_char);
+      iter.Advance();
+    }
+
     // We first clear the field value, and then simulate the key presses.
     // TODO(crbug.com/806868): Disable keyboard during this action and then
     // reset to previous state.
     InternalSetFieldValue(
         selector, "",
-        base::BindOnce(&WebController::OnClearFieldForDispatchKeyEvent,
-                       weak_ptr_factory_.GetWeakPtr(), selector, value,
+        base::BindOnce(&WebController::OnClearFieldForSendKeyboardInput,
+                       weak_ptr_factory_.GetWeakPtr(), selector, utf8_chars,
                        std::move(callback)));
     return;
   }
-
   InternalSetFieldValue(selector, value, std::move(callback));
 }
 
@@ -1061,112 +1077,59 @@ void WebController::InternalSetFieldValue(
                              std::move(callback)));
 }
 
-void WebController::OnClearFieldForDispatchKeyEvent(
+void WebController::OnClearFieldForSendKeyboardInput(
     const Selector& selector,
-    const std::string& value,
+    const std::vector<std::string>& utf8_chars,
     base::OnceCallback<void(bool)> callback,
     bool clear_status) {
   if (!clear_status) {
     OnResult(false, std::move(callback));
     return;
   }
-
-  // TODO(crbug.com/806868): Substitute mouse click with touch tap.
-  //
-  // Note that 'KeyDown' will not be handled by the element immediately after
-  // touch tap. Add ~1 second delay before 'DispatchKeyDownEvent' in
-  // 'OnClickOrTapElementForDispatchKeyEvent' solved the problem, needs more
-  // investigation for this timing issue. One possible reason is that events
-  // from different devices are not guarranteed to be handled in order (needs a
-  // way to make sure previous events have been handled).
-  ClickElement(selector,
-               base::BindOnce(&WebController::OnClickElementForDispatchKeyEvent,
-                              weak_ptr_factory_.GetWeakPtr(), value,
-                              std::move(callback)));
-}
-
-void WebController::OnClickElementForDispatchKeyEvent(
-    const std::string& value,
-    base::OnceCallback<void(bool)> callback,
-    bool click_status) {
-  if (!click_status) {
-    OnResult(/* result= */ false, std::move(callback));
-    return;
-  }
-  DispatchKeyDownEvent(value, 0, std::move(callback));
+  SendKeyboardInput(selector, utf8_chars, std::move(callback));
 }
 
 void WebController::OnClickElementForSendKeyboardInput(
-    const std::string& text,
+    const std::vector<std::string>& utf8_chars,
     base::OnceCallback<void(bool)> callback,
     bool click_status) {
   if (!click_status) {
     OnResult(false, std::move(callback));
     return;
   }
-  DispatchKeyboardTextDownEvent(text, std::move(callback));
+  DispatchKeyboardTextDownEvent(utf8_chars, 0, std::move(callback));
 }
 
-void WebController::DispatchKeyDownEvent(
-    const std::string& value,
+void WebController::DispatchKeyboardTextDownEvent(
+    const std::vector<std::string>& utf8_chars,
     size_t index,
     base::OnceCallback<void(bool)> callback) {
-  if (index >= value.size()) {
+  if (index >= utf8_chars.size()) {
     OnResult(true, std::move(callback));
     return;
   }
 
   devtools_client_->GetInput()->DispatchKeyEvent(
-      input::DispatchKeyEventParams::Builder()
-          .SetType(input::DispatchKeyEventType::KEY_DOWN)
-          .SetText(std::string(1, value[index]))
-          .Build(),
-      base::BindOnce(&WebController::DispatchKeyUpEvent,
-                     weak_ptr_factory_.GetWeakPtr(), value, index,
-                     std::move(callback)));
-}
-
-void WebController::DispatchKeyUpEvent(
-    const std::string& value,
-    size_t index,
-    base::OnceCallback<void(bool)> callback) {
-  DCHECK_LT(index, value.size());
-  devtools_client_->GetInput()->DispatchKeyEvent(
-      input::DispatchKeyEventParams::Builder()
-          .SetType(input::DispatchKeyEventType::KEY_UP)
-          .SetText(std::string(1, value[index]))
-          .Build(),
-      base::BindOnce(&WebController::OnDispatchKeyUpEvent,
-                     weak_ptr_factory_.GetWeakPtr(), value, index,
-                     std::move(callback)));
-}
-
-void WebController::OnDispatchKeyUpEvent(
-    const std::string& value,
-    size_t index,
-    base::OnceCallback<void(bool)> callback) {
-  DispatchKeyDownEvent(value, index + 1, std::move(callback));
-}
-
-void WebController::DispatchKeyboardTextDownEvent(
-    const std::string& text,
-    base::OnceCallback<void(bool)> callback) {
-  devtools_client_->GetInput()->DispatchKeyEvent(
       CreateKeyEventParamsFromText(
-          autofill_assistant::input::DispatchKeyEventType::KEY_DOWN, text),
+          autofill_assistant::input::DispatchKeyEventType::KEY_DOWN,
+          utf8_chars[index]),
       base::BindOnce(&WebController::DispatchKeyboardTextUpEvent,
-                     weak_ptr_factory_.GetWeakPtr(), text,
+                     weak_ptr_factory_.GetWeakPtr(), utf8_chars, index,
                      std::move(callback)));
 }
 
 void WebController::DispatchKeyboardTextUpEvent(
-    const std::string& text,
+    const std::vector<std::string>& utf8_chars,
+    size_t index,
     base::OnceCallback<void(bool)> callback) {
+  DCHECK_LT(index, utf8_chars.size());
   devtools_client_->GetInput()->DispatchKeyEvent(
       CreateKeyEventParamsFromText(
-          autofill_assistant::input::DispatchKeyEventType::KEY_UP, text),
-      base::BindOnce(&WebController::OnDispatchKeyboardTextUpEvent,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+          autofill_assistant::input::DispatchKeyEventType::KEY_UP,
+          utf8_chars[index]),
+      base::BindOnce(&WebController::DispatchKeyboardTextDownEvent,
+                     weak_ptr_factory_.GetWeakPtr(), utf8_chars, index + 1,
+                     std::move(callback)));
 }
 
 auto WebController::CreateKeyEventParamsFromText(
@@ -1175,11 +1138,6 @@ auto WebController::CreateKeyEventParamsFromText(
   auto params = input::DispatchKeyEventParams::Builder().SetType(type).Build();
   params->SetText(text);
   return params;
-}
-
-void WebController::OnDispatchKeyboardTextUpEvent(
-    base::OnceCallback<void(bool)> callback) {
-  OnResult(/* result= */ true, std::move(callback));
 }
 
 void WebController::OnPressKeyboard(
@@ -1274,26 +1232,27 @@ void WebController::OnSetAttribute(
   OnResult(result && !result->HasExceptionDetails(), std::move(callback));
 }
 
-void WebController::SendKeyboardInput(const Selector& selector,
-                                      const std::string& text,
-                                      base::OnceCallback<void(bool)> callback) {
+void WebController::SendKeyboardInput(
+    const Selector& selector,
+    const std::vector<std::string>& utf8_chars,
+    base::OnceCallback<void(bool)> callback) {
   DCHECK(!selector.empty());
   FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSendKeyboardInput,
-                             weak_ptr_factory_.GetWeakPtr(), selector, text,
-                             std::move(callback)));
+                             weak_ptr_factory_.GetWeakPtr(), selector,
+                             utf8_chars, std::move(callback)));
 }
 
 void WebController::OnFindElementForSendKeyboardInput(
     const Selector& selector,
-    const std::string& text,
+    const std::vector<std::string>& utf8_chars,
     base::OnceCallback<void(bool)> callback,
     std::unique_ptr<FindElementResult> element_result) {
-  ClickElement(selector,
-               base::BindOnce(
-                   &WebController::OnClickElementForSendKeyboardInput,
-                   weak_ptr_factory_.GetWeakPtr(), text, std::move(callback)));
+  ClickElement(selector, base::BindOnce(
+                             &WebController::OnClickElementForSendKeyboardInput,
+                             weak_ptr_factory_.GetWeakPtr(), utf8_chars,
+                             std::move(callback)));
 }
 
 void WebController::GetOuterHtml(
