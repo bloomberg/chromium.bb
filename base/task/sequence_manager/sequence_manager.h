@@ -174,9 +174,12 @@ class SequenceManager {
   virtual scoped_refptr<TaskQueue> CreateTaskQueue(
       const TaskQueue::Spec& spec) = 0;
 
-  // Returns true iff this SequenceManager has no immediate work to do
-  // (tasks with unexpired delay are fine, tasks with zero delay and
-  // expired delay are not).
+  // Returns true iff this SequenceManager has no immediate work to do. I.e.
+  // there are no pending non-delayed tasks or delayed tasks that are due to
+  // run. This method ignores any pending delayed tasks that might have become
+  // eligible to run since the last task was executed. This is important because
+  // if it did tests would become flaky depending on the exact timing of this
+  // call.
   virtual bool IsIdleForTesting() = 0;
 
   // The total number of posted tasks that haven't executed yet.
