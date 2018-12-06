@@ -4135,6 +4135,10 @@ crbug.com/835717 virtual/omt-worker-fetch/fast/workers/chromium/worker-crash-wit
 # script loading changes the order of url revocation and script fetch.
 # See also crbug.com/800898.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/dedicated-worker-from-blob-url.window.html [ Timeout ]
+# These fail because of various reasons.
+crbug.com/835717 virtual/omt-worker-fetch/http/tests/workers/worker-invalid-context.html [ Failure ]
+crbug.com/835717 virtual/omt-worker-fetch/http/tests/workers/worker-performance-timeline.html [ Failure ]
+crbug.com/835717 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Failure ]
 
 # This fails because AllowedByNoSniff::MimeTypeAsScript() blocks the nested worker's
 # worker script, because the script url has a .html file extension.
