@@ -42,30 +42,16 @@ class NullFetchContext final : public FetchContext {
  public:
   explicit NullFetchContext(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : FetchContext(std::move(task_runner)),
-        fetch_client_settings_object_(
-            MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
-                KURL(),
-                nullptr /* security_origin */,
-                network::mojom::ReferrerPolicy::kDefault,
-                String(),
-                HttpsState::kNone)) {}
-
-  const FetchClientSettingsObject* GetFetchClientSettingsObject()
-      const override {
-    return fetch_client_settings_object_;
+      : FetchContext(std::move(task_runner)) {
+    SetFetchClientSettingsObject(
+        MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
+            KURL(), nullptr /* security_origin */,
+            network::mojom::ReferrerPolicy::kDefault, String(),
+            HttpsState::kNone));
   }
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
-
-  void Trace(blink::Visitor* visitor) override {
-    visitor->Trace(fetch_client_settings_object_);
-    FetchContext::Trace(visitor);
-  }
-
- private:
-  const Member<const FetchClientSettingsObject> fetch_client_settings_object_;
 };
 
 }  // namespace
@@ -85,6 +71,7 @@ FetchContext::FetchContext(
 
 void FetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_probe_sink_);
+  visitor->Trace(fetch_client_settings_object_);
 }
 
 void FetchContext::DispatchDidChangeResourcePriority(unsigned long,
@@ -157,6 +144,27 @@ void FetchContext::AddInfoConsoleMessage(const String&, LogSource) const {}
 void FetchContext::AddWarningConsoleMessage(const String&, LogSource) const {}
 
 void FetchContext::AddErrorConsoleMessage(const String&, LogSource) const {}
+
+const SecurityOrigin* FetchContext::GetSecurityOrigin() const {
+  // This can be called before |fetch_client_settings_object_| is set in
+  // FrameFetchContext.
+  // TODO(hiroshige): Make |fetch_client_settings_object_| always non-null.
+  if (!fetch_client_settings_object_)
+    return nullptr;
+  return fetch_client_settings_object_->GetSecurityOrigin();
+}
+
+void FetchContext::SetFetchClientSettingsObject(
+    FetchClientSettingsObject* fetch_client_settings_object) {
+  DCHECK(fetch_client_settings_object);
+  fetch_client_settings_object_ = fetch_client_settings_object;
+}
+
+const FetchClientSettingsObject* FetchContext::GetFetchClientSettingsObject()
+    const {
+  DCHECK(fetch_client_settings_object_);
+  return fetch_client_settings_object_.Get();
+}
 
 void FetchContext::PopulateResourceRequest(
     ResourceType,

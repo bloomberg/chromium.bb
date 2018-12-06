@@ -140,7 +140,7 @@ class FrameFetchContextTest : public testing::Test {
     fetch_context =
         static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
     owner = DummyFrameOwner::Create();
-    FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
+    fetch_context->ProvideDocumentToContext(document.Get());
   }
 
   void TearDown() override {
@@ -158,8 +158,7 @@ class FrameFetchContextTest : public testing::Test {
     child_document = child_frame->GetDocument();
     FrameFetchContext* child_fetch_context = static_cast<FrameFetchContext*>(
         &child_frame->Loader().GetDocumentLoader()->Fetcher()->Context());
-    FrameFetchContext::ProvideDocumentToContext(*child_fetch_context,
-                                                child_document.Get());
+    child_fetch_context->ProvideDocumentToContext(child_document.Get());
     return child_fetch_context;
   }
 
@@ -291,7 +290,7 @@ class FrameFetchContextMockedLocalFrameClientTest
     fetch_context =
         static_cast<FrameFetchContext*>(&document->Fetcher()->Context());
     owner = DummyFrameOwner::Create();
-    FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
+    fetch_context->ProvideDocumentToContext(document.Get());
   }
 
   KURL url;
@@ -432,7 +431,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
        "ftp://example.test:1212/image.png"},
   };
 
-  FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
+  fetch_context->ProvideDocumentToContext(document.Get());
   document->SetInsecureRequestPolicy(kUpgradeInsecureRequests);
 
   for (const auto& test : tests) {
@@ -480,7 +479,7 @@ TEST_F(FrameFetchContextModifyRequestTest, UpgradeInsecureResourceRequests) {
 
 TEST_F(FrameFetchContextModifyRequestTest,
        DoNotUpgradeInsecureResourceRequests) {
-  FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
+  fetch_context->ProvideDocumentToContext(document.Get());
   document->SetSecurityOrigin(secure_origin);
   document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
 
@@ -565,7 +564,7 @@ TEST_F(FrameFetchContextModifyRequestTest, SendUpgradeInsecureRequestHeader) {
                                        test.should_prefer);
   }
 
-  FrameFetchContext::ProvideDocumentToContext(*fetch_context, document.Get());
+  fetch_context->ProvideDocumentToContext(document.Get());
 
   for (const auto& test : tests) {
     document->SetInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
