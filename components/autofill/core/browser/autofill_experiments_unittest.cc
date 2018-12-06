@@ -49,13 +49,6 @@ TEST_F(AutofillExperimentsTest, DenyUpload_FeatureDisabled) {
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
-TEST_F(AutofillExperimentsTest, DenyUpload_SyncServiceCannotStart) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-  sync_service_.SetDisableReasons(
-      syncer::SyncService::DISABLE_REASON_USER_CHOICE);
-  EXPECT_FALSE(IsCreditCardUploadEnabled());
-}
-
 TEST_F(AutofillExperimentsTest, DenyUpload_AuthError) {
   scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   sync_service_.SetAuthError(
@@ -63,24 +56,17 @@ TEST_F(AutofillExperimentsTest, DenyUpload_AuthError) {
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
-TEST_F(AutofillExperimentsTest,
-       DenyUpload_SyncServiceDoesNotHaveAutofillProfilePreferredDataType) {
+TEST_F(AutofillExperimentsTest, DenyUpload_SyncDoesNotHaveWalletDataType) {
   scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-  sync_service_.SetPreferredDataTypes(syncer::ModelTypeSet());
   sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
-TEST_F(AutofillExperimentsTest, DenyUpload_SyncCycleNotComplete) {
+TEST_F(AutofillExperimentsTest,
+       DenyUpload_FullSyncDoesNotHaveAutofillProfileActiveDataType) {
   scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-  sync_service_.SetLastCycleSnapshot(syncer::SyncCycleSnapshot());
-  EXPECT_FALSE(IsCreditCardUploadEnabled());
-}
-
-TEST_F(AutofillExperimentsTest, DenyUpload_SyncConfigurationNotDone) {
-  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
-  sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::CONFIGURING);
+  sync_service_.SetActiveDataTypes(
+      syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
   EXPECT_FALSE(IsCreditCardUploadEnabled());
 }
 
@@ -101,6 +87,36 @@ TEST_F(AutofillExperimentsTest,
 TEST_F(AutofillExperimentsTest, DenyUpload_EmptyUserEmail) {
   scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
   EXPECT_FALSE(IsCreditCardUploadEnabled(""));
+}
+
+TEST_F(AutofillExperimentsTest, AllowUpload_TransportModeOnly) {
+  scoped_feature_list_.InitWithFeatures(
+      /*enable_features=*/{features::kAutofillUpstream,
+                           features::kAutofillEnableAccountWalletStorage},
+      /*disable_features=*/{});
+  // When we have no primary account, Sync will start in Transport-only mode
+  // (if allowed).
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+
+  EXPECT_TRUE(IsCreditCardUploadEnabled("john.smith@gmail.com"));
+}
+
+TEST_F(AutofillExperimentsTest,
+       AllowUpload_TransportSyncDoesNotHaveAutofillProfileActiveDataType) {
+  scoped_feature_list_.InitWithFeatures(
+      /*enable_features=*/{features::kAutofillUpstream,
+                           features::kAutofillEnableAccountWalletStorage},
+      /*disable_features=*/{});
+  // When we have no primary account, Sync will start in Transport-only mode
+  // (if allowed).
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+
+  // Update the active types to only include Wallet. This disables all other
+  // types, including profiles.
+  sync_service_.SetActiveDataTypes(
+      syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+
+  EXPECT_TRUE(IsCreditCardUploadEnabled());
 }
 
 TEST_F(AutofillExperimentsTest, AllowUpload_UserEmailWithGoogleDomain) {

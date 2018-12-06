@@ -189,7 +189,7 @@ class PersonalDataManagerTestBase {
   }
 
   void ResetPersonalDataManager(UserMode user_mode,
-                                bool use_account_server_storage) {
+                                bool use_sync_transport_mode) {
     bool is_incognito = (user_mode == USER_MODE_INCOGNITO);
     personal_data_.reset(new PersonalDataManagerMock("en"));
     personal_data_->Init(
@@ -207,7 +207,7 @@ class PersonalDataManagerTestBase {
     AccountInfo account_info;
     account_info.email = "sync@account";
     sync_service_.SetAuthenticatedAccountInfo(account_info);
-    sync_service_.SetIsAuthenticatedAccountPrimary(!use_account_server_storage);
+    sync_service_.SetIsAuthenticatedAccountPrimary(!use_sync_transport_mode);
     personal_data_->OnSyncServiceInitialized(&sync_service_);
     personal_data_->OnStateChanged(&sync_service_);
 
@@ -218,7 +218,7 @@ class PersonalDataManagerTestBase {
   }
 
   void ResetPersonalDataManager(UserMode user_mode) {
-    ResetPersonalDataManager(user_mode, /*use_account_server_storage=*/false);
+    ResetPersonalDataManager(user_mode, /*use_sync_transport_mode=*/false);
   }
 
   void ResetProfiles() {
@@ -5572,7 +5572,7 @@ TEST_F(PersonalDataManagerTest, DoNotConvertWalletAddressesInEphemeralStorage) {
   ///////////////////////////////////////////////////////////////////////
   EnableWalletCardImport();
   ResetPersonalDataManager(USER_MODE_NORMAL,
-                           /*use_account_server_storage=*/true);
+                           /*use_sync_transport_mode=*/true);
   ASSERT_FALSE(personal_data_->IsSyncFeatureEnabled());
 
   // Add a local profile.
@@ -6248,6 +6248,34 @@ TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
 }
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
+  // Set up PersonalDataManager in transport mode.
+  ResetPersonalDataManager(USER_MODE_NORMAL,
+                           /*use_sync_transport_mode=*/true);
+  SetUpThreeCardTypes();
+
+  // Check that the server cards are available for suggestion.
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      3U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
+  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+
+  // Stop Wallet sync.
+  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+
+  // Check that server cards are unavailable.
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      1U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
+  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
 // Tests that all the non settings origins of autofill profiles are cleared but
 // that the settings origins are untouched.
 TEST_F(PersonalDataManagerTest, ClearProfileNonSettingsOrigins) {
@@ -6524,7 +6552,7 @@ TEST_F(
 // cards still works.
 TEST_F(PersonalDataManagerTest, UsePersistentServerStorage) {
   ResetPersonalDataManager(USER_MODE_NORMAL,
-                           /*use_account_server_storage=*/false);
+                           /*use_sync_transport_mode=*/false);
   SetUpThreeCardTypes();
 
   // include_server_cards is set to false, therefore no server cards should be
@@ -6542,7 +6570,7 @@ TEST_F(PersonalDataManagerTest, UsePersistentServerStorage) {
 TEST_F(PersonalDataManagerTest, SwitchServerStorages) {
   // Start with account storage.
   ResetPersonalDataManager(USER_MODE_NORMAL,
-                           /*use_account_server_storage=*/true);
+                           /*use_sync_transport_mode=*/true);
   SetUpThreeCardTypes();
 
   // Check that we do have 2 server cards, as expected.
@@ -6579,7 +6607,7 @@ TEST_F(PersonalDataManagerTest, SwitchServerStorages) {
 // cards still works.
 TEST_F(PersonalDataManagerTest, UseCorrectStorageForDifferentCards) {
   ResetPersonalDataManager(USER_MODE_NORMAL,
-                           /*use_account_server_storage=*/true);
+                           /*use_sync_transport_mode=*/true);
 
   // Add a server card.
   CreditCard server_card;

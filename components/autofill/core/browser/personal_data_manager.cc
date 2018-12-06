@@ -1416,10 +1416,13 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   if (is_syncing_for_test_)
     return true;
 
-  // Server cards should be suggested if the sync service active.
-  return syncer::GetUploadToGoogleState(
-             sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-         syncer::UploadState::ACTIVE;
+  // Server cards should be suggested if the sync service is active.
+  // We check for persistent auth errors, because we don't want to offer server
+  // cards when the user is in the "sync paused" state.
+  return sync_service_ &&
+         sync_service_->GetActiveDataTypes().Has(
+             syncer::AUTOFILL_WALLET_DATA) &&
+         !sync_service_->GetAuthError().IsPersistentError();
 }
 
 std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
