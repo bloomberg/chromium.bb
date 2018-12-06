@@ -350,7 +350,7 @@ function testGetLocationInfo(callback) {
             VolumeManagerCommon.RootType.COMPUTER,
             computerLocationInfo.rootType);
         assertFalse(computerLocationInfo.hasFixedLabel);
-        assertFalse(computerLocationInfo.isReadOnly);
+        assertTrue(computerLocationInfo.isReadOnly);
         assertTrue(computerLocationInfo.isRootEntry);
       }),
       callback);
