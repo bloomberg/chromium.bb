@@ -180,7 +180,6 @@ JobScheduler::JobScheduler(
     PrefService* pref_service,
     EventLogger* logger,
     DriveServiceInterface* drive_service,
-    network::NetworkConnectionTracker* network_connection_tracker,
     base::SequencedTaskRunner* blocking_task_runner,
     device::mojom::WakeLockProviderPtr wake_lock_provider)
     : throttle_count_(0),
@@ -188,7 +187,6 @@ JobScheduler::JobScheduler(
       disable_throttling_(false),
       logger_(logger),
       drive_service_(drive_service),
-      network_connection_tracker_(network_connection_tracker),
       blocking_task_runner_(blocking_task_runner),
       uploader_(new DriveUploader(drive_service,
                                   blocking_task_runner,
@@ -199,7 +197,7 @@ JobScheduler::JobScheduler(
     queue_[i] = std::make_unique<JobQueue>(kMaxJobCount[i], NUM_CONTEXT_TYPES,
                                            kMaxBatchCount, kMaxBatchSize);
 
-  network_connection_tracker_->AddNetworkConnectionObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 JobScheduler::~JobScheduler() {
@@ -210,7 +208,7 @@ JobScheduler::~JobScheduler() {
     num_queued_jobs += queue_[i]->GetNumberOfJobs();
   DCHECK_EQ(num_queued_jobs, job_map_.size());
 
-  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 std::vector<JobInfo> JobScheduler::GetJobInfoList() {
@@ -869,18 +867,15 @@ int JobScheduler::GetCurrentAcceptedPriority(QueueType queue_type) {
     return kNoJobShouldRun;
 
   // Should stop if the network is not online.
-  auto connection_type = network::mojom::ConnectionType::CONNECTION_UNKNOWN;
-  network_connection_tracker_->GetConnectionType(
-      &connection_type, base::BindOnce(&JobScheduler::OnConnectionChanged,
-                                       weak_ptr_factory_.GetWeakPtr()));
-  if (connection_type == network::mojom::ConnectionType::CONNECTION_NONE)
+  if (net::NetworkChangeNotifier::IsOffline())
     return kNoJobShouldRun;
 
   // For the file queue, if it is on cellular network, only user initiated
   // operations are allowed to start.
   if (queue_type == FILE_QUEUE &&
       pref_service_->GetBoolean(prefs::kDisableDriveOverCellular) &&
-      network::NetworkConnectionTracker::IsConnectionCellular(connection_type))
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType()))
     return USER_INITIATED;
 
   // Otherwise, every operations including background tasks are allowed.
@@ -1127,12 +1122,13 @@ void JobScheduler::UpdateProgress(JobID job_id,
   NotifyJobUpdated(job_entry->job_info);
 }
 
-void JobScheduler::OnConnectionChanged(network::mojom::ConnectionType type) {
+void JobScheduler::OnNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType type) {
   // When connection type switches from one connection to another,
   // CONNECTION_NONE signal comes right before the changed connection signal.
   // Ignore such signals to avoid aborting jobs.
-  if (type == network::mojom::ConnectionType::CONNECTION_NONE &&
-      !network_connection_tracker_->IsOffline())
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE &&
+      !net::NetworkChangeNotifier::IsOffline())
     return;
 
   DCHECK(thread_checker_.CalledOnValidThread());
