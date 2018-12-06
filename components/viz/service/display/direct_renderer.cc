@@ -526,17 +526,8 @@ void DirectRenderer::DrawRenderPassAndExecuteCopyRequests(
   for (int i = 0; i < settings_->slow_down_compositing_scale_factor; ++i)
     DrawRenderPass(render_pass);
 
-  bool first_request = true;
-  for (auto& copy_request : render_pass->copy_requests) {
-    // CopyDrawnRenderPass() can change the binding of the framebuffer target as
-    // a part of its usual scaling and readback operations. Therefore, make sure
-    // to restore the correct framebuffer between readbacks. (Even if it did
-    // not, a Mac-specific bug requires this workaround: http://crbug.com/99393)
-    if (!first_request)
-      UseRenderPass(render_pass);
+  for (auto& copy_request : render_pass->copy_requests)
     CopyDrawnRenderPass(std::move(copy_request));
-    first_request = false;
-  }
 }
 
 void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
