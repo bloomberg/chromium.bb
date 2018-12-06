@@ -569,7 +569,7 @@ div.offline-content-suggestion {
 }
 
 #offline-content-summary {
-  border: 1px solid rgb(241, 243, 244);
+  border: 1px solid rgb(223, 225, 229);
   border-radius: 12px;
   padding: 12px;
   text-align: center;
@@ -598,7 +598,7 @@ div.offline-content-suggestion {
 }
 
 .offline-content-summary-description {
-  border-top: 1px solid rgb(241, 243, 244);
+  border-top: 1px solid rgb(223, 225, 229);
   padding-top: 12px;
 }
 
