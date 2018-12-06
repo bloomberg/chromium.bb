@@ -7,7 +7,6 @@
 
 #include <CoreAudio/AudioHardware.h>
 
-#include <map>
 #include <memory>
 #include <utility>
 
@@ -51,6 +50,7 @@ class MEDIA_EXPORT AudioDeviceListenerMac {
   void RemovePropertyListener(PropertyListener* property_listener);
   void OnDevicesAddedOrRemoved();
   void UpdateSourceListeners();
+  void PruneDeletedListeners();
 
   base::RepeatingClosure listener_cb_;
   std::unique_ptr<PropertyListener> default_output_listener_;
