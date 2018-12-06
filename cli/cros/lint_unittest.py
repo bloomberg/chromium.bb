@@ -433,6 +433,13 @@ class DocStringCheckerTest(CheckerTestCase):
          """,
          ('self', 'moo',), 'args', 'kwargs',
         ),
+        ("""args are allowed to have annotations
+
+         Args:
+           moo (Cow): cow
+         """,
+         ('moo',), None, None,
+        ),
         ("""args are allowed to wrap
 
          Args:
@@ -479,6 +486,13 @@ class DocStringCheckerTest(CheckerTestCase):
 
          Args:
            moo:cow
+         """,
+         ('moo',),
+        ),
+        ("""too much space after type and colon
+
+         Args:
+           moo (Cow):  cow
          """,
          ('moo',),
         ),
