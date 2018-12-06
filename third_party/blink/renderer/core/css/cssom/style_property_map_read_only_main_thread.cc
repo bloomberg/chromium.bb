@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only_main_thread.h"
 
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
@@ -61,52 +62,47 @@ CSSStyleValue* StylePropertyMapReadOnlyMainThread::get(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) {
-  const CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid) {
+  base::Optional<CSSPropertyName> name = CSSPropertyName::From(property_name);
+
+  if (!name) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return nullptr;
   }
 
-  DCHECK(isValidCSSPropertyID(property_id));
-  const CSSProperty& property = CSSProperty::Get(property_id);
+  const CSSProperty& property = CSSProperty::Get(name->Id());
   if (property.IsShorthand())
     return GetShorthandProperty(property);
 
-  AtomicString custom_property_name = property_id == CSSPropertyVariable
-                                          ? AtomicString(property_name)
-                                          : g_null_atom;
-
   const CSSValue* value =
-      (property_id == CSSPropertyVariable)
-          ? GetCustomProperty(*execution_context, custom_property_name)
-          : GetProperty(property_id);
+      (name->IsCustomProperty())
+          ? GetCustomProperty(*execution_context, name->ToAtomicString())
+          : GetProperty(name->Id());
   if (!value)
     return nullptr;
 
   // Custom properties count as repeated whenever we have a CSSValueList.
   if (property.IsRepeated() ||
-      (property_id == CSSPropertyVariable && value->IsValueList())) {
-    CSSStyleValueVector values = StyleValueFactory::CssValueToStyleValueVector(
-        property_id, custom_property_name, *value);
+      (name->IsCustomProperty() && value->IsValueList())) {
+    CSSStyleValueVector values =
+        StyleValueFactory::CssValueToStyleValueVector(*name, *value);
     return values.IsEmpty() ? nullptr : values[0];
   }
 
-  return StyleValueFactory::CssValueToStyleValue(property_id,
-                                                 custom_property_name, *value);
+  return StyleValueFactory::CssValueToStyleValue(*name, *value);
 }
 
 CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
     const ExecutionContext* execution_context,
     const String& property_name,
     ExceptionState& exception_state) {
-  CSSPropertyID property_id = cssPropertyID(property_name);
-  if (property_id == CSSPropertyInvalid) {
+  base::Optional<CSSPropertyName> name = CSSPropertyName::From(property_name);
+
+  if (!name) {
     exception_state.ThrowTypeError("Invalid propertyName: " + property_name);
     return CSSStyleValueVector();
   }
 
-  DCHECK(isValidCSSPropertyID(property_id));
-  const CSSProperty& property = CSSProperty::Get(property_id);
+  const CSSProperty& property = CSSProperty::Get(name->Id());
   if (property.IsShorthand()) {
     CSSStyleValueVector values;
     if (CSSStyleValue* value = GetShorthandProperty(property))
@@ -114,19 +110,14 @@ CSSStyleValueVector StylePropertyMapReadOnlyMainThread::getAll(
     return values;
   }
 
-  AtomicString custom_property_name = property_id == CSSPropertyVariable
-                                          ? AtomicString(property_name)
-                                          : g_null_atom;
-
   const CSSValue* value =
-      (property_id == CSSPropertyVariable)
-          ? GetCustomProperty(*execution_context, custom_property_name)
-          : GetProperty(property_id);
+      (name->IsCustomProperty())
+          ? GetCustomProperty(*execution_context, name->ToAtomicString())
+          : GetProperty(name->Id());
   if (!value)
     return CSSStyleValueVector();
 
-  return StyleValueFactory::CssValueToStyleValueVector(
-      property_id, custom_property_name, *value);
+  return StyleValueFactory::CssValueToStyleValueVector(*name, *value);
 }
 
 bool StylePropertyMapReadOnlyMainThread::has(
@@ -173,8 +164,10 @@ StylePropertyMapReadOnlyMainThread::StartIteration(ScriptState* script_state,
       }
     }
 
-    auto values = StyleValueFactory::CssValueToStyleValueVector(
-        property_id, custom_property_name, *value);
+    auto name = (property_id == CSSPropertyVariable)
+                    ? CSSPropertyName(custom_property_name)
+                    : CSSPropertyName(property_id);
+    auto values = StyleValueFactory::CssValueToStyleValueVector(name, *value);
     result.emplace_back(property_name, std::move(values));
   });
 

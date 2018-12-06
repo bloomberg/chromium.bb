@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_NAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_NAME_H_
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -26,6 +27,15 @@ class CORE_EXPORT CSSPropertyName {
       : property_id_(CSSPropertyVariable),
         custom_property_name_(custom_property_name) {
     DCHECK(!custom_property_name.IsNull());
+  }
+
+  static base::Optional<CSSPropertyName> From(const String& value) {
+    const CSSPropertyID property_id = cssPropertyID(value);
+    if (property_id == CSSPropertyInvalid)
+      return base::nullopt;
+    if (property_id == CSSPropertyVariable)
+      return base::make_optional(CSSPropertyName(AtomicString(value)));
+    return base::make_optional(CSSPropertyName(property_id));
   }
 
   bool operator==(const CSSPropertyName&) const;

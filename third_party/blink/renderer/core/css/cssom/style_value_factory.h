@@ -14,6 +14,7 @@ namespace blink {
 
 class CSSParserContext;
 class CSSProperty;
+class CSSPropertyName;
 class CSSValue;
 class ExecutionContext;
 class PropertyRegistration;
@@ -28,14 +29,10 @@ class CORE_EXPORT StyleValueFactory {
       const PropertyRegistration*,
       const String&,
       const CSSParserContext*);
-  static CSSStyleValue* CssValueToStyleValue(
-      CSSPropertyID,
-      const AtomicString& custom_property_name,
-      const CSSValue&);
-  static CSSStyleValueVector CssValueToStyleValueVector(
-      CSSPropertyID,
-      const AtomicString& custom_property_name,
-      const CSSValue&);
+  static CSSStyleValue* CssValueToStyleValue(const CSSPropertyName&,
+                                             const CSSValue&);
+  static CSSStyleValueVector CssValueToStyleValueVector(const CSSPropertyName&,
+                                                        const CSSValue&);
   // Returns an empty vector on error conditions.
   static CSSStyleValueVector CoerceStyleValuesOrStrings(
       const CSSProperty& property,
