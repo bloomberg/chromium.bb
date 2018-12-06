@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/intervention.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -793,6 +794,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   frame_->GetDocument()->MaybeHandleHttpRefresh(
       response_.HttpHeaderField(http_names::kRefresh),
       Document::kHttpRefreshFromHeader);
+  ReportPreviewsIntervention();
 }
 
 void DocumentLoader::CommitData(const char* bytes, size_t length) {
@@ -1343,6 +1345,37 @@ void DocumentLoader::ResumeParser() {
     parser_->Finish();
     parser_.Clear();
   }
+}
+
+void DocumentLoader::ReportPreviewsIntervention() const {
+  // Only send reports for main frames.
+  if (!frame_->IsMainFrame())
+    return;
+
+  WebURLRequest::PreviewsState previews_state = request_.GetPreviewsState();
+
+  // Verify that certain types are not on main frame requests.
+  DCHECK_NE(WebURLRequest::kClientLoFiAutoReload, previews_state);
+  DCHECK_NE(WebURLRequest::kLazyImageLoadDeferred, previews_state);
+
+  static_assert(WebURLRequest::kPreviewsStateLast ==
+                    WebURLRequest::kLazyImageLoadDeferred,
+                "If a new Preview type is added, verify that the Intervention "
+                "Report should be sent (or not sent) for that type.");
+
+  // If the preview type is not unspecified, off, or no transform, it is a
+  // preview that needs to be reported.
+  if (previews_state == WebURLRequest::kPreviewsUnspecified ||
+      previews_state & WebURLRequest::kPreviewsOff ||
+      previews_state & WebURLRequest::kPreviewsNoTransform) {
+    return;
+  }
+
+  Intervention::GenerateReport(
+      frame_, "LitePageServed",
+      "Modified page load behavior on the page because the page was expected "
+      "to take a long amount of time to load. "
+      "https://www.chromestatus.com/feature/5148050062311424");
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);
