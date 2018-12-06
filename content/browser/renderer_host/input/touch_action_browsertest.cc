@@ -431,9 +431,14 @@ class TouchActionBrowserTest : public ContentBrowserTest,
       scroll_left = GetScrollLeft();
     }
 
-    // Expect it scrolled at least half of the expected distance.
-    EXPECT_LE(expected_scroll_position_after_scroll.y() / 2, scroll_top);
-    EXPECT_LE(expected_scroll_position_after_scroll.x() / 2, scroll_left);
+    // It seems that even if the compositor frame has scrolled half of the
+    // expected scroll offset, the Blink side scroll offset may not yet be
+    // updated, so here we expect it to at least have scrolled.
+    // TODO(crbug.com/902446): this can be resolved by fixing this bug.
+    if (expected_scroll_position_after_scroll.y() > 0)
+      EXPECT_GT(scroll_top, 0);
+    if (expected_scroll_position_after_scroll.x() > 0)
+      EXPECT_GT(scroll_left, 0);
   }
 
   const bool compositor_touch_action_enabled_;
