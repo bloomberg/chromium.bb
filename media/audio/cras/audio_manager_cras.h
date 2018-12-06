@@ -82,6 +82,9 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   // Get if system AEC is supported or not for this board.
   bool GetSystemAecSupportedPerBoard();
 
+  // Get what the system AEC group ID is for this board.
+  int32_t GetSystemAecGroupIdPerBoard();
+
   void GetAudioDeviceNamesImpl(bool is_input, AudioDeviceNames* device_names);
 
   std::string GetHardwareDeviceFromDeviceId(
@@ -102,6 +105,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
                                               base::WaitableEvent* event);
   void GetSystemAecSupportedOnMainThread(bool* system_aec_supported,
                                          base::WaitableEvent* event);
+  void GetSystemAecGroupIdOnMainThread(int32_t* group_id,
+                                       base::WaitableEvent* event);
 
   void WaitEventOrShutdown(base::WaitableEvent* event);
 
