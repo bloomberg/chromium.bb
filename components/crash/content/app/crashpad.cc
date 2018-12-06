@@ -264,9 +264,11 @@ bool GetUploadsEnabled() {
   return false;
 }
 
+#if !defined(OS_ANDROID)
 void DumpWithoutCrashing() {
   CRASHPAD_SIMULATE_CRASH();
 }
+#endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 void CrashWithoutDumping(const std::string& message) {

@@ -29,6 +29,7 @@
 #include "third_party/crashpad/crashpad/client/annotation.h"
 #include "third_party/crashpad/crashpad/client/client_argv_handling.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
+#include "third_party/crashpad/crashpad/client/simulate_crash_linux.h"
 #include "third_party/crashpad/crashpad/snapshot/sanitized/sanitization_information.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_handler_client.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_information.h"
@@ -98,6 +99,22 @@ class SandboxedHandler {
     return Signals::InstallCrashHandlers(HandleCrash, 0, nullptr);
   }
 
+  void HandleCrashNonFatal(int signo, siginfo_t* siginfo, void* context) {
+    base::ScopedFD connection;
+    if (ConnectToHandler(signo, &connection) == 0) {
+      ExceptionInformation exception_information;
+      SetExceptionInformation(siginfo, static_cast<ucontext_t*>(context),
+                              &exception_information);
+
+      ClientInformation info;
+      SetClientInformation(&exception_information, &sanitization_, &info);
+
+      ExceptionHandlerClient handler_client(connection.get());
+      handler_client.SetCanSetPtracer(false);
+      handler_client.RequestCrashDump(info);
+    }
+  }
+
  private:
   SandboxedHandler() = default;
   ~SandboxedHandler() = delete;
@@ -148,22 +165,7 @@ class SandboxedHandler {
 
   static void HandleCrash(int signo, siginfo_t* siginfo, void* context) {
     SandboxedHandler* state = Get();
-
-    base::ScopedFD connection;
-    if (state->ConnectToHandler(signo, &connection) == 0) {
-      ExceptionInformation exception_information;
-      SetExceptionInformation(siginfo, static_cast<ucontext_t*>(context),
-                              &exception_information);
-
-      ClientInformation info;
-      SetClientInformation(&exception_information, &state->sanitization_,
-                           &info);
-
-      ExceptionHandlerClient handler_client(connection.get());
-      handler_client.SetCanSetPtracer(false);
-      handler_client.RequestCrashDump(info);
-    }
-
+    state->HandleCrashNonFatal(signo, siginfo, context);
     Signals::RestoreHandlerAndReraiseSignalOnReturn(siginfo, nullptr);
   }
 
@@ -501,7 +503,31 @@ bool ConnectToHandler(CrashReporterClient* client, base::ScopedFD* connection) {
   return true;
 }
 
+bool g_is_browser = false;
+
 }  // namespace
+
+#if defined(OS_ANDROID)
+// TODO(jperaza): This might be simplified to have both the browser and child
+// processes use CRASHPAD_SIMULATE_CRASH() if CrashpadClient allows injecting
+// the Chromium specific SandboxedHandler.
+void DumpWithoutCrashing() {
+  if (g_is_browser) {
+    CRASHPAD_SIMULATE_CRASH();
+  } else {
+    siginfo_t siginfo;
+    siginfo.si_signo = crashpad::Signals::kSimulatedSigno;
+    siginfo.si_errno = 0;
+    siginfo.si_code = 0;
+
+    ucontext_t context;
+    crashpad::CaptureContext(&context);
+
+    crashpad::SandboxedHandler::Get()->HandleCrashNonFatal(siginfo.si_signo,
+                                                           &siginfo, &context);
+  }
+}
+#endif
 
 bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
   base::ScopedFD connection;
@@ -550,6 +576,8 @@ base::FilePath PlatformCrashpadInitialization(
   // Not used on Linux/Android.
   DCHECK(!embedded_handler);
   DCHECK(exe_path.empty());
+
+  g_is_browser = browser_process;
 
   bool dump_at_crash = true;
 #if defined(OS_ANDROID)

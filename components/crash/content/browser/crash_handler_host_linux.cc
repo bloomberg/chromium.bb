@@ -54,6 +54,7 @@
 #if !defined(OS_CHROMEOS)
 #include "components/crash/content/app/crashpad.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"  // nogncheck
+#include "third_party/crashpad/crashpad/util/posix/signals.h"      // nogncheck
 #endif
 
 using content::BrowserThread;
@@ -618,7 +619,9 @@ bool CrashHandlerHost::ReceiveClientMessage(int client_fd,
     return false;
   }
 
-  NotifyCrashSignalObservers(child_pid, signo);
+  if (signo != crashpad::Signals::kSimulatedSigno) {
+    NotifyCrashSignalObservers(child_pid, signo);
+  }
 
 #if defined(OS_ANDROID)
   if (!request_dump) {
