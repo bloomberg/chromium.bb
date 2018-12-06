@@ -22,12 +22,10 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/common/web_contents_ns_view_bridge.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#import "ui/base/cocoa/base_view.h"
 #import "ui/base/cocoa/views_hostable.h"
 #include "ui/gfx/geometry/size.h"
 
-@class WebDragDest;
-@class WebDragSource;
+@class WebContentsViewCocoa;
 
 namespace content {
 class RenderWidgetHostViewMac;
@@ -39,34 +37,6 @@ class WebContentsViewMac;
 namespace gfx {
 class Vector2d;
 }
-
-CONTENT_EXPORT
-@interface WebContentsViewCocoa : BaseView<ViewsHostable> {
- @private
-  // Instances of this class are owned by both webContentsView_ and AppKit. It
-  // is possible for an instance to outlive its webContentsView_. The
-  // webContentsView_ must call -clearWebContentsView in its destructor.
-  content::WebContentsViewMac* webContentsView_;
-  base::scoped_nsobject<WebDragSource> dragSource_;
-  base::scoped_nsobject<WebDragDest> dragDest_;
-  base::scoped_nsobject<id> accessibilityParent_;
-  BOOL mouseDownCanMoveWindow_;
-}
-
-- (void)setMouseDownCanMoveWindow:(BOOL)canMove;
-
-// Sets |accessibilityParent| as the object returned when the
-// receiver is queried for its accessibility parent.
-// TODO(lgrey/ellyjones): Remove this in favor of setAccessibilityParent:
-// when we switch to the new accessibility API.
-- (void)setAccessibilityParentElement:(id)accessibilityParent;
-
-// Returns the available drag operations. This is a required method for
-// NSDraggingSource. It is supposedly deprecated, but the non-deprecated API
-// -[NSWindow dragImage:...] still relies on it.
-- (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal;
-
-@end
 
 namespace content {
 
