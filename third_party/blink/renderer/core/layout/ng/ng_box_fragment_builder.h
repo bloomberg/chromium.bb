@@ -225,8 +225,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   };
 
   void ComputeInlineContainerFragments(
-      HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
-      NGLogicalSize* container_size);
+      HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments);
 
  private:
   scoped_refptr<NGLayoutResult> ToBoxFragment(WritingMode);

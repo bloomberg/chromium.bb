@@ -116,14 +116,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // Pass in direction if candidates direction does not match.
   NGContainerFragmentBuilder& AddOutOfFlowChildCandidate(
       NGBlockNode,
-      const NGLogicalOffset& child_offset);
-
-  // Inline candidates are laid out line-relative, not fragment-relative.
-  NGContainerFragmentBuilder& AddInlineOutOfFlowChildCandidate(
-      NGBlockNode,
-      const NGLogicalOffset& child_line_offset,
-      TextDirection line_direction,
-      LayoutObject* inline_container);
+      const NGLogicalOffset& child_offset,
+      base::Optional<TextDirection> container_direction = base::nullopt);
 
   NGContainerFragmentBuilder& AddOutOfFlowDescendant(
       NGOutOfFlowPositionedDescendant descendant);
@@ -184,24 +178,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   struct NGOutOfFlowPositionedCandidate {
     NGOutOfFlowPositionedDescendant descendant;
     NGLogicalOffset child_offset;  // Logical offset of child's top left vertex.
-    bool is_line_relative;  // True if offset is relative to line, not fragment.
-    TextDirection line_direction;
 
-    NGOutOfFlowPositionedCandidate(
-        NGOutOfFlowPositionedDescendant descendant_arg,
-        NGLogicalOffset child_offset_arg)
-        : descendant(descendant_arg),
-          child_offset(child_offset_arg),
-          is_line_relative(false) {}
-
-    NGOutOfFlowPositionedCandidate(
-        NGOutOfFlowPositionedDescendant descendant_arg,
-        NGLogicalOffset child_offset_arg,
-        TextDirection line_direction_arg)
-        : descendant(descendant_arg),
-          child_offset(child_offset_arg),
-          is_line_relative(true),
-          line_direction(line_direction_arg) {}
+    NGOutOfFlowPositionedCandidate(NGOutOfFlowPositionedDescendant descendant,
+                                   NGLogicalOffset child_offset)
+        : descendant(descendant), child_offset(child_offset) {}
   };
 
   NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle> style,

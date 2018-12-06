@@ -45,6 +45,7 @@ struct CORE_EXPORT NGLogicalOffset {
   NGLogicalOffset operator+(const NGLogicalOffset& other) const;
   NGLogicalOffset operator+(const NGLogicalSize& size) const;
   NGLogicalOffset& operator+=(const NGLogicalOffset& other);
+  NGLogicalOffset& operator+=(const NGLogicalSize& size);
 
   NGLogicalDelta operator-(const NGLogicalOffset& other) const;
   NGLogicalOffset& operator-=(const NGLogicalOffset& other);

@@ -75,15 +75,13 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     const ComputedStyle* style;
     // Logical in containing block coordinates.
     NGLogicalSize content_size_for_absolute;
-    // Content size for fixed is different for icb
+    // Content size for fixed is different for the ICB.
     NGLogicalSize content_size_for_fixed;
-    // Content offset wrt border box.
-    NGLogicalOffset content_offset;
-    // Physical content offset wrt border box.
-    NGPhysicalOffset content_physical_offset;
-    // Logical offset of container padding box
-    // wrt default containing block padding box.
-    NGLogicalOffset default_container_offset;
+
+    // Offsets (both logical and physical) of the container's padding-box, wrt.
+    // the default container's border-box.
+    NGLogicalOffset container_offset;
+    NGPhysicalOffset physical_container_offset;
 
     NGLogicalSize ContentSize(EPosition position) const {
       return position == EPosition::kAbsolute ? content_size_for_absolute

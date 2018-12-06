@@ -77,6 +77,11 @@ NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalOffset& other) {
   return *this;
 }
 
+NGLogicalOffset& NGLogicalOffset::operator+=(const NGLogicalSize& size) {
+  *this = *this + size;
+  return *this;
+}
+
 bool NGLogicalOffset::operator>(const NGLogicalOffset& other) const {
   return inline_offset > other.inline_offset &&
          block_offset > other.block_offset;

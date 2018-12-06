@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class LayoutObject;
 class NGInlineItem;
 struct NGInlineItemResult;
 class ShapeResultView;
@@ -134,8 +133,6 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Compute all the pending positioning at the end of a line.
   void OnEndPlaceItems(NGLineBoxFragmentBuilder::ChildList*, FontBaseline);
-
-  LayoutObject* ContainingLayoutObjectForAbsolutePositionObjects() const;
 
   bool HasBoxFragments() const { return !box_data_list_.IsEmpty(); }
 
