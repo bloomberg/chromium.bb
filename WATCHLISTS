@@ -1686,6 +1686,7 @@
       # Includes VR, AR, and XR.
       'filepath': '/vr/'\
                   '|/xr'\
+                  '|isolated_xr_device'\
                   '|third_party/arcore'\
                   '|third_party/gvr'\
                   '|third_party/libovr'\
