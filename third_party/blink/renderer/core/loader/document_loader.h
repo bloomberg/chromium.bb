@@ -341,6 +341,9 @@ class CORE_EXPORT DocumentLoader
   // to the parser in a nested message loop.
   void ProcessDataBuffer();
 
+  // Sends an intervention report if the page is being served as a preview.
+  void ReportPreviewsIntervention() const;
+
   Member<LocalFrame> frame_;
   Member<ResourceFetcher> fetcher_;
 
