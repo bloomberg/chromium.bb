@@ -544,32 +544,32 @@ PreviewsLitePageNavigationThrottle::WillRedirectRequest() {
           base::TimeTicks::Now() - navigation_handle()->NavigationStart());
       UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                                 ServerResponse::kPreviewUnavailable);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
-                                ServerResponse::kRedirect);
-      GetServerLitePageInfo()->status =
-          previews::ServerLitePageStatus::kRedirect;
+
+      // Check if the original host should be blacklisted, as directed by the
+      // server.
+      const net::HttpResponseHeaders* response_headers =
+          navigation_handle()->GetResponseHeaders();
+
+      std::string chrome_proxy_header;
+      bool blacklist_host =
+          response_headers &&
+          response_headers->EnumerateHeader(nullptr, kChromeProxyHeader,
+                                            &chrome_proxy_header) &&
+          chrome_proxy_header.find("host-blacklisted") != std::string::npos;
+
+      if (blacklist_host)
+        manager_->BlacklistHost(GURL(original_url).host(), kBlacklistDuration);
+
+      UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.HostBlacklistedOnBypass",
+                            blacklist_host);
+
+      return content::NavigationThrottle::PROCEED;
     }
 
-    // Check if the original host should be blacklisted, as directed by the
-    // server.
-    const net::HttpResponseHeaders* response_headers =
-        navigation_handle()->GetResponseHeaders();
-
-    std::string chrome_proxy_header;
-    bool blacklist_host =
-        response_headers &&
-        response_headers->EnumerateHeader(nullptr, kChromeProxyHeader,
-                                          &chrome_proxy_header) &&
-        chrome_proxy_header.find("host-blacklisted") != std::string::npos;
-
-    if (blacklist_host)
-      manager_->BlacklistHost(GURL(original_url).host(), kBlacklistDuration);
-
-    UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.HostBlacklistedOnBypass",
-                          blacklist_host);
-
-    return content::NavigationThrottle::PROCEED;
+    // Otherwise fall out of this if and potentially trigger again.
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              ServerResponse::kRedirect);
+    GetServerLitePageInfo()->status = previews::ServerLitePageStatus::kRedirect;
   }
 
   return MaybeNavigateToPreview();
