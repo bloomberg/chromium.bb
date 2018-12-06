@@ -51,4 +51,4 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // GamepadButton_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_CHARACTERISTIC_PROPERTIES_H_
