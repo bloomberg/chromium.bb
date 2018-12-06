@@ -33,6 +33,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_JS);
+  source->AddResourcePath("fake_page_handler.js",
+                          IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
   source->AddResourcePath("main_view.js", IDR_APP_MANAGEMENT_MAIN_VIEW_JS);
 

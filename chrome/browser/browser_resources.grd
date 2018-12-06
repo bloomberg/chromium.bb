@@ -220,6 +220,7 @@
       <include name="IDR_APP_MANAGEMENT_APP_JS" file="resources\app_management\app.js" type="BINDATA" />
       <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML" file="resources\app_management\browser_proxy.html" type="BINDATA" />
       <include name="IDR_APP_MANAGEMENT_BROWSER_PROXY_JS" file="resources\app_management\browser_proxy.js" type="BINDATA" />
+      <include name="IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS" file="resources\app_management\fake_page_handler.js" type="BINDATA" />
       <include name="IDR_APP_MANAGEMENT_INDEX_HTML" file="resources\app_management\index.html" type="BINDATA" />
       <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_HTML" file="resources\app_management\main_view.html" type="BINDATA" />
       <include name="IDR_APP_MANAGEMENT_MAIN_VIEW_JS" file="resources\app_management\main_view.js" type="BINDATA" />
