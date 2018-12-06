@@ -23,6 +23,7 @@ mojom("mojom_platform") {
     "contacts/contacts_manager.mojom",
     "cookie_store/cookie_store.mojom",
     "crash/crash_memory_metrics_reporter.mojom",
+    "csp/content_security_policy.mojom",
     "dom_storage/session_storage_namespace.mojom",
     "dom_storage/storage_area.mojom",
     "dom_storage/storage_partition_service.mojom",

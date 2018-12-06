@@ -635,7 +635,6 @@ mojom("mojo_bindings") {
       [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
   sources = [
     "platform/autoplay.mojom",
-    "platform/content_security_policy.mojom",
     "platform/media_download_in_product_help.mojom",
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",

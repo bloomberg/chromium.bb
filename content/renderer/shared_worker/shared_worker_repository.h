@@ -14,7 +14,7 @@
 #include "content/renderer/shared_worker/shared_worker_client_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "third_party/blink/public/platform/content_security_policy.mojom.h"
+#include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
 #include "third_party/blink/public/web/web_shared_worker_repository_client.h"
 
 namespace blink {
