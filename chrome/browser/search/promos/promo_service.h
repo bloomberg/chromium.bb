@@ -53,7 +53,7 @@ class PromoService : public KeyedService {
 
   // Requests an asynchronous refresh from the network. After the update
   // completes, OnPromoDataUpdated will be called on the observers.
-  void Refresh();
+  virtual void Refresh();
 
   // Add/remove observers. All observers must unregister themselves before the
   // PromoService is destroyed.
@@ -62,8 +62,10 @@ class PromoService : public KeyedService {
 
   GURL GetLoadURLForTesting() const;
 
- private:
+ protected:
   void PromoDataLoaded(Status status, const base::Optional<PromoData>& data);
+
+ private:
   void LoadDone(std::unique_ptr<std::string> response_body);
   void JsonParsed(std::unique_ptr<base::Value> value);
   void JsonParseFailed(const std::string& message);

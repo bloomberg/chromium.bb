@@ -831,3 +831,70 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   text-decoration: none;
   transition: background-color 200ms;
 }
+
+#promo {
+  bottom: 16px;
+  left: 0;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  text-align: center;
+  transition: bottom 400ms;
+}
+
+#promo.float-down {
+  bottom: -50px;
+}
+
+#promo > div {
+  background-color: #FFF;
+  border: 1px solid rgb(218, 220, 224);
+  border-radius: 16px;
+  box-sizing: border-box;
+  color: rgb(95, 99, 104);
+  display: inline-block;
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 12px;
+  line-height: 32px;
+  margin-bottom: 0;
+  max-width: 505px;
+  overflow: hidden;
+  padding: 0 16px;
+  pointer-events: all;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/**
+ * Hide the promo if the window is too small:
+ * max-width = promo.max-width (505px) + 2 * edit gear icon (16px + 28px + 8px)
+ * max-height = ntp-contents.max-height (628px) + promo div height (16px + 22px)
+ */
+@media only screen and (max-width: 609px),
+            screen and (max-height: 666px)  {
+  #promo > div {
+    display: none;
+  }
+}
+
+#promo > div > a {
+  color: rgb(51, 103, 214) !important;
+  text-decoration: none;
+}
+
+#promo > div > a:visited {
+  color: rgb(51, 103, 214) !important;
+}
+
+#promo > div > img {
+  border-radius: 50%;
+  height: 24px;
+  margin: 0 8px 0 -12px;
+  object-fit: cover;
+  vertical-align: middle;
+  width: 24px;
+}
+
+#promo.notice-hide {
+  display: none;
+}

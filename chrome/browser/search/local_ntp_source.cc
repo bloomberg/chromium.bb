@@ -374,6 +374,16 @@ std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
   return result;
 }
 
+std::unique_ptr<base::DictionaryValue> ConvertPromoDataToDict(
+    const base::Optional<PromoData>& promo) {
+  auto result = std::make_unique<base::DictionaryValue>();
+  if (promo.has_value())
+    result->SetString("promoHtml", promo->promo_html);
+  else
+    result->SetString("promoHtml", std::string());
+  return result;
+}
+
 std::string ConvertLogoImageToBase64(const EncodedLogo& logo) {
   std::string base64;
   base::Base64Encode(logo.encoded_image->data(), &base64);
@@ -821,6 +831,7 @@ void LocalNtpSource::StartDataRequest(
 
     // TODO(crbug/909931): There's no need to fetch the promo on each load,
     // we can sometimes use cached data.
+    promo_requests_.emplace_back(base::TimeTicks::Now(), callback);
     promo_service_->Refresh();
 
     return;
@@ -1148,6 +1159,8 @@ void LocalNtpSource::OnOneGoogleBarServiceShuttingDown() {
 
 void LocalNtpSource::OnPromoDataUpdated() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ServePromo(promo_service_->promo_data());
 }
 
 void LocalNtpSource::OnPromoServiceShuttingDown() {
@@ -1188,6 +1201,34 @@ void LocalNtpSource::ServeOneGoogleBar(
   one_google_bar_requests_.clear();
 }
 
+void LocalNtpSource::ServePromo(const base::Optional<PromoData>& data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (promo_requests_.empty())
+    return;
+
+  scoped_refptr<base::RefCountedString> result;
+  std::string js;
+  base::JSONWriter::Write(*ConvertPromoDataToDict(data), &js);
+  js = "var promo = " + js + ";";
+  result = base::RefCountedString::TakeString(&js);
+
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (const auto& request : promo_requests_) {
+    request.callback.Run(result);
+    base::TimeDelta delta = now - request.start_time;
+    UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency", delta);
+    if (result) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Success",
+                                 delta);
+    } else {
+      UMA_HISTOGRAM_MEDIUM_TIMES("NewTabPage.Promos.RequestLatency.Failure",
+                                 delta);
+    }
+  }
+  promo_requests_.clear();
+}
+
 LocalNtpSource::NtpBackgroundRequest::NtpBackgroundRequest(
     base::TimeTicks start_time,
     const content::URLDataSource::GotDataCallback& callback)
@@ -1207,3 +1248,12 @@ LocalNtpSource::OneGoogleBarRequest::OneGoogleBarRequest(
     const OneGoogleBarRequest&) = default;
 
 LocalNtpSource::OneGoogleBarRequest::~OneGoogleBarRequest() = default;
+
+LocalNtpSource::PromoRequest::PromoRequest(
+    base::TimeTicks start_time,
+    const content::URLDataSource::GotDataCallback& callback)
+    : start_time(start_time), callback(callback) {}
+
+LocalNtpSource::PromoRequest::PromoRequest(const PromoRequest&) = default;
+
+LocalNtpSource::PromoRequest::~PromoRequest() = default;
