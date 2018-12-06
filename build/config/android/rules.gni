@@ -425,7 +425,7 @@ if (enable_java_templates) {
 
       script = "//base/android/jni_generator/jni_registration_generator.py"
       deps = [
-        "${invoker.target}__build_config",
+        "${invoker.target}$build_config_target_suffix",
       ]
       inputs = [
         _build_config,
@@ -716,7 +716,7 @@ if (enable_java_templates) {
 
     _build_config = "$target_gen_dir/${target_name}.build_config"
 
-    write_build_config("${target_name}__build_config") {
+    write_build_config("$target_name$build_config_target_suffix") {
       build_config = _build_config
       resources_zip = invoker.generated_resources_zip
       type = "android_resources"
@@ -727,7 +727,7 @@ if (enable_java_templates) {
 
     group(target_name) {
       public_deps = [
-        ":${target_name}__build_config",
+        ":$target_name$build_config_target_suffix",
         invoker.generating_target_name,
       ]
     }
@@ -859,7 +859,7 @@ if (enable_java_templates) {
     _zip_path = "${root_out_dir}/resource_zips/${_resources_zip_rebased_path}/${target_name}.resources.zip"
     _r_text_out_path = _base_path + "_R.txt"
     _build_config = _base_path + ".build_config"
-    _build_config_target_name = "${target_name}__build_config"
+    _build_config_target_name = "$target_name$build_config_target_suffix"
 
     if (!defined(invoker.create_srcjar) || invoker.create_srcjar) {
       _srcjar_path = _base_path + ".srcjar"
@@ -984,7 +984,7 @@ if (enable_java_templates) {
     forward_variables_from(invoker, [ "testonly" ])
 
     _build_config = "$target_gen_dir/$target_name.build_config"
-    _build_config_target_name = "${target_name}__build_config"
+    _build_config_target_name = "$target_name$build_config_target_suffix"
 
     write_build_config(_build_config_target_name) {
       type = "android_assets"
@@ -1047,7 +1047,7 @@ if (enable_java_templates) {
                              "testonly",
                              "input_jars_paths",
                            ])
-    write_build_config("${target_name}__build_config") {
+    write_build_config("$target_name$build_config_target_suffix") {
       type = "group"
       build_config = "$target_gen_dir/${invoker.target_name}.build_config"
       supports_android = true
@@ -1060,7 +1060,7 @@ if (enable_java_templates) {
       if (!defined(deps)) {
         deps = []
       }
-      deps += [ ":${target_name}__build_config" ]
+      deps += [ ":$target_name$build_config_target_suffix" ]
     }
   }
 
@@ -1250,7 +1250,7 @@ if (enable_java_templates) {
     _main_class = "org.chromium.testing.local.JunitTestMain"
 
     _build_config = "$target_gen_dir/$target_name.build_config"
-    _build_config_target_name = "${target_name}__build_config"
+    _build_config_target_name = "$target_name$build_config_target_suffix"
     _deps = [
       "//testing/android/junit:junit_test_support",
       "//third_party/junit",
@@ -1495,7 +1495,7 @@ if (enable_java_templates) {
       _build_config = invoker.override_build_config
     } else {
       _build_config = "$target_gen_dir/$target_name.build_config"
-      _build_config_target_name = "${target_name}__build_config"
+      _build_config_target_name = "$target_name$build_config_target_suffix"
 
       write_build_config(_build_config_target_name) {
         type = "dist_jar"
@@ -1587,7 +1587,7 @@ if (enable_java_templates) {
     }
 
     _build_config = "$target_gen_dir/$target_name.build_config"
-    _build_config_target_name = "${target_name}__build_config"
+    _build_config_target_name = "$target_name$build_config_target_suffix"
 
     write_build_config(_build_config_target_name) {
       type = "dist_jar"
@@ -1649,7 +1649,7 @@ if (enable_java_templates) {
         defined(invoker.direct_deps_only) && invoker.direct_deps_only
 
     _build_config = "$target_gen_dir/$target_name.build_config"
-    _build_config_target_name = "${target_name}__build_config"
+    _build_config_target_name = "$target_name$build_config_target_suffix"
 
     write_build_config(_build_config_target_name) {
       type = "dist_aar"
@@ -1948,7 +1948,7 @@ if (enable_java_templates) {
     _gen_dir = "$target_gen_dir/$target_name"
     _base_path = "$_gen_dir/$target_name"
     _build_config = "$target_gen_dir/$target_name.build_config"
-    _build_config_target = "${target_name}__build_config"
+    _build_config_target = "$target_name$build_config_target_suffix"
 
     # Mark as used
     assert(!defined(invoker.min_sdk_version) || invoker.min_sdk_version != 0)
@@ -3838,7 +3838,7 @@ if (enable_java_templates) {
         name = "base"
         module_target = invoker.base_module_target
         build_config = "$_base_target_gen_dir/${_base_target_name}.build_config"
-        build_config_target = "${module_target}__build_config"
+        build_config_target = "$module_target$build_config_target_suffix"
       },
     ]
 
@@ -3859,7 +3859,8 @@ if (enable_java_templates) {
             get_label_info(_module_target, "target_gen_dir")
         _module.build_config =
             "$_module_target_gen_dir/${_module_target_name}.build_config"
-        _module.build_config_target = "${_module_target}__build_config"
+        _module.build_config_target =
+            "$_module_target$build_config_target_suffix"
         _all_modules += [ _module ]
       }
     }
@@ -3881,7 +3882,7 @@ if (enable_java_templates) {
     }
     _build_config = "$target_gen_dir/${target_name}.build_config"
     _rebased_build_config = rebase_path(_build_config, root_build_dir)
-    _build_config_target = "${target_name}__build_config"
+    _build_config_target = "$target_name$build_config_target_suffix"
     if (defined(invoker.proguard_android_sdk_dep)) {
       proguard_android_sdk_dep_ = invoker.proguard_android_sdk_dep
     } else {
@@ -4041,7 +4042,7 @@ if (enable_java_templates) {
 
     _base_module_build_config = _all_module_build_configs[0]
     _base_module_build_config_target =
-        "${invoker.base_module_target}__build_config"
+        "${invoker.base_module_target}$build_config_target_suffix"
     _rebased_base_module_build_config =
         rebase_path(_base_module_build_config, root_build_dir)
 

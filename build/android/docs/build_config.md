@@ -85,7 +85,7 @@ is with the following parameters:
 ```
 python ../../build/android/gyp/write_build_config.py \
     --type=android_resources \
-    --depfile gen/ui/android/ui_java_resources__build_config.d \
+    --depfile gen/ui/android/ui_java_resources__build_config_crbug_908819.d \
     --deps-configs=\[\"gen/ui/android/ui_strings_grd.build_config\"\] \
     --build-config gen/ui/android/ui_java_resources.build_config \
     --resources-zip resource_zips/ui/android/ui_java_resources.resources.zip \
