@@ -27,7 +27,8 @@
 
 namespace {
 
-constexpr int kLoadingProgressTimeMs = 400;
+constexpr int kSlowLoadingProgressTimeMs = 2000;
+constexpr int kFastLoadingProgressTimeMs = 400;
 constexpr int kLoadingProgressFadeOutMs = 200;
 constexpr int kFaviconFadeInMs = 500;
 
@@ -237,7 +238,10 @@ void TabIcon::UpdatePendingAnimationState() {
   pending_animation_state_.elapsed_time = waiting_state_.elapsed_time;
 
   if (pending_animation_state_.loading_progress) {
-    double loading_progress_delta = animation_delta_ms / kLoadingProgressTimeMs;
+    double loading_progress_delta =
+        animation_delta_ms / (network_state_ == TabNetworkState::kLoading
+                                  ? kSlowLoadingProgressTimeMs
+                                  : kFastLoadingProgressTimeMs);
     // Clamp the progress bar to the current target percentage.
     pending_animation_state_.loading_progress = std::min(
         *pending_animation_state_.loading_progress + loading_progress_delta,
