@@ -212,6 +212,12 @@ void ArcFileSystemBridge::OnDocumentChanged(
     observer.OnDocumentChanged(watcher_id, type);
 }
 
+void ArcFileSystemBridge::OnRootsChanged() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (auto& observer : observer_list_)
+    observer.OnRootsChanged();
+}
+
 void ArcFileSystemBridge::OpenFileToRead(const std::string& url,
                                          OpenFileToReadCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

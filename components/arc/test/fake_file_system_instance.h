@@ -37,7 +37,9 @@ namespace arc {
 // - GetDocument()
 // - GetChildDocuments()
 // - GetRecentDocuments()
-// Fake documents for those functions can be set up by AddDocument().
+// - GetRoots()
+// Fake documents for those functions can be set up by AddDocument() and fake
+// roots for those functions can be set up by AddRoot().
 //
 // Notes:
 // - GetChildDocuments() returns child documents in the same order as they were
@@ -112,6 +114,29 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
     ~Document();
   };
 
+  // Specification of a fake root available to documents provider based methods.
+  struct Root {
+    // Authority.
+    std::string authority;
+
+    // ID of this root.
+    std::string root_id;
+
+    // ID of the document which is a directory that represents the top
+    // directory of this root.
+    std::string document_id;
+
+    // Title of this root.
+    std::string title;
+
+    Root(const std::string& authority,
+         const std::string& root_id,
+         const std::string& document_id,
+         const std::string& title);
+    Root(const Root& that);
+    ~Root();
+  };
+
   FakeFileSystemInstance();
   ~FakeFileSystemInstance() override;
 
@@ -126,6 +151,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Adds a recent document accessible by document provider based methods.
   void AddRecentDocument(const std::string& root_id, const Document& document);
+
+  // Adds a root accessible by document provider based methods.
+  void AddRoot(const Root& root);
 
   // Triggers watchers installed to a document.
   void TriggerWatchers(const std::string& authority,
@@ -152,6 +180,7 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   void GetRecentDocuments(const std::string& authority,
                           const std::string& root_id,
                           GetRecentDocumentsCallback callback) override;
+  void GetRoots(GetRootsCallback callback) override;
   void InitDeprecated(mojom::FileSystemHostPtr host) override;
   void Init(mojom::FileSystemHostPtr host, InitCallback callback) override;
   void OpenFileToRead(const std::string& url,
@@ -194,6 +223,9 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
 
   // Mapping from a watcher ID to a document key.
   std::map<int64_t, DocumentKey> watcher_to_document_;
+
+  // List of roots added by AddRoot().
+  std::vector<Root> roots_;
 
   int64_t next_watcher_id_ = 1;
   int get_child_documents_count_ = 0;

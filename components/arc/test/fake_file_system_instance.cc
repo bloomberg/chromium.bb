@@ -59,9 +59,16 @@ mojom::DocumentPtr MakeDocument(const FakeFileSystemInstance::Document& doc) {
   return document;
 }
 
-}  // namespace
+mojom::RootPtr MakeRoot(const FakeFileSystemInstance::Root& in_root) {
+  mojom::RootPtr root = mojom::Root::New();
+  root->authority = in_root.authority;
+  root->root_id = in_root.root_id;
+  root->document_id = in_root.document_id;
+  root->title = in_root.title;
+  return root;
+}
 
-FakeFileSystemInstance::File::File(const File& that) = default;
+}  // namespace
 
 FakeFileSystemInstance::File::File(const std::string& url,
                                    const std::string& content,
@@ -69,9 +76,9 @@ FakeFileSystemInstance::File::File(const std::string& url,
                                    Seekable seekable)
     : url(url), content(content), mime_type(mime_type), seekable(seekable) {}
 
-FakeFileSystemInstance::File::~File() = default;
+FakeFileSystemInstance::File::File(const File& that) = default;
 
-FakeFileSystemInstance::Document::Document(const Document& that) = default;
+FakeFileSystemInstance::File::~File() = default;
 
 FakeFileSystemInstance::Document::Document(
     const std::string& authority,
@@ -89,7 +96,22 @@ FakeFileSystemInstance::Document::Document(
       size(size),
       last_modified(last_modified) {}
 
+FakeFileSystemInstance::Document::Document(const Document& that) = default;
+
 FakeFileSystemInstance::Document::~Document() = default;
+
+FakeFileSystemInstance::Root::Root(const std::string& authority,
+                                   const std::string& root_id,
+                                   const std::string& document_id,
+                                   const std::string& title)
+    : authority(authority),
+      root_id(root_id),
+      document_id(document_id),
+      title(title) {}
+
+FakeFileSystemInstance::Root::Root(const Root& that) = default;
+
+FakeFileSystemInstance::Root::~Root() = default;
 
 FakeFileSystemInstance::FakeFileSystemInstance() {
   bool temp_dir_created = temp_dir_.CreateUniqueTempDir();
@@ -128,6 +150,11 @@ void FakeFileSystemInstance::AddRecentDocument(const std::string& root_id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   RootKey key(document.authority, root_id);
   recent_documents_[key].push_back(document);
+}
+
+void FakeFileSystemInstance::AddRoot(const Root& root) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  roots_.push_back(root);
 }
 
 void FakeFileSystemInstance::TriggerWatchers(
@@ -271,6 +298,16 @@ void FakeFileSystemInstance::GetRecentDocuments(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback),
                                 base::make_optional(std::move(recents))));
+}
+
+void FakeFileSystemInstance::GetRoots(GetRootsCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  std::vector<mojom::RootPtr> roots;
+  for (const Root& root : roots_)
+    roots.emplace_back(MakeRoot(root));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                base::make_optional(std::move(roots))));
 }
 
 void FakeFileSystemInstance::InitDeprecated(mojom::FileSystemHostPtr host) {
