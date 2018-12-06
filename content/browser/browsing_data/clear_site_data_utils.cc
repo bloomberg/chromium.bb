@@ -44,7 +44,13 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
     scoped_observer_.Add(remover_);
   }
 
-  ~SiteDataClearer() override {}
+  ~SiteDataClearer() override {
+    // This SiteDataClearer class is self-owned, and the only way for it to be
+    // destroyed should be the "delete this" part in
+    // OnBrowsingDataRemoverDone() function, and it invokes the |callback_|. So
+    // when this destructor is called, the |callback_| should be null.
+    DCHECK(!callback_);
+  }
 
   void RunAndDestroySelfWhenDone() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
