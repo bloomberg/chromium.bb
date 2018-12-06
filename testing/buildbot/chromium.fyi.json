@@ -7907,6 +7907,11 @@
       }
     ]
   },
+  "mac-hermetic-upgrade-rel": {
+    "additional_compile_targets": [
+      "all"
+    ]
+  },
   "mac-mojo-rel": {
     "gtest_tests": [
       {
