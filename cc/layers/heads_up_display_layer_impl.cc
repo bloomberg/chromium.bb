@@ -592,19 +592,20 @@ void HeadsUpDisplayLayerImpl::DrawText(PaintCanvas* canvas,
   flags->setAntiAlias(true);
   flags->setTextSize(size);
   flags->setTypeface(typeface_);
+  SkFont font = flags->ToSkFont();
   if (align == TextAlign::kCenter) {
-    auto width = flags->ToSkPaint().measureText(text.c_str(), text.length());
+    auto width =
+        font.measureText(text.c_str(), text.length(), kUTF8_SkTextEncoding);
     x -= width * 0.5f;
   } else if (align == TextAlign::kRight) {
-    auto width = flags->ToSkPaint().measureText(text.c_str(), text.length());
+    auto width =
+        font.measureText(text.c_str(), text.length(), kUTF8_SkTextEncoding);
     x -= width;
   }
-  auto sk_paint = flags->ToSkPaint();
 
-  auto text_blob = SkTextBlob::MakeFromText(
-      text.c_str(), text.length(),
-      SkFont(sk_paint.refTypeface(), sk_paint.getTextSize()));
-  canvas->drawTextBlob(std::move(text_blob), x, y, *flags);
+  canvas->drawTextBlob(
+      SkTextBlob::MakeFromText(text.c_str(), text.length(), font), x, y,
+      *flags);
 }
 
 void HeadsUpDisplayLayerImpl::DrawText(PaintCanvas* canvas,
@@ -954,8 +955,8 @@ void HeadsUpDisplayLayerImpl::DrawDebugRect(
     label_flags.setTypeface(typeface_);
     label_flags.setColor(stroke_color);
 
-    const SkScalar label_text_width = label_flags.ToSkPaint().measureText(
-        label_text.c_str(), label_text.length());
+    const SkScalar label_text_width = label_flags.ToSkFont().measureText(
+        label_text.c_str(), label_text.length(), kUTF8_SkTextEncoding);
     canvas->drawRect(SkRect::MakeWH(label_text_width + 2 * kPadding,
                                     kFontHeight + 2 * kPadding),
                      label_flags);

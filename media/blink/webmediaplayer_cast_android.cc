@@ -15,6 +15,7 @@
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkFont.h"
 #include "third_party/skia/include/core/SkFontStyle.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
@@ -61,20 +62,21 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   const SkScalar kMinPadding(40);
 
   SkPaint paint;
-  paint.setAntiAlias(true);
-  paint.setFilterQuality(kHigh_SkFilterQuality);
   paint.setColor(SK_ColorWHITE);
-  paint.setTypeface(SkTypeface::MakeFromName("sans", SkFontStyle::Bold()));
-  paint.setTextSize(kTextSize);
+
+  SkFont font;
+  font.setTypeface(SkTypeface::MakeFromName("sans", SkFontStyle::Bold()));
+  font.setSize(kTextSize);
 
   // Calculate the vertical margin from the top
   SkFontMetrics font_metrics;
-  paint.getFontMetrics(&font_metrics);
+  font.getMetrics(&font_metrics);
   SkScalar sk_vertical_margin = kMinPadding - font_metrics.fAscent;
 
   // Measure the width of the entire text to display
-  size_t display_text_width = paint.measureText(remote_playback_message.c_str(),
-                                                remote_playback_message.size());
+  size_t display_text_width =
+      font.measureText(remote_playback_message.c_str(),
+                       remote_playback_message.size(), kUTF8_SkTextEncoding);
   std::string display_text(remote_playback_message);
 
   if (display_text_width + (kMinPadding * 2) > canvas_size.width()) {
@@ -83,31 +85,33 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
 
     // First, figure out how much of the canvas the '...' will take up.
     const std::string kTruncationEllipsis("\xE2\x80\xA6");
-    SkScalar sk_ellipse_width = paint.measureText(kTruncationEllipsis.c_str(),
-                                                  kTruncationEllipsis.size());
+    SkScalar sk_ellipse_width =
+        font.measureText(kTruncationEllipsis.c_str(),
+                         kTruncationEllipsis.size(), kUTF8_SkTextEncoding);
 
     // Then calculate how much of the text can be drawn with the '...' appended
     // to the end of the string.
     SkScalar sk_max_original_text_width(canvas_size.width() -
                                         (kMinPadding * 2) - sk_ellipse_width);
-    size_t sk_max_original_text_length = paint.breakText(
+    size_t sk_max_original_text_length = font.breakText(
         remote_playback_message.c_str(), remote_playback_message.size(),
-        sk_max_original_text_width);
+        kUTF8_SkTextEncoding, sk_max_original_text_width);
 
     // Remove the part of the string that doesn't fit and append '...'.
     display_text.erase(
         sk_max_original_text_length,
         remote_playback_message.size() - sk_max_original_text_length);
     display_text.append(kTruncationEllipsis);
-    display_text_width =
-        paint.measureText(display_text.c_str(), display_text.size());
+    display_text_width = font.measureText(
+        display_text.c_str(), display_text.size(), kUTF8_SkTextEncoding);
   }
 
   // Center the text horizontally.
   SkScalar sk_horizontal_margin =
       (canvas_size.width() - display_text_width) / 2.0;
-  canvas.drawText(display_text.c_str(), display_text.size(),
-                  sk_horizontal_margin, sk_vertical_margin, paint);
+  canvas.drawSimpleText(display_text.c_str(), display_text.size(),
+                        kUTF8_SkTextEncoding, sk_horizontal_margin,
+                        sk_vertical_margin, font, paint);
 
   GLES2Interface* gl = context_3d_cb.Run();
 
