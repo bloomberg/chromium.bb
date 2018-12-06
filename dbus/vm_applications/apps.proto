@@ -26,11 +26,11 @@ message App {
   // should be "fr"; for the default entry, |locale| should be empty. The
   // browser is responsible for mapping this to something it can use.
   message LocaleStrings {
-    message Entry {
+    message StringsWithLocale {
       string locale = 1;
       repeated string value = 2;
     }
-    repeated Entry values = 1;
+    repeated StringsWithLocale values = 1;
   }
 
   string desktop_file_id = 1;
