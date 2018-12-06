@@ -14,7 +14,7 @@ registerAnimator("test_animator", class {
   animate(currentTime, effect) {
     // If an effect doesn't have fill-mode specified, setting its local time
     // beyond its duration makes the animation inactive.
-    effect.localTime = 5000;
+    effect.localTime = 2000;
   }
 });
 </script>
@@ -36,6 +36,7 @@ runInAnimationWorklet(
      { transform: 'translateY(200px)' }
     ], {
       duration: 1000,
+      delay: 1000
     }
   );
 

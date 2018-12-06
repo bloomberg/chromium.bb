@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
 #include "cc/trees/element_id.h"
@@ -54,6 +55,8 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   enum class Direction { NORMAL, REVERSE, ALTERNATE_NORMAL, ALTERNATE_REVERSE };
 
   enum class FillMode { NONE, FORWARDS, BACKWARDS, BOTH, AUTO };
+
+  enum class Phase { BEFORE, ACTIVE, AFTER };
 
   static std::unique_ptr<KeyframeModel> Create(
       std::unique_ptr<AnimationCurve> curve,
@@ -202,8 +205,9 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   base::TimeDelta ConvertMonotonicTimeToLocalTime(
       base::TimeTicks monotonic_time) const;
 
-  base::TimeDelta TrimLocalTimeToCurrentIteration(
-      base::TimeDelta local_time) const;
+  KeyframeModel::Phase CalculatePhase(base::TimeDelta local_time) const;
+  base::Optional<base::TimeDelta> CalculateActiveTime(
+      base::TimeTicks monotonic_time) const;
 
   std::unique_ptr<AnimationCurve> curve_;
 
