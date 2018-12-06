@@ -413,39 +413,94 @@ bool AXNodeData::GetHtmlAttribute(
 
 void AXNodeData::AddStringAttribute(ax::mojom::StringAttribute attribute,
                                     const std::string& value) {
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
+  if (HasStringAttribute(attribute))
+    RemoveStringAttribute(attribute);
   string_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddIntAttribute(ax::mojom::IntAttribute attribute, int value) {
+  DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
+  if (HasIntAttribute(attribute))
+    RemoveIntAttribute(attribute);
   int_attributes.push_back(std::make_pair(attribute, value));
-}
-
-void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
-  DCHECK_GE(static_cast<int>(attribute), 0);
-  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
-    return int_attribute.first == attribute;
-  });
 }
 
 void AXNodeData::AddFloatAttribute(ax::mojom::FloatAttribute attribute,
                                    float value) {
+  DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
+  if (HasFloatAttribute(attribute))
+    RemoveFloatAttribute(attribute);
   float_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddBoolAttribute(ax::mojom::BoolAttribute attribute,
                                   bool value) {
+  DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
+  if (HasBoolAttribute(attribute))
+    RemoveBoolAttribute(attribute);
   bool_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddIntListAttribute(ax::mojom::IntListAttribute attribute,
                                      const std::vector<int32_t>& value) {
+  DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
+  if (HasIntListAttribute(attribute))
+    RemoveIntListAttribute(attribute);
   intlist_attributes.push_back(std::make_pair(attribute, value));
 }
 
 void AXNodeData::AddStringListAttribute(
     ax::mojom::StringListAttribute attribute,
     const std::vector<std::string>& value) {
+  DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
+  if (HasStringListAttribute(attribute))
+    RemoveStringListAttribute(attribute);
   stringlist_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AXNodeData::RemoveStringAttribute(ax::mojom::StringAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::StringAttribute::kNone);
+  base::EraseIf(string_attributes, [attribute](const auto& string_attribute) {
+    return string_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveIntAttribute(ax::mojom::IntAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::IntAttribute::kNone);
+  base::EraseIf(int_attributes, [attribute](const auto& int_attribute) {
+    return int_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveFloatAttribute(ax::mojom::FloatAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::FloatAttribute::kNone);
+  base::EraseIf(float_attributes, [attribute](const auto& float_attribute) {
+    return float_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveBoolAttribute(ax::mojom::BoolAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::BoolAttribute::kNone);
+  base::EraseIf(bool_attributes, [attribute](const auto& bool_attribute) {
+    return bool_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveIntListAttribute(ax::mojom::IntListAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::IntListAttribute::kNone);
+  base::EraseIf(intlist_attributes, [attribute](const auto& intlist_attribute) {
+    return intlist_attribute.first == attribute;
+  });
+}
+
+void AXNodeData::RemoveStringListAttribute(
+    ax::mojom::StringListAttribute attribute) {
+  DCHECK_NE(attribute, ax::mojom::StringListAttribute::kNone);
+  base::EraseIf(stringlist_attributes,
+                [attribute](const auto& stringlist_attribute) {
+                  return stringlist_attribute.first == attribute;
+                });
 }
 
 void AXNodeData::SetName(const std::string& name) {
