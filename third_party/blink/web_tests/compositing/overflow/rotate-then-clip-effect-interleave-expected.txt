@@ -30,13 +30,6 @@
       "transform": 2
     },
     {
-      "name": "Ancestor Clipping Layer",
-      "position": [20, 20],
-      "bounds": [200, 200],
-      "drawsContent": false,
-      "transform": 2
-    },
-    {
       "name": "LayoutBlockFlow DIV",
       "position": [20, 20],
       "bounds": [400, 400],
@@ -50,13 +43,6 @@
       "bounds": [400, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FFFF",
-      "transform": 2
-    },
-    {
-      "name": "Ancestor Clipping Layer",
-      "position": [20, 20],
-      "bounds": [200, 200],
-      "drawsContent": false,
       "transform": 2
     },
     {

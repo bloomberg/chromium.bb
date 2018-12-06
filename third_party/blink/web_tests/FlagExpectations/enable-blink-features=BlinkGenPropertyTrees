@@ -1,6 +1,5 @@
 # Expectations for --enable-blink-features=BlinkGenPropertyTrees
-# We are focused on scrolling, compositing, animations, threading, and paint
-# related tests with all other directories skipped to improve bot cycle time.
+# TODO(pdr): Remove these expectations as blink-gen-property-trees is enabled.
 
 Bug(none) app_banner/ [ Skip ]
 Bug(none) battery-status/ [ Skip ]
@@ -109,9 +108,7 @@ Bug(none) xr/ [ Skip ]
 
 # These tests failed in normal mode but are fixed with BlinkGenPropertyTrees.
 Bug(none) compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
-Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Pass ]
-Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]
 crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 
 # Link highlights are no longer affected by ancestor effects.

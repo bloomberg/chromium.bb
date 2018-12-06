@@ -18,9 +18,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "Ancestor Clipping Layer",
-      "position": [8, 8],
-      "bounds": [185, 185],
+      "name": "Squashing Containment Layer",
       "drawsContent": false
     },
     {
