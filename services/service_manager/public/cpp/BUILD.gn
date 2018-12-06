@@ -21,7 +21,6 @@ component("cpp") {
     "service.h",
     "service_binding.cc",
     "service_binding.h",
-    "service_context_ref.cc",
     "service_context_ref.h",
     "service_keepalive.cc",
     "service_keepalive.h",

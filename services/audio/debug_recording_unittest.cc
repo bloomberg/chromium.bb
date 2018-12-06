@@ -15,7 +15,7 @@
 #include "services/audio/public/cpp/debug_recording_session.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/traced_service_ref.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -55,12 +55,13 @@ class MockFileProvider : public mojom::DebugRecordingFileProvider {
   DISALLOW_COPY_AND_ASSIGN(MockFileProvider);
 };
 
-class DebugRecordingTest : public media::AudioDebugRecordingTest {
+class DebugRecordingTest : public media::AudioDebugRecordingTest,
+                           public service_manager::ServiceKeepalive::Observer {
  public:
-  DebugRecordingTest()
-      : service_ref_factory_(
-            base::BindRepeating(&DebugRecordingTest::OnNoServiceRefs,
-                                base::Unretained(this))) {}
+  DebugRecordingTest() : service_keepalive_(nullptr, base::TimeDelta()) {
+    service_keepalive_.AddObserver(this);
+  }
+
   ~DebugRecordingTest() override = default;
 
   void SetUp() override {
@@ -77,9 +78,9 @@ class DebugRecordingTest : public media::AudioDebugRecordingTest {
     debug_recording_ = std::make_unique<DebugRecording>(
         mojo::MakeRequest(&debug_recording_ptr_),
         static_cast<media::AudioManager*>(mock_audio_manager_.get()),
-        TracedServiceRef(service_ref_factory_.CreateRef(),
+        TracedServiceRef(service_keepalive_.CreateRef(),
                          "audio::DebugRecording Binding"));
-    EXPECT_FALSE(service_ref_factory_.HasNoRefs());
+    EXPECT_FALSE(service_keepalive_.HasNoRefs());
   }
 
   void EnableDebugRecording() {
@@ -88,18 +89,21 @@ class DebugRecordingTest : public media::AudioDebugRecordingTest {
         mojo::MakeRequest(&file_provider_ptr), base::FilePath(kBaseFileName));
     ASSERT_TRUE(file_provider_ptr.is_bound());
     debug_recording_ptr_->Enable(std::move(file_provider_ptr));
-    EXPECT_FALSE(service_ref_factory_.HasNoRefs());
+    EXPECT_FALSE(service_keepalive_.HasNoRefs());
   }
 
   void DestroyDebugRecording() {
     debug_recording_ptr_.reset();
     scoped_task_environment_.RunUntilIdle();
-    EXPECT_TRUE(service_ref_factory_.HasNoRefs());
+    EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
+
+  // service_manager::ServiceKeepalive::Observer:
+  void OnIdleTimeout() override { OnNoServiceRefs(); }
 
   std::unique_ptr<DebugRecording> debug_recording_;
   mojom::DebugRecordingPtr debug_recording_ptr_;
-  service_manager::ServiceContextRefFactory service_ref_factory_;
+  service_manager::ServiceKeepalive service_keepalive_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DebugRecordingTest);

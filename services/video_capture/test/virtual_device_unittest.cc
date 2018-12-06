@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "media/capture/video/video_capture_device_info.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "services/video_capture/public/cpp/mock_producer.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/shared_memory_virtual_device_mojo_adapter.h"
@@ -31,7 +31,7 @@ const media::VideoPixelFormat kTestPixelFormat =
 
 class VirtualDeviceTest : public ::testing::Test {
  public:
-  VirtualDeviceTest() : ref_factory_(base::DoNothing()) {}
+  VirtualDeviceTest() : keepalive_(nullptr, base::nullopt) {}
   ~VirtualDeviceTest() override {}
 
   void SetUp() override {
@@ -41,7 +41,7 @@ class VirtualDeviceTest : public ::testing::Test {
     producer_ =
         std::make_unique<MockProducer>(mojo::MakeRequest(&producer_proxy));
     device_adapter_ = std::make_unique<SharedMemoryVirtualDeviceMojoAdapter>(
-        ref_factory_.CreateRef(), std::move(producer_proxy));
+        keepalive_.CreateRef(), std::move(producer_proxy));
   }
 
   void OnFrameBufferReceived(bool valid_buffer_expected, int32_t buffer_id) {
@@ -96,7 +96,7 @@ class VirtualDeviceTest : public ::testing::Test {
 
  private:
   base::MessageLoop loop_;
-  service_manager::ServiceContextRefFactory ref_factory_;
+  service_manager::ServiceKeepalive keepalive_;
   media::VideoCaptureDeviceInfo device_info_;
 };
 

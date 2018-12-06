@@ -18,7 +18,7 @@
 #include "media/base/test_data_util.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -83,11 +83,11 @@ class TestMediaDataSource : public chrome::mojom::MediaDataSource {
 
 class MediaParserAndroidTest : public testing::Test {
  public:
-  MediaParserAndroidTest() : ref_factory_(base::DoNothing()) {}
+  MediaParserAndroidTest() : keepalive_(nullptr, base::nullopt) {}
   ~MediaParserAndroidTest() override = default;
 
   void SetUp() override {
-    parser_ = std::make_unique<MediaParserAndroid>(ref_factory_.CreateRef());
+    parser_ = std::make_unique<MediaParserAndroid>(keepalive_.CreateRef());
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
@@ -128,7 +128,7 @@ class MediaParserAndroidTest : public testing::Test {
   std::unique_ptr<MediaParserAndroid> parser_;
   base::ScopedTempDir temp_dir_;
 
-  service_manager::ServiceContextRefFactory ref_factory_;
+  service_manager::ServiceKeepalive keepalive_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaParserAndroidTest);
