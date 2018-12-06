@@ -30,8 +30,6 @@ const base::Feature kAccountConsistencyFeature{
     "AccountConsistency", base::FEATURE_ENABLED_BY_DEFAULT};
 const char kAccountConsistencyFeatureMethodParameter[] = "method";
 const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
-const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[] =
-    "dice_fix_auth_errors";
 const char kAccountConsistencyFeatureMethodDiceMigration[] = "dice_migration";
 const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
@@ -58,15 +56,6 @@ enum class DiceMigrationStatus {
   kDiceMigrationStatusCount
 };
 #endif
-
-// Returns the default account consistency for guest profiles.
-AccountConsistencyMethod GetMethodForNonRegularProfile() {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  return AccountConsistencyMethod::kDiceFixAuthErrors;
-#else
-  return AccountConsistencyMethod::kDisabled;
-#endif
-}
 
 }  // namespace
 
@@ -144,7 +133,7 @@ void AccountConsistencyModeManager::RegisterProfilePrefs(
 AccountConsistencyMethod AccountConsistencyModeManager::GetMethodForProfile(
     Profile* profile) {
   if (profile->IsOffTheRecord())
-    return GetMethodForNonRegularProfile();
+    return AccountConsistencyMethod::kDisabled;
 
   return AccountConsistencyModeManager::GetForProfile(profile)
       ->GetAccountConsistencyMethod();
@@ -210,7 +199,7 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
     Profile* profile) {
   if (profile->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
     DCHECK_EQ(Profile::ProfileType::GUEST_PROFILE, profile->GetProfileType());
-    return GetMethodForNonRegularProfile();
+    return AccountConsistencyMethod::kDisabled;
   }
 
 #if BUILDFLAG(ENABLE_MIRROR)
@@ -236,15 +225,10 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   AccountConsistencyMethod method = AccountConsistencyMethod::kDiceMigration;
 
-  if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
-    method = AccountConsistencyMethod::kDiceFixAuthErrors;
-  else if (method_value == kAccountConsistencyFeatureMethodDiceMigration)
+  if (method_value == kAccountConsistencyFeatureMethodDiceMigration)
     method = AccountConsistencyMethod::kDiceMigration;
   else if (method_value == kAccountConsistencyFeatureMethodDice)
     method = AccountConsistencyMethod::kDice;
-
-  if (method == AccountConsistencyMethod::kDiceFixAuthErrors)
-    return method;
 
   DCHECK(signin::DiceMethodGreaterOrEqual(
       method, AccountConsistencyMethod::kDiceMigration));
@@ -253,20 +237,20 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
   // TODO(droger): remove this once legacy supervised users are no longer
   // supported.
   if (profile->IsLegacySupervised())
-    return AccountConsistencyMethod::kDiceFixAuthErrors;
+    return AccountConsistencyMethod::kDisabled;
 
   bool can_enable_dice_for_build = ignore_missing_oauth_client_for_testing_ ||
                                    google_apis::HasOAuthClientConfigured();
   if (!can_enable_dice_for_build) {
     LOG(WARNING) << "Desktop Identity Consistency cannot be enabled as no "
                     "OAuth client ID and client secret have been configured.";
-    return AccountConsistencyMethod::kDiceFixAuthErrors;
+    return AccountConsistencyMethod::kDisabled;
   }
 
   if (!profile->GetPrefs()->GetBoolean(prefs::kSigninAllowed)) {
     VLOG(1) << "Desktop Identity Consistency disabled as sign-in to Chrome"
                "is not allowed";
-    return AccountConsistencyMethod::kDiceFixAuthErrors;
+    return AccountConsistencyMethod::kDisabled;
   }
 
   if (method == AccountConsistencyMethod::kDiceMigration &&

@@ -487,7 +487,6 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
 // Shows the |ProfileChooserView| when a supervised user is the active profile.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
                        DISABLED_InvokeUi_SupervisedUser) {
-  ScopedAccountConsistencyDiceFixAuthErrors scoped_account_consistency;
   ShowAndVerifyUi();
 }
 

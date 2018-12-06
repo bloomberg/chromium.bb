@@ -127,7 +127,6 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
           IdentityManagerFactory::GetForProfile(profile));
 
     case signin::AccountConsistencyMethod::kDisabled:
-    case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
       return std::make_unique<signin::AccountReconcilorDelegate>();
 
     case signin::AccountConsistencyMethod::kDiceMigration:

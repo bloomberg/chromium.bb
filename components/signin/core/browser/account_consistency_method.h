@@ -21,9 +21,6 @@ enum class AccountConsistencyMethod : int {
   // Account management UI in the avatar bubble.
   kMirror,
 
-  // No account consistency, but Dice fixes authentication errors.
-  kDiceFixAuthErrors,
-
   // Account management UI on Gaia webpages is enabled once the accounts become
   // consistent.
   kDiceMigration,

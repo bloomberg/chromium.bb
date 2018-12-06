@@ -68,7 +68,7 @@ class ChromeSigninHelperTest : public testing::Test {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Tests that Dice response headers are removed after being processed.
 TEST_F(ChromeSigninHelperTest, RemoveDiceSigninHeader) {
-  ScopedAccountConsistencyDiceFixAuthErrors scoped_dice_fix_auth_errors;
+  ScopedAccountConsistencyDiceMigration scoped_dice_migration;
 
   // Create a response with the Dice header.
   test_request_delegate_ = std::make_unique<net::TestDelegate>();

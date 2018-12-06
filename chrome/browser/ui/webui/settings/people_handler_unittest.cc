@@ -1042,7 +1042,7 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
           : unified_consent::UnifiedConsentFeatureState::kDisabled);
   ScopedAccountConsistency dice(
       dice_enabled ? signin::AccountConsistencyMethod::kDice
-                   : signin::AccountConsistencyMethod::kDiceFixAuthErrors);
+                   : signin::AccountConsistencyMethod::kDiceMigration);
 
   // Setup the profile.
   std::unique_ptr<TestingProfile> profile =

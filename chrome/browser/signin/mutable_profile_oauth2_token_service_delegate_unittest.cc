@@ -719,8 +719,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   AddAuthTokenManually("AccountId-12345", "refresh_token");
   AddAuthTokenManually("AccountId-67890", "refresh_token");
 
-  InitializeOAuth2ServiceDelegate(
-      signin::AccountConsistencyMethod::kDiceFixAuthErrors);
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
   oauth2_service_delegate_->LoadCredentials(/*primary_account_id=*/"");
   base::RunLoop().RunUntilIdle();
 

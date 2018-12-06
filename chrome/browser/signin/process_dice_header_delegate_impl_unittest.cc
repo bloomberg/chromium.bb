@@ -21,8 +21,6 @@
 namespace {
 
 // Constants defined for a better formatting of the test tables:
-const signin::AccountConsistencyMethod kDiceFixAuthErrors =
-    signin::AccountConsistencyMethod::kDiceFixAuthErrors;
 const signin::AccountConsistencyMethod kDice =
     signin::AccountConsistencyMethod::kDice;
 const signin::AccountConsistencyMethod kDiceMigration =
@@ -132,14 +130,10 @@ struct TestConfiguration {
 TestConfiguration kEnableSyncTestCases[] = {
     // clang-format off
     // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
-    {kDiceFixAuthErrors,    false,      false,       false,            false},
-    {kDiceFixAuthErrors,    false,      true,        false,            false},
     {kDiceMigration,        false,      false,       false,            false},
     {kDiceMigration,        false,      true,        true,             true},
     {kDice,                 false,      false,       false,            false},
     {kDice,                 false,      true,        true,             true},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDice,                 true,       false,       false,            false},
@@ -179,14 +173,10 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
 TestConfiguration kHandleTokenExchangeFailureTestCases[] = {
     // clang-format off
     // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
-    {kDiceFixAuthErrors,    false,      false,       false,            false},
-    {kDiceFixAuthErrors,    false,      true,        false,            false},
     {kDiceMigration,        false,      false,       false,            false},
     {kDiceMigration,        false,      true,        true,             true},
     {kDice,                 false,      false,       true,             false},
     {kDice,                 false,      true,        true,             true},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
-    {kDiceFixAuthErrors,    true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDiceMigration,        true,       false,       false,            false},
     {kDice,                 true,       false,       true,             false},

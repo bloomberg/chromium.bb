@@ -159,11 +159,8 @@ BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
 
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  if (!signin::DiceMethodGreaterOrEqual(
-          AccountConsistencyModeManager::GetMethodForProfile(profile_),
-          signin::AccountConsistencyMethod::kDiceMigration)) {
+  if (!AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_))
     return true;
-  }
   return !base::FeatureList::IsEnabled(kExtensionsAllAccountsFeature);
 #else
   return true;
