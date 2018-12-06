@@ -10,11 +10,11 @@
 
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
+class IDBKey;
 class IDBValue;
 class WebData;
 class WebIDBKeyPath;
@@ -31,7 +31,7 @@ class WebIDBValue {
 
   // Used by object stores that store primary keys separately from wire data.
   MODULES_EXPORT void SetInjectedPrimaryKey(
-      WebIDBKey primary_key,
+      std::unique_ptr<IDBKey> primary_key,
       const WebIDBKeyPath& primary_key_path);
 
   // Returns the Blobs associated with this value. Should only be used for

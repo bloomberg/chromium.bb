@@ -128,8 +128,8 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void OnSuccess(const WebVector<WebString>&) override { NOTREACHED(); }
 
   void OnSuccess(WebIDBCursor* cursor,
-                 WebIDBKey key,
-                 WebIDBKey primary_key,
+                 std::unique_ptr<IDBKey> key,
+                 std::unique_ptr<IDBKey> primary_key,
                  WebIDBValue value) override {
     NOTREACHED();
   }
@@ -139,7 +139,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     NOTREACHED();
   }
 
-  void OnSuccess(WebIDBKey key) override { NOTREACHED(); }
+  void OnSuccess(std::unique_ptr<IDBKey> key) override { NOTREACHED(); }
 
   void OnSuccess(WebIDBValue value) override { NOTREACHED(); }
 
@@ -149,8 +149,8 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
   void OnSuccess() override { NOTREACHED(); }
 
-  void OnSuccess(WebIDBKey key,
-                 WebIDBKey primary_key,
+  void OnSuccess(std::unique_ptr<IDBKey> key,
+                 std::unique_ptr<IDBKey> primary_key,
                  WebIDBValue value) override {
     NOTREACHED();
   }

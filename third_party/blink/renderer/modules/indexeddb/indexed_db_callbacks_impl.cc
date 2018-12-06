@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
@@ -17,7 +18,6 @@
 
 using blink::IndexedDBDatabaseMetadata;
 using blink::WebBlobInfo;
-using blink::WebData;
 using blink::WebIDBCallbacks;
 using blink::WebIDBDatabase;
 using blink::WebIDBNameAndVersion;
@@ -35,7 +35,8 @@ WebIDBValue ConvertReturnValue(const mojom::blink::IDBReturnValuePtr& value) {
     return WebIDBValue(WebData(), WebVector<WebBlobInfo>());
 
   WebIDBValue web_value = IndexedDBCallbacksImpl::ConvertValue(value->value);
-  web_value.SetInjectedPrimaryKey(value->primary_key, value->key_path);
+  web_value.SetInjectedPrimaryKey(std::move(value->primary_key),
+                                  value->key_path);
   return web_value;
 }
 
@@ -144,8 +145,8 @@ void IndexedDBCallbacksImpl::SuccessDatabase(
 
 void IndexedDBCallbacksImpl::SuccessCursor(
     mojom::blink::IDBCursorAssociatedPtrInfo cursor_info,
-    WebIDBKey key,
-    WebIDBKey primary_key,
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
     mojom::blink::IDBValuePtr value) {
   WebIDBCursorImpl* cursor =
       new WebIDBCursorImpl(std::move(cursor_info), transaction_id_);
@@ -161,8 +162,8 @@ void IndexedDBCallbacksImpl::SuccessValue(
 }
 
 void IndexedDBCallbacksImpl::SuccessCursorContinue(
-    WebIDBKey key,
-    WebIDBKey primary_key,
+    std::unique_ptr<IDBKey> key,
+    std::unique_ptr<IDBKey> primary_key,
     mojom::blink::IDBValuePtr value) {
   callbacks_->OnSuccess(std::move(key), std::move(primary_key),
                         ConvertValue(value));
@@ -170,8 +171,8 @@ void IndexedDBCallbacksImpl::SuccessCursorContinue(
 }
 
 void IndexedDBCallbacksImpl::SuccessCursorPrefetch(
-    Vector<WebIDBKey> keys,
-    Vector<WebIDBKey> primary_keys,
+    Vector<std::unique_ptr<IDBKey>> keys,
+    Vector<std::unique_ptr<IDBKey>> primary_keys,
     Vector<mojom::blink::IDBValuePtr> values) {
   Vector<WebIDBValue> web_values;
   web_values.ReserveInitialCapacity(values.size());
@@ -196,7 +197,7 @@ void IndexedDBCallbacksImpl::SuccessArray(
   callbacks_.reset();
 }
 
-void IndexedDBCallbacksImpl::SuccessKey(WebIDBKey key) {
+void IndexedDBCallbacksImpl::SuccessKey(std::unique_ptr<IDBKey> key) {
   callbacks_->OnSuccess(std::move(key));
   callbacks_.reset();
 }

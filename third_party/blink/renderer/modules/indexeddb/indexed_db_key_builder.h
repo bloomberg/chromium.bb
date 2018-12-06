@@ -5,70 +5,21 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_KEY_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_INDEXED_DB_KEY_BUILDER_H_
 
-#include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
+#include "base/macros.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
-class IndexedDBKeyRange;
-class WebIDBKeyPath;
+class IDBKey;
 class WebIDBKeyRange;
-
-class MODULES_EXPORT IndexedDBKeyBuilder {
- public:
-  static IndexedDBKey Build(WebIDBKeyView key);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyBuilder);
-};
-
-class MODULES_EXPORT WebIDBKeyBuilder {
- public:
-  static WebIDBKey Build(const IndexedDBKey& key);
-  static WebIDBKey Build(const WebIDBKeyView& key);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebIDBKeyBuilder);
-};
-
-class MODULES_EXPORT IndexedDBKeyRangeBuilder {
- public:
-  static IndexedDBKeyRange Build(const WebIDBKeyRange& key_range);
-
-  // Builds a point range (containing a single key).
-  static IndexedDBKeyRange Build(WebIDBKeyView key);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyRangeBuilder);
-};
 
 class MODULES_EXPORT WebIDBKeyRangeBuilder {
  public:
-  static WebIDBKeyRange Build(const IndexedDBKeyRange& key);
-
   // Builds a point range (containing a single key).
-  static WebIDBKeyRange Build(WebIDBKeyView key);
+  static WebIDBKeyRange Build(const IDBKey* key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebIDBKeyRangeBuilder);
-};
-
-class MODULES_EXPORT IndexedDBKeyPathBuilder {
- public:
-  static IndexedDBKeyPath Build(const WebIDBKeyPath& key_path);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBKeyPathBuilder);
-};
-
-class MODULES_EXPORT WebIDBKeyPathBuilder {
- public:
-  static WebIDBKeyPath Build(const IndexedDBKeyPath& key_path);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebIDBKeyPathBuilder);
 };
 
 }  // namespace blink

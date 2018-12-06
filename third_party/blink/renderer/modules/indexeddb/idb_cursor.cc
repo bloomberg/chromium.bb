@@ -281,7 +281,10 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
 
   const IDBKey* current_primary_key = IdbPrimaryKey();
 
-  if (key) {
+  if (!key)
+    key = IDBKey::CreateNull();
+
+  if (key->GetType() != mojom::IDBKeyType::Null) {
     DCHECK(key_);
     if (direction_ == mojom::IDBCursorDirection::Next ||
         direction_ == mojom::IDBCursorDirection::NextNoDuplicate) {
@@ -308,14 +311,16 @@ void IDBCursor::Continue(std::unique_ptr<IDBKey> key,
     }
   }
 
+  if (!primary_key)
+    primary_key = IDBKey::CreateNull();
+
   // FIXME: We're not using the context from when continue was called, which
   // means the callback will be on the original context openCursor was called
   // on. Is this right?
   request_->SetPendingCursor(this);
   request_->AssignNewMetrics(std::move(metrics));
   got_value_ = false;
-  backend_->CursorContinue(WebIDBKeyView(key.get()),
-                           WebIDBKeyView(primary_key.get()),
+  backend_->CursorContinue(key.get(), primary_key.get(),
                            request_->CreateWebCallbacks().release());
 }
 
@@ -359,8 +364,8 @@ IDBRequest* IDBCursor::Delete(ScriptState* script_state,
   IDBRequest* request = IDBRequest::Create(
       script_state, this, transaction_.Get(), std::move(metrics));
   transaction_->BackendDB()->Delete(
-      transaction_->Id(), EffectiveObjectStore()->Id(),
-      WebIDBKeyView(IdbPrimaryKey()), request->CreateWebCallbacks().release());
+      transaction_->Id(), EffectiveObjectStore()->Id(), IdbPrimaryKey(),
+      request->CreateWebCallbacks().release());
   return request;
 }
 

@@ -53,18 +53,18 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
   void SuccessDatabase(mojom::blink::IDBDatabaseAssociatedPtrInfo database_info,
                        const IDBDatabaseMetadata& metadata) override;
   void SuccessCursor(mojom::blink::IDBCursorAssociatedPtrInfo cursor,
-                     WebIDBKey key,
-                     WebIDBKey primary_key,
+                     std::unique_ptr<IDBKey> key,
+                     std::unique_ptr<IDBKey> primary_key,
                      mojom::blink::IDBValuePtr value) override;
   void SuccessValue(mojom::blink::IDBReturnValuePtr value) override;
-  void SuccessCursorContinue(WebIDBKey key,
-                             WebIDBKey primary_key,
+  void SuccessCursorContinue(std::unique_ptr<IDBKey> key,
+                             std::unique_ptr<IDBKey> primary_key,
                              mojom::blink::IDBValuePtr value) override;
-  void SuccessCursorPrefetch(Vector<WebIDBKey> keys,
-                             Vector<WebIDBKey> primary_keys,
+  void SuccessCursorPrefetch(Vector<std::unique_ptr<IDBKey>> keys,
+                             Vector<std::unique_ptr<IDBKey>> primary_keys,
                              Vector<mojom::blink::IDBValuePtr> values) override;
   void SuccessArray(Vector<mojom::blink::IDBReturnValuePtr> values) override;
-  void SuccessKey(WebIDBKey key) override;
+  void SuccessKey(std::unique_ptr<IDBKey> key) override;
   void SuccessInteger(int64_t value) override;
   void Success() override;
 

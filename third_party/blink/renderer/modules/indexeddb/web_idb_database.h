@@ -108,14 +108,14 @@ class MODULES_EXPORT WebIDBDatabase {
                    long long object_store_id,
                    const WebData& value,
                    const Vector<WebBlobInfo>&,
-                   WebIDBKeyView primary_key,
+                   std::unique_ptr<IDBKey> primary_key,
                    mojom::IDBPutMode,
                    WebIDBCallbacks*,
-                   const Vector<WebIDBIndexKeys>&) = 0;
+                   Vector<IDBIndexKeys>) = 0;
   virtual void SetIndexKeys(long long transaction_id,
                             long long object_store_id,
-                            WebIDBKeyView primary_key,
-                            const Vector<WebIDBIndexKeys>&) = 0;
+                            std::unique_ptr<IDBKey> primary_key,
+                            Vector<IDBIndexKeys>) = 0;
   virtual void SetIndexesReady(long long transaction_id,
                                long long object_store_id,
                                const Vector<int64_t>& index_ids) = 0;
@@ -134,7 +134,7 @@ class MODULES_EXPORT WebIDBDatabase {
                      WebIDBCallbacks*) = 0;
   virtual void Delete(long long transaction_id,
                       long long object_store_id,
-                      WebIDBKeyView primary_key,
+                      const IDBKey* primary_key,
                       WebIDBCallbacks*) = 0;
   virtual void DeleteRange(long long transaction_id,
                            long long object_store_id,

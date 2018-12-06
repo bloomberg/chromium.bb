@@ -27,7 +27,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_KEY_RANGE_H_
 
 #include "third_party/blink/public/platform/web_private_ptr.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -40,21 +41,21 @@ class WebIDBKeyRange {
 
   WebIDBKeyRange() = default;
   WebIDBKeyRange(const WebIDBKeyRange& key_range) { Assign(key_range); }
-  WebIDBKeyRange(WebIDBKey lower,
-                 WebIDBKey upper,
+  WebIDBKeyRange(std::unique_ptr<IDBKey> lower,
+                 std::unique_ptr<IDBKey> upper,
                  bool lower_open,
                  bool upper_open) {
     Assign(std::move(lower), std::move(upper), lower_open, upper_open);
   }
 
-  MODULES_EXPORT WebIDBKeyView Lower() const;
-  MODULES_EXPORT WebIDBKeyView Upper() const;
+  MODULES_EXPORT const IDBKey* Lower() const;
+  MODULES_EXPORT const IDBKey* Upper() const;
   MODULES_EXPORT bool LowerOpen() const;
   MODULES_EXPORT bool UpperOpen() const;
 
   MODULES_EXPORT void Assign(const WebIDBKeyRange&);
-  MODULES_EXPORT void Assign(WebIDBKey lower,
-                             WebIDBKey upper,
+  MODULES_EXPORT void Assign(std::unique_ptr<IDBKey> lower,
+                             std::unique_ptr<IDBKey> upper,
                              bool lower_open,
                              bool upper_open);
 

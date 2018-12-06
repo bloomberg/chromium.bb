@@ -32,8 +32,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -57,6 +57,10 @@ class MODULES_EXPORT IDBKey {
     return base::WrapUnique(new IDBKey());
   }
 
+  static std::unique_ptr<IDBKey> CreateNull() {
+    return base::WrapUnique(new IDBKey(mojom::IDBKeyType::Null));
+  }
+
   static std::unique_ptr<IDBKey> CreateNumber(double number) {
     return base::WrapUnique(new IDBKey(mojom::IDBKeyType::Number, number));
   }
@@ -78,50 +82,13 @@ class MODULES_EXPORT IDBKey {
     return base::WrapUnique(new IDBKey(std::move(array)));
   }
 
-  // TODO(cmp): This |Clone| function is necessary for WebIDBKey's ctor
-  //            functions.  It needs to be available in this header file so
-  //            web_idb_key.cc can use it.  When the IDB Blink variant typemap
-  //            moves to the renderer/modules/indexeddb/ types and off of the
-  //            WebIDB* types, this |Clone| function should be removed.
   static std::unique_ptr<IDBKey> Clone(const std::unique_ptr<IDBKey>& rkey_in) {
-    IDBKey* rkey = rkey_in.get();
-    if (!rkey_in.get())
-      return nullptr;
-
-    switch (rkey->GetType()) {
-      case mojom::IDBKeyType::Invalid:
-        return IDBKey::CreateInvalid();
-      case mojom::IDBKeyType::Array: {
-        IDBKey::KeyArray lkey_array;
-        const auto& rkey_array = rkey->Array();
-        for (const auto& rkey_item : rkey_array)
-          lkey_array.push_back(IDBKey::Clone(rkey_item));
-        return IDBKey::CreateArray(std::move(lkey_array));
-      }
-      case mojom::IDBKeyType::Binary:
-        return IDBKey::CreateBinary(rkey->Binary());
-      case mojom::IDBKeyType::String:
-        return IDBKey::CreateString(rkey->GetString());
-      case mojom::IDBKeyType::Date:
-        return IDBKey::CreateDate(rkey->Date());
-      case mojom::IDBKeyType::Number:
-        return IDBKey::CreateNumber(rkey->Number());
-
-      case mojom::IDBKeyType::Null:
-      case mojom::IDBKeyType::Min:
-        break;  // Not used, NOTREACHED.
-    }
-    NOTREACHED();
-    return nullptr;
+    return IDBKey::Clone(rkey_in.get());
   }
 
-  ~IDBKey();
+  static std::unique_ptr<IDBKey> Clone(const IDBKey* rkey);
 
-  // Very rough estimate of minimum key size overhead.
-  //
-  // TODO(cmp): When the reference to this in web_idb_key.cc goes away, move
-  //            this variable back to idb_key.cc's anonymous namespace.
-  static const size_t kIDBKeyOverheadSize = 16;
+  ~IDBKey();
 
   mojom::IDBKeyType GetType() const { return type_; }
   bool IsValid() const;
@@ -165,13 +132,14 @@ class MODULES_EXPORT IDBKey {
   // The return value will be pasesd to the backing store, which requires
   // Web types. Returning the correct types directly avoids copying later on
   // (wasted CPU cycles and code size).
-  static WebVector<WebIDBKey> ToMultiEntryArray(
+  static Vector<std::unique_ptr<IDBKey>> ToMultiEntryArray(
       std::unique_ptr<IDBKey> array_key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IDBKey);
 
   IDBKey();
+  IDBKey(mojom::IDBKeyType type);
   IDBKey(mojom::IDBKeyType type, double number);
   explicit IDBKey(const String& value);
   explicit IDBKey(scoped_refptr<SharedBuffer> value);
@@ -188,6 +156,8 @@ class MODULES_EXPORT IDBKey {
   // verify that a given key is small enough to pass over IPC.
   size_t size_estimate_;
 };
+
+using IDBIndexKeys = std::pair<int64_t, Vector<std::unique_ptr<IDBKey>>>;
 
 }  // namespace blink
 

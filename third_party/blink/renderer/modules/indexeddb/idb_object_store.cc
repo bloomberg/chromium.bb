@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_value_wrapping.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -306,7 +305,7 @@ IDBRequest* IDBObjectStore::getAllKeys(ScriptState* script_state,
   return request;
 }
 
-static WebVector<WebIDBKey> GenerateIndexKeysForValue(
+static Vector<std::unique_ptr<IDBKey>> GenerateIndexKeysForValue(
     v8::Isolate* isolate,
     const IDBIndexMetadata& index_metadata,
     const ScriptValue& object_value) {
@@ -314,7 +313,7 @@ static WebVector<WebIDBKey> GenerateIndexKeysForValue(
   std::unique_ptr<IDBKey> index_key = ScriptValue::To<std::unique_ptr<IDBKey>>(
       isolate, object_value, exception_state, index_metadata.key_path);
   if (!index_key)
-    return WebVector<WebIDBKey>();
+    return Vector<std::unique_ptr<IDBKey>>();
 
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, key_type_histogram,
@@ -324,20 +323,20 @@ static WebVector<WebIDBKey> GenerateIndexKeysForValue(
   if (!index_metadata.multi_entry ||
       index_key->GetType() != mojom::IDBKeyType::Array) {
     if (!index_key->IsValid())
-      return WebVector<WebIDBKey>();
+      return Vector<std::unique_ptr<IDBKey>>();
 
-    WebVector<WebIDBKey> index_keys;
-    index_keys.reserve(1);
+    Vector<std::unique_ptr<IDBKey>> index_keys;
+    index_keys.ReserveInitialCapacity(1);
     index_keys.emplace_back(std::move(index_key));
-    key_type_histogram.Count(static_cast<int>(index_keys[0].View().KeyType()));
-    return WebVector<WebIDBKey>(std::move(index_keys));
+    key_type_histogram.Count(static_cast<int>(index_keys[0]->GetType()));
+    return index_keys;
   } else {
     DCHECK(index_metadata.multi_entry);
     DCHECK_EQ(index_key->GetType(), mojom::IDBKeyType::Array);
-    WebVector<WebIDBKey> index_keys =
+    Vector<std::unique_ptr<IDBKey>> index_keys =
         IDBKey::ToMultiEntryArray(std::move(index_key));
-    for (const WebIDBKey& key : index_keys)
-      key_type_histogram.Count(static_cast<int>(key.View().KeyType()));
+    for (std::unique_ptr<IDBKey>& key : index_keys)
+      key_type_histogram.Count(static_cast<int>(key->GetType()));
     return index_keys;
   }
 }
@@ -558,7 +557,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
     key_type_histogram.Count(static_cast<int>(key->GetType()));
   }
 
-  Vector<WebIDBIndexKeys> index_keys;
+  Vector<IDBIndexKeys> index_keys;
   index_keys.ReserveInitialCapacity(Metadata().indexes.size());
   for (const auto& it : Metadata().indexes) {
     if (clone.IsEmpty())
@@ -584,7 +583,7 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   BackendDB()->Put(
       transaction_->Id(), Id(), WebData(value_wrapper.TakeWireBytes()),
-      value_wrapper.TakeBlobInfo(), WebIDBKeyView(key), put_mode,
+      value_wrapper.TakeBlobInfo(), IDBKey::Clone(key), put_mode,
       request->CreateWebCallbacks().release(), std::move(index_keys));
 
   return request;
@@ -754,7 +753,7 @@ class IndexPopulator final : public EventListener {
       const IDBKey* primary_key = cursor->IdbPrimaryKey();
       ScriptValue value = cursor->value(script_state_);
 
-      Vector<WebIDBIndexKeys> index_keys;
+      Vector<IDBIndexKeys> index_keys;
       index_keys.ReserveInitialCapacity(1);
       index_keys.emplace_back(
           IndexMetadata().id,
@@ -762,7 +761,7 @@ class IndexPopulator final : public EventListener {
                                     IndexMetadata(), value));
 
       database_->Backend()->SetIndexKeys(transaction_id_, object_store_id_,
-                                         WebIDBKeyView(primary_key),
+                                         IDBKey::Clone(primary_key),
                                          std::move(index_keys));
     } else {
       // Now that we are done indexing, tell the backend to go

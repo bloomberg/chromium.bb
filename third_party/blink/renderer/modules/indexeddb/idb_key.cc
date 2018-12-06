@@ -29,12 +29,14 @@
 #include <memory>
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
 namespace {
+
+// Very rough estimate of minimum key size overhead.
+const size_t kIDBKeyOverheadSize = 16;
 
 size_t CalculateIDBKeyArraySize(const IDBKey::KeyArray& keys) {
   size_t size(0);
@@ -45,8 +47,47 @@ size_t CalculateIDBKeyArraySize(const IDBKey::KeyArray& keys) {
 
 }  // namespace
 
+// static
+std::unique_ptr<IDBKey> IDBKey::Clone(const IDBKey* rkey) {
+  if (!rkey)
+    return IDBKey::CreateNull();
+
+  switch (rkey->GetType()) {
+    case mojom::IDBKeyType::Invalid:
+      return IDBKey::CreateInvalid();
+    case mojom::IDBKeyType::Null:
+      return IDBKey::CreateNull();
+    case mojom::IDBKeyType::Array: {
+      IDBKey::KeyArray lkey_array;
+      const auto& rkey_array = rkey->Array();
+      for (const auto& rkey_item : rkey_array)
+        lkey_array.push_back(IDBKey::Clone(rkey_item));
+      return IDBKey::CreateArray(std::move(lkey_array));
+    }
+    case mojom::IDBKeyType::Binary:
+      return IDBKey::CreateBinary(rkey->Binary());
+    case mojom::IDBKeyType::String:
+      return IDBKey::CreateString(rkey->GetString());
+    case mojom::IDBKeyType::Date:
+      return IDBKey::CreateDate(rkey->Date());
+    case mojom::IDBKeyType::Number:
+      return IDBKey::CreateNumber(rkey->Number());
+
+    case mojom::IDBKeyType::Min:
+      break;  // Not used, NOTREACHED.
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 IDBKey::IDBKey()
     : type_(mojom::IDBKeyType::Invalid), size_estimate_(kIDBKeyOverheadSize) {}
+
+IDBKey::IDBKey(mojom::IDBKeyType type)
+    : type_(type), size_estimate_(kIDBKeyOverheadSize) {
+  DCHECK(type_ == mojom::IDBKeyType::Invalid ||
+         type_ == mojom::IDBKeyType::Null);
+}
 
 IDBKey::IDBKey(mojom::IDBKeyType type, double number)
     : type_(type),
@@ -145,11 +186,11 @@ bool IDBKey::IsEqual(const IDBKey* other) const {
 }
 
 // static
-WebVector<WebIDBKey> IDBKey::ToMultiEntryArray(
+Vector<std::unique_ptr<IDBKey>> IDBKey::ToMultiEntryArray(
     std::unique_ptr<IDBKey> array_key) {
   DCHECK_EQ(array_key->type_, mojom::IDBKeyType::Array);
-  WebVector<WebIDBKey> result;
-  result.reserve(array_key->array_.size());
+  Vector<std::unique_ptr<IDBKey>> result;
+  result.ReserveInitialCapacity(array_key->array_.size());
   for (std::unique_ptr<IDBKey>& key : array_key->array_) {
     if (key->IsValid())
       result.emplace_back(std::move(key));
@@ -158,10 +199,11 @@ WebVector<WebIDBKey> IDBKey::ToMultiEntryArray(
   // Remove duplicates using std::sort/std::unique rather than a hashtable to
   // avoid the complexity of implementing DefaultHash<IDBKey>.
   std::sort(
-      result.begin(), result.end(), [](const WebIDBKey& a, const WebIDBKey& b) {
-        return static_cast<IDBKey*>(a)->IsLessThan(static_cast<IDBKey*>(b));
+      result.begin(), result.end(),
+      [](const std::unique_ptr<IDBKey>& a, const std::unique_ptr<IDBKey>& b) {
+        return (a)->IsLessThan(b.get());
       });
-  const auto end = std::unique(result.begin(), result.end());
+  std::unique_ptr<IDBKey>* end = std::unique(result.begin(), result.end());
   DCHECK_LE(static_cast<wtf_size_t>(end - result.begin()), result.size());
   result.resize(end - result.begin());
 
