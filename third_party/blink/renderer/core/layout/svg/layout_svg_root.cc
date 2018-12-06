@@ -209,7 +209,7 @@ void LayoutSVGRoot::UpdateLayout() {
   }
 
   const auto& old_overflow_rect = VisualOverflowRect();
-  overflow_.reset();
+  ClearAllOverflows();
   AddVisualEffectOverflow();
 
   if (!ShouldApplyViewportClip())

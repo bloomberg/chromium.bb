@@ -1360,7 +1360,7 @@ int LayoutTableSection::PaginationStrutForRow(LayoutTableRow* row,
 
 void LayoutTableSection::ComputeOverflowFromDescendants() {
   auto old_self_visual_overflow_rect = SelfVisualOverflowRect();
-  overflow_.reset();
+  ClearAllOverflows();
   overflowing_cells_.clear();
   force_full_paint_ = false;
 

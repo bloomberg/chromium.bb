@@ -5285,6 +5285,15 @@ void LayoutBox::AddLayoutOverflowFromChild(const LayoutBox& child,
   AddLayoutOverflow(child_layout_overflow_rect);
 }
 
+void LayoutBox::SetLayoutClientAfterEdge(LayoutUnit client_after_edge) {
+  if (overflow_)
+    overflow_->SetLayoutClientAfterEdge(client_after_edge);
+}
+
+LayoutUnit LayoutBox::LayoutClientAfterEdge() const {
+  return overflow_ ? overflow_->LayoutClientAfterEdge() : ClientLogicalBottom();
+}
+
 bool LayoutBox::HasTopOverflow() const {
   return !StyleRef().IsLeftToRightDirection() && !IsHorizontalWritingMode();
 }
@@ -5382,6 +5391,19 @@ void LayoutBox::ClearLayoutOverflow() {
   }
 
   overflow_->SetLayoutOverflow(NoOverflowRect());
+}
+
+void LayoutBox::ClearVisualOverflow() {
+  if (!overflow_)
+    return;
+
+  if (!HasLayoutOverflow()) {
+    ClearAllOverflows();
+    return;
+  }
+
+  overflow_->ClearContentsVisualOverflow();
+  overflow_->SetSelfVisualOverflow(BorderBoxRect());
 }
 
 bool LayoutBox::PercentageLogicalHeightIsResolvable() const {

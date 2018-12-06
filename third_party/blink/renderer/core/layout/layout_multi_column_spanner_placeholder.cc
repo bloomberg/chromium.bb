@@ -123,7 +123,7 @@ void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {
 
   // Take the overflow from the spanner, so that it gets propagated to the
   // multicol container and beyond.
-  overflow_.reset();
+  ClearAllOverflows();
   AddContentsVisualOverflow(
       layout_object_in_flow_thread_->VisualOverflowRect());
   AddLayoutOverflow(layout_object_in_flow_thread_->LayoutOverflowRect());

@@ -450,7 +450,7 @@ void LayoutBlock::UpdateLayout() {
   // It's safe to check for control clip here, since controls can never be table
   // cells. If we have a lightweight clip, there can never be any overflow from
   // children.
-  if (HasControlClip() && overflow_)
+  if (HasControlClip() && HasLayoutOverflow())
     ClearLayoutOverflow();
 
   height_available_to_children_changed_ = false;
@@ -508,7 +508,7 @@ void LayoutBlock::AddLayoutOverflowFromChildren() {
 void LayoutBlock::ComputeOverflow(LayoutUnit old_client_after_edge,
                                   bool recompute_floats) {
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
-  overflow_.reset();
+  ClearAllOverflows();
   ComputeLayoutOverflow(old_client_after_edge, recompute_floats);
   ComputeVisualOverflow(previous_visual_overflow_rect, recompute_floats);
 }
@@ -551,8 +551,7 @@ void LayoutBlock::ComputeLayoutOverflow(LayoutUnit old_client_after_edge,
           (old_client_after_edge - client_rect.X()).ClampNegativeToZero(),
           LayoutUnit(1));
     AddLayoutOverflow(rect_to_apply);
-    if (HasOverflowModel())
-      overflow_->SetLayoutClientAfterEdge(old_client_after_edge);
+    SetLayoutClientAfterEdge(old_client_after_edge);
   }
 }
 
@@ -730,9 +729,7 @@ bool LayoutBlock::SimplifiedLayout() {
     // every relayout so it's not a regression. computeOverflow expects the
     // bottom edge before we clamp our height. Since this information isn't
     // available during simplifiedLayout, we cache the value in m_overflow.
-    LayoutUnit old_client_after_edge = HasOverflowModel()
-                                           ? overflow_->LayoutClientAfterEdge()
-                                           : ClientLogicalBottom();
+    LayoutUnit old_client_after_edge = LayoutClientAfterEdge();
     ComputeOverflow(old_client_after_edge, true);
   }
 
@@ -2135,9 +2132,7 @@ bool LayoutBlock::RecalcSelfOverflow() {
   if (NeedsLayout())
     return false;
 
-  LayoutUnit old_client_after_edge = HasOverflowModel()
-                                         ? overflow_->LayoutClientAfterEdge()
-                                         : ClientLogicalBottom();
+  LayoutUnit old_client_after_edge = LayoutClientAfterEdge();
   ComputeOverflow(old_client_after_edge, true);
 
   if (HasOverflowClip())
