@@ -1,47 +1,33 @@
-interface ParamIteratorNext {
-  done: boolean,
-  value: any,
-}
-interface ParamIterator {
-  next(): ParamIteratorNext
-}
-interface Params {
-  [Symbol.iterator](): ParamIterator
-}
+import { param } from './params';
 
-class ParamList implements Params {
-  private list: any[];
-  constructor(list: any[]) {
-    this.list = list;
-  }
-  [Symbol.iterator](): ParamIterator {
-    return this.list[Symbol.iterator];
-  }
-}
-
-class ParamCombiner implements Params {
-  private paramses: Params[];
-  constructor(paramses: Params[]) {
-    this.paramses = paramses;
-  }
-  * [Symbol.iterator](): ParamIterator {
-  }
-}
-
-type TestInstantiation = () => void;
 type TestDefinitionCallback = (p: object) => void;
-const kValidTestNames = /[a-zA-Z0-9 _-]+/;
+interface Test {
+  name: string,
+  params: param.ParamIterable,
+  callback: TestDefinitionCallback,
+}
+
+const kValidTestNames = /[a-zA-Z0-9_]+/;
 class TestCollection {
-  /*private*/ tests: TestInstantiation[];
+  private tests: Test[];
   constructor() {
     this.tests = [];
   }
-  add(name: string, params: Params, callback: TestDefinitionCallback) {
+
+  add(name: string, params: param.ParamIterable, callback: TestDefinitionCallback) {
     if (!kValidTestNames.test(name)) {
-      throw new Error("name may contain only [as");
+      throw new Error("name must match " + kValidTestNames);
     }
-    for (const p of params) {
-      this.tests.push(() => callback(p));
+    this.tests.push({ name, params, callback });
+  }
+
+  run() {
+    for (const test of this.tests) {
+      for (const testcase of test.params) {
+        console.log('');
+        console.log('****', test.name, testcase);
+        test.callback(testcase);
+      }
     }
   }
 }
@@ -49,8 +35,15 @@ class TestCollection {
 // example
 (() => {
   const tests = new TestCollection();
-  tests.add("hello world", , (p) => {
-    console.log(p);
-  });
-  console.log(tests.tests);
+
+  tests.add("hello_world",
+      new param.Combiner([
+        new param.List('x', [1, 2]),
+        new param.List('y', ['a', 'b']),
+        new param.Unit(),
+      ]),
+      (p: object) => {
+        console.log(p);
+      });
+  tests.run();
 })();
