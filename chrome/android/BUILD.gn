@@ -48,6 +48,7 @@ trichrome_chrome_android_manifest =
     "$target_gen_dir/trichrome_chrome_apk/AndroidManifest.xml"
 
 app_hooks_impl = "java/src/org/chromium/chrome/browser/AppHooksImpl.java"
+_chrome_version_java_file = "$target_gen_dir/templates/org/chromium/chrome/browser/ChromeVersionConstants.java"
 
 # Exclude it from JNI registration if VR is not enabled.
 chrome_jni_sources_blacklist = []
@@ -230,6 +231,7 @@ android_library("chrome_java") {
     ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
+    ":chrome_version_constants",
     ":document_tab_model_info_proto_java",
     ":partner_location_descriptor_proto_java",
     ":thumbnail_cache_entry_proto_java",
@@ -343,7 +345,6 @@ android_library("chrome_java") {
   srcjar_deps = [
     ":chrome_android_java_enums_srcjar",
     ":chrome_android_java_google_api_keys_srcjar",
-    ":chrome_version_srcjar",
     ":photo_picker_aidl",
     ":resource_id_javagen",
     "//chrome:assist_ranker_prediction_enum_javagen",
@@ -383,7 +384,10 @@ android_library("chrome_java") {
   android_manifest_for_lint = chrome_public_android_manifest
 
   # From java_sources.gni.
-  java_files = chrome_java_sources + [ app_hooks_impl ]
+  java_files = chrome_java_sources + [
+                 app_hooks_impl,
+                 _chrome_version_java_file,
+               ]
 
   # Include sources from feed_java_sources.gni.
   java_files += feed_java_sources
@@ -566,25 +570,12 @@ junit_binary("chrome_junit_tests") {
   package_name = manifest_package
 }
 
-chrome_version_java_dir = "$root_gen_dir/templates/chrome_version_java"
-chrome_version_java_file = "$chrome_version_java_dir/org/chromium/chrome/browser/ChromeVersionConstants.java"
-process_version("chrome_version_java") {
+process_version("chrome_version_constants") {
   template_file = "java/ChromeVersionConstants.java.version"
   sources = [
     branding_file_path,
   ]
-  output = chrome_version_java_file
-}
-
-zip("chrome_version_srcjar") {
-  inputs = [
-    chrome_version_java_file,
-  ]
-  output = "$target_gen_dir/$target_name.srcjar"
-  base_dir = chrome_version_java_dir
-  deps = [
-    ":chrome_version_java",
-  ]
+  output = _chrome_version_java_file
 }
 
 # Files used for both chrome tests and VR/AR tests
