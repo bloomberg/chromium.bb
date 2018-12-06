@@ -220,20 +220,20 @@ static const CGFloat NoMultiplier = 1.0;
   self.siteNameLabel.translatesAutoresizingMaskIntoConstraints = NO;
   self.siteNameLabel.adjustsFontForContentSizeCategory = YES;
   [self.contentView addSubview:self.siteNameLabel];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.siteNameLabel ], guide,
-                                                ButtonHorizontalMargin);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.siteNameLabel ], guide,
+                                                 ButtonHorizontalMargin);
 
   self.usernameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapUsernameButton:), self);
   [self.contentView addSubview:self.usernameButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.usernameButton ], guide,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.usernameButton ],
+                                                 guide, 0);
 
   self.passwordButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapPasswordButton:), self);
   [self.contentView addSubview:self.passwordButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.passwordButton ], guide,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.passwordButton ],
+                                                 guide, 0);
 }
 
 - (void)userDidTapUsernameButton:(UIButton*)button {

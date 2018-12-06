@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/uicolor_manualfill.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -66,8 +67,11 @@
 
 @interface ManualFillCardCell ()
 
-// The label with the site name and host.
+// The label with bank name and network.
 @property(nonatomic, strong) UILabel* cardLabel;
+
+// The credit card icon.
+@property(nonatomic, strong) UIImageView* cardIcon;
 
 // A button showing the card number.
 @property(nonatomic, strong) UIButton* cardNumberButton;
@@ -105,6 +109,7 @@
   [self.expirationYearButton setTitle:@"" forState:UIControlStateNormal];
   self.contentDelegate = nil;
   self.navigationDelegate = nil;
+  self.cardIcon.image = nil;
   self.card = nil;
 }
 
@@ -136,6 +141,8 @@
               }];
   self.cardLabel.attributedText = attributedString;
 
+  self.cardIcon.image = NativeImage(card.issuerNetworkIconID);
+
   [self.cardNumberButton setTitle:card.obfuscatedNumber
                          forState:UIControlStateNormal];
   [self.cardholderButton setTitle:card.cardHolder
@@ -158,20 +165,28 @@
 
   self.cardLabel = CreateLabel();
   [self.contentView addSubview:self.cardLabel];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardLabel ], guide,
-                                                ButtonHorizontalMargin);
+
+  self.cardIcon = [[UIImageView alloc] init];
+  self.cardIcon.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.contentView addSubview:self.cardIcon];
+  HorizontalConstraintsForViewsOnGuideWithMargin(
+      @[ self.cardLabel, self.cardIcon ], guide, ButtonHorizontalMargin, YES);
+  [NSLayoutConstraint activateConstraints:@[
+    [self.cardIcon.bottomAnchor
+        constraintEqualToAnchor:self.cardLabel.firstBaselineAnchor]
+  ]];
 
   self.cardNumberButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardNumber:), self);
   [self.contentView addSubview:self.cardNumberButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardNumberButton ],
-                                                guide, 0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.cardNumberButton ],
+                                                 guide, 0);
 
   self.cardholderButton =
       CreateButtonWithSelectorAndTarget(@selector(userDidTapCardInfo:), self);
   [self.contentView addSubview:self.cardholderButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.cardholderButton ],
-                                                guide, 0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.cardholderButton ],
+                                                 guide, 0);
 
   // Expiration line.
   self.expirationMonthButton =
@@ -186,7 +201,7 @@
   SyncBaselinesForViewsOnView(
       @[ expirationSeparatorLabel, self.expirationYearButton ],
       self.expirationMonthButton);
-  HorizontalConstraintsForViewsOnGuideWithShift(
+  HorizontalConstraintsForViewsOnGuideWithMargin(
       @[
         self.expirationMonthButton, expirationSeparatorLabel,
         self.expirationYearButton
