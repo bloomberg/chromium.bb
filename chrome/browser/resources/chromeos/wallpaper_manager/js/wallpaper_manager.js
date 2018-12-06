@@ -1258,14 +1258,14 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
   var bar = $('bar');
   bar.style.left = selectedListItem.offsetLeft + 'px';
   bar.style.width = selectedListItem.offsetWidth + 'px';
-
-  var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
-  var selectedItem = null;
   // Cancel any ongoing wallpaper request if user clicks on another category.
   if (this.wallpaperRequest_) {
     this.wallpaperRequest_.abort();
     this.wallpaperRequest_ = null;
   }
+  // Always start with the top when showing a new category.
+  this.wallpaperGrid_.scrollTop = 0;
+
   if (selectedListItem.custom) {
     var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
     if (loadTimeData.getBoolean('isOEMDefaultWallpaper')) {
