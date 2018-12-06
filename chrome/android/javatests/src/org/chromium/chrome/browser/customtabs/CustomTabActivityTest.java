@@ -127,6 +127,7 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -1150,13 +1151,14 @@ public class CustomTabActivityTest {
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testCloseButtonBehaviourWithDynamicModule()
             throws InterruptedException, ExecutionException, TimeoutException {
-        String moduleManagedUrl1 = mTestServer.getURL(
-                "/chrome/test/data/android/about.html");
-        String moduleManagedUrl2 = mTestServer.getURL(
-                "/chrome/test/data/android/simple.html");
+        setupHttpsTestServerAndPages();
+        String relativeUrl1 = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl1 = mTestServer.getURL(relativeUrl1);
+        String relativeUrl2 = "/chrome/test/data/android/simple.html";
+        String moduleManagedUrl2 = mTestServer.getURL(relativeUrl2);
 
-        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(moduleManagedUrl1,
-                "^(" + moduleManagedUrl1 + "|" + moduleManagedUrl2 + ")$");
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl1, "^(" + relativeUrl1 + "|" + relativeUrl2 + ")$");
 
         // Open CCT with moduleManagedUrl1 and navigate
         // moduleManagedUrl1 -> nav1.1 - nav1.2 -> modulemanagedUrl2 -> nav2.1 -> nav2.2
@@ -1209,6 +1211,7 @@ public class CustomTabActivityTest {
     @SmallTest
     public void testCloseButtonBehaviourWithoutDynamicModule()
             throws InterruptedException, ExecutionException, TimeoutException {
+        setupHttpsTestServerAndPages();
         String moduleManagedUrl1 = mTestServer.getURL(
                 "/chrome/test/data/android/about.html");
         String moduleManagedUrl2 = mTestServer.getURL(
@@ -1247,8 +1250,9 @@ public class CustomTabActivityTest {
     @SmallTest
     public void testCloseButtonBehaviourDynamicModuleLoadFails()
             throws InterruptedException, ExecutionException, TimeoutException {
-        String moduleManagedUrl = mTestServer.getURL(
-                "/chrome/test/data/android/about.html");
+        setupHttpsTestServerAndPages();
+        String relativeUrl = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl = mTestServer.getURL(relativeUrl);
 
         // Open CCT with moduleManagedUrl1 and navigate
         // moduleManagedUrl1 -> nav1.1 - nav1.2
@@ -1258,7 +1262,7 @@ public class CustomTabActivityTest {
                 new ComponentName(CustomTabsDynamicModuleTestUtils.FAKE_MODULE_PACKAGE_NAME,
                         "ClassName");
         Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
-                componentName, moduleManagedUrl, "^" + moduleManagedUrl+ "$");
+                componentName, moduleManagedUrl, "^(" + relativeUrl + ")$");
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
@@ -1285,6 +1289,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView() throws Exception {
+        setupHttpsTestServerAndPages();
         String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
         Intent intent =
                 CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(moduleManagedUrl, null);
@@ -1306,6 +1311,7 @@ public class CustomTabActivityTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView_secondCallIsNoOp() throws Exception {
+        setupHttpsTestServerAndPages();
         String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
         Intent intent =
                 CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(moduleManagedUrl, null);
@@ -1328,8 +1334,9 @@ public class CustomTabActivityTest {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(),
                 "https://www.google.com/search?q=london");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                "^https://www.google.com/search.*");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST, "www.google.com");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX, "/search.*");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         waitForModuleLoading();
 
@@ -1346,9 +1353,11 @@ public class CustomTabActivityTest {
     @SmallTest
     @DisableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView_featureDisabled_noTopBar() throws Exception {
-        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        setupHttpsTestServerAndPages();
+        String relativeUrl = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl = mTestServer.getURL(relativeUrl);
         Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
-                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+                moduleManagedUrl, "^(" + relativeUrl + ")$");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         waitForModuleLoading();
 
@@ -1388,9 +1397,11 @@ public class CustomTabActivityTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     public void testSetTopBarContentView_withModuleAndManagedUrls_topBarVisible() throws Exception {
-        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        setupHttpsTestServerAndPages();
+        String relativeUrl = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl = mTestServer.getURL(relativeUrl);
         Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
-                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+                moduleManagedUrl, "^(" + relativeUrl + ")$");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         waitForModuleLoading();
 
@@ -1412,8 +1423,9 @@ public class CustomTabActivityTest {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(),
                 "https://www.google.com/search?q=london");
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
-                "^https://www.google.com/search.*");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST, "www.google.com");
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX, "/search.*");
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
@@ -1434,9 +1446,11 @@ public class CustomTabActivityTest {
     @SmallTest
     @DisableFeatures(ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER)
     public void testSetTopBarContentView_featureDisabled_cctHeaderVisible() throws Exception {
-        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+        setupHttpsTestServerAndPages();
+        String relativeUrl = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl = mTestServer.getURL(relativeUrl);
         Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
-                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+                moduleManagedUrl, "^(" + relativeUrl + ")$");
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
@@ -1456,10 +1470,39 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
-    public void testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() throws Exception {
-        String moduleManagedUrl = mTestServer.getURL("/chrome/test/data/android/about.html");
+    public void testSetTopBarContentView_notModuleManagedHost_cctHeaderVisible() throws Exception {
+        setupHttpsTestServerAndPages();
+        String relativeUrl = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl = mTestServer.getURL(relativeUrl);
         Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
-                moduleManagedUrl, "^(" + moduleManagedUrl + ")$");
+                moduleManagedUrl, "^(" + relativeUrl + ")$");
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
+        intent.putExtra(
+                CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST, "www.google.com");
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        waitForModuleLoading();
+
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
+            cctActivity.setTopBarContentView(new View(cctActivity));
+            View toolbarView = cctActivity.findViewById(R.id.toolbar);
+            Assert.assertTrue(
+                    "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
+            CustomTabToolbar toolbar = (CustomTabToolbar) toolbarView;
+            Assert.assertEquals(View.VISIBLE, toolbar.getVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_CUSTOM_HEADER})
+    public void testSetTopBarContentView_withModuleAndExtras_cctHeaderHidden() throws Exception {
+        setupHttpsTestServerAndPages();
+        String relativeUrl = "/chrome/test/data/android/about.html";
+        String moduleManagedUrl = mTestServer.getURL(relativeUrl);
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(
+                moduleManagedUrl, "^(" + relativeUrl + ")$");
         intent.putExtra(
                 CustomTabIntentDataProvider.EXTRA_HIDE_CCT_HEADER_ON_MODULE_MANAGED_URLS, true);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
@@ -3275,5 +3318,15 @@ public class CustomTabActivityTest {
                 return !mCustomTabActivityTestRule.getActivity().isModuleLoading();
             }
         });
+    }
+
+    private void setupHttpsTestServerAndPages() throws InterruptedException {
+        mTestServer.stopAndDestroyServer();
+        // Module managed hosts only work with HTTPS.
+        mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                ServerCertificate.CERT_OK);
+        mTestPage = mTestServer.getURL(TEST_PAGE);
+        mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
     }
 }

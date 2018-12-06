@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.customtabs;
 
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_CLASS_NAME;
+import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST;
 import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_MODULE_PACKAGE_NAME;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.PENDING_URL_KEY;
 import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleNavigationEventObserver.URL_KEY;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsCallback;
@@ -29,6 +31,8 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -210,6 +214,8 @@ public class CustomTabsDynamicModuleTestUtils {
         intent.putExtra(EXTRA_MODULE_CLASS_NAME, componentName.getClassName());
 
         if (managedUrlsRegex != null) {
+            intent.putStringArrayListExtra(EXTRA_MODULE_MANAGED_HOST_LIST,
+                    new ArrayList<>(Arrays.asList(Uri.parse(url).getHost())));
             intent.putExtra(CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_URLS_REGEX,
                     managedUrlsRegex);
         }
