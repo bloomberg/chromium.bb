@@ -1,8 +1,8 @@
 <?php
-    header('Link: <http://127.0.0.1:8000/resources/square.png?large>; rel=preload; as=image; imagesrcset="http://127.0.0.1:8000/resources/square.png?small 150w, http://127.0.0.1:8000/resources/square.png?large 300w"; imagesizes="(min-width: 150px) and (max-width: 150px) 150px, 300px"', false);
+    header('Link: <http://127.0.0.1:8000/resources/square.png?large>; rel=preload; as=image; imagesrcset="http://127.0.0.1:8000/resources/square.png?small 300w, http://127.0.0.1:8000/resources/square.png?large 600w"; imagesizes="(min-width: 300px) and (max-width: 300px) 300px, 600px"', false);
 ?>
 <!DOCTYPE html>
-<meta name="viewport" content="width=150">
+<meta name="viewport" content="width=300">
 <script>
     window.addEventListener("load", function() {
         var entries = performance.getEntriesByType("resource");

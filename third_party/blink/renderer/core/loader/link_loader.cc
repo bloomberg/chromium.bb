@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/link_rel_attribute.h"
 #include "third_party/blink/renderer/core/html/parser/html_preload_scanner.h"
@@ -331,9 +332,12 @@ static MediaValues* CreateMediaValues(
   MediaValues* media_values =
       MediaValues::CreateDynamicIfFrameExists(document.GetFrame());
   if (viewport_description) {
-    media_values->OverrideViewportDimensions(
-        viewport_description->max_width.GetFloatValue(),
-        viewport_description->max_height.GetFloatValue());
+    FloatSize initial_viewport(media_values->DeviceWidth(),
+                               media_values->DeviceHeight());
+    PageScaleConstraints constraints = viewport_description->Resolve(
+        initial_viewport, document.GetViewportData().ViewportDefaultMinWidth());
+    media_values->OverrideViewportDimensions(constraints.layout_size.Width(),
+                                             constraints.layout_size.Height());
   }
   return media_values;
 }
