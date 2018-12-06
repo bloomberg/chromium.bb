@@ -329,8 +329,7 @@ class BASE_EXPORT SequenceManagerImpl
   bool GetAddQueueTimeToTasks();
 
   std::unique_ptr<trace_event::ConvertableToTraceFormat>
-  AsValueWithSelectorResult(bool should_run,
-                            internal::WorkQueue* selected_work_queue,
+  AsValueWithSelectorResult(internal::WorkQueue* selected_work_queue,
                             bool force_verbose) const;
 
   // Adds |queue| to |any_thread().has_incoming_immediate_work_| and if

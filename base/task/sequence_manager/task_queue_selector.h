@@ -47,11 +47,9 @@ class BASE_EXPORT TaskQueueSelector {
                         TaskQueue::QueuePriority priority);
 
   // Called to choose the work queue from which the next task should be taken
-  // and run. Return true if |out_work_queue| indicates the queue to service or
-  // false to avoid running any task.
-  //
+  // and run. Return the queue to service if there is one or null otherwise.
   // This function is called on the main thread.
-  bool SelectWorkQueueToService(WorkQueue** out_work_queue);
+  WorkQueue* SelectWorkQueueToService();
 
   // Serialize the selector state for tracing.
   void AsValueInto(trace_event::TracedValue* state) const;
@@ -73,78 +71,12 @@ class BASE_EXPORT TaskQueueSelector {
   bool AllEnabledWorkQueuesAreEmpty() const;
 
  protected:
-  class BASE_EXPORT PrioritizingSelector {
-   public:
-    PrioritizingSelector(TaskQueueSelector* task_queue_selector,
-                         const char* name);
+  WorkQueue* ChooseOldestWithPriority(TaskQueue::QueuePriority priority) const;
 
-    void ChangeSetIndex(internal::TaskQueueImpl* queue,
-                        TaskQueue::QueuePriority priority);
-    void AddQueue(internal::TaskQueueImpl* queue,
-                  TaskQueue::QueuePriority priority);
-    void RemoveQueue(internal::TaskQueueImpl* queue);
+  WorkQueueSets* delayed_work_queue_sets() { return &delayed_work_queue_sets_; }
 
-    bool SelectWorkQueueToService(TaskQueue::QueuePriority max_priority,
-                                  WorkQueue** out_work_queue,
-                                  bool* out_chose_delayed_over_immediate);
-
-    WorkQueueSets* delayed_work_queue_sets() {
-      return &delayed_work_queue_sets_;
-    }
-    WorkQueueSets* immediate_work_queue_sets() {
-      return &immediate_work_queue_sets_;
-    }
-
-    const WorkQueueSets* delayed_work_queue_sets() const {
-      return &delayed_work_queue_sets_;
-    }
-    const WorkQueueSets* immediate_work_queue_sets() const {
-      return &immediate_work_queue_sets_;
-    }
-
-    bool ChooseOldestWithPriority(TaskQueue::QueuePriority priority,
-                                  bool* out_chose_delayed_over_immediate,
-                                  WorkQueue** out_work_queue) const;
-
-#if DCHECK_IS_ON() || !defined(NDEBUG)
-    bool CheckContainsQueueForTest(const internal::TaskQueueImpl* queue) const;
-#endif
-
-   private:
-    bool ChooseOldestImmediateTaskWithPriority(
-        TaskQueue::QueuePriority priority,
-        WorkQueue** out_work_queue) const;
-
-    bool ChooseOldestDelayedTaskWithPriority(TaskQueue::QueuePriority priority,
-                                             WorkQueue** out_work_queue) const;
-
-    // Return true if |out_queue| contains the queue with the oldest pending
-    // task from the set of queues of |priority|, or false if all queues of that
-    // priority are empty. In addition |out_chose_delayed_over_immediate| is set
-    // to true iff we chose a delayed work queue in favour of an immediate work
-    // queue.
-    bool ChooseOldestImmediateOrDelayedTaskWithPriority(
-        TaskQueue::QueuePriority priority,
-        bool* out_chose_delayed_over_immediate,
-        WorkQueue** out_work_queue) const;
-
-    const TaskQueueSelector* task_queue_selector_;
-    WorkQueueSets delayed_work_queue_sets_;
-    WorkQueueSets immediate_work_queue_sets_;
-
-    DISALLOW_COPY_AND_ASSIGN(PrioritizingSelector);
-  };
-
-  // Return true if |out_queue| contains the queue with the oldest pending task
-  // from the set of queues of |priority|, or false if all queues of that
-  // priority are empty. In addition |out_chose_delayed_over_immediate| is set
-  // to true iff we chose a delayed work queue in favour of an immediate work
-  // queue.  This method will force select an immediate task if those are being
-  // starved by delayed tasks.
-  void SetImmediateStarvationCountForTest(size_t immediate_starvation_count);
-
-  PrioritizingSelector* prioritizing_selector_for_test() {
-    return &prioritizing_selector_;
+  WorkQueueSets* immediate_work_queue_sets() {
+    return &immediate_work_queue_sets_;
   }
 
   // Maximum score to accumulate before high priority tasks are run even in
@@ -158,19 +90,20 @@ class BASE_EXPORT TaskQueueSelector {
   static const size_t kSmallScoreIncrementForHighPriorityStarvation = 1;
 
   // Maximum score to accumulate before normal priority tasks are run even in
-  // the presence of higher priority tasks i.e. highest and high priority tasks.
+  // the presence of higher priority tasks i.e. highest and high priority
+  // tasks.
   static const size_t kMaxNormalPriorityStarvationScore = 5;
 
-  // Increment to be applied to the normal priority starvation score when a task
-  // should have a large effect on the score. E.g Only a few high priority
-  // priority tasks must run before the normal priority queue is considered
-  // starved.
+  // Increment to be applied to the normal priority starvation score when a
+  // task should have a large effect on the score. E.g Only a few high
+  // priority priority tasks must run before the normal priority queue is
+  // considered starved.
   static const size_t kLargeScoreIncrementForNormalPriorityStarvation = 2;
 
-  // Increment to be applied to the normal priority starvation score when a task
-  // should have only a small effect on the score. E.g. A number of highest
-  // priority tasks must run before the normal priority queue is considered
-  // starved.
+  // Increment to be applied to the normal priority starvation score when a
+  // task should have only a small effect on the score. E.g. A number of
+  // highest priority tasks must run before the normal priority queue is
+  // considered starved.
   static const size_t kSmallScoreIncrementForNormalPriorityStarvation = 1;
 
   // Maximum score to accumulate before low priority tasks are run even in the
@@ -189,11 +122,29 @@ class BASE_EXPORT TaskQueueSelector {
   // starved.
   static const size_t kSmallScoreIncrementForLowPriorityStarvation = 1;
 
-  // Maximum number of delayed tasks tasks which can be run while there's a
-  // waiting non-delayed task.
-  static const size_t kMaxDelayedStarvationTasks = 3;
-
  private:
+  void ChangeSetIndex(internal::TaskQueueImpl* queue,
+                      TaskQueue::QueuePriority priority);
+  void AddQueueImpl(internal::TaskQueueImpl* queue,
+                    TaskQueue::QueuePriority priority);
+  void RemoveQueueImpl(internal::TaskQueueImpl* queue);
+
+  WorkQueue* SelectWorkQueueToServiceImpl(
+      TaskQueue::QueuePriority max_priority);
+
+#if DCHECK_IS_ON() || !defined(NDEBUG)
+  bool CheckContainsQueueForTest(const internal::TaskQueueImpl* queue) const;
+#endif
+
+  WorkQueue* ChooseOldestImmediateTaskWithPriority(
+      TaskQueue::QueuePriority priority) const;
+
+  WorkQueue* ChooseOldestDelayedTaskWithPriority(
+      TaskQueue::QueuePriority priority) const;
+
+  WorkQueue* ChooseOldestImmediateOrDelayedTaskWithPriority(
+      TaskQueue::QueuePriority priority) const;
+
   // Returns the priority which is next after |priority|.
   static TaskQueue::QueuePriority NextPriority(
       TaskQueue::QueuePriority priority);
@@ -203,20 +154,21 @@ class BASE_EXPORT TaskQueueSelector {
   // Called whenever the selector chooses a task queue for execution with the
   // priority |priority|.
   void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
-                                  bool chose_delayed_over_immediate);
+                                  bool chose_delayed_queue);
 
   // Returns true if there are pending tasks with priority |priority|.
   bool HasTasksWithPriority(TaskQueue::QueuePriority priority);
 
   scoped_refptr<AssociatedThreadId> associated_thread_;
 
-  PrioritizingSelector prioritizing_selector_;
-  size_t immediate_starvation_count_;
-  size_t high_priority_starvation_score_;
-  size_t normal_priority_starvation_score_;
-  size_t low_priority_starvation_score_;
+  WorkQueueSets delayed_work_queue_sets_;
+  WorkQueueSets immediate_work_queue_sets_;
+  bool choose_immediate_over_delayed_ = false;
+  size_t high_priority_starvation_score_ = 0;
+  size_t normal_priority_starvation_score_ = 0;
+  size_t low_priority_starvation_score_ = 0;
 
-  Observer* task_queue_selector_observer_;  // Not owned.
+  Observer* task_queue_selector_observer_ = nullptr;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSelector);
 };
 

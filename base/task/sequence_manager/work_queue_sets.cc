@@ -108,31 +108,28 @@ void WorkQueueSets::OnQueueBlocked(WorkQueue* work_queue) {
   work_queue_heaps_[set_index].erase(heap_handle);
 }
 
-bool WorkQueueSets::GetOldestQueueInSet(size_t set_index,
-                                        WorkQueue** out_work_queue) const {
+WorkQueue* WorkQueueSets::GetOldestQueueInSet(size_t set_index) const {
   DCHECK_LT(set_index, work_queue_heaps_.size());
   if (work_queue_heaps_[set_index].empty())
-    return false;
-  *out_work_queue = work_queue_heaps_[set_index].Min().value;
-  DCHECK_EQ(set_index, (*out_work_queue)->work_queue_set_index());
-  DCHECK((*out_work_queue)->heap_handle().IsValid());
-  return true;
+    return nullptr;
+  WorkQueue* queue = work_queue_heaps_[set_index].Min().value;
+  DCHECK_EQ(set_index, queue->work_queue_set_index());
+  DCHECK(queue->heap_handle().IsValid());
+  return queue;
 }
 
-bool WorkQueueSets::GetOldestQueueAndEnqueueOrderInSet(
+WorkQueue* WorkQueueSets::GetOldestQueueAndEnqueueOrderInSet(
     size_t set_index,
-    WorkQueue** out_work_queue,
     EnqueueOrder* out_enqueue_order) const {
   DCHECK_LT(set_index, work_queue_heaps_.size());
   if (work_queue_heaps_[set_index].empty())
-    return false;
+    return nullptr;
   const OldestTaskEnqueueOrder& oldest = work_queue_heaps_[set_index].Min();
-  *out_work_queue = oldest.value;
   *out_enqueue_order = oldest.key;
   EnqueueOrder enqueue_order;
   DCHECK(oldest.value->GetFrontTaskEnqueueOrder(&enqueue_order) &&
          oldest.key == enqueue_order);
-  return true;
+  return oldest.value;
 }
 
 bool WorkQueueSets::IsSetEmpty(size_t set_index) const {
