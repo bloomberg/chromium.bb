@@ -207,13 +207,11 @@ scoped_refptr<NGLayoutResult> NGBoxFragmentBuilder::Abort(
 // inline containing blocks are required.
 // Not finding a required block is an unexpected behavior (DCHECK).
 void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
-    HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments,
-    NGLogicalSize* container_size) {
+    HashMap<const LayoutObject*, FragmentPair>* inline_container_fragments) {
   // This function has detailed knowledge of inline fragment tree structure,
   // and will break if this changes.
   DCHECK_GE(InlineSize(), LayoutUnit());
   DCHECK_GE(BlockSize(), LayoutUnit());
-  *container_size = Size();
 
   for (wtf_size_t i = 0; i < children_.size(); i++) {
     if (children_[i]->IsLineBox()) {
