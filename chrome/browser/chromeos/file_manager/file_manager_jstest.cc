@@ -119,8 +119,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, MultiMetadataProvider) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ListThumbnailLoader) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/list_thumbnail_loader_unittest.html")));
+  RunGeneratedTest("/foreground/js/list_thumbnail_loader_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileSystemMetadataProvider) {
