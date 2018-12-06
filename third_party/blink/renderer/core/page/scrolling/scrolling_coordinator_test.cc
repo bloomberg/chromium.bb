@@ -73,7 +73,7 @@ class ScrollingCoordinatorTest : public testing::Test,
       : ScopedPaintTouchActionRectsForTest(GetParam()),
         base_url_("http://www.test.com/") {
     helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
-    GetWebView()->Resize(IntSize(320, 240));
+    GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
 
     // macOS attaches main frame scrollbars to the VisualViewport so the
     // VisualViewport layers need to be initialized.
@@ -145,7 +145,7 @@ class ScrollingCoordinatorTest : public testing::Test,
 INSTANTIATE_TEST_CASE_P(All, ScrollingCoordinatorTest, ::testing::Bool());
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
-  GetWebView()->Resize(WebSize(800, 600));
+  GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   ForceFullCompositingUpdate();
 
@@ -175,7 +175,7 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
 }
 
 TEST_P(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting) {
-  GetWebView()->Resize(WebSize(800, 600));
+  GetWebView()->MainFrameWidget()->Resize(WebSize(800, 600));
   LoadHTML("<div id='spacer' style='height: 1000px'></div>");
   GetWebView()->GetSettings()->SetThreadedScrollingEnabled(false);
   ForceFullCompositingUpdate();

@@ -121,7 +121,7 @@ class PointerEventManagerTest : public SimTest {
 };
 
 TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
-  WebView().Resize(WebSize(400, 400));
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(
@@ -133,12 +133,12 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   GetDocument().body()->addEventListener(event_type_names::kPointercancel,
                                          callback);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerDown,
                              WebPointerProperties::PointerType::kTouch),
       std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerDown,
                              WebPointerProperties::PointerType::kPen),
       std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
@@ -150,7 +150,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   ASSERT_EQ(callback->touchEventCount(), 0);
   ASSERT_EQ(callback->penEventCount(), 0);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerCausedUaAction,
                              WebPointerProperties::PointerType::kPen),
       std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
@@ -158,7 +158,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   ASSERT_EQ(callback->touchEventCount(), 1);
   ASSERT_EQ(callback->penEventCount(), 1);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerCausedUaAction,
                              WebPointerProperties::PointerType::kTouch),
       std::vector<WebPointerEvent>(), std::vector<WebPointerEvent>()));
@@ -176,7 +176,7 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
 }
 
 TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
-  WebView().Resize(WebSize(400, 400));
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(
@@ -188,7 +188,7 @@ TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
   GetDocument().body()->addEventListener(event_type_names::kPointerdown,
                                          callback);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerDown,
                              WebPointerProperties::PointerType::kTouch,
                              WebFloatPoint(150, 200), WebFloatPoint(100, 50),
@@ -208,7 +208,7 @@ TEST_F(PointerEventManagerTest, PointerEventCoordinates) {
 }
 
 TEST_F(PointerEventManagerTest, PointerEventMovements) {
-  WebView().Resize(WebSize(400, 400));
+  WebView().MainFrameWidget()->Resize(WebSize(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(
@@ -222,7 +222,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
   // Turn on the flag for test.
   RuntimeEnabledFeatures::SetMovementXYInBlinkEnabled(true);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerMove,
                              WebPointerProperties::PointerType::kMouse,
                              WebFloatPoint(150, 210), WebFloatPoint(100, 50),
@@ -234,7 +234,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
   ASSERT_EQ(callback->last_movement_x_, 0);
   ASSERT_EQ(callback->last_movement_y_, 0);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerMove,
                              WebPointerProperties::PointerType::kMouse,
                              WebFloatPoint(150, 200), WebFloatPoint(132, 29),
@@ -246,7 +246,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
   ASSERT_EQ(callback->last_movement_x_, 32);
   ASSERT_EQ(callback->last_movement_y_, -21);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerMove,
                              WebPointerProperties::PointerType::kMouse,
                              WebFloatPoint(150, 210),
@@ -262,7 +262,7 @@ TEST_F(PointerEventManagerTest, PointerEventMovements) {
   // When flag is off, movementX/Y follows the value in WebPointerProperties.
   RuntimeEnabledFeatures::SetMovementXYInBlinkEnabled(false);
 
-  WebView().HandleInputEvent(WebCoalescedInputEvent(
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
       CreateTestPointerEvent(WebInputEvent::kPointerMove,
                              WebPointerProperties::PointerType::kMouse,
                              WebFloatPoint(150, 210), WebFloatPoint(100, 16.25),

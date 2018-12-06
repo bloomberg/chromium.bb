@@ -2958,7 +2958,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
       base_url_ +
           "viewport/viewport-gpu-rasterization-disabled-without-viewport.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_FALSE(web_view_helper.GetWebView()
                    ->MatchesHeuristicsForGpuRasterizationForTesting());
   // Also test that setting enableViewport to false (as on desktop Chrome)
@@ -2966,7 +2966,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(
       base_url_ +
       "viewport/viewport-gpu-rasterization-disabled-without-viewport.html");
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -2974,7 +2974,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-gpu-rasterization.html", nullptr, nullptr,
       nullptr, SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -2984,7 +2984,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
       base_url_ +
           "viewport/viewport-gpu-rasterization-expanded-heuristics.html",
       nullptr, nullptr, nullptr, SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -2992,7 +2992,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-1.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -3000,7 +3000,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-15.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -3008,7 +3008,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(base_url_ + "viewport/viewport-130.html",
                                     nullptr, nullptr, nullptr,
                                     SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -3016,7 +3016,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 
@@ -3024,7 +3024,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization) {
   web_view_helper.InitializeAndLoad(
       base_url_ + "viewport/viewport-legacy-handheldfriendly.html", nullptr,
       nullptr, nullptr, SetViewportSettings);
-  web_view_helper.GetWebView()->Resize(WebSize(640, 480));
+  web_view_helper.GetWebView()->MainFrameWidget()->Resize(WebSize(640, 480));
   EXPECT_TRUE(web_view_helper.GetWebView()
                   ->MatchesHeuristicsForGpuRasterizationForTesting());
 }
@@ -3375,7 +3375,7 @@ class ViewportHistogramsTest : public SimTest {
 
     WebView().GetSettings()->SetViewportEnabled(true);
     WebView().GetSettings()->SetViewportMetaEnabled(true);
-    WebView().Resize(WebSize(500, 600));
+    WebView().MainFrameWidget()->Resize(WebSize(500, 600));
   }
 
   void UseMetaTag(const String& metaTag) {

@@ -45,7 +45,8 @@ class AnchorElementMetricsTest : public SimTest {
 
   void SetUp() override {
     SimTest::SetUp();
-    WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
     feature_list_.InitAndEnableFeature(features::kRecordAnchorMetricsClicked);
   }
 

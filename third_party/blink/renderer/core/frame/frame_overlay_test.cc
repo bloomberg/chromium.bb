@@ -64,7 +64,8 @@ class FrameOverlayTest : public testing::Test {
     helper_.Initialize(nullptr /* web_frame_client */,
                        nullptr /* web_view_client */,
                        nullptr /* web_widget_client */);
-    GetWebView()->Resize(WebSize(kViewportWidth, kViewportHeight));
+    GetWebView()->MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
     GetWebView()->MainFrameWidget()->UpdateAllLifecyclePhases(
         WebWidget::LifecycleUpdateReason::kTest);
   }

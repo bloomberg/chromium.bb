@@ -286,7 +286,7 @@ void ExecuteContextMenuCommand(WebViewImpl* web_view,
       WebPoint(30, 30), 0);
   event.click_count = 1;
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(
       web_view->MainFrame()->ToWebLocalFrame()->ExecuteCommand(command_name));
 }
@@ -491,7 +491,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
 
   // Now, let's try a more complex scenario:
   // 1) open the context menu. This will focus the plugin.
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   // 2) document blurs the plugin, because it can.
   web_view->ClearFocusedElement();
   // 3) Copy should still operate on the context node, even though the focus had
@@ -794,7 +794,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   // plugin doesn't receive it.
   event.SetPositionInWidget(WebFloatPoint(0, 0));
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kUndefined, test_plugin->GetLastInputEventType());
@@ -805,7 +805,7 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
   event.SetPositionInWidget(
       WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2));
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kGestureLongPress,
@@ -837,7 +837,7 @@ TEST_F(WebPluginContainerTest, MouseEventButtons) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kMouseMove, test_plugin->GetLastInputEventType());
@@ -869,7 +869,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventTranslated) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kMouseWheel, test_plugin->GetLastInputEventType());
@@ -909,8 +909,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolled) {
           WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
       1.0f, 1.0f);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
-  web_view->DispatchBufferedTouchEvents();
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kTouchStart, test_plugin->GetLastInputEventType());
@@ -953,8 +953,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
 
     WebCoalescedInputEvent coalesced_event(event);
 
-    web_view->HandleInputEvent(coalesced_event);
-    web_view->DispatchBufferedTouchEvents();
+    web_view->MainFrameWidget()->HandleInputEvent(coalesced_event);
+    web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
     RunPendingTasks();
 
     EXPECT_EQ(static_cast<const size_t>(1),
@@ -1000,8 +1000,8 @@ TEST_F(WebPluginContainerTest, TouchEventScrolledWithCoalescedTouches) {
     coalesced_event.AddCoalescedEvent(event2);
     coalesced_event.AddCoalescedEvent(event3);
 
-    web_view->HandleInputEvent(coalesced_event);
-    web_view->DispatchBufferedTouchEvents();
+    web_view->MainFrameWidget()->HandleInputEvent(coalesced_event);
+    web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
     RunPendingTasks();
 
     EXPECT_EQ(static_cast<const size_t>(3),
@@ -1041,7 +1041,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventScrolled) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kMouseWheel, test_plugin->GetLastInputEventType());
@@ -1077,7 +1077,7 @@ TEST_F(WebPluginContainerTest, MouseEventScrolled) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   EXPECT_EQ(WebInputEvent::kMouseMove, test_plugin->GetLastInputEventType());
@@ -1116,7 +1116,7 @@ TEST_F(WebPluginContainerTest, MouseEventZoomed) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and
@@ -1158,7 +1158,7 @@ TEST_F(WebPluginContainerTest, MouseWheelEventZoomed) {
   WebRect rect = plugin_container_one_element.BoundsInViewport();
   event.SetPositionInWidget(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   RunPendingTasks();
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and
@@ -1177,7 +1177,7 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
       base_url_ + "plugin_scroll.html", &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->GetSettings()->SetPluginsEnabled(true);
-  web_view->Resize(WebSize(300, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(300, 300));
   web_view->SetPageScaleFactor(2);
   web_view->SmoothScroll(0, 300, 0);
   UpdateAllLifecyclePhases(web_view);
@@ -1203,8 +1203,8 @@ TEST_F(WebPluginContainerTest, TouchEventZoomed) {
           WebFloatPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)),
       1.0f, 1.0f);
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
-  web_view->DispatchBufferedTouchEvents();
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
   RunPendingTasks();
 
   // rect.width/height divided by 4 because the rect is in viewport bounds and

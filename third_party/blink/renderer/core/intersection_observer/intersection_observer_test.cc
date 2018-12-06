@@ -145,7 +145,7 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
 }
 
 TEST_F(IntersectionObserverTest, ResumePostsTask) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -205,7 +205,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
 }
 
 TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -252,7 +252,7 @@ TEST_F(IntersectionObserverTest, HitTestAfterMutation) {
 }
 
 TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -289,7 +289,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
 
 TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   WebView().GetSettings()->SetForceZeroLayoutHeight(true);
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -378,7 +378,7 @@ TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {
 }
 
 TEST_F(IntersectionObserverV2Test, BasicOcclusion) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -437,7 +437,7 @@ TEST_F(IntersectionObserverV2Test, BasicOcclusion) {
 }
 
 TEST_F(IntersectionObserverV2Test, BasicOpacity) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -486,7 +486,7 @@ TEST_F(IntersectionObserverV2Test, BasicOpacity) {
 }
 
 TEST_F(IntersectionObserverV2Test, BasicTransform) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(

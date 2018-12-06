@@ -400,7 +400,7 @@ TEST_F(WebViewTest, BrokenImage) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->GetSettings()->SetLoadsImagesAutomatically(true);
   LoadFrame(web_view->MainFrameImpl(), url);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
 
   std::string image_url = "http://www.test.com/non_existent.png";
 
@@ -417,7 +417,7 @@ TEST_F(WebViewTest, BrokenInputImage) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->GetSettings()->SetLoadsImagesAutomatically(true);
   LoadFrame(web_view->MainFrameImpl(), url);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
 
   std::string image_url = "http://www.test.com/non_existent.png";
 
@@ -431,10 +431,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
   const SkColor kTranslucentPutty = SkColorSetARGB(0x80, 0xBF, 0xB1, 0x96);
 
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  EXPECT_EQ(SK_ColorWHITE, web_view->BackgroundColor());
+  EXPECT_EQ(SK_ColorWHITE, web_view->MainFrameWidget()->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
+  EXPECT_EQ(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(
@@ -443,7 +443,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
       "{background-color:#227788}</style></head></"
       "html>",
       base_url);
-  EXPECT_EQ(kDarkCyan, web_view->BackgroundColor());
+  EXPECT_EQ(kDarkCyan, web_view->MainFrameWidget()->BackgroundColor());
 
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
                                      "<html><head><style>body "
@@ -451,11 +451,11 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
                                      "style></head></html>",
                                      base_url);
   // Expected: red (50% alpha) blended atop base of SK_ColorBLUE.
-  EXPECT_EQ(0xFF80007F, web_view->BackgroundColor());
+  EXPECT_EQ(0xFF80007F, web_view->MainFrameWidget()->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(kTranslucentPutty);
   // Expected: red (50% alpha) blended atop kTranslucentPutty. Note the alpha.
-  EXPECT_EQ(0xBFE93A31, web_view->BackgroundColor());
+  EXPECT_EQ(0xBFE93A31, web_view->MainFrameWidget()->BackgroundColor());
 
   web_view->SetBaseBackgroundColor(SK_ColorTRANSPARENT);
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -464,7 +464,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColor) {
                                      "head></html>",
                                      base_url);
   // Expected: transparent on top of transparent will still be transparent.
-  EXPECT_EQ(SK_ColorTRANSPARENT, web_view->BackgroundColor());
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            web_view->MainFrameWidget()->BackgroundColor());
 
   LocalFrame* frame = web_view->MainFrameImpl()->GetFrame();
   // The shutdown() calls are a hack to prevent this test
@@ -490,16 +491,17 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
       WebView::Create(&web_view_client, &web_view_client,
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, nullptr));
-  EXPECT_NE(SK_ColorBLUE, web_view->BackgroundColor());
+  EXPECT_NE(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
   // webView does not have a frame yet, but we should still be able to set the
   // background color.
   web_view->SetBaseBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
+  EXPECT_EQ(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
   frame_test_helpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(frame);
-  web_view->Close();
+  // This closes the WebView also.
+  web_view->MainFrameWidget()->Close();
 }
 
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
@@ -513,7 +515,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   // Set WebView background to green with alpha.
   web_view->SetBaseBackgroundColor(kAlphaGreen);
   web_view->GetSettings()->SetShouldClearDocumentBackground(false);
-  web_view->Resize(WebSize(kWidth, kHeight));
+  web_view->MainFrameWidget()->Resize(WebSize(kWidth, kHeight));
   UpdateAllLifecyclePhases();
 
   // Set canvas background to red with alpha.
@@ -552,36 +554,36 @@ TEST_F(WebViewTest, FocusIsInactive) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "visible_iframe.html");
 
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
   web_view->SetIsActive(true);
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   EXPECT_TRUE(frame->GetFrame()->GetDocument()->IsHTMLDocument());
 
   Document* document = frame->GetFrame()->GetDocument();
   EXPECT_TRUE(document->hasFocus());
-  web_view->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(false);
   web_view->SetIsActive(false);
   EXPECT_FALSE(document->hasFocus());
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
   web_view->SetIsActive(true);
   EXPECT_TRUE(document->hasFocus());
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
   web_view->SetIsActive(false);
   EXPECT_FALSE(document->hasFocus());
-  web_view->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(false);
   web_view->SetIsActive(true);
   EXPECT_FALSE(document->hasFocus());
   web_view->SetIsActive(false);
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
   EXPECT_TRUE(document->hasFocus());
   web_view->SetIsActive(true);
-  web_view->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(false);
   EXPECT_FALSE(document->hasFocus());
 }
 
 TEST_F(WebViewTest, DocumentHasFocus) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(
@@ -608,11 +610,11 @@ TEST_F(WebViewTest, DocumentHasFocus) {
                log_element.TextContent().Utf8().data());
 
   web_view->SetIsActive(false);
-  web_view->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(false);
   EXPECT_FALSE(document->hasFocus());
   EXPECT_TRUE(log_element.TextContent().IsEmpty());
 
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
   EXPECT_TRUE(document->hasFocus());
   EXPECT_STREQ("document.hasFocus(): true",
                log_element.TextContent().Utf8().data());
@@ -664,7 +666,7 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan) {
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
-  web_view->Resize(WebSize(100, 100));
+  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   gfx::Point hit_point(75, 75);
 
   // Image is at top left quandrant, so should not hit it.
@@ -720,7 +722,7 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan) {
   std::string url = RegisterMockedHttpURLLoad("hit_test.html");
   WebViewImpl* web_view = web_view_helper_.Initialize();
   LoadFrame(web_view->MainFrameImpl(), url);
-  web_view->Resize(WebSize(100, 100));
+  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   gfx::Point hit_point(55, 55);
 
   // Image is at top left quandrant, so should not hit it.
@@ -1047,7 +1049,7 @@ TEST_F(WebViewTest, LongPressOutsideInputShouldNotSelectPlaceholderText) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "input_placeholder.html");
   web_view->SetInitialFocus(false);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -1063,7 +1065,8 @@ TEST_F(WebViewTest, LongPressOutsideInputShouldNotSelectPlaceholderText) {
                         kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(100, 150));
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
   EXPECT_TRUE(web_view->MainFrameImpl()->SelectionAsText().IsEmpty());
 }
 
@@ -1424,7 +1427,7 @@ TEST_F(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   RegisterMockedHttpURLLoad("form_with_input.html");
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "form_with_input.html");
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
   web_view->SetInitialFocus(false);
   EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_EQ(0, web_view->MainFrameImpl()->GetScrollOffset().height);
@@ -1727,7 +1730,7 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst) {
   EXPECT_TRUE(frame->IsSelectionAnchorFirst());
   WebRect anchor;
   WebRect focus;
-  web_view->SelectionBounds(anchor, focus);
+  web_view->MainFrameWidget()->SelectionBounds(anchor, focus);
   frame->SelectRange(WebPoint(focus.x, focus.y), WebPoint(anchor.x, anchor.y));
   EXPECT_FALSE(frame->IsSelectionAnchorFirst());
 }
@@ -2232,7 +2235,7 @@ TEST_F(WebViewTest, ExitingDeviceEmulationResetsPageScale) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(200, 300));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(200, 300));
 
   float page_scale_expected = web_view_impl->PageScaleFactor();
 
@@ -2254,7 +2257,7 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(100, 150));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(100, 150));
   UpdateAllLifecyclePhases();
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
@@ -2299,7 +2302,7 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
   RegisterMockedHttpURLLoad("back_forward_restore_scroll.html");
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       base_url_ + "back_forward_restore_scroll.html");
-  web_view_impl->Resize(WebSize(640, 480));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(640, 480));
   web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
@@ -2353,7 +2356,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
-  web_view_impl->Resize(WebSize(800, 600));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(800, 600));
   UpdateAllLifecyclePhases();
 
   // Scroll the page down.
@@ -2366,7 +2369,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
+  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases();
 
   // Assert the scroll position on the document element doesn't change.
@@ -2374,7 +2377,7 @@ TEST_F(WebViewTest, FullscreenNoResetScroll) {
 
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 2100));
 
-  web_view_impl->DidExitFullscreen();
+  web_view_impl->MainFrameWidget()->DidExitFullscreen();
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(2100, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
@@ -2385,9 +2388,9 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   RegisterMockedHttpURLLoad("fullscreen_style.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "fullscreen_style.html");
-  web_view_impl->Resize(WebSize(800, 600));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(800, 600));
   UpdateAllLifecyclePhases();
-  EXPECT_EQ(SK_ColorWHITE, web_view_impl->BackgroundColor());
+  EXPECT_EQ(SK_ColorWHITE, web_view_impl->MainFrameWidget()->BackgroundColor());
 
   // Enter fullscreen.
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
@@ -2396,10 +2399,11 @@ TEST_F(WebViewTest, FullscreenBackgroundColor) {
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*element);
-  web_view_impl->DidEnterFullscreen();
+  web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases();
 
-  EXPECT_EQ(SK_ColorYELLOW, web_view_impl->BackgroundColor());
+  EXPECT_EQ(SK_ColorYELLOW,
+            web_view_impl->MainFrameWidget()->BackgroundColor());
 }
 
 class PrintWebViewClient : public frame_test_helpers::TestWebViewClient {
@@ -2500,7 +2504,7 @@ bool WebViewTest::TapElement(WebInputEvent::Type type, Element* element) {
                         kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(center);
 
-  web_view_helper_.GetWebView()->HandleInputEvent(
+  web_view_helper_.GetWebView()->MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(event));
   RunPendingTasks();
   return true;
@@ -2567,8 +2571,10 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
                         kWebGestureDeviceTouchscreen);
   event.SetPositionInWidget(WebFloatPoint(3, 8));
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
-  web_view->Close();
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
+  // This also closes the WebView.
+  web_view->MainFrameWidget()->Close();
 }
 
 TEST_F(WebViewTest, LongPressEmptyDiv) {
@@ -2577,7 +2583,7 @@ TEST_F(WebViewTest, LongPressEmptyDiv) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_empty_div.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2588,7 +2594,8 @@ TEST_F(WebViewTest, LongPressEmptyDiv) {
   event.SetPositionInWidget(WebFloatPoint(250, 150));
 
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 }
 
 TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow) {
@@ -2597,7 +2604,7 @@ TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_empty_div.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2608,7 +2615,8 @@ TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow) {
   event.SetPositionInWidget(WebFloatPoint(250, 150));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 }
 
 TEST_F(WebViewTest, LongPressObject) {
@@ -2617,7 +2625,7 @@ TEST_F(WebViewTest, LongPressObject) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_object.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2628,7 +2636,8 @@ TEST_F(WebViewTest, LongPressObject) {
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_NE(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 
   HTMLElement* element = ToHTMLElement(
       web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
@@ -2641,7 +2650,7 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_object_fallback.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(true);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2652,7 +2661,8 @@ TEST_F(WebViewTest, LongPressObjectFallback) {
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 
   HTMLElement* element = ToHTMLElement(
       web_view->MainFrameImpl()->GetDocument().GetElementById("obj"));
@@ -2665,7 +2675,7 @@ TEST_F(WebViewTest, LongPressImage) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2676,7 +2686,8 @@ TEST_F(WebViewTest, LongPressImage) {
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 }
 
 TEST_F(WebViewTest, LongPressVideo) {
@@ -2685,7 +2696,7 @@ TEST_F(WebViewTest, LongPressVideo) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_video.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2696,7 +2707,8 @@ TEST_F(WebViewTest, LongPressVideo) {
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 }
 
 TEST_F(WebViewTest, LongPressLink) {
@@ -2705,7 +2717,7 @@ TEST_F(WebViewTest, LongPressLink) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_link.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2716,7 +2728,8 @@ TEST_F(WebViewTest, LongPressLink) {
   event.SetPositionInWidget(WebFloatPoint(500, 300));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 }
 
 // Tests that we send touchcancel when drag start by long press.
@@ -2730,7 +2743,7 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
       base_url_ + "long_press_draggable_div.html");
 
   web_view->SettingsImpl()->SetTouchDragDropEnabled(true);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2738,8 +2751,9 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
       WebInputEvent::kPointerDown,
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetPositionInWidget(250, 8);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
-  web_view->DispatchBufferedTouchEvents();
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_down));
+  web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
 
   WebString target_id = WebString::FromUTF8("target");
 
@@ -2754,8 +2768,9 @@ TEST_F(WebViewTest, TouchCancelOnStartDragging) {
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_cancel.SetPositionInWidget(250, 8);
   EXPECT_NE(WebInputEventResult::kHandledSuppressed,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_cancel)));
-  web_view->DispatchBufferedTouchEvents();
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(pointer_cancel)));
+  web_view->MainFrameWidget()->DispatchBufferedTouchEvents();
   EXPECT_STREQ("touchcancel",
                web_view->MainFrameImpl()->GetDocument().Title().Utf8().data());
 }
@@ -2770,7 +2785,7 @@ TEST_F(WebViewTest, showContextMenuOnLongPressingLinks) {
       base_url_ + "long_press_links_and_images.html");
 
   web_view->SettingsImpl()->SetTouchDragDropEnabled(true);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2792,7 +2807,7 @@ TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "long_press_empty_editable_selection.html");
   web_view->SettingsImpl()->SetAlwaysShowContextMenuOnTouch(false);
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2803,7 +2818,8 @@ TEST_F(WebViewTest, LongPressEmptyEditableSelection) {
   event.SetPositionInWidget(WebFloatPoint(10, 10));
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
 }
 
 TEST_F(WebViewTest, LongPressEmptyNonEditableSelection) {
@@ -2811,7 +2827,7 @@ TEST_F(WebViewTest, LongPressEmptyNonEditableSelection) {
 
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "long_press_image.html");
-  web_view->Resize(WebSize(500, 500));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 500));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2823,7 +2839,8 @@ TEST_F(WebViewTest, LongPressEmptyNonEditableSelection) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(event)));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 }
 
@@ -2832,7 +2849,7 @@ TEST_F(WebViewTest, LongPressSelection) {
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2852,7 +2869,7 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotDismissHandles) {
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_selection.html");
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2888,7 +2905,7 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
 
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "longpress_textarea.html");
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2907,7 +2924,7 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   event.SetPositionInWidget(WebFloatPoint(100, 25));
   event.data.tap.tap_count = 2;
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
   HTMLTextAreaElement* text_area_element = ToHTMLTextAreaElement(
@@ -2921,7 +2938,7 @@ TEST_F(WebViewTest, TouchDoesntSelectEmptyTextarea) {
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 
   // Double-tap past last word of textbox.
-  web_view->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
   EXPECT_TRUE(frame->SelectionAsText().IsEmpty());
 }
 #endif
@@ -2931,7 +2948,7 @@ TEST_F(WebViewTest, LongPressImageTextarea) {
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "longpress_image_contenteditable.html");
-  web_view->Resize(WebSize(500, 300));
+  web_view->MainFrameWidget()->Resize(WebSize(500, 300));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2951,7 +2968,7 @@ TEST_F(WebViewTest, BlinkCaretAfterLongPress) {
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "blink_caret_on_typing_after_long_press.html");
-  web_view->Resize(WebSize(640, 480));
+  web_view->MainFrameWidget()->Resize(WebSize(640, 480));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -2980,7 +2997,8 @@ TEST_F(WebViewTest, BlinkCaretOnClosingContextMenu) {
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(1, 1);
   mouse_event.click_count = 1;
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
   RunPendingTasks();
 
   WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
@@ -3000,7 +3018,7 @@ TEST_F(WebViewTest, SelectionOnReadOnlyInput) {
   RegisterMockedHttpURLLoad("selection_readonly.html");
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "selection_readonly.html");
-  web_view->Resize(WebSize(640, 480));
+  web_view->MainFrameWidget()->Resize(WebSize(640, 480));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -3022,7 +3040,7 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
 
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "content-width-1000.html");
-  web_view->Resize(WebSize(100, 100));
+  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -3033,60 +3051,74 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
   // RawKeyDown pagedown should be handled.
   key_event.windows_key_code = VKEY_NEXT;
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   // Coalesced KeyDown arrow-down should be handled.
   key_event.windows_key_code = VKEY_DOWN;
   key_event.SetType(WebInputEvent::kKeyDown);
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   // Ctrl-Home should be handled...
   key_event.windows_key_code = VKEY_HOME;
   key_event.SetModifiers(WebInputEvent::kControlKey);
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   // But Ctrl-Down should not.
   key_event.windows_key_code = VKEY_DOWN;
   key_event.SetModifiers(WebInputEvent::kControlKey);
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   // Shift, meta, and alt should not be handled.
   key_event.windows_key_code = VKEY_NEXT;
   key_event.SetModifiers(WebInputEvent::kShiftKey);
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   key_event.windows_key_code = VKEY_NEXT;
   key_event.SetModifiers(WebInputEvent::kMetaKey);
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   key_event.windows_key_code = VKEY_NEXT;
   key_event.SetModifiers(WebInputEvent::kAltKey);
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   // System-key labeled Alt-Down (as in Windows) should do nothing,
   // but non-system-key labeled Alt-Down (as in Mac) should be handled
@@ -3096,18 +3128,22 @@ TEST_F(WebViewTest, KeyDownScrollsHandled) {
   key_event.is_system_key = true;
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kNotHandled,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   key_event.windows_key_code = VKEY_DOWN;
   key_event.SetModifiers(WebInputEvent::kAltKey);
   key_event.is_system_key = false;
   key_event.SetType(WebInputEvent::kRawKeyDown);
   EXPECT_EQ(WebInputEventResult::kHandledSystem,
-            web_view->HandleInputEvent(WebCoalescedInputEvent(key_event)));
+            web_view->MainFrameWidget()->HandleInputEvent(
+                WebCoalescedInputEvent(key_event)));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 }
 
 class MiddleClickAutoscrollWebWidgetClient
@@ -3132,7 +3168,7 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
-  web_view->Resize(WebSize(100, 100));
+  web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
 
@@ -3144,9 +3180,11 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   mouse_event.click_count = 1;
 
   // Start middle-click autoscroll.
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
   mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
 
   EXPECT_EQ(MiddlePanningCursor().GetType(), client.GetLastCursorType());
 
@@ -3161,9 +3199,11 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
 
   // End middle-click autoscroll.
   mouse_event.SetType(WebInputEvent::kMouseDown);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
   mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
 
   web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
                                                  local_frame);
@@ -3181,7 +3221,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
 
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(
@@ -3198,7 +3238,8 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink) {
   event.SetPositionInWidget(WebFloatPoint(20, 20));
 
   // Just make sure we don't hit any asserts.
-  web_view_impl->HandleInputEvent(WebCoalescedInputEvent(event));
+  web_view_impl->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(event));
 }
 
 class MockAutofillClient : public WebAutofillClient {
@@ -3254,7 +3295,7 @@ TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
   // Clear the focus and track that the subsequent composition commit does not
   // trigger a text changed notification for autofill.
   client.ClearChangeCounts();
-  web_view->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(false);
   EXPECT_EQ(0, client.TextChanges());
 
   frame->SetAutofillClient(nullptr);
@@ -3302,7 +3343,8 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
                                WebInputEvent::GetStaticTimeStampForTests());
     key_event.dom_key = Platform::Current()->DomKeyEnumFromString("\b");
     key_event.windows_key_code = VKEY_BACK;
-    web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(key_event));
 
     frame->SetEditableSelectionOffsets(6, 6);
     EXPECT_TRUE(active_input_method_controller->SetComposition(
@@ -3312,7 +3354,8 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
                                   "after pressing Backspace");
 
     key_event.SetType(WebInputEvent::kKeyUp);
-    web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+    web_view->MainFrameWidget()->HandleInputEvent(
+        WebCoalescedInputEvent(key_event));
 
     web_view->AdvanceFocus(false);
   }
@@ -3479,9 +3522,9 @@ TEST_F(WebViewTest, DispatchesFocusOutFocusInOnViewToggleFocus) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "focusout_focusin_events.html");
 
-  web_view->SetFocus(true);
-  web_view->SetFocus(false);
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(true);
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
@@ -3493,9 +3536,9 @@ TEST_F(WebViewTest, DispatchesDomFocusOutDomFocusInOnViewToggleFocus) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "domfocusout_domfocusin_events.html");
 
-  web_view->SetFocus(true);
-  web_view->SetFocus(false);
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(true);
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
@@ -3606,9 +3649,9 @@ TEST_F(WebViewTest, DispatchesFocusBlurOnViewToggle) {
   WebViewImpl* web_view =
       web_view_helper_.InitializeAndLoad(base_url_ + "focus_blur_events.html");
 
-  web_view->SetFocus(true);
-  web_view->SetFocus(false);
-  web_view->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(true);
+  web_view->MainFrameWidget()->SetFocus(false);
+  web_view->MainFrameWidget()->SetFocus(true);
 
   WebElement element =
       web_view->MainFrameImpl()->GetDocument().GetElementById("message");
@@ -3909,7 +3952,7 @@ TEST_F(WebViewTest, TextInputFlags) {
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
-  web_view_impl->SetFocus(true);
+  web_view_impl->MainFrameWidget()->SetFocus(true);
   WebTextInputInfo info1 = active_input_method_controller->TextInputInfo();
   EXPECT_EQ(kWebTextInputFlagAutocompleteOff | kWebTextInputFlagAutocorrectOff |
                 kWebTextInputFlagSpellcheckOff |
@@ -3922,7 +3965,7 @@ TEST_F(WebViewTest, TextInputFlags) {
   document->SetFocusedElement(
       input_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
-  web_view_impl->SetFocus(true);
+  web_view_impl->MainFrameWidget()->SetFocus(true);
   WebTextInputInfo info2 = active_input_method_controller->TextInputInfo();
   EXPECT_EQ(kWebTextInputFlagAutocompleteOn | kWebTextInputFlagAutocorrectOn |
                 kWebTextInputFlagSpellcheckOn |
@@ -3936,7 +3979,7 @@ TEST_F(WebViewTest, TextInputFlags) {
   document->SetFocusedElement(
       text_area_element,
       FocusParams(SelectionBehaviorOnFocus::kNone, kWebFocusTypeNone, nullptr));
-  web_view_impl->SetFocus(true);
+  web_view_impl->MainFrameWidget()->SetFocus(true);
   WebTextInputInfo info3 = active_input_method_controller->TextInputInfo();
   EXPECT_EQ(kWebTextInputFlagAutocapitalizeSentences, info3.flags);
 
@@ -3966,9 +4009,11 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent) {
                              WebInputEvent::GetStaticTimeStampForTests());
   key_event.dom_key = Platform::Current()->DomKeyEnumFromString(" ");
   key_event.windows_key_code = VKEY_SPACE;
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
   key_event.SetType(WebInputEvent::kKeyUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   EXPECT_EQ(2, client.GetUserGestureNotificationsCount());
   frame->SetAutofillClient(nullptr);
@@ -3991,9 +4036,11 @@ TEST_F(WebViewTest, FirstUserGestureObservedMouseEvent) {
   mouse_event.button = WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(1, 1);
   mouse_event.click_count = 1;
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
   mouse_event.SetType(WebInputEvent::kMouseUp);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(mouse_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_event));
 
   EXPECT_EQ(1, client.GetUserGestureNotificationsCount());
   frame->SetAutofillClient(nullptr);
@@ -4096,7 +4143,7 @@ TEST_F(WebViewTest, PreferredSize) {
 
 TEST_F(WebViewTest, PreferredMinimumSizeQuirksMode) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
   frame_test_helpers::LoadHTMLString(
       web_view->MainFrameImpl(),
       R"HTML(<html>
@@ -4255,7 +4302,7 @@ class ShowUnhandledTapTest : public WebViewTest {
         WebString::FromUTF8(base_url_ + test_file), web_view_helper_));
 
     web_view_ = mojo_test_helper_->WebView();
-    web_view_->Resize(WebSize(500, 300));
+    web_view_->MainFrameWidget()->Resize(WebSize(500, 300));
     web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
         WebWidget::LifecycleUpdateReason::kTest);
     RunPendingTasks();
@@ -4405,7 +4452,7 @@ TEST_F(WebViewTest, WebSubstringUtil) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_populated.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
   WebPoint baseline_point;
@@ -4435,7 +4482,7 @@ TEST_F(WebViewTest, WebSubstringUtilBaselinePoint) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_multiline.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
   WebPoint old_point;
@@ -4453,7 +4500,7 @@ TEST_F(WebViewTest, WebSubstringUtilPinchZoom) {
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "content_editable_populated.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   NSAttributedString* result = nil;
 
@@ -4482,7 +4529,7 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
       web_view_helper_.InitializeAndLoad(base_url_ + "single_iframe.html");
   web_view->GetSettings()->SetDefaultFontSize(12);
   web_view->GetSettings()->SetJavaScriptEnabled(true);
-  web_view->Resize(WebSize(400, 400));
+  web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
   WebLocalFrameImpl* child_frame = WebLocalFrameImpl::FromFrame(
       ToLocalFrame(main_frame->GetFrame()->Tree().FirstChild()));
@@ -4639,7 +4686,7 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(100, 150));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(100, 150));
   SetViewportSize(WebSize(100, 150));
   VisualViewport* visual_viewport =
       &web_view_impl->GetPage()->GetVisualViewport();
@@ -4685,7 +4732,7 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(100, 150));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(100, 150));
 
   TransformationMatrix expected_matrix;
   expected_matrix.MakeIdentity();
@@ -4714,7 +4761,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
   RegisterMockedHttpURLLoad("200-by-300.html");
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad(base_url_ + "200-by-300.html");
-  web_view_impl->Resize(WebSize(100, 150));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(100, 150));
   SetViewportSize(WebSize(100, 150));
   LocalFrameView* frame_view =
       web_view_impl->MainFrameImpl()->GetFrame()->View();
@@ -4772,7 +4819,7 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
 
 TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -4802,12 +4849,12 @@ TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
   EXPECT_EQ(expected_size.Width(), vw_element->OffsetWidth());
   EXPECT_EQ(expected_size.Height(), vw_element->OffsetHeight());
 
-  web_view->Resize(FlooredIntSize(page_size));
+  web_view->MainFrameWidget()->Resize(FlooredIntSize(page_size));
 
   EXPECT_EQ(expected_size.Width(), vw_element->OffsetWidth());
   EXPECT_EQ(expected_size.Height(), vw_element->OffsetHeight());
 
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
   frame->PrintEnd();
 
   EXPECT_EQ(800, vw_element->OffsetWidth());
@@ -4815,7 +4862,7 @@ TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
 
 TEST_F(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
@@ -4850,7 +4897,7 @@ TEST_F(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
 
 TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
   web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
@@ -4889,7 +4936,7 @@ TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
 
 TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
-  web_view->Resize(WebSize(800, 600));
+  web_view->MainFrameWidget()->Resize(WebSize(800, 600));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5051,7 +5098,8 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event1));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
               0.01);
@@ -5067,7 +5115,8 @@ TEST_F(WebViewTest, FirstInputDelayReported) {
   key_event2.windows_key_code = VKEY_SPACE;
   clock.Advance(TimeDelta::FromMilliseconds(60));
   key_event2.SetTimeStamp(CurrentTimeTicks());
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event2));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
               0.01);
@@ -5105,7 +5154,8 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event1));
 
   TimeTicks longest_input_timestamp = CurrentTimeTicks();
 
@@ -5116,7 +5166,8 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(longest_input_timestamp);
   clock.Advance(TimeDelta::FromMilliseconds(100));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event2));
 
   WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5125,7 +5176,8 @@ TEST_F(WebViewTest, LongestInputDelayReported) {
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(70));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event3));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event3));
 
   EXPECT_NEAR(100,
               interactive_detector->GetLongestInputDelay().InMillisecondsF(),
@@ -5154,7 +5206,8 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event1.windows_key_code = VKEY_SPACE;
   key_event1.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event1));
 
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5163,7 +5216,8 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event2.windows_key_code = VKEY_SPACE;
   key_event2.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event2));
 
   WebKeyboardEvent key_event3(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5172,7 +5226,8 @@ TEST_F(WebViewTest, InputDelayReported) {
   key_event3.windows_key_code = VKEY_SPACE;
   key_event3.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(70));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event3));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event3));
 
   histogram_tester.ExpectTotalCount("PageLoad.InteractiveTiming.InputDelay", 3);
   histogram_tester.ExpectBucketCount("PageLoad.InteractiveTiming.InputDelay", 50, 2);
@@ -5215,7 +5270,8 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   TimeTicks key_event1_time = CurrentTimeTicks();
   key_event1.SetTimeStamp(key_event1_time);
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event1));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event1));
 
   WebKeyboardEvent key_event2(WebInputEvent::kRawKeyDown,
                               WebInputEvent::kNoModifiers,
@@ -5229,7 +5285,8 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedDuringQueuing) {
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
   clock.Advance(TimeDelta::FromMilliseconds(100));
   // Total input delay is >300ms.
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event2));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event2));
 
   EXPECT_NEAR(
       50, interactive_detector->GetLongestInputDelay().InMillisecondsF(), 0.01);
@@ -5267,7 +5324,8 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedAtNavStart) {
   key_event.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(100));
   web_view->SetIsHidden(/*is_hidden=*/false, /*initial_state=*/false);
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   EXPECT_TRUE(interactive_detector->GetLongestInputDelay().is_zero());
 }
@@ -5308,7 +5366,8 @@ TEST_F(WebViewTest, LongestInputDelayPageBackgroundedNotDuringQueuing) {
   TimeTicks key_event_time = CurrentTimeTicks();
   key_event.SetTimeStamp(key_event_time);
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   EXPECT_NEAR(
       50, interactive_detector->GetLongestInputDelay().InMillisecondsF(), 0.01);
@@ -5341,7 +5400,8 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_down));
 
   // We don't know if this pointer event will result in a scroll or not, so we
   // can't report its delay. We don't consider a scroll to be meaningful input.
@@ -5353,7 +5413,8 @@ TEST_F(WebViewTest, PointerDownUpFirstInputDelay) {
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   clock.Advance(TimeDelta::FromMilliseconds(60));
   pointer_up.SetTimeStamp(CurrentTimeTicks());
-  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_up));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_up));
 
   EXPECT_NEAR(50, interactive_detector->GetFirstInputDelay().InMillisecondsF(),
               0.01);
@@ -5387,7 +5448,8 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   pointer_down.SetTimeStamp(CurrentTimeTicks());
   clock.Advance(TimeDelta::FromMilliseconds(50));
-  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_down));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_down));
 
   // We don't know if this pointer event will result in a scroll or not, so we
   // can't report its delay. We don't consider a scroll to be meaningful input.
@@ -5399,7 +5461,8 @@ TEST_F(WebViewTest, PointerDownCancelFirstInputDelay) {
       WebPointerProperties(1, WebPointerProperties::PointerType::kTouch), 5, 5);
   clock.Advance(TimeDelta::FromMilliseconds(60));
   pointer_cancel.SetTimeStamp(CurrentTimeTicks());
-  web_view->HandleInputEvent(WebCoalescedInputEvent(pointer_cancel));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(pointer_cancel));
 
   // We received a pointer cancel, so this is a scroll gesture. No meaningful
   // input has occurred yet.
@@ -5465,7 +5528,8 @@ TEST_F(WebViewTest, FirstInputDelayExcludesProcessingTime) {
 
   clock.Advance(TimeDelta::FromMilliseconds(5000));
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   TimeDelta first_input_delay = interactive_detector->GetFirstInputDelay();
   EXPECT_EQ(5000, first_input_delay.InMillisecondsF());
@@ -5510,7 +5574,8 @@ TEST_F(WebViewTest, LongestInputDelayExcludesProcessingTime) {
 
   clock.Advance(TimeDelta::FromMilliseconds(5000));
 
-  web_view->HandleInputEvent(WebCoalescedInputEvent(key_event));
+  web_view->MainFrameWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(key_event));
 
   TimeDelta longest_input_delay = interactive_detector->GetLongestInputDelay();
   EXPECT_EQ(5000, longest_input_delay.InMillisecondsF());

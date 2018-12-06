@@ -188,8 +188,8 @@ IntRect ChromeClientImpl::RootWindowRect() {
     // These numbers will be fairly wrong. The window's x/y coordinates will
     // be the top left corner of the screen and the size will be the content
     // size instead of the window size.
-    rect.width = web_view_->Size().width;
-    rect.height = web_view_->Size().height;
+    rect.width = web_view_->MainFrameWidget()->Size().width;
+    rect.height = web_view_->MainFrameWidget()->Size().height;
   }
   return IntRect(rect);
 }
@@ -823,7 +823,7 @@ DOMWindow* ChromeClientImpl::PagePopupWindowForTesting() const {
 void ChromeClientImpl::SetBrowserControlsState(float top_height,
                                                float bottom_height,
                                                bool shrinks_layout) {
-  WebSize size = web_view_->Size();
+  WebSize size = web_view_->MainFrameWidget()->Size();
   if (shrinks_layout)
     size.height -= top_height + bottom_height;
 

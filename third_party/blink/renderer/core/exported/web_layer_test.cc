@@ -218,7 +218,7 @@ TEST_P(WebLayerListTest, FrameViewScroll) {
 class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
  public:
   void InitializeWithHTML(const String& html) {
-    WebView().Resize(WebSize(800, 600));
+    WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
     SimRequest request("https://example.com/test.html", "text/html");
     LoadURL("https://example.com/test.html");
