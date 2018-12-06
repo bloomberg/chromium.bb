@@ -402,7 +402,7 @@ void WorkerGlobalScope::ImportClassicScriptPausable(
       script_url, mojom::RequestContextType::WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      GetSecurityContext().AddressSpace(), IsNestedWorker(),
+      GetSecurityContext().AddressSpace(),
       WTF::Bind(&WorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),

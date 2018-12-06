@@ -32,18 +32,23 @@ struct CrossThreadFetchClientSettingsObjectData {
       scoped_refptr<const SecurityOrigin> security_origin,
       network::mojom::ReferrerPolicy referrer_policy,
       String outgoing_referrer,
-      HttpsState https_state)
+      HttpsState https_state,
+      AllowedByNosniff::MimeTypeCheck mime_type_check_for_classic_worker_script)
       : base_url(std::move(base_url)),
         security_origin(std::move(security_origin)),
         referrer_policy(referrer_policy),
         outgoing_referrer(std::move(outgoing_referrer)),
-        https_state(https_state) {}
+        https_state(https_state),
+        mime_type_check_for_classic_worker_script(
+            mime_type_check_for_classic_worker_script) {}
 
   const KURL base_url;
   const scoped_refptr<const SecurityOrigin> security_origin;
   const network::mojom::ReferrerPolicy referrer_policy;
   const String outgoing_referrer;
   const HttpsState https_state;
+  const AllowedByNosniff::MimeTypeCheck
+      mime_type_check_for_classic_worker_script;
 };
 
 // This takes a partial snapshot of the execution context's states so that an
@@ -67,7 +72,8 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
       const scoped_refptr<const SecurityOrigin> security_origin,
       network::mojom::ReferrerPolicy referrer_policy,
       const String& outgoing_referrer,
-      HttpsState https_state);
+      HttpsState https_state,
+      AllowedByNosniff::MimeTypeCheck);
 
   ~FetchClientSettingsObjectSnapshot() override = default;
 
@@ -83,11 +89,17 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   }
   HttpsState GetHttpsState() const override { return https_state_; }
 
+  AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
+      const override {
+    return mime_type_check_for_classic_worker_script_;
+  }
+
   // Gets a copy of the data suitable for passing to another thread.
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData> CopyData() const {
     return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
         base_url_.Copy(), security_origin_->IsolatedCopy(), referrer_policy_,
-        outgoing_referrer_.IsolatedCopy(), https_state_);
+        outgoing_referrer_.IsolatedCopy(), https_state_,
+        mime_type_check_for_classic_worker_script_);
   }
 
  private:
@@ -96,6 +108,8 @@ class PLATFORM_EXPORT FetchClientSettingsObjectSnapshot final
   const network::mojom::ReferrerPolicy referrer_policy_;
   const String outgoing_referrer_;
   const HttpsState https_state_;
+  const AllowedByNosniff::MimeTypeCheck
+      mime_type_check_for_classic_worker_script_;
 };
 
 }  // namespace blink

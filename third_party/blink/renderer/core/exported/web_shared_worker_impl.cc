@@ -131,7 +131,7 @@ void WebSharedWorkerImpl::OnShadowPageInitialized() {
       script_request_url_, mojom::RequestContextType::SHARED_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      creation_address_space_, false /* is_nested_worker */,
+      creation_address_space_,
       Bind(&WebSharedWorkerImpl::DidReceiveScriptLoaderResponse,
            WTF::Unretained(this)),
       Bind(&WebSharedWorkerImpl::OnScriptLoaderFinished,

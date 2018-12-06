@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/platform/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -50,6 +51,11 @@ class PLATFORM_EXPORT FetchClientSettingsObject
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#https-state
   virtual HttpsState GetHttpsState() const = 0;
+
+  // Used for classic top-level scripts and importScripts().
+  // TODO(crbug.com/794548): Remove this once we deprecate kLax.
+  virtual AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
+      const = 0;
 
   virtual void Trace(Visitor*) {}
 };

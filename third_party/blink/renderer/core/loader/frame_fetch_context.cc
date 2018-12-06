@@ -1450,7 +1450,8 @@ FetchContext* FrameFetchContext::Detach() {
     SetFetchClientSettingsObject(
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
             NullURL(), nullptr, network::mojom::ReferrerPolicy::kDefault,
-            String(), HttpsState::kNone));
+            String(), HttpsState::kNone,
+            AllowedByNosniff::MimeTypeCheck::kStrict));
   }
 
   // This is needed to break a reference cycle in which off-heap
