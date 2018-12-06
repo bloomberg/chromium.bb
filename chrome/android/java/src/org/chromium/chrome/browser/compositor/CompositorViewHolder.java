@@ -689,15 +689,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     @Override
-    public void onTopControlsHeightChanged(int topControlsHeight, boolean controlsResizeView) {
-        if (mTabVisible == null) return;
-        mTabVisible.setTopControlsHeight(topControlsHeight, controlsResizeView);
-        Point viewportSize = getViewportSize();
-        setSize(mTabVisible.getWebContents(), mTabVisible.getContentView(), viewportSize.x,
-                viewportSize.y);
-    }
-
-    @Override
     public void onToggleOverlayVideoMode(boolean enabled) {
         if (mCompositorView != null) {
             mCompositorView.setOverlayVideoMode(enabled);

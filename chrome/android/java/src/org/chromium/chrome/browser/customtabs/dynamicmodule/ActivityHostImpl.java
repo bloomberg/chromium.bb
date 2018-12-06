@@ -58,9 +58,4 @@ public class ActivityHostImpl extends BaseActivityHost {
     public int postMessage(String message) {
         return mActivity.postMessage(message);
     }
-
-    @Override
-    public void setTopBarHeight(int heightInPx) {
-        mActivity.setTopBarHeight(heightInPx);
-    }
 }
