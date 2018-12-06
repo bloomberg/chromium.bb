@@ -38,10 +38,10 @@ static const struct GoodBadPairLinux {
 };
 
 TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathLinuxTest) {
-  for (size_t i = 0; i < arraysize(kLinuxIllegalCharacterCases); ++i) {
-    std::string bad_name(kLinuxIllegalCharacterCases[i].bad_name);
+  for (auto i : kLinuxIllegalCharacterCases) {
+    std::string bad_name(i.bad_name);
     ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(kLinuxIllegalCharacterCases[i].good_name, bad_name);
+    EXPECT_EQ(i.good_name, bad_name);
   }
 }
 
@@ -85,15 +85,15 @@ static const struct goodbad_pair {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_POSIX)
 
 TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathTest) {
-  for (size_t i = 0; i < arraysize(kIllegalCharacterCases); ++i) {
+  for (auto i : kIllegalCharacterCases) {
 #if defined(OS_WIN)
-    std::wstring bad_name(kIllegalCharacterCases[i].bad_name);
+    std::wstring bad_name(i.bad_name);
     ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(kIllegalCharacterCases[i].good_name, bad_name);
+    EXPECT_EQ(i.good_name, bad_name);
 #else
-    std::string bad_name(WideToUTF8(kIllegalCharacterCases[i].bad_name));
+    std::string bad_name(WideToUTF8(i.bad_name));
     ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(WideToUTF8(kIllegalCharacterCases[i].good_name), bad_name);
+    EXPECT_EQ(WideToUTF8(i.good_name), bad_name);
 #endif
   }
 }

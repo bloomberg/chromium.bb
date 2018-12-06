@@ -448,8 +448,8 @@ TEST(BreakIteratorTest, BreakCharacter) {
   };
   std::vector<string16> characters;
   string16 text;
-  for (size_t i = 0; i < arraysize(kCharacters); ++i) {
-    characters.push_back(WideToUTF16(kCharacters[i]));
+  for (auto*& i : kCharacters) {
+    characters.push_back(WideToUTF16(i));
     text.append(characters.back());
   }
   BreakIterator iter(text, BreakIterator::BREAK_CHARACTER);
