@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/clock.h"
 #include "chrome/common/pref_names.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 
 namespace offline_pages {
@@ -148,7 +150,7 @@ void OfflineMetricsCollectorImpl::EnsureLoaded() {
   tracking_day_midnight_ = prefs_->GetTime(prefs::kOfflineUsageTrackingDay);
   // For the very first run, initialize to current time.
   if (tracking_day_midnight_.is_null())
-    tracking_day_midnight_ = Now().LocalMidnight();
+    tracking_day_midnight_ = OfflineClock()->Now().LocalMidnight();
 
   unused_days_count_ = prefs_->GetInteger(prefs::kOfflineUsageUnusedCount);
   started_days_count_ = prefs_->GetInteger(prefs::kOfflineUsageStartedCount);
@@ -203,7 +205,7 @@ void OfflineMetricsCollectorImpl::SetTrackingFlag(bool* flag) {
 }
 
 bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
-  base::Time current_midnight = Now().LocalMidnight();
+  base::Time current_midnight = OfflineClock()->Now().LocalMidnight();
   // 1. If days_since_last_update <= 0, continue to accumulate the current day.
   // 2. If days_since_last_update == 1, stats are recorded and initialized for
   //    the current day.
@@ -262,16 +264,6 @@ bool OfflineMetricsCollectorImpl::UpdatePastDaysIfNeeded() {
   tracking_day_midnight_ = current_midnight;
 
   return true;
-}
-
-base::Time OfflineMetricsCollectorImpl::Now() const {
-  if (testing_clock_)
-    return testing_clock_->Now();
-  return base::Time::Now();
-}
-
-void OfflineMetricsCollectorImpl::SetClockForTesting(base::Clock* clock) {
-  testing_clock_ = clock;
 }
 
 }  // namespace offline_pages

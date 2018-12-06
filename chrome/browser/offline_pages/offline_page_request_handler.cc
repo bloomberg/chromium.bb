@@ -16,6 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/previews/core/previews_experiments.h"
@@ -622,7 +624,7 @@ void OfflinePageRequestHandler::OnTrustedOfflinePageFound() {
   // If the page is being loaded on a slow network, only use the offline page
   // if it was created within the past day.
   if (network_state_ == NetworkState::PROHIBITIVELY_SLOW_NETWORK &&
-      base::Time::Now() - GetCurrentOfflinePage().creation_time >
+      OfflineClock()->Now() - GetCurrentOfflinePage().creation_time >
           previews::params::OfflinePreviewFreshnessDuration()) {
     ReportRequestResult(RequestResult::PAGE_NOT_FRESH, network_state_);
     delegate_->FallbackToDefault();
