@@ -2,7 +2,6 @@ This test documents all properties on all element instances.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 [HTML NAMESPACE ELEMENT PROPERTIES]
 namespace http://www.w3.org/1999/xhtml
 <common>

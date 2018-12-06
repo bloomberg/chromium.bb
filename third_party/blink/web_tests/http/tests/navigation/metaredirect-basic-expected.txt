@@ -1,4 +1,5 @@
-This is test page that we navigate to as part of testing various navigation styles. It includes a form so that we can test saving and restoring of form data, and it needs to be long enough that we can test saving and restoring of scroll position. 
+This is test page that we navigate to as part of testing various navigation styles. It includes a form so that we can test saving and restoring of form data, and it needs to be long enough that we can test saving and restoring of scroll position.
+
 
 
 
@@ -9,6 +10,12 @@ that we can use for testing
  Female
  option #1
  option #2
+
+Initial Value
+foo
+Value set by User that should be Restored
+bar
+
 
 
 Now

@@ -1,7 +1,6 @@
 This test checks cross-frame access security of getOwnPropertyDescriptor (https://bugs.webkit.org/show_bug.cgi?id=32119).
 
 
-
 ----- tests for getting of not allowed properties -----
 
 

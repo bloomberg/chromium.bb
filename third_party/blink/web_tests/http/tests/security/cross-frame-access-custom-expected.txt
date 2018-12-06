@@ -1,5 +1,4 @@
 
-
 ----- tests for getting/setting interesting properties -----
 
 PASS: canGet('targetWindow.Object') should be 'false' and is.

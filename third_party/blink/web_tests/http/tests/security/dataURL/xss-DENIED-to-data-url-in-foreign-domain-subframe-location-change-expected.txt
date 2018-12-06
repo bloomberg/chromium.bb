@@ -1,6 +1,5 @@
 Opener frame
 
-
 PASS: Cross frame access to a data: URL embed in a frame on a foreign domain denied!
 
 

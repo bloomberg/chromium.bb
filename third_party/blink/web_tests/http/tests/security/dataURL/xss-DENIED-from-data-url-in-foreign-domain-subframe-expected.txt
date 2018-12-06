@@ -3,14 +3,10 @@ The scenario for this test is that you have an iframe with content from a foreig
 
 Pass: Cross frame access from a data: URL on a different domain was denied.
 
-
-
 --------
 Frame: 'aFrame'
 --------
 Inner iframe on a foreign domain.
-
-
 
 --------
 Frame: '<!--framePath //aFrame/<!--frame0-->-->'

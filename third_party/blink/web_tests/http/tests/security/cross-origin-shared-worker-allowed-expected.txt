@@ -1,9 +1,6 @@
 This iframe should not return any errors:
 
-
 This iframe should not return any errors:
-
-
 
 --------
 Frame: '<!--framePath //<!--frame0-->-->'

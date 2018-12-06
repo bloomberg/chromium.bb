@@ -25,4 +25,5 @@ PASS readPixels should never throw exception -- not possible to dirty origin of 
 PASS should not throw exception by toDataURL for WebGL canvas, which should stay origin clean.
 
 TEST COMPLETE
+
  

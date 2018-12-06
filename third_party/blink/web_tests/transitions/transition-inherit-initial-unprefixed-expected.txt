@@ -2,7 +2,6 @@ Test that inherit and initial works on unprefixed transitions.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Testing inherit.
 PASS computedStyle.transitionProperty is 'width'
 PASS computedStyle.webkitTransitionProperty is 'width'

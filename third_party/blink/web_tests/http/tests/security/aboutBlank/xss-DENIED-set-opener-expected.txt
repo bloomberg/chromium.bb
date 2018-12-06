@@ -6,6 +6,7 @@ setTimeout(function() {write(window.opener.top.frames[0], 'FAIL: XSS was allowed
 setTimeout(function() {write(window.opener.top.frames[1], 'SUCCESS: Window remained in original SecurityOrigin.');}, 200);
 setTimeout(function() { window.opener.top.postMessage('done', '*'); }, 300);</script>
 PASS: 'window.open' called on another frame threw: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+
  
 
 --------

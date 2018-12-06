@@ -3,7 +3,6 @@ This tests that a cross-origin iframe with user gesture can vibrate.
 
 127.0.0.1
 
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

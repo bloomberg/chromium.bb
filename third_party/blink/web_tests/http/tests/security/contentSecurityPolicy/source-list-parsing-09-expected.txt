@@ -1,7 +1,5 @@
 Host wildcards should work correctly.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

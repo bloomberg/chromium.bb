@@ -7,6 +7,7 @@ This is what's tested:
 - The URLs used in workers (for subworkers or XHR) are always encoded using UTF-8 (in regular html documents parts of the query an hash may be encoded with other encodings).
 - The base URL for the worker (used to resolve relative URLs for subworkers and XHR) is the URL of its script.
 - importScripts() decodes the scripts using UTF-8.
+
 Document encoding: windows-1251
 Document, Workers: All XHR responses should match this: Привет
 Document: : XHR: Привет

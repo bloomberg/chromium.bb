@@ -35,8 +35,6 @@ CONSOLE ERROR: Invalid plugin type in 'plugin-types' Content Security Policy dir
 CONSOLE MESSAGE: Blink Test Plugin: initializing
 This tests our handling of invalid `plugin-types` CSP directives. Consider this test passing if each of the following frames contains either "PASS" or no text at all.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
@@ -80,5 +78,4 @@ Frame: '<!--framePath //<!--frame7-->-->'
 --------
 Frame: '<!--framePath //<!--frame8-->-->'
 --------
-
 PASS.

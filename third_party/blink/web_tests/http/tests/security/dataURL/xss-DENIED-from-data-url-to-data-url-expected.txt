@@ -1,14 +1,9 @@
 This tests that a data: URL subframe can't access a child data: URL subframe of itself.
 
-
-
 --------
 Frame: 'aFrame'
 --------
-
 Inner iframe.
-
-
 
 --------
 Frame: 'inner'

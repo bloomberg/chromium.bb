@@ -184,7 +184,6 @@ ALERT: PASS: window.setTimeout should be 'function setTimeout() { [native code] 
 ALERT: PASS: window.stop should be 'function stop() { [native code] }' and is.
 This test checks cross-frame access security of window attribute setters (rdar://problem/5326791).
 
-
 PASS: Unable to set property Attr: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property CDATASection: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property CharacterData: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.

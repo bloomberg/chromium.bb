@@ -1,4 +1,3 @@
-
 PASS: deletionThrowsException('targetWindow.existingProperty') should be 'true' and is.
 PASS: deletionThrowsException('targetWindow[1]') should be 'true' and is.
 PASS: deletionThrowsException('targetWindow.location.existingProperty') should be 'true' and is.

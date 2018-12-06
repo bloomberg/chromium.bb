@@ -4,7 +4,6 @@ Check that an X-Frame-Options header added by a 304 response does not override o
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Two console messages should be generated, each followed by an alert.
 Both frames should point to the expected URL, and not to about:blank.
 PASS frame1.src is "http://127.0.0.1:8000/security/XFrameOptions/resources/nph-cached-xfo.pl"
@@ -12,4 +11,5 @@ PASS frame2.src is "http://127.0.0.1:8000/security/XFrameOptions/resources/nph-c
 PASS successfullyParsed is true
 
 TEST COMPLETE
-  
+
+ 

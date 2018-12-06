@@ -3,8 +3,6 @@ CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/conten
 
 Loads an iframe which in turns tries to load an external script. The iframe has a content security policy disabling external scripts. So the script should not get executed.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

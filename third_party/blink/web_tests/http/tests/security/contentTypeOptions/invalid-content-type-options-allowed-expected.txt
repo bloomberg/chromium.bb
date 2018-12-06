@@ -7,7 +7,6 @@ Check that script sent with an invalid 'X-Content-Type-Options: nosniff' header 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS window.scriptsSuccessfullyLoaded is unscriptyMimeTypes.length
 PASS successfullyParsed is true
 

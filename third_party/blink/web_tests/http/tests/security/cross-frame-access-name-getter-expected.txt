@@ -1,5 +1,4 @@
 
-
 ----- tests for getting properties by name -----
 
 PASS: canGet('targetWindow.testiframe') should be 'true' and is.

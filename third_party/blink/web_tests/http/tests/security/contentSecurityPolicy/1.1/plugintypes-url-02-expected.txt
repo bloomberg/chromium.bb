@@ -6,8 +6,6 @@ CONSOLE ERROR: line 16: Refused to load 'http://127.0.0.1:8000/plugins/resources
 
 This tests our handling of non-`data:` URLs, given a `plugin-types` CSP directive. Consider this test passing if none of the following frames contains "FAIL" and four sets of console logs appear above.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
