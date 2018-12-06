@@ -62,18 +62,6 @@
       },
       {
         "args": [
-          "--enable-logging",
-          "--v=1",
-          "--test-launcher-jobs=1",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false
-        },
-        "test": "capture_unittests"
-      },
-      {
-        "args": [
           "--gtest_filter=WebRtc*"
         ],
         "swarming": {
