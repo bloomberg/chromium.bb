@@ -16,6 +16,7 @@
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "storage/common/fileapi/file_system_types.h"
+#include "url/origin.h"
 
 using base::WeakPtr;
 using content::BrowserContext;
@@ -69,10 +70,10 @@ void MigrateOnIndexedDBThread(IndexedDBContext* old_indexed_db_context,
                               const extensions::Extension* extension) {
   DCHECK(old_indexed_db_context->TaskRunner()->RunsTasksInCurrentSequence());
 
-  GURL extension_url =
-      extensions::Extension::GetBaseURLFromExtensionId(extension->id());
+  url::Origin extension_origin = url::Origin::Create(
+      extensions::Extension::GetBaseURLFromExtensionId(extension->id()));
 
-  old_indexed_db_context->CopyOriginData(extension_url, indexed_db_context);
+  old_indexed_db_context->CopyOriginData(extension_origin, indexed_db_context);
 }
 
 void MigrateFileSystem(WeakPtr<extensions::AppDataMigrator> migrator,
