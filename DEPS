@@ -375,7 +375,7 @@ deps = {
   },
 
   'src/ios/third_party/motion_interchange_objc/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-interchange-objc.git' + '@' + '9be1e8572f8debb8dd9033ce9bd6ae56dc7ae1ab',
+      'url': Var('chromium_git') + '/external/github.com/material-motion/motion-interchange-objc.git' + '@' + '6c385396ae7d3ee6752c3d625e322138eb8e25fc',
       'condition': 'checkout_ios',
   },
 
