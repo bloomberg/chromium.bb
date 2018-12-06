@@ -552,14 +552,14 @@ bool SearchBoxView::HandleMouseEvent(views::Textfield* sender,
     return app_list_view_->HandleScroll(
         (&mouse_event)->AsMouseWheelEvent()->offset(), ui::ET_MOUSEWHEEL);
   }
-  if (mouse_event.type() == ui::ET_MOUSE_PRESSED)
+  if (mouse_event.type() == ui::ET_MOUSE_PRESSED && HasAutocompleteText())
     AcceptAutocompleteText();
   return search_box::SearchBoxViewBase::HandleMouseEvent(sender, mouse_event);
 }
 
 bool SearchBoxView::HandleGestureEvent(views::Textfield* sender,
                                        const ui::GestureEvent& gesture_event) {
-  if (gesture_event.type() == ui::ET_GESTURE_TAP)
+  if (gesture_event.type() == ui::ET_GESTURE_TAP && HasAutocompleteText())
     AcceptAutocompleteText();
   return search_box::SearchBoxViewBase::HandleGestureEvent(sender,
                                                            gesture_event);
