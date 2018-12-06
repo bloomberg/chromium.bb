@@ -863,10 +863,6 @@ const FeatureEntry::Choice kAutoplayPolicyChoices[] = {
 #if defined(OS_ANDROID)
     {flag_descriptions::kAutoplayPolicyUserGestureRequired,
      switches::kAutoplayPolicy, switches::autoplay::kUserGestureRequiredPolicy},
-#else
-    {flag_descriptions::kAutoplayPolicyUserGestureRequiredForCrossOrigin,
-     switches::kAutoplayPolicy,
-     switches::autoplay::kUserGestureRequiredForCrossOriginPolicy},
 #endif
     {flag_descriptions::kAutoplayPolicyDocumentUserActivation,
      switches::kAutoplayPolicy,

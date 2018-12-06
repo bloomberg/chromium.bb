@@ -184,11 +184,6 @@ const char kNoUserGestureRequiredPolicy[] = "no-user-gesture-required";
 // Autoplay policy to require a user gesture in order to play.
 const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 
-// Autoplay policy to require a user gesture in order to play for cross origin
-// iframes.
-const char kUserGestureRequiredForCrossOriginPolicy[] =
-    "user-gesture-required-for-cross-origin";
-
 }  // namespace autoplay
 
 }  // namespace switches

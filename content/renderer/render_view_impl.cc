@@ -880,10 +880,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       settings->SetAutoplayPolicy(
           WebSettings::AutoplayPolicy::kUserGestureRequired);
       break;
-    case AutoplayPolicy::kUserGestureRequiredForCrossOrigin:
-      settings->SetAutoplayPolicy(
-          WebSettings::AutoplayPolicy::kUserGestureRequiredForCrossOrigin);
-      break;
     case AutoplayPolicy::kDocumentUserActivationRequired:
       settings->SetAutoplayPolicy(
           WebSettings::AutoplayPolicy::kDocumentUserActivationRequired);

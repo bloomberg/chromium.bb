@@ -69,7 +69,6 @@ enum class SavePreviousDocumentResources {
 enum class AutoplayPolicy {
   kNoUserGestureRequired,
   kUserGestureRequired,
-  kUserGestureRequiredForCrossOrigin,
   kDocumentUserActivationRequired,
 };
 
