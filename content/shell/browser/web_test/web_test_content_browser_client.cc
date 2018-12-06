@@ -47,7 +47,7 @@ namespace {
 
 WebTestContentBrowserClient* g_layout_test_browser_client;
 
-void BindWebTestHelper(mojom::MojoLayoutTestHelperRequest request,
+void BindWebTestHelper(mojom::MojoWebTestHelperRequest request,
                        RenderFrameHost* render_frame_host) {
   MojoWebTestHelper::Create(std::move(request));
 }

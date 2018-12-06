@@ -1,19 +1,19 @@
 importScripts('../../resources/testharness.js');
 importScripts('file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js');
-importScripts('file:///gen/content/test/data/mojo_layouttest_test.mojom.js');
+importScripts('file:///gen/content/test/data/mojo_web_test_helper_test.mojom.js');
 importScripts('helpers.js');
 
 promise_test(async () => {
   let helperImpl = new TestHelperImpl;
   let interceptor =
-      new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name);
+      new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name);
   interceptor.oninterfacerequest = e => {
     helperImpl.bindRequest(e.handle);
   };
   interceptor.start();
 
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  Mojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  let helper = new content.mojom.MojoWebTestHelperPtr;
+  Mojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                      mojo.makeRequest(helper).handle);
 
   let response = await helper.reverse('the string');
@@ -25,7 +25,7 @@ test(t => {
   assert_throws(
       'NotSupportedError',
       () => {
-        new MojoInterfaceInterceptor(content.mojom.MojoLayoutTestHelper.name,
+        new MojoInterfaceInterceptor(content.mojom.MojoWebTestHelper.name,
                                      "process");
       });
 }, 'Cannot create a MojoInterfaceInterceptor with process scope');

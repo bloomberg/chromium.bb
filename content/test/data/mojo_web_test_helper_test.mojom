@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-interface MojoLayoutTestHelper {
+interface MojoWebTestHelper {
   Reverse(string message) => (string reversed);
 };
 
