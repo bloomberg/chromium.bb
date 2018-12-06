@@ -42,20 +42,13 @@ ProcessDiceHeaderDelegateImpl::ProcessDiceHeaderDelegateImpl(
       redirect_url_(redirect_url) {
   DCHECK(web_contents);
   DCHECK(identity_manager_);
+  DCHECK(signin::DiceMethodGreaterOrEqual(
+      account_consistency_, signin::AccountConsistencyMethod::kDiceMigration));
 }
 
 ProcessDiceHeaderDelegateImpl::~ProcessDiceHeaderDelegateImpl() = default;
 
 bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
-  if (!signin::DiceMethodGreaterOrEqual(
-          account_consistency_,
-          signin::AccountConsistencyMethod::kDiceMigration)) {
-    // Dice migration not enabled.
-    VLOG(1)
-        << "Do not start sync after web sign-in [DICE migration not enabled].";
-    return false;
-  }
-
   if (identity_manager_->HasPrimaryAccount()) {
     VLOG(1) << "Do not start sync after web sign-in [already authenticated].";
     return false;

@@ -20,11 +20,12 @@ DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
     AccountConsistencyMethod account_consistency)
     : signin_client_(signin_client), account_consistency_(account_consistency) {
   DCHECK(signin_client_);
+  DCHECK(DiceMethodGreaterOrEqual(account_consistency_,
+                                  AccountConsistencyMethod::kDiceMigration));
 }
 
 bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
-  return DiceMethodGreaterOrEqual(account_consistency_,
-                                  AccountConsistencyMethod::kDiceMigration);
+  return true;
 }
 
 bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
@@ -171,12 +172,9 @@ void DiceAccountReconcilorDelegate::OnReconcileFinished(
 
   // Migration happens on startup if the last reconcile was a no-op and the
   // refresh tokens are Dice-compatible.
-  if (DiceMethodGreaterOrEqual(account_consistency_,
-                               AccountConsistencyMethod::kDiceMigration)) {
-    signin_client_->SetReadyForDiceMigration(
-        reconcile_is_noop && signin_client_->GetPrefs()->GetBoolean(
-                                 prefs::kTokenServiceDiceCompatible));
-  }
+  signin_client_->SetReadyForDiceMigration(
+      reconcile_is_noop && signin_client_->GetPrefs()->GetBoolean(
+                               prefs::kTokenServiceDiceCompatible));
 }
 
 }  // namespace signin
