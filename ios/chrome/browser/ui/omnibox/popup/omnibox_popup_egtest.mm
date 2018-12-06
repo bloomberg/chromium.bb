@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_egtest_util.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -30,6 +31,14 @@ id<GREYMatcher> PopupRowWithUrl(GURL url) {
       grey_kindOfClass([OmniboxPopupRow class]),
       grey_descendant(chrome_test_util::StaticTextWithAccessibilityLabel(
           base::SysUTF8ToNSString(url.GetContent()))),
+      nil);
+}
+
+// Returns the switch to open tab element for the |url|.
+id<GREYMatcher> SwitchTabElementForUrl(const GURL& url) {
+  return grey_allOf(
+      grey_ancestor(PopupRowWithUrl(url)),
+      grey_accessibilityID(kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
       nil);
 }
 
@@ -119,12 +128,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
 
   // Switch to the first tab.
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_ancestor(PopupRowWithUrl(firstPageURL)),
-                     grey_accessibilityID(
-                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
-                     nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(firstPageURL)]
+      performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kPage1];
 
   // Check that both tabs are opened (and that we switched tab and not just
@@ -159,12 +164,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // as it is the current page.
   [[EarlGrey selectElementWithMatcher:PopupRowWithUrl(URL2)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_ancestor(PopupRowWithUrl(URL2)),
-                     grey_accessibilityID(
-                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
-                     nil)] assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL2)]
+      assertWithMatcher:grey_nil()];
 }
 
 // Tests that the incognito tabs aren't displayed as "opened" tab in the
@@ -210,12 +211,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Check that we have the suggestion for the second page, but not the switch.
   [[EarlGrey selectElementWithMatcher:PopupRowWithUrl(URL2)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_ancestor(PopupRowWithUrl(URL2)),
-                     grey_accessibilityID(
-                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
-                     nil)] assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL2)]
+      assertWithMatcher:grey_nil()];
 
   // Open page 3 in incognito.
   [ChromeEarlGrey openNewIncognitoTab];
@@ -235,12 +232,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   // Check that we have the suggestion for the first page, but not the switch.
   [[EarlGrey selectElementWithMatcher:PopupRowWithUrl(URL1)]
       assertWithMatcher:grey_sufficientlyVisible()];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_ancestor(PopupRowWithUrl(URL1)),
-                     grey_accessibilityID(
-                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
-                     nil)] assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      assertWithMatcher:grey_nil()];
 }
 
 - (void)testCloseNTPWhenSwitching {
@@ -255,12 +248,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       selectElementWithMatcher:grey_accessibilityID(
                                    ntp_home::FakeOmniboxAccessibilityID())]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_ancestor(PopupRowWithUrl(URL1)),
-                     grey_accessibilityID(
-                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
-                     nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kPage1];
 
   // Check that the other tab is closed.
@@ -284,15 +273,41 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       selectElementWithMatcher:grey_accessibilityID(
                                    ntp_home::FakeOmniboxAccessibilityID())]
       performAction:grey_typeText(base::SysUTF8ToNSString(URL1.host()))];
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(grey_ancestor(PopupRowWithUrl(URL1)),
-                     grey_accessibilityID(
-                         kOmniboxPopupRowSwitchTabAccessibilityIdentifier),
-                     nil)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kPage1];
 
   // Check that the other tab is not closed.
+  [ChromeEarlGrey waitForMainTabCount:2];
+}
+
+// Tests that switching to closed tab opens the tab in foreground, except if it
+// is from NTP without history.
+- (void)testSwitchToClosedTab {
+  GURL URL1 = self.testServer->GetURL(kPage1URL);
+
+  // Open the first page.
+  [ChromeEarlGrey loadURL:URL1];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
+
+  // Open a new tab and load another URL.
+  [ChromeEarlGrey openNewTab];
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kPage2URL)];
+  [ChromeEarlGrey waitForWebViewContainingText:kPage2];
+
+  // Start typing url of the first page.
+  [ChromeEarlGreyUI focusOmniboxAndType:base::SysUTF8ToNSString(kPage1URL)];
+
+  // Close the first page.
+  chrome_test_util::CloseTabAtIndex(0);
+  [ChromeEarlGrey waitForMainTabCount:1];
+
+  // Try to switch to the first tab.
+  [[EarlGrey selectElementWithMatcher:SwitchTabElementForUrl(URL1)]
+      performAction:grey_tap()];
+
+  // Check that the URL has been opened in a new foreground tab.
+  [ChromeEarlGrey waitForWebViewContainingText:kPage1];
   [ChromeEarlGrey waitForMainTabCount:2];
 }
 
