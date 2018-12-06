@@ -360,7 +360,7 @@ cr.define('languages_page_tests', function() {
         assertTrue(translateOption.hidden);
       });
 
-      test('remove language', function() {
+      test('remove language when starting with 3 languages', function() {
         // Enable a language which we can then disable.
         languageHelper.enableLanguage('no');
 
@@ -387,6 +387,29 @@ cr.define('languages_page_tests', function() {
 
         assertEquals(
             initialLanguages, languageHelper.getPref(languagesPref).value);
+      });
+
+      test('remove language when starting with 2 languages', function() {
+        assertEquals(
+            initialLanguages, languageHelper.getPref(languagesPref).value);
+        const items = languagesCollapse.querySelectorAll('.list-item');
+        const domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
+        const item = Array.from(items).find(function(el) {
+          return domRepeat.itemForElement(el) &&
+              domRepeat.itemForElement(el).language.code == 'sw';
+        });
+
+        // Open the menu and select Remove.
+        item.querySelector('button').click();
+
+        assertTrue(actionMenu.open);
+        const removeMenuItem = getMenuItem('removeLanguage');
+        assertFalse(removeMenuItem.disabled);
+        removeMenuItem.click();
+        assertFalse(actionMenu.open);
+
+        assertEquals('en-US', languageHelper.getPref(languagesPref).value);
       });
 
       test('move up/down buttons', function() {
