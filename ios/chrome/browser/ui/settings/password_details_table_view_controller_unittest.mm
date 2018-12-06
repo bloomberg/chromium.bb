@@ -16,32 +16,13 @@
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+#include "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@interface MockSavePasswordsTableViewController
-    : NSObject <PasswordDetailsTableViewControllerDelegate>
-
-- (void)passwordDetailsTableViewController:
-            (PasswordDetailsTableViewController*)constroller
-                            deletePassword:
-                                (const autofill::PasswordForm&)passwordForm;
-
-@end
-
-@implementation MockSavePasswordsTableViewController
-
-- (void)passwordDetailsTableViewController:
-            (PasswordDetailsTableViewController*)constroller
-                            deletePassword:
-                                (const autofill::PasswordForm&)passwordForm {
-}
-
-@end
 
 namespace {
 
@@ -79,7 +60,6 @@ class PasswordDetailsTableViewControllerTest
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
-    delegate_ = [[MockSavePasswordsTableViewController alloc] init];
     reauthentication_module_ = [[MockReauthenticationModule alloc] init];
     reauthentication_module_.shouldSucceed = YES;
   }
@@ -87,12 +67,12 @@ class PasswordDetailsTableViewControllerTest
   ChromeTableViewController* InstantiateController() override {
     return [[PasswordDetailsTableViewController alloc]
           initWithPasswordForm:form_
-                      delegate:delegate_
+                      delegate:OCMProtocolMock(@protocol(
+                                   PasswordDetailsTableViewControllerDelegate))
         reauthenticationModule:reauthentication_module_];
   }
 
   web::TestWebThreadBundle thread_bundle_;
-  MockSavePasswordsTableViewController* delegate_;
   MockReauthenticationModule* reauthentication_module_;
   NSString* origin_;
   autofill::PasswordForm form_;
