@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -142,8 +142,8 @@ class ReadingListStoreTest : public testing::Test,
     return model_->SyncMergeEntry(std::move(entry));
   }
 
-  // In memory model type store needs a MessageLoop.
-  base::MessageLoop message_loop_;
+  // In memory model type store needs to be able to post tasks.
+  base::test::ScopedTaskEnvironment task_environment_;
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> processor_;
   std::unique_ptr<syncer::ModelTypeStore> store_;
