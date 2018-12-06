@@ -101,7 +101,7 @@ void DynamicsCompressorHandler::Process(uint32_t frames_to_process) {
 
   float reduction =
       dynamics_compressor_->ParameterValue(DynamicsCompressor::kParamReduction);
-  NoBarrierStore(&reduction_, reduction);
+  reduction_.store(reduction, std::memory_order_relaxed);
 }
 
 void DynamicsCompressorHandler::ProcessOnlyAudioParams(

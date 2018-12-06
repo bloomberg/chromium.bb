@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DYNAMICS_COMPRESSOR_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DYNAMICS_COMPRESSOR_NODE_H_
 
+#include <atomic>
 #include <memory>
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -56,7 +57,9 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
   void ProcessOnlyAudioParams(uint32_t frames_to_process) override;
   void Initialize() override;
 
-  float ReductionValue() const { return NoBarrierLoad(&reduction_); }
+  float ReductionValue() const {
+    return reduction_.load(std::memory_order_relaxed);
+  }
 
   void SetChannelCount(unsigned, ExceptionState&) final;
   void SetChannelCountMode(const String&, ExceptionState&) final;
@@ -77,7 +80,7 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
   scoped_refptr<AudioParamHandler> threshold_;
   scoped_refptr<AudioParamHandler> knee_;
   scoped_refptr<AudioParamHandler> ratio_;
-  float reduction_;
+  std::atomic<float> reduction_;
   scoped_refptr<AudioParamHandler> attack_;
   scoped_refptr<AudioParamHandler> release_;
 
