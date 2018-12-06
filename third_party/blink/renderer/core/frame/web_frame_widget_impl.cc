@@ -257,7 +257,7 @@ void WebFrameWidgetImpl::ResizeVisualViewport(const WebSize& new_size) {
   // both the WebViewImpl size and the Page's VisualViewport. If there are
   // multiple OOPIFs on a page, this will currently be set redundantly by
   // each of them. See https://crbug.com/599688.
-  View()->Resize(new_size);
+  View()->MainFrameWidget()->Resize(new_size);
 
   View()->DidUpdateFullscreenSize();
 }
@@ -276,11 +276,11 @@ void WebFrameWidgetImpl::UpdateMainFrameLayoutSize() {
 }
 
 void WebFrameWidgetImpl::DidEnterFullscreen() {
-  View()->DidEnterFullscreen();
+  View()->MainFrameWidget()->DidEnterFullscreen();
 }
 
 void WebFrameWidgetImpl::DidExitFullscreen() {
-  View()->DidExitFullscreen();
+  View()->MainFrameWidget()->DidExitFullscreen();
 }
 
 void WebFrameWidgetImpl::SetSuppressFrameRequestsWorkaroundFor704763Only(

@@ -121,7 +121,7 @@ TEST_P(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
@@ -175,7 +175,7 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
 
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
@@ -222,7 +222,7 @@ TEST_P(LinkHighlightImplTest, resetLayerTreeView) {
 
   int page_width = 640;
   int page_height = 480;
-  web_view_impl->Resize(WebSize(page_width, page_height));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   UpdateAllLifecyclePhases();
 
   WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
@@ -257,7 +257,7 @@ TEST_P(LinkHighlightImplTest, HighlightLayerEffectNode) {
   int page_width = 640;
   int page_height = 480;
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
-  web_view_impl->Resize(WebSize(page_width, page_height));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
 
   paint_artifact_compositor()->EnableExtraDataForTesting();
   UpdateAllLifecyclePhases();
@@ -312,7 +312,7 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   int page_width = 640;
   int page_height = 480;
   WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
-  web_view_impl->Resize(WebSize(page_width, page_height));
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
   UpdateAllLifecyclePhases();
 
   paint_artifact_compositor()->EnableExtraDataForTesting();

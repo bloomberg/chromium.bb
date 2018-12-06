@@ -378,7 +378,8 @@ void WebViewHelper::LoadAhem() {
 void WebViewHelper::Reset() {
   if (web_view_) {
     DCHECK(!TestWebFrameClient::IsLoading());
-    web_view_->Close();
+    // This closes the WebView also.
+    web_view_->MainFrameWidget()->Close();
     web_view_ = nullptr;
   }
 }
@@ -393,7 +394,7 @@ WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
 
 void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
-  GetWebView()->Resize(size);
+  GetWebView()->MainFrameWidget()->Resize(size);
   EXPECT_FALSE(test_web_view_client_->AnimationScheduled());
   test_web_view_client_->ClearAnimationScheduled();
 }
@@ -415,7 +416,8 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
   // Consequently, all external image resources must be mocked.
   web_view_->GetSettings()->SetLoadsImagesAutomatically(true);
 
-  web_view_->SetLayerTreeView(web_view_client->layer_tree_view());
+  web_view_->MainFrameWidget()->SetLayerTreeView(
+      web_view_client->layer_tree_view());
   web_view_->SetDeviceScaleFactor(
       web_view_client->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);

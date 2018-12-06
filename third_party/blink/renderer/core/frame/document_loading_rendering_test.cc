@@ -232,7 +232,7 @@ TEST_F(DocumentLoadingRenderingTest,
 
   LoadURL("https://example.com/test.html");
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   main_resource.Complete(R"HTML(
     <!DOCTYPE html>
@@ -317,7 +317,7 @@ TEST_F(DocumentLoadingRenderingTest,
 
   LoadURL("https://example.com/main.html");
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   main_resource.Complete(R"HTML(
     <!DOCTYPE html>
@@ -403,7 +403,7 @@ TEST_F(DocumentLoadingRenderingTest,
 
   LoadURL("https://example.com/test.html");
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   main_resource.Start();
 

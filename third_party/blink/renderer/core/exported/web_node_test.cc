@@ -65,7 +65,7 @@ TEST_F(WebNodeSimTest, IsFocused) {
   SimRequest css_resource("https://example.com/style.css", "text/css");
 
   LoadURL("https://example.com/test.html");
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   main_resource.Start();
   main_resource.Write(R"HTML(

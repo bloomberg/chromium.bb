@@ -84,7 +84,7 @@ class DragControllerSimTest : public SimTest {};
 // https://crbug.com/733996.
 TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");
@@ -124,7 +124,7 @@ TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
 // Regression test for https://crbug.com/685030
 TEST_F(DragControllerSimTest, ThrottledDocumentHandled) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
 
   LoadURL("https://example.com/test.html");

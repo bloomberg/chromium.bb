@@ -43,7 +43,7 @@ class FrameThrottlingTest : public PaintTestConfigurations, public SimTest {
  protected:
   void SetUp() override {
     SimTest::SetUp();
-    WebView().Resize(WebSize(640, 480));
+    WebView().MainFrameWidget()->Resize(WebSize(640, 480));
   }
 
   SimCanvas::Commands CompositeFrame() {

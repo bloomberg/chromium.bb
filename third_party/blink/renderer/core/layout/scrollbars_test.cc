@@ -158,7 +158,7 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
 
 TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -206,7 +206,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
 
   // Needed so visual viewport supplies its own scrollbars.
   web_view_impl->GetSettings()->SetViewportEnabled(true);
-  web_view_impl->Resize(IntSize(800, 600));
+  web_view_impl->MainFrameWidget()->Resize(IntSize(800, 600));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view_impl->MainFrameImpl(),
@@ -234,7 +234,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
 
   const float device_scale = 3.5f;
   client.set_device_scale_factor(device_scale);
-  web_view_impl->Resize(IntSize(400, 300));
+  web_view_impl->MainFrameWidget()->Resize(IntSize(400, 300));
 
   EXPECT_EQ(
       clampTo<int>(std::floor(horizontal_scrollbar * device_scale)),
@@ -245,7 +245,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
                 visual_viewport.LayerForVerticalScrollbar()->Size().width())));
 
   client.set_device_scale_factor(1.f);
-  web_view_impl->Resize(IntSize(800, 600));
+  web_view_impl->MainFrameWidget()->Resize(IntSize(800, 600));
 
   EXPECT_EQ(
       horizontal_scrollbar,
@@ -262,7 +262,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
 // checking whether the scrollbars should be custom - which do take up layout
 // space. https://crbug.com/668387.
 TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -313,7 +313,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarsCauseLayoutOnExistenceChange) {
 }
 
 TEST_F(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   WebView().SetBaseBackgroundColorOverride(SK_ColorTRANSPARENT);
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -339,7 +339,7 @@ TEST_F(ScrollbarsTest, TransparentBackgroundUsesDarkOverlayColorTheme) {
 
 TEST_F(ScrollbarsTest, BodyBackgroundChangesOverlayColorTheme) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -367,7 +367,7 @@ TEST_F(ScrollbarsTest, BodyBackgroundChangesOverlayColorTheme) {
 
 // Ensure overlay scrollbar change to display:none correctly.
 TEST_F(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -435,7 +435,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarChangeToDisplayNoneDynamically) {
 }
 
 TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -476,7 +476,7 @@ TEST_F(ScrollbarsTest, scrollbarIsNotHandlingTouchpadScroll) {
 }
 
 TEST_F(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -544,7 +544,7 @@ TEST_F(ScrollbarsTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
 
 // Ensure mouse cursor should be pointer when hovering over the scrollbar.
 TEST_F(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
-  WebView().Resize(WebSize(250, 250));
+  WebView().MainFrameWidget()->Resize(WebSize(250, 250));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -588,7 +588,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
 // Ensure mouse cursor should be override when hovering over the custom
 // scrollbar.
 TEST_F(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
-  WebView().Resize(WebSize(250, 250));
+  WebView().MainFrameWidget()->Resize(WebSize(250, 250));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -641,7 +641,7 @@ TEST_F(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
 // elements below(except the Element that owns the scrollbar) unless the
 // scrollbar is faded out.
 TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
-  WebView().Resize(WebSize(20, 20));
+  WebView().MainFrameWidget()->Resize(WebSize(20, 20));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -723,7 +723,7 @@ TEST_F(ScrollbarsTest, MouseOverLinkAndOverlayScrollbar) {
 // Makes sure that mouse hover over an custom scrollbar doesn't change the
 // activate elements.
 TEST_F(ScrollbarsTest, MouseOverCustomScrollbar) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -790,7 +790,7 @@ TEST_F(ScrollbarsTest, MouseOverCustomScrollbar) {
 // Makes sure that mouse hover over an overlay scrollbar doesn't hover iframe
 // below.
 TEST_F(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -874,7 +874,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarAndIFrame) {
 // scrollbar.
 TEST_F(ScrollbarsTest, MouseOverScrollbarAndParentElement) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -962,7 +962,7 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarAndParentElement) {
 TEST_F(ScrollbarsTest, MouseOverRootScrollbar) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -994,7 +994,7 @@ TEST_F(ScrollbarsTest, MouseOverRootScrollbar) {
 }
 
 TEST_F(ScrollbarsTest, MouseReleaseUpdatesScrollbarHoveredPart) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1059,7 +1059,7 @@ TEST_F(ScrollbarsTest, MouseReleaseUpdatesScrollbarHoveredPart) {
 }
 
 TEST_F(ScrollbarsTest, ContextMenuUpdatesScrollbarPressedPart) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1112,7 +1112,7 @@ TEST_F(ScrollbarsTest, ContextMenuUpdatesScrollbarPressedPart) {
 
 TEST_F(ScrollbarsTest,
        CustomScrollbarInOverlayScrollbarThemeWillNotCauseDCHECKFails) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1140,7 +1140,7 @@ TEST_F(ScrollbarsTest,
 // Make sure root custom scrollbar can change by Emulator but div custom
 // scrollbar not.
 TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1223,7 +1223,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
 
 // Ensure custom scrollbar recreate when style owner change,
 TEST_F(ScrollbarsTest, CustomScrollbarWhenStyleOwnerChange) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1295,7 +1295,7 @@ TEST_F(ScrollbarsTestWithVirtualTimer, TestNonCompositedOverlayScrollbarsFade) {
       (ScrollbarThemeOverlayMock&)theme;
   mock_overlay_theme.SetOverlayScrollbarFadeOutDelay(kMockOverlayFadeOutDelay);
 
-  WebView().Resize(WebSize(640, 480));
+  WebView().MainFrameWidget()->Resize(WebSize(640, 480));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   RunTasksForPeriod(kMockOverlayFadeOutDelay);
@@ -1432,7 +1432,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
   bool use_overlay_scrollbar = GetParam();
 
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1526,7 +1526,7 @@ TEST_P(ScrollbarAppearanceTest, ThemeEngineDefinesMinimumThumbLength) {
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1551,7 +1551,7 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   ScopedTestingPlatformSupport<ScrollbarTestingPlatformSupport> platform;
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  WebView().Resize(WebSize(1000, 1000));
+  WebView().MainFrameWidget()->Resize(WebSize(1000, 1000));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1572,8 +1572,8 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);
 
-  int maximumThumbPosition =
-      WebView().Size().height - StubWebThemeEngine::kMinimumVerticalLength;
+  int maximumThumbPosition = WebView().MainFrameWidget()->Size().height -
+                             StubWebThemeEngine::kMinimumVerticalLength;
 
   // TODO(bokan): it seems that the scrollbar margin is cached in the static
   // ScrollbarTheme, so if another test runs first without our mocked
@@ -1592,7 +1592,7 @@ TEST_F(ScrollbarsTest, WideBodyShouldNotHaveScrollbars) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1616,7 +1616,7 @@ TEST_F(ScrollbarsTest, TallBodyShouldNotHaveScrollbars) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1641,7 +1641,7 @@ TEST_F(ScrollbarsTest, TallAndWideBodyShouldNotHaveScrollbars) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1666,7 +1666,7 @@ TEST_F(ScrollbarsTest, BodySizeEqualWindowSizeShouldNotHaveScrollbars) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1691,7 +1691,7 @@ TEST_F(ScrollbarsTest, WidePercentageBodyShouldHaveScrollbar) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1717,7 +1717,7 @@ TEST_F(ScrollbarsTest, WidePercentageAndTallBodyShouldHaveScrollbar) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1743,7 +1743,7 @@ TEST_F(ScrollbarsTest, TallPercentageBodyShouldHaveScrollbar) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1769,7 +1769,7 @@ TEST_F(ScrollbarsTest, TallPercentageAndWideBodyShouldHaveScrollbar) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1795,7 +1795,7 @@ TEST_F(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -1817,7 +1817,7 @@ TEST_F(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
 
 TEST_F(ScrollbarsTest, MouseOverIFrameScrollbar) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
 
   SimRequest main_resource("https://example.com/test.html", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -1869,7 +1869,7 @@ TEST_F(ScrollbarsTest, AutosizeTest) {
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
-  WebView().Resize(WebSize(0, 0));
+  WebView().MainFrameWidget()->Resize(WebSize(0, 0));
   SimRequest resource("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   resource.Complete(R"HTML(
@@ -1970,7 +1970,7 @@ TEST_F(ScrollbarsTest, AutosizeAlmostRemovableScrollbar) {
 
 TEST_F(ScrollbarsTest,
        HideTheOverlayScrollbarNotCrashAfterPLSADisposedPaintLayer) {
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2013,7 +2013,7 @@ TEST_F(ScrollbarsTest,
 TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2053,7 +2053,7 @@ TEST_F(ScrollbarsTest, PLSADisposeShouldClearPointerInLayers) {
 }
 
 TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
-  WebView().Resize(WebSize(300, 300));
+  WebView().MainFrameWidget()->Resize(WebSize(300, 300));
 
   SimRequest main_resource("https://example.com/", "text/html");
   SimRequest frame_resource("https://example.com/iframe.html", "text/html");
@@ -2108,7 +2108,7 @@ TEST_F(ScrollbarsTest, OverlayScrollbarHitTest) {
 
 TEST_F(ScrollbarsTest, AllowMiddleButtonPressOnScrollbar) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2140,7 +2140,7 @@ TEST_F(ScrollbarsTest, AllowMiddleButtonPressOnScrollbar) {
 // Ensure Scrollbar not release press by middle button down.
 TEST_F(ScrollbarsTest, MiddleDownShouldNotAffectScrollbarPress) {
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
@@ -2202,7 +2202,7 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
 #endif
   TimeAdvance();
   GetDocument().GetFrame()->GetSettings()->SetScrollAnimatorEnabled(false);
-  WebView().Resize(WebSize(200, 200));
+  WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -2269,7 +2269,7 @@ TEST_F(ScrollbarsTestWithVirtualTimer,
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {
  public:
   void PrepareTest(const String& track_style) {
-    WebView().Resize(WebSize(200, 200));
+    WebView().MainFrameWidget()->Resize(WebSize(200, 200));
 
     SimRequest request("https://example.com/test.html", "text/html");
     LoadURL("https://example.com/test.html");

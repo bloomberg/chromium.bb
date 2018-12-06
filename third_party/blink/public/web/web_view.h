@@ -274,8 +274,8 @@ class WebView {
   virtual float ZoomFactorForDeviceScaleFactor() = 0;
 
   // Resize the view at the same time as changing the state of the top
-  // controls. If |browserControlsShrinkLayout| is true, the embedder shrunk the
-  // WebView size by the browser controls height.
+  // controls. If |browser_controls_shrink_layout| is true, the embedder shrunk
+  // the WebView size by the browser controls height.
   virtual void ResizeWithBrowserControls(
       const WebSize&,
       float top_controls_height,

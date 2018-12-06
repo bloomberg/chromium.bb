@@ -118,7 +118,7 @@ void ScrollMetricsTest::Scroll(Element* element,
 }
 
 void ScrollMetricsTest::SetUpHtml(const char* html_content) {
-  WebView().Resize(WebSize(800, 600));
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(html_content);

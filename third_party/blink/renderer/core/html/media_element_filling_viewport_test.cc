@@ -20,7 +20,7 @@ class MediaElementFillingViewportTest : public SimTest {
 
   void SetUp() override {
     SimTest::SetUp();
-    WebView().Resize(WebSize(640, 480));
+    WebView().MainFrameWidget()->Resize(WebSize(640, 480));
   }
 
   bool IsMostlyFillingViewport(HTMLMediaElement* element) {

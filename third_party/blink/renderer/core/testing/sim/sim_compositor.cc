@@ -76,7 +76,7 @@ SimCanvas::Commands SimCompositor::PaintFrame() {
 }
 
 void SimCompositor::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {
-  web_view_->ApplyViewportChanges(args);
+  web_view_->MainFrameWidget()->ApplyViewportChanges(args);
 }
 
 void SimCompositor::RequestNewLayerTreeFrameSink(
@@ -89,7 +89,7 @@ void SimCompositor::RequestNewLayerTreeFrameSink(
 void SimCompositor::BeginMainFrame(base::TimeTicks frame_time) {
   // There is no WebWidget like RenderWidget would have..? So go right to the
   // WebViewImpl.
-  web_view_->BeginFrame(last_frame_time_);
+  web_view_->MainFrameWidget()->BeginFrame(last_frame_time_);
   web_view_->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
   *paint_commands_ = PaintFrame();

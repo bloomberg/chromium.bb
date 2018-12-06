@@ -102,7 +102,8 @@ class LazyLoadFramesParamsTest
         std::get<WebEffectiveConnectionType>(GetParam()));
 
     SimTest::SetUp();
-    WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
 
@@ -1109,7 +1110,8 @@ class LazyLoadFramesTest : public SimTest {
         WebEffectiveConnectionType::kTypeUnknown);
 
     SimTest::SetUp();
-    WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
+    WebView().MainFrameWidget()->Resize(
+        WebSize(kViewportWidth, kViewportHeight));
 
     Settings& settings = WebView().GetPage()->GetSettings();
     settings.SetLazyFrameLoadingDistanceThresholdPxUnknown(
