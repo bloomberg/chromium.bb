@@ -168,6 +168,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_depth_texture',
         'WEBGL_draw_buffers',
         'WEBGL_lose_context',
+        'WEBGL_multi_draw',
+        'WEBGL_multi_draw_instanced',
       ]
     else:
       return [
@@ -185,6 +187,8 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_debug_renderer_info',
         'WEBGL_debug_shaders',
         'WEBGL_lose_context',
+        'WEBGL_multi_draw',
+        'WEBGL_multi_draw_instanced',
         'WEBGL_multiview',
       ]
 

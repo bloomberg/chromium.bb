@@ -51,6 +51,8 @@ class WebGLColorBufferFloat;
 class WebGLDebugRendererInfo;
 class WebGLDepthTexture;
 class WebGLLoseContext;
+class WebGLMultiDraw;
+class WebGLMultiDrawInstanced;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {
   DEFINE_WRAPPERTYPEINFO();
@@ -119,6 +121,8 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   Member<WebGLDepthTexture> webgl_depth_texture_;
   Member<WebGLDrawBuffers> webgl_draw_buffers_;
   Member<WebGLLoseContext> webgl_lose_context_;
+  Member<WebGLMultiDraw> webgl_multi_draw_;
+  Member<WebGLMultiDrawInstanced> webgl_multi_draw_instanced_;
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContext,
