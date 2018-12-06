@@ -46,6 +46,19 @@ class CORE_EXPORT DisplayLockContext final
     kDone
   };
 
+  class ScopedPendingFrameRect {
+   public:
+    ScopedPendingFrameRect(ScopedPendingFrameRect&&);
+    ~ScopedPendingFrameRect();
+
+   private:
+    friend class DisplayLockContext;
+
+    ScopedPendingFrameRect(DisplayLockContext*);
+
+    UntracedMember<DisplayLockContext> context_ = nullptr;
+  };
+
   DisplayLockContext(Element*, ExecutionContext*);
   ~DisplayLockContext() override;
 
@@ -101,6 +114,13 @@ class CORE_EXPORT DisplayLockContext final
 
   void DidAttachLayoutTree();
 
+  // Returns a ScopedPendingFrameRect object which exposes the pending layout
+  // frame rect to LayoutBox. This is used to ensure that children of the locked
+  // element use the pending layout frame to update the size of the element.
+  // After the scoped object is destroyed, the previous frame rect is restored
+  // and the pending one is stored in the context until it is needed.
+  ScopedPendingFrameRect GetScopedPendingFrameRect();
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
@@ -153,6 +173,10 @@ class CORE_EXPORT DisplayLockContext final
     return weak_element_handle_;
   }
 
+  // When ScopedPendingFrameRect is destroyed, it calls this function. See
+  // GetScopedPendingFrameRect() for more information.
+  void NotifyPendingFrameRectScopeEnded();
+
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
 
@@ -185,6 +209,8 @@ class CORE_EXPORT DisplayLockContext final
   unsigned suspended_count_ = 0;
   State state_ = kUninitialized;
   LifecycleUpdateState lifecycle_update_state_ = kNeedsStyle;
+  LayoutRect pending_frame_rect_;
+  base::Optional<LayoutRect> locked_frame_rect_;
 };
 
 }  // namespace blink
