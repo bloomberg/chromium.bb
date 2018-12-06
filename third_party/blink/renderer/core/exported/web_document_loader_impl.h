@@ -84,6 +84,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   bool IsArchive() const override;
   WebArchiveInfo GetArchiveInfo() const override;
   bool HadUserGesture() const override;
+  bool IsListingFtpDirectory() const override;
 
   void Trace(blink::Visitor*) override;
 

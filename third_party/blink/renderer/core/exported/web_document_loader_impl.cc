@@ -165,6 +165,10 @@ bool WebDocumentLoaderImpl::HadUserGesture() const {
   return DocumentLoader::had_transient_activation();
 }
 
+bool WebDocumentLoaderImpl::IsListingFtpDirectory() const {
+  return DocumentLoader::IsListingFtpDirectory();
+}
+
 void WebDocumentLoaderImpl::Trace(blink::Visitor* visitor) {
   DocumentLoader::Trace(visitor);
 }

@@ -31,7 +31,6 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
-#include "content/renderer/loader/ftp_directory_listing_response_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/shared_memory_data_consumer_handle.h"
@@ -447,7 +446,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   ResourceDispatcher* resource_dispatcher_;
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   mojom::KeepAliveHandlePtr keep_alive_handle_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
@@ -552,11 +550,6 @@ void WebURLLoaderImpl::Context::Cancel() {
 
   if (body_stream_writer_)
     body_stream_writer_->Fail();
-
-  // Ensure that we do not notify the delegate anymore as it has
-  // its own pointer to the client.
-  if (ftp_listing_delegate_)
-    ftp_listing_delegate_->Cancel();
 
   // Do not make any further calls to the client.
   client_ = nullptr;
@@ -844,17 +837,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(url_, info, &response, report_raw_headers_, request_id_);
 
-  bool show_raw_listing = false;
-  if (info.mime_type == "text/vnd.chromium.ftp-dir") {
-    if (GURL(url_).query_piece() == "raw") {
-      // Set the MIME type to plain text to prevent any active content.
-      response.SetMIMEType("text/plain");
-      show_raw_listing = true;
-    } else {
-      // We're going to produce a parsed listing in HTML.
-      response.SetMIMEType("text/html");
-    }
-  }
   if (info.headers.get() && info.mime_type == "multipart/x-mixed-replace") {
     std::string content_type;
     info.headers->EnumerateHeader(nullptr, "content-type", &content_type);
@@ -897,13 +879,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   // go away.
   if (!client_)
     return;
-
-  DCHECK(!ftp_listing_delegate_);
-  if (info.mime_type == "text/vnd.chromium.ftp-dir" && !show_raw_listing) {
-    ftp_listing_delegate_ =
-        std::make_unique<FtpDirectoryListingResponseDelegate>(client_, loader_,
-                                                              response);
-  }
 }
 
 void WebURLLoaderImpl::Context::OnStartLoadingResponseBody(
@@ -923,20 +898,11 @@ void WebURLLoaderImpl::Context::OnReceivedData(
       "loading", "WebURLLoaderImpl::Context::OnReceivedData",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
-  if (ftp_listing_delegate_) {
-    // The FTP listing delegate will make the appropriate calls to
-    // client_->didReceiveData and client_->didReceiveResponse.
-    ftp_listing_delegate_->OnReceivedData(payload, data_length);
-    return;
-  }
-
   // We dispatch the data even when |useStreamOnResponse()| is set, in order
   // to make Devtools work.
   client_->DidReceiveData(payload, data_length);
 
   if (use_stream_on_response_) {
-    // We don't support |ftp_listing_delegate_| for now.
-    // TODO(yhirano): Support ftp listening.
     body_stream_writer_->AddData(std::move(data));
   }
 }
@@ -959,11 +925,6 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     const network::URLLoaderCompletionStatus& status) {
   int64_t total_transfer_size = status.encoded_data_length;
   int64_t encoded_body_size = status.encoded_body_length;
-
-  if (ftp_listing_delegate_) {
-    ftp_listing_delegate_->OnCompletedRequest();
-    ftp_listing_delegate_.reset(nullptr);
-  }
 
   if (body_stream_writer_ && status.error_code != net::OK)
     body_stream_writer_->Fail();
@@ -1001,12 +962,6 @@ WebURLLoaderImpl::Context::~Context() {
 
 void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   scoped_refptr<Context> protect(this);
-
-  // Notify renderer clients that the request is canceled.
-  if (ftp_listing_delegate_) {
-    ftp_listing_delegate_->OnCompletedRequest();
-    ftp_listing_delegate_.reset(nullptr);
-  }
 
   if (body_stream_writer_) {
     body_stream_writer_->Fail();

@@ -181,8 +181,6 @@ target(link_target_type, "renderer") {
     "loader/code_cache_loader_impl.h",
     "loader/frame_request_blocker.cc",
     "loader/frame_request_blocker.h",
-    "loader/ftp_directory_listing_response_delegate.cc",
-    "loader/ftp_directory_listing_response_delegate.h",
     "loader/navigation_response_override_parameters.cc",
     "loader/navigation_response_override_parameters.h",
     "loader/request_extra_data.cc",

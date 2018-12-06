@@ -3042,9 +3042,7 @@ void RenderFrameImpl::PluginDidStopLoading() {
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 bool RenderFrameImpl::IsFTPDirectoryListing() {
-  WebURLResponseExtraDataImpl* extra_data =
-      GetExtraDataFromResponse(frame_->GetDocumentLoader()->GetResponse());
-  return extra_data ? extra_data->is_ftp_directory_listing() : false;
+  return frame_->GetDocumentLoader()->IsListingFtpDirectory();
 }
 
 void RenderFrameImpl::AttachGuest(int element_instance_id) {

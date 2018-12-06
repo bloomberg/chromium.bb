@@ -87,6 +87,8 @@ blink_platform_sources("loader") {
     "fetch/text_resource_decoder_options.h",
     "fetch/unique_identifier.cc",
     "fetch/unique_identifier.h",
+    "ftp_directory_listing.cc",
+    "ftp_directory_listing.h",
     "link_header.cc",
     "link_header.h",
     "mixed_content_autoupgrade_status.h",
@@ -127,6 +129,7 @@ jumbo_source_set("unit_tests") {
     "fetch/resource_response_test.cc",
     "fetch/resource_test.cc",
     "fetch/source_keyed_cached_metadata_handler_test.cc",
+    "ftp_directory_listing_test.cc",
     "link_header_test.cc",
     "subresource_integrity_test.cc",
   ]

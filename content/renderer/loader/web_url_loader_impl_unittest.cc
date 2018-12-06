@@ -55,14 +55,6 @@ const char kTestURL[] = "http://foo";
 const char kTestHTTPSURL[] = "https://foo";
 const char kTestData[] = "blah!";
 
-const char kFtpDirMimeType[] = "text/vnd.chromium.ftp-dir";
-// Simple FTP directory listing.  Tests are not concerned with correct parsing,
-// but rather correct cleanup when deleted while parsing.  Important details of
-// this list are that it contains more than one entry that are not "." or "..".
-const char kFtpDirListing[] =
-    "drwxr-xr-x    3 ftp      ftp          4096 May 15 18:11 goat\n"
-    "drwxr-xr-x    3 ftp      ftp          4096 May 15 18:11 hat";
-
 class TestResourceDispatcher : public ResourceDispatcher {
  public:
   TestResourceDispatcher() : canceled_(false), defers_loading_(false) {}
@@ -391,22 +383,6 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_EQ(net::ERR_FAILED, client()->error()->reason());
   }
 
-  void DoReceiveResponseFtp() {
-    EXPECT_FALSE(client()->did_receive_response());
-    network::ResourceResponseInfo response_info;
-    response_info.mime_type = kFtpDirMimeType;
-    peer()->OnReceivedResponse(response_info);
-    EXPECT_TRUE(client()->did_receive_response());
-  }
-
-  void DoReceiveDataFtp() {
-    auto size = strlen(kFtpDirListing);
-    peer()->OnReceivedData(
-        std::make_unique<FixedReceivedData>(kFtpDirListing, size));
-    // The FTP delegate should modify the data the client sees.
-    EXPECT_NE(kFtpDirListing, client()->received_data());
-  }
-
   TestWebURLLoaderClient* client() { return client_.get(); }
   TestResourceDispatcher* dispatcher() { return &dispatcher_; }
   RequestPeer* peer() { return dispatcher()->peer(); }
@@ -570,67 +546,6 @@ TEST_F(WebURLLoaderImplTest, DefersLoadingBeforeStart) {
   EXPECT_FALSE(dispatcher()->defers_loading());
   DoStartAsyncRequest();
   EXPECT_TRUE(dispatcher()->defers_loading());
-}
-
-// FTP integration tests.  These are focused more on safe deletion than correct
-// parsing of FTP responses.
-
-TEST_F(WebURLLoaderImplTest, Ftp) {
-  DoStartAsyncRequest();
-  DoReceiveResponseFtp();
-  DoReceiveDataFtp();
-  DoCompleteRequest();
-  EXPECT_FALSE(dispatcher()->canceled());
-}
-
-TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveResponse) {
-  client()->set_delete_on_receive_response();
-  DoStartAsyncRequest();
-  DoReceiveResponseFtp();
-
-  // No data should have been received.
-  EXPECT_EQ("", client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveFirstData) {
-  client()->set_delete_on_receive_data();
-  DoStartAsyncRequest();
-  DoReceiveResponseFtp();
-
-  EXPECT_NE("", client()->received_data());
-}
-
-TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveMoreData) {
-  DoStartAsyncRequest();
-  DoReceiveResponseFtp();
-  DoReceiveDataFtp();
-
-  // Directory listings are only parsed once the request completes, so this will
-  // cancel in DoReceiveDataFtp, before the request finishes.
-  client()->set_delete_on_receive_data();
-
-  network::URLLoaderCompletionStatus status(net::OK);
-  status.encoded_data_length = arraysize(kTestData);
-  status.encoded_body_length = arraysize(kTestData);
-  status.decoded_body_length = arraysize(kTestData);
-  peer()->OnCompletedRequest(status);
-  EXPECT_FALSE(client()->did_finish());
-}
-
-TEST_F(WebURLLoaderImplTest, FtpDeleteOnFinish) {
-  client()->set_delete_on_finish();
-  DoStartAsyncRequest();
-  DoReceiveResponseFtp();
-  DoReceiveDataFtp();
-  DoCompleteRequest();
-}
-
-TEST_F(WebURLLoaderImplTest, FtpDeleteOnFail) {
-  client()->set_delete_on_fail();
-  DoStartAsyncRequest();
-  DoReceiveResponseFtp();
-  DoReceiveDataFtp();
-  DoFailRequest();
 }
 
 // Checks that the navigation response override parameters provided on

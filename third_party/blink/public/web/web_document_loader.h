@@ -134,6 +134,9 @@ class BLINK_EXPORT WebDocumentLoader {
   // Whether this load was started with a user gesture.
   virtual bool HadUserGesture() const = 0;
 
+  // Returns true when the document is a FTP directory.
+  virtual bool IsListingFtpDirectory() const = 0;
+
  protected:
   ~WebDocumentLoader() = default;
 };

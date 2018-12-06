@@ -262,6 +262,8 @@ class CORE_EXPORT DocumentLoader
     return content_security_policy_.Get();
   }
 
+  bool IsListingFtpDirectory() const { return listing_ftp_directory_; }
+
   UseCounter& GetUseCounter() { return use_counter_; }
 
  protected:
@@ -418,6 +420,8 @@ class CORE_EXPORT DocumentLoader
   bool had_sticky_activation_;
   // Whether this load request had a user activation when created.
   bool had_transient_activation_;
+
+  bool listing_ftp_directory_ = false;
 
   // This UseCounter tracks feature usage associated with the lifetime of the
   // document load. Features recorded prior to commit will be recorded locally.
