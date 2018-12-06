@@ -4,7 +4,7 @@
     "service_manager:connector": {
       "provides": {
         "renderer": [
-          "content.mojom.MojoLayoutTestHelper",
+          "content.mojom.MojoWebTestHelper",
           "content.mojom.FakeBluetoothChooser",
           "content.mojom.WebTestBluetoothFakeAdapterSetter",
           "bluetooth.mojom.FakeBluetooth"
@@ -21,7 +21,7 @@
     "navigation:frame": {
       "provides": {
         "renderer": [
-          "content.mojom.MojoLayoutTestHelper"
+          "content.mojom.MojoWebTestHelper"
         ]
       }
     }

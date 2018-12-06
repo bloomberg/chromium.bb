@@ -2,7 +2,7 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
-<script src="file:///gen/content/test/data/mojo_layouttest_test.mojom.js"></script>
+<script src="file:///gen/content/test/data/mojo_web_test_helper_test.mojom.js"></script>
 <body>
 <script>
 
@@ -27,8 +27,8 @@ promise_test(async () => {
   let frameMojo = frame.contentWindow.Mojo;
   document.body.removeChild(frame);
 
-  let helper = new content.mojom.MojoLayoutTestHelperPtr;
-  frameMojo.bindInterface(content.mojom.MojoLayoutTestHelper.name,
+  let helper = new content.mojom.MojoWebTestHelperPtr;
+  frameMojo.bindInterface(content.mojom.MojoWebTestHelper.name,
                           mojo.makeRequest(helper).handle);
 
   try {
@@ -52,7 +52,7 @@ promise_test(async () => {
   document.body.removeChild(frame);
 
   let interceptor = new frameMojoInterfaceInterceptor(
-      content.mojom.MojoLayoutTestHelper.name);
+      content.mojom.MojoWebTestHelper.name);
   try {
     interceptor.start();
     assert_unreached();
@@ -70,7 +70,7 @@ promise_test(async () => {
   // Create the interceptor while the frame is attached so that it is associated
   // with the frame's execution context.
   let interceptor = new frame.contentWindow.MojoInterfaceInterceptor(
-      content.mojom.MojoLayoutTestHelper.name);
+      content.mojom.MojoWebTestHelper.name);
   document.body.removeChild(frame);
 
   try {
@@ -89,7 +89,7 @@ promise_test(async () => {
 
   // Create the interceptor and start it while the frame is attached.
   let interceptor = new frame.contentWindow.MojoInterfaceInterceptor(
-      content.mojom.MojoLayoutTestHelper.name);
+      content.mojom.MojoWebTestHelper.name);
   interceptor.start();
   document.body.removeChild(frame);
 

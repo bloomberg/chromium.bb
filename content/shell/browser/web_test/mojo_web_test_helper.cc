@@ -13,7 +13,7 @@ MojoWebTestHelper::MojoWebTestHelper() {}
 MojoWebTestHelper::~MojoWebTestHelper() {}
 
 // static
-void MojoWebTestHelper::Create(mojom::MojoLayoutTestHelperRequest request) {
+void MojoWebTestHelper::Create(mojom::MojoWebTestHelperRequest request) {
   mojo::MakeStrongBinding(std::make_unique<MojoWebTestHelper>(),
                           std::move(request));
 }
