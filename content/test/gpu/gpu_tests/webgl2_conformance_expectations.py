@@ -376,6 +376,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-depth-renderbuffer-initialization.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
+    self.Flaky('conformance2/rendering/' +
+        'out-of-bounds-index-buffers-after-copying.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=912579)
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance2/textures/misc/texture-npot.html',
@@ -628,6 +631,27 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/uniforms/draw-with-uniform-blocks.html',
         ['mac', ('nvidia', 0xfe9)], bug=795052)
+
+    self.Flaky('conformance2/glsl3/compound-assignment-type-combination.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/query/occlusion-query.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/state/gl-object-get-calls.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-r8-red-unsigned_byte.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb16f-rgb-half_float.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
+        'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
+    self.Flaky('conformance2/textures/canvas/tex-3d-r16f-red-half_float.html',
+        ['mac', ('nvidia', 0xfe9)], bug=911772)
 
     # When these fail on this configuration, they fail multiple times in a row.
     self.Fail('deqp/functional/gles3/shaderoperator/*',

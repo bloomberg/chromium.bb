@@ -846,6 +846,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'nvidia'], bug=478572)
     self.Fail('conformance/glsl/bugs/multiplication-assignment.html',
         ['android', 'nvidia'], bug=606096)
+    self.Flaky('conformance/glsl/constructors/glsl-construct-mat2.html',
+        ['android', 'nvidia'], bug=912583)
     self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
         ['android', 'nvidia'], bug=891456)
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
