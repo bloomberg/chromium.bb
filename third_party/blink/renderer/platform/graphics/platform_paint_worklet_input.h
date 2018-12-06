@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PLATFORM_PAINT_WORKLET_INPUT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PLATFORM_PAINT_WORKLET_INPUT_H_
 
-#include "cc/paint/layer_tree_painter.h"
+#include "cc/paint/paint_worklet_input.h"
 
 namespace blink {
 

@@ -12,8 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
-#include "cc/paint/layer_tree_painter.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_worklet_input.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/rect.h"
 
