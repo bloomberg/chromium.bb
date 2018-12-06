@@ -40,7 +40,9 @@ void FidoHidDiscovery::DeviceAdded(
     device::mojom::HidDeviceInfoPtr device_info) {
   // The init packet header is the larger of the headers so we only compare
   // against it below.
-  DCHECK_GE(kHidInitPacketHeaderSize, kHidContinuationPacketHeaderSize);
+  static_assert(
+      kHidInitPacketHeaderSize >= kHidContinuationPacketHeaderSize,
+      "init header is expected to be larger than continuation header");
 
   // Ignore non-U2F devices.
   if (filter_.Matches(*device_info) &&

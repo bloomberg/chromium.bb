@@ -308,35 +308,34 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialTypeMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialAlgorithmMapKey[];
 
 // HID transport specific constants.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint32_t kHidBroadcastChannel;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidInitPacketHeaderSize;
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const size_t kHidContinuationPacketHeaderSize;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxPacketSize;
+constexpr uint32_t kHidBroadcastChannel = 0xffffffff;
+constexpr size_t kHidInitPacketHeaderSize = 7;
+constexpr size_t kHidContinuationPacketHeaderSize = 5;
+constexpr size_t kHidMaxPacketSize = 64;
 
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kHidMaxLockSeconds;
+constexpr uint8_t kHidMaxLockSeconds = 10;
 
 // Messages are limited to an initiation packet and 128 continuation packets.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidMaxMessageSize;
+constexpr size_t kHidMaxMessageSize = 7609;
 
 // U2F APDU encoding constants, as specified in
 // https://fidoalliance.org/specs/fido-u2f-v1.2-ps-20170411/fido-u2f-raw-message-formats-v1.2-ps-20170411.html#bib-U2FHeader
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kU2fMaxResponseSize;
+constexpr size_t kU2fMaxResponseSize = 65536;
 
 // P1 instructions.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1TupRequired;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1TupConsumed;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1TupRequiredConsumed;
+constexpr uint8_t kP1TupRequired = 0x01;
+constexpr uint8_t kP1TupConsumed = 0x02;
+constexpr uint8_t kP1TupRequiredConsumed = kP1TupRequired | kP1TupConsumed;
 
 // Control byte used for check-only setting. The check-only command is used to
 // determine if the provided key handle was originally created by this token
 // and whether it was created for the provided application parameter.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1CheckOnly;
+constexpr uint8_t kP1CheckOnly = 0x07;
 
 // Indicates that an individual attestation certificate is acceptable to
 // return with this registration.
-COMPONENT_EXPORT(DEVICE_FIDO) extern const uint8_t kP1IndividualAttestation;
-COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kMaxKeyHandleLength;
+constexpr uint8_t kP1IndividualAttestation = 0x80;
+constexpr size_t kMaxKeyHandleLength = 255;
 
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
