@@ -4319,25 +4319,27 @@ TEST_F(SpdyNetworkTransactionTest, NetLog) {
                                    NetLogEventType::HTTP2_SESSION_SEND_HEADERS,
                                    NetLogEventPhase::NONE);
 
-  base::ListValue* header_list;
-  ASSERT_TRUE(entries[pos].params.get());
-  ASSERT_TRUE(entries[pos].params->GetList("headers", &header_list));
+  ASSERT_TRUE(entries[pos].params);
+  auto* header_list = entries[pos].params->FindKey("headers");
+  ASSERT_TRUE(header_list);
+  ASSERT_TRUE(header_list->is_list());
+  ASSERT_EQ(5u, header_list->GetList().size());
 
-  std::vector<std::string> expected;
-  expected.push_back(std::string(spdy::kHttp2AuthorityHeader) +
-                     ": www.example.org");
-  expected.push_back(std::string(spdy::kHttp2PathHeader) + ": /");
-  expected.push_back(std::string(spdy::kHttp2SchemeHeader) + ": " +
-                     default_url_.scheme());
-  expected.push_back(std::string(spdy::kHttp2MethodHeader) + ": GET");
-  expected.push_back("user-agent: Chrome");
-  EXPECT_EQ(expected.size(), header_list->GetSize());
-  for (std::vector<std::string>::const_iterator it = expected.begin();
-       it != expected.end(); ++it) {
-    base::Value header(*it);
-    EXPECT_NE(header_list->end(), header_list->Find(header)) <<
-        "Header not found: " << *it;
-  }
+  ASSERT_TRUE(header_list->GetList()[0].is_string());
+  EXPECT_EQ(":method: GET", header_list->GetList()[0].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[1].is_string());
+  EXPECT_EQ(":authority: www.example.org",
+            header_list->GetList()[1].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[2].is_string());
+  EXPECT_EQ(":scheme: https", header_list->GetList()[2].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[3].is_string());
+  EXPECT_EQ(":path: /", header_list->GetList()[3].GetString());
+
+  ASSERT_TRUE(header_list->GetList()[4].is_string());
+  EXPECT_EQ("user-agent: Chrome", header_list->GetList()[4].GetString());
 }
 
 // Since we buffer the IO from the stream to the renderer, this test verifies
