@@ -94,8 +94,6 @@ SearchBoxView::SearchBoxView(search_box::SearchBoxViewDelegate* delegate,
     : search_box::SearchBoxViewBase(delegate),
       view_delegate_(view_delegate),
       app_list_view_(app_list_view),
-      is_new_style_launcher_enabled_(
-          app_list_features::IsNewStyleLauncherEnabled()),
       is_app_list_search_autocomplete_enabled_(
           app_list_features::IsAppListSearchAutocompleteEnabled()),
       weak_ptr_factory_(this) {

@@ -76,9 +76,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   // be canceled.
   bool button_pressed_ = false;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
-
   // The y position offset of the arrow in this view.
   int arrow_y_offset_;
 

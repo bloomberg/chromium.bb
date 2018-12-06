@@ -11,7 +11,6 @@
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
-#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,9 +41,7 @@ class FolderImageSource : public gfx::CanvasImageSource {
  public:
   typedef std::vector<gfx::ImageSkia> Icons;
 
-  FolderImageSource(const Icons& icons,
-                    const gfx::Size& size,
-                    bool draw_shadow);
+  FolderImageSource(const Icons& icons, const gfx::Size& size);
   ~FolderImageSource() override;
 
  private:
@@ -59,18 +56,12 @@ class FolderImageSource : public gfx::CanvasImageSource {
 
   Icons icons_;
   gfx::Size size_;
-  bool draw_shadow_;  // True if |icons| have shadows.
 
   DISALLOW_COPY_AND_ASSIGN(FolderImageSource);
 };
 
-FolderImageSource::FolderImageSource(const Icons& icons,
-                                     const gfx::Size& size,
-                                     bool draw_shadow)
-    : gfx::CanvasImageSource(size, false),
-      icons_(icons),
-      size_(size),
-      draw_shadow_(draw_shadow) {
+FolderImageSource::FolderImageSource(const Icons& icons, const gfx::Size& size)
+    : gfx::CanvasImageSource(size, false), icons_(icons), size_(size) {
   DCHECK(icons.size() <= FolderImage::kNumFolderTopItems);
 }
 
@@ -86,11 +77,6 @@ void FolderImageSource::DrawIcon(gfx::Canvas* canvas,
 
   const gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST, icon_size));
-  if (!draw_shadow_) {
-    canvas->DrawImageInt(resized, 0, 0, resized.width(), resized.height(), x, y,
-                         resized.width(), resized.height(), true);
-    return;
-  }
 
   // Draw a shadowed icon on the specified location.
   const gfx::ImageSkia shadowed(
@@ -134,52 +120,12 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   }
 }
 
-// Calculates and returns the top item icons' bounds inside |folder_icon_bounds|
-// when new style launcher is not enabled.
-std::vector<gfx::Rect> GetTopIconsBoundsLegacy(
-    const gfx::Rect& folder_icon_bounds,
-    size_t num_items) {
-  DCHECK_LE(num_items, FolderImage::kNumFolderTopItems);
-  const int delta_to_center = 1;
-  const int item_icon_dimension =
-      AppListConfig::instance().item_icon_in_folder_icon_dimension();
-  gfx::Point icon_center = folder_icon_bounds.CenterPoint();
-  std::vector<gfx::Rect> top_icon_bounds;
-
-  // Get the top left icon bounds.
-  int left_x = icon_center.x() - item_icon_dimension - delta_to_center;
-  int top_y = icon_center.y() - item_icon_dimension - delta_to_center;
-  gfx::Rect top_left(left_x, top_y, item_icon_dimension, item_icon_dimension);
-  top_icon_bounds.emplace_back(top_left);
-
-  // Get the top right icon bounds.
-  int right_x = icon_center.x() + delta_to_center;
-  gfx::Rect top_right(right_x, top_y, item_icon_dimension, item_icon_dimension);
-  top_icon_bounds.emplace_back(top_right);
-
-  // Get the bottom left icon bounds.
-  int bottom_y = icon_center.y() + delta_to_center;
-  gfx::Rect bottom_left(left_x, bottom_y, item_icon_dimension,
-                        item_icon_dimension);
-  top_icon_bounds.emplace_back(bottom_left);
-
-  // Get the bottom right icon bounds.
-  gfx::Rect bottom_right(right_x, bottom_y, item_icon_dimension,
-                         item_icon_dimension);
-  top_icon_bounds.emplace_back(bottom_right);
-
-  return top_icon_bounds;
-}
-
 }  // namespace
 
 // static
 const size_t FolderImage::kNumFolderTopItems = 4;
 
-FolderImage::FolderImage(AppListItemList* item_list)
-    : item_list_(item_list),
-      is_new_style_launcher_enabled_(
-          app_list_features::IsNewStyleLauncherEnabled()) {
+FolderImage::FolderImage(AppListItemList* item_list) : item_list_(item_list) {
   item_list_->AddObserver(this);
 }
 
@@ -218,9 +164,6 @@ void FolderImage::UpdateDraggedItem(const AppListItem* dragged_item) {
 std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
     const gfx::Rect& folder_icon_bounds,
     size_t num_items) {
-  if (!app_list_features::IsNewStyleLauncherEnabled())
-    return GetTopIconsBoundsLegacy(folder_icon_bounds, num_items);
-
   DCHECK_LE(num_items, kNumFolderTopItems);
   const int item_icon_dimension =
       AppListConfig::instance().item_icon_in_folder_icon_dimension();
@@ -339,10 +282,8 @@ void FolderImage::RedrawIconAndNotify() {
     top_icons.push_back(item->icon());
   const gfx::Size icon_size =
       AppListConfig::instance().folder_unclipped_icon_size();
-  icon_ = gfx::ImageSkia(std::make_unique<FolderImageSource>(
-                             top_icons, icon_size,
-                             is_new_style_launcher_enabled_ /* draw_shadow */),
-                         icon_size);
+  icon_ = gfx::ImageSkia(
+      std::make_unique<FolderImageSource>(top_icons, icon_size), icon_size);
 
   for (auto& observer : observers_)
     observer.OnFolderImageUpdated();

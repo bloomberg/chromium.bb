@@ -156,9 +156,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   app_list::AppListView* app_list_view_;
   ContentsView* contents_view_ = nullptr;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
-
   // True if app list search autocomplete is enabled.
   const bool is_app_list_search_autocomplete_enabled_;
 

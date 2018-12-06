@@ -53,6 +53,7 @@ class APP_LIST_EXPORT SuggestionChipView : public views::Button {
   void OnFocus() override;
   void OnBlur() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // views::InkDropHost:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;

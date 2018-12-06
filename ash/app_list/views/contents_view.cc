@@ -81,10 +81,8 @@ void ContentsView::Init(AppListModel* model) {
         results, search_result_answer_card_view_);
   }
 
-  if (app_list_features::IsNewStyleLauncherEnabled()) {
-    expand_arrow_view_ = new ExpandArrowView(this, app_list_view_);
-    AddChildView(expand_arrow_view_);
-  }
+  expand_arrow_view_ = new ExpandArrowView(this, app_list_view_);
+  AddChildView(expand_arrow_view_);
 
   search_result_tile_item_list_view_ = new SearchResultTileItemListView(
       search_results_page_view_, GetSearchBoxView()->search_box(),
@@ -306,9 +304,6 @@ void ContentsView::UpdateSearchBox(double progress,
 void ContentsView::UpdateExpandArrowOpacity(double progress,
                                             ash::AppListState current_state,
                                             ash::AppListState target_state) {
-  if (!expand_arrow_view_)
-    return;
-
   // Don't show |expand_arrow_view_| when the home launcher gestures are
   // disabled in tablet mode.
   if (app_list_view_->is_tablet_mode() &&
@@ -334,9 +329,6 @@ void ContentsView::UpdateExpandArrowOpacity(double progress,
 
 void ContentsView::UpdateExpandArrowFocusBehavior(
     ash::AppListState current_state) {
-  if (!expand_arrow_view_)
-    return;
-
   if (current_state == ash::AppListState::kStateStart) {
     // The expand arrow is only focusable and has InkDropMode on in peeking
     // state.
@@ -479,15 +471,13 @@ void ContentsView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  if (expand_arrow_view_) {
-    // Layout expand arrow.
-    gfx::Rect arrow_rect(GetContentsBounds());
-    const gfx::Size arrow_size(expand_arrow_view_->GetPreferredSize());
-    arrow_rect.set_height(arrow_size.height());
-    arrow_rect.ClampToCenteredSize(arrow_size);
-    expand_arrow_view_->SetBoundsRect(arrow_rect);
-    expand_arrow_view_->SchedulePaint();
-  }
+  // Layout expand arrow.
+  gfx::Rect arrow_rect(GetContentsBounds());
+  const gfx::Size arrow_size(expand_arrow_view_->GetPreferredSize());
+  arrow_rect.set_height(arrow_size.height());
+  arrow_rect.ClampToCenteredSize(arrow_size);
+  expand_arrow_view_->SetBoundsRect(arrow_rect);
+  expand_arrow_view_->SchedulePaint();
 
   UpdatePageBounds();
 }
@@ -526,27 +516,24 @@ void ContentsView::UpdateYPositionAndOpacity() {
     return;
   }
 
-  if (expand_arrow_view_) {
-    const bool should_restore_opacity =
-        !app_list_view_->is_in_drag() &&
-        (app_list_view_->app_list_state() != AppListViewState::CLOSED);
+  const bool should_restore_opacity =
+      !app_list_view_->is_in_drag() &&
+      (app_list_view_->app_list_state() != AppListViewState::CLOSED);
 
-    // Changes the opacity of expand arrow between 0 and 1 when app list
-    // transition progress changes between |kExpandArrowOpacityStartProgress|
-    // and |kExpandArrowOpacityEndProgress|.
-    expand_arrow_view_->layer()->SetOpacity(
-        should_restore_opacity
-            ? 1.0f
-            : std::min(
-                  std::max((app_list_view_->GetAppListTransitionProgress() -
-                            kExpandArrowOpacityStartProgress) /
-                               (kExpandArrowOpacityEndProgress -
-                                kExpandArrowOpacityStartProgress),
-                           0.f),
-                  1.0f));
+  // Changes the opacity of expand arrow between 0 and 1 when app list
+  // transition progress changes between |kExpandArrowOpacityStartProgress|
+  // and |kExpandArrowOpacityEndProgress|.
+  expand_arrow_view_->layer()->SetOpacity(
+      should_restore_opacity
+          ? 1.0f
+          : std::min(std::max((app_list_view_->GetAppListTransitionProgress() -
+                               kExpandArrowOpacityStartProgress) /
+                                  (kExpandArrowOpacityEndProgress -
+                                   kExpandArrowOpacityStartProgress),
+                              0.f),
+                     1.0f));
 
-    expand_arrow_view_->SchedulePaint();
-  }
+  expand_arrow_view_->SchedulePaint();
 
   AppsContainerView* apps_container_view = GetAppsContainerView();
   SearchBoxView* search_box = GetSearchBoxView();

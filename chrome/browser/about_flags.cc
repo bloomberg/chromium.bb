@@ -3828,11 +3828,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-apps-grid-gap", flag_descriptions::kEnableAppsGridGapFeatureName,
      flag_descriptions::kEnableAppsGridGapFeatureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kEnableAppsGridGapFeature)},
-
-    {"enable-new-style-launcher",
-     flag_descriptions::kEnableNewStyleLauncherName,
-     flag_descriptions::kEnableNewStyleLauncherDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableNewStyleLauncher)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_WIN)

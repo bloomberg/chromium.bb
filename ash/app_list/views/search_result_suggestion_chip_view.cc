@@ -109,6 +109,12 @@ void SearchResultSuggestionChipView::GetAccessibleNodeData(
   node_data->role = ax::mojom::Role::kGenericContainer;
 }
 
+bool SearchResultSuggestionChipView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE)
+    return false;
+  return Button::OnKeyPressed(event);
+}
+
 void SearchResultSuggestionChipView::UpdateSuggestionChipView() {
   if (!item_) {
     suggestion_chip_view_->SetIcon(gfx::ImageSkia());

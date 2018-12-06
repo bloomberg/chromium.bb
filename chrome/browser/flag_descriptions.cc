@@ -3374,11 +3374,6 @@ const char kEnableMediaSessionAshMediaKeysDescription[] =
     "Enable the media session service to handle media keys. This requires "
     "the audio focus flag to be enabled too.";
 
-const char kEnableNewStyleLauncherName[] = "Enable new style launcher.";
-const char kEnableNewStyleLauncherDescription[] =
-    "Enables new style UI such as suggestion chips, resizable apps grid, etc. "
-    "in app launcher.";
-
 const char kEnableOobeRecommendAppsScreenName[] =
     "Enable OOBE Recommend Apps Screen";
 const char kEnableOobeRecommendAppsScreenDescription[] =

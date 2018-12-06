@@ -104,9 +104,6 @@ class APP_LIST_MODEL_EXPORT FolderImage : public AppListItemListObserver,
   // Top items for generating folder icon.
   std::vector<AppListItem*> top_items_;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
-
   base::ObserverList<FolderImageObserver>::Unchecked observers_;
 };
 

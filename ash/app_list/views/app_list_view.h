@@ -410,9 +410,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView {
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
-  // True if new style launcher feature is enabled.
-  const bool is_new_style_launcher_enabled_;
-
   base::WeakPtrFactory<AppListView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);

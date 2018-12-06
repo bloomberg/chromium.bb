@@ -26,8 +26,6 @@ const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppsGridGapFeature{"EnableAppsGridGapFeature",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableNewStyleLauncher{"EnableNewStyleLauncher",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableContinueReading{"EnableContinueReading",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateSuggestions{
@@ -69,10 +67,6 @@ bool IsSettingsShortcutSearchEnabled() {
 
 bool IsAppsGridGapFeatureEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppsGridGapFeature);
-}
-
-bool IsNewStyleLauncherEnabled() {
-  return base::FeatureList::IsEnabled(kEnableNewStyleLauncher);
 }
 
 bool IsContinueReadingEnabled() {
