@@ -1704,9 +1704,31 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      'Chromium Mac Goma RBE Staging': {
+        'additional_compile_targets': [
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
       'Chromium Mac Goma RBE Staging (clobber)': {
         'additional_compile_targets': [
-          'all',
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'Chromium Mac Goma RBE Staging (dbg)': {
+        'additional_compile_targets': [
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
         ],
         'test_suites': {
           'gtest_tests': 'goma_gtests',
