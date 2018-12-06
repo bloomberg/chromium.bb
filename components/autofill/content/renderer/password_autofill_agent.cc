@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
-#include "base/memory/linked_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
