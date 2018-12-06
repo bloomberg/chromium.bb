@@ -1144,9 +1144,7 @@ void WebViewImpl::AnimateDoubleTapZoom(const gfx::Point& point_in_root_frame,
 }
 
 void WebViewImpl::ZoomToFindInPageRect(const WebRect& rect_in_root_frame) {
-  // TODO(lukasza): https://crbug.com/734209: Add OOPIF support.
-  if (!MainFrameImpl())
-    return;
+  DCHECK(MainFrameImpl());
 
   WebRect block_bounds = MainFrameImpl()->FrameWidgetImpl()->ComputeBlockBound(
       gfx::Point(rect_in_root_frame.x + rect_in_root_frame.width / 2,

@@ -216,6 +216,11 @@ HitTestResult WebViewFrameWidget::CoreHitTestResultAt(const gfx::Point& point) {
   return web_view_->CoreHitTestResultAt(point);
 }
 
+void WebViewFrameWidget::ZoomToFindInPageRect(
+    const WebRect& rect_in_root_frame) {
+  web_view_->ZoomToFindInPageRect(rect_in_root_frame);
+}
+
 void WebViewFrameWidget::Trace(blink::Visitor* visitor) {
   WebFrameWidgetBase::Trace(visitor);
 }
