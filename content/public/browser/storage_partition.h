@@ -17,7 +17,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
-class ChromeURLRequestContextGetter;
 class GURL;
 
 namespace base {
@@ -75,8 +74,6 @@ class CONTENT_EXPORT ScopedAllowGetURLRequestContext {
  private:
   // https://crbug.com/806817
   friend class cast::CastTransportHostFilter;
-  // Uses URLRequestContextGetter to cast to a derived class.
-  friend class ::ChromeURLRequestContextGetter;
   ScopedAllowGetURLRequestContext();
   ~ScopedAllowGetURLRequestContext();
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGetURLRequestContext);
