@@ -3542,6 +3542,10 @@ if (enable_java_templates) {
   #   ignore_aidl: Whether to ignore .aidl files found with the .aar.
   #   ignore_assets: Whether to ignore assets found in the .aar.
   #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
+  #       See also extract_native_libraries.
+  #   extract_native_libraries: Whether to extract .so files found in the .aar.
+  #       If the file contains .so, either extract_native_libraries or
+  #       ignore_native_libraries must be set.
   #   create_srcjar: If false, does not create an R.java file.
   #   TODO(jbudorick@): remove this arguments after crbug.com/522043 is fixed.
   #   requires_android: Whether this target can only be used for compiling
@@ -3562,6 +3566,8 @@ if (enable_java_templates) {
     _ignore_assets = defined(invoker.ignore_assets) && invoker.ignore_assets
     _ignore_native_libraries = defined(invoker.ignore_native_libraries) &&
                                invoker.ignore_native_libraries
+    _extract_native_libraries = defined(invoker.extract_native_libraries) &&
+                                invoker.extract_native_libraries
 
     # Scan the AAR file and determine the resources and jar files.
     # Some libraries might not have resources; others might have two jars.
@@ -3590,9 +3596,16 @@ if (enable_java_templates) {
            "android_aar_prebuilt() assets not yet supported." +
                " Implement or use ignore_assets = true." +
                " http://crbug.com/643966")
-    assert(_ignore_native_libraries || !_scanned_files.has_native_libraries,
-           "android_aar_prebuilt() with .so files is not supported." +
-               " Use ignore_native_libraries = true to silence this error.")
+    assert(
+        !_scanned_files.has_native_libraries ||
+            (_ignore_native_libraries || _extract_native_libraries),
+        "android_aar_prebuilt() contains .so files." +
+            " Please set ignore_native_libraries or extract_native_libraries.")
+    assert(
+        !(_ignore_native_libraries && _extract_native_libraries),
+        "ignore_native_libraries and extract_native_libraries cannot both be set.")
+    assert(!_scanned_files.has_native_libraries ||
+           _scanned_files.native_libraries != [])
     assert(_scanned_files.has_classes_jar || _scanned_files.subjars == [])
 
     action_with_pydeps(_unpack_target_name) {
@@ -3632,6 +3645,12 @@ if (enable_java_templates) {
                         "abspath")
       if (_scanned_files.has_proguard_flags) {
         outputs += [ "${_output_path}/proguard.txt" ]
+      }
+
+      if (_extract_native_libraries && _scanned_files.has_native_libraries) {
+        outputs += get_path_info(
+                rebase_path(_scanned_files.native_libraries, "", _output_path),
+                "abspath")
       }
     }
 
