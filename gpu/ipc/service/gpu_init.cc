@@ -519,4 +519,8 @@ void GpuInit::AdjustInfoToSwiftShader() {
   CollectContextGraphicsInfo(&gpu_info_, gpu_preferences_);
 }
 
+scoped_refptr<gl::GLSurface> GpuInit::TakeDefaultOffscreenSurface() {
+  return std::move(default_offscreen_surface_);
+}
+
 }  // namespace gpu
