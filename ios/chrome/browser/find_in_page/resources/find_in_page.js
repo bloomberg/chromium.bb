@@ -731,16 +731,7 @@ function findScrollDimensions_() {
   // Perform the scroll.
   // window.scrollTo(xPos, yPos);
 
-  if (xPos < window.pageXOffset ||
-      xPos >= (window.pageXOffset + window.innerWidth) ||
-      yPos < window.pageYOffset ||
-      yPos >= (window.pageYOffset + window.innerHeight)) {
-    // If it's off the screen.  Wait a bit to start the highlight animation so
-    // that scrolling can get there first.
-    window.setTimeout(() => match.addSelectHighlight(), 250);
-  } else {
-    match.addSelectHighlight();
-  }
+  match.addSelectHighlight();
   let scaled = scaleCoordinates_(normalized);
   let index = match.visibleIndex;
   scaled.unshift(index);
