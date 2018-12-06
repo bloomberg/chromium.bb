@@ -475,8 +475,10 @@ void TabIcon::SetNetworkState(TabNetworkState network_state,
     bool was_animated = NetworkStateIsAnimated(old_state);
     bool is_animated = NetworkStateIsAnimated(network_state_);
 
-    if (!was_animated && is_animated) {
-      // Reset all animations.
+    // If we either start animating (or from loading to waiting), reset all
+    // animations.
+    if ((!was_animated && is_animated) ||
+        network_state_ == TabNetworkState::kWaiting) {
       last_animation_update_time_ = clock_->NowTicks();
       pending_animation_state_ = LoadingAnimationState();
       pending_animation_state_.favicon_fade_in_progress.reset();
