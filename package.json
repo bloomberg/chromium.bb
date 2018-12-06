@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "node_modules/typescript/bin/tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -rf out/",
+    "test": "npm run build && node out/unittests"
   },
   "repository": {
     "type": "git",
