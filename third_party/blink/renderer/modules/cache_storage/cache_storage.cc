@@ -32,12 +32,15 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
                                  const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
+  // Make sure to bind the CacheStorage object to keep the mojo interface
+  // pointer alive during the operation.  Otherwise GC might prevent the
+  // callback from ever being executed.
   cache_storage_ptr_->Open(
       cache_name,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
              GlobalFetch::ScopedFetcher* fetcher, TimeTicks start_time,
-             mojom::blink::OpenResultPtr result) {
+             CacheStorage* _, mojom::blink::OpenResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
               return;
@@ -60,7 +63,7 @@ ScriptPromise CacheStorage::open(ScriptState* script_state,
             }
           },
           WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
-          TimeTicks::Now()));
+          TimeTicks::Now(), WrapPersistent(this)));
 
   return resolver->Promise();
 }
@@ -69,11 +72,14 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                                 const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
+  // Make sure to bind the CacheStorage object to keep the mojo interface
+  // pointer alive during the operation.  Otherwise GC might prevent the
+  // callback from ever being executed.
   cache_storage_ptr_->Has(
       cache_name,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             mojom::blink::CacheStorageError result) {
+             CacheStorage* _, mojom::blink::CacheStorageError result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
               return;
@@ -91,7 +97,7 @@ ScriptPromise CacheStorage::has(ScriptState* script_state,
                 break;
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now()));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(this)));
 
   return resolver->Promise();
 }
@@ -100,11 +106,14 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                                    const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
+  // Make sure to bind the CacheStorage object to keep the mojo interface
+  // pointer alive during the operation.  Otherwise GC might prevent the
+  // callback from ever being executed.
   cache_storage_ptr_->Delete(
       cache_name,
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             mojom::blink::CacheStorageError result) {
+             CacheStorage* _, mojom::blink::CacheStorageError result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
               return;
@@ -123,7 +132,7 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                 break;
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now()));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(this)));
 
   return resolver->Promise();
 }
@@ -131,8 +140,11 @@ ScriptPromise CacheStorage::Delete(ScriptState* script_state,
 ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
 
+  // Make sure to bind the CacheStorage object to keep the mojo interface
+  // pointer alive during the operation.  Otherwise GC might prevent the
+  // callback from ever being executed.
   cache_storage_ptr_->Keys(WTF::Bind(
-      [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+      [](ScriptPromiseResolver* resolver, TimeTicks start_time, CacheStorage* _,
          const Vector<String>& keys) {
         if (!resolver->GetExecutionContext() ||
             resolver->GetExecutionContext()->IsContextDestroyed())
@@ -141,7 +153,7 @@ ScriptPromise CacheStorage::keys(ScriptState* script_state) {
                             TimeTicks::Now() - start_time);
         resolver->Resolve(keys);
       },
-      WrapPersistent(resolver), TimeTicks::Now()));
+      WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(this)));
 
   return resolver->Promise();
 }
@@ -172,11 +184,14 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
+  // Make sure to bind the CacheStorage object to keep the mojo interface
+  // pointer alive during the operation.  Otherwise GC might prevent the
+  // callback from ever being executed.
   cache_storage_ptr_->Match(
       request->CreateFetchAPIRequest(), Cache::ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions* options,
+             const CacheQueryOptions* options, CacheStorage* _,
              mojom::blink::MatchResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -213,7 +228,8 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                                                  *result->get_response()));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
+          WrapPersistent(this)));
 
   return promise;
 }
