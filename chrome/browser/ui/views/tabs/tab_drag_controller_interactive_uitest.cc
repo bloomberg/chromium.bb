@@ -1479,7 +1479,7 @@ void DragAllToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
 
 }  // namespace
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if !defined(OS_CHROMEOS) && defined(OS_LINUX)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
 #define MAYBE_DragAllToSeparateWindow DISABLED_DragAllToSeparateWindow
@@ -1551,7 +1551,7 @@ void DragAllToSeparateWindowAndCancelStep2(
 
 }  // namespace
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if !defined(OS_CHROMEOS) && defined(OS_LINUX)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
 #define MAYBE_DragAllToSeparateWindowAndCancel \
