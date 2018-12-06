@@ -113,18 +113,28 @@ def _CommonChecks(input_api, output_api):
   results = []
   results.extend(_CheckPolicyTemplatesSyntax(input_api, output_api))
 
-  os_path = input_api.os_path
-  local_path = input_api.PresubmitLocalPath()
-  template_path = os_path.join(local_path, 'policy_templates.json')
-  affected_files = input_api.AffectedFiles()
-  if any(f.AbsoluteLocalPath() == template_path for f in affected_files):
+  root = input_api.change.RepositoryRoot()
+  template_path = template_path = input_api.os_path.join(
+      root, 'components', 'policy', 'resources', 'policy_templates.json')
+  # policies in chrome/test/data/policy/policy_test_cases.json.
+  test_cases_path = input_api.os_path.join(
+      root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
+  affected_files = input_api.change.AffectedFiles()
+
+  template_changed = any(f.AbsoluteLocalPath() == template_path \
+    for f in affected_files)
+  tests_changed = any(f.AbsoluteLocalPath() == test_cases_path \
+    for f in affected_files)
+
+  if template_changed or tests_changed:
     try:
       policies = _GetPolicyTemplates(template_path)
     except:
       results.append(output_api.PresubmitError('Invalid Python/JSON syntax.'))
       return results
     results.extend(_CheckPolicyTestCases(input_api, output_api, policies))
-    results.extend(_CheckPolicyHistograms(input_api, output_api, policies))
+    if template_changed:
+      results.extend(_CheckPolicyHistograms(input_api, output_api, policies))
 
   return results
 
