@@ -442,6 +442,7 @@ external/wpt/encrypted-media/clearkey-mp4-unique-origin.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-waiting-for-a-key.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-events-session-closed-event.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-update-non-ascii-input.https.html [ WontFix ]
+external/wpt/media-source/mediasource-invalid-codec.html [ WontFix ]
 
 external/wpt/clipboard-apis/async-navigator-clipboard-basics.https.html [ WontFix ]
 external/wpt/css/CSS2/linebox/inline-formatting-context-010b.xht [ WontFix ]
