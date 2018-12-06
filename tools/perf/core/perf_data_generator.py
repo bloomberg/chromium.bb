@@ -17,9 +17,9 @@ import csv
 import filecmp
 import json
 import os
-import re
 import sys
 import tempfile
+import textwrap
 
 from core import benchmark_finders
 from core import benchmark_utils
@@ -580,9 +580,6 @@ def update_all_tests(waterfall, file_path):
   with open(file_path, 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
-  verify_all_tests_in_benchmark_csv(
-      tests, ALL_PERF_WATERFALL_BENCHMARKS_METADATA)
-
 
 def merge_dicts(*dict_args):
     result = {}
@@ -679,7 +676,7 @@ def get_telemetry_tests_in_performance_test_suite():
   add_benchmarks_from_sharding_map(
       tests, "shard_maps/linux-perf_map.json")
   add_benchmarks_from_sharding_map(
-      tests, "shard_maps/pixel2_7_shard_map.json")
+      tests, "shard_maps/android-pixel2-perf_map.json")
   return tests
 
 
@@ -695,41 +692,79 @@ def add_benchmarks_from_sharding_map(tests, shard_map_name):
         tests.add(benchmark)
 
 
-def verify_all_tests_in_benchmark_csv(tests, benchmark_metadatas):
-  benchmark_names = set(benchmark_metadatas)
-  test_names = get_telemetry_tests_in_performance_test_suite()
+def get_scheduled_non_telemetry_benchmarks(perf_waterfall_file):
+  test_names = set()
 
+  with open(perf_waterfall_file) as f:
+    tests_by_builder = json.load(f)
 
-  for t in tests:
-    scripts = []
-    if 'isolated_scripts' in tests[t]:
-      scripts = tests[t]['isolated_scripts']
-    elif 'scripts' in tests[t]:
-      scripts = tests[t]['scripts']
-    else:
-      assert(t in BUILDER_ADDITIONAL_COMPILE_TARGETS
-             or t.startswith('AAAAA')), 'Unknown test data %s' % t
-    for s in scripts:
-      name = s['name']
-      name = re.sub('\\.reference$', '', name)
-      # TODO(eyaich): Determine new way to generate ownership based
-      # on the benchmark bot map instead of on the generated tests
-      # for new perf recipe.
-      if (name is 'performance_test_suite'
-          or name is 'performance_webview_test_suite'):
-        continue
+  script_tests = []
+  for tests in tests_by_builder.values():
+    if 'isolated_scripts' in tests:
+      script_tests += tests['isolated_scripts']
+    if 'scripts' in tests:
+      script_tests += tests['scripts']
+
+  for s in script_tests:
+    name = s['name']
+    # TODO(eyaich): Determine new way to generate ownership based
+    # on the benchmark bot map instead of on the generated tests
+    # for new perf recipe.
+    if not name in ('performance_test_suite',
+                    'performance_webview_test_suite'):
       test_names.add(name)
 
+  return test_names
+
+
+def is_perf_benchmarks_scheduling_valid(
+    perf_waterfall_file, outstream):
+  """Validates that all existing benchmarks are properly scheduled.
+
+  Return: True if all benchmarks are properly scheduled, False otherwise.
+  """
+  scheduled_telemetry_tests = get_telemetry_tests_in_performance_test_suite()
+  scheduled_non_telemetry_tests = get_scheduled_non_telemetry_benchmarks(
+      perf_waterfall_file)
+
+  all_perf_telemetry_tests = set(TELEMETRY_PERF_BENCHMARKS)
+  all_perf_non_telemetry_tests = set(NON_TELEMETRY_BENCHMARKS)
+
   error_messages = []
-  for test in benchmark_names - test_names:
-    error_messages.append('Remove ' + test + ' from NON_TELEMETRY_BENCHMARKS')
-  for test in test_names - benchmark_names:
-    error_messages.append('Add ' + test + ' to NON_TELEMETRY_BENCHMARKS')
 
-  assert benchmark_names == test_names, ('Please update '
-      'NON_TELEMETRY_BENCHMARKS as below:\n' + '\n'.join(error_messages))
+  for test_name in all_perf_telemetry_tests - scheduled_telemetry_tests:
+    if not test_name.startswith('UNSCHEDULED_'):
+      error_messages.append(
+          'Telemetry benchmark %s exists but is not scheduled to run. Rename '
+          'it to UNSCHEDULED_%s, then file a crbug against Telemetry and '
+          'Chrome Client Infrastructure team to schedule the benchmark on the '
+          'perf waterfall.' % (test_name, test_name))
 
-  _verify_benchmark_owners(benchmark_metadatas)
+  for test_name in scheduled_telemetry_tests - all_perf_telemetry_tests:
+    error_messages.append(
+        'Telemetry benchmark %s no longer exists but is scheduled. File a bug '
+        'against Telemetry and/or Chrome Client Infrastructure team to remove '
+        'the corresponding benchmark class and deschedule the benchmark on the '
+        "perf waterfall. After that, you can safely remove the benchmark's "
+        'dependency code, e.g: stories, WPR archives, metrics, etc.' %
+        test_name)
+
+  for test_name in all_perf_non_telemetry_tests - scheduled_non_telemetry_tests:
+    error_messages.append(
+        'Benchmark %s is tracked but not scheduled on any perf waterfall '
+        'builders. Either schedule or remove it from NON_TELEMETRY_BENCHMARKS.'
+        % test_name)
+
+  for test_name in scheduled_non_telemetry_tests - all_perf_non_telemetry_tests:
+    error_messages.append(
+        'Benchmark %s is scheduled on perf waterfall but not tracked. Please '
+        'add an entry for it in '
+        'perf.core.perf_data_generator.NON_TELEMETRY_BENCHMARKS.' % test_name)
+
+  for message in error_messages:
+    print >> outstream, '*', textwrap.fill(message, 70), '\n'
+
+  return not error_messages
 
 
 # Verify that all benchmarks have owners except those on the whitelist.
@@ -992,7 +1027,7 @@ def main(args):
             'configs'))
   options = parser.parse_args(args)
 
-  waterfall_file = os.path.join(
+  perf_waterfall_file = os.path.join(
       path_util.GetChromiumSrcDir(), 'testing', 'buildbot',
       'chromium.perf.json')
   fyi_waterfall_file = os.path.join(
@@ -1005,9 +1040,11 @@ def main(args):
   labs_docs_file = os.path.join(
       path_util.GetChromiumSrcDir(), 'docs', 'speed', 'perf_lab_platforms.md')
 
+  return_code = 0
+
   if options.validate_only:
     if validate_tests(get_waterfall_builder_config(),
-                      waterfall_file, benchmark_file, labs_docs_file):
+                      perf_waterfall_file, benchmark_file, labs_docs_file):
       print 'All the perf config files are up-to-date. \\o/'
       return 0
     else:
@@ -1016,7 +1053,11 @@ def main(args):
       return 1
   else:
     load_and_update_fyi_json(fyi_waterfall_file)
-    update_all_tests(get_waterfall_builder_config(), waterfall_file)
+    update_all_tests(get_waterfall_builder_config(), perf_waterfall_file)
     update_benchmark_csv(benchmark_file)
     update_labs_docs_md(labs_docs_file)
-  return 0
+    if not is_perf_benchmarks_scheduling_valid(
+        perf_waterfall_file, outstream=sys.stderr):
+      return_code = 1
+
+  return return_code
