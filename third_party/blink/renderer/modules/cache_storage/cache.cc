@@ -188,12 +188,15 @@ class Cache::BarrierCallbackForPut final
     if (--number_of_remaining_operations_ != 0)
       return;
     MaybeReportInstalledScripts();
+    // Make sure to bind the Cache object to keep the mojo interface pointer
+    // alive during the operation.  Otherwise GC might prevent the callback
+    // from ever being executed.
     cache_->cache_ptr_->Batch(
         std::move(batch_operations_),
         RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
         WTF::Bind(
             [](const String& method_name, ScriptPromiseResolver* resolver,
-               TimeTicks start_time,
+               TimeTicks start_time, Cache* _,
                mojom::blink::CacheStorageVerboseErrorPtr error) {
               ExecutionContext* context = resolver->GetExecutionContext();
               if (!context || context->IsContextDestroyed())
@@ -232,7 +235,8 @@ class Cache::BarrierCallbackForPut final
                     CacheStorageError::CreateException(error->value, message));
               }
             },
-            method_name_, WrapPersistent(resolver_.Get()), TimeTicks::Now()));
+            method_name_, WrapPersistent(resolver_.Get()), TimeTicks::Now(),
+            WrapPersistent(cache_.Get())));
   }
 
   void OnError(const String& error_message) {
@@ -594,11 +598,14 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
+  // Make sure to bind the Cache object to keep the mojo interface pointer
+  // alive during the operation.  Otherwise GC might prevent the callback
+  // from ever being executed.
   cache_ptr_->Match(
       request->CreateFetchAPIRequest(), ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions* options,
+             const CacheQueryOptions* options, Cache* _,
              mojom::blink::MatchResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -631,7 +638,8 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                                                  *result->get_response()));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
+          WrapPersistent(this)));
 
   return promise;
 }
@@ -652,11 +660,14 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
     }
   }
 
+  // Make sure to bind the Cache object to keep the mojo interface pointer
+  // alive during the operation.  Otherwise GC might prevent the callback
+  // from ever being executed.
   cache_ptr_->MatchAll(
       std::move(fetch_api_request), ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions* options,
+             const CacheQueryOptions* options, Cache* _,
              mojom::blink::MatchAllResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -687,7 +698,8 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
               resolver->Resolve(responses);
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
+          WrapPersistent(this)));
   return promise;
 }
 
@@ -745,12 +757,15 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
   operation->request = request->CreateFetchAPIRequest();
   operation->match_params = ToQueryParams(options);
 
+  // Make sure to bind the Cache object to keep the mojo interface pointer
+  // alive during the operation.  Otherwise GC might prevent the callback
+  // from ever being executed.
   cache_ptr_->Batch(
       std::move(batch_operations),
       RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions* options,
+             const CacheQueryOptions* options, Cache* _,
              mojom::blink::CacheStorageVerboseErrorPtr error) {
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context || context->IsContextDestroyed())
@@ -793,7 +808,8 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                   kJSMessageSource, kWarningMessageLevel, message));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
+          WrapPersistent(this)));
   return promise;
 }
 
@@ -903,11 +919,14 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
     }
   }
 
+  // Make sure to bind the Cache object to keep the mojo interface pointer
+  // alive during the operation.  Otherwise GC might prevent the callback
+  // from ever being executed.
   cache_ptr_->Keys(
       std::move(fetch_api_request), ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             const CacheQueryOptions* options,
+             const CacheQueryOptions* options, Cache* _,
              mojom::blink::CacheKeysResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -938,7 +957,8 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               resolver->Resolve(requests);
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options)));
+          WrapPersistent(resolver), TimeTicks::Now(), WrapPersistent(options),
+          WrapPersistent(this)));
   return promise;
 }
 
