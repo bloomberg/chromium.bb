@@ -40,6 +40,7 @@ public class WebApkValidator {
     private static final String MAPSLITE_PACKAGE_NAME = "com.google.android.apps.mapslite";
     private static final String MAPSLITE_URL_PREFIX =
             "https://www.google.com/maps"; // Matches scope.
+    private static final boolean DEBUG = false;
 
     private static byte[] sExpectedSignature;
     private static byte[] sCommentSignedPublicKeyBytes;
@@ -200,22 +201,28 @@ public class WebApkValidator {
             packageInfo = context.getPackageManager().getPackageInfo(webappPackageName,
                     PackageManager.GET_SIGNATURES | PackageManager.GET_META_DATA);
         } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "WebApk not found");
+            if (DEBUG) {
+                e.printStackTrace();
+                Log.d(TAG, "WebApk not found");
+            }
             return false;
         }
         if (isNotWebApkQuick(packageInfo)) {
             return false;
         }
         if (sOverrideValidationForTesting) {
-            Log.d(TAG, "Ok! Looks like a WebApk (has start url) and validation is disabled.");
+            if (DEBUG) {
+                Log.d(TAG, "Ok! Looks like a WebApk (has start url) and validation is disabled.");
+            }
             return true;
         }
         if (verifyV1WebApk(packageInfo, webappPackageName)) {
             return true;
         }
         if (verifyMapsLite(packageInfo, webappPackageName)) {
-            Log.d(TAG, "Matches Maps Lite");
+            if (DEBUG) {
+                Log.d(TAG, "Matches Maps Lite");
+            }
             return true;
         }
         return verifyCommentSignedWebApk(packageInfo);
@@ -239,7 +246,9 @@ public class WebApkValidator {
         }
         for (Signature signature : packageInfo.signatures) {
             if (Arrays.equals(sExpectedSignature, signature.toByteArray())) {
-                Log.d(TAG, "WebApk valid - signature match!");
+                if (DEBUG) {
+                    Log.d(TAG, "WebApk valid - signature match!");
+                }
                 return true;
             }
         }
@@ -252,12 +261,16 @@ public class WebApkValidator {
         }
         String startUrl = packageInfo.applicationInfo.metaData.getString(START_URL);
         if (startUrl == null || !startUrl.startsWith(MAPSLITE_URL_PREFIX)) {
-            Log.d(TAG, "mapslite invalid startUrl prefix");
+            if (DEBUG) {
+                Log.d(TAG, "mapslite invalid startUrl prefix");
+            }
             return false;
         }
         String scope = packageInfo.applicationInfo.metaData.getString(SCOPE);
         if (scope == null || !scope.equals(MAPSLITE_URL_PREFIX)) {
-            Log.d(TAG, "mapslite invalid scope prefix");
+            if (DEBUG) {
+                Log.d(TAG, "mapslite invalid scope prefix");
+            }
             return false;
         }
         return true;
@@ -303,7 +316,9 @@ public class WebApkValidator {
             result = v.verifySignature(commentSignedPublicKey);
 
             // TODO(scottkirkwood): remove this log once well tested.
-            Log.d(TAG, "File " + packageFilename + ": " + result);
+            if (DEBUG) {
+                Log.d(TAG, "File " + packageFilename + ": " + result);
+            }
             return result == WebApkVerifySignature.ERROR_OK;
         } catch (Exception e) {
             Log.e(TAG, "WebApk file error for file " + packageFilename, e);
