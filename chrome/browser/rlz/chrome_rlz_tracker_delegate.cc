@@ -188,6 +188,10 @@ void ChromeRLZTrackerDelegate::SetHomepageSearchCallback(
   on_homepage_search_callback_ = callback;
 }
 
+bool ChromeRLZTrackerDelegate::ShouldUpdateExistingAccessPointRlz() {
+  return true;
+}
+
 void ChromeRLZTrackerDelegate::Observe(
     int type,
     const content::NotificationSource& source,
