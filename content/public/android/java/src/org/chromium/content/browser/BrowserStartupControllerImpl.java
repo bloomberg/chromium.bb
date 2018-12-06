@@ -176,6 +176,9 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     public void startBrowserProcessesAsync(boolean startGpuProcess, boolean startServiceManagerOnly,
             final StartupCallback callback) throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
+        ServicificationStartupUma.getInstance().record(ServicificationStartupUma.getStartupMode(
+                mFullBrowserStartupDone, mServiceManagerStarted, startServiceManagerOnly));
+
         if (mFullBrowserStartupDone || (startServiceManagerOnly && mServiceManagerStarted)) {
             // Browser process initialization has already been completed, so we can immediately post
             // the callback.
@@ -225,6 +228,10 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
 
     @Override
     public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {
+        ServicificationStartupUma.getInstance().record(
+                ServicificationStartupUma.getStartupMode(mFullBrowserStartupDone,
+                        mServiceManagerStarted, false /* startServiceManagerOnly */));
+
         // If already started skip to checking the result
         if (!mFullBrowserStartupDone) {
             if (!mHasStartedInitializingBrowserProcess || !mPostResourceExtractionTasksCompleted) {
@@ -314,6 +321,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
             // If full browser startup is not needed, execute all the callbacks now.
             executeEnqueuedCallbacks(STARTUP_SUCCESS);
         }
+        ServicificationStartupUma.getInstance().commit();
     }
 
     private void executeEnqueuedCallbacks(int startupResult) {
