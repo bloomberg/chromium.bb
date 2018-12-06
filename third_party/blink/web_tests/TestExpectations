@@ -4301,8 +4301,6 @@ crbug.com/900431 [ Mac ] css3/blending/mix-blend-mode-isolated-group-3.html [ Pa
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.html [ Failure ]
 crbug.com/709227 external/wpt/console/console-time-label-conversion.any.worker.html [ Failure ]
 crbug.com/709227 external/wpt/html/browsers/history/the-location-interface/per-global.window.html [ Failure ]
-crbug.com/709227 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/synthetic-errorevent-click.worker.html [ Failure ]
-crbug.com/709227 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-errorevent.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.arc.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.closed.worker.html [ Failure ]
 crbug.com/709227 external/wpt/offscreen-canvas/path-objects/2d.path.stroke.prune.curve.worker.html [ Failure ]

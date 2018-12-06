@@ -301,6 +301,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute PERSISTENT
 [Worker]     attribute TEMPORARY
 [Worker]     method constructor
+[Worker] interface ErrorEvent : Event
+[Worker]     attribute @@toStringTag
+[Worker]     getter colno
+[Worker]     getter error
+[Worker]     getter filename
+[Worker]     getter lineno
+[Worker]     getter message
+[Worker]     method constructor
 [Worker] interface Event
 [Worker]     attribute @@toStringTag
 [Worker]     attribute AT_TARGET
