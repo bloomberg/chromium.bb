@@ -41,11 +41,10 @@ void SequenceManagerFuzzerProcessor::RunTest(
     ordered_actions_.emplace_back(main_thread_manager_->ordered_actions());
     ordered_tasks_.emplace_back(main_thread_manager_->ordered_tasks());
 
-    for (auto&& thread : (thread_pool_manager_->threads())) {
-      DCHECK(thread->thread_manager());
-      ordered_actions_.emplace_back(
-          thread->thread_manager()->ordered_actions());
-      ordered_tasks_.emplace_back(thread->thread_manager()->ordered_tasks());
+    for (ThreadManager* thread_manager :
+         thread_pool_manager_->GetAllThreadManagers()) {
+      ordered_actions_.emplace_back(thread_manager->ordered_actions());
+      ordered_tasks_.emplace_back(thread_manager->ordered_tasks());
     }
   }
 }

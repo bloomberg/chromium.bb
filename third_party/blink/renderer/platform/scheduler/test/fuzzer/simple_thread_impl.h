@@ -29,8 +29,6 @@ class PLATFORM_EXPORT SimpleThreadImpl : public SimpleThread {
 
   ~SimpleThreadImpl() override;
 
-  ThreadManager* thread_manager() const;
-
  private:
   // This doesn't terminate until |this| object is destructed.
   void Run() override;

@@ -33,7 +33,7 @@ void ThreadPoolManager::CreateThread(
     const google::protobuf::RepeatedPtrField<
         SequenceManagerTestDescription::Action>& initial_thread_actions,
     TimeTicks time) {
-  SimpleThreadImpl* thread;
+  SimpleThread* thread;
   {
     AutoLock lock(lock_);
     threads_.push_back(std::make_unique<SimpleThreadImpl>(
@@ -51,6 +51,7 @@ void ThreadPoolManager::StartThread(
     ThreadManager* thread_manager) {
   {
     AutoLock lock(lock_);
+    thread_managers_.push_back(thread_manager);
     while (!initial_threads_created_)
       ready_to_execute_threads_.Wait();
   }
@@ -147,19 +148,21 @@ void ThreadPoolManager::ThreadDone() {
   }
 }
 
-const std::vector<std::unique_ptr<SimpleThreadImpl>>&
-ThreadPoolManager::threads() const {
-  return threads_;
-}
-
 SequenceManagerFuzzerProcessor* ThreadPoolManager::processor() const {
   return processor_;
 }
 
 ThreadManager* ThreadPoolManager::GetThreadManagerFor(uint64_t thread_id) {
   AutoLock lock(lock_);
-  int id = thread_id % threads_.size();
-  return threads_[id]->thread_manager();
+  if (thread_managers_.empty())
+    return nullptr;
+  int id = thread_id % thread_managers_.size();
+  return thread_managers_[id];
+}
+
+std::vector<ThreadManager*> ThreadPoolManager::GetAllThreadManagers() {
+  AutoLock lock(lock_);
+  return thread_managers_;
 }
 
 }  // namespace sequence_manager
