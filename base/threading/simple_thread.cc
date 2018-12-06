@@ -29,7 +29,7 @@ SimpleThread::~SimpleThread() {
 
 void SimpleThread::Start() {
   StartAsync();
-  ThreadRestrictions::ScopedAllowWait allow_wait;
+  ScopedAllowBaseSyncPrimitives allow_wait;
   event_.Wait();  // Wait for the thread to complete initialization.
 }
 
@@ -62,7 +62,6 @@ PlatformThreadId SimpleThread::tid() {
 }
 
 bool SimpleThread::HasBeenStarted() {
-  ThreadRestrictions::ScopedAllowWait allow_wait;
   return event_.IsSignaled();
 }
 
