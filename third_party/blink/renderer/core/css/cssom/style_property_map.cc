@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/cssom/style_property_map.h"
 
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
@@ -443,7 +444,7 @@ void StylePropertyMap::append(const ExecutionContext* execution_context,
               GetCustomProperty(*execution_context, custom_property_name)) {
         DCHECK(css_value->IsValueList());
         style_values = StyleValueFactory::CssValueToStyleValueVector(
-            property_id, custom_property_name, *css_value);
+            CSSPropertyName(custom_property_name), *css_value);
       }
 
       // Append incoming CSSStyleValues:

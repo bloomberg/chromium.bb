@@ -229,15 +229,9 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
   return CreateStyleValue(value);
 }
 
-CSSStyleValueVector UnsupportedCSSValue(
-    CSSPropertyID property_id,
-    const AtomicString& custom_property_name,
-    const CSSValue& value) {
-  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
+CSSStyleValueVector UnsupportedCSSValue(const CSSPropertyName& name,
+                                        const CSSValue& value) {
   CSSStyleValueVector style_value_vector;
-  auto name = (property_id == CSSPropertyVariable)
-                  ? CSSPropertyName(custom_property_name)
-                  : CSSPropertyName(property_id);
   style_value_vector.push_back(CSSUnsupportedStyleValue::Create(name, value));
   return style_value_vector;
 }
@@ -263,7 +257,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
                                     StyleRule::RuleType::kStyle)) {
     if (parsed_properties.size() == 1) {
       const auto result = StyleValueFactory::CssValueToStyleValueVector(
-          parsed_properties[0].Id(), g_null_atom,
+          CSSPropertyName(parsed_properties[0].Id()),
           *parsed_properties[0].Value());
       // TODO(801935): Handle list-valued properties.
       if (result.size() == 1U)
@@ -287,7 +281,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
       return CSSStyleValueVector();
 
     return StyleValueFactory::CssValueToStyleValueVector(
-        property_id, custom_property_name, *value);
+        CSSPropertyName(custom_property_name), *value);
   }
 
   if ((property_id == CSSPropertyVariable && !tokens.IsEmpty()) ||
@@ -305,19 +299,13 @@ CSSStyleValueVector StyleValueFactory::FromString(
 }
 
 CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
-    CSSPropertyID property_id,
-    const AtomicString& custom_property_name,
+    const CSSPropertyName& name,
     const CSSValue& css_value) {
-  DCHECK(!CSSProperty::Get(property_id).IsRepeated());
-  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
+  DCHECK(!CSSProperty::Get(name.Id()).IsRepeated());
   CSSStyleValue* style_value =
-      CreateStyleValueWithProperty(property_id, css_value);
-  if (!style_value) {
-    auto name = (property_id == CSSPropertyVariable)
-                    ? CSSPropertyName(custom_property_name)
-                    : CSSPropertyName(property_id);
+      CreateStyleValueWithProperty(name.Id(), css_value);
+  if (!style_value)
     return CSSUnsupportedStyleValue::Create(name, css_value);
-  }
   return style_value;
 }
 
@@ -354,12 +342,11 @@ CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
 }
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
-    CSSPropertyID property_id,
-    const AtomicString& custom_property_name,
+    const CSSPropertyName& name,
     const CSSValue& css_value) {
-  DCHECK_EQ(property_id == CSSPropertyVariable, !custom_property_name.IsNull());
   CSSStyleValueVector style_value_vector;
 
+  CSSPropertyID property_id = name.Id();
   CSSStyleValue* style_value =
       CreateStyleValueWithProperty(property_id, css_value);
   if (style_value) {
@@ -380,7 +367,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
       // https://github.com/w3c/css-houdini-drafts/issues/290
       (property_id == CSSPropertyVariable &&
        CSSTransformComponent::FromCSSValue(css_value))) {
-    return UnsupportedCSSValue(property_id, custom_property_name, css_value);
+    return UnsupportedCSSValue(name, css_value);
   }
 
   // We assume list-valued properties are always stored as a list.
@@ -388,7 +375,7 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
   for (const CSSValue* inner_value : css_value_list) {
     style_value = CreateStyleValueWithProperty(property_id, *inner_value);
     if (!style_value)
-      return UnsupportedCSSValue(property_id, custom_property_name, css_value);
+      return UnsupportedCSSValue(name, css_value);
     style_value_vector.push_back(style_value);
   }
   return style_value_vector;

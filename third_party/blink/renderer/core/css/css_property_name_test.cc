@@ -37,4 +37,14 @@ TEST(CSSPropertyNameTest, OperatorEquals) {
             CSSPropertyName(CSSPropertyBackgroundColor));
 }
 
+TEST(CSSPropertyNameTest, From) {
+  EXPECT_TRUE(CSSPropertyName::From("color"));
+  EXPECT_TRUE(CSSPropertyName::From("--x"));
+  EXPECT_FALSE(CSSPropertyName::From("notaproperty"));
+  EXPECT_FALSE(CSSPropertyName::From("-not-a-property"));
+
+  EXPECT_EQ(*CSSPropertyName::From("color"), CSSPropertyName(CSSPropertyColor));
+  EXPECT_EQ(*CSSPropertyName::From("--x"), CSSPropertyName("--x"));
+}
+
 }  // namespace blink
