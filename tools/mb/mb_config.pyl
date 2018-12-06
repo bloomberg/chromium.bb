@@ -770,7 +770,7 @@
   # bots all using the 'release_bot' config).
   'configs': {
     'afl_asan_release_bot': [
-      'afl', 'asan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'afl', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'android_binary_size': [
@@ -1164,14 +1164,6 @@
       'clang_tot', 'msan', 'release',
     ],
 
-    'clang_tot_shared_debug': [
-      'clang_tot', 'shared', 'debug',
-    ],
-
-    'clang_tot_shared_debug_x86': [
-      'clang_tot', 'shared', 'debug', 'x86',
-    ],
-
     'clang_tot_minimal_symbols_shared_release': [
       'clang_tot', 'minimal_symbols', 'shared', 'release',
     ],
@@ -1214,6 +1206,10 @@
 
     'clang_tot_shared_debug': [
       'clang_tot', 'shared', 'debug',
+    ],
+
+    'clang_tot_shared_debug_x86': [
+      'clang_tot', 'shared', 'debug', 'x86',
     ],
 
     'closure_compilation': [
@@ -1283,7 +1279,7 @@
     ],
 
     'libfuzzer_asan_debug_bot': [
-      'libfuzzer', 'asan', 'debug_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'debug_trybot': [
@@ -1471,25 +1467,35 @@
     ],
 
     'libfuzzer_asan_debug_bot': [
-      'libfuzzer', 'asan', 'debug_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'debug_bot', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
+
     'libfuzzer_chromeos_asan_release_bot': [
-      'libfuzzer', 'asan', 'chromeos_with_codecs', 'shared_release_bot', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
+
     'libfuzzer_asan_release_bot': [
-      'libfuzzer', 'asan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'libfuzzer_asan_release_trybot': [
-      'libfuzzer', 'asan', 'release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_trybot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'libfuzzer_asan_clang_tot_release': [
-      'libfuzzer', 'asan', 'clang_tot', 'release', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+      'libfuzzer', 'asan', 'clang_tot', 'release', 'shared', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl',
+    ],
+
+    'libfuzzer_msan_release_bot': [
+      'libfuzzer', 'msan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+    ],
+
+    'libfuzzer_ubsan_release_bot': [
+      'libfuzzer', 'ubsan_security', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'libfuzzer_mac_asan_release_bot': [
-      'libfuzzer', 'asan', 'release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'asan', 'shared_release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     # Note that because of optimize_for_fuzzing, Windows cannot share a config
@@ -1498,19 +1504,13 @@
     'libfuzzer_windows_asan_release_bot': [
       'libfuzzer', 'asan', 'release_bot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
     ],
+
     'libfuzzer_windows_asan_clang_tot_release_bot': [
       'libfuzzer', 'asan', 'clang_tot', 'release', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
     ],
+
     'libfuzzer_windows_asan_release_trybot': [
       'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl', 'minimal_symbols',
-    ],
-
-    'libfuzzer_msan_release_bot': [
-      'libfuzzer', 'msan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
-    ],
-
-    'libfuzzer_ubsan_release_bot': [
-      'libfuzzer', 'ubsan_security', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'linux_chromium_analysis': [
@@ -2155,6 +2155,10 @@
 
     'shared_release_bot': {
       'mixins': ['shared', 'release', 'goma']
+    },
+
+    'shared_release_trybot': {
+      'mixins': ['shared', 'release_trybot', ],
     },
 
     'static': {
