@@ -83,9 +83,15 @@ class WebView {
   //
   // clients may be null, but should both be null or not together.
   // |is_hidden| defines the initial visibility of the page.
+  // |compositing_enabled| dictates whether accelerated compositing should be
+  // enabled for the page. It must be false if no clients are provided, or if a
+  // LayerTreeView will not be set for the WebWidget.
+  // TODO(danakj): This field should go away as WebWidgets always composite
+  // their output.
   BLINK_EXPORT static WebView* Create(WebViewClient*,
                                       WebWidgetClient*,
                                       bool is_hidden,
+                                      bool compositing_enabled,
                                       WebView* opener);
 
   // Initializes the various client interfaces.

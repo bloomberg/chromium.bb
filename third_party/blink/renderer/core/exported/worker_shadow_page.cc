@@ -26,6 +26,7 @@ WorkerShadowPage::WorkerShadowPage(
       web_view_(WebViewImpl::Create(nullptr,
                                     nullptr,
                                     /*is_hidden=*/false,
+                                    /*compositing_enabled=*/false,
                                     nullptr)),
       main_frame_(
           WebLocalFrameImpl::CreateMainFrame(web_view_,

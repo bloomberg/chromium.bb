@@ -262,18 +262,21 @@ class EmptyEventListener final : public EventListener {
 WebView* WebView::Create(WebViewClient* client,
                          WebWidgetClient* widget_client,
                          bool is_hidden,
+                         bool compositing_enabled,
                          WebView* opener) {
   return WebViewImpl::Create(client, widget_client, is_hidden,
+                             compositing_enabled,
                              static_cast<WebViewImpl*>(opener));
 }
 
 WebViewImpl* WebViewImpl::Create(WebViewClient* client,
                                  WebWidgetClient* widget_client,
                                  bool is_hidden,
+                                 bool compositing_enabled,
                                  WebViewImpl* opener) {
   // Pass the WebViewImpl's self-reference to the caller.
-  auto web_view =
-      base::AdoptRef(new WebViewImpl(client, widget_client, is_hidden, opener));
+  auto web_view = base::AdoptRef(new WebViewImpl(
+      client, widget_client, is_hidden, compositing_enabled, opener));
   web_view->AddRef();
   return web_view.get();
 }
@@ -296,6 +299,7 @@ void WebViewImpl::SetPrerendererClient(
 WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebWidgetClient* widget_client,
                          bool is_hidden,
+                         bool does_composite,
                          WebViewImpl* opener)
     : client_(client),
       widget_client_(widget_client),
@@ -316,8 +320,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       ime_accept_events_(true),
       dev_tools_emulator_(nullptr),
       tabs_to_links_(false),
-      does_composite_(widget_client_ &&
-                      !widget_client_->AllowsBrokenNullLayerTreeView()),
+      does_composite_(does_composite),
       layer_tree_view_(nullptr),
       root_layer_(nullptr),
       root_graphics_layer_(nullptr),
@@ -337,6 +340,9 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       elastic_overscroll_(FloatSize()),
       mutator_dispatcher_(nullptr) {
   DCHECK_EQ(!!client_, !!widget_client_);
+  if (!client_) {
+    DCHECK(!does_composite_);
+  }
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
 
@@ -3239,6 +3245,7 @@ void WebViewImpl::ScheduleAnimationForWidget() {
 }
 
 void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
+  DCHECK(does_composite_);
   layer_tree_view_ = layer_tree_view;
   if (Platform::Current()->IsThreadedAnimationEnabled()) {
     animation_host_ = std::make_unique<CompositorAnimationHost>(

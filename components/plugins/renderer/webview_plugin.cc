@@ -256,6 +256,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(WebViewPlugin* plugin,
   web_view_ = WebView::Create(/*client=*/this,
                               /*widget_client=*/this,
                               /*is_hidden=*/false,
+                              /*compositing_enabled=*/false,
                               /*opener=*/nullptr);
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
@@ -305,10 +306,6 @@ void WebViewPlugin::WebViewHelper::StartDragging(network::mojom::ReferrerPolicy,
                                                  const gfx::Point&) {
   // Immediately stop dragging.
   frame_->FrameWidget()->DragSourceSystemDragEnded();
-}
-
-bool WebViewPlugin::WebViewHelper::AllowsBrokenNullLayerTreeView() const {
-  return true;
 }
 
 void WebViewPlugin::WebViewHelper::DidInvalidateRect(const WebRect& rect) {

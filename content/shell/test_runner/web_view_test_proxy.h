@@ -60,7 +60,6 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
 
   // blink::WebWidgetClient implementation.
   void DidInvalidateRect(const blink::WebRect&) override;
-  bool AllowsBrokenNullLayerTreeView() const override;
   void ScheduleAnimation() override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;

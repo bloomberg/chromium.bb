@@ -29,9 +29,6 @@ ProxyWebWidgetClient::ProxyWebWidgetClient(
 void ProxyWebWidgetClient::DidInvalidateRect(const blink::WebRect& r) {
   base_class_widget_client_->DidInvalidateRect(r);
 }
-bool ProxyWebWidgetClient::AllowsBrokenNullLayerTreeView() const {
-  return base_class_widget_client_->AllowsBrokenNullLayerTreeView();
-}
 void ProxyWebWidgetClient::ScheduleAnimation() {
   widget_test_client_->ScheduleAnimation();
 }
