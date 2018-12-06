@@ -5,9 +5,6 @@
 #ifndef ASH_SHELF_WINDOW_PREVIEW_H_
 #define ASH_SHELF_WINDOW_PREVIEW_H_
 
-#include "ash/ash_export.h"
-#include "ash/wm/window_mirror_view.h"
-#include "base/observer_list.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -22,8 +19,16 @@ class Label;
 
 namespace ash {
 
-class ASH_EXPORT WindowPreview : public views::View,
-                                 public views::ButtonListener {
+namespace wm {
+class WindowPreviewView;
+}
+
+// A view used by the shelf which shows a mirror view of the the window
+// associated with the window of the shelf icon where the mouse is hovered over.
+// The view is also contains a button which closes the window if clicked. Other
+// click events will activate the window and dismiss the bubble which holds this
+// view.
+class WindowPreview : public views::View, public views::ButtonListener {
  public:
   class Delegate {
    public:
@@ -47,16 +52,16 @@ class ASH_EXPORT WindowPreview : public views::View,
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
-  // ButtonListener:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   void SetStyling(const ui::NativeTheme* theme);
 
   // Child views.
-  views::ImageButton* close_button_;
-  views::Label* title_;
-  wm::WindowMirrorView* mirror_;
+  views::ImageButton* close_button_ = nullptr;
+  views::Label* title_ = nullptr;
+  wm::WindowPreviewView* preview_view_ = nullptr;
 
   // Unowned pointer to the delegate. The delegate should outlive this instance.
   Delegate* delegate_;
