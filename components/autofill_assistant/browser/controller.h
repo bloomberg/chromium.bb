@@ -103,7 +103,6 @@ class Controller : public ScriptExecutorDelegate,
   void Start(const GURL& initialUrl) override;
   void OnClickOverlay() override;
   void OnDestroy() override;
-  void ScrollBy(float distanceXRatio, float distanceYRatio) override;
   void UpdateTouchableArea() override;
   void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;

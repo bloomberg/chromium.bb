@@ -83,10 +83,6 @@ class UiControllerAndroid : public UiController,
              const base::android::JavaParamRef<jobject>& jcaller,
              const base::android::JavaParamRef<jstring>& initialUrlString);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void ScrollBy(JNIEnv* env,
-                const base::android::JavaParamRef<jobject>& obj,
-                float distanceX,
-                float distanceY);
   void UpdateTouchableArea(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
   void OnScriptSelected(
