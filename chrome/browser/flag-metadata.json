@@ -2525,11 +2525,6 @@
     "expiry_milestone": 73
   },
   {
-    "name": "ntp-ui-md",
-    "owners": [ "kmilka", "ramyan" ],
-    "expiry_milestone": 73
-  },
-  {
     "name": "num-raster-threads",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

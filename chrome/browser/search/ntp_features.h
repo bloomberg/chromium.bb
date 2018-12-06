@@ -15,7 +15,6 @@ namespace features {
 extern const base::Feature kDoodlesOnLocalNtp;
 extern const base::Feature kNtpBackgrounds;
 extern const base::Feature kNtpIcons;
-extern const base::Feature kNtpUIMd;
 extern const base::Feature kPromosOnLocalNtp;
 extern const base::Feature kSearchSuggestionsOnLocalNtp;
 extern const base::Feature kUseGoogleLocalNtp;
@@ -28,9 +27,6 @@ bool IsCustomBackgroundsEnabled();
 
 // Returns whether the Material Design UI for Most Visited is enabled.
 bool IsMDIconsEnabled();
-
-// Returns whether the Material Design UI is enabled on the New Tab Page.
-bool IsMDUIEnabled();
 
 }  // namespace features
 
