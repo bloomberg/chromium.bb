@@ -33,6 +33,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
@@ -87,7 +88,10 @@ std::unique_ptr<views::Label> CreateExplanationText(
       message_id = IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER;
       break;
     case LocalCardMigrationDialogState::kFinished:
-      message_id = IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE;
+      message_id =
+          card_list_size == 0
+              ? IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_INVALID_CARD_REMOVED
+              : IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE;
       break;
     case LocalCardMigrationDialogState::kActionRequired:
       message_id = IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX;
@@ -102,13 +106,13 @@ std::unique_ptr<views::Label> CreateExplanationText(
 }
 
 // Create the scroll view of cards in |migratable_credit_cards|, and each
-// row in the scroll view is a MigratableCardView. |card_list_listener|
+// row in the scroll view is a MigratableCardView. |dialog_view|
 // will be notified whenever the checkbox or the trash can button
 // (if any) in any row is clicked. The content and the layout of the
 // scroll view depends on |should_show_checkbox|.
 std::unique_ptr<views::ScrollView> CreateCardList(
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
-    views::ButtonListener* card_list_listener,
+    LocalCardMigrationDialogView* dialog_view,
     bool should_show_checkbox) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto* card_list_view = new views::View();
@@ -123,9 +127,8 @@ std::unique_ptr<views::ScrollView> CreateCardList(
   card_list_view_layout->set_main_axis_alignment(
       views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
   for (size_t index = 0; index < migratable_credit_cards.size(); ++index) {
-    card_list_view->AddChildView(
-        new MigratableCardView(migratable_credit_cards[index],
-                               card_list_listener, should_show_checkbox));
+    card_list_view->AddChildView(new MigratableCardView(
+        migratable_credit_cards[index], dialog_view, should_show_checkbox));
   }
 
   auto card_list_scroll_view = std::make_unique<views::ScrollView>();
@@ -173,7 +176,7 @@ std::unique_ptr<views::View> CreateTip(const base::string16& tip_message) {
 // title, explanation text, card list, and the tip (if present).
 std::unique_ptr<views::View> CreateFeedbackContentView(
     LocalCardMigrationDialogController* controller,
-    views::ButtonListener* card_list_listener) {
+    LocalCardMigrationDialogView* dialog_view) {
   DCHECK(controller->GetViewState() != LocalCardMigrationDialogState::kOffered);
 
   auto feedback_view = std::make_unique<views::View>();
@@ -190,14 +193,18 @@ std::unique_ptr<views::View> CreateFeedbackContentView(
 
   feedback_view->AddChildView(
       CreateExplanationText(view_state, card_list_size).release());
-  feedback_view->AddChildView(
-      CreateCardList(card_list, card_list_listener, false).release());
-  // If there are no more than two cards in the finished dialog, show the tip.
-  constexpr int kShowTipMessageCardNumberLimit = 2;
-  if (view_state == LocalCardMigrationDialogState::kFinished &&
-      card_list_size <= kShowTipMessageCardNumberLimit) {
+
+  if (card_list_size > 0) {
     feedback_view->AddChildView(
-        CreateTip(controller->GetTipMessage()).release());
+        CreateCardList(card_list, dialog_view, false).release());
+
+    // If there are no more than two cards in the finished dialog, show the tip.
+    constexpr int kShowTipMessageCardNumberLimit = 2;
+    if (view_state == LocalCardMigrationDialogState::kFinished &&
+        card_list_size <= kShowTipMessageCardNumberLimit) {
+      feedback_view->AddChildView(
+          CreateTip(controller->GetTipMessage()).release());
+    }
   }
 
   return feedback_view;
@@ -214,7 +221,7 @@ class LocalCardMigrationOfferView : public views::View,
                                     public views::StyledLabelListener {
  public:
   LocalCardMigrationOfferView(LocalCardMigrationDialogController* controller,
-                              views::ButtonListener* card_list_listener)
+                              LocalCardMigrationDialogView* dialog_view)
       : controller_(controller) {
     ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
     SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -239,7 +246,7 @@ class LocalCardMigrationOfferView : public views::View,
             .release());
 
     std::unique_ptr<views::ScrollView> scroll_view =
-        CreateCardList(card_list, card_list_listener, card_list_size != 1);
+        CreateCardList(card_list, dialog_view, card_list_size != 1);
     card_list_view_ = scroll_view->contents();
     contents_container->AddChildView(scroll_view.release());
 
@@ -300,7 +307,7 @@ LocalCardMigrationDialogView::LocalCardMigrationDialogView(
 LocalCardMigrationDialogView::~LocalCardMigrationDialogView() {}
 
 void LocalCardMigrationDialogView::ShowDialog() {
-  Init();
+  ConstructView();
   constrained_window::CreateBrowserModalDialogViews(
       this, web_contents_->GetTopLevelNativeWindow())
       ->Show();
@@ -326,6 +333,14 @@ ui::ModalType LocalCardMigrationDialogView::GetModalType() const {
 
 bool LocalCardMigrationDialogView::ShouldShowCloseButton() const {
   return false;
+}
+
+int LocalCardMigrationDialogView::GetDialogButtons() const {
+  // Don't show the "View cards" button if all cards are invalid.
+  if (controller_->AllCardsInvalid())
+    return ui::DIALOG_BUTTON_OK;
+
+  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 base::string16 LocalCardMigrationDialogView::GetDialogButtonLabel(
@@ -378,18 +393,23 @@ void LocalCardMigrationDialogView::WindowClosing() {
   }
 }
 
-// TODO(crbug/867194): Add button pressed logic for kDeleteCardButtonTag.
-void LocalCardMigrationDialogView::ButtonPressed(views::Button* sender,
-                                                 const ui::Event& event) {
-  // The button clicked is a checkbox. Enable/disable the save
-  // button if needed.
-  DCHECK_EQ(sender->GetClassName(), views::Checkbox::kViewClassName);
-  DialogModelChanged();
+void LocalCardMigrationDialogView::DeleteCard(const std::string& guid) {
+  controller_->DeleteCard(guid);
+  ConstructView();
+  Layout();
+  // Since the dialog does not have anchor view or arrow, cannot use
+  // SizeToContents() for now. TODO(crbug.com/867194): Try to fix the
+  // BubbleDialogDelegateView::GetBubbleBounds() when there is no anchor
+  // view or arrow.
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }
 
-void LocalCardMigrationDialogView::Init() {
-  if (has_children())
-    return;
+void LocalCardMigrationDialogView::ConstructView() {
+  DCHECK(controller_->GetViewState() !=
+             LocalCardMigrationDialogState::kOffered ||
+         !has_children());
+
+  RemoveAllChildViews(/*delete_children=*/true);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),

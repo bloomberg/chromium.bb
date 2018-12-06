@@ -274,7 +274,7 @@
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.">
       Use your cards in more places
     </message>
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated.">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated, or migration of all cards failed and the user deleted all invalid cards.">
       You're all set!
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_FIX" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
@@ -285,7 +285,7 @@
       =1 {This card and its billing address will be saved to your Google Account so you can check out faster wherever you're signed in}
       other {These cards and their billing addresses will be saved to your Google Account so you can check out faster wherever you're signed in}}
     </message>
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated. [ICU Syntax]">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and some cards have been successfully migrated. [ICU Syntax]">
       {NUM_CARDS, plural,
       =1 {This card has been added to your Google Account. You can now use it from any signed-in device.}
       other {These cards have been added to your Google Account. You can now use them from any signed-in device.}}
@@ -298,6 +298,9 @@
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX" desc="The body text shown on a dialog after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
       Check the info below and delete any invalid cards
     </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_INVALID_CARD_REMOVED" desc="The body text for a dialog shown after the user has deleted all invalid cards from browser local storage.">
+      The invalid cards have been removed
+    </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_SAVE" desc="The text in the OK button of a dialog that offers to migrate local cards into the cloud.">
       Save
     </message>
@@ -309,6 +312,12 @@
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_BUTTON_LABEL_VIEW_CARDS" desc="The text in the cancel button a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud.">
       View cards
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_LABEL_INVALID_CARDS" desc="The label text shown when a card is invalid and could not be migrated.">
+      Invalid
+    </message>
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TRASH_CAN_BUTTON_TOOLTIP" desc="The tooltip for the trash can button in the card list that allows user to delete this particular credit card from Chrome.">
+      Remove card
     </message>
   </if>
 

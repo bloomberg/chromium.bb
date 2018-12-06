@@ -101,7 +101,8 @@ void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
 
 void TestAutofillClient::ShowLocalCardMigrationResults(
     const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards) {}
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    MigrationDeleteCardCallback delete_local_card_callback) {}
 
 void TestAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,

@@ -6,6 +6,7 @@
 
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/local_card_migration_dialog_state.h"
+#include "chrome/browser/ui/views/autofill/local_card_migration_dialog_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/autofill/core/browser/local_card_migration_manager.h"
@@ -30,27 +31,27 @@ constexpr char MigratableCardView::kViewClassName[] = "MigratableCardView";
 
 MigratableCardView::MigratableCardView(
     const MigratableCreditCard& migratable_credit_card,
-    views::ButtonListener* listener,
+    LocalCardMigrationDialogView* parent_dialog,
     bool should_show_checkbox)
-    : migratable_credit_card_(migratable_credit_card) {
+    : migratable_credit_card_(migratable_credit_card),
+      parent_dialog_(parent_dialog) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
-  constexpr int kMigrationResultImageSize = 16;
 
   std::unique_ptr<views::Label> card_description =
       std::make_unique<views::Label>(
           migratable_credit_card.credit_card().NetworkAndLastFourDigits(),
           views::style::CONTEXT_LABEL);
 
+  constexpr int kMigrationResultImageSize = 16;
   switch (migratable_credit_card.migration_status()) {
     case MigratableCreditCard::MigrationStatus::UNKNOWN: {
       if (should_show_checkbox) {
-        DCHECK(listener);
-        checkbox_ = new views::Checkbox(base::string16(), listener);
+        checkbox_ = new views::Checkbox(base::string16(), this);
         checkbox_->SetChecked(true);
         // TODO(crbug/867194): Currently the ink drop animation circle is
         // cropped by the border of scroll bar view. Find a way to adjust the
@@ -105,19 +106,20 @@ MigratableCardView::MigratableCardView(
           views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_SECONDARY);
   AddChildView(card_expiration.release());
 
-  // If card is not successfully uploaded we create the trash can icon.
+  // If card is not successfully uploaded we show the invalid card
+  // label and the trash can icon.
   if (migratable_credit_card.migration_status() ==
       MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD) {
-    // TODO(crbug.com/867194): Add the invalid string for failed card, and
-    // update the above comment.
+    AddChildView(new views::Label(
+        l10n_util::GetStringUTF16(
+            IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_LABEL_INVALID_CARDS),
+        views::style::CONTEXT_LABEL, ChromeTextStyle::STYLE_RED));
 
-    DCHECK(listener);
-    delete_card_from_local_button_ = views::CreateVectorImageButton(listener);
+    delete_card_from_local_button_ = views::CreateVectorImageButton(this);
     views::SetImageFromVectorIcon(delete_card_from_local_button_,
                                   kTrashCanIcon);
-    // TODO(crbug.com/867194): Add tooltip and tag for the
-    // delete_card_from_local_button_, and then set it visible by default.
-    delete_card_from_local_button_->SetVisible(false);
+    delete_card_from_local_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TRASH_CAN_BUTTON_TOOLTIP));
     AddChildView(delete_card_from_local_button_);
   }
 }
@@ -134,6 +136,20 @@ std::string MigratableCardView::GetGuid() {
 
 const char* MigratableCardView::GetClassName() const {
   return kViewClassName;
+}
+
+void MigratableCardView::ButtonPressed(views::Button* sender,
+                                       const ui::Event& event) {
+  if (sender == checkbox_) {
+    // If the button clicked is a checkbox. Enable/disable the save
+    // button if needed.
+    parent_dialog_->DialogModelChanged();
+  } else {
+    // Otherwise it is the trash can button clicked. Delete the corresponding
+    // card from local storage.
+    DCHECK_EQ(sender, delete_card_from_local_button_);
+    parent_dialog_->DeleteCard(GetGuid());
+  }
 }
 
 }  // namespace autofill

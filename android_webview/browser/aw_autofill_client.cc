@@ -134,8 +134,8 @@ void AwAutofillClient::ConfirmMigrateLocalCardToCloud(
 
 void AwAutofillClient::ShowLocalCardMigrationResults(
     const base::string16& tip_message,
-    const std::vector<autofill::MigratableCreditCard>&
-        migratable_credit_cards) {
+    const std::vector<autofill::MigratableCreditCard>& migratable_credit_cards,
+    MigrationDeleteCardCallback delete_local_card_callback) {
   NOTIMPLEMENTED();
 }
 

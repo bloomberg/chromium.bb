@@ -61,9 +61,10 @@ class WebViewAutofillClientIOS : public AutofillClient {
       std::unique_ptr<base::DictionaryValue> legal_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
-  void ShowLocalCardMigrationResults(const base::string16& tip_message,
-                                     const std::vector<MigratableCreditCard>&
-                                         migratable_credit_cards) override;
+  void ShowLocalCardMigrationResults(
+      const base::string16& tip_message,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const CreditCard& card,
