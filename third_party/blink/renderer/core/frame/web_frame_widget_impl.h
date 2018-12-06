@@ -147,6 +147,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
+  void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
   // Exposed for the purpose of overriding device metrics.
   void SendResizeEventAndRepaint();

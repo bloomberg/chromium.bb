@@ -146,6 +146,10 @@ class WebFrameWidget : public WebWidget {
   // inside) this widget into view. The scrolling might end with a final zooming
   // into the editable region which is performed in the main frame process.
   virtual bool ScrollFocusedEditableElementIntoView() = 0;
+
+  // This function provides zooming for find in page results when browsing with
+  // page autosize.
+  virtual void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) = 0;
 };
 
 }  // namespace blink

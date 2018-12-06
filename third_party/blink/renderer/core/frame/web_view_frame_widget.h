@@ -98,6 +98,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
+  void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
   void Trace(blink::Visitor*) override;
 

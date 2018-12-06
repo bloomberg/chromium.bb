@@ -1165,6 +1165,13 @@ HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(
   return HitTestResultForRootFramePos(point_in_root_frame);
 }
 
+void WebFrameWidgetImpl::ZoomToFindInPageRect(
+    const WebRect& rect_in_root_frame) {
+  // TODO(wjmaclean): add plumbing to send IPC to browser to request
+  // this zoom operation on the main frame's renderer.
+  // https://crbug.com/734209: Add OOPIF support.
+}
+
 HitTestResult WebFrameWidgetImpl::HitTestResultForRootFramePos(
     const LayoutPoint& pos_in_root_frame) {
   LayoutPoint doc_point(
