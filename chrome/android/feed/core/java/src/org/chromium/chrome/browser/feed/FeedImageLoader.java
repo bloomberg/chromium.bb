@@ -35,7 +35,6 @@ import java.util.List;
  */
 public class FeedImageLoader implements ImageLoaderApi {
     private static final String ASSET_PREFIX = "asset://";
-    private static final String DRAWABLE_RESOURCE_TYPE = "drawable";
     private static final String OVERLAY_IMAGE_PREFIX = "overlay-image://";
     private static final String OVERLAY_IMAGE_URL_PARAM = "url";
     private static final String OVERLAY_IMAGE_DIRECTION_PARAM = "direction";
@@ -129,7 +128,7 @@ public class FeedImageLoader implements ImageLoaderApi {
     private Drawable getAssetDrawable(String url) {
         String resourceName = url.substring(ASSET_PREFIX.length());
         @DrawableRes
-        int id = lookupDrawableIdenfier(resourceName);
+        int id = lookupDrawableIdentifier(resourceName);
         return id == 0 ? null : AppCompatResources.getDrawable(mActivityContext, id);
     }
 
@@ -140,7 +139,7 @@ public class FeedImageLoader implements ImageLoaderApi {
      * @param resourceName The name of the drawable asset.
      * @return The id of the drawable asset. May be 0 if it could not be found.
      */
-    private @DrawableRes int lookupDrawableIdenfier(String resourceName) {
+    private @DrawableRes int lookupDrawableIdentifier(String resourceName) {
         switch (resourceName) {
             case BundledAssets.OFFLINE_INDICATOR_BADGE:
                 return R.drawable.offline_pin_round;
