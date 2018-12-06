@@ -99,12 +99,10 @@ class BASE_EXPORT SequenceManagerImpl
   // This function should be called only once per MessageLoop.
   static std::unique_ptr<SequenceManagerImpl> CreateUnbound(
       MessageLoopBase* message_loop_base,
-      const TickClock* clock = DefaultTickClock::GetInstance(),
       SequenceManager::Settings settings = Settings());
 
   static std::unique_ptr<SequenceManagerImpl> CreateUnboundWithPump(
-      SequenceManager::Settings settings,
-      const TickClock* clock = DefaultTickClock::GetInstance());
+      SequenceManager::Settings settings);
 
   // SequenceManager implementation:
   void BindToCurrentThread() override;

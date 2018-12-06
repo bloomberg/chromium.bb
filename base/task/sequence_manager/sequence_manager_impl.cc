@@ -56,8 +56,8 @@ std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThreadWithPump(
 std::unique_ptr<SequenceManager> CreateUnboundSequenceManager(
     MessageLoopBase* message_loop_base,
     SequenceManager::Settings settings) {
-  return internal::SequenceManagerImpl::CreateUnbound(
-      message_loop_base, DefaultTickClock::GetInstance(), std::move(settings));
+  return internal::SequenceManagerImpl::CreateUnbound(message_loop_base,
+                                                      std::move(settings));
 }
 
 namespace internal {
@@ -180,7 +180,7 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateOnCurrentThread(
     SequenceManager::Settings settings) {
   std::unique_ptr<SequenceManagerImpl> manager =
       CreateUnbound(MessageLoopCurrent::Get()->ToMessageLoopBaseDeprecated(),
-                    DefaultTickClock::GetInstance(), std::move(settings));
+                    std::move(settings));
   manager->BindToCurrentThread();
   manager->CompleteInitializationOnBoundThread();
   return manager;
@@ -189,19 +189,17 @@ std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateOnCurrentThread(
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnbound(
     MessageLoopBase* message_loop_base,
-    const TickClock* clock,
     SequenceManager::Settings settings) {
   return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerImpl::Create(message_loop_base, clock),
+      ThreadControllerImpl::Create(message_loop_base, settings.clock),
       std::move(settings)));
 }
 
 // static
 std::unique_ptr<SequenceManagerImpl> SequenceManagerImpl::CreateUnboundWithPump(
-    SequenceManager::Settings settings,
-    const TickClock* clock) {
+    SequenceManager::Settings settings) {
   return WrapUnique(new SequenceManagerImpl(
-      ThreadControllerWithMessagePumpImpl::CreateUnbound(clock),
+      ThreadControllerWithMessagePumpImpl::CreateUnbound(settings.clock),
       std::move(settings)));
 }
 
