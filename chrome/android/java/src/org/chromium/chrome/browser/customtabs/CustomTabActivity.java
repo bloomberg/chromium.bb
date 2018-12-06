@@ -60,6 +60,7 @@ import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.ServiceTabLauncher;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -1696,8 +1697,28 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
             return false;
         }
+        List<String> moduleManagedHosts = mIntentDataProvider.getExtraModuleManagedHosts();
         Pattern urlsPattern = mIntentDataProvider.getExtraModuleManagedUrlsPattern();
-        return !TextUtils.isEmpty(url) && urlsPattern != null && urlsPattern.matcher(url).matches();
+        if (TextUtils.isEmpty(url) || moduleManagedHosts == null || moduleManagedHosts.isEmpty()
+                || urlsPattern == null) {
+            return false;
+        }
+        Uri parsed = Uri.parse(url);
+        String scheme = parsed.getScheme();
+        if (!UrlConstants.HTTPS_SCHEME.equals(scheme)) {
+            return false;
+        }
+        String host = parsed.getHost();
+        if (host == null) {
+            return false;
+        }
+        String pathAndQuery = url.substring(UrlUtilities.stripPath(url).length());
+        for (String moduleManagedHost : moduleManagedHosts) {
+            if (host.equals(moduleManagedHost) && urlsPattern.matcher(pathAndQuery).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void maybeUpdateCctHeaderVisibility(String url) {
