@@ -1810,6 +1810,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Store the frame that is currently fullscreen, nullptr if there is none.
   RenderFrameHostImpl* current_fullscreen_frame_ = nullptr;
 
+  // Whether location bar should be focused by default. This is computed in
+  // DidStartNavigation/DidFinishNavigation and only set for an initial
+  // navigation triggered by the browser going to about:blank.
+  bool should_focus_location_bar_by_default_ = false;
+
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;
 

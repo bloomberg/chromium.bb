@@ -199,17 +199,18 @@ class ToolbarViewTest : public InProcessBrowserTest {
 void ToolbarViewTest::RunToolbarCycleFocusTest(Browser* browser) {
   gfx::NativeWindow window = browser->window()->GetNativeWindow();
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  views::FocusManager* focus_manager = widget->GetFocusManager();
-  CommandUpdater* updater = browser->command_controller();
-
-  // Send focus to the toolbar as if the user pressed Alt+Shift+T.
-  updater->ExecuteCommand(IDC_FOCUS_TOOLBAR);
 
   // Test relies on browser window activation, while platform such as Linux's
   // window activation is asynchronous.
   views::test::WidgetActivationWaiter waiter(widget, true);
   waiter.Wait();
 
+  // Send focus to the toolbar as if the user pressed Alt+Shift+T. This should
+  // happen after the browser window activation.
+  CommandUpdater* updater = browser->command_controller();
+  updater->ExecuteCommand(IDC_FOCUS_TOOLBAR);
+
+  views::FocusManager* focus_manager = widget->GetFocusManager();
   views::View* first_view = focus_manager->GetFocusedView();
   std::vector<int> ids;
 
