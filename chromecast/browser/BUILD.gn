@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/ui.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
@@ -11,6 +12,11 @@ import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
+}
+
+buildflag_header("browser_buildflags") {
+  header = "browser_buildflags.h"
+  flags = [ "ENABLE_CAST_AUDIO_MANAGER_MIXER=$enable_cast_audio_manager_mixer" ]
 }
 
 cast_source_set("browser") {
@@ -114,6 +120,7 @@ cast_source_set("browser") {
   ]
 
   deps = [
+    ":browser_buildflags",
     "//base",
     "//base:i18n",
     "//cc",

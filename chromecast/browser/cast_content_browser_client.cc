@@ -27,6 +27,7 @@
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/application_session_id_manager.h"
+#include "chromecast/browser/browser_buildflags.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -269,22 +270,13 @@ CastContentBrowserClient::media_pipeline_backend_manager() {
 std::unique_ptr<::media::AudioManager>
 CastContentBrowserClient::CreateAudioManager(
     ::media::AudioLogFactory* audio_log_factory) {
-  // TODO(alokp): Consider switching off the mixer on audio platforms
-  // because we already have a mixer in the audio pipeline downstream of
-  // CastAudioManager.
-#if !defined(OS_ANDROID)
-  bool use_mixer = true;
-#else
-  bool use_mixer = false;
-#endif
-
 #if defined(OS_ANDROID)
   // Disable CMA backend on builds older than N.
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
       base::android::SDK_VERSION_NOUGAT) {
     return nullptr;
   }
-#endif
+#endif  // defined(OS_ANDROID)
 
   // Create the audio thread and initialize the CastSessionIdMap. We need to
   // initialize the CastSessionIdMap as soon as possible, so that the task
@@ -302,7 +294,7 @@ CastContentBrowserClient::CreateAudioManager(
           {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      use_mixer);
+      BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #else
   return std::make_unique<media::CastAudioManager>(
       std::move(audio_thread), audio_log_factory,
@@ -313,7 +305,7 @@ CastContentBrowserClient::CreateAudioManager(
           {content::BrowserThread::UI}),
       GetMediaTaskRunner(),
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
-      use_mixer);
+      BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #endif  // defined(USE_ALSA)
 }
 

@@ -104,6 +104,11 @@ declare_args() {
 
   # Whether to build cast for Android Things N version
   build_for_android_things_n = false
+
+  # Set to true to enable mixing in CastAudioManager. Only needed on devices
+  # that do not have a mixer in the CMA backend.
+  enable_cast_audio_manager_mixer =
+      chromecast_branding == "google" && !is_cast_audio_only && !is_android
 }
 
 declare_args() {
