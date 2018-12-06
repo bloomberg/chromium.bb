@@ -64,6 +64,8 @@ class ElementInternals : public ScriptWrappable, public ListedElement {
   bool TypeMismatch() const override;
   bool ValueMissing() const override;
   bool CustomError() const override;
+  String validationMessage() const override;
+  String ValidationSubMessage() const override;
   void DisabledStateMightBeChanged() override;
 
   Member<HTMLElement> target_;
