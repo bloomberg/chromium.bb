@@ -1522,6 +1522,48 @@ TEST_P(MessageLoopTypedTest, NestableTasksAllowedManually) {
   run_loop.Run();
 }
 
+TEST_P(MessageLoopTypedTest, IsIdleForTesting) {
+  auto loop = CreateMessageLoop();
+  EXPECT_TRUE(loop->IsIdleForTesting());
+  loop->task_runner()->PostTask(FROM_HERE, BindOnce([]() {}));
+  loop->task_runner()->PostDelayedTask(FROM_HERE, BindOnce([]() {}),
+                                       TimeDelta::FromMilliseconds(10));
+  EXPECT_FALSE(loop->IsIdleForTesting());
+  RunLoop().RunUntilIdle();
+  EXPECT_TRUE(loop->IsIdleForTesting());
+
+  PlatformThread::Sleep(TimeDelta::FromMilliseconds(20));
+  EXPECT_TRUE(loop->IsIdleForTesting());
+}
+
+TEST_P(MessageLoopTypedTest, IsIdleForTestingNonNestableTask) {
+  auto loop = CreateMessageLoop();
+  RunLoop run_loop;
+  EXPECT_TRUE(loop->IsIdleForTesting());
+  bool nested_task_run = false;
+  loop->task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        RunLoop nested_run_loop(RunLoop::Type::kNestableTasksAllowed);
+
+        loop->task_runner()->PostNonNestableTask(
+            FROM_HERE, BindLambdaForTesting([&]() { nested_task_run = true; }));
+
+        loop->task_runner()->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
+                                        EXPECT_FALSE(nested_task_run);
+                                        EXPECT_TRUE(loop->IsIdleForTesting());
+                                      }));
+
+        nested_run_loop.RunUntilIdle();
+        EXPECT_FALSE(nested_task_run);
+        EXPECT_FALSE(loop->IsIdleForTesting());
+      }));
+
+  run_loop.RunUntilIdle();
+
+  EXPECT_TRUE(nested_task_run);
+  EXPECT_TRUE(loop->IsIdleForTesting());
+}
+
 INSTANTIATE_TEST_CASE_P(
     ,
     MessageLoopTypedTest,

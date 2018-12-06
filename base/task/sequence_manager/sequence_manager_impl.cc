@@ -898,8 +898,11 @@ void SequenceManagerImpl::AttachToMessagePump() {
 #endif
 
 bool SequenceManagerImpl::IsIdleForTesting() {
-  LazyNow lazy_now(controller_->GetClock());
-  return DelayTillNextTask(&lazy_now) != TimeDelta();
+  // We don't use DelayTillNextTask here because the MessageLoop version which
+  // we're emulating does not take Now() into account.  If it did tests would
+  // become flaky wrt delayed tasks that are just about to run.
+  ReloadEmptyWorkQueues();
+  return main_thread_only().selector.AllEnabledWorkQueuesAreEmpty();
 }
 
 size_t SequenceManagerImpl::GetPendingTaskCountForTesting() const {
