@@ -29,6 +29,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time_override.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -206,6 +207,7 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
 
 // See content::RunAllTasksUntilIdle().
 void RunAllTasksUntilIdle() {
+  LOG(ERROR) << "RunAllTasksUntilIdle - before";
   while (true) {
     TaskObserver task_observer;
     base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer);
@@ -218,6 +220,7 @@ void RunAllTasksUntilIdle() {
     if (!task_observer.processed())
       break;
   }
+  LOG(ERROR) << "RunAllTasksUntilIdle - after";
 }
 
 // A test implementation of the WallpaperObserver mojo interface.
@@ -2334,9 +2337,26 @@ TEST_F(WallpaperControllerTest, AddFirstWallpaperAnimationEndCallback) {
       base::BindLambdaForTesting(
           [&is_second_callback_run]() { is_second_callback_run = true; }),
       test_window.get());
+  {
+    // The animation is quite short (0.01 seconds) which is problematic in
+    // debug builds if RunAllTasksUntilIdle is a bit slow to execute. That leads
+    // to test flakes. We work around that by temporarily freezing time, which
+    // prevents the animation from unexpectedly completing too soon.
+    // Ideally this test should use MockTime instead, which will become easier
+    // after https://crrev.com/c/1352260 lands.
+    base::subtle::ScopedTimeClockOverrides time_override(
+        nullptr,
+        []() {
+          static base::TimeTicks time_ticks =
+              base::subtle::TimeTicksNowIgnoringOverride();
+          return time_ticks;
+        },
+        nullptr);
+
+    RunAllTasksUntilIdle();
+  }
   // Neither callback is run because the animation of the first wallpaper
   // hasn't finished yet.
-  RunAllTasksUntilIdle();
   EXPECT_FALSE(is_first_callback_run);
   EXPECT_FALSE(is_second_callback_run);
 
