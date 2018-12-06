@@ -1,7 +1,10 @@
+CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/insecure-iframe-with-hsts.https.html' attempted to load subresource at 'https://127.0.0.1:8443/resources/testharness.js' over broken HTTPS.
+CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/insecure-iframe-with-hsts.https.html' attempted to load subresource at 'https://127.0.0.1:8443/resources/testharnessreport.js' over broken HTTPS.
 main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
+CONSOLE ERROR: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/insecure-iframe-with-hsts.https.html' attempted to load subresource at 'https://hsts-example.test:8443/security/resources/hsts.php?as-fetch' over broken HTTPS.
 frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 frame "<!--framePath //<!--frame0-->-->" - didStartProvisionalLoadForFrame
 CONSOLE ERROR: line 18: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/insecure-iframe-with-hsts.https.html' was loaded over HTTPS, but requested an insecure resource 'http://hsts-example.test:8443/security/resources/hsts.php'. This request has been blocked; the content must be served over HTTPS.
