@@ -148,11 +148,12 @@ def _QueryForAllGnTargets(output_dir):
   logging.info('Running: %r', cmd)
   ninja_output = build_utils.CheckOutput(cmd)
   ret = []
-  SUFFIX_LEN = len('__build_config')
+  SUFFIX_LEN = len('__build_config_crbug_908819')
   for line in ninja_output.splitlines():
     ninja_target = line.rsplit(':', 1)[0]
     # Ignore root aliases by ensure a : exists.
-    if ':' in ninja_target and ninja_target.endswith('__build_config'):
+    if ':' in ninja_target and ninja_target.endswith(
+        '__build_config_crbug_908819'):
       ret.append('//' + ninja_target[:-SUFFIX_LEN])
   return ret
 
@@ -201,10 +202,10 @@ class _ProjectEntry(object):
     return self._gn_target[2:]
 
   def GnBuildConfigTarget(self):
-    return '%s__build_config' % self._gn_target
+    return '%s__build_config_crbug_908819' % self._gn_target
 
   def NinjaBuildConfigTarget(self):
-    return '%s__build_config' % self.NinjaTarget()
+    return '%s__build_config_crbug_908819' % self.NinjaTarget()
 
   def GradleSubdir(self):
     """Returns the output subdirectory."""
@@ -715,7 +716,8 @@ def _GenerateSettingsGradle(project_entries):
   lines.append('rootProject.projectDir = settingsDir')
   lines.append('')
   for name, subdir in project_entries:
-    # Example target: android_webview:android_webview_java__build_config
+    # Example target:
+    # android_webview:android_webview_java__build_config_crbug_908819
     lines.append('include ":%s"' % name)
     lines.append('project(":%s").projectDir = new File(settingsDir, "%s")' %
                  (name, subdir))
@@ -892,7 +894,7 @@ def main():
     else:
       # Faster than running "gn gen" in the no-op case.
       _RunNinja(output_dir, ['build.ninja'], args.j)
-    # Query ninja for all __build_config targets.
+    # Query ninja for all __build_config_crbug_908819 targets.
     targets = _QueryForAllGnTargets(output_dir)
   else:
     assert not args.native_targets, 'Native editing requires --all.'
