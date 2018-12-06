@@ -54,7 +54,7 @@ class ArcWindowDelegateImpl : public ArcImeService::ArcWindowDelegate {
   ~ArcWindowDelegateImpl() override = default;
 
   bool IsInArcAppWindow(const aura::Window* window) const override {
-    if (!exo::WMHelper::GetInstance())
+    if (!exo::WMHelper::HasInstance())
       return false;
     aura::Window* active = exo::WMHelper::GetInstance()->GetActiveWindow();
     for (; window; window = window->parent()) {
