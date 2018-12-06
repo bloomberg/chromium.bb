@@ -70,6 +70,10 @@ def _CreateInfo(aar_file):
         data['assets'].append(name)
       elif name.startswith('jni/'):
         data['has_native_libraries'] = True
+        if 'native_libraries' in data:
+          data['native_libraries'].append(name)
+        else:
+          data['native_libraries'] = [name]
       elif name == 'classes.jar':
         data['has_classes_jar'] = True
       elif name == 'proguard.txt':
