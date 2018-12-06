@@ -20,6 +20,8 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -49,6 +51,23 @@ std::unique_ptr<MessageLoop> CreateMessageLoopForMainThreadType(
   NOTREACHED();
   return nullptr;
 }
+
+class TickClockBasedClock : public Clock {
+ public:
+  explicit TickClockBasedClock(const TickClock* tick_clock)
+      : tick_clock_(*tick_clock),
+        start_ticks_(tick_clock_.NowTicks()),
+        start_time_(Time::UnixEpoch()) {}
+
+  Time Now() const override {
+    return start_time_ + (tick_clock_.NowTicks() - start_ticks_);
+  }
+
+ private:
+  const TickClock& tick_clock_;
+  const TimeTicks start_ticks_;
+  const Time start_time_;
+};
 
 }  // namespace
 
@@ -117,6 +136,10 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
                     internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
                     slsm_for_mock_time_.get())
               : nullptr),
+      mock_clock_(mock_time_task_runner_
+                      ? std::make_unique<TickClockBasedClock>(
+                            mock_time_task_runner_->GetMockTickClock())
+                      : nullptr),
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
       file_descriptor_watcher_(main_thread_type == MainThreadType::IO
                                    ? std::make_unique<FileDescriptorWatcher>(
@@ -310,7 +333,7 @@ void ScopedTaskEnvironment::FastForwardUntilNoTasksRemain() {
   mock_time_task_runner_->FastForwardUntilNoTasksRemain();
 }
 
-const TickClock* ScopedTaskEnvironment::GetMockTickClock() {
+const TickClock* ScopedTaskEnvironment::GetMockTickClock() const {
   DCHECK(mock_time_task_runner_);
   return mock_time_task_runner_->GetMockTickClock();
 }
@@ -323,6 +346,11 @@ std::unique_ptr<TickClock> ScopedTaskEnvironment::DeprecatedGetMockTickClock() {
 base::TimeTicks ScopedTaskEnvironment::NowTicks() const {
   DCHECK(mock_time_task_runner_);
   return mock_time_task_runner_->NowTicks();
+}
+
+const Clock* ScopedTaskEnvironment::GetMockClock() const {
+  DCHECK(mock_clock_);
+  return mock_clock_.get();
 }
 
 size_t ScopedTaskEnvironment::GetPendingMainThreadTaskCount() const {

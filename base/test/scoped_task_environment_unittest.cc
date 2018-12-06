@@ -18,6 +18,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/win/com_init_util.h"
 #include "build/build_config.h"
@@ -305,6 +307,18 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTickClock) {
   // clock.
   scoped_task_environment.FastForwardBy(kLongTaskDelay);
   EXPECT_EQ(kLongTaskDelay * 2, tick_clock->NowTicks() - tick_clock_ref);
+}
+
+TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceMockClock) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
+
+  const Clock* clock = scoped_task_environment.GetMockClock();
+  const Time start_time = clock->Now();
+  scoped_task_environment.FastForwardBy(kDelay);
+
+  EXPECT_EQ(start_time + kDelay, clock->Now());
 }
 
 #if defined(OS_WIN)
