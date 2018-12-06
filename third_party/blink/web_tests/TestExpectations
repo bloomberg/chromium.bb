@@ -5705,3 +5705,6 @@ crbug.com/910846 [ Win ] virtual/streaming-preload/external/wpt/html/semantics/s
 crbug.com/911515 [ Mac ] transforms/shadows.html [ Pass Failure ]
 crbug.com/911634 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-input-field.html [ Pass Failure ]
 crbug.com/911782 [ Mac ] paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ Pass Failure ]
+
+#Sheriff 2018-12-06
+crbug.com/9121570 [ Linux ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Failure Pass ]
