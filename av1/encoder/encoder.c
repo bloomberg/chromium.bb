@@ -3178,7 +3178,7 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
   struct aom_codec_cx_pkt pkt;
   int i;
   PSNR_STATS psnr;
-  aom_calc_highbd_psnr(cpi->source, cpi->common.frame_to_show, &psnr,
+  aom_calc_highbd_psnr(cpi->source, &cpi->common.cur_frame->buf, &psnr,
                        cpi->td.mb.e_mbd.bd, cpi->oxcf.input_bit_depth);
 
   for (i = 0; i < 4; ++i) {
@@ -4391,14 +4391,14 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
   if (lf->filter_level[0] || lf->filter_level[1]) {
     if (cpi->num_workers > 1)
-      av1_loop_filter_frame_mt(cm->frame_to_show, cm, xd, 0, num_planes, 0,
+      av1_loop_filter_frame_mt(&cm->cur_frame->buf, cm, xd, 0, num_planes, 0,
 #if LOOP_FILTER_BITMASK
                                0,
 #endif
                                cpi->workers, cpi->num_workers,
                                &cpi->lf_row_sync);
     else
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd,
+      av1_loop_filter_frame(&cm->cur_frame->buf, cm, xd,
 #if LOOP_FILTER_BITMASK
                             0,
 #endif
@@ -4406,7 +4406,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 
   if (!no_restoration)
-    av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 0);
+    av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 0);
 
   if (no_cdef) {
     cm->cdef_info.cdef_bits = 0;
@@ -4415,11 +4415,11 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cm->cdef_info.cdef_uv_strengths[0] = 0;
   } else {
     // Find CDEF parameters
-    av1_cdef_search(cm->frame_to_show, cpi->source, cm, xd,
+    av1_cdef_search(&cm->cur_frame->buf, cpi->source, cm, xd,
                     cpi->sf.fast_cdef_search);
 
     // Apply the filter
-    av1_cdef_frame(cm->frame_to_show, cm, xd);
+    av1_cdef_frame(&cm->cur_frame->buf, cm, xd);
   }
 
   superres_post_encode(cpi);
@@ -4429,17 +4429,17 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
   } else {
-    av1_loop_restoration_save_boundary_lines(cm->frame_to_show, cm, 1);
+    av1_loop_restoration_save_boundary_lines(&cm->cur_frame->buf, cm, 1);
     av1_pick_filter_restoration(cpi->source, cpi);
     if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
       if (cpi->num_workers > 1)
-        av1_loop_restoration_filter_frame_mt(cm->frame_to_show, cm, 0,
+        av1_loop_restoration_filter_frame_mt(&cm->cur_frame->buf, cm, 0,
                                              cpi->workers, cpi->num_workers,
                                              &cpi->lr_row_sync, &cpi->lr_ctxt);
       else
-        av1_loop_restoration_filter_frame(cm->frame_to_show, cm, 0,
+        av1_loop_restoration_filter_frame(&cm->cur_frame->buf, cm, 0,
                                           &cpi->lr_ctxt);
     }
   }
@@ -4905,7 +4905,7 @@ static void set_ext_overrides(AV1_COMP *cpi) {
 static void dump_filtered_recon_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const CurrentFrame *const current_frame = &cm->current_frame;
-  const YV12_BUFFER_CONFIG *recon_buf = cm->frame_to_show;
+  const YV12_BUFFER_CONFIG *recon_buf = &cm->cur_frame->buf;
 
   if (recon_buf == NULL) {
     printf("Frame %d is not ready.\n", current_frame->frame_number);
@@ -5072,9 +5072,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     cpi->seq_params_locked = 1;
 
-    // Set up frame to show to get ready for stats collection.
-    cm->frame_to_show = &cm->cur_frame->buf;
-
     // Update current frame offset.
     current_frame->order_hint = cm->cur_frame->order_hint;
 
@@ -5236,17 +5233,16 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     cpi->refresh_last_frame = 1;
   }
 
-  cm->frame_to_show = &cm->cur_frame->buf;
-  cm->frame_to_show->color_primaries = seq_params->color_primaries;
-  cm->frame_to_show->transfer_characteristics =
+  cm->cur_frame->buf.color_primaries = seq_params->color_primaries;
+  cm->cur_frame->buf.transfer_characteristics =
       seq_params->transfer_characteristics;
-  cm->frame_to_show->matrix_coefficients = seq_params->matrix_coefficients;
-  cm->frame_to_show->monochrome = seq_params->monochrome;
-  cm->frame_to_show->chroma_sample_position =
+  cm->cur_frame->buf.matrix_coefficients = seq_params->matrix_coefficients;
+  cm->cur_frame->buf.monochrome = seq_params->monochrome;
+  cm->cur_frame->buf.chroma_sample_position =
       seq_params->chroma_sample_position;
-  cm->frame_to_show->color_range = seq_params->color_range;
-  cm->frame_to_show->render_width = cm->render_width;
-  cm->frame_to_show->render_height = cm->render_height;
+  cm->cur_frame->buf.color_range = seq_params->color_range;
+  cm->cur_frame->buf.render_width = cm->render_width;
+  cm->cur_frame->buf.render_height = cm->render_height;
 
   // TODO(zoeliu): For non-ref frames, loop filtering may need to be turned
   // off.
@@ -5267,11 +5263,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   }
 
   // TODO(debargha): Fix mv search range on encoder side
-  // aom_extend_frame_inner_borders(cm->frame_to_show, av1_num_planes(cm));
-  aom_extend_frame_borders(cm->frame_to_show, av1_num_planes(cm));
+  // aom_extend_frame_inner_borders(&cm->cur_frame->buf, av1_num_planes(cm));
+  aom_extend_frame_borders(&cm->cur_frame->buf, av1_num_planes(cm));
 
 #ifdef OUTPUT_YUV_REC
-  aom_write_one_yuv_frame(cm, cm->frame_to_show);
+  aom_write_one_yuv_frame(cm, &cm->cur_frame->buf);
 #endif
 
   // Build the bitstream
@@ -5713,7 +5709,7 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
   }
   if (cm->show_frame) {
     const YV12_BUFFER_CONFIG *orig = cpi->source;
-    const YV12_BUFFER_CONFIG *recon = cpi->common.frame_to_show;
+    const YV12_BUFFER_CONFIG *recon = &cpi->common.cur_frame->buf;
     double y, u, v, frame_all;
 
     cpi->count++;
@@ -6917,8 +6913,8 @@ int av1_get_preview_raw_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *dest) {
     return -1;
   } else {
     int ret;
-    if (cm->frame_to_show) {
-      *dest = *cm->frame_to_show;
+    if (cm->cur_frame != NULL) {
+      *dest = cm->cur_frame->buf;
       dest->y_width = cm->width;
       dest->y_height = cm->height;
       dest->uv_width = cm->width >> cm->seq_params.subsampling_x;

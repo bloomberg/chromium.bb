@@ -341,7 +341,6 @@ typedef struct AV1Common {
   // Scale of the current frame with respect to itself.
   struct scale_factors sf_identity;
 
-  YV12_BUFFER_CONFIG *frame_to_show;
   RefCntBuffer *prev_frame;
 
   // TODO(hkuang): Combine this with cur_buf in macroblockd.

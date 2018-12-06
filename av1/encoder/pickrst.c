@@ -140,7 +140,7 @@ static void init_rsc(const YV12_BUFFER_CONFIG *src, const AV1_COMMON *cm,
   rsc->rusi = rusi;
   rsc->sf = sf;
 
-  const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
+  const YV12_BUFFER_CONFIG *dgd = &cm->cur_frame->buf;
   const int is_uv = plane != AOM_PLANE_Y;
   rsc->plane_width = src->crop_widths[is_uv];
   rsc->plane_height = src->crop_heights[is_uv];
@@ -165,7 +165,7 @@ static int64_t try_restoration_unit(const RestSearchCtxt *rsc,
   const int bit_depth = cm->seq_params.bit_depth;
   const int highbd = cm->seq_params.use_highbitdepth;
 
-  const YV12_BUFFER_CONFIG *fts = cm->frame_to_show;
+  const YV12_BUFFER_CONFIG *fts = &cm->cur_frame->buf;
   // TODO(yunqing): For now, only use optimized LR filter in decoder. Can be
   // also used in encoder.
   const int optimized_lr = 0;
@@ -1281,7 +1281,7 @@ static void search_norestore(const RestorationTileLimits *limits,
 
   const int highbd = rsc->cm->seq_params.use_highbitdepth;
   rusi->sse[RESTORE_NONE] = sse_restoration_unit(
-      limits, rsc->src, rsc->cm->frame_to_show, rsc->plane, highbd);
+      limits, rsc->src, &rsc->cm->cur_frame->buf, rsc->plane, highbd);
 
   rsc->sse += rusi->sse[RESTORE_NONE];
 }
