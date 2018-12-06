@@ -28,8 +28,7 @@ class ProxyResolverServiceTest : public testing::Test {
 };
 
 // Check that destroying the service while there's a live ProxyResolverFactory
-// works. This makes sure that the ServiceContextRefFactory is destroyed before
-// the underlying ProxyResolverFactoryImpl is.
+// is safe.
 TEST_F(ProxyResolverServiceTest, ShutdownServiceWithLiveProxyResolverFactory) {
   mojom::ProxyResolverFactoryPtr proxy_resolver_factory;
   connector_factory_.GetDefaultConnector()->BindInterface(

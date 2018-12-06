@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/traced_service_ref.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,7 +21,7 @@ namespace audio {
 // Stream creation is tested as part of the stream unit tests.
 TEST(AudioServiceStreamFactoryTest, TakesServiceRef) {
   base::test::ScopedTaskEnvironment env;
-  service_manager::ServiceContextRefFactory ref_factory{base::DoNothing()};
+  service_manager::ServiceKeepalive keepalive{nullptr, base::nullopt};
   media::MockAudioManager audio_manager(
       std::make_unique<media::TestAudioThread>());
 
@@ -29,13 +29,13 @@ TEST(AudioServiceStreamFactoryTest, TakesServiceRef) {
 
   mojom::StreamFactoryPtr factory_ptr;
 
-  factory.Bind(mojo::MakeRequest(&factory_ptr),
-               TracedServiceRef(ref_factory.CreateRef(),
-                                "audio::StreamFactory binding"));
-  EXPECT_FALSE(ref_factory.HasNoRefs());
+  factory.Bind(
+      mojo::MakeRequest(&factory_ptr),
+      TracedServiceRef(keepalive.CreateRef(), "audio::StreamFactory binding"));
+  EXPECT_FALSE(keepalive.HasNoRefs());
   factory_ptr.reset();
   env.RunUntilIdle();
-  EXPECT_TRUE(ref_factory.HasNoRefs());
+  EXPECT_TRUE(keepalive.HasNoRefs());
   audio_manager.Shutdown();
 }
 

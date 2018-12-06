@@ -14,7 +14,7 @@
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/audio/traced_service_ref.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,12 +73,13 @@ class MockAudioLogFactory : public media::mojom::AudioLogFactory {
 
 }  // namespace
 
-class LogFactoryManagerTest : public ::testing::Test {
+class LogFactoryManagerTest
+    : public ::testing::Test,
+      public service_manager::ServiceKeepalive::Observer {
  public:
-  LogFactoryManagerTest()
-      : service_ref_factory_(
-            base::BindRepeating(&LogFactoryManagerTest::OnNoServiceRefs,
-                                base::Unretained(this))) {}
+  LogFactoryManagerTest() : service_keepalive_(nullptr, base::TimeDelta()) {
+    service_keepalive_.AddObserver(this);
+  }
 
  protected:
   MOCK_METHOD0(OnNoServiceRefs, void());
@@ -87,23 +88,26 @@ class LogFactoryManagerTest : public ::testing::Test {
     log_factory_manager_ = std::make_unique<LogFactoryManager>();
     log_factory_manager_->Bind(
         mojo::MakeRequest(&log_factory_manager_ptr_),
-        TracedServiceRef(service_ref_factory_.CreateRef(),
+        TracedServiceRef(service_keepalive_.CreateRef(),
                          "audio::LogFactoryManager Binding"));
-    EXPECT_FALSE(service_ref_factory_.HasNoRefs());
+    EXPECT_FALSE(service_keepalive_.HasNoRefs());
   }
 
   void DestroyLogFactoryManager() {
     log_factory_manager_ptr_.reset();
     scoped_task_environment_.RunUntilIdle();
-    EXPECT_TRUE(service_ref_factory_.HasNoRefs());
+    EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
+
+  // service_manager::ServiceKeepalive::Observer:
+  void OnIdleTimeout() override { OnNoServiceRefs(); }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   mojom::LogFactoryManagerPtr log_factory_manager_ptr_;
   std::unique_ptr<LogFactoryManager> log_factory_manager_;
 
  private:
-  service_manager::ServiceContextRefFactory service_ref_factory_;
+  service_manager::ServiceKeepalive service_keepalive_;
 
   DISALLOW_COPY_AND_ASSIGN(LogFactoryManagerTest);
 };

@@ -10,7 +10,7 @@
 #include "media/base/data_source.h"
 #include "media/filters/audio_file_reader.h"
 #include "media/filters/blocking_url_protocol.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
+#include "services/service_manager/public/cpp/service_keepalive.h"
 
 namespace chromeos {
 namespace assistant {
@@ -27,7 +27,7 @@ void OnError(bool* succeeded) {
 }  // namespace
 
 AssistantAudioDecoder::AssistantAudioDecoder(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+    std::unique_ptr<service_manager::ServiceKeepaliveRef> service_ref,
     mojom::AssistantAudioDecoderClientPtr client,
     mojom::AssistantMediaDataSourcePtr data_source)
     : service_ref_(std::move(service_ref)),
