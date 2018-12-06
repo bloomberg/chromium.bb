@@ -1,0 +1,25 @@
+This is a testharness.js-based test.
+PASS idl_test setup
+PASS Partial interface Navigator: original interface defined
+FAIL NFCWriter interface: existence and properties of interface object assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface object length assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface object name assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface: existence and properties of interface prototype object assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+FAIL NFCWriter interface: operation push(NFCMessageSource, NFCPushOptions) assert_own_property: self does not have own property "NFCWriter" expected property "NFCWriter" missing
+PASS NFC interface: existence and properties of interface object
+PASS NFC interface object length
+PASS NFC interface object name
+PASS NFC interface: existence and properties of interface prototype object
+PASS NFC interface: existence and properties of interface prototype object's "constructor" property
+PASS NFC interface: existence and properties of interface prototype object's @@unscopables property
+PASS NFC interface: operation watch(MessageCallback, NFCWatchOptions)
+PASS NFC must be primary interface of navigator.nfc
+PASS Stringification of navigator.nfc
+PASS NFC interface: navigator.nfc must inherit property "watch(MessageCallback, NFCWatchOptions)" with the proper type
+PASS NFC interface: calling watch(MessageCallback, NFCWatchOptions) on navigator.nfc with too few arguments must throw TypeError
+PASS Navigator interface: attribute nfc
+PASS Navigator interface: navigator must inherit property "nfc" with the proper type
+Harness: the test ran to completion.
+

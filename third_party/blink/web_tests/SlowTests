@@ -572,7 +572,6 @@ crbug.com/874695 external/wpt/css/css-animations/event-dispatch.tentative.html [
 crbug.com/874695 external/wpt/css/css-fonts/variations/font-style-interpolation.html [ Slow ]
 crbug.com/874695 external/wpt/css/css-layout-api/constraints-data.https.html [ Slow ]
 crbug.com/874695 external/wpt/css/cssom-view/matchMedia.xht [ Slow ]
-crbug.com/874695 external/wpt/css/cssom-view/overscrollBehavior-manual.html [ Slow ]
 crbug.com/874695 external/wpt/css/cssom-view/scroll-behavior-smooth.html [ Slow ]
 crbug.com/874695 external/wpt/css/css-transitions/transitions-animatable-properties-01.html [ Slow ]
 crbug.com/874695 external/wpt/css/css-values/vh_not_refreshing_on_chrome.html [ Slow ]
