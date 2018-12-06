@@ -4000,7 +4000,7 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
         Don't display again
       </message>
       <message name="IDS_AUTOFILL_ASSISTANT_INIT_MESSAGE" desc="Onboarding message describing autofill assistant's capability.">
-        Google Assistant can help you get things done faster and easier on the web
+        The Google Assistant saves you time by speeding you through the website's checkout.
       </message>
       <!-- Autofill Assistant preferences -->
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_TITLE" desc="Title for the Autofill Assistant preferences screen. [CHAR-LIMIT=32]">
@@ -4008,6 +4008,9 @@ However, you aren’t invisible. Going private doesn’t hide your browsing from
       </message>
       <message name="IDS_PREFS_AUTOFILL_ASSISTANT_SWITCH" desc="Title for the switch toggling whether Autofill Assistant is enabled. [CHAR-LIMIT=32]">
         Automate
+      </message>
+      <message name="IDS_AUTOFILL_ASSISTANT_GOOGLE_TERMS_DESCRIPTION" desc="Message linking to the Google terms and conditions for Fast Checkout.">
+        By continuing you agree to the Google terms and conditions for Fast Checkout. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Read more<ph name="END_LINK">&lt;/link&gt;</ph>
       </message>
     </messages>
   </release>
