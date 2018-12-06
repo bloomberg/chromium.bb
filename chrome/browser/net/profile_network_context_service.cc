@@ -367,6 +367,9 @@ ProfileNetworkContextService::CreateNetworkContextParams(
         ->matching_scheme_cookies_allowed_schemes.push_back(
             extensions::kExtensionScheme);
   }
+  network_context_params->cookie_manager_params
+      ->third_party_cookies_allowed_schemes.push_back(
+          extensions::kExtensionScheme);
 #endif
 
   ContentSettingsForOneType settings;
