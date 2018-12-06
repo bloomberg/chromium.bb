@@ -725,6 +725,21 @@ void MixedContentChecker::HandleCertificateError(
       !effective_frame)
     return;
 
+  // There should not be certificate errors for non-HTTPS responses.
+  DCHECK(response.CurrentRequestUrl().ProtocolIs("https"));
+
+  // Avoid logging in cases where the page URL is HTTP and the response
+  // URL is HTTPS.
+  if (MainResourceUrlForFrame(effective_frame).ProtocolIs("https")) {
+    String message = String::Format(
+        "Mixed Content: The page at '%s' attempted to load subresource "
+        "at '%s' over broken HTTPS.",
+        MainResourceUrlForFrame(effective_frame).ElidedString().Utf8().data(),
+        response.CurrentRequestUrl().ElidedString().Utf8().data());
+    frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel, message));
+  }
+
   // Use the current local frame's client; the embedder doesn't distinguish
   // mixed content signals from different frames on the same page.
   LocalFrameClient* client = frame->Client();
