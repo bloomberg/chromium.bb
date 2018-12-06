@@ -31,9 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTANCE_COUNTERS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_INSTANCE_COUNTERS_H_
 
+#include <atomic>
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/atomics.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
@@ -58,6 +58,13 @@ namespace blink {
   V(AdSubframe)                   \
   V(DetachedScriptState)
 
+// Atomic counters of the number of instances of objects that exist.
+//
+// Note that while these operations are atomic, they do not imply that other
+// changes to memory are visible to the accessing thread. As a result, this
+// is primarily useful where either other synchronization exists (e.g. the
+// objects are only used on one thread), or an inconsistent answer is
+// acceptable.
 class InstanceCounters {
   STATIC_ONLY(InstanceCounters);
 
@@ -76,7 +83,7 @@ class InstanceCounters {
       DCHECK(IsMainThread());
       ++counters_[kNodeCounter];
     } else {
-      AtomicIncrement(&counters_[type]);
+      counters_[type].fetch_add(1, std::memory_order_relaxed);
     }
   }
 
@@ -85,14 +92,15 @@ class InstanceCounters {
       DCHECK(IsMainThread());
       --counters_[kNodeCounter];
     } else {
-      AtomicDecrement(&counters_[type]);
+      counters_[type].fetch_sub(1, std::memory_order_relaxed);
     }
   }
 
   PLATFORM_EXPORT static int CounterValue(CounterType);
 
  private:
-  PLATFORM_EXPORT static int counters_[];
+  PLATFORM_EXPORT static std::atomic_int counters_[];
+  PLATFORM_EXPORT static int node_counter_;
 };
 
 }  // namespace blink
