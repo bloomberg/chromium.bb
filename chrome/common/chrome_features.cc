@@ -387,7 +387,7 @@ const char kNewNetErrorPageUIAlternateContentPreview[] = "content_preview";
 
 #if !defined(OS_ANDROID)
 const base::Feature kNewTabLoadingAnimation{"NewTabLoadingAnimation",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // !OS_ANDROID
 
 #if defined(OS_POSIX)

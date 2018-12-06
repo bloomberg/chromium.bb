@@ -151,9 +151,6 @@ bool TabIcon::ShowingLoadingAnimation() const {
   if (NetworkStateIsAnimated(network_state_))
     return true;
 
-  if (!UseNewLoadingAnimation())
-    return false;
-
   if (LoadingAnimationNeedsRepaint())
     return true;
 
@@ -185,20 +182,14 @@ void TabIcon::SetCanPaintToLayer(bool can_paint_to_layer) {
 }
 
 void TabIcon::StepLoadingAnimation(const base::TimeDelta& elapsed_time) {
-  // The old loading animation only updates elapsed time while it's loading.
-  // This is used as a starting point for PaintThrobberSpinningAfterWaiting().
-  if (UseNewLoadingAnimation() || network_state_ == TabNetworkState::kWaiting)
-    waiting_state_.elapsed_time = elapsed_time;
+  waiting_state_.elapsed_time = elapsed_time;
 
   UpdatePendingAnimationState();
 
   if (LoadingAnimationNeedsRepaint())
     SchedulePaint();
 
-  // TODO(pbos): Revisit this, ideally we should always be able to paint on a
-  // layer.
-  if (UseNewLoadingAnimation())
-    RefreshLayer();
+  RefreshLayer();
 }
 
 void TabIcon::SetBackgroundColor(SkColor bg_color) {
@@ -446,8 +437,6 @@ const gfx::ImageSkia& TabIcon::GetIconToPaint() {
 
 void TabIcon::MaybePaintFaviconPlaceholder(gfx::Canvas* canvas,
                                            const gfx::Rect& bounds) {
-  if (!UseNewLoadingAnimation())
-    return;
   if (!animation_state_.favicon_placeholder_alpha)
     return;
   cc::PaintFlags flags;
@@ -469,16 +458,14 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
                                 const gfx::Rect& bounds) {
   // While loading, the favicon (or placeholder) isn't drawn until it has
   // started fading in.
-  if (UseNewLoadingAnimation() && !animation_state_.favicon_fade_in_progress)
+  if (!animation_state_.favicon_fade_in_progress)
     return;
 
   if (icon.isNull())
     return;
 
   cc::PaintFlags flags;
-  double fade_in_progress = UseNewLoadingAnimation()
-                                ? *animation_state_.favicon_fade_in_progress
-                                : 1.0;
+  double fade_in_progress = *animation_state_.favicon_fade_in_progress;
   flags.setAlpha(fade_in_progress * SK_AlphaOPAQUE);
   // Drop in the new favicon from the top while it's fading in.
   const int offset = round((fade_in_progress - 1.0) * 4.0);
@@ -495,9 +482,6 @@ bool TabIcon::HasNonDefaultFavicon() const {
 }
 
 void TabIcon::MaybeStartFaviconFadeIn() {
-  if (!UseNewLoadingAnimation())
-    return;
-
   if (pending_animation_state_.favicon_fade_in_progress)
     return;
 
@@ -537,11 +521,6 @@ void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
 
 void TabIcon::SetNetworkState(TabNetworkState network_state,
                               float load_progress) {
-  if (!UseNewLoadingAnimation()) {
-    network_state_ = network_state;
-    return;
-  }
-
   if (network_state_ != network_state) {
     TabNetworkState old_state = network_state_;
     network_state_ = network_state;
