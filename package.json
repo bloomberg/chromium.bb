@@ -1,0 +1,24 @@
+{
+  "name": "cts-experiment",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kainino0x/cts-experiment.git"
+  },
+  "author": "Kai Ninomiya <kainino@chromium.org>",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/kainino0x/cts-experiment/issues"
+  },
+  "homepage": "https://github.com/kainino0x/cts-experiment#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^3.2.1"
+  }
+}
