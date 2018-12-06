@@ -2122,14 +2122,18 @@ virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-
 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/outofblink-cors/external/wpt/xhr/send-authentication-existing-session-manual.htm [ WontFix ]
 virtual/outofblink-cors/external/wpt/xhr/send-authentication-prompt-2-manual.htm [ WontFix ]
-virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
-virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
-virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
+virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-backward-navigation-manual.https.html [ WontFix ]
+virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-history-forward-navigation-manual.https.html [ WontFix ]
+virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-event-is-reload-navigation-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-abort-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onerror-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-onresult-manual.https.html [ WontFix ]
 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechRecognition-stop-manual.https.html [ WontFix ]
 [ Retina ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ WontFix ]
+
+# See crbug.com/865839.
+virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ WontFix ]
+
 
 # ====== Tests incompatible with the default Site Isolation from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md

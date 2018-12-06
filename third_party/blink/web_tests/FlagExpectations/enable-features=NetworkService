@@ -34,3 +34,7 @@ Bug(none) virtual/outofblink-cors [ Skip ]
 # Skip virtual/outofblink-cors-ns on this bot, since when run normally it
 # already forces NetworkService on, so there is no need to run it again here.
 Bug(none) virtual/outofblink-cors-ns [ Skip ]
+
+# NetworkService needs S13nServiceWorker. Running these test with
+# NetworkService doesn't make sense.
+Bug(none) virtual/disabled-service-worker-servicification [ Skip ]
