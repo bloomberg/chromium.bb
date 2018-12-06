@@ -684,6 +684,17 @@ js_library("task_controller") {
   ]
 }
 
+js_unittest("task_controller_unittest") {
+  deps = [
+    ":task_controller",
+    "metadata:mock_metadata",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/background/js:mock_crostini",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+  ]
+}
+
 js_library("task_history") {
   deps = [
     "//ui/webui/resources/js/cr:event_target",
@@ -741,6 +752,7 @@ js_unit_tests("unit_tests") {
     ":progress_center_item_group_unittest",
     ":providers_model_unittest",
     ":spinner_controller_unittest",
+    ":task_controller_unittest",
     ":thumbnail_loader_unittest",
   ]
 }
