@@ -38,7 +38,7 @@
 #include "ui/views/metrics.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #endif  // defined(OS_CHROMEOS)
 
 // static

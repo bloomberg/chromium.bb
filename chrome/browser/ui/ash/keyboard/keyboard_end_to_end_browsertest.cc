@@ -6,7 +6,7 @@
 #include "base/files/file.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/input_method/textinput_test_helper.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"

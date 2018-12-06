@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_CONTROLLER_CLIENT_TEST_HELPER_H_
-#define CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_CONTROLLER_CLIENT_TEST_HELPER_H_
+#ifndef CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_CONTROLLER_CLIENT_TEST_HELPER_H_
+#define CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_CONTROLLER_CLIENT_TEST_HELPER_H_
 
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "chrome/browser/ui/ash/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 
 namespace service_manager {
 class Connector;
@@ -55,4 +55,4 @@ class ChromeKeyboardControllerClientTestHelper {
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardControllerClientTestHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_CHROME_KEYBOARD_CONTROLLER_CLIENT_TEST_HELPER_H_
+#endif  // CHROME_BROWSER_UI_ASH_KEYBOARD_CHROME_KEYBOARD_CONTROLLER_CLIENT_TEST_HELPER_H_
