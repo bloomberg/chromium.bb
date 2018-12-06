@@ -1416,11 +1416,24 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   if (is_syncing_for_test_)
     return true;
 
+  if (!sync_service_)
+    return false;
+
+  // For SyncTransport, only show server cards if the user has opted in to
+  // seeing them in the dropdown.
+  if (!sync_service_->IsSyncFeatureEnabled() &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillEnableAccountWalletStorage) &&
+      !prefs::IsUserOptedInWalletSyncTransport(
+          pref_service_,
+          sync_service_->GetAuthenticatedAccountInfo().account_id)) {
+    return false;
+  }
+
   // Server cards should be suggested if the sync service is active.
   // We check for persistent auth errors, because we don't want to offer server
   // cards when the user is in the "sync paused" state.
-  return sync_service_ &&
-         sync_service_->GetActiveDataTypes().Has(
+  return sync_service_->GetActiveDataTypes().Has(
              syncer::AUTOFILL_WALLET_DATA) &&
          !sync_service_->GetAuthError().IsPersistentError();
 }
@@ -2053,7 +2066,7 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
       features::kAutofillEnableAccountWalletStorage));
 
   // The option should only be shown if the user has not already accepted it.
-  return !::autofill::prefs::IsUserOptedInWalletSyncTransport(
+  return !prefs::IsUserOptedInWalletSyncTransport(
       pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);
 }
 
