@@ -44,6 +44,7 @@ from chromite.lib import sudo
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 from chromite.lib import ts_mon_config
+from chromite.lib.buildstore import BuildStore
 
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
@@ -157,6 +158,7 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
   with parallel.Manager() as manager:
     builder_run = cbuildbot_run.BuilderRun(
         options, site_config, build_config, manager)
+    buildstore = BuildStore()
     if metadata_dump_dict:
       builder_run.attrs.metadata.UpdateWithDict(metadata_dump_dict)
 
@@ -167,9 +169,9 @@ def _RunBuildStagesWrapper(options, site_config, build_config):
       else:
         builder_cls_name = 'simple_builders.SimpleBuilder'
       builder_cls = builders.GetBuilderClass(builder_cls_name)
-      builder = builder_cls(builder_run)
+      builder = builder_cls(builder_run, buildstore)
     else:
-      builder = builders.Builder(builder_run)
+      builder = builders.Builder(builder_run, buildstore)
 
     if not builder.Run():
       sys.exit(1)

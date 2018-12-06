@@ -29,9 +29,11 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import timeout_util
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
 
 # pylint: disable=too-many-ancestors,protected-access
+
 
 class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                         cbuildbot_unittest.SimpleBuilderTestCase):
@@ -50,10 +52,12 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         self.build_root, 'src/build/images/amd64-generic/latest-cbuildbot')
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return test_stages.UnitTestStage(self._run, self._current_board)
+    return test_stages.UnitTestStage(self._run, self.buildstore,
+                                     self._current_board)
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
@@ -62,7 +66,10 @@ class UnitTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.RunStage()
     makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
     self.rununittests_mock.assert_called_once_with(
-        self.build_root, self._current_board, blacklist=[], extra_env=mock.ANY,
+        self.build_root,
+        self._current_board,
+        blacklist=[],
+        extra_env=mock.ANY,
         build_stage=True)
     self.buildunittests_mock.assert_called_once_with(
         self.build_root, self._current_board,
@@ -84,14 +91,16 @@ class UnitTestOnlyStageTest(generic_stages_unittest.AbstractStageTestCase,
         commands, 'BuildUnitTestTarball', return_value='unit_tests.tar')
     self.uploadartifact_mock = self.PatchObject(
         generic_stages.ArchivingStageMixin, 'UploadArtifact')
-    self.image_dir = os.path.join(
-        self.build_root, 'src/build/images/grunt/latest-cbuildbot')
+    self.image_dir = os.path.join(self.build_root,
+                                  'src/build/images/grunt/latest-cbuildbot')
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return test_stages.UnitTestStage(self._run, self._current_board)
+    return test_stages.UnitTestStage(self._run, self.buildstore,
+                                     self._current_board)
 
   def testFullTests(self):
     """Tests if full unit tests are run correctly."""
@@ -100,7 +109,10 @@ class UnitTestOnlyStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.RunStage()
     makedirs_mock.assert_called_once_with(self._run.GetArchive().archive_path)
     self.rununittests_mock.assert_called_once_with(
-        self.build_root, self._current_board, blacklist=[], extra_env=mock.ANY,
+        self.build_root,
+        self._current_board,
+        blacklist=[],
+        extra_env=mock.ANY,
         build_stage=False)
     self.buildunittests_mock.assert_called_once_with(
         self.build_root, self._current_board,
@@ -119,16 +131,15 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self.run_suite_mock = self.PatchObject(commands, 'RunHWTestSuite')
-    self.warning_mock = self.PatchObject(
-        logging, 'PrintBuildbotStepWarnings')
-    self.failure_mock = self.PatchObject(
-        logging, 'PrintBuildbotStepFailure')
+    self.warning_mock = self.PatchObject(logging, 'PrintBuildbotStepWarnings')
+    self.failure_mock = self.PatchObject(logging, 'PrintBuildbotStepFailure')
 
     self.suite_config = None
     self.suite = None
     self.version = None
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def _Prepare(self, bot_id=None, version=None, warn_only=False, **kwargs):
     super(HWTestStageTest, self)._Prepare(bot_id, **kwargs)
@@ -143,10 +154,14 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._run.GetArchive().SetupArchivePath()
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
     board_runattrs.SetParallelDefault('test_artifacts_uploaded', True)
-    return test_stages.HWTestStage(
-        self._run, self._current_board, self._model, self.suite_config)
+    return test_stages.HWTestStage(self._run, self.buildstore,
+                                   self._current_board, self._model,
+                                   self.suite_config)
 
-  def _RunHWTestSuite(self, debug=False, fails=False, warns=False,
+  def _RunHWTestSuite(self,
+                      debug=False,
+                      fails=False,
+                      warns=False,
                       cmd_fail_mode=None):
     """Verify the stage behavior in various circumstances.
 
@@ -164,8 +179,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.warning_mock.reset_mock()
     self.failure_mock.reset_mock()
 
-    mock_report = self.PatchObject(
-        test_stages.HWTestStage, 'ReportHWTestResults')
+    mock_report = self.PatchObject(test_stages.HWTestStage,
+                                   'ReportHWTestResults')
 
     to_raise = None
 
@@ -216,8 +231,9 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testRemoteTrybotWithHWTest(self):
     """Test remote trybot with hw test enabled"""
-    cmd_args = ['--remote-trybot', '-r', self.build_root, '--hwtest',
-                self.BOT_ID]
+    cmd_args = [
+        '--remote-trybot', '-r', self.build_root, '--hwtest', self.BOT_ID
+    ]
     self._Prepare(cmd_args=cmd_args)
     self._RunHWTestSuite()
 
@@ -349,8 +365,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 """
     json_dump_dict = json.loads(json_str)
     db = fake_cidb.FakeCIDBConnection()
-    build_id = db.InsertBuild('build_1', 1,
-                              'build_1', 'bot_hostname')
+    build_id = db.InsertBuild('build_1', 1, 'build_1', 'bot_hostname')
 
     # When json_dump_dict is None
     self.assertIsNone(stage.ReportHWTestResults(None, build_id, db))
@@ -377,8 +392,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Test PerformStage on CQ."""
     self._Prepare('eve-paladin')
     stage = self.ConstructStage()
-    mock_report = self.PatchObject(
-        test_stages.HWTestStage, 'ReportHWTestResults')
+    mock_report = self.PatchObject(test_stages.HWTestStage,
+                                   'ReportHWTestResults')
     cmd_result = mock.Mock(to_raise=None)
     self.PatchObject(commands, 'RunHWTestSuite', return_value=cmd_result)
     stage.PerformStage()
@@ -396,30 +411,36 @@ class ImageTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._test_root = os.path.join(self.build_root, 'tmp/results_dir')
-    self.PatchObject(commands, 'CreateTestRoot', autospec=True,
-                     return_value='/tmp/results_dir')
-    self.PatchObject(path_util, 'ToChrootPath',
-                     side_effect=lambda x: x)
+    self.PatchObject(
+        commands,
+        'CreateTestRoot',
+        autospec=True,
+        return_value='/tmp/results_dir')
+    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(ImageTestStageTest, self)._Prepare(bot_id, **kwargs)
     self._run.GetArchive().SetupArchivePath()
 
   def ConstructStage(self):
-    return test_stages.ImageTestStage(self._run, self._current_board)
+    return test_stages.ImageTestStage(self._run, self.buildstore,
+                                      self._current_board)
 
   def testPerformStage(self):
     """Tests that we correctly run test-image script."""
     stage = self.ConstructStage()
     stage.PerformStage()
     cmd = [
-        'sudo', '--',
+        'sudo',
+        '--',
         os.path.join(self.build_root, 'chromite', 'bin', 'test_image'),
-        '--board', self._current_board,
+        '--board',
+        self._current_board,
         '--test_results_root',
-        path_util.ToChrootPath(os.path.join(self._test_root,
-                                            'image_test_results')),
+        path_util.ToChrootPath(
+            os.path.join(self._test_root, 'image_test_results')),
         path_util.ToChrootPath(stage.GetImageDirSymlink()),
     ]
     self.assertCommandContains(cmd)
@@ -436,9 +457,10 @@ class CbuildbotLaunchTestEndToEndTest(
         cros_build_lib.RunCommandError('msg', 1), 'cros tryjob')
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return test_stages.CbuildbotLaunchTestStage(self._run)
+    return test_stages.CbuildbotLaunchTestStage(self._run, self.buildstore)
 
   def testFullPassRun(self):
     """Runs through CbuildbotLaunchTestStage.
@@ -446,19 +468,25 @@ class CbuildbotLaunchTestEndToEndTest(
     This includes 4 runs through CbuildbotLaunchTestBuildStage.
     """
     # Tryjob command will: Fail, Pass, Pass, Pass.
-    self.tryjob_mock.side_effect = iter([
-        self.tryjob_failure_exception, None, None, None])
+    self.tryjob_mock.side_effect = iter(
+        [self.tryjob_failure_exception, None, None, None])
 
     self.RunStage()
 
+
 class HWTestPlanStageTest(cros_test_lib.MockTempDirTestCase):
   """Tests for the HWTestPlanStageTest."""
+
   def setUp(self):
     self.buildroot = os.path.join(self.tempdir, 'buildroot')
+    self.buildstore = FakeBuildStore()
 
-  def _initConfig(
-      self, bot_id, master=False, extra_argv=None, override_hw_test_config=None,
-      models=None):
+  def _initConfig(self,
+                  bot_id,
+                  master=False,
+                  extra_argv=None,
+                  override_hw_test_config=None,
+                  models=None):
     """Return normal options/build_config for |bot_id|"""
     site_config = config_lib.GetConfig()
     build_config = copy.deepcopy(site_config[bot_id])
@@ -482,15 +510,13 @@ class HWTestPlanStageTest(cros_test_lib.MockTempDirTestCase):
         for hw_test in build_config.hw_tests:
           setattr(hw_test, key, val)
 
-    return cbuildbot_run.BuilderRun(
-        options, site_config, build_config, parallel.Manager())
+    return cbuildbot_run.BuilderRun(options, site_config, build_config,
+                                    parallel.Manager())
 
   def testGetHWTestStageWithPerModelFilters(self):
     """Verify hwtests are filtered correctly on a per-model basis"""
     extra_argv = ['--hwtest']
-    unified_build = self._initConfig(
-        'eve-release',
-        extra_argv=extra_argv)
+    unified_build = self._initConfig('eve-release', extra_argv=extra_argv)
     unified_build.attrs.chrome_version = 'TheChromeVersion'
 
     test_phase1 = unified_build.config.hw_tests[0]
@@ -499,26 +525,17 @@ class HWTestPlanStageTest(cros_test_lib.MockTempDirTestCase):
     model1 = config_lib.ModelTestConfig('model1', 'some_lab_board')
     model2 = config_lib.ModelTestConfig('model2', 'mode11', [test_phase2.suite])
 
-    stage = test_stages.TestPlanStage(unified_build, 'eve')
+    stage = test_stages.TestPlanStage(unified_build, self.buildstore, 'eve')
 
-    hw_stage = stage._GetHWTestStage(
-        unified_build,
-        'eve',
-        model1,
-        test_phase1)
+    hw_stage = stage._GetHWTestStage(unified_build, self.buildstore, 'eve',
+                                     model1, test_phase1)
     self.assertIsNotNone(hw_stage)
     self.assertEqual(hw_stage._board_name, 'some_lab_board')
 
-    hw_stage = stage._GetHWTestStage(
-        unified_build,
-        'eve',
-        model2,
-        test_phase1)
+    hw_stage = stage._GetHWTestStage(unified_build, self.buildstore, 'eve',
+                                     model2, test_phase1)
     self.assertIsNone(hw_stage)
 
-    hw_stage = stage._GetHWTestStage(
-        unified_build,
-        'eve',
-        model2,
-        test_phase2)
+    hw_stage = stage._GetHWTestStage(unified_build, self.buildstore, 'eve',
+                                     model2, test_phase2)
     self.assertIsNotNone(hw_stage)

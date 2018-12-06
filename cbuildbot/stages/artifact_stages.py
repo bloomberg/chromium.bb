@@ -29,7 +29,6 @@ from chromite.lib import parallel
 from chromite.lib import path_util
 from chromite.lib import portage_util
 
-
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
 
@@ -40,6 +39,7 @@ class DebugSymbolsUploadException(Exception):
 
 class NothingToArchiveException(Exception):
   """Thrown if ArchiveStage found nothing to archive."""
+
   def __init__(self, message='No images found to archive.'):
     super(NothingToArchiveException, self).__init__(message)
 
@@ -59,8 +59,13 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
   category = constants.CI_INFRA_STAGE
 
   # This stage is intended to run in the background, in parallel with tests.
-  def __init__(self, builder_run, board, chrome_version=None, **kwargs):
-    super(ArchiveStage, self).__init__(builder_run, board, **kwargs)
+  def __init__(self,
+               builder_run,
+               buildstore,
+               board,
+               chrome_version=None,
+               **kwargs):
+    super(ArchiveStage, self).__init__(builder_run, buildstore, board, **kwargs)
     self.chrome_version = chrome_version
 
     # TODO(mtennant): Places that use this release_tag attribute should
@@ -88,10 +93,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
   def ArchiveStrippedPackages(self):
     """Generate and archive stripped versions of packages requested."""
     tarball = commands.BuildStrippedPackagesTarball(
-        self._build_root,
-        self._current_board,
-        self._run.config.upload_stripped_packages,
-        self.archive_path)
+        self._build_root, self._current_board,
+        self._run.config.upload_stripped_packages, self.archive_path)
     if tarball is not None:
       self._upload_queue.put([tarball])
 
@@ -200,9 +203,9 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       # Build and upload factory zip if needed.
       if factory_install_symlink or config['factory_toolkit']:
-        filename = commands.BuildFactoryZip(
-            buildroot, board, archive_path, factory_install_symlink,
-            self._run.attrs.release_tag)
+        filename = commands.BuildFactoryZip(buildroot, board, archive_path,
+                                            factory_install_symlink,
+                                            self._run.attrs.release_tag)
         self._release_upload_queue.put([filename])
 
     def ArchiveStandaloneArtifact(artifact_info):
@@ -223,9 +226,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       This includes all the files in /build/$BOARD/tmp/portage/logs.
       """
-      tarpath = commands.BuildEbuildLogsTarball(self._build_root,
-                                                self._current_board,
-                                                self.archive_path)
+      tarpath = commands.BuildEbuildLogsTarball(
+          self._build_root, self._current_board, self.archive_path)
       if tarpath is not None:
         self._upload_queue.put([tarpath])
 
@@ -244,16 +246,15 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       # TODO(petermayo): This logic needs to be exported from the BuildTargets
       # stage rather than copied/re-evaluated here.
       # TODO(mtennant): Make this autotest_built concept into a run param.
-      autotest_built = (self._run.options.tests and
-                        config['upload_hw_test_artifacts'])
+      autotest_built = (
+          self._run.options.tests and config['upload_hw_test_artifacts'])
 
       if config['hwqual'] and autotest_built:
         # Build the full autotest tarball for hwqual image. We don't upload it,
         # as it's fairly large and only needed by the hwqual tarball.
         logging.info('Archiving full autotest tarball locally ...')
-        tarball = commands.BuildFullAutotestTarball(self._build_root,
-                                                    self._current_board,
-                                                    image_dir)
+        tarball = commands.BuildFullAutotestTarball(
+            self._build_root, self._current_board, image_dir)
         self.board_runattrs.SetParallel('autotest_tarball_generated', True)
         commands.ArchiveFile(tarball, archive_path)
 
@@ -297,10 +298,12 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
         self._recovery_image_status_queue.put(True)
         recovery_image = constants.RECOVERY_IMAGE_BIN
         if not self.IsArchivedFile(recovery_image):
-          info = {'paths': [recovery_image],
-                  'input': [recovery_image],
-                  'archive': 'tar',
-                  'compress': 'xz'}
+          info = {
+              'paths': [recovery_image],
+              'input': [recovery_image],
+              'archive': 'tar',
+              'compress': 'xz'
+          }
           self.artifacts.append(info)
       else:
         self._recovery_image_status_queue.put(False)
@@ -356,8 +359,10 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
     def BuildAndArchiveArtifacts():
       # Run archiving steps in parallel.
-      steps = [ArchiveReleaseArtifacts, ArchiveManifest,
-               self.ArchiveStrippedPackages, ArchiveEbuildLogs]
+      steps = [
+          ArchiveReleaseArtifacts, ArchiveManifest,
+          self.ArchiveStrippedPackages, ArchiveEbuildLogs
+      ]
       if config['images']:
         steps.append(ArchiveImageScripts)
 
@@ -433,9 +438,7 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     Returns:
       Boolean that authorizes running of this stage.
     """
-    return self.board_runattrs.GetParallel('unittest_completed',
-                                           timeout=None)
-
+    return self.board_runattrs.GetParallel('unittest_completed', timeout=None)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -479,7 +482,10 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   def UploadDebugBreakpadTarball(self):
     """Generate and upload the debug tarball with only breakpad files."""
     filename = commands.GenerateDebugTarball(
-        self._build_root, self._current_board, self.archive_path, False,
+        self._build_root,
+        self._current_board,
+        self.archive_path,
+        False,
         archive_name='debug_breakpad.tar.xz')
     self.UploadArtifact(filename, archive=False)
 
@@ -547,9 +553,10 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
   config_name = 'prebuilts'
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, board, version=None, **kwargs):
+  def __init__(self, builder_run, buildstore, board, version=None, **kwargs):
     self.prebuilts_version = version
-    super(UploadPrebuiltsStage, self).__init__(builder_run, board, **kwargs)
+    super(UploadPrebuiltsStage, self).__init__(builder_run, buildstore, board,
+                                               **kwargs)
 
   def GenerateCommonArgs(self):
     """Generate common prebuilt arguments."""
@@ -658,7 +665,8 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     if public_builders or public:
       public_board = board if public else None
       prebuilts.UploadPrebuilts(
-          private_bucket=False, board=public_board,
+          private_bucket=False,
+          board=public_board,
           extra_args=generated_args + public_args,
           **common_kwargs)
 
@@ -666,7 +674,8 @@ class UploadPrebuiltsStage(generic_stages.BoardSpecificBuilderStage):
     if private_builders or not public:
       private_board = board if not public else None
       prebuilts.UploadPrebuilts(
-          private_bucket=True, board=private_board,
+          private_bucket=True,
+          board=private_board,
           extra_args=generated_args + private_args,
           **common_kwargs)
 
@@ -725,8 +734,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
   def BuildUpdatePayloads(self):
     """Archives update payloads when they are ready."""
     # If we are not configured to generate payloads, don't.
-    if not (self._run.options.build and
-            self._run.options.tests and
+    if not (self._run.options.build and self._run.options.tests and
             self._run.config.upload_hw_test_artifacts and
             self._run.config.images):
       return
@@ -769,6 +777,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
     return super(UploadTestArtifactsStage, self)._HandleStageException(exc_info)
 
+
 # TODO(mtennant): This class continues to exist only for subclasses that still
 # need self.archive_stage.  Hopefully, we can get rid of that need, eventually.
 class ArchivingStage(generic_stages.BoardSpecificBuilderStage,
@@ -783,9 +792,11 @@ class ArchivingStage(generic_stages.BoardSpecificBuilderStage,
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, board, archive_stage, **kwargs):
-    super(ArchivingStage, self).__init__(builder_run, board, **kwargs)
+  def __init__(self, builder_run, buildstore, board, archive_stage, **kwargs):
+    super(ArchivingStage, self).__init__(builder_run, buildstore, board,
+                                         **kwargs)
     self.archive_stage = archive_stage
+
 
 # This stage generates and uploads the sysroot for the build
 # containing all the packages built previously in build packages stage.
@@ -808,16 +819,19 @@ class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
     if self._run.config.useflags:
       extra_env['USE'] = ' '.join(self._run.config.useflags)
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
-    cmd = ['cros_generate_sysroot', '--out-file', sysroot_tarball, '--out-dir',
-           in_chroot_path, '--board', self._current_board, '--package',
-           ' '.join(pkgs)]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
-                              extra_env=extra_env)
+    cmd = [
+        'cros_generate_sysroot', '--out-file', sysroot_tarball, '--out-dir',
+        in_chroot_path, '--board', self._current_board, '--package',
+        ' '.join(pkgs)
+    ]
+    cros_build_lib.RunCommand(
+        cmd, cwd=self._build_root, enter_chroot=True, extra_env=extra_env)
     self._upload_queue.put([sysroot_tarball])
 
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._GenerateSysroot()
+
 
 # This stage generates and uploads the clang-tidy warnings files for the
 # build, for all the packages built in build packages stage with
@@ -865,9 +879,11 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
     out_chroot_path = os.path.abspath(
         os.path.join(self._build_root, 'chroot', self.archive_path))
-    cmd = ['cros_generate_tidy_warnings', '--out-file', clang_tidy_tarball,
-           '--out-dir', in_chroot_path, '--board', self._current_board,
-           '--logs-dir', logs_dir]
+    cmd = [
+        'cros_generate_tidy_warnings', '--out-file', clang_tidy_tarball,
+        '--out-dir', in_chroot_path, '--board', self._current_board,
+        '--logs-dir', logs_dir
+    ]
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
     self._UploadTidyWarnings(out_chroot_path, clang_tidy_tarball)
     self._upload_queue.put([clang_tidy_tarball])

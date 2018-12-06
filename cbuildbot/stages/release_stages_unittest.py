@@ -17,12 +17,12 @@ from chromite.lib import failures_lib
 from chromite.lib import parallel
 from chromite.lib import results_lib
 from chromite.lib import timeout_util
+from chromite.lib.buildstore import FakeBuildStore
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
-
 
 # pylint: disable=protected-access
 
@@ -45,15 +45,17 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return release_stages.SigningStage(self._run, self._current_board)
+    return release_stages.SigningStage(self._run, self.buildstore,
+                                       self._current_board)
 
   def testWaitForPushImageSuccess(self):
     """Test waiting for input from PushImage."""
     stage = self.ConstructStage()
-    stage.board_runattrs.SetParallel(
-        'instruction_urls_per_channel', self.INSNS_URLS_PER_CHANNEL)
+    stage.board_runattrs.SetParallel('instruction_urls_per_channel',
+                                     self.INSNS_URLS_PER_CHANNEL)
 
     self.assertEqual(stage.WaitUntilReady(), True)
     self.assertEqual(stage.instruction_urls_per_channel,
@@ -62,8 +64,7 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testWaitForPushImageError(self):
     """Test WaitForPushImageError with an error output from pushimage."""
     stage = self.ConstructStage()
-    stage.board_runattrs.SetParallel(
-        'instruction_urls_per_channel', None)
+    stage.board_runattrs.SetParallel('instruction_urls_per_channel', None)
 
     self.assertEqual(stage.WaitUntilReady(), False)
 
@@ -79,9 +80,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
       stage = self.ConstructStage()
       stage._WaitForSigningResults(self.INSNS_URLS_PER_CHANNEL, notifier)
 
-      self.assertEqual(notifier.mock_calls,
-                       [mock.call('chan1'),
-                        mock.call('chan2')])
+      self.assertEqual(
+          notifier.mock_calls,
+          [mock.call('chan1'), mock.call('chan2')])
 
       for result in results:
         mock_gs_ctx.Cat.assert_any_call(result)
@@ -125,10 +126,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
 
-      self.assertRaisesStringifyable(
-          release_stages.SignerFailure,
-          stage._WaitForSigningResults,
-          {'chan1': ['chan1_uri1']}, notifier)
+      self.assertRaisesStringifyable(release_stages.SignerFailure,
+                                     stage._WaitForSigningResults,
+                                     {'chan1': ['chan1_uri1']}, notifier)
 
       # Ensure we didn't notify anyone of success.
       self.assertEqual(notifier.mock_calls, [])
@@ -144,8 +144,8 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
       stage = self.ConstructStage()
 
       self.assertRaises(release_stages.SignerResultsTimeout,
-                        stage._WaitForSigningResults,
-                        {'chan1': ['chan1_uri1']}, notifier)
+                        stage._WaitForSigningResults, {'chan1': ['chan1_uri1']},
+                        notifier)
 
       self.assertEqual(notifier.mock_calls, [])
 
@@ -158,11 +158,11 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
       self.assertTrue(
-          stage._CheckForResults(mock_gs_ctx,
-                                 self.INSNS_URLS_PER_CHANNEL,
+          stage._CheckForResults(mock_gs_ctx, self.INSNS_URLS_PER_CHANNEL,
                                  notifier))
-      self.assertEqual(notifier.mock_calls,
-                       [mock.call('chan1'), mock.call('chan2')])
+      self.assertEqual(
+          notifier.mock_calls,
+          [mock.call('chan1'), mock.call('chan2')])
 
   def testCheckForResultsSuccessNoChannels(self):
     """Test that _CheckForResults works when there is nothing to check for."""
@@ -181,6 +181,7 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testCheckForResultsPartialComplete(self):
     """Verify _CheckForResults handles partial signing results."""
+
     def catChan2Success(url):
       if url.startswith('chan2'):
         return self.SIGNER_RESULT
@@ -194,21 +195,23 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
       self.assertFalse(
-          stage._CheckForResults(mock_gs_ctx,
-                                 self.INSNS_URLS_PER_CHANNEL,
+          stage._CheckForResults(mock_gs_ctx, self.INSNS_URLS_PER_CHANNEL,
                                  notifier))
-      self.assertEqual(stage.signing_results, {
-          'chan1': {},
-          'chan2': {
-              'chan2_uri1.json': {
-                  'board': 'link',
-                  'channel': 'stable',
-                  'keyset': 'link-mp-v4',
-                  'status': {'status': 'passed'},
-                  'type': 'recovery'
+      self.assertEqual(
+          stage.signing_results, {
+              'chan1': {},
+              'chan2': {
+                  'chan2_uri1.json': {
+                      'board': 'link',
+                      'channel': 'stable',
+                      'keyset': 'link-mp-v4',
+                      'status': {
+                          'status': 'passed'
+                      },
+                      'type': 'recovery'
+                  }
               }
-          }
-      })
+          })
       self.assertEqual(notifier.mock_calls, [mock.call('chan2')])
 
   def testCheckForResultsUnexpectedJson(self):
@@ -220,12 +223,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
       self.assertFalse(
-          stage._CheckForResults(mock_gs_ctx,
-                                 self.INSNS_URLS_PER_CHANNEL,
+          stage._CheckForResults(mock_gs_ctx, self.INSNS_URLS_PER_CHANNEL,
                                  notifier))
-      self.assertEqual(stage.signing_results, {
-          'chan1': {}, 'chan2': {}
-      })
+      self.assertEqual(stage.signing_results, {'chan1': {}, 'chan2': {}})
       self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsMalformedJson(self):
@@ -237,12 +237,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
       self.assertFalse(
-          stage._CheckForResults(mock_gs_ctx,
-                                 self.INSNS_URLS_PER_CHANNEL,
+          stage._CheckForResults(mock_gs_ctx, self.INSNS_URLS_PER_CHANNEL,
                                  notifier))
-      self.assertEqual(stage.signing_results, {
-          'chan1': {}, 'chan2': {}
-      })
+      self.assertEqual(stage.signing_results, {'chan1': {}, 'chan2': {}})
       self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsNoResult(self):
@@ -254,12 +251,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
       self.assertFalse(
-          stage._CheckForResults(mock_gs_ctx,
-                                 self.INSNS_URLS_PER_CHANNEL,
+          stage._CheckForResults(mock_gs_ctx, self.INSNS_URLS_PER_CHANNEL,
                                  notifier))
-      self.assertEqual(stage.signing_results, {
-          'chan1': {}, 'chan2': {}
-      })
+      self.assertEqual(stage.signing_results, {'chan1': {}, 'chan2': {}})
       self.assertEqual(notifier.mock_calls, [])
 
   def testCheckForResultsFailed(self):
@@ -271,12 +265,9 @@ class SigningStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       stage = self.ConstructStage()
       self.assertFalse(
-          stage._CheckForResults(mock_gs_ctx,
-                                 self.INSNS_URLS_PER_CHANNEL,
+          stage._CheckForResults(mock_gs_ctx, self.INSNS_URLS_PER_CHANNEL,
                                  notifier))
-      self.assertEqual(stage.signing_results, {
-          'chan1': {}, 'chan2': {}
-      })
+      self.assertEqual(stage.signing_results, {'chan1': {}, 'chan2': {}})
       self.assertEqual(notifier.mock_calls, [])
 
   def testPerformStageSuccess(self):
@@ -302,14 +293,15 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
     # This method fetches a file from GS, mock it out.
-    self.validateMock = self.PatchObject(
-        paygen_build_lib, 'ValidateBoardConfig')
+    self.validateMock = self.PatchObject(paygen_build_lib,
+                                         'ValidateBoardConfig')
 
     instanceMock = mock.MagicMock()
-    self.paygenBuildMock = self.PatchObject(paygen_build_lib, 'PaygenBuild',
-                                            return_value=instanceMock)
+    self.paygenBuildMock = self.PatchObject(
+        paygen_build_lib, 'PaygenBuild', return_value=instanceMock)
 
     instanceMock.CreatePayloads.side_effect = iter([(
         'foo-suite-name',
@@ -319,14 +311,13 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   # pylint: disable=arguments-differ
   def ConstructStage(self, channels=None):
-    return release_stages.PaygenStage(self._run, self._current_board,
-                                      channels=channels)
+    return release_stages.PaygenStage(
+        self._run, self.buildstore, self._current_board, channels=channels)
 
   def testWaitUntilReadSigning(self):
     """Test that PaygenStage works when signing works."""
     stage = self.ConstructStage()
-    stage.board_runattrs.SetParallel('signed_images_ready',
-                                     ['stable', 'beta'])
+    stage.board_runattrs.SetParallel('signed_images_ready', ['stable', 'beta'])
 
     self.assertEqual(stage.WaitUntilReady(), True)
     self.assertEqual(stage.channels, ['stable', 'beta'])
@@ -356,17 +347,15 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       stage.PerformStage()
 
       # Verify that we validate with the board name in release name space.
-      self.assertEqual(
-          self.validateMock.call_args_list,
-          [mock.call('auron-yuna')])
+      self.assertEqual(self.validateMock.call_args_list,
+                       [mock.call('auron-yuna')])
 
       # Verify that we queue up work
-      self.assertEqual(
-          queue.put.call_args_list,
-          [mock.call(('stable', 'auron-yuna', '0.0.1',
-                      False, False, False, True)),
-           mock.call(('beta', 'auron-yuna', '0.0.1',
-                      False, False, False, True))])
+      self.assertEqual(queue.put.call_args_list, [
+          mock.call(
+              ('stable', 'auron-yuna', '0.0.1', False, False, False, True)),
+          mock.call(('beta', 'auron-yuna', '0.0.1', False, False, False, True))
+      ])
 
   def testPerformStageNoChannels(self):
     """Test that PaygenStage works when signing works."""
@@ -392,12 +381,10 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       # Notice that we didn't put anything in _wait_for_channel_signing, but
       # still got results right away.
-      self.assertEqual(
-          queue.put.call_args_list,
-          [mock.call(('foo', 'auron-yuna', '0.0.1',
-                      False, False, False, True)),
-           mock.call(('bar', 'auron-yuna', '0.0.1',
-                      False, False, False, True))])
+      self.assertEqual(queue.put.call_args_list, [
+          mock.call(('foo', 'auron-yuna', '0.0.1', False, False, False, True)),
+          mock.call(('bar', 'auron-yuna', '0.0.1', False, False, False, True))
+      ])
 
   def testPerformStageUnknownBoard(self):
     """Test that PaygenStage exits when an unknown board is specified."""
@@ -419,20 +406,29 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
       # Call the method under test.
-      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                True, False, False, skip_duts_check=False)
+      stage._RunPaygenInProcess(
+          'foo',
+          'foo-board',
+          'foo-version',
+          True,
+          False,
+          False,
+          skip_duts_check=False)
       # Ensure that PaygenTestStage is created and schedules the test suite
       # with the correct arguments.
       sched_tests.assert_called_once_with(
-          'foo-suite-name', 'foo-archive-board', None, 'foo-archive-build',
-          False, True, job_keyvals=mock.ANY)
+          'foo-suite-name',
+          'foo-archive-board',
+          None,
+          'foo-archive-build',
+          False,
+          True,
+          job_keyvals=mock.ANY)
 
     # Ensure arguments are properly converted and passed along.
     self.paygenBuildMock.assert_called_with(
         gspaths.Build(
-            version='foo-version',
-            board='foo-board',
-            channel='foo-channel'),
+            version='foo-version', board='foo-board', channel='foo-channel'),
         work_dir=mock.ANY,
         site_config=stage._run.site_config,
         dry_run=True,
@@ -444,15 +440,21 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
     # Call the method under test.
     # Use release tools channel naming, and a board name including a variant.
     stage = self.ConstructStage()
-    stage._RunPaygenInProcess('foo-channel', 'foo-board-variant',
-                              'foo-version', True, True, True,
-                              skip_duts_check=False)
+    stage._RunPaygenInProcess(
+        'foo-channel',
+        'foo-board-variant',
+        'foo-version',
+        True,
+        True,
+        True,
+        skip_duts_check=False)
 
     # Ensure arguments are properly converted and passed along.
     self.paygenBuildMock.assert_called_with(
-        gspaths.Build(version='foo-version',
-                      board='foo-board-variant',
-                      channel='foo-channel'),
+        gspaths.Build(
+            version='foo-version',
+            board='foo-board-variant',
+            channel='foo-channel'),
         dry_run=True,
         work_dir=mock.ANY,
         site_config=stage._run.site_config,
@@ -460,34 +462,53 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         skip_duts_check=False)
 
   def testRunPaygenInProcessWithUnifiedBuild(self):
-    self._run.config.models = [config_lib.ModelTestConfig('model1', 'model1'),
-                               config_lib.ModelTestConfig(
-                                   'model2', 'board', ['au'])]
+    self._run.config.models = [
+        config_lib.ModelTestConfig('model1', 'model1'),
+        config_lib.ModelTestConfig('model2', 'board', ['au'])
+    ]
 
     # Have to patch and verify that the PaygenTestStage is created.
     stage = self.ConstructStage()
 
     with patch(paygen_build_lib, 'ScheduleAutotestTests') as sched_tests:
       # Call the method under test.
-      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                True, False, False, skip_duts_check=False)
+      stage._RunPaygenInProcess(
+          'foo',
+          'foo-board',
+          'foo-version',
+          True,
+          False,
+          False,
+          skip_duts_check=False)
       # Ensure that the first model from the unified build was selected
       # as the platform to be tested
       sched_tests.assert_called_once_with(
-          'foo-suite-name', 'board', 'model2', 'foo-archive-build',
-          False, True, job_keyvals=mock.ANY)
+          'foo-suite-name',
+          'board',
+          'model2',
+          'foo-archive-build',
+          False,
+          True,
+          job_keyvals=mock.ANY)
 
   def testRunPaygenInParallelWithUnifiedBuild(self):
     self._run.config.models = [
         config_lib.ModelTestConfig('model1', 'model1', ['au']),
-        config_lib.ModelTestConfig('model2', 'model1', ['au'])]
+        config_lib.ModelTestConfig('model2', 'model1', ['au'])
+    ]
 
     # Have to patch and verify that the PaygenTestStage is created.
     stage = self.ConstructStage()
 
     with patch(parallel, 'RunParallelSteps') as parallel_tests:
-      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
-                                True, False, False, skip_duts_check=False)
+      stage._RunPaygenInProcess(
+          'foo',
+          'foo-board',
+          'foo-version',
+          True,
+          False,
+          False,
+          skip_duts_check=False)
       parallel_tests.assert_called_once_with([mock.ANY, mock.ANY])
 
 
@@ -501,11 +522,13 @@ class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   # pylint: disable=arguments-differ
   def ConstructStage(self):
     return release_stages.PaygenBuildStage(
         self._run,
+        self.buildstore,
         board=self._current_board,
         channel='foochan',
         version='foo-version',
@@ -519,6 +542,7 @@ class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
     stage = self.ConstructStage()
     self.assertEqual(stage.name, 'PaygenBuildFoochan')
 
+
 class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                           cbuildbot_unittest.SimpleBuilderTestCase):
   """Test the PaygenTestStage stage."""
@@ -529,11 +553,13 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   # pylint: disable=arguments-differ
   def ConstructStage(self):
     return release_stages.PaygenTestStage(
         builder_run=self._run,
+        buildstore=self.buildstore,
         suite_name='foo-test-suite',
         board=self._current_board,
         model=self._current_board,
@@ -559,8 +585,7 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
       with patch(stage, '_HandleExceptionAsWarning') as warning_handler:
         warning_handler.return_value = (results_lib.Results.FORGIVEN,
-                                        'description',
-                                        0)
+                                        'description', 0)
 
         stage.Run()
 

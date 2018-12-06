@@ -45,15 +45,16 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
   a dummy version of metadata.json.
   """
 
-  def __init__(self, builder_run, build_root, **kwargs):
+  def __init__(self, builder_run, buildstore, build_root, **kwargs):
     """Initializer.
 
     Args:
       builder_run: BuilderRun object.
+      buildstore: BuildStore instance to make DB calls with.
       build_root: Fully qualified path to use as a string.
     """
     super(FirmwareArchiveStage, self).__init__(
-        builder_run, build_root=build_root, **kwargs)
+        builder_run, buildstore, build_root=build_root, **kwargs)
 
     self.dummy_firmware_config = None
     self.workspace_version_info = None

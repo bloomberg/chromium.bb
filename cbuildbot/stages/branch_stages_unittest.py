@@ -21,6 +21,7 @@ from chromite.lib import git_unittest
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib.buildstore import FakeBuildStore
 
 
 MANIFEST_CONTENTS = """\
@@ -171,7 +172,8 @@ class BranchUtilStageTest(generic_stages_unittest.AbstractStageTestCase,
     super(BranchUtilStageTest, self)._Prepare(bot_id, **kwargs)
 
   def ConstructStage(self):
-    return branch_stages.BranchUtilStage(self._run)
+    bs = FakeBuildStore()
+    return branch_stages.BranchUtilStage(self._run, bs)
 
   def _VerifyPush(self, new_branch, rename_from=None, delete=False):
     """Verify that |new_branch| has been created.

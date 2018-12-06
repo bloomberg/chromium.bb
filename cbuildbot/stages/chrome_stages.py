@@ -40,8 +40,8 @@ class SyncChromeStage(generic_stages.BuilderStage,
   option_name = 'managed_chrome'
   category = constants.PRODUCT_CHROME_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(SyncChromeStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(SyncChromeStage, self).__init__(builder_run, buildstore, **kwargs)
     # PerformStage() will fill this out for us.
     # TODO(mtennant): Replace with a run param.
     self.chrome_version = None

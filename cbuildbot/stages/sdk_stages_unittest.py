@@ -22,17 +22,18 @@ from chromite.lib import osutils
 from chromite.lib import perf_uploader
 from chromite.lib import portage_util
 from chromite.lib import toolchain
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import upload_prebuilts
 
 
-class SDKBuildToolchainsStageTest(
-    generic_stages_unittest.AbstractStageTestCase,
-    cbuildbot_unittest.SimpleBuilderTestCase):
+class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTestCase,
+                                  cbuildbot_unittest.SimpleBuilderTestCase):
   """Tests SDK toolchain building."""
 
   RELEASE_TAG = 'ToT.0.0'
 
   def setUp(self):
+    self.buildstore = FakeBuildStore()
     # This code has its own unit tests, so no need to go testing it here.
     self.run_mock = self.PatchObject(commands, 'RunBuildScript')
     self.uploadartifact_mock = self.PatchObject(
@@ -40,13 +41,16 @@ class SDKBuildToolchainsStageTest(
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return sdk_stages.SDKBuildToolchainsStage(self._run)
+    return sdk_stages.SDKBuildToolchainsStage(self._run, self.buildstore)
 
   def testNormal(self):
     """Basic run through the main code."""
     self._Prepare('chromiumos-sdk')
     self.PatchObject(
-        os, 'listdir', return_value=['i686-pc.tar.xz', 'x86_64-cros.tar.xz', ])
+        os, 'listdir', return_value=[
+            'i686-pc.tar.xz',
+            'x86_64-cros.tar.xz',
+        ])
     self.RunStage()
     self.assertEqual(self.run_mock.call_count, 2)
     self.assertEqual(self.uploadartifact_mock.call_count, 2)
@@ -69,9 +73,10 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
                    ('cat2/package', '3'), ('cat2/package', '4'))
 
   def setUp(self):
+    self.buildstore = FakeBuildStore()
     # Replace SudoRunCommand, since we don't care about sudo.
-    self.PatchObject(cros_build_lib, 'SudoRunCommand',
-                     wraps=cros_build_lib.RunCommand)
+    self.PatchObject(
+        cros_build_lib, 'SudoRunCommand', wraps=cros_build_lib.RunCommand)
     self.uploadartifact_mock = self.PatchObject(
         generic_stages.ArchivingStageMixin, 'UploadArtifact')
     # Prepare a fake chroot.
@@ -85,7 +90,7 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return sdk_stages.SDKPackageStage(self._run)
+    return sdk_stages.SDKPackageStage(self._run, self.buildstore)
 
   def testTarballCreation(self):
     """Tests whether we package the tarball and correctly create a Manifest."""
@@ -94,11 +99,10 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     self._Prepare('chromiumos-sdk')
     fake_tarball = os.path.join(self.build_root, 'built-sdk.tar.xz')
-    fake_manifest = os.path.join(self.build_root,
-                                 'built-sdk.tar.xz.Manifest')
+    fake_manifest = os.path.join(self.build_root, 'built-sdk.tar.xz.Manifest')
 
-    self.PatchObject(portage_util, 'ListInstalledPackages',
-                     return_value=self.fake_packages)
+    self.PatchObject(
+        portage_util, 'ListInstalledPackages', return_value=self.fake_packages)
 
     self.RunStage()
 
@@ -114,8 +118,7 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.assertIn('/file', tar_lines)
     # Verify manifest contents.
     real_json_data = json.loads(osutils.ReadFile(fake_manifest))
-    self.assertEqual(real_json_data['packages'],
-                     self.fake_json_data)
+    self.assertEqual(real_json_data['packages'], self.fake_json_data)
     self.uploadartifact_mock.assert_called_once_with(
         fake_tarball, strict=True, archive=True)
 
@@ -138,8 +141,8 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare('chromiumos-sdk')
     stage = self.ConstructStage()
     # pylint: disable=protected-access
-    stage._SendPerfValues(
-        self.tempdir, sdk_tarball, 'http://some/log', '123.4.5.6', 'sdk-bot')
+    stage._SendPerfValues(self.tempdir, sdk_tarball, 'http://some/log',
+                          '123.4.5.6', 'sdk-bot')
     # pylint: enable=protected-access
 
     perf_values = m.call_args[0][0]
@@ -204,6 +207,7 @@ class SDKPackageToolchainOverlaysStageTest(
   """Tests board toolchain overlay installation and packaging."""
 
   def setUp(self):
+    self.buildstore = FakeBuildStore()
     # Mock out running of cros_setup_toolchains.
     self.PatchObject(commands, 'RunBuildScript', wraps=self.FakeRunBuildScript)
     self._setup_toolchain_cmds = []
@@ -240,7 +244,8 @@ class SDKPackageToolchainOverlaysStageTest(
       osutils.Touch(os.path.join(merged_dir, board + '.tmp'))
 
   def ConstructStage(self):
-    return sdk_stages.SDKPackageToolchainOverlaysStage(self._run)
+    return sdk_stages.SDKPackageToolchainOverlaysStage(self._run,
+                                                       self.buildstore)
 
   # TODO(akeshet): determine why this test is flaky
   @unittest.skip("Skip flaky test.")
@@ -274,8 +279,8 @@ class SDKPackageToolchainOverlaysStageTest(
       tmp_files = [os.path.basename(x) for x in output if x.endswith('.tmp')]
       self.assertEqual(1, len(tmp_files))
       board = tmp_files[0][:-len('.tmp')]
-      board_toolchains = '-'.join(sorted(
-          toolchain.GetToolchainsForBoard(board).iterkeys()))
+      board_toolchains = '-'.join(
+          sorted(toolchain.GetToolchainsForBoard(board).iterkeys()))
       self.assertEqual(toolchains, board_toolchains)
 
 
@@ -283,11 +288,12 @@ class SDKTestStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests SDK test phase."""
 
   def setUp(self):
+    self.buildstore = FakeBuildStore()
     # This code has its own unit tests, so no need to go testing it here.
     self.run_mock = self.PatchObject(cros_build_lib, 'RunCommand')
 
   def ConstructStage(self):
-    return sdk_stages.SDKTestStage(self._run)
+    return sdk_stages.SDKTestStage(self._run, self.buildstore)
 
   def testNormal(self):
     """Basic run through the main code."""
@@ -301,7 +307,8 @@ class SDKUprevStageTest(generic_stages_unittest.AbstractStageTestCase):
   _VERSION = '2017.09.01.155318'
 
   def ConstructStage(self):
-    return sdk_stages.SDKUprevStage(self._run, version=self._VERSION)
+    return sdk_stages.SDKUprevStage(
+        self._run, self.buildstore, version=self._VERSION)
 
   def testUprev(self):
     recorded_args = []
@@ -318,11 +325,13 @@ class SDKUprevStageTest(generic_stages_unittest.AbstractStageTestCase):
     # upload_prebuilts.RevGitFile should be called exact once.
     self.assertEqual(1, len(recorded_args))
     sdk_conf, sdk_settings = recorded_args[0]
-    self.assertEqual(sdk_conf,
-                     os.path.join(self.build_root, 'src', 'third_party',
-                                  'chromiumos-overlay', 'chromeos',
-                                  'binhost', 'host', 'sdk_version.conf'))
     self.assertEqual(
-        sdk_settings,
-        {'SDK_LATEST_VERSION': self._VERSION,
-         'TC_PATH': '2017/09/%(target)s-2017.09.01.155318.tar.xz'})
+        sdk_conf,
+        os.path.join(self.build_root, 'src', 'third_party',
+                     'chromiumos-overlay', 'chromeos', 'binhost', 'host',
+                     'sdk_version.conf'))
+    self.assertEqual(
+        sdk_settings, {
+            'SDK_LATEST_VERSION': self._VERSION,
+            'TC_PATH': '2017/09/%(target)s-2017.09.01.155318.tar.xz'
+        })

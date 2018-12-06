@@ -19,6 +19,7 @@ from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import fake_cidb
+from chromite.lib.buildstore import FakeBuildStore
 
 
 class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
@@ -45,7 +46,8 @@ class ScheduleSalvesStageTest(generic_stages_unittest.AbstractStageTestCase):
     self._Prepare()
 
   def ConstructStage(self):
-    return scheduler_stages.ScheduleSlavesStage(self._run, self.sync_stage)
+    bs = FakeBuildStore()
+    return scheduler_stages.ScheduleSlavesStage(self._run, bs, self.sync_stage)
 
   def testPerformStage(self):
     """Test PerformStage."""

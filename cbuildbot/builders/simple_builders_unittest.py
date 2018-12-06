@@ -24,8 +24,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
-
 
 # pylint: disable=protected-access
 
@@ -44,6 +44,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     self.all_vm_test_stages = [vm_test_stages.VMTestStage,
                                tast_test_stages.TastVMTestStage]
 
+    self.buildstore = FakeBuildStore()
     # Simple new function that redirects RunStage to record all stages to be
     # run rather than mock them completely. These can be used in a test to
     # assert something has been called.
@@ -121,7 +122,8 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     exception_types = []
 
     try:
-      simple_builders.SimpleBuilder(builder_run)._RunVMTests(builder_run, board)
+      simple_builders.SimpleBuilder(builder_run, self.buildstore)._RunVMTests(
+          builder_run, board)
     except failures_lib.CompoundFailure as f:
       exception_types = [e.type for e in f.exc_infos]
     return exception_types
@@ -129,39 +131,39 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
   def testRunStagesPreCQ(self):
     """Verify RunStages for PRE_CQ_LAUNCHER_TYPE builders"""
     builder_run = self._initConfig('pre-cq-launcher')
-    simple_builders.SimpleBuilder(builder_run).RunStages()
+    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
   def testRunStagesBranchUtil(self):
     """Verify RunStages for CREATE_BRANCH_TYPE builders"""
     extra_argv = ['--branch-name', 'foo', '--version', '1234']
     builder_run = self._initConfig(constants.BRANCH_UTIL_CONFIG,
                                    extra_argv=extra_argv)
-    simple_builders.SimpleBuilder(builder_run).RunStages()
+    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
   def testRunStagesChrootBuilder(self):
     """Verify RunStages for CHROOT_BUILDER_TYPE builders"""
     builder_run = self._initConfig('chromiumos-sdk')
-    simple_builders.SimpleBuilder(builder_run).RunStages()
+    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
   def testRunStagesDefaultBuild(self):
     """Verify RunStages for standard board builders"""
     builder_run = self._initConfig('amd64-generic-full')
     builder_run.attrs.chrome_version = 'TheChromeVersion'
-    simple_builders.SimpleBuilder(builder_run).RunStages()
+    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
   def testRunStagesDefaultBuildCompileCheck(self):
     """Verify RunStages for standard board builders (compile only)"""
     extra_argv = ['--compilecheck']
     builder_run = self._initConfig('amd64-generic-full', extra_argv=extra_argv)
     builder_run.attrs.chrome_version = 'TheChromeVersion'
-    simple_builders.SimpleBuilder(builder_run).RunStages()
+    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
   def testRunStagesDefaultBuildHwTests(self):
     """Verify RunStages for boards w/hwtests"""
     extra_argv = ['--hwtest']
     builder_run = self._initConfig('eve-release', extra_argv=extra_argv)
     builder_run.attrs.chrome_version = 'TheChromeVersion'
-    simple_builders.SimpleBuilder(builder_run).RunStages()
+    simple_builders.SimpleBuilder(builder_run, self.buildstore).RunStages()
 
   def testThatWeScheduleHWTestsRegardlessOfBlocking(self):
     """Verify RunStages for boards w/hwtests (blocking).
@@ -179,11 +181,13 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
     builder_run_without_blocking.attrs.chrome_version = 'TheChromeVersion'
     builder_run_with_blocking.attrs.chrome_version = 'TheChromeVersion'
 
-    simple_builders.SimpleBuilder(builder_run_without_blocking).RunStages()
+    simple_builders.SimpleBuilder(builder_run_without_blocking,
+                                  self.buildstore).RunStages()
     without_blocking_stages = list(self.called_stages)
 
     self.called_stages = []
-    simple_builders.SimpleBuilder(builder_run_with_blocking).RunStages()
+    simple_builders.SimpleBuilder(builder_run_with_blocking,
+                                  self.buildstore).RunStages()
     self.assertEqual(without_blocking_stages, self.called_stages)
 
   def testUnifiedBuildsRunHwTestsForAllModels(self):
@@ -196,7 +200,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
                 config_lib.ModelTestConfig(
                     'model2', 'model2', ['sanity', 'bvt-inline'])])
     unified_build.attrs.chrome_version = 'TheChromeVersion'
-    simple_builders.SimpleBuilder(unified_build).RunStages()
+    simple_builders.SimpleBuilder(unified_build, self.buildstore).RunStages()
 
   def testAllVMTestStagesSucceed(self):
     """Verify all VM test stages are run."""
@@ -237,7 +241,7 @@ class DistributedBuilderTests(SimpleBuilderTest):
   def testRunStagesCommitQueueMaster(self):
     """Verify RunStages for master-paladin builder."""
     builder_run = self._initConfig('master-paladin', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run)
+    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
     builder.sync_stage = mock.Mock()
     builder.completion_stage_class = mock.Mock()
     builder.RunStages()
@@ -247,7 +251,7 @@ class DistributedBuilderTests(SimpleBuilderTest):
   def testRunStagesCommitQueueMasterWithImportantBuilderFailedException(self):
     """Verify RunStages for CQ-master with ImportantBuilderFailedException."""
     builder_run = self._initConfig('master-paladin', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run)
+    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
     builder.sync_stage = mock.Mock()
     builder.completion_stage_class = (
         completion_stages.CommitQueueCompletionStage)
@@ -265,7 +269,7 @@ class DistributedBuilderTests(SimpleBuilderTest):
   def testRunStagesCommitQueueMasterWithStepFailure(self):
     """Verify RunStages for CQ-master with StepFailure."""
     builder_run = self._initConfig('master-paladin', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run)
+    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
     builder.sync_stage = mock.Mock()
     builder.completion_stage_class = (
         completion_stages.CommitQueueCompletionStage)
@@ -282,7 +286,7 @@ class DistributedBuilderTests(SimpleBuilderTest):
   def testRunStagesReleaseMaster(self):
     """Verify RunStages for master-release builder."""
     builder_run = self._initConfig('master-release', master=True)
-    builder = simple_builders.DistributedBuilder(builder_run)
+    builder = simple_builders.DistributedBuilder(builder_run, self.buildstore)
     builder.sync_stage = mock.Mock()
     builder.completion_stage_class = mock.Mock()
     builder.RunStages()

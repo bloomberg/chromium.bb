@@ -757,3 +757,11 @@ class FakeCIDBConnection(object):
       result.append(
           (config, flakes.get(config, 0), len(runs_by_build_config[config])))
     return result
+
+  def UpdateBoardPerBuildMetadata(self, build_id, board, board_metadata):
+    """Update the given board-per-build metadata.
+
+    This function is not being tested. A function stub to spare a
+    unittest error.
+    """
+    pass

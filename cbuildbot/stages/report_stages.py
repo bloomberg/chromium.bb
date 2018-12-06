@@ -255,7 +255,7 @@ class BuildStartStage(generic_stages.BuilderStage):
       db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
       if db:
         try:
-          build_id = db.InsertBuild(
+          build_id = self.buildstore.InsertBuild(
               builder_name=d['builder-name'],
               build_number=d['build-number'],
               build_config=d['bot-config'],
@@ -553,8 +553,8 @@ class ReportStage(generic_stages.BuilderStage,
   _STATS_HISTORY_DAYS = 7
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, completion_instance, **kwargs):
-    super(ReportStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, completion_instance, **kwargs):
+    super(ReportStage, self).__init__(builder_run, buildstore, **kwargs)
 
     # TODO(mtennant): All these should be retrieved from builder_run instead.
     # Or, more correctly, the info currently retrieved from these stages should
@@ -614,8 +614,7 @@ class ReportStage(generic_stages.BuilderStage,
     site_params = config_lib.GetSiteParams()
     gs_ctx = gs.GSContext(dry_run=dry_run)
     counter_url = os.path.join(site_params.MANIFEST_VERSIONS_GS_URL,
-                               constants.STREAK_COUNTERS,
-                               counter_name)
+                               constants.STREAK_COUNTERS, counter_name)
     gs_counter = gs.GSCounter(gs_ctx, counter_url)
 
     if final_status == constants.BUILDER_STATUS_PASSED:
@@ -853,9 +852,8 @@ class ReportStage(generic_stages.BuilderStage,
                                                                  final_status))
 
     return metadata_lib.CBuildbotMetadata.GetReportMetadataDict(
-        builder_run, get_statuses_from_slaves,
-        config, stage, final_status, completion_instance,
-        child_configs_list)
+        builder_run, get_statuses_from_slaves, config, stage, final_status,
+        completion_instance, child_configs_list)
 
   def ArchiveResults(self, final_status, build_id, db):
     """Archive our build results.
@@ -911,8 +909,7 @@ class ReportStage(generic_stages.BuilderStage,
       if final_status == constants.BUILDER_STATUS_PASSED:
         # Update the LATEST files if the build passed.
         try:
-          upload_urls = self._GetUploadUrls(
-              'LATEST-*', builder_run=builder_run)
+          upload_urls = self._GetUploadUrls('LATEST-*', builder_run=builder_run)
         except portage_util.MissingOverlayError as e:
           # If the build failed prematurely, some overlays might be
           # missing. Ignore them in this stage.
@@ -1109,9 +1106,15 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, board, changes, suffix=None, **kwargs):
-    super(DetectRelevantChangesStage, self).__init__(builder_run, board,
-                                                     suffix=suffix, **kwargs)
+  def __init__(self,
+               builder_run,
+               buildstore,
+               board,
+               changes,
+               suffix=None,
+               **kwargs):
+    super(DetectRelevantChangesStage, self).__init__(
+        builder_run, buildstore, board, suffix=suffix, **kwargs)
     # changes is a list of GerritPatch instances.
     self.changes = changes
 
@@ -1205,8 +1208,7 @@ class DetectRelevantChangesStage(generic_stages.BoardSpecificBuilderStage):
             relevant_changes, constants.CL_ACTION_RELEVANT_TO_SLAVE)
 
     if relevant_changes:
-      validation_pool.ValidationPool.PrintLinksToChanges(
-          list(relevant_changes))
+      validation_pool.ValidationPool.PrintLinksToChanges(list(relevant_changes))
     else:
       logging.info('No changes are relevant for board: %s.',
                    self._current_board)

@@ -25,6 +25,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
 
 
@@ -87,6 +88,7 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
     self.bot_id = self.build_config.name
     self.build_config['master'] = False
     self.build_config['important'] = False
+    self.buildstore = FakeBuildStore()
 
     # Use the cbuildbot parser to create properties and populate default values.
     self.parser = cbuildbot._CreateParser()
@@ -127,7 +129,7 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
 
     # Clean up before.
     os.environ.pop('CHROMEOS_OFFICIAL', None)
-    simple_builders.SimpleBuilder(self.run).Run()
+    simple_builders.SimpleBuilder(self.run, self.buildstore).Run()
     self.assertIn('CHROMEOS_OFFICIAL', os.environ)
 
   def testChromeosOfficialNotSet(self):
@@ -138,7 +140,7 @@ class RunBuildStagesTest(cros_test_lib.RunCommandTempDirTestCase,
 
     # Clean up before.
     os.environ.pop('CHROMEOS_OFFICIAL', None)
-    simple_builders.SimpleBuilder(self.run).Run()
+    simple_builders.SimpleBuilder(self.run, self.buildstore).Run()
     self.assertNotIn('CHROMEOS_OFFICIAL', os.environ)
 
 

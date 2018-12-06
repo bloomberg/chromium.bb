@@ -24,6 +24,7 @@ from chromite.lib import fake_cidb
 from chromite.lib import hwtest_results
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
+from chromite.lib.buildstore import FakeBuildStore
 
 
 # pylint: disable=protected-access
@@ -37,6 +38,7 @@ class CommitQueueHandleChangesStageTests(
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
     self.partial_submit_changes = ['A', 'B']
     self.other_changes = ['C', 'D']
@@ -61,7 +63,7 @@ class CommitQueueHandleChangesStageTests(
     cidb.CIDBConnectionFactory.ClearMock()
 
   def _MockSyncStage(self, tree_was_open=True):
-    sync_stage = sync_stages.CommitQueueSyncStage(self._run)
+    sync_stage = sync_stages.CommitQueueSyncStage(self._run, self.buildstore)
     sync_stage.pool = mock.MagicMock()
     sync_stage.pool.applied = self.changes
     sync_stage.pool.tree_was_open = tree_was_open
@@ -79,9 +81,8 @@ class CommitQueueHandleChangesStageTests(
   def ConstructStage(self, sync_stage=None, completion_stage=None):
     sync_stage = sync_stage or self.sync_stage
     completion_stage = completion_stage or self.completion_stage
-
     return handle_changes_stages.CommitQueueHandleChangesStage(
-        self._run, sync_stage, completion_stage)
+        self._run, self.buildstore, sync_stage, completion_stage)
 
   def test_GetBuildsPassedSyncStage(self):
     """Test _GetBuildsPassedSyncStage."""

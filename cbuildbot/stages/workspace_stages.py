@@ -44,7 +44,7 @@ class InvalidWorkspace(failures_lib.StepFailure):
 
 class WorkspaceStageBase(generic_stages.BuilderStage):
   """Base class for Workspace stages."""
-  def __init__(self, builder_run, build_root, **kwargs):
+  def __init__(self, builder_run, buildstore, build_root, **kwargs):
     """Initializer.
 
     Properties for subclasses:
@@ -53,10 +53,11 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
 
     Args:
       builder_run: BuilderRun object.
+      buildstore: BuildStore instance to make DB calls with.
       build_root: Fully qualified path to use as a string.
     """
     super(WorkspaceStageBase, self).__init__(
-        builder_run, build_root=build_root,
+        builder_run, buildstore, build_root=build_root,
         **kwargs)
 
     self._orig_root = builder_run.buildroot
@@ -120,7 +121,7 @@ class SyncStage(WorkspaceStageBase):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, build_root,
+  def __init__(self, builder_run, buildstore, build_root,
                external=False,
                branch=None,
                version=None,
@@ -129,13 +130,14 @@ class SyncStage(WorkspaceStageBase):
 
     Args:
       builder_run: BuilderRun object.
+      buildstore: BuildStore instance to make DB calls with.
       build_root: Path to sync into.
       external: Boolean telling if this an internal or external checkout.
       branch: Branch to sync, with default to master.
       version: Version number to sync too.
     """
     super(SyncStage, self).__init__(
-        builder_run, build_root=build_root, **kwargs)
+        builder_run, buildstore, build_root=build_root, **kwargs)
 
     self.external = external
     self.branch = branch
@@ -173,6 +175,7 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
     SyncStage(
         self._run,
+        self.buildstore,
         build_root=self._orig_root,
         external=True,
         branch='master',
@@ -180,6 +183,7 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
     SyncStage(
         self._run,
+        self.buildstore,
         build_root=self._build_root,
         external=not self._run.config.internal,
         branch=self._run.config.workspace_branch,
@@ -220,8 +224,10 @@ class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
   """
   config = 'push_overlays'
 
-  def __init__(self, builder_run, boards=None, **kwargs):
-    super(WorkspaceUprevAndPublishStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, boards=None, **kwargs):
+    super(WorkspaceUprevAndPublishStage, self).__init__(builder_run,
+                                                        buildstore,
+                                                        **kwargs)
     if boards is not None:
       self._boards = boards
 

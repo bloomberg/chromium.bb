@@ -46,8 +46,7 @@ class CleanUpStage(generic_stages.BuilderStage):
 
   def _CleanChroot(self):
     logging.info('Cleaning chroot.')
-    commands.CleanupChromeKeywordsFile(self._boards,
-                                       self._build_root)
+    commands.CleanupChromeKeywordsFile(self._boards, self._build_root)
     chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     chroot_tmpdir = os.path.join(chroot_dir, 'tmp')
     if os.path.exists(chroot_tmpdir):
@@ -69,8 +68,8 @@ class CleanUpStage(generic_stages.BuilderStage):
                    constants.CHROOT_SNAPSHOT_CLEAN)
       snapshots = commands.ListChrootSnapshots(self._build_root)
       if constants.CHROOT_SNAPSHOT_CLEAN not in snapshots:
-        logging.error(
-            "Can't find %s snapshot.", constants.CHROOT_SNAPSHOT_CLEAN)
+        logging.error("Can't find %s snapshot.",
+                      constants.CHROOT_SNAPSHOT_CLEAN)
         return False
 
       return commands.RevertChrootToSnapshot(self._build_root,
@@ -106,9 +105,9 @@ class CleanUpStage(generic_stages.BuilderStage):
   def _DeleteArchivedPerfResults(self):
     """Clear any previously stashed perf results from hw testing."""
     logging.info('Deleting archived perf results.')
-    for result in glob.glob(os.path.join(
-        self._run.options.log_dir,
-        '*.%s' % test_stages.HWTestStage.PERF_RESULTS_EXTENSION)):
+    for result in glob.glob(
+        os.path.join(self._run.options.log_dir,
+                     '*.%s' % test_stages.HWTestStage.PERF_RESULTS_EXTENSION)):
       os.remove(result)
 
   def _DeleteChromeBuildOutput(self):
@@ -147,8 +146,10 @@ class CleanUpStage(generic_stages.BuilderStage):
       cros_sdk_lib.CleanupChrootMount(chroot_dir, delete=True)
 
     logging.info('Remove Chrome checkout.')
-    osutils.RmDir(os.path.join(workspace, '.cache', 'distfiles'),
-                  ignore_missing=True, sudo=True)
+    osutils.RmDir(
+        os.path.join(workspace, '.cache', 'distfiles'),
+        ignore_missing=True,
+        sudo=True)
 
     logging.info('Remove all workspace files except .repo and .cache.')
     repository.ClearBuildRoot(workspace, ['.repo', '.cache'])
@@ -162,8 +163,7 @@ class CleanUpStage(generic_stages.BuilderStage):
     previous_state = build_summary.BuildSummary()
     if self._run.options.previous_build_state:
       try:
-        state_json = base64.b64decode(
-            self._run.options.previous_build_state)
+        state_json = base64.b64decode(self._run.options.previous_build_state)
         previous_state.from_json(state_json)
         logging.info('Previous local build %s finished in state %s.',
                      previous_state.build_description(), previous_state.status)
@@ -194,8 +194,7 @@ class CleanUpStage(generic_stages.BuilderStage):
                       previous_state.master_build_id)
       return None, None
     logging.info('Previous master build %s finished in state %s',
-                 master_status['build_number'],
-                 master_status['status'])
+                 master_status['build_number'], master_status['status'])
 
     return master_status['build_number'], master_status['status']
 
@@ -213,8 +212,10 @@ class CleanUpStage(generic_stages.BuilderStage):
         self._run.options.debug,
         buckets=constants.ACTIVE_BUCKETS,
         limit=3,
-        tags=['cbb_config:%s' % self._run.config.name,
-              'cbb_branch:%s' % self._run.manifest_branch],
+        tags=[
+            'cbb_config:%s' % self._run.config.name,
+            'cbb_branch:%s' % self._run.manifest_branch
+        ],
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
 
     slave_ids = []
@@ -223,8 +224,10 @@ class CleanUpStage(generic_stages.BuilderStage):
     master_ids = buildbucket_lib.ExtractBuildIds(master_builds)
     logging.info('Found Previous Master builds: %s', ', '.join(master_ids))
     for master_id in master_ids:
-      for status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
-                     constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
+      for status in [
+          constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
+          constants.BUILDBUCKET_BUILDER_STATUS_STARTED
+      ]:
         builds = buildbucket_client.SearchAllBuilds(
             self._run.options.debug,
             tags=['buildset:%s' % request_build.SlaveBuildSet(master_id)],
@@ -232,15 +235,13 @@ class CleanUpStage(generic_stages.BuilderStage):
 
         ids = buildbucket_lib.ExtractBuildIds(builds)
         if ids:
-          logging.info('Found builds %s in status %s from master %s.',
-                       ids, status, master_id)
+          logging.info('Found builds %s in status %s from master %s.', ids,
+                       status, master_id)
           slave_ids.extend(ids)
 
     if slave_ids:
-      builder_status_lib.CancelBuilds(slave_ids,
-                                      buildbucket_client,
-                                      self._run.options.debug,
-                                      self._run.config)
+      builder_status_lib.CancelBuilds(slave_ids, buildbucket_client,
+                                      self._run.options.debug, self._run.config)
 
   def CanReuseChroot(self, chroot_path):
     """Determine if the chroot can be reused.
@@ -262,10 +263,11 @@ class CleanUpStage(generic_stages.BuilderStage):
     chroot_img = chroot_path + '.img'
     chroot_img_exists = os.path.exists(chroot_img)
     if self._run.config.chroot_use_image != chroot_img_exists:
-      logging.info('chroot image at %s %s but chroot_use_image=%s.  '
-                   'Cannot reuse chroot.', chroot_img,
-                   'exists' if chroot_img_exists else "doesn't exist",
-                   self._run.config.chroot_use_image)
+      logging.info(
+          'chroot image at %s %s but chroot_use_image=%s.  '
+          'Cannot reuse chroot.', chroot_img,
+          'exists' if chroot_img_exists else "doesn't exist",
+          self._run.config.chroot_use_image)
       return False
 
     if self._run.config.chroot_replace and self._run.options.build:
@@ -281,8 +283,9 @@ class CleanUpStage(generic_stages.BuilderStage):
     if previous_state.master_build_id:
       build_number, status = self._GetPreviousMasterStatus(previous_state)
       if status != constants.BUILDER_STATUS_PASSED:
-        logging.info('Previous master build %s did not pass (%s).  '
-                     'Cannot reuse chroot.', build_number, status)
+        logging.info(
+            'Previous master build %s did not pass (%s).  '
+            'Cannot reuse chroot.', build_number, status)
         return False
 
     return True
@@ -328,8 +331,8 @@ class CleanUpStage(generic_stages.BuilderStage):
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    if (not (self._run.options.buildbot or self._run.options.remote_trybot)
-        and self._run.options.clobber):
+    if (not (self._run.options.buildbot or self._run.options.remote_trybot) and
+        self._run.options.clobber):
       if not commands.ValidateClobber(self._build_root):
         cros_build_lib.Die("--clobber in local mode must be approved.")
 
@@ -371,8 +374,9 @@ class CleanUpStage(generic_stages.BuilderStage):
       try:
         cros_sdk_lib.MountChroot(chroot=chroot_path, create=False)
       except cros_build_lib.RunCommandError as e:
-        logging.error('Unable to mount chroot under %s.  Deleting chroot.  '
-                      'Error: %s', self._build_root, e)
+        logging.error(
+            'Unable to mount chroot under %s.  Deleting chroot.  '
+            'Error: %s', self._build_root, e)
         delete_chroot = True
 
     if manifest is None:
@@ -380,11 +384,11 @@ class CleanUpStage(generic_stages.BuilderStage):
       repository.ClearBuildRoot(self._build_root,
                                 self._run.options.preserve_paths)
     else:
-      tasks = [self._BuildRootGitCleanup,
-               self._WipeOldOutput,
-               self._DeleteArchivedTrybotImages,
-               self._DeleteArchivedPerfResults,
-               self._DeleteAutotestSitePackages]
+      tasks = [
+          self._BuildRootGitCleanup, self._WipeOldOutput,
+          self._DeleteArchivedTrybotImages, self._DeleteArchivedPerfResults,
+          self._DeleteAutotestSitePackages
+      ]
       if self._run.options.chrome_root:
         tasks.append(self._DeleteChromeBuildOutput)
       if delete_chroot:
@@ -418,14 +422,15 @@ class InitSDKStage(generic_stages.BuilderStage):
   option_name = 'build'
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, chroot_replace=False, **kwargs):
+  def __init__(self, builder_run, buildstore, chroot_replace=False, **kwargs):
     """InitSDK constructor.
 
     Args:
       builder_run: Builder run instance for this run.
+      buildstore: BuildStore instance to make DB calls with.
       chroot_replace: If True, force the chroot to be replaced.
     """
-    super(InitSDKStage, self).__init__(builder_run, **kwargs)
+    super(InitSDKStage, self).__init__(builder_run, buildstore, **kwargs)
     self.force_chroot_replace = chroot_replace
 
   def PerformStage(self):
@@ -471,10 +476,12 @@ class UpdateSDKStage(generic_stages.BuilderStage):
     # Ensure we don't run on SDK builder. https://crbug.com/225509
     assert self._run.config.build_type != constants.CHROOT_BUILDER_TYPE
 
-    usepkg_toolchain = (self._run.config.usepkg_toolchain and
-                        not self._latest_toolchain)
-    commands.UpdateChroot(self._build_root, usepkg=usepkg_toolchain,
-                          extra_env=self._portage_extra_env)
+    usepkg_toolchain = (
+        self._run.config.usepkg_toolchain and not self._latest_toolchain)
+    commands.UpdateChroot(
+        self._build_root,
+        usepkg=usepkg_toolchain,
+        extra_env=self._portage_extra_env)
 
 
 class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
@@ -487,17 +494,23 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
     # Ensure we don't run on SDK builder. https://crbug.com/225509
     if self._run.config.build_type != constants.CHROOT_BUILDER_TYPE:
       # Setup board's toolchain.
-      usepkg_toolchain = (self._run.config.usepkg_toolchain and
-                          not self._latest_toolchain)
-      commands.SetupToolchains(self._build_root, usepkg=usepkg_toolchain,
-                               targets='boards', boards=self._current_board)
+      usepkg_toolchain = (
+          self._run.config.usepkg_toolchain and not self._latest_toolchain)
+      commands.SetupToolchains(
+          self._build_root,
+          usepkg=usepkg_toolchain,
+          targets='boards',
+          boards=self._current_board)
 
     # Update the board.
     usepkg = self._run.config.usepkg_build_packages
     commands.SetupBoard(
-        self._build_root, board=self._current_board, usepkg=usepkg,
+        self._build_root,
+        board=self._current_board,
+        usepkg=usepkg,
         force=self._run.config.board_replace,
-        extra_env=self._portage_extra_env, chroot_upgrade=False,
+        extra_env=self._portage_extra_env,
+        chroot_upgrade=False,
         profile=self._run.options.profile or self._run.config.profile)
 
 
@@ -511,8 +524,10 @@ class BuildSDKBoardStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     # Build the SDK board.
     commands.BuildSDKBoard(
-        self._build_root, self._current_board,
-        force=self._run.config.board_replace, extra_env=self._portage_extra_env)
+        self._build_root,
+        self._current_board,
+        force=self._run.config.board_replace,
+        extra_env=self._portage_extra_env)
 
 
 class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
@@ -523,12 +538,19 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   option_name = 'build'
   config_name = 'build_packages'
 
-  def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
-               afdo_use=False, update_metadata=False, **kwargs):
+  def __init__(self,
+               builder_run,
+               buildstore,
+               board,
+               suffix=None,
+               afdo_generate_min=False,
+               afdo_use=False,
+               update_metadata=False,
+               **kwargs):
     if afdo_use:
       suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
-    super(BuildPackagesStage, self).__init__(builder_run, board, suffix=suffix,
-                                             **kwargs)
+    super(BuildPackagesStage, self).__init__(
+        builder_run, buildstore, board, suffix=suffix, **kwargs)
     self._afdo_generate_min = afdo_generate_min
     self._update_metadata = update_metadata
     assert not afdo_generate_min or not afdo_use
@@ -545,11 +567,12 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # we should be building Chrome from a binary package.
     if (not self._run.options.managed_chrome and
         self._run.manifest_branch == 'master'):
-      commands.VerifyBinpkg(self._build_root,
-                            self._current_board,
-                            constants.CHROME_CP,
-                            packages,
-                            extra_env=self._portage_extra_env)
+      commands.VerifyBinpkg(
+          self._build_root,
+          self._current_board,
+          constants.CHROME_CP,
+          packages,
+          extra_env=self._portage_extra_env)
 
   def RecordPackagesUnderTest(self, packages_to_build):
     """Records all packages that may affect the board to BuilderRun."""
@@ -563,9 +586,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       deps.update(commands.ExtractDependencies(self._build_root, packages))
 
       # Include packages that will be built as part of the board.
-      deps.update(commands.ExtractDependencies(self._build_root,
-                                               packages_to_build,
-                                               board=self._current_board))
+      deps.update(
+          commands.ExtractDependencies(
+              self._build_root, packages_to_build, board=self._current_board))
     except Exception as e:
       # Dependency extraction may fail due to bad ebuild changes. Let
       # the build continues because we have logic to triage build
@@ -581,8 +604,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # Enable goma if 1) chrome actually needs to be built, 2) not
     # latest_toolchain (because toolchain prebuilt package may not be available
     # for goma, crbug.com/728971) and 3) goma is available.
-    return (self._run.options.managed_chrome and
-            not self._latest_toolchain and
+    return (self._run.options.managed_chrome and not self._latest_toolchain and
             self._run.options.goma_dir)
 
   def _SetupGomaIfNecessary(self):
@@ -601,7 +623,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     # bots, too.
     use_goma_deps_cache = self._run.config.name.endswith('chrome-pfq')
     goma = goma_util.Goma(
-        self._run.options.goma_dir, self._run.options.goma_client_json,
+        self._run.options.goma_dir,
+        self._run.options.goma_client_json,
         stage_name=self.StageNamePrefix() if use_goma_deps_cache else None)
 
     # Set USE_GOMA env var so that chrome is built with goma.
@@ -609,8 +632,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     self._portage_extra_env.update(goma.GetChrootExtraEnv())
 
     # Keep GOMA_TMP_DIR for Report stage to upload logs.
-    self._run.attrs.metadata.UpdateWithDict(
-        {'goma_tmp_dir': goma.goma_tmp_dir})
+    self._run.attrs.metadata.UpdateWithDict({'goma_tmp_dir': goma.goma_tmp_dir})
 
     # Mount goma directory and service account json file (if necessary)
     # into chroot.
@@ -640,18 +662,19 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     chroot_args = self._SetupGomaIfNecessary()
 
     build_id, _ = self._run.GetCIDBHandle()
-    commands.Build(self._build_root,
-                   self._current_board,
-                   build_autotest=self._run.ShouldBuildAutotest(),
-                   usepkg=self._run.config.usepkg_build_packages,
-                   packages=packages,
-                   skip_chroot_upgrade=True,
-                   chrome_root=self._run.options.chrome_root,
-                   noretry=self._run.config.nobuildretry,
-                   chroot_args=chroot_args,
-                   extra_env=self._portage_extra_env,
-                   event_file=event_file_in_chroot,
-                   run_goma=bool(chroot_args))
+    commands.Build(
+        self._build_root,
+        self._current_board,
+        build_autotest=self._run.ShouldBuildAutotest(),
+        usepkg=self._run.config.usepkg_build_packages,
+        packages=packages,
+        skip_chroot_upgrade=True,
+        chrome_root=self._run.options.chrome_root,
+        noretry=self._run.config.nobuildretry,
+        chroot_args=chroot_args,
+        extra_env=self._portage_extra_env,
+        event_file=event_file_in_chroot,
+        run_goma=bool(chroot_args))
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
@@ -662,16 +685,14 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
 
       build_id, db = self._run.GetCIDBHandle()
       if db and creds_file:
-        parent_key = ('Build',
-                      build_id,
-                      'BuildStage',
-                      self._build_stage_id)
+        parent_key = ('Build', build_id, 'BuildStage', self._build_stage_id)
 
-        commands.ExportToGCloud(self._build_root,
-                                creds_file,
-                                event_file,
-                                parent_key=parent_key,
-                                caller=type(self).__name__)
+        commands.ExportToGCloud(
+            self._build_root,
+            creds_file,
+            event_file,
+            parent_key=parent_key,
+            caller=type(self).__name__)
     else:
       logging.info('No build-events.json file to archive')
 
@@ -682,8 +703,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       main = fw_versions.main_rw or fw_versions.main
       ec = fw_versions.ec_rw or fw_versions.ec
       update_dict = {'main-firmware-version': main, 'ec-firmware-version': ec}
-      self._run.attrs.metadata.UpdateBoardDictWithDict(
-          self._current_board, update_dict)
+      self._run.attrs.metadata.UpdateBoardDictWithDict(self._current_board,
+                                                       update_dict)
 
       # Write board metadata update to cidb
       build_id, db = self._run.GetCIDBHandle()
@@ -696,8 +717,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
           self._build_root, self._current_board, log_output=False)
       self._run.attrs.metadata.UpdateWithDict({'unibuild': bool(models)})
       if models:
-        all_fw_versions = commands.GetAllFirmwareVersions(self._build_root,
-                                                          self._current_board)
+        all_fw_versions = commands.GetAllFirmwareVersions(
+            self._build_root, self._current_board)
         models_data = {}
         for model in models:
           if model in all_fw_versions:
@@ -710,17 +731,18 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
             # Get the firmware key-id for the current board and model.
             model_arg = '--model=' + model
             key_id_list = commands.RunCrosConfigHost(
-                self._build_root,
-                self._current_board,
+                self._build_root, self._current_board,
                 [model_arg, 'get', '/firmware', 'key-id'])
             key_id = None
             if len(key_id_list) == 1:
               key_id = key_id_list[0]
 
-            models_data[model] = {'main-readonly-firmware-version': main_ro,
-                                  'main-readwrite-firmware-version': main_rw,
-                                  'ec-firmware-version': ec,
-                                  'firmware-key-id': key_id}
+            models_data[model] = {
+                'main-readonly-firmware-version': main_ro,
+                'main-readwrite-firmware-version': main_rw,
+                'ec-firmware-version': ec,
+                'firmware-key-id': key_id
+            }
         if models_data:
           self._run.attrs.metadata.UpdateBoardDictWithDict(
               self._current_board, {'models': models_data})
@@ -739,8 +761,8 @@ class BuildImageStage(BuildPackagesStage):
       images_can_build = set(['test'])
     else:
       images_can_build = set(['base', 'dev', 'test'])
-    images_to_build = set(self._run.config.images).intersection(
-        images_can_build)
+    images_to_build = set(
+        self._run.config.images).intersection(images_can_build)
 
     version = self._run.attrs.release_tag
     disk_layout = self._run.config.disk_layout
@@ -749,14 +771,15 @@ class BuildImageStage(BuildPackagesStage):
 
     rootfs_verification = self._run.config.rootfs_verification
     builder_path = '/'.join([self._bot_id, self.version])
-    commands.BuildImage(self._build_root,
-                        self._current_board,
-                        sorted(images_to_build),
-                        rootfs_verification=rootfs_verification,
-                        version=version,
-                        builder_path=builder_path,
-                        disk_layout=disk_layout,
-                        extra_env=self._portage_extra_env)
+    commands.BuildImage(
+        self._build_root,
+        self._current_board,
+        sorted(images_to_build),
+        rootfs_verification=rootfs_verification,
+        version=version,
+        builder_path=builder_path,
+        disk_layout=disk_layout,
+        extra_env=self._portage_extra_env)
 
     # Update link to latest image.
     latest_image = os.readlink(self.GetImageDirSymlink('latest'))
@@ -854,16 +877,15 @@ class UprevStage(generic_stages.BuilderStage):
   option_name = 'uprev'
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, boards=None, **kwargs):
-    super(UprevStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, boards=None, **kwargs):
+    super(UprevStage, self).__init__(builder_run, buildstore, **kwargs)
     if boards is not None:
       self._boards = boards
 
   def PerformStage(self):
     # Perform other uprevs.
-    commands.UprevPackages(self._build_root,
-                           self._boards,
-                           overlay_type=self._run.config.overlays)
+    commands.UprevPackages(
+        self._build_root, self._boards, overlay_type=self._run.config.overlays)
 
 
 class RegenPortageCacheStage(generic_stages.BuilderStage):

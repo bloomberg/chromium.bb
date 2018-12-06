@@ -28,10 +28,10 @@ from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import path_util
+from chromite.lib.buildstore import FakeBuildStore
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 from chromite.cbuildbot.stages.generic_stages_unittest import patches
-
 
 # pylint: disable=too-many-ancestors
 
@@ -47,24 +47,25 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def _PatchDependencies(self):
     """Patch dependencies of ArchiveStage.PerformStage()."""
-    to_patch = [
-        (parallel, 'RunParallelSteps'), (commands, 'PushImages'),
-        (commands, 'UploadArchivedFile')]
+    to_patch = [(parallel, 'RunParallelSteps'), (commands, 'PushImages'),
+                (commands, 'UploadArchivedFile')]
     self.AutoPatch(to_patch)
 
   def setUp(self):
     self._PatchDependencies()
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def _Prepare(self, bot_id=None, **kwargs):
     extra_config = {'upload_symbols': True, 'push_image': True}
-    super(ArchiveStageTest, self)._Prepare(bot_id, extra_config=extra_config,
-                                           **kwargs)
+    super(ArchiveStageTest, self)._Prepare(
+        bot_id, extra_config=extra_config, **kwargs)
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return artifact_stages.ArchiveStage(self._run, self._current_board)
+    return artifact_stages.ArchiveStage(self._run, self.buildstore,
+                                        self._current_board)
 
   def testArchive(self):
     """Simple did-it-run test."""
@@ -77,8 +78,10 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
   # trybot flow.
   def testNoPushImagesForRemoteTrybot(self):
     """Test that remote trybot overrides work to disable push images."""
-    self._Prepare(cmd_args=['--remote-trybot', '-r', self.build_root,
-                            '--buildnumber=1234', 'eve-release'])
+    self._Prepare(cmd_args=[
+        '--remote-trybot', '-r', self.build_root, '--buildnumber=1234',
+        'eve-release'
+    ])
     self.RunStage()
     # pylint: disable=no-member
     self.assertEquals(commands.PushImages.call_count, 0)
@@ -87,8 +90,7 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
     """Stage construction for archive steps."""
     stage = self.ConstructStage()
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
-    self.PatchObject(path_util, 'ToChrootPath', return_value='',
-                     autospec=True)
+    self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
     return stage
 
 
@@ -105,12 +107,17 @@ class UploadPrebuiltsStageTest(
     self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
                             'upload_prebuilts')
     self._run.options.prebuilts = True
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return artifact_stages.UploadPrebuiltsStage(self._run,
+    return artifact_stages.UploadPrebuiltsStage(self._run, self.buildstore,
                                                 self._run.config.boards[-1])
 
-  def _VerifyBoardMap(self, bot_id, count, board_map, public_args=None,
+  def _VerifyBoardMap(self,
+                      bot_id,
+                      count,
+                      board_map,
+                      public_args=None,
                       private_args=None):
     """Verify that the prebuilts are uploaded for the specified bot.
 
@@ -134,8 +141,9 @@ class UploadPrebuiltsStageTest(
       self.assertCommandContains(private_cmd, expected=not public)
       count -= 1
     if board_map:
-      self.assertCommandContains([self.cmd, '--set-version',
-                                  self._run.GetVersion()], )
+      self.assertCommandContains(
+          [self.cmd, '--set-version',
+           self._run.GetVersion()],)
       count -= 1
     self.assertEqual(
         count, 0,
@@ -160,8 +168,8 @@ class UploadDevInstallerPrebuiltsStageTest(
   RELEASE_TAG = 'RT'
 
   def setUp(self):
-    self.upload_mock = self.PatchObject(
-        prebuilts, 'UploadDevInstallerPrebuilts')
+    self.upload_mock = self.PatchObject(prebuilts,
+                                        'UploadDevInstallerPrebuilts')
 
     self._Prepare()
 
@@ -174,10 +182,11 @@ class UploadDevInstallerPrebuiltsStageTest(
     self._run.config['binhost_bucket'] = 'gs://testbucket'
     self._run.config['binhost_key'] = 'dontcare'
     self._run.config['binhost_base_url'] = 'https://dontcare/here'
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return artifact_stages.DevInstallerPrebuiltsStage(self._run,
-                                                      self._current_board)
+    return artifact_stages.DevInstallerPrebuiltsStage(
+        self._run, self.buildstore, self._current_board)
 
   def testDevInstallerUpload(self):
     """Basic sanity test testing uploads of dev installer prebuilts."""
@@ -204,11 +213,13 @@ class CPEExportStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.rc_mock.SetDefaultCmdResult(output='')
 
     self.stage = None
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     """Create a CPEExportStage instance for testing"""
     self._run.GetArchive().SetupArchivePath()
-    return artifact_stages.CPEExportStage(self._run, self._current_board)
+    return artifact_stages.CPEExportStage(self._run, self.buildstore,
+                                          self._current_board)
 
   def assertBoardAttrEqual(self, attr, expected_value):
     """Assert the value of a board run |attr| against |expected_value|."""
@@ -238,8 +249,8 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.StartPatcher(generic_stages_unittest.ArchivingStageMixinMock())
 
     self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
-    self.gen_android_mock = self.PatchObject(
-        commands, 'GenerateAndroidBreakpadSymbols')
+    self.gen_android_mock = self.PatchObject(commands,
+                                             'GenerateAndroidBreakpadSymbols')
     self.upload_mock = self.PatchObject(commands, 'UploadSymbols')
     self.tar_mock = self.PatchObject(commands, 'GenerateDebugTarball')
 
@@ -256,21 +267,24 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
           'vm_tests': True,
           'upload_symbols': True,
       }
-    super(DebugSymbolsStageTest, self)._Prepare(extra_config=extra_config,
-                                                **kwargs)
+    super(DebugSymbolsStageTest, self)._Prepare(
+        extra_config=extra_config, **kwargs)
     self._run.attrs.release_tag = self.VERSION
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     """Create a DebugSymbolsStage instance for testing"""
     self._run.GetArchive().SetupArchivePath()
-    return artifact_stages.DebugSymbolsStage(self._run, self._current_board)
+    return artifact_stages.DebugSymbolsStage(self._run, self.buildstore,
+                                             self._current_board)
 
   def assertBoardAttrEqual(self, attr, expected_value):
     """Assert the value of a board run |attr| against |expected_value|."""
     value = self.stage.board_runattrs.GetParallel(attr)
     self.assertEqual(expected_value, value)
 
-  def _TestPerformStage(self, extra_config=None,
+  def _TestPerformStage(self,
+                        extra_config=None,
                         create_android_symbols_archive=False):
     """Run PerformStage for the stage with the given extra config."""
     self._Prepare(extra_config=extra_config)
@@ -332,6 +346,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testGenerateCrashStillNotifies(self):
     """Crashes in symbol generation should still notify external events."""
+
     class TestError(Exception):
       """Unique test exception"""
 
@@ -382,8 +397,9 @@ class UploadTestArtifactsStageMock(
   """Partial mock for BuildImageStage."""
 
   TARGET = 'chromite.cbuildbot.stages.artifact_stages.UploadTestArtifactsStage'
-  ATTRS = (generic_stages_unittest.ArchivingStageMixinMock.ATTRS +
-           ('BuildAutotestTarballs',))
+  ATTRS = (
+      generic_stages_unittest.ArchivingStageMixinMock.ATTRS +
+      ('BuildAutotestTarballs',))
 
   def BuildAutotestTarballs(self, *args, **kwargs):
     with patches(
@@ -401,9 +417,10 @@ class UploadTestArtifactsStageTest(build_stages_unittest.AllConfigsTestCase,
 
     osutils.SafeMakedirs(os.path.join(self.build_root, 'chroot', 'tmp'))
     self.StartPatcher(UploadTestArtifactsStageMock())
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return artifact_stages.UploadTestArtifactsStage(self._run,
+    return artifact_stages.UploadTestArtifactsStage(self._run, self.buildstore,
                                                     self._current_board)
 
   def RunTestsWithBotId(self, bot_id, options_tests=True):
@@ -507,13 +524,15 @@ class ArchivingStageTest(generic_stages_unittest.AbstractStageTestCase,
     self.StartPatcher(ArchivingMock())
 
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    archive_stage = artifact_stages.ArchiveStage(
-        self._run, self._current_board)
-    return artifact_stages.ArchivingStage(
-        self._run, self._current_board, archive_stage)
+    archive_stage = artifact_stages.ArchiveStage(self._run, self.buildstore,
+                                                 self._current_board)
+    return artifact_stages.ArchivingStage(self._run, self.buildstore,
+                                          self._current_board, archive_stage)
+
 
 class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
                                cbuildbot_unittest.SimpleBuilderTestCase):
@@ -527,16 +546,17 @@ class GenerateSysrootStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._Prepare()
     self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
     self.rc_mock.SetDefaultCmdResult()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
-    return artifact_stages.GenerateSysrootStage(self._run, self._current_board)
+    return artifact_stages.GenerateSysrootStage(self._run, self.buildstore,
+                                                self._current_board)
 
   def testGenerateSysroot(self):
     """Test that the sysroot generation was called correctly."""
     stage = self.ConstructStage()
-    self.PatchObject(path_util, 'ToChrootPath', return_value='',
-                     autospec=True)
+    self.PatchObject(path_util, 'ToChrootPath', return_value='', autospec=True)
     self.PatchObject(stage._upload_queue, 'put', autospec=True)
     stage._GenerateSysroot()
     sysroot_tarball = 'sysroot_%s.tar.xz' % ("virtual_target-os")

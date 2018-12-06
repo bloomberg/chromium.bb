@@ -34,7 +34,7 @@ from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import risk_report
 from chromite.lib import toolchain
-
+from chromite.lib.buildstore import FakeBuildStore
 
 # pylint: disable=protected-access
 # pylint: disable=too-many-ancestors
@@ -44,6 +44,7 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that BuildReexecutionFinishedStage behaves as expected."""
   def setUp(self):
     self.fake_db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.fake_db)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     build_id = self.fake_db.InsertBuild(
         'builder name', 1, 'build config', 'bot hostname')
@@ -71,14 +72,18 @@ class BuildReexecutionStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.assertEqual(tags['version_full'], 'R39-4815.0.0-rc1')
 
   def ConstructStage(self):
-    return report_stages.BuildReexecutionFinishedStage(self._run)
+    return report_stages.BuildReexecutionFinishedStage(self._run,
+                                                       self.buildstore)
 
 
 class ConfigDumpStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests that ConfigDumpStage runs without syntax error."""
 
+  def setUp(self):
+    self.buildstore = FakeBuildStore()
+
   def ConstructStage(self):
-    return report_stages.ConfigDumpStage(self._run)
+    return report_stages.ConfigDumpStage(self._run, self.buildstore)
 
   def testPerformStage(self):
     self._Prepare()
@@ -91,6 +96,7 @@ class SlaveFailureSummaryStageTest(
 
   def setUp(self):
     self.db = mock.MagicMock()
+    self.buildstore = FakeBuildStore(self.db)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
     self._Prepare(build_id=1)
 
@@ -100,7 +106,7 @@ class SlaveFailureSummaryStageTest(
     self._run.config['master'] = True
 
   def ConstructStage(self):
-    return report_stages.SlaveFailureSummaryStage(self._run)
+    return report_stages.SlaveFailureSummaryStage(self._run, self.buildstore)
 
   def testPerformStage(self):
     """Tests that stage runs without syntax errors."""
@@ -125,6 +131,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
 
   def setUp(self):
     self.db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.db)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
     retry_stats.SetupStats()
 
@@ -189,7 +196,7 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTestCase):
     stage.HandleSkip()
 
   def ConstructStage(self):
-    return report_stages.BuildStartStage(self._run)
+    return report_stages.BuildStartStage(self._run, self.buildstore)
 
 
 class AbstractReportStageTestCase(
@@ -198,6 +205,7 @@ class AbstractReportStageTestCase(
   """Base class for testing the Report stage."""
 
   def setUp(self):
+    self.buildstore = FakeBuildStore()
     for cmd in ((osutils, 'WriteFile'),
                 (commands, 'UploadArchivedFile'),
                 (alerts, 'SendEmail')):
@@ -230,7 +238,7 @@ class AbstractReportStageTestCase(
                      autospec=True, return_value=counter_value)
 
   def ConstructStage(self):
-    return report_stages.ReportStage(self._run, None)
+    return report_stages.ReportStage(self._run, self.buildstore, None)
 
 
 class ReportStageTest(AbstractReportStageTestCase):
@@ -283,10 +291,8 @@ class ReportStageTest(AbstractReportStageTestCase):
             'status': constants.BUILDER_STATUS_PASSED,
         },
     ]
-    self.mock_cidb.GetBuildStages = mock.Mock(
-        return_value=stages)
-    self.mock_cidb.GetSlaveStatuses = mock.Mock(
-        return_value=statuses)
+    self.mock_cidb.GetBuildStages = mock.Mock(return_value=stages)
+    self.mock_cidb.GetSlaveStatuses = mock.Mock(return_value=statuses)
     self._SetupUpdateStreakCounter()
     self.PatchObject(report_stages.ReportStage, '_LinkArtifacts')
     self.RunStage()
@@ -447,15 +453,15 @@ class DetectRelevantChangesStageTest(
     self._Prepare()
 
     self.fake_db = fake_cidb.FakeCIDBConnection()
+    self.buildstore = FakeBuildStore(self.fake_db)
     cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
     build_id = self.fake_db.InsertBuild(
         'test-paladin', 1, 'test-paladin', 'bot_hostname')
     self._run.attrs.metadata.UpdateWithDict({'build_id': build_id})
 
   def ConstructStage(self):
-    return report_stages.DetectRelevantChangesStage(self._run,
-                                                    self._current_board,
-                                                    self.changes)
+    return report_stages.DetectRelevantChangesStage(
+        self._run, self.buildstore, self._current_board, self.changes)
 
   def testRecordActionForChangesWithIrrelevantAction(self):
     """Test _RecordActionForChanges with irrelevant action.."""

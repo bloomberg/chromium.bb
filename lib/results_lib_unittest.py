@@ -27,6 +27,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.lib import parallel
+from chromite.lib.buildstore import FakeBuildStore
 
 
 class PassStage(generic_stages.BuilderStage):
@@ -75,8 +76,14 @@ class SetAttrStage(generic_stages.BuilderStage):
   DEFAULT_ATTR = 'unittest_value'
   VALUE = 'HereTakeThis'
 
-  def __init__(self, builder_run, delay=2, attr=DEFAULT_ATTR, *args, **kwargs):
-    super(SetAttrStage, self).__init__(builder_run, *args, **kwargs)
+  def __init__(self,
+               builder_run,
+               buildstore,
+               delay=2,
+               attr=DEFAULT_ATTR,
+               *args,
+               **kwargs):
+    super(SetAttrStage, self).__init__(builder_run, buildstore, *args, **kwargs)
     self.delay = delay
     self.attr = attr
 
@@ -94,9 +101,15 @@ class GetAttrStage(generic_stages.BuilderStage):
 
   DEFAULT_ATTR = 'unittest_value'
 
-  def __init__(self, builder_run, tester=None, timeout=5, attr=DEFAULT_ATTR,
-               *args, **kwargs):
-    super(GetAttrStage, self).__init__(builder_run, *args, **kwargs)
+  def __init__(self,
+               builder_run,
+               buildstore,
+               tester=None,
+               timeout=5,
+               attr=DEFAULT_ATTR,
+               *args,
+               **kwargs):
+    super(GetAttrStage, self).__init__(builder_run, buildstore, *args, **kwargs)
     self.tester = tester
     self.timeout = timeout
     self.attr = attr
@@ -121,6 +134,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
     self._bot_id = 'amd64-generic-paladin'
+    self.buildstore = FakeBuildStore()
     site_config = config_lib_unittest.MockSiteConfig()
     build_config = site_config[self._bot_id]
     self.build_root = '/fake_root'
@@ -154,8 +168,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     self._manager = parallel.Manager()
     self._manager.__enter__()
 
-    self._run = cbuildbot_run.BuilderRun(
-        options, site_config, build_config, self._manager)
+    self._run = cbuildbot_run.BuilderRun(options, site_config, build_config,
+                                         self._manager)
 
     results_lib.Results.Clear()
 
@@ -169,11 +183,10 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""
     # Run two pass stages, and one fail stage.
-    PassStage(self._run).Run()
-    Pass2Stage(self._run).Run()
-    self.assertRaises(
-        failures_lib.StepFailure,
-        FailStage(self._run).Run)
+    PassStage(self._run, self.buildstore).Run()
+    Pass2Stage(self._run, self.buildstore).Run()
+    self.assertRaises(failures_lib.StepFailure,
+                      FailStage(self._run, self.buildstore).Run)
 
   def _verifyRunResults(self, expectedResults, max_time=2.0):
     actualResults = results_lib.Results.Get()
@@ -236,32 +249,31 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Record('stage1', results_lib.Results.SUCCESS)
     results_lib.Results.Record('stage2', results_lib.Results.SKIPPED)
 
-    self.db.InsertBuildStage(build_id, 'stage1',
-                             status=constants.BUILDER_STATUS_PASSED)
-    self.db.InsertBuildStage(build_id, 'stage2',
-                             status=constants.BUILDER_STATUS_SKIPPED)
-    self.db.InsertBuildStage(build_id, 'stage3',
-                             status=constants.BUILDER_STATUS_FORGIVEN)
-    self.db.InsertBuildStage(build_id, 'stage4',
-                             status=constants.BUILDER_STATUS_PLANNED)
+    self.db.InsertBuildStage(
+        build_id, 'stage1', status=constants.BUILDER_STATUS_PASSED)
+    self.db.InsertBuildStage(
+        build_id, 'stage2', status=constants.BUILDER_STATUS_SKIPPED)
+    self.db.InsertBuildStage(
+        build_id, 'stage3', status=constants.BUILDER_STATUS_FORGIVEN)
+    self.db.InsertBuildStage(
+        build_id, 'stage4', status=constants.BUILDER_STATUS_PLANNED)
 
-    self.assertTrue(results_lib.Results.BuildSucceededSoFar(
-        self.db, build_id))
+    self.assertTrue(results_lib.Results.BuildSucceededSoFar(self.db, build_id))
 
-    self.db.InsertBuildStage(build_id, 'stage5',
-                             status=constants.BUILDER_STATUS_INFLIGHT)
+    self.db.InsertBuildStage(
+        build_id, 'stage5', status=constants.BUILDER_STATUS_INFLIGHT)
 
-    self.assertTrue(results_lib.Results.BuildSucceededSoFar(
-        self.db, build_id, 'stage5'))
+    self.assertTrue(
+        results_lib.Results.BuildSucceededSoFar(self.db, build_id, 'stage5'))
 
-    self.db.InsertBuildStage(build_id, 'stage6',
-                             status=constants.BUILDER_STATUS_FAILED)
+    self.db.InsertBuildStage(
+        build_id, 'stage6', status=constants.BUILDER_STATUS_FAILED)
 
-    self.assertFalse(results_lib.Results.BuildSucceededSoFar(
-        self.db, build_id, 'stage5'))
+    self.assertFalse(
+        results_lib.Results.BuildSucceededSoFar(self.db, build_id, 'stage5'))
 
   def _TestParallelStages(self, stage_objs):
-    builder = simple_builders.SimpleBuilder(self._run)
+    builder = simple_builders.SimpleBuilder(self._run, self.buildstore)
     error = None
     # pylint: disable=protected-access
     with mock.patch.multiple(parallel._BackgroundTask, PRINT_INTERVAL=0.01):
@@ -273,9 +285,11 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     return error
 
   def testParallelStages(self):
-    stage_objs = [stage(self._run) for stage in
-                  (PassStage, SneakyFailStage, FailStage, SuicideStage,
-                   Pass2Stage)]
+    bs = FakeBuildStore()
+    stage_objs = [
+        stage(self._run, bs) for stage in (PassStage, SneakyFailStage,
+                                           FailStage, SuicideStage, Pass2Stage)
+    ]
     error = self._TestParallelStages(stage_objs)
     self.assertTrue(error)
     expectedResults = [
@@ -289,14 +303,18 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def testParallelStageCommunicationOK(self):
     """Test run attr communication betweeen parallel stages."""
+
     def assert_test(value):
-      self.assertEqual(value, SetAttrStage.VALUE,
-                       'Expected value %r to be passed between stages, but'
-                       ' got %r.' % (SetAttrStage.VALUE, value))
+      self.assertEqual(
+          value, SetAttrStage.VALUE,
+          'Expected value %r to be passed between stages, but'
+          ' got %r.' % (SetAttrStage.VALUE, value))
+
+    bs = FakeBuildStore()
     stage_objs = [
-        SetAttrStage(self._run),
-        GetAttrStage(self._run, assert_test, timeout=30),
-        GetAttrStage(self._run, assert_test, timeout=30),
+        SetAttrStage(self._run, bs),
+        GetAttrStage(self._run, bs, assert_test, timeout=30),
+        GetAttrStage(self._run, bs, assert_test, timeout=30),
     ]
     error = self._TestParallelStages(stage_objs)
     self.assertFalse(error)
@@ -313,13 +331,18 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def testParallelStageCommunicationTimeout(self):
     """Test run attr communication between parallel stages that times out."""
+
     def assert_test(value):
-      self.assertEqual(value, SetAttrStage.VALUE,
-                       'Expected value %r to be passed between stages, but'
-                       ' got %r.' % (SetAttrStage.VALUE, value))
-    stage_objs = [SetAttrStage(self._run, delay=11),
-                  GetAttrStage(self._run, assert_test, timeout=1),
-                 ]
+      self.assertEqual(
+          value, SetAttrStage.VALUE,
+          'Expected value %r to be passed between stages, but'
+          ' got %r.' % (SetAttrStage.VALUE, value))
+
+    bs = FakeBuildStore()
+    stage_objs = [
+        SetAttrStage(self._run, bs, delay=11),
+        GetAttrStage(self._run, bs, assert_test, timeout=1),
+    ]
     error = self._TestParallelStages(stage_objs)
     self.assertTrue(error)
     expectedResults = [
@@ -330,9 +353,11 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
   def testParallelStageCommunicationNotQueueable(self):
     """Test setting non-queueable run attr in parallel stage."""
-    stage_objs = [SetAttrStage(self._run, attr='release_tag'),
-                  GetAttrStage(self._run, timeout=2),
-                 ]
+    bs = FakeBuildStore()
+    stage_objs = [
+        SetAttrStage(self._run, bs, attr='release_tag'),
+        GetAttrStage(self._run, bs, timeout=2),
+    ]
     error = self._TestParallelStages(stage_objs)
     self.assertTrue(error)
     expectedResults = [
@@ -351,13 +376,13 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
     results_lib.Results.Record('Test', FailStage.FAIL_EXCEPTION, time=3)
     results_lib.Results.Record('SignerTests', results_lib.Results.SKIPPED)
-    result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
-                                          returncode=2)
+    result = cros_build_lib.CommandResult(
+        cmd=['/bin/false', '/nosuchdir'], returncode=2)
     results_lib.Results.Record(
         'Archive',
         cros_build_lib.RunCommandError(
-            'Command "/bin/false /nosuchdir" failed.\n',
-            result), time=4)
+            'Command "/bin/false /nosuchdir" failed.\n', result),
+        time=4)
 
     results = StringIO.StringIO()
 
@@ -374,8 +399,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "** FAIL Test (0:00:03) with StepFailure\n"
         "************************************************************\n"
         "** FAIL Archive (0:00:04) in /bin/false\n"
-        "************************************************************\n"
-    )
+        "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
@@ -393,16 +417,16 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     # Store off a known set of results and generate a report
     results_lib.Results.Record('Sync', results_lib.Results.SUCCESS, time=1)
     results_lib.Results.Record('Build', results_lib.Results.SUCCESS, time=2)
-    results_lib.Results.Record('Test', FailStage.FAIL_EXCEPTION,
-                               'failException Msg\nLine 2', time=3)
-    result = cros_build_lib.CommandResult(cmd=['/bin/false', '/nosuchdir'],
-                                          returncode=2)
+    results_lib.Results.Record(
+        'Test', FailStage.FAIL_EXCEPTION, 'failException Msg\nLine 2', time=3)
+    result = cros_build_lib.CommandResult(
+        cmd=['/bin/false', '/nosuchdir'], returncode=2)
     results_lib.Results.Record(
         'Archive',
         cros_build_lib.RunCommandError(
-            'Command "/bin/false /nosuchdir" failed.\n',
-            result),
-        'FailRunCommand msg', time=4)
+            'Command "/bin/false /nosuchdir" failed.\n', result),
+        'FailRunCommand msg',
+        time=4)
 
     results = StringIO.StringIO()
 
@@ -428,8 +452,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "\n"
         "Failed in stage Archive:\n"
         "\n"
-        "FailRunCommand msg\n"
-    )
+        "FailRunCommand msg\n")
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')
@@ -457,8 +480,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
         "** Stage Results\n"
         "************************************************************\n"
         "** PASS Pass (0:00:01)\n"
-        "************************************************************\n"
-    )
+        "************************************************************\n")
 
     expectedLines = expectedResults.split('\n')
     actualLines = results.getvalue().split('\n')

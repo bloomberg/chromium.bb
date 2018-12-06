@@ -26,9 +26,10 @@ from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import results_lib
-
+from chromite.lib.buildstore import FakeBuildStore
 
 # pylint: disable=too-many-ancestors
+
 
 class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
                        cbuildbot_unittest.SimpleBuilderTestCase):
@@ -41,15 +42,25 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
     for cmd in ('CreateTestRoot', 'GenerateStackTraces', 'ArchiveFile',
                 'UploadArchivedFile', 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
-    for cmd in ('RunTestSuite', 'ArchiveTestResults', 'ArchiveVMFiles',
-                'RunDevModeTest', 'RunCrosVMTest',
-                'ListTests', 'GetTestResultsDir',):
+    for cmd in (
+        'RunTestSuite',
+        'ArchiveTestResults',
+        'ArchiveVMFiles',
+        'RunDevModeTest',
+        'RunCrosVMTest',
+        'ListTests',
+        'GetTestResultsDir',
+    ):
       self.PatchObject(vm_test_stages, cmd, autospec=True)
-    self.PatchObject(vm_test_stages.VMTestStage, '_NoTestResults',
-                     autospec=True, return_value=False)
+    self.PatchObject(
+        vm_test_stages.VMTestStage,
+        '_NoTestResults',
+        autospec=True,
+        return_value=False)
     self.PatchObject(osutils, 'RmDir', autospec=True)
     self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
     # Simulate breakpad symbols being ready.
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
@@ -59,17 +70,18 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def ConstructStage(self):
     # pylint: disable=protected-access
     self._run.GetArchive().SetupArchivePath()
-    stage = vm_test_stages.GCETestStage(self._run, self._current_board)
+    stage = vm_test_stages.GCETestStage(self._run, self.buildstore,
+                                        self._current_board)
     image_dir = stage.GetImageDirSymlink()
-    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
-                  makedirs=True)
+    osutils.Touch(
+        os.path.join(image_dir, constants.TEST_KEY_PRIVATE), makedirs=True)
     return stage
 
   def testGceTests(self):
     """Verifies that GCE_SUITE_TEST_TYPE tests are run on GCE."""
     self._run.config['gce_tests'] = [
-        config_lib.GCETestConfig(constants.GCE_SUITE_TEST_TYPE,
-                                 test_suite='gce-smoke')
+        config_lib.GCETestConfig(
+            constants.GCE_SUITE_TEST_TYPE, test_suite='gce-smoke')
     ]
     gce_tarball = constants.TEST_IMAGE_GCE_TAR
 
@@ -80,6 +92,7 @@ class GCETestStageTest(generic_stages_unittest.AbstractStageTestCase,
       self.assertEndsWith(image_path, gce_tarball)
       self.assertEqual(test_type, constants.GCE_SUITE_TEST_TYPE)
       self.assertEqual(test_config.test_suite, 'gce-smoke')
+
     # pylint: enable=unused-argument
 
     vm_test_stages.RunTestSuite.side_effect = _MockRunTestSuite
@@ -101,15 +114,25 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     for cmd in ('CreateTestRoot', 'GenerateStackTraces', 'ArchiveFile',
                 'UploadArchivedFile', 'BuildAndArchiveTestResultsTarball'):
       self.PatchObject(commands, cmd, autospec=True)
-    for cmd in ('RunTestSuite', 'ArchiveTestResults', 'ArchiveVMFiles',
-                'RunDevModeTest', 'RunCrosVMTest',
-                'ListTests', 'GetTestResultsDir',):
+    for cmd in (
+        'RunTestSuite',
+        'ArchiveTestResults',
+        'ArchiveVMFiles',
+        'RunDevModeTest',
+        'RunCrosVMTest',
+        'ListTests',
+        'GetTestResultsDir',
+    ):
       self.PatchObject(vm_test_stages, cmd, autospec=True)
-    self.PatchObject(vm_test_stages.VMTestStage, '_NoTestResults',
-                     autospec=True, return_value=False)
+    self.PatchObject(
+        vm_test_stages.VMTestStage,
+        '_NoTestResults',
+        autospec=True,
+        return_value=False)
     self.PatchObject(osutils, 'RmDir', autospec=True)
     self.PatchObject(cgroups, 'SimpleContainChildren', autospec=True)
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
     # Simulate breakpad symbols being ready.
     board_runattrs = self._run.GetBoardRunAttrs(self._current_board)
@@ -119,10 +142,11 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def ConstructStage(self):
     # pylint: disable=protected-access
     self._run.GetArchive().SetupArchivePath()
-    stage = vm_test_stages.VMTestStage(self._run, self._current_board)
+    stage = vm_test_stages.VMTestStage(self._run, self.buildstore,
+                                       self._current_board)
     image_dir = stage.GetImageDirSymlink()
-    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
-                  makedirs=True)
+    osutils.Touch(
+        os.path.join(image_dir, constants.TEST_KEY_PRIVATE), makedirs=True)
     return stage
 
   def testFullTests(self):
@@ -141,8 +165,11 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testFailedTest(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self.PatchObject(vm_test_stages.VMTestStage, '_RunTest',
-                     autospec=True, side_effect=Exception())
+    self.PatchObject(
+        vm_test_stages.VMTestStage,
+        '_RunTest',
+        autospec=True,
+        side_effect=Exception())
     self.assertRaises(failures_lib.StepFailure, self.RunStage)
 
   def testRaisesInfraFail(self):
@@ -172,10 +199,12 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testForgivingVMTest(self):
     """Test if a test is warn-only, it actually warns."""
     self._run.config['vm_tests'] = [
-        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                warn_only=True, test_suite='bvt-perbuild'),
-        config_lib.VMTestConfig(constants.VM_SUITE_TEST_TYPE,
-                                warn_only=False, test_suite='bvt-arc')
+        config_lib.VMTestConfig(
+            constants.VM_SUITE_TEST_TYPE,
+            warn_only=True,
+            test_suite='bvt-perbuild'),
+        config_lib.VMTestConfig(
+            constants.VM_SUITE_TEST_TYPE, warn_only=False, test_suite='bvt-arc')
     ]
 
     # pylint: disable=unused-argument
@@ -184,10 +213,14 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Only raise exception in one test.
       if test_config.test_suite == 'bvt-perbuild':
         raise Exception()
+
     # pylint: enable=unused-argument
 
-    self.PatchObject(vm_test_stages, 'RunTestSuite',
-                     autospec=True, side_effect=_MockRunTestSuite)
+    self.PatchObject(
+        vm_test_stages,
+        'RunTestSuite',
+        autospec=True,
+        side_effect=_MockRunTestSuite)
     results_lib.Results.Clear()
     self.RunStage()
     result = results_lib.Results.Get()[0]
@@ -214,18 +247,20 @@ class MoblabVMTestStageTestCase(
     osutils.SafeMakedirsNonRoot(self._temp_host_prefix)
     self.PatchObject(commands, 'UploadArchivedFile', autospec=True)
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
     self._run.GetArchive().SetupArchivePath()
     self._run.config['moblab_vm_tests'] = [
         config_lib.MoblabVMTestConfig(constants.MOBLAB_VM_SMOKE_TEST_TYPE),
     ]
-    stage = vm_test_stages.MoblabVMTestStage(self._run, self._current_board)
+    stage = vm_test_stages.MoblabVMTestStage(self._run, self.buildstore,
+                                             self._current_board)
     image_dir = stage.GetImageDirSymlink()
-    osutils.Touch(os.path.join(image_dir, constants.TEST_KEY_PRIVATE),
-                  makedirs=True)
-    osutils.Touch(os.path.join(image_dir, constants.TEST_IMAGE_BIN),
-                  makedirs=True)
+    osutils.Touch(
+        os.path.join(image_dir, constants.TEST_KEY_PRIVATE), makedirs=True)
+    osutils.Touch(
+        os.path.join(image_dir, constants.TEST_IMAGE_BIN), makedirs=True)
     return stage
 
   def _temp_chroot_path(self, suffix):
@@ -243,7 +278,9 @@ class MoblabVMTestStageTestCase(
 
   def testPerformStageSuccess(self):
     mock_create_test_root = self.PatchObject(
-        commands, 'CreateTestRoot', autospec=True,
+        commands,
+        'CreateTestRoot',
+        autospec=True,
         return_value=self._temp_chroot_prefix)
     self.PatchObject(
         path_util,
@@ -257,17 +294,16 @@ class MoblabVMTestStageTestCase(
     )
 
     mock_gs_context = mock.create_autospec(gs.GSContext)
-    self.PatchObject(gs, 'GSContext', autospec=True,
-                     return_value=mock_gs_context)
+    self.PatchObject(
+        gs, 'GSContext', autospec=True, return_value=mock_gs_context)
     mock_buildbot_link = self.PatchObject(cros_logging, 'PrintBuildbotLink')
     mock_generate_payloads = self.PatchObject(commands, 'GeneratePayloads')
     self.PatchObject(commands, 'BuildAutotestTarballsForHWTest')
     #self.PatchObject(vm_test_stages, 'StageArtifactsOnMoblab', autospec=True)
-    mock_run_moblab_tests = self.PatchObject(vm_test_stages, 'RunMoblabTests',
-                                             autospec=True)
-    mock_validate_results = self.PatchObject(vm_test_stages,
-                                             'ValidateMoblabTestSuccess',
-                                             autospec=True)
+    mock_run_moblab_tests = self.PatchObject(
+        vm_test_stages, 'RunMoblabTests', autospec=True)
+    mock_validate_results = self.PatchObject(
+        vm_test_stages, 'ValidateMoblabTestSuccess', autospec=True)
 
     disk_dir = os.path.join(self.tempdir, 'moblab_mounted_disk')
     osutils.SafeMakedirsNonRoot(disk_dir)
@@ -275,30 +311,53 @@ class MoblabVMTestStageTestCase(
     mock_context_manager.__enter__.return_value = disk_dir
     mock_moblab_vm = mock.create_autospec(moblab_vm.MoblabVm)
     mock_moblab_vm.MountedMoblabDiskContext.return_value = mock_context_manager
-    self.PatchObject(moblab_vm, 'MoblabVm', autospec=True,
-                     return_value=mock_moblab_vm)
+    self.PatchObject(
+        moblab_vm, 'MoblabVm', autospec=True, return_value=mock_moblab_vm)
 
     # Prepopulate results in the results directory to test result link printing.
-    osutils.SafeMakedirsNonRoot(os.path.join(
-        self._temp_host_prefix, 'results',
-        'results-1-moblab_DummyServerNoSspSuite',
-        'moblab_RunSuite', 'sysinfo', 'var', 'log', 'bootup',
-    ))
-    osutils.SafeMakedirsNonRoot(os.path.join(
-        self._temp_host_prefix, 'results',
-        'results-1-moblab_DummyServerNoSspSuite',
-        'moblab_RunSuite', 'sysinfo', 'var', 'log', 'autotest',
-    ))
-    osutils.SafeMakedirsNonRoot(os.path.join(
-        self._temp_host_prefix, 'results',
-        'results-1-moblab_DummyServerNoSspSuite',
-        'moblab_RunSuite', 'sysinfo', 'var', 'log_diff', 'autotest',
-    ))
-    osutils.SafeMakedirsNonRoot(os.path.join(
-        self._temp_host_prefix, 'results',
-        'results-1-moblab_DummyServerNoSspSuite',
-        'sysinfo', 'mnt', 'moblab', 'results',
-    ))
+    osutils.SafeMakedirsNonRoot(
+        os.path.join(
+            self._temp_host_prefix,
+            'results',
+            'results-1-moblab_DummyServerNoSspSuite',
+            'moblab_RunSuite',
+            'sysinfo',
+            'var',
+            'log',
+            'bootup',
+        ))
+    osutils.SafeMakedirsNonRoot(
+        os.path.join(
+            self._temp_host_prefix,
+            'results',
+            'results-1-moblab_DummyServerNoSspSuite',
+            'moblab_RunSuite',
+            'sysinfo',
+            'var',
+            'log',
+            'autotest',
+        ))
+    osutils.SafeMakedirsNonRoot(
+        os.path.join(
+            self._temp_host_prefix,
+            'results',
+            'results-1-moblab_DummyServerNoSspSuite',
+            'moblab_RunSuite',
+            'sysinfo',
+            'var',
+            'log_diff',
+            'autotest',
+        ))
+    osutils.SafeMakedirsNonRoot(
+        os.path.join(
+            self._temp_host_prefix,
+            'results',
+            'results-1-moblab_DummyServerNoSspSuite',
+            'sysinfo',
+            'mnt',
+            'moblab',
+            'results',
+        ))
     self.RunStage()
 
     self.assertEqual(mock_create_test_root.call_count, 1)
@@ -341,22 +400,25 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(
         path_util,
         'FromChrootPath',
-        new=lambda path: re.sub(r'^{0}'.format(constants.CHROOT_SOURCE_ROOT),
-                                self.BUILD_ROOT,
-                                path)
+        new=
+        lambda path: re.sub(r'^{0}'.format(constants.CHROOT_SOURCE_ROOT),
+                            self.BUILD_ROOT, path)
     )
     self.PatchObject(
         path_util,
         'ToChrootPath',
-        new=lambda path: re.sub(r'^{0}'.format(self.BUILD_ROOT),
-                                constants.CHROOT_SOURCE_ROOT,
-                                path)
+        new=
+        lambda path: re.sub(r'^{0}'.format(self.BUILD_ROOT),
+                            constants.CHROOT_SOURCE_ROOT, path)
     )
 
   def _RunTestSuite(self, test_config, whitelist_chrome_crashes=False):
     vm_test_stages.RunTestSuite(
-        self.BUILD_ROOT, self.TEST_BOARD, self.TEST_IMAGE_OUTSIDE_CHROOT,
-        self.RESULTS_DIR, archive_dir=self.BUILD_ROOT,
+        self.BUILD_ROOT,
+        self.TEST_BOARD,
+        self.TEST_IMAGE_OUTSIDE_CHROOT,
+        self.RESULTS_DIR,
+        archive_dir=self.BUILD_ROOT,
         whitelist_chrome_crashes=whitelist_chrome_crashes,
         test_config=test_config,
         ssh_private_key=self.PRIVATE_KEY_OUTSIDE_CHROOT,
@@ -366,14 +428,16 @@ class RunTestSuiteTest(cros_test_lib.RunCommandTempDirTestCase):
       self.assertCommandContains([
           'bin/ctest', '--no_graphics', '--verbose',
           '--target_image=%s' % self.TEST_IMAGE_OUTSIDE_CHROOT,
-          '--ssh_private_key=%s' % self.PRIVATE_KEY_OUTSIDE_CHROOT])
+          '--ssh_private_key=%s' % self.PRIVATE_KEY_OUTSIDE_CHROOT
+      ])
       self.assertCommandContains(enter_chroot=True, expected=False)
     else:
       self.assertCommandContains([
           'cros_run_vm_test', '--debug',
           '--image-path=%s' % self.VM_IMAGE_INSIDE_CHROOT,
           '--results-dir=%s' % self.RESULTS_DIR,
-          '--private-key=%s' % self.PRIVATE_KEY_INSIDE_CHROOT])
+          '--private-key=%s' % self.PRIVATE_KEY_INSIDE_CHROOT
+      ])
       self.assertCommandContains(enter_chroot=True)
       self.assertCommandContains(error_code_ok=True)
 
@@ -457,13 +521,16 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     # list the same test twice.
     osutils.WriteFile(
         os.path.join(results_path, 'taste_tests', 'all', 'test_report.log'),
-        test_report_1, makedirs=True)
+        test_report_1,
+        makedirs=True)
     osutils.WriteFile(
         os.path.join(results_path, 'taste_tests', 'failed', 'test_report.log'),
-        test_report_1, makedirs=True)
+        test_report_1,
+        makedirs=True)
     osutils.WriteFile(
         os.path.join(results_path, 'verify_tests', 'all', 'test_report.log'),
-        test_report_2, makedirs=True)
+        test_report_2,
+        makedirs=True)
 
     self.assertEquals(
         vm_test_stages.ListTests(results_path, show_passed=False),
@@ -479,8 +546,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     # File that should be archived.
     osutils.Touch(os.path.join(results_path, 'foo.txt'))
     # Flies that should be ignored.
-    osutils.Touch(os.path.join(results_path,
-                               'chromiumos_qemu_disk.bin.foo'))
+    osutils.Touch(os.path.join(results_path, 'chromiumos_qemu_disk.bin.foo'))
     os.symlink('/src/foo', os.path.join(results_path, 'taco_link'))
     vm_test_stages.ArchiveTestResults(results_path, archive_dir)
     self.assertExists(os.path.join(archive_dir, 'foo.txt'))
@@ -498,13 +564,11 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     """ValidateMoblabTestSuccess raises when logs indicate no test run."""
     os.makedirs(os.path.join(self.tempdir, 'debug'))
     osutils.WriteFile(
-        os.path.join(self.tempdir, 'debug', 'test_that.INFO'),
-        """
+        os.path.join(self.tempdir, 'debug', 'test_that.INFO'), """
 Some random stuff.
 01/08 15:00:28.679 INFO  autoserv| [stderr] Suite job          [ PASSED ]
 01/08 15:00:28.681 INFO  autoserv| [stderr]
-01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:"""
-    )
+01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:""")
     with self.assertRaises(failures_lib.TestFailure):
       vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
 
@@ -512,14 +576,12 @@ Some random stuff.
     """ValidateMoblabTestSuccess raises when logs indicate test failed."""
     os.makedirs(os.path.join(self.tempdir, 'debug'))
     osutils.WriteFile(
-        os.path.join(self.tempdir, 'debug', 'test_that.INFO'),
-        """
+        os.path.join(self.tempdir, 'debug', 'test_that.INFO'), """
 Some random stuff.
 01/08 15:00:28.679 INFO  autoserv| [stderr] Suite job          [ PASSED ]
 01/08 15:00:28.680 INFO  autoserv| [stderr] dummy_PassServer   [ FAILED ]
 01/08 15:00:28.681 INFO  autoserv| [stderr]
-01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:"""
-    )
+01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:""")
     with self.assertRaises(failures_lib.TestFailure):
       vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)
 
@@ -527,12 +589,10 @@ Some random stuff.
     """ValidateMoblabTestSuccess succeeds when logs indicate test passed."""
     os.makedirs(os.path.join(self.tempdir, 'debug'))
     osutils.WriteFile(
-        os.path.join(self.tempdir, 'debug', 'test_that.INFO'),
-        """
+        os.path.join(self.tempdir, 'debug', 'test_that.INFO'), """
 Some random stuff.
 01/08 15:00:28.679 INFO  autoserv| [stderr] Suite job          [ PASSED ]
 01/08 15:00:28.680 INFO  autoserv| [stderr] dummy_PassServer   [ PASSED ]
 01/08 15:00:28.681 INFO  autoserv| [stderr]
-01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:"""
-    )
+01/08 15:00:28.681 INFO  autoserv| [stderr] Suite timings:""")
     vm_test_stages.ValidateMoblabTestSuccess(self.tempdir)

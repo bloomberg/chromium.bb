@@ -24,8 +24,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, sync_stage, **kwargs):
-    super(ScheduleSlavesStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, sync_stage, **kwargs):
+    super(ScheduleSlavesStage, self).__init__(builder_run, buildstore, **kwargs)
     self.sync_stage = sync_stage
     self.buildbucket_client = self.GetBuildbucketClient()
 
@@ -54,8 +54,11 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return bot_id
 
-  def PostSlaveBuildToBuildbucket(self, build_name, build_config,
-                                  master_build_id, master_buildbucket_id,
+  def PostSlaveBuildToBuildbucket(self,
+                                  build_name,
+                                  build_config,
+                                  master_build_id,
+                                  master_buildbucket_id,
                                   dryrun=False):
     """Send a Put slave build request to Buildbucket.
 
@@ -96,7 +99,8 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
 
     return (result.buildbucket_id, result.created_ts)
 
-  def ScheduleSlaveBuildsViaBuildbucket(self, important_only=False,
+  def ScheduleSlaveBuildsViaBuildbucket(self,
+                                        important_only=False,
                                         dryrun=False):
     """Schedule slave builds by sending PUT requests to Buildbucket.
 
@@ -127,22 +131,25 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     for slave_config_name, slave_config in sorted(slave_config_map.iteritems()):
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_config_name, slave_config, build_id, master_buildbucket_id,
+            slave_config_name,
+            slave_config,
+            build_id,
+            master_buildbucket_id,
             dryrun=dryrun)
         request_reason = None
 
         if slave_config.important:
-          scheduled_important_slave_builds.append(
-              (slave_config_name, buildbucket_id, created_ts))
+          scheduled_important_slave_builds.append((slave_config_name,
+                                                   buildbucket_id, created_ts))
           request_reason = build_requests.REASON_IMPORTANT_CQ_SLAVE
         else:
           scheduled_experimental_slave_builds.append(
               (slave_config_name, buildbucket_id, created_ts))
           request_reason = build_requests.REASON_EXPERIMENTAL_CQ_SLAVE
 
-        scheduled_build_reqs.append(build_requests.BuildRequest(
-            None, build_id, slave_config_name, None, buildbucket_id,
-            request_reason, None))
+        scheduled_build_reqs.append(
+            build_requests.BuildRequest(None, build_id, slave_config_name, None,
+                                        buildbucket_id, request_reason, None))
       except buildbucket_lib.BuildbucketResponseException as e:
         # Use 16-digit ts to be consistent with the created_ts from Buildbucket
         current_ts = int(round(time.time() * 1000000))
@@ -173,5 +180,5 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
                    'do not schedule CQ slaves.')
       return
 
-    self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,
-                                           dryrun=self._run.options.debug)
+    self.ScheduleSlaveBuildsViaBuildbucket(
+        important_only=False, dryrun=self._run.options.debug)

@@ -48,7 +48,6 @@ from chromite.lib import tree_status
 from chromite.scripts import cros_mark_android_as_stable
 from chromite.scripts import cros_mark_chrome_as_stable
 
-
 PRE_CQ = validation_pool.PRE_CQ
 
 PRECQ_INFLIGHT_TIMEOUT_MSG = (
@@ -77,7 +76,6 @@ PRECQ_EARLY_CRASH_MSG = (
     'again. If this problem occurs multiple times please notify '
     'the sheriff and file a bug.')
 
-
 # Default limit for the size of Pre-CQ configs to test for unioned options
 # TODO(nxia): make this configurable in the COMMIT-QUEUE.ini
 DEFAULT_UNION_PRE_CQ_LIMIT = 15
@@ -104,8 +102,8 @@ class UnknownPreCQConfigRequestedError(Exception):
 
   def __init__(self, pre_cq_configs):
     super(UnknownPreCQConfigRequestedError, self).__init__(
-        'One of the requested pre-cq configs is invalid or nonexistant: %s'
-        % pre_cq_configs)
+        'One of the requested pre-cq configs is invalid or nonexistant: %s' %
+        pre_cq_configs)
     self.pre_cq_configs = pre_cq_configs
 
 
@@ -114,15 +112,16 @@ class PatchChangesStage(generic_stages.BuilderStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, patch_pool, **kwargs):
+  def __init__(self, builder_run, buildstore, patch_pool, **kwargs):
     """Construct a PatchChangesStage.
 
     Args:
       builder_run: BuilderRun object.
+      buildstore: BuildStore instance to make DB calls with.
       patch_pool: A TrybotPatchPool object containing the different types of
                   patches to apply.
     """
-    super(PatchChangesStage, self).__init__(builder_run, **kwargs)
+    super(PatchChangesStage, self).__init__(builder_run, buildstore, **kwargs)
     self.patch_pool = patch_pool
 
   @staticmethod
@@ -144,8 +143,8 @@ class PatchChangesStage(generic_stages.BuilderStage):
 
     for conflict in duplicates:
       logging.error(
-          "Changes %s conflict with each other- they have same id %s., "
-          .join(map(str, conflict)), conflict[0].id)
+          "Changes %s conflict with each other- they have same id %s., ".join(
+              map(str, conflict)), conflict[0].id)
 
     cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
 
@@ -170,10 +169,11 @@ class PatchChangesStage(generic_stages.BuilderStage):
       self.HandleApplyFailures(failures)
 
   def HandleApplyFailures(self, failures):
-    cros_build_lib.Die("Failed applying patches: %s",
-                       "\n".join(map(str, failures)))
+    cros_build_lib.Die("Failed applying patches: %s", "\n".join(
+        map(str, failures)))
 
   def PerformStage(self):
+
     class NoisyPatchSeries(patch_series.PatchSeries):
       """Custom PatchSeries that adds links to buildbot logs for remote trys."""
 
@@ -208,9 +208,10 @@ class BootstrapStage(PatchChangesStage):
   option_name = 'bootstrap'
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, patch_pool, **kwargs):
-    super(BootstrapStage, self).__init__(
-        builder_run, trybot_patch_pool.TrybotPatchPool(), **kwargs)
+  def __init__(self, builder_run, buildstore, patch_pool, **kwargs):
+    super(BootstrapStage, self).__init__(builder_run, buildstore,
+                                         trybot_patch_pool.TrybotPatchPool(),
+                                         **kwargs)
 
     self.patch_pool = patch_pool
     self.returncode = None
@@ -244,6 +245,7 @@ class BootstrapStage(PatchChangesStage):
   @staticmethod
   def _FilterArgsForApi(parsed_args, api_minor):
     """Remove arguments that are introduced after an api version."""
+
     def filter_fn(passed_arg):
       return passed_arg.opt_inst.api_version <= api_minor
 
@@ -378,8 +380,8 @@ class SyncStage(generic_stages.BuilderStage):
   output_manifest_sha1 = True
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(SyncStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(SyncStage, self).__init__(builder_run, buildstore, **kwargs)
     self.repo = None
     self.skip_sync = False
 
@@ -417,15 +419,18 @@ class SyncStage(generic_stages.BuilderStage):
 
   def ManifestCheckout(self, next_manifest):
     """Checks out the repository to the given manifest."""
-    self._Print('\n'.join(['BUILDROOT: %s' % self.repo.directory,
-                           'TRACKING BRANCH: %s' % self.repo.branch,
-                           'NEXT MANIFEST: %s' % next_manifest]))
+    self._Print('\n'.join([
+        'BUILDROOT: %s' % self.repo.directory,
+        'TRACKING BRANCH: %s' % self.repo.branch,
+        'NEXT MANIFEST: %s' % next_manifest
+    ]))
 
     if not self.skip_sync:
       self.repo.Sync(next_manifest)
 
-    print(self.repo.ExportManifest(mark_revision=self.output_manifest_sha1),
-          file=sys.stderr)
+    print(
+        self.repo.ExportManifest(mark_revision=self.output_manifest_sha1),
+        file=sys.stderr)
 
   def RunPrePatchBuild(self):
     """Run through a pre-patch build to prepare for incremental build.
@@ -441,13 +446,13 @@ class SyncStage(generic_stages.BuilderStage):
     suffix = ' (pre-Patch)'
     try:
       build_stages.InitSDKStage(
-          self._run, chroot_replace=True, suffix=suffix).Run()
+          self._run, self.buildstore, chroot_replace=True, suffix=suffix).Run()
       for builder_run in self._run.GetUngroupedBuilderRuns():
         for board in builder_run.config.boards:
           build_stages.SetupBoardStage(
-              builder_run, board=board, suffix=suffix).Run()
+              builder_run, self.buildstore, board=board, suffix=suffix).Run()
           build_stages.BuildPackagesStage(
-              builder_run, board=board, suffix=suffix).Run()
+              builder_run, self.buildstore, board=board, suffix=suffix).Run()
     except failures_lib.StepFailure:
       return False
 
@@ -461,10 +466,13 @@ class SyncStage(generic_stages.BuilderStage):
     """
     changes_list = self._run.attrs.metadata.GetDict().get('changes', [])
     changes_list = changes_list + [c.GetAttributeDict() for c in set(changes)]
-    changes_list = sorted(changes_list,
-                          key=lambda x: (x[cros_patch.ATTR_GERRIT_NUMBER],
-                                         x[cros_patch.ATTR_PATCH_NUMBER],
-                                         x[cros_patch.ATTR_REMOTE]))
+    changes_list = sorted(
+        changes_list,
+        key=
+        lambda x: (x[cros_patch.ATTR_GERRIT_NUMBER],
+                   x[cros_patch.ATTR_PATCH_NUMBER],
+                   x[cros_patch.ATTR_REMOTE])
+    )
     self._run.attrs.metadata.UpdateWithDict({'changes': changes_list})
     change_ids = []
     change_gerrit_ids = []
@@ -472,8 +480,10 @@ class SyncStage(generic_stages.BuilderStage):
     for c in changes_list:
       change_ids.append(c[cros_patch.ATTR_CHANGE_ID])
       gerrit_number = c[cros_patch.ATTR_GERRIT_NUMBER]
-      gerrit_id = '/'.join([c[cros_patch.ATTR_REMOTE], gerrit_number,
-                            c[cros_patch.ATTR_PATCH_NUMBER]])
+      gerrit_id = '/'.join([
+          c[cros_patch.ATTR_REMOTE], gerrit_number,
+          c[cros_patch.ATTR_PATCH_NUMBER]
+      ])
       change_gerrit_ids.append(gerrit_id)
       change_gerrit_numbers.append(gerrit_number)
     tags = {
@@ -523,9 +533,10 @@ class ManifestVersionedSyncStage(SyncStage):
   output_manifest_sha1 = False
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, **kwargs):
+  def __init__(self, builder_run, buildstore, **kwargs):
     # Perform the sync at the end of the stage to the given manifest.
-    super(ManifestVersionedSyncStage, self).__init__(builder_run, **kwargs)
+    super(ManifestVersionedSyncStage, self).__init__(builder_run, buildstore,
+                                                     **kwargs)
     self.repo = None
     self.manifest_manager = None
 
@@ -581,19 +592,20 @@ class ManifestVersionedSyncStage(SyncStage):
         'chrome_rev is unsupported on release builders.'
 
     _, db = self._run.GetCIDBHandle()
-    self.RegisterManifestManager(manifest_version.BuildSpecsManager(
-        source_repo=self.repo,
-        manifest_repo=self.manifest_repo,
-        manifest=self._run.config.manifest,
-        build_names=self._run.GetBuilderIds(),
-        incr_type=self.VersionIncrementType(),
-        force=self._force,
-        branch=self._run.manifest_branch,
-        dry_run=dry_run,
-        config=self._run.config,
-        metadata=self._run.attrs.metadata,
-        db=db,
-        buildbucket_client=self.buildbucket_client))
+    self.RegisterManifestManager(
+        manifest_version.BuildSpecsManager(
+            source_repo=self.repo,
+            manifest_repo=self.manifest_repo,
+            manifest=self._run.config.manifest,
+            build_names=self._run.GetBuilderIds(),
+            incr_type=self.VersionIncrementType(),
+            force=self._force,
+            branch=self._run.manifest_branch,
+            dry_run=dry_run,
+            config=self._run.config,
+            metadata=self._run.attrs.metadata,
+            db=db,
+            buildbucket_client=self.buildbucket_client))
 
   def _SetAndroidVersionIfApplicable(self, manifest):
     """If 'android' is in |manifest|, write version to the BuilderRun object.
@@ -607,8 +619,8 @@ class ManifestVersionedSyncStage(SyncStage):
     if elements:
       android_version = elements[0].getAttribute(
           lkgm_manager.ANDROID_VERSION_ATTR)
-      logging.info(
-          'Android version was found in the manifest: %s', android_version)
+      logging.info('Android version was found in the manifest: %s',
+                   android_version)
       # Update the metadata dictionary. This is necessary because the
       # metadata dictionary is preserved through re-executions, so
       # UprevAndroidStage can read the version from the dictionary
@@ -629,15 +641,15 @@ class ManifestVersionedSyncStage(SyncStage):
     if elements:
       chrome_version = elements[0].getAttribute(
           lkgm_manager.CHROME_VERSION_ATTR)
-      logging.info(
-          'Chrome version was found in the manifest: %s', chrome_version)
+      logging.info('Chrome version was found in the manifest: %s',
+                   chrome_version)
       # Update the metadata dictionary. This is necessary because the
       # metadata dictionary is preserved through re-executions, so
       # SyncChromeStage can read the version from the dictionary
       # later. This is easier than parsing the manifest again after
       # the re-execution.
-      self._run.attrs.metadata.UpdateKeyDictWithDict(
-          'version', {'chrome': chrome_version})
+      self._run.attrs.metadata.UpdateKeyDictWithDict('version',
+                                                     {'chrome': chrome_version})
 
   def GetNextManifest(self):
     """Uses the initialized manifest manager to get the next manifest."""
@@ -696,6 +708,7 @@ class ManifestVersionedSyncStage(SyncStage):
         triggered slightly before the platform version is written. Default
         is 5 minutes.
     """
+
     # TODO(davidjames): Remove the wait loop here once we've updated slave
     # builders to only get triggered after the platform version is written.
     def _PrintRemainingTime(remaining):
@@ -709,11 +722,12 @@ class ManifestVersionedSyncStage(SyncStage):
       return not x
 
     _, db = self._run.GetCIDBHandle()
-    return timeout_util.WaitForSuccess(_ShouldRetry,
-                                       _GetPlatformVersion,
-                                       timeout,
-                                       period=constants.SLEEP_TIMEOUT,
-                                       side_effect_func=_PrintRemainingTime)
+    return timeout_util.WaitForSuccess(
+        _ShouldRetry,
+        _GetPlatformVersion,
+        timeout,
+        period=constants.SLEEP_TIMEOUT,
+        side_effect_func=_PrintRemainingTime)
 
   def _VerifyMasterId(self, master_id):
     """Verify that our master id is current and valid.
@@ -726,7 +740,8 @@ class ManifestVersionedSyncStage(SyncStage):
       assert not self._run.options.force_version
       master_build_status = db.GetBuildStatus(master_id)
       latest = db.GetBuildHistory(
-          master_build_status['build_config'], 1,
+          master_build_status['build_config'],
+          1,
           milestone_version=master_build_status['milestone_version'])
       if latest and latest[0]['id'] != master_id:
         raise failures_lib.MasterSlaveVersionMismatchFailure(
@@ -762,8 +777,8 @@ class ManifestVersionedSyncStage(SyncStage):
 
     # Log this early on for the release team to grep out before we finish.
     if self.manifest_manager:
-      self._Print('\nRELEASETAG: %s\n' % (
-          self.manifest_manager.current_version))
+      self._Print(
+          '\nRELEASETAG: %s\n' % (self.manifest_manager.current_version))
 
     self._SetAndroidVersionIfApplicable(next_manifest)
     self._SetChromeVersionIfApplicable(next_manifest)
@@ -784,12 +799,13 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   # external manifest, we create a second manager for that manifest.
   external_manager = None
   MAX_BUILD_HISTORY_LENGTH = 10
-  MilestoneVersion = collections.namedtuple(
-      'MilestoneVersion', ['milestone', 'platform'])
+  MilestoneVersion = collections.namedtuple('MilestoneVersion',
+                                            ['milestone', 'platform'])
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(MasterSlaveLKGMSyncStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(MasterSlaveLKGMSyncStage, self).__init__(builder_run, buildstore,
+                                                   **kwargs)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self._android_version = None
@@ -852,8 +868,9 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     assert self._run.config.master
 
     build_id = self._run.attrs.metadata.GetDict().get('build_id')
-    logging.info('Creating new candidate manifest, including chrome version '
-                 '%s.', self._chrome_version)
+    logging.info(
+        'Creating new candidate manifest, including chrome version '
+        '%s.', self._chrome_version)
     if self._android_version:
       logging.info('Adding Android version to new candidate manifest %s.',
                    self._android_version)
@@ -908,8 +925,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       if m:
         milestone = m.group(1)
         platform = m.group(2)
-      return self.MilestoneVersion(
-          milestone=milestone, platform=platform)
+      return self.MilestoneVersion(milestone=milestone, platform=platform)
     return None
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
@@ -936,11 +952,13 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       old_filename = self.manifest_manager.GetBuildSpecFilePath(
           cros_version.milestone, cros_version.platform)
       if not os.path.exists(old_filename):
-        logging.error('Could not generate blamelist, '
-                      'manifest file does not exist: %s', old_filename)
+        logging.error(
+            'Could not generate blamelist, '
+            'manifest file does not exist: %s', old_filename)
       else:
         logging.debug('Generate blamelist against: %s', old_filename)
         lkgm_manager.GenerateBlameList(self.repo, old_filename)
+
 
 class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
   """Commit Queue Sync stage that handles syncing and applying patches.
@@ -959,8 +977,9 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
   PRE_CQ_TIMEOUT = 2 * 60 * 60
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(CommitQueueSyncStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(CommitQueueSyncStage, self).__init__(builder_run, buildstore,
+                                               **kwargs)
 
     # The pool of patches to be picked up by the commit queue.
     # - For the master commit queue, it's initialized in GetNextManifest.
@@ -1054,7 +1073,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
           dryrun=self._run.options.debug,
           check_tree_open=(not self._run.options.debug or
                            self._run.options.mock_tree_status),
-          change_filter=self._ChangeFilter, builder_run=self._run)
+          change_filter=self._ChangeFilter,
+          builder_run=self._run)
     except validation_pool.TreeIsClosedException as e:
       logging.warning(str(e))
       return None
@@ -1114,8 +1134,8 @@ class PreCQSyncStage(SyncStage):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, patches, **kwargs):
-    super(PreCQSyncStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, patches, **kwargs):
+    super(PreCQSyncStage, self).__init__(builder_run, buildstore, **kwargs)
 
     # As a workaround for crbug.com/432706, we scan patches to see if they
     # are already being merged. If they are, we don't test them in the PreCQ.
@@ -1195,11 +1215,10 @@ class PreCQLauncherStage(SyncStage):
   # How many days to look back in build history to check for sanity-pre-cq
   PRE_CQ_SANITY_CHECK_LOOK_BACK_HISTORY_DAYS = 1
 
-  def __init__(self, builder_run, **kwargs):
-    super(PreCQLauncherStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(PreCQLauncherStage, self).__init__(builder_run, buildstore, **kwargs)
     self.skip_sync = True
     self.last_cycle_launch_count = 0
-
 
   def _HasTimedOut(self, start, now, timeout_minutes):
     """Check whether |timeout_minutes| has elapsed between |start| and |now|.
@@ -1241,8 +1260,8 @@ class PreCQLauncherStage(SyncStage):
       A set of valid Pre-CQ configs (strings) or None.
     """
     try:
-      cq_config_parser = cq_config.CQConfigParser(self._build_root, change,
-                                                  forgiving=False)
+      cq_config_parser = cq_config.CQConfigParser(
+          self._build_root, change, forgiving=False)
       pre_cq_configs = None
       if cq_config_parser.GetUnionPreCQSubConfigsFlag():
         pre_cq_configs = self._ParsePreCQsFromOption(
@@ -1254,12 +1273,12 @@ class PreCQLauncherStage(SyncStage):
 
         return pre_cq_configs
       else:
-        return self._ParsePreCQsFromOption(
-            cq_config_parser.GetPreCQConfigs())
+        return self._ParsePreCQsFromOption(cq_config_parser.GetPreCQConfigs())
     except (UnknownPreCQConfigRequestedError,
             cq_config.MalformedCQConfigException):
-      logging.exception('Exception encountered when parsing pre-cq options '
-                        'for change %s. Falling back to default set.', change)
+      logging.exception(
+          'Exception encountered when parsing pre-cq options '
+          'for change %s. Falling back to default set.', change)
       m = 'chromeos/cbuildbot/pre-cq/bad_pre_cq_options_count'
       metrics.Counter(m).increment()
       return None
@@ -1287,9 +1306,9 @@ class PreCQLauncherStage(SyncStage):
       try:
         configs_to_test = self._ParsePreCQsFromOption(lines)
       except UnknownPreCQConfigRequestedError:
-        logging.exception('Unknown config requested in commit message '
-                          'for change %s. Falling back to default set.',
-                          change)
+        logging.exception(
+            'Unknown config requested in commit message '
+            'for change %s. Falling back to default set.', change)
 
     configs_from_options = None
     try:
@@ -1299,10 +1318,10 @@ class PreCQLauncherStage(SyncStage):
       pre_cq_configs = list(e.pre_cq_configs)
       pre_cq_configs.sort()
       configs_from_options = pre_cq_configs[:DEFAULT_UNION_PRE_CQ_LIMIT]
-      logging.info('Unioned Pre-CQs %s for change %s exceed the limit %d. '
-                   'Will launch the following Pre-CQ configs: %s',
-                   e.pre_cq_configs, change.PatchLink(),
-                   DEFAULT_UNION_PRE_CQ_LIMIT, configs_from_options)
+      logging.info(
+          'Unioned Pre-CQs %s for change %s exceed the limit %d. '
+          'Will launch the following Pre-CQ configs: %s', e.pre_cq_configs,
+          change.PatchLink(), DEFAULT_UNION_PRE_CQ_LIMIT, configs_from_options)
 
     configs_to_test = configs_to_test or configs_from_options
     return set(configs_to_test or constants.PRE_CQ_DEFAULT_CONFIGS)
@@ -1362,11 +1381,12 @@ class PreCQLauncherStage(SyncStage):
     actions = []
     configs_to_test = self.VerificationsForChange(change)
     for c in configs_to_test:
-      actions.append(clactions.CLAction.FromGerritPatchAndAction(
-          change, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ,
-          reason=c))
-    actions.append(clactions.CLAction.FromGerritPatchAndAction(
-        change, constants.CL_ACTION_SCREENED_FOR_PRE_CQ))
+      actions.append(
+          clactions.CLAction.FromGerritPatchAndAction(
+              change, constants.CL_ACTION_VALIDATION_PENDING_PRE_CQ, reason=c))
+    actions.append(
+        clactions.CLAction.FromGerritPatchAndAction(
+            change, constants.CL_ACTION_SCREENED_FOR_PRE_CQ))
 
     build_id, db = self._run.GetCIDBHandle()
     db.InsertCLActions(build_id, actions)
@@ -1394,8 +1414,7 @@ class PreCQLauncherStage(SyncStage):
     tryjob_output = json.loads(output)
     return {t['build_config']: t['buildbucket_id'] for t in tryjob_output}
 
-  def _LaunchTrybots(self, pool, configs, plan=None,
-                     sanity_check_build=False):
+  def _LaunchTrybots(self, pool, configs, plan=None, sanity_check_build=False):
     """Launch tryjobs on the configs with patches if provided.
 
     Args:
@@ -1417,14 +1436,17 @@ class PreCQLauncherStage(SyncStage):
 
         if plan is not None:
           for change in plan:
-            logging.error('Skipping trybots on nonexistent config %s for '
-                          '%s %s', config, str(change), change.url)
+            logging.error(
+                'Skipping trybots on nonexistent config %s for '
+                '%s %s', config, str(change), change.url)
             pool.HandleNoConfigTargetFailure(change, config)
 
         return {}
 
-    cmd = ['cros', 'tryjob', '--yes', '--json',
-           '--timeout', str(self.INFLIGHT_TIMEOUT * 60)] + configs
+    cmd = [
+        'cros', 'tryjob', '--yes', '--json', '--timeout',
+        str(self.INFLIGHT_TIMEOUT * 60)
+    ] + configs
 
     if sanity_check_build:
       cmd += ['--sanity-check-build']
@@ -1457,8 +1479,8 @@ class PreCQLauncherStage(SyncStage):
       configs: A list of pre-cq config names to launch.
       plan: The list of patches to test in the pre-cq tryjob.
     """
-    logging.info('Launching Pre-CQs for configs %s with changes %s',
-                 configs, cros_patch.GetChangesAsString(plan))
+    logging.info('Launching Pre-CQs for configs %s with changes %s', configs,
+                 cros_patch.GetChangesAsString(plan))
     config_buildbucket_id_map = self._LaunchTrybots(pool, configs, plan=plan)
 
     if not config_buildbucket_id_map:
@@ -1469,9 +1491,12 @@ class PreCQLauncherStage(SyncStage):
     for config in configs:
       if config in config_buildbucket_id_map:
         for patch in plan:
-          actions.append(clactions.CLAction.FromGerritPatchAndAction(
-              patch, constants.CL_ACTION_TRYBOT_LAUNCHING, config,
-              buildbucket_id=config_buildbucket_id_map[config]))
+          actions.append(
+              clactions.CLAction.FromGerritPatchAndAction(
+                  patch,
+                  constants.CL_ACTION_TRYBOT_LAUNCHING,
+                  config,
+                  buildbucket_id=config_buildbucket_id_map[config]))
 
     db.InsertCLActions(build_id, actions)
 
@@ -1494,9 +1519,10 @@ class PreCQLauncherStage(SyncStage):
     if db:
       launched_build_reqs = []
       for config in configs:
-        launched_build_reqs.append(build_requests.BuildRequest(
-            None, build_id, config, None, config_buildbucket_id_map[config],
-            build_requests.REASON_SANITY_PRE_CQ, None))
+        launched_build_reqs.append(
+            build_requests.BuildRequest(
+                None, build_id, config, None, config_buildbucket_id_map[config],
+                build_requests.REASON_SANITY_PRE_CQ, None))
 
       if launched_build_reqs:
         db.InsertBuildRequests(launched_build_reqs)
@@ -1523,7 +1549,8 @@ class PreCQLauncherStage(SyncStage):
     manifest = git.ManifestCheckout.Cached(self._build_root)
     logging.info('Creating disjoint transactions.')
     plans, failed = pool.CreateDisjointTransactions(
-        manifest, screened_changes,
+        manifest,
+        screened_changes,
         max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
     logging.info('Created %s disjoint transactions.', len(plans))
 
@@ -1543,9 +1570,9 @@ class PreCQLauncherStage(SyncStage):
       # there's no need to launch a trybot run.
       plan = set(plan)
       if not plan.issubset(screened_changes):
-        logging.info('CLs waiting to be screened: %s',
-                     cros_patch.GetChangesAsString(
-                         plan.difference(screened_changes)))
+        logging.info(
+            'CLs waiting to be screened: %s',
+            cros_patch.GetChangesAsString(plan.difference(screened_changes)))
       elif plan.issubset(verified):
         logging.info('CLs already verified: %s',
                      cros_patch.GetChangesAsString(plan))
@@ -1573,15 +1600,15 @@ class PreCQLauncherStage(SyncStage):
       change: GerritPatch instance to check.
       action_history: List of CLActions.
     """
-    action_string = clactions.GetRequeuedOrSpeculative(
-        change, action_history, not change.IsMergeable())
+    action_string = clactions.GetRequeuedOrSpeculative(change, action_history,
+                                                       not change.IsMergeable())
     if action_string:
       build_id, db = self._run.GetCIDBHandle()
       action = clactions.CLAction.FromGerritPatchAndAction(
           change, action_string)
       db.InsertCLActions(build_id, [action])
-      logging.info('Record change %s with action %s build_id %s.',
-                   change, action_string, build_id)
+      logging.info('Record change %s with action %s build_id %s.', change,
+                   action_string, build_id)
 
   def _ProcessExpiry(self, change, status, timestamp, pool, current_time):
     """Enforce expiry of a PASSED or FULLY_VERIFIED status.
@@ -1621,8 +1648,8 @@ class PreCQLauncherStage(SyncStage):
     for config, progress in config_progress.iteritems():
       # Note: only "INFLIGHT" status has the timeout.
       if (progress.status != constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT or
-          not self._HasTimedOut(
-              progress.timestamp, current_time, self.INFLIGHT_TIMEOUT)):
+          not self._HasTimedOut(progress.timestamp, current_time,
+                                self.INFLIGHT_TIMEOUT)):
         continue
 
       msg = PRECQ_INFLIGHT_TIMEOUT_MSG % (config, self.INFLIGHT_TIMEOUT)
@@ -1642,17 +1669,21 @@ class PreCQLauncherStage(SyncStage):
         buildbucket_id, dryrun=self._run.options.debug)
 
     status = buildbucket_lib.GetBuildStatus(get_content)
-    if status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
-                  constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
-      logging.info('Cancelling old build buildbucket_id: %s, '
-                   'current status: %s.', buildbucket_id, status)
+    if status in [
+        constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
+        constants.BUILDBUCKET_BUILDER_STATUS_STARTED
+    ]:
+      logging.info(
+          'Cancelling old build buildbucket_id: %s, '
+          'current status: %s.', buildbucket_id, status)
 
       cancel_content = self.buildbucket_client.CancelBuildRequest(
           buildbucket_id, dryrun=self._run.options.debug)
       cancel_status = buildbucket_lib.GetBuildStatus(cancel_content)
       if cancel_status:
-        logging.info('Cancelled old build buildbucket_id: %s, '
-                     'current status: %s', buildbucket_id, cancel_status)
+        logging.info(
+            'Cancelled old build buildbucket_id: %s, '
+            'current status: %s', buildbucket_id, cancel_status)
         metrics.Counter(constants.MON_BB_CANCEL_PRE_CQ_BUILD_COUNT).increment()
 
         if db:
@@ -1685,9 +1716,10 @@ class PreCQLauncherStage(SyncStage):
         self._CancelPreCQIfNeeded(db, old_build_action)
       except buildbucket_lib.BuildbucketResponseException as e:
         # Do not raise if it's buildbucket_lib.BuildbucketResponseException.
-        logging.error('Failed to cancel the old pre cq run through Buildbucket.'
-                      ' change: %s buildbucket_id: %s error: %r',
-                      change, old_build_action.buildbucket_id, e)
+        logging.error(
+            'Failed to cancel the old pre cq run through Buildbucket.'
+            ' change: %s buildbucket_id: %s error: %r', change,
+            old_build_action.buildbucket_id, e)
 
   def _ProcessPreCQEarlyCrashes(self, progress_map, pool):
     """Processes Pre-CQ builders crashed in early stages.
@@ -1720,9 +1752,9 @@ class PreCQLauncherStage(SyncStage):
         if status != constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED:
           continue
 
-        msg = PRECQ_EARLY_CRASH_MSG % (
-            config,
-            tree_status.ConstructLegolandBuildURL(progress.buildbucket_id))
+        msg = PRECQ_EARLY_CRASH_MSG % (config,
+                                       tree_status.ConstructLegolandBuildURL(
+                                           progress.buildbucket_id))
         pool.SendNotification(change, '%(details)s', details=msg)
         pool.RemoveReady(change, reason=config)
         pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
@@ -1794,7 +1826,9 @@ class PreCQLauncherStage(SyncStage):
     start_date = datetime.datetime.now().date() - datetime.timedelta(
         days=self.PRE_CQ_SANITY_CHECK_LOOK_BACK_HISTORY_DAYS)
     builds_history = db.GetBuildsHistory(
-        build_configs, db.NUM_RESULTS_NO_LIMIT, start_date=start_date,
+        build_configs,
+        db.NUM_RESULTS_NO_LIMIT,
+        start_date=start_date,
         final=True)
     build_history_by_build_config = cros_collections.GroupByKey(
         builds_history, 'build_config')
@@ -1811,8 +1845,7 @@ class PreCQLauncherStage(SyncStage):
       build_history = build_history_by_build_config.get(build_config, [])
       build_reqs = build_requests_by_build_config.get(build_config, [])
       if (build_history and
-          not build_reqs and
-          self._FailureStreakCounterExceedsThreshold(
+          not build_reqs and self._FailureStreakCounterExceedsThreshold(
               build_config, build_history)):
         sanity_check_build_configs.add(build_config)
 
@@ -1879,8 +1912,9 @@ class PreCQLauncherStage(SyncStage):
     if changes:
       build_id, db = self._run.GetCIDBHandle()
       a = clactions.TranslatePreCQStatusToAction(status)
-      actions = [clactions.CLAction.FromGerritPatchAndAction(c, a)
-                 for c in changes]
+      actions = [
+          clactions.CLAction.FromGerritPatchAndAction(c, a) for c in changes
+      ]
       db.InsertCLActions(build_id, actions)
 
   def _LaunchPreCQsIfNeeded(self, pool, changes):
@@ -1896,22 +1930,26 @@ class PreCQLauncherStage(SyncStage):
         self._GetUpdatedActionHistoryAndStatusMaps(db, changes))
 
     # Filter out failed speculative changes.
-    changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
-               or c.HasReadyFlag()]
+    changes = [
+        c for c in changes
+        if status_map[c] != constants.CL_STATUS_FAILED or c.HasReadyFlag()
+    ]
 
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
 
     # Filter out changes that have already failed, and aren't marked trybot
     # ready or commit ready, before launching.
     launchable_progress_map = {
-        k: v for k, v in progress_map.iteritems()
-        if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED}
+        k: v
+        for k, v in progress_map.iteritems()
+        if k.HasReadyFlag() or status_map[k] != constants.CL_STATUS_FAILED
+    }
 
     is_tree_open = tree_status.IsTreeOpen(throttled_ok=True)
     launch_count = 0
     cl_launch_count = 0
-    launch_count_limit = (self.last_cycle_launch_count +
-                          self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
+    launch_count_limit = (
+        self.last_cycle_launch_count + self.MAX_LAUNCHES_PER_CYCLE_DERIVATIVE)
 
     launches = {}
     for plan, config in self.GetDisjointTransactionsToTest(
@@ -1923,19 +1961,18 @@ class PreCQLauncherStage(SyncStage):
         logging.info('Tree is closed, not launching configs %r for plan %s.',
                      configs, cros_patch.GetChangesAsString(plan))
       elif launch_count >= launch_count_limit:
-        logging.info('Hit or exceeded maximum launch count of %s this cycle, '
-                     'not launching configs %r for plan %s.',
-                     launch_count_limit, configs,
-                     cros_patch.GetChangesAsString(plan))
+        logging.info(
+            'Hit or exceeded maximum launch count of %s this cycle, '
+            'not launching configs %r for plan %s.', launch_count_limit,
+            configs, cros_patch.GetChangesAsString(plan))
       else:
         self.LaunchPreCQs(build_id, db, pool, configs, plan)
         launch_count += len(configs)
         cl_launch_count += len(configs) * len(plan)
 
-    metrics.Counter(constants.MON_PRECQ_LAUNCH_COUNT).increment_by(
-        launch_count)
-    metrics.Counter(constants.MON_PRECQ_CL_LAUNCH_COUNT).increment_by(
-        cl_launch_count)
+    metrics.Counter(constants.MON_PRECQ_LAUNCH_COUNT).increment_by(launch_count)
+    metrics.Counter(
+        constants.MON_PRECQ_CL_LAUNCH_COUNT).increment_by(cl_launch_count)
     metrics.Counter(constants.MON_PRECQ_TICK_COUNT).increment()
 
     self.last_cycle_launch_count = launch_count
@@ -1954,8 +1991,8 @@ class PreCQLauncherStage(SyncStage):
     action_history = db.GetActionsForChanges(changes)
 
     status_and_timestamp_map = {
-        c: clactions.GetCLPreCQStatusAndTime(c, action_history)
-        for c in changes}
+        c: clactions.GetCLPreCQStatusAndTime(c, action_history) for c in changes
+    }
     status_map = {c: v[0] for c, v in status_and_timestamp_map.items()}
 
     status_str_map = {c.PatchLink(): s for c, s in status_map.iteritems()}
@@ -1990,25 +2027,29 @@ class PreCQLauncherStage(SyncStage):
         self._GetUpdatedActionHistoryAndStatusMaps(db, changes))
 
     # Filter out failed speculative changes.
-    changes = [c for c in changes if status_map[c] != constants.CL_STATUS_FAILED
-               or c.HasReadyFlag()]
+    changes = [
+        c for c in changes
+        if status_map[c] != constants.CL_STATUS_FAILED or c.HasReadyFlag()
+    ]
 
     progress_map = clactions.GetPreCQProgressMap(changes, action_history)
     busy, inflight, verified = clactions.GetPreCQCategories(progress_map)
-    logging.info('Changes in busy: %s.\nChanges in inflight: %s.\nChanges in '
-                 'verified: %s.',
-                 cros_patch.GetChangesAsString(busy),
-                 cros_patch.GetChangesAsString(inflight),
-                 cros_patch.GetChangesAsString(verified))
+    logging.info(
+        'Changes in busy: %s.\nChanges in inflight: %s.\nChanges in '
+        'verified: %s.', cros_patch.GetChangesAsString(busy),
+        cros_patch.GetChangesAsString(inflight),
+        cros_patch.GetChangesAsString(verified))
 
     current_db_time = db.GetTime()
 
-    to_process = set(c for c in changes
-                     if status_map[c] != constants.CL_STATUS_PASSED)
+    to_process = set(
+        c for c in changes if status_map[c] != constants.CL_STATUS_PASSED)
 
     # Mark verified changes verified.
-    to_mark_verified = [c for c in verified.intersection(to_process) if
-                        status_map[c] != constants.CL_STATUS_FULLY_VERIFIED]
+    to_mark_verified = [
+        c for c in verified.intersection(to_process)
+        if status_map[c] != constants.CL_STATUS_FULLY_VERIFIED
+    ]
     self.UpdateChangeStatuses(to_mark_verified,
                               constants.CL_STATUS_FULLY_VERIFIED)
     # Send notifications to the fully verified changes.
@@ -2017,8 +2058,9 @@ class PreCQLauncherStage(SyncStage):
 
     # Changes that can be submitted, if their dependencies can be too. Only
     # include changes that have not already been marked as passed.
-    can_submit = set(c for c in (verified.intersection(to_process)) if
-                     c.IsMergeable() and self.CanSubmitChangeInPreCQ(c))
+    can_submit = set(
+        c for c in (verified.intersection(to_process))
+        if c.IsMergeable() and self.CanSubmitChangeInPreCQ(c))
 
     self.SendChangeCountStats(status_map)
 
@@ -2069,10 +2111,10 @@ class PreCQLauncherStage(SyncStage):
 
     # Submit changes that are ready to submit, if we can.
     if tree_status.IsTreeOpen(throttled_ok=True):
-      pool.SubmitNonManifestChanges(check_tree_open=False,
-                                    reason=constants.STRATEGY_NONMANIFEST)
+      pool.SubmitNonManifestChanges(
+          check_tree_open=False, reason=constants.STRATEGY_NONMANIFEST)
       submit_reason = constants.STRATEGY_PRECQ_SUBMIT
-      will_submit = {c:submit_reason for c in will_submit}
+      will_submit = {c: submit_reason for c in will_submit}
       submitted, _ = pool.SubmitChanges(will_submit, check_tree_open=False)
 
       # Record stats about submissions in monarch.
@@ -2106,7 +2148,10 @@ class PreCQLauncherStage(SyncStage):
     for (is_mergable, status), count in sorted(status_counts.items()):
       subtype = 'mergeable' if is_mergable else 'speculative'
       metrics.Gauge('chromeos/cbuildbot/pre-cq/cl-count').set(
-          count, fields={'status': str(status), 'subtype': subtype})
+          count, fields={
+              'status': str(status),
+              'subtype': subtype
+          })
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -2126,5 +2171,6 @@ class PreCQLauncherStage(SyncStage):
         buildbucket_id=self._run.options.buildbucket_id,
         query=query,
         dryrun=self._run.options.debug,
-        check_tree_open=False, change_filter=self.ProcessChanges,
+        check_tree_open=False,
+        change_filter=self.ProcessChanges,
         builder_run=self._run)

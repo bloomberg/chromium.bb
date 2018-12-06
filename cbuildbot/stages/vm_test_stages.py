@@ -21,7 +21,7 @@ import shutil
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cli.cros.tests  import cros_vm_test
+from chromite.cli.cros.tests import cros_vm_test
 from chromite.lib import cgroups
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -33,7 +33,6 @@ from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
-
 
 _GCE_TEST_RESULTS = 'gce_test_results_%(attempt)s'
 _VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
@@ -62,8 +61,7 @@ _DEVSERVER_STAGE_URL = (
     'http://localhost:8080/stage?local_path=%(payload_dir)s'
     '&delete_source=True'
     '&artifacts=full_payload,stateful,quick_provision,'
-    'test_suites,control_files,autotest_packages,autotest_server_package'
-)
+    'test_suites,control_files,autotest_packages,autotest_server_package')
 
 
 class VMTestStage(generic_stages.BoardSpecificBuilderStage,
@@ -74,12 +72,19 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
   config_name = 'vm_tests'
   category = constants.TEST_INFRA_STAGE
 
-  def __init__(self, builder_run, board, vm_tests=None, ssh_port=9228,
-               test_basename=None, **kwargs):
+  def __init__(self,
+               builder_run,
+               buildstore,
+               board,
+               vm_tests=None,
+               ssh_port=9228,
+               test_basename=None,
+               **kwargs):
     """Initiailization of the VMTestStage.
 
     Args:
       builder_run: BoardRunAttributes object for this stage.
+      buildstore: BuildStore instance to make DB calls with.
       board: The active board for this stage.
       vm_tests: vm_tests to run at this stage. If None is specified, use
                 builder_run.config.vm_tests instead.
@@ -90,9 +95,9 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     self._vm_tests = vm_tests
     self._ssh_port = ssh_port
     self._test_basename = test_basename
-    self._stage_exception_handler = super(
-        VMTestStage, self)._HandleStageException
-    super(VMTestStage, self).__init__(builder_run, board, **kwargs)
+    self._stage_exception_handler = super(VMTestStage,
+                                          self)._HandleStageException
+    super(VMTestStage, self).__init__(builder_run, buildstore, board, **kwargs)
 
   def _PrintFailedTests(self, results_path, test_basename):
     """Print links to failed tests.
@@ -118,8 +123,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
       test_results_dir: Name of the directory containing the test results.
       test_basename: The basename to archive the tests.
     """
-    results_path = GetTestResultsDir(
-        self._build_root, test_results_dir)
+    results_path = GetTestResultsDir(self._build_root, test_results_dir)
 
     # Skip archiving if results_path does not exist or is an empty directory.
     if self._NoTestResults(results_path):
@@ -135,8 +139,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
         archived_results_dir, self._build_root)
     upload_paths.append(test_tarball)
 
-    got_symbols = self.GetParallel('breakpad_symbols_generated',
-                                   pretty_name='breakpad symbols')
+    got_symbols = self.GetParallel(
+        'breakpad_symbols_generated', pretty_name='breakpad symbols')
     upload_paths += commands.GenerateStackTraces(
         self._build_root, self._current_board, test_results_dir,
         self.archive_path, got_symbols)
@@ -156,8 +160,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     # TODO(pwang): also upload to sponge and afe/tko so results show up
     # consistently on all dashboards like wmatrix and goldeneye.
-    results_path = GetTestResultsDir(
-        self._build_root, test_results_dir)
+    results_path = GetTestResultsDir(self._build_root, test_results_dir)
 
     # Skip reporting if results_path does not exist or is an empty directory.
     if self._NoTestResults(results_path):
@@ -179,21 +182,29 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     builder = self._run.GetBuilderName()
     buildbucket_id = self._run.options.buildbucket_id
     buildbucket_id = str(buildbucket_id)
+
     def _uploader(gs_url, file_path, *args, **kwargs):
       directory, filename = os.path.split(file_path)
       logging.info('Uploading %s to %s', file_path, gs_url)
-      commands.UploadArchivedFile(
-          directory, [gs_url], filename, *args, **kwargs)
+      commands.UploadArchivedFile(directory, [gs_url], filename, *args,
+                                  **kwargs)
 
-    cts_helper.uploadFiles(test_dir, builder, buildbucket_id, buildbucket_id,
-                           test_name, _uploader, self._run.debug,
-                           update_list=False, acl=self.acl)
+    cts_helper.uploadFiles(
+        test_dir,
+        builder,
+        buildbucket_id,
+        buildbucket_id,
+        test_name,
+        _uploader,
+        self._run.debug,
+        update_list=False,
+        acl=self.acl)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def _ArchiveVMFiles(self, test_results_dir):
-    vm_files = ArchiveVMFiles(
-        self._build_root, os.path.join(test_results_dir, 'test_harness'),
-        self.archive_path)
+    vm_files = ArchiveVMFiles(self._build_root,
+                              os.path.join(test_results_dir, 'test_harness'),
+                              self.archive_path)
     # We use paths relative to |self.archive_path|, for prettier
     # formatting on the web page.
     self._Upload([os.path.basename(image) for image in vm_files])
@@ -225,8 +236,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     if test_type == constants.CROS_VM_TEST_TYPE:
       RunCrosVMTest(self._current_board, self.GetImageDirSymlink())
     elif test_type == constants.DEV_MODE_TEST_TYPE:
-      RunDevModeTest(
-          self._build_root, self._current_board, self.GetImageDirSymlink())
+      RunDevModeTest(self._build_root, self._current_board,
+                     self.GetImageDirSymlink())
     else:
       image_path = os.path.join(self.GetImageDirSymlink(),
                                 constants.TEST_IMAGE_BIN)
@@ -247,8 +258,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
           whitelist_chrome_crashes=self._chrome_rev is None,
           archive_dir=self.bot_archive_root,
           ssh_private_key=ssh_private_key,
-          ssh_port=self._ssh_port
-      )
+          ssh_port=self._ssh_port)
 
   def WaitUntilReady(self):
     """Block until Archive completes tarring autotest/.
@@ -258,8 +268,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     Returns:
       Boolean that authorizes running of this stage.
     """
-    return self.board_runattrs.GetParallel('autotest_tarball_generated',
-                                           timeout=None)
+    return self.board_runattrs.GetParallel(
+        'autotest_tarball_generated', timeout=None)
 
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
@@ -304,8 +314,8 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
     except Exception as e:
       if not isinstance(e, failures_lib.TestWarning):
         # pylint: disable=logging-not-lazy
-        logging.error(_ERROR_MSG % dict(test_name='VMTests',
-                                        test_results=test_basename))
+        logging.error(
+            _ERROR_MSG % dict(test_name='VMTests', test_results=test_basename))
       self._ArchiveVMFiles(test_results_root)
       raise
     finally:
@@ -335,17 +345,18 @@ class GCETestStage(VMTestStage):
 
   TEST_TIMEOUT = 90 * 60
 
-  def __init__(self, builder_run, board, gce_tests=None, **kwargs):
+  def __init__(self, builder_run, buildstore, board, gce_tests=None, **kwargs):
     """Initiailization of the VMTestStage.
 
     Args:
       builder_run: BoardRunAttributes object for this stage.
+      buildstore: BuildStore instance to make DB calls with.
       board: The active board for this stage.
       gce_tests: gce_tests to run at this stage. If None is specified, use
                 builder_run.config.gce_tests instead.
     """
     self._gce_tests = gce_tests
-    super(GCETestStage, self).__init__(builder_run, board, **kwargs)
+    super(GCETestStage, self).__init__(builder_run, buildstore, board, **kwargs)
 
   def _RunTest(self, test_config, test_results_dir):
     """Run a GCE test.
@@ -374,8 +385,7 @@ class GCETestStage(VMTestStage):
         whitelist_chrome_crashes=self._chrome_rev is None,
         archive_dir=self.bot_archive_root,
         ssh_private_key=ssh_private_key,
-        ssh_port=self._ssh_port
-    )
+        ssh_port=self._ssh_port)
 
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
@@ -401,8 +411,8 @@ class GCETestStage(VMTestStage):
 
     except Exception:
       # pylint: disable=logging-not-lazy
-      logging.error(_ERROR_MSG % dict(test_name='GCETests',
-                                      test_results=test_basename))
+      logging.error(
+          _ERROR_MSG % dict(test_name='GCETests', test_results=test_basename))
       raise
     finally:
       self._ArchiveTestResults(test_results_root, test_basename)
@@ -440,8 +450,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       self._PerformStage(work_dir, results_dir)
     except:
       # pylint: disable=logging-not-lazy
-      logging.error(_ERROR_MSG % dict(test_name='MoblabVMTest',
-                                      test_results='directory'))
+      logging.error(
+          _ERROR_MSG % dict(test_name='MoblabVMTest', test_results='directory'))
       raise
     finally:
       self._ArchiveTestResults(results_dir)
@@ -499,8 +509,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     """
     tarball_relpath = 'workspace.tar.bz2'
     tarball_path = os.path.join(self.archive_path, tarball_relpath)
-    cros_build_lib.CreateTarball(tarball_path, workspace,
-                                 compression=cros_build_lib.COMP_BZIP2)
+    cros_build_lib.CreateTarball(
+        tarball_path, workspace, compression=cros_build_lib.COMP_BZIP2)
     self._Upload(tarball_relpath, 'moblabvm workspace')
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
@@ -520,8 +530,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       # gsutil hangs on broken symlinks.
       return [x for x in file_list if os.path.islink(os.path.join(dirname, x))]
 
-    shutil.copytree(results_dir, archive_dir, symlinks=False,
-                    ignore=_ShouldIgnore)
+    shutil.copytree(
+        results_dir, archive_dir, symlinks=False, ignore=_ShouldIgnore)
     self._Upload(results_reldir)
     self._PrintDetailedLogLinks(results_reldir)
 
@@ -591,8 +601,10 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
     with vms.MountedMoblabDiskContext() as disk_dir:
       # If by any chance this path exists, the permission bits are surely
       # nonsense, since 'moblab' user doesn't exist on the host system.
-      osutils.RmDir(os.path.join(disk_dir, _MOBLAB_PAYLOAD_CACHE_DIR),
-                    ignore_missing=True, sudo=True)
+      osutils.RmDir(
+          os.path.join(disk_dir, _MOBLAB_PAYLOAD_CACHE_DIR),
+          ignore_missing=True,
+          sudo=True)
       payloads_dir = os.path.join(disk_dir, _MOBLAB_PAYLOAD_CACHE_DIR,
                                   self._SubDutTargetImage())
       # moblab VM will chown this folder upon boot, so once again permission
@@ -611,9 +623,8 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
           stateful=True,
       )
       cwd = os.path.abspath(
-          os.path.join(self._build_root, 'chroot', 'build',
-                       self._current_board, constants.AUTOTEST_BUILD_PATH,
-                       '..'))
+          os.path.join(self._build_root, 'chroot', 'build', self._current_board,
+                       constants.AUTOTEST_BUILD_PATH, '..'))
       commands.BuildAutotestTarballsForHWTest(self._build_root, cwd,
                                               payloads_dir)
     return os.path.join(_MOBLAB_STATIC_MOUNT_PATH, _MOBLAB_PAYLOAD_CACHE_DIR)
@@ -627,7 +638,6 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
       self.PrintDownloadLink(path, '%s: ' % prefix)
     else:
       self.PrintDownloadLink(path)
-
 
 
 def ListTests(results_path, show_failed=True, show_passed=True):
@@ -647,8 +657,9 @@ def ListTests(results_path, show_failed=True, show_passed=True):
   # crbug.com/350520 is fixed.
   reports = []
   for path, _, filenames in os.walk(results_path):
-    reports.extend([os.path.join(path, x) for x in filenames
-                    if x == _TEST_REPORT_FILENAME])
+    reports.extend([
+        os.path.join(path, x) for x in filenames if x == _TEST_REPORT_FILENAME
+    ])
 
   tests = []
   processed_tests = []
@@ -721,13 +732,14 @@ def ArchiveTestResults(results_path, archive_dir):
     # Note: We exclude VM disk and memory images. Instead, they are
     # archived via ArchiveVMFiles. Also skip any symlinks. gsutil
     # hangs on broken symlinks.
-    return [x for x in file_list if
-            x.startswith(constants.VM_DISK_PREFIX) or
-            x.startswith(constants.VM_MEM_PREFIX) or
-            os.path.islink(os.path.join(dirname, x))]
+    return [
+        x for x in file_list if x.startswith(constants.VM_DISK_PREFIX) or
+        x.startswith(constants.VM_MEM_PREFIX) or
+        os.path.islink(os.path.join(dirname, x))
+    ]
 
-  shutil.copytree(results_path, archive_dir, symlinks=False,
-                  ignore=_ShouldIgnore)
+  shutil.copytree(
+      results_path, archive_dir, symlinks=False, ignore=_ShouldIgnore)
 
 
 def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
@@ -751,10 +763,15 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
   images_dir = os.path.join(buildroot, 'chroot', test_results_dir.lstrip('/'))
   images = []
   for path, _, filenames in os.walk(images_dir):
-    images.extend([os.path.join(path, filename) for filename in
-                   fnmatch.filter(filenames, constants.VM_DISK_PREFIX + '*')])
-    images.extend([os.path.join(path, filename) for filename in
-                   fnmatch.filter(filenames, constants.VM_MEM_PREFIX + '*')])
+    images.extend([
+        os.path.join(path, filename)
+        for filename in fnmatch.filter(filenames, constants.VM_DISK_PREFIX +
+                                       '*')
+    ])
+    images.extend([
+        os.path.join(path, filename)
+        for filename in fnmatch.filter(filenames, constants.VM_MEM_PREFIX + '*')
+    ])
 
   tar_files = []
   for image_path in images:
@@ -765,10 +782,11 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
                                 "%s.tar" % image_rel_path.replace('/', '_'))
     # Note that tar will chdir to |image_parent_dir|, so that |image_file|
     # is at the top-level of the tar file.
-    cros_build_lib.CreateTarball(tarball_path,
-                                 image_parent_dir,
-                                 compression=cros_build_lib.COMP_BZIP2,
-                                 inputs=[image_file])
+    cros_build_lib.CreateTarball(
+        tarball_path,
+        image_parent_dir,
+        compression=cros_build_lib.COMP_BZIP2,
+        inputs=[image_file])
     tar_files.append(tarball_path)
   return tar_files
 
@@ -785,13 +803,20 @@ def RunDevModeTest(buildroot, board, image_dir):
   crostestutils = os.path.join(buildroot, 'src', 'platform', 'crostestutils')
   image_path = os.path.join(image_dir, constants.TEST_IMAGE_BIN)
   test_script = 'devmode-test/devinstall_test.py'
-  cmd = [os.path.join(crostestutils, test_script), '--verbose', board,
-         image_path]
+  cmd = [
+      os.path.join(crostestutils, test_script), '--verbose', board, image_path
+  ]
   cros_build_lib.RunCommand(cmd)
 
 
-def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
-                 whitelist_chrome_crashes, archive_dir, ssh_private_key=None,
+def RunTestSuite(buildroot,
+                 board,
+                 image_path,
+                 results_dir,
+                 test_config,
+                 whitelist_chrome_crashes,
+                 archive_dir,
+                 ssh_private_key=None,
                  ssh_port=9228):
   """Runs the test harness suite."""
   if (test_config.use_ctest or
@@ -807,21 +832,26 @@ def RunTestSuite(buildroot, board, image_path, results_dir, test_config,
 
 # TODO(zamorzaev): absorb this function into RunTestSuite after deprecating
 # ctest.
-def _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
-                               whitelist_chrome_crashes, ssh_private_key=None,
+def _RunTestSuiteUsingChromite(board,
+                               image_path,
+                               results_dir,
+                               test_config,
+                               whitelist_chrome_crashes,
+                               ssh_private_key=None,
                                ssh_port=9228):
   """Runs the test harness suite using the chromite code path."""
   image_dir = os.path.dirname(image_path)
   vm_image_path = os.path.join(image_dir, constants.VM_IMAGE_BIN)
 
-  cmd = ['cros_run_vm_test',
-         '--debug',
-         '--board=%s' % board,
-         '--image-path=%s' % path_util.ToChrootPath(vm_image_path),
-         '--ssh-port=%s' % ssh_port,
-         '--autotest=suite:%s' % test_config.test_suite,
-         '--results-dir=%s' % results_dir,
-        ]
+  cmd = [
+      'cros_run_vm_test',
+      '--debug',
+      '--board=%s' % board,
+      '--image-path=%s' % path_util.ToChrootPath(vm_image_path),
+      '--ssh-port=%s' % ssh_port,
+      '--autotest=suite:%s' % test_config.test_suite,
+      '--results-dir=%s' % results_dir,
+  ]
 
   if whitelist_chrome_crashes:
     cmd.append('--test_that-args=--whitelist-chrome-crashes')
@@ -830,10 +860,8 @@ def _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
     cmd.append('--private-key=%s' % path_util.ToChrootPath(ssh_private_key))
 
   # Give tests 10 minutes to clean up before shutting down.
-  result = cros_build_lib.RunCommand(cmd,
-                                     error_code_ok=True,
-                                     kill_timeout=10 * 60,
-                                     enter_chroot=True)
+  result = cros_build_lib.RunCommand(
+      cmd, error_code_ok=True, kill_timeout=10 * 60, enter_chroot=True)
   if result.returncode:
     results_dir_in_chroot = os.path.join(constants.SOURCE_ROOT,
                                          constants.DEFAULT_CHROOT_DIR,
@@ -847,9 +875,15 @@ def _RunTestSuiteUsingChromite(board, image_path, results_dir, test_config,
         '** VMTests failed with code %d **' % result.returncode)
 
 
-def _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
-                            test_config, whitelist_chrome_crashes, archive_dir,
-                            ssh_private_key=None, ssh_port=9228):
+def _RunTestSuiteUsingCtest(buildroot,
+                            board,
+                            image_path,
+                            results_dir,
+                            test_config,
+                            whitelist_chrome_crashes,
+                            archive_dir,
+                            ssh_private_key=None,
+                            ssh_port=9228):
   """Runs the test harness suite using the ctest code path."""
   results_dir_in_chroot = os.path.join(buildroot, 'chroot',
                                        results_dir.lstrip('/'))
@@ -859,22 +893,22 @@ def _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
   cwd = os.path.join(buildroot, 'src', 'scripts')
   dut_type = 'gce' if test_type == constants.GCE_SUITE_TEST_TYPE else 'vm'
 
-  cmd = ['bin/ctest',
-         '--board=%s' % board,
-         '--type=%s' % dut_type,
-         '--no_graphics',
-         '--verbose',
-         '--target_image=%s' % image_path,
-         '--test_results_root=%s' % results_dir_in_chroot
-        ]
+  cmd = [
+      'bin/ctest',
+      '--board=%s' % board,
+      '--type=%s' % dut_type, '--no_graphics', '--verbose',
+      '--target_image=%s' % image_path,
+      '--test_results_root=%s' % results_dir_in_chroot
+  ]
 
   if test_type not in constants.VALID_VM_TEST_TYPES:
     raise AssertionError('Unrecognized test type %r' % test_type)
 
   if test_type == constants.FULL_AU_TEST_TYPE:
     cmd.append('--archive_dir=%s' % archive_dir)
-  elif test_type in [constants.VM_SUITE_TEST_TYPE,
-                     constants.GCE_SUITE_TEST_TYPE]:
+  elif test_type in [
+      constants.VM_SUITE_TEST_TYPE, constants.GCE_SUITE_TEST_TYPE
+  ]:
     cmd.append('--ssh_port=%s' % ssh_port)
     cmd.append('--only_verify')
     cmd.append('--suite=%s' % test_config.test_suite)
@@ -888,8 +922,8 @@ def _RunTestSuiteUsingCtest(buildroot, board, image_path, results_dir,
     cmd.append('--ssh_private_key=%s' % ssh_private_key)
 
   # Give tests 10 minutes to clean up before shutting down.
-  result = cros_build_lib.RunCommand(cmd, cwd=cwd, error_code_ok=True,
-                                     kill_timeout=10 * 60)
+  result = cros_build_lib.RunCommand(
+      cmd, cwd=cwd, error_code_ok=True, kill_timeout=10 * 60)
   if result.returncode:
     if os.path.exists(results_dir_in_chroot):
       error = '%s exited with code %d' % (' '.join(cmd), result.returncode)
@@ -933,10 +967,14 @@ def RunMoblabTests(moblab_board, moblab_ip, dut_target_image, results_dir,
       [
           'test_that',
           '--no-quickmerge',
-          '-b', moblab_board,
-          '--results_dir', path_util.ToChrootPath(results_dir),
-          'localhost:%s' % moblab_ip, 'moblab_DummyServerNoSspSuite',
-          '--args', ' '.join(test_args),
+          '-b',
+          moblab_board,
+          '--results_dir',
+          path_util.ToChrootPath(results_dir),
+          'localhost:%s' % moblab_ip,
+          'moblab_DummyServerNoSspSuite',
+          '--args',
+          ' '.join(test_args),
       ],
       enter_chroot=True,
   )
@@ -950,8 +988,8 @@ def ValidateMoblabTestSuccess(results_dir):
   """
   log_path = os.path.join(results_dir, 'debug', 'test_that.INFO')
   if not os.path.isfile(log_path):
-    raise failures_lib.TestFailure('Could not find test_that logs at %s' %
-                                   log_path)
+    raise failures_lib.TestFailure(
+        'Could not find test_that logs at %s' % log_path)
 
   dummy_pass_server_success_re = re.compile(
       r'dummy_PassServer\s*\[\s*PASSED\s*]')

@@ -19,35 +19,41 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
-
+from chromite.lib.buildstore import FakeBuildStore
 
 # pylint: disable=protected-access
+
 
 class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests for CheckTemplateStage."""
 
-  TOT_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
-              'build_config.ToT.json')
-  R52_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
-              'build_config.release-R52-7978.B.json')
-  R53_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
-              'build_config.release-R53-7978.B.json')
-  R54_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
-              'build_config.release-R54-7978.B.json')
+  TOT_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET + 'build_config.ToT.json')
+  R52_PATH = (
+      config_stages.GS_GE_TEMPLATE_BUCKET +
+      'build_config.release-R52-7978.B.json')
+  R53_PATH = (
+      config_stages.GS_GE_TEMPLATE_BUCKET +
+      'build_config.release-R53-7978.B.json')
+  R54_PATH = (
+      config_stages.GS_GE_TEMPLATE_BUCKET +
+      'build_config.release-R54-7978.B.json')
 
   def setUp(self):
     self._Prepare()
     self.PatchObject(repository, 'CloneWorkingRepo')
     self.PatchObject(gs, 'GSContext')
     self.update_mock = self.PatchObject(config_stages.UpdateConfigStage, 'Run')
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return config_stages.CheckTemplateStage(self._run)
+    return config_stages.CheckTemplateStage(self._run, self.buildstore)
 
   def testListTemplates(self):
     """Test _ListTemplates."""
-    self.PatchObject(config_stages.CheckTemplateStage, 'SortAndGetReleasePaths',
-                     return_value=['R_template.json'])
+    self.PatchObject(
+        config_stages.CheckTemplateStage,
+        'SortAndGetReleasePaths',
+        return_value=['R_template.json'])
     stage = self.ConstructStage()
     stage.ctx = mock.Mock()
     stage.ctx.LS.return_value = ['template.json']
@@ -66,8 +72,10 @@ class CheckTemplateStageTest(generic_stages_unittest.AbstractStageTestCase):
 
   def testBasicPerformStage(self):
     """Test basic PerformStage."""
-    self.PatchObject(config_stages.CheckTemplateStage, '_ListTemplates',
-                     return_value=[self.TOT_PATH, self.R54_PATH])
+    self.PatchObject(
+        config_stages.CheckTemplateStage,
+        '_ListTemplates',
+        return_value=[self.TOT_PATH, self.R54_PATH])
     stage = self.ConstructStage()
 
     stage.PerformStage()
@@ -97,8 +105,9 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     self.PatchObject(cros_build_lib, 'RunCommand')
 
     self.project = 'chromite'
-    self.chromite_dir = config_stages.GetProjectRepoDir(
-        'chromite', constants.CHROMITE_URL)
+    self.chromite_dir = config_stages.GetProjectRepoDir('chromite',
+                                                        constants.CHROMITE_URL)
+    self.buildstore = FakeBuildStore()
 
   def tearDown(self):
     osutils.RmDir(self.chromite_dir, ignore_missing=True)
@@ -107,8 +116,9 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
   def ConstructStage(self, template, new_config=True):
     template_path = config_stages.GS_GE_TEMPLATE_BUCKET + template
     branch = config_stages.GetBranchName(template)
-    stage = config_stages.UpdateConfigStage(
-        self._run, template_path, branch, self.chromite_dir, True)
+    stage = config_stages.UpdateConfigStage(self._run, self.buildstore,
+                                            template_path, branch,
+                                            self.chromite_dir, True)
 
     if new_config:
       fake_config_path = os.path.join(self.chromite_dir, 'config',
@@ -157,8 +167,8 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     with mock.patch('__builtin__.open'):
       config_change_patch = stage._CreateConfigPatch()
-      self.assertEqual(os.path.basename(config_change_patch),
-                       'config_change.patch')
+      self.assertEqual(
+          os.path.basename(config_change_patch), 'config_change.patch')
 
   def testCreateConfigPatchOldPath(self):
     """Test _CreateConfigPatch."""
@@ -167,13 +177,15 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
 
     with mock.patch('__builtin__.open'):
       config_change_patch = stage._CreateConfigPatch()
-      self.assertEqual(os.path.basename(config_change_patch),
-                       'config_change.patch')
+      self.assertEqual(
+          os.path.basename(config_change_patch), 'config_change.patch')
 
   def testRunBinhostTest(self):
     """Test RunBinhostTest."""
-    self.PatchObject(config_stages.UpdateConfigStage,
-                     '_CreateConfigPatch', return_value='patch')
+    self.PatchObject(
+        config_stages.UpdateConfigStage,
+        '_CreateConfigPatch',
+        return_value='patch')
     mock_binhost_run = self.PatchObject(test_stages.BinhostTestStage, 'Run')
     mock_run_git = self.PatchObject(git, 'RunGit')
     template = 'build_config.ToT.json'

@@ -23,20 +23,14 @@ from chromite.lib import portage_util
 from chromite.lib import toolchain
 from chromite.scripts import upload_prebuilts
 
-
 # Version of the Manifest file being generated for SDK artifacts. Should be
 # incremented for major format changes.
 PACKAGE_MANIFEST_VERSION = '1'
 
 # Paths excluded when packaging SDK artifacts. These are relative to the target
 # build root where SDK packages are being installed (e.g. /build/amd64-host).
-PACKAGE_EXCLUDED_PATHS = (
-    'usr/lib/debug',
-    'usr/lib64/debug',
-    constants.AUTOTEST_BUILD_PATH,
-    'packages',
-    'tmp'
-)
+PACKAGE_EXCLUDED_PATHS = ('usr/lib/debug', 'usr/lib64/debug',
+                          constants.AUTOTEST_BUILD_PATH, 'packages', 'tmp')
 
 # Names of various packaged artifacts.
 SDK_TARBALL_NAME = 'built-sdk.tar.xz'
@@ -66,8 +60,12 @@ def CreateTarball(source_root, tarball_path, exclude_paths=None):
   # Options for maximum compression.
   extra_env = {'XZ_OPT': '-e9'}
   cros_build_lib.CreateTarball(
-      tarball_path, source_root, sudo=True, extra_args=extra_args,
-      debug_level=logging.INFO, extra_env=extra_env)
+      tarball_path,
+      source_root,
+      sudo=True,
+      extra_args=extra_args,
+      debug_level=logging.INFO,
+      extra_env=extra_env)
   # Make sure the regular user has the permission to read.
   cmd = ['chmod', 'a+r', tarball_path]
   cros_build_lib.SudoRunCommand(cmd)
@@ -97,15 +95,17 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage,
 
   def CrosSetupToolchains(self, cmd_args, **kwargs):
     """Wrapper around cros_setup_toolchains to simplify things."""
-    commands.RunBuildScript(self._build_root,
-                            ['cros_setup_toolchains'] + list(cmd_args),
-                            chromite_cmd=True, enter_chroot=True, **kwargs)
+    commands.RunBuildScript(
+        self._build_root, ['cros_setup_toolchains'] + list(cmd_args),
+        chromite_cmd=True,
+        enter_chroot=True,
+        **kwargs)
 
   def CreateRedistributableToolchains(self, chroot_location):
     """Create the toolchain packages"""
-    osutils.RmDir(os.path.join(chroot_location,
-                               constants.SDK_TOOLCHAINS_OUTPUT),
-                  ignore_missing=True)
+    osutils.RmDir(
+        os.path.join(chroot_location, constants.SDK_TOOLCHAINS_OUTPUT),
+        ignore_missing=True)
 
     # We need to run this as root because the tool creates hard links to root
     # owned files and our bots enable security features which disallow that.
@@ -114,8 +114,10 @@ class SDKBuildToolchainsStage(generic_stages.BuilderStage,
     #  /proc/sys/fs/protected_hardlinks
     self.CrosSetupToolchains([
         '--create-packages',
-        '--output-dir', os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
-    ], sudo=True)
+        '--output-dir',
+        os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
+    ],
+                             sudo=True)
 
 
 class SDKPackageStage(generic_stages.BuilderStage,
@@ -124,9 +126,9 @@ class SDKPackageStage(generic_stages.BuilderStage,
 
   category = constants.PRODUCT_TOOLCHAIN_STAGE
 
-  def __init__(self, builder_run, version=None, **kwargs):
+  def __init__(self, builder_run, buildstore, version=None, **kwargs):
     self.sdk_version = version
-    super(SDKPackageStage, self).__init__(builder_run, **kwargs)
+    super(SDKPackageStage, self).__init__(builder_run, buildstore, **kwargs)
 
   def PerformStage(self):
     tarball_location = os.path.join(self._build_root, SDK_TARBALL_NAME)
@@ -182,9 +184,9 @@ class SDKPackageStage(generic_stages.BuilderStage,
     perf_uploader.OutputPerfValue(perf_path, 'base', sdk_size, units,
                                   **common_kwargs)
 
-    for tarball in glob.glob(os.path.join(
-        buildroot, constants.DEFAULT_CHROOT_DIR,
-        constants.SDK_TOOLCHAINS_OUTPUT, '*.tar.*')):
+    for tarball in glob.glob(
+        os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR,
+                     constants.SDK_TOOLCHAINS_OUTPUT, '*.tar.*')):
       name = os.path.basename(tarball).rsplit('.', 2)[0]
       size = os.path.getsize(tarball)
       perf_uploader.OutputPerfValue(perf_path, name, size, units,
@@ -197,8 +199,8 @@ class SDKPackageStage(generic_stages.BuilderStage,
     # the perf dashboard accepts this or CrOS+Chrome official versions.
     revision = int(version.replace('.', ''))
     perf_values = perf_uploader.LoadPerfValues(perf_path)
-    self._UploadPerfValues(perf_values, platform_name, test_name,
-                           revision=revision)
+    self._UploadPerfValues(
+        perf_values, platform_name, test_name, revision=revision)
 
   def SendPerfValues(self, sdk_tarball):
     """Generate & upload perf data for the build"""
@@ -212,18 +214,17 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
 
   category = constants.PRODUCT_TOOLCHAIN_STAGE
 
-  def __init__(self, builder_run, version=None, **kwargs):
+  def __init__(self, builder_run, buildstore, version=None, **kwargs):
     self.sdk_version = version
-    super(SDKPackageToolchainOverlaysStage, self).__init__(builder_run,
-                                                           **kwargs)
+    super(SDKPackageToolchainOverlaysStage, self).__init__(
+        builder_run, buildstore, **kwargs)
 
   def PerformStage(self):
     chroot_dir = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     sdk_dir = os.path.join(chroot_dir, 'build/amd64-host')
     tmp_dir = os.path.join(chroot_dir, 'tmp')
     osutils.SafeMakedirs(tmp_dir, mode=0o777, sudo=True)
-    overlay_output_dir = os.path.join(chroot_dir,
-                                      constants.SDK_OVERLAYS_OUTPUT)
+    overlay_output_dir = os.path.join(chroot_dir, constants.SDK_OVERLAYS_OUTPUT)
     osutils.RmDir(overlay_output_dir, ignore_missing=True, sudo=True)
     osutils.SafeMakedirs(overlay_output_dir, mode=0o777, sudo=True)
     overlay_tarball_template = os.path.join(
@@ -245,22 +246,32 @@ class SDKPackageToolchainOverlaysStage(generic_stages.BuilderStage):
       if not toolchains.issubset(sdk_toolchains) or toolchains_str in generated:
         continue
 
-      with osutils.TempDir(prefix='toolchains-overlay-%s.' % toolchains_str,
-                           base_dir=tmp_dir, sudo_rm=True) as overlay_dir:
+      with osutils.TempDir(
+          prefix='toolchains-overlay-%s.' % toolchains_str,
+          base_dir=tmp_dir,
+          sudo_rm=True) as overlay_dir:
         # NOTE: We let MountOverlayContext remove the mount point created by
         # the TempDir context below, because it has built-in retries for rmdir
         # EBUSY errors that are due to unmount lag.
-        with osutils.TempDir(prefix='amd64-host-%s.' % toolchains_str,
-                             base_dir=tmp_dir, delete=False) as merged_dir:
-          with osutils.MountOverlayContext(sdk_dir, overlay_dir, merged_dir,
-                                           cleanup=True):
+        with osutils.TempDir(
+            prefix='amd64-host-%s.' % toolchains_str,
+            base_dir=tmp_dir,
+            delete=False) as merged_dir:
+          with osutils.MountOverlayContext(
+              sdk_dir, overlay_dir, merged_dir, cleanup=True):
             sysroot = merged_dir[len(chroot_dir):]
-            cmd = ['cros_setup_toolchains', '--targets=boards',
-                   '--include-boards=%s' % board,
-                   '--sysroot=%s' % sysroot]
-            commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
-                                    enter_chroot=True, sudo=True,
-                                    extra_env=self._portage_extra_env)
+            cmd = [
+                'cros_setup_toolchains', '--targets=boards',
+                '--include-boards=%s' % board,
+                '--sysroot=%s' % sysroot
+            ]
+            commands.RunBuildScript(
+                self._build_root,
+                cmd,
+                chromite_cmd=True,
+                enter_chroot=True,
+                sudo=True,
+                extra_env=self._portage_extra_env)
 
         # NOTE: Make sure that the overlay directory is owned root:root and has
         # 0o755 perms; apparently, these things are preserved through
@@ -287,11 +298,15 @@ class SDKTestStage(generic_stages.BuilderStage):
       new_chroot_args += ['--chrome_root', self._run.options.chrome_root]
 
     # Build a new SDK using the provided tarball.
-    chroot_args = new_chroot_args + ['--download', '--replace', '--nousepkg',
-                                     '--url', 'file://' + tarball_location]
-    cros_build_lib.RunCommand(
-        ['true'], cwd=self._build_root, enter_chroot=True,
-        chroot_args=chroot_args, extra_env=self._portage_extra_env)
+    chroot_args = new_chroot_args + [
+        '--download', '--replace', '--nousepkg', '--url',
+        'file://' + tarball_location
+    ]
+    cros_build_lib.RunCommand(['true'],
+                              cwd=self._build_root,
+                              enter_chroot=True,
+                              chroot_args=chroot_args,
+                              extra_env=self._portage_extra_env)
 
     # Inject the toolchain binpkgs from the previous sdk build.  On end user
     # systems, they'd be fetched from the binpkg mirror, but we don't have one
@@ -302,29 +317,40 @@ class SDKTestStage(generic_stages.BuilderStage):
     new_pkgdir = os.path.join(self._build_root, new_chroot_dir, pkgdir)
     osutils.SafeMakedirs(new_pkgdir, sudo=True)
     cros_build_lib.SudoRunCommand(
-        ['cp', '-r'] + glob.glob(os.path.join(old_pkgdir, '*')) +
-        [new_pkgdir])
+        ['cp', '-r'] + glob.glob(os.path.join(old_pkgdir, '*')) + [new_pkgdir])
 
     # Now install those toolchains in the new chroot.  We skip the chroot
     # upgrade below which means we need to install the toolchain manually.
-    cmd = ['cros_setup_toolchains', '--targets=boards',
-           '--include-boards=%s' % ','.join(self._boards)]
-    commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True,
-                            enter_chroot=True, sudo=True,
-                            chroot_args=new_chroot_args,
-                            extra_env=self._portage_extra_env)
+    cmd = [
+        'cros_setup_toolchains', '--targets=boards',
+        '--include-boards=%s' % ','.join(self._boards)
+    ]
+    commands.RunBuildScript(
+        self._build_root,
+        cmd,
+        chromite_cmd=True,
+        enter_chroot=True,
+        sudo=True,
+        chroot_args=new_chroot_args,
+        extra_env=self._portage_extra_env)
 
     # Build all the boards with the new sdk.
     for board in self._boards:
       logging.PrintBuildbotStepText(board)
-      commands.SetupBoard(self._build_root, board, usepkg=True,
-                          chroot_upgrade=False,
-                          extra_env=self._portage_extra_env,
-                          chroot_args=new_chroot_args)
-      commands.Build(self._build_root, board, build_autotest=True,
-                     usepkg=False,
-                     extra_env=self._portage_extra_env,
-                     chroot_args=new_chroot_args)
+      commands.SetupBoard(
+          self._build_root,
+          board,
+          usepkg=True,
+          chroot_upgrade=False,
+          extra_env=self._portage_extra_env,
+          chroot_args=new_chroot_args)
+      commands.Build(
+          self._build_root,
+          board,
+          build_autotest=True,
+          usepkg=False,
+          extra_env=self._portage_extra_env,
+          chroot_args=new_chroot_args)
 
 
 class SDKUprevStage(generic_stages.BuilderStage):
@@ -332,8 +358,8 @@ class SDKUprevStage(generic_stages.BuilderStage):
 
   category = constants.PRODUCT_TOOLCHAIN_STAGE
 
-  def __init__(self, builder_run, version=None, **kwargs):
-    super(SDKUprevStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, version=None, **kwargs):
+    super(SDKUprevStage, self).__init__(builder_run, buildstore, **kwargs)
     self._version = version
 
   def PerformStage(self):
@@ -343,14 +369,17 @@ class SDKUprevStage(generic_stages.BuilderStage):
       binhost_conf_dir = prebuilts.PUBLIC_BINHOST_CONF_DIR
     else:
       binhost_conf_dir = prebuilts.PRIVATE_BINHOST_CONF_DIR
-    sdk_conf = os.path.join(
-        self._build_root, binhost_conf_dir, 'host', 'sdk_version.conf')
+    sdk_conf = os.path.join(self._build_root, binhost_conf_dir, 'host',
+                            'sdk_version.conf')
 
     tc_path_format = prebuilts.GetToolchainSdkUploadFormat(
-        self._version, prebuilts.GetToolchainSdkPaths(self._build_root)[0][1])
+        self._version,
+        prebuilts.GetToolchainSdkPaths(self._build_root)[0][1])
     sdk_settings = {
         'SDK_LATEST_VERSION': self._version,
-        'TC_PATH': tc_path_format % {'version': self._version},
+        'TC_PATH': tc_path_format % {
+            'version': self._version
+        },
     }
     upload_prebuilts.RevGitFile(
         sdk_conf, sdk_settings, dryrun=self._run.options.debug)

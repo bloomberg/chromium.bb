@@ -13,11 +13,12 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 
 from chromite.lib import gs
 from chromite.lib import portage_util
+from chromite.lib.buildstore import FakeBuildStore
 
 
-def _GenerateAFDOGenerateTest(chrome_version_str,
-                              expected_to_generate_profile,
+def _GenerateAFDOGenerateTest(chrome_version_str, expected_to_generate_profile,
                               test_name):
+
   class Test(generic_stages_unittest.AbstractStageTestCase):
     """Test that we don't update non-r1 AFDO profiles"""
 
@@ -26,22 +27,22 @@ def _GenerateAFDOGenerateTest(chrome_version_str,
       chrome_version = portage_util.SplitCPV(chrome_version_str)
       self.PatchObject(portage_util, 'PortageqBestVisible',
                        lambda *_, **_2: chrome_version)
-      self.wait_for_data = self.PatchObject(afdo, 'WaitForAFDOPerfData',
-                                            autospec=True,
-                                            wraps=lambda *_: True)
+      self.wait_for_data = self.PatchObject(
+          afdo, 'WaitForAFDOPerfData', autospec=True, wraps=lambda *_: True)
 
       afdo_path = '/does/not/exist/afdo.prof'
-      self.generate_afdo_data = self.PatchObject(afdo, 'GenerateAFDOData',
-                                                 autospec=True,
-                                                 wraps=lambda *_: afdo_path)
+      self.generate_afdo_data = self.PatchObject(
+          afdo, 'GenerateAFDOData', autospec=True, wraps=lambda *_: afdo_path)
 
       self.PatchObject(afdo_stages.AFDODataGenerateStage, '_GetCurrentArch',
                        lambda *_: 'some_arch')
 
       self._Prepare()
+      self.buildstore = FakeBuildStore()
 
     def ConstructStage(self):
-      return afdo_stages.AFDODataGenerateStage(self._run, 'some_board')
+      return afdo_stages.AFDODataGenerateStage(self._run, self.buildstore,
+                                               'some_board')
 
     def testAFDOUpdateChromeEbuildStage(self):
       self.RunStage()
@@ -79,28 +80,31 @@ class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
   def setUp(self):
     # Intercept afdo.UpdateChromeEbuildAFDOFile so that we can check how it is
     # called.
-    self.patch_mock = self.PatchObject(afdo, 'UpdateChromeEbuildAFDOFile',
-                                       autospec=True)
+    self.patch_mock = self.PatchObject(
+        afdo, 'UpdateChromeEbuildAFDOFile', autospec=True)
     # Don't care the return value of portage_util.PortageqBestVisible
     self.PatchObject(portage_util, 'PortageqBestVisible')
     # Don't care the return value of gs.GSContext
     self.PatchObject(gs, 'GSContext')
     # Don't call the getters; Use mock responses instead.
-    self.PatchDict(afdo.PROFILE_SOURCES,
-                   {'benchmark': lambda *_: 'benchmark.afdo',
-                    'silvermont': lambda *_: 'silvermont.afdo'},
-                   clear=True)
+    self.PatchDict(
+        afdo.PROFILE_SOURCES, {
+            'benchmark': lambda *_: 'benchmark.afdo',
+            'silvermont': lambda *_: 'silvermont.afdo'
+        },
+        clear=True)
     self._Prepare()
+    self.buildstore = FakeBuildStore()
 
   def ConstructStage(self):
-    return afdo_stages.AFDOUpdateChromeEbuildStage(self._run)
+    return afdo_stages.AFDOUpdateChromeEbuildStage(self._run, self.buildstore)
 
   def testAFDOUpdateChromeEbuildStage(self):
     self.RunStage()
 
     # afdo.UpdateChromeEbuildAFDOFile should be called with the mock responses
     # from profile source specific query.
-    self.patch_mock.assert_called_with(
-        'amd64-generic',
-        {'benchmark': 'benchmark.afdo',
-         'silvermont': 'silvermont.afdo'})
+    self.patch_mock.assert_called_with('amd64-generic', {
+        'benchmark': 'benchmark.afdo',
+        'silvermont': 'silvermont.afdo'
+    })

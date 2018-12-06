@@ -48,8 +48,8 @@ class BranchUtilStage(generic_stages.BuilderStage):
   COMMIT_MESSAGE = 'Bump %(target)s after branching %(branch)s'
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, **kwargs):
-    super(BranchUtilStage, self).__init__(builder_run, **kwargs)
+  def __init__(self, builder_run, buildstore, **kwargs):
+    super(BranchUtilStage, self).__init__(builder_run, buildstore, **kwargs)
     self.skip_remote_push = (self._run.options.skip_remote_push or
                              self._run.options.debug)
     self.branch_name = self._run.options.branch_name

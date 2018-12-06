@@ -32,13 +32,13 @@ from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.lib import results_lib
+from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
 
 
 DEFAULT_BUILD_NUMBER = 1234321
 DEFAULT_BUILD_ID = 31337
 DEFAULT_BUILD_STAGE_ID = 313377
-
 
 # pylint: disable=protected-access
 
@@ -74,6 +74,7 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
     self._boards = None
     self._run = None
     self._model = None
+    self.buildstore = FakeBuildStore()
 
 
   def _Prepare(self, bot_id=None, extra_config=None, cmd_args=None,
@@ -269,6 +270,7 @@ class BuilderStageTest(AbstractStageTestCase):
   def setUp(self):
     self._Prepare()
     self.mock_cidb = mock.MagicMock()
+    self.buildstore = FakeBuildStore()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     # Many tests modify the global results_lib.Results instance.
     results_lib.Results.Clear()
@@ -288,12 +290,13 @@ class BuilderStageTest(AbstractStageTestCase):
     if stage_class is None:
       stage_class = generic_stages.BuilderStage
 
-    self.PatchObject(self.mock_cidb, 'InsertBuildStage',
-                     return_value=DEFAULT_BUILD_STAGE_ID)
-    stage = stage_class(self._run)
-    self.mock_cidb.InsertBuildStage.assert_called_once_with(
-        build_id=DEFAULT_BUILD_ID,
-        name=mock.ANY)
+    self.PatchObject(
+        FakeBuildStore, 'InsertBuildStage',
+        return_value=constants.MOCK_STAGE_ID)
+    stage = stage_class(self._run, self.buildstore)
+    self.buildstore.InsertBuildStage.assert_called_once_with(
+        constants.MOCK_BUILD_ID, stage.name, None,
+        constants.BUILDER_STATUS_PLANNED)
     return stage
 
   def ConstructStage(self):
@@ -485,6 +488,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
 
   def setUp(self):
     self._Prepare()
+    self.buildstore = FakeBuildStore()
     # Many tests modify the global results_lib.Results instance.
     results_lib.Results.Clear()
 
@@ -492,7 +496,7 @@ class BuilderStageGetBuildFailureMessage(AbstractStageTestCase):
     cidb.CIDBConnectionFactory.ClearMock()
 
   def ConstructStage(self):
-    return generic_stages.BuilderStage(self._run)
+    return generic_stages.BuilderStage(self._run, self.buildstore)
 
   def testGetBuildFailureMessageFromCIDB(self):
     """Test GetBuildFailureMessageFromCIDB."""
@@ -582,6 +586,7 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
   def setUp(self):
     self._Prepare()
     self.mock_cidb = mock.MagicMock()
+    self.buildstore = FakeBuildStore()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     results_lib.Results.Clear()
 
@@ -589,7 +594,7 @@ class MasterConfigBuilderStageTest(AbstractStageTestCase):
     cidb.CIDBConnectionFactory.ClearMock()
 
   def ConstructStage(self):
-    return generic_stages.BuilderStage(self._run)
+    return generic_stages.BuilderStage(self._run, self.buildstore)
 
   def testGetBuildbucketClient(self):
     """GetBuildbucketClient returns not None."""
@@ -689,10 +694,12 @@ class BoardSpecificBuilderStageTest(AbstractStageTestCase):
   DEFAULT_BOARD_NAME = 'my_shiny_test_board'
 
   def setUp(self):
+    self.buildstore = FakeBuildStore()
     self._Prepare()
 
   def ConstructStage(self):
     return generic_stages.BoardSpecificBuilderStage(self._run,
+                                                    self.buildstore,
                                                     self.DEFAULT_BOARD_NAME)
 
   def testBuilderNameContainsBoardName(self):

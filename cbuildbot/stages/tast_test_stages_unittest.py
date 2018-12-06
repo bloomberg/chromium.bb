@@ -22,6 +22,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import results_lib
+from chromite.lib.buildstore import FakeBuildStore
 
 
 class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
@@ -91,7 +92,9 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def ConstructStage(self):
     # pylint: disable=protected-access
     self._run.GetArchive().SetupArchivePath()
+    bs = FakeBuildStore()
     self._stage = tast_test_stages.TastVMTestStage(self._run,
+                                                   bs,
                                                    self._current_board)
     self._stage._attempt = 1
     image_dir = self._stage.GetImageDirSymlink()
