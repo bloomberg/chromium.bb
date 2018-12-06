@@ -96,6 +96,9 @@ vars = {
   # ANGLE's deps are relative to the angle_root variable.
   'angle_root': 'src/third_party/angle',
 
+  # luci-go CIPD package version.
+  'luci_go': 'git_revision:fdf05508e8a66c773a41521e0243c9d11b9a2a1c',
+
   'android_git': 'https://android.googlesource.com',
   'aomedia_git': 'https://aomedia.googlesource.com',
   'boringssl_git': 'https://boringssl.googlesource.com',
@@ -404,15 +407,15 @@ deps = {
       'packages': [
         {
           'package': 'infra/tools/luci/isolate/${{platform}}',
-          'version': 'git_revision:fdf05508e8a66c773a41521e0243c9d11b9a2a1c',
+          'version': Var('luci_go'),
         },
         {
           'package': 'infra/tools/luci/isolated/${{platform}}',
-          'version': 'git_revision:fdf05508e8a66c773a41521e0243c9d11b9a2a1c',
+          'version': Var('luci_go'),
         },
         {
           'package': 'infra/tools/luci/swarming/${{platform}}',
-          'version': 'git_revision:fdf05508e8a66c773a41521e0243c9d11b9a2a1c',
+          'version': Var('luci_go'),
         },
       ],
       'dep_type': 'cipd',
