@@ -5,16 +5,18 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.PASSWORD_SHEET_DATA;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
 
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
-import org.chromium.chrome.browser.modelutil.ListModel;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.Type;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
@@ -32,6 +34,7 @@ class PasswordAccessorySheetMediator implements KeyboardAccessoryData.Observer<A
     @Override
     public void onItemAvailable(int typeId, AccessorySheetData accessorySheetData) {
         mModel.get(CREDENTIALS).set(convertToItems(accessorySheetData));
+        mModel.get(PASSWORD_SHEET_DATA).set(splitIntoDataPieces(accessorySheetData));
     }
 
     PasswordAccessorySheetMediator(
@@ -58,12 +61,13 @@ class PasswordAccessorySheetMediator implements KeyboardAccessoryData.Observer<A
             for (UserInfo.Field field : userInfo.getFields()) {
                 items.add(Item.createSuggestion(field.getDisplayText(), field.getA11yDescription(),
                         field.isObfuscated(),
-                        item -> field.triggerSelection(), userInfo.getFaviconProvider()));
+                        field.isSelectable() ? (item -> field.triggerSelection()) : null,
+                        userInfo.getFaviconProvider()));
             }
         }
 
         if (!accessorySheetData.getFooterCommands().isEmpty()) items.add(Item.createDivider());
-        for (KeyboardAccessoryData.FooterCommand command : accessorySheetData.getFooterCommands()) {
+        for (FooterCommand command : accessorySheetData.getFooterCommands()) {
             items.add(Item.createOption(
                     command.getDisplayText(), command.getDisplayText(), (i) -> command.execute()));
         }
@@ -71,8 +75,18 @@ class PasswordAccessorySheetMediator implements KeyboardAccessoryData.Observer<A
         return items.toArray(new Item[0]);
     }
 
-    @VisibleForTesting
-    ListModel<Item> getModelForTesting() {
-        return mModel.get(CREDENTIALS);
+    private AccessorySheetDataPiece[] splitIntoDataPieces(AccessorySheetData accessorySheetData) {
+        if (accessorySheetData == null) return new AccessorySheetDataPiece[0];
+
+        List<AccessorySheetDataPiece> items = new ArrayList<>();
+        items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
+        for (UserInfo userInfo : accessorySheetData.getUserInfoList()) {
+            items.add(new AccessorySheetDataPiece(userInfo, Type.PASSWORD_INFO));
+        }
+        for (FooterCommand command : accessorySheetData.getFooterCommands()) {
+            items.add(new AccessorySheetDataPiece(command, Type.FOOTER_COMMAND));
+        }
+
+        return items.toArray(new AccessorySheetDataPiece[0]);
     }
 }

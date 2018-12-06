@@ -20,6 +20,8 @@ import static org.mockito.Mockito.when;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.Type.PASSWORD_INFO;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.getType;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -453,7 +455,7 @@ public class ManualFillingControllerTest {
 
         if (oldState.mPasswordAccessorySheet == null)
             return; // Having no password sheet is fine - it would be completely destroyed then.
-        assertThat(oldState.mPasswordAccessorySheet.getModelForTesting().size(), is(0));
+        assertThat(oldState.mPasswordAccessorySheet.getItemsForTesting().size(), is(0));
     }
 
     @Test
@@ -641,10 +643,16 @@ public class ManualFillingControllerTest {
     }
 
     private String getFirstPassword(ManualFillingMediator mediator) {
-        assert mediator.getPasswordAccessorySheet() != null;
-        assert mediator.getPasswordAccessorySheet().getModelForTesting() != null;
-        assert mediator.getPasswordAccessorySheet().getModelForTesting().size() > 1;
-        // The 0th item is a divider, the 1st a title, the 2nd a username and 3rd a password.
-        return mediator.getPasswordAccessorySheet().getModelForTesting().get(3).getCaption();
+        PasswordAccessorySheetCoordinator passwordSheet = mediator.getPasswordAccessorySheet();
+        assert passwordSheet != null;
+        assert passwordSheet.getSheetDataPiecesForTesting() != null;
+        assert passwordSheet.getSheetDataPiecesForTesting().size() > 1;
+        assert getType(passwordSheet.getSheetDataPiecesForTesting().get(1)) == PASSWORD_INFO;
+        // The 1st element is a title, the 2nd the password info.
+        UserInfo info =
+                (UserInfo) passwordSheet.getSheetDataPiecesForTesting().get(1).getDataPiece();
+        // The 1st field is the name, the 2nd the password.
+        assert info.getFields().size() > 1;
+        return info.getFields().get(1).getDisplayText();
     }
 }
