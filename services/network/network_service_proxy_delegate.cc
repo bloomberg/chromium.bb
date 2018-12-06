@@ -150,6 +150,10 @@ void NetworkServiceProxyDelegate::OnResolveProxy(
     const std::string& method,
     const net::ProxyRetryInfoMap& proxy_retry_info,
     net::ProxyInfo* result) {
+  // TODO(http://crbug.com/912217): Remove these or switch to DCHECK when done
+  // debugging crash.
+  CHECK(result);
+  CHECK(proxy_config_);
   if (!EligibleForProxy(*result, url, method))
     return;
 
