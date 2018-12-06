@@ -26,6 +26,7 @@
         {
           "name": "Mask Layer",
           "bounds": [800, 300],
+          "backfaceVisibility": "hidden",
           "paintInvalidations": [
             {
               "object": "Mask Layer",

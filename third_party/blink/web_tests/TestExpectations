@@ -355,6 +355,33 @@ crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 
+# These tests are no longer applicable with layer list mode (BGPT). Move to NeverFixTests later.
+Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
+Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
+
+# ==== Regressions introduced by BlinkGenPropertyTrees =====
+# Opacity not applied to descendant of animated filter node.
+crbug.com/912380 transitions/opacity-transition-zindex.html [ Failure ]
+crbug.com/912380 virtual/threaded/transitions/opacity-transition-zindex.html [ Failure ]
+# Reflection / mask ordering issue
+crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
+# Incorrect scrollbar invalidation.
+crbug.com/887000 virtual/prefer_compositing_to_lcd_text/scrollbars/hidden-scrollbars-invisible.html [ Failure ]
+crbug.com/882975 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Pass ]
+crbug.com/882975 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Pass ]
+### See crbug.com/891427 comment near the top of this file:
+###crbug.com/882975 virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Failure Pass ]
+crbug.com/911664 fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/911664 virtual/scroll_customization/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/911664 virtual/user-activation-v2/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/911664 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-non-composited-scroll.html [ Failure ]
+crbug.com/882973 http/tests/devtools/layers/layer-tree-model.js [ Failure ]
+crbug.com/884239 virtual/threaded/animations/animationworklet/worklet-animation-local-time-undefined.html [ Failure ]
+# Subpixel rounding differences that are incorrect.
+crbug.com/836886 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scaled-overflow.html [ Failure ]
+crbug.com/836886 compositing/overflow/scaled-overflow.html [ Failure ]
+crbug.com/836886 compositing/scrollbars/nested-overlay-scrollbars.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
@@ -1886,13 +1913,14 @@ crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
+crbug.com/497522 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-clip-rect.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.html [ Failure ]
-crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-fixed-clip.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Pass Failure ]
+crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
 # ====== Backdrop-filter related tests END ======
 
 
@@ -2350,12 +2378,8 @@ crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.
 
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400841 virtual/video-surface-layer/media/video-canvas-draw.html [ Failure ]
-crbug.com/400829 media/video-object-fit.html [ Failure ]
-crbug.com/400829 virtual/video-surface-layer/media/video-object-fit.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
 crbug.com/400829 virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure ]
-crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html [ Failure ]
-crbug.com/400829 virtual/gpu/fast/canvas/canvas-with-overflowing-object-fit.html [ Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api [ Skip ]
@@ -4092,6 +4116,10 @@ crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/locat
 
 crbug.com/785940 external/wpt/web-animations/timing-model/timelines/document-timelines.html [ Failure Pass ]
 
+crbug.com/912362 external/wpt/web-animations/timing-model/timelines/timelines.html [ Failure ]
+
+crbug.com/912574 virtual/threaded/animations/responsive/transform-responsive-neutral-keyframe.html [ Crash ]
+
 # Decoding test timeout on Win7. Marked flaky to get imported in case it's flaky timeout everywhere.
 crbug.com/862938 external/wpt/encoding/textdecoder-fatal-single-byte.any.worker.html [ Pass Timeout ]
 
@@ -4380,15 +4408,6 @@ crbug.com/820334 external/wpt/fetch/api/request/request-cache-default-conditiona
 crbug.com/820334 virtual/outofblink-cors/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 crbug.com/820334 virtual/outofblink-cors-ns/external/wpt/fetch/api/request/request-cache-default-conditional.html [ Timeout Pass ]
 
-# Link highlights currently paint under ancestor affects but this is being
-# changed with BlinkGenPropertyTrees. Until that launches, this test will fail.
-crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Failure ]
-
-# Clip and Clip-path order with filtering is currently incorrect. This is being fixed with BlinkGenPropertyTrees.
-crbug.com/907175 external/wpt/css/css-masking/clip/clip-filter-order.html [ Failure ]
-crbug.com/907175 external/wpt/css/css-masking/clip-path/clip-path-filter-order.html [ Failure ]
-crbug.com/907175 external/wpt/svg/rendering/order/clip-path-filter-order.svg [ Failure ]
-
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success-and-failure.html [ Failure Timeout ]
 crbug.com/716320 external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/broadcastchannel-success.html [ Failure Timeout ]
 crbug.com/716320 [ Android ] external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-messagechannel-success.html [ Failure Timeout ]
@@ -4675,11 +4694,6 @@ crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
 # Antialiasing error
 crbug.com/845973 virtual/display-compositor-pixel-dump/fast/canvas/display-compositor-pixel-dump/OffscreenCanvas-opaque-background-compositing.html  [ Pass Failure ]
-
-# Workaround crbug.com/817175 . Very difficult to fix with old-world compositing
-# but pass with CompositeAfterPaint.
-crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
-crbug.com/817175 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
