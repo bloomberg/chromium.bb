@@ -76,6 +76,44 @@ static void temporal_filter_predictors_mb_c(
   }
 }
 
+static void apply_temporal_filter_self(const uint8_t *pred, int buf_stride,
+                                       unsigned int block_width,
+                                       unsigned int block_height,
+                                       int filter_weight, uint32_t *accumulator,
+                                       uint16_t *count) {
+  const int modifier = filter_weight * 16;
+  unsigned int i, j, k = 0;
+  assert(filter_weight == 2);
+
+  for (i = 0; i < block_height; i++) {
+    for (j = 0; j < block_width; j++) {
+      const int pixel_value = pred[i * buf_stride + j];
+      count[k] += modifier;
+      accumulator[k] += modifier * pixel_value;
+      ++k;
+    }
+  }
+}
+
+static void highbd_apply_temporal_filter_self(
+    const uint8_t *pred8, int buf_stride, unsigned int block_width,
+    unsigned int block_height, int filter_weight, uint32_t *accumulator,
+    uint16_t *count) {
+  const int modifier = filter_weight * 16;
+  const uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+  unsigned int i, j, k = 0;
+  assert(filter_weight == 2);
+
+  for (i = 0; i < block_height; i++) {
+    for (j = 0; j < block_width; j++) {
+      const int pixel_value = pred[i * buf_stride + j];
+      count[k] += modifier;
+      accumulator[k] += modifier * pixel_value;
+      ++k;
+    }
+  }
+}
+
 static INLINE int mod_index(int64_t sum_dist, int index, int rounding,
                             int strength, int filter_weight) {
   int mod = (int)(((sum_dist * 3) / index + rounding) >> strength);
@@ -682,43 +720,67 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               mb_col * BW, mb_row * BH, cm->allow_warped_motion, num_planes);
 
           // Apply the filter (YUV)
-          if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-            int adj_strength = strength + 2 * (mbd->bd - 8);
+          if (frame == alt_ref_index) {
+            uint8_t *pred = predictor;
+            uint32_t *accum = accumulator;
+            uint16_t *cnt = count;
+            int plane;
 
-            if (num_planes <= 1) {
-              // Single plane case
-              av1_highbd_temporal_filter_apply_c(
-                  f->y_buffer + mb_y_offset, f->y_stride, predictor, BW, BH,
-                  adj_strength, filter_weight, accumulator, count);
-            } else {
-              // Process 3 planes together.
-              highbd_apply_temporal_filter(
-                  f->y_buffer + mb_y_offset, f->y_stride, predictor, BW,
-                  f->u_buffer + mb_uv_offset, f->v_buffer + mb_uv_offset,
-                  f->uv_stride, predictor + BLK_PELS,
-                  predictor + (BLK_PELS << 1), mb_uv_width, BW, BH,
-                  mbd->plane[1].subsampling_x, mbd->plane[1].subsampling_y,
-                  adj_strength, filter_weight, accumulator, count,
-                  accumulator + BLK_PELS, count + BLK_PELS,
-                  accumulator + (BLK_PELS << 1), count + (BLK_PELS << 1));
+            for (plane = 0; plane < num_planes; ++plane) {
+              const int pred_stride = plane ? mb_uv_width : BW;
+              const unsigned int w = plane ? mb_uv_width : BW;
+              const unsigned int h = plane ? mb_uv_height : BH;
+
+              if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+                highbd_apply_temporal_filter_self(pred, pred_stride, w, h,
+                                                  filter_weight, accum, cnt);
+              else
+                apply_temporal_filter_self(pred, pred_stride, w, h,
+                                           filter_weight, accum, cnt);
+
+              pred += BLK_PELS;
+              accum += BLK_PELS;
+              cnt += BLK_PELS;
             }
           } else {
-            if (num_planes <= 1) {
-              // Single plane case
-              av1_temporal_filter_apply_c(
-                  f->y_buffer + mb_y_offset, f->y_stride, predictor, BW, BH,
-                  strength, filter_weight, accumulator, count);
+            if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+              int adj_strength = strength + 2 * (mbd->bd - 8);
+
+              if (num_planes <= 1) {
+                // Single plane case
+                av1_highbd_temporal_filter_apply_c(
+                    f->y_buffer + mb_y_offset, f->y_stride, predictor, BW, BH,
+                    adj_strength, filter_weight, accumulator, count);
+              } else {
+                // Process 3 planes together.
+                highbd_apply_temporal_filter(
+                    f->y_buffer + mb_y_offset, f->y_stride, predictor, BW,
+                    f->u_buffer + mb_uv_offset, f->v_buffer + mb_uv_offset,
+                    f->uv_stride, predictor + BLK_PELS,
+                    predictor + (BLK_PELS << 1), mb_uv_width, BW, BH,
+                    mbd->plane[1].subsampling_x, mbd->plane[1].subsampling_y,
+                    adj_strength, filter_weight, accumulator, count,
+                    accumulator + BLK_PELS, count + BLK_PELS,
+                    accumulator + (BLK_PELS << 1), count + (BLK_PELS << 1));
+              }
             } else {
-              // Process 3 planes together.
-              apply_temporal_filter(
-                  f->y_buffer + mb_y_offset, f->y_stride, predictor, BW,
-                  f->u_buffer + mb_uv_offset, f->v_buffer + mb_uv_offset,
-                  f->uv_stride, predictor + BLK_PELS,
-                  predictor + (BLK_PELS << 1), mb_uv_width, BW, BH,
-                  mbd->plane[1].subsampling_x, mbd->plane[1].subsampling_y,
-                  strength, filter_weight, accumulator, count,
-                  accumulator + BLK_PELS, count + BLK_PELS,
-                  accumulator + (BLK_PELS << 1), count + (BLK_PELS << 1));
+              if (num_planes <= 1) {
+                // Single plane case
+                av1_temporal_filter_apply_c(
+                    f->y_buffer + mb_y_offset, f->y_stride, predictor, BW, BH,
+                    strength, filter_weight, accumulator, count);
+              } else {
+                // Process 3 planes together.
+                apply_temporal_filter(
+                    f->y_buffer + mb_y_offset, f->y_stride, predictor, BW,
+                    f->u_buffer + mb_uv_offset, f->v_buffer + mb_uv_offset,
+                    f->uv_stride, predictor + BLK_PELS,
+                    predictor + (BLK_PELS << 1), mb_uv_width, BW, BH,
+                    mbd->plane[1].subsampling_x, mbd->plane[1].subsampling_y,
+                    strength, filter_weight, accumulator, count,
+                    accumulator + BLK_PELS, count + BLK_PELS,
+                    accumulator + (BLK_PELS << 1), count + (BLK_PELS << 1));
+              }
             }
           }
         }
