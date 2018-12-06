@@ -38,6 +38,9 @@ class CORE_EXPORT FetchClientSettingsObjectImpl final
 
   HttpsState GetHttpsState() const override;
 
+  AllowedByNosniff::MimeTypeCheck MimeTypeCheckForClassicWorkerScript()
+      const override;
+
   void Trace(Visitor* visitor) override;
 
  private:

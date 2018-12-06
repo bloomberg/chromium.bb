@@ -69,7 +69,7 @@ class MockFetchContext : public FetchContext {
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
             KURL(), std::move(security_origin),
             network::mojom::ReferrerPolicy::kDefault, String(),
-            HttpsState::kNone));
+            HttpsState::kNone, AllowedByNosniff::MimeTypeCheck::kStrict));
   }
 
   // The last ResourceRequest passed to DispatchWillSendRequest.

@@ -80,7 +80,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
       network::mojom::FetchRequestMode,
       network::mojom::FetchCredentialsMode,
       mojom::IPAddressSpace,
-      bool is_nested_worker,
       base::OnceClosure response_callback,
       base::OnceClosure finished_callback);
 
@@ -160,9 +159,6 @@ class CORE_EXPORT WorkerClassicScriptLoader final
 
   bool is_worker_global_scope_ = false;
   Member<ResourceFetcher> fetch_client_settings_object_fetcher_;
-
-  // TODO(nhiroki): Move this to FetchClientSettingsObject.
-  AllowedByNosniff::MimeTypeCheck mime_type_check_mode_;
 };
 
 }  // namespace blink

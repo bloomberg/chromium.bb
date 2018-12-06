@@ -197,7 +197,6 @@ void DedicatedWorker::Start() {
         network::mojom::FetchRequestMode::kSameOrigin,
         network::mojom::FetchCredentialsMode::kSameOrigin,
         GetExecutionContext()->GetSecurityContext().AddressSpace(),
-        GetExecutionContext()->IsWorkerGlobalScope(),
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
         WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this),
                   stack_id));

@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -49,8 +50,7 @@
 namespace blink {
 
 WorkerClassicScriptLoader::WorkerClassicScriptLoader()
-    : response_address_space_(mojom::IPAddressSpace::kPublic),
-      mime_type_check_mode_(AllowedByNosniff::MimeTypeCheck::kStrict) {}
+    : response_address_space_(mojom::IPAddressSpace::kPublic) {}
 
 void WorkerClassicScriptLoader::LoadSynchronously(
     ExecutionContext& execution_context,
@@ -61,10 +61,6 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   DCHECK(fetch_client_settings_object_fetcher);
   url_ = url;
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
-
-  // Impose strict MIME-type checks on importScripts(). See
-  // https://crbug.com/794548.
-  mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kStrict;
 
   ResourceRequest request(url);
   request.SetHTTPMethod(http_names::kGET);
@@ -93,7 +89,6 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode fetch_credentials_mode,
     mojom::IPAddressSpace creation_address_space,
-    bool is_nested_worker,
     base::OnceClosure response_callback,
     base::OnceClosure finished_callback) {
   DCHECK(fetch_client_settings_object_fetcher);
@@ -104,30 +99,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
   forbid_cross_origin_redirects_ = true;
 
-  if (execution_context.IsDocument()) {
-    // For worker creation on a document, don't impose strict MIME-type checks
-    // on the top-level worker script for backward compatibility. Note that
-    // there is a plan to deprecate legacy mime types for workers. See
-    // https://crbug.com/794548.
-    mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kLax;
-  } else {
-    DCHECK(execution_context.IsWorkerGlobalScope());
-    is_worker_global_scope_ = true;
-    if (is_nested_worker) {
-      // For nested workers, impose the strict MIME-type checks because the
-      // feature is new (enabled by default in M69) and there is no backward
-      // compatibility issue.
-      mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kStrict;
-    } else {
-      // For worker creation on a document with off-the-main-thread top-level
-      // worker classic script loading, don't impose strict MIME-type checks for
-      // backward compatibility.
-      // TODO(nhiroki): Always impose strict MIME-type checks on all web
-      // workers (https://crbug.com/794548).
-      DCHECK(RuntimeEnabledFeatures::OffMainThreadWorkerScriptFetchEnabled());
-      mime_type_check_mode_ = AllowedByNosniff::MimeTypeCheck::kLax;
-    }
-  }
+  is_worker_global_scope_ = execution_context.IsWorkerGlobalScope();
 
   ResourceRequest request(url);
   request.SetHTTPMethod(http_names::kGET);
@@ -162,7 +134,10 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   }
   if (!AllowedByNosniff::MimeTypeAsScript(
           fetch_client_settings_object_fetcher_->Context(), response,
-          mime_type_check_mode_, is_worker_global_scope_)) {
+          fetch_client_settings_object_fetcher_->Context()
+              .GetFetchClientSettingsObject()
+              ->MimeTypeCheckForClassicWorkerScript(),
+          is_worker_global_scope_)) {
     NotifyError();
     return;
   }

@@ -47,7 +47,7 @@ class NullFetchContext final : public FetchContext {
         MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
             KURL(), nullptr /* security_origin */,
             network::mojom::ReferrerPolicy::kDefault, String(),
-            HttpsState::kNone));
+            HttpsState::kNone, AllowedByNosniff::MimeTypeCheck::kStrict));
   }
 
   void CountUsage(mojom::WebFeature) const override {}
