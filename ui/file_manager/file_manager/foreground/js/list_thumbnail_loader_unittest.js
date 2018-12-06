@@ -2,92 +2,121 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * Generates a data url of a sample image for testing.
- * TODO(yawano) Consider to share image generation logic with
- *     gallery/js/image_editor/test_util.js.
- *
- * @param {Document} document Document.
- * @return {string} Data url of a sample image.
- */
-function generateSampleImageDataUrl(document) {
-  var canvas = document.createElement('canvas');
-  canvas.width = 160;
-  canvas.height = 160;
-
-  var context = canvas.getContext('2d');
-  context.fillStyle = 'black';
-  context.fillRect(0, 0, 80, 80);
-  context.fillRect(80, 80, 80, 80);
-
-  return canvas.toDataURL('image/jpeg', 0.5);
-}
-
-var listThumbnailLoader;
-var getCallbacks;
-var thumbnailLoadedEvents;
-var thumbnailModel;
-var metadataModel;
-var fileListModel;
-var directoryModel;
+/** @type {string} */
 var currentVolumeType;
-var isScanningForTest = false;
+
+/** @type {!ListThumbnailLoader} */
+var listThumbnailLoader;
+
+/** @type {!Object} */
+var getCallbacks;
+
+/** @type {!Array<Event>} */
+var thumbnailLoadedEvents;
+
+/** @type {!ThumbnailModel} */
+var thumbnailModel;
+
+/** @type {!MetadataModel} */
+var metadataModel;
+
+/** @type {!FileListModel} */
+var fileListModel;
+
+/** @type {!DirectoryModel} */
+var directoryModel;
+
+/** @type {boolean} */
+var isScanningForTest;
+
+/** @type {!MockFileSystem} */
 var fileSystem = new MockFileSystem('volume-id');
+
+/** @type {!MockDirectoryEntry} */
 var directory1 = new MockDirectoryEntry(fileSystem, '/TestDirectory');
+
+/** @type {!MockEntry} */
 var entry1 = new MockEntry(fileSystem, '/Test1.jpg');
+/** @type {!MockEntry} */
 var entry2 = new MockEntry(fileSystem, '/Test2.jpg');
+/** @type {!MockEntry} */
 var entry3 = new MockEntry(fileSystem, '/Test3.jpg');
+/** @type {!MockEntry} */
 var entry4 = new MockEntry(fileSystem, '/Test4.jpg');
+/** @type {!MockEntry} */
 var entry5 = new MockEntry(fileSystem, '/Test5.jpg');
+/** @type {!MockEntry} */
 var entry6 = new MockEntry(fileSystem, '/Test6.jpg');
 
 function setUp() {
   currentVolumeType = ListThumbnailLoader.TEST_VOLUME_TYPE;
+  /** @suppress {const} */
   ListThumbnailLoader.CACHE_SIZE = 5;
+  /** @suppress {const} */
   ListThumbnailLoader.numOfMaxActiveTasksForTest = 2;
+
+  /** @suppress {const} */
   MockThumbnailLoader.errorUrls = [];
-  MockThumbnailLoader.testImageDataUrl = generateSampleImageDataUrl(document);
+  /** @suppress {const} */
   MockThumbnailLoader.testImageWidth = 160;
+  /** @suppress {const} */
   MockThumbnailLoader.testImageHeight = 160;
 
+  // Create an image dataURL for testing.
+  var canvas = document.createElement('canvas');
+  canvas.width = MockThumbnailLoader.testImageWidth;
+  canvas.height = MockThumbnailLoader.testImageHeight;
+  var context = canvas.getContext('2d');
+  context.fillStyle = 'black';
+  context.fillRect(0, 0, 80, 80);
+  context.fillRect(80, 80, 80, 80);
+  /** @const {string} */
+  var testImageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+
+  /** @suppress {const} */
+  MockThumbnailLoader.testImageDataUrl = testImageDataUrl;
+
   getCallbacks = {};
-  thumbnailModel = {
+
+  thumbnailModel = /** @type {!ThumbnailModel} */ ({
     get: function(entries) {
       return new Promise(function(fulfill) {
         getCallbacks[getKeyOfGetCallback_(entries)] = fulfill;
       });
-    }
-  };
+    },
+  });
 
-  metadataModel = {
+  metadataModel = /** @type {!MetadataModel} */ ({
     get: function() {},
     getCache: function(entries, names) {
       return [{}];
-    }
-  };
+    },
+  });
 
   fileListModel = new FileListModel(metadataModel);
 
-  directoryModel = {
+  isScanningForTest = false;
+
+  directoryModel = /** @type {!DirectoryModel} */ ({
     __proto__: cr.EventTarget.prototype,
     getFileList: function() {
       return fileListModel;
     },
     isScanning: function() {
       return isScanningForTest;
-    }
-  };
+    },
+  });
+
+  var fakeVolumeManager = /** @type {!VolumeManager} */ ({
+    getVolumeInfo: function(entry) {
+      return {
+        volumeType: currentVolumeType,
+      };
+    },
+  });
 
   listThumbnailLoader = new ListThumbnailLoader(
-      directoryModel,
-      thumbnailModel,
-      // Mocking volume manager
-      {
-        getVolumeInfo: function(entry) {
-          return { volumeType: currentVolumeType };
-        }
-      },
-      MockThumbnailLoader);
+      directoryModel, thumbnailModel, fakeVolumeManager, MockThumbnailLoader);
 
   thumbnailLoadedEvents = [];
   listThumbnailLoader.addEventListener('thumbnailLoaded', function(event) {
@@ -366,24 +395,24 @@ function testDirectoryScanIsRunning() {
 function testExifIOError(callback) {
   var task = new ListThumbnailLoader.Task(
       entry1,
-      // Mocking volume manager.
-      {
+      /** @type {!VolumeManager} */ ({
         getVolumeInfo: function(entry) {
-          return { volumeType: currentVolumeType };
-        }
-      },
-      // Mocking thumbnail model.
-      {
+          return {
+            volumeType: currentVolumeType
+          };
+        },
+      }),
+      /** @type {!ThumbnailModel} */ ({
         get: function(entries) {
           return Promise.resolve([{
             thumbnail: {
               urlError: {
                 errorDescription: 'Error: Unexpected EOF @0'
-              }
-            }
+              },
+            },
           }]);
-        }
-      },
+        },
+      }),
       function() {
         // Thumbnails should be fetched only from EXIF on IO error.
         assertTrue(false);

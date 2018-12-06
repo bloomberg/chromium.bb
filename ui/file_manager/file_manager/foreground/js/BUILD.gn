@@ -485,6 +485,15 @@ js_library("list_thumbnail_loader") {
   ]
 }
 
+js_unittest("list_thumbnail_loader_unittest") {
+  deps = [
+    ":list_thumbnail_loader",
+    ":mock_thumbnail_loader",
+    "//ui/file_manager/base/js:test_error_reporting",
+    "//ui/file_manager/file_manager/common/js:mock_entry",
+  ]
+}
+
 js_library("main") {
   deps = [
     ":file_manager",
@@ -748,6 +757,7 @@ js_unit_tests("unit_tests") {
     ":actions_model_unittest",
     ":file_list_model_unittest",
     ":file_tasks_unittest",
+    ":list_thumbnail_loader_unittest",
     ":navigation_list_model_unittest",
     ":progress_center_item_group_unittest",
     ":providers_model_unittest",
