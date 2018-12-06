@@ -787,7 +787,7 @@ void PaintArtifactCompositor::Update(
         property_tree_manager.EnsureCompositorPageScaleTransformNode(
             viewport_scale_node);
   }
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     host->RegisterViewportPropertyIds(viewport_property_ids);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
@@ -818,9 +818,9 @@ void PaintArtifactCompositor::Update(
         paint_artifact, pending_layer, layer_offset, new_content_layer_clients,
         new_scroll_hit_test_layers);
 
-    // Pre-SPV2, touch action rects are updated through
+    // Pre-CompositeAfterPaint, touch action rects are updated through
     // ScrollingCoordinator::UpdateLayerTouchActionRects.
-    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       auto paint_chunks = paint_artifact->GetPaintChunkSubset(
           pending_layer.paint_chunk_indices);
       UpdateTouchActionRects(layer.get(), layer_offset, property_state,
