@@ -12,7 +12,6 @@
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
@@ -56,6 +55,7 @@
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 using session_manager::SessionState;
 
@@ -438,7 +438,7 @@ void LoginShelfView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (LockScreen::HasInstance()) {
     int previous_id = views::AXAuraObjCache::GetInstance()->GetID(
-        static_cast<views::Widget*>(LockScreen::Get()->window()));
+        LockScreen::Get()->widget());
     node_data->AddIntAttribute(ax::mojom::IntAttribute::kPreviousFocusId,
                                previous_id);
   }

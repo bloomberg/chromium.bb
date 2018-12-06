@@ -9,7 +9,9 @@
 #include "ash/wm/lock_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
+#include "ui/aura/env.h"
 #include "ui/events/event.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -49,13 +51,30 @@ void LockLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   wm::WindowState* window_state = LockWindowState::SetLockWindowState(child);
   wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
   window_state->OnWMEvent(&event);
+
+  Shell::Get()->aura_env()->gesture_recognizer()->CancelActiveTouchesExcept(
+      nullptr);
+
+  // Disable virtual keyboard overscroll because it interferes with scrolling
+  // login/lock content. See crbug.com/363635.
+  keyboard::mojom::KeyboardConfig config =
+      keyboard::KeyboardController::Get()->keyboard_config();
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDisabled;
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
 }
 
 void LockLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   child->RemoveObserver(this);
 }
 
-void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {}
+void LockLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
+  keyboard::mojom::KeyboardConfig config =
+      keyboard::KeyboardController::Get()->keyboard_config();
+  config.overscroll_behavior =
+      keyboard::mojom::KeyboardOverscrollBehavior::kDefault;
+  keyboard::KeyboardController::Get()->UpdateKeyboardConfig(config);
+}
 
 void LockLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
                                                        bool visible) {}

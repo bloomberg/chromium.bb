@@ -10,7 +10,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/login/ui/lock_window.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -22,11 +21,13 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/display/display_observer.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
 
 namespace content {
 class WebUI;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace chromeos {
@@ -42,7 +43,6 @@ class NetworkStateHelper;
 class WebUIScreenLocker : public WebUILoginView,
                           public ScreenLocker::Delegate,
                           public LoginDisplay::Delegate,
-                          public views::WidgetObserver,
                           public PowerManagerClient::Observer,
                           public display::DisplayObserver,
                           public content::WebContentsObserver {
@@ -97,9 +97,6 @@ class WebUIScreenLocker : public WebUILoginView,
   void ResetAutoLoginTimer() override;
   void Signout() override;
 
-  // WidgetObserver:
-  void OnWidgetDestroying(views::Widget* widget) override;
-
   // PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
@@ -134,8 +131,8 @@ class WebUIScreenLocker : public WebUILoginView,
   // The ScreenLocker that owns this instance.
   ScreenLocker* screen_locker_ = nullptr;
 
-  // The screen locker window.
-  ash::LockWindow* lock_window_ = nullptr;
+  // The screen locker widget.
+  std::unique_ptr<views::Widget> lock_widget_;
 
   // Sign-in Screen controller instance (owns login screens).
   std::unique_ptr<SignInScreenController> signin_screen_controller_;

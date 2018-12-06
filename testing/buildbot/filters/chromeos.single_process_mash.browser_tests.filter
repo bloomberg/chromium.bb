@@ -23,10 +23,6 @@
 # Crash in media::AudioOutputController::Create()
 -KioskVirtualKeyboardTest.RestrictFeatures
 
-# Crash in Window::AddChild(), https://crbug.com/899862
--ShutdownPolicyLockerTest.PolicyChange
--ShutdownPolicyLockerTest.TestBasic
-
 # AutomationManagerAura::Enable() uses ash to get active window. More generally,
 # chrome a11y code directly accesses ash system UI widgets and views.
 # https://crbug.com/888145

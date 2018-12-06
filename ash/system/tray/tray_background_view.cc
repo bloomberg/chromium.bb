@@ -9,7 +9,6 @@
 
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
-#include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf_constants.h"
@@ -303,7 +302,7 @@ void TrayBackgroundView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
   if (LockScreen::HasInstance()) {
     int next_id = views::AXAuraObjCache::GetInstance()->GetID(
-        static_cast<views::Widget*>(LockScreen::Get()->window()));
+        LockScreen::Get()->widget());
     node_data->AddIntAttribute(ax::mojom::IntAttribute::kNextFocusId, next_id);
   }
 
