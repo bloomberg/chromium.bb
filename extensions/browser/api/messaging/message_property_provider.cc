@@ -23,6 +23,7 @@
 #include "net/ssl/channel_id_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -40,7 +41,12 @@ void MessagePropertyProvider::GetChannelID(
     return;
   }
 
-  content::ScopedAllowGetURLRequestContext scoped_allow_get_url_request_context;
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // ChannelID is deprecated and doesn't work with network service.
+    reply.Run(std::string());
+    return;
+  }
+
   scoped_refptr<net::URLRequestContextGetter> request_context_getter =
       storage_partition->GetURLRequestContext();
   base::PostTaskWithTraits(
