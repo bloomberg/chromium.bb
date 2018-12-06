@@ -241,12 +241,14 @@ void ChromeAutofillClient::ConfirmMigrateLocalCardToCloud(
 
 void ChromeAutofillClient::ShowLocalCardMigrationResults(
     const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    MigrationDeleteCardCallback delete_local_card_callback) {
 #if !defined(OS_ANDROID)
   autofill::ManageMigrationUiController::CreateForWebContents(web_contents());
   autofill::ManageMigrationUiController* controller =
       autofill::ManageMigrationUiController::FromWebContents(web_contents());
-  controller->ShowCreditCardIcon(tip_message, migratable_credit_cards);
+  controller->ShowCreditCardIcon(tip_message, migratable_credit_cards,
+                                 delete_local_card_callback);
 #endif
 }
 

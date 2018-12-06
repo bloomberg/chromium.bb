@@ -55,7 +55,8 @@ class ManageMigrationUiController
 
   void ShowCreditCardIcon(
       const base::string16& tip_message,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards);
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      AutofillClient::MigrationDeleteCardCallback delete_local_card_callback);
 
   void OnUserClickedCreditCardIcon();
 

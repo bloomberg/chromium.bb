@@ -87,7 +87,8 @@ class AwAutofillClient : public autofill::AutofillClient,
   void ShowLocalCardMigrationResults(
       const base::string16& tip_message,
       const std::vector<autofill::MigratableCreditCard>&
-          migratable_credit_cards) override;
+          migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const autofill::AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(const autofill::CreditCard& card,

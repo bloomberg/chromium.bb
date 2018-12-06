@@ -75,12 +75,14 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
 
 void LocalCardMigrationDialogControllerImpl::ShowCreditCardIcon(
     const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    AutofillClient::MigrationDeleteCardCallback delete_local_card_callback) {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_->CloseDialog();
 
   migratable_credit_cards_ = migratable_credit_cards;
   tip_message_ = tip_message;
+  delete_local_card_callback_ = delete_local_card_callback;
 
   view_state_ = LocalCardMigrationDialogState::kFinished;
   for (const auto& cc : migratable_credit_cards) {
@@ -164,9 +166,43 @@ void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_LEGAL_MESSAGE_CLICKED);
 }
 
+void LocalCardMigrationDialogControllerImpl::DeleteCard(
+    const std::string& deleted_card_guid) {
+  DCHECK(delete_local_card_callback_);
+  delete_local_card_callback_.Run(deleted_card_guid);
+
+  migratable_credit_cards_.erase(
+      std::remove_if(migratable_credit_cards_.begin(),
+                     migratable_credit_cards_.end(),
+                     [&](const auto& card) {
+                       return card.credit_card().guid() == deleted_card_guid;
+                     }),
+      migratable_credit_cards_.end());
+
+  if (!HasFailedCard()) {
+    view_state_ = LocalCardMigrationDialogState::kFinished;
+    delete_local_card_callback_.Reset();
+  }
+}
+
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_ = nullptr;
+}
+
+bool LocalCardMigrationDialogControllerImpl::AllCardsInvalid() const {
+  // For kOffered state, the migration status of all cards are UNKNOWN,
+  // so this function will return true as well. Need an early exit to avoid
+  // it.
+  if (view_state_ == LocalCardMigrationDialogState::kOffered)
+    return false;
+
+  return std::find_if(
+             migratable_credit_cards_.begin(), migratable_credit_cards_.end(),
+             [](const auto& card) {
+               return card.migration_status() ==
+                      MigratableCreditCard::MigrationStatus::SUCCESS_ON_UPLOAD;
+             }) == migratable_credit_cards_.end();
 }
 
 LocalCardMigrationDialog*
@@ -187,6 +223,15 @@ void LocalCardMigrationDialogControllerImpl::UpdateIcon() {
   LocationBar* location_bar = browser->window()->GetLocationBar();
   DCHECK(location_bar);
   location_bar->UpdateLocalCardMigrationIcon();
+}
+
+bool LocalCardMigrationDialogControllerImpl::HasFailedCard() const {
+  return std::find_if(
+             migratable_credit_cards_.begin(), migratable_credit_cards_.end(),
+             [](const auto& card) {
+               return card.migration_status() ==
+                      MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD;
+             }) != migratable_credit_cards_.end();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LocalCardMigrationDialogControllerImpl)
