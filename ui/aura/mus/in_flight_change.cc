@@ -145,7 +145,10 @@ void CrashInFlightChange::SetRevertValueFrom(const InFlightChange& change) {
 }
 
 void CrashInFlightChange::ChangeFailed() {
-  CHECK(false) << "change failed, type=" << static_cast<int>(change_type());
+  // TODO(crbug.com/912228): remove LOG(). Used to figure out why this is being
+  // hit.
+  LOG(ERROR) << "change failed, type=" << static_cast<int>(change_type());
+  CHECK(false);
 }
 
 void CrashInFlightChange::Revert() {
