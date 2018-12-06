@@ -5,7 +5,6 @@
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 
 #include "ash/login/ui/lock_screen.h"
-#include "ash/login/ui/lock_window.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
@@ -19,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -92,9 +92,9 @@ void AshMessageCenterLockScreenController::EncourageUserToUnlock() {
   DCHECK(locked_);
 
   DCHECK(LockScreen::Get());
-  DCHECK(LockScreen::Get()->window());
+  DCHECK(LockScreen::Get()->widget());
   auto* unified_system_tray =
-      Shelf::ForWindow(LockScreen::Get()->window()->GetNativeWindow())
+      Shelf::ForWindow(LockScreen::Get()->widget()->GetNativeWindow())
           ->GetStatusAreaWidget()
           ->unified_system_tray();
   if (unified_system_tray) {

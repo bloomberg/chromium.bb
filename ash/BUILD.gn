@@ -46,7 +46,6 @@ component("ash") {
     "frame/header_view.h",
     "frame/non_client_frame_view_ash.h",
     "frame/wide_frame_view.h",
-    "login/ui/lock_window.h",
     "magnifier/magnification_controller.h",
 
     # TODO: move MultiUserWindowManager (and delegate) to sources:
@@ -445,7 +444,6 @@ component("ash") {
     "login/ui/lock_debug_view.h",
     "login/ui/lock_screen.cc",
     "login/ui/lock_screen.h",
-    "login/ui/lock_window.cc",
     "login/ui/login_auth_user_view.cc",
     "login/ui/login_auth_user_view.h",
     "login/ui/login_base_bubble_view.cc",

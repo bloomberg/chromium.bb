@@ -11,10 +11,13 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 
+namespace views {
+class Widget;
+}
+
 namespace ash {
 
 class LockContentsView;
-class LockWindow;
 class LoginDataDispatcher;
 class TrayAction;
 
@@ -47,7 +50,7 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // Returns true if the instance has been instantiated.
   static bool HasInstance();
 
-  LockWindow* window() { return window_; }
+  views::Widget* widget() { return widget_.get(); }
 
   // Destroys an existing lock screen instance.
   void Destroy();
@@ -55,7 +58,7 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   ScreenType screen_type() const { return type_; }
 
   // Returns the active data dispatcher.
-  LoginDataDispatcher* data_dispatcher();
+  LoginDataDispatcher* data_dispatcher() { return data_dispatcher_.get(); }
 
   // Returns if the screen has been shown (i.e. |LockWindow::Show| was called).
   bool is_shown() const { return is_shown_; }
@@ -77,8 +80,10 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   // The type of screen shown. Controls how the screen is dismissed.
   const ScreenType type_;
 
-  // Unowned pointer to the window which hosts the lock screen.
-  LockWindow* window_ = nullptr;
+  // The lock screen widget.
+  std::unique_ptr<views::Widget> widget_;
+
+  std::unique_ptr<LoginDataDispatcher> data_dispatcher_;
 
   // Unowned pointer to the LockContentsView hosted in lock window.
   LockContentsView* contents_view_ = nullptr;
