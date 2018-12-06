@@ -42,13 +42,13 @@
                 android:layout_width="36dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:layout_marginBottom="10dp"
                 android:layout_gravity="center_horizontal"
                 android:src="@drawable/autofill_assistant_swipe_indicator"/>
 
             <LinearLayout
+                android:id="@+id/bottombar_header"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginEnd="24dp"
                 android:orientation="horizontal"
@@ -63,7 +63,7 @@
                 <TextView
                     android:id="@+id/status_message"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:paddingStart="24dp"
                     android:paddingEnd="24dp"
@@ -96,7 +96,6 @@
                 android:id="@+id/progress_bar"
                 android:layout_width="match_parent"
                 android:layout_height="6dp"
-                android:layout_marginTop="17dp"
                 app:colorBackground="@color/modern_grey_100"
                 app:colorProgress="@color/modern_blue_600" />
 
