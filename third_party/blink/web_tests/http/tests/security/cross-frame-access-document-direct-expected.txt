@@ -1,7 +1,5 @@
 Test cross-origin direct document access.
 
-
-
 --------
 Frame: 'theFrame'
 --------

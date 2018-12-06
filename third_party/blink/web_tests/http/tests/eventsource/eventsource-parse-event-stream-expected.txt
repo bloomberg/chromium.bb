@@ -2,7 +2,6 @@ Test EventSource text/event-stream parsing.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS es = new EventSource("resources/event-stream.php"); did not throw exception.
 PASS got open event
 PASS evt.data is "\n\n"

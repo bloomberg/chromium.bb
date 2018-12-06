@@ -4,10 +4,8 @@ Submit a form via POST to a frame (redirect-to-go-back.pl).
 Form page does a 302 to a static page (top-go-back.html), still within the frame.
 Static page does a top-level navigation to another static page (go-back.html)
 This static page goes back.
+
 We should end up showing the top-level page with the first static page inside the frame.
-
-
-
 
 --------
 Frame: 'target-frame'

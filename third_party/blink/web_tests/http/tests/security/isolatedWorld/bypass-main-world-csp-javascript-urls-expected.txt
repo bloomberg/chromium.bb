@@ -5,5 +5,4 @@ ALERT: iframe javascript: src running
 ALERT: iframe loaded
 ALERT: Running test #0
 
-
 This test ensures that scripts run in isolated worlds marked with their own Content Security Policy can bypass javascript: URL restrictions.

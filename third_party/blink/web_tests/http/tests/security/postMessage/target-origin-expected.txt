@@ -1,5 +1,4 @@
 window.location.href = http://127.0.0.1:8000/security/postMessage/target-origin.html
-
 waiting...
 Error sending message to //. SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '//' in a call to 'postMessage'.
 Received message: data="Received message: data="Trying origin=*" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"

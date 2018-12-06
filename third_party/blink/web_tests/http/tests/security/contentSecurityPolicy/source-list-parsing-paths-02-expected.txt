@@ -12,8 +12,6 @@ CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/conten
 
 Resources should be rejected unless they match a whitelisted path.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

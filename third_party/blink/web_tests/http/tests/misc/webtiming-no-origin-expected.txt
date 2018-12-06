@@ -2,7 +2,6 @@ Web Timing should report zeros for redirects and unload since there was no prece
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS timing.connectEnd is non-zero.
 PASS timing.connectStart is non-zero.
 PASS timing.domComplete is non-zero.

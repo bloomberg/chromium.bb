@@ -2,7 +2,6 @@ This test verifies that the ScrollAnimator can schedule animations on the compos
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS internals.getScrollAnimationState(document) is RUNNING_ON_COMPOSITOR
 PASS internals.mainThreadScrollingReasons(document) is ANIMATING_TEXT
 PASS needsUpdateOrRunningOnCompositor(document) is true

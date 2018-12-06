@@ -30,5 +30,6 @@ PASS internals.isPreloaded('resources/empty.js'); is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
+
 This test passes if the image is preloaded, but none of the non-img elements with a srcset attribute is.
  

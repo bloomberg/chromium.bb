@@ -1,5 +1,4 @@
 
-
 ----- tests for getting window.location's properties -----
 
 PASS: canGet('targetWindow.location') should be 'true' and is.

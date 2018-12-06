@@ -7,4 +7,5 @@ main frame - didFinishLoadForFrame
 
 This test needs to be run in DRT. Preload scanner should see the image resource.
 <img src="resources/preload-test.jpg">
+
 PASS

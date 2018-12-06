@@ -2,8 +2,6 @@ CONSOLE ERROR: line 4: The XSS Auditor blocked access to 'http://127.0.0.1:8000/
 CONSOLE MESSAGE: line 31: PASS: "frame" is cross-origin.
 This tests that the X-XSS-Protection header is not ignored when the report and mode directives are swapped.
 
-
-
 --------
 Frame: 'frame'
 --------

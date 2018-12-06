@@ -2,4 +2,3 @@ CONSOLE WARNING: line 8: Synchronous XMLHttpRequest on the main thread is deprec
 Test behavior of sync XHR during unload
 
 PASS: sync XHR completed successfully
-

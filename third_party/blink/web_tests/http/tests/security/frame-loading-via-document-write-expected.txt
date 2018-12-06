@@ -14,9 +14,7 @@ Frame: 'middleRow'
 --------
 Image NOT loaded.
 
-
 --------
 Frame: 'bottomRow'
 --------
 Image loaded.
-

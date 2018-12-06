@@ -1,5 +1,6 @@
 
 
+
 --- Test begins ---
 * "about:blank"
 document.URL = about:blank

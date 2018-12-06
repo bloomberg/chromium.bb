@@ -2,7 +2,6 @@ WebSocket message event origin attribute test (String message)
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Connected.
 PASS data is firstMessageToSend
 PASS wsOrigin is "ws://localhost:8880"

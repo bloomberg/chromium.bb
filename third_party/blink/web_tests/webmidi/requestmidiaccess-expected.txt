@@ -2,7 +2,6 @@ Tests navigator.requestMIDIAccess.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS PermissionsHelper.setPermission is defined.
 PASS requestMIDIAccess() succeeded with access [object MIDIAccess].
 PASS access.sysexEnabled is defined.

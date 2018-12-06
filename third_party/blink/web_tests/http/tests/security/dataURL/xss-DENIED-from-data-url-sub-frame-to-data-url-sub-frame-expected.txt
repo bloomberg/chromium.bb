@@ -1,6 +1,6 @@
 This tests that a data: URL subframe can't access a sibling data: URL subframe.
 
-  
+ 
 
 --------
 Frame: 'firstSubFrame'
@@ -13,5 +13,3 @@ Pass: Cross frame access from a sibling data: URL was denied.
 Frame: 'secondSubFrame'
 --------
 Inner iframe.
-
-

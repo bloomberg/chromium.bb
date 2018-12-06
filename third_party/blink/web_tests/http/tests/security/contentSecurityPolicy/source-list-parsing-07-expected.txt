@@ -25,8 +25,6 @@ CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/conten
 CONSOLE ERROR: The source list for Content Security Policy directive 'script-src' contains an invalid source: 'https://127.0.0.1:'. It will be ignored.
 Invalid source expressions should log a console warning, and be ignored.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

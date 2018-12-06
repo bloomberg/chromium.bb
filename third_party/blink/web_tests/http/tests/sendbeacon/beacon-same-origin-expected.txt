@@ -6,7 +6,6 @@ Testing navigator.sendBeacon() within same origin.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Sending beacon with type: [object String]
 PASS navigator.sendBeacon("resources/save-beacon.php?name=same-origin", payload); is true
 PASS Beacon sent successfully

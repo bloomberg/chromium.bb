@@ -2,7 +2,6 @@ Tests using webkitResolveLocalFileSystemURL to obtain an Entry from a URL
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 * Resolving a generated URL.
 PASS expectedPath is actualPath
 PASS isFile is true

@@ -5,5 +5,3 @@ CONSOLE ERROR: line 5: The XSS Auditor refused to execute a script in 'http://lo
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
 This is an iframe with a injected form
-
-

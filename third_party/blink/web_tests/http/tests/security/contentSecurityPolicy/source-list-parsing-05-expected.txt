@@ -22,8 +22,6 @@ CONSOLE ERROR: Refused to load the script 'http://127.0.0.1:8000/security/conten
 
 Paths should be ignored when evaluating sources. This test passes if FAIL does not appear in the output, and each of the tests generates a warning about the path component.
 
-
-
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------

@@ -2,7 +2,6 @@ Test that a manifest that changes during an update fails.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS gotCheckingEvent is true
 PASS gotDownloadingEvent is true
 PASS window.applicationCache.status is applicationCache.UNCACHED

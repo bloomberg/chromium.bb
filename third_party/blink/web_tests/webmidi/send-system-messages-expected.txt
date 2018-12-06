@@ -2,7 +2,6 @@ Test if various kinds of system messages can be validated.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 PASS output.send([241,0])
 PASS output.send([241,0,241,0])
 PASS output.send([241,0,241,0,241,0])

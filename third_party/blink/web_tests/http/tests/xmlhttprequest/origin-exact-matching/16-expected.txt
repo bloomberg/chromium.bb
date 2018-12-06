@@ -9,7 +9,6 @@ Check that exact matching is used when comparing a request's originating url and
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-
 Should disallow origin: 'http://localhost:8000/'
 PASS xhr.send(null) threw exception NetworkError: Failed to execute 'send' on 'XMLHttpRequest': Failed to load 'http://127.0.0.1:8000/xmlhttprequest/resources/access-control-allow-lists.php?origin=http%3A%2F%2Flocalhost%3A8000%2F'..
 PASS successfullyParsed is true
