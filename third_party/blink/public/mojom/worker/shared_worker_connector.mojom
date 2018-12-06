@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/worker/shared_worker_client.mojom";
@@ -18,9 +18,9 @@ interface SharedWorkerConnector {
   // URL. The token will then be used to look up the blob associated with the
   // blob URL. Without this by the time the worker code starts fetching
   // the URL the blob URL might no longer be valid.
-  Connect(blink.mojom.SharedWorkerInfo info,
-          blink.mojom.SharedWorkerClient client,
-          blink.mojom.SharedWorkerCreationContextType creation_context_type,
+  Connect(SharedWorkerInfo info,
+          SharedWorkerClient client,
+          SharedWorkerCreationContextType creation_context_type,
           handle<message_pipe> message_port,
-          blink.mojom.BlobURLToken? blob_url_token);
+          BlobURLToken? blob_url_token);
 };
