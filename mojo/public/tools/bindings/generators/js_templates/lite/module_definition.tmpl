@@ -1,13 +1,18 @@
 {#--- Constants #}
 {%- for constant in module.constants %}
-let {{constant.name}} = {{constant.value|expression_to_text}};
+/**
+ * @const { {{constant.kind|lite_closure_type_with_nullability}} }
+ * @export
+ */
+{{module.namespace}}.{{constant.name}} =
+    {{constant.value|expression_to_text_lite}};
 {%- endfor %}
 
 {#--- Enums #}
 {% from "lite/enum_definition.tmpl" import enum_def %}
 {%- for enum in enums %}
-let {{ enum_def(enum.name, enum) }}
-{%-  endfor %}
+{{enum_def("%s.%s"|format(module.namespace, enum.name), enum)}}
+{%  endfor %}
 
 {#--- Interface definitions #}
 {%- for interface in interfaces %}
@@ -15,38 +20,32 @@ let {{ enum_def(enum.name, enum) }}
 {%- endfor %}
 
 {#--- Struct and Union forward declarations #}
+{# Note that we do an evil type cast here because we know that
+ # mojo.internal.Struct and mojo.internal.Union will fix-up the object
+ # appropriately, and we don't want Closure to complain. #}
 {%  for struct in structs %}
-const {{struct.name}} = {};
-{%- endfor %}
+/**
+ * @const {!Object}
+ * @export
+ */
+{{module.namespace}}.{{struct.name}} =
+    { $: /** @type {!mojo.internal.MojomType} */ ({}) };
+{% endfor %}
 {%- for union in unions %}
-const {{union.name}} = {};
-{%- endfor %}
+/**
+ * @const {!Object}
+ * @export
+ */
+{{module.namespace}}.{{union.name}} =
+    { $: /** @type {!mojo.internal.MojomType} */ ({}) };
+{% endfor %}
 
 {#--- Struct definitions #}
 {%  for struct in structs %}
 {%-   include "lite/struct_definition.tmpl" %}
-{%- endfor -%}
+{% endfor -%}
 
 {#--- Union definitions #}
 {%  for union in unions %}
 {%-   include "lite/union_definition.tmpl" %}
 {% endfor %}
-
-{%- for constant in module.constants %}
-exports['{{constant.name}}'] = {{constant.name}};
-{%- endfor %}
-{%- for enum in enums %}
-exports['{{enum.name}}'] = {{enum.name}};
-{%- endfor %}
-{%- for struct in structs if struct.exported %}
-exports['{{struct.name}}'] = {{struct.name}};
-{%- endfor %}
-{%- for union in unions %}
-exports['{{union.name}}'] = {{union.name}};
-{%- endfor %}
-{%- for interface in interfaces %}
-exports['{{interface.name}}'] = {{interface.name}};
-exports['{{interface.name}}Request'] = {{interface.name}}Request;
-exports['{{interface.name}}Proxy'] = {{interface.name}}Proxy;
-exports['{{interface.name}}CallbackRouter'] = {{interface.name}}CallbackRouter;
-{%- endfor %}

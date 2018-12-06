@@ -3,672 +3,27 @@
 // found in the LICENSE file.
 'use strict';
 
-/** @export */
-var mojo = {};
+goog.provide('mojo.internal');
 
-/** @export */
-mojo.internal = {};
-
-/** @export */
-mojo.config = {};
-
-/** @export */
-mojo.config.globalScope = window;
-
-/** @export */
-mojo.config.autoLoadMojomDeps = true;
-
-// Whether to automatically load mojom dependencies.
-// For example, if foo.mojom imports bar.mojom, |mojoAutoLoadMojomDeps| set to
-// true means that loading foo.mojom.js will insert a <script> tag to load
-// bar.mojom.js, if it hasn't been loaded.
-//
-// The URL of bar.mojom.js is determined by the relative path of bar.mojom
-// (relative to the position of foo.mojom at build time) and the URL of
-// foo.mojom.js.
-if ('mojoAutoLoadMojomDeps' in window)
-  mojo.config.autoLoadMojomDeps = window['mojoAutoLoadMojomDeps'];
-
-/** @enum {number} */
-mojo.internal.LoadState = {
-  PENDING_LOAD: 1,
-  LOADED: 2
-};
-
-/** @const {!Map<string, mojo.internal.LoadState>} */
-mojo.internal.mojomRegistry = new Map;
+/** @const {!Object} */
+mojo.internal.globalScope = this;
 
 /**
+ * This is effectively the same as goog.provide, but it's made available under
+ * the mojo.internal namespace to avoid potential collisions in certain
+ * compilation environments.
+ *
  * @param {string} namespace
  * @export
  */
-mojo.internal.exposeNamespace = function(namespace) {
-  let current = mojo.config.globalScope;
+mojo.internal.exportModule = function(namespace) {
+  let current = mojo.internal.globalScope;
   const parts = namespace.split('.');
 
   for (let part; parts.length && (part = parts.shift());) {
     if (!current[part])
       current[part] = {};
     current = current[part];
-  }
-
-  return current;
-};
-
-/**
- * @param {string} id
- * @return {boolean}
- * @export
- */
-mojo.internal.isMojomPendingLoad = function(id) {
-  return mojo.internal.mojomRegistry.get(id) ===
-      mojo.internal.LoadState.PENDING_LOAD;
-};
-
-/**
- * @param {string} id
- * @return {boolean}
- * @export
- */
-mojo.internal.isMojomLoaded = function(id) {
-  return mojo.internal.mojomRegistry.get(id) === mojo.internal.LoadState.LOADED;
-};
-
-/**
- * @param {string} id
- * @export
- */
-mojo.internal.markMojomPendingLoad = function(id) {
-  if (mojo.internal.isMojomLoaded(id)) {
-    throw new Error('The following mojom file has been loaded: ' + id);
-  }
-
-  mojo.internal.mojomRegistry.set(id, mojo.internal.LoadState.PENDING_LOAD);
-};
-
-/**
- * @param {string} id
- * @export
- */
-mojo.internal.markMojomLoaded = function(id) {
-  mojo.internal.mojomRegistry.set(id, mojo.internal.LoadState.LOADED);
-};
-
-/**
- * @param {string} id
- * @param {string} relativePath
- * @export
- */
-mojo.internal.loadMojomIfNecessary = function(id, relativePath) {
-  if (mojo.internal.mojomRegistry.has(id))
-    return;
-
-  if (!('document' in mojo.config.globalScope)) {
-    throw new Error(
-        'Mojom dependency autoloading is not implemented in workers. ' +
-        'Please see config variable mojo.config.autoLoadMojomDeps for more ' +
-        'details.');
-  }
-
-  mojo.internal.markMojomPendingLoad(id);
-  const url = new URL(relativePath, document.currentScript.src).href;
-  mojo.config.globalScope.document.write(
-      `<script type="text/javascript" src="${url}"></script>`);
-};
-
-/**
- * Handles incoming interface control messages on a proxy or router endpoint.
- */
-mojo.internal.ControlMessageHandler = class {
-  /** @param {!MojoHandle} handle */
-  constructor(handle) {
-    /** @private {!MojoHandle} */
-    this.handle_ = handle;
-
-    /** @private {!Map<number, !Promise>} */
-    this.pendingFlushResolvers_ = new Map;
-  }
-
-  sendRunMessage(requestId, input) {
-    return new Promise(resolve => {
-      const control = mojo['interfaceControl'];
-      mojo.internal.serializeAndSendMessage(
-          this.handle_, control['kRunMessageId'], requestId,
-          mojo.internal.kMessageFlagExpectsResponse,
-          control['RunMessageParams'], {'input': input});
-      this.pendingFlushResolvers_.set(requestId, resolve);
-    });
-  }
-
-  maybeHandleControlMessage(header, buffer) {
-    const kRunMessageId = mojo['interfaceControl']['kRunMessageId'];
-    if (header.ordinal === kRunMessageId) {
-      const data = new DataView(buffer, header.headerSize);
-      const decoder = new mojo.internal.Decoder(data, []);
-      if (header.flags & mojo.internal.kMessageFlagExpectsResponse)
-        return this.handleRunRequest_(header.requestId, decoder);
-      else
-        return this.handleRunResponse_(header.requestId, decoder);
-    }
-
-    return false;
-  }
-
-  handleRunRequest_(requestId, decoder) {
-    const control = mojo['interfaceControl'];
-    const input = decoder.decodeStructInline(
-        control['RunMessageParams'].$.structSpec)['input'];
-    if (input.hasOwnProperty('flushForTesting')) {
-      mojo.internal.serializeAndSendMessage(
-          this.handle_, control['kRunMessageId'], requestId,
-          mojo.internal.kMessageFlagIsResponse,
-          control['RunResponseMessageParams'], {'output': null});
-      return true;
-    }
-
-    return false;
-  }
-
-  handleRunResponse_(requestId, decoder) {
-    const resolver = this.pendingFlushResolvers_.get(requestId);
-    if (!resolver)
-      return false;
-
-    resolver();
-    return true;
-  }
-};
-
-/**
- * Captures metadata about a request which was sent by a local proxy, for which
- * a response is expected.
- */
-mojo.internal.PendingResponse = class {
-  /**
-   * @param {number} requestId
-   * @param {number} ordinal
-   * @param {!mojo.internal.MojomType} responseStruct
-   * @param {!Function} resolve
-   * @param {!Function} reject
-   * @private
-   */
-  constructor(requestId, ordinal, responseStruct, resolve, reject) {
-    /** @public {number} */
-    this.requestId = requestId;
-
-    /** @public {number} */
-    this.ordinal = ordinal;
-
-    /** @public {!mojo.internal.MojomType} */
-    this.responseStruct = responseStruct;
-
-    /** @public {!Function} */
-    this.resolve = resolve;
-
-    /** @public {!Function} */
-    this.reject = reject;
-  }
-};
-
-/**
- * Generic helper used to implement all generated proxy classes. Knows how to
- * serialize requests and deserialize their replies, both according to
- * declarative message structure specs.
- * @export
- */
-mojo.internal.InterfaceProxyBase = class {
-  /**
-   * @param {MojoHandle=} opt_handle The message pipe handle to use as a proxy
-   *     endpoint. If null, this object must be bound with bindHandle before
-   *     it can be used to send any messages.
-   * @public
-   */
-  constructor(opt_handle) {
-    /** @public {?MojoHandle} */
-    this.handle = null;
-
-    /** @private {?mojo.internal.HandleReader} */
-    this.reader_ = null;
-
-    /** @private {number} */
-    this.nextRequestId_ = 0;
-
-    /** @private {!Map<number, !mojo.internal.PendingResponse>} */
-    this.pendingResponses_ = new Map;
-
-    /** @private {mojo.internal.ControlMessageHandler} */
-    this.controlMessageHandler_ = null;
-
-    if (opt_handle instanceof MojoHandle)
-      this.bindHandle(opt_handle);
-  }
-
-  /**
-   * @param {!MojoHandle} handle
-   * @export
-   */
-  bindHandle(handle) {
-    if (this.handle)
-      throw new Error('Proxy already bound.');
-    this.handle = handle;
-
-    const reader = new mojo.internal.HandleReader(handle);
-    reader.onRead = this.onMessageReceived_.bind(this);
-    reader.onError = this.onError_.bind(this);
-    reader.start();
-    this.controlMessageHandler_ =
-        new mojo.internal.ControlMessageHandler(handle);
-
-    this.reader_ = reader;
-    this.nextRequestId_ = 0;
-    this.pendingResponses_ = new Map;
-  }
-
-  /** @export */
-  unbind() {
-    if (this.reader_)
-      this.reader_.stop();
-  }
-
-  /**
-   * @param {number} ordinal
-   * @param {!mojo.internal.Type} paramStruct
-   * @param {!mojo.internal.Type} responseStruct
-   * @param {!Array} args
-   * @return {!Promise}
-   * @export
-   */
-  sendMessage(ordinal, paramStruct, responseStruct, args) {
-    if (!this.handle) {
-      throw new Error(
-          'Attempting to use an unbound proxy. Try createRequest() first.')
-    }
-
-    // The pipe has already been closed, so just drop the message.
-    if (!this.reader_ || this.reader_.isStopped())
-      return Promise.reject();
-
-    const requestId = this.nextRequestId_++;
-    const value = {};
-    paramStruct.$.structSpec.fields.forEach(
-        (field, index) => value[field.name] = args[index]);
-    mojo.internal.serializeAndSendMessage(
-        this.handle, ordinal, requestId,
-        responseStruct ? mojo.internal.kMessageFlagExpectsResponse : 0,
-        paramStruct, value);
-    if (!responseStruct)
-      return Promise.resolve();
-
-    return new Promise((resolve, reject) => {
-      this.pendingResponses_.set(
-          requestId,
-          new mojo.internal.PendingResponse(
-              requestId, ordinal, responseStruct, resolve, reject));
-    });
-  }
-
-  /**
-   * @return {!Promise}
-   * @export
-   */
-  flushForTesting() {
-    return this.controlMessageHandler_.sendRunMessage(
-        this.nextRequestId_++, {'flushForTesting': {}});
-  }
-
-  /**
-   * @param {!ArrayBuffer} buffer
-   * @param {!Array<MojoHandle>} handles
-   * @private
-   */
-  onMessageReceived_(buffer, handles) {
-    const data = new DataView(buffer);
-    const header = mojo.internal.deserializeMessageHeader(data);
-    if (this.controlMessageHandler_.maybeHandleControlMessage(header, buffer))
-      return;
-    if (!(header.flags & mojo.internal.kMessageFlagIsResponse) ||
-        header.flags & mojo.internal.kMessageFlagExpectsResponse) {
-      return this.onError_('Received unexpected request message');
-    }
-    const pendingResponse = this.pendingResponses_.get(header.requestId);
-    this.pendingResponses_.delete(header.requestId);
-    if (!pendingResponse)
-      return this.onError_('Received unexpected response message');
-    const decoder = new mojo.internal.Decoder(
-        new DataView(buffer, header.headerSize), handles);
-    const responseValue =
-        decoder.decodeStructInline(pendingResponse.responseStruct.$.structSpec);
-    if (!responseValue)
-      return this.onError_('Received malformed response message');
-    if (header.ordinal !== pendingResponse.ordinal)
-      return this.onError_('Received malformed response message');
-
-    pendingResponse.resolve(responseValue);
-  }
-
-  /**
-   * @param {string=} opt_reason
-   * @private
-   */
-  onError_(opt_reason) {
-    this.reader_.stopAndCloseHandle();
-    this.reader_ = null;
-    for (const id of this.pendingResponses_.keys())
-      this.pendingResponses_.get(id).reject(new Error(opt_reason));
-    this.pendingResponses_ = new Map;
-  }
-};
-
-/**
- * Helper used by generated EventRouter types to dispatch incoming interface
- * messages as Event-like things.
- * @export
- */
-mojo.internal.CallbackRouter = class {
-  constructor() {
-    /** @type {!Map<number, !Function>} */
-    this.removeCallbacks = new Map;
-
-    /** @private {number} */
-    this.nextListenerId_ = 0;
-  }
-
-  /** @return {number} */
-  getNextId() {
-    return ++this.nextListenerId_;
-  }
-
-  /**
-   * @param {number} id An ID returned by a prior call to addListener.
-   * @return {boolean} True iff the identified listener was found and removed.
-   * @export
-   */
-  removeListener(id) {
-    this.removeCallbacks.get(id)();
-    return this.removeCallbacks.delete(id);
-  }
-};
-
-/**
- * Helper used by generated CallbackRouter types to dispatch incoming interface
- * messages to listeners.
- * @export
- */
-mojo.internal.InterfaceCallbackTarget = class {
-  /**
-   * @public
-   * @param {!mojo.internal.CallbackRouter} callbackRouter
-   */
-  constructor(callbackRouter) {
-    /** @private {!Map<number, !Function>} */
-    this.listeners_ = new Map;
-
-    /** @private {!mojo.internal.CallbackRouter} */
-    this.callbackRouter_ = callbackRouter;
-  }
-
-  /**
-   * @param {!Function} listener
-   * @return {number} A unique ID for the added listener.
-   * @export
-   */
-  addListener(listener) {
-    const id = this.callbackRouter_.getNextId();
-    this.listeners_.set(id, listener);
-    this.callbackRouter_.removeCallbacks.set(id, () => {
-      return this.listeners_.delete(id);
-    });
-    return id;
-  }
-
-  /**
-   * @param {boolean} expectsResponse
-   * @return {!Function}
-   * @export
-   */
-  createTargetHandler(expectsResponse) {
-    if (expectsResponse)
-      return this.dispatchWithResponse_.bind(this);
-    return this.dispatch_.bind(this);
-  }
-
-  /**
-   * @param {...*} arguments
-   * @private
-   */
-  dispatch_() {
-    const args = Array.from(arguments);
-    this.listeners_.forEach(listener => listener.apply(null, args));
-  }
-
-  /**
-   * @param {...*} arguments
-   * @return {?Object}
-   * @private
-   */
-  dispatchWithResponse_() {
-    const args = Array.from(arguments);
-    const returnValues = Array.from(this.listeners_.values())
-                             .map(listener => listener.apply(null, args));
-
-    let returnValue;
-    for (const value of returnValues) {
-      if (value === undefined)
-        continue;
-      if (returnValue !== undefined)
-        throw new Error('Multiple listeners attempted to reply to a message');
-      returnValue = value;
-    }
-
-    return returnValue;
-  }
-};
-
-/**
- * Wraps message handlers attached to an InterfaceTarget.
- */
-mojo.internal.MessageHandler = class {
-  /**
-   * @param {!mojo.internal.MojomType} paramStruct
-   * @param {!mojo.internal.MojomType} responseStruct
-   * @param {!Function} handler
-   * @private
-   */
-  constructor(paramStruct, responseStruct, handler) {
-    /** @public {!mojo.internal.MojomType} */
-    this.paramStruct = paramStruct;
-
-    /** @public {!mojo.internal.MojomType} */
-    this.responseStruct = responseStruct;
-
-    /** @public {!Function} */
-    this.handler = handler;
-  }
-};
-
-/**
- * Listens for incoming request messages on a message pipe, dispatching them to
- * any registered handlers. Handlers are registered against a specific ordinal
- * message number.
- * @export
- */
-mojo.internal.InterfaceTarget = class {
-  /** @public */
-  constructor() {
-    /** @private {!Map<MojoHandle, !mojo.internal.HandleReader>} */
-    this.readers_ = new Map;
-
-    /** @private {!Map<number, !mojo.internal.MessageHandler>} */
-    this.messageHandlers_ = new Map;
-
-    /** @private {mojo.internal.ControlMessageHandler} */
-    this.controlMessageHandler_ = null;
-  }
-
-  /**
-   * @param {number} ordinal
-   * @param {!mojo.internal.MojomType} paramStruct
-   * @param {!mojo.internal.MojomType} responseStruct
-   * @param {!Function} handler
-   * @export
-   */
-  registerHandler(ordinal, paramStruct, responseStruct, handler) {
-    this.messageHandlers_.set(
-        ordinal,
-        new mojo.internal.MessageHandler(paramStruct, responseStruct, handler));
-  }
-
-  /**
-   * @param {!MojoHandle} handle
-   * @export
-   */
-  bindHandle(handle) {
-    const reader = new mojo.internal.HandleReader(handle);
-    this.readers_.set(handle, reader);
-    reader.onRead = this.onMessageReceived_.bind(this, handle);
-    reader.onError = this.onError_.bind(this, handle);
-    reader.start();
-    this.controlMessageHandler_ =
-        new mojo.internal.ControlMessageHandler(handle);
-  }
-
-  /**
-   * @param {!MojoHandle} handle
-   * @param {!ArrayBuffer} buffer
-   * @param {!Array<MojoHandle>} handles
-   * @private
-   */
-  onMessageReceived_(handle, buffer, handles) {
-    const data = new DataView(buffer);
-    const header = mojo.internal.deserializeMessageHeader(data);
-    if (this.controlMessageHandler_.maybeHandleControlMessage(header, buffer))
-      return;
-    if (header.flags & mojo.internal.kMessageFlagIsResponse)
-      throw new Error('Received unexpected response on interface target');
-    const handler = this.messageHandlers_.get(header.ordinal);
-    if (!handler)
-      throw new Error('Received unknown message');
-    const decoder = new mojo.internal.Decoder(
-        new DataView(buffer, header.headerSize), handles);
-    const request =
-        decoder.decodeStructInline(handler.paramStruct.$.structSpec);
-    if (!request)
-      throw new Error('Received malformed message');
-
-    let result = handler.handler.apply(
-        null,
-        handler.paramStruct.$.structSpec.fields.map(
-            field => request[field.name]));
-
-    // If the message expects a response, the handler must return either a
-    // well-formed response object, or a Promise that will eventually yield one.
-    if (handler.responseStruct) {
-      if (result === undefined) {
-        this.onError_(handle);
-        throw new Error(
-            'Message expects a reply but its handler did not provide one.');
-      }
-
-      if (!(result instanceof Promise))
-        result = Promise.resolve(result);
-
-      result
-          .then(value => {
-            mojo.internal.serializeAndSendMessage(
-                handle, header.ordinal, header.requestId,
-                mojo.internal.kMessageFlagIsResponse, handler.responseStruct,
-                value);
-          })
-          .catch(() => {
-            // If the handler rejects, that means it didn't like the request's
-            // contents for whatever reason. We close the binding to prevent
-            // further messages from being received from that client.
-            this.onError_(handle);
-          });
-    }
-  }
-
-  /**
-   * @param {!MojoHandle} handle
-   * @private
-   */
-  onError_(handle) {
-    const reader = this.readers_.get(handle);
-    if (!reader)
-      return;
-    reader.stopAndCloseHandle();
-    this.readers_.delete(handle);
-  }
-};
-
-/**
- * Watches a MojoHandle for readability or peer closure, forwarding either event
- * to one of two callbacks on the reader. Used by both InterfaceProxyBase and
- * InterfaceTarget to watch for incoming messages.
- */
-mojo.internal.HandleReader = class {
-  /**
-   * @param {!MojoHandle} handle
-   * @private
-   */
-  constructor(handle) {
-    /** @private {MojoHandle} */
-    this.handle_ = handle;
-
-    /** @public {?function(!ArrayBuffer, !Array<MojoHandle>)} */
-    this.onRead = null;
-
-    /** @public {!Function} */
-    this.onError = () => {};
-
-    /** @public {?MojoWatcher} */
-    this.watcher_ = null;
-  }
-
-  isStopped() {
-    return this.watcher_ === null;
-  }
-
-  start() {
-    this.watcher_ = this.handle_.watch({readable: true}, this.read_.bind(this));
-  }
-
-  stop() {
-    if (!this.watcher_)
-      return;
-    this.watcher_.cancel();
-    this.watcher_ = null;
-  }
-
-  stopAndCloseHandle() {
-    this.stop();
-    this.handle_.close();
-  }
-
-  /** @private */
-  read_(result) {
-    for (;;) {
-      if (!this.watcher_)
-        return;
-
-      const read = this.handle_.readMessage();
-
-      // No messages available.
-      if (read.result == Mojo.RESULT_SHOULD_WAIT)
-        return;
-
-      // Remote endpoint has been closed *and* no messages available.
-      if (read.result == Mojo.RESULT_FAILED_PRECONDITION) {
-        this.onError();
-        return;
-      }
-
-      // Something terrible happened.
-      if (read.result != Mojo.RESULT_OK)
-        throw new Error('Unexpected error on HandleReader: ' + read.result);
-
-      this.onRead(read.buffer, read.handles);
-    }
   }
 };
 
@@ -796,7 +151,7 @@ mojo.internal.getInt64 = function(dataView, byteOffset) {
  * and nullable unions.
  *
  * @param {!mojo.internal.StructSpec} structSpec
- * @param {*} value
+ * @param {!Object} value
  * @return {number}
  */
 mojo.internal.computeTotalStructSize = function(structSpec, value) {
@@ -814,7 +169,7 @@ mojo.internal.computeTotalStructSize = function(structSpec, value) {
 
 /**
  * @param {!mojo.internal.UnionSpec} unionSpec
- * @param {*} value
+ * @param {!Object} value
  * @return {number}
  */
 mojo.internal.computeTotalUnionSize = function(unionSpec, nullable, value) {
@@ -853,22 +208,22 @@ mojo.internal.computeTotalUnionSize = function(unionSpec, nullable, value) {
 
 /**
  * @param {!mojo.internal.ArraySpec} arraySpec
- * @param {number} length
+ * @param {!Array|!Uint8Array} value
  * @return {number}
  */
 mojo.internal.computeInlineArraySize = function(arraySpec, value) {
-  if (arraySpec.elementType === mojo.mojom.Bool) {
+  if (arraySpec.elementType === mojo.internal.Bool) {
     return mojo.internal.kArrayHeaderSize + (value.length + 7) >> 3;
   } else {
     return mojo.internal.kArrayHeaderSize +
         value.length *
-        arraySpec.elementType.$.arrayElementSize(arraySpec.elementNullable);
+        arraySpec.elementType.$.arrayElementSize(!!arraySpec.elementNullable);
   }
 };
 
 /**
  * @param {!mojo.internal.ArraySpec} arraySpec
- * @param {number} length
+ * @param {!Array|!Uint8Array} value
  * @return {number}
  */
 mojo.internal.computeTotalArraySize = function(arraySpec, value) {
@@ -880,7 +235,9 @@ mojo.internal.computeTotalArraySize = function(arraySpec, value) {
   for (let elementValue of value) {
     if (!mojo.internal.isNullOrUndefined(elementValue)) {
       totalSize += mojo.internal.align(
-          arraySpec.elementType.$.computePayloadSize(elementValue), 8);
+          arraySpec.elementType.$.computePayloadSize(
+              elementValue, !!arraySpec.elementNullable),
+          8);
     }
   }
 
@@ -914,7 +271,7 @@ mojo.internal.Message = class {
    * @param {number} ordinal
    * @param {number} requestId
    * @param {!mojo.internal.StructSpec} paramStructSpec
-   * @param {*} value
+   * @param {!Object} value
    * @private
    */
   constructor(flags, ordinal, requestId, paramStructSpec, value) {
@@ -935,7 +292,7 @@ mojo.internal.Message = class {
     /** @public {!ArrayBuffer} */
     this.buffer = new ArrayBuffer(totalMessageSize);
 
-    /* @public {!Array<MojoHandle>} */
+    /** @public {!Array<MojoHandle>} */
     this.handles = [];
 
     const header = new DataView(this.buffer);
@@ -977,12 +334,12 @@ mojo.internal.Message = class {
  */
 mojo.internal.Encoder = class {
   /**
-   * @param {!Message} message
+   * @param {!mojo.internal.Message} message
    * @param {!DataView} data
-   * @private
+   * @public
    */
   constructor(message, data) {
-    /** @private {!Message} */
+    /** @private {!mojo.internal.Message} */
     this.message_ = message;
 
     /** @private {!DataView} */
@@ -1048,7 +405,7 @@ mojo.internal.Encoder = class {
     if (typeof value !== 'string')
       throw new Error('Unxpected non-string value for string field.');
     this.encodeArray(
-        {elementType: mojo['mojom']['Uint8']}, offset,
+        {elementType: mojo.internal.Uint8}, offset,
         mojo.internal.Message.textEncoder.encode(value));
   }
 
@@ -1059,7 +416,7 @@ mojo.internal.Encoder = class {
   /**
    * @param {!mojo.internal.ArraySpec} arraySpec
    * @param {number} offset
-   * @param {*} value
+   * @param {!Array|!Uint8Array} value
    */
   encodeArray(arraySpec, offset, value) {
     const arraySize = mojo.internal.computeInlineArraySize(arraySpec, value);
@@ -1071,7 +428,7 @@ mojo.internal.Encoder = class {
     arrayEncoder.encodeUint32(4, value.length);
 
     let byteOffset = 8;
-    if (arraySpec.elementType === mojo.mojom.Bool) {
+    if (arraySpec.elementType === mojo.internal.Bool) {
       let bitOffset = 0;
       for (const e of value) {
         arrayEncoder.encodeBool(byteOffset, bitOffset, e);
@@ -1092,9 +449,9 @@ mojo.internal.Encoder = class {
           arraySpec.elementType.$.encodeNull(arrayEncoder, byteOffset);
         }
         arraySpec.elementType.$.encode(
-            e, arrayEncoder, byteOffset, 0, arraySpec.elementNullable);
-        byteOffset +=
-            arraySpec.elementType.$.arrayElementSize(arraySpec.elementNullable);
+            e, arrayEncoder, byteOffset, 0, !!arraySpec.elementNullable);
+        byteOffset += arraySpec.elementType.$.arrayElementSize(
+            !!arraySpec.elementNullable);
       }
     }
   }
@@ -1102,7 +459,7 @@ mojo.internal.Encoder = class {
   /**
    * @param {!mojo.internal.MapSpec} mapSpec
    * @param {number} offset
-   * @param {*} value
+   * @param {!Map|!Object} value
    */
   encodeMap(mapSpec, offset, value) {
     let keys, values;
@@ -1213,7 +570,6 @@ mojo.internal.Decoder = class {
   /**
    * @param {!DataView} data
    * @param {!Array<MojoHandle>} handles
-   * @private
    */
   constructor(data, handles) {
     /** @private {!DataView} */
@@ -1282,7 +638,7 @@ mojo.internal.Decoder = class {
     return mojo.internal.Decoder.textDecoder.decode(
         new Uint8Array(this.decodeArray(
                            {
-                             elementType: mojo.mojom.Uint8,
+                             elementType: mojo.internal.Uint8,
                            },
                            offset))
             .buffer);
@@ -1297,7 +653,7 @@ mojo.internal.Decoder = class {
 
   /**
    * @param {!mojo.internal.ArraySpec} arraySpec
-   * @return {!Array}
+   * @return {Array}
    */
   decodeArray(arraySpec, offset) {
     const arrayOffset = this.decodeOffset(offset);
@@ -1313,19 +669,19 @@ mojo.internal.Decoder = class {
       return [];
 
     const result = [];
-    if (arraySpec.elementType === mojo.mojom.Bool) {
+    if (arraySpec.elementType === mojo.internal.Bool) {
       for (let i = 0; i < numElements; ++i)
         result.push(arrayDecoder.decodeBool(8 + (i >> 3), i % 8));
     } else {
       let byteOffset = 8;
       for (let i = 0; i < numElements; ++i) {
-        const element =
-            arraySpec.elementType.$.decode(arrayDecoder, byteOffset, 0);
+        const element = arraySpec.elementType.$.decode(
+            arrayDecoder, byteOffset, 0, !!arraySpec.elementNullable);
         if (element === null && !arraySpec.elementNullable)
           throw new Error('Received unexpected array element');
         result.push(element);
-        byteOffset +=
-            arraySpec.elementType.$.arrayElementSize(arraySpec.elementNullable);
+        byteOffset += arraySpec.elementType.$.arrayElementSize(
+            !!arraySpec.elementNullable);
       }
     }
     return result;
@@ -1333,7 +689,7 @@ mojo.internal.Decoder = class {
 
   /**
    * @param {!mojo.internal.MapSpec} mapSpec
-   * @return {!Object|!Map}
+   * @return {Object|Map}
    */
   decodeMap(mapSpec, offset) {
     const mapOffset = this.decodeOffset(offset);
@@ -1394,8 +750,8 @@ mojo.internal.Decoder = class {
     const result = {};
     for (const field of structSpec.fields) {
       const byteOffset = mojo.internal.kStructHeaderSize + field.packedOffset;
-      const value =
-          field.type.$.decode(this, byteOffset, field.packedBitOffset);
+      const value = field.type.$.decode(
+          this, byteOffset, field.packedBitOffset, !!field.nullable);
       if (value === null && !field.nullable) {
         throw new Error(
             'Received ' + structSpec.name + ' with invalid null field ' +
@@ -1471,7 +827,7 @@ mojo.internal.serializeAndSendMessage = function(
     handle, ordinal, requestId, flags, paramStruct, value) {
   const message = new mojo.internal.Message(
       flags, ordinal, requestId,
-      /* @type {!mojo.internal.StructSpec} */ (paramStruct.$.structSpec),
+      /** @type {!mojo.internal.StructSpec} */ (paramStruct.$.structSpec),
       value);
   handle.writeMessage(message.buffer, message.handles);
 };
@@ -1512,9 +868,11 @@ mojo.internal.deserializeMessageHeader = function(data) {
 /**
  * @typedef {{
  *   encode: function(*, !mojo.internal.Encoder, number, number, boolean),
+ *   encodeNull: ((function(!mojo.internal.Encoder, number))|undefined),
  *   decode: function(!mojo.internal.Decoder, number, number, boolean):*,
+ *   computePayloadSize: ((function(*, boolean):number)|undefined),
  *   isValidObjectKeyType: boolean,
- *   arrayElementSize: function(boolean):(number|undefined),
+ *   arrayElementSize: ((function(boolean):number)|undefined),
  *   arraySpec: (!mojo.internal.ArraySpec|undefined),
  *   mapSpec: (!mojo.internal.MapSpec|undefined),
  *   structSpec: (!mojo.internal.StructSpec|undefined),
@@ -1585,20 +943,10 @@ mojo.internal.UnionFieldSpec;
 mojo.internal.UnionSpec;
 
 /**
- * Mojom type specifications and corresponding encode/decode routines. These
- * are stored in struct and union specifications to describe how fields should
- * be serialized and deserialized.
- *
- * @const
- * @export
- */
-mojo.mojom = {};
-
-/**
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Bool = {
+mojo.internal.Bool = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeBool(byteOffset, bitOffset, value);
@@ -1614,7 +962,7 @@ mojo.mojom.Bool = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Int8 = {
+mojo.internal.Int8 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt8(byteOffset, value);
@@ -1631,7 +979,7 @@ mojo.mojom.Int8 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Uint8 = {
+mojo.internal.Uint8 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint8(byteOffset, value);
@@ -1648,7 +996,7 @@ mojo.mojom.Uint8 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Int16 = {
+mojo.internal.Int16 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt16(byteOffset, value);
@@ -1665,7 +1013,7 @@ mojo.mojom.Int16 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Uint16 = {
+mojo.internal.Uint16 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint16(byteOffset, value);
@@ -1682,7 +1030,7 @@ mojo.mojom.Uint16 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Int32 = {
+mojo.internal.Int32 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt32(byteOffset, value);
@@ -1699,7 +1047,7 @@ mojo.mojom.Int32 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Uint32 = {
+mojo.internal.Uint32 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint32(byteOffset, value);
@@ -1716,7 +1064,7 @@ mojo.mojom.Uint32 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Int64 = {
+mojo.internal.Int64 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeInt64(byteOffset, value);
@@ -1733,7 +1081,7 @@ mojo.mojom.Int64 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Uint64 = {
+mojo.internal.Uint64 = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeUint64(byteOffset, value);
@@ -1750,7 +1098,7 @@ mojo.mojom.Uint64 = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Float = {
+mojo.internal.Float = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeFloat(byteOffset, value);
@@ -1767,7 +1115,7 @@ mojo.mojom.Float = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Double = {
+mojo.internal.Double = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeDouble(byteOffset, value);
@@ -1784,7 +1132,7 @@ mojo.mojom.Double = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Handle = {
+mojo.internal.Handle = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeHandle(byteOffset, value);
@@ -1802,7 +1150,7 @@ mojo.mojom.Handle = {
  * @const {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.String = {
+mojo.internal.String = {
   $: {
     encode: function(value, encoder, byteOffset, bitOffset, nullable) {
       encoder.encodeString(byteOffset, value);
@@ -1813,7 +1161,7 @@ mojo.mojom.String = {
     },
     computePayloadSize: function(value, nullable) {
       return mojo.internal.computeTotalArraySize(
-          {elementType: mojo.mojom.Uint8}, value);
+          {elementType: mojo.internal.Uint8}, value);
     },
     arrayElementSize: nullable => 8,
     isValidObjectKeyType: true,
@@ -1826,7 +1174,7 @@ mojo.mojom.String = {
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Array = function(elementType, elementNullable) {
+mojo.internal.Array = function(elementType, elementNullable) {
   /** @type {!mojo.internal.ArraySpec} */
   const arraySpec = {
     elementType: elementType,
@@ -1858,7 +1206,7 @@ mojo.mojom.Array = function(elementType, elementNullable) {
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Map = function(keyType, valueType, valueNullable) {
+mojo.internal.Map = function(keyType, valueType, valueNullable) {
   /** @type {!mojo.internal.MapSpec} */
   const mapSpec = {
     keyType: keyType,
@@ -1897,11 +1245,10 @@ mojo.mojom.Map = function(keyType, valueType, valueNullable) {
 };
 
 /**
- * @param {!Object} properties
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.Enum = function(properties) {
+mojo.internal.Enum = function() {
   return {
     $: {
       encode: function(value, encoder, byteOffset, bitOffset, nullable) {
@@ -1926,10 +1273,10 @@ mojo.mojom.Enum = function(properties) {
  * @param {!mojo.internal.MojomType} type
  * @param {*} defaultValue
  * @param {boolean} nullable
- * @return {!mojo.mojom.StructFieldSpec}
+ * @return {!mojo.internal.StructFieldSpec}
  * @export
  */
-mojo.mojom.StructField = function(
+mojo.internal.StructField = function(
     name, packedOffset, packedBitOffset, type, defaultValue, nullable) {
   return {
     name: name,
@@ -1948,7 +1295,7 @@ mojo.mojom.StructField = function(
  * @param {!Array<!mojo.internal.StructFieldSpec>} fields
  * @export
  */
-mojo.mojom.Struct = function(objectToBlessAsType, name, packedSize, fields) {
+mojo.internal.Struct = function(objectToBlessAsType, name, packedSize, fields) {
   /** @type {!mojo.internal.StructSpec} */
   const structSpec = {
     name: name,
@@ -1978,7 +1325,7 @@ mojo.mojom.Struct = function(objectToBlessAsType, name, packedSize, fields) {
  * @param {!Object} fields
  * @export
  */
-mojo.mojom.Union = function(objectToBlessAsUnion, name, fields) {
+mojo.internal.Union = function(objectToBlessAsUnion, name, fields) {
   /** @type {!mojo.internal.UnionSpec} */
   const unionSpec = {
     name: name,
@@ -2005,15 +1352,9 @@ mojo.mojom.Union = function(objectToBlessAsUnion, name, fields) {
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.InterfaceProxy = function(type) {
+mojo.internal.InterfaceProxy = function(type) {
   return {
     $: {
-      /**
-       * @param {!{proxy: mojo.internal.InterfaceProxyBase}} value
-       * @param {!mojo.internal.Encoder} encoder
-       * @param {number} byteOffset
-       * @param {number} bitOffset
-       */
       encode: function(value, encoder, byteOffset, bitOffset, nullable) {
         if (!(value instanceof type))
           throw new Error('Invalid proxy type. Expected ' + type.name);
@@ -2040,7 +1381,7 @@ mojo.mojom.InterfaceProxy = function(type) {
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.InterfaceRequest = function(type) {
+mojo.internal.InterfaceRequest = function(type) {
   return {
     $: {
       encode: function(value, encoder, byteOffset, bitOffset, nullable) {
@@ -2066,7 +1407,7 @@ mojo.mojom.InterfaceRequest = function(type) {
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.AssociatedInterfaceProxy = function(type) {
+mojo.internal.AssociatedInterfaceProxy = function(type) {
   return {
     $: {
       type: type,
@@ -2076,6 +1417,7 @@ mojo.mojom.AssociatedInterfaceProxy = function(type) {
       decode: function(decoder, byteOffset, bitOffset, nullable) {
         throw new Error('Associated interfaces not supported yet.');
       },
+      isValidObjectKeyType: false,
     },
   };
 };
@@ -2084,7 +1426,7 @@ mojo.mojom.AssociatedInterfaceProxy = function(type) {
  * @return {!mojo.internal.MojomType}
  * @export
  */
-mojo.mojom.AssociatedInterfaceRequest = function(type) {
+mojo.internal.AssociatedInterfaceRequest = function(type) {
   return {
     $: {
       type: type,
@@ -2094,6 +1436,7 @@ mojo.mojom.AssociatedInterfaceRequest = function(type) {
       decode: function(decoder, byteOffset, bitOffset, nullable) {
         throw new Error('Associated interfaces not supported yet.');
       },
+      isValidObjectKeyType: false,
     },
   };
 };

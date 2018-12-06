@@ -1,11 +1,24 @@
-{#--- Begin #}
-mojo.mojom.Struct(
-    {{struct.name}},
+{%  for constant in struct.constants %}
+/**
+ * @const { {{constant.kind|lite_closure_type_with_nullability}} }
+ * @export
+ */
+{{module.namespace}}.{{struct.name}}.{{constant.name}} =
+    {{constant.value|expression_to_text_lite}};
+{%  endfor %}
+
+{%- from "lite/enum_definition.tmpl" import enum_def %}
+{%  for enum in struct.enums %}
+{{enum_def("%s.%s.%s"|format(module.namespace, struct.name, enum.name), enum)}}
+{%  endfor %}
+
+mojo.internal.Struct(
+    {{module.namespace}}.{{struct.name}}.$,
     '{{struct.name}}',
     {{struct.packed|payload_size}},
     [
 {%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
-      mojo.mojom.StructField(
+      mojo.internal.StructField(
         '{{packed_field.field.name}}', {{packed_field.offset}},
         {% if packed_field.field.kind|is_bool_kind %}{{packed_field.bit}}
         {%- else %}0{% endif %},
@@ -18,12 +31,3 @@ mojo.mojom.Struct(
 {%-   endif %}
 {%- endfor %}
     ]);
-
-{%  for constant in struct.constants %}
-{{struct.name}}.{{constant.name}} = {{constant.value|expression_to_text}};
-{%-  endfor %}
-
-{%- from "lite/enum_definition.tmpl" import enum_def %}
-{%  for enum in struct.enums %}
-{{enum_def("%s.%s"|format(struct.name, enum.name), enum)}}
-{%- endfor %}

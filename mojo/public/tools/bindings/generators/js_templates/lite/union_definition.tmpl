@@ -1,6 +1,6 @@
 
-mojo.mojom.Union(
-    {{union.name}}, '{{union.name}}',
+mojo.internal.Union(
+    {{module.namespace}}.{{union.name}}.$, '{{union.name}}',
     {
 {%- for field in union.fields %}
       '{{field.name}}': {
