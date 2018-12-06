@@ -5,7 +5,7 @@
 #ifndef CC_TEST_TEST_PAINT_WORKLET_INPUT_H_
 #define CC_TEST_TEST_PAINT_WORKLET_INPUT_H_
 
-#include "cc/paint/layer_tree_painter.h"
+#include "cc/paint/paint_worklet_input.h"
 
 namespace cc {
 
