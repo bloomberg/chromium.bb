@@ -90,29 +90,29 @@ _kind_to_closure_type = {
 }
 
 _kind_to_lite_js_type = {
-  mojom.BOOL:                  "mojo.mojom.Bool",
-  mojom.INT8:                  "mojo.mojom.Int8",
-  mojom.UINT8:                 "mojo.mojom.Uint8",
-  mojom.INT16:                 "mojo.mojom.Int16",
-  mojom.UINT16:                "mojo.mojom.Uint16",
-  mojom.INT32:                 "mojo.mojom.Int32",
-  mojom.UINT32:                "mojo.mojom.Uint32",
-  mojom.FLOAT:                 "mojo.mojom.Float",
-  mojom.HANDLE:                "mojo.mojom.Handle",
-  mojom.DCPIPE:                "mojo.mojom.Handle",
-  mojom.DPPIPE:                "mojo.mojom.Handle",
-  mojom.MSGPIPE:               "mojo.mojom.Handle",
-  mojom.SHAREDBUFFER:          "mojo.mojom.Handle",
-  mojom.NULLABLE_HANDLE:       "mojo.mojom.Handle",
-  mojom.NULLABLE_DCPIPE:       "mojo.mojom.Handle",
-  mojom.NULLABLE_DPPIPE:       "mojo.mojom.Handle",
-  mojom.NULLABLE_MSGPIPE:      "mojo.mojom.Handle",
-  mojom.NULLABLE_SHAREDBUFFER: "mojo.mojom.Handle",
-  mojom.INT64:                 "mojo.mojom.Int64",
-  mojom.UINT64:                "mojo.mojom.Uint64",
-  mojom.DOUBLE:                "mojo.mojom.Double",
-  mojom.STRING:                "mojo.mojom.String",
-  mojom.NULLABLE_STRING:       "mojo.mojom.String",
+  mojom.BOOL:                  "mojo.internal.Bool",
+  mojom.INT8:                  "mojo.internal.Int8",
+  mojom.UINT8:                 "mojo.internal.Uint8",
+  mojom.INT16:                 "mojo.internal.Int16",
+  mojom.UINT16:                "mojo.internal.Uint16",
+  mojom.INT32:                 "mojo.internal.Int32",
+  mojom.UINT32:                "mojo.internal.Uint32",
+  mojom.FLOAT:                 "mojo.internal.Float",
+  mojom.HANDLE:                "mojo.internal.Handle",
+  mojom.DCPIPE:                "mojo.internal.Handle",
+  mojom.DPPIPE:                "mojo.internal.Handle",
+  mojom.MSGPIPE:               "mojo.internal.Handle",
+  mojom.SHAREDBUFFER:          "mojo.internal.Handle",
+  mojom.NULLABLE_HANDLE:       "mojo.internal.Handle",
+  mojom.NULLABLE_DCPIPE:       "mojo.internal.Handle",
+  mojom.NULLABLE_DPPIPE:       "mojo.internal.Handle",
+  mojom.NULLABLE_MSGPIPE:      "mojo.internal.Handle",
+  mojom.NULLABLE_SHAREDBUFFER: "mojo.internal.Handle",
+  mojom.INT64:                 "mojo.internal.Int64",
+  mojom.UINT64:                "mojo.internal.Uint64",
+  mojom.DOUBLE:                "mojo.internal.Double",
+  mojom.STRING:                "mojo.internal.String",
+  mojom.NULLABLE_STRING:       "mojo.internal.String",
 }
 
 _js_reserved_keywords = [
@@ -250,7 +250,7 @@ class JavaScriptStylizer(generator.Stylizer):
 
 
 class Generator(generator.Generator):
-  def _GetParameters(self):
+  def _GetParameters(self, for_compile=False):
     return {
       "enums": self.module.enums,
       "imports": self.module.imports,
@@ -261,6 +261,7 @@ class Generator(generator.Generator):
       "structs": self.module.structs + self._GetStructsFromMethods(),
       "unions": self.module.unions,
       "generate_fuzzing": self.generate_fuzzing,
+      "generate_closure_exports": for_compile,
     }
 
   @staticmethod
@@ -274,6 +275,7 @@ class Generator(generator.Generator):
       "default_value": self._JavaScriptDefaultValue,
       "encode_snippet": self._JavaScriptEncodeSnippet,
       "expression_to_text": self._ExpressionToText,
+      "expression_to_text_lite": self._ExpressionToTextLite,
       "field_offset": JavaScriptFieldOffset,
       "get_relative_url": GetRelativeUrl,
       "has_callbacks": mojom.HasCallbacks,
@@ -300,6 +302,7 @@ class Generator(generator.Generator):
       "method_passes_associated_kinds": mojom.MethodPassesAssociatedKinds,
       "namespace_declarations": self._NamespaceDeclarations,
       "closure_type_with_nullability": self._ClosureTypeWithNullability,
+      "lite_closure_param_type": self._LiteClosureParamType,
       "lite_closure_type_with_nullability":
           self._LiteClosureTypeWithNullability,
       "payload_size": JavaScriptPayloadSize,
@@ -333,6 +336,10 @@ class Generator(generator.Generator):
   def _GenerateLiteBindings(self):
     return self._GetParameters()
 
+  @UseJinja("lite/mojom-lite.js.tmpl")
+  def _GenerateLiteBindingsForCompile(self):
+    return self._GetParameters(for_compile=True)
+
   @UseJinja("lite/module.externs.tmpl")
   def _GenerateLiteExterns(self):
     return self._GetParameters()
@@ -352,6 +359,8 @@ class Generator(generator.Generator):
     self.Write(self._GenerateExterns(), "%s.externs.js" % self.module.path)
     if self.js_bindings_mode == "new":
       self.Write(self._GenerateLiteBindings(), "%s-lite.js" % self.module.path)
+      self.Write(self._GenerateLiteBindingsForCompile(),
+          "%s-lite-for-compile.js" % self.module.path)
       self.Write(self._GenerateLiteExterns(),
                  "%s-lite.externs.js" % self.module.path)
 
@@ -444,6 +453,23 @@ class Generator(generator.Generator):
   def _ClosureTypeWithNullability(self, kind):
     return ("" if mojom.IsNullableKind(kind) else "!") + self._ClosureType(kind)
 
+  def _LiteClosureParamType(self, kind):
+    if mojom.IsEnumKind(kind):
+      return "number"
+    prefix = "" if mojom.IsNullableKind(kind) else "!"
+    if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+      return prefix + "Object"
+    if mojom.IsArrayKind(kind):
+      return prefix + ("Array<%s>" % self._LiteClosureParamType(kind.kind))
+    if mojom.IsMapKind(kind):
+      return "%sMap<%s, %s>|%sObject<%s, %s>" % (
+          prefix, self._LiteClosureParamType(kind.key_kind),
+          self._LiteClosureParamType(kind.value_kind),
+          prefix, self._LiteClosureParamType(kind.key_kind),
+          self._LiteClosureParamType(kind.value_kind))
+
+    return prefix + self._LiteClosureType(kind)
+
   def _LiteClosureTypeWithNullability(self, kind):
     return (("" if mojom.IsNullableKind(kind) else "!") +
         self._LiteClosureType(kind))
@@ -470,11 +496,11 @@ class Generator(generator.Generator):
     if self._IsPrimitiveKind(kind):
       return _kind_to_lite_js_type[kind]
     if mojom.IsArrayKind(kind):
-      return "mojo.mojom.Array(%s, %s)" % (
+      return "mojo.internal.Array(%s, %s)" % (
           self._LiteJavaScriptType(kind.kind),
           "true" if mojom.IsNullableKind(kind.kind) else "false")
     if mojom.IsMapKind(kind):
-      return "mojo.mojom.Map(%s, %s, %s)" % (
+      return "mojo.internal.Map(%s, %s, %s)" % (
           self._LiteJavaScriptType(kind.key_kind),
           self._LiteJavaScriptType(kind.value_kind),
           "true" if mojom.IsNullableKind(kind.value_kind) else "false")
@@ -485,21 +511,25 @@ class Generator(generator.Generator):
       named_kind = kind
 
     name = []
-    if named_kind.module and named_kind.module.path != self.module.path:
-      name.append(named_kind.module.unique_name)
+    if named_kind.module:
+      name.append(named_kind.module.namespace)
     if named_kind.parent_kind:
       name.append(named_kind.parent_kind.name)
     name.append(named_kind.name)
     name = ".".join(name)
 
+    if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
+        mojom.IsEnumKind(kind)):
+      return "%s.$" % name
     if mojom.IsInterfaceKind(kind):
-      return "new mojo.mojom.InterfaceProxy(%sProxy)" % name
+      return "mojo.internal.InterfaceProxy(%sProxy)" % name
     if mojom.IsInterfaceRequestKind(kind):
-      return "new mojo.mojom.InterfaceRequest(%sRequest)" % name
+      return "mojo.internal.InterfaceRequest(%sRequest)" % name
     if mojom.IsAssociatedInterfaceKind(kind):
-      return "new mojo.mojom.AssociatedInterfaceProxy(%sAssociatedProxy)" % name
+      return "mojo.internal.AssociatedInterfaceProxy(%sAssociatedProxy)" % (
+          name)
     if mojom.IsAssociatedInterfaceRequestKind(kind):
-      return "new mojo.mojom.AssociatedInterfaceRequest(%s)" % name
+      return "mojo.internal.AssociatedInterfaceRequest(%s)" % name
 
     return name
 
@@ -677,7 +707,7 @@ class Generator(generator.Generator):
 
     return identifier
 
-  def _TranslateConstants(self, token):
+  def _ExpressionToText(self, token):
     if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
       # Both variable and enum constants are constructed like:
       # NamespaceUid.Struct[.Enum].CONSTANT_NAME
@@ -702,8 +732,21 @@ class Generator(generator.Generator):
 
     return token
 
-  def _ExpressionToText(self, value):
-    return self._TranslateConstants(value)
+  def _ExpressionToTextLite(self, token):
+    if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
+      # Both variable and enum constants are constructed like:
+      # NamespaceUid.Struct[.Enum].CONSTANT_NAME
+      name = []
+      if token.module:
+        name.append(token.module.namespace)
+      if token.parent_kind:
+        name.append(token.parent_kind.name)
+      if isinstance(token, mojom.EnumValue):
+        name.append(token.enum.name)
+      name.append(token.name)
+      return ".".join(name)
+
+    return self._ExpressionToText(token)
 
   def _GetStructsFromMethods(self):
     result = []
