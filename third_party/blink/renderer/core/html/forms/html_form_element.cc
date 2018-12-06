@@ -101,8 +101,11 @@ bool HTMLFormElement::MatchesValidityPseudoClasses() const {
 }
 
 bool HTMLFormElement::IsValidElement() {
-  return !CheckInvalidControlsAndCollectUnhandled(
-      nullptr, kCheckValidityDispatchNoEvent);
+  for (const auto& element : ListedElements()) {
+    if (!element->IsNotCandidateOrValid())
+      return false;
+  }
+  return true;
 }
 
 Node::InsertionNotificationRequest HTMLFormElement::InsertedInto(
@@ -211,8 +214,7 @@ bool HTMLFormElement::ValidateInteractively() {
     element->HideVisibleValidationMessage();
 
   ListedElement::List unhandled_invalid_controls;
-  if (!CheckInvalidControlsAndCollectUnhandled(
-          &unhandled_invalid_controls, kCheckValidityDispatchInvalidEvent))
+  if (!CheckInvalidControlsAndCollectUnhandled(&unhandled_invalid_controls))
     return true;
   UseCounter::Count(GetDocument(),
                     WebFeature::kFormValidationAbortedSubmission);
@@ -718,15 +720,13 @@ HTMLFormControlElement* HTMLFormElement::FindDefaultButton() const {
 }
 
 bool HTMLFormElement::checkValidity() {
-  return !CheckInvalidControlsAndCollectUnhandled(
-      nullptr, kCheckValidityDispatchInvalidEvent);
+  return !CheckInvalidControlsAndCollectUnhandled(nullptr);
 }
 
 bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
-    ListedElement::List* unhandled_invalid_controls,
-    CheckValidityEventBehavior event_behavior) {
+    ListedElement::List* unhandled_invalid_controls) {
   // Copy listedElements because event handlers called from
-  // HTMLFormControlElement::checkValidity() might change listedElements.
+  // ListedElement::checkValidity() might change listed_elements.
   const ListedElement::List& listed_elements = ListedElements();
   HeapVector<Member<ListedElement>> elements;
   elements.ReserveCapacity(listed_elements.size());
@@ -745,12 +745,9 @@ bool HTMLFormElement::CheckInvalidControlsAndCollectUnhandled(
       should_check_validity = true;
     }
     if (should_check_validity &&
-        !element->checkValidity(unhandled_invalid_controls, event_behavior) &&
+        !element->checkValidity(unhandled_invalid_controls) &&
         element->Form() == this) {
       ++invalid_controls_count;
-      if (!unhandled_invalid_controls &&
-          event_behavior == kCheckValidityDispatchNoEvent)
-        return true;
     }
   }
   return invalid_controls_count;

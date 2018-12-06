@@ -429,14 +429,9 @@ ValidationMessageClient* ListedElement::GetValidationMessageClient() const {
   return nullptr;
 }
 
-bool ListedElement::checkValidity(List* unhandled_invalid_controls,
-                                  CheckValidityEventBehavior event_behavior) {
-  if (!WillValidate())
+bool ListedElement::checkValidity(List* unhandled_invalid_controls) {
+  if (IsNotCandidateOrValid())
     return true;
-  if (IsValidElement())
-    return true;
-  if (event_behavior != kCheckValidityDispatchInvalidEvent)
-    return false;
   HTMLElement& element = ToHTMLElement(*this);
   Document* original_document = &element.GetDocument();
   DispatchEventResult dispatch_result = element.DispatchEvent(
@@ -457,8 +452,7 @@ void ListedElement::ShowValidationMessage() {
 
 bool ListedElement::reportValidity() {
   List unhandled_invalid_controls;
-  bool is_valid = checkValidity(&unhandled_invalid_controls,
-                                kCheckValidityDispatchInvalidEvent);
+  bool is_valid = checkValidity(&unhandled_invalid_controls);
   if (is_valid || unhandled_invalid_controls.IsEmpty())
     return is_valid;
   DCHECK_EQ(unhandled_invalid_controls.size(), 1u);
@@ -491,6 +485,12 @@ bool ListedElement::IsValidElement() {
     DCHECK_EQ(is_valid_, (!WillValidate() || Valid()));
   }
   return is_valid_;
+}
+
+bool ListedElement::IsNotCandidateOrValid() {
+  // Apply Element::willValidate(), not ListedElement::WillValidate(), because
+  // some elements override willValidate().
+  return !ToHTMLElement(this)->willValidate() || IsValidElement();
 }
 
 void ListedElement::SetNeedsValidityCheck() {

@@ -1516,6 +1516,12 @@ bool HTMLElement::MatchesValidityPseudoClasses() const {
   return IsFormAssociatedCustomElement();
 }
 
+bool HTMLElement::willValidate() const {
+  return IsFormAssociatedCustomElement() && const_cast<HTMLElement*>(this)
+                                                ->EnsureElementInternals()
+                                                .WillValidate();
+}
+
 bool HTMLElement::IsValidElement() {
   return IsFormAssociatedCustomElement() &&
          EnsureElementInternals().IsValidElement();

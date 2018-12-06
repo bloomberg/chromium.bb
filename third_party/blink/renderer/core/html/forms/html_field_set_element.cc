@@ -54,13 +54,11 @@ bool HTMLFieldSetElement::MatchesValidityPseudoClasses() const {
 bool HTMLFieldSetElement::IsValidElement() {
   for (Element* element : *elements()) {
     if (element->IsFormControlElement()) {
-      if (!ToHTMLFormControlElement(element)->checkValidity(
-              nullptr, kCheckValidityDispatchNoEvent))
+      if (!ToHTMLFormControlElement(element)->IsNotCandidateOrValid())
         return false;
     } else if (element->IsHTMLElement() &&
                ToHTMLElement(element)->IsFormAssociatedCustomElement()) {
-      if (!element->EnsureElementInternals().ListedElement::checkValidity(
-              nullptr, kCheckValidityDispatchNoEvent))
+      if (!element->EnsureElementInternals().IsNotCandidateOrValid())
         return false;
     }
   }

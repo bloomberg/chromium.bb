@@ -42,11 +42,6 @@ class Node;
 class ValidationMessageClient;
 class ValidityState;
 
-enum CheckValidityEventBehavior {
-  kCheckValidityDispatchNoEvent,
-  kCheckValidityDispatchInvalidEvent
-};
-
 // https://html.spec.whatwg.org/multipage/forms.html#category-listed
 class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
@@ -103,9 +98,7 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
   virtual void setCustomValidity(const String&);
   void UpdateVisibleValidationMessage();
   void HideVisibleValidationMessage();
-  bool checkValidity(
-      List* unhandled_invalid_controls = nullptr,
-      CheckValidityEventBehavior = kCheckValidityDispatchInvalidEvent);
+  bool checkValidity(List* unhandled_invalid_controls = nullptr);
   bool reportValidity();
   // This must be called only after the caller check the element is focusable.
   void ShowValidationMessage();
@@ -117,6 +110,12 @@ class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
 
   // For Element::IsValidElement(), which is for :valid :invalid selectors.
   bool IsValidElement();
+  // Returns true if
+  //  - this is not a candidate for constraint validation, or
+  //    https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#candidate-for-constraint-validation
+  //  - this satisfies its constraints
+  //    https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fv-valid
+  bool IsNotCandidateOrValid();
 
   // This must be called when a validation constraint or control value is
   // changed.

@@ -1422,11 +1422,8 @@ ax::mojom::InvalidState AXNodeObject::GetInvalidState() const {
   if (GetNode() && GetNode()->IsElementNode() &&
       ToElement(GetNode())->IsFormControlElement()) {
     HTMLFormControlElement* element = ToHTMLFormControlElement(GetNode());
-    ListedElement::List invalid_controls;
-    bool is_invalid = !element->checkValidity(&invalid_controls,
-                                              kCheckValidityDispatchNoEvent);
-    return is_invalid ? ax::mojom::InvalidState::kTrue
-                      : ax::mojom::InvalidState::kFalse;
+    return element->IsNotCandidateOrValid() ? ax::mojom::InvalidState::kFalse
+                                            : ax::mojom::InvalidState::kTrue;
   }
 
   return AXObject::GetInvalidState();
