@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.autofill_assistant.ui;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.support.design.widget.CoordinatorLayout;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import org.chromium.base.Callback;
@@ -159,8 +159,8 @@ public class BottomBarAnimations {
     }
 
     private void setBottomBarHeight(int targetHeight) {
-        FrameLayout.LayoutParams layoutParams =
-                (FrameLayout.LayoutParams) mBottomBarView.getLayoutParams();
+        CoordinatorLayout.LayoutParams layoutParams =
+                (CoordinatorLayout.LayoutParams) mBottomBarView.getLayoutParams();
         layoutParams.height = targetHeight;
         mBottomBarView.setLayoutParams(layoutParams);
     }
