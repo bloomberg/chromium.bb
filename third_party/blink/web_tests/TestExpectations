@@ -1904,7 +1904,6 @@ crbug.com/520736 [ Linux ] media/W3C/video/networkState/networkState_during_prog
 crbug.com/909095 [ Mac ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 # This is also flaky from findit, see crbug.com/903019:
 crbug.com/520736 virtual/video-surface-layer/media/W3C/video/networkState/networkState_during_progress.html [ Pass Failure Timeout Crash ]
-crbug.com/865839 external/wpt/service-workers/service-worker/update-after-navigation-redirect.https.html [ Timeout ]
 
 crbug.com/841922 [ Linux ] virtual/video-surface-layer/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/841922 [ Win ] virtual/video-surface-layer/media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
@@ -2901,7 +2900,7 @@ crbug.com/828506 [ Win ] virtual/user-activation-v2/fast/events/touch/scroll-wit
 
 # Failure messages are unstable so we cannot create baselines.
 crbug.com/832071 external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
-crbug.com/832071 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
+crbug.com/832071 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 crbug.com/832071 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
@@ -3097,7 +3096,7 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/text-transform-full-si
 crbug.com/626703 external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
 crbug.com/626703 virtual/layout_ng_experimental/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
-crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
+crbug.com/626703 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/update-not-allowed.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/line-edge-white-space-collapse-001.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center.html [ Failure ]
@@ -3800,7 +3799,7 @@ crbug.com/626703 external/wpt/screen-orientation/onchange-event-subframe.html [ 
 crbug.com/648295 external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
-crbug.com/648295 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
+crbug.com/648295 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 crbug.com/626703 external/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_down.html [ Failure ]
@@ -4192,17 +4191,17 @@ crbug.com/825798 external/wpt/html/semantics/embedded-content/media-elements/tra
 
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
-crbug.com/691944 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
+crbug.com/691944 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 
 # These tests (erroneously) see a platform-specific User-Agent header
 crbug.com/595993 external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
-crbug.com/595993 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
+crbug.com/595993 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/595993 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
+crbug.com/595993 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 crbug.com/595993 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 
@@ -4211,7 +4210,7 @@ crbug.com/595993 virtual/outofblink-cors-ns/external/wpt/service-workers/service
 crbug.com/894682 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
 crbug.com/894682 external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
 crbug.com/894682 virtual/outofblink-cors/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
-crbug.com/894682 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
+crbug.com/894682 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/postmessage-to-client-message-queue.https.html [ Skip ]
 
 crbug.com/619427 [ Mac ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
@@ -4413,7 +4412,7 @@ crbug.com/877296 external/wpt/wasm/serialization/window-serviceworker-failure.ht
 
 crbug.com/831509 external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/navigation-mojo-response/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
-crbug.com/831509 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
+crbug.com/831509 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/outofblink-cors/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 crbug.com/831509 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/skip-waiting-installed.https.html [ Failure Pass ]
 
@@ -4857,7 +4856,7 @@ crbug.com/831720 virtual/video-surface-layer/media/controls/modern/tap-to-hide-c
 crbug.com/802915 css3/blending/isolation-should-include-non-local-background.html [ Failure ]
 
 crbug.com/807838 external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
-crbug.com/807838 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
+crbug.com/807838 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 crbug.com/807838 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Crash Pass ]
 
@@ -5080,7 +5079,7 @@ crbug.com/832274 [ Win ] fast/forms/search/search-appearance-basic.html [ Pass F
 crbug.com/840881 external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 crbug.com/840881 virtual/outofblink-cors/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 crbug.com/840881 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
-crbug.com/840881 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
+crbug.com/840881 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/resource-timing.https.html [ Failure ]
 
 # Sheriff 2018-04-12
 crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Timeout ]
@@ -5428,11 +5427,11 @@ crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/recorded-keyd
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
-crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
-crbug.com/873873 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
+crbug.com/873873 virtual/disabled-service-worker-servicification/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Timeout Pass ]
 
 # IntersectionObserverV2 tests run in a virtual test suite
 crbug.com/827639 intersection-observer/v2 [ Skip ]

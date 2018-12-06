@@ -683,16 +683,14 @@
     "args": ["--enable-features=SignedHTTPExchangeOriginTrial,NetworkService"]
   },
   {
-    "prefix": "service-worker-servicification",
+    "prefix": "disabled-service-worker-servicification",
     "base": "http/tests/serviceworker",
-    "args": ["--enable-features=ServiceWorkerServicification",
-             "--disable-features=NetworkService"]
+    "args": ["--disable-features=ServiceWorkerServicification,NetworkService"]
   },
   {
-    "prefix": "service-worker-servicification",
+    "prefix": "disabled-service-worker-servicification",
     "base": "external/wpt/service-workers/service-worker",
-    "args": ["--enable-features=ServiceWorkerServicification",
-             "--disable-features=NetworkService"]
+    "args": ["--disable-features=ServiceWorkerServicification,NetworkService"]
   },
   {
     "prefix": "omt-worker-fetch",
