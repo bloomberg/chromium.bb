@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.support.annotation.ColorInt;
+import android.support.annotation.IntDef;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.GestureDetector;
@@ -28,6 +29,8 @@ import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -37,11 +40,30 @@ import java.util.List;
  * A view that filters out touch events, letting through only the touch events events that are
  * within a specified touchable area.
  *
- * <p>This view decides whether to forward touch events. It does not manipulate them. This works at
- * the level of low-level touch events (up, down, move, cancel), not gestures.
+ * <p>This view decides whether to forward gestures to the views below or the compositor view.
+ *
+ * <p>When accessibility (touch exploration) is enabled, this view:
+ * <ul>
+ * <li>avoids covering the top and bottom controls, even when the full overlay is on
+ * <li>is fully visible and accessible as long as a touchable area is available.
+ * TODO(crbug.com/806868):restrict access when using touch exploration as well
+ * </ul>
+ *
+ * <p>TODO(crbug.com/806868): To better integrate with the layout, the event filtering and
+ * forwarding implemented in this view should likely be a {@link
+ * org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter}, and part of a scene.
  */
 public class TouchEventFilter
         extends View implements ChromeFullscreenManager.FullscreenListener, GestureStateListener {
+    /** A client of this view. */
+    public interface Client {
+        /** Called after a certain number of unexpected taps. */
+        void onUnexpectedTaps();
+
+        /** Asks for an update of the touchable area. */
+        void updateTouchableArea();
+    }
+
     /**
      * Complain after there's been {@link TAP_TRACKING_COUNT} taps within
      * {@link @TAP_TRACKING_DURATION_MS} in the unallowed area.
@@ -49,26 +71,27 @@ public class TouchEventFilter
     private static final int TAP_TRACKING_COUNT = 3;
     private static final long TAP_TRACKING_DURATION_MS = 15_000;
 
-    /** A client of this view. */
-    public interface Client {
-        /** Called after a certain number of unexpected taps. */
-        void onUnexpectedTaps();
+    /** A mode that describes what's happening to the current gesture. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({NO_GESTURE_MODE, TRACKING_GESTURE_MODE, FORWARDING_GESTURE_MODE})
+    private @interface GestureMode {}
 
-        /**
-         * Scroll the browser view by the given distance.
-         *
-         * <p>Distances are floats between -1.0 and 1.0, with 1 corresponding to the size of the
-         * visible viewport.
-         */
-        void scrollBy(float distanceXRatio, float distanceYRatio);
+    /** There's no current gesture. */
+    private static final int NO_GESTURE_MODE = 0;
 
-        /** Asks for an update of the touchable area. */
-        void updateTouchableArea();
-    }
+    /**
+     * The current gesture is being tracked and buffered. The gesture might later on transition to
+     * forwarding mode or it might be abandoned.
+     */
+    private static final int TRACKING_GESTURE_MODE = 1;
+
+    /** The current gesture is being forwarded to the content view. */
+    private static final int FORWARDING_GESTURE_MODE = 2;
 
     private Client mClient;
     private ChromeFullscreenManager mFullscreenManager;
     private GestureListenerManager mGestureListenerManager;
+    private View mCompositorView;
     private final List<RectF> mTouchableArea = new ArrayList<>();
     private final Paint mGrayOut;
     private final Paint mClear;
@@ -90,11 +113,28 @@ public class TouchEventFilter
     /** A single RectF instance used for drawing, to avoid creating many instances when drawing. */
     private final RectF mDrawRect = new RectF();
 
-    /** Detects gestures that happen outside of the allowed area. */
-    private final GestureDetector mNonBrowserGesture;
+    /**
+     * Detects taps: {@link GestureDetector#onTouchEvent} returns {@code true} after a tap event.
+     */
+    private final GestureDetector mTapDetector;
 
-    /** True while a gesture handled by {@link #mNonBrowserGesture} is in progress. */
-    private boolean mNonBrowserGestureInProgress;
+    /**
+     * Detects scrolls and flings: {@link GestureDetector#onTouchEvent} returns {@code true} a
+     * scroll or fling event.
+     */
+    private final GestureDetector mScrollDetector;
+
+    /** The current state of the gesture filter. */
+    @GestureMode
+    private int mCurrentGestureMode;
+
+    /**
+     * A capture of the motion event that are part of the current gesture, kept around in case they
+     * need to be forwarded while {@code mCurrentGestureMode == TRACKING_GESTURE_MODE}.
+     *
+     * <p>Elements of this list must be recycled. Call {@link #cleanupCurrentGestureBuffer}.
+     */
+    private List<MotionEvent> mCurrentGestureBuffer = new ArrayList<>();
 
     /** Times, in millisecond, of unexpected taps detected outside of the allowed area. */
     private final List<Long> mUnexpectedTapTimes = new ArrayList<>();
@@ -131,6 +171,8 @@ public class TouchEventFilter
      * <p>Margins are set when the top or bottom controller are fully shown. When they're shown
      * partially, during a scroll, margins are always 0. The drawing takes care of adapting.
      *
+     * <p>Always 0 unless accessibility is turned on.
+     *
      * <p>TODO(crbug.com/806868): Better integrate this filter with the view layout to make it
      * automatic.
      */
@@ -163,41 +205,45 @@ public class TouchEventFilter
         mClear = new Paint();
         mClear.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
-        // Handles gestures that happen outside of the allowed area.
-        mNonBrowserGesture = new GestureDetector(context, new SimpleOnGestureListener() {
+        setFullOverlay(false);
+        setPartialOverlay(false, Collections.emptyList());
 
+        mTapDetector = new GestureDetector(context, new SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
-                onUnexpectedTap(e);
-                return true;
-            }
-
-            @Override
-            public boolean onScroll(MotionEvent downEvent, MotionEvent moveEvent, float distanceX,
-                    float distanceY) {
-                if (mPartialOverlayEnabled)
-                    mClient.scrollBy(distanceX / getWidth(), distanceY / getVisualViewportHeight());
                 return true;
             }
         });
+        mScrollDetector = new GestureDetector(context, new SimpleOnGestureListener() {
+            @Override
+            public boolean onScroll(
+                    MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                return true;
+            }
 
-        setFullOverlay(false);
-        setPartialOverlay(false, Collections.emptyList());
+            @Override
+            public boolean onFling(
+                    MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                return true;
+            }
+        });
     }
 
     /** Initializes dependencies. */
-    public void init(
-            Client client, ChromeFullscreenManager fullscreenManager, WebContents webContents) {
+    public void init(Client client, ChromeFullscreenManager fullscreenManager,
+            WebContents webContents, View compositorView) {
         mClient = client;
         mFullscreenManager = fullscreenManager;
         mFullscreenManager.addListener(this);
         mGestureListenerManager = GestureListenerManager.fromWebContents(webContents);
         mGestureListenerManager.addListener(this);
         maybeUpdateVerticalMargins();
+        mCompositorView = compositorView;
     }
 
     public void deInit() {
         mClient = null;
+        mCompositorView = null;
         if (mFullscreenManager != null) {
             mFullscreenManager.removeListener(this);
             mFullscreenManager = null;
@@ -206,6 +252,7 @@ public class TouchEventFilter
             mGestureListenerManager.removeListener(this);
             mGestureListenerManager = null;
         }
+        cleanupCurrentGestureBuffer();
     }
 
     /** Sets the color to be used for unusable areas. */
@@ -289,50 +336,152 @@ public class TouchEventFilter
         return false;
     }
 
+    private boolean dispatchTouchEventWithFullOverlay(MotionEvent event) {
+        if (mTapDetector.onTouchEvent(event)) {
+            onUnexpectedTap(event);
+        }
+        return true;
+    }
+
+    /**
+     * Let through or intercept gestures.
+     *
+     * <p>If the event starts a gesture, with ACTION_DOWN, within a touchable area, let the event
+     * through.
+     *
+     * <p>If the event starts a gesture outside a touchable area, forward it to the compositor once
+     * it's clear that it's a scroll, fling or multi-touch event - and not a tap event.
+     *
+     * @return true if the event was handled by this view, as defined for {@link
+     *         View#dispatchTouchEvent}
+     */
     private boolean dispatchTouchEventWithPartialOverlay(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_SCROLL:
-                // Scrolling is always safe. Let it through.
-                return false;
-            case MotionEvent.ACTION_MOVE:
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (mNonBrowserGestureInProgress) {
-                    // If a non-browser gesture, started with an ACTION_DOWN, is in progress, give
-                    // it priority over everything else until the next ACTION_DOWN.
-                    mNonBrowserGesture.onTouchEvent(event);
-                    return true;
-                }
-                if (mBrowserScrolling) {
-                    // Events sent to the browser triggered scrolling, which was reported to
-                    // onScrollStarted. Direct all events to the browser until the next ACTION_DOWN
-                    // to avoid interrupting that scroll.
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN: // Starts a new gesture.
+
+                // Reset is needed, as ACTION_DOWN can interrupt a running gesture
+                resetCurrentGesture();
+
+                if (shouldLetEventThrough(event)) {
+                    // This is the last we'll hear of this gesture unless it turns multi-touch. No
+                    // need to track or forward it.
                     return false;
                 }
-                // fall through
-
-            case MotionEvent.ACTION_DOWN:
-                // Only let through events if they're meant for the touchable area of the screen.
-                int yTop = getVisualViewportTop();
-                int yBottom = getVisualViewportBottom();
-                int height = yBottom - yTop;
-                boolean allowed = isInTouchableArea(((float) event.getX()) / getWidth(),
-                        (((float) event.getY() - yTop + mBrowserScrollOffsetY + mOffsetY)
-                                / height));
-                if (!allowed) {
-                    mNonBrowserGestureInProgress = mNonBrowserGesture.onTouchEvent(event);
-                    return true; // handled
+                if (event.getPointerCount() > 0 && event.getPointerId(0) != 0) {
+                    // We're being offered a previously let-through gesture, which turned
+                    // multi-touch. This isn't a real gesture start.
+                    return false;
                 }
-                return false; // let it through
+
+                // Track the gesture in case this is a tap, which we should handle, or a
+                // scroll/fling/pinch, which we should forward.
+                mCurrentGestureMode = TRACKING_GESTURE_MODE;
+                mCurrentGestureBuffer.add(MotionEvent.obtain(event));
+                mScrollDetector.onTouchEvent(event);
+                mTapDetector.onTouchEvent(event);
+                return true;
+
+            case MotionEvent.ACTION_MOVE: // Continues a gesture.
+                switch (mCurrentGestureMode) {
+                    case TRACKING_GESTURE_MODE:
+                        if (mScrollDetector.onTouchEvent(event)) {
+                            // The current gesture is a scroll or a fling. Forward it.
+                            startForwardingGesture(event);
+                            return true;
+                        }
+
+                        // Continue accumulating events.
+                        mTapDetector.onTouchEvent(event);
+                        mCurrentGestureBuffer.add(MotionEvent.obtain(event));
+                        return true;
+
+                    case FORWARDING_GESTURE_MODE:
+                        mCompositorView.dispatchTouchEvent(event);
+                        return true;
+
+                    default:
+                        return true;
+                }
+
+            case MotionEvent.ACTION_POINTER_DOWN: // Continues a multi-touch gesture
+            case MotionEvent.ACTION_POINTER_UP:
+                switch (mCurrentGestureMode) {
+                    case TRACKING_GESTURE_MODE:
+                        // The current gesture has just become a multi-touch gesture. Forward it.
+                        startForwardingGesture(event);
+                        return true;
+
+                    case FORWARDING_GESTURE_MODE:
+                        mCompositorView.dispatchTouchEvent(event);
+                        return true;
+
+                    default:
+                        return true;
+                }
+
+            case MotionEvent.ACTION_UP: // Ends a gesture
+            case MotionEvent.ACTION_CANCEL:
+                switch (mCurrentGestureMode) {
+                    case TRACKING_GESTURE_MODE:
+                        if (mTapDetector.onTouchEvent(event)) {
+                            onUnexpectedTap(event);
+                        }
+                        resetCurrentGesture();
+                        return true;
+
+                    case FORWARDING_GESTURE_MODE:
+                        mCompositorView.dispatchTouchEvent(event);
+                        resetCurrentGesture();
+                        return true;
+
+                    default:
+                        return true;
+                }
 
             default:
-                return super.dispatchTouchEvent(event);
+                return true;
         }
     }
 
-    private boolean dispatchTouchEventWithFullOverlay(MotionEvent event) {
-        mNonBrowserGesture.onTouchEvent(event);
-        return true;
+    /** Clears all information about the current gesture. */
+    private void resetCurrentGesture() {
+        mCurrentGestureMode = NO_GESTURE_MODE;
+        cleanupCurrentGestureBuffer();
+    }
+
+    /** Clears {@link #mCurrentGestureStart}, recycling it if necessary. */
+    private void cleanupCurrentGestureBuffer() {
+        for (MotionEvent event : mCurrentGestureBuffer) {
+            event.recycle();
+        }
+        mCurrentGestureBuffer.clear();
+    }
+
+    /** Enables forwarding of the current gesture, starting with {@link currentEvent}. */
+    private void startForwardingGesture(MotionEvent currentEvent) {
+        mCurrentGestureMode = FORWARDING_GESTURE_MODE;
+        for (MotionEvent event : mCurrentGestureBuffer) {
+            mCompositorView.dispatchTouchEvent(event);
+        }
+        cleanupCurrentGestureBuffer();
+        mCompositorView.dispatchTouchEvent(currentEvent);
+    }
+
+    /**
+     * Returns {@code true} if {@code event} is for a position in the touchable area
+     * or the top/bottom bar.
+     */
+    private boolean shouldLetEventThrough(MotionEvent event) {
+        int yTop = getVisualViewportTop();
+        int yBottom = getVisualViewportBottom();
+        if (event.getY() < yTop || event.getY() > yBottom) {
+            // Let it through. The event is meant for the top or bottom bar UI controls, not the
+            // webpage.
+            return true;
+        }
+        int height = yBottom - yTop;
+        return isInTouchableArea(((float) event.getX()) / getWidth(),
+                (((float) event.getY() - yTop + mBrowserScrollOffsetY + mOffsetY) / height));
     }
 
     /** Returns the origin of the visual viewport in this view. */
@@ -487,7 +636,7 @@ public class TouchEventFilter
     }
 
     /**
-     * Updates the vertical margins of the view.
+     * Updates the vertical margins of the view when accessibility is enabled.
      *
      * <p>When the controls are fully visible, the view covers has just the right margins to cover
      * only the web page.
@@ -501,7 +650,8 @@ public class TouchEventFilter
     private void maybeUpdateVerticalMargins() {
         if (mFullscreenManager == null) return;
 
-        if (mFullscreenManager.areBrowserControlsFullyVisible()) {
+        if (mFullscreenManager.areBrowserControlsFullyVisible()
+                && AccessibilityUtil.isAccessibilityEnabled()) {
             setVerticalMargins(getTopBarHeight(), getBottomBarHeight());
         } else {
             setVerticalMargins(0, 0);

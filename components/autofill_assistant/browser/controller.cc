@@ -401,11 +401,6 @@ void Controller::OnScriptSelected(const std::string& script_path) {
   ExecuteScript(script_path);
 }
 
-void Controller::ScrollBy(float distanceXRatio, float distanceYRatio) {
-  GetWebController()->ScrollBy(distanceXRatio, distanceYRatio);
-  touchable_element_area_.UpdatePositions();
-}
-
 void Controller::UpdateTouchableArea() {
   touchable_element_area_.UpdatePositions();
 }
