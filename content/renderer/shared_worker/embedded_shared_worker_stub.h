@@ -12,13 +12,13 @@
 #include "base/unguessable_token.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
-#include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
@@ -73,7 +73,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-      mojom::SharedWorkerHostPtr host,
+      blink::mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider);
   ~EmbeddedSharedWorkerStub() override;
@@ -110,7 +110,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
   mojo::Binding<mojom::SharedWorker> binding_;
-  mojom::SharedWorkerHostPtr host_;
+  blink::mojom::SharedWorkerHostPtr host_;
   const std::string name_;
   bool running_ = false;
   GURL url_;

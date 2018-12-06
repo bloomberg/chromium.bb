@@ -77,7 +77,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     const std::string& expected_name,
     blink::mojom::ContentSecurityPolicyType
         expected_content_security_policy_type,
-    mojom::SharedWorkerHostPtr* host,
+    blink::mojom::SharedWorkerHostPtr* host,
     mojom::SharedWorkerRequest* request) {
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);
   if (!create_params)
@@ -111,7 +111,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
-    mojom::SharedWorkerHostPtr host,
+    blink::mojom::SharedWorkerHostPtr host,
     mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
   DCHECK(!create_params_);
