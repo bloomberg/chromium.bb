@@ -1245,7 +1245,7 @@ class GSContext(object):
       # https://github.com/GoogleCloudPlatform/gsutil/issues/288
       # Example line:
       # No URLs matched gs://bucket/file
-      if e.result.error.startswith('No URLs matched'):
+      if e.result.error and e.result.error.startswith('No URLs matched'):
         raise GSNoSuchKey('Stat Error: No URLs matched %s.' % path)
 
       # No idea what this is, so just choke.
