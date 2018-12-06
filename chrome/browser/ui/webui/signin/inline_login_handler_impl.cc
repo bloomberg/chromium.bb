@@ -33,10 +33,10 @@
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -72,6 +72,8 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
+#include "services/identity/public/cpp/primary_account_mutator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -258,9 +260,9 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
       AccountTrackerServiceFactory::GetForProfile(profile_)->SeedAccountInfo(
           gaia_id_, email_);
 
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile_);
-  std::string primary_email =
-      signin_manager->GetAuthenticatedAccountInfo().email;
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+  std::string primary_email = identity_manager->GetPrimaryAccountInfo().email;
   if (gaia::AreEmailsSame(email_, primary_email) &&
       (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
        reason == signin_metrics::Reason::REASON_UNLOCK) &&
@@ -303,7 +305,11 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
 
     if (reason == signin_metrics::Reason::REASON_REAUTHENTICATION ||
         reason == signin_metrics::Reason::REASON_UNLOCK) {
-      signin_manager->MergeSigninCredentialIntoCookieJar();
+      // GetPrimaryAccountMutator() returns nullptr on platforms not supporting
+      // mutation of the primary account (e.g. ChromeOS).
+      auto* account_mutator = identity_manager->GetPrimaryAccountMutator();
+      if (account_mutator)
+        account_mutator->LegacyMergeSigninCredentialIntoCookieJar();
     }
     LogSigninReason(reason);
   } else {
@@ -685,8 +691,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     case signin_metrics::Reason::REASON_REAUTHENTICATION:
     case signin_metrics::Reason::REASON_UNLOCK: {
       std::string primary_username =
-          SigninManagerFactory::GetForProfile(profile)
-              ->GetAuthenticatedAccountInfo()
+          IdentityManagerFactory::GetForProfile(profile)
+              ->GetPrimaryAccountInfo()
               .email;
       if (!gaia::AreEmailsSame(default_email, primary_username))
         can_offer_for = CAN_OFFER_SIGNIN_FOR_SECONDARY_ACCOUNT;
