@@ -8,9 +8,9 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_creation_context_type.mojom.h"
-#include "third_party/blink/public/platform/content_security_policy.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
