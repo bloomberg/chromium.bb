@@ -42,6 +42,30 @@ ToAuthenticatorMakeCredentialResponse(
     return base::nullopt;
   }
 
+  base::Optional<FidoTransportProtocol> transport_used;
+  if (credential_attestation.dwVersion >=
+      WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_3) {
+    // dwUsedTransport should have exactly one of the
+    // WEBAUTHN_CTAP_TRANSPORT_* values set.
+    switch (credential_attestation.dwUsedTransport) {
+      case WEBAUTHN_CTAP_TRANSPORT_USB:
+        transport_used = FidoTransportProtocol::kUsbHumanInterfaceDevice;
+        break;
+      case WEBAUTHN_CTAP_TRANSPORT_NFC:
+        transport_used = FidoTransportProtocol::kNearFieldCommunication;
+        break;
+      case WEBAUTHN_CTAP_TRANSPORT_BLE:
+        transport_used = FidoTransportProtocol::kBluetoothLowEnergy;
+        break;
+      case WEBAUTHN_CTAP_TRANSPORT_INTERNAL:
+        transport_used = FidoTransportProtocol::kInternal;
+        break;
+      default:
+        // Ignore _TEST and possibly future others.
+        break;
+    }
+  }
+
   return AuthenticatorMakeCredentialResponse(
       base::nullopt /* transport_used */,
       AttestationObject(

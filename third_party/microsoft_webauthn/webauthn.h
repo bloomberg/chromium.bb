@@ -50,7 +50,7 @@ extern "C" {
 //          - WEBAUTHN_AUTHENTICATOR_MAKE_CREDENTIAL_OPTIONS    :   3
 //          - WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS      :   4
 //          - WEBAUTHN_COMMON_ATTESTATION                       :   1
-//          - WEBAUTHN_CREDENTIAL_ATTESTATION                   :   2
+//          - WEBAUTHN_CREDENTIAL_ATTESTATION                   :   3
 //          - WEBAUTHN_ASSERTION                                :   1
 //      Extensions:
 //          - WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET
@@ -486,7 +486,8 @@ typedef const WEBAUTHN_COMMON_ATTESTATION *PCWEBAUTHN_COMMON_ATTESTATION;
 
 #define WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_1               1
 #define WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_2               2
-#define WEBAUTHN_CREDENTIAL_ATTESTATION_CURRENT_VERSION         WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_2
+#define WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_3               3
+#define WEBAUTHN_CREDENTIAL_ATTESTATION_CURRENT_VERSION         WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_3
 
 typedef struct _WEBAUTHN_CREDENTIAL_ATTESTATION {
     // Version of this structure, to allow for modifications in the future.
@@ -532,6 +533,14 @@ typedef struct _WEBAUTHN_CREDENTIAL_ATTESTATION {
     //
 
     WEBAUTHN_EXTENSIONS Extensions;
+
+    //
+    // Following fields have been added in WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_3
+    //
+
+    // One of the WEBAUTHN_CTAP_TRANSPORT_* bits will be set corresponding to
+    // the transport that was used.
+    DWORD dwUsedTransport;
 
 } WEBAUTHN_CREDENTIAL_ATTESTATION, *PWEBAUTHN_CREDENTIAL_ATTESTATION;
 typedef const WEBAUTHN_CREDENTIAL_ATTESTATION *PCWEBAUTHN_CREDENTIAL_ATTESTATION;

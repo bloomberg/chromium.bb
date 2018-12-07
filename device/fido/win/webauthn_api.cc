@@ -204,11 +204,15 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
         WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()};
     options.pCancellationId = &cancellation_id;
 
-    auto exclude_list_credentials = ToWinCredentialExVector(exclude_list);
-    auto* exclude_list_ptr = exclude_list_credentials.data();
-    WEBAUTHN_CREDENTIAL_LIST credential_list{exclude_list_credentials.size(),
-                                             &exclude_list_ptr};
-    options.pExcludeCredentialList = &credential_list;
+    std::vector<WEBAUTHN_CREDENTIAL_EX> exclude_list_credentials =
+        ToWinCredentialExVector(exclude_list);
+    std::vector<WEBAUTHN_CREDENTIAL_EX*> exclude_list_ptrs;
+    std::transform(exclude_list_credentials.begin(),
+                   exclude_list_credentials.end(), exclude_list_ptrs.begin(),
+                   [](auto& cred) { return &cred; });
+    WEBAUTHN_CREDENTIAL_LIST exclude_credential_list{exclude_list_ptrs.size(),
+                                                     exclude_list_ptrs.data()};
+    options.pExcludeCredentialList = &exclude_credential_list;
 
     WEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr = nullptr;
     HRESULT hresult = authenticator_make_credential_(
@@ -237,15 +241,29 @@ class WinWebAuthnApiImpl : public WinWebAuthnApi {
     }
     options.pCancellationId = &cancellation_id;
 
+    std::vector<WEBAUTHN_CREDENTIAL_EX> allow_list_credentials =
+        ToWinCredentialExVector(allow_list);
+    std::vector<WEBAUTHN_CREDENTIAL_EX*> allow_list_ptrs;
+    std::transform(allow_list_credentials.begin(), allow_list_credentials.end(),
+                   std::back_inserter(allow_list_ptrs),
+                   [](auto& cred) { return &cred; });
+    WEBAUTHN_CREDENTIAL_LIST allow_credential_list{allow_list_ptrs.size(),
+                                                   allow_list_ptrs.data()};
+    options.pAllowCredentialList = &allow_credential_list;
+
     // As of Nov 2018, the WebAuthNAuthenticatorGetAssertion method will fail
     // to challenge credentials via CTAP1 if the allowList is passed in the
     // extended form in WEBAUTHN_AUTHENTICATOR_GET_ASSERTION_OPTIONS (i.e.
-    // pAllowCredentialList instead of CredentialList). The older field we
-    // use here as a work-around does not allow setting transport
-    // restrictions on the credential descriptor.
-    auto credentials = ToWinCredentialVector(allow_list);
-    options.CredentialList =
-        WEBAUTHN_CREDENTIALS{credentials.size(), credentials.data()};
+    // pAllowCredentialList instead of CredentialList). The legacy
+    // CredentialList field works fine, but does not support setting
+    // transport restrictions on the credential descriptor.
+    //
+    // As a workaround, MS tells us to also set the CredentialList parameter
+    // with an accurate cCredentials count and some arbitrary pCredentials
+    // data.
+    auto legacy_credentials = ToWinCredentialVector(allow_list);
+    options.CredentialList = WEBAUTHN_CREDENTIALS{legacy_credentials.size(),
+                                                  legacy_credentials.data()};
 
     WEBAUTHN_CLIENT_DATA client_data{
         WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, client_data_json.size(),
