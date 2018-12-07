@@ -86,6 +86,12 @@
 #include "base/mac/mac_util.h"
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
+#include "extensions/browser/browsertest_util.h"
+#include "extensions/test/test_extension_dir.h"
+#endif
+
 namespace {
 
 const char kCacheRandomPath[] = "/cacherandom";
@@ -649,6 +655,68 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   ASSERT_TRUE(simple_loader_helper.response_body());
   EXPECT_EQ("cookie", *simple_loader_helper.response_body());
 }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+std::unique_ptr<net::test_server::HttpResponse> EchoCookieHeader(
+    const net::test_server::HttpRequest& request) {
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  auto it = request.headers.find("Cookie");
+  if (it != request.headers.end())
+    response->set_content(it->second);
+  response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+  return response;
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
+                       ThirdPartyCookiesAllowedForExtensions) {
+  if (IsRestartStateWithInProcessNetworkService())
+    return;
+
+  // Loading an extension only makes sense for profile contexts.
+  if (GetParam().network_context_type != NetworkContextType::kProfile &&
+      GetParam().network_context_type !=
+          NetworkContextType::kIncognitoProfile) {
+    return;
+  }
+  net::EmbeddedTestServer test_server;
+  net::test_server::RegisterDefaultHandlers(&test_server);
+  test_server.RegisterRequestHandler(base::BindRepeating(&EchoCookieHeader));
+  ASSERT_TRUE(test_server.Start());
+
+  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  SetCookie(CookieType::kFirstParty, CookiePersistenceType::kPersistent);
+
+  extensions::TestExtensionDir extension_dir;
+  extension_dir.WriteManifest(R"({
+    "name": "Cookie Test",
+    "manifest_version": 2,
+    "version": "1.0",
+    "background": {
+      "scripts": ["background.js"]
+    },
+    "incognito": "split",
+    "permissions": ["<all_urls>"]
+   })");
+  extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"), "");
+  extensions::ChromeTestExtensionLoader loader(browser()->profile());
+  loader.set_allow_incognito_access(true);
+  scoped_refptr<const extensions::Extension> extension =
+      loader.LoadExtension(extension_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  GURL url = test_server.GetURL("/echocookieheader");
+  std::string script = R"((url => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = () => domAutomationController.send(xhr.responseText);
+    xhr.send();
+  }))";
+  std::string result =
+      extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+          GetProfile(), extension->id(), script + "('" + url.spec() + "')");
+  EXPECT_EQ("cookie", result);
+}
+#endif
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, BasicRequest) {
   if (IsRestartStateWithInProcessNetworkService())

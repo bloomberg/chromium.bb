@@ -76,6 +76,8 @@ CookieManager::CookieManager(
         params->secure_origin_cookies_allowed_schemes);
     cookie_settings_.set_matching_scheme_cookies_allowed_schemes(
         params->matching_scheme_cookies_allowed_schemes);
+    cookie_settings_.set_third_party_cookies_allowed_schemes(
+        params->third_party_cookies_allowed_schemes);
   }
 }
 

@@ -123,16 +123,42 @@ TEST(CookieSettingsTest, GetCookieSettingSecureOriginCookiesAllowed) {
   settings.set_block_third_party_cookies(true);
 
   ContentSetting setting;
-  settings.GetCookieSetting(GURL("https://foo.com"), GURL("chrome://foo"),
-                            nullptr, &setting);
+  settings.GetCookieSetting(GURL("https://foo.com") /* url */,
+                            GURL("chrome://foo") /* first_party_url */,
+                            nullptr /* source */, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 
-  settings.GetCookieSetting(GURL("chrome://foo"), GURL("https://foo.com"),
-                            nullptr, &setting);
+  settings.GetCookieSetting(GURL("chrome://foo") /* url */,
+                            GURL("https://foo.com") /* first_party_url */,
+                            nullptr /* source */, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 
-  settings.GetCookieSetting(GURL("http://foo.com"), GURL("chrome://foo"),
-                            nullptr, &setting);
+  settings.GetCookieSetting(GURL("http://foo.com") /* url */,
+                            GURL("chrome://foo") /* first_party_url */,
+                            nullptr /* source */, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+}
+
+TEST(CookieSettingsTest, GetCookieSettingWithThirdPartyCookiesAllowedScheme) {
+  CookieSettings settings;
+  settings.set_third_party_cookies_allowed_schemes({"chrome-extension"});
+  settings.set_block_third_party_cookies(true);
+
+  ContentSetting setting;
+  settings.GetCookieSetting(
+      GURL("http://foo.com") /* url */,
+      GURL("chrome-extension://foo") /* first_party_url */,
+      nullptr /* source */, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
+
+  settings.GetCookieSetting(GURL("http://foo.com") /* url */,
+                            GURL("other-scheme://foo") /* first_party_url */,
+                            nullptr /* source */, &setting);
+  EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
+
+  settings.GetCookieSetting(GURL("chrome-extension://foo") /* url */,
+                            GURL("http://foo.com") /* first_party_url */,
+                            nullptr /* source */, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
@@ -142,16 +168,21 @@ TEST(CookieSettingsTest, GetCookieSettingMatchingSchemeCookiesAllowed) {
   settings.set_block_third_party_cookies(true);
 
   ContentSetting setting;
-  settings.GetCookieSetting(GURL("chrome-extension://bar"),
-                            GURL("chrome-extension://foo"), nullptr, &setting);
+  settings.GetCookieSetting(
+      GURL("chrome-extension://bar") /* url */,
+      GURL("chrome-extension://foo") /* first_party_url */,
+      nullptr /* source */, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_ALLOW);
 
-  settings.GetCookieSetting(GURL("http://foo.com"),
-                            GURL("chrome-extension://foo"), nullptr, &setting);
+  settings.GetCookieSetting(
+      GURL("http://foo.com") /* url */,
+      GURL("chrome-extension://foo") /* first_party_url */,
+      nullptr /* source */, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 
-  settings.GetCookieSetting(GURL("chrome-extension://foo"),
-                            GURL("http://foo.com"), nullptr, &setting);
+  settings.GetCookieSetting(GURL("chrome-extension://foo") /* url */,
+                            GURL("http://foo.com") /* first_party_url */,
+                            nullptr /* source */, &setting);
   EXPECT_EQ(setting, CONTENT_SETTING_BLOCK);
 }
 
