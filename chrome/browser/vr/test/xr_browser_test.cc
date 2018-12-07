@@ -4,6 +4,7 @@
 
 #include <cstring>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -11,6 +12,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
@@ -43,25 +45,39 @@ XrBrowserTestBase::XrBrowserTestBase() : env_(base::Environment::Create()) {}
 
 XrBrowserTestBase::~XrBrowserTestBase() = default;
 
-// We need an std::string that is an absolute file path, which requires
-// platform-specific logic since Windows uses std::wstring instead of
-// std::string for FilePaths, but SetVar only accepts std::string.
+// Returns an std::string consisting of the given path relative to the test
+// executable's path, e.g. if the executable is in out/Debug and the given path
+// is "test", the returned string should be out/Debug/test.
+std::string MakeExecutableRelative(const char* path) {
+  base::FilePath executable_path;
+  EXPECT_TRUE(
+      base::PathService::Get(base::BasePathKey::FILE_EXE, &executable_path));
+  executable_path = executable_path.DirName();
+  // We need an std::string that is an absolute file path, which requires
+  // platform-specific logic since Windows uses std::wstring instead of
+  // std::string for FilePaths, but SetVar only accepts std::string.
 #ifdef OS_WIN
-#define MAKE_ABSOLUTE(x) \
-  base::WideToUTF8(      \
-      base::MakeAbsoluteFilePath(base::FilePath(base::UTF8ToWide(x))).value())
+  return base::WideToUTF8(
+      base::MakeAbsoluteFilePath(
+          executable_path.Append(base::FilePath(base::UTF8ToWide(path))))
+          .value());
 #else
-#define MAKE_ABSOLUTE(x) base::MakeAbsoluteFilePath(base::FilePath(x)).value()
+  return base::MakeAbsoluteFilePath(
+             executable_path.Append(base::FilePath(path)))
+      .value();
 #endif
+}
 
 void XrBrowserTestBase::SetUp() {
   // Set the environment variable to use the mock OpenVR client.
-  EXPECT_TRUE(env_->SetVar(kVrOverrideEnvVar, MAKE_ABSOLUTE(kVrOverrideVal)))
-      << "Failed to set OpenVR mock client location environment variable";
   EXPECT_TRUE(
-      env_->SetVar(kVrConfigPathEnvVar, MAKE_ABSOLUTE(kVrConfigPathVal)))
+      env_->SetVar(kVrOverrideEnvVar, MakeExecutableRelative(kVrOverrideVal)))
+      << "Failed to set OpenVR mock client location environment variable";
+  EXPECT_TRUE(env_->SetVar(kVrConfigPathEnvVar,
+                           MakeExecutableRelative(kVrConfigPathVal)))
       << "Failed to set OpenVR config location environment variable";
-  EXPECT_TRUE(env_->SetVar(kVrLogPathEnvVar, MAKE_ABSOLUTE(kVrLogPathVal)))
+  EXPECT_TRUE(
+      env_->SetVar(kVrLogPathEnvVar, MakeExecutableRelative(kVrLogPathVal)))
       << "Failed to set OpenVR log location environment variable";
 
   // Set any command line flags that subclasses have set, e.g. enabling WebVR
