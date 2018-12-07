@@ -1182,6 +1182,7 @@ bool QuicConnection::OnPathChallengeFrame(const QuicPathChallengeFrame& frame) {
 }
 
 bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
+  should_last_packet_instigate_acks_ = true;
   if (!transmitted_connectivity_probe_payload_ ||
       *transmitted_connectivity_probe_payload_ != frame.data_buffer) {
     // Is not for the probe we sent, ignore it.
@@ -1190,7 +1191,6 @@ bool QuicConnection::OnPathResponseFrame(const QuicPathResponseFrame& frame) {
   // Have received the matching PATH RESPONSE, saved payload no longer valid.
   transmitted_connectivity_probe_payload_ = nullptr;
   UpdatePacketContent(FIRST_FRAME_IS_PING);
-  should_last_packet_instigate_acks_ = true;
   return true;
 }
 
