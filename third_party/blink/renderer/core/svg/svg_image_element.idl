@@ -37,7 +37,8 @@
     // https://github.com/ojanvafai/intrinsicsize-attribute/blob/master/README.md
     [RuntimeEnabled=ExperimentalProductivityFeatures, CEReactions, Reflect] attribute DOMString intrinsicSize;
 
-    [CallWith=ScriptState, RaisesException] Promise decode();
+    // Follow HTMLImageElement's spec
+    [CallWith=ScriptState, RaisesException] Promise<void> decode();
 };
 
 SVGImageElement implements SVGURIReference;

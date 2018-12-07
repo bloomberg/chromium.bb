@@ -33,8 +33,5 @@
 [
   ImplementedAs=NavigatorWebMIDI
 ] partial interface Navigator {
-  [
-    CallWith = ScriptState, MeasureAs = RequestMIDIAccess_ObscuredByFootprinting
-  ] Promise
-  requestMIDIAccess(optional MIDIOptions options);
+  [CallWith=ScriptState, MeasureAs=RequestMIDIAccess_ObscuredByFootprinting] Promise<MIDIAccess> requestMIDIAccess(optional MIDIOptions options);
 };

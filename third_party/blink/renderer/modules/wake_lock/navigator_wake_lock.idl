@@ -9,5 +9,5 @@
   ImplementedAs=NavigatorWakeLock,
   RuntimeEnabled=WakeLockNavigator
 ] partial interface Navigator {
-  [CallWith=ScriptState] Promise getWakeLock(WakeLockType type);
+  [CallWith=ScriptState] Promise<WakeLock> getWakeLock(WakeLockType type);
 };

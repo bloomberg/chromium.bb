@@ -49,5 +49,5 @@
     readonly attribute ComputedAccessibleNode? previousSibling;
     readonly attribute ComputedAccessibleNode? nextSibling;
 
-    [CallWith=ScriptState] Promise ensureUpToDate();
+    [CallWith=ScriptState] Promise<any> ensureUpToDate();
 };

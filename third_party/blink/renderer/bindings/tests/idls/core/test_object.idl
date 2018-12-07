@@ -84,7 +84,7 @@ interface TestObject {
     attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
     // Custom type conversions
-    attribute Promise promiseAttribute;
+    attribute Promise<any> promiseAttribute;
     attribute Window windowAttribute;
     // DOM Node types
     attribute Document documentAttribute;
@@ -347,12 +347,12 @@ interface TestObject {
     void passPermissiveDictionaryMethod([PermissiveDictionaryConversion] optional TestDictionary arg);
     NodeFilter nodeFilterMethod();
     Promise<void> promiseMethod(long arg1, Dictionary arg2, DOMString arg3, DOMString... variadic);
-    Promise promiseMethodWithoutExceptionState(Dictionary arg1);
+    Promise<any> promiseMethodWithoutExceptionState(Dictionary arg1);
     SerializedScriptValue serializedScriptValueMethod();
     XPathNSResolver xPathNSResolverMethod();
     void voidMethodDictionaryArg(Dictionary dictionaryArg);
     void voidMethodNodeFilterArg(NodeFilter nodeFilterArg);
-    void voidMethodPromiseArg(Promise promiseArg);
+    void voidMethodPromiseArg(Promise<any> promiseArg);
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
     void voidMethodDictionarySequenceArg(sequence<Dictionary> dictionarySequenceArg);
@@ -425,9 +425,9 @@ interface TestObject {
     void overloadedMethodN(TestInterface testInterfaceArg);
     void overloadedMethodN(TestCallbackInterface testCallbackInterfaceArg);
 
-    Promise promiseOverloadMethod();
-    Promise promiseOverloadMethod(Window arg1, double arg2);
-    Promise promiseOverloadMethod(Document arg1, double arg2);
+    Promise<any> promiseOverloadMethod();
+    Promise<any> promiseOverloadMethod(Window arg1, double arg2);
+    Promise<any> promiseOverloadMethod(Document arg1, double arg2);
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
     [PerWorldBindings] void overloadedPerWorldBindingsMethod(long longArg);
