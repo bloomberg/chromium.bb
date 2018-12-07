@@ -44,7 +44,7 @@ DecodeStatus HpackVarintDecoder::StartExtended(uint8_t prefix_length,
 
 DecodeStatus HpackVarintDecoder::Resume(DecodeBuffer* db) {
   if (decode_64_bits_) {
-    HTTP2_FLAG_COUNT(chromium_flag_http2_varint_decode_64_bits);
+    HTTP2_RELOADABLE_FLAG_COUNT(http2_varint_decode_64_bits);
     // There can be at most 10 continuation bytes.  Offset is zero for the
     // first one and increases by 7 for each subsequent one.
     const uint8_t kMaxOffset = 63;

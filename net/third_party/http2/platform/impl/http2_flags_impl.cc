@@ -4,4 +4,4 @@
 
 #include "net/third_party/http2/platform/impl/http2_flags_impl.h"
 
-bool FLAGS_chromium_flag_http2_varint_decode_64_bits = true;
+bool FLAGS_http2_varint_decode_64_bits = true;

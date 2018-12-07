@@ -7,8 +7,7 @@
 
 #include "net/third_party/http2/platform/api/http2_export.h"
 
-HTTP2_EXPORT_PRIVATE extern bool
-    FLAGS_chromium_flag_http2_varint_decode_64_bits;
+HTTP2_EXPORT_PRIVATE extern bool FLAGS_http2_varint_decode_64_bits;
 
 namespace http2 {
 
@@ -20,7 +19,7 @@ inline void SetHttp2FlagImpl(bool* f, bool v) {
   *f = v;
 }
 
-#define HTTP2_RELOADABLE_FLAG(flag) FLAGS_chromium_flag_##flag
+#define HTTP2_RELOADABLE_FLAG(flag) FLAGS_##flag
 
 #define GetHttp2ReloadableFlagImpl(flag) \
   GetHttp2FlagImpl(HTTP2_RELOADABLE_FLAG(flag))
