@@ -61,9 +61,6 @@
     'android_lint': {
       'filepath': 'build/android/lint/'
     },
-    'android_loading': {
-      'filepath': 'tools/android/loading/'
-    },
     'android_media': {
       'filepath': 'content/browser/media/android' \
                   '|content/renderer/media/android' \
@@ -1787,8 +1784,6 @@
     'android_item_chooser_dialogs': ['juncai+watch@chromium.org',
                                      'ortuno+watch@chromium.org'],
     'android_lint': ['wnwen+watch@chromium.org'],
-    'android_loading': ['gabadie+watch@chromium.org',
-                        'lizeb+watch-android-loading@chromium.org'],
     'android_media': ['mlamouri+watch-media@chromium.org'],
     'android_search_widget': ['tedchoc+watch@chromium.org',
                               'yusufo+watch@chromium.org'],
