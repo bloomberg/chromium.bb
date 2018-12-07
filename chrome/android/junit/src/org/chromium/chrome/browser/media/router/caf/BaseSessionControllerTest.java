@@ -62,7 +62,7 @@ public class BaseSessionControllerTest {
     @Mock
     private CafBaseMediaRouteProvider mProvider;
     @Mock
-    private BaseNotificationController mNotificationController;
+    private CafNotificationController mNotificationController;
     @Mock
     private MediaSource mSource;
     @Mock
@@ -91,9 +91,10 @@ public class BaseSessionControllerTest {
                 new MediaRouteSelector.Builder()
                         .addControlCategory(CastMediaControlIntent.categoryForCast(APP_ID))
                         .build();
-        mController = new TestSessionController(mProvider, mNotificationController);
+        mController = new BaseSessionController(mProvider);
         mRequestInfo = new CreateRouteRequestInfo(mSource, mSink, PRESENTATION_ID, ORIGIN, TAB_ID,
                 false, 1, mMediaRouterHelper.getCastRoute());
+        mController.mNotificationController = mNotificationController;
 
         doReturn(mSessionManager).when(mCastContext).getSessionManager();
         doReturn(mRemoteMediaClient).when(mCastSession).getRemoteMediaClient();
@@ -209,20 +210,5 @@ public class BaseSessionControllerTest {
 
         callbackCaptor.getValue().onMetadataUpdated();
         verify(mNotificationController).onMetadataUpdated();
-    }
-
-    private static class TestSessionController extends BaseSessionController {
-        public BaseNotificationController mNotificationController;
-
-        public TestSessionController(CafBaseMediaRouteProvider provider,
-                BaseNotificationController notificationController) {
-            super(provider);
-            mNotificationController = notificationController;
-        }
-
-        @Override
-        public BaseNotificationController getNotificationController() {
-            return mNotificationController;
-        }
     }
 }

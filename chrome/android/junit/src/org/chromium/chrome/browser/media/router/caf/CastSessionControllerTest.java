@@ -61,6 +61,8 @@ public class CastSessionControllerTest {
     @Mock
     private CafMediaRouteProvider mProvider;
     @Mock
+    private CafNotificationController mNotificationController;
+    @Mock
     private MediaSource mSource;
     @Mock
     private MediaSink mSink;
@@ -83,6 +85,7 @@ public class CastSessionControllerTest {
         mContext = RuntimeEnvironment.application;
         mMediaRouterHelper = new MediaRouterTestHelper();
         mController = spy(new CastSessionController(mProvider));
+        mController.mNotificationController = mNotificationController;
         mController.initNestedFieldsForTesting();
 
         doReturn(mRemoteMediaClient).when(mCastSession).getRemoteMediaClient();
