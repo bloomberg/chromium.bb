@@ -1029,7 +1029,6 @@ if (!is_ios) {
     }
 
     data = [
-      "$root_build_dir/resources/inspector/",
       "//testing/scripts/common.py",
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
