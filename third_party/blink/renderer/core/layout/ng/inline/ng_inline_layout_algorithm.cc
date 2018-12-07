@@ -583,6 +583,10 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
 // Justify the line. This changes the size of items by adding spacing.
 // Returns false if justification failed and should fall back to start-aligned.
 bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
+  // Empty lines should align to start.
+  if (line_info->IsEmptyLine())
+    return false;
+
   NGLineAlign align(*line_info);
   if (align.space <= 0)
     return false;  // no expansion is needed.
@@ -596,6 +600,7 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(NGLineInfo* line_info) {
   // Append a hyphen if the last word is hyphenated. The hyphen is in
   // |ShapeResult|, but not in text. |ShapeResultSpacing| needs the text that
   // matches to the |ShapeResult|.
+  DCHECK(!line_info->Results().IsEmpty());
   const NGInlineItemResult& last_item_result = line_info->Results().back();
   if (last_item_result.text_end_effect == NGTextEndEffect::kHyphen)
     line_text.append(last_item_result.item->Style()->HyphenString());
