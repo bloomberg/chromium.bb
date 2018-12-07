@@ -195,6 +195,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
       const std::map<std::string, std::vector<uint8_t>>& service_data,
       const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data);
 
+  // Updates the EIR property of fake device with object path |object_path| to
+  // |eir|, if the fake device exists.
+  void UpdateEIR(const dbus::ObjectPath& object_path,
+                 const std::vector<uint8_t>& eir);
+
   // Adds a pending prepare write request to |object_path|.
   void AddPrepareWriteRequest(const dbus::ObjectPath& object_path,
                               const std::vector<uint8_t>& value);

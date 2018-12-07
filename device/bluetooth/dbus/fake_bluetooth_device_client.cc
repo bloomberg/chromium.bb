@@ -1631,6 +1631,19 @@ void FakeBluetoothDeviceClient::UpdateServiceAndManufacturerData(
   properties->manufacturer_data.ReplaceValue(merged_manufacturer_data);
 }
 
+void FakeBluetoothDeviceClient::UpdateEIR(const dbus::ObjectPath& object_path,
+                                          const std::vector<uint8_t>& eir) {
+  PropertiesMap::const_iterator iter = properties_map_.find(object_path);
+  if (iter == properties_map_.end()) {
+    VLOG(2) << "Fake device does not exist: " << object_path.value();
+    return;
+  }
+  Properties* properties = iter->second.get();
+  DCHECK(properties);
+  properties->eir.set_valid(true);
+  properties->eir.ReplaceValue(eir);
+}
+
 void FakeBluetoothDeviceClient::UpdateConnectionInfo(
     uint16_t connection_rssi,
     uint16_t transmit_power,
