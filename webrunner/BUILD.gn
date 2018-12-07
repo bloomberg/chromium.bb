@@ -31,17 +31,43 @@ fuchsia_package_runner("castrunner") {
       ] ]
 }
 
-executable("castrunner_exe") {
+source_set("castrunner_common") {
   sources = [
     "app/cast/cast_runner.cc",
     "app/cast/cast_runner.h",
-    "app/cast/main.cc",
   ]
   deps = [
     ":web_fidl",
-    ":webrunner_common",
     "//base",
     "//url",
+  ]
+  public_deps = [
+    ":webrunner_common",
+  ]
+}
+
+executable("castrunner_exe") {
+  sources = [
+    "app/cast/main.cc",
+  ]
+  deps = [
+    ":castrunner_common",
+    ":webrunner_common",
+    "//base",
+  ]
+}
+
+test("castrunner_unittests") {
+  sources = [
+    "app/cast/cast_runner_unittest.cc",
+  ]
+  deps = [
+    ":castrunner_common",
+    ":test_support",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -74,6 +100,9 @@ source_set("webrunner_common") {
     "//third_party/fuchsia-sdk/sdk:app",
     "//third_party/fuchsia-sdk/sdk:viewsv1",
     "//url",
+  ]
+  public_deps = [
+    "//third_party/fuchsia-sdk/sdk:sys",
   ]
 }
 
