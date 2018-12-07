@@ -28,26 +28,16 @@ Polymer({
     });
   },
 
-  /**
-   * Elements can override onRouteChange to handle route changes.
-   * Overrides function in behavior.
-   * @param {!welcome.Routes} route
-   * @param {number} step
-   */
-  onRouteChange: function(route, step) {
-    if (`step-${step}` == this.id) {
-      this.finalized_ = false;
-      nux.BookmarkProxyImpl.getInstance().isBookmarkBarShown().then(
-          bookmarkBarShown => {
-            this.$.appChooser.bookmarkBarWasShown = bookmarkBarShown;
-          });
-      this.$.appChooser.populateAllBookmarks();
-    } else {
-      if (this.finalized_)
-        return;
-      // TODO(hcarmona): Add metrics?
-      this.$.appChooser.removeAllBookmarks();
-    }
+  onRouteEnter: function() {
+    this.finalized_ = false;
+    this.$.appChooser.populateAllBookmarks();
+  },
+
+  onRouteExit: function() {
+    if (this.finalized_)
+      return;
+    // TODO(hcarmona): Add metrics?
+    this.$.appChooser.removeAllBookmarks();
   },
 
   /** @private */

@@ -55,6 +55,7 @@ js_library("welcome_app") {
     ":navigation_behavior",
     ":welcome_browser_proxy",
     "./set_as_default/:nux_set_as_default_proxy",
+    "./shared:bookmark_proxy",
     "./shared:nux_types",
     "//ui/webui/resources/cr_elements/cr_view_manager:cr_view_manager",
     "//ui/webui/resources/js:cr",

@@ -27,8 +27,6 @@ Polymer({
      */
     emailList_: Array,
 
-    bookmarkBarWasShown: Boolean,
-
     /** @private */
     finalized_: Boolean,
 
@@ -38,7 +36,6 @@ Polymer({
     /** @private {?nuxEmail.EmailProviderModel} */
     selectedEmailProvider_: {
       type: Object,
-      value: () => null,
       observer: 'onSelectedEmailProviderChange_',
     },
   },
@@ -48,6 +45,15 @@ Polymer({
 
   /** @private {nux.BookmarkProxy} */
   bookmarkProxy_: null,
+
+  /** @private {nux.BookmarkBarManager} */
+  bookmarkBarManager_: null,
+
+  /** @private {boolean} */
+  wasBookmarkBarShownOnInit_: false,
+
+  /** @private {Promise} */
+  listInitialized_: null,
 
   /** @override */
   attached: function() {
@@ -60,14 +66,12 @@ Polymer({
   ready: function() {
     this.emailProxy_ = nux.NuxEmailProxyImpl.getInstance();
     this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
+    this.bookmarkBarManager_ = nux.BookmarkBarManager.getInstance();
 
     this.emailProxy_.recordPageInitialized();
 
-    this.emailProxy_.getEmailList().then(list => {
+    this.listInitialized_ = this.emailProxy_.getEmailList().then(list => {
       this.emailList_ = list;
-
-      // Pre-select fist email provider.
-      this.selectedEmailProvider_ = this.emailList_[0];
     });
 
     window.addEventListener('beforeunload', () => {
@@ -78,7 +82,7 @@ Polymer({
       if (this.selectedEmailProvider_) {
         // TODO(hcarmona): metrics.
         this.revertBookmark_();
-        this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+        this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
       }
 
       this.emailProxy_.recordFinalize();
@@ -87,11 +91,22 @@ Polymer({
 
   /** Initializes the section when navigated to. */
   initializeSection: function() {
+    this.wasBookmarkBarShownOnInit_ = this.bookmarkBarManager_.getShown();
     this.finalized_ = false;
-    if (this.selectedEmailProvider_) {
-      this.addBookmark_(this.selectedEmailProvider_);
-      this.bookmarkProxy_.toggleBookmarkBar(true);
-    }
+
+    assert(this.listInitialized_);
+    this.listInitialized_.then(() => {
+      // If selectedEmailProvider_ was never initialized, and not explicitly
+      // cancelled by the user at some point (in which case it would be null),
+      // then default to the first option.
+      if (this.selectedEmailProvider_ === undefined) {
+        this.selectedEmailProvider_ = this.emailList_[0];
+      }
+
+      if (this.selectedEmailProvider_) {
+        this.addBookmark_(this.selectedEmailProvider_);
+      }
+    });
   },
 
   /** Finalizes the section when navigated away from. */
@@ -102,7 +117,7 @@ Polymer({
     if (this.selectedEmailProvider_) {
       // TODO(hcarmona): metrics?
       this.revertBookmark_();
-      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+      this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
     }
   },
 
@@ -159,7 +174,7 @@ Polymer({
     emailProvider.bookmarkId = 'pending';
 
     this.emailProxy_.cacheBookmarkIcon(emailProvider.id);
-    this.bookmarkProxy_.toggleBookmarkBar(true);
+    this.bookmarkBarManager_.setShown(true);
     this.bookmarkProxy_.addBookmark(
         {
           title: emailProvider.name,
@@ -202,7 +217,7 @@ Polymer({
     if (newEmail)
       this.addBookmark_(newEmail);
     else
-      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+      this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
 
     // Announcements are mutually exclusive, so keeping separate.
     if (prevEmail && newEmail) {
@@ -218,7 +233,7 @@ Polymer({
   onNoThanksClicked_: function() {
     this.finalized_ = true;
     this.revertBookmark_();
-    this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+    this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
     this.emailProxy_.recordNoThanks();
     welcome.navigateToNextStep();
   },

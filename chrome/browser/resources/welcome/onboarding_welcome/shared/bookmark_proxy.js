@@ -55,8 +55,38 @@ cr.define('nux', function() {
 
   cr.addSingletonGetter(BookmarkProxyImpl);
 
+  // Wrapper for bookmark proxy to keep some additional states.
+  class BookmarkBarManager {
+    constructor() {
+      /** @private {nux.BookmarkProxy} */
+      this.proxy_ = BookmarkProxyImpl.getInstance();
+
+      /** @private {boolean} */
+      this.isBarShown_ = false;
+
+      /** @type {!Promise} */
+      this.initialized = this.proxy_.isBookmarkBarShown().then(shown => {
+        this.isBarShown_ = shown;
+      });
+    }
+
+    /** @return {boolean} */
+    getShown() {
+      return this.isBarShown_;
+    }
+
+    /** @param {boolean} show */
+    setShown(show) {
+      this.isBarShown_ = show;
+      this.proxy_.toggleBookmarkBar(show);
+    }
+  }
+
+  cr.addSingletonGetter(BookmarkBarManager);
+
   return {
     BookmarkProxy: BookmarkProxy,
     BookmarkProxyImpl: BookmarkProxyImpl,
+    BookmarkBarManager: BookmarkBarManager,
   };
 });

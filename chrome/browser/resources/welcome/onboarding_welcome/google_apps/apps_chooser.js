@@ -36,8 +36,6 @@ Polymer({
      */
     appList_: Array,
 
-    bookmarkBarWasShown: Boolean,
-
     hasAppsSelected: {
       type: Boolean,
       notify: true,
@@ -51,6 +49,12 @@ Polymer({
   /** @private {nux.BookmarkProxy} */
   bookmarkProxy_: null,
 
+  /** @private {nux.BookmarkBarManager} */
+  bookmarkBarManager_: null,
+
+  /** @private {boolean} */
+  wasBookmarkBarShownOnInit_: false,
+
   /** @override */
   attached: function() {
     Polymer.RenderStatus.afterNextRender(this, () => {
@@ -62,10 +66,13 @@ Polymer({
   ready() {
     this.appsProxy_ = nux.NuxGoogleAppsProxyImpl.getInstance();
     this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
+    this.bookmarkBarManager_ = nux.BookmarkBarManager.getInstance();
   },
 
   /** Called when bookmarks should be created for all selected apps. */
   populateAllBookmarks() {
+    this.wasBookmarkBarShownOnInit_ = this.bookmarkBarManager_.getShown();
+
     if (this.appList_) {
       this.appList_.forEach(app => this.updateBookmark(app));
     } else {
@@ -98,7 +105,7 @@ Polymer({
     });
     // Only update and announce if we removed bookmarks.
     if (removedBookmarks) {
-      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+      this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
       this.fire('iron-announce', {text: this.i18n('bookmarksRemoved')});
     }
   },
@@ -109,7 +116,7 @@ Polymer({
    */
   updateBookmark(item) {
     if (item.selected && !item.bookmarkId) {
-      this.bookmarkProxy_.toggleBookmarkBar(true);
+      this.bookmarkBarManager_.setShown(true);
       this.bookmarkProxy_.addBookmark(
           {
             title: item.name,
@@ -168,6 +175,6 @@ Polymer({
   updateHasAppsSelected: function() {
     this.hasAppsSelected = this.appList_ && this.appList_.some(a => a.selected);
     if (!this.hasAppsSelected)
-      this.bookmarkProxy_.toggleBookmarkBar(this.bookmarkBarWasShown);
+      this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
   },
 });
