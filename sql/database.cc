@@ -1490,23 +1490,15 @@ bool Database::DoesSchemaItemExist(const char* name, const char* type) const {
 
 bool Database::DoesColumnExist(const char* table_name,
                                const char* column_name) const {
-  std::string sql("PRAGMA TABLE_INFO(");
-  sql.append(table_name);
-  sql.append(")");
-
-  Statement statement(GetUntrackedStatement(sql.c_str()));
-
-  // This can happen if the database is corrupt and the error is a test
-  // expectation.
-  if (!statement.is_valid())
-    return false;
-
-  while (statement.Step()) {
-    if (base::EqualsCaseInsensitiveASCII(statement.ColumnString(1),
-                                         column_name))
-      return true;
-  }
-  return false;
+  // sqlite3_table_column_metadata uses out-params to return column definition
+  // details, such as the column type and whether it allows NULL values. These
+  // aren't needed to compute the current method's result, so we pass in nullptr
+  // for all the out-params.
+  int error = sqlite3_table_column_metadata(
+      db_, "main", table_name, column_name, /* pzDataType= */ nullptr,
+      /* pzCollSeq= */ nullptr, /* pNotNull= */ nullptr,
+      /* pPrimaryKey= */ nullptr, /* pAutoinc= */ nullptr);
+  return error == SQLITE_OK;
 }
 
 int64_t Database::GetLastInsertRowId() const {
