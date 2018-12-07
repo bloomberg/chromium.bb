@@ -51,6 +51,8 @@ BLINK_COMMON_EXPORT extern const char kMixedContentAutoupgradeModeBlockable[];
 BLINK_COMMON_EXPORT extern const char
     kMixedContentAutoupgradeModeOptionallyBlockable[];
 
+BLINK_COMMON_EXPORT extern const base::Feature kDecodeLossyWebPImagesToYUV;
+
 }  // namespace features
 }  // namespace blink
 

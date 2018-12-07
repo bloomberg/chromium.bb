@@ -146,5 +146,10 @@ const char kMixedContentAutoupgradeModeBlockable[] = "blockable";
 const char kMixedContentAutoupgradeModeOptionallyBlockable[] =
     "optionally-blockable";
 
+// Decodes lossy WebP images to YUV instead of RGBX and stores in this format
+// in the image decode cache. See crbug.com/900264 for details on the feature.
+const base::Feature kDecodeLossyWebPImagesToYUV{
+    "DecodeLossyWebPImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink
