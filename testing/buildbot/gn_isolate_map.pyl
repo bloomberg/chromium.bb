@@ -1336,6 +1336,10 @@
     "label": "//components/viz:viz_unittests",
     "type": "windowed_test_launcher",
   },
+  'vr_android_unittests': {
+    "label": "//chrome/browser/android/vr:vr_android_unittests",
+    "type": "console_test_launcher",
+  },
   "vr_common_unittests": {
     "label": "//chrome/browser/vr:vr_common_unittests",
     "type": "console_test_launcher",
