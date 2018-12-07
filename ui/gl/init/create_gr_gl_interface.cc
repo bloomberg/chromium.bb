@@ -523,9 +523,6 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // functions->fCreateImage = nullptr;
   // functions->fDestroyImage = nullptr;
 
-  // GL 4.0 or GL_ARB_sample_shading or ES+GL_OES_sample_shading
-  functions->fMinSampleShading = gl->glMinSampleShadingFn;
-
   functions->fFenceSync = gl->glFenceSyncFn;
   functions->fIsSync = gl->glIsSyncFn;
   functions->fClientWaitSync = gl->glClientWaitSyncFn;
