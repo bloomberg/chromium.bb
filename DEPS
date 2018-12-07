@@ -614,8 +614,9 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/crc32c.git' + '@' + 'f8925d027884dde9a8f567f1fa230b92048f6132',
 
   # For Linux and Chromium OS.
+  # Manually rolled onto the release-R71-11151.B branch.
   'src/third_party/cros_system_api': {
-      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + '5a432f7b9d71d63dee1afed6769cdb0e71b6895d',
+      'url': Var('chromium_git') + '/chromiumos/platform2/system_api.git' + '@' + 'ca14da75123ef1055bf2441f2a07869b01fe4728',
       'condition': 'checkout_linux',
   },
 
