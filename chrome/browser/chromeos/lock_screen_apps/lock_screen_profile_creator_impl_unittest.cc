@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -30,11 +31,13 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_session.h"
+#include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -208,6 +211,9 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
   ~LockScreenProfileCreatorImplTest() override {}
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        extensions::switches::kWhitelistedExtensionID,
+        crx_file::id_util::GenerateId("test_app"));
     ASSERT_TRUE(user_data_dir_.CreateUniqueTempDir());
 
     auto profile_manager =
@@ -275,6 +281,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
 
     return extensions::ExtensionBuilder()
         .SetManifest(manifest_builder.Build())
+        .SetID(crx_file::id_util::GenerateId("test_app"))
         .Build();
   }
 
