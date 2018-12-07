@@ -395,13 +395,15 @@ bool UsageTimeLimitProcessor::IsUsageLimitOverridden(
       usage_limit_entry->last_updated > time_limit_override_->created_at)
     return false;
 
+  base::Time last_reset_time = ConvertPolicyTime(LockOverrideResetTime(), 0);
   bool usage_limit_enforced_previously =
       previous_state_->is_time_usage_limit_enabled &&
       previous_state_->remaining_usage <= base::TimeDelta::FromMinutes(0);
   bool override_created_after_usage_limit_start =
       !previous_state_->time_usage_limit_started.is_null() &&
       time_limit_override_->created_at >
-          previous_state_->time_usage_limit_started;
+          previous_state_->time_usage_limit_started &&
+      time_limit_override_->created_at >= last_reset_time;
   return usage_limit_enforced_previously &&
          override_created_after_usage_limit_start;
 }
@@ -474,7 +476,7 @@ UsageTimeLimitProcessor::GetEnabledTimeUsageLimit() {
     return base::nullopt;
 
   internal::Weekday current_usage_limit_day =
-      current_time_ > ConvertPolicyTime(UsageLimitResetTime(), 0)
+      current_time_ >= ConvertPolicyTime(UsageLimitResetTime(), 0)
           ? current_weekday_
           : internal::WeekdayShift(current_weekday_, -1);
   return time_usage_limit_->entries[current_usage_limit_day];
@@ -719,9 +721,8 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
     }
   }
 
-  // Minimum time when the time usage quota could end. Not calculated when
-  // time usage limit has already finished. If there is no active time usage
-  // limit on the current day, we search on the following days.
+  // Minimum time when the current time usage quota could end. Not calculated
+  // when time usage limit has already finished.
   if (time_usage_limit_ && !active_time_usage_limit_ &&
       !overridden_usage_limit_ && !active_time_window_limit_) {
     // If there is an active time usage, we just look when it would lock the
@@ -733,22 +734,24 @@ base::Time UsageTimeLimitProcessor::GetNextStateChangeTime(
         next_change = quota_ends;
         *out_next_active = ActivePolicies::kUsageLimit;
       }
-    } else {
-      // Look for the next time usage, and calculate when the minimum time it
-      // could end.
-      for (int i = 0; i < static_cast<int>(internal::Weekday::kCount); i++) {
-        base::Optional<internal::TimeUsageLimitEntry> usage_limit_entry =
-            time_usage_limit_
-                ->entries[internal::WeekdayShift(current_weekday_, i)];
-        if (usage_limit_entry) {
-          base::Time quota_ends = ConvertPolicyTime(UsageLimitResetTime(), i) +
-                                  usage_limit_entry->usage_quota;
-          if (IsBefore(quota_ends, next_change)) {
-            next_change = quota_ends;
-            *out_next_active = ActivePolicies::kUsageLimit;
-          }
-          break;
+    }
+  }
+
+  // Look for the next time usage, and calculate the minimum time when it could
+  // end.
+  if (time_usage_limit_) {
+    for (int i = 1; i < static_cast<int>(internal::Weekday::kCount); i++) {
+      base::Optional<internal::TimeUsageLimitEntry> usage_limit_entry =
+          time_usage_limit_
+              ->entries[internal::WeekdayShift(current_weekday_, i)];
+      if (usage_limit_entry) {
+        base::Time quota_ends = ConvertPolicyTime(UsageLimitResetTime(), i) +
+                                usage_limit_entry->usage_quota;
+        if (IsBefore(quota_ends, next_change)) {
+          next_change = quota_ends;
+          *out_next_active = ActivePolicies::kUsageLimit;
         }
+        break;
       }
     }
   }
