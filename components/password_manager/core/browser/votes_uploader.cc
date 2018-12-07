@@ -307,6 +307,9 @@ bool VotesUploader::UploadPasswordVote(
     logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
   }
 
+  // Annotate the form with the source language of the page.
+  form_structure.set_page_language(client_->GetPageLanguage());
+
   // Attach the Randomized Encoder.
   form_structure.set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
@@ -360,6 +363,9 @@ void VotesUploader::UploadFirstLoginVotes(
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogFormStructure(Logger::STRING_FORM_VOTES, form_structure);
   }
+
+  // Annotate the form with the source language of the page.
+  form_structure.set_page_language(client_->GetPageLanguage());
 
   // Attach the Randomized Encoder.
   form_structure.set_randomized_encoder(

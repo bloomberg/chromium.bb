@@ -80,6 +80,10 @@ const LogManager* PasswordManagerClient::GetLogManager() const {
 
 void PasswordManagerClient::AnnotateNavigationEntry(bool has_password_field) {}
 
+std::string PasswordManagerClient::GetPageLanguage() const {
+  return std::string();
+}
+
 PasswordRequirementsService*
 PasswordManagerClient::GetPasswordRequirementsService() {
   // Not impemented but that is a valid state as per interface definition.

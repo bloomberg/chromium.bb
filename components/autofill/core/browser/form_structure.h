@@ -325,6 +325,12 @@ class FormStructure {
 
   void set_is_rich_query_enabled(bool v) { is_rich_query_enabled_ = v; }
 
+  const std::string& page_language() const { return page_language_; }
+
+  void set_page_language(std::string language) {
+    page_language_ = std::move(language);
+  }
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
@@ -468,6 +474,10 @@ class FormStructure {
   // to those fields which are bound when POSTing.
   static base::string16 FindLongestCommonPrefix(
       const std::vector<base::string16>& strings);
+
+  // The language detected for this form's page, prior to any translations
+  // performed by Chrome.
+  std::string page_language_;
 
   // The id attribute of the form.
   base::string16 id_attribute_;

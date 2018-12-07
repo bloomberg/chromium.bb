@@ -437,6 +437,9 @@ bool AutofillManager::MaybeStartVoteUploadProcess(
   for (const CreditCard* card : credit_cards)
     copied_credit_cards.push_back(*card);
 
+  // Annotate the form with the source language of the page.
+  form_structure->set_page_language(client_->GetPageLanguage());
+
   // Attach the Randomized Encoder.
   form_structure->set_randomized_encoder(
       RandomizedEncoder::Create(client_->GetPrefs()));
@@ -1562,6 +1565,12 @@ void AutofillManager::OnFormsParsed(
                               client_->GetUkmSourceId(), form_structure);
     std::set<FormType> current_form_types = form_structure->GetFormTypes();
     form_types.insert(current_form_types.begin(), current_form_types.end());
+
+    // Annotate the form with the source language of the page.
+    // TODO(898510): Move this earlier in the form parsing flow. Ideally the
+    // form structure should be annotated with the page language before the
+    // heuristics are run.
+    form_structure->set_page_language(client_->GetPageLanguage());
 
     // Configure the query encoding for this form and add it to the appropriate
     // collection of forms: queryable vs non-queryable.

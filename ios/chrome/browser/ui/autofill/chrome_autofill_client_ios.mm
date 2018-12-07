@@ -22,6 +22,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/legacy_strike_database_factory.h"
@@ -33,6 +34,7 @@
 #import "ios/chrome/browser/ssl/insecure_input_tab_helper.h"
 #include "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
+#include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #include "ios/chrome/browser/ui/autofill/save_card_infobar_controller.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
@@ -168,6 +170,18 @@ ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   security_state::SecurityInfo result;
   ios_security_state_tab_helper->GetSecurityInfo(&result);
   return result.security_level;
+}
+
+std::string ChromeAutofillClientIOS::GetPageLanguage() const {
+  // TODO(crbug.com/912597): iOS vs other platforms extracts language from
+  // the top level frame vs whatever frame directly holds the form.
+  auto* translate_client = ChromeIOSTranslateClient::FromWebState(web_state_);
+  if (translate_client) {
+    auto* translate_manager = translate_client->GetTranslateManager();
+    if (translate_manager)
+      return translate_manager->GetLanguageState().original_language();
+  }
+  return std::string();
 }
 
 void ChromeAutofillClientIOS::ShowAutofillSettings(

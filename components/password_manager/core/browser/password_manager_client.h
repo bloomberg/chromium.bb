@@ -216,6 +216,9 @@ class PasswordManagerClient {
   // Record that we saw a password field on this page.
   virtual void AnnotateNavigationEntry(bool has_password_field);
 
+  // Returns the current best guess as to the page's display language.
+  virtual std::string GetPageLanguage() const;
+
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // Return the PasswordProtectionService associated with this instance.
   virtual safe_browsing::PasswordProtectionService*
