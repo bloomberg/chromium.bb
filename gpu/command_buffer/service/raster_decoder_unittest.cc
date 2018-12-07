@@ -214,10 +214,6 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     gl::GLSurfaceTestSupport::InitializeOneOff();
     gpu::GpuDriverBugWorkarounds workarounds;
 
-    GpuFeatureInfo gpu_feature_info;
-    gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
-        kGpuFeatureStatusEnabled;
-
     scoped_refptr<gl::GLShareGroup> share_group = new gl::GLShareGroup();
     scoped_refptr<gl::GLSurface> surface =
         gl::init::CreateOffscreenGLSurface(gfx::Size());
@@ -229,8 +225,10 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
-    context_state_->InitializeGL(workarounds, gpu_feature_info);
 
+    GpuFeatureInfo gpu_feature_info;
+    gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
+        kGpuFeatureStatusEnabled;
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(workarounds, gpu_feature_info);
     group_ = new gles2::ContextGroup(
@@ -265,10 +263,10 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     ContextCreationAttribs attribs;
     attribs.enable_oop_rasterization = true;
     attribs.enable_raster_interface = true;
-    CHECK_EQ(decoder->Initialize(context_state_->surface(),
-                                 context_state_->context(), true,
-                                 gles2::DisallowedFeatures(), attribs),
-             ContextResult::kSuccess);
+    CHECK_EQ(
+        decoder->Initialize(context_state_->surface, context_state_->context,
+                            true, gles2::DisallowedFeatures(), attribs),
+        ContextResult::kSuccess);
     return decoder;
   }
 
@@ -315,7 +313,7 @@ TEST_F(RasterDecoderOOPTest, StateRestoreAcrossDecoders) {
   EXPECT_TRUE(context_state_->need_context_state_reset);
 
   decoder1->Destroy(true);
-  context_state_->MakeCurrent(nullptr);
+  context_state_->context->MakeCurrent(context_state_->surface.get());
   decoder2->Destroy(true);
 
   // Make sure the context is preserved across decoders.

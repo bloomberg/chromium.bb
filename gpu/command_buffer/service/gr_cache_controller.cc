@@ -21,7 +21,7 @@ GrCacheController::~GrCacheController() = default;
 
 void GrCacheController::ScheduleGrContextCleanup() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(context_state_->IsCurrent(nullptr));
+  DCHECK(context_state_->context->IsCurrent(nullptr));
 
   if (!context_state_->gr_context)
     return;
@@ -35,6 +35,7 @@ void GrCacheController::ScheduleGrContextCleanup() {
   // a long while even if it is under budget. Below we set a call back to
   // purge all possible GrContext resources if the context itself is not being
   // used.
+  context_state_->context->DirtyVirtualContextState();
   context_state_->need_context_state_reset = true;
   context_state_->gr_context->performDeferredCleanup(
       std::chrono::seconds(kOldResourceCleanupDelaySeconds));
@@ -63,6 +64,7 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
     return;
   }
 
+  context_state_->context->DirtyVirtualContextState();
   context_state_->need_context_state_reset = true;
   context_state_->gr_context->freeGpuResources();
 }
