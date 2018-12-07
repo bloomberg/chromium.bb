@@ -298,27 +298,6 @@ void AudioParamHandler::CalculateTimelineValues(float* values,
       sample_rate, sample_rate, MinValue(), MaxValue()));
 }
 
-void AudioParamHandler::Connect(AudioNodeOutput& output) {
-  GetDeferredTaskHandler().AssertGraphOwner();
-
-  if (outputs_.Contains(&output))
-    return;
-
-  output.AddParam(*this);
-  outputs_.insert(&output);
-  ChangedOutputs();
-}
-
-void AudioParamHandler::Disconnect(AudioNodeOutput& output) {
-  GetDeferredTaskHandler().AssertGraphOwner();
-
-  if (outputs_.Contains(&output)) {
-    outputs_.erase(&output);
-    ChangedOutputs();
-    output.RemoveParam(*this);
-  }
-}
-
 int AudioParamHandler::ComputeQHistogramValue(float new_value) const {
   // For the Q value, assume a useful range is [0, 25] and that 0.25 dB
   // resolution is good enough.  Then, we can map the floating point Q value (in

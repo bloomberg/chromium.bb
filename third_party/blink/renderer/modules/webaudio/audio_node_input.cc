@@ -30,6 +30,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_wiring.h"
 
 namespace blink {
 
@@ -42,83 +43,11 @@ AudioNodeInput::AudioNodeInput(AudioHandler& handler)
 }
 
 AudioNodeInput::~AudioNodeInput() {
-  GetDeferredTaskHandler().AssertGraphOwner();
-
-  for (AudioNodeOutput* output : outputs_)
-    output->RemoveInput(*this);
-  for (AudioNodeOutput* output : disabled_outputs_)
-    output->RemoveInput(*this);
-  outputs_.clear();
-  disabled_outputs_.clear();
-  ChangedOutputs();
+  AudioNodeWiring::WillBeDestroyed(*this);
 }
 
 std::unique_ptr<AudioNodeInput> AudioNodeInput::Create(AudioHandler& handler) {
   return base::WrapUnique(new AudioNodeInput(handler));
-}
-
-void AudioNodeInput::Connect(AudioNodeOutput& output) {
-  GetDeferredTaskHandler().AssertGraphOwner();
-
-  // Check if we're already connected to this output.
-  if (outputs_.Contains(&output))
-    return;
-
-  output.AddInput(*this);
-  outputs_.insert(&output);
-  ChangedOutputs();
-}
-
-void AudioNodeInput::Disconnect(AudioNodeOutput& output) {
-  GetDeferredTaskHandler().AssertGraphOwner();
-
-  // First try to disconnect from "active" connections.
-  if (outputs_.Contains(&output)) {
-    outputs_.erase(&output);
-    ChangedOutputs();
-    output.RemoveInput(*this);
-    // Note: it's important to return immediately after removeInput() calls
-    // since the node may be deleted.
-    return;
-  }
-
-  // Otherwise, try to disconnect from disabled connections.
-  if (disabled_outputs_.Contains(&output)) {
-    disabled_outputs_.erase(&output);
-    output.RemoveInput(*this);
-    // Note: it's important to return immediately after all removeInput() calls
-    // since the node may be deleted.
-    return;
-  }
-
-  NOTREACHED();
-}
-
-void AudioNodeInput::Disable(AudioNodeOutput& output) {
-  GetDeferredTaskHandler().AssertGraphOwner();
-  DCHECK(outputs_.Contains(&output));
-
-  disabled_outputs_.insert(&output);
-  outputs_.erase(&output);
-  ChangedOutputs();
-
-  // Propagate disabled state to outputs.
-  Handler().DisableOutputsIfNecessary();
-}
-
-void AudioNodeInput::Enable(AudioNodeOutput& output) {
-  GetDeferredTaskHandler().AssertGraphOwner();
-
-  // Move output from disabled list to active list.
-  outputs_.insert(&output);
-  if (disabled_outputs_.size() > 0) {
-    DCHECK(disabled_outputs_.Contains(&output));
-    disabled_outputs_.erase(&output);
-  }
-  ChangedOutputs();
-
-  // Propagate enabled state to outputs.
-  Handler().EnableOutputsIfNecessary();
 }
 
 void AudioNodeInput::DidUpdate() {

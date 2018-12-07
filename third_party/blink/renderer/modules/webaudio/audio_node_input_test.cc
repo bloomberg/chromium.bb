@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_wiring.h"
 #include "third_party/blink/renderer/modules/webaudio/delay_node.h"
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_context.h"
 
@@ -28,7 +29,7 @@ TEST(AudioNodeInputTest, InputDestroyedBeforeOutput) {
 
   {
     BaseAudioContext::GraphAutoLocker graph_lock(context);
-    input->Connect(*output);
+    AudioNodeWiring::Connect(*output, *input);
     ASSERT_TRUE(output->IsConnected());
 
     // This should not crash.
@@ -52,7 +53,7 @@ TEST(AudioNodeInputTest, OutputDestroyedBeforeInput) {
 
   {
     BaseAudioContext::GraphAutoLocker graph_lock(context);
-    input->Connect(*output);
+    AudioNodeWiring::Connect(*output, *input);
     ASSERT_TRUE(output->IsConnected());
 
     // This should not crash.
