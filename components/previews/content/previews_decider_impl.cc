@@ -31,6 +31,7 @@ namespace {
 
 void LogPreviewsEligibilityReason(PreviewsEligibilityReason status,
                                   PreviewsType type) {
+  DCHECK_LT(status, PreviewsEligibilityReason::LAST);
   UMA_HISTOGRAM_ENUMERATION("Previews.EligibilityReason", status,
                             PreviewsEligibilityReason::LAST);
   int32_t max_limit = static_cast<int32_t>(PreviewsEligibilityReason::LAST);
@@ -294,16 +295,21 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   // perform its own ECT check and for previews with hints because the hints may
   // specify variable ECT thresholds for slow page hints.
   if (!is_drp_server_preview && !ShouldCheckOptimizationHints(type)) {
+    if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
+      return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
+    }
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
+
     // Network quality estimator may sometimes return effective connection type
     // as offline when the Android APIs incorrectly return device connectivity
     // as null. See https://crbug.com/838969. So, we do not trigger previews
     // when |observed_effective_connection_type| is
     // net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-    if (effective_connection_type_ <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
-      return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
+    if (effective_connection_type_ == net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+      return PreviewsEligibilityReason::DEVICE_OFFLINE;
     }
-    passed_reasons->push_back(
-        PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
+    passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
 
     if (effective_connection_type_ >
         previews::params::GetECTThresholdForPreview(type)) {
@@ -464,21 +470,30 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
   // connection type as offline when the Android APIs incorrectly return device
   // connectivity as null. See https://crbug.com/838969. So, we do not trigger
   // previews when |ect| is net::EFFECTIVE_CONNECTION_TYPE_OFFLINE.
-  if (previews_data->navigation_ect() <=
-      net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+  if (previews_data->navigation_ect() ==
+      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
     return PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE;
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE);
+
+  if (previews_data->navigation_ect() ==
+      net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+    return PreviewsEligibilityReason::DEVICE_OFFLINE;
+  }
+  passed_reasons->push_back(PreviewsEligibilityReason::DEVICE_OFFLINE);
+
   if (previews_data->navigation_ect() > ect_threshold) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
+
   if (previews_data->navigation_ect() > params::GetSessionMaxECTThreshold()) {
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
   }
   passed_reasons->push_back(
       PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
+
   LogTriggeredPreviewEffectiveConnectionType(previews_data->navigation_ect(),
                                              type);
 
