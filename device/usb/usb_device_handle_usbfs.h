@@ -66,8 +66,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                               const std::vector<uint32_t>& packet_lengths,
                               unsigned int timeout,
                               IsochronousTransferCallback callback) override;
-  // To support DevTools this function may be called from any thread and on
-  // completion |callback| will be run on that thread.
   void GenericTransfer(UsbTransferDirection direction,
                        uint8_t endpoint_number,
                        scoped_refptr<base::RefCountedBytes> buffer,
@@ -111,13 +109,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
                                    const std::vector<uint32_t>& packet_lengths,
                                    unsigned int timeout,
                                    IsochronousTransferCallback callback);
-  void GenericTransferInternal(
-      UsbTransferDirection direction,
-      uint8_t endpoint_number,
-      scoped_refptr<base::RefCountedBytes> buffer,
-      unsigned int timeout,
-      TransferCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
   void ReapedUrbs(const std::vector<usbdevfs_urb*>& urbs);
   void TransferComplete(std::unique_ptr<Transfer> transfer);
   void RefreshEndpointInfo();

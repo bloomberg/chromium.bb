@@ -382,8 +382,7 @@ void UsbDeviceHandleWin::ControlTransfer(
   control_request->MaybeStartWatching(
       result, last_error,
       base::BindOnce(&UsbDeviceHandleWin::TransferComplete,
-                     weak_factory_.GetWeakPtr(), nullptr, std::move(callback),
-                     buffer));
+                     weak_factory_.GetWeakPtr(), std::move(callback), buffer));
 }
 
 void UsbDeviceHandleWin::IsochronousTransferIn(
@@ -415,17 +414,50 @@ void UsbDeviceHandleWin::GenericTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     unsigned int timeout,
     TransferCallback callback) {
-  if (task_runner_->BelongsToCurrentThread()) {
-    GenericTransferInternal(direction, endpoint_number, std::move(buffer),
-                            timeout, std::move(callback), task_runner_);
-  } else {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  uint8_t endpoint_address = endpoint_number;
+  if (direction == UsbTransferDirection::INBOUND)
+    endpoint_address |= 0x80;
+
+  auto endpoint_it = endpoints_.find(endpoint_address);
+  if (endpoint_it == endpoints_.end()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&UsbDeviceHandleWin::GenericTransferInternal, this,
-                       direction, endpoint_number, std::move(buffer), timeout,
-                       std::move(callback),
-                       base::ThreadTaskRunnerHandle::Get()));
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       nullptr, 0));
+    return;
   }
+
+  auto interface_it =
+      interfaces_.find(endpoint_it->second.interface->interface_number);
+  DCHECK(interface_it != interfaces_.end());
+  Interface* interface = &interface_it->second;
+  if (!interface->claimed) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       nullptr, 0));
+    return;
+  }
+
+  DCHECK(interface->handle.IsValid());
+  Request* request = MakeRequest(true /* winusb_handle */);
+  BOOL result;
+  if (direction == UsbTransferDirection::INBOUND) {
+    result = WinUsb_ReadPipe(interface->handle.Get(), endpoint_address,
+                             buffer->front(), buffer->size(), nullptr,
+                             request->overlapped());
+  } else {
+    result = WinUsb_WritePipe(interface->handle.Get(), endpoint_address,
+                              buffer->front(), buffer->size(), nullptr,
+                              request->overlapped());
+  }
+  DWORD last_error = GetLastError();
+  request->MaybeStartWatching(
+      result, last_error,
+      base::BindOnce(&UsbDeviceHandleWin::TransferComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(buffer)));
 }
 
 const UsbInterfaceDescriptor* UsbDeviceHandleWin::FindInterfaceByEndpoint(
@@ -635,7 +667,6 @@ void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
 }
 
 void UsbDeviceHandleWin::TransferComplete(
-    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
     TransferCallback callback,
     scoped_refptr<base::RefCountedBytes> buffer,
     Request* request_ptr,
@@ -653,68 +684,7 @@ void UsbDeviceHandleWin::TransferComplete(
     status = UsbTransferStatus::TRANSFER_ERROR;
   }
 
-  if (!callback_task_runner ||
-      callback_task_runner->RunsTasksInCurrentSequence()) {
-    std::move(callback).Run(status, std::move(buffer), bytes_transferred);
-  } else {
-    callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), status,
-                                  std::move(buffer), bytes_transferred));
-  }
-}
-
-void UsbDeviceHandleWin::GenericTransferInternal(
-    UsbTransferDirection direction,
-    uint8_t endpoint_number,
-    scoped_refptr<base::RefCountedBytes> buffer,
-    unsigned int timeout,
-    TransferCallback callback,
-    scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  uint8_t endpoint_address = endpoint_number;
-  if (direction == UsbTransferDirection::INBOUND)
-    endpoint_address |= 0x80;
-
-  auto endpoint_it = endpoints_.find(endpoint_address);
-  if (endpoint_it == endpoints_.end()) {
-    callback_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
-                       nullptr, 0));
-    return;
-  }
-
-  auto interface_it =
-      interfaces_.find(endpoint_it->second.interface->interface_number);
-  DCHECK(interface_it != interfaces_.end());
-  Interface* interface = &interface_it->second;
-  if (!interface->claimed) {
-    callback_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
-                       nullptr, 0));
-    return;
-  }
-
-  DCHECK(interface->handle.IsValid());
-  Request* request = MakeRequest(true /* winusb_handle */);
-  BOOL result;
-  if (direction == UsbTransferDirection::INBOUND) {
-    result = WinUsb_ReadPipe(interface->handle.Get(), endpoint_address,
-                             buffer->front(), buffer->size(), nullptr,
-                             request->overlapped());
-  } else {
-    result = WinUsb_WritePipe(interface->handle.Get(), endpoint_address,
-                              buffer->front(), buffer->size(), nullptr,
-                              request->overlapped());
-  }
-  DWORD last_error = GetLastError();
-  request->MaybeStartWatching(
-      result, last_error,
-      base::BindOnce(&UsbDeviceHandleWin::TransferComplete,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(callback_task_runner), std::move(callback),
-                     std::move(buffer)));
+  std::move(callback).Run(status, std::move(buffer), bytes_transferred);
 }
 
 void UsbDeviceHandleWin::ReportIsochronousError(
