@@ -186,6 +186,12 @@ void UiControllerAndroid::UpdateTouchableArea(
   ui_delegate_->UpdateTouchableArea();
 }
 
+void UiControllerAndroid::OnUserInteractionInsideTouchableArea(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcallerj) {
+  ui_delegate_->OnUserInteractionInsideTouchableArea();
+}
+
 void UiControllerAndroid::OnScriptSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,

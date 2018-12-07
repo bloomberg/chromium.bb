@@ -85,6 +85,9 @@ class UiControllerAndroid : public UiController,
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void UpdateTouchableArea(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
+  void OnUserInteractionInsideTouchableArea(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
   void OnScriptSelected(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,

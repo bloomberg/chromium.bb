@@ -62,6 +62,12 @@ public class TouchEventFilter
 
         /** Asks for an update of the touchable area. */
         void updateTouchableArea();
+
+        /**
+         * Called when interaction within allowed touchable area was detected. The interaction
+         * could be any gesture.
+         */
+        void onUserInteractionInsideTouchableArea();
     }
 
     /**
@@ -333,6 +339,13 @@ public class TouchEventFilter
         // Note that partial overlays have precedence over full overlays
         if (mPartialOverlayEnabled) return dispatchTouchEventWithPartialOverlay(event);
         if (mFullOverlayEnabled) return dispatchTouchEventWithFullOverlay(event);
+        return dispatchTouchEventWithNoOverlay();
+    }
+
+    private boolean dispatchTouchEventWithNoOverlay() {
+        if (mClient != null) {
+            mClient.onUserInteractionInsideTouchableArea();
+        }
         return false;
     }
 
@@ -363,6 +376,7 @@ public class TouchEventFilter
                 resetCurrentGesture();
 
                 if (shouldLetEventThrough(event)) {
+                    mClient.onUserInteractionInsideTouchableArea();
                     // This is the last we'll hear of this gesture unless it turns multi-touch. No
                     // need to track or forward it.
                     return false;
