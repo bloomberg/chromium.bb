@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  *
  * static native void nativeFoo(@JCaller A a, long nativeCppClass);
  *
- * @JniStaticNatives
+ * @NativeMethods
  * interface Natives {
  *    void foo(@JCaller A a, long nativeCppClass);
  * }
