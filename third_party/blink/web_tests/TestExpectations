@@ -2945,6 +2945,8 @@ crbug.com/875622 external/wpt/css/css-animations/AnimationEffect-getComputedTimi
 crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Pass Failure Timeout ]
 
+crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
+
 
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
@@ -3692,7 +3694,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-002v.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-005v.html [ Failure ]
 crbug.com/626703 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-013.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/available-size-016.html [ Failure ]
