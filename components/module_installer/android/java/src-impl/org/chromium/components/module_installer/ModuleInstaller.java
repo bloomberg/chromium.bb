@@ -36,12 +36,14 @@ public class ModuleInstaller {
     private static final Map<String, List<OnModuleInstallFinishedListener>> sModuleNameListenerMap =
             new HashMap<>();
     private static ModuleInstallerBackend sBackend;
+    private static boolean sSplitCompatted;
 
     /** Needs to be called before trying to access a module. */
     public static void init() {
         // SplitCompat.install may copy modules into Chrome's internal folder or clean them up.
         try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
             SplitCompat.install(ContextUtils.getApplicationContext());
+            sSplitCompatted = true;
         }
         // SplitCompat.install may add emulated modules. Thus, update crash keys.
         updateCrashKeys();
@@ -68,10 +70,16 @@ public class ModuleInstaller {
         }
 
         // Create temporary split install manager to retrieve both fully installed and emulated
-        // modules. Then remove fully installed ones to get emulated ones only.
-        Set<String> emulatedModules =
-                new TreeSet<>(SplitInstallManagerFactory.create(context).getInstalledModules());
-        emulatedModules.removeAll(fullyInstalledModules);
+        // modules. Then remove fully installed ones to get emulated ones only. Querying the
+        // installed modules can only be done if splitcompat has already been called. Otherwise,
+        // emulation of later modules won't work. If splitcompat has not been called no modules are
+        // emulated. Therefore, use an empty set in that case.
+        Set<String> emulatedModules = new TreeSet<>();
+        if (sSplitCompatted) {
+            emulatedModules.addAll(
+                    SplitInstallManagerFactory.create(context).getInstalledModules());
+            emulatedModules.removeAll(fullyInstalledModules);
+        }
 
         CrashKeys.getInstance().set(
                 CrashKeyIndex.INSTALLED_MODULES, encodeCrashKeyValue(fullyInstalledModules));
