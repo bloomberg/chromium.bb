@@ -75,6 +75,11 @@ cr.define('cr.ui', function() {
       return false;
     },
 
+    /** @override */
+    getCustomEquivalent: function(sampleElement) {
+      return null;
+    },
+
     /**
      * Unregisters event handlers and removes all |this.rows|.
      */

@@ -7,7 +7,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -176,10 +176,11 @@
       <div id="date-accessed" class="card-title">
         [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
       </div>
-      <div id="item-container"
+      <div id="item-container" focus-row-container
           on-mousedown="onItemMousedown_"
           on-click="onItemClick_">
         <cr-checkbox id="checkbox" checked="[[selected]]" unresolved
+            focus-row-control focus-type="cr-checkbox"
             on-mousedown="onCheckboxClick_" on-keydown="onCheckboxClick_"
             on-change="onCheckboxChange_" class="no-label"
             hidden="[[selectionNotAllowed_]]"
@@ -191,6 +192,7 @@
         <div class="website-icon" id="icon"></div>
         <div id="title-and-domain">
           <a href="[[item.url]]" id="title" class="website-title"
+              focus-row-control focus-type="link"
               title="[[item.title]]" on-click="onLinkClick_"
               on-contextmenu="onLinkRightClick_">
             <history-searched-label title="[[item.title]]"
@@ -201,7 +203,7 @@
         <div id="star-container">
           <template is="dom-if" if="[[item.starred]]" notify-dom-change>
             <paper-icon-button-light id="bookmark-star-container">
-              <button id="bookmark-star"
+              <button id="bookmark-star" focus-row-control focus-type="star"
                   title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
                 <iron-icon icon="cr:star"></iron-icon>
               </button>
@@ -210,7 +212,7 @@
         </div>
         <paper-icon-button-light id="menu-button-container"
             class="more-vert-button">
-          <button id="menu-button"
+          <button id="menu-button" focus-row-control focus-type="cr-menu-button"
               title="$i18n{actionMenuDescription}" on-click="onMenuButtonTap_"
               aria-haspopup="menu">
             <div></div>

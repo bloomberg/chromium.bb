@@ -20,7 +20,7 @@ settings.EDIT_STARTUP_URL_EVENT = 'edit-startup-url';
 Polymer({
   is: 'settings-startup-url-entry',
 
-  behaviors: [FocusRowBehavior],
+  behaviors: [cr.ui.FocusRowBehavior],
 
   properties: {
     editable: {

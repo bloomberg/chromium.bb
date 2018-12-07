@@ -2,76 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class HistoryFocusRow extends cr.ui.FocusRow {
-  /**
-   * @param {!Element} root
-   * @param {?Element} boundary
-   * @param {cr.ui.FocusRowDelegate} delegate
-   */
-  constructor(root, boundary, delegate) {
-    super(root, boundary, delegate);
-    this.addItems();
-  }
-
-  /** @override */
-  getCustomEquivalent(sampleElement) {
-    let equivalent;
-
-    if (this.getTypeForElement(sampleElement) == 'star')
-      equivalent = this.getFirstFocusable('title');
-
-    return equivalent || super.getCustomEquivalent(sampleElement);
-  }
-
-  addItems() {
-    this.destroy();
-
-    assert(this.addItem('checkbox', '#checkbox'));
-    assert(this.addItem('title', '#title'));
-    assert(this.addItem('menu-button', '#menu-button'));
-
-    this.addItem('star', '#bookmark-star');
-  }
-}
-
 cr.define('md_history', function() {
-  /** @implements {cr.ui.FocusRowDelegate} */
-  class FocusRowDelegate {
-    /** @param {{lastFocused: Object}} historyItemElement */
-    constructor(historyItemElement) {
-      this.historyItemElement = historyItemElement;
-    }
-
-    /**
-     * @override
-     * @param {!cr.ui.FocusRow} row
-     * @param {!Event} e
-     */
-    onFocus(row, e) {
-      this.historyItemElement.lastFocused = e.path[0];
-    }
-
-    /**
-     * @override
-     * @param {!cr.ui.FocusRow} row The row that detected a keydown.
-     * @param {!Event} e
-     * @return {boolean} Whether the event was handled.
-     */
-    onKeydown(row, e) {
-      // Allow Home and End to move the history list.
-      if (e.key == 'Home' || e.key == 'End')
-        return true;
-
-      // Prevent iron-list from changing the focus on enter.
-      if (e.key == 'Enter')
-        e.stopPropagation();
-
-      return false;
-    }
-  }
-
   const HistoryItem = Polymer({
     is: 'history-item',
+
+    behaviors: [cr.ui.FocusRowBehavior],
 
     properties: {
       // Underlying HistoryEntry data for this item. Contains read-only fields
@@ -125,10 +60,12 @@ cr.define('md_history', function() {
 
       // Search term used to obtain this history-item.
       searchTerm: String,
-    },
 
-    /** @private {?HistoryFocusRow} */
-    row_: null,
+      overrideCustomEquivalent: {
+        type: Boolean,
+        value: true,
+      },
+    },
 
     /** @private {boolean} */
     mouseDown_: false,
@@ -139,87 +76,21 @@ cr.define('md_history', function() {
     /** @override */
     attached: function() {
       Polymer.RenderStatus.afterNextRender(this, function() {
-        this.row_ = new HistoryFocusRow(
-            this.$['main-container'], null, new FocusRowDelegate(this));
-        this.row_.makeActive(this.ironListTabIndex == 0);
-
         // Adding listeners asynchronously to reduce blocking time, since these
         // history items are items in a potentially long list.
-        this.listen(this, 'focus', 'onFocus_');
-        this.listen(this, 'blur', 'onBlur_');
-        this.listen(this, 'dom-change', 'onDomChange_');
         this.listen(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
       });
     },
 
     /** @override */
     detached: function() {
-      this.unlisten(this, 'focus', 'onFocus_');
-      this.unlisten(this, 'dom-change', 'onDomChange_');
       this.unlisten(this.$.checkbox, 'keydown', 'onCheckboxKeydown_');
-      if (this.row_)
-        this.row_.destroy();
-    },
-
-    /**
-     * @param {!Event} e The focus event
-     * @private
-     */
-    onFocus_: function(e) {
-      // Don't change the focus while the mouse is down, as it prevents text
-      // selection. Not changing focus here is acceptable because the checkbox
-      // will be focused in onItemClick_() anyway.
-      if (this.mouseDown_)
-        return;
-
-      // If focus is being restored from outside the item and the event is fired
-      // by the list item itself, focus the first control so that the user can
-      // tab through all the controls. When the user shift-tabs back to the row,
-      // or focus is restored to the row from a dropdown on the last item, the
-      // last child item will be focused before the row itself. Since this is
-      // the desired behavior, do not shift focus to the first item in these
-      // cases.
-      const restoreFocusToFirst =
-          this.listBlurred && e.composedPath()[0] === this;
-
-      if (this.lastFocused && !restoreFocusToFirst)
-        this.row_.getEquivalentElement(this.lastFocused).focus();
-      else
-        this.row_.getFirstFocusable().focus();
-      this.listBlurred = false;
-    },
-
-    /**
-     * @param {!Event} e
-     * @private
-     */
-    onBlur_: function(e) {
-      const node =
-          e.relatedTarget ? /** @type {!Node} */ (e.relatedTarget) : null;
-      if (!this.parentNode.contains(node))
-        this.listBlurred = true;
     },
 
     /** @param {!KeyboardEvent} e */
     onCheckboxKeydown_: function(e) {
       if (e.shiftKey && e.key === 'Tab')
         this.focus();
-    },
-
-    /**
-     * @private
-     */
-    ironListTabIndexChanged_: function() {
-      if (this.row_)
-        this.row_.makeActive(this.ironListTabIndex == 0);
-    },
-
-    /**
-     * @private
-     */
-    onDomChange_: function() {
-      if (this.row_)
-        this.row_.addItems();
     },
 
     /**
@@ -279,10 +150,6 @@ cr.define('md_history', function() {
      * @private
      */
     onItemMousedown_: function(e) {
-      this.mouseDown_ = true;
-      listenOnce(document, 'mouseup', () => {
-        this.mouseDown_ = false;
-      });
       // Prevent shift clicking a checkbox from selecting text.
       if (e.shiftKey)
         e.preventDefault();
@@ -399,6 +266,17 @@ cr.define('md_history', function() {
       const el = this.$['time-accessed'];
       el.setAttribute('title', new Date(this.item.time).toString());
       this.unlisten(el, 'mouseover', 'addTimeTitle_');
+    },
+
+    /**
+     * @param {!Element} sampleElement An element to find an equivalent for.
+     * @return {?Element} An equivalent element to focus, or null to use the
+     *     default element.
+     */
+    getCustomEquivalent(sampleElement) {
+      return sampleElement.getAttribute('focus-type') === 'star' ?
+          this.$.title :
+          null;
     },
   });
 

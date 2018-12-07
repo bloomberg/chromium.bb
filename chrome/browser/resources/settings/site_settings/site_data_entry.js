@@ -11,7 +11,7 @@ Polymer({
   is: 'site-data-entry',
 
   behaviors: [
-    FocusRowBehavior,
+    cr.ui.FocusRowBehavior,
     I18nBehavior,
   ],
 
