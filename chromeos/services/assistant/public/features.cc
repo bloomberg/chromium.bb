@@ -16,6 +16,9 @@ const base::Feature kAssistantVoiceMatch{"AssistantVoiceMatch",
 const base::Feature kAssistantWarmerWelcomeFeature{
     "AssistantWarmerWelcome", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantAppSupport{"AssistantAppSupport",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
