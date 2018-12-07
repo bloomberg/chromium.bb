@@ -25,6 +25,11 @@ import java.util.List;
 public class ExploreSitesBridge {
     private static final String TAG = "ExploreSitesBridge";
 
+    private static List<ExploreSitesCategory> sCatalogForTesting;
+    public static void setCatalogForTesting(List<ExploreSitesCategory> catalog) {
+        sCatalogForTesting = catalog;
+    }
+
     /**
      * Fetches the catalog data for Explore page.
      *
@@ -32,16 +37,27 @@ public class ExploreSitesBridge {
      */
     public static void getEspCatalog(
             Profile profile, Callback<List<ExploreSitesCategory>> callback) {
+        if (sCatalogForTesting != null) {
+            callback.onResult(sCatalogForTesting);
+            return;
+        }
+
         List<ExploreSitesCategory> result = new ArrayList<>();
         nativeGetEspCatalog(profile, result, callback);
     }
 
     public static void getSiteImage(Profile profile, int siteID, Callback<Bitmap> callback) {
+        if (sCatalogForTesting != null) {
+            callback.onResult(null);
+        }
         nativeGetIcon(profile, siteID, callback);
     }
 
     public static void getCategoryImage(
             Profile profile, int categoryID, int pixelSize, Callback<Bitmap> callback) {
+        if (sCatalogForTesting != null) {
+            callback.onResult(null);
+        }
         nativeGetCategoryImage(profile, categoryID, pixelSize, callback);
     }
 
