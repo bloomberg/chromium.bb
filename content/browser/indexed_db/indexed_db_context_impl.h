@@ -22,7 +22,6 @@
 #include "content/public/browser/indexed_db_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace base {
@@ -90,11 +89,9 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   void DeleteForOrigin(const url::Origin& origin) override;
   void CopyOriginData(const url::Origin& origin,
                       IndexedDBContext* dest_context) override;
-  base::FilePath GetFilePathForTesting(const GURL& origin_url) const override;
+  base::FilePath GetFilePathForTesting(
+      const url::Origin& origin) const override;
   void ResetCachesForTesting() override;
-
-  // TODO(jsbell): Replace IndexedDBContext members with these.
-  base::FilePath GetFilePathForTesting(const url::Origin& origin) const;
 
   // Methods called by IndexedDBDispatcherHost for quota support.
   void ConnectionOpened(const url::Origin& origin, IndexedDBConnection* db);

@@ -429,12 +429,6 @@ std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
   return paths;
 }
 
-// TODO(jsbell): Update callers to use url::Origin overload and remove.
-base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
-    const GURL& origin_url) const {
-  return GetFilePathForTesting(Origin::Create(origin_url));
-}
-
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
     const Origin& origin) const {
   return GetLevelDBPath(origin);

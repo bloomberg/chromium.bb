@@ -14,8 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 
-class GURL;
-
 namespace base {
 class SequencedTaskRunner;
 }
@@ -48,7 +46,7 @@ class IndexedDBContext : public base::RefCountedThreadSafe<IndexedDBContext> {
 
   // Get the file name of the local storage file for the given origin.
   virtual base::FilePath GetFilePathForTesting(
-      const GURL& origin_url) const = 0;
+      const url::Origin& origin) const = 0;
 
   // Forget the origins/sizes read from disk.
   virtual void ResetCachesForTesting() = 0;
