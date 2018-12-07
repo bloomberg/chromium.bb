@@ -108,9 +108,14 @@ class OverlayAgentAura : public OverlayAgent,
   HighlightRectsConfiguration highlight_rect_config_;
   bool is_swap_ = false;
 
+  // The layer used to paint highlights, and its offset from the screen origin.
   std::unique_ptr<ui::Layer> layer_for_highlighting_;
+  gfx::Vector2d layer_for_highlighting_screen_offset_;
+
+  // Hovered and pinned element bounds in screen coordinates; empty if none.
   gfx::Rect hovered_rect_;
   gfx::Rect pinned_rect_;
+
   int pinned_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayAgentAura);

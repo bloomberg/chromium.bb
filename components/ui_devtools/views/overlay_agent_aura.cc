@@ -11,11 +11,13 @@
 #include "components/ui_devtools/views/window_element.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/effects/SkDashPathEffect.h"
-#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -530,20 +532,26 @@ bool OverlayAgentAura::UpdateHighlight(
   }
 
   gfx::NativeWindow root = window_and_bounds.first->GetRootWindow();
+#if defined(OS_CHROMEOS)
+  // Get the screen's display-root window; otherwise, if the window belongs to
+  // a window service client, |root| will only be a client-root window.
+  aura::Window* window = display::Screen::GetScreen()->GetWindowAtScreenPoint(
+      root->GetBoundsInScreen().origin());
+  if (window)  // May be null in unit tests.
+    root = window->GetRootWindow();
+#endif  // OS_CHROMEOS
+
   layer_for_highlighting_->SetBounds(root->bounds());
   layer_for_highlighting_->SchedulePaint(root->bounds());
+  layer_for_highlighting_screen_offset_ =
+      root->GetBoundsInScreen().OffsetFromOrigin();
 
   if (root->layer() != layer_for_highlighting_->parent())
     root->layer()->Add(layer_for_highlighting_.get());
   else
     root->layer()->StackAtTop(layer_for_highlighting_.get());
 
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(root);
   hovered_rect_ = window_and_bounds.second;
-  gfx::Point origin = hovered_rect_.origin();
-  screen_position_client->ConvertPointFromScreen(root, &origin);
-  hovered_rect_.set_origin(origin);
   return true;
 }
 
@@ -624,7 +632,9 @@ void OverlayAgentAura::OnPaintLayer(const ui::PaintContext& context) {
   const gfx::Rect& screen_bounds(layer_for_highlighting_->bounds());
   ui::PaintRecorder recorder(context, screen_bounds.size());
   gfx::Canvas* canvas = recorder.canvas();
+  // Convert the hovered rect from screen coordinates to layer coordinates.
   gfx::RectF hovered_rect_f(hovered_rect_);
+  hovered_rect_f.Offset(-layer_for_highlighting_screen_offset_);
 
   cc::PaintFlags flags;
   flags.setStrokeWidth(1.0f);
@@ -648,15 +658,17 @@ void OverlayAgentAura::OnPaintLayer(const ui::PaintContext& context) {
 
     // Display size of the rectangle after mouse click.
     if (show_size_on_canvas_) {
-      DrawSizeOfRectangle(hovered_rect_, RectSide::BOTTOM_SIDE, canvas,
-                          render_text_.get());
+      DrawSizeOfRectangle(gfx::ToNearestRect(hovered_rect_f),
+                          RectSide::BOTTOM_SIDE, canvas, render_text_.get());
     }
     return;
   }
   flags.setPathEffect(nullptr);
   flags.setColor(SK_ColorBLUE);
 
+  // Convert the pinned rect from screen coordinates to layer coordinates.
   gfx::RectF pinned_rect_f(pinned_rect_);
+  pinned_rect_f.Offset(-layer_for_highlighting_screen_offset_);
 
   // Draw |pinned_rect_f| bounds in blue.
   canvas->DrawRect(pinned_rect_f, flags);
@@ -670,9 +682,9 @@ void OverlayAgentAura::OnPaintLayer(const ui::PaintContext& context) {
   flags.setColor(SK_ColorRED);
 
   // Make sure |pinned_rect_f| stays on the right or below of |hovered_rect_f|.
-  if (pinned_rect_.x() < hovered_rect_.x() ||
-      (pinned_rect_.x() == hovered_rect_.x() &&
-       pinned_rect_.y() < hovered_rect_.y())) {
+  if (pinned_rect_f.x() < hovered_rect_f.x() ||
+      (pinned_rect_f.x() == hovered_rect_f.x() &&
+       pinned_rect_f.y() < hovered_rect_f.y())) {
     std::swap(pinned_rect_f, hovered_rect_f);
   }
 
