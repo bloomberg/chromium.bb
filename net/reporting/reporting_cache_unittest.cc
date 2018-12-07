@@ -12,8 +12,8 @@
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_client.h"
-#include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_report.h"
 #include "net/reporting/reporting_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,16 +23,24 @@
 namespace net {
 namespace {
 
-class TestReportingObserver : public ReportingObserver {
+class TestReportingCacheObserver : public ReportingCacheObserver {
  public:
-  TestReportingObserver() : cache_update_count_(0) {}
+  TestReportingCacheObserver()
+      : cached_reports_update_count_(0), cached_clients_update_count_(0) {}
 
-  void OnCacheUpdated() override { ++cache_update_count_; }
+  void OnReportsUpdated() override { ++cached_reports_update_count_; }
+  void OnClientsUpdated() override { ++cached_clients_update_count_; }
 
-  int cache_update_count() const { return cache_update_count_; }
+  int cached_reports_update_count() const {
+    return cached_reports_update_count_;
+  }
+  int cached_clients_update_count() const {
+    return cached_clients_update_count_;
+  }
 
  private:
-  int cache_update_count_;
+  int cached_reports_update_count_;
+  int cached_clients_update_count_;
 };
 
 class ReportingCacheTest : public ReportingTestBase {
@@ -43,12 +51,12 @@ class ReportingCacheTest : public ReportingTestBase {
     policy.max_client_count = 5;
     UsePolicy(policy);
 
-    context()->AddObserver(&observer_);
+    context()->AddCacheObserver(&observer_);
   }
 
-  ~ReportingCacheTest() override { context()->RemoveObserver(&observer_); }
+  ~ReportingCacheTest() override { context()->RemoveCacheObserver(&observer_); }
 
-  TestReportingObserver* observer() { return &observer_; }
+  TestReportingCacheObserver* observer() { return &observer_; }
 
   size_t report_count() {
     std::vector<const ReportingReport*> reports;
@@ -134,7 +142,7 @@ class ReportingCacheTest : public ReportingTestBase {
   const base::TimeTicks kExpires2_ = kExpires1_ + base::TimeDelta::FromDays(7);
 
  private:
-  TestReportingObserver observer_;
+  TestReportingCacheObserver observer_;
 };
 
 TEST_F(ReportingCacheTest, Reports) {
@@ -144,7 +152,7 @@ TEST_F(ReportingCacheTest, Reports) {
 
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNow_, 0);
-  EXPECT_EQ(1, observer()->cache_update_count());
+  EXPECT_EQ(1, observer()->cached_reports_update_count());
 
   cache()->GetReports(&reports);
   ASSERT_EQ(1u, reports.size());
@@ -161,7 +169,7 @@ TEST_F(ReportingCacheTest, Reports) {
   EXPECT_FALSE(cache()->IsReportDoomedForTesting(report));
 
   cache()->IncrementReportsAttempts(reports);
-  EXPECT_EQ(2, observer()->cache_update_count());
+  EXPECT_EQ(2, observer()->cached_reports_update_count());
 
   cache()->GetReports(&reports);
   ASSERT_EQ(1u, reports.size());
@@ -170,7 +178,7 @@ TEST_F(ReportingCacheTest, Reports) {
   EXPECT_EQ(1, report->attempts);
 
   cache()->RemoveReports(reports, ReportingReport::Outcome::UNKNOWN);
-  EXPECT_EQ(3, observer()->cache_update_count());
+  EXPECT_EQ(3, observer()->cached_reports_update_count());
 
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
@@ -181,14 +189,14 @@ TEST_F(ReportingCacheTest, RemoveAllReports) {
                      std::make_unique<base::DictionaryValue>(), 0, kNow_, 0);
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNow_, 0);
-  EXPECT_EQ(2, observer()->cache_update_count());
+  EXPECT_EQ(2, observer()->cached_reports_update_count());
 
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
   EXPECT_EQ(2u, reports.size());
 
   cache()->RemoveAllReports(ReportingReport::Outcome::UNKNOWN);
-  EXPECT_EQ(3, observer()->cache_update_count());
+  EXPECT_EQ(3, observer()->cached_reports_update_count());
 
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
@@ -197,7 +205,7 @@ TEST_F(ReportingCacheTest, RemoveAllReports) {
 TEST_F(ReportingCacheTest, RemovePendingReports) {
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNow_, 0);
-  EXPECT_EQ(1, observer()->cache_update_count());
+  EXPECT_EQ(1, observer()->cached_reports_update_count());
 
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
@@ -212,7 +220,7 @@ TEST_F(ReportingCacheTest, RemovePendingReports) {
   cache()->RemoveReports(reports, ReportingReport::Outcome::UNKNOWN);
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_TRUE(cache()->IsReportDoomedForTesting(reports[0]));
-  EXPECT_EQ(2, observer()->cache_update_count());
+  EXPECT_EQ(2, observer()->cached_reports_update_count());
 
   // After removing report, future calls to GetReports should not return it.
   std::vector<const ReportingReport*> visible_reports;
@@ -228,7 +236,7 @@ TEST_F(ReportingCacheTest, RemovePendingReports) {
 TEST_F(ReportingCacheTest, RemoveAllPendingReports) {
   cache()->AddReport(kUrl1_, kUserAgent_, kGroup1_, kType_,
                      std::make_unique<base::DictionaryValue>(), 0, kNow_, 0);
-  EXPECT_EQ(1, observer()->cache_update_count());
+  EXPECT_EQ(1, observer()->cached_reports_update_count());
 
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
@@ -243,7 +251,7 @@ TEST_F(ReportingCacheTest, RemoveAllPendingReports) {
   cache()->RemoveAllReports(ReportingReport::Outcome::UNKNOWN);
   EXPECT_TRUE(cache()->IsReportPendingForTesting(reports[0]));
   EXPECT_TRUE(cache()->IsReportDoomedForTesting(reports[0]));
-  EXPECT_EQ(2, observer()->cache_update_count());
+  EXPECT_EQ(2, observer()->cached_reports_update_count());
 
   // After removing report, future calls to GetReports should not return it.
   std::vector<const ReportingReport*> visible_reports;
@@ -327,7 +335,7 @@ TEST_F(ReportingCacheTest, GetReportsAsValue) {
 
 TEST_F(ReportingCacheTest, Endpoints) {
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
-  EXPECT_EQ(1, observer()->cache_update_count());
+  EXPECT_EQ(1, observer()->cached_clients_update_count());
 
   const ReportingClient* client =
       FindClientInCache(cache(), kOrigin1_, kEndpoint1_);
@@ -339,7 +347,7 @@ TEST_F(ReportingCacheTest, Endpoints) {
   EXPECT_EQ(kExpires1_, client->expires);
 
   SetClient(kOrigin1_, kEndpoint1_, true, kGroup2, kExpires2_);
-  EXPECT_EQ(2, observer()->cache_update_count());
+  EXPECT_EQ(2, observer()->cached_clients_update_count());
 
   client = FindClientInCache(cache(), kOrigin1_, kEndpoint1_);
   ASSERT_TRUE(client);
@@ -350,7 +358,7 @@ TEST_F(ReportingCacheTest, Endpoints) {
   EXPECT_EQ(kExpires2_, client->expires);
 
   cache()->RemoveClients(std::vector<const ReportingClient*>{client});
-  EXPECT_EQ(3, observer()->cache_update_count());
+  EXPECT_EQ(3, observer()->cached_clients_update_count());
 
   client = FindClientInCache(cache(), kOrigin1_, kEndpoint1_);
   EXPECT_FALSE(client);
@@ -374,10 +382,10 @@ TEST_F(ReportingCacheTest, RemoveClientForOriginAndEndpoint) {
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
   SetClient(kOrigin1_, kEndpoint2_, false, kGroup2, kExpires1_);
   SetClient(kOrigin2_, kEndpoint1_, false, kGroup1_, kExpires1_);
-  EXPECT_EQ(3, observer()->cache_update_count());
+  EXPECT_EQ(3, observer()->cached_clients_update_count());
 
   cache()->RemoveClientForOriginAndEndpoint(kOrigin1_, kEndpoint1_);
-  EXPECT_EQ(4, observer()->cache_update_count());
+  EXPECT_EQ(4, observer()->cached_clients_update_count());
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin1_, kGroup1_, &clients);
@@ -394,10 +402,10 @@ TEST_F(ReportingCacheTest, RemoveClientsForEndpoint) {
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
   SetClient(kOrigin1_, kEndpoint2_, false, kGroup2, kExpires1_);
   SetClient(kOrigin2_, kEndpoint1_, false, kGroup1_, kExpires1_);
-  EXPECT_EQ(3, observer()->cache_update_count());
+  EXPECT_EQ(3, observer()->cached_clients_update_count());
 
   cache()->RemoveClientsForEndpoint(kEndpoint1_);
-  EXPECT_EQ(4, observer()->cache_update_count());
+  EXPECT_EQ(4, observer()->cached_clients_update_count());
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClientsForOriginAndGroup(kOrigin1_, kGroup1_, &clients);
@@ -461,10 +469,10 @@ TEST_F(ReportingCacheTest, GetClientsAsValue) {
 TEST_F(ReportingCacheTest, RemoveAllClients) {
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
   SetClient(kOrigin2_, kEndpoint2_, false, kGroup1_, kExpires1_);
-  EXPECT_EQ(2, observer()->cache_update_count());
+  EXPECT_EQ(2, observer()->cached_clients_update_count());
 
   cache()->RemoveAllClients();
-  EXPECT_EQ(3, observer()->cache_update_count());
+  EXPECT_EQ(3, observer()->cached_clients_update_count());
 
   std::vector<const ReportingClient*> clients;
   cache()->GetClients(&clients);

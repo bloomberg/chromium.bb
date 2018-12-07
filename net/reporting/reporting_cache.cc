@@ -97,7 +97,7 @@ class ReportingCacheImpl : public ReportingCache {
       RemoveReportInternal(to_evict);
     }
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedReportsUpdated();
   }
 
   void GetReports(
@@ -195,7 +195,7 @@ class ReportingCacheImpl : public ReportingCache {
       reports_[report]->attempts++;
     }
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedReportsUpdated();
   }
 
   void IncrementEndpointDeliveries(const url::Origin& origin,
@@ -227,7 +227,7 @@ class ReportingCacheImpl : public ReportingCache {
       }
     }
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedReportsUpdated();
   }
 
   void RemoveAllReports(ReportingReport::Outcome outcome) override {
@@ -244,7 +244,7 @@ class ReportingCacheImpl : public ReportingCache {
     for (const ReportingReport* report : reports_to_remove)
       RemoveReportInternal(report);
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedReportsUpdated();
   }
 
   void SetClient(const url::Origin& origin,
@@ -282,7 +282,7 @@ class ReportingCacheImpl : public ReportingCache {
       RemoveClient(to_evict);
     }
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedClientsUpdated();
   }
 
   void MarkClientUsed(const ReportingClient* client) override {
@@ -407,7 +407,7 @@ class ReportingCacheImpl : public ReportingCache {
     for (const ReportingClient* client : clients_to_remove)
       RemoveClient(client);
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedClientsUpdated();
   }
 
   void RemoveClientForOriginAndEndpoint(const url::Origin& origin,
@@ -416,7 +416,7 @@ class ReportingCacheImpl : public ReportingCache {
         GetClientByOriginAndEndpoint(origin, endpoint);
     RemoveClient(client);
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedClientsUpdated();
   }
 
   void RemoveClientsForEndpoint(const GURL& endpoint) override {
@@ -431,7 +431,7 @@ class ReportingCacheImpl : public ReportingCache {
       RemoveClient(client);
 
     if (!clients_to_remove.empty())
-      context_->NotifyCacheUpdated();
+      context_->NotifyCachedClientsUpdated();
   }
 
   void RemoveAllClients() override {
@@ -439,7 +439,7 @@ class ReportingCacheImpl : public ReportingCache {
     wildcard_clients_.clear();
     client_metadata_.clear();
 
-    context_->NotifyCacheUpdated();
+    context_->NotifyCachedClientsUpdated();
   }
 
   ClientStatistics GetStatisticsForOriginAndEndpoint(

@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_context.h"
-#include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_report.h"
 
@@ -21,17 +21,17 @@ namespace net {
 namespace {
 
 class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
-                                      public ReportingObserver {
+                                      public ReportingCacheObserver {
  public:
   ReportingGarbageCollectorImpl(ReportingContext* context)
       : context_(context), timer_(std::make_unique<base::OneShotTimer>()) {
-    context_->AddObserver(this);
+    context_->AddCacheObserver(this);
   }
 
   // ReportingGarbageCollector implementation:
 
   ~ReportingGarbageCollectorImpl() override {
-    context_->RemoveObserver(this);
+    context_->RemoveCacheObserver(this);
   }
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) override {
@@ -39,7 +39,7 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
   }
 
   // ReportingObserver implementation:
-  void OnCacheUpdated() override {
+  void OnReportsUpdated() override {
     if (timer_->IsRunning())
       return;
 
@@ -67,12 +67,12 @@ class ReportingGarbageCollectorImpl : public ReportingGarbageCollector,
     }
 
     // Don't restart the timer on the garbage collector's own updates.
-    context_->RemoveObserver(this);
+    context_->RemoveCacheObserver(this);
     context_->cache()->RemoveReports(failed_reports,
                                      ReportingReport::Outcome::ERASED_FAILED);
     context_->cache()->RemoveReports(expired_reports,
                                      ReportingReport::Outcome::ERASED_EXPIRED);
-    context_->AddObserver(this);
+    context_->AddCacheObserver(this);
   }
 
   ReportingContext* context_;
