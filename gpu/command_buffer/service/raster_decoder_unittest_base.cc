@@ -230,10 +230,7 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   // we can use the ContextGroup to figure out how the real RasterDecoder
   // will initialize itself.
   command_buffer_service_.reset(new FakeCommandBufferServiceBase());
-  command_buffer_service_for_mock_decoder_.reset(
-      new FakeCommandBufferServiceBase());
-  mock_decoder_.reset(
-      new MockRasterDecoder(command_buffer_service_for_mock_decoder_.get()));
+  mock_decoder_.reset(new MockRasterDecoder(command_buffer_service_.get()));
 
   EXPECT_EQ(group_->Initialize(mock_decoder_.get(), context_type,
                                gles2::DisallowedFeatures()),
@@ -253,14 +250,6 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       init.lose_context_when_out_of_memory;
   attribs.context_type = context_type;
 
-  // Setup expections for RasterDecoderContextState::InitializeGL()
-  // It will initialize a FeatureInfo and
-  gles2::TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-      gl_.get(), all_extensions.c_str(), "" /* gl_renderer */,
-      init.gl_version.c_str(), CONTEXT_TYPE_OPENGLES2);
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
-      .WillOnce(SetArgPointee<1>(8u))
-      .RetiresOnSaturation();
   SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
   SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
 
@@ -268,10 +257,6 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
       new gl::GLShareGroup(), surface_, context_,
       feature_info->workarounds().use_virtualized_gl_contexts,
       base::DoNothing());
-
-  raster_decoder_context_state_->InitializeGL(init.workarounds,
-                                              gpu_feature_info);
-
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get(),
                                        raster_decoder_context_state_));
@@ -281,10 +266,9 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   copy_texture_manager_ = new gles2::MockCopyTextureResourceManager();
   decoder_->SetCopyTextureResourceManagerForTest(copy_texture_manager_);
 
-  ASSERT_EQ(
-      decoder_->Initialize(surface_, raster_decoder_context_state_->context(),
-                           true, gles2::DisallowedFeatures(), attribs),
-      gpu::ContextResult::kSuccess);
+  ASSERT_EQ(decoder_->Initialize(surface_, context_, true,
+                                 gles2::DisallowedFeatures(), attribs),
+            gpu::ContextResult::kSuccess);
 
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   if (context_->WasAllocatedUsingRobustnessExtension()) {
@@ -318,7 +302,6 @@ void RasterDecoderTestBase::ResetDecoder() {
   decoder_.reset();
   group_->Destroy(mock_decoder_.get(), false);
   command_buffer_service_.reset();
-  command_buffer_service_for_mock_decoder_.reset();
   ::gl::MockGLInterface::SetGLInterface(nullptr);
   gl_.reset();
   gl::init::ShutdownGL(false);

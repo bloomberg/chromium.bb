@@ -145,7 +145,6 @@ TEST_P(RasterDecoderLostContextTest, LostFromMakeCurrent) {
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(false));
   // Expect the group to be lost.
   EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
-  EXPECT_FALSE(decoder_->WasContextLost());
   decoder_->MakeCurrent();
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_EQ(error::kMakeCurrentFailed, GetContextLostReason());
@@ -284,6 +283,18 @@ TEST_P(RasterDecoderLostContextTest, LoseInnocentFromGLError) {
   EXPECT_TRUE(decoder_->WasContextLost());
   EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
   EXPECT_EQ(error::kInnocent, GetContextLostReason());
+}
+
+TEST_P(RasterDecoderLostContextTest, LoseVirtualContextWithRobustness) {
+  InitWithVirtualContextsAndRobustness();
+  EXPECT_CALL(*mock_decoder_, MarkContextLost(error::kUnknown)).Times(1);
+  // Signal guilty....
+  DoGetErrorWithContextLost(GL_GUILTY_CONTEXT_RESET_KHR);
+  EXPECT_TRUE(decoder_->WasContextLost());
+  EXPECT_TRUE(decoder_->WasContextLostByRobustnessExtension());
+  // ...but make sure we don't pretend, since for virtual contexts we don't
+  // know if this was really the guilty client.
+  EXPECT_EQ(error::kUnknown, GetContextLostReason());
 }
 
 TEST_P(RasterDecoderLostContextTest, LoseGroupFromRobustness) {
