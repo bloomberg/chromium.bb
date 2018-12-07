@@ -115,6 +115,16 @@ var IDS = {
   ATTRIBUTION_TEXT: 'attribution-text',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
+  DOODLE_SHARE_BUTTON: 'ddlsb',
+  DOODLE_SHARE_BUTTON_IMG: 'ddlsb-img',
+  DOODLE_SHARE_DIALOG: 'ddlsd',
+  DOODLE_SHARE_DIALOG_CLOSE_BUTTON: 'ddlsd-close',
+  DOODLE_SHARE_DIALOG_COPY_LINK_BUTTON: 'ddlsd-copy',
+  DOODLE_SHARE_DIALOG_FACEBOOK_BUTTON: 'ddlsd-fbb',
+  DOODLE_SHARE_DIALOG_LINK: 'ddlsd-text',
+  DOODLE_SHARE_DIALOG_MAIL_BUTTON: 'ddlsd-emb',
+  DOODLE_SHARE_DIALOG_TITLE: 'ddlsd-title',
+  DOODLE_SHARE_DIALOG_TWITTER_BUTTON: 'ddlsd-twb',
   ERROR_NOTIFICATION: 'error-notice',
   ERROR_NOTIFICATION_CONTAINER: 'error-notice-container',
   ERROR_NOTIFICATION_LINK: 'error-notice-link',
@@ -128,6 +138,7 @@ var IDS = {
   LOGO_DOODLE: 'logo-doodle',
   LOGO_DOODLE_IMAGE: 'logo-doodle-image',
   LOGO_DOODLE_IFRAME: 'logo-doodle-iframe',
+  LOGO_DOODLE_CONTAINER: 'logo-doodle-container',
   LOGO_DOODLE_BUTTON: 'logo-doodle-button',
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
   MOST_VISITED: 'most-visited',
@@ -229,6 +240,13 @@ var KEYCODE = {ENTER: 13, SPACE: 32};
  * @type {number}
  */
 const NOTIFICATION_TIMEOUT = 10000;
+
+
+/**
+ * The ID of the doodle app for Facebook. Used to share doodles to Facebook.
+ * @type {number}
+ */
+const FACEBOOK_APP_ID = 738026486351791;
 
 
 /**
@@ -1400,8 +1418,8 @@ var isDoodleCurrentlyVisible = function() {
         (logoDoodleIframe.src === targetDoodle.metadata.fullPageUrl);
   } else {
     var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
-    var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
-    return logoDoodleButton.classList.contains(CLASSES.SHOW_LOGO) &&
+    var logoDoodleContainer = $(IDS.LOGO_DOODLE_CONTAINER);
+    return logoDoodleContainer.classList.contains(CLASSES.SHOW_LOGO) &&
         ((logoDoodleImage.src === targetDoodle.image) ||
          (logoDoodleImage.src === targetDoodle.metadata.animatedUrl));
   }
@@ -1442,11 +1460,11 @@ var showLogoOrDoodle = function(fromCache) {
   if (targetDoodle.metadata !== null && !cachedInteractiveOffline) {
     applyDoodleMetadata();
     if (targetDoodle.metadata.type === LOGO_TYPE.INTERACTIVE) {
-      $(IDS.LOGO_DOODLE_BUTTON).classList.remove(CLASSES.SHOW_LOGO);
+      $(IDS.LOGO_DOODLE_CONTAINER).classList.remove(CLASSES.SHOW_LOGO);
       $(IDS.LOGO_DOODLE_IFRAME).classList.add(CLASSES.SHOW_LOGO);
     } else {
       $(IDS.LOGO_DOODLE_IMAGE).src = targetDoodle.image;
-      $(IDS.LOGO_DOODLE_BUTTON).classList.add(CLASSES.SHOW_LOGO);
+      $(IDS.LOGO_DOODLE_CONTAINER).classList.add(CLASSES.SHOW_LOGO);
       $(IDS.LOGO_DOODLE_IFRAME).classList.remove(CLASSES.SHOW_LOGO);
 
       // Log the impression in Chrome metrics.
@@ -1534,9 +1552,12 @@ var onDoodleFadeOutComplete = function(e) {
 
 
 var applyDoodleMetadata = function() {
-  var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
   var logoDoodleImage = $(IDS.LOGO_DOODLE_IMAGE);
+  var logoDoodleButton = $(IDS.LOGO_DOODLE_BUTTON);
   var logoDoodleIframe = $(IDS.LOGO_DOODLE_IFRAME);
+
+  var logoDoodleShareButton = null;
+  var logoDoodleShareDialog = null;
 
   switch (targetDoodle.metadata.type) {
     case LOGO_TYPE.SIMPLE:
@@ -1555,6 +1576,9 @@ var applyDoodleMetadata = function() {
 
         window.location = getDoodleTargetUrl();
       };
+
+      insertShareButton();
+      updateShareDialog();
       break;
 
     case LOGO_TYPE.ANIMATED:
@@ -1594,6 +1618,9 @@ var applyDoodleMetadata = function() {
 
           window.location = getDoodleTargetUrl();
         };
+
+        insertShareButton();
+        updateShareDialog();
       };
       break;
 
@@ -1609,6 +1636,126 @@ var applyDoodleMetadata = function() {
           targetDoodle.metadata.iframeHeightPx + 'px');
       break;
   }
+};
+
+/**
+ * Creates a share button for static/animated doodles which opens the share
+ * dialog upon click.
+ */
+var insertShareButton = function() {
+  // Terminates early if share button data are missing or incomplete.
+  if (!targetDoodle.metadata || !targetDoodle.metadata.shareButtonX ||
+      !targetDoodle.metadata.shareButtonY ||
+      !targetDoodle.metadata.shareButtonBg ||
+      !targetDoodle.metadata.shareButtonIcon) {
+    return;
+  }
+  var shareDialog = $(IDS.DOODLE_SHARE_DIALOG);
+
+  var shareButtonWrapper = document.createElement('button');
+  shareButtonWrapper.id = IDS.DOODLE_SHARE_BUTTON;
+  var shareButtonImg = document.createElement('img');
+  shareButtonImg.id = IDS.DOODLE_SHARE_BUTTON_IMG;
+  shareButtonWrapper.appendChild(shareButtonImg);
+
+  shareButtonWrapper.style.left = targetDoodle.metadata.shareButtonX + 'px';
+  shareButtonWrapper.style.top = targetDoodle.metadata.shareButtonY + 'px';
+
+  // Alpha-less background color represented as an RGB HEX string.
+  // Share button opacity represented as a double between 0 to 1.
+  // Final background color is an RGBA HEX string created by combining
+  // both.
+  var backgroundColor = targetDoodle.metadata.shareButtonBg;
+  if (!!targetDoodle.metadata.shareButtonOpacity ||
+      targetDoodle.metadata.shareButtonOpacity == 0) {
+    var backgroundOpacityHex =
+        parseInt(targetDoodle.metadata.shareButtonOpacity * 255, 10)
+            .toString(16);
+    backgroundColor += backgroundOpacityHex;
+  }
+
+  shareButtonWrapper.style.backgroundColor = backgroundColor;
+  shareButtonImg.src =
+      'data:image/png;base64,' + targetDoodle.metadata.shareButtonIcon;
+  shareButtonWrapper.onclick = function() {
+    shareDialog.showModal();
+  };
+
+  var oldButton = $(IDS.DOODLE_SHARE_BUTTON);
+  if (oldButton) {
+    oldButton.remove();
+  }
+
+  var logoContainer = $(IDS.LOGO_DOODLE_CONTAINER);
+  if (logoContainer) {
+    logoContainer.appendChild(shareButtonWrapper);
+  }
+};
+
+/**
+ * Initiates the buttons on the doodle share dialog. Also updates the doodle
+ * title and short link.
+ */
+var updateShareDialog = function() {
+  var shareDialog = $(IDS.DOODLE_SHARE_DIALOG);
+  var shareDialogTitle = $(IDS.DOODLE_SHARE_DIALOG_TITLE);
+  var closeButton = $(IDS.DOODLE_SHARE_DIALOG_CLOSE_BUTTON);
+  var facebookButton = $(IDS.DOODLE_SHARE_DIALOG_FACEBOOK_BUTTON);
+  var twitterButton = $(IDS.DOODLE_SHARE_DIALOG_TWITTER_BUTTON);
+  var mailButton = $(IDS.DOODLE_SHARE_DIALOG_MAIL_BUTTON);
+  var copyButton = $(IDS.DOODLE_SHARE_DIALOG_COPY_LINK_BUTTON);
+  var linkText = $(IDS.DOODLE_SHARE_DIALOG_LINK);
+
+  if (!targetDoodle.metadata || !targetDoodle.metadata.shortLink ||
+      !targetDoodle.metadata.altText) {
+    return;
+  }
+
+  var closeDialog = function() {
+    shareDialog.close();
+  };
+
+  closeButton.onclick = closeDialog;
+  shareDialog.onclick = function(e) {
+    if (e.target == shareDialog) {
+      closeDialog();
+    }
+  };
+
+  var title = targetDoodle.metadata.altText;
+
+  shareDialogTitle.innerHTML = title;
+  var shortLink = targetDoodle.metadata.shortLink;
+
+  facebookButton.onclick = function() {
+    var url = 'https://www.facebook.com/dialog/share' +
+        '?app_id=' + FACEBOOK_APP_ID +
+        '&href=' + encodeURIComponent(shortLink) +
+        '&hashtag=' + encodeURIComponent('#GoogleDoodle');
+    window.open(url);
+  };
+
+  twitterButton.onclick = function() {
+    var url = 'https://twitter.com/intent/tweet' +
+        '?text=' + encodeURIComponent(title + '\n' + shortLink);
+    window.open(url);
+  };
+
+  mailButton.onclick = function() {
+    var url = 'mailto:?subject=' + encodeURIComponent(title) +
+        '&body=' + encodeURIComponent(shortLink);
+    document.location.href = url;
+  };
+
+  linkText.value = shortLink;
+  linkText.onclick = function() {
+    linkText.select();
+  };
+  linkText.setAttribute('readonly', true);
+  copyButton.onclick = function() {
+    linkText.select();
+    document.execCommand('copy');
+  };
 };
 
 

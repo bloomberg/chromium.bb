@@ -93,6 +93,10 @@ const char kOneGoogleBarScriptFilename[] = "one-google.js";
 const char kPromoScriptFilename[] = "promo.js";
 const char kDoodleScriptFilename[] = "doodle.js";
 const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
+const char kSimpleShareDoodleUrl[] =
+    "https://www.gstatic.com/logo/dev/ddljson_simple_share_button.json";
+const char kAnimatedShareDoodleUrl[] =
+    "https://www.gstatic.com/logo/dev/ddljson_animated_share_button.json";
 
 const struct Resource{
   const char* filename;
@@ -416,6 +420,16 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
   result->SetInteger("iframeHeightPx", meta.iframe_height_px);
   result->SetString("logUrl", meta.log_url.spec());
   result->SetString("ctaLogUrl", meta.cta_log_url.spec());
+  result->SetString("shortLink", meta.short_link.spec());
+
+  if (meta.share_button_x >= 0 && meta.share_button_y >= 0 &&
+      !meta.share_button_icon.empty() && !meta.share_button_bg.empty()) {
+    result->SetInteger("shareButtonX", meta.share_button_x);
+    result->SetInteger("shareButtonY", meta.share_button_y);
+    result->SetDouble("shareButtonOpacity", meta.share_button_opacity);
+    result->SetString("shareButtonIcon", meta.share_button_icon);
+    result->SetString("shareButtonBg", meta.share_button_bg);
+  }
 
   GURL full_page_url = meta.full_page_url;
   if (base::GetFieldTrialParamByFeatureAsBool(
@@ -913,10 +927,23 @@ void LocalNtpSource::StartDataRequest(
     if (net::GetValueForKeyInQuery(path_url, "force-doodle",
                                    &force_doodle_param)) {
       base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      command_line->AppendSwitchASCII(
-          search_provider_logos::switches::kGoogleDoodleUrl,
-          "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
-              force_doodle_param + ".json");
+
+      // TODO(crbug.com/896461): Add share button to ddljson_desktop0.json and
+      // ddljson_desktop1.json then update links below.
+      if (force_doodle_param == "0") {
+        command_line->AppendSwitchASCII(
+            search_provider_logos::switches::kGoogleDoodleUrl,
+            kSimpleShareDoodleUrl);
+      } else if (force_doodle_param == "1") {
+        command_line->AppendSwitchASCII(
+            search_provider_logos::switches::kGoogleDoodleUrl,
+            kAnimatedShareDoodleUrl);
+      } else {
+        command_line->AppendSwitchASCII(
+            search_provider_logos::switches::kGoogleDoodleUrl,
+            "https://www.gstatic.com/chrome/ntp/doodle_test/ddljson_desktop" +
+                force_doodle_param + ".json");
+      }
     }
 
     callback.Run(base::RefCountedString::TakeString(&html));

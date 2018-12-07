@@ -128,6 +128,10 @@ body.hide-fakebox #fakebox {
   display: none;
 }
 
+#logo-doodle {
+  text-align: center;
+}
+
 #logo-default,
 #logo-doodle {
   opacity: 0;
@@ -140,14 +144,21 @@ body.hide-fakebox #fakebox {
   visibility: visible;
 }
 
-#logo-doodle-button,
+#logo-doodle-container,
 #logo-doodle-iframe {
   display: none;
 }
 
-#logo-doodle-button.show-logo,
+#logo-doodle-button {
+  cursor: pointer;
+}
+
 #logo-doodle-iframe.show-logo {
   display: block;
+}
+
+#logo-doodle-container.show-logo {
+  display: inline-block;
 }
 
 #logo-doodle-image {
@@ -188,16 +199,18 @@ body.alternate-logo #logo-non-white {
   display: none;
 }
 
-#logo-doodle-button {
+#logo-doodle-container {
   /* An image logo is allowed to spill into the margin below, so it's not a
    * real bottom margin. If the image extends further than that margin, it
    * is cropped. */
   margin: 0 auto;
   max-height: calc(var(--logo-height) + var(--logo-margin-bottom));
   overflow: hidden;
+  position: relative;
+  text-align: text-center;
 }
 
-.non-white-bg #logo-doodle-button,
+.non-white-bg #logo-doodle-container,
 .non-white-bg #logo-doodle-iframe {
   display: none;
 }
@@ -608,6 +621,134 @@ html[dir=rtl] #mv-notice-x {
 
 #mv-notice.notice-hide {
   display: none;
+}
+
+/** TODO(crbug.com/903398): Move doodle styling and logic to dedicated files. */
+#ddlsb {
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-block;
+  height: 26px;
+  opacity: 0.8;
+  position: absolute;
+  width: 26px;
+}
+
+#ddlsb:hover {
+  opacity: 1;
+}
+
+#ddlsb-img {
+  height: 22px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  width: 22px;
+}
+
+#ddlsd {
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
+  left: 0;
+  margin: auto;
+  min-height: 100px;
+  padding: 22px;
+  position: absolute;
+  right: 0;
+  text-align: left;
+  top: 30%;
+  width: 300px;
+  z-index: 9001;
+}
+
+#ddlsd::backdrop {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+#ddlsd button {
+  border: none;
+  cursor: pointer;
+}
+
+#ddlsd button:hover {
+  opacity: 0.8;
+}
+
+#ddlsd-title {
+  color: #212121;
+  font-size: 22px;
+  padding: 0 40px 16px 0;
+}
+
+#ddlsd-close {
+  background: url(icons/close.svg) no-repeat;
+  height: 24px;
+  position: absolute;
+  right: 22px;
+  top: 22px;
+  width: 24px;
+}
+
+#ddlsd-fbb {
+  background: url(icons/facebook.svg) no-repeat center;
+}
+
+#ddlsd-twb {
+  background: url(icons/twitter.svg) no-repeat center;
+}
+
+#ddlsd-emb {
+  background: url(icons/mail.svg) no-repeat center;
+}
+
+#ddlsd-text {
+  border: 2px solid #aaa;
+  border-color: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+  color: #555;
+  display: inline-block;
+  font-size: 14px;
+  padding: 12px;
+  width: 100%;
+}
+
+#ddlsd-copy {
+  background: url(icons/copy.svg) no-repeat center;
+  background-size: contain;
+  display: inline-block;
+  float: right;
+  height: 36px;
+  margin: 5px;
+  width: 36px;
+}
+
+.ddlsd-sbtn {
+  background-size: contain;
+  border-radius: 4px;
+  display: inline-block;
+  height: 48px;
+  margin: 0 4px;
+  width: 48px;
+}
+
+#ddlsd-hr {
+  background: #ccc;
+  border: 0;
+  height: 2px;
+  margin: 15px 0;
+}
+
+#ddlsd-link {
+  margin: 6px;
+  overflow: hidden;
+}
+
+#ddlsd-text-ctr {
+  display: block;
+  overflow: hidden;
+  padding-right: 36px;
 }
 
 #attribution {
