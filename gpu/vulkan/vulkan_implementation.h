@@ -14,6 +14,12 @@
 #include "gpu/vulkan/vulkan_export.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_hardware_buffer_handle.h"
+#include "base/files/scoped_file.h"
+#include "ui/gfx/geometry/size.h"
+#endif
+
 namespace gfx {
 class GpuFence;
 }
@@ -69,6 +75,18 @@ class VULKAN_EXPORT VulkanImplementation {
   virtual bool GetSemaphoreFdKHR(VkDevice vk_device,
                                  VkSemaphore vk_semaphore,
                                  base::ScopedFD* sync_fd) = 0;
+
+  // Create a VkImage, import Android AHardwareBuffer object created outside of
+  // the Vulkan device into Vulkan memory object and bind it to the VkImage.
+  virtual bool CreateVkImageAndImportAHB(
+      const VkDevice& vk_device,
+      const VkPhysicalDevice& vk_physical_device,
+      const gfx::Size& size,
+      base::android::ScopedHardwareBufferHandle ahb_handle,
+      VkImage* vk_image,
+      VkImageCreateInfo* vk_image_info,
+      VkDeviceMemory* vk_device_memory,
+      VkDeviceSize* mem_allocation_size) = 0;
 #endif
 
  private:

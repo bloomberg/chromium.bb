@@ -89,6 +89,13 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
   if (!vkEnumerateDeviceLayerPropertiesFn)
     return false;
 
+  vkGetPhysicalDeviceMemoryProperties2KHRFn =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties2KHR>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkGetPhysicalDeviceMemoryProperties2KHR"));
+  if (!vkGetPhysicalDeviceMemoryProperties2KHRFn)
+    return false;
+
   vkGetPhysicalDeviceQueueFamilyPropertiesFn =
       reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
           vkGetInstanceProcAddrFn(vk_instance,
@@ -109,6 +116,16 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkAllocateDescriptorSetsFn = reinterpret_cast<PFN_vkAllocateDescriptorSets>(
       vkGetDeviceProcAddrFn(vk_device, "vkAllocateDescriptorSets"));
   if (!vkAllocateDescriptorSetsFn)
+    return false;
+
+  vkAllocateMemoryFn = reinterpret_cast<PFN_vkAllocateMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkAllocateMemory"));
+  if (!vkAllocateMemoryFn)
+    return false;
+
+  vkBindImageMemoryFn = reinterpret_cast<PFN_vkBindImageMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkBindImageMemory"));
+  if (!vkBindImageMemoryFn)
     return false;
 
   vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
@@ -135,6 +152,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkCreateFramebufferFn = reinterpret_cast<PFN_vkCreateFramebuffer>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateFramebuffer"));
   if (!vkCreateFramebufferFn)
+    return false;
+
+  vkCreateImageFn = reinterpret_cast<PFN_vkCreateImage>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateImage"));
+  if (!vkCreateImageFn)
     return false;
 
   vkCreateImageViewFn = reinterpret_cast<PFN_vkCreateImageView>(
@@ -253,6 +275,12 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkGetFenceStatusFn)
     return false;
 
+  vkGetImageMemoryRequirements2KHRFn =
+      reinterpret_cast<PFN_vkGetImageMemoryRequirements2KHR>(
+          vkGetDeviceProcAddrFn(vk_device, "vkGetImageMemoryRequirements2KHR"));
+  if (!vkGetImageMemoryRequirements2KHRFn)
+    return false;
+
   vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
   if (!vkResetFencesFn)
@@ -273,6 +301,13 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
   if (!vkImportSemaphoreFdKHRFn)
+    return false;
+
+  vkGetAndroidHardwareBufferPropertiesANDROIDFn =
+      reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetAndroidHardwareBufferPropertiesANDROID"));
+  if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn)
     return false;
 
   vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(

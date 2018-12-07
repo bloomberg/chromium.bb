@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//components/viz/viz.gni")
-import("//testing/test.gni")
 import("//gpu/vulkan/features.gni")
+import("//testing/test.gni")
 
 source_set("resource_format") {
   sources = [
@@ -45,6 +45,13 @@ if (enable_vulkan) {
 
     defines = [ "VIZ_VULKAN_CONTEXT_PROVIDER_IMPLEMENTATION" ]
 
+    # TODO(cblume): http://crbug.com/911313
+    # Abstract out the platform specific defines. Right now we need the android
+    # platform specific define here to be able to include android specific
+    # functions.
+    if (is_android) {
+      defines += [ "VK_USE_PLATFORM_ANDROID_KHR" ]
+    }
     sources = [
       "gpu/vulkan_context_provider.h",
       "gpu/vulkan_in_process_context_provider.cc",

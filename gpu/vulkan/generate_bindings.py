@@ -29,6 +29,7 @@ VULKAN_INSTANCE_FUNCTIONS = [
 VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 { 'name': 'vkCreateDevice' },
 { 'name': 'vkEnumerateDeviceLayerProperties' },
+{ 'name': 'vkGetPhysicalDeviceMemoryProperties2KHR' },
 { 'name': 'vkGetPhysicalDeviceQueueFamilyProperties' },
 # The following functions belong here but are handled specially:
 # vkGetPhysicalDeviceSurfaceCapabilitiesKHR
@@ -39,11 +40,14 @@ VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkAllocateCommandBuffers' },
 { 'name': 'vkAllocateDescriptorSets' },
+{ 'name': 'vkAllocateMemory' },
+{ 'name': 'vkBindImageMemory' },
 { 'name': 'vkCreateCommandPool' },
 { 'name': 'vkCreateDescriptorPool' },
 { 'name': 'vkCreateDescriptorSetLayout' },
 { 'name': 'vkCreateFence' },
 { 'name': 'vkCreateFramebuffer' },
+{ 'name': 'vkCreateImage' },
 { 'name': 'vkCreateImageView' },
 { 'name': 'vkCreateRenderPass' },
 { 'name': 'vkCreateSampler' },
@@ -67,6 +71,7 @@ VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkFreeMemory' },
 { 'name': 'vkGetDeviceQueue' },
 { 'name': 'vkGetFenceStatus' },
+{ 'name': 'vkGetImageMemoryRequirements2KHR' },
 { 'name': 'vkResetFences' },
 { 'name': 'vkUpdateDescriptorSets' },
 { 'name': 'vkWaitForFences' },
@@ -74,6 +79,7 @@ VULKAN_DEVICE_FUNCTIONS = [
 
 VULKAN_DEVICE_FUNCTIONS_ANDROID = [
 { 'name': 'vkImportSemaphoreFdKHR' },
+{ 'name': 'vkGetAndroidHardwareBufferPropertiesANDROID' },
 { 'name': 'vkGetSemaphoreFdKHR' },
 ]
 
