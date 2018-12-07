@@ -179,6 +179,9 @@ Polymer({
     if (this.languages == undefined || this.detailLanguage_ == undefined)
       return false;
 
+    if (n >= this.languages.enabled.length)
+      return false;
+
     const compareLanguage = assert(this.languages.enabled[n]);
     return this.detailLanguage_.language == compareLanguage.language;
   },
