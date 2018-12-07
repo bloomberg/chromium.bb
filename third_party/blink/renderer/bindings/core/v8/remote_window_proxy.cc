@@ -52,12 +52,14 @@ RemoteWindowProxy::RemoteWindowProxy(v8::Isolate* isolate,
 void RemoteWindowProxy::DisposeContext(Lifecycle next_status,
                                        FrameReuseStatus) {
   DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
-         next_status == Lifecycle::kFrameIsDetached);
+         next_status == Lifecycle::kFrameIsDetached ||
+         next_status == Lifecycle::kForciblyPurgeV8Memory);
 
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  if (next_status == Lifecycle::kGlobalObjectIsDetached &&
+  if ((next_status == Lifecycle::kGlobalObjectIsDetached ||
+       next_status == Lifecycle::kForciblyPurgeV8Memory) &&
       !global_proxy_.IsEmpty()) {
     global_proxy_.Get().SetWrapperClassId(0);
     V8DOMWrapper::ClearNativeInfo(GetIsolate(),

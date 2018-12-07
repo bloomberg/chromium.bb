@@ -74,7 +74,8 @@ void LocalWindowProxy::Trace(blink::Visitor* visitor) {
 void LocalWindowProxy::DisposeContext(Lifecycle next_status,
                                       FrameReuseStatus frame_reuse_status) {
   DCHECK(next_status == Lifecycle::kGlobalObjectIsDetached ||
-         next_status == Lifecycle::kFrameIsDetached);
+         next_status == Lifecycle::kFrameIsDetached ||
+         next_status == Lifecycle::kForciblyPurgeV8Memory);
 
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
@@ -86,8 +87,8 @@ void LocalWindowProxy::DisposeContext(Lifecycle next_status,
   // it returns.
   GetFrame()->Client()->WillReleaseScriptContext(context, world_->GetWorldId());
   MainThreadDebugger::Instance()->ContextWillBeDestroyed(script_state_);
-
-  if (next_status == Lifecycle::kGlobalObjectIsDetached) {
+  if (next_status == Lifecycle::kGlobalObjectIsDetached ||
+      next_status == Lifecycle::kForciblyPurgeV8Memory) {
     // Clean up state on the global proxy, which will be reused.
     if (!global_proxy_.IsEmpty()) {
       CHECK(global_proxy_ == context->Global());
