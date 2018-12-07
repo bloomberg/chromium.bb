@@ -103,6 +103,7 @@ RESOURCES = \
 	src/images/camera_shutter_recording_stop_hover.svg \
 	src/images/settings_button_back.svg \
 	src/images/settings_button_external.svg \
+	src/images/settings_feedback.svg \
 	src/images/settings_help.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
