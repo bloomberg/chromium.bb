@@ -15,7 +15,7 @@ def CheckChangeOnCommit(input_api, output_api):
 def _CheckForTranslations(input_api, output_api):
   shared_keywords = ['i18n(']
   html_keywords = shared_keywords + ['$118n{']
-  js_keywords = shared_keywords + ['I18nBehavior', 'loadTimeData.']
+  js_keywords = shared_keywords + ['I18nBehavior', 'loadTimeData.get']
 
   errors = []
 

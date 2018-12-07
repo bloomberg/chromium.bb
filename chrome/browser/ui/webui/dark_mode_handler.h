@@ -55,7 +55,6 @@ class DarkModeHandler : public content::WebUIMessageHandler,
  private:
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
-  void OnJavascriptAllowed() override;
   void OnJavascriptDisallowed() override;
 
   // ui::NativeThemeObserver:
@@ -63,6 +62,13 @@ class DarkModeHandler : public content::WebUIMessageHandler,
 
   // Handles the "observeDarkMode" message. No arguments. Protected for testing.
   void HandleObserveDarkMode(const base::ListValue* args);
+
+  // Generates a dictionary with "dark" and "darkMode" i18n keys based on
+  // |using_dark_|. Called initialize and on each change for notifications.
+  std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate() const;
+
+  // Whether the feature is enabled and the system is in dark mode.
+  bool IsDarkModeEnabled() const;
 
   // Fire a webui listener notification if dark mode actually changed.
   void NotifyIfChanged();

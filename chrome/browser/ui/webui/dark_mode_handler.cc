@@ -20,17 +20,6 @@ namespace {
 
 using ui::NativeTheme;
 
-std::unique_ptr<base::DictionaryValue> GetDataSourceUpdate(bool use_dark) {
-  auto update = std::make_unique<base::DictionaryValue>();
-  update->SetKey("dark", base::Value(use_dark ? "dark" : ""));
-  update->SetKey("darkMode", base::Value(use_dark));
-  return update;
-}
-
-bool IsFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kWebUIDarkMode);
-}
-
 }  // namespace
 
 DarkModeHandler::~DarkModeHandler() {}
@@ -47,23 +36,17 @@ void DarkModeHandler::InitializeInternal(content::WebUI* web_ui,
                                          content::WebUIDataSource* source,
                                          NativeTheme* theme,
                                          Profile* profile) {
-  const bool enabled = IsFeatureEnabled();
-  auto update = GetDataSourceUpdate(enabled && theme->SystemDarkModeEnabled());
-  source->AddLocalizedStrings(*update);
-  if (enabled) {
-    auto handler = base::WrapUnique(new DarkModeHandler(theme, profile));
-    handler->source_name_ = source->GetSource();
-    web_ui->AddMessageHandler(std::move(handler));
-  }
+  auto handler = base::WrapUnique(new DarkModeHandler(theme, profile));
+  source->AddLocalizedStrings(*handler->GetDataSourceUpdate());
+  handler->source_name_ = source->GetSource();
+  web_ui->AddMessageHandler(std::move(handler));
 }
 
 DarkModeHandler::DarkModeHandler(NativeTheme* theme, Profile* profile)
     : theme_(theme),
       profile_(profile),
-      using_dark_(theme->SystemDarkModeEnabled()),
-      observer_(this) {
-  CHECK(IsFeatureEnabled());
-}
+      using_dark_(IsDarkModeEnabled()),
+      observer_(this) {}
 
 void DarkModeHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -77,24 +60,34 @@ void DarkModeHandler::OnNativeThemeUpdated(NativeTheme* observed_theme) {
   NotifyIfChanged();
 }
 
-void DarkModeHandler::OnJavascriptAllowed() {
-  observer_.Add(theme_);
-}
-
 void DarkModeHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
 }
 
 void DarkModeHandler::HandleObserveDarkMode(const base::ListValue* /*args*/) {
   AllowJavascript();
+  observer_.Add(theme_);
+}
+
+bool DarkModeHandler::IsDarkModeEnabled() const {
+  return base::FeatureList::IsEnabled(features::kWebUIDarkMode) &&
+         theme_->SystemDarkModeEnabled();
+}
+
+std::unique_ptr<base::DictionaryValue> DarkModeHandler::GetDataSourceUpdate()
+    const {
+  auto update = std::make_unique<base::DictionaryValue>();
+  update->SetKey("dark", base::Value(using_dark_ ? "dark" : ""));
+  update->SetKey("darkMode", base::Value(using_dark_));
+  return update;
 }
 
 void DarkModeHandler::NotifyIfChanged() {
-  bool use_dark = theme_->SystemDarkModeEnabled();
+  bool use_dark = IsDarkModeEnabled();
   if (use_dark == using_dark_)
     return;
   using_dark_ = use_dark;
   FireWebUIListener("dark-mode-changed", base::Value(use_dark));
   content::WebUIDataSource::Update(profile_, source_name_,
-                                   GetDataSourceUpdate(use_dark));
+                                   GetDataSourceUpdate());
 }
