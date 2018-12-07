@@ -10,12 +10,13 @@ import subprocess
 import sys
 
 
+_CLOUD_PROJECT_ID = 'test-results-hrd'
 QUERY_BY_BUILD_NUMBER = """
 SELECT
   run.name AS name,
   SUM(run.times) AS duration
 FROM
-  [test-results-hrd:events.test_results]
+  [%s:events.test_results]
 WHERE
   buildbot_info.builder_name IN ({})
   AND buildbot_info.build_number = {}
@@ -23,9 +24,7 @@ GROUP BY
   name
 ORDER BY
   name
-"""
-
-
+""" % _CLOUD_PROJECT_ID
 QUERY_STORY_AVG_RUNTIME = """
 SELECT
   name,
@@ -36,7 +35,7 @@ FROM (
     start_time,
     AVG(run.times) AS time
   FROM
-    [test-results-hrd:events.test_results]
+    [%s:events.test_results]
   WHERE
     buildbot_info.builder_name IN ({configuration_names})
     AND run.time IS NOT NULL
@@ -52,8 +51,7 @@ GROUP BY
   name
 ORDER BY
   name
-"""
-
+""" % _CLOUD_PROJECT_ID
 QUERY_STORY_TOTAL_RUNTIME = """
 SELECT
   name,
@@ -64,7 +62,7 @@ FROM (
     start_time,
     SUM(run.times) AS time
   FROM
-    [test-results-hrd:events.test_results]
+    [%s:events.test_results]
   WHERE
     buildbot_info.builder_name IN ({configuration_names})
     AND run.time IS NOT NULL
@@ -80,7 +78,7 @@ GROUP BY
   name
 ORDER BY
   name
-"""
+""" % _CLOUD_PROJECT_ID
 
 
 _BQ_SETUP_INSTRUCTION = """
@@ -105,7 +103,8 @@ def _run_query(query):
     subprocess.check_call(['which', 'bq'])
   except subprocess.CalledProcessError:
     raise RuntimeError(_BQ_SETUP_INSTRUCTION)
-  args = ["bq", "query", "--format=json", "--max_rows=100000", query]
+  args = ["bq", "query", "--project_id="+_CLOUD_PROJECT_ID, "--format=json",
+          "--max_rows=100000", query]
 
   p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   stdout, stderr = p.communicate()
