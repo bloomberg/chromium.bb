@@ -110,10 +110,13 @@ void BuildCredentialRows(views::GridLayout* layout,
   password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   int labels_width = std::max(username_label->GetPreferredSize().width(),
                               password_label->GetPreferredSize().width());
+  int fields_height = std::max(username_field->GetPreferredSize().height(),
+                               password_field->GetPreferredSize().height());
 
   layout->AddView(username_label.release(), 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::FILL, labels_width, 0);
-  layout->AddView(username_field);
+  layout->AddView(username_field, 1, 1, views::GridLayout::FILL,
+                  views::GridLayout::FILL, 0, fields_height);
 
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -127,7 +130,8 @@ void BuildCredentialRows(views::GridLayout* layout,
   layout->StartRow(views::GridLayout::kFixedSize, type);
   layout->AddView(password_label.release(), 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::FILL, labels_width, 0);
-  layout->AddView(password_field);
+  layout->AddView(password_field, 1, 1, views::GridLayout::FILL,
+                  views::GridLayout::FILL, 0, fields_height);
   // The eye icon is also added to the layout if it was passed.
   if (password_view_button) {
     layout->AddView(password_view_button);
