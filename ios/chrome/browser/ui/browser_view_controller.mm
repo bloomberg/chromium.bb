@@ -767,20 +767,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Tab creation and selection
 // --------------------------
-// Adds a new tab with |url| and |postData| at the end of the model, and make it
-// the selected tab and return it.
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                     postData:(TemplateURLRef::PostContent*)postData
-                   transition:(ui::PageTransition)transition;
-// Internal method that all of the similar public and private methods call.
-// Adds a new tab with |url| and |postData| (if not null) at |position| in the
-// tab model (or at the end if |position is NSNotFound|, with |transition| as
-// the page transition type. If |tabAddedCompletion| is nonnull, it's called
-// synchronously after the tab is added.
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                     postData:(TemplateURLRef::PostContent*)postData
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition;
 // Whether the given tab's URL is an application specific URL.
 - (BOOL)isTabNativePage:(Tab*)tab;
 // Returns the view to use when animating a page in or out, positioning it to
@@ -1331,18 +1317,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     SnapshotTabHelper::FromWebState(currentTab.webState)
         ->UpdateSnapshot(/*with_overlays=*/true, /*visible_frame_only=*/true);
   }
-  [self addSelectedTabWithURL:GURL(kChromeUINewTabURL)
-                      atIndex:self.tabModel.count
-                   transition:ui::PAGE_TRANSITION_TYPED];
-}
 
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition {
-  return [self addSelectedTabWithURL:url
-                            postData:NULL
-                             atIndex:position
-                          transition:transition];
+  [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
+                                             GURL(kChromeUINewTabURL),
+                                             ui::PAGE_TRANSITION_TYPED, nullptr)
+                                  opener:nil
+                             openedByDOM:NO
+                                 atIndex:self.tabModel.count
+                            inBackground:NO];
 }
 
 - (void)appendTabAddedCompletion:(ProceduralBlock)tabAddedCompletion {
@@ -2796,27 +2778,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 #pragma mark - Private Methods: Tab creation and selection
 
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                     postData:(TemplateURLRef::PostContent*)postData
-                   transition:(ui::PageTransition)transition {
-  return [self addSelectedTabWithURL:url
-                            postData:postData
-                             atIndex:self.tabModel.count
-                          transition:transition];
-}
-
-- (Tab*)addSelectedTabWithURL:(const GURL&)URL
-                     postData:(TemplateURLRef::PostContent*)postData
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition {
-  return [self.tabModel
-      insertTabWithLoadParams:CreateWebLoadParams(URL, transition, postData)
-                       opener:nil
-                  openedByDOM:NO
-                      atIndex:position
-                 inBackground:NO];
-}
-
 - (BOOL)isTabNativePage:(Tab*)tab {
   web::WebState* webState = tab.webState;
   if (!webState)
@@ -3626,12 +3587,16 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
   // Generate the URL and populate |post_content| with the content type and
   // HTTP body for the request.
-  TemplateURLRef::PostContent post_content;
+  TemplateURLRef::PostContent postContent;
   GURL result(defaultURL->image_url_ref().ReplaceSearchTerms(
-      search_args, templateUrlService->search_terms_data(), &post_content));
-  [self addSelectedTabWithURL:result
-                     postData:&post_content
-                   transition:ui::PAGE_TRANSITION_TYPED];
+      search_args, templateUrlService->search_terms_data(), &postContent));
+  [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
+                                             result, ui::PAGE_TRANSITION_TYPED,
+                                             &postContent)
+                                  opener:nil
+                             openedByDOM:NO
+                                 atIndex:self.tabModel.count
+                            inBackground:NO];
 }
 
 // Saves the image at the given URL on the system's album.  The referrer is used
@@ -5190,9 +5155,13 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
 - (void)captivePortalDetectorTabHelper:
             (CaptivePortalDetectorTabHelper*)tabHelper
                  connectWithLandingURL:(const GURL&)landingURL {
-  [self addSelectedTabWithURL:landingURL
-                      atIndex:self.tabModel.count
-                   transition:ui::PAGE_TRANSITION_TYPED];
+  [self.tabModel insertTabWithLoadParams:CreateWebLoadParams(
+                                             landingURL,
+                                             ui::PAGE_TRANSITION_TYPED, nullptr)
+                                  opener:nil
+                             openedByDOM:NO
+                                 atIndex:self.tabModel.count
+                            inBackground:NO];
 }
 
 #pragma mark - PageInfoPresentation

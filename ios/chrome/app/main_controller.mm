@@ -108,6 +108,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/tabs/tab_util.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -2272,14 +2273,19 @@ enum class ShowTabSwitcherSnapshotResult {
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
+  TabModel* targetTabModel = targetBVC.tabModel;
 
-  Tab* currentTabInTargetBVC = [[targetBVC tabModel] currentTab];
+  Tab* currentTabInTargetBVC = [targetTabModel currentTab];
   if (!(currentTabInTargetBVC.webState &&
         IsURLNtp(currentTabInTargetBVC.webState->GetVisibleURL()))) {
     [targetBVC appendTabAddedCompletion:tabOpenedCompletion];
-    return [targetBVC addSelectedTabWithURL:URL
-                                    atIndex:targetBVC.tabModel.count
-                                 transition:transition];
+    [targetTabModel
+        insertTabWithLoadParams:CreateWebLoadParams(URL, transition,
+                                                    /*post_data=*/nullptr)
+                         opener:nil
+                    openedByDOM:NO
+                        atIndex:targetTabModel.count
+                   inBackground:NO];
   }
 
   Tab* newTab = currentTabInTargetBVC;
@@ -2321,8 +2327,8 @@ enum class ShowTabSwitcherSnapshotResult {
   BrowserCoordinator* targetBrowserCoordinator =
       targetMode == ApplicationMode::NORMAL ? self.mainBrowserCoordinator
                                             : self.incognitoBrowserCoordinator;
-  NSUInteger tabIndex = NSNotFound;
-
+  TabModel* targetTabModel = targetBrowserCoordinator.tabModel;
+  NSUInteger tabIndex = targetTabModel.count;
   ProceduralBlock startupCompletion =
       [self completionBlockForTriggeringAction:[_startupParameters
                                                    postOpeningAction]];
@@ -2355,21 +2361,23 @@ enum class ShowTabSwitcherSnapshotResult {
               : TabSwitcherDismissalMode::INCOGNITO;
       [targetBrowserCoordinator.viewController
           appendTabAddedCompletion:tabOpenedCompletion];
-      tab = [targetBrowserCoordinator.viewController
-          addSelectedTabWithURL:url
-                        atIndex:tabIndex
-                     transition:transition];
+      tab = [targetTabModel
+          insertTabWithLoadParams:CreateWebLoadParams(url, transition,
+                                                      /*post_data=*/nullptr)
+                           opener:nil
+                      openedByDOM:NO
+                          atIndex:tabIndex
+                     inBackground:NO];
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.
       self.NTPActionAfterTabSwitcherDismissal =
           [_startupParameters postOpeningAction];
       [self setStartupParameters:nil];
-      tab = [_tabSwitcher
-          dismissWithNewTabAnimationToModel:targetBrowserCoordinator.tabModel
-                                    withURL:url
-                                    atIndex:tabIndex
-                                 transition:transition];
+      tab = [_tabSwitcher dismissWithNewTabAnimationToModel:targetTabModel
+                                                    withURL:url
+                                                    atIndex:tabIndex
+                                                 transition:transition];
     }
   } else {
     if (!self.currentBVC.presentedViewController) {
