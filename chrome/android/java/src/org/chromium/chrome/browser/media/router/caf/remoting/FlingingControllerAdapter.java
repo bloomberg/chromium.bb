@@ -18,15 +18,16 @@ import org.chromium.chrome.browser.media.router.MediaStatusObserver;
 public class FlingingControllerAdapter implements FlingingController, MediaController {
     private static final String TAG = "FlingCtrlAdptr";
 
+    private final StreamPositionExtrapolator mStreamPositionExtrapolator;
     private final RemotingSessionController mSessionController;
     private final String mMediaUrl;
     private MediaStatusObserver mMediaStatusObserver;
-    private long mCachedApproximateCurrentTime;
     private boolean mLoaded;
 
     FlingingControllerAdapter(RemotingSessionController sessionController, String mediaUrl) {
         mSessionController = sessionController;
         mMediaUrl = mediaUrl;
+        mStreamPositionExtrapolator = new StreamPositionExtrapolator();
     }
 
     ////////////////////////////////////////////
@@ -52,11 +53,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
 
     @Override
     public long getApproximateCurrentTime() {
-        if (mSessionController.isConnected()) {
-            mCachedApproximateCurrentTime =
-                    mSessionController.getRemoteMediaClient().getApproximateStreamPosition();
-        }
-        return mCachedApproximateCurrentTime;
+        return mStreamPositionExtrapolator.getPosition();
     }
 
     ////////////////////////////////////////////
@@ -125,6 +122,7 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
 
         mSessionController.getRemoteMediaClient().seek(position).setResultCallback(
                 this ::onMediaCommandResult);
+        mStreamPositionExtrapolator.onSeek(position);
     }
 
     ////////////////////////////////////////////
@@ -134,9 +132,25 @@ public class FlingingControllerAdapter implements FlingingController, MediaContr
     public void onStatusUpdated() {
         if (mMediaStatusObserver == null) return;
 
-        MediaStatus mediaStatus = mSessionController.getRemoteMediaClient().getMediaStatus();
+        RemoteMediaClient remoteMediaClient = mSessionController.getRemoteMediaClient();
+
+        MediaStatus mediaStatus = remoteMediaClient.getMediaStatus();
         if (mediaStatus != null) {
+            if (mediaStatus.getPlayerState() == MediaStatus.PLAYER_STATE_IDLE
+                    && mediaStatus.getIdleReason() == MediaStatus.IDLE_REASON_FINISHED) {
+                mLoaded = false;
+                mStreamPositionExtrapolator.onFinish();
+            } else {
+                mStreamPositionExtrapolator.update(remoteMediaClient.getStreamDuration(),
+                        remoteMediaClient.getApproximateStreamPosition(),
+                        remoteMediaClient.isPlaying(), mediaStatus.getPlaybackRate());
+            }
+
             mMediaStatusObserver.onMediaStatusUpdate(new MediaStatusBridge(mediaStatus));
+
+        } else {
+            mLoaded = false;
+            mStreamPositionExtrapolator.clear();
         }
     }
 
