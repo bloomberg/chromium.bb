@@ -24,7 +24,6 @@
 #include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/cryptauth/local_device_data_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -120,14 +119,7 @@ ChromeProximityAuthClient::GetCryptAuthDeviceManager() {
 }
 
 std::string ChromeProximityAuthClient::GetLocalDevicePublicKey() {
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
-    return GetDeviceSyncClient()->GetLocalDeviceMetadata()->public_key();
-  } else {
-    cryptauth::LocalDeviceDataProvider provider(GetCryptAuthService());
-    std::string local_public_key;
-    provider.GetLocalDeviceData(&local_public_key, nullptr);
-    return local_public_key;
-  }
+  return GetDeviceSyncClient()->GetLocalDeviceMetadata()->public_key();
 }
 
 cryptauth::CryptAuthService* ChromeProximityAuthClient::GetCryptAuthService() {

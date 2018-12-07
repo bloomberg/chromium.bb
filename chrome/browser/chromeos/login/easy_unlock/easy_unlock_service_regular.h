@@ -30,7 +30,6 @@ class ListValue;
 namespace cryptauth {
 class CryptAuthDeviceManager;
 class CryptAuthEnrollmentManager;
-class LocalDeviceDataProvider;
 class RemoteDeviceLoader;
 }  // namespace cryptauth
 
@@ -184,10 +183,6 @@ class EasyUnlockServiceRegular
 
   // Loads the RemoteDevice instances from CryptAuth and local data.
   std::unique_ptr<cryptauth::RemoteDeviceLoader> remote_device_loader_;
-
-  // Provides local device information from CryptAuth.
-  std::unique_ptr<cryptauth::LocalDeviceDataProvider>
-      local_device_data_provider_;
 
   // If a new RemoteDevice was synced while the screen is locked, we defer
   // loading the RemoteDevice until the screen is unlocked. For security,
