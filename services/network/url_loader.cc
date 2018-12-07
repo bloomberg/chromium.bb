@@ -13,14 +13,17 @@
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/mime_sniffer.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/cert/symantec_certs.h"
@@ -43,6 +46,8 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/throttling/scoped_throttling_token.h"
+#include "url/origin.h"
+#include "url/url_constants.h"
 
 namespace network {
 
@@ -299,6 +304,53 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
 };
 
+using InitiatorOriginLockCompatibility =
+    URLLoader::RequestInitiatorOriginLockCompatibility;
+InitiatorOriginLockCompatibility VerifyRequestInitiatorOriginLock(
+    const mojom::URLLoaderFactoryParams& factory_params,
+    const ResourceRequest& request) {
+  if (factory_params.process_id == mojom::kBrowserProcessId)
+    return InitiatorOriginLockCompatibility::kBrowserProcess;
+
+  if (!factory_params.request_initiator_site_lock.has_value())
+    return InitiatorOriginLockCompatibility::kNoLock;
+  const url::Origin& lock = factory_params.request_initiator_site_lock.value();
+
+  if (!request.request_initiator.has_value()) {
+    NOTREACHED();  // Should only happen for the browser process.
+    return InitiatorOriginLockCompatibility::kNoInitiator;
+  }
+  const url::Origin& initiator = request.request_initiator.value();
+
+  if (initiator.opaque() || (initiator == lock))
+    return InitiatorOriginLockCompatibility::kCompatibleLock;
+
+  // TODO(lukasza, nasko): https://crbug.com/888079: Return kIncorrectLock if
+  // the origins do not match exactly in the previous if statement.  Once we
+  // have precursor origins, there should be no need to fall back to
+  // site-url-safe comparisons.
+  //
+  // It is only safe to compare sites if no other site can reuse the process.
+  // For some schemes (e.g. chrome-extension) the comparison is not safe.
+  if (initiator.GetURL().SchemeIsHTTPOrHTTPS()) {
+    // Only keep the scheme and registered domain of |initiator|.
+    std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        initiator.host(),
+        net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    std::string site = initiator.scheme();
+    site += url::kStandardSchemeSeparator;
+    site += domain.empty() ? initiator.host() : domain;
+
+    // Compare just the site URLs.
+    return GURL(site) == lock.GetURL()
+               ? InitiatorOriginLockCompatibility::kCompatibleLock
+               : InitiatorOriginLockCompatibility::kIncorrectLock;
+  }
+  return initiator.scheme() == lock.scheme()
+             ? InitiatorOriginLockCompatibility::kCompatibleLock
+             : InitiatorOriginLockCompatibility::kIncorrectLock;
+}
+
 }  // namespace
 
 URLLoader::URLLoader(
@@ -399,6 +451,14 @@ URLLoader::URLLoader(
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
+      VerifyRequestInitiatorOriginLock(*factory_params_, request));
+  // TODO(lukasza): https://crbug.com/871827: Enforce the origin lock.  In the
+  // long-term kIncorrectLock should trigger a renderer kill, but in the
+  // short-term we should at least fallback to using an opaque origin instead of
+  // a lock-incorrect |request.request_initiator| - using an opaque should be
+  // safe and hopefully also compatible with HTML Imports and SVG images.
   url_request_->set_initiator(request.request_initiator);
 
   if (request.update_first_party_url_on_redirect) {

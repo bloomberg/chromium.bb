@@ -412,7 +412,7 @@ MockRenderProcessHost::GetProcessResourceCoordinator() {
 }
 
 void MockRenderProcessHost::CreateURLLoaderFactory(
-    const url::Origin& origin,
+    const base::Optional<url::Origin>& origin,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   url_loader_factory_->Clone(std::move(request));

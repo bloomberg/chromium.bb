@@ -159,3 +159,10 @@ include_rules = [
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
 ]
+
+specific_include_rules = {
+  # To share values of UMA enums between product code and tests.
+  "cross_site_document_blocking_browsertest.cc": [
+    "+services/network/url_loader.h",
+  ],
+}
