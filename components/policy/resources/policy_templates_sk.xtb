@@ -107,6 +107,13 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 
           Pre spravované zariadenia nie sú predvolene k dispozícii žiadne režimy rýchleho odomknutia.</translation>
 <translation id="123081309365616809">Povolenie prenášania obsahu do zariadenia</translation>
+<translation id="1231349879329465225">Umožňuje povoliť alebo zakázať rýchly prechod.
+      Platí pre všetkých používateľov a rozhrania v zariadení.
+      Ak chcete používať rýchly prechod, musíte povoliť toto nastavenie aj vlastnosť ONC konkrétnej siete.
+      Rýchly prechod je po nastavení povolený dovtedy, kým pravidlo nezmeníte a nezakážete ho.
+
+      Ak pravidlo nenastavíte alebo ho nastavíte na hodnotu false, rýchly prechod sa nebude používať.
+      Ak ho nastavíte na hodnotu true, rýchly prechod sa použije, keď ho bezdrôtový prístupový bod podporuje.</translation>
 <translation id="1243570869342663665">Ovládať filtrovanie obsahu pre dospelých SafeSites</translation>
 <translation id="1257550411839719984">Nastaviť predvolený adresár na sťahovanie</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
@@ -124,6 +131,7 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
       Na rozdiel od <ph name="URL_LIST_POLICY_NAME" /> platia tieto pravidlá obojstranne. Znamená to, že ak používate doplnok pre prehliadač Internet Explorer a je zapnutý, ovládate ním aj to, či má <ph name="IE_PRODUCT_NAME" /> otvárať tieto webové adresy v prehliadači <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Použiť skript servera proxy vo formáte PAC</translation>
 <translation id="1304973015437969093">ID rozšírení/aplikácií a webové adresy aktualizácií, ktoré sa majú nainštalovať na pozadí</translation>
+<translation id="1307415922184340052">Odosielajte s každou tlačovou úlohou používateľské meno aj názov súboru na server natívnych tlačiarní. Predvolené nastavenie je „neodosielať“.</translation>
 <translation id="1307454923744766368">Zdroje alebo vzory názvov hostiteľa, v prípade ktorých by sa nemali uplatniť obmedzenia nezabezpečených zdrojov</translation>
 <translation id="1313457536529613143">Určuje percentuálnu hodnotu, o ktorú sa predĺži oneskorenie stmavenia obrazovky, keď sa zaznamená aktivita používateľa počas doby, keď je obrazovka stmavená, alebo krátko po vypnutí obrazovky.
 
@@ -676,7 +684,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
 <translation id="2693108589792503178">Konfiguruje webovú adresu zmeny hesla.</translation>
-<translation id="2696531058295423290">Povoľte zariadeniam používať <ph name="PLUGIN_VM_NAME" /> v systéme<ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="2696531058295423290">Povoľte zariadeniam používať <ph name="PLUGIN_VM_NAME" /> v systéme <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="2742843273354638707">Skryje na stránke Nová karta a v spúšťači systému <ph name="PRODUCT_OS_NAME" /> aplikáciu Internetový obchod Chrome a odkaz na pätu stránky.
 
@@ -3380,4 +3388,5 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
       Zariadenia počas zadaných časových intervalov nebudú môcť automaticky kontrolovať dostupnosť aktualizácií. Z dôvodu možných bezpečnostných problémov toto pravidlo neovplyvní zariadenia, ktoré vyžadujú vrátenie na staršiu verziu alebo v ktorých je nižšia než minimálna verzia systému <ph name="PRODUCT_OS_NAME" />. Nebude tiež blokovať kontroly dostupnosti aktualizácií, o ktoré požiadajú používatelia alebo správcovia.
       Keď toto pravidlo nie je nastavené alebo neobsahuje žiadne časové intervaly:
       Toto pravidlo nebude blokovať automatické kontroly dostupnosti aktualizácií, môžu ich však blokovať iné pravidlá.</translation>
+<translation id="991560005425213776">Odosielať natívnym tlačiarňam používateľské meno a názov súboru</translation>
 </translationbundle>

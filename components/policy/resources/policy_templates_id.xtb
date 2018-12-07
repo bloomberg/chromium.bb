@@ -108,6 +108,13 @@ Misalnya, untuk mengaktifkan setiap mode buka kunci cepat, gunakan ["semua"]. Un
 
 Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat yang dikelola.</translation>
 <translation id="123081309365616809">Mengaktifkan casting konten ke perangkat</translation>
+<translation id="1231349879329465225">Mengizinkan pengaktifan atau penonaktifan Transisi Cepat.
+      Berlaku untuk semua pengguna dan semua antarmuka pada perangkat.
+      Agar Transisi Cepat dapat digunakan, setelan ini dan properti ONC per jaringan perlu diaktifkan.
+      Setelah disetel, Transisi Cepat dapat terus digunakan hingga kebijakan ini dinonaktifkan.
+
+      Jika kebijakan tidak disetel atau disetel ke false, Transisi Cepat tidak dapat digunakan.
+      Jika disetel ke true, Transisi Cepat dapat digunakan saat titik akses nirkabel mendukungnya.</translation>
 <translation id="1243570869342663665">Mengontrol pemfilteran konten khusus dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Setel direktori download default</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>
@@ -125,6 +132,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, aturan berlaku untuk kedua arah. Yaitu, jika add-in Internet Explorer tersedia dan diaktifkan, aturan tersebut juga mengontrol apakah <ph name="IE_PRODUCT_NAME" /> harus membuka URL ini di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Gunakan skrip proxy .pac</translation>
 <translation id="1304973015437969093">ID Ekstensi/Aplikasi dan URL pembaruan akan dipasang di latar belakang</translation>
+<translation id="1307415922184340052">Kirim nama pengguna dan nama file ke server printer asli beserta setiap tugas pencetakannya. Setelan defaultnya bukan untuk mengirim.</translation>
 <translation id="1307454923744766368">Asal atau pola hostname yang semestinya tidak dikenai pembatasan untuk asal yang tidak aman</translation>
 <translation id="1313457536529613143">Menentukan persentase yang digunakan untuk menskalakan penundaan layar redup saat mengamati aktivitas pengguna selagi layar diredupkan atau tak lama setelah layar dimatikan.
 
@@ -3239,4 +3247,5 @@ Kebijakan ini hanya memengaruhi pengguna yang melakukan autentikasi menggunakan 
       Perangkat tidak dapat memeriksa update secara otomatis selama interval waktu yang ditentukan. Perangkat yang memerlukan rollback atau di bawah versi mininum <ph name="PRODUCT_OS_NAME" /> tidak akan terpengaruh oleh kebijakan ini karena potensi masalah keamanan. Selain itu, kebijakan ini tidak akan memblokir pemeriksaan update yang diminta oleh pengguna atau administrator.
       Jika kebijakan ini tidak disetel atau tidak berisi interval waktu:
       Pemeriksaan update otomatis tidak akan diblokir oleh kebijakan ini, namun dapat diblokir oleh kebijakan lain.</translation>
+<translation id="991560005425213776">Kirim nama pengguna dan nama file ke printer asli</translation>
 </translationbundle>

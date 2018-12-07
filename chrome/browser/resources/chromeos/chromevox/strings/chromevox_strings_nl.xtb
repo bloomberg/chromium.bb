@@ -51,6 +51,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1334095593597963605">teken- en woordecho</translation>
 <translation id="1339428534620983148">Vorige kolom van tabel</translation>
 <translation id="1342835525016946179">artikel</translation>
+<translation id="1346059596910821859">Fooi</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="135978014023467274">Er is een update uitgevoerd naar ChromeVox 63.</translation>
 <translation id="136718599399906424">Volgende rij van tabel</translation>
@@ -103,6 +104,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1828385960365606039">mei</translation>
 <translation id="1834891354138622109">Kolom</translation>
 <translation id="1845944666972354496">Dubbeltik om te activeren</translation>
+<translation id="1846771122725914429">Bluetooth-brailleleesregel</translation>
 <translation id="1865601187525349519">Einde van tekst</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">De huidige datum en tijd uitspreken.</translation>
@@ -159,6 +161,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2422937916923936891">Selectievakje voor menu-item</translation>
 <translation id="2428534162001909979">Opdrachtmenu's</translation>
 <translation id="2429669115401274487">p.m.</translation>
+<translation id="242998846562331953">Ondertitel</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> is nu de nieuwe functietoets voor ChromeVox.</translation>
 <translation id="2450814015951372393">Selectievakje</translation>
 <translation id="2462626033734746142">Groep met keuzerondjes</translation>
@@ -645,6 +648,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5887397643266327462">Braille-ondertiteling ingeschakeld.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Afspelen met lager volume wanneer ChromeVox spreekt</translation>
+<translation id="5906974869830879618">Geef een pincode op</translation>
 <translation id="5921587111466148855">Hoofdstuk</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{gelijkteken}other{# gelijktekens}}</translation>
 <translation id="5939518447894949180">Resetten</translation>
@@ -701,6 +705,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="641759969622533235">{COUNT,plural, =1{dubbelepunt}other{# dubbelepunten}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialoogvenster voor meldingen</translation>
+<translation id="6452403590345320472">Inhoudsopgave</translation>
 <translation id="6459511626086141404">Platte toetsenbordindeling</translation>
 <translation id="6468049171101508116">Volgende knop</translation>
 <translation id="646954774886932461">Index</translation>
@@ -994,6 +999,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="948171205378458592">Spreeksnelheid verlagen</translation>
 <translation id="958854023026327378">Veeg met één vinger omlaag</translation>
 <translation id="962913030769097253">Volgende kop voor niveau 1</translation>
+<translation id="966588271015727539">Een Bluetooth-brailleleesregel selecteren</translation>
 <translation id="973955474346881951">Modus voor vastzetten in-/uitschakelen</translation>
 <translation id="976849232629612000">Geen items.</translation>
 <translation id="995852680044449248">Begin van doorgehaalde tekst</translation>

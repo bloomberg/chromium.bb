@@ -107,6 +107,13 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
 
           Ve výchozím nastavení nejsou pro spravovaná zařízení k dispozici žádné metody rychlého odemknutí.</translation>
 <translation id="123081309365616809">Povoluje odesílání obsahu do zařízení</translation>
+<translation id="1231349879329465225">Umožňuje aktivovat nebo deaktivovat Rychlé převádění.
+      Toto nastavení platí pro všechny uživatele a všechna rozhraní v zařízení.
+      Aby se Rychlé převádění použilo, musí být zapnuté toto nastavení i vlastnost ONC na úrovni sítě.
+      Jakmile je Rychlé převádění nastaveno, zůstane aktivní, dokud nebude deaktivováno změnou této zásady.
+
+      Pokud tato zásada není nastavená nebo je nastavená na hodnotu false, Rychlé převádění se nepoužívá.
+      Pokud je nastavená na hodnotu true, Rychlé převádění se používá v případě, že ho bezdrátový přístupový bod podporuje.</translation>
 <translation id="1243570869342663665">Ovládat filtrování obsahu pro dospělé pomocí funkce SafeSites.</translation>
 <translation id="1257550411839719984">Nastavit výchozí adresář pro stahování</translation>
 <translation id="1265053460044691532">Omezit dobu, po kterou se uživatel ověřený pomocí technologie SAML může přihlásit offline</translation>
@@ -124,6 +131,7 @@ Není-li tato zásada nastavena, výchozí frekvence je 3 hodiny. Minimální po
       Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry. Když je přítomen a zapnut doplněk prohlížeče Internet Explorer, ovládá také, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URl otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Použít skript proxy serveru ve formátu PAC</translation>
 <translation id="1304973015437969093">ID aplikací/rozšíření a adresy URL aktualizací, které se mají nainstalovat na pozadí</translation>
+<translation id="1307415922184340052">S každou tiskovou úlohou do nativních tiskáren odesílat uživatelské jméno a název souboru. Ve výchozím nastavení se tyto údaje neodesílají.</translation>
 <translation id="1307454923744766368">Vzory zdrojů nebo názvů hostitelů, na které se nemají vztahovat omezení ohledně nezabezpečených zdrojů.</translation>
 <translation id="1313457536529613143">Určuje, o kolik procent bude prodloužena prodleva ztmavení obrazovky, když je v případě ztmavené obrazovky nebo záhy po vypnutí obrazovky zaznamenána aktivita uživatele.
 
@@ -3313,4 +3321,5 @@ Pokud je nastavena na true, možnost Záhlaví a zápatí je v dialogovém okn
       Zařízení během zadaných časových intervalů nebudou moci automaticky kontrolovat dostupnost aktualizací. Tato zásada vzhledem k možným bezpečnostním problémům nebude mít vliv na zařízení, která vyžadují vrácení na starší verzi nebo v nichž je nižší než minimální verze systému <ph name="PRODUCT_OS_NAME" />. Nebude také blokovat kontroly dostupnosti aktualizací, o které požádají uživatelé nebo administrátoři.
       Když tato zásada není nastavená nebo neobsahuje žádné časové intervaly:
       Tato zásada nebude blokovat automatické kontroly dostupnosti aktualizací, mohou je však blokovat jiné zásady.</translation>
+<translation id="991560005425213776">Odesílat do nativních tiskáren uživatelské jméno a název souboru</translation>
 </translationbundle>

@@ -9,7 +9,7 @@
 <translation id="3174168572213147020">આઇલેન્ડ</translation>
 <translation id="3713769522066937702">આ પિન કોડ ફોર્મેટ ઓળખવામાં આવ્યું નથી. માન્ય પિન કોડનું ઉદાહરણ: <ph name="EXAMPLE" />. તમારો પિન કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK" />અહીં<ph name="END_LINK" /> શોધો.</translation>
 <translation id="3882422586004212847">આ પોસ્ટલ કોડ ફોર્મેટ ઓળખવામાં આવ્યું નથી. માન્ય પોસ્ટલ કોડનું ઉદાહરણ: <ph name="EXAMPLE" />.</translation>
-<translation id="3885155851504623709">પૅરિશ</translation>
+<translation id="3885155851504623709">પેરિશ</translation>
 <translation id="43113324827158664">તમે આને ખાલી છોડી શકતા નથી.</translation>
 <translation id="4376888869070172068">આ પોસ્ટલ કોડ ફોર્મેટ ઓળખાયેલું નથી.</translation>
 <translation id="4518701284698680367">તમારે એક પિન કોડ પ્રદાન કરવો આવશ્યક છે, ઉદાહરણ તરીકે <ph name="EXAMPLE" />. તમારો પિન કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK" />અહીં<ph name="END_LINK" /> શોધો.</translation>
@@ -27,11 +27,11 @@
 <translation id="6735419622867539268">આ ફીલ્ડ માટે <ph name="FIELD_VALUE" /> જ્ઞાત મૂલ્ય તરીકે ઓળખાયેલું નથી.</translation>
 <translation id="6768780634682399515">એરકોડ</translation>
 <translation id="6777217372746654521">આ સરનામામાં એક પોસ્ટ ઓફિસ બોક્સ શામેલ હોય એવું લાગે છે. કૃપા કરી શેરી અથવા બિલ્ડિંગ સરનામાંનો ઉપયોગ કરો.</translation>
-<translation id="6839929833149231406">વિસ્તાર</translation>
+<translation id="6839929833149231406">ક્ષેત્ર</translation>
 <translation id="684852933191805996">ટાઉનલેન્ડ</translation>
-<translation id="6970216967273061347">જીલ્લો</translation>
-<translation id="7087282848513945231">પરગણું</translation>
-<translation id="7139724024395191329">એમિરાત</translation>
+<translation id="6970216967273061347">જિલ્લો</translation>
+<translation id="7087282848513945231">કાઉન્ટિ</translation>
+<translation id="7139724024395191329">એમિરેટ</translation>
 <translation id="7393381084163773901">શેરીનું સરનામું</translation>
 <translation id="7602447984296396718">આ સરનામાંના શેષ ભાગથી આ પિન કોડ મેળ ખાતો હોય એવું લાગતું નથી.</translation>
 <translation id="7738983109397305830">આ બાકીના સરનામાંથી આ પિન કોડ મેળ ખાતો હોય એવું લાગતું નથી. તમારો પિન કોડ જાણતાં નથી? તેને <ph name="BEGIN_LINK" />અહીં<ph name="END_LINK" /> શોધો.</translation>

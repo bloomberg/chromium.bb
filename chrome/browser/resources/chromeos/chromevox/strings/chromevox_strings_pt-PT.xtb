@@ -51,6 +51,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1334095593597963605">eco do caráter e da palavra</translation>
 <translation id="1339428534620983148">Coluna anterior da tabela</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">Gorjeta</translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="135978014023467274">O seu ChromeVox foi atualizado para a versão 63.</translation>
 <translation id="136718599399906424">Linha seguinte da tabela</translation>
@@ -103,6 +104,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1828385960365606039">Maio</translation>
 <translation id="1834891354138622109">Coluna</translation>
 <translation id="1845944666972354496">Toque duas vezes para ativar.</translation>
+<translation id="1846771122725914429">Ecrã em braille Bluetooth</translation>
 <translation id="1865601187525349519">Fim do texto</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Diga a data e hora atuais.</translation>
@@ -160,6 +162,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="2422937916923936891">Caixa de verificação do item de menu</translation>
 <translation id="2428534162001909979">Menus de comandos</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">Subtítulo</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> é agora o novo modificador do ChromeVox.</translation>
 <translation id="2450814015951372393">Caixa de verificação</translation>
 <translation id="2462626033734746142">Grupo de botões de opção</translation>
@@ -646,6 +649,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="5887397643266327462">Legendas braille ativadas.</translation>
 <translation id="5891934789323004067">Tabela</translation>
 <translation id="5899860758576822363">Reproduzir num volume mais baixo quando o ChromeVox estiver a falar</translation>
+<translation id="5906974869830879618">Introduza um PIN.</translation>
 <translation id="5921587111466148855">Capítulo</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{igual}other{# sinais de igual}}</translation>
 <translation id="5939518447894949180">Repor</translation>
@@ -702,6 +706,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="641759969622533235">{COUNT,plural, =1{dois pontos}other{# sinais de dois pontos}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Caixa de diálogo de alerta</translation>
+<translation id="6452403590345320472">Índice</translation>
 <translation id="6459511626086141404">Mapa de teclas simples</translation>
 <translation id="6468049171101508116">Botão seguinte</translation>
 <translation id="646954774886932461">Índice</translation>
@@ -996,6 +1001,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="948171205378458592">Diminuir velocidade de voz</translation>
 <translation id="958854023026327378">Deslizar com um dedo para baixo</translation>
 <translation id="962913030769097253">Título de nível 1 seguinte</translation>
+<translation id="966588271015727539">Selecionar um ecrã em braille Bluetooth</translation>
 <translation id="973955474346881951">Ativar/desativar o modo aderente</translation>
 <translation id="976849232629612000">Sem itens.</translation>
 <translation id="995852680044449248">Início de rasurado</translation>

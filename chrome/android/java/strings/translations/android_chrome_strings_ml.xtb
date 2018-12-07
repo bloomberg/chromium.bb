@@ -182,7 +182,7 @@
 <translation id="2342981853652716282">നിങ്ങളുടെ ബുക്ക്‌മാർക്കുകളും  ‌പാസ്‌വേഡുകളും മറ്റും എല്ലാ ഉപകരണങ്ങളിലും ലഭ്യമാക്കുന്നതിന് Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="2349710944427398404">അക്കൗണ്ടുകളും ബുക്ക്‌മാർക്കുകളും സംരക്ഷിച്ച ക്രമീകരണവും ഉൾപ്പെടെ Chrome ഉപയോഗിക്കുന്ന മൊത്തം വിവരങ്ങൾ</translation>
 <translation id="2351097562818989364">നിങ്ങളുടെ വിവർത്തന ക്രമീകരണം റീസെറ്റുചെയ്‌തു.</translation>
-<translation id="2359808026110333948">തുടരൂ</translation>
+<translation id="2359808026110333948">തുടരുക</translation>
 <translation id="2369533728426058518">ഓപ്പൺ ടാബുകൾ</translation>
 <translation id="2387895666653383613">ടെക്‌സ്റ്റ് സ്‌കെയിലിംഗ്</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -462,7 +462,7 @@
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" />-ൽ തുറക്കുക</translation>
 <translation id="4720982865791209136">Chrome മെച്ചപ്പെടുത്താൻ സഹായിക്കുക. <ph name="BEGIN_LINK" />സർവേയിൽ പങ്കെടുക്കുക.<ph name="END_LINK" /></translation>
 <translation id="4730876730346568982">നിങ്ങൾ <ph name="ACCOUNT_EMAIL_OLD" /> എന്നതിൽ നിന്ന് <ph name="ACCOUNT_EMAIL_NEW" /> എന്നതിലേക്ക് സമന്വയ അക്കൗണ്ടുകൾ മാറ്റുകയാണ്. <ph name="MANAGED_DOMAIN" /> ഡൊമെയ്‌നാണ് നിങ്ങളുടെ നിലവിലുള്ള Chrome വിവരങ്ങൾ മാനേജുചെയ്യുന്നത്. ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ വിവരം ഇല്ലാതാക്കുമെങ്കിലും, <ph name="ACCOUNT_EMAIL_OLD" /> എന്നതിൽ തുടർന്നും അവ ഉണ്ടായിരിക്കുന്നതാണ്.</translation>
-<translation id="473775607612524610">അപ്ഡേറ്റുചെയ്യുക</translation>
+<translation id="473775607612524610">അപ്‌ഡേറ്റുചെയ്യുക</translation>
 <translation id="4738836084190194332">അവസാനം സമന്വയിപ്പിച്ചത്: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">ഒരു പുതിയ ടാബ് തുറക്കുക</translation>
 <translation id="4751476147751820511">ചലന അല്ലെങ്കിൽ വെളിച്ച സെൻസറുകൾ</translation>

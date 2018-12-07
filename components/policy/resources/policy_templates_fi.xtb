@@ -117,6 +117,13 @@
 
           Oletuksena mitkään lukituksen pika-avaamisen tilat eivät ole käytettävissä ylläpidetyillä laitteilla.</translation>
 <translation id="123081309365616809">Salli sisällön suoratoisto laitteeseen</translation>
+<translation id="1231349879329465225">Sallii nopean siirtymisen käyttöön ottamisen ja käytöstä poistamisen.
+      Tämä koskee kaikkia käyttäjiä ja kaikkia laitteen käyttöliittymiä.
+      Nopean siirtymisen käyttö edellyttää sekä tämän asetuksen että verkkokohtaisen ONC-arvon käyttöönottoa.
+      Kun tämä on määritetty, nopea siirtyminen on käytössä, kunnes käytännön muutos poistaa sen käytöstä.
+
+      Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty epätosi, nopeaa siirtymistä ei käytetä.
+      Jos käytännön arvoksi on määritetty tosi, nopeaa siirtymistä käytetään, kun langaton tukiasema sallii sen.</translation>
 <translation id="1243570869342663665">Vain aikuisille suunnatun sisällön SafeSites-suodatuksen määritys</translation>
 <translation id="1257550411839719984">Aseta oletuslataushakemisto</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
@@ -134,6 +141,7 @@
       Sääntöjä sovelletaan molempiin suuntiin (toisin kuin <ph name="URL_LIST_POLICY_NAME" />-käytännössä). Kun Internet Explorer ‑laajennus on käytössä, myös se päättää, avaako <ph name="IE_PRODUCT_NAME" /> URL-osoitteet, kun <ph name="PRODUCT_NAME" /> on avoinna.</translation>
 <translation id="1297182715641689552">Käytä .pac-välityspalvelinkoodia</translation>
 <translation id="1304973015437969093">Laajennuksien ja sovellusten tunnukset ja päivitys-URL-osoitteet asennetaan taustalla</translation>
+<translation id="1307415922184340052">Lähetä käyttäjänimi ja tiedostonimi natiivitulostimien palvelimelle jokaisen tulostustyön yhteydessä. Oletus on olla lähettämättä.</translation>
 <translation id="1307454923744766368">Alkuperät tai isäntänimimallit, joihin ei sovelleta
       suojaamattomien alkuperien rajoituksia</translation>
 <translation id="1313457536529613143">Määrittää prosenttimäärän, jolla näytön himmennyksen viive skaalataan, kun käyttäjän toimia huomataan näytön ollessa himmennettynä tai pian näytön sammuttamisen jälkeen.
@@ -3311,4 +3319,5 @@ Jos tämän käytännön arvoksi on määritetty Tosi, käyttäjän on suoritett
       Laitteet eivät voi tarkastaa päivityksiä automaattisesti määritettyinä aikoina. Jos laite on palautettava edelliseen versioon tai siinä on <ph name="PRODUCT_OS_NAME" /> ‑vähimmäisversiota vanhempi versio, tällä käytännöllä ei tietoturvasyistä ole vaikutusta. Tämä käytäntö ei myöskään estä käyttäjän tai järjestelmänvalvojan pyytämää päivitysten tarkastusta.
       Jos tällä käytännöllä ei ole arvoa tai arvossa ei ole aikavälejä:
       Tämä käytäntö ei estä automaattisia päivitysten tarkastuksia, mutta muut käytännöt voivat estää ne.</translation>
+<translation id="991560005425213776">Lähetä käyttäjänimi ja tiedostonimi natiivitulostimille</translation>
 </translationbundle>

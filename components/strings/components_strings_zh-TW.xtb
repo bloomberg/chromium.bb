@@ -179,7 +179,7 @@
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
 <translation id="2091887806945687916">音訊</translation>
 <translation id="2094505752054353250">網域不符</translation>
-<translation id="2096368010154057602">省</translation>
+<translation id="2096368010154057602">部門</translation>
 <translation id="2102134110707549001">建議高強度密碼…</translation>
 <translation id="2108755909498034140">重新啟動電腦</translation>
 <translation id="2113977810652731515">信用卡</translation>
@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">允許 (預設)</translation>
 <translation id="3427342743765426898">重做編輯(&amp;R)</translation>
 <translation id="342781501876943858">如果你在其他網站上重複使用過你的密碼，Chromium 會建議你重設密碼。</translation>
-<translation id="3430691998045392297">影片螢幕設定不同，要繼續嗎？</translation>
 <translation id="3431636764301398940">將這張信用卡儲存到這個裝置</translation>
 <translation id="3447661539832366887">這個裝置的擁有者已關閉恐龍遊戲。</translation>
 <translation id="3447884698081792621">顯示憑證 (核發者：<ph name="ISSUER" />)</translation>
@@ -450,7 +449,7 @@
 <translation id="385051799172605136">返回</translation>
 <translation id="3858027520442213535">更新日期和時間</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
-<translation id="3885155851504623709">轄區</translation>
+<translation id="3885155851504623709">教區</translation>
 <translation id="3886446263141354045">你想存取這個網站的要求已傳送給<ph name="NAME" /></translation>
 <translation id="3890664840433101773">新增電子郵件地址</translation>
 <translation id="3901925938762663762">這張信用卡已過期</translation>
@@ -620,7 +619,7 @@
 <translation id="5087580092889165836">新增信用卡</translation>
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chromium 的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
-<translation id="5095208057601539847">省</translation>
+<translation id="5095208057601539847">州/省</translation>
 <translation id="5098332213681597508">這是你在 Google 帳戶中設定的名稱。</translation>
 <translation id="5115563688576182185">(64 位元)</translation>
 <translation id="5128122789703661928">無法將使用這個名稱的工作階段刪除。</translation>
@@ -823,7 +822,6 @@
 <translation id="6569060085658103619">目前顯示的是擴充功能頁面</translation>
 <translation id="6596325263575161958">加密選項</translation>
 <translation id="6604181099783169992">動作或光源感應器</translation>
-<translation id="6607617806003952240">我無法提供協助了，請以手動方式繼續填寫。</translation>
 <translation id="6624427990725312378">聯絡資訊</translation>
 <translation id="6626291197371920147">新增有效的信用卡號碼</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜尋</translation>
@@ -849,7 +847,7 @@
 <translation id="6824266427216888781">無法載入地區資料</translation>
 <translation id="6825578344716086703">你嘗試連上 <ph name="DOMAIN" />，但伺服器的憑證是以防護力薄弱的簽章演算法 (例如 SHA-1) 進行簽署。這代表伺服器提供的安全性憑證可能遭到偽造，而且這個伺服器可能並不是你的目標伺服器 (你的連線對象可能是攻擊者的電腦)。</translation>
 <translation id="6831043979455480757">翻譯</translation>
-<translation id="6839929833149231406">區</translation>
+<translation id="6839929833149231406">區域</translation>
 <translation id="6852204201400771460">要重新載入應用程式嗎？</translation>
 <translation id="6865412394715372076">目前無法驗證這張信用卡</translation>
 <translation id="6868206169573555318">重新啟動即可更新</translation>
@@ -870,7 +868,7 @@
 <translation id="6964255747740675745">無法剖析網路設定 (無效的 JSON)。</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="6965978654500191972">裝置</translation>
-<translation id="6970216967273061347">區</translation>
+<translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6979440798594660689">靜音 (預設)</translation>
@@ -883,7 +881,7 @@
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7064851114919012435">聯絡資訊</translation>
 <translation id="7079718277001814089">這個網站含有惡意軟體</translation>
-<translation id="7087282848513945231">郡</translation>
+<translation id="7087282848513945231">郡/縣</translation>
 <translation id="7090678807593890770">請透過 Google 搜尋「<ph name="LINK" />」</translation>
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7108819624672055576">依據擴充功能設定允許</translation>
@@ -891,7 +889,7 @@
 <translation id="7119414471315195487">關閉其他分頁或程式</translation>
 <translation id="7129409597930077180">無法運送到這個地址，請改用其他地址。</translation>
 <translation id="7138472120740807366">快遞方式</translation>
-<translation id="7139724024395191329">大公國</translation>
+<translation id="7139724024395191329">埃米爾管轄區</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 和另外 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> 種付款方式}}</translation>
 <translation id="717330890047184534">GAIA ID：</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" />和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}other{<ph name="SHIPPING_OPTION_PREVIEW" />和另外 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> 種選項}}</translation>
