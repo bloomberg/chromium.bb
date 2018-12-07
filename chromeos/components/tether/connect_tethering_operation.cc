@@ -246,7 +246,7 @@ ConnectTetheringOperation::ConnectTetheringResponseCodeToHostResponseErrorCode(
       break;
   }
 
-  return HostResponseErrorCode::NO_RESPONSE;
+  return HostResponseErrorCode::UNRECOGNIZED_RESPONSE_ERROR;
 }
 
 void ConnectTetheringOperation::SetClockForTest(base::Clock* clock_for_test) {
