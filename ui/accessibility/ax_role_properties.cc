@@ -171,6 +171,8 @@ bool IsItemLike(const ax::mojom::Role role) {
     case ax::mojom::Role::kTreeItem:
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kDescriptionListTerm:
+    case ax::mojom::Role::kTerm:
       return true;
     default:
       return false;
@@ -269,6 +271,7 @@ bool IsSetLike(const ax::mojom::Role role) {
     case ax::mojom::Role::kTree:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kDescriptionList:
       return true;
     default:
       return false;

@@ -588,6 +588,12 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
     case ax::mojom::Role::kRadioGroup:
       return item_role == ax::mojom::Role::kRadioButton;
 
+    case ax::mojom::Role::kDescriptionList:
+      // Only the term for each description list entry should receive posinset
+      // and setsize.
+      return item_role == ax::mojom::Role::kDescriptionListTerm ||
+             item_role == ax::mojom::Role::kTerm;
+
     default:
       return false;
   }

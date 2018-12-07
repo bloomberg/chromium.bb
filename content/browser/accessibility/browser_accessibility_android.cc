@@ -1064,7 +1064,7 @@ int BrowserAccessibilityAndroid::GetItemIndex() const {
       case ax::mojom::Role::kListItem:
       case ax::mojom::Role::kListBoxOption:
       case ax::mojom::Role::kTreeItem:
-        index = GetIntAttribute(ax::mojom::IntAttribute::kPosInSet) - 1;
+        index = node()->GetPosInSet() - 1;
         break;
       default:
         break;
@@ -1085,7 +1085,7 @@ int BrowserAccessibilityAndroid::GetItemCount() const {
       case ax::mojom::Role::kList:
       case ax::mojom::Role::kListBox:
       case ax::mojom::Role::kDescriptionList:
-        count = PlatformChildCount();
+        count = node()->GetSetSize();
         break;
       default:
         break;
@@ -1385,7 +1385,7 @@ int BrowserAccessibilityAndroid::RowCount() const {
       GetRole() == ax::mojom::Role::kListBox ||
       GetRole() == ax::mojom::Role::kDescriptionList ||
       GetRole() == ax::mojom::Role::kTree) {
-    return PlatformChildCount();
+    return node()->GetSetSize();
   }
 
   return 0;
@@ -1402,7 +1402,7 @@ int BrowserAccessibilityAndroid::RowIndex() const {
   if (GetRole() == ax::mojom::Role::kListItem ||
       GetRole() == ax::mojom::Role::kListBoxOption ||
       GetRole() == ax::mojom::Role::kTreeItem) {
-    return GetIndexInParent();
+    return node()->GetPosInSet() - 1;
   }
 
   return node()->GetTableCellRowIndex();
