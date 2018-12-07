@@ -61,6 +61,8 @@ import javax.inject.Provider;
 @ActivityScope
 class ContextualSuggestionsMediator
         implements EnabledStateMonitor.Observer, FetchHelper.Delegate, ListMenuButton.Delegate {
+    @VisibleForTesting
+    static final String IPH_CONFIDENCE_THRESHOLD_PARAM = "iph_confidence_threshold";
     private static final int IPH_AUTO_DISMISS_TIMEOUT_MS = 6000;
     private static final int IPH_AUTO_DISMISS_ACCESSIBILITY_TIMEOUT_MS = 10000;
     private static boolean sOverrideIPHTimeoutForTesting;
@@ -108,6 +110,13 @@ class ContextualSuggestionsMediator
     private boolean mCanShowIph;
 
     /**
+     * Whether the current results are eligible for IPH based on the confidence of the results and
+     * the confidence threshold for showing IPH. Should be used in combination with other criteria
+     * e.g. {@link #mCanShowIph} to determine whether to request to show IPH.
+     */
+    private boolean mCanShowIphForCurrentResults;
+
+    /**
      * Construct a new {@link ContextualSuggestionsMediator}.
      * @param profile The last used {@link Profile}.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
@@ -152,7 +161,8 @@ class ContextualSuggestionsMediator
                 if (!mHaveBrowserControlsFullyHidden) {
                     mHaveBrowserControlsFullyHidden =
                             mFullscreenManager.areBrowserControlsOffScreen();
-                } else if (mCanShowIph && mRequireReverseScrollForIPH
+                } else if (mCanShowIph && mCanShowIphForCurrentResults
+                        && mRequireReverseScrollForIPH
                         && mFullscreenManager.areBrowserControlsFullyVisible()) {
                     mHandler.postDelayed(() -> maybeShowHelpBubble(),
                             ToolbarPhone.LOC_BAR_WIDTH_CHANGE_ANIMATION_DURATION_MS);
@@ -281,6 +291,13 @@ class ContextualSuggestionsMediator
 
             prepareModel(clusters, suggestionsResult.getPeekText());
 
+            // By default, we will show IPH if results have been sent to the UI layer unless
+            // otherwise configured via a field trial.
+            mCanShowIphForCurrentResults = suggestionsResult.getPeekConditions().getConfidence()
+                    >= (float) ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON,
+                            IPH_CONFIDENCE_THRESHOLD_PARAM, 0.d);
+
             mToolbarManager.enableExperimentalButton(
                     view -> onToolbarButtonClicked(),
                     R.drawable.contextual_suggestions,
@@ -335,7 +352,7 @@ class ContextualSuggestionsMediator
         reportEvent(ContextualSuggestionsEvent.UI_BUTTON_SHOWN);
         TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                 EventConstants.CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN);
-        if (mCanShowIph && !mRequireReverseScrollForIPH) {
+        if (mCanShowIph && mCanShowIphForCurrentResults && !mRequireReverseScrollForIPH) {
             mHandler.postDelayed(() -> maybeShowHelpBubble(),
                     ToolbarPhone.LOC_BAR_WIDTH_CHANGE_ANIMATION_DURATION_MS);
         }
@@ -484,8 +501,8 @@ class ContextualSuggestionsMediator
 
     private void maybeShowHelpBubble() {
         View anchorView = mToolbarManager.getExperimentalButtonView();
-        if (!mCanShowIph || mToolbarManager.isUrlBarFocused() || anchorView == null
-                || anchorView.getVisibility() != View.VISIBLE
+        if (!mCanShowIph || !mCanShowIphForCurrentResults || mToolbarManager.isUrlBarFocused()
+                || anchorView == null || anchorView.getVisibility() != View.VISIBLE
                 || !mFullscreenManager.areBrowserControlsFullyVisible()
                 || mSuggestionsSource == null || !mModel.hasSuggestions()) {
             return;
@@ -557,5 +574,10 @@ class ContextualSuggestionsMediator
     @VisibleForTesting
     static void setOverrideIPHTimeoutForTesting(boolean override) {
         sOverrideIPHTimeoutForTesting = override;
+    }
+
+    @VisibleForTesting
+    boolean getCanShowIphForCurrentResults() {
+        return mCanShowIphForCurrentResults;
     }
 }

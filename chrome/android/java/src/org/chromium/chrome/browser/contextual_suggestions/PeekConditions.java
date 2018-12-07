@@ -6,28 +6,36 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 /** Encapsulates server-provided conditions for "peeking" the contextual suggestions UI. */
 public class PeekConditions {
+    private final float mConfidence;
     private final float mPageScrollPercentage;
     private final float mMinimumSecondsOnPage;
     private final float mMaximumNumberOfPeeks;
 
     public PeekConditions() {
-        this(0, 0, 0);
+        this(0, 0, 0, 0);
     }
 
     /**
      * Constructs a new PeekConditions.
-     * @param pageScrollPercentage float The percentage of the page that the user scrolls required
-     * for an auto peek to occur.
-     * @param minimumSecondsOnPage float The minimum time (seconds) the user spends on the page
-     * required for auto peek.
-     * @param maximumNumberOfPeeks float The maximum number of auto peeks that we can show for this
-     * page.
+     * @param confidence The confidence of the results that were returned.
+     * @param pageScrollPercentage The percentage of the page that the user scrolls required
+     *                             for an auto peek to occur.
+     * @param minimumSecondsOnPage The minimum time (seconds) the user spends on the page
+     *                             required for auto peek.
+     * @param maximumNumberOfPeeks The maximum number of auto peeks that we can show for this
+     *                             page.
      */
-    public PeekConditions(
-            float pageScrollPercentage, float minimumSecondsOnPage, float maximumNumberOfPeeks) {
+    public PeekConditions(float confidence, float pageScrollPercentage, float minimumSecondsOnPage,
+            float maximumNumberOfPeeks) {
+        mConfidence = confidence;
         mPageScrollPercentage = pageScrollPercentage;
         mMinimumSecondsOnPage = minimumSecondsOnPage;
         mMaximumNumberOfPeeks = maximumNumberOfPeeks;
+    }
+
+    /** @return The confidence of the results that were returned.*/
+    public float getConfidence() {
+        return mConfidence;
     }
 
     /**
