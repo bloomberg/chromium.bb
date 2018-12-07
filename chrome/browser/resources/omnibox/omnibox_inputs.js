@@ -23,11 +23,6 @@ let QueryInputs;
 let DisplayInputs;
 
 class OmniboxInputs extends OmniboxElement {
-  /** @return {string} */
-  static get is() {
-    return 'omnibox-inputs';
-  }
-
   constructor() {
     super('omnibox-inputs-template');
   }
@@ -122,4 +117,4 @@ class OmniboxInputs extends OmniboxElement {
   }
 }
 
-window.customElements.define(OmniboxInputs.is, OmniboxInputs);
+window.customElements.define('omnibox-inputs', OmniboxInputs);

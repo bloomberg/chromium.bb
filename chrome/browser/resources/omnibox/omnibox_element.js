@@ -25,7 +25,7 @@ class OmniboxElement extends HTMLElement {
    * @return {!Element}
    */
   $$(id) {
-    return OmniboxElement.getById_(id, (this.shadowRoot));
+    return OmniboxElement.getById_(id, this.shadowRoot);
   }
 
   /**

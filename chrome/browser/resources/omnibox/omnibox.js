@@ -90,14 +90,13 @@
     omniboxInputs.addEventListener(
         'display-inputs-changed',
         event => omniboxOutput.updateDisplayInputs(event.detail));
-    omniboxInputs.addEventListener(
-        'copy-request',
-        event => event.detail === 'text' ?
-            omniboxOutput.copyDelegate.copyTextOutput() :
-            omniboxOutput.copyDelegate.copyJsonOutput());
+    omniboxInputs.addEventListener('copy-request', event => {
+      event.detail === 'text' ? omniboxOutput.copyDelegate.copyTextOutput() :
+                                omniboxOutput.copyDelegate.copyJsonOutput();
+    });
     omniboxInputs.addEventListener(
         'filter-input-changed',
-        event => omniboxOutput.filterDelegate.filter(
+        event => omniboxOutput.filter(
             event.detail.filterText, event.detail.filterHide));
   });
 })();
