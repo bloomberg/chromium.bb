@@ -371,7 +371,11 @@
       'chromedriver_replay_unittests': {},
     },
 
-    'chromeos_gtests': {
+    # Tests that run in Chrome OS VMs.
+    # NOTE: We only want a small subset of test suites here, because most
+    # suites assume that they stub out the underlying device hardware.
+    # https://crbug.com/865693
+    'chromeos_device_friendly_gtests': {
       'aura_unittests': {
         'args': [
           '--ozone-platform=headless',
@@ -389,13 +393,6 @@
       },
       'cc_unittests': {},
       'chrome_all_tast_tests': {},
-      'chromeos_unittests': {
-        'args': [
-          # TODO(crbug.com/865693): Don't stub out dbus clients.
-          '--dbus-stub',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter',
-        ],
-      },
       'cros_vm_sanity_test': {},
       'crypto_unittests': {},
       'display_unittests': {},
@@ -441,16 +438,9 @@
       'url_unittests': {},
     },
 
-    'chromeos_gtests_experimental': {
+    'chromeos_device_friendly_gtests_experimental': {
       'base_unittests': {},
       'chrome_login_tast_tests': {},
-      'chromeos_unittests': {
-        'args': [
-          # TODO(crbug.com/865693): Don't stub out dbus clients.
-          '--dbus-stub',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.chromeos_unittests.filter',
-        ],
-      },
       'cros_vm_sanity_test': {},
       'services_unittests': {
         'args': [

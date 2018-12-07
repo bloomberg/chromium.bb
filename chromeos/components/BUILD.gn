@@ -16,6 +16,7 @@ test("chromeos_components_unittests") {
   deps = [
     "//base",
     "//base/test:test_support",
+    "//chromeos:chromeos_buildflags",
     "//chromeos/components/drivefs:unit_tests",
     "//chromeos/components/multidevice:unit_tests",
     "//chromeos/components/nearby:unit_tests",

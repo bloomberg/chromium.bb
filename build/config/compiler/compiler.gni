@@ -13,7 +13,7 @@ import("//build_overrides/build.gni")
 if (is_chromeos) {
   import("//build/config/chromeos/rules.gni")
 } else {
-  is_chromeos_chrome = false
+  is_cros_chrome_sdk = false
 }
 
 if (is_android) {
@@ -206,7 +206,7 @@ if (symbol_level == -1) {
     # If you use is_win_fastlink = true or lld or clang then you can set
     # symbol_level = 2 when using goma.
     symbol_level = 1
-  } else if (is_chromeos_chrome) {
+  } else if (is_cros_chrome_sdk) {
     # Use lower symbol level in Simple Chrome build for faster link time.
     # For Simple Chrome, this should take precedence over is_official_build,
     # turned on by --internal.

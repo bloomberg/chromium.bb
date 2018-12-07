@@ -10,12 +10,18 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "chromeos/chromeos_buildflags.h"
 #include "mojo/core/embedder/embedder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+
+#if BUILDFLAG(IS_CROS_CHROME_SDK)
+#error This test target only builds with linux-chromeos, not cros chrome-sdk.\
+  See comment in build/config/chromeos/rules.gni.
+#endif
 
 namespace {
 

@@ -8,15 +8,15 @@
 
 if (is_android) {
   import("//build/config/android/config.gni")
+  import("//build/config/android/extract_unwind_tables.gni")
   import("//build/config/android/rules.gni")
   import("//build/config/sanitizers/sanitizers.gni")
-  import("//build/config/android/extract_unwind_tables.gni")
 }
 
 if (is_fuchsia) {
   import("//build/config/chromecast_build.gni")
-  import("//build/config/fuchsia/rules.gni")
   import("//build/config/fuchsia/package.gni")
+  import("//build/config/fuchsia/rules.gni")
 }
 
 if (is_chromeos) {
@@ -322,7 +322,7 @@ template("test") {
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
     }
-  } else if (is_chromeos && is_chromeos_chrome) {
+  } else if (is_chromeos && is_cros_chrome_sdk) {
     # Building for a cros board (ie: not linux-chromeos).
 
     _gen_runner_target = "${target_name}__runner"
