@@ -220,6 +220,8 @@
       'mac-rel',
     ],
   },
+  # Note: keep experiment percentages the same as
+  # network_service_chrome_public_test_apk.
   'chrome_public_test_apk': {
     'modifications': {
       # chromium.android
@@ -766,6 +768,37 @@
       },
     },
   },
+  # Note: keep experiment percentages the same as chrome_public_test_apk.
+  'network_service_chrome_public_test_apk': {
+    # Only run these on the phone testers for now due to capacity.
+    'remove_from': [
+      # chromium.android
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel',
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
+      'KitKat Phone Tester (dbg)',
+      # chromium.android.fyi
+      'x86 Cloud Tester',
+      # chromium.memory
+      'Android CFI',
+      # chromium.clang
+      'ToTAndroid',
+      'ToTAndroidCFI',
+    ],
+    'modifications': {
+      # chromium.android
+      'Marshmallow 64 bit Tester': {
+        # TODO(crbug.com/731759): Enable this once we're confident that it
+        # passes.
+        'experiment_percentage': 100,
+      },
+      'Oreo Phone Tester': {
+        'experiment_percentage': 100,
+      },
+    },
+  },
   'network_service_components_browsertests': {
     'remove_from': [
       # chromium.memory
@@ -804,6 +837,25 @@
       'Mac ASan 64 Tests (1)',
       'mac-views-rel',
       'ToTMacASan',
+    ],
+  },
+  'network_service_content_shell_test_apk': {
+    # Only run these on the phone testers for now due to capacity.
+    'remove_from': [
+      # chromium.android
+      'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-rel',
+      'KitKat Tablet Tester',
+      'Lollipop Tablet Tester',
+      'Marshmallow Tablet Tester',
+      'KitKat Phone Tester (dbg)',
+      # chromium.android.fyi
+      'x86 Cloud Tester',
+      # chromium.memory
+      'Android CFI',
+      # chromium.clang
+      'ToTAndroid',
+      'ToTAndroidCFI',
     ],
   },
   'network_service_extensions_browsertests': {
