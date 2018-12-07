@@ -361,7 +361,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   }
   if (speed >= 8) {
     sf->mv.search_method = FAST_DIAMOND;
-    sf->mv.subpel_force_stop = 2;
+    sf->mv.subpel_force_stop = HALF_PEL;
     sf->lpf_pick = LPF_PICK_MINIMAL_LPF;
   }
 }
@@ -407,7 +407,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->recode_loop = ALLOW_RECODE;
   sf->mv.subpel_search_method = SUBPEL_TREE;
   sf->mv.subpel_iters_per_step = 2;
-  sf->mv.subpel_force_stop = 0;
+  sf->mv.subpel_force_stop = EIGHTH_PEL;
 #if DISABLE_TRELLISQ_SEARCH == 2
   sf->optimize_coefficients = !is_lossless_requested(&cpi->oxcf)
                                   ? FINAL_PASS_TRELLIS_OPT
