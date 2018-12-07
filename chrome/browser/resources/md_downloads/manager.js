@@ -50,8 +50,11 @@ cr.define('downloads', function() {
       'itemsChanged_(items_.*)',
     ],
 
+    /** @private {mdDownloads.mojom.PageCallbackRouter} */
+    mojoEventTarget_: null,
+
     /** @private {mdDownloads.mojom.PageHandlerInterface} */
-    browserProxy_: null,
+    mojoHandler_: null,
 
     /** @private {?downloads.SearchService} */
     searchService_: null,
@@ -64,29 +67,30 @@ cr.define('downloads', function() {
 
     /** @override */
     created: function() {
-      this.browserProxy_ = downloads.BrowserProxy.getInstance().handler;
+      const browserProxy = downloads.BrowserProxy.getInstance();
+      this.mojoEventTarget_ = browserProxy.callbackRouter;
+      this.mojoHandler_ = browserProxy.handler;
       this.searchService_ = downloads.SearchService.getInstance();
     },
 
     /** @override */
     attached: function() {
       document.documentElement.classList.remove('loading');
-      const callbackRouter =
-          downloads.BrowserProxy.getInstance().callbackRouter;
       this.listenerIds_ = [
-        callbackRouter.clearAll.addListener(this.clearAll_.bind(this)),
-        callbackRouter.insertItems.addListener(this.insertItems_.bind(this)),
-        callbackRouter.removeItem.addListener(this.removeItem_.bind(this)),
-        callbackRouter.updateItem.addListener(this.updateItem_.bind(this)),
+        this.mojoEventTarget_.clearAll.addListener(this.clearAll_.bind(this)),
+        this.mojoEventTarget_.insertItems.addListener(
+            this.insertItems_.bind(this)),
+        this.mojoEventTarget_.removeItem.addListener(
+            this.removeItem_.bind(this)),
+        this.mojoEventTarget_.updateItem.addListener(
+            this.updateItem_.bind(this)),
       ];
     },
 
     /** @override */
     detached: function() {
-      const callbackRouter =
-          downloads.BrowserProxy.getInstance().callbackRouter;
       this.listenerIds_.forEach(
-          id => assert(callbackRouter.removeListener(id)));
+          id => assert(this.mojoEventTarget_.removeListener(id)));
     },
 
     /** @private */
@@ -182,9 +186,9 @@ cr.define('downloads', function() {
      */
     onCommand_: function(e) {
       if (e.command.id == 'clear-all-command')
-        this.browserProxy_.clearAll();
+        this.mojoHandler_.clearAll();
       else if (e.command.id == 'undo-command')
-        this.browserProxy_.undo();
+        this.mojoHandler_.undo();
       else if (e.command.id == 'find-command')
         this.$.toolbar.onFindCommand();
     },

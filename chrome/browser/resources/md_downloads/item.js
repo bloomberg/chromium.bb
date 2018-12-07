@@ -95,11 +95,11 @@ cr.define('downloads', function() {
     ],
 
     /** @private {mdDownloads.mojom.PageHandlerInterface} */
-    browserProxy_: null,
+    mojoHandler_: null,
 
     /** @override */
     ready: function() {
-      this.browserProxy_ = downloads.BrowserProxy.getInstance().handler;
+      this.mojoHandler_ = downloads.BrowserProxy.getInstance().handler;
       this.content = this.$.content;
     },
 
@@ -355,12 +355,12 @@ cr.define('downloads', function() {
 
     /** @private */
     onCancelTap_: function() {
-      this.browserProxy_.cancel(this.data.id);
+      this.mojoHandler_.cancel(this.data.id);
     },
 
     /** @private */
     onDiscardDangerousTap_: function() {
-      this.browserProxy_.discardDangerous(this.data.id);
+      this.mojoHandler_.discardDangerous(this.data.id);
     },
 
     /**
@@ -369,7 +369,7 @@ cr.define('downloads', function() {
      */
     onDragStart_: function(e) {
       e.preventDefault();
-      this.browserProxy_.drag(this.data.id);
+      this.mojoHandler_.drag(this.data.id);
     },
 
     /**
@@ -378,35 +378,35 @@ cr.define('downloads', function() {
      */
     onFileLinkTap_: function(e) {
       e.preventDefault();
-      this.browserProxy_.openFileRequiringGesture(this.data.id);
+      this.mojoHandler_.openFileRequiringGesture(this.data.id);
     },
 
     /** @private */
     onPauseOrResumeTap_: function() {
       if (this.isInProgress_)
-        this.browserProxy_.pause(this.data.id);
+        this.mojoHandler_.pause(this.data.id);
       else
-        this.browserProxy_.resume(this.data.id);
+        this.mojoHandler_.resume(this.data.id);
     },
 
     /** @private */
     onRemoveTap_: function() {
-      this.browserProxy_.remove(this.data.id);
+      this.mojoHandler_.remove(this.data.id);
     },
 
     /** @private */
     onRetryTap_: function() {
-      this.browserProxy_.retryDownload(this.data.id);
+      this.mojoHandler_.retryDownload(this.data.id);
     },
 
     /** @private */
     onSaveDangerousTap_: function() {
-      this.browserProxy_.saveDangerousRequiringGesture(this.data.id);
+      this.mojoHandler_.saveDangerousRequiringGesture(this.data.id);
     },
 
     /** @private */
     onShowTap_: function() {
-      this.browserProxy_.show(this.data.id);
+      this.mojoHandler_.show(this.data.id);
     },
   });
 

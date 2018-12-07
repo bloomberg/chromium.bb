@@ -3,114 +3,22 @@
 // found in the LICENSE file.
 
 suite('manager tests', function() {
-  const DOWNLOAD_DATA_TEMPLATE = Object.freeze({
-    byExtId: '',
-    byExtName: '',
-    dangerType: downloads.DangerType.NOT_DANGEROUS,
-    dateString: '',
-    fileExternallyRemoved: false,
-    filePath: '/some/file/path',
-    fileName: 'download 1',
-    fileUrl: 'file:///some/file/path',
-    id: '',
-    lastReasonText: '',
-    otr: false,
-    percent: 100,
-    progressStatusText: '',
-    resume: false,
-    retry: false,
-    return: false,
-    sinceString: 'Today',
-    started: Date.now() - 10000,
-    state: downloads.States.COMPLETE,
-    total: -1,
-    url: 'http://permission.site',
-  });
-
-  /** @implements {mdDownloads.mojom.PageHandlerInterface} */
-  class TestDownloadsProxy extends TestBrowserProxy {
-    /** @param {!mdDownloads.mojom.PageHandlerCallbackRouter} */
-    constructor(pageRouterProxy) {
-      super(['remove']);
-
-      /** @private {!mdDownloads.mojom.PageHandlerCallbackRouter} */
-      this.pageRouterProxy_ = pageRouterProxy;
-    }
-
-    /** @override */
-    remove(id) {
-      this.pageRouterProxy_.removeItem(id);
-      this.pageRouterProxy_.flushForTesting().then(
-          () => this.methodCalled('remove', id));
-    }
-
-    /** @override */
-    getDownloads(searchTerms) {}
-
-    /** @override */
-    openFileRequiringGesture(id) {}
-
-    /** @override */
-    drag(id) {}
-
-    /** @override */
-    saveDangerousRequiringGesture(id) {}
-
-    /** @override */
-    discardDangerous(id) {}
-
-    /** @override */
-    retryDownload(id) {}
-
-    /** @override */
-    show(id) {}
-
-    /** @override */
-    pause(id) {}
-
-    /** @override */
-    resume(id) {}
-
-    /** @override */
-    undo() {}
-
-    /** @override */
-    cancel(id) {}
-
-    /** @override */
-    clearAll() {}
-
-    /** @override */
-    openDownloadsFolderRequiringGesture() {}
-  }
-
-  /**
-   * @param {Object=} config
-   * @return {!downloads.Data}
-   */
-  function createDownload(config) {
-    if (!config)
-      config = {};
-
-    return Object.assign({}, DOWNLOAD_DATA_TEMPLATE, config);
-  }
-
   /** @type {!downloads.Manager} */
   let manager;
 
-  /** @type {!mdDownloads.mojom.PageInterface} */
+  /** @type {!mdDownloads.mojom.PageHandlerCallbackRouter} */
   let pageRouterProxy;
 
   /** @type {TestDownloadsProxy} */
-  let testPageHandlerProxy;
+  let testBrowserProxy;
 
   setup(function() {
-    pageRouterProxy =
-        downloads.BrowserProxy.getInstance().callbackRouter.createProxy();
-    testPageHandlerProxy = new TestDownloadsProxy(pageRouterProxy);
-    downloads.BrowserProxy.getInstance().handler = testPageHandlerProxy;
-
     PolymerTest.clearBody();
+
+    testBrowserProxy = new TestDownloadsProxy();
+    pageRouterProxy = testBrowserProxy.pageRouterProxy;
+    downloads.BrowserProxy.instance_ = testBrowserProxy;
+
     manager = document.createElement('downloads-manager');
     document.body.appendChild(manager);
     assertEquals(manager, downloads.Manager.get());
@@ -166,7 +74,7 @@ suite('manager tests', function() {
   });
 
   test('update', function() {
-    let dangerousDownload = Object.assign({}, DOWNLOAD_DATA_TEMPLATE, {
+    let dangerousDownload = createDownload({
       dangerType: downloads.DangerType.DANGEROUS_FILE,
       state: downloads.States.DANGEROUS,
     });
@@ -202,7 +110,7 @@ suite('manager tests', function() {
           const item = manager.$$('downloads-item');
 
           item.$.remove.click();
-          return testPageHandlerProxy.whenCalled('remove');
+          return testBrowserProxy.handler.whenCalled('remove');
         })
         .then(() => {
           Polymer.dom.flush();
