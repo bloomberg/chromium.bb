@@ -45,6 +45,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -963,6 +964,34 @@ TEST_F(VariationsServiceTest, DoNotRetryIfInsecureURLIsHTTPS) {
   service.set_insecure_url(GURL("https://example.test"));
   EXPECT_FALSE(service.CallMaybeRetryOverHTTP());
   EXPECT_FALSE(service.fetch_attempted());
+}
+
+TEST_F(VariationsServiceTest, SeedNotStoredWhenRedirected) {
+  VariationsService::EnableFetchForTesting();
+
+  TestVariationsService service(
+      std::make_unique<web_resource::TestRequestAllowedNotifier>(
+          &prefs_, network_tracker_),
+      &prefs_, GetMetricsStateManager(), true);
+
+  EXPECT_FALSE(service.seed_stored());
+
+  net::RedirectInfo redirect_info;
+  redirect_info.status_code = 301;
+  redirect_info.new_url = service.interception_url();
+  network::TestURLLoaderFactory::Redirects redirects{
+      {redirect_info, network::ResourceResponseHead()}};
+
+  network::ResourceResponseHead head =
+      network::CreateResourceResponseHead(net::HTTP_OK);
+
+  service.test_url_loader_factory()->AddResponse(
+      service.interception_url(), head, SerializeSeed(CreateTestSeed()),
+      network::URLLoaderCompletionStatus(), redirects);
+
+  service.set_intercepts_fetch(false);
+  service.DoActualFetch();
+  EXPECT_FALSE(service.seed_stored());
 }
 
 // TODO(isherman): Add an integration test for saving and loading a safe seed,
