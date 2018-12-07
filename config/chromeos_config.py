@@ -1860,7 +1860,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       description='Commit Queue master (all others are slaves)',
-      auto_reboot=True,  # TODO(dgarrett): Disable chroot.img stable.
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 2m interval',
   )

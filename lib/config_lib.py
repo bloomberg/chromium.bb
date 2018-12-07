@@ -1079,9 +1079,6 @@ def DefaultSettings():
       # If true, skip package retries in BuildPackages step.
       nobuildretry=False,
 
-      # If false, turn off rebooting between builds
-      auto_reboot=True,
-
       # Attempt to run this build on the same bot each time it builds.
       # This is only meaningful for slave builds run on swarming. This
       # should only be used with LUCI Builders that use a reserved
