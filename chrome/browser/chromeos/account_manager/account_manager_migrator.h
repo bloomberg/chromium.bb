@@ -28,6 +28,9 @@ class AccountManagerMigrator : public KeyedService {
   // Starts migrating accounts to Chrome OS Account Manager.
   void Start();
 
+  // Gets the current status of migration.
+  AccountMigrationRunner::Status GetStatus() const;
+
  private:
   void OnMigrationRunComplete(
       const AccountMigrationRunner::MigrationResult& result);

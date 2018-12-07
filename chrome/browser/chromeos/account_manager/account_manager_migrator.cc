@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "chromeos/account_manager/account_manager.h"
@@ -27,6 +28,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -221,16 +223,31 @@ void AccountManagerMigrator::Start() {
   // TODO(sinhak): Migrate Secondary Accounts in ARC.
   // TODO(sinhak): Store success state in Preferences.
   // TODO(sinhak): Verify Device Account LST state.
-  // TODO(sinhak): Enable account reconciliation.
 
   migration_runner_.Run(
       base::BindOnce(&AccountManagerMigrator::OnMigrationRunComplete,
                      weak_factory_.GetWeakPtr()));
 }
 
+AccountMigrationRunner::Status AccountManagerMigrator::GetStatus() const {
+  return migration_runner_.GetStatus();
+}
+
 void AccountManagerMigrator::OnMigrationRunComplete(
     const AccountMigrationRunner::MigrationResult& result) {
+  DCHECK_NE(AccountMigrationRunner::Status::kNotStarted,
+            migration_runner_.GetStatus());
+  DCHECK_NE(AccountMigrationRunner::Status::kRunning,
+            migration_runner_.GetStatus());
   // TODO(sinhak): Gather UMA stats.
+
+  // Migration could have finished with a failure but we need to start account
+  // reconciliation anyways. This may cause us to lose Chrome content area
+  // Secondary Accounts but if we do not enable reconciliation, users will not
+  // be able to add any account to Chrome content area which is a much worse
+  // experience than losing Chrome content area Secondary Accounts.
+  AccountReconcilorFactory::GetForProfile(profile_)->Initialize(
+      true /* start_reconcile_if_tokens_available */);
 }
 
 // static
@@ -254,6 +271,9 @@ AccountManagerMigratorFactory::AccountManagerMigratorFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
   // For translating between account identifiers.
   DependsOn(AccountTrackerServiceFactory::GetInstance());
+  // Account reconciliation is paused for the duration of migration and needs to
+  // be re-enabled once migration is done.
+  DependsOn(AccountReconcilorFactory::GetInstance());
 }
 
 AccountManagerMigratorFactory::~AccountManagerMigratorFactory() = default;
