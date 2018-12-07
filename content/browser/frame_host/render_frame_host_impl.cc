@@ -453,6 +453,12 @@ service_manager::Connector* MaybeGetConnectorForProcess() {
   return connection->GetConnector();
 }
 
+std::unique_ptr<URLLoaderFactoryBundleInfo> CloneFactoryBundle(
+    scoped_refptr<URLLoaderFactoryBundle> bundle) {
+  return base::WrapUnique(
+      static_cast<URLLoaderFactoryBundleInfo*>(bundle->Clone().release()));
+}
+
 }  // namespace
 
 class RenderFrameHostImpl::DroppedInterfaceRequestLogger
@@ -4587,8 +4593,11 @@ void RenderFrameHostImpl::CommitNavigation(
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle_for_prefetch;
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory;
     if (subresource_loader_factories) {
-      SaveSubresourceFactories(std::move(subresource_loader_factories));
-      factory_bundle_for_prefetch = CloneSubresourceFactories();
+      // Clone the factory bundle for prefetch.
+      auto bundle = base::MakeRefCounted<URLLoaderFactoryBundle>(
+          std::move(subresource_loader_factories));
+      subresource_loader_factories = CloneFactoryBundle(bundle);
+      factory_bundle_for_prefetch = CloneFactoryBundle(bundle);
     } else if (base::FeatureList::IsEnabled(
                    blink::features::kServiceWorkerServicification) &&
                (!is_same_document || is_first_navigation)) {
@@ -4631,7 +4640,8 @@ void RenderFrameHostImpl::CommitNavigation(
         navigation_request_->GetCommitNavigationClient()) {
       navigation_request_->GetCommitNavigationClient()->CommitNavigation(
           head, common_params, request_params,
-          std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
+          std::move(url_loader_client_endpoints),
+          std::move(subresource_loader_factories),
           std::move(subresource_overrides), std::move(controller),
           std::move(prefetch_loader_factory), devtools_navigation_token,
           base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
@@ -4639,7 +4649,8 @@ void RenderFrameHostImpl::CommitNavigation(
     } else {
       GetNavigationControl()->CommitNavigation(
           head, common_params, request_params,
-          std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
+          std::move(url_loader_client_endpoints),
+          std::move(subresource_loader_factories),
           std::move(subresource_overrides), std::move(controller),
           std::move(prefetch_loader_factory), devtools_navigation_token,
           request ? base::BindOnce(
@@ -4705,7 +4716,6 @@ void RenderFrameHostImpl::FailedNavigation(
         URLLoaderFactoryBundleInfo::SchemeMap(),
         URLLoaderFactoryBundleInfo::OriginMap(), bypass_redirect_checks);
   }
-  SaveSubresourceFactories(std::move(subresource_loader_factories));
 
   auto find_request = navigation_requests_.find(navigation_id);
   NavigationRequest* request = find_request != navigation_requests_.end()
@@ -4715,13 +4725,13 @@ void RenderFrameHostImpl::FailedNavigation(
       request->GetCommitNavigationClient()) {
     request->GetCommitNavigationClient()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
-        error_page_content, CloneSubresourceFactories(),
+        error_page_content, std::move(subresource_loader_factories),
         base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
                        base::Unretained(this), navigation_id));
   } else {
     GetNavigationControl()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
-        error_page_content, CloneSubresourceFactories(),
+        error_page_content, std::move(subresource_loader_factories),
         base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
                        base::Unretained(this), navigation_id));
   }
@@ -5220,9 +5230,8 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
           CreateInitiatorSpecificURLLoaderFactories(
               initiators_requiring_separate_url_loader_factory_),
           bypass_redirect_checks);
-  SaveSubresourceFactories(std::move(subresource_loader_factories));
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
-      CloneSubresourceFactories());
+      std::move(subresource_loader_factories));
 }
 
 std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
@@ -6052,27 +6061,6 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
   }
   // Remove the requests from the list of NavigationRequests waiting to commit.
   navigation_requests_.erase(navigation_id);
-}
-
-void RenderFrameHostImpl::SaveSubresourceFactories(
-    std::unique_ptr<URLLoaderFactoryBundleInfo> bundle_info) {
-  // CHECK for https://crbug.com/849929.
-  CHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-        bundle_info);
-  subresource_loader_factories_bundle_ = nullptr;
-  if (bundle_info) {
-    subresource_loader_factories_bundle_ =
-        base::MakeRefCounted<URLLoaderFactoryBundle>(std::move(bundle_info));
-  }
-}
-
-std::unique_ptr<URLLoaderFactoryBundleInfo>
-RenderFrameHostImpl::CloneSubresourceFactories() {
-  if (subresource_loader_factories_bundle_) {
-    return base::WrapUnique(static_cast<URLLoaderFactoryBundleInfo*>(
-        subresource_loader_factories_bundle_->Clone().release()));
-  }
-  return nullptr;
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
