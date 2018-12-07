@@ -521,10 +521,11 @@ enum class GamepadId {
   kVendorf000Product00f1,
   kHamaProduct0001,
   kHamaProduct0005,
+  kSteelSeriesBtProduct1419,
   // Add new items here. kMaxValue must be updated to the last item in the
   // enumeration.
 
-  kMaxValue = kHamaProduct0005,
+  kMaxValue = kSteelSeriesBtProduct1419,
 };
 
 }  // namespace device
