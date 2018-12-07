@@ -17,6 +17,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/time/clock.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/clear_storage_task.h"
@@ -33,6 +34,7 @@
 #include "components/offline_pages/core/offline_page_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/stub_system_download_manager.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -136,11 +138,13 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
 
   // Getters for private fields.
   base::TestMockTimeTaskRunner* task_runner() { return task_runner_.get(); }
+  base::Clock* clock() { return task_runner_->GetMockClock(); }
   OfflinePageModelTaskified* model() { return model_.get(); }
   OfflinePageMetadataStore* store() { return store_test_util_.store(); }
   OfflinePageMetadataStoreTestUtil* store_test_util() {
     return &store_test_util_;
   }
+
   StubSystemDownloadManager* download_manager_stub() {
     return download_manager_stub_;
   }
@@ -182,6 +186,8 @@ class OfflinePageModelTaskifiedTest : public testing::Test,
   base::ScopedTempDir private_archive_dir_;
   base::ScopedTempDir public_archive_dir_;
 
+  TestScopedOfflineClockOverride clock_;
+
   base::FilePath last_path_created_by_archiver_;
   bool observer_add_page_called_;
   OfflinePageItem last_added_page_;
@@ -193,7 +199,8 @@ OfflinePageModelTaskifiedTest::OfflinePageModelTaskifiedTest()
     : task_runner_(new base::TestMockTimeTaskRunner(base::Time::Now(),
                                                     base::TimeTicks::Now())),
       task_runner_handle_(task_runner_),
-      store_test_util_(task_runner_) {}
+      store_test_util_(task_runner_),
+      clock_(task_runner_->GetMockClock()) {}
 
 OfflinePageModelTaskifiedTest::~OfflinePageModelTaskifiedTest() {}
 
@@ -244,8 +251,7 @@ void OfflinePageModelTaskifiedTest::BuildModel() {
       download_manager_stub_);
   model_ = std::make_unique<OfflinePageModelTaskified>(
       store_test_util()->ReleaseStore(), std::move(archive_manager),
-      std::move(download_manager), base::ThreadTaskRunnerHandle::Get(),
-      task_runner_->GetMockClock());
+      std::move(download_manager), base::ThreadTaskRunnerHandle::Get());
   model_->AddObserver(this);
   histogram_tester_ = std::make_unique<base::HistogramTester>();
   ResetResults();
@@ -1491,8 +1497,8 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   base::MockCallback<MultipleOfflinePageItemCallback> callback;
   model()->GetAllPages(callback.Get());
   PumpLoop();
-  EXPECT_EQ(task_runner()->Now(), last_maintenance_tasks_schedule_time());
-  base::Time last_scheduling_time = task_runner()->Now();
+  EXPECT_EQ(clock()->Now(), last_maintenance_tasks_schedule_time());
+  base::Time last_scheduling_time = clock()->Now();
   // Confirm no runs so far.
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ClearTemporaryPages.Result", 0);
@@ -1514,7 +1520,7 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   // Note: The previous elapsed delay is discounted from the clock advance here.
   task_runner()->FastForwardBy(
       OfflinePageModelTaskified::kClearStorageInterval / 2 - run_delay);
-  ASSERT_GT(task_runner()->Now(), last_scheduling_time);
+  ASSERT_GT(clock()->Now(), last_scheduling_time);
   model()->GetAllPages(callback.Get());
   // And advance the delay too.
   task_runner()->FastForwardBy(run_delay);
@@ -1535,7 +1541,7 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   SavePageWithExpectedResult(kTestUrl, kTestClientId1, kTestUrl2,
                              kEmptyRequestOrigin, std::move(archiver),
                              SavePageResult::SUCCESS);
-  last_scheduling_time = task_runner()->Now();
+  last_scheduling_time = clock()->Now();
   // Advance the delay again.
   task_runner()->FastForwardBy(run_delay);
   PumpLoop();
@@ -1696,7 +1702,7 @@ TEST_F(OfflinePageModelTaskifiedTest, StoreAndCheckThumbnail) {
   // Store a thumbnail.
   OfflinePageThumbnail thumb;
   thumb.offline_id = 1;
-  thumb.expiration = base::Time::Now();
+  thumb.expiration = clock()->Now();
   thumb.thumbnail = "abc123";
   model()->StoreThumbnail(thumb);
   EXPECT_CALL(*this, ThumbnailAdded(_, thumb));

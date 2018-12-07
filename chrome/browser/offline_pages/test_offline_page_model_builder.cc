@@ -52,8 +52,7 @@ std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(stub_download_manager), task_runner,
-      base::DefaultClock::GetInstance()));
+      std::move(stub_download_manager), task_runner));
 }
 
 }  // namespace offline_pages

@@ -8,11 +8,17 @@
 
 namespace offline_pages {
 
-TestScopedOfflineClock::TestScopedOfflineClock() {
-  SetOfflineClockForTesting(this);
+TestScopedOfflineClockOverride::TestScopedOfflineClockOverride(
+    base::Clock* clock) {
+  SetOfflineClockForTesting(clock);
 }
-TestScopedOfflineClock::~TestScopedOfflineClock() {
+
+TestScopedOfflineClockOverride::~TestScopedOfflineClockOverride() {
   SetOfflineClockForTesting(nullptr);
 }
+
+TestScopedOfflineClock::TestScopedOfflineClock() : override_(this) {}
+
+TestScopedOfflineClock::~TestScopedOfflineClock() {}
 
 }  // namespace offline_pages
