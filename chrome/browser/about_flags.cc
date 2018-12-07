@@ -3285,12 +3285,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseGoogleLocalNtp)},
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_MACOSX)
-    {"mac-rtl", flag_descriptions::kMacRTLName,
-     flag_descriptions::kMacRTLDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kMacRTL)},
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_CHROMEOS)
     {"enable-stylus-virtual-keyboard",
      flag_descriptions::kEnableStylusVirtualKeyboardName,
