@@ -49,7 +49,7 @@ TEST_F(ImportDataMultilineDetailItemTest, ConfigureCell) {
 TEST_F(ImportDataMultilineDetailItemTest, MultipleLines) {
   ImportDataMultilineDetailCell* cell =
       [[ImportDataMultilineDetailCell alloc] init];
-  EXPECT_EQ(1, cell.textLabel.numberOfLines);
+  EXPECT_EQ(0, cell.textLabel.numberOfLines);
   EXPECT_EQ(0, cell.detailTextLabel.numberOfLines);
 }
 
