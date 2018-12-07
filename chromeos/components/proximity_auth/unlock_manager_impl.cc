@@ -135,6 +135,9 @@ UnlockManagerImpl::~UnlockManagerImpl() {
   if (GetMessenger())
     GetMessenger()->RemoveObserver(this);
 
+  if (proximity_monitor_)
+    proximity_monitor_->RemoveObserver(this);
+
   ScreenlockBridge::Get()->RemoveObserver(this);
 
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
@@ -164,6 +167,8 @@ void UnlockManagerImpl::SetRemoteDeviceLifeCycle(
     AttemptToStartRemoteDeviceLifecycle();
     SetWakingUpState(true /* is_waking_up */);
   } else {
+    if (proximity_monitor_)
+      proximity_monitor_->RemoveObserver(this);
     proximity_monitor_.reset();
   }
 
@@ -177,7 +182,10 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
   if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
     DCHECK(life_cycle_->GetChannel());
     DCHECK(GetMessenger());
-    proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
+    if (!proximity_monitor_) {
+      proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
+      proximity_monitor_->AddObserver(this);
+    }
     GetMessenger()->AddObserver(this);
   }
 
@@ -465,7 +473,7 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
   // If the RSSI is too low, then the remote device is nowhere near the local
   // device. This message should take priority over messages about screen lock
   // states.
-  if (!proximity_monitor_->IsUnlockAllowed()) {
+  if (proximity_monitor_ && !proximity_monitor_->IsUnlockAllowed()) {
     if (remote_screenlock_state_ &&
         *remote_screenlock_state_ == RemoteScreenlockState::UNLOCKED) {
       return ScreenlockState::RSSI_TOO_LOW;
@@ -516,7 +524,6 @@ void UnlockManagerImpl::UpdateProximityMonitorState() {
   if (is_locked_ && life_cycle_ &&
       life_cycle_->GetState() ==
           RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-    proximity_monitor_->AddObserver(this);
     proximity_monitor_->Start();
   } else {
     proximity_monitor_->Stop();
@@ -579,7 +586,7 @@ void UnlockManagerImpl::FinalizeAuthAttempt(
   reject_auth_attempt_weak_ptr_factory_.InvalidateWeakPtrs();
 
   bool should_accept = !error;
-  if (should_accept)
+  if (should_accept && proximity_monitor_)
     proximity_monitor_->RecordProximityMetricsOnAuthSuccess();
 
   is_attempting_auth_ = false;
