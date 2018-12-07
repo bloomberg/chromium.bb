@@ -99,6 +99,16 @@ void HostConnectionMetricsLogger::RecordConnectionToHostResult(
       RecordConnectionResultFailure(
           ConnectionToHostResult_FailureEventType::INVALID_HOTSPOT_CREDENTIALS);
       break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_SUCCESSFUL_REQUEST_BUT_NO_RESPONSE:
+      RecordConnectionResultFailure(ConnectionToHostResult_FailureEventType::
+                                        SUCCESSFUL_REQUEST_BUT_NO_RESPONSE);
+      break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_UNRECOGNIZED_RESPONSE_ERROR:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::UNRECOGNIZED_RESPONSE_ERROR);
+      break;
     default:
       NOTREACHED();
   };

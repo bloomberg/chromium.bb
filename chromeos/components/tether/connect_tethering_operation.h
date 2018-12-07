@@ -39,7 +39,9 @@ class TetherHostResponseRecorder;
 class ConnectTetheringOperation : public MessageTransferOperation {
  public:
   // Includes all error codes of ConnectTetheringResponse_ResponseCode, but
-  // includes extra values, |NO_RESPONSE| and |INVALID_HOTSPOT_CREDENTIALS|.
+  // includes extra values: |COULD_NOT_CONNECT_TO_PHONE|,
+  // |INVALID_HOTSPOT_CREDENTIALS|, |SUCCESSFUL_REQUEST_BUT_NO_RESPONSE|, and
+  // |UNRECOGNIZED_RESPONSE_ERROR|.
   enum HostResponseErrorCode {
     PROVISIONING_FAILED = 0,
     TETHERING_TIMEOUT = 1,
@@ -49,7 +51,8 @@ class ConnectTetheringOperation : public MessageTransferOperation {
     ENABLING_HOTSPOT_TIMEOUT = 5,
     UNKNOWN_ERROR = 6,
     NO_RESPONSE = 7,
-    INVALID_HOTSPOT_CREDENTIALS = 8
+    INVALID_HOTSPOT_CREDENTIALS = 8,
+    UNRECOGNIZED_RESPONSE_ERROR = 9
   };
 
   class Factory {

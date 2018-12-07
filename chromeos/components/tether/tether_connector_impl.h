@@ -114,6 +114,7 @@ class TetherConnectorImpl : public TetherConnector,
   DisconnectTetheringRequestSender* disconnect_tethering_request_sender_;
   WifiHotspotDisconnector* wifi_hotspot_disconnector_;
 
+  bool did_send_successful_request_ = false;
   std::string device_id_pending_connection_;
   base::Closure success_callback_;
   network_handler::StringResultCallback error_callback_;

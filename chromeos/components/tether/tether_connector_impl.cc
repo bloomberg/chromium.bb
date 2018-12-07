@@ -150,6 +150,8 @@ bool TetherConnectorImpl::CancelConnectionAttempt(
 
 void TetherConnectorImpl::OnConnectTetheringRequestSent(
     multidevice::RemoteDeviceRef remote_device) {
+  did_send_successful_request_ = true;
+
   // If setup is required for the phone, display a notification so that the
   // user knows to follow instructions on the phone. Note that the notification
   // is displayed only after a request has been sent successfully. If the
@@ -432,8 +434,19 @@ TetherConnectorImpl::GetConnectionToHostResultFromErrorCode(
         CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS;
   }
 
+  if (error_code ==
+      ConnectTetheringOperation::HostResponseErrorCode::NO_RESPONSE) {
+    if (did_send_successful_request_) {
+      return HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_SUCCESSFUL_REQUEST_BUT_NO_RESPONSE;
+    } else {
+      return HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_NO_RESPONSE;
+    }
+  }
+
   return HostConnectionMetricsLogger::ConnectionToHostResult::
-      CONNECTION_RESULT_FAILURE_NO_RESPONSE;
+      CONNECTION_RESULT_FAILURE_UNRECOGNIZED_RESPONSE_ERROR;
 }
 
 }  // namespace tether

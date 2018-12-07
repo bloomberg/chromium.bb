@@ -27035,6 +27035,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Enabling hotspot timed out"/>
   <int value="7" label="No response"/>
   <int value="8" label="Invalid hotspot credentials"/>
+  <int value="9"
+      label="Successful request but no ConnectTetheringResponse message"/>
+  <int value="10" label="Unrecognized response error"/>
 </enum>
 
 <enum name="InstantTethering_ConnectionToHostResult_Failure_ClientConnection">
