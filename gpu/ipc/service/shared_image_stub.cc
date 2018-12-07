@@ -146,13 +146,16 @@ void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
 
 bool SharedImageStub::MakeContextCurrent() {
   DCHECK(context_state_);
-  DCHECK(!context_state_->context_lost);
+  DCHECK(!context_state_->context_lost());
 
   // |factory_| never writes to the surface, so pass nullptr to
   // improve performance. https://crbug.com/457431
-  if (context_state_->MakeCurrent(nullptr)) {
+  auto* context = context_state_->real_context();
+  if (context->IsCurrent(nullptr) ||
+      context_state_->real_context()->MakeCurrent(context_state_->surface())) {
     return true;
   } else {
+    context_state_->MarkContextLost();
     LOG(ERROR) << "SharedImageStub: MakeCurrent failed";
     return false;
   }
@@ -169,7 +172,7 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
       return false;
     }
     DCHECK(context_state_);
-    DCHECK(!context_state_->context_lost);
+    DCHECK(!context_state_->context_lost());
     if (!MakeContextCurrent())
       return false;
     gpu::GpuMemoryBufferFactory* gmb_factory =
@@ -184,13 +187,12 @@ bool SharedImageStub::MakeContextCurrentAndCreateFactory() {
     return true;
   } else {
     DCHECK(context_state_);
-    if (context_state_->context_lost) {
+    if (context_state_->context_lost()) {
       LOG(ERROR) << "SharedImageStub: context already lost";
       return false;
     } else {
       if (MakeContextCurrent())
         return true;
-      context_state_->context_lost = true;
       return false;
     }
   }

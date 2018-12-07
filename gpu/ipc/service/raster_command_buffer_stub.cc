@@ -119,8 +119,8 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
     return result;
   }
 
-  surface_ = raster_decoder_context_state->surface;
-  share_group_ = raster_decoder_context_state->share_group;
+  surface_ = raster_decoder_context_state->surface();
+  share_group_ = raster_decoder_context_state->share_group();
   use_virtualized_gl_context_ =
       raster_decoder_context_state->use_virtualized_gl_contexts;
 
@@ -138,26 +138,9 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
 
-  scoped_refptr<gl::GLContext> context = raster_decoder_context_state->context;
-  if (use_virtualized_gl_context_) {
-    context = base::MakeRefCounted<GLContextVirtual>(
-        share_group_.get(), context.get(), decoder->AsWeakPtr());
-    if (!context->Initialize(surface_.get(),
-                             GenerateGLContextAttribs(init_params.attribs,
-                                                      context_group_.get()))) {
-      // The real context created above for the default offscreen surface
-      // might not be compatible with this surface.
-      context = nullptr;
-      // TODO(piman): This might not be fatal, we could recurse into
-      // CreateGLContext to get more info, tho it should be exceedingly
-      // rare and may not be recoverable anyway.
-      LOG(ERROR) << "ContextResult::kFatalFailure: "
-                    "Failed to initialize virtual GL context.";
-      return gpu::ContextResult::kFatalFailure;
-    }
-  }
-
-  if (!context->MakeCurrent(surface_.get())) {
+  scoped_refptr<gl::GLContext> context =
+      raster_decoder_context_state->context();
+  if (!raster_decoder_context_state->MakeCurrent(nullptr)) {
     LOG(ERROR) << "ContextResult::kTransientFailure: "
                   "Failed to make context current.";
     return gpu::ContextResult::kTransientFailure;
@@ -195,22 +178,6 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
 
   if (!active_url_.is_empty())
     manager->delegate()->DidCreateOffscreenContext(active_url_);
-
-  if (use_virtualized_gl_context_) {
-    // If virtualized GL contexts are in use, then real GL context state
-    // is in an indeterminate state, since the GLStateRestorer was not
-    // initialized at the time the GLContextVirtual was made current. In
-    // the case that this command decoder is the next one to be
-    // processed, force a "full virtual" MakeCurrent to be performed.
-    // Note that GpuChannel's initialization of the gpu::Capabilities
-    // expects the context to be left current.
-    context->ForceReleaseVirtuallyCurrent();
-    if (!context->MakeCurrent(surface_.get())) {
-      LOG(ERROR) << "ContextResult::kTransientFailure: "
-                    "Failed to make context current after initialization.";
-      return gpu::ContextResult::kTransientFailure;
-    }
-  }
 
   manager->delegate()->DidCreateContextSuccessfully();
   initialized_ = true;

@@ -319,7 +319,7 @@ void GpuChannelManager::OnBackgroundCleanup() {
 
   if (raster_decoder_context_state_) {
     gr_cache_controller_.reset();
-    raster_decoder_context_state_->context_lost = true;
+    raster_decoder_context_state_->MarkContextLost();
     raster_decoder_context_state_.reset();
   }
 
@@ -353,7 +353,7 @@ void GpuChannelManager::HandleMemoryPressure(
 scoped_refptr<raster::RasterDecoderContextState>
 GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
   if (raster_decoder_context_state_ &&
-      !raster_decoder_context_state_->context_lost) {
+      !raster_decoder_context_state_->context_lost()) {
     *result = ContextResult::kSuccess;
     return raster_decoder_context_state_;
   }
@@ -441,6 +441,14 @@ GpuChannelManager::GetRasterDecoderContextState(ContextResult* result) {
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
                      /*synthetic_loss=*/false),
       vulkan_context_provider_);
+
+  if (!vulkan_context_provider_) {
+    if (!raster_decoder_context_state_->InitializeGL(
+            gpu_driver_bug_workarounds(), gpu_feature_info())) {
+      raster_decoder_context_state_ = nullptr;
+      return nullptr;
+    }
+  }
 
   const bool enable_raster_transport =
       gpu_feature_info_.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
