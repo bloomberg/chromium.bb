@@ -23,6 +23,7 @@ const char kAllowedPaths[] = "allowedPaths";
 const char kNativePath[] = "nativePath";
 const char kNativeOrDrivePath[] = "nativeOrDrivePath";
 const char kAnyPath[] = "anyPath";
+const char kAnyPathOrUrl[] = "anyPathOrUrl";
 
 // Returns a file manager URL for the given |path|.
 GURL GetFileManagerUrl(const char* path) {
@@ -128,6 +129,9 @@ GURL GetFileManagerMainPageUrlWithParams(
         break;
       case ui::SelectFileDialog::FileTypeInfo::ANY_PATH:
         arg_value.SetString(kAllowedPaths, kAnyPath);
+        break;
+      case ui::SelectFileDialog::FileTypeInfo::ANY_PATH_OR_URL:
+        arg_value.SetString(kAllowedPaths, kAnyPathOrUrl);
         break;
     }
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs)) {

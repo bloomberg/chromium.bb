@@ -963,7 +963,7 @@ FileTable.prototype.updateListItemsMetadata = function(type, entries) {
               [entry],
               [
                 'availableOffline', 'customIconUrl', 'shared', 'isMachineRoot',
-                'isExternalMedia'
+                'isExternalMedia', 'hosted'
               ])[0],
           util.isTeamDriveRoot(entry));
     });

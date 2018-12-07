@@ -309,6 +309,24 @@ testcase.openFileDialogDriveHostedDoc = function() {
 };
 
 /**
+ * Tests that selecting a hosted doc from a dialog requiring a real file is
+ * disabled.
+ */
+testcase.openFileDialogDriveHostedNeedsFile = function() {
+  return openFileDialogExpectOkButtonDisabled(
+      'drive', ENTRIES.testDocument.nameText, TEST_DRIVE_FILE);
+};
+
+/**
+ * Tests that selecting a hosted doc from a dialog requiring a real file is
+ * disabled.
+ */
+testcase.saveFileDialogDriveHostedNeedsFile = function() {
+  return openFileDialogExpectOkButtonDisabled(
+      'drive', ENTRIES.testDocument.nameText, TEST_DRIVE_FILE, 'saveFile');
+};
+
+/**
  * Tests opening file dialog on Drive and closing it with Cancel button.
  */
 testcase.openFileDialogCancelDrive = function() {

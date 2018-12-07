@@ -371,6 +371,9 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   // Initialize attributes.
   this.element.setAttribute('type', this.dialogType_);
+  if (launchParam.allowedPaths !== AllowedPaths.ANY_PATH_OR_URL) {
+    this.element.setAttribute('block-hosted-docs', '');
+  }
 
   // Hack: make menuitems focusable. Since the menuitems in the Files app is not
   // button so it doesn't have a tabfocus in nature. It prevents Chromevox from

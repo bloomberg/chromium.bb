@@ -753,6 +753,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("saveFileDialogDrive").WithBrowser().EnableMyFilesVolume(),
         TestCase("saveFileDialogDrive").WithBrowser().InIncognito(),
         TestCase("openFileDialogDriveHostedDoc").WithBrowser(),
+        TestCase("openFileDialogDriveHostedNeedsFile")
+            .WithBrowser()
+            .EnableDriveFs(),
+        TestCase("saveFileDialogDriveHostedNeedsFile")
+            .WithBrowser()
+            .EnableDriveFs(),
+        TestCase("openFileDialogDriveHostedNeedsFile")
+            .WithBrowser()
+            .DisableDriveFs(),
         TestCase("openFileDialogCancelDrive").WithBrowser().DisableDriveFs(),
         TestCase("openFileDialogCancelDrive").WithBrowser().EnableDriveFs(),
         TestCase("openFileDialogEscapeDrive").WithBrowser().DisableDriveFs(),

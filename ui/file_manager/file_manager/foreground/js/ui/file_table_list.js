@@ -213,6 +213,11 @@ filelist.updateListItemExternalProps = function(
     // TODO(mtomasz): Consider adding some vidual indication for files which
     // are not cached on LTE. Currently we show them as normal files.
     // crbug.com/246611.
+
+    if (externalProps.hosted === true)
+      li.classList.add('dim-hosted');
+    else
+      li.classList.remove('dim-hosted');
   }
 
   var iconDiv = li.querySelector('.detail-icon');
