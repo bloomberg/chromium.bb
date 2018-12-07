@@ -1038,41 +1038,6 @@ bool ContentSecurityPolicy::AllowWorkerContextFromSource(
     RedirectStatus redirect_status,
     SecurityViolationReportingPolicy reporting_policy,
     CheckHeaderType check_header_type) const {
-  // CSP 1.1 moves workers from 'script-src' to the new 'child-src'. Measure the
-  // impact of this backwards-incompatible change.
-  // TODO(mkwst): We reverted this.
-  if (Document* document = this->GetDocument()) {
-    UseCounter::Count(*document, WebFeature::kWorkerSubjectToCSP);
-    bool is_allowed_worker = true;
-    if (!ShouldBypassContentSecurityPolicy(url, execution_context_)) {
-      for (const auto& policy : policies_) {
-        if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-          continue;
-        is_allowed_worker &= policy->AllowWorkerFromSource(
-            url, redirect_status,
-            SecurityViolationReportingPolicy::kSuppressReporting);
-      }
-    }
-
-    bool is_allowed_script = true;
-
-    if (!ShouldBypassContentSecurityPolicy(url, execution_context_)) {
-      for (const auto& policy : policies_) {
-        if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
-          continue;
-        is_allowed_script &= policy->AllowScriptFromSource(
-            url, AtomicString(), IntegrityMetadataSet(), kNotParserInserted,
-            redirect_status,
-            SecurityViolationReportingPolicy::kSuppressReporting);
-      }
-    }
-
-    if (is_allowed_worker && !is_allowed_script) {
-      UseCounter::Count(*document,
-                        WebFeature::kWorkerAllowedByChildBlockedByScript);
-    }
-  }
-
   if (ShouldBypassContentSecurityPolicy(url, execution_context_))
     return true;
 
