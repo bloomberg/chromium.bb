@@ -240,11 +240,13 @@ class ProfileSyncService : public syncer::SyncService,
   void StopAndClear() override;
   void RequestStop(SyncStopDataFate data_fate);
   virtual void RequestStart();  // Virtual for testing.
-  syncer::ModelTypeSet GetActiveDataTypes() const override;
   void AddObserver(syncer::SyncServiceObserver* observer) override;
   void RemoveObserver(syncer::SyncServiceObserver* observer) override;
   bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
+  syncer::ModelTypeSet GetRegisteredDataTypes() const override;
+  syncer::ModelTypeSet GetForcedDataTypes() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
+  syncer::ModelTypeSet GetActiveDataTypes() const override;
   // Virtual for testing.
   virtual void OnUserChoseDatatypes(bool sync_everything,
                                     syncer::ModelTypeSet chosen_types);
@@ -395,17 +397,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // SyncPrefObserver implementation.
   void OnSyncManagedPrefChange(bool is_sync_managed) override;
-
-  // Returns the set of types which are enforced programmatically and can not
-  // be disabled by the user.
-  syncer::ModelTypeSet GetForcedDataTypes() const;
-
-  // Gets the set of all data types that could be allowed (the set that
-  // should be advertised to the user).  These will typically only change
-  // via a command-line option.  See class comment for more on what it means
-  // for a datatype to be Registered.
-  // Virtual for testing.
-  virtual syncer::ModelTypeSet GetRegisteredDataTypes() const;
 
   // See the SyncServiceCrypto header.
   // Virtual for testing.

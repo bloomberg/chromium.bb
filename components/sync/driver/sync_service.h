@@ -230,8 +230,17 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // DATA TYPE STATE
   //////////////////////////////////////////////////////////////////////////////
 
+  // Returns the set of data types that are supported in principle. These will
+  // typically only change via a command-line option.
+  virtual syncer::ModelTypeSet GetRegisteredDataTypes() const = 0;
+
+  // Returns the set of types which are enforced programmatically and can not
+  // be disabled by the user.
+  virtual syncer::ModelTypeSet GetForcedDataTypes() const = 0;
+
   // Returns the set of types which are preferred for enabling. This is a
-  // superset of the active types (see GetActiveDataTypes()).
+  // superset of the active types (see GetActiveDataTypes()). This also includes
+  // any forced types.
   virtual ModelTypeSet GetPreferredDataTypes() const = 0;
 
   // Get the set of current active data types (those chosen or configured by

@@ -60,6 +60,8 @@ class TestSyncService : public SyncService {
       override;
   bool IsSetupInProgress() const override;
 
+  ModelTypeSet GetRegisteredDataTypes() const override;
+  ModelTypeSet GetForcedDataTypes() const override;
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
 

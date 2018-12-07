@@ -1383,13 +1383,6 @@ void ProfileSyncService::OnUserChoseDatatypes(
   ReconfigureDatatypeManager(/*bypass_setup_in_progress_check=*/false);
 }
 
-syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!data_type_manager_)
-    return syncer::ModelTypeSet();
-  return data_type_manager_->GetActiveDataTypes();
-}
-
 syncer::SyncClient* ProfileSyncService::GetSyncClientForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_client_.get();
@@ -1411,6 +1404,29 @@ bool ProfileSyncService::HasObserver(
   return observers_.HasObserver(observer);
 }
 
+syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  syncer::ModelTypeSet registered_types;
+  // The |data_type_controllers_| are determined by command-line flags;
+  // that's effectively what controls the values returned here.
+  for (const std::pair<const syncer::ModelType,
+                       std::unique_ptr<DataTypeController>>&
+           type_and_controller : data_type_controllers_) {
+    registered_types.Put(type_and_controller.first);
+  }
+  return registered_types;
+}
+
+syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  syncer::ModelTypeSet forced_types;
+  for (const syncer::SyncTypePreferenceProvider* provider :
+       preference_providers_) {
+    forced_types.PutAll(provider->GetForcedDataTypes());
+  }
+  return Intersection(forced_types, GetRegisteredDataTypes());
+}
+
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncer::ModelTypeSet preferred_types =
@@ -1424,27 +1440,11 @@ syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   return Union(preferred_types, GetForcedDataTypes());
 }
 
-syncer::ModelTypeSet ProfileSyncService::GetForcedDataTypes() const {
+syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  syncer::ModelTypeSet forced_types;
-  for (const syncer::SyncTypePreferenceProvider* provider :
-       preference_providers_) {
-    forced_types.PutAll(provider->GetForcedDataTypes());
-  }
-  return Intersection(forced_types, GetRegisteredDataTypes());
-}
-
-syncer::ModelTypeSet ProfileSyncService::GetRegisteredDataTypes() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  syncer::ModelTypeSet registered_types;
-  // The |data_type_controllers_| are determined by command-line flags;
-  // that's effectively what controls the values returned here.
-  for (const std::pair<const syncer::ModelType,
-                       std::unique_ptr<DataTypeController>>&
-           type_and_controller : data_type_controllers_) {
-    registered_types.Put(type_and_controller.first);
-  }
-  return registered_types;
+  if (!data_type_manager_)
+    return syncer::ModelTypeSet();
+  return data_type_manager_->GetActiveDataTypes();
 }
 
 bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
