@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_registry.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image.h"
 
@@ -75,17 +74,17 @@ void ContextMenuMatcher::AppendExtensionItems(
   if (items.empty())
     return;
 
+  bool prepend_separator = false;
+
+#if !defined(OS_CHROMEOS)
   // If this is the first extension-provided menu item, and there are other
   // items in the menu, and the last item is not a separator add a separator.
-  // Separators are not required when the context menu is a touchable app
-  // context menu.
   // Also, don't add separators when Smart Text Selection is enabled. Smart
   // actions are grouped with extensions and the separator logic is
   // handled by them.
-  const bool prepend_separator =
-      *index == 0 && menu_model_->GetItemCount() &&
-      !::features::IsTouchableAppContextMenuEnabled() &&
-      !is_smart_text_selection_enabled_;
+  prepend_separator = *index == 0 && menu_model_->GetItemCount() &&
+                      !is_smart_text_selection_enabled_;
+#endif
 
   // Extensions (other than platform apps) are only allowed one top-level slot
   // (and it can't be a radio or checkbox item because we are going to put the
@@ -270,10 +269,11 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
   int radio_group_id = 1;
   int num_visible_items = 0;
 
-  // Separators are not required when the context menu is a touchable app
-  // context menu.
-  const bool enable_separators =
-      !::features::IsTouchableAppContextMenuEnabled();
+  bool enable_separators = false;
+
+#if !defined(OS_CHROMEOS)
+  enable_separators = true;
+#endif
 
   for (auto i = items.begin(); i != items.end(); ++i) {
     MenuItem* item = *i;
