@@ -57,6 +57,7 @@ Polymer({
     updateValueInstantly: {
       type: Boolean,
       value: true,
+      observer: 'onSliderChanged_',
     },
 
     loaded_: Boolean,
@@ -95,6 +96,10 @@ Polymer({
   onSliderChanged_: function() {
     if (!this.loaded_)
       return;
+
+    if (this.$.slider.dragging && !this.updateValueInstantly)
+      return;
+
     const sliderValue = this.$.slider.value;
 
     let newValue;
@@ -143,6 +148,9 @@ Polymer({
 
     const tickValue = this.getTickValueAtIndex_(this.$.slider.value);
     if (this.$.slider.dragging && this.pref.value != tickValue) {
+      if (!this.updateValueInstantly)
+        return;
+
       // The value changed outside settings-slider but we're still holding the
       // knob, so set the value back to where the knob was.
       // Async so we don't confuse Polymer's data binding.

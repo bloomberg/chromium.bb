@@ -149,28 +149,6 @@ suite('cr-slider', function() {
     assertEquals(100, crSlider.value);
   });
 
-  test('update value instantly both off and on', () => {
-    crSlider.updateValueInstantly = false;
-    assertEquals(0, crSlider.value);
-    pointerDown(.5);
-    assertEquals(0, crSlider.value);
-    pointerUp();
-    assertEquals(50, crSlider.value);
-
-    // Once |updateValueInstantly| is turned on, |value| should start updating
-    // again during drag.
-    pointerDown(0);
-    assertEquals(50, crSlider.value);
-    crSlider.updateValueInstantly = true;
-    pointerMove(0);
-    assertEquals(0, crSlider.value);
-    crSlider.updateValueInstantly = false;
-    pointerMove(.4);
-    assertEquals(0, crSlider.value);
-    pointerUp();
-    assertEquals(40, crSlider.value);
-  });
-
   test('snaps to closest value', () => {
     crSlider.snaps = true;
     pointerDown(.501);
