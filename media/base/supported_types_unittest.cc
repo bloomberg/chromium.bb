@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/decode_capabilities.h"
+#include "media/base/supported_types.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-TEST(DecodeCapabilitiesTest, IsSupportedVideoConfigBasics) {
+TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
   // Default to common 709.
   const media::VideoColorSpace kColorSpace = media::VideoColorSpace::REC709();
 
@@ -16,36 +16,36 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfigBasics) {
   const int kUnspecifiedLevel = 0;
 
   // Expect support for baseline configuration of known codecs.
-  EXPECT_TRUE(IsSupportedVideoConfig(
+  EXPECT_TRUE(IsSupportedVideoType(
       {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kColorSpace}));
-  EXPECT_TRUE(IsSupportedVideoConfig({media::kCodecVP8, media::VP8PROFILE_ANY,
-                                      kUnspecifiedLevel, kColorSpace}));
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
+                                    kUnspecifiedLevel, kColorSpace}));
   EXPECT_TRUE(
-      IsSupportedVideoConfig({media::kCodecVP9, media::VP9PROFILE_PROFILE0,
-                              kUnspecifiedLevel, kColorSpace}));
-  EXPECT_TRUE(IsSupportedVideoConfig({media::kCodecTheora,
-                                      media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                      kUnspecifiedLevel, kColorSpace}));
+      IsSupportedVideoType({media::kCodecVP9, media::VP9PROFILE_PROFILE0,
+                            kUnspecifiedLevel, kColorSpace}));
+  EXPECT_TRUE(IsSupportedVideoType({media::kCodecTheora,
+                                    media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                    kUnspecifiedLevel, kColorSpace}));
 
   // Expect non-support for the following.
-  EXPECT_FALSE(IsSupportedVideoConfig({media::kUnknownVideoCodec,
-                                       media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                       kUnspecifiedLevel, kColorSpace}));
-  EXPECT_FALSE(IsSupportedVideoConfig({media::kCodecVC1,
-                                       media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                       kUnspecifiedLevel, kColorSpace}));
-  EXPECT_FALSE(IsSupportedVideoConfig({media::kCodecMPEG2,
-                                       media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                       kUnspecifiedLevel, kColorSpace}));
-  EXPECT_FALSE(IsSupportedVideoConfig({media::kCodecMPEG4,
-                                       media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                       kUnspecifiedLevel, kColorSpace}));
-  EXPECT_FALSE(IsSupportedVideoConfig({media::kCodecHEVC,
-                                       media::VIDEO_CODEC_PROFILE_UNKNOWN,
-                                       kUnspecifiedLevel, kColorSpace}));
+  EXPECT_FALSE(IsSupportedVideoType({media::kUnknownVideoCodec,
+                                     media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                     kUnspecifiedLevel, kColorSpace}));
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecVC1,
+                                     media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                     kUnspecifiedLevel, kColorSpace}));
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecMPEG2,
+                                     media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                     kUnspecifiedLevel, kColorSpace}));
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecMPEG4,
+                                     media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                     kUnspecifiedLevel, kColorSpace}));
+  EXPECT_FALSE(IsSupportedVideoType({media::kCodecHEVC,
+                                     media::VIDEO_CODEC_PROFILE_UNKNOWN,
+                                     kUnspecifiedLevel, kColorSpace}));
 }
 
-TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9TransferFunctions) {
+TEST(SupportedTypesTest, IsSupportedVideoType_VP9TransferFunctions) {
   size_t num_found = 0;
   // TODO(hubbe): Verify support for HDR codecs when color management enabled.
   const std::set<media::VideoColorSpace::TransferID> kSupportedTransfers = {
@@ -76,14 +76,14 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9TransferFunctions) {
                  kSupportedTransfers.end();
     if (found)
       num_found++;
-    EXPECT_EQ(found, IsSupportedVideoConfig({media::kCodecVP9,
-                                             media::VP9PROFILE_PROFILE0, 1,
-                                             color_space}));
+    EXPECT_EQ(found, IsSupportedVideoType({media::kCodecVP9,
+                                           media::VP9PROFILE_PROFILE0, 1,
+                                           color_space}));
   }
   EXPECT_EQ(kSupportedTransfers.size(), num_found);
 }
 
-TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9Primaries) {
+TEST(SupportedTypesTest, IsSupportedVideoType_VP9Primaries) {
   size_t num_found = 0;
   // TODO(hubbe): Verify support for HDR codecs when color management enabled.
   const std::set<media::VideoColorSpace::PrimaryID> kSupportedPrimaries = {
@@ -108,14 +108,14 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9Primaries) {
                  kSupportedPrimaries.end();
     if (found)
       num_found++;
-    EXPECT_EQ(found, IsSupportedVideoConfig({media::kCodecVP9,
-                                             media::VP9PROFILE_PROFILE0, 1,
-                                             color_space}));
+    EXPECT_EQ(found, IsSupportedVideoType({media::kCodecVP9,
+                                           media::VP9PROFILE_PROFILE0, 1,
+                                           color_space}));
   }
   EXPECT_EQ(kSupportedPrimaries.size(), num_found);
 }
 
-TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9Matrix) {
+TEST(SupportedTypesTest, IsSupportedVideoType_VP9Matrix) {
   size_t num_found = 0;
   // TODO(hubbe): Verify support for HDR codecs when color management enabled.
   const std::set<media::VideoColorSpace::MatrixID> kSupportedMatrix = {
@@ -140,9 +140,9 @@ TEST(DecodeCapabilitiesTest, IsSupportedVideoConfig_VP9Matrix) {
         kSupportedMatrix.find(color_space.matrix) != kSupportedMatrix.end();
     if (found)
       num_found++;
-    EXPECT_EQ(found, IsSupportedVideoConfig({media::kCodecVP9,
-                                             media::VP9PROFILE_PROFILE0, 1,
-                                             color_space}));
+    EXPECT_EQ(found, IsSupportedVideoType({media::kCodecVP9,
+                                           media::VP9PROFILE_PROFILE0, 1,
+                                           color_space}));
   }
   EXPECT_EQ(kSupportedMatrix.size(), num_found);
 }

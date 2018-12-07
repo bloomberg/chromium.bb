@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/base/decode_capabilities.h"
+#include "media/base/supported_types.h"
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "media/base/media_client.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "third_party/libaom/av1_buildflags.h"
@@ -17,6 +18,22 @@
 #endif
 
 namespace media {
+
+bool IsSupportedAudioType(const AudioType& type) {
+  MediaClient* media_client = GetMediaClient();
+  if (media_client)
+    return media_client->IsSupportedAudioType(type);
+
+  return IsDefaultSupportedAudioType(type);
+}
+
+bool IsSupportedVideoType(const VideoType& type) {
+  MediaClient* media_client = GetMediaClient();
+  if (media_client)
+    return media_client->IsSupportedVideoType(type);
+
+  return IsDefaultSupportedVideoType(type);
+}
 
 bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
   switch (color_space.primaries) {
@@ -122,8 +139,8 @@ bool IsVp9ProfileSupported(VideoCodecProfile profile) {
   return false;
 }
 
-bool IsSupportedAudioConfig(const AudioConfig& config) {
-  switch (config.codec) {
+bool IsDefaultSupportedAudioType(const AudioType& type) {
+  switch (type.codec) {
     case media::kCodecAAC:
     case media::kCodecFLAC:
     case media::kCodecMP3:
@@ -157,21 +174,21 @@ bool IsSupportedAudioConfig(const AudioConfig& config) {
   return false;
 }
 
-// TODO(chcunningham): Query decoders for codec profile support. Add platform
-// specific logic for Android (move from MimeUtilIntenral).
-bool IsSupportedVideoConfig(const VideoConfig& config) {
-  switch (config.codec) {
+// TODO(chcunningham): Add platform specific logic for Android (move from
+// MimeUtilIntenral).
+bool IsDefaultSupportedVideoType(const VideoType& type) {
+  switch (type.codec) {
     case media::kCodecAV1:
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-      return IsColorSpaceSupported(config.color_space);
+      return IsColorSpaceSupported(type.color_space);
 #else
       return false;
 #endif
 
     case media::kCodecVP9:
       // Color management required for HDR to not look terrible.
-      return IsColorSpaceSupported(config.color_space) &&
-             IsVp9ProfileSupported(config.profile);
+      return IsColorSpaceSupported(type.color_space) &&
+             IsVp9ProfileSupported(type.profile);
     case media::kCodecH264:
     case media::kCodecVP8:
     case media::kCodecTheora:

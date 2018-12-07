@@ -6,8 +6,8 @@ import("//build/config/android/config.gni")
 import("//build/config/arm.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
-import("//build/config/ui.gni")
 import("//build/config/linux/pkg_config.gni")
+import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
@@ -112,8 +112,6 @@ jumbo_source_set("base") {
     "data_buffer.h",
     "data_source.cc",
     "data_source.h",
-    "decode_capabilities.cc",
-    "decode_capabilities.h",
     "decode_status.cc",
     "decode_status.h",
     "decoder_buffer.cc",
@@ -182,6 +180,7 @@ jumbo_source_set("base") {
     "media_track.h",
     "media_tracks.cc",
     "media_tracks.h",
+    "media_types.h",
     "media_url_demuxer.cc",
     "media_url_demuxer.h",
     "media_url_params.h",
@@ -239,6 +238,8 @@ jumbo_source_set("base") {
     "stream_parser_buffer.h",
     "subsample_entry.cc",
     "subsample_entry.h",
+    "supported_types.cc",
+    "supported_types.h",
     "text_cue.cc",
     "text_cue.h",
     "text_ranges.cc",
@@ -484,7 +485,6 @@ source_set("unit_tests") {
     "channel_mixing_matrix_unittest.cc",
     "container_names_unittest.cc",
     "data_buffer_unittest.cc",
-    "decode_capabilities_unittest.cc",
     "decoder_buffer_queue_unittest.cc",
     "decoder_buffer_unittest.cc",
     "decrypt_config_unittest.cc",
@@ -510,6 +510,7 @@ source_set("unit_tests") {
     "sinc_resampler_unittest.cc",
     "stream_parser_unittest.cc",
     "subsample_entry_unittest.cc",
+    "supported_types_unittest.cc",
     "text_ranges_unittest.cc",
     "text_renderer_unittest.cc",
     "time_delta_interpolator_unittest.cc",

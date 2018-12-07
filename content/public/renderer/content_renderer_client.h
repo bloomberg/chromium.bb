@@ -22,7 +22,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
-#include "media/base/decode_capabilities.h"
+#include "media/base/supported_types.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
@@ -277,10 +277,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual bool IsKeySystemsUpdateNeeded();
 
   // Allows embedder to describe customized audio capabilities.
-  virtual bool IsSupportedAudioConfig(const media::AudioConfig& config);
+  virtual bool IsSupportedAudioType(const media::AudioType& type);
 
   // Allows embedder to describe customized video capabilities.
-  virtual bool IsSupportedVideoConfig(const media::VideoConfig& config);
+  virtual bool IsSupportedVideoType(const media::VideoType& type);
 
   // Return true if the bitstream format |codec| is supported by the audio sink.
   virtual bool IsSupportedBitstreamAudioCodec(media::AudioCodec codec);

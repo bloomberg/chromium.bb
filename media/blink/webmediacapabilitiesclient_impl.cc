@@ -9,9 +9,9 @@
 
 #include "base/bind_helpers.h"
 #include "media/base/audio_codecs.h"
-#include "media/base/decode_capabilities.h"
 #include "media/base/key_system_names.h"
 #include "media/base/mime_util.h"
+#include "media/base/supported_types.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
@@ -56,8 +56,7 @@ bool CheckAudioSupport(const blink::WebAudioConfiguration& audio_config) {
              << audio_config.codec.Ascii();
     audio_supported = false;
   } else {
-    AudioConfig audio_config = {audio_codec};
-    audio_supported = IsSupportedAudioConfig(audio_config);
+    audio_supported = IsSupportedAudioType({audio_codec});
   }
 
   return audio_supported;
@@ -84,7 +83,7 @@ bool CheckVideoSupport(const blink::WebVideoConfiguration& video_config,
              << video_config.codec.Ascii();
     video_supported = false;
   } else {
-    video_supported = IsSupportedVideoConfig(
+    video_supported = IsSupportedVideoType(
         {video_codec, *out_video_profile, video_level, video_color_space});
   }
 
