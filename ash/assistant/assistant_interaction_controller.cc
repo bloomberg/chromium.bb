@@ -205,28 +205,6 @@ void AssistantInteractionController::OnHighlighterSelectionRecognized(
   StartMetalayerInteraction(/*region=*/rect);
 }
 
-void AssistantInteractionController::OnCommittedQueryChanged(
-    const AssistantQuery& assistant_query) {
-  std::string query;
-  switch (assistant_query.type()) {
-    case AssistantQueryType::kText: {
-      const auto* assistant_text_query =
-          static_cast<const AssistantTextQuery*>(&assistant_query);
-      query = assistant_text_query->text();
-      break;
-    }
-    case AssistantQueryType::kVoice: {
-      const auto* assistant_voice_query =
-          static_cast<const AssistantVoiceQuery*>(&assistant_query);
-      query = assistant_voice_query->high_confidence_speech();
-      break;
-    }
-    case AssistantQueryType::kNull:
-      break;
-  }
-  model_.query_history().Add(query);
-}
-
 void AssistantInteractionController::OnInteractionStateChanged(
     InteractionState interaction_state) {
   if (interaction_state != InteractionState::kActive)
@@ -261,8 +239,27 @@ void AssistantInteractionController::OnMicStateChanged(MicState mic_state) {
     Shell::Get()->accessibility_controller()->SilenceSpokenFeedback();
 }
 
-void AssistantInteractionController::OnResponseChanged(
-    const std::shared_ptr<AssistantResponse>& response) {
+void AssistantInteractionController::OnCommittedQueryChanged(
+    const AssistantQuery& assistant_query) {
+  std::string query;
+  switch (assistant_query.type()) {
+    case AssistantQueryType::kText: {
+      const auto* assistant_text_query =
+          static_cast<const AssistantTextQuery*>(&assistant_query);
+      query = assistant_text_query->text();
+      break;
+    }
+    case AssistantQueryType::kVoice: {
+      const auto* assistant_voice_query =
+          static_cast<const AssistantVoiceQuery*>(&assistant_query);
+      query = assistant_voice_query->high_confidence_speech();
+      break;
+    }
+    case AssistantQueryType::kNull:
+      break;
+  }
+  model_.query_history().Add(query);
+
   assistant::util::IncrementAssistantQueryCountForEntryPoint(
       assistant_controller_->ui_controller()->model()->entry_point());
 }
