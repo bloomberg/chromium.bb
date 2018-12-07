@@ -10,11 +10,9 @@ import android.util.AttributeSet;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -26,14 +24,8 @@ class ShareButton extends ChromeImageButton implements ThemeColorObserver {
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
 
-    /** The {@link HintlessActivityTabObserver} used to know when the activity tab changed. */
-    private HintlessActivityTabObserver mHintlessActivityTabObserver;
-
-    /** The {@link ActivityTabProvider} used to know when the activity tab changed. */
-    private ActivityTabProvider mActivityTabProvider;
-
-    /** A {@link TabModelSelector} used to know when a new page has loaded. */
-    private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    /** The {@link sActivityTabTabObserver} used to know when the active page changed. */
+    private ActivityTabTabObserver mActivityTabTabObserver;
 
     public ShareButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -45,19 +37,13 @@ class ShareButton extends ChromeImageButton implements ThemeColorObserver {
     }
 
     void setActivityTabProvider(ActivityTabProvider activityTabProvider) {
-        mActivityTabProvider = activityTabProvider;
-        mHintlessActivityTabObserver = new HintlessActivityTabObserver() {
+        mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
             @Override
-            public void onActivityTabChanged(Tab tab) {
+            public void onObservingDifferentTab(Tab tab) {
                 if (tab == null) return;
                 setEnabled(shouldEnableShare(tab));
             }
-        };
-        mActivityTabProvider.addObserverAndTrigger(mHintlessActivityTabObserver);
-    }
 
-    void setTabModelSelector(TabModelSelector tabModelSelector) {
-        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(tabModelSelector) {
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
                 if (tab == null) return;
@@ -71,13 +57,9 @@ class ShareButton extends ChromeImageButton implements ThemeColorObserver {
             mThemeColorProvider.removeObserver(this);
             mThemeColorProvider = null;
         }
-        if (mTabModelSelectorTabObserver != null) {
-            mTabModelSelectorTabObserver.destroy();
-            mTabModelSelectorTabObserver = null;
-        }
-        if (mActivityTabProvider != null) {
-            mActivityTabProvider.removeObserver(mHintlessActivityTabObserver);
-            mActivityTabProvider = null;
+        if (mActivityTabTabObserver != null) {
+            mActivityTabTabObserver.destroy();
+            mActivityTabTabObserver = null;
         }
     }
 
