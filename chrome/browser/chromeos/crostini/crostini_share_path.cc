@@ -329,11 +329,32 @@ std::vector<base::FilePath> CrostiniSharePath::GetPersistedSharedPaths() {
   std::vector<base::FilePath> result;
   if (!base::FeatureList::IsEnabled(chromeos::features::kCrostiniFiles))
     return result;
+  PrefService* pref_service = profile_->GetPrefs();
   const base::ListValue* shared_paths =
-      profile_->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
-  for (const auto& path : *shared_paths) {
-    result.emplace_back(base::FilePath(path.GetString()));
+      pref_service->GetList(prefs::kCrostiniSharedPaths);
+  // Paths in <cryptohome>/Downloads need to be migrated to
+  // <cryptohome>/MyFiles/Downloads.
+  bool swap_for_migrate_required = false;
+  base::ListValue migrated_paths;
+  for (const auto& shared_path : *shared_paths) {
+    base::FilePath path(shared_path.GetString());
+    base::FilePath migrated;
+    if (file_manager::util::MigrateFromDownloadsToMyFiles(profile_, path,
+                                                          &migrated)) {
+      swap_for_migrate_required = true;
+      path = migrated;
+    }
+    migrated_paths.AppendString(path.value());
+    result.emplace_back(path);
   }
+
+  // If any paths were modified during migration, update prefs.
+  if (swap_for_migrate_required) {
+    ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniSharedPaths);
+    base::ListValue* shared_paths = update.Get();
+    shared_paths->Swap(&migrated_paths);
+  }
+
   return result;
 }
 

@@ -47,6 +47,17 @@ bool MigratePathFromOldFormat(Profile* profile,
                               const base::FilePath& old_path,
                               base::FilePath* new_path);
 
+// Converts |old_path| in <cryptohome>/Downloads[/*] to |new_path| in
+// <cryptohome/MyFiles/Downloads[*].  Returns true if path is changed else
+// returns false if |old_path| was not inside Downloads, and |new_path| is
+// undefined.
+//
+// Introduced in M73.  This code updates values stored in prefs.
+// TODO(crbug.com/911946) Remove this when no users are running M72 or earlier.
+bool MigrateFromDownloadsToMyFiles(Profile* profile,
+                                   const base::FilePath& old_path,
+                                   base::FilePath* new_path);
+
 // The canonical mount point name for "Downloads" folder.
 std::string GetDownloadsMountPointName(Profile* profile);
 

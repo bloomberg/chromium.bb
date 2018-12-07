@@ -226,6 +226,56 @@ TEST(FileManagerPathUtilTest, GetPathDisplayTextForSettings) {
   chromeos::disks::DiskMountManager::Shutdown();
 }
 
+TEST(FileManagerPathUtilTest, MigrateFromDownlaodsToMyFiles) {
+  content::TestBrowserThreadBundle thread_bundle;
+  base::FilePath home("/home/chronos/u-0123456789abcdef");
+  base::FilePath result;
+  TestingProfile profile(home);
+  base::FilePath downloads = home.Append("Downloads");
+  base::FilePath file = home.Append("Downloads/file.txt");
+  base::FilePath inhome = home.Append("NotDownloads");
+  base::FilePath myfiles = home.Append("MyFiles");
+  base::FilePath myfilesFile = home.Append("MyFiles/file.txt");
+  base::FilePath myfilesDownloads = home.Append("MyFiles/Downloads");
+  base::FilePath myfilesDownloadsFile =
+      home.Append("MyFiles/Downloads/file.txt");
+  base::FilePath other("/some/other/path");
+  chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
+                                                              base::Time());
+  // MyFilesVolume disabled, no changes.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(chromeos::features::kMyFilesVolume);
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, downloads, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, file, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, inhome, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, myfiles, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, myfilesFile, &result));
+    EXPECT_FALSE(
+        MigrateFromDownloadsToMyFiles(&profile, myfilesDownloads, &result));
+    EXPECT_FALSE(
+        MigrateFromDownloadsToMyFiles(&profile, myfilesDownloadsFile, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, other, &result));
+  }
+  // MyFilesVolume enabled, migrate paths under Downloads.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(chromeos::features::kMyFilesVolume);
+    EXPECT_TRUE(MigrateFromDownloadsToMyFiles(&profile, downloads, &result));
+    EXPECT_EQ(result, myfilesDownloads);
+    EXPECT_TRUE(MigrateFromDownloadsToMyFiles(&profile, file, &result));
+    EXPECT_EQ(result, myfilesDownloadsFile);
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, inhome, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, myfiles, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, myfilesFile, &result));
+    EXPECT_FALSE(
+        MigrateFromDownloadsToMyFiles(&profile, myfilesDownloads, &result));
+    EXPECT_FALSE(
+        MigrateFromDownloadsToMyFiles(&profile, myfilesDownloadsFile, &result));
+    EXPECT_FALSE(MigrateFromDownloadsToMyFiles(&profile, other, &result));
+  }
+}
+
 TEST(FileManagerPathUtilTest, MultiProfileDownloadsFolderMigration) {
   content::TestBrowserThreadBundle thread_bundle;
   TestingProfile profile;
