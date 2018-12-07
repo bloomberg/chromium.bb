@@ -220,9 +220,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
     return;
   }
 
-  if (!opaque_background_.visible()) {
+  if (!opaque_background_.visible())
     opaque_background_.SetVisible(true);
-  }
 
   // Show rounded corners except in maximized and split modes.
   if (background_type == SHELF_BACKGROUND_MAXIMIZED ||
