@@ -28,7 +28,7 @@ TEST_F(CWVAutofillSuggestionTest, Initialization) {
       [FormSuggestion suggestionWithValue:@"TestValue"
                        displayDescription:@"TestDisplayDescription"
                                      icon:@"TestIcon"
-                               identifier:0];
+                               identifier:1337];
   CWVAutofillSuggestion* suggestion =
       [[CWVAutofillSuggestion alloc] initWithFormSuggestion:formSuggestion
                                                    formName:formName
@@ -40,6 +40,7 @@ TEST_F(CWVAutofillSuggestionTest, Initialization) {
   EXPECT_NSEQ(frameID, suggestion.frameID);
   EXPECT_NSEQ(formSuggestion.displayDescription, suggestion.displayDescription);
   EXPECT_NSEQ(formSuggestion.value, suggestion.value);
+  EXPECT_EQ(1337, suggestion.uniqueIdentifier);
   EXPECT_EQ(formSuggestion, suggestion.formSuggestion);
   EXPECT_FALSE([suggestion isPasswordSuggestion]);
 }
