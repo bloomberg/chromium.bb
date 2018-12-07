@@ -401,7 +401,11 @@ def GetTestName(test, sep='#'):
   Returns:
     The test name as a string.
   """
-  return '%s%s%s' % (test['class'], sep, test['method'])
+  test_name = '%s%s%s' % (test['class'], sep, test['method'])
+  assert ' *-:' not in test_name, (
+      'The test name must not contain any of the characters in " *-:". See '
+      'https://crbug.com/912199')
+  return test_name
 
 
 def GetTestNameWithoutParameterPostfix(
@@ -440,7 +444,13 @@ def GetUniqueTestName(test, sep='#'):
   """
   display_name = GetTestName(test, sep=sep)
   if test.get('flags', [None])[0]:
-    display_name = '%s with %s' % (display_name, ' '.join(test['flags']))
+    sanitized_flags = [x.replace('-', '_') for x in test['flags']]
+    display_name = '%s_with_%s' % (display_name, '_'.join(sanitized_flags))
+
+  assert ' *-:' not in display_name, (
+      'The test name must not contain any of the characters in " *-:". See '
+      'https://crbug.com/912199')
+
   return display_name
 
 

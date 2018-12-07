@@ -652,7 +652,7 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     self.assertEquals(
         instrumentation_test_instance.GetUniqueTestName(
             test, sep='.'),
-        'org.chromium.TestA.testSimple with enable_features=abc')
+        'org.chromium.TestA.testSimple_with_enable_features=abc')
 
   def testGetTestNameWithoutParameterPostfix(self):
     test = {
