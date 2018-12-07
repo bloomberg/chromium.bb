@@ -525,6 +525,7 @@
     <dimen name="clear_text_button_end_padding">10dp</dimen>
     <dimen name="sync_promo_view_padding">16dp</dimen>
     <dimen name="open_new_tab_animation_y_translation">-20dp</dimen>
+    <dimen name="sync_passphrase_type_instructions_padding">25dp</dimen>
 
     <!-- Context Menu Dimensions -->
     <dimen name="context_menu_header_image_width_padding">15dp</dimen>

@@ -24,7 +24,6 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -34,6 +33,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.sync.PassphraseType;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -159,22 +159,29 @@ public class PassphraseTypeDialogFragment extends DialogFragment implements
 
         // Configure the passphrase type list
         ListView list = (ListView) v.findViewById(R.id.passphrase_types);
-        Adapter adapter = createAdapter(getCurrentTypeFromArguments());
-        list.setAdapter(adapter);
-        list.setId(R.id.passphrase_type_list);
-        list.setOnItemClickListener(this);
-        list.setDividerHeight(0);
+
         PassphraseType currentType = getCurrentTypeFromArguments();
-        list.setSelection(adapter.getPositionForType(currentType));
 
         // Configure the hint to reset the passphrase settings
         // Only show this hint if encryption has been set to use sync passphrase
         if (currentType == PassphraseType.CUSTOM_PASSPHRASE) {
-            TextView instructionsView = (TextView) v.findViewById(R.id.reset_sync_text);
-            instructionsView.setVisibility(View.VISIBLE);
+            TextViewWithClickableSpans instructionsView =
+                    new TextViewWithClickableSpans(getActivity());
+            instructionsView.setPadding(0,
+                    getResources().getDimensionPixelSize(
+                            R.dimen.sync_passphrase_type_instructions_padding),
+                    0, 0);
             instructionsView.setMovementMethod(LinkMovementMethod.getInstance());
             instructionsView.setText(getResetText());
+            list.addFooterView(instructionsView);
         }
+
+        Adapter adapter = createAdapter(currentType);
+        list.setAdapter(adapter);
+        list.setId(R.id.passphrase_type_list);
+        list.setOnItemClickListener(this);
+        list.setDividerHeight(0);
+        list.setSelection(adapter.getPositionForType(currentType));
 
         // Create and return the dialog
         return new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
