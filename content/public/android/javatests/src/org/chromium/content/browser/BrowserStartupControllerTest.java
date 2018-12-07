@@ -51,6 +51,9 @@ public class BrowserStartupControllerTest {
         }
 
         @Override
+        void recordStartupUma() {}
+
+        @Override
         int contentMainStart(boolean startServiceManagerOnly) {
             if (startServiceManagerOnly) {
                 mServiceManagerLaunchCounter++;
