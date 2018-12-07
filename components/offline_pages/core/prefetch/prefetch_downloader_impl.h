@@ -51,8 +51,6 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
                            int64_t file_size) override;
   void OnDownloadFailed(const std::string& download_id) override;
 
-  void SetClockForTesting(base::Clock* clock);
-
  private:
   enum class DownloadServiceStatus {
     // The download service is booting up.
@@ -72,8 +70,6 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
       const std::set<std::string>& outstanding_download_ids,
       const std::map<std::string, std::pair<base::FilePath, int64_t>>&
           success_downloads);
-
-  base::Clock* clock_;
 
   // Unowned. It is valid until |this| instance is disposed.
   download::DownloadService* download_service_;
