@@ -96,5 +96,8 @@ template("generate_stubs") {
     ]
     libs = [ "dl" ]
     include_dirs = [ target_gen_dir ]
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
   }
 }
