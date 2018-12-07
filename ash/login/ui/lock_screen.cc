@@ -46,12 +46,17 @@ LockContentsView* LockScreen::TestApi::contents_view() const {
 
 LockScreen::LockScreen(ScreenType type) : type_(type) {
   tray_action_observer_.Add(ash::Shell::Get()->tray_action());
+  saved_clipboard_ = ui::Clipboard::TakeForCurrentThread();
 }
 
 LockScreen::~LockScreen() {
   // Must happen before data_dispatcher_.reset().
   widget_.reset();
   data_dispatcher_.reset();
+
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+  if (saved_clipboard_)
+    ui::Clipboard::SetClipboardForCurrentThread(std::move(saved_clipboard_));
 }
 
 // static
