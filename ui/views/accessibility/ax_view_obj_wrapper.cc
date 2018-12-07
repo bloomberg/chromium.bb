@@ -14,9 +14,10 @@
 
 namespace views {
 
-AXViewObjWrapper::AXViewObjWrapper(View* view)  : view_(view) {
+AXViewObjWrapper::AXViewObjWrapper(AXAuraObjCache* aura_obj_cache, View* view)
+    : aura_obj_cache_(aura_obj_cache), view_(view) {
   if (view->GetWidget())
-    AXAuraObjCache::GetInstance()->GetOrCreate(view->GetWidget());
+    aura_obj_cache_->GetOrCreate(view->GetWidget());
   view->AddObserver(this);
 }
 
@@ -35,12 +36,11 @@ AXAuraObjWrapper* AXViewObjWrapper::GetParent() {
   if (!view_)
     return nullptr;
 
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
   if (view_->parent())
-    return cache->GetOrCreate(view_->parent());
+    return aura_obj_cache_->GetOrCreate(view_->parent());
 
   if (view_->GetWidget())
-    return cache->GetOrCreate(view_->GetWidget());
+    return aura_obj_cache_->GetOrCreate(view_->GetWidget());
 
   return nullptr;
 }
@@ -58,8 +58,7 @@ void AXViewObjWrapper::GetChildren(
     if (!view_->child_at(i)->visible())
       continue;
 
-    AXAuraObjWrapper* child =
-        AXAuraObjCache::GetInstance()->GetOrCreate(view_->child_at(i));
+    AXAuraObjWrapper* child = aura_obj_cache_->GetOrCreate(view_->child_at(i));
     out_children->push_back(child);
   }
 }
