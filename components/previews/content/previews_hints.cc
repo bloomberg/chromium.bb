@@ -180,13 +180,12 @@ bool IsDisabledExperimentalOptimization(
 // |total_page_patterns_with_resource_loading_hints_received| and
 // |total_resource_loading_hints_received| have their totals updated as
 // resource loading hints are encountered.
-void MaybeAddHintToStrippedHintsWithPageHints(
+void MaybeAddHintToStrippedHintsToHintCacheData(
     const optimization_guide::proto::Hint& hint,
-    std::vector<optimization_guide::proto::Hint>*
-        stripped_hints_with_page_hints,
+    HintCache::Data* hint_cache_data,
     size_t* total_page_patterns_with_resource_loading_hints_received,
     size_t* total_resource_loading_hints_received) {
-  DCHECK(stripped_hints_with_page_hints);
+  DCHECK(hint_cache_data);
   DCHECK(total_page_patterns_with_resource_loading_hints_received);
   DCHECK(total_resource_loading_hints_received);
 
@@ -271,7 +270,7 @@ void MaybeAddHintToStrippedHintsWithPageHints(
   if (stripped_hint.page_hints_size() > 0) {
     stripped_hint.set_key_representation(hint.key_representation());
     stripped_hint.set_key(hint.key());
-    stripped_hints_with_page_hints->push_back(stripped_hint);
+    hint_cache_data->AddHint(stripped_hint);
   }
 }
 
@@ -308,13 +307,13 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
 
   base::FilePath sentinel_path(info.path.DirName().Append(kSentinelFileName));
   if (!CreateSentinelFile(sentinel_path, info.version)) {
-    std::unique_ptr<PreviewsHints> no_hints;
     RecordProcessHintsResult(
         PreviewsProcessHintsResult::kFailedFinishProcessing);
-    return no_hints;
+    return nullptr;
   }
 
   std::unique_ptr<PreviewsHints> hints(new PreviewsHints());
+  HintCache::Data hint_cache_data;
 
   // The condition set ID is a simple increasing counter that matches the
   // order of hints in the config (where earlier hints in the config take
@@ -331,15 +330,17 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
   for (const auto& hint : config->hints()) {
     // We only support host suffixes at the moment. Skip anything else.
     // One |hint| applies to one host URL suffix.
-    if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX)
+    if (hint.key_representation() != optimization_guide::proto::HOST_SUFFIX) {
       continue;
+    }
 
     const std::string& hint_key = hint.key();
 
     // Validate configuration keys.
     DCHECK(!hint_key.empty());
-    if (hint_key.empty())
+    if (hint_key.empty()) {
       continue;
+    }
 
     auto seen_host_suffixes_iter = seen_host_suffixes.find(hint_key);
     DCHECK(seen_host_suffixes_iter == seen_host_suffixes.end());
@@ -385,8 +386,8 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     // hint to the initial hints that are used to populate the hint cache,
     // removing all of the hint's top-level optimizations and only retaining the
     // first enabled optimization of each preview type within each page hint.
-    MaybeAddHintToStrippedHintsWithPageHints(
-        hint, &hints->initial_hints_,
+    MaybeAddHintToStrippedHintsToHintCacheData(
+        hint, &hint_cache_data,
         &total_page_patterns_with_resource_loading_hints_received,
         &total_resource_loading_hints_received);
   }
@@ -404,13 +405,18 @@ std::unique_ptr<PreviewsHints> PreviewsHints::CreateFromHintsComponent(
     hints->url_matcher_.AddConditionSets(all_conditions);
   }
 
+  if (hint_cache_data.HasHints()) {
+    hints->hint_cache_ =
+        std::make_unique<HintCache>(std::move(hint_cache_data));
+  }
+
   // Extract any supported large scale blacklists from the configuration.
   hints->ParseOptimizationFilters(*config);
 
   // Completed processing hints data without crashing so clear sentinel.
   DeleteSentinelFile(sentinel_path);
   RecordProcessHintsResult(
-      hints->initial_hints_.empty() && all_conditions.empty()
+      all_conditions.empty() && !hints->hint_cache_
           ? PreviewsProcessHintsResult::kProcessedNoPreviewsHints
           : PreviewsProcessHintsResult::kProcessedPreviewsHints);
   return hints;
@@ -450,7 +456,7 @@ void PreviewsHints::ParseOptimizationFilters(
             PreviewsOptimizationFilterStatus::kFailedServerBlacklistBadConfig);
         continue;
       }
-      if ((int)bloom_filter_proto.num_bits() >
+      if (static_cast<int>(bloom_filter_proto.num_bits()) >
           previews::params::
                   LitePageRedirectPreviewMaxServerBlacklistByteSize() /
               8) {
@@ -503,16 +509,6 @@ const optimization_guide::proto::PageHint* PreviewsHints::FindPageHint(
   return nullptr;
 }
 
-void PreviewsHints::Initialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!initial_hints_.empty()) {
-    if (!hint_cache_)
-      hint_cache_ = std::make_unique<HintCache>();
-    hint_cache_->AddHints(initial_hints_);
-    initial_hints_.clear();
-  }
-}
-
 bool PreviewsHints::IsWhitelisted(
     const GURL& url,
     PreviewsType type,
@@ -520,8 +516,9 @@ bool PreviewsHints::IsWhitelisted(
     net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!url.has_host())
+  if (!url.has_host()) {
     return false;
+  }
 
   return IsWhitelistedAtTopLevel(url, type, out_inflation_percent) ||
          IsWhitelistedInPageHints(url, type, out_inflation_percent,
@@ -576,8 +573,9 @@ bool PreviewsHints::IsWhitelistedInPageHints(
     net::EffectiveConnectionType* out_ect_threshold) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!hint_cache_)
+  if (!hint_cache_) {
     return false;
+  }
 
   // Now check HintCache for a loaded entry with a PageHint that matches |url|
   // that whitelists the optimization.
@@ -616,8 +614,9 @@ bool PreviewsHints::IsWhitelistedInPageHints(
 bool PreviewsHints::IsBlacklisted(const GURL& url, PreviewsType type) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!url.has_host())
+  if (!url.has_host()) {
     return false;
+  }
 
   // Check large scale blacklists received from the server.
   // (At some point, we may have blacklisting to check in HintCache as well.)
@@ -639,8 +638,9 @@ bool PreviewsHints::MaybeLoadOptimizationHints(
     HintLoadedCallback callback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!hint_cache_ || !url.has_host())
+  if (!hint_cache_ || !url.has_host()) {
     return false;
+  }
 
   hint_cache_->LoadHint(url.host(), std::move(callback));
   return hint_cache_->HasHint(url.host());
@@ -649,8 +649,9 @@ bool PreviewsHints::MaybeLoadOptimizationHints(
 void PreviewsHints::LogHintCacheMatch(const GURL& url,
                                       bool is_committed,
                                       net::EffectiveConnectionType ect) const {
-  if (!hint_cache_)
+  if (!hint_cache_) {
     return;
+  }
 
   if (hint_cache_->HasHint(url.host())) {
     if (!is_committed) {

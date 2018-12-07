@@ -11,11 +11,27 @@ namespace previews {
 // Realistic minimum length of a host suffix.
 const int kMinHostSuffix = 6;  // eg., abc.tv
 
-HintCache::HintCache() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
+HintCache::Data::Data() = default;
+
+HintCache::Data::~Data() = default;
+
+void HintCache::Data::AddHint(const optimization_guide::proto::Hint& hint) {
+  DCHECK_EQ(optimization_guide::proto::HOST_SUFFIX, hint.key_representation());
+  activation_list_.insert(hint.key());
+  memory_cache_[hint.key()] = hint;
 }
 
-HintCache::~HintCache() {}
+bool HintCache::Data::HasHints() const {
+  return !activation_list_.empty();
+}
+
+HintCache::Data::Data(Data&& other) = default;
+
+HintCache::HintCache(Data&& data) : data_(std::move(data)) {
+  // Detach from sequence as the HintCache can be constructed on a different
+  // thread than it is used on.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
 bool HintCache::HasHint(const std::string& host) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -38,7 +54,7 @@ bool HintCache::IsHintLoaded(const std::string& host) const {
   if (host_suffix.empty()) {
     return false;
   }
-  return memory_cache_.find(host_suffix) != memory_cache_.end();
+  return data_.memory_cache_.find(host_suffix) != data_.memory_cache_.end();
 }
 
 const optimization_guide::proto::Hint* HintCache::GetHint(
@@ -48,29 +64,12 @@ const optimization_guide::proto::Hint* HintCache::GetHint(
   if (host_suffix.empty()) {
     return nullptr;
   }
-  auto it = memory_cache_.find(host_suffix);
-  if (it != memory_cache_.end()) {
+  auto it = data_.memory_cache_.find(host_suffix);
+  if (it != data_.memory_cache_.end()) {
     return &it->second;
   }
 
   return nullptr;
-}
-
-void HintCache::AddHint(const optimization_guide::proto::Hint& hint) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(optimization_guide::proto::HOST_SUFFIX, hint.key_representation());
-
-  activation_list_.insert(hint.key());
-  // TODO(dougarnett): Limit size of memory cache.
-  memory_cache_[hint.key()] = hint;
-}
-
-void HintCache::AddHints(
-    const std::vector<optimization_guide::proto::Hint>& hints) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto hint : hints) {
-    AddHint(hint);
-  }
 }
 
 std::string HintCache::DetermineHostSuffix(const std::string& host) const {
@@ -80,7 +79,7 @@ std::string HintCache::DetermineHostSuffix(const std::string& host) const {
   // lookups and substring work once get to a root domain like ".com" or
   // ".co.in" (MinHostSuffix length check is a heuristic for that).
   while (suffix.length() >= kMinHostSuffix) {
-    if (activation_list_.find(suffix) != activation_list_.end()) {
+    if (data_.activation_list_.find(suffix) != data_.activation_list_.end()) {
       return suffix;
     }
     size_t pos = suffix.find_first_of('.');
