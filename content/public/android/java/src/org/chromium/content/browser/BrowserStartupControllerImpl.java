@@ -321,7 +321,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
             // If full browser startup is not needed, execute all the callbacks now.
             executeEnqueuedCallbacks(STARTUP_SUCCESS);
         }
-        ServicificationStartupUma.getInstance().commit();
+        recordStartupUma();
     }
 
     private void executeEnqueuedCallbacks(int startupResult) {
@@ -419,6 +419,14 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         } else {
             ResourceExtractor.get().addCompletionCallback(postResourceExtraction);
         }
+    }
+
+    /**
+     * Can be overridden by testing.
+     */
+    @VisibleForTesting
+    void recordStartupUma() {
+        ServicificationStartupUma.getInstance().commit();
     }
 
     /**
