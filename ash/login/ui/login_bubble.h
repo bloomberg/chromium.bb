@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "components/user_manager/user_type.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -20,12 +19,7 @@ class LoginButton;
 class LoginMenuView;
 
 // A wrapper for the bubble view in the login screen.
-// This class observes keyboard events, mouse clicks and touch down events
-// and dismisses the bubble accordingly.
-class ASH_EXPORT LoginBubble : public views::WidgetObserver,
-                               public ui::EventHandler,
-                               public ui::LayerAnimationObserver,
-                               public aura::client::FocusChangeObserver {
+class ASH_EXPORT LoginBubble : public views::WidgetObserver {
  public:
   class TestApi {
    public:
@@ -82,50 +76,15 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   // True if the bubble is visible.
   bool IsVisible();
 
-  // views::WidgetObservers:
-  void OnWidgetClosing(views::Widget* widget) override;
-  void OnWidgetDestroying(views::Widget* widget) override;
-  void OnWidgetBoundsChanged(views::Widget* widget,
-                             const gfx::Rect& new_bounds) override;
-
-  // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  void OnKeyEvent(ui::KeyEvent* event) override;
-
-  // gfx::LayerAnimationObserver:
-  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
-  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override{};
-  void OnLayerAnimationScheduled(
-      ui::LayerAnimationSequence* sequence) override{};
-
-  // aura::client::FocusChangeObserver:
-  void OnWindowFocused(aura::Window* gained_focus,
-                       aura::Window* lost_focus) override;
-
   LoginBaseBubbleView* bubble_view() { return bubble_view_; }
 
  private:
-  // Show the bubble widget and schedule animation for bubble showing.
-  void Show();
-
-  void ProcessPressedEvent(const ui::LocatedEvent* event);
-
-  // Starts show/hide animation.
-  void ScheduleAnimation(bool visible);
-
   // Reset local states and close the widget if it is not already closing.
   // |widget_already_closing| : True if we don't need to close the widget
   // explicitly. False otherwise.
   void Reset(bool widget_already_closing);
 
-  // Repositions the bubble view if it extends too far right or down.
-  void EnsureBubbleInScreen();
-
   LoginBaseBubbleView* bubble_view_ = nullptr;
-
-  // The status of bubble after animation ends.
-  bool is_visible_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(LoginBubble);
 };
