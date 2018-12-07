@@ -22,6 +22,8 @@ const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
 NGCaretPosition ComputeNGCaretPosition(const PositionInFlatTreeWithAffinity&);
 
 LocalCaretRect ComputeNGLocalCaretRect(const PositionInFlatTreeWithAffinity&);
+LocalCaretRect ComputeNGLocalSelectionRect(
+    const PositionInFlatTreeWithAffinity&);
 
 bool InSameNGLineBox(const PositionInFlatTreeWithAffinity&,
                      const PositionInFlatTreeWithAffinity&);
