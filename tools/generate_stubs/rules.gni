@@ -11,6 +11,7 @@
 #   extra_header: prepend the contents of this file to the generated .cc file
 #   logging_function: override the used logging function (default: VLOG(1))
 #   logging_include: override the additional include (default: base/logging.h)
+#   path_from_source: relative path of generated files from the project root
 #
 # Example
 #   generate_stubs("libfoo_stubs") {
@@ -52,6 +53,17 @@ template("generate_stubs") {
       "--path_from_source",
       rebase_path(_gen_dir, root_gen_dir),
     ]
+    if (defined(invoker.path_from_source)) {
+      args += [
+        "--path_from_source",
+        invoker.path_from_source,
+      ]
+    } else {
+      args += [
+        "--path_from_source",
+        rebase_path(_gen_dir, root_gen_dir),
+      ]
+    }
     if (defined(invoker.logging_function)) {
       args += [
         "--logging-function",
