@@ -72,6 +72,7 @@ DownloadsManagerTest.prototype = {
     ROOT_PATH + 'ui/webui/resources/js/cr.js',
     ROOT_PATH + 'chrome/browser/resources/md_downloads/constants.js',
     '../test_browser_proxy.js',
+    'test_support.js',
     'manager_tests.js',
   ]),
 };
