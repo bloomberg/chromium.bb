@@ -690,9 +690,6 @@ extern const char kIgnoreGpuBlacklistDescription[];
 extern const char kIgnorePreviewsBlacklistName[];
 extern const char kIgnorePreviewsBlacklistDescription[];
 
-extern const char kImprovedLanguageSettingsName[];
-extern const char kImprovedLanguageSettingsDescription[];
-
 extern const char kInProductHelpDemoModeChoiceName[];
 extern const char kInProductHelpDemoModeChoiceDescription[];
 
