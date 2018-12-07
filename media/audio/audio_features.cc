@@ -6,6 +6,11 @@
 
 namespace features {
 
+// If enabled, base::DumpWithoutCrashing is called whenever an audio service
+// hang is detected.
+const base::Feature kDumpOnAudioServiceHang{"DumpOnAudioServiceHang",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_CHROMEOS)
 // Allows experimentally enables mediaDevices.enumerateDevices() on ChromeOS.
 // Default disabled (crbug.com/554168).
