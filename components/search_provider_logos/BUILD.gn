@@ -18,7 +18,6 @@ static_library("search_provider_logos") {
     "logo_service.h",
     "logo_service_impl.cc",
     "logo_service_impl.h",
-    "logo_tracker.cc",
     "logo_tracker.h",
     "switches.cc",
     "switches.h",

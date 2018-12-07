@@ -36878,7 +36878,7 @@ Called by update_net_trust_anchors.py.-->
 <enum name="NewTabPageLogoDownloadOutcome">
   <summary>
     These values are defined in LogoDownloadOutcome enum in
-    components/search_provider_logos/logo_tracker.h.
+    components/search_provider_logos/logo_service_impl.h.
   </summary>
   <int value="0" label="New logo success"/>
   <int value="1" label="No logo today"/>
@@ -51419,7 +51419,7 @@ Full version information for the fingerprint enum values:
   <int value="35370363" label="suggestions_service"/>
   <int value="35380758" label="download_manager_resume"/>
   <int value="35565745" label="gaia_auth_list_accounts"/>
-  <int value="36859107" label="logo_tracker"/>
+  <int value="36859107" label="logo_service"/>
   <int value="37249086" label="android_device_manager_socket"/>
   <int value="37531401" label="proxy_script_fetcher"/>
   <int value="38670228" label="download_internals_webui_source"/>
