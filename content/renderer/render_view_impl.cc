@@ -2034,7 +2034,7 @@ void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
   //                 we won't have to test for user gesture anymore and we can
   //                 move that code back to render_widget.cc
   if (WebUserGestureIndicator::IsProcessingUserGesture(calling_frame) &&
-      !RenderThreadImpl::current()->layout_test_mode()) {
+      !RenderThreadImpl::current()->web_test_mode()) {
     Send(new ViewHostMsg_Focus(GetRoutingID()));
 
     // Tattle on the frame that called |window.focus()|.

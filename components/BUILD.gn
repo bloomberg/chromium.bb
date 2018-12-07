@@ -537,7 +537,7 @@ if (!is_ios) {
         "//components/autofill_assistant/browser",
         "//components/autofill_assistant/browser:proto",
         "//content/public/test/android:layouttest_java_support",
-        "//content/test:layouttest_support",
+        "//content/test:web_test_support",
         "//testing/android/native_test:native_test_support",
       ]
       use_default_launcher = false

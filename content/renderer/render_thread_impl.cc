@@ -1896,9 +1896,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         render_frame_metadata_observer_client_request,
     mojom::RenderFrameMetadataObserverPtr render_frame_metadata_observer_ptr,
     const char* client_name) {
-  // Misconfigured bots (eg. crbug.com/780757) could run layout tests on a
+  // Misconfigured bots (eg. crbug.com/780757) could run web tests on a
   // machine where gpu compositing doesn't work. Don't crash in that case.
-  if (layout_test_mode() && is_gpu_compositing_disabled_) {
+  if (web_test_mode() && is_gpu_compositing_disabled_) {
     LOG(FATAL) << "Layout tests require gpu compositing, but it is disabled.";
     return;
   }
@@ -1963,7 +1963,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       mojo::MakeRequest(&compositor_frame_sink_client);
 
   if (is_gpu_compositing_disabled_) {
-    DCHECK(!layout_test_mode());
+    DCHECK(!web_test_mode());
     frame_sink_provider_->CreateForWidget(
         widget_routing_id, std::move(compositor_frame_sink_request),
         std::move(compositor_frame_sink_client));
@@ -2025,9 +2025,9 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           attributes,
           ws::command_buffer_metrics::ContextType::RENDER_COMPOSITOR));
 
-  if (layout_test_deps_) {
-    if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
-      std::move(callback).Run(layout_test_deps_->CreateLayerTreeFrameSink(
+  if (web_test_deps_) {
+    if (!web_test_deps_->UseDisplayCompositorPixelDump()) {
+      std::move(callback).Run(web_test_deps_->CreateLayerTreeFrameSink(
           widget_routing_id, std::move(gpu_channel_host),
           std::move(context_provider), std::move(worker_context_provider),
           GetGpuMemoryBufferManager(), this));
@@ -2082,10 +2082,9 @@ std::unique_ptr<cc::SwapPromise>
 RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
     int32_t widget_routing_id,
     std::unique_ptr<viz::CopyOutputRequest> request) {
-  DCHECK(layout_test_deps_ &&
-         !layout_test_deps_->UseDisplayCompositorPixelDump());
-  return layout_test_deps_->RequestCopyOfOutput(widget_routing_id,
-                                                std::move(request));
+  DCHECK(web_test_deps_ && !web_test_deps_->UseDisplayCompositorPixelDump());
+  return web_test_deps_->RequestCopyOfOutput(widget_routing_id,
+                                             std::move(request));
 }
 
 std::unique_ptr<blink::WebMediaStreamCenter>

@@ -6,7 +6,7 @@
 
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/test/layouttest_support.h"
+#include "content/public/test/web_test_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/web_test/web_test_messages.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -29,7 +29,7 @@ WebTestRenderThreadObserver::WebTestRenderThreadObserver() {
   CHECK(!g_instance);
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
-  EnableRendererLayoutTestMode();
+  EnableRendererWebTestMode();
 
   test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();

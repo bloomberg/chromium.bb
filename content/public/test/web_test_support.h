@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
-#define CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
+#ifndef CONTENT_PUBLIC_TEST_WEB_TEST_SUPPORT_H_
+#define CONTENT_PUBLIC_TEST_WEB_TEST_SUPPORT_H_
 
 #include <stddef.h>
 
@@ -24,7 +24,7 @@ struct WebSize;
 class WebURL;
 class WebURLRequest;
 class WebView;
-}
+}  // namespace blink
 
 namespace gfx {
 class ColorSpace;
@@ -34,7 +34,7 @@ namespace test_runner {
 class WebFrameTestProxyBase;
 class WebViewTestProxyBase;
 class WebWidgetTestProxyBase;
-}
+}  // namespace test_runner
 
 namespace content {
 
@@ -42,8 +42,8 @@ class RenderFrame;
 class RenderView;
 class StoragePartition;
 
-// Turn the browser process into layout test mode.
-void EnableBrowserLayoutTestMode();
+// Turn the browser process into web test mode.
+void EnableBrowserWebTestMode();
 
 // Terminates all workers and notifies when complete. This is used for
 // testing when it is important to make sure that all shared worker activity
@@ -54,8 +54,8 @@ void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
 ///////////////////////////////////////////////////////////////////////////////
 // The following methods are meant to be used from a renderer.
 
-// Turn a renderer into layout test mode.
-void EnableRendererLayoutTestMode();
+// Turn a renderer into web test mode.
+void EnableRendererWebTestMode();
 
 // "Casts" |render_view| to |WebViewTestProxyBase|.  Caller has to ensure that
 // prior to construction of |render_view|, EnableWebTestProxyCreation was
@@ -159,4 +159,4 @@ void SetWorkerRewriteURLFunction(RewriteURLFunction rewrite_url_function);
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_
+#endif  // CONTENT_PUBLIC_TEST_WEB_TEST_SUPPORT_H_

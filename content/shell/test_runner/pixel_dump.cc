@@ -17,7 +17,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/shell/common/web_test/web_test_utils.h"
-#include "content/shell/test_runner/layout_test_runtime_flags.h"
+#include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "services/service_manager/public/cpp/connector.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"

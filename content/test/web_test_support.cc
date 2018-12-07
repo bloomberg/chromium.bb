@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/layouttest_support.h"
+#include "content/public/test/web_test_support.h"
 
 #include <stddef.h>
 
@@ -32,7 +32,6 @@
 #include "content/public/common/screen_info.h"
 #include "content/renderer/gpu/layer_tree_view.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
-#include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
 #include "content/renderer/render_frame_impl.h"
@@ -40,6 +39,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/renderer/web_test_dependencies.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
@@ -281,7 +281,7 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
   }
   void DidSwap() override {}
   void DidNotSwap(DidNotSwapReason r) override {
-    // The compositor should always swap in layout test mode.
+    // The compositor should always swap in web test mode.
     NOTREACHED() << "did not swap for reason " << r;
   }
   int64_t TraceId() const override { return 0; }
@@ -294,8 +294,8 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
 
 }  // namespace
 
-class LayoutTestDependenciesImpl : public LayoutTestDependencies,
-                                   public viz::TestLayerTreeFrameSinkClient {
+class WebTestDependenciesImpl : public WebTestDependencies,
+                                public viz::TestLayerTreeFrameSinkClient {
  public:
   bool UseDisplayCompositorPixelDump() const override {
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
@@ -351,11 +351,10 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     // routing_id.
     return std::make_unique<CopyRequestSwapPromise>(
         std::move(request),
-        base::Bind(
-            &LayoutTestDependenciesImpl::FindLayerTreeFrameSink,
-            // |this| will still be valid, because its lifetime is tied to
-            // RenderThreadImpl, which outlives layout test execution.
-            base::Unretained(this), routing_id));
+        base::Bind(&WebTestDependenciesImpl::FindLayerTreeFrameSink,
+                   // |this| will still be valid, because its lifetime is tied
+                   // to RenderThreadImpl, which outlives web test execution.
+                   base::Unretained(this), routing_id));
   }
 
   // TestLayerTreeFrameSinkClient implementation.
@@ -384,13 +383,13 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
           gpu_channel_, gpu_memory_buffer_manager_, kGpuStreamIdDefault,
           kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
           GURL("chrome://gpu/"
-               "LayoutTestDependenciesImpl::CreateOutputSurface"),
+               "WebTestDependenciesImpl::CreateOutputSurface"),
           automatic_flushes, support_locking, support_grcontext,
           gpu::SharedMemoryLimits(), attributes,
           ws::command_buffer_metrics::ContextType::FOR_TESTING);
       context_result = context_provider->BindToCurrentThread();
 
-      // Layout tests can't recover from a fatal or surface failure.
+      // Web tests can't recover from a fatal or surface failure.
       CHECK(!gpu::IsFatalOrSurfaceFailure(context_result));
     }
 
@@ -413,18 +412,18 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
   }
 
   // Entries are not removed, so this map can grow. However, it is only used in
-  // layout tests, so this memory usage does not occur in production.
+  // web tests, so this memory usage does not occur in production.
   // Entries in this map will outlive the output surface, because this object is
-  // owned by RenderThreadImpl, which outlives layout test execution.
+  // owned by RenderThreadImpl, which outlives web test execution.
   std::unordered_map<int32_t, viz::TestLayerTreeFrameSink*>
       layer_tree_frame_sinks_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_ = nullptr;
 };
 
-void EnableRendererLayoutTestMode() {
-  RenderThreadImpl::current()->set_layout_test_dependencies(
-      std::make_unique<LayoutTestDependenciesImpl>());
+void EnableRendererWebTestMode() {
+  RenderThreadImpl::current()->set_web_test_dependencies(
+      std::make_unique<WebTestDependenciesImpl>());
 
   UniqueNameHelper::PreserveStableUniqueNameForTesting();
 
@@ -433,7 +432,7 @@ void EnableRendererLayoutTestMode() {
 #endif
 }
 
-void EnableBrowserLayoutTestMode() {
+void EnableBrowserWebTestMode() {
 #if defined(OS_MACOSX)
   PopupMenuHelper::DontShowPopupMenuForTesting();
 #endif
@@ -448,17 +447,16 @@ void TerminateAllSharedWorkersForTesting(StoragePartition* storage_partition,
 }
 
 int GetLocalSessionHistoryLength(RenderView* render_view) {
-  return static_cast<RenderViewImpl*>(render_view)->
-      GetLocalSessionHistoryLengthForTesting();
+  return static_cast<RenderViewImpl*>(render_view)
+      ->GetLocalSessionHistoryLengthForTesting();
 }
 
 void SetFocusAndActivate(RenderView* render_view, bool enable) {
-  static_cast<RenderViewImpl*>(render_view)->
-      SetFocusAndActivateForTesting(enable);
+  static_cast<RenderViewImpl*>(render_view)
+      ->SetFocusAndActivateForTesting(enable);
 }
 
-void ForceResizeRenderView(RenderView* render_view,
-                           const WebSize& new_size) {
+void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
   auto* render_view_impl = static_cast<RenderViewImpl*>(render_view);
   gfx::Rect window_rect(render_view_impl->RootWindowRect().x,
                         render_view_impl->RootWindowRect().y, new_size.width,

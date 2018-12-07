@@ -23,8 +23,8 @@
 #include "content/public/browser/browser_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/layouttest_support.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "content/public/test/web_test_support.h"
 #include "content/shell/app/blink_test_platform_support.h"
 #include "content/shell/app/shell_crash_reporter_client.h"
 #include "content/shell/browser/shell_browser_main.h"
@@ -201,7 +201,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       }
     }
 
-    EnableBrowserLayoutTestMode();
+    EnableBrowserWebTestMode();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
     if (!ppapi::RegisterBlinkTestPlugin(&command_line)) {

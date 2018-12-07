@@ -29,7 +29,7 @@ RendererWebApplicationCacheHostImpl::RendererWebApplicationCacheHostImpl(
 
 void RendererWebApplicationCacheHostImpl::OnLogMessage(
     AppCacheLogLevel log_level, const std::string& message) {
-  if (RenderThreadImpl::current()->layout_test_mode())
+  if (RenderThreadImpl::current()->web_test_mode())
     return;
 
   RenderViewImpl* render_view = GetRenderView();
