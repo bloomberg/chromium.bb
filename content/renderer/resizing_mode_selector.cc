@@ -14,7 +14,7 @@ ResizingModeSelector::ResizingModeSelector() : is_synchronous_mode_(false) {}
 
 bool ResizingModeSelector::NeverUsesSynchronousResize() const {
   return !RenderThreadImpl::current() ||  // can be NULL when in unit tests
-         !RenderThreadImpl::current()->layout_test_mode();
+         !RenderThreadImpl::current()->web_test_mode();
 }
 
 bool ResizingModeSelector::ShouldAbortOnResize(

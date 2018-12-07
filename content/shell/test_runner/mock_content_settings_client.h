@@ -10,14 +10,14 @@
 
 namespace test_runner {
 
-class LayoutTestRuntimeFlags;
 class WebTestDelegate;
+class WebTestRuntimeFlags;
 
 class MockContentSettingsClient : public blink::WebContentSettingsClient {
  public:
   // Caller has to guarantee that |layout_test_runtime_flags| lives longer
   // than the MockContentSettingsClient being constructed here.
-  MockContentSettingsClient(LayoutTestRuntimeFlags* layout_test_runtime_flags);
+  MockContentSettingsClient(WebTestRuntimeFlags* layout_test_runtime_flags);
 
   ~MockContentSettingsClient() override;
 
@@ -38,7 +38,7 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
  private:
   WebTestDelegate* delegate_;
 
-  LayoutTestRuntimeFlags* flags_;
+  WebTestRuntimeFlags* flags_;
 
   DISALLOW_COPY_AND_ASSIGN(MockContentSettingsClient);
 };

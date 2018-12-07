@@ -4,15 +4,15 @@
 
 #include "content/shell/test_runner/mock_content_settings_client.h"
 
-#include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "content/shell/test_runner/test_common.h"
 #include "content/shell/test_runner/web_test_delegate.h"
+#include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_url.h"
 
 namespace test_runner {
 
 MockContentSettingsClient::MockContentSettingsClient(
-    LayoutTestRuntimeFlags* layout_test_runtime_flags)
+    WebTestRuntimeFlags* layout_test_runtime_flags)
     : delegate_(nullptr), flags_(layout_test_runtime_flags) {}
 
 MockContentSettingsClient::~MockContentSettingsClient() {}

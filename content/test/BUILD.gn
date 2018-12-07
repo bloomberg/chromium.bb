@@ -538,8 +538,8 @@ jumbo_static_library("browsertest_support") {
   ]
 
   deps = [
-    ":layouttest_support",
     ":test_support",
+    ":web_test_support",
     "//base",
     "//base:i18n",
     "//base/test:test_config",
@@ -608,7 +608,7 @@ mojom("test_interfaces") {
   ]
 }
 
-static_library("layouttest_support") {
+static_library("web_test_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -618,10 +618,10 @@ static_library("layouttest_support") {
   }
 
   sources = [
-    "../public/test/layouttest_support.h",
     "../public/test/nested_message_pump_android.cc",
     "../public/test/nested_message_pump_android.h",
-    "layouttest_support.cc",
+    "../public/test/web_test_support.h",
+    "web_test_support.cc",
   ]
 
   deps = [
@@ -942,8 +942,8 @@ test("content_browsertests") {
   deps = [
     ":browsertest_support",
     ":content_test_mojo_bindings",
-    ":layouttest_support",
     ":test_support",
+    ":web_test_support",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
     "//components/discardable_memory/client",

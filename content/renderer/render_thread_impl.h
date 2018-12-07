@@ -40,9 +40,9 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
-#include "content/renderer/layout_test_dependencies.h"
 #include "content/renderer/media/audio/audio_input_ipc_factory.h"
 #include "content/renderer/media/audio/audio_output_ipc_factory.h"
+#include "content/renderer/web_test_dependencies.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/media_buildflags.h"
@@ -283,21 +283,20 @@ class CONTENT_EXPORT RenderThreadImpl
       int32_t widget_routing_id,
       std::unique_ptr<viz::CopyOutputRequest> request);
 
-  // True if we are running layout tests. This currently disables forwarding
+  // True if we are running web tests. This currently disables forwarding
   // various status messages to the console, skips network error pages, and
   // short circuits size update and focus events.
-  bool layout_test_mode() const { return !!layout_test_deps_; }
-  void set_layout_test_dependencies(
-      std::unique_ptr<LayoutTestDependencies> deps) {
-    layout_test_deps_ = std::move(deps);
+  bool web_test_mode() const { return !!web_test_deps_; }
+  void set_web_test_dependencies(std::unique_ptr<WebTestDependencies> deps) {
+    web_test_deps_ = std::move(deps);
   }
-  // Returns whether we are running layout tests with display compositor for
+  // Returns whether we are running web tests with display compositor for
   // pixel dump enabled. It is meant to disable feature that require display
   // compositor while it is not enabled by default.
   // This should only be called if currently running in layout tests.
-  bool LayoutTestModeUsesDisplayCompositorPixelDump() const {
-    DCHECK(layout_test_deps_);
-    return layout_test_deps_->UseDisplayCompositorPixelDump();
+  bool WebTestModeUsesDisplayCompositorPixelDump() const {
+    DCHECK(web_test_deps_);
+    return web_test_deps_->UseDisplayCompositorPixelDump();
   }
 
   discardable_memory::ClientDiscardableSharedMemoryManager*
@@ -639,8 +638,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::WebString user_agent_;
 
-  // Used to control layout test specific behavior.
-  std::unique_ptr<LayoutTestDependencies> layout_test_deps_;
+  // Used to control web test specific behavior.
+  std::unique_ptr<WebTestDependencies> web_test_deps_;
 
   // Sticky once true, indicates that compositing is done without Gpu, so
   // resources given to the compositor or to the viz service should be

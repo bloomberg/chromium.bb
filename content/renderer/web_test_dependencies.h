@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDER_LAYOUT_TEST_DEPENDENCIES_H_
-#define CONTENT_RENDER_LAYOUT_TEST_DEPENDENCIES_H_
+#ifndef CONTENT_RENDERER_WEB_TEST_DEPENDENCIES_H_
+#define CONTENT_RENDERER_WEB_TEST_DEPENDENCIES_H_
 
 #include <stdint.h>
 #include <memory>
@@ -16,26 +16,26 @@ namespace cc {
 class CopyOutputRequest;
 class LayerTreeFrameSink;
 class SwapPromise;
-}
+}  // namespace cc
 
 namespace gpu {
 class GpuChannelHost;
 class GpuMemoryBufferManager;
-}
+}  // namespace gpu
 
 namespace viz {
 class ContextProvider;
 class RasterContextProvider;
-}
+}  // namespace viz
 
 namespace content {
 class CompositorDependencies;
 
-// This class allows injection of LayoutTest-specific behaviour to the
+// This class allows injection of WebTest-specific behaviour to the
 // RenderThreadImpl.
-class CONTENT_EXPORT LayoutTestDependencies {
+class CONTENT_EXPORT WebTestDependencies {
  public:
-  virtual ~LayoutTestDependencies();
+  virtual ~WebTestDependencies();
 
   // Returns true if the layout tests should use the display compositor pixel
   // dumps.
@@ -57,4 +57,4 @@ class CONTENT_EXPORT LayoutTestDependencies {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDER_LAYOUT_TEST_DEPENDENCIES_H_
+#endif  // CONTENT_RENDERER_WEB_TEST_DEPENDENCIES_H_
