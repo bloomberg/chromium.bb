@@ -5734,6 +5734,9 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/idlharness.any.worker.html [ Pass Fail
 crbug.com/v8/8319 external/wpt/wasm/jsapi/idlharness.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/interface.any.worker.html [ Pass Failure ]
 
-#Sheriff 2018-12-06
+# Sheriff 2018-12-06
 crbug.com/912793 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]
 crbug.com/912793 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Pass Failure ]
+
+# Sheriff 2018-12-07
+crbug.com/912821 [ Mac ] virtual/threaded/http/tests/devtools/tracing/user-timing.js [ Pass Failure ]
