@@ -3,7 +3,6 @@
   "Files": {
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.exe": {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome.VisualElementsManifest.xml": {"exists": true},
-    "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\chrome_proxy.exe": {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome.dll": {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll": {"exists": true},
     "$LOCAL_APPDATA\\$CHROME_DIR_SXS\\Application\\$PREVIOUS_VERSION_MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z": {"exists": true},
