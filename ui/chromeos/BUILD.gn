@@ -69,6 +69,7 @@ test("ui_chromeos_unittests") {
     ":chromeos",
     "//base/test:test_support",
     "//chromeos",
+    "//chromeos:chromeos_buildflags",
     "//mojo/core/embedder",
     "//skia",
     "//testing/gtest",
