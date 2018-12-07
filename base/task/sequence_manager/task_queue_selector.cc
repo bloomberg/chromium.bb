@@ -20,28 +20,32 @@ namespace internal {
 TaskQueueSelector::TaskQueueSelector(
     scoped_refptr<AssociatedThreadId> associated_thread)
     : associated_thread_(std::move(associated_thread)),
-      delayed_work_queue_sets_(TaskQueue::kQueuePriorityCount, "delayed"),
-      immediate_work_queue_sets_(TaskQueue::kQueuePriorityCount, "immediate") {}
+      prioritizing_selector_(this, "enabled"),
+      immediate_starvation_count_(0),
+      high_priority_starvation_score_(0),
+      normal_priority_starvation_score_(0),
+      low_priority_starvation_score_(0),
+      task_queue_selector_observer_(nullptr) {}
 
 TaskQueueSelector::~TaskQueueSelector() = default;
 
 void TaskQueueSelector::AddQueue(internal::TaskQueueImpl* queue) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(queue->IsQueueEnabled());
-  AddQueueImpl(queue, TaskQueue::kNormalPriority);
+  prioritizing_selector_.AddQueue(queue, TaskQueue::kNormalPriority);
 }
 
 void TaskQueueSelector::RemoveQueue(internal::TaskQueueImpl* queue) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (queue->IsQueueEnabled()) {
-    RemoveQueueImpl(queue);
+    prioritizing_selector_.RemoveQueue(queue);
   }
 }
 
 void TaskQueueSelector::EnableQueue(internal::TaskQueueImpl* queue) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(queue->IsQueueEnabled());
-  AddQueueImpl(queue, queue->GetQueuePriority());
+  prioritizing_selector_.AddQueue(queue, queue->GetQueuePriority());
   if (task_queue_selector_observer_)
     task_queue_selector_observer_->OnTaskQueueEnabled(queue);
 }
@@ -49,7 +53,7 @@ void TaskQueueSelector::EnableQueue(internal::TaskQueueImpl* queue) {
 void TaskQueueSelector::DisableQueue(internal::TaskQueueImpl* queue) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(!queue->IsQueueEnabled());
-  RemoveQueueImpl(queue);
+  prioritizing_selector_.RemoveQueue(queue);
 }
 
 void TaskQueueSelector::SetQueuePriority(internal::TaskQueueImpl* queue,
@@ -57,7 +61,7 @@ void TaskQueueSelector::SetQueuePriority(internal::TaskQueueImpl* queue,
   DCHECK_LT(priority, TaskQueue::kQueuePriorityCount);
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (queue->IsQueueEnabled()) {
-    ChangeSetIndex(queue, priority);
+    prioritizing_selector_.ChangeSetIndex(queue, priority);
   } else {
     // Disabled queue is not in any set so we can't use ChangeSetIndex here
     // and have to assign priority for the queue itself.
@@ -73,8 +77,16 @@ TaskQueue::QueuePriority TaskQueueSelector::NextPriority(
   return static_cast<TaskQueue::QueuePriority>(static_cast<int>(priority) + 1);
 }
 
-void TaskQueueSelector::AddQueueImpl(internal::TaskQueueImpl* queue,
-                                     TaskQueue::QueuePriority priority) {
+TaskQueueSelector::PrioritizingSelector::PrioritizingSelector(
+    TaskQueueSelector* task_queue_selector,
+    const char* name)
+    : task_queue_selector_(task_queue_selector),
+      delayed_work_queue_sets_(TaskQueue::kQueuePriorityCount, name),
+      immediate_work_queue_sets_(TaskQueue::kQueuePriorityCount, name) {}
+
+void TaskQueueSelector::PrioritizingSelector::AddQueue(
+    internal::TaskQueueImpl* queue,
+    TaskQueue::QueuePriority priority) {
 #if DCHECK_IS_ON()
   DCHECK(!CheckContainsQueueForTest(queue));
 #endif
@@ -85,8 +97,9 @@ void TaskQueueSelector::AddQueueImpl(internal::TaskQueueImpl* queue,
 #endif
 }
 
-void TaskQueueSelector::ChangeSetIndex(internal::TaskQueueImpl* queue,
-                                       TaskQueue::QueuePriority priority) {
+void TaskQueueSelector::PrioritizingSelector::ChangeSetIndex(
+    internal::TaskQueueImpl* queue,
+    TaskQueue::QueuePriority priority) {
 #if DCHECK_IS_ON()
   DCHECK(CheckContainsQueueForTest(queue));
 #endif
@@ -99,7 +112,8 @@ void TaskQueueSelector::ChangeSetIndex(internal::TaskQueueImpl* queue,
 #endif
 }
 
-void TaskQueueSelector::RemoveQueueImpl(internal::TaskQueueImpl* queue) {
+void TaskQueueSelector::PrioritizingSelector::RemoveQueue(
+    internal::TaskQueueImpl* queue) {
 #if DCHECK_IS_ON()
   DCHECK(CheckContainsQueueForTest(queue));
 #endif
@@ -111,96 +125,121 @@ void TaskQueueSelector::RemoveQueueImpl(internal::TaskQueueImpl* queue) {
 #endif
 }
 
-WorkQueue* TaskQueueSelector::ChooseOldestImmediateTaskWithPriority(
-    TaskQueue::QueuePriority priority) const {
-  return immediate_work_queue_sets_.GetOldestQueueInSet(priority);
+bool TaskQueueSelector::PrioritizingSelector::
+    ChooseOldestImmediateTaskWithPriority(TaskQueue::QueuePriority priority,
+                                          WorkQueue** out_work_queue) const {
+  return immediate_work_queue_sets_.GetOldestQueueInSet(priority,
+                                                        out_work_queue);
 }
 
-WorkQueue* TaskQueueSelector::ChooseOldestDelayedTaskWithPriority(
-    TaskQueue::QueuePriority priority) const {
-  return delayed_work_queue_sets_.GetOldestQueueInSet(priority);
+bool TaskQueueSelector::PrioritizingSelector::
+    ChooseOldestDelayedTaskWithPriority(TaskQueue::QueuePriority priority,
+                                        WorkQueue** out_work_queue) const {
+  return delayed_work_queue_sets_.GetOldestQueueInSet(priority, out_work_queue);
 }
 
-WorkQueue* TaskQueueSelector::ChooseOldestImmediateOrDelayedTaskWithPriority(
-    TaskQueue::QueuePriority priority) const {
+bool TaskQueueSelector::PrioritizingSelector::
+    ChooseOldestImmediateOrDelayedTaskWithPriority(
+        TaskQueue::QueuePriority priority,
+        bool* out_chose_delayed_over_immediate,
+        WorkQueue** out_work_queue) const {
+  WorkQueue* immediate_queue;
+  DCHECK_EQ(*out_chose_delayed_over_immediate, false);
   EnqueueOrder immediate_enqueue_order;
-  WorkQueue* immediate_queue =
-      immediate_work_queue_sets_.GetOldestQueueAndEnqueueOrderInSet(
-          priority, &immediate_enqueue_order);
-
-  EnqueueOrder delayed_enqueue_order;
-  WorkQueue* delayed_queue =
-      delayed_work_queue_sets_.GetOldestQueueAndEnqueueOrderInSet(
-          priority, &delayed_enqueue_order);
-
-  if (!delayed_queue)
-    return immediate_queue;
-
-  if (immediate_queue && immediate_enqueue_order < delayed_enqueue_order)
-    return immediate_queue;
-
-  return delayed_queue;
-}
-
-WorkQueue* TaskQueueSelector::ChooseOldestWithPriority(
-    TaskQueue::QueuePriority priority) const {
-  if (choose_immediate_over_delayed_) {
-    WorkQueue* queue = ChooseOldestImmediateTaskWithPriority(priority);
-    if (queue)
-      return queue;
-    return ChooseOldestDelayedTaskWithPriority(priority);
-  } else {
-    return ChooseOldestImmediateOrDelayedTaskWithPriority(priority);
+  if (immediate_work_queue_sets_.GetOldestQueueAndEnqueueOrderInSet(
+          priority, &immediate_queue, &immediate_enqueue_order)) {
+    WorkQueue* delayed_queue;
+    EnqueueOrder delayed_enqueue_order;
+    if (delayed_work_queue_sets_.GetOldestQueueAndEnqueueOrderInSet(
+            priority, &delayed_queue, &delayed_enqueue_order)) {
+      if (immediate_enqueue_order < delayed_enqueue_order) {
+        *out_work_queue = immediate_queue;
+      } else {
+        *out_chose_delayed_over_immediate = true;
+        *out_work_queue = delayed_queue;
+      }
+    } else {
+      *out_work_queue = immediate_queue;
+    }
+    return true;
   }
+  return delayed_work_queue_sets_.GetOldestQueueInSet(priority, out_work_queue);
 }
 
-WorkQueue* TaskQueueSelector::SelectWorkQueueToServiceImpl(
-    TaskQueue::QueuePriority max_priority) {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+bool TaskQueueSelector::PrioritizingSelector::ChooseOldestWithPriority(
+    TaskQueue::QueuePriority priority,
+    bool* out_chose_delayed_over_immediate,
+    WorkQueue** out_work_queue) const {
+  // Select an immediate work queue if we are starving immediate tasks.
+  if (task_queue_selector_->immediate_starvation_count_ >=
+      kMaxDelayedStarvationTasks) {
+    if (ChooseOldestImmediateTaskWithPriority(priority, out_work_queue))
+      return true;
+    return ChooseOldestDelayedTaskWithPriority(priority, out_work_queue);
+  }
+  return ChooseOldestImmediateOrDelayedTaskWithPriority(
+      priority, out_chose_delayed_over_immediate, out_work_queue);
+}
+
+bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
+    TaskQueue::QueuePriority max_priority,
+    WorkQueue** out_work_queue,
+    bool* out_chose_delayed_over_immediate) {
+  DCHECK_CALLED_ON_VALID_THREAD(
+      task_queue_selector_->associated_thread_->thread_checker);
+  DCHECK_EQ(*out_chose_delayed_over_immediate, false);
 
   // Always service the control queue if it has any work.
-  if (max_priority > TaskQueue::kControlPriority) {
-    WorkQueue* queue = ChooseOldestWithPriority(TaskQueue::kControlPriority);
-    if (queue)
-      return queue;
+  if (max_priority > TaskQueue::kControlPriority &&
+      ChooseOldestWithPriority(TaskQueue::kControlPriority,
+                               out_chose_delayed_over_immediate,
+                               out_work_queue)) {
+    return true;
   }
 
   // Select from the low priority queue if we are starving it.
   if (max_priority > TaskQueue::kLowPriority &&
-      low_priority_starvation_score_ >= kMaxLowPriorityStarvationScore) {
-    WorkQueue* queue = ChooseOldestWithPriority(TaskQueue::kLowPriority);
-    if (queue)
-      return queue;
+      task_queue_selector_->low_priority_starvation_score_ >=
+          kMaxLowPriorityStarvationScore &&
+      ChooseOldestWithPriority(TaskQueue::kLowPriority,
+                               out_chose_delayed_over_immediate,
+                               out_work_queue)) {
+    return true;
   }
 
   // Select from the normal priority queue if we are starving it.
   if (max_priority > TaskQueue::kNormalPriority &&
-      normal_priority_starvation_score_ >= kMaxNormalPriorityStarvationScore) {
-    WorkQueue* queue = ChooseOldestWithPriority(TaskQueue::kNormalPriority);
-    if (queue)
-      return queue;
+      task_queue_selector_->normal_priority_starvation_score_ >=
+          kMaxNormalPriorityStarvationScore &&
+      ChooseOldestWithPriority(TaskQueue::kNormalPriority,
+                               out_chose_delayed_over_immediate,
+                               out_work_queue)) {
+    return true;
   }
 
   // Select from the high priority queue if we are starving it.
   if (max_priority > TaskQueue::kHighPriority &&
-      high_priority_starvation_score_ >= kMaxHighPriorityStarvationScore) {
-    WorkQueue* queue = ChooseOldestWithPriority(TaskQueue::kHighPriority);
-    if (queue)
-      return queue;
+      task_queue_selector_->high_priority_starvation_score_ >=
+          kMaxHighPriorityStarvationScore &&
+      ChooseOldestWithPriority(TaskQueue::kHighPriority,
+                               out_chose_delayed_over_immediate,
+                               out_work_queue)) {
+    return true;
   }
 
   // Otherwise choose in priority order.
   for (TaskQueue::QueuePriority priority = TaskQueue::kHighestPriority;
        priority < max_priority; priority = NextPriority(priority)) {
-    WorkQueue* queue = ChooseOldestWithPriority(priority);
-    if (queue)
-      return queue;
+    if (ChooseOldestWithPriority(priority, out_chose_delayed_over_immediate,
+                                 out_work_queue)) {
+      return true;
+    }
   }
-  return nullptr;
+  return false;
 }
 
 #if DCHECK_IS_ON() || !defined(NDEBUG)
-bool TaskQueueSelector::CheckContainsQueueForTest(
+bool TaskQueueSelector::PrioritizingSelector::CheckContainsQueueForTest(
     const internal::TaskQueueImpl* queue) const {
   bool contains_delayed_work_queue =
       delayed_work_queue_sets_.ContainsWorkQueueForTest(
@@ -215,23 +254,26 @@ bool TaskQueueSelector::CheckContainsQueueForTest(
 }
 #endif
 
-WorkQueue* TaskQueueSelector::SelectWorkQueueToService() {
+bool TaskQueueSelector::SelectWorkQueueToService(WorkQueue** out_work_queue) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  WorkQueue* queue =
-      SelectWorkQueueToServiceImpl(TaskQueue::kQueuePriorityCount);
-  if (queue) {
-    // We could use |(*out_work_queue)->task_queue()->GetQueuePriority()| here
-    // but for re-queued non-nestable tasks |task_queue()| returns null.
-    DidSelectQueueWithPriority(
-        static_cast<TaskQueue::QueuePriority>(queue->work_queue_set_index()),
-        queue->work_queue_sets() == &delayed_work_queue_sets_);
-  }
-  return queue;
+  bool chose_delayed_over_immediate = false;
+  bool found_queue = prioritizing_selector_.SelectWorkQueueToService(
+      TaskQueue::kQueuePriorityCount, out_work_queue,
+      &chose_delayed_over_immediate);
+  if (!found_queue)
+    return false;
+
+  // We could use |(*out_work_queue)->task_queue()->GetQueuePriority()| here but
+  // for re-queued non-nestable tasks |task_queue()| returns null.
+  DidSelectQueueWithPriority(static_cast<TaskQueue::QueuePriority>(
+                                 (*out_work_queue)->work_queue_set_index()),
+                             chose_delayed_over_immediate);
+  return true;
 }
 
 void TaskQueueSelector::DidSelectQueueWithPriority(
     TaskQueue::QueuePriority priority,
-    bool chose_delayed_queue) {
+    bool chose_delayed_over_immediate) {
   switch (priority) {
     case TaskQueue::kControlPriority:
       break;
@@ -276,10 +318,11 @@ void TaskQueueSelector::DidSelectQueueWithPriority(
     default:
       NOTREACHED();
   }
-
-  // Achieve delayed and immediate task round robining by favoring immediate
-  // tasks if we just selected a delayed task.
-  choose_immediate_over_delayed_ = chose_delayed_queue;
+  if (chose_delayed_over_immediate) {
+    immediate_starvation_count_++;
+  } else {
+    immediate_starvation_count_ = 0;
+  }
 }
 
 void TaskQueueSelector::AsValueInto(trace_event::TracedValue* state) const {
@@ -290,8 +333,7 @@ void TaskQueueSelector::AsValueInto(trace_event::TracedValue* state) const {
                     normal_priority_starvation_score_);
   state->SetInteger("low_priority_starvation_score",
                     low_priority_starvation_score_);
-  state->SetBoolean("choose_immediate_over_delayed",
-                    choose_immediate_over_delayed_);
+  state->SetInteger("immediate_starvation_count", immediate_starvation_count_);
 }
 
 void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
@@ -303,18 +345,27 @@ bool TaskQueueSelector::AllEnabledWorkQueuesAreEmpty() const {
   for (TaskQueue::QueuePriority priority = TaskQueue::kControlPriority;
        priority < TaskQueue::kQueuePriorityCount;
        priority = NextPriority(priority)) {
-    if (!delayed_work_queue_sets_.IsSetEmpty(priority) ||
-        !immediate_work_queue_sets_.IsSetEmpty(priority)) {
+    if (!prioritizing_selector_.delayed_work_queue_sets()->IsSetEmpty(
+            priority) ||
+        !prioritizing_selector_.immediate_work_queue_sets()->IsSetEmpty(
+            priority)) {
       return false;
     }
   }
   return true;
 }
 
+void TaskQueueSelector::SetImmediateStarvationCountForTest(
+    size_t immediate_starvation_count) {
+  immediate_starvation_count_ = immediate_starvation_count;
+}
+
 bool TaskQueueSelector::HasTasksWithPriority(
     TaskQueue::QueuePriority priority) {
-  return !delayed_work_queue_sets_.IsSetEmpty(priority) ||
-         !immediate_work_queue_sets_.IsSetEmpty(priority);
+  return !prioritizing_selector_.delayed_work_queue_sets()->IsSetEmpty(
+             priority) ||
+         !prioritizing_selector_.immediate_work_queue_sets()->IsSetEmpty(
+             priority);
 }
 
 }  // namespace internal
