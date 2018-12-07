@@ -1081,11 +1081,18 @@ public class CustomTabsConnection {
     void showSignInToastIfNecessary(CustomTabsSessionToken session, Intent intent) { }
 
     /**
-     * Sends a callback using {@link CustomTabsCallback} about the first run result if necessary.
+     * Sends a callback using {@link CustomTabsCallback} with the first run result if necessary.
      * @param intent The initial VIEW intent that initiated first run.
      * @param resultOK Whether first run was successful.
      */
     public void sendFirstRunCallbackIfNecessary(Intent intent, boolean resultOK) { }
+
+    /**
+     * Sends a callback using {@link CustomTabsCallback} with the first run result if necessary.
+     * @param intentExtras The extras for the initial VIEW intent that initiated first run.
+     * @param resultOK Whether first run was successful.
+     */
+    public void sendFirstRunCallbackIfNecessary(Bundle intentExtras, boolean resultOK) {}
 
     /**
      * Sends the navigation info that was captured to the client callback.
