@@ -131,7 +131,7 @@
     },
     {
       name: "Badging",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "BlinkGenPropertyTrees",

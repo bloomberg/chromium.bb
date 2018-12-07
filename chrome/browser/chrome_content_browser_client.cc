@@ -4370,7 +4370,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #endif
 
 #if !defined(OS_ANDROID)
-  frame_interfaces_->AddInterface(
+  frame_interfaces_parameterized_->AddInterface(
       base::BindRepeating(&BadgeServiceImpl::Create));
 #endif
 
