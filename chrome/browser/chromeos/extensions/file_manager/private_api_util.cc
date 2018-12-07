@@ -22,11 +22,13 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/snapshot_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/drive_api_util.h"
 #include "components/drive/file_errors.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -112,6 +114,12 @@ void ContinueGetSelectedFileInfo(
     std::unique_ptr<GetSelectedFileInfoParams> params,
     const base::FilePath& local_file_path);
 
+void ContinueGetSelectedFileInfoWithDriveFsMetadata(
+    Profile* profile,
+    std::unique_ptr<GetSelectedFileInfoParams> params,
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata);
+
 // Part of GetSelectedFileInfo().
 void GetSelectedFileInfoInternal(
     Profile* profile,
@@ -127,11 +135,19 @@ void GetSelectedFileInfoInternal(
       // the selected path does not point to a native local path (e.g., Drive,
       // MTP, or provided file system), we should resolve the path.
       switch (params->local_path_option) {
-        case NO_LOCAL_PATH_RESOLUTION:
+        case NO_LOCAL_PATH_RESOLUTION: {
           // Pass empty local path.
           params->selected_files.emplace_back(file_path, base::FilePath());
+
+          GURL external_file_url =
+              chromeos::CreateExternalFileURLFromPath(profile, file_path);
+          if (!external_file_url.is_empty()) {
+            params->selected_files.back().url.emplace(
+                std::move(external_file_url));
+          }
           break;
-        case NEED_LOCAL_PATH_FOR_OPENING:
+        }
+        case NEED_LOCAL_PATH_FOR_OPENING: {
           GetFileNativeLocalPathForOpening(
               profile,
               file_path,
@@ -139,7 +155,8 @@ void GetSelectedFileInfoInternal(
                          profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
-        case NEED_LOCAL_PATH_FOR_SAVING:
+        }
+        case NEED_LOCAL_PATH_FOR_SAVING: {
           GetFileNativeLocalPathForSaving(
               profile,
               file_path,
@@ -147,8 +164,26 @@ void GetSelectedFileInfoInternal(
                          profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
+        }
       }
     } else {
+      // Hosted docs can only accessed by navigating to their URLs. Get the
+      // metadata for the file from DriveFS and populate the |url| field in the
+      // SelectedFileInfo.
+      if (drive::util::HasHostedDocumentExtension(file_path)) {
+        auto* integration_service =
+            drive::util::GetIntegrationServiceByProfile(profile);
+        base::FilePath drive_mount_relative_path;
+        if (integration_service && integration_service->GetDriveFsInterface() &&
+            integration_service->GetRelativeDrivePath(
+                file_path, &drive_mount_relative_path)) {
+          integration_service->GetDriveFsInterface()->GetMetadata(
+              drive_mount_relative_path,
+              base::BindOnce(&ContinueGetSelectedFileInfoWithDriveFsMetadata,
+                             profile, std::move(params)));
+          return;
+        }
+      }
       params->selected_files.emplace_back(file_path, file_path);
     }
   }
@@ -167,6 +202,24 @@ void ContinueGetSelectedFileInfo(
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
   params->selected_files.emplace_back(file_path, local_path);
+  GetSelectedFileInfoInternal(profile, std::move(params));
+}
+
+// Part of GetSelectedFileInfo().
+void ContinueGetSelectedFileInfoWithDriveFsMetadata(
+    Profile* profile,
+    std::unique_ptr<GetSelectedFileInfoParams> params,
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata) {
+  const int index = params->selected_files.size();
+  const auto& path = params->file_paths[index];
+  params->selected_files.emplace_back(path, path);
+  if (metadata &&
+      metadata->type == drivefs::mojom::FileMetadata::Type::kHosted &&
+      !metadata->alternate_url.empty()) {
+    params->selected_files.back().url.emplace(
+        std::move(metadata->alternate_url));
+  }
   GetSelectedFileInfoInternal(profile, std::move(params));
 }
 

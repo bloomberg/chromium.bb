@@ -76,21 +76,24 @@ async function setUpFileEntrySet(volume) {
  *
  * @param {!string} volume Volume name for openAndWaitForClosingDialog.
  * @param {!string} name File name to select in the dialog.
+ * @param {boolean} useBrowserOpen Whether to launch the dialog from the
+ *     browser.
  * @return {!Promise} Promise to be fulfilled on success.
  */
 async function openFileDialogClickOkButton(
-    volume, name, expectedUrl = undefined) {
+    volume, name, useBrowserOpen = false) {
   const okButton = '.button-panel button.ok:enabled';
   let closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   const entrySet = await setUpFileEntrySet(volume);
   const result = await openAndWaitForClosingDialog(
-      {type: 'openFile'}, volume, entrySet, closer, !!expectedUrl);
-  if (expectedUrl) {
-    chrome.test.assertEq(expectedUrl, result);
-  } else {
+      {type: 'openFile'}, volume, entrySet, closer, useBrowserOpen);
+  // If the file is opened via the filesystem API, check the name matches.
+  // Otherwise, the caller is responsible for verifying the returned URL.
+  if (!useBrowserOpen) {
     chrome.test.assertEq(name, result.name);
   }
+  return result;
 }
 
 /**
@@ -299,12 +302,30 @@ testcase.saveFileDialogDriveOfflinePinned = function() {
 };
 
 /**
+ * Tests opening a file from Drive in the browser, ensuring it correctly
+ * opens the file URL.
+ */
+testcase.openFileDialogDriveFromBrowser = async function() {
+  const url = new URL(
+      await openFileDialogClickOkButton('drive', TEST_DRIVE_FILE, true));
+
+  const isDriveFsEnabled =
+      await sendTestMessage({name: 'getDriveFsEnabled'}) === 'true';
+
+  chrome.test.assertEq(
+      url.protocol, isDriveFsEnabled ? 'file:' : 'externalfile:');
+  chrome.test.assertTrue(
+      url.pathname.endsWith(`/root/${TEST_DRIVE_FILE}`), url.pathname);
+};
+
+/**
  * Tests opening a hosted doc in the browser, ensuring it correctly navigates to
  * the doc's URL.
  */
-testcase.openFileDialogDriveHostedDoc = function() {
-  return openFileDialogClickOkButton(
-      'drive', ENTRIES.testDocument.nameText,
+testcase.openFileDialogDriveHostedDoc = async function() {
+  chrome.test.assertEq(
+      await openFileDialogClickOkButton(
+          'drive', ENTRIES.testDocument.nameText, true),
       'https://document_alternate_link/Test%20Document');
 };
 
