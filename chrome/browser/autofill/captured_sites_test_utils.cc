@@ -557,6 +557,10 @@ bool TestRecipeReplayer::ReplayRecordedActions(
                    type, "validateNoSavePasswordPrompt") == 0) {
       if (!ExecuteValidateNoSavePasswordPromptAction(*action))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(
+                   type, "validatePasswordSaveFallback") == 0) {
+      if (!ExecuteValidateSaveFallbackAction(*action))
+        return false;
     } else if (base::CompareCaseInsensitiveASCII(type, "waitFor") == 0) {
       if (!ExecuteWaitForStateAction(*action))
         return false;
@@ -1060,6 +1064,13 @@ bool TestRecipeReplayer::ExecuteValidateNoSavePasswordPromptAction(
     const base::DictionaryValue& action) {
   VLOG(1) << "Verify that the page hasn't shown a save password prompt.";
   EXPECT_FALSE(feature_action_executor()->HasChromeShownSavePasswordPrompt());
+  return true;
+}
+
+bool TestRecipeReplayer::ExecuteValidateSaveFallbackAction(
+    const base::DictionaryValue& action) {
+  VLOG(1) << "Verify that Chrome shows the save fallback icon in the omnibox.";
+  EXPECT_TRUE(feature_action_executor()->WaitForSaveFallback());
   return true;
 }
 
@@ -1661,6 +1672,12 @@ bool TestRecipeReplayChromeFeatureActionExecutor::SavePassword() {
 bool TestRecipeReplayChromeFeatureActionExecutor::UpdatePassword() {
   ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
                    "::UpdatePassword is not implemented!";
+  return false;
+}
+
+bool TestRecipeReplayChromeFeatureActionExecutor::WaitForSaveFallback() {
+  ADD_FAILURE() << "TestRecipeReplayChromeFeatureActionExecutor"
+                   "::WaitForSaveFallback is not implemented!";
   return false;
 }
 
