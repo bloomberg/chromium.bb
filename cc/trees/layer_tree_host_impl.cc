@@ -3469,8 +3469,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
 
   // We may not find an associated layer for the root or secondary root node -
   // that's fine, they're not associated with any elements on the page. We also
-  // won't find a layer for the inner viewport (in SPv2) since it doesn't
-  // require hit testing.
+  // won't find a layer for the inner viewport (in CompositeAfterPaint) since it
+  // doesn't require hit testing.
   DCHECK(layer || scroll_node->id == ScrollTree::kRootNodeId ||
          scroll_node->id == ScrollTree::kSecondaryRootNodeId ||
          scroll_node->scrolls_inner_viewport);

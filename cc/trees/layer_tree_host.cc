@@ -747,7 +747,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
   // and cc needs to compute property trees from that.
   // In layer lists mode, blink sends cc property trees directly so they do not
   // need to be built here. Layer lists mode is used by BlinkGenPropertyTrees
-  // and SlimmingPaintV2.
+  // and CompositeAfterPaint.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
     Layer* root_scroll =
@@ -1650,8 +1650,8 @@ void LayerTreeHost::SetElementFilterMutated(ElementId element_id,
                                             ElementListType list_type,
                                             const FilterOperations& filters) {
   if (IsUsingLayerLists()) {
-    // In SPv2 we always have property trees and can set the filter
-    // directly on the effect node.
+    // In BlinkGenPropertyTrees/CompositeAfterPaint we always have property
+    // tree nodes and can set the filter directly on the effect node.
     property_trees_.effect_tree.OnFilterAnimated(element_id, filters);
     return;
   }
