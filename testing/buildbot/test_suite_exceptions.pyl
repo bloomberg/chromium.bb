@@ -1221,6 +1221,13 @@
       'Win10 Tests x64',
     ],
   },
+  'vr_android_unittests': {
+    'remove_from': [
+      # chromium.android.fyi
+      'x64 Device Tester',
+      'x86 Cloud Tester',
+    ],
+  },
   'vr_pixeltests': {
     'remove_from': [
       # chromium.fyi

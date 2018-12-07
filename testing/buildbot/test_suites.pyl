@@ -308,6 +308,7 @@
       },
       'mojo_test_apk': {},
       'ui_android_unittests': {},
+      'vr_android_unittests': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
