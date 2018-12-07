@@ -187,6 +187,10 @@ specialize qw/av1_build_compound_diffwtd_mask_highbd ssse3 avx2/;
 add_proto qw/void av1_build_compound_diffwtd_mask_d16/, "uint8_t *mask, DIFFWTD_MASK_TYPE mask_type, const CONV_BUF_TYPE *src0, int src0_stride, const CONV_BUF_TYPE *src1, int src1_stride, int h, int w, ConvolveParams *conv_params, int bd";
 specialize qw/av1_build_compound_diffwtd_mask_d16 sse4_1 avx2 neon/;
 
+# Helper functions.
+add_proto qw/void av1_round_shift_array/, "int32_t *arr, int size, int bit";
+specialize "av1_round_shift_array", qw/sse4_1 neon/;
+
 #
 # Encoder functions below this point.
 #

@@ -466,10 +466,6 @@ specialize qw/aom_highbd_lpf_horizontal_4 sse2/;
 add_proto qw/void aom_highbd_lpf_horizontal_4_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
 specialize qw/aom_highbd_lpf_horizontal_4_dual sse2 avx2/;
 
-# Helper functions.
-add_proto qw/void av1_round_shift_array/, "int32_t *arr, int size, int bit";
-specialize "av1_round_shift_array", qw/sse4_1 neon/;
-
 #
 # Encoder functions.
 #
