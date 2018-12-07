@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_COORDINATOR_H_
-#define IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_COORDINATOR_H_
+#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONTAINER_COORDINATOR_H_
+#define IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONTAINER_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
-namespace infobars {
-class InfoBarManager;
-}
 namespace web {
 class WebState;
 }
@@ -20,8 +17,8 @@ class WebState;
 @protocol LanguageSelectionHandler;
 @protocol SyncPresenter;
 
-// Coordinator that owns and manages an InfoBarContainer.
-@interface InfobarCoordinator : ChromeCoordinator
+// Coordinator that owns and manages an InfobarContainer.
+@interface InfobarContainerCoordinator : ChromeCoordinator
 
 // TODO(crbug.com/892376): Stop passing TabModel and use WebStateList instead.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -39,19 +36,19 @@ class WebState;
                                   (ios::ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 
-// The InfoBarContainer View.
+// The InfobarContainer View.
 - (UIView*)view;
 
 // Updates the InfobarContainer according to the positioner information.
 - (void)updateInfobarContainer;
 
-// YES if an infobar is being presented for |webState|.
+// YES if an Infobar is being presented for |webState|.
 - (BOOL)isInfobarPresentingForWebState:(web::WebState*)webState;
 
 // The dispatcher for this Coordinator.
 @property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
-// The delegate used to position the InfoBarContainer in the view.
+// The delegate used to position the InfobarContainer in the view.
 @property(nonatomic, weak) id<InfobarPositioner> positioner;
 
 // The SyncPresenter delegate for this Coordinator.
@@ -63,4 +60,4 @@ class WebState;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_COORDINATOR_H_
+#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_CONTAINER_COORDINATOR_H_

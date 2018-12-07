@@ -5,10 +5,10 @@
 source_set("infobars") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "infobar_container_coordinator.h",
+    "infobar_container_coordinator.mm",
     "infobar_container_mediator.h",
     "infobar_container_mediator.mm",
-    "infobar_coordinator.h",
-    "infobar_coordinator.mm",
   ]
   deps = [
     ":infobars_ui",
@@ -54,8 +54,8 @@ source_set("infobars_ui") {
     "infobar_constants.h",
     "infobar_constants.mm",
     "infobar_container_consumer.h",
-    "infobar_container_view_controller.h",
-    "infobar_container_view_controller.mm",
+    "legacy_infobar_container_view_controller.h",
+    "legacy_infobar_container_view_controller.mm",
   ]
   deps = [
     ":public",
