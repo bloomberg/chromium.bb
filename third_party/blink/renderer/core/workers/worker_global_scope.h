@@ -177,9 +177,6 @@ class CORE_EXPORT WorkerGlobalScope
     return animation_frame_provider_;
   }
 
-  // Returns true when this is a nested worker.
-  virtual bool IsNestedWorker() const { return false; }
-
   TrustedTypePolicyFactory* trustedTypes();
 
  protected:
