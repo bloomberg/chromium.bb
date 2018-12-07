@@ -29,7 +29,6 @@ constexpr base::TimeDelta kJsConditionCheckFrequency =
     base::TimeDelta::FromMilliseconds(200);
 constexpr base::TimeDelta kLoginDisplayHostCheckFrequency =
     base::TimeDelta::FromMilliseconds(200);
-}  // namespace
 
 // Waits for js condition to be fulfilled.
 class JsConditionWaiter {
@@ -129,6 +128,8 @@ class ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver {
   DISALLOW_COPY_AND_ASSIGN(
       ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver);
 };
+
+}  // namespace
 
 class OobeInteractiveUITest
     : public OobeBaseTest,
