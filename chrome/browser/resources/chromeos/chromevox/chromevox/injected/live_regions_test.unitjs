@@ -112,7 +112,7 @@ TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_InsertPoliteLiveRegion', functi
 /**
  * Test modifying an existing status live region.
  */
-TEST_F('ChromeVoxLiveRegionsUnitTest', 'ModifyStatusLiveRegion', function() {
+TEST_F('ChromeVoxLiveRegionsUnitTest', 'DISABLED_ModifyStatusLiveRegion', function() {
   var region = document.createElement('div');
   region.innerHTML = '<div id="status" role="status">Gamma</div>';
   document.body.appendChild(region);
