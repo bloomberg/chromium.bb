@@ -18,7 +18,10 @@ FrameCoordinationUnitImpl::FrameCoordinationUnitImpl(
     : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)),
       parent_frame_coordination_unit_(nullptr),
       page_coordination_unit_(nullptr),
-      process_coordination_unit_(nullptr) {}
+      process_coordination_unit_(nullptr) {
+  for (size_t i = 0; i < base::size(intervention_policy_); ++i)
+    intervention_policy_[i] = mojom::InterventionPolicy::kUnknown;
+}
 
 FrameCoordinationUnitImpl::~FrameCoordinationUnitImpl() {
   if (parent_frame_coordination_unit_)
@@ -98,6 +101,32 @@ void FrameCoordinationUnitImpl::SetHasNonEmptyBeforeUnload(
   has_nonempty_beforeunload_ = has_nonempty_beforeunload;
 }
 
+void FrameCoordinationUnitImpl::SetInterventionPolicy(
+    mojom::PolicyControlledIntervention intervention,
+    mojom::InterventionPolicy policy) {
+  size_t i = static_cast<size_t>(intervention);
+  DCHECK_LT(i, base::size(intervention_policy_));
+
+  // This can only be called to set a policy, but not to revert a policy to the
+  // unset state.
+  DCHECK_NE(mojom::InterventionPolicy::kUnknown, policy);
+
+  // We expect intervention policies to be initially set in order, and rely on
+  // that as a synchronization primitive. Ensure this is the case.
+  DCHECK(i == 0 ||
+         intervention_policy_[i - 1] != mojom::InterventionPolicy::kUnknown);
+
+  if (policy == intervention_policy_[i])
+    return;
+  // Only notify of actual changes.
+  mojom::InterventionPolicy old_policy = intervention_policy_[i];
+  intervention_policy_[i] = policy;
+  if (auto* page_cu = GetPageCoordinationUnit()) {
+    page_cu->OnFrameInterventionPolicyChanged(this, intervention, old_policy,
+                                              policy);
+  }
+}
+
 void FrameCoordinationUnitImpl::OnAlertFired() {
   SendEvent(mojom::Event::kAlertFired);
 }
@@ -123,6 +152,36 @@ FrameCoordinationUnitImpl::GetProcessCoordinationUnit() const {
 
 bool FrameCoordinationUnitImpl::IsMainFrame() const {
   return !parent_frame_coordination_unit_;
+}
+
+bool FrameCoordinationUnitImpl::AreAllInterventionPoliciesSet() const {
+  // The convention is that policies are first set en masse, in order. So if
+  // the last policy is set then they are all considered to be set. Check this
+  // in DEBUG builds.
+#if DCHECK_IS_ON()
+  bool seen_unset_policy = false;
+  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
+    if (!seen_unset_policy) {
+      seen_unset_policy =
+          intervention_policy_[i] != mojom::InterventionPolicy::kUnknown;
+    } else {
+      // Once a first unset policy is seen, all subsequent policies must be
+      // unset.
+      DCHECK_NE(mojom::InterventionPolicy::kUnknown, intervention_policy_[i]);
+    }
+  }
+#endif
+
+  return intervention_policy_[base::size(intervention_policy_) - 1] !=
+         mojom::InterventionPolicy::kUnknown;
+}  // namespace resource_coordinator
+
+void FrameCoordinationUnitImpl::SetAllInterventionPoliciesForTesting(
+    mojom::InterventionPolicy policy) {
+  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
+    SetInterventionPolicy(static_cast<mojom::PolicyControlledIntervention>(i),
+                          policy);
+  }
 }
 
 void FrameCoordinationUnitImpl::OnEventReceived(mojom::Event event) {

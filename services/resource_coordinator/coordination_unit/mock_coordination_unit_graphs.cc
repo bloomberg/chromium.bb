@@ -27,6 +27,8 @@ MockSinglePageInSingleProcessCoordinationUnitGraph::
           graph)),
       page(TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(
           graph)) {
+  frame->SetAllInterventionPoliciesForTesting(
+      mojom::InterventionPolicy::kDefault);
   page->AddFrame(frame->id());
   frame->SetProcess(process->id());
   process->SetPID(1);
@@ -44,6 +46,8 @@ MockMultiplePagesInSingleProcessCoordinationUnitGraph::
               graph)),
       other_page(TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(
           graph)) {
+  other_frame->SetAllInterventionPoliciesForTesting(
+      mojom::InterventionPolicy::kDefault);
   other_page->AddFrame(other_frame->id());
   other_frame->SetProcess(process->id());
 }
@@ -61,6 +65,8 @@ MockSinglePageWithMultipleProcessesCoordinationUnitGraph::
       other_process(
           TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create(
               graph)) {
+  child_frame->SetAllInterventionPoliciesForTesting(
+      mojom::InterventionPolicy::kDefault);
   frame->AddChildFrame(child_frame->id());
   page->AddFrame(child_frame->id());
   child_frame->SetProcess(other_process->id());
@@ -80,6 +86,8 @@ MockMultiplePagesWithMultipleProcessesCoordinationUnitGraph::
       other_process(
           TestCoordinationUnitWrapper<ProcessCoordinationUnitImpl>::Create(
               graph)) {
+  child_frame->SetAllInterventionPoliciesForTesting(
+      mojom::InterventionPolicy::kDefault);
   other_frame->AddChildFrame(child_frame->id());
   other_page->AddFrame(child_frame->id());
   child_frame->SetProcess(other_process->id());

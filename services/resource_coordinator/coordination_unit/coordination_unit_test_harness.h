@@ -35,7 +35,7 @@ class TestCoordinationUnitWrapper {
   TestCoordinationUnitWrapper(CoordinationUnitClass* impl) : impl_(impl) {
     DCHECK(impl);
   }
-  ~TestCoordinationUnitWrapper() { impl_->Destruct(); }
+  ~TestCoordinationUnitWrapper() { reset(); }
 
   CoordinationUnitClass* operator->() const { return impl_; }
 
@@ -43,6 +43,13 @@ class TestCoordinationUnitWrapper {
       : impl_(other.impl_) {}
 
   CoordinationUnitClass* get() const { return impl_; }
+
+  void reset() {
+    if (impl_) {
+      impl_->Destruct();
+      impl_ = nullptr;
+    }
+  }
 
  private:
   CoordinationUnitClass* impl_;

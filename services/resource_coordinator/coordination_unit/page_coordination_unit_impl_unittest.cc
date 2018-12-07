@@ -249,4 +249,178 @@ TEST_F(PageCoordinationUnitImplTest, OnAllFramesInPageFrozen) {
                          mojom::PropertyType::kLifecycleState, kRunning));
 }
 
+namespace {
+
+const size_t kInterventionCount =
+    static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue) + 1;
+
+void ExpectRawInterventionPolicy(mojom::InterventionPolicy policy,
+                                 const PageCoordinationUnitImpl* page_cu) {
+  for (size_t i = 0; i < kInterventionCount; ++i) {
+    EXPECT_EQ(policy, page_cu->GetRawInterventionPolicyForTesting(
+                          static_cast<mojom::PolicyControlledIntervention>(i)));
+  }
+}
+
+void ExpectInterventionPolicy(mojom::InterventionPolicy policy,
+                              PageCoordinationUnitImpl* page_cu) {
+  for (size_t i = 0; i < kInterventionCount; ++i) {
+    EXPECT_EQ(policy, page_cu->GetInterventionPolicy(
+                          static_cast<mojom::PolicyControlledIntervention>(i)));
+  }
+}
+
+void ExpectInitialInterventionPolicyAggregationWorks(
+    CoordinationUnitGraph* cu_graph,
+    mojom::InterventionPolicy f0_policy,
+    mojom::InterventionPolicy f1_policy,
+    mojom::InterventionPolicy f0_policy_aggregated,
+    mojom::InterventionPolicy f0f1_policy_aggregated) {
+  // Create two frames not tied to any page.
+  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f0 =
+      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
+  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f1 =
+      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
+
+  // Set frame policies before attaching to a page CU.
+  f0->SetAllInterventionPoliciesForTesting(f0_policy);
+  f1->SetAllInterventionPoliciesForTesting(f1_policy);
+
+  // Check the initial values before any frames are added.
+  TestCoordinationUnitWrapper<PageCoordinationUnitImpl> page =
+      TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(cu_graph);
+  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+
+  // Add a frame and expect the values to be invalidated. Reaggregate and
+  // ensure the appropriate value results.
+  page->AddFrame(f0->id());
+  EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(f0_policy_aggregated, page.get());
+
+  // Do it again. This time the raw values should be the same as the
+  // aggregated values above.
+  page->AddFrame(f1->id());
+  EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(f0f1_policy_aggregated, page.get());
+
+  // Remove a frame and expect the values to be invalidated again.
+  f1.reset();
+  EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(f0_policy_aggregated, page.get());
+}
+
+}  // namespace
+
+TEST_F(PageCoordinationUnitImplTest, InitialInterventionPolicy) {
+  auto* cu_graph = coordination_unit_graph();
+
+  // Tests all possible transitions where the frame CU has its policy values
+  // set before being attached to the page CU. This affectively tests the
+  // aggregation logic in isolation.
+
+  // Default x [Default, OptIn, OptOut]
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kDefault /* f0_policy */,
+      mojom::InterventionPolicy::kDefault /* f1_policy */,
+      mojom::InterventionPolicy::kDefault /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kDefault /* f0f1_policy_aggregated */);
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kDefault /* f0_policy */,
+      mojom::InterventionPolicy::kOptIn /* f1_policy */,
+      mojom::InterventionPolicy::kDefault /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kDefault /* f0_policy */,
+      mojom::InterventionPolicy::kOptOut /* f1_policy */,
+      mojom::InterventionPolicy::kDefault /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+
+  // OptIn x [Default, OptIn, OptOut]
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kOptIn /* f0_policy */,
+      mojom::InterventionPolicy::kDefault /* f1_policy */,
+      mojom::InterventionPolicy::kOptIn /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kOptIn /* f0_policy */,
+      mojom::InterventionPolicy::kOptIn /* f1_policy */,
+      mojom::InterventionPolicy::kOptIn /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptIn /* f0f1_policy_aggregated */);
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kOptIn /* f0_policy */,
+      mojom::InterventionPolicy::kOptOut /* f1_policy */,
+      mojom::InterventionPolicy::kOptIn /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+
+  // OptOut x [Default, OptIn, OptOut]
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kOptOut /* f0_policy */,
+      mojom::InterventionPolicy::kDefault /* f1_policy */,
+      mojom::InterventionPolicy::kOptOut /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kOptOut /* f0_policy */,
+      mojom::InterventionPolicy::kOptIn /* f1_policy */,
+      mojom::InterventionPolicy::kOptOut /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+
+  ExpectInitialInterventionPolicyAggregationWorks(
+      cu_graph, mojom::InterventionPolicy::kOptOut /* f0_policy */,
+      mojom::InterventionPolicy::kOptOut /* f1_policy */,
+      mojom::InterventionPolicy::kOptOut /* f0_policy_aggregated */,
+      mojom::InterventionPolicy::kOptOut /* f0f1_policy_aggregated */);
+}
+
+TEST_F(PageCoordinationUnitImplTest, IncrementalInterventionPolicy) {
+  auto* cu_graph = coordination_unit_graph();
+
+  TestCoordinationUnitWrapper<PageCoordinationUnitImpl> page =
+      TestCoordinationUnitWrapper<PageCoordinationUnitImpl>::Create(cu_graph);
+
+  // Create two frames and immediately attach them to the page.
+  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f0 =
+      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
+  TestCoordinationUnitWrapper<FrameCoordinationUnitImpl> f1 =
+      TestCoordinationUnitWrapper<FrameCoordinationUnitImpl>::Create(cu_graph);
+  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
+  page->AddFrame(f0->id());
+  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
+  page->AddFrame(f1->id());
+  EXPECT_EQ(0u, page->GetInterventionPolicyFramesReportedForTesting());
+
+  // Set the policies on the first frame. This should be observed by the page
+  // CU, but aggregation should still not be possible.
+  f0->SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy::kDefault);
+  EXPECT_EQ(1u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+
+  // Now set the policy on the second frame. This should be observed and an
+  // aggregated page policy value should now be available.
+  f1->SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy::kDefault);
+  EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(mojom::InterventionPolicy::kDefault, page.get());
+
+  // Change the policy value on a frame and expect a new aggregation to be
+  // required.
+  f1->SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy::kOptIn);
+  EXPECT_EQ(2u, page->GetInterventionPolicyFramesReportedForTesting());
+  ExpectRawInterventionPolicy(mojom::InterventionPolicy::kUnknown, page.get());
+  ExpectInterventionPolicy(mojom::InterventionPolicy::kOptIn, page.get());
+}
+
 }  // namespace resource_coordinator

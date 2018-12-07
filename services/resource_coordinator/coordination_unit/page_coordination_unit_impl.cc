@@ -13,11 +13,26 @@
 
 namespace resource_coordinator {
 
+namespace {
+
+constexpr size_t kMaxInterventionIndex =
+    static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue);
+
+size_t ToIndex(mojom::PolicyControlledIntervention intervention) {
+  const size_t kIndex = static_cast<size_t>(intervention);
+  DCHECK(kIndex <= kMaxInterventionIndex);
+  return kIndex;
+}
+
+}  // namespace
+
 PageCoordinationUnitImpl::PageCoordinationUnitImpl(
     const CoordinationUnitID& id,
     CoordinationUnitGraph* graph,
     std::unique_ptr<service_manager::ServiceKeepaliveRef> keepalive_ref)
-    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {}
+    : CoordinationUnitInterface(id, graph, std::move(keepalive_ref)) {
+  InvalidateAllInterventionPolicies();
+}
 
 PageCoordinationUnitImpl::~PageCoordinationUnitImpl() {
   for (auto* child_frame : frame_coordination_units_)
@@ -160,6 +175,50 @@ void PageCoordinationUnitImpl::OnFrameLifecycleStateChanged(
     OnNumFrozenFramesStateChange(delta);
 }
 
+void PageCoordinationUnitImpl::OnFrameInterventionPolicyChanged(
+    FrameCoordinationUnitImpl* frame,
+    mojom::PolicyControlledIntervention intervention,
+    mojom::InterventionPolicy old_policy,
+    mojom::InterventionPolicy new_policy) {
+  const size_t kIndex = ToIndex(intervention);
+
+  // Invalidate the local policy aggregation for this intervention. It will be
+  // recomputed on the next query to GetInterventionPolicy.
+  intervention_policy_[kIndex] = mojom::InterventionPolicy::kUnknown;
+
+  // The first time a frame transitions away from kUnknown for the last policy,
+  // then that frame is considered to have checked in. Frames always provide
+  // initial policy values in order, ensuring this works.
+  if (old_policy == mojom::InterventionPolicy::kUnknown &&
+      new_policy != mojom::InterventionPolicy::kUnknown &&
+      intervention == mojom::PolicyControlledIntervention::kMaxValue) {
+    ++intervention_policy_frames_reported_;
+    DCHECK_LE(intervention_policy_frames_reported_,
+              frame_coordination_units_.size());
+  }
+}
+
+mojom::InterventionPolicy PageCoordinationUnitImpl::GetInterventionPolicy(
+    mojom::PolicyControlledIntervention intervention) {
+  // If there are no frames, or they've not all reported, then return kUnknown.
+  if (frame_coordination_units_.empty() ||
+      intervention_policy_frames_reported_ !=
+          frame_coordination_units_.size()) {
+    return mojom::InterventionPolicy::kUnknown;
+  }
+
+  // Recompute the policy if it is currently invalid.
+  const size_t kIndex = ToIndex(intervention);
+  DCHECK_LE(kIndex, kMaxInterventionIndex);
+  if (intervention_policy_[kIndex] == mojom::InterventionPolicy::kUnknown) {
+    RecomputeInterventionPolicy(intervention);
+    DCHECK_NE(mojom::InterventionPolicy::kUnknown,
+              intervention_policy_[kIndex]);
+  }
+
+  return intervention_policy_[kIndex];
+}
+
 void PageCoordinationUnitImpl::OnEventReceived(mojom::Event event) {
   for (auto& observer : observers())
     observer.OnPageEventReceived(this, event);
@@ -179,6 +238,7 @@ bool PageCoordinationUnitImpl::AddFrame(FrameCoordinationUnitImpl* frame_cu) {
   if (inserted) {
     OnNumFrozenFramesStateChange(
         frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen ? 1 : 0);
+    MaybeInvalidateInterventionPolicies(frame_cu, true /* adding_frame */);
   }
   return inserted;
 }
@@ -189,14 +249,15 @@ bool PageCoordinationUnitImpl::RemoveFrame(
   if (removed) {
     OnNumFrozenFramesStateChange(
         frame_cu->lifecycle_state() == mojom::LifecycleState::kFrozen ? -1 : 0);
+    MaybeInvalidateInterventionPolicies(frame_cu, false /* adding_frame */);
   }
+
   return removed;
 }
 
 void PageCoordinationUnitImpl::OnNumFrozenFramesStateChange(
     int num_frozen_frames_delta) {
   num_frozen_frames_ += num_frozen_frames_delta;
-  DCHECK_GE(num_frozen_frames_, 0u);
   DCHECK_LE(num_frozen_frames_, frame_coordination_units_.size());
 
   const int64_t kRunning =
@@ -231,6 +292,73 @@ void PageCoordinationUnitImpl::OnNumFrozenFramesStateChange(
   // PageCoordinationUnit rather than as a non-typed property.
   SetProperty(mojom::PropertyType::kLifecycleState,
               is_fully_frozen ? kFrozen : kRunning);
+}
+
+void PageCoordinationUnitImpl::InvalidateAllInterventionPolicies() {
+  for (size_t i = 0; i <= kMaxInterventionIndex; ++i)
+    intervention_policy_[i] = mojom::InterventionPolicy::kUnknown;
+}
+
+void PageCoordinationUnitImpl::MaybeInvalidateInterventionPolicies(
+    FrameCoordinationUnitImpl* frame_cu,
+    bool adding_frame) {
+  // Ensure that the frame was already added or removed as expected.
+  DCHECK(adding_frame == frame_coordination_units_.count(frame_cu));
+
+  // Determine whether or not the frames had all reported prior to this change.
+  const size_t prior_frame_count =
+      frame_coordination_units_.size() + (adding_frame ? -1 : 1);
+  const bool frames_all_reported_prior =
+      prior_frame_count > 0 &&
+      intervention_policy_frames_reported_ == prior_frame_count;
+
+  // If the previous state was considered fully reported, then aggregation may
+  // have occurred. Adding or removing a frame (even one that is fully reported)
+  // needs to invalidate that aggregation. Invalidation could happen on every
+  // single frame addition and removal, but only doing this when the previous
+  // state was fully reported reduces unnecessary invalidations.
+  if (frames_all_reported_prior)
+    InvalidateAllInterventionPolicies();
+
+  // Update the reporting frame count.
+  const bool frame_reported = frame_cu->AreAllInterventionPoliciesSet();
+  if (frame_reported)
+    intervention_policy_frames_reported_ += adding_frame ? 1 : -1;
+
+  DCHECK_LE(intervention_policy_frames_reported_,
+            frame_coordination_units_.size());
+}
+
+void PageCoordinationUnitImpl::RecomputeInterventionPolicy(
+    mojom::PolicyControlledIntervention intervention) {
+  const size_t kIndex = ToIndex(intervention);
+
+  // This should never be called with an empty frame tree.
+  DCHECK(!frame_coordination_units_.empty());
+
+  mojom::InterventionPolicy policy = mojom::InterventionPolicy::kDefault;
+  for (auto* frame : frame_coordination_units_) {
+    // No frame should have an unknown policy, as aggregation should only be
+    // invoked after all frames have checked in.
+    DCHECK_NE(mojom::InterventionPolicy::kUnknown,
+              frame->intervention_policy_[kIndex]);
+
+    // If any frame opts out then the whole frame tree opts out, even if other
+    // frames have opted in.
+    if (frame->intervention_policy_[kIndex] ==
+        mojom::InterventionPolicy::kOptOut) {
+      intervention_policy_[kIndex] = mojom::InterventionPolicy::kOptOut;
+      return;
+    }
+
+    // If any frame opts in and none opt out, then the whole tree opts in.
+    if (frame->intervention_policy_[kIndex] ==
+        mojom::InterventionPolicy::kOptIn) {
+      policy = mojom::InterventionPolicy::kOptIn;
+    }
+  }
+
+  intervention_policy_[kIndex] = policy;
 }
 
 }  // namespace resource_coordinator
