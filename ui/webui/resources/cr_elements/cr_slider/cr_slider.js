@@ -120,26 +120,6 @@ cr_slider.SliderTick;
         observer: 'onValueChanged_',
       },
 
-      /**
-       * If true, |value| is updated while dragging happens. If false, |value|
-       * is updated only once, when drag gesture finishes.
-       */
-      updateValueInstantly: {
-        type: Boolean,
-        value: true,
-      },
-
-      /**
-       * |immediateValue_| has the most up-to-date value and is used to render
-       * the slider UI. When dragging, |immediateValue_| is always updated, and
-       * |value| is updated at least once when dragging is stopped.
-       * @private
-       */
-      immediateValue_: {
-        type: Number,
-        value: 0,
-      },
-
       /** @private */
       holdDown_: {
         type: Boolean,
@@ -182,8 +162,8 @@ cr_slider.SliderTick;
 
     observers: [
       'onTicksChanged_(ticks.*)',
-      'updateLabelAndAria_(immediateValue_, min, max)',
-      'updateKnobAndBar_(immediateValue_, min, max)',
+      'updateLabelAndAria_(value, min, max)',
+      'updateKnobAndBar_(value, min, max)',
     ],
 
     listeners: {
@@ -250,18 +230,16 @@ cr_slider.SliderTick;
      * @return {number}
      */
     getRatio: function() {
-      return (this.immediateValue_ - this.min) / (this.max - this.min);
+      return (this.value - this.min) / (this.max - this.min);
     },
 
     /** @private */
     ensureValidValue_: function() {
-      if (this.immediateValue_ == undefined || this.value == undefined)
+      if (this.value == undefined)
         return;
-      let validValue = clamp(this.min, this.max, this.immediateValue_);
+      let validValue = clamp(this.min, this.max, this.value);
       validValue = this.snaps ? Math.round(validValue) : validValue;
-      this.immediateValue_ = validValue;
-      if (!this.dragging || this.updateValueInstantly)
-        this.value = validValue;
+      this.value = validValue;
     },
 
     /**
@@ -270,9 +248,6 @@ cr_slider.SliderTick;
      * @private
      */
     stopDragging_: function(pointerId) {
-      // Update |value| before updating |dragging| so dragging-changed event
-      // handlers will have access to the updated |value|.
-      this.value = this.immediateValue_;
       this.draggingEventTracker_.removeAll();
       this.releasePointerCapture(pointerId);
       this.dragging = false;
@@ -317,18 +292,17 @@ cr_slider.SliderTick;
 
       let handled = true;
       if (event.key == 'Home') {
-        this.immediateValue_ = this.min;
+        this.value = this.min;
       } else if (event.key == 'End') {
-        this.immediateValue_ = this.max;
+        this.value = this.max;
       } else if (this.deltaKeyMap_.has(event.key)) {
-        const value = this.value + this.deltaKeyMap_.get(event.key);
-        this.immediateValue_ = clamp(this.min, this.max, value);
+        const newValue = this.value + this.deltaKeyMap_.get(event.key);
+        this.value = clamp(this.min, this.max, newValue);
       } else {
         handled = false;
       }
 
       if (handled) {
-        this.value = this.immediateValue_;
         this.fire('cr-slider-value-changed-from-ui');
         event.preventDefault();
         event.stopPropagation();
@@ -399,16 +373,11 @@ cr_slider.SliderTick;
     },
 
     /**
-     * Update |immediateValue_| which is used for rendering when |value| is
-     * updated either programmatically or from a keyboard input or a mouse drag
-     * (when |updateValueInstantly| is true).
+     * Update |value| which is used for rendering when |value| is
+     * updated either programmatically or from a keyboard input or a mouse drag.
      * @private
      */
     onValueChanged_: function() {
-      if (this.immediateValue_ == this.value)
-        return;
-
-      this.immediateValue_ = this.value;
       this.ensureValidValue_();
     },
 
@@ -422,7 +391,7 @@ cr_slider.SliderTick;
     /** @private */
     updateLabelAndAria_: function() {
       const ticks = this.ticks;
-      const index = this.immediateValue_;
+      const index = this.value;
       if (!ticks || ticks.length == 0 || index >= ticks.length ||
           !Number.isInteger(index) || !this.snaps) {
         this.setAttribute('aria-valuetext', index);
@@ -472,8 +441,7 @@ cr_slider.SliderTick;
       let ratio = (clientX - rect.left) / rect.width;
       if (this.isRtl_)
         ratio = 1 - ratio;
-      this.immediateValue_ = ratio * (this.max - this.min) + this.min;
-      this.ensureValidValue_();
+      this.value = ratio * (this.max - this.min) + this.min;
       this.fire('cr-slider-value-changed-from-ui');
     },
 

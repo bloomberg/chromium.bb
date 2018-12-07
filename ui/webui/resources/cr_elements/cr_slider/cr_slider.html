@@ -200,7 +200,7 @@
         <div id="bar"></div>
         <div id="markers" hidden$="[[!markerCount]]">
           <template is="dom-repeat" items="[[getMarkers_(markerCount)]]">
-            <div class$="[[getMarkerClass_(index, immediateValue_, min, max,
+            <div class$="[[getMarkerClass_(index, value, min, max,
                                            markerCount)]]"></div>
           </template>
         </div>

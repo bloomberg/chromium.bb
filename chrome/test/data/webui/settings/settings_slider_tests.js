@@ -24,6 +24,7 @@ suite('SettingsSlider', function() {
     };
     document.body.appendChild(slider);
     crSlider = slider.$$('cr-slider');
+    return PolymerTest.flushTasks();
   });
 
   function pressArrowRight() {
@@ -56,6 +57,28 @@ suite('SettingsSlider', function() {
 
   function pressEnd() {
     MockInteractions.pressAndReleaseKeyOn(crSlider, 35, [], 'End');
+  }
+
+  function pointerEvent(eventType, ratio) {
+    const rect = crSlider.$.barContainer.getBoundingClientRect();
+    crSlider.dispatchEvent(new PointerEvent(eventType, {
+      buttons: 1,
+      pointerId: 1,
+      clientX: rect.left + (ratio * rect.width),
+    }));
+  }
+
+  function pointerDown(ratio) {
+    pointerEvent('pointerdown', ratio);
+  }
+
+  function pointerMove(ratio) {
+    pointerEvent('pointermove', ratio);
+  }
+
+  function pointerUp() {
+    // Ignores clientX for pointerup event.
+    pointerEvent('pointerup', 0);
   }
 
   test('enforce value', function() {
@@ -176,5 +199,36 @@ suite('SettingsSlider', function() {
     pressPageUp();
     expectEquals(4, crSlider.value);
     expectEquals(.4, slider.pref.value);
+  });
+
+  test('update value instantly both off and on', () => {
+    slider.ticks = ticks;
+    slider.set('pref.value', 2);
+    slider.updateValueInstantly = false;
+    assertEquals(0, crSlider.value);
+    pointerDown(3 / crSlider.max);
+    assertEquals(3, crSlider.value);
+    assertEquals(2, slider.pref.value);
+    pointerUp();
+    assertEquals(3, crSlider.value);
+    assertEquals(16, slider.pref.value);
+
+    // Once |updateValueInstantly| is turned on, |value| should start updating
+    // again during drag.
+    pointerDown(0);
+    assertEquals(0, crSlider.value);
+    assertEquals(16, slider.pref.value);
+    slider.updateValueInstantly = true;
+    assertEquals(2, slider.pref.value);
+    pointerMove(1 / crSlider.max);
+    assertEquals(1, crSlider.value);
+    assertEquals(4, slider.pref.value);
+    slider.updateValueInstantly = false;
+    pointerMove(2 / crSlider.max);
+    assertEquals(2, crSlider.value);
+    assertEquals(4, slider.pref.value);
+    pointerUp();
+    assertEquals(2, crSlider.value);
+    assertEquals(8, slider.pref.value);
   });
 });
