@@ -54,8 +54,6 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
     return worker_object_proxy_;
   }
 
-  bool IsNestedWorker() const { return is_nested_worker_; }
-
  private:
   friend class DedicatedWorkerThreadForTest;
 
@@ -72,7 +70,6 @@ class CORE_EXPORT DedicatedWorkerThread : public WorkerThread {
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   const String name_;
   DedicatedWorkerObjectProxy& worker_object_proxy_;
-  const bool is_nested_worker_;
 };
 
 }  // namespace blink
