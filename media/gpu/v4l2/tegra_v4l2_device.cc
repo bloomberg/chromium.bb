@@ -256,11 +256,12 @@ GLenum TegraV4L2Device::GetTextureTarget() {
   return GL_TEXTURE_2D;
 }
 
-uint32_t TegraV4L2Device::PreferredInputFormat(Type type) {
-  if (type == Type::kEncoder)
-    return V4L2_PIX_FMT_YUV420M;
+std::vector<uint32_t> TegraV4L2Device::PreferredInputFormat(Type type) {
+  if (type == Type::kEncoder) {
+    return {V4L2_PIX_FMT_YUV420M};
+  }
 
-  return 0;
+  return {};
 }
 
 std::vector<uint32_t> TegraV4L2Device::GetSupportedImageProcessorPixelformats(

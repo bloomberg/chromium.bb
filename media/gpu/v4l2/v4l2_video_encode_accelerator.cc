@@ -1124,13 +1124,16 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   device_input_format_ = PIXEL_FORMAT_UNKNOWN;
   input_planes_count_ = 0;
 
-  const std::vector<uint32_t> pix_fmt_candidates = {
-      // First see if the device can use the provided format directly.
-      // V4L2 VEA only supports multi plane input pixel format.
-      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false),
-      // Second try preferred input format.
-      device_->PreferredInputFormat(V4L2Device::Type::kEncoder),
-  };
+  // First see if the device can use the provided format directly.
+  // V4L2 VEA only supports multi plane input pixel format.
+  std::vector<uint32_t> pix_fmt_candidates = {
+      V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format, false)};
+  // Second try preferred input formats for both single-planar and
+  // multi-planar.
+  for (auto preferred_format :
+       device_->PreferredInputFormat(V4L2Device::Type::kEncoder)) {
+    pix_fmt_candidates.push_back(preferred_format);
+  }
 
   for (const auto pix_fmt : pix_fmt_candidates) {
     auto trying_format = V4L2Device::V4L2PixFmtToVideoPixelFormat(pix_fmt);

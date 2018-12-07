@@ -379,11 +379,11 @@ GLenum GenericV4L2Device::GetTextureTarget() {
   return GL_TEXTURE_EXTERNAL_OES;
 }
 
-uint32_t GenericV4L2Device::PreferredInputFormat(Type type) {
+std::vector<uint32_t> GenericV4L2Device::PreferredInputFormat(Type type) {
   if (type == Type::kEncoder)
-    return V4L2_PIX_FMT_NV12M;
+    return {V4L2_PIX_FMT_NV12M, V4L2_PIX_FMT_NV12};
 
-  return 0;
+  return {};
 }
 
 std::vector<uint32_t> GenericV4L2Device::GetSupportedImageProcessorPixelformats(
