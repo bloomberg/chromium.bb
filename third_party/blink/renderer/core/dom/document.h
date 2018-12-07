@@ -958,6 +958,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const KURL& CookieURL() const { return cookie_url_; }
   void SetCookieURL(const KURL& url) { cookie_url_ = url; }
 
+  scoped_refptr<const SecurityOrigin> TopFrameOrigin() const;
+
   const KURL SiteForCookies() const;
 
   // The following implements the rule from HTML 4 for what valid names are.

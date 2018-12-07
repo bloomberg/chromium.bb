@@ -287,6 +287,15 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method may only be called before Start().
   void set_site_for_cookies(const GURL& site_for_cookies);
 
+  // The origin of the top frame of the page making the request (where
+  // applicable). Note that this is experimental and may not always be set.
+  const base::Optional<url::Origin>& top_frame_origin() const {
+    return top_frame_origin_;
+  }
+  void set_top_frame_origin(const base::Optional<url::Origin>& origin) {
+    top_frame_origin_ = origin;
+  }
+
   // Indicate whether SameSite cookies should be attached even though the
   // request is cross-site.
   bool attach_same_site_cookies() const { return attach_same_site_cookies_; }
@@ -855,6 +864,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
 
   std::vector<GURL> url_chain_;
   GURL site_for_cookies_;
+  base::Optional<url::Origin> top_frame_origin_;
+
   bool attach_same_site_cookies_;
   base::Optional<url::Origin> initiator_;
   GURL delegate_redirect_url_;

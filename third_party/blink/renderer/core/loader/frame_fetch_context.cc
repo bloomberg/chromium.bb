@@ -232,6 +232,7 @@ struct FrameFetchContext::FrozenState final
               const base::Optional<mojom::IPAddressSpace>& address_space,
               const ContentSecurityPolicy* content_security_policy,
               KURL site_for_cookies,
+              scoped_refptr<const SecurityOrigin> top_frame_origin,
               const ClientHintsPreferences& client_hints_preferences,
               float device_pixel_ratio,
               const String& user_agent,
@@ -242,6 +243,7 @@ struct FrameFetchContext::FrozenState final
         address_space(address_space),
         content_security_policy(content_security_policy),
         site_for_cookies(site_for_cookies),
+        top_frame_origin(std::move(top_frame_origin)),
         client_hints_preferences(client_hints_preferences),
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
@@ -253,6 +255,7 @@ struct FrameFetchContext::FrozenState final
   const base::Optional<mojom::IPAddressSpace> address_space;
   const Member<const ContentSecurityPolicy> content_security_policy;
   const KURL site_for_cookies;
+  const scoped_refptr<const SecurityOrigin> top_frame_origin;
   const ClientHintsPreferences client_hints_preferences;
   const float device_pixel_ratio;
   const String user_agent;
@@ -520,6 +523,7 @@ void FrameFetchContext::DispatchDidChangeResourcePriority(
 void FrameFetchContext::PrepareRequest(ResourceRequest& request,
                                        RedirectType redirect_type) {
   SetFirstPartyCookie(request);
+  request.SetTopFrameOrigin(GetTopFrameOrigin());
 
   String user_agent = GetUserAgent();
   request.SetHTTPUserAgent(AtomicString(user_agent));
@@ -1123,6 +1127,15 @@ bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
       ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
 }
 
+scoped_refptr<const SecurityOrigin> FrameFetchContext::GetTopFrameOrigin()
+    const {
+  if (IsDetached())
+    return frozen_state_->top_frame_origin;
+
+  Document* document = document_ ? document_.Get() : GetFrame()->GetDocument();
+  return document->TopFrameOrigin();
+}
+
 bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
   if (IsDetached())
     return false;
@@ -1434,7 +1447,7 @@ FetchContext* FrameFetchContext::Detach() {
   if (document_) {
     frozen_state_ = MakeGarbageCollected<FrozenState>(
         Url(), GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetSiteForCookies(),
+        GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
     SetFetchClientSettingsObject(
@@ -1444,7 +1457,7 @@ FetchContext* FrameFetchContext::Detach() {
     // Some getters are unavailable in this case.
     frozen_state_ = MakeGarbageCollected<FrozenState>(
         NullURL(), GetParentSecurityOrigin(), GetAddressSpace(),
-        GetContentSecurityPolicy(), GetSiteForCookies(),
+        GetContentSecurityPolicy(), GetSiteForCookies(), GetTopFrameOrigin(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
         IsMainFrame(), IsSVGImageChromeClient());
     SetFetchClientSettingsObject(

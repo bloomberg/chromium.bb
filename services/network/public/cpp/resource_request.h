@@ -43,6 +43,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // done if there really is no way to determine the correct value.
   GURL site_for_cookies;
 
+  // If the optional is valid, contains the origin of the top frame of the page
+  // making the request. Note that this is experimental and is only set for
+  // navigation and document subresource requests but not other cases such as
+  // workers.
+  base::Optional<url::Origin> top_frame_origin;
+
   // Boolean indicating whether SameSite cookies are allowed to be attached
   // to the request. It should be used as additional input to network side
   // checks.

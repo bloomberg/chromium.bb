@@ -26,6 +26,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   NavigationRequestInfo(const CommonNavigationParams& common_params,
                         mojom::BeginNavigationParamsPtr begin_params,
                         const GURL& site_for_cookies,
+                        const base::Optional<url::Origin>& top_frame_origin,
                         bool is_main_frame,
                         bool parent_is_main_frame,
                         bool are_ancestors_secure,
@@ -47,6 +48,12 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   // Usually the URL of the document in the top-level window, which may be
   // checked by the third-party cookie blocking policy.
   const GURL site_for_cookies;
+
+  // The origin of the navigation if top frame, else the origin of the top
+  // frame.
+  // TODO(crbug.com/910716) Make this required. I believe we just need to add
+  // support for signed exchange redirects.
+  const base::Optional<url::Origin> top_frame_origin;
 
   const bool is_main_frame;
   const bool parent_is_main_frame;

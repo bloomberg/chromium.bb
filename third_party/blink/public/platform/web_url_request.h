@@ -130,6 +130,10 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT WebURL SiteForCookies() const;
   BLINK_PLATFORM_EXPORT void SetSiteForCookies(const WebURL&);
 
+  BLINK_PLATFORM_EXPORT base::Optional<WebSecurityOrigin> TopFrameOrigin()
+      const;
+  BLINK_PLATFORM_EXPORT void SetTopFrameOrigin(const WebSecurityOrigin&);
+
   // https://fetch.spec.whatwg.org/#concept-request-origin
   BLINK_PLATFORM_EXPORT WebSecurityOrigin RequestorOrigin() const;
   BLINK_PLATFORM_EXPORT void SetRequestorOrigin(const WebSecurityOrigin&);
