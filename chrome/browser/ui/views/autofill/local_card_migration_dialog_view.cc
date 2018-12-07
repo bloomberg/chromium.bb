@@ -370,6 +370,7 @@ bool LocalCardMigrationDialogView::Accept() {
       return true;
     case LocalCardMigrationDialogState::kFinished:
     case LocalCardMigrationDialogState::kActionRequired:
+      controller_->OnDoneButtonClicked();
       return true;
   }
 }

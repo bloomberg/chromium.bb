@@ -32,6 +32,7 @@ class LocalCardMigrationDialogController {
   virtual void OnSaveButtonClicked(
       const std::vector<std::string>& selected_cards_guids) = 0;
   virtual void OnCancelButtonClicked() = 0;
+  virtual void OnDoneButtonClicked() = 0;
   virtual void OnViewCardsButtonClicked() = 0;
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
   virtual void DeleteCard(const std::string& deleted_card_guid) = 0;
