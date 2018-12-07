@@ -93,6 +93,19 @@ struct COMPONENT_EXPORT(LEARNING_COMMON) LearningTask {
 
   // Should the accuracy of this model be recorded to UMA?
   bool record_accuracy_via_uma = true;
+
+  // RandomTree parameters
+
+  // How RandomTree handles unknown feature values.
+  enum class RTUnknownValueHandling {
+    // Return an empty distribution as the prediction.
+    kEmptyDistribution,
+
+    // Return the sum of the traversal of all splits.
+    kUseAllSplits,
+  };
+  RTUnknownValueHandling rt_unknown_value_handling =
+      RTUnknownValueHandling::kUseAllSplits;
 };
 
 }  // namespace learning

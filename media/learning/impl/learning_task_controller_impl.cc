@@ -16,9 +16,8 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(const LearningTask& task)
     : task_(task), storage_(base::MakeRefCounted<TrainingDataStorage>()) {
   switch (task_.model) {
     case LearningTask::Model::kRandomForest:
-      // TODO(liberato): send in the task, so that it can get params.
       // TODO(liberato): forest!
-      training_cb_ = RandomTreeTrainer::GetTrainingAlgorithmCB();
+      training_cb_ = RandomTreeTrainer::GetTrainingAlgorithmCB(task_);
       break;
   }
 
