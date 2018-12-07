@@ -41,7 +41,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // or not for the view. In case of having an ink drop, it also specifies
   // whether the default event handler for the ink drop should be installed or
   // the subclass will handle ink drop events itself.
-  // TODO (cyan): Update ON_NO_GESTURE_HANDLER name.
   enum class InkDropMode {
     OFF,
     ON,
@@ -135,8 +134,8 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // of CreateInkDrop() delegates to this function.
   std::unique_ptr<InkDropImpl> CreateDefaultInkDropImpl();
 
-  // Returns an InkDropImpl configured to work well with a
-  // flood-fill ink drop ripple.
+  // Returns an InkDropImpl configured to work well with a flood-fill ink drop
+  // ripple.
   std::unique_ptr<InkDropImpl> CreateDefaultFloodFillInkDropImpl();
 
   // Returns the default InkDropRipple centered on |center_point|.
@@ -175,7 +174,6 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
  private:
   class InkDropEventHandler;
-  friend class InkDropEventHandler;
   friend class test::InkDropHostViewTestApi;
 
   // The last user Event to trigger an ink drop ripple animation.
@@ -189,7 +187,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
   // Intentionally declared after |ink_drop_| so that it doesn't access a
   // destroyed |ink_drop_| during destruction.
-  std::unique_ptr<InkDropEventHandler> ink_drop_event_handler_;
+  const std::unique_ptr<InkDropEventHandler> ink_drop_event_handler_;
 
   float ink_drop_visible_opacity_ = 0.175f;
 
