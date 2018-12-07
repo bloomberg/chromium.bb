@@ -5551,6 +5551,13 @@ String Document::lastModified() const {
                         date.Minute(), date.Second());
 }
 
+scoped_refptr<const SecurityOrigin> Document::TopFrameOrigin() const {
+  if (!GetFrame())
+    return scoped_refptr<const SecurityOrigin>();
+
+  return GetFrame()->Tree().Top().GetSecurityContext()->GetSecurityOrigin();
+}
+
 const KURL Document::SiteForCookies() const {
   // TODO(mkwst): This doesn't properly handle HTML Import documents.
 

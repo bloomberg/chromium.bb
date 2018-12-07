@@ -84,6 +84,7 @@ class PLATFORM_EXPORT ResourceRequest final {
       const KURL& new_url,
       const AtomicString& new_method,
       const KURL& new_site_for_cookies,
+      scoped_refptr<const SecurityOrigin> new_top_frame_origin,
       const String& new_referrer,
       network::mojom::ReferrerPolicy new_referrer_policy,
       bool skip_service_worker) const;
@@ -103,6 +104,9 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   const KURL& SiteForCookies() const;
   void SetSiteForCookies(const KURL&);
+
+  const SecurityOrigin* TopFrameOrigin() const;
+  void SetTopFrameOrigin(scoped_refptr<const SecurityOrigin>);
 
   // The origin of the request, specified at
   // https://fetch.spec.whatwg.org/#concept-request-origin. This origin can be
@@ -438,6 +442,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   // TimeDelta::Max() represents the default timeout on platforms that have one.
   base::TimeDelta timeout_interval_;
   KURL site_for_cookies_;
+  scoped_refptr<const SecurityOrigin> top_frame_origin_;
 
   scoped_refptr<const SecurityOrigin> requestor_origin_;
 

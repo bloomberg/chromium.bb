@@ -43,6 +43,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/test_navigation_throttle_inserter.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
@@ -190,6 +191,40 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
   void SetUpOnMainThread() override {
     NavigationBaseBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  // Navigate to |url| and for each ResourceRequest record its
+  // top_frame_origin. Stop listening after |final_resource| has been
+  // detected. The output is recorded in |top_frame_origins|.
+  void NavigateAndRecordTopFrameOrigins(
+      const GURL& url,
+      const GURL& final_resource,
+      bool from_renderer,
+      std::map<GURL, url::Origin>* top_frame_origins) {
+    if (from_renderer)
+      EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
+
+    base::RunLoop run_loop;
+    base::OnceClosure quit_closure = run_loop.QuitClosure();
+
+    // Intercept network requests and record them.
+    URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+        [&](URLLoaderInterceptor::RequestParams* params) -> bool {
+          (*top_frame_origins)[params->url_request.url] =
+              *params->url_request.top_frame_origin;
+
+          if (params->url_request.url == final_resource)
+            std::move(quit_closure).Run();
+          return false;
+        }));
+
+    if (from_renderer)
+      EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url));
+    else
+      EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    // Wait until the last resource we care about has been requested.
+    run_loop.Run();
   }
 };
 
@@ -713,6 +748,48 @@ IN_PROC_BROWSER_TEST_F(NavigationBaseBrowserTest,
   std::string done;
   EXPECT_TRUE(dom_message_queue.WaitForMessage(&done));
   EXPECT_EQ("\"done\"", done);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BrowserNavigationTopFrameOrigin) {
+  std::map<GURL, url::Origin> top_frame_origins;
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+
+  NavigateAndRecordTopFrameOrigins(url, url /*final_resource*/,
+                                   false /*from_renderer*/, &top_frame_origins);
+  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, RenderNavigationTopFrameOrigin) {
+  std::map<GURL, url::Origin> top_frame_origins;
+  GURL url(embedded_test_server()->GetURL("/title2.html"));
+
+  NavigateAndRecordTopFrameOrigins(url, url /*final_resource*/,
+                                   true /*from_renderer*/, &top_frame_origins);
+  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SubframeTopFrameOrigin) {
+  std::map<GURL, url::Origin> top_frame_origins;
+  GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  GURL iframe_document = embedded_test_server()->GetURL("/title1.html");
+
+  NavigateAndRecordTopFrameOrigins(url, iframe_document /*final_resource*/,
+                                   false /*from_renderer*/, &top_frame_origins);
+  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
+  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[iframe_document]);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SubresourceTopFrameOrigin) {
+  std::map<GURL, url::Origin> top_frame_origins;
+  GURL url(embedded_test_server()->GetURL("/page_with_iframe_and_image.html"));
+  GURL blank_image = embedded_test_server()->GetURL("/blank.jpg");
+
+  NavigateAndRecordTopFrameOrigins(url, blank_image /*final_resource*/,
+                                   false /*from_renderer*/, &top_frame_origins);
+  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[url]);
+  EXPECT_EQ(url::Origin::Create(url),
+            top_frame_origins[embedded_test_server()->GetURL("/image.jpg")]);
+  EXPECT_EQ(url::Origin::Create(url), top_frame_origins[blank_image]);
 }
 
 // Navigation are started in the browser process. After the headers are

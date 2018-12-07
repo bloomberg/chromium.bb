@@ -209,6 +209,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->method = request_info->common_params.method;
   new_request->url = request_info->common_params.url;
   new_request->site_for_cookies = request_info->site_for_cookies;
+  new_request->top_frame_origin = request_info->top_frame_origin;
 
   net::RequestPriority net_priority = net::HIGHEST;
   if (!request_info->is_main_frame &&
@@ -299,6 +300,7 @@ std::unique_ptr<NavigationRequestInfo> CreateNavigationRequestInfoForRedirect(
   return std::make_unique<NavigationRequestInfo>(
       std::move(new_common_params), std::move(new_begin_params),
       updated_resource_request.site_for_cookies,
+      updated_resource_request.top_frame_origin,
       previous_request_info.is_main_frame,
       previous_request_info.parent_is_main_frame,
       previous_request_info.are_ancestors_secure,
@@ -1028,7 +1030,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
-
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       auto* common_params =
           const_cast<CommonNavigationParams*>(&request_info_->common_params);
@@ -1065,6 +1066,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     resource_request_->url = redirect_info_.new_url;
     resource_request_->method = redirect_info_.new_method;
     resource_request_->site_for_cookies = redirect_info_.new_site_for_cookies;
+    resource_request_->top_frame_origin = redirect_info_.new_top_frame_origin;
     resource_request_->referrer = GURL(redirect_info_.new_referrer);
     resource_request_->referrer_policy = redirect_info_.new_referrer_policy;
     url_chain_.push_back(redirect_info_.new_url);

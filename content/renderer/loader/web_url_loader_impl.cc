@@ -641,6 +641,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   resource_request->method = method;
   resource_request->url = url_;
   resource_request->site_for_cookies = request.SiteForCookies();
+  resource_request->top_frame_origin = request.TopFrameOrigin();
   resource_request->upgrade_if_insecure = request.UpgradeIfInsecure();
   resource_request->is_revalidating = request.IsRevalidating();
   if (!request.RequestorOrigin().IsNull()) {
@@ -818,6 +819,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   url_ = WebURL(redirect_info.new_url);
   return client_->WillFollowRedirect(
       url_, redirect_info.new_site_for_cookies,
+      redirect_info.new_top_frame_origin,
       WebString::FromUTF8(redirect_info.new_referrer),
       Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
           redirect_info.new_referrer_policy),

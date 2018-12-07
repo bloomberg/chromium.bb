@@ -263,6 +263,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // frame's main resource.
   bool IsFirstPartyOrigin(const KURL& url) const;
 
+  // Returns the origin of the top frame in the document.
+  scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const;
+
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;
 

@@ -1489,12 +1489,21 @@ void NavigationRequest::OnStartChecksComplete(
       frame_tree_node_, begin_params_.get(), &report_raw_headers);
   devtools_instrumentation::OnNavigationRequestWillBeSent(*this);
 
+  // If this is a top-frame navigation, then use the origin of the url (and
+  // update it as redirects happen). If this is a sub-frame navigation, get the
+  // URL from the top frame.
+  GURL top_frame_url =
+      frame_tree_node_->IsMainFrame()
+          ? common_params_.url
+          : frame_tree_node_->frame_tree()->root()->current_url();
+  url::Origin top_frame_origin = url::Origin::Create(top_frame_url);
+
   loader_ = NavigationURLLoader::Create(
       browser_context->GetResourceContext(), partition,
       std::make_unique<NavigationRequestInfo>(
           common_params_, begin_params_.Clone(), site_for_cookies,
-          frame_tree_node_->IsMainFrame(), parent_is_main_frame,
-          IsSecureFrame(frame_tree_node_->parent()),
+          top_frame_origin, frame_tree_node_->IsMainFrame(),
+          parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers,
           navigating_frame_host->GetVisibilityState() ==

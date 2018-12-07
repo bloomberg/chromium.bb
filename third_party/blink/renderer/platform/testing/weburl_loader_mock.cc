@@ -8,6 +8,7 @@
 
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_data.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
@@ -93,7 +94,8 @@ WebURL WebURLLoaderMock::ServeRedirect(
 
   bool report_raw_headers = false;
   bool follow = client_->WillFollowRedirect(
-      redirect_url, redirect_url, WebString(),
+      redirect_url, redirect_url,
+      WebSecurityOrigin::Create(WebURL(redirect_url)), WebString(),
       network::mojom::ReferrerPolicy::kDefault, request.HttpMethod(),
       redirect_response, report_raw_headers);
   // |this| might be deleted in willFollowRedirect().

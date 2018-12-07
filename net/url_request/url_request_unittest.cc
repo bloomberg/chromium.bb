@@ -8003,18 +8003,16 @@ TEST_F(URLRequestTestHTTP, Redirect302PreserveReferenceFragment) {
   GURL expected_url(http_test_server()->GetURL("/echo#fragment"));
 
   TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      original_url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
 
-    r->Start();
-    d.RunUntilComplete();
+  r->Start();
+  d.RunUntilComplete();
 
-    EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(original_url, r->original_url());
-    EXPECT_EQ(expected_url, r->url());
-  }
+  EXPECT_EQ(2U, r->url_chain().size());
+  EXPECT_EQ(OK, d.request_status());
+  EXPECT_EQ(original_url, r->original_url());
+  EXPECT_EQ(expected_url, r->url());
 }
 
 TEST_F(URLRequestTestHTTP, RedirectPreserveFirstPartyURL) {
@@ -8024,18 +8022,54 @@ TEST_F(URLRequestTestHTTP, RedirectPreserveFirstPartyURL) {
   GURL first_party_url("http://example.com");
 
   TestDelegate d;
-  {
-    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
-        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
-    r->set_site_for_cookies(first_party_url);
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_site_for_cookies(first_party_url);
 
-    r->Start();
-    d.RunUntilComplete();
+  r->Start();
+  d.RunUntilComplete();
 
-    EXPECT_EQ(2U, r->url_chain().size());
-    EXPECT_EQ(OK, d.request_status());
-    EXPECT_EQ(first_party_url, r->site_for_cookies());
-  }
+  EXPECT_EQ(2U, r->url_chain().size());
+  EXPECT_EQ(OK, d.request_status());
+  EXPECT_EQ(first_party_url, r->site_for_cookies());
+}
+
+TEST_F(URLRequestTestHTTP, RedirectPreserveTopFrameOrigin) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
+  url::Origin top_frame_origin =
+      url::Origin::Create(GURL("http://example.com"));
+  TestDelegate d;
+
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_top_frame_origin(top_frame_origin);
+
+  r->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(2U, r->url_chain().size());
+  EXPECT_EQ(OK, d.request_status());
+  EXPECT_EQ(top_frame_origin, *r->top_frame_origin());
+}
+
+TEST_F(URLRequestTestHTTP, RedirectPreserveUnsetTopFrameOrigin) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
+  TestDelegate d;
+
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  // Since we're not setting a top frame origin, we wouldn't expect one after
+  // the redirect.
+  r->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(2U, r->url_chain().size());
+  EXPECT_EQ(OK, d.request_status());
+  EXPECT_FALSE(r->top_frame_origin());
 }
 
 TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
@@ -8046,7 +8080,7 @@ TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
   GURL expected_first_party_url(http_test_server()->GetURL("/echo"));
 
   TestDelegate d;
-  {
+
     std::unique_ptr<URLRequest> r(default_context().CreateRequest(
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->set_site_for_cookies(original_first_party_url);
@@ -8059,7 +8093,50 @@ TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
     EXPECT_EQ(2U, r->url_chain().size());
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(expected_first_party_url, r->site_for_cookies());
-  }
+}
+
+TEST_F(URLRequestTestHTTP, RedirectUpdateTopFrameOrigin) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
+  url::Origin original_top_frame_origin =
+      url::Origin::Create(GURL("http://example.com"));
+  url::Origin expected_top_frame_origin =
+      url::Origin::Create(GURL(http_test_server()->GetURL("/echo")));
+
+  TestDelegate d;
+
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  r->set_top_frame_origin(original_top_frame_origin);
+  r->set_first_party_url_policy(URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+
+  r->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(2U, r->url_chain().size());
+  EXPECT_EQ(OK, d.request_status());
+  EXPECT_EQ(expected_top_frame_origin, *r->top_frame_origin());
+}
+
+TEST_F(URLRequestTestHTTP, RedirectIgnoreUnsetTopFrameOrigin) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
+  TestDelegate d;
+
+  std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+      url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+  // Since we're not setting a top frame origin, we wouldn't expect one after
+  // the redirect.
+  r->set_first_party_url_policy(URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);
+
+  r->Start();
+  d.RunUntilComplete();
+
+  EXPECT_EQ(2U, r->url_chain().size());
+  EXPECT_EQ(OK, d.request_status());
+  EXPECT_FALSE(r->top_frame_origin());
 }
 
 TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {

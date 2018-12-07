@@ -101,6 +101,16 @@ void WebURLRequest::SetSiteForCookies(const WebURL& site_for_cookies) {
   resource_request_->SetSiteForCookies(site_for_cookies);
 }
 
+base::Optional<WebSecurityOrigin> WebURLRequest::TopFrameOrigin() const {
+  const SecurityOrigin* origin = resource_request_->TopFrameOrigin();
+  return origin ? base::Optional<WebSecurityOrigin>(origin)
+                : base::Optional<WebSecurityOrigin>();
+}
+
+void WebURLRequest::SetTopFrameOrigin(const WebSecurityOrigin& origin) {
+  resource_request_->SetTopFrameOrigin(origin);
+}
+
 WebSecurityOrigin WebURLRequest::RequestorOrigin() const {
   return resource_request_->RequestorOrigin();
 }
