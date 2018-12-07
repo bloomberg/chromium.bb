@@ -286,17 +286,15 @@ AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
   return host;
 }
 
-views::BridgeFactoryHost*
-ExtensionAppShimHandler::GetViewsBridgeFactoryHostForBrowser(Browser* browser) {
+AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
   if (!features::HostWindowsInAppShimProcess())
     return nullptr;
 
   const Extension* extension =
       apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
   if (extension && extension->is_hosted_app()) {
-    AppShimHost* host = FindOrCreateHost(
-        Profile::FromBrowserContext(browser->profile()), extension->id());
-    return host->GetViewsBridgeFactoryHost();
+    return FindOrCreateHost(Profile::FromBrowserContext(browser->profile()),
+                            extension->id());
   }
   return nullptr;
 }

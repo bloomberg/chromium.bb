@@ -202,7 +202,7 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
   views_bridge_mac::mojom::BridgedNativeWidget* bridge() const;
   BridgedNativeWidgetImpl* bridge_impl() const;
-  BridgedNativeWidgetHostImpl* bridge_host_for_testing() const {
+  BridgedNativeWidgetHostImpl* bridge_host() const {
     return bridge_host_.get();
   }
 

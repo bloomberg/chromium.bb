@@ -37,10 +37,6 @@ class AppWindow;
 class Extension;
 }  // namespace extensions
 
-namespace views {
-class BridgeFactoryHost;
-}  // namespace views
-
 namespace apps {
 
 // This app shim handler that handles events for app shims that correspond to an
@@ -99,10 +95,11 @@ class ExtensionAppShimHandler : public AppShimHandler,
   // needed.
   AppShimHost* FindOrCreateHost(Profile* profile, const std::string& app_id);
 
-  // Get the ViewBridgeFactoryHost, which may be used to create remote
-  // NSWindows, corresponding to a browser instance (or nullptr if none exists).
-  views::BridgeFactoryHost* GetViewsBridgeFactoryHostForBrowser(
-      Browser* browser);
+  // Get the AppShimHost corresponding to a browser instance, returning nullptr
+  // if none should exist. If no AppShimHost exists, but one should exist
+  // (e.g, because the app process is still launching), create one, which will
+  // bind to the app process when it finishes launching.
+  AppShimHost* GetHostForBrowser(Browser* browser);
 
   void SetHostedAppHidden(Profile* profile,
                           const std::string& app_id,

@@ -43,6 +43,10 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   virtual void OnAppLaunchComplete(apps::AppShimLaunchResult result);
   // Invoked when the app is closed in the browser process.
   void OnAppClosed();
+
+  // TODO(ccameron): The following three function should directly call the
+  // AppShim mojo interface (they only don't due to tests that could be changed
+  // to mock the AppShim mojo interface).
   // Invoked when the app should be hidden.
   void OnAppHide();
   // Invoked when a window becomes visible while the app is hidden. Ensures
@@ -56,7 +60,12 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // to.
   base::FilePath GetProfilePath() const;
   std::string GetAppId() const;
+
+  // Return the factory to use to create new widgets in the same process.
   views::BridgeFactoryHost* GetViewsBridgeFactoryHost() const;
+
+  // Return the app shim interface.
+  chrome::mojom::AppShim* GetAppShim() const;
 
  protected:
   // AppShimHost is owned by itself. It will delete itself in Close (called on

@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -26,13 +27,22 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #import "ui/views_bridge_mac/bridged_native_widget_impl.h"
+#include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget.mojom.h"
 #include "ui/views_bridge_mac/mojo/bridged_native_widget_host.mojom.h"
 #import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 #import "ui/views_bridge_mac/window_touch_bar_delegate.h"
 
 namespace {
+
+AppShimHost* GetHostForBrowser(Browser* browser) {
+  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
+  if (!shim_handler)
+    return nullptr;
+  return shim_handler->GetHostForBrowser(browser);
+}
 
 bool ShouldHandleKeyboardEvent(const content::NativeWebKeyboardEvent& event) {
   // |event.skip_in_browser| is true when it shouldn't be handled by the browser
@@ -330,20 +340,21 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
 }
 
 views::BridgeFactoryHost* BrowserFrameMac::GetBridgeFactoryHost() {
-  auto* shim_handler = apps::ExtensionAppShimHandler::Get();
-  if (!shim_handler)
-    return nullptr;
-  return shim_handler->GetViewsBridgeFactoryHostForBrowser(
-      browser_view_->browser());
+  if (auto* host = GetHostForBrowser(browser_view_->browser()))
+    return host->GetViewsBridgeFactoryHost();
+  return nullptr;
 }
 
 void BrowserFrameMac::OnWindowInitialized() {
-  // TODO(ccameron): Window-level hotkeys need to be wired up across processes.
-  // https://crbug.com/895168
   if (bridge_impl()) {
     bridge_impl()->SetCommandDispatcher(
         [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
         [[[BrowserWindowCommandHandler alloc] init] autorelease]);
+  } else {
+    if (auto* host = GetHostForBrowser(browser_view_->browser())) {
+      host->GetAppShim()->CreateCommandDispatcherForWidget(
+          bridge_host()->bridged_native_widget_id());
+    }
   }
 }
 
