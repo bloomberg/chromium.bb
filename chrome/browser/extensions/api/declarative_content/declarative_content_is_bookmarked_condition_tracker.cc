@@ -190,13 +190,12 @@ void DeclarativeContentIsBookmarkedConditionTracker::StopTrackingPredicates(
 
 void DeclarativeContentIsBookmarkedConditionTracker::TrackForWebContents(
     content::WebContents* contents) {
-  per_web_contents_tracker_[contents] =
-      make_linked_ptr(new PerWebContentsTracker(
-          contents,
-          base::Bind(&Delegate::RequestEvaluation, base::Unretained(delegate_)),
-          base::Bind(&DeclarativeContentIsBookmarkedConditionTracker::
+  per_web_contents_tracker_[contents] = std::make_unique<PerWebContentsTracker>(
+      contents,
+      base::Bind(&Delegate::RequestEvaluation, base::Unretained(delegate_)),
+      base::Bind(&DeclarativeContentIsBookmarkedConditionTracker::
                      DeletePerWebContentsTracker,
-                     base::Unretained(this))));
+                 base::Unretained(this)));
 }
 
 void DeclarativeContentIsBookmarkedConditionTracker::OnWebContentsNavigation(

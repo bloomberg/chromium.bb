@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -136,8 +135,8 @@ class DeclarativeContentPageUrlConditionTracker
       tracked_predicates_;
 
   // Maps WebContents to the tracker for that WebContents state.
-  std::map<content::WebContents*,
-           linked_ptr<PerWebContentsTracker>> per_web_contents_tracker_;
+  std::map<content::WebContents*, std::unique_ptr<PerWebContentsTracker>>
+      per_web_contents_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentPageUrlConditionTracker);
 };
