@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -30,6 +31,7 @@
 #include "net/http/http_byte_range.h"
 #include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 
 using base::StringPiece;
@@ -917,10 +919,13 @@ bool HttpResponseHeaders::IsRedirect(std::string* location) const {
   } while (parsed_[i].value_begin == parsed_[i].value_end);
 
   if (location) {
+    base::StringPiece location_strpiece(parsed_[i].value_begin,
+                                        parsed_[i].value_end);
     // Escape any non-ASCII characters to preserve them.  The server should
     // only be returning ASCII here, but for compat we need to do this.
-    *location = EscapeNonASCII(
-        std::string(parsed_[i].value_begin, parsed_[i].value_end));
+    *location = base::IsStringASCII(location_strpiece)
+                    ? location_strpiece.as_string()
+                    : EscapeNonASCIIAndPercent(location_strpiece);
   }
 
   return true;
@@ -1327,17 +1332,15 @@ std::unique_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
     NetLogCaptureMode capture_mode) const {
   auto dict = std::make_unique<base::DictionaryValue>();
   auto headers = std::make_unique<base::ListValue>();
-  headers->AppendString(EscapeNonASCII(GetStatusLine()));
+  headers->GetList().push_back(NetLogStringValue(GetStatusLine()));
   size_t iterator = 0;
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
     std::string log_value =
         ElideHeaderValueForNetLog(capture_mode, name, value);
-    std::string escaped_name = EscapeNonASCII(name);
-    std::string escaped_value = EscapeNonASCII(log_value);
-    headers->AppendString(base::StringPrintf("%s: %s", escaped_name.c_str(),
-                                             escaped_value.c_str()));
+    headers->GetList().push_back(
+        NetLogStringValue(base::StrCat({name, ": ", log_value})));
   }
   dict->Set("headers", std::move(headers));
   return std::move(dict);

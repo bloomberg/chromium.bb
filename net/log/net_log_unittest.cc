@@ -399,6 +399,43 @@ TEST(NetLogTest, NetLogAddRemoveObserverThreads) {
   RunTestThreads<AddRemoveObserverTestThread>(&net_log);
 }
 
+// Calls NetLogASCIIStringValue() on |raw| and returns the resulting string
+// (rather than the base::Value).
+std::string GetNetLogString(base::StringPiece raw) {
+  base::Value value = NetLogStringValue(raw);
+  std::string result;
+  EXPECT_TRUE(value.GetAsString(&result));
+  return result;
+}
+
+TEST(NetLogTest, NetLogASCIIStringValue) {
+  // ASCII strings should not be transformed.
+  EXPECT_EQ("ascii\nstrin\0g", GetNetLogString("ascii\nstrin\0g"));
+
+  // Non-ASCII UTF-8 strings should be escaped.
+  EXPECT_EQ("%ESCAPED:\xE2\x80\x8B utf-8 string %E2%98%83",
+            GetNetLogString("utf-8 string \xE2\x98\x83"));
+
+  // The presence of percent should not trigger escaping.
+  EXPECT_EQ("%20", GetNetLogString("%20"));
+
+  // However if the value to be escaped contains percent, it should be escaped
+  // (so can unescape to restore the original string).
+  EXPECT_EQ("%ESCAPED:\xE2\x80\x8B %E2%98%83 %2520",
+            GetNetLogString("\xE2\x98\x83 %20"));
+
+  // Test that when percent escaping, no ASCII value is escaped (excluding %).
+  for (uint8_t c = 0; c <= 0x7F; ++c) {
+    if (c == '%')
+      continue;
+
+    std::string s;
+    s.push_back(c);
+
+    EXPECT_EQ("%ESCAPED:\xE2\x80\x8B %E2 " + s, GetNetLogString("\xE2 " + s));
+  }
+}
+
 }  // namespace
 
 }  // namespace net

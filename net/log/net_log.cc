@@ -13,8 +13,10 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "net/base/escape.h"
 
 namespace net {
 
@@ -295,6 +297,21 @@ void NetLog::AddEntry(NetLogEventType type,
   base::AutoLock lock(lock_);
   for (auto* observer : observers_)
     observer->OnAddEntryData(entry_data);
+}
+
+base::Value NetLogStringValue(base::StringPiece raw) {
+  // The common case is that |raw| is ASCII. Represent this directly.
+  if (base::IsStringASCII(raw))
+    return base::Value(raw);
+
+  // For everything else (including valid UTF-8) percent-escape |raw|, and add a
+  // prefix that "tags" the value as being a percent-escaped representation.
+  //
+  // Note that the sequence E2 80 8B is U+200B (zero-width space) in UTF-8. It
+  // is added so the escaped string is not itself also ASCII (otherwise there
+  // would be ambiguity for consumers as to when the value needs to be
+  // unescaped).
+  return base::Value("%ESCAPED:\xE2\x80\x8B " + EscapeNonASCIIAndPercent(raw));
 }
 
 }  // namespace net
