@@ -14,6 +14,12 @@ cr.define('welcome', function() {
     /** @param {?string} redirectUrl the URL to go to, after signing in. */
     handleActivateSignIn(redirectUrl) {}
 
+    /**
+     * @param {?string} redirectUrl the URL to go to after backend records the
+     *     user declining signin.
+     */
+    handleUserDecline(redirectUrl) {}
+
     /** @param {boolean=} replace */
     goToNewTabPage(replace) {}
 
@@ -26,6 +32,11 @@ cr.define('welcome', function() {
     /** @override */
     handleActivateSignIn(redirectUrl) {
       chrome.send('handleActivateSignIn', redirectUrl ? [redirectUrl] : []);
+    }
+
+    /** @override */
+    handleUserDecline(redirectUrl) {
+      chrome.send('handleUserDecline', redirectUrl ? [redirectUrl] : []);
     }
 
     /** @override */
