@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -186,14 +187,20 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   // Cancels tracing and discards collected data.
   void CancelTracing(const OutputCallback& cb);
 
-  typedef void (*AddTraceEventOverrideCallback)(TraceEvent*,
-                                                bool thread_will_flush);
-  typedef void (*OnFlushCallback)();
-  // The callback will be called up until the point where the flush is
+  using AddTraceEventOverrideCallback = void (*)(TraceEvent*,
+                                                 bool thread_will_flush,
+                                                 TraceEventHandle* handle);
+  using OnFlushCallback = void (*)();
+  using UpdateDurationCallback = void (*)(TraceEventHandle handle,
+                                          const TimeTicks& now,
+                                          const ThreadTicks& thread_now);
+  // The callbacks will be called up until the point where the flush is
   // finished, i.e. must be callable until OutputCallback is called with
   // has_more_events==false.
-  void SetAddTraceEventOverride(const AddTraceEventOverrideCallback& override,
-                                const OnFlushCallback& on_flush_callback);
+  void SetAddTraceEventOverrides(
+      const AddTraceEventOverrideCallback& add_event_override,
+      const OnFlushCallback& on_flush_callback,
+      const UpdateDurationCallback& update_duration_callback);
 
   // Called by TRACE_EVENT* macros, don't call this directly.
   // The name parameter is a category group for example:
@@ -548,8 +555,9 @@ class BASE_EXPORT TraceLog : public MemoryDumpProvider {
   ArgumentFilterPredicate argument_filter_predicate_;
   subtle::AtomicWord generation_;
   bool use_worker_thread_;
-  subtle::AtomicWord trace_event_override_;
-  subtle::AtomicWord on_flush_callback_;
+  std::atomic<AddTraceEventOverrideCallback> add_trace_event_override_;
+  std::atomic<OnFlushCallback> on_flush_callback_;
+  std::atomic<UpdateDurationCallback> update_duration_callback_;
 
   FilterFactoryForTesting filter_factory_for_testing_;
 
