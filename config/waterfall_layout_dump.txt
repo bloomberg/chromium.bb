@@ -344,6 +344,7 @@
     rikku-postsubmit
     samus-postsubmit
     sand-postsubmit
+    sarien-postsubmit
     scarlet-postsubmit
     sentry-postsubmit
     setzer-postsubmit
@@ -2505,6 +2506,7 @@
     rikku-postsubmit
     samus-postsubmit
     sand-postsubmit
+    sarien-postsubmit
     scarlet-postsubmit
     sentry-postsubmit
     setzer-postsubmit
@@ -3301,6 +3303,7 @@
   sarien-llvm-toolchain-tryjob
   sarien-no-vmtest-pre-cq
   sarien-paladin-tryjob
+  sarien-postsubmit-tryjob
   sarien-pre-cq
   sarien-release-tryjob
   sarien-tot-chromium-pfq-informational-tryjob
