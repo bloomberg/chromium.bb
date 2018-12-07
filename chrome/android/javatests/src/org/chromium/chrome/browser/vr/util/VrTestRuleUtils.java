@@ -58,7 +58,6 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
     public static void evaluateVrTestRuleImpl(final Statement base, final Description desc,
             final VrTestRule rule, final ChromeLaunchMethod launcher) throws Throwable {
         VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
-        VrTestRuleUtils.maybeWorkaroundWebContentFlakiness(desc);
         HeadTrackingUtils.checkForAndApplyHeadTrackingModeAnnotation(rule, desc);
         launcher.launch();
         // Must be called after Chrome is started, as otherwise startService fails with an
