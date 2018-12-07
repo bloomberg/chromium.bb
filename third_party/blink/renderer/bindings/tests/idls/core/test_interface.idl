@@ -114,9 +114,9 @@
     void voidMethodPartialOverload(double doubleArg);
     static void staticVoidMethodPartialOverload();
 
-    Promise promiseMethodPartialOverload();
-    Promise promiseMethodPartialOverload(Window window);
-    static Promise staticPromiseMethodPartialOverload();
+    Promise<any> promiseMethodPartialOverload();
+    Promise<any> promiseMethodPartialOverload(Window window);
+    static Promise<any> staticPromiseMethodPartialOverload();
 
     void overloadMethodWithUnionTypeWithStringMember((double or DOMString) unionArg);
     void overloadMethodWithUnionTypeWithStringMember(boolean boolArg);

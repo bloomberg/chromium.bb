@@ -309,15 +309,15 @@ enum EffectiveConnectionType {
 
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
-    [CallWith=ScriptState] Promise createResolvedPromise(any value);
-    [CallWith=ScriptState] Promise createRejectedPromise(any reason);
-    [CallWith=ScriptState] Promise addOneToPromise(Promise promise);
-    [CallWith=ScriptState, RaisesException] Promise promiseCheck(long arg1, boolean arg2, object arg3, DOMString arg4, sequence<DOMString> arg5);
-    [CallWith=ScriptState] Promise promiseCheckWithoutExceptionState(object arg1, DOMString arg2, DOMString... variadic);
-    [CallWith=ScriptState] Promise promiseCheckRange([EnforceRange] octet arg1);
-    [CallWith=ScriptState] Promise promiseCheckOverload(Location arg1);
-    [CallWith=ScriptState] Promise promiseCheckOverload(Document arg1);
-    [CallWith=ScriptState] Promise promiseCheckOverload(Location arg1, long arg2, long arg3);
+    [CallWith=ScriptState] Promise<any> createResolvedPromise(any value);
+    [CallWith=ScriptState] Promise<any> createRejectedPromise(any reason);
+    [CallWith=ScriptState] Promise<any> addOneToPromise(Promise<any> promise);
+    [CallWith=ScriptState, RaisesException] Promise<any> promiseCheck(long arg1, boolean arg2, object arg3, DOMString arg4, sequence<DOMString> arg5);
+    [CallWith=ScriptState] Promise<any> promiseCheckWithoutExceptionState(object arg1, DOMString arg2, DOMString... variadic);
+    [CallWith=ScriptState] Promise<any> promiseCheckRange([EnforceRange] octet arg1);
+    [CallWith=ScriptState] Promise<any> promiseCheckOverload(Location arg1);
+    [CallWith=ScriptState] Promise<any> promiseCheckOverload(Document arg1);
+    [CallWith=ScriptState] Promise<any> promiseCheckOverload(Location arg1, long arg2, long arg3);
 
     void setValueForUser(HTMLInputElement element, DOMString value);
 

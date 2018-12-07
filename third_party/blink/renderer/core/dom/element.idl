@@ -141,7 +141,7 @@ interface Element : Node {
     attribute EventHandler onsearch;
 
     // Display locking.
-    [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise acquireDisplayLock(DisplayLockCallback callback);
+    [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise<any> acquireDisplayLock(DisplayLockCallback callback);
 };
 
 Element implements ParentNode;

@@ -61,5 +61,5 @@
     [MeasureAs=HTMLImageElementX] readonly attribute long x;
     [MeasureAs=HTMLImageElementY] readonly attribute long y;
 
-    [CallWith=ScriptState, RaisesException] Promise decode();
+    [CallWith=ScriptState, RaisesException] Promise<void> decode();
 };

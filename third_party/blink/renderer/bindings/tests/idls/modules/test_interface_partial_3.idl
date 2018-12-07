@@ -36,8 +36,8 @@
     void voidMethodPartialOverload(DOMString value);
     static void staticVoidMethodPartialOverload(DOMString value);
 
-    Promise promiseMethodPartialOverload(Document document);
-    static Promise staticPromiseMethodPartialOverload(DOMString value);
+    Promise<any> promiseMethodPartialOverload(Document document);
+    static Promise<any> staticPromiseMethodPartialOverload(DOMString value);
 
     void partial2VoidMethod(DOMString value);
     void partial2VoidMethod(Node node);

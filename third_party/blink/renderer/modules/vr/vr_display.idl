@@ -38,10 +38,10 @@ enum VREye {
     // Begin presenting to the VRDisplay. Must be called in response to a user
     // gesture. Repeat calls while already presenting will update the layer
     // being displayed.
-    [CallWith=ScriptState] Promise requestPresent(sequence<VRLayerInit> layers);
+    [CallWith=ScriptState] Promise<void> requestPresent(sequence<VRLayerInit> layers);
 
     // Stops presenting to the VRDisplay.
-    [CallWith=ScriptState] Promise exitPresent();
+    [CallWith=ScriptState] Promise<void> exitPresent();
 
     // Get the sources currently being presented.
     sequence<VRLayerInit> getLayers();
