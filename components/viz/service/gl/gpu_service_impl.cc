@@ -298,7 +298,7 @@ GpuServiceImpl::GetContextStateForGLSurface(gl::GLSurface* surface) {
   // TODO(penghuang): https://crbug.com/899740 Support GLSurface which is not
   // compatible.
   DCHECK_EQ(surface->GetCompatibilityKey(),
-            context_state->surface->GetCompatibilityKey());
+            context_state->surface()->GetCompatibilityKey());
   DCHECK(!context_state->use_virtualized_gl_contexts);
   return context_state;
 }

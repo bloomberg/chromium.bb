@@ -563,6 +563,8 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
       context_state_ = base::MakeRefCounted<raster::RasterDecoderContextState>(
           gl_share_group_, surface_, real_context, use_virtualized_gl_context_,
           base::DoNothing());
+      context_state_->InitializeGL(workarounds,
+                                   task_executor_->gpu_feature_info());
       gr_shader_cache_ = params.gr_shader_cache;
       context_state_->InitializeGrContext(workarounds, params.gr_shader_cache,
                                           params.activity_flags);
@@ -582,18 +584,22 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
     }
 
     if (use_virtualized_gl_context_) {
-      context_ = base::MakeRefCounted<GLContextVirtual>(
-          gl_share_group_.get(), real_context.get(), decoder_->AsWeakPtr());
-      if (!context_->Initialize(
-              surface_.get(),
-              GenerateGLContextAttribs(params.attribs, context_group_.get()))) {
-        // TODO(piman): This might not be fatal, we could recurse into
-        // CreateGLContext to get more info, tho it should be exceedingly
-        // rare and may not be recoverable anyway.
-        DestroyOnGpuThread();
-        LOG(ERROR) << "ContextResult::kFatalFailure: "
-                      "Failed to initialize virtual GL context.";
-        return gpu::ContextResult::kFatalFailure;
+      if (context_state_) {
+        context_ = context_state_->context();
+      } else {
+        context_ = base::MakeRefCounted<GLContextVirtual>(
+            gl_share_group_.get(), real_context.get(), decoder_->AsWeakPtr());
+        if (!context_->Initialize(surface_.get(),
+                                  GenerateGLContextAttribs(
+                                      params.attribs, context_group_.get()))) {
+          // TODO(piman): This might not be fatal, we could recurse into
+          // CreateGLContext to get more info, tho it should be exceedingly
+          // rare and may not be recoverable anyway.
+          DestroyOnGpuThread();
+          LOG(ERROR) << "ContextResult::kFatalFailure: "
+                        "Failed to initialize virtual GL context.";
+          return gpu::ContextResult::kFatalFailure;
+        }
       }
 
       if (!context_->MakeCurrent(surface_.get())) {
