@@ -485,9 +485,10 @@ class FileSystemFileURLLoader : public FileSystemEntryURLLoader {
         static_cast<int64_t>(kDefaultFileSystemUrlPipeSize), remaining_bytes_);
     if (!bytes_to_read) {
       if (consumer_handle_.is_valid()) {
-        // This was an empty file; make sure to call OnReceiveResponse
-        // regardless.
+        // This was an empty file; make sure to call OnReceiveResponse and
+        // OnStartLoadingResponseBody regardless.
         client_->OnReceiveResponse(head_);
+        client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
       }
       OnFileWritten(MOJO_RESULT_OK);
       return;
