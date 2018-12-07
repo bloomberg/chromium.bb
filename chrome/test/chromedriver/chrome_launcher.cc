@@ -204,7 +204,8 @@ Status WaitForDevToolsAndCheckVersion(
     const SyncWebSocketFactory& socket_factory,
     const Capabilities* capabilities,
     int wait_time,
-    std::unique_ptr<DevToolsHttpClient>* user_client) {
+    std::unique_ptr<DevToolsHttpClient>* user_client,
+    bool* retry) {
   std::unique_ptr<DeviceMetrics> device_metrics;
   if (capabilities && capabilities->device_metrics)
     device_metrics.reset(new DeviceMetrics(*capabilities->device_metrics));
@@ -248,14 +249,20 @@ Status WaitForDevToolsAndCheckVersion(
                           browser_info->android_package.c_str()));
   }
 
+  *retry = true;
   if (cmd_line->HasSwitch("disable-build-check")) {
     LOG(WARNING) << "You are using an unsupported command-line switch: "
                     "--disable-build-check. Please don't report bugs that "
                     "cannot be reproduced with this switch removed.";
-  } else if (browser_info->build_no < kMinimumSupportedChromeBuildNo) {
-    return Status(
-        kSessionNotCreated,
-        "Chrome version must be >= " + GetMinimumSupportedChromeVersion());
+  } else if (browser_info->major_version <
+                 kMinimumSupportedChromeMajorVersion ||
+             browser_info->major_version >
+                 (kMinimumSupportedChromeMajorVersion + 3)) {
+    *retry = false;
+    return Status(kSessionNotCreated,
+                  base::StringPrintf("Chrome version must be between %d and %d",
+                                     kMinimumSupportedChromeMajorVersion,
+                                     kMinimumSupportedChromeMajorVersion + 3));
   }
 
   while (base::TimeTicks::Now() < deadline) {
@@ -317,9 +324,10 @@ Status LaunchRemoteChromeSession(
     std::unique_ptr<Chrome>* chrome) {
   Status status(kOk);
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
+  bool retry = true;
   status = WaitForDevToolsAndCheckVersion(
       capabilities.debugger_address, factory, socket_factory, &capabilities, 60,
-      &devtools_http_client);
+      &devtools_http_client, &retry);
   if (status.IsError()) {
     return Status(kUnknownError, "cannot connect to chrome at " +
                       capabilities.debugger_address.ToString(),
@@ -357,6 +365,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
   Status status = Status(kOk);
   std::vector<std::string> extension_bg_pages;
   int devtools_port = 0;
+  bool retry = true;
 
   if (capabilities.switches.HasSwitch("remote-debugging-port")) {
     std::string port_switch =
@@ -455,7 +464,10 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
     if (status.IsOk()) {
       status = WaitForDevToolsAndCheckVersion(
           NetAddress(devtools_port), factory, socket_factory, &capabilities, 1,
-          &devtools_http_client);
+          &devtools_http_client, &retry);
+      if (!retry) {
+        break;
+      }
     }
     if (status.IsOk()) {
       break;
@@ -574,9 +586,10 @@ Status LaunchAndroidChrome(network::mojom::URLLoaderFactory* factory,
   }
 
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
+  bool retry = true;
   status = WaitForDevToolsAndCheckVersion(NetAddress(devtools_port), factory,
                                           socket_factory, &capabilities, 60,
-                                          &devtools_http_client);
+                                          &devtools_http_client, &retry);
   if (status.IsError()) {
     device->TearDown();
     return status;
@@ -628,10 +641,10 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
 #endif
 
   std::unique_ptr<DevToolsHttpClient> devtools_http_client;
-  status =
-      WaitForDevToolsAndCheckVersion(NetAddress(0), factory, socket_factory,
-                                     &capabilities, 1, &devtools_http_client);
-
+  bool retry = true;
+  status = WaitForDevToolsAndCheckVersion(NetAddress(0), factory,
+                                          socket_factory, &capabilities, 1,
+                                          &devtools_http_client, &retry);
   std::unique_ptr<DevToolsClient> devtools_websocket_client;
   status = CreateBrowserwideDevToolsClientAndConnect(
       NetAddress(0), capabilities.perf_logging_prefs, socket_factory,

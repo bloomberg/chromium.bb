@@ -13,6 +13,8 @@ const int kMinimumSupportedChromeVersion[] = {70, 0, 3538, 0};
 
 }  // namespace
 
+const int kMinimumSupportedChromeMajorVersion =
+    kMinimumSupportedChromeVersion[0];
 const int kMinimumSupportedChromeBuildNo = kMinimumSupportedChromeVersion[2];
 
 std::string GetMinimumSupportedChromeVersion() {
