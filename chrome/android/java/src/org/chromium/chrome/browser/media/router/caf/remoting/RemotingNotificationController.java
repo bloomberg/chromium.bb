@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.media.router.caf;
+package org.chromium.chrome.browser.media.router.caf.remoting;
 
 import android.content.Intent;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.media.router.caf.BaseNotificationController;
+import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.tab.Tab;
 
-/** NotificationController implementation for presentation. */
-public class CafNotificationController extends BaseNotificationController {
-    public CafNotificationController(BaseSessionController sessionController) {
+/** NotificationController implementation for remoting. */
+public class RemotingNotificationController extends BaseNotificationController {
+    public RemotingNotificationController(BaseSessionController sessionController) {
         super(sessionController);
     }
 
@@ -22,13 +24,13 @@ public class CafNotificationController extends BaseNotificationController {
                 Tab.createBringTabToFrontIntent(mSessionController.getRouteCreationInfo().tabId);
         if (contentIntent != null) {
             contentIntent.putExtra(MediaNotificationUma.INTENT_EXTRA_NAME,
-                    MediaNotificationUma.Source.PRESENTATION);
+                    MediaNotificationUma.Source.MEDIA_FLING);
         }
         return contentIntent;
     }
 
     @Override
     public int getNotificationId() {
-        return R.id.presentation_notification;
+        return R.id.remote_notification;
     }
 }

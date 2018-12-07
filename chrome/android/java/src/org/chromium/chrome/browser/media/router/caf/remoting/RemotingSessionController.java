@@ -9,6 +9,7 @@ import com.google.android.gms.cast.framework.CastSession;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.media.router.CastSessionUtil;
 import org.chromium.chrome.browser.media.router.FlingingController;
+import org.chromium.chrome.browser.media.router.caf.BaseNotificationController;
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
 import org.chromium.chrome.browser.media.router.caf.CafBaseMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.remoting.RemotingMediaSource;
@@ -18,8 +19,11 @@ public class RemotingSessionController extends BaseSessionController {
     private static final String TAG = "RmtSessionCtrl";
 
     private FlingingControllerAdapter mFlingingControllerAdapter;
+    private RemotingNotificationController mNotificationController;
+
     RemotingSessionController(CafBaseMediaRouteProvider provider) {
         super(provider);
+        mNotificationController = new RemotingNotificationController(this);
     }
 
     @Override
@@ -51,5 +55,10 @@ public class RemotingSessionController extends BaseSessionController {
     @Override
     public FlingingController getFlingingController() {
         return mFlingingControllerAdapter;
+    }
+
+    @Override
+    public BaseNotificationController getNotificationController() {
+        return mNotificationController;
     }
 }
