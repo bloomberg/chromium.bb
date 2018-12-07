@@ -12,6 +12,10 @@
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace gpu {
 struct GPUInfo;
 struct VideoMemoryUsageStats;
@@ -60,6 +64,9 @@ class GpuDataManager {
 
   // Whether a GPU is in use (as opposed to a software renderer).
   virtual bool HardwareAccelerationEnabled() const = 0;
+
+  // Insert switches into gpu process command line: kUseGL, etc.
+  virtual void AppendGpuCommandLine(base::CommandLine* command_line) const = 0;
 
  protected:
   virtual ~GpuDataManager() {}
