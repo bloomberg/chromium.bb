@@ -150,6 +150,60 @@ const char* const kQuerySelectorAll =
         return found[0];
       return undefined;
     })";
+
+bool ConvertPseudoType(const PseudoType pseudo_type,
+                       dom::PseudoType* pseudo_type_output) {
+  switch (pseudo_type) {
+    case PseudoType::UNDEFINED:
+      break;
+    case PseudoType::FIRST_LINE:
+      *pseudo_type_output = dom::PseudoType::FIRST_LINE;
+      return true;
+    case PseudoType::FIRST_LETTER:
+      *pseudo_type_output = dom::PseudoType::FIRST_LETTER;
+      return true;
+    case PseudoType::BEFORE:
+      *pseudo_type_output = dom::PseudoType::BEFORE;
+      return true;
+    case PseudoType::AFTER:
+      *pseudo_type_output = dom::PseudoType::AFTER;
+      return true;
+    case PseudoType::BACKDROP:
+      *pseudo_type_output = dom::PseudoType::BACKDROP;
+      return true;
+    case PseudoType::SELECTION:
+      *pseudo_type_output = dom::PseudoType::SELECTION;
+      return true;
+    case PseudoType::FIRST_LINE_INHERITED:
+      *pseudo_type_output = dom::PseudoType::FIRST_LINE_INHERITED;
+      return true;
+    case PseudoType::SCROLLBAR:
+      *pseudo_type_output = dom::PseudoType::SCROLLBAR;
+      return true;
+    case PseudoType::SCROLLBAR_THUMB:
+      *pseudo_type_output = dom::PseudoType::SCROLLBAR_THUMB;
+      return true;
+    case PseudoType::SCROLLBAR_BUTTON:
+      *pseudo_type_output = dom::PseudoType::SCROLLBAR_BUTTON;
+      return true;
+    case PseudoType::SCROLLBAR_TRACK:
+      *pseudo_type_output = dom::PseudoType::SCROLLBAR_TRACK;
+      return true;
+    case PseudoType::SCROLLBAR_TRACK_PIECE:
+      *pseudo_type_output = dom::PseudoType::SCROLLBAR_TRACK_PIECE;
+      return true;
+    case PseudoType::SCROLLBAR_CORNER:
+      *pseudo_type_output = dom::PseudoType::SCROLLBAR_CORNER;
+      return true;
+    case PseudoType::RESIZER:
+      *pseudo_type_output = dom::PseudoType::RESIZER;
+      return true;
+    case PseudoType::INPUT_LIST_BUTTON:
+      *pseudo_type_output = dom::PseudoType::INPUT_LIST_BUTTON;
+      return true;
+  }
+  return false;
+}
 }  // namespace
 
 WebController::ElementPositionGetter::ElementPositionGetter()
@@ -623,10 +677,32 @@ void WebController::OnQuerySelectorAll(
     return;
   }
 
-  // Return object id of the element.
   if (selector.selectors.size() == index + 1) {
-    element_result->object_id = result->GetResult()->GetObjectId();
-    std::move(callback).Run(std::move(element_result));
+    // The pseudo type is associated to the final element matched by
+    // |selector|, which means that we currently don't handle matching an
+    // element inside a pseudo element.
+    if (selector.pseudo_type == PseudoType::UNDEFINED) {
+      // Return object id of the element.
+      element_result->object_id = result->GetResult()->GetObjectId();
+      std::move(callback).Run(std::move(element_result));
+      return;
+    }
+
+    // We are looking for a pseudo element associated with this element.
+    dom::PseudoType pseudo_type;
+    if (!ConvertPseudoType(selector.pseudo_type, &pseudo_type)) {
+      // Return empty result.
+      std::move(callback).Run(std::move(element_result));
+      return;
+    }
+
+    devtools_client_->GetDOM()->DescribeNode(
+        dom::DescribeNodeParams::Builder()
+            .SetObjectId(result->GetResult()->GetObjectId())
+            .Build(),
+        base::BindOnce(&WebController::OnDescribeNodeForPseudoElement,
+                       weak_ptr_factory_.GetWeakPtr(), pseudo_type,
+                       std::move(element_result), std::move(callback)));
     return;
   }
 
@@ -638,6 +714,49 @@ void WebController::OnQuerySelectorAll(
           &WebController::OnDescribeNode, weak_ptr_factory_.GetWeakPtr(),
           result->GetResult()->GetObjectId(), index, selector, strict_mode,
           std::move(element_result), std::move(callback)));
+}
+
+void WebController::OnDescribeNodeForPseudoElement(
+    dom::PseudoType pseudo_type,
+    std::unique_ptr<FindElementResult> element_result,
+    FindElementCallback callback,
+    std::unique_ptr<dom::DescribeNodeResult> result) {
+  if (!result || !result->GetNode()) {
+    DLOG(ERROR) << "Failed to describe the node for pseudo element.";
+    std::move(callback).Run(std::move(element_result));
+    return;
+  }
+
+  auto* node = result->GetNode();
+  if (node->HasPseudoElements()) {
+    for (const auto& pseudo_element : *(node->GetPseudoElements())) {
+      if (pseudo_element->HasPseudoType() &&
+          pseudo_element->GetPseudoType() == pseudo_type) {
+        devtools_client_->GetDOM()->ResolveNode(
+            dom::ResolveNodeParams::Builder()
+                .SetBackendNodeId(pseudo_element->GetBackendNodeId())
+                .Build(),
+            base::BindOnce(&WebController::OnResolveNodeForPseudoElement,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(element_result), std::move(callback)));
+        return;
+      }
+    }
+  }
+
+  // Failed to find the pseudo element: run the callback with empty result.
+  std::move(callback).Run(std::move(element_result));
+}
+
+void WebController::OnResolveNodeForPseudoElement(
+    std::unique_ptr<FindElementResult> element_result,
+    FindElementCallback callback,
+    std::unique_ptr<dom::ResolveNodeResult> result) {
+  if (result && result->GetObject() && result->GetObject()->HasObjectId()) {
+    element_result->object_id = result->GetObject()->GetObjectId();
+  }
+
+  std::move(callback).Run(std::move(element_result));
 }
 
 void WebController::OnDescribeNode(

@@ -6,8 +6,19 @@
 
 namespace autofill_assistant {
 
-Selector::Selector() = default;
-Selector::Selector(std::vector<std::string> s) : selectors(s) {}
+Selector::Selector() : pseudo_type(PseudoType::UNDEFINED) {}
+
+Selector::Selector(const ElementReferenceProto& element) {
+  for (const auto& selector : element.selectors()) {
+    selectors.emplace_back(selector);
+  }
+  pseudo_type = element.pseudo_type();
+}
+
+Selector::Selector(std::vector<std::string> s)
+    : selectors(s), pseudo_type(PseudoType::UNDEFINED) {}
+Selector::Selector(std::vector<std::string> s, PseudoType p)
+    : selectors(s), pseudo_type(p) {}
 Selector::~Selector() = default;
 
 Selector::Selector(Selector&& other) = default;
@@ -16,11 +27,14 @@ Selector& Selector::operator=(const Selector& other) = default;
 Selector& Selector::operator=(Selector&& other) = default;
 
 bool Selector::operator<(const Selector& other) const {
-  return this->selectors < other.selectors;
+  return this->selectors < other.selectors ||
+         (this->selectors == other.selectors &&
+          this->pseudo_type < other.pseudo_type);
 }
 
 bool Selector::operator==(const Selector& other) const {
-  return this->selectors == other.selectors;
+  return this->selectors == other.selectors &&
+         this->pseudo_type == other.pseudo_type;
 }
 
 bool Selector::empty() const {

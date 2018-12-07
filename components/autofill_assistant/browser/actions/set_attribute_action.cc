@@ -23,7 +23,7 @@ SetAttributeAction::~SetAttributeAction() {}
 void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
   delegate->ShortWaitForElementExist(
-      ExtractSelector(proto_.set_attribute().element()),
+      Selector(proto_.set_attribute().element()),
       base::BindOnce(&SetAttributeAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -39,7 +39,7 @@ void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->SetAttribute(
-      ExtractSelector(proto_.set_attribute().element()),
+      Selector(proto_.set_attribute().element()),
       ExtractVector(proto_.set_attribute().attribute()),
       proto_.set_attribute().value(),
       base::BindOnce(&SetAttributeAction::OnSetAttribute,

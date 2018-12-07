@@ -298,6 +298,27 @@ enum ProcessedActionStatusProto {
   PAYMENT_REQUEST_ERROR = 4;
 }
 
+// The pseudo type values come from
+// https://chromedevtools.github.io/devtools-protocol/tot/DOM#type-PseudoType.
+enum PseudoType {
+  UNDEFINED = 0;
+  FIRST_LINE = 1;
+  FIRST_LETTER = 2;
+  BEFORE = 3;
+  AFTER = 4;
+  BACKDROP = 5;
+  SELECTION = 6;
+  FIRST_LINE_INHERITED = 7;
+  SCROLLBAR = 8;
+  SCROLLBAR_THUMB = 9;
+  SCROLLBAR_BUTTON = 10;
+  SCROLLBAR_TRACK = 11;
+  SCROLLBAR_TRACK_PIECE = 12;
+  SCROLLBAR_CORNER = 13;
+  RESIZER = 14;
+  INPUT_LIST_BUTTON = 15;
+}
+
 // A reference to an unique element on the page, possibly nested in frames.
 message ElementReferenceProto {
   // A sequence of CSS selectors. Any non-final CSS selector is expected to
@@ -306,6 +327,11 @@ message ElementReferenceProto {
   // APIs are free to reject element references that do not refer to unique
   // elements (i.e. resolve to more than one element on the page).
   repeated string selectors = 2;
+
+  // An optional pseudo type. This pseudo type is associated to the final
+  // element matched by |selector|, which means that we currently don't handle
+  // matching an element inside a pseudo element.
+  optional PseudoType pseudo_type = 3;
 }
 
 // Contain all arguments to perform a click.

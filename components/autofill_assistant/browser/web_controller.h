@@ -319,6 +319,15 @@ class WebController {
       std::unique_ptr<FindElementResult> element_result,
       FindElementCallback callback,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnDescribeNodeForPseudoElement(
+      dom::PseudoType pseudo_type,
+      std::unique_ptr<FindElementResult> element_result,
+      FindElementCallback callback,
+      std::unique_ptr<dom::DescribeNodeResult> result);
+  void OnResolveNodeForPseudoElement(
+      std::unique_ptr<FindElementResult> element_result,
+      FindElementCallback callback,
+      std::unique_ptr<dom::ResolveNodeResult> result);
   void OnDescribeNode(const std::string& object_id,
                       size_t index,
                       const Selector& selector,
