@@ -46,6 +46,8 @@
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/window/frame_background.h"
+#include "ui/views/window/frame_caption_button.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 #include "ui/views/window/window_shape.h"
 
 #if defined(OS_LINUX)
@@ -119,10 +121,6 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
     OpaqueBrowserFrameViewLayout* layout)
     : BrowserNonClientFrameView(frame, browser_view),
       layout_(layout),
-      minimize_button_(nullptr),
-      maximize_button_(nullptr),
-      restore_button_(nullptr),
-      close_button_(nullptr),
       window_icon_(nullptr),
       window_title_(nullptr),
       frame_background_(new views::FrameBackground()) {
@@ -133,34 +131,49 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   platform_observer_.reset(OpaqueBrowserFrameViewPlatformSpecific::Create(
       this, layout_,
       ThemeServiceFactory::GetForProfile(browser_view->browser()->profile())));
+}
 
-  minimize_button_ = InitWindowCaptionButton(IDR_MINIMIZE,
-                                             IDR_MINIMIZE_H,
-                                             IDR_MINIMIZE_P,
-                                             IDR_MINIMIZE_BUTTON_MASK,
-                                             IDS_ACCNAME_MINIMIZE,
-                                             VIEW_ID_MINIMIZE_BUTTON);
-  maximize_button_ = InitWindowCaptionButton(IDR_MAXIMIZE,
-                                             IDR_MAXIMIZE_H,
-                                             IDR_MAXIMIZE_P,
-                                             IDR_MAXIMIZE_BUTTON_MASK,
-                                             IDS_ACCNAME_MAXIMIZE,
-                                             VIEW_ID_MAXIMIZE_BUTTON);
-  restore_button_ = InitWindowCaptionButton(IDR_RESTORE,
-                                            IDR_RESTORE_H,
-                                            IDR_RESTORE_P,
-                                            IDR_RESTORE_BUTTON_MASK,
-                                            IDS_ACCNAME_RESTORE,
-                                            VIEW_ID_RESTORE_BUTTON);
-  close_button_ = InitWindowCaptionButton(IDR_CLOSE,
-                                          IDR_CLOSE_H,
-                                          IDR_CLOSE_P,
-                                          IDR_CLOSE_BUTTON_MASK,
-                                          IDS_ACCNAME_CLOSE,
-                                          VIEW_ID_CLOSE_BUTTON);
+OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
+
+void OpaqueBrowserFrameView::InitViews() {
+  if (GetFrameButtonStyle() == FrameButtonStyle::kMdButton) {
+    minimize_button_ = CreateFrameCaptionButton(
+        views::CAPTION_BUTTON_ICON_MINIMIZE, HTMINBUTTON,
+        views::kWindowControlMinimizeIcon);
+    maximize_button_ = CreateFrameCaptionButton(
+        views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, HTMAXBUTTON,
+        views::kWindowControlMaximizeIcon);
+    restore_button_ =
+        CreateFrameCaptionButton(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
+                                 HTMAXBUTTON, views::kWindowControlRestoreIcon);
+    close_button_ =
+        CreateFrameCaptionButton(views::CAPTION_BUTTON_ICON_CLOSE, HTMAXBUTTON,
+                                 views::kWindowControlCloseIcon);
+  } else if (GetFrameButtonStyle() == FrameButtonStyle::kImageButton) {
+    minimize_button_ =
+        CreateImageButton(IDR_MINIMIZE, IDR_MINIMIZE_H, IDR_MINIMIZE_P,
+                          IDR_MINIMIZE_BUTTON_MASK, VIEW_ID_MINIMIZE_BUTTON);
+    maximize_button_ =
+        CreateImageButton(IDR_MAXIMIZE, IDR_MAXIMIZE_H, IDR_MAXIMIZE_P,
+                          IDR_MAXIMIZE_BUTTON_MASK, VIEW_ID_MAXIMIZE_BUTTON);
+    restore_button_ =
+        CreateImageButton(IDR_RESTORE, IDR_RESTORE_H, IDR_RESTORE_P,
+                          IDR_RESTORE_BUTTON_MASK, VIEW_ID_RESTORE_BUTTON);
+    close_button_ =
+        CreateImageButton(IDR_CLOSE, IDR_CLOSE_H, IDR_CLOSE_P,
+                          IDR_CLOSE_BUTTON_MASK, VIEW_ID_CLOSE_BUTTON);
+  }
+  InitWindowCaptionButton(minimize_button_, IDS_ACCNAME_MINIMIZE,
+                          VIEW_ID_MINIMIZE_BUTTON);
+  InitWindowCaptionButton(maximize_button_, IDS_ACCNAME_MAXIMIZE,
+                          VIEW_ID_MAXIMIZE_BUTTON);
+  InitWindowCaptionButton(restore_button_, IDS_ACCNAME_RESTORE,
+                          VIEW_ID_RESTORE_BUTTON);
+  InitWindowCaptionButton(close_button_, IDS_ACCNAME_CLOSE,
+                          VIEW_ID_CLOSE_BUTTON);
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
-  if (browser_view->ShouldShowWindowIcon()) {
+  if (browser_view()->ShouldShowWindowIcon()) {
     window_icon_ = new TabIconView(this, this);
     window_icon_->set_is_light(true);
     window_icon_->set_id(VIEW_ID_WINDOW_ICON);
@@ -168,8 +181,8 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
     window_icon_->Update();
   }
 
-  window_title_ = new views::Label(browser_view->GetWindowTitle());
-  window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
+  window_title_ = new views::Label(browser_view()->GetWindowTitle());
+  window_title_->SetVisible(browser_view()->ShouldShowWindowTitle());
   // Readability is ensured by |GetReadableFrameForegroundColor()|.
   window_title_->SetAutoColorReadabilityEnabled(false);
   window_title_->SetSubpixelRenderingEnabled(false);
@@ -178,16 +191,14 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(
   AddChildView(window_title_);
 
   extensions::HostedAppBrowserController* controller =
-      browser_view->browser()->hosted_app_controller();
+      browser_view()->browser()->hosted_app_controller();
   if (controller && controller->ShouldShowHostedAppButtonContainer()) {
     set_hosted_app_button_container(new HostedAppButtonContainer(
-        frame, browser_view, GetReadableFrameForegroundColor(kActive),
+        frame(), browser_view(), GetReadableFrameForegroundColor(kActive),
         GetReadableFrameForegroundColor(kInactive)));
     AddChildView(hosted_app_button_container());
   }
 }
-
-OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
@@ -472,6 +483,15 @@ bool OpaqueBrowserFrameView::EverHasVisibleBackgroundTabShapes() const {
   return BrowserNonClientFrameView::EverHasVisibleBackgroundTabShapes();
 }
 
+OpaqueBrowserFrameView::FrameButtonStyle
+OpaqueBrowserFrameView::GetFrameButtonStyle() const {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  return FrameButtonStyle::kMdButton;
+#else
+  return FrameButtonStyle::kImageButton;
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, protected:
 
@@ -481,11 +501,12 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   if (frame()->IsFullscreen())
     return;  // Nothing is visible, so don't bother to paint.
 
-  SkColor frame_color = GetFrameColor();
+  const SkColor frame_color = GetFrameColor();
+  const bool active = ShouldPaintAsActive();
   window_title_->SetEnabledColor(GetReadableFrameForegroundColor(kUseCurrent));
   frame_background_->set_frame_color(frame_color);
   frame_background_->set_use_custom_frame(frame()->UseCustomFrame());
-  frame_background_->set_is_active(ShouldPaintAsActive());
+  frame_background_->set_is_active(active);
   frame_background_->set_incognito(browser_view()->IsIncognito());
   frame_background_->set_theme_image(GetFrameImage());
   const int y_inset =
@@ -495,6 +516,28 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
   frame_background_->set_theme_image_y_inset(y_inset);
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
   frame_background_->set_top_area_height(GetTopAreaHeight());
+
+  if (GetFrameButtonStyle() == FrameButtonStyle::kMdButton) {
+    views::FrameCaptionButton::ColorMode color_mode =
+        views::FrameCaptionButton::ColorMode::kDefault;
+    extensions::HostedAppBrowserController* controller =
+        browser_view()->browser()->hosted_app_controller();
+    if (controller) {
+      color_mode = controller->GetThemeColor()
+                       ? views::FrameCaptionButton::ColorMode::kThemed
+                       : views::FrameCaptionButton::ColorMode::kDefault;
+    }
+    for (auto* button :
+         {minimize_button_, maximize_button_, restore_button_, close_button_}) {
+      DCHECK_EQ(std::string(views::FrameCaptionButton::kViewClassName),
+                button->GetClassName());
+      views::FrameCaptionButton* frame_caption_button =
+          static_cast<views::FrameCaptionButton*>(button);
+      frame_caption_button->set_paint_as_active(active);
+      frame_caption_button->SetBackgroundColor(frame_color);
+      frame_caption_button->SetColorMode(color_mode);
+    }
+  }
 
   if (IsFrameCondensed())
     PaintMaximizedFrameBorder(canvas);
@@ -522,13 +565,22 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, private:
 
-views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
-    int normal_image_id,
-    int hot_image_id,
-    int pushed_image_id,
-    int mask_image_id,
-    int accessibility_string_id,
-    ViewID view_id) {
+views::Button* OpaqueBrowserFrameView::CreateFrameCaptionButton(
+    views::CaptionButtonIcon icon_type,
+    int ht_component,
+    const gfx::VectorIcon& icon_image) {
+  views::FrameCaptionButton* button =
+      new views::FrameCaptionButton(this, icon_type, ht_component);
+  button->SetImage(button->icon(), views::FrameCaptionButton::ANIMATE_NO,
+                   icon_image);
+  return button;
+}
+
+views::Button* OpaqueBrowserFrameView::CreateImageButton(int normal_image_id,
+                                                         int hot_image_id,
+                                                         int pushed_image_id,
+                                                         int mask_image_id,
+                                                         ViewID view_id) {
   views::ImageButton* button = new views::ImageButton(this);
   const ui::ThemeProvider* tp = frame()->GetThemeProvider();
   button->SetImage(views::Button::STATE_NORMAL,
@@ -538,24 +590,31 @@ views::ImageButton* OpaqueBrowserFrameView::InitWindowCaptionButton(
   button->SetImage(views::Button::STATE_PRESSED,
                    tp->GetImageSkiaNamed(pushed_image_id));
   if (browser_view()->IsBrowserTypeNormal()) {
-    // Get a custom processed version of the theme's background image so that it
-    // appears to draw contiguously across all of the caption buttons.
+    // Get a custom processed version of the theme's background image so
+    // that it appears to draw contiguously across all of the caption
+    // buttons.
     const gfx::Size normal_image_size = GetThemeImageSize(normal_image_id);
     const gfx::ImageSkia processed_bg_image =
         GetProcessedBackgroundImageForCaptionButon(view_id, normal_image_size);
 
     // SetBackgroundImage immediately uses the provided ImageSkia pointer
-    // (&processed_bg_image) to create a local copy, so it's safe for this to be
-    // locally scoped.
+    // (&processed_bg_image) to create a local copy, so it's safe for this
+    // to be locally scoped.
     button->SetBackgroundImage(
         tp->GetColor(ThemeProperties::COLOR_BUTTON_BACKGROUND),
         (processed_bg_image.isNull() ? nullptr : &processed_bg_image),
         tp->GetImageSkiaNamed(mask_image_id));
   }
+  return button;
+}
+
+void OpaqueBrowserFrameView::InitWindowCaptionButton(
+    views::Button* button,
+    int accessibility_string_id,
+    ViewID view_id) {
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessibility_string_id));
   button->set_id(view_id);
   AddChildView(button);
-  return button;
 }
 
 gfx::Size OpaqueBrowserFrameView::GetThemeImageSize(int image_id) {

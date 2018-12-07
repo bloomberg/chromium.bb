@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_LAYOUT_DELEGATE_H_
 
+#include "base/strings/string16.h"
+
 namespace gfx {
 class Size;
 }
@@ -13,6 +15,14 @@ class Size;
 // Browser{,Frame,View}.
 class OpaqueBrowserFrameViewLayoutDelegate {
  public:
+  enum class FrameButtonStyle {
+    // MD-styled button with a vector image, of class FrameCaptionButton.
+    kMdButton,
+
+    // Regular old ImageButton.
+    kImageButton,
+  };
+
   // Controls the visual placement of the window icon/title in non-tabstrip
   // mode.
   virtual bool ShouldShowWindowIcon() const = 0;
@@ -61,6 +71,9 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // Returns whether the shapes of background tabs are visible against the frame
   // for either active or inactive windows.
   virtual bool EverHasVisibleBackgroundTabShapes() const = 0;
+
+  // Indicates the type of the frame buttons.
+  virtual FrameButtonStyle GetFrameButtonStyle() const;
 
  protected:
   virtual ~OpaqueBrowserFrameViewLayoutDelegate() {}

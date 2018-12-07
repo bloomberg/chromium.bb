@@ -17,7 +17,7 @@ class HostedAppButtonContainer;
 class OpaqueBrowserFrameViewLayoutDelegate;
 
 namespace views {
-class ImageButton;
+class Button;
 class Label;
 }
 
@@ -116,10 +116,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
                                       bool leading_spacing,
                                       bool is_leading_button) const;
 
-  void set_extra_caption_y(int extra_caption_y) {
-    extra_caption_y_ = extra_caption_y;
-  }
-
   void set_forced_window_caption_spacing_for_test(
       int forced_window_caption_spacing) {
     forced_window_caption_spacing_ = forced_window_caption_spacing;
@@ -156,9 +152,6 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   virtual TopAreaPadding GetTopAreaPadding(bool has_leading_buttons,
                                            bool has_trailing_buttons) const;
 
-  virtual bool ShouldDrawImageMirrored(views::ImageButton* button,
-                                       ButtonAlignment alignment) const;
-
   OpaqueBrowserFrameViewLayoutDelegate* delegate_;
 
   // The leading and trailing x positions of the empty space available for
@@ -172,20 +165,17 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
  private:
   // Layout various sub-components of this view.
-  void LayoutWindowControls(views::View* host);
-  void LayoutTitleBar(views::View* host);
+  void LayoutWindowControls();
+  void LayoutTitleBar();
 
-  void ConfigureButton(views::View* host,
-                       views::FrameButton button_id,
-                       ButtonAlignment align);
+  void ConfigureButton(views::FrameButton button_id, ButtonAlignment align);
 
   // Sets the visibility of all buttons associated with |button_id| to false.
   void HideButton(views::FrameButton button_id);
 
   // Adds a window caption button to either the leading or trailing side.
   void SetBoundsForButton(views::FrameButton button_id,
-                          views::View* host,
-                          views::ImageButton* button,
+                          views::Button* button,
                           ButtonAlignment align);
 
   // Internal implementation of ViewAdded() and ViewRemoved().
@@ -216,19 +206,15 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   bool placed_leading_button_;
   bool placed_trailing_button_;
 
-  // Extra offset from the top of the frame to the top of the window control
-  // buttons. Configurable based on platform and whether we are under test.
-  int extra_caption_y_;
-
   // Extra offset between the individual window caption buttons.  Set only in
   // testing, otherwise, its value will be -1.
   int forced_window_caption_spacing_;
 
   // Window controls.
-  views::ImageButton* minimize_button_;
-  views::ImageButton* maximize_button_;
-  views::ImageButton* restore_button_;
-  views::ImageButton* close_button_;
+  views::Button* minimize_button_;
+  views::Button* maximize_button_;
+  views::Button* restore_button_;
+  views::Button* close_button_;
 
   views::View* window_icon_;
   views::Label* window_title_;
