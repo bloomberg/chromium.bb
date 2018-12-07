@@ -420,6 +420,12 @@ class SQL_EXPORT Database {
   bool DoesViewExist(const char* table_name) const;
 
   // Returns true if a column with the given name exists in the given table.
+  //
+  // Calling this method on a VIEW returns an unspecified result.
+  //
+  // This should only be used by migration code for legacy features that do not
+  // use MetaTable, and need an alternative way of figuring out the database's
+  // current version.
   bool DoesColumnExist(const char* table_name, const char* column_name) const;
 
   // Returns sqlite's internal ID for the last inserted row. Valid only
