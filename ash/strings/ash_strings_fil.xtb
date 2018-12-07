@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2761704814324807722">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Piliin kung makakagamit ang mga website ng mga serbisyo ng lokasyon o mikropono, camera, o iba pang feature ng device</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">Para i-unlock, ilagay ang iyong password</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
@@ -224,6 +223,7 @@
 <translation id="4628757576491864469">Mga Device</translation>
 <translation id="4659419629803378708">Na-enable ang ChromeVox</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">Maaaring subaybayan ng admin ng device na ito ang iyong aktibidad sa pag-browse.</translation>
 <translation id="4774338217796918551">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Hindi available ang Google Assistant sa demo session.</translation>
@@ -338,7 +338,6 @@
 <translation id="6751826523481687655">Naka-on ang pag-trace ng performance</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
 <translation id="6803622936009808957">Hindi ma-mirror ang mga display dahil walang mga sinusuportahang resolusyon na nakita. Pumasok na lang sa pinalawak na desktop.</translation>
-<translation id="6814658242098378692">Pamahalaan ang mga app, extension, at tema</translation>
 <translation id="6820676911989879663">Magpahinga!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">I-activate <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +377,6 @@
 <translation id="7564874036684306347">Kapag inilipat ang mga window sa isa pang desktop, maaari itong magresulta sa hindi inaasahang gawi. Maaaring hatiin ang mga susunod na notification, window, at dialog sa pagitan ng mga desktop.</translation>
 <translation id="7569509451529460200">Na-enable ang Braille at ChromeVox</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
-<translation id="7604942372593434070">I-access ang iyong aktibidad sa pag-browse</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (may-ari)</translation>
 <translation id="7647488630410863958">I-unlock ang device upang tingnan ang iyong mga notification</translation>
 <translation id="7649070708921625228">Tulong</translation>

@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Genopretter forbindelsen til <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Vælg, om websites skal kunne bruge placeringstjenester eller enhedens mikrofon, kamera eller andre funktioner</translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
 <translation id="2803734122639935495">Angiv din adgangskode for at låse enheden op</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
@@ -224,6 +223,7 @@
 <translation id="4628757576491864469">Enheder</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4734965478015604180">Vandret</translation>
+<translation id="476166673298332917">Administratoren af enheden kan overvåge din browseraktivitet.</translation>
 <translation id="4774338217796918551">Kom tilbage i morgen kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>
@@ -339,7 +339,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6751826523481687655">Sporing af effektivitet er slået til</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % opladet og oplades nu.</translation>
 <translation id="6803622936009808957">Skærmene kunne ikke spejles, da der ikke fandtes en understøttet opløsning. I stedet anvendes Udvidet skrivebord.</translation>
-<translation id="6814658242098378692">Administrer apps, udvidelser og temaer</translation>
 <translation id="6820676911989879663">Hold en pause</translation>
 <translation id="683971173229319003">Søg+L</translation>
 <translation id="6857811139397017780">Aktivér <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +378,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7564874036684306347">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd. Efterfølgende underretninger, vinduer og dialogbokse kan blive delt mellem skriveborde.</translation>
 <translation id="7569509451529460200">Braille og ChromeVox er aktiveret</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
-<translation id="7604942372593434070">Adgang til din browseraktivitet</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine underretninger</translation>
 <translation id="7649070708921625228">Hjælp</translation>

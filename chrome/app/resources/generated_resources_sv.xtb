@@ -1283,6 +1283,7 @@
 <translation id="2908162660801918428">Lägg till mediegalleri efter katalog</translation>
 <translation id="2910318910161511225">Anslut till ett nätverk och försök igen</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
+<translation id="2915102088417824677">Visa aktivitetslogg</translation>
 <translation id="2916073183900451334">Om du trycker på Tabb på en webbsida markeras länkar och formulärfält</translation>
 <translation id="2916745397441987255">Sök efter tillägg</translation>
 <translation id="2921081876747860777">Skapa ett lösenord för att skydda lokal data</translation>
@@ -2071,6 +2072,7 @@
 <translation id="4104163789986725820">E&amp;xportera...</translation>
 <translation id="4107048419833779140">Identifiera och mata ut lagringsenheter</translation>
 <translation id="4109135793348361820">Flytta fönster till <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Nedladdningen är klar: <ph name="FILE_NAME" />. Stega till nedladdningsfältet med Skift+F6.</translation>
 <translation id="4110895898888439383">Surfa på webben i högkontrastläge</translation>
 <translation id="4115002065223188701">Nätverket är utanför räckvidden</translation>
 <translation id="4115080753528843955">I vissa innehållstjänster används unika identifierare i syfte att ge åtkomst till skyddat innehåll</translation>
@@ -2231,6 +2233,7 @@
 <translation id="44141919652824029">Vill du ge <ph name="APP_NAME" /> åtkomstbehörighet till listan med anslutna USB-enheter?</translation>
 <translation id="4414232939543644979">Nytt &amp;inkognitofönster</translation>
 <translation id="4415245286584082850">Inga enheter hittades. Öppna en hjälpsida på en ny flik.</translation>
+<translation id="4415276339145661267">Hantera Google-kontot</translation>
 <translation id="4415748029120993980">SECG med elliptisk kurva secp384r1 (kallas även NIST P-384)</translation>
 <translation id="4416582610654027550">Ange en giltig webbadress</translation>
 <translation id="4419409365248380979">Tillåt alltid <ph name="HOST" /> att använda cookies</translation>
@@ -2326,6 +2329,7 @@
 <translation id="4568213207643490790">Google-konton tillåts tyvärr inte på den här enheten.</translation>
 <translation id="4568854179928172494">Ändrades</translation>
 <translation id="4569747168316751899">När enheten är inaktiv</translation>
+<translation id="4570387585180509432">Adresser, telefonnummer och annat</translation>
 <translation id="4572659312570518089">Autentiseringen avbröts vid anslutning till <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer...</translation>
@@ -3004,6 +3008,7 @@
 <translation id="5585912436068747822">Formateringen misslyckades</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Läser in appar …</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> vill parkoppla enheter</translation>
 <translation id="5592595402373377407">Det finns inte tillräckligt mycket data ännu.</translation>
 <translation id="5593357315997824387">Synkronisera mina filer</translation>
 <translation id="5595152862129936745">Mycket långt</translation>
@@ -3036,6 +3041,7 @@
 <translation id="5627676517703583263">Surfa smart med Chrome</translation>
 <translation id="562935524653278697">Administratören har inaktiverat synkronisering av bokmärken, historik, lösenord och andra inställningar.</translation>
 <translation id="5632566673632479864">Kontot <ph name="EMAIL" /> får inte längre användas som primärt konto. Eftersom kontot hanteras av <ph name="DOMAIN" /> raderas bokmärken, historik, lösenord och andra inställningar från enheten.</translation>
+<translation id="5632592977009207922">Laddar ned, <ph name="PERCENT_REMAINING" /> % återstår</translation>
 <translation id="563535393368633106">Fråga innan informationen används (rekommenderas)</translation>
 <translation id="5636996382092289526">Om du vill använda <ph name="NETWORK_ID" /> kanske du först måste <ph name="LINK_START" />besöka nätverkets inloggningssida<ph name="LINK_END" />, som öppnas automatiskt om några sekunder. Om den inte öppnas går det inte att använda nätverket.</translation>
 <translation id="5637476008227280525">Aktivera mobildata</translation>
@@ -3060,7 +3066,7 @@
 <translation id="5671641761787789573">Bilder har blockerats</translation>
 <translation id="567643736130151854">Logga in och aktivera synkronisering om du vill få dina bokmärken, lösenord och annat på alla dina enheter</translation>
 <translation id="5677503058916217575">Sidans språk:</translation>
-<translation id="5677928146339483299">Blockerad</translation>
+<translation id="5677928146339483299">Blockerade</translation>
 <translation id="5678550637669481956">Läs- och skrivåtkomst till <ph name="VOLUME_NAME" /> har beviljats.</translation>
 <translation id="5678784840044122290">Linux-programmet blir tillgängligt via terminalen och det kan också finnas en ikon för det i startprogrammet.</translation>
 <translation id="5678955352098267522">Läsa din data på <ph name="WEBSITE_1" /></translation>
@@ -3418,6 +3424,7 @@
 <translation id="6198252989419008588">Byt PIN</translation>
 <translation id="6199801702437275229">Väntar på information om lagringsutrymme ...</translation>
 <translation id="6201792273624501289">Linux-appar</translation>
+<translation id="6202304368170870640">Du kan logga in på eller låsa upp enheten med pinkoden.</translation>
 <translation id="6205710420833115353">Vissa åtgärder tar längre tid än väntat. Vill du avbryta dem?</translation>
 <translation id="6206311232642889873">Kopiera &amp;bild</translation>
 <translation id="6207200176136643843">Återställ standardzoomnivån</translation>
@@ -4253,6 +4260,7 @@
 <translation id="7497215489070763236">Serverns CA-certifikat</translation>
 <translation id="7497981768003291373">Du har inga nyligen registrerade WebRTC-textloggar.</translation>
 <translation id="7502658306369382406">IPv6-adress</translation>
+<translation id="7503127198245469314">Ta av VR-kikaren och blockera eller tillåt på datorskärmen</translation>
 <translation id="7503191893372251637">Certifieringstyp för Netscape</translation>
 <translation id="7503821294401948377">Det gick inte att läsa in ikonen <ph name="ICON" /> för webbläsaråtgärden.</translation>
 <translation id="750509436279396091">Öppna mappen för nedladdningar</translation>
@@ -4867,6 +4875,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8425213833346101688">Ändra</translation>
 <translation id="8425492902634685834">Fäst i aktivitetsfältet</translation>
 <translation id="8425755597197517046">Kl&amp;istra in och sök</translation>
+<translation id="8425768983279799676">Du kan låsa upp enheten med pinkoden.</translation>
 <translation id="8426713856918551002">Aktiveras</translation>
 <translation id="8427292751741042100">inbäddad på någon värd</translation>
 <translation id="8428213095426709021">Inställningar</translation>

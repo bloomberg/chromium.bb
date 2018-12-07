@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">מתחבר מחדש אל <ph name="NAME" /></translation>
-<translation id="2790844815106384441">יש לקבוע אם אתרים יכולים להשתמש בשירותי מיקום, או במיקרופון, במצלמה ובתכונות נוספות של המכשיר</translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
 <translation id="2803734122639935495">כדי לבטל את הנעילה, צריך להזין את הסיסמה שלך</translation>
 <translation id="2819276065543622893">תצא עכשיו מהחשבון.</translation>
@@ -224,6 +223,7 @@
 <translation id="4628757576491864469">מכשירים</translation>
 <translation id="4659419629803378708">‏ChromeVox הופעל</translation>
 <translation id="4734965478015604180">אופקי</translation>
+<translation id="476166673298332917">מנהל המכשיר עשוי לנטר את פעילות הגלישה שלך.</translation>
 <translation id="4774338217796918551">אפשר לחזור מחר בשעה <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏Google Assistant אינו זמין בסשן הדגמה.</translation>
@@ -338,7 +338,6 @@
 <translation id="6751826523481687655">מעקב הביצועים פועל</translation>
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
-<translation id="6814658242098378692">ניהול אפליקציות, תוספים ועיצובים</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">הפעל את <ph name="NETWORKSERVICE" /></translation>
@@ -380,7 +379,6 @@
 ייתכן שהודעות, חלונות ותיבות דו-שיח יתפצלו בהמשך בין שולחנות עבודה.</translation>
 <translation id="7569509451529460200">‏כתב ברייל ו-ChromeVox מופעלים</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
-<translation id="7604942372593434070">כניסה לפעילות הגלישה שלך</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (בעלים)</translation>
 <translation id="7647488630410863958">בטל את נעילת המכשיר כדי להציג את ההודעות</translation>
 <translation id="7649070708921625228">עזרה</translation>

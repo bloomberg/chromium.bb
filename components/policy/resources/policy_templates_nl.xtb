@@ -120,6 +120,13 @@
 
           Standaard zijn er geen modi voor snel ontgrendelen beschikbaar voor beheerde apparaten.</translation>
 <translation id="123081309365616809">Casten van content naar het apparaat inschakelen</translation>
+<translation id="1231349879329465225">Hiermee kan Fast Transition worden in- of uitgeschakeld.
+      Dit is van toepassing op alle gebruikers en op alle interfaces op het apparaat.
+      Als je Fast Transition wilt gebruiken, moeten deze instelling en de ONC-property van het netwerk zijn ingeschakeld.
+      Zodra Fast Transition is ingesteld, wordt deze instelling gehandhaafd totdat het beleid wordt gewijzigd en de instelling wordt uitgeschakeld.
+
+      Als er geen beleid is ingesteld of het beleid is ingesteld op 'false', wordt Fast Transition niet gebruikt.
+      Als het beleid is ingesteld op 'true', wordt Fast Transition gebruikt wanneer dit wordt ondersteund door het draadloze toegangspunt.</translation>
 <translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
@@ -463,9 +470,9 @@
 <translation id="2149330464730004005">Afdrukken in kleur inschakelen</translation>
 <translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2163878108829382394">
-        Als dit beleid is ingesteld op 'True', is inschrijving voor cloudbeheer verplicht en wordt het Chrome-startproces geblokkeerd als de inschrijving mislukt.
+        Als dit beleid is ingesteld op 'true', is inschrijving voor cloudbeheer verplicht en wordt het Chrome-startproces geblokkeerd als de inschrijving mislukt.
 
-        Als het beleid niet is ingesteld of is ingesteld op 'False', is inschrijving voor cloudbeheer optioneel en wordt het Chrome-startproces niet geblokkeerd als de inschrijving mislukt.</translation>
+        Als het beleid niet is ingesteld of is ingesteld op 'false', is inschrijving voor cloudbeheer optioneel en wordt het Chrome-startproces niet geblokkeerd als de inschrijving mislukt.</translation>
 <translation id="2166472654199325139">Sites niet filteren op content voor volwassenen</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>

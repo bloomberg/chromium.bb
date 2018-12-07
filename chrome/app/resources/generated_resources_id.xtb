@@ -919,7 +919,7 @@
 <translation id="2356070529366658676">Tanya</translation>
 <translation id="2357949918965361754">Anda dapat menggunakan fitur ini untuk menampilkan konten dari Chrome di TV atau perangkat lainnya.</translation>
 <translation id="2359345697448000899">Kelola ekstensi Anda dengan mengeklik Ekstensi pada menu Alat.</translation>
-<translation id="2359808026110333948">Lanjut</translation>
+<translation id="2359808026110333948">Lanjutkan</translation>
 <translation id="236117173274098341">Optimalkan</translation>
 <translation id="236141728043665931">Selalu blokir akses mikrofon</translation>
 <translation id="2365507699358342471">Situs ini dapat melihat teks dan gambar yang disalin ke papan klip.</translation>
@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Tambahkan Galeri Media menurut Direktori</translation>
 <translation id="2910318910161511225">Sambungkan ke jaringan dan coba lagi</translation>
 <translation id="2913331724188855103">Izinkan situs untuk menyimpan dan membaca data cookie (disarankan)</translation>
+<translation id="2915102088417824677">Lihat log aktivitas</translation>
 <translation id="2916073183900451334">Menekan Tab pada halaman web akan menyorot link, juga bidang formulir</translation>
 <translation id="2916745397441987255">Telusuri ekstensi</translation>
 <translation id="2921081876747860777">Buat sandi untuk melindungi data lokal Anda.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">E&amp;kspor...</translation>
 <translation id="4107048419833779140">Identifikasi dan keluarkan perangkat penyimpanan</translation>
 <translation id="4109135793348361820">Pindahkan jendela ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Download selesai: <ph name="FILE_NAME" />. Tekan Shift+F6 untuk masuk ke area kotak download</translation>
 <translation id="4110895898888439383">Akses web dalam mode kontras tinggi</translation>
 <translation id="4115002065223188701">Jaringan di luar jangkauan</translation>
 <translation id="4115080753528843955">Beberapa layanan konten menggunakan pengenal unik untuk memberi otorisasi akses ke konten yang dilindungi</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Izinkan "<ph name="APP_NAME" />" untuk mendapatkan daftar perangkat USB yang terpasang?</translation>
 <translation id="4414232939543644979">Jendela &amp;Penyamaran Baru</translation>
 <translation id="4415245286584082850">Perangkat tidak ditemukan. Buka artikel pusat bantuan di tab baru.</translation>
+<translation id="4415276339145661267">Kelola Akun Google Anda</translation>
 <translation id="4415748029120993980">Kurva eliptis SECG secp384r1 (alias NIST P-384)</translation>
 <translation id="4416582610654027550">Ketik URL yang valid</translation>
 <translation id="4419409365248380979">Selalu izinkan <ph name="HOST" /> untuk menetapkan cookie</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Maaf, akun Google tidak diizinkan di perangkat ini.</translation>
 <translation id="4568854179928172494">Waktu perubahan</translation>
 <translation id="4569747168316751899">Saat tidak ada aktivitas</translation>
+<translation id="4570387585180509432">Alamat, nomor telepon, dan lainnya</translation>
 <translation id="4572659312570518089">Autentikasi dibatalkan saat menyambung ke "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lainnya...</translation>
@@ -2429,7 +2433,7 @@
 <translation id="473546211690256853">Akun ini dikelola oleh <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Sistem gagal menentukan ID perangkat untuk perangkat ini.</translation>
 <translation id="4737715515457435632">Sambungkan ke jaringan</translation>
-<translation id="473775607612524610">Mutakhirkan</translation>
+<translation id="473775607612524610">Perbarui</translation>
 <translation id="474217410105706308">Nonaktifkan Tab</translation>
 <translation id="4742746985488890273">Pin ke Rak</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Pelajari cara mengupdate aplikasi<ph name="END_LINK" /></translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Pemformatan gagal</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Memuat aplikasi...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> ingin menyambungkan ke perangkat</translation>
 <translation id="5592595402373377407">Data yang tersedia belum cukup.</translation>
 <translation id="5593357315997824387">Sinkronkan file saya</translation>
 <translation id="5595152862129936745">Sangat jauh</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Akses cerdas menggunakan Chrome</translation>
 <translation id="562935524653278697">Administrator Anda telah menonaktifkan sinkronisasi bookmark, histori, sandi, dan setelan yang lain.</translation>
 <translation id="5632566673632479864"><ph name="EMAIL" /> akun Anda tidak lagi diizinkan sebagai akun utama. Karena akun ini dikelola oleh <ph name="DOMAIN" />, bookmark, histori, sandi, dan setelan Anda lainnya akan dihapus dari perangkat ini.</translation>
+<translation id="5632592977009207922">Mendownload, <ph name="PERCENT_REMAINING" />% tersisa</translation>
 <translation id="563535393368633106">Tanyakan sebelum mengakses (disarankan)</translation>
 <translation id="5636996382092289526">Untuk menggunakan <ph name="NETWORK_ID" />, pertama Anda harus <ph name="LINK_START" />mengunjungi halaman proses masuk jaringan<ph name="LINK_END" />, yang akan otomatis terbuka dalam beberapa detik. Jika hal itu tidak terjadi, jaringan tidak akan dapat digunakan.</translation>
 <translation id="5637476008227280525">Data seluler aktif</translation>
@@ -3061,7 +3067,7 @@
 <translation id="5671641761787789573">Gambar diblokir</translation>
 <translation id="567643736130151854">Login dan aktifkan sinkronisasi untuk mendapatkan bookmark, sandi, dan lainnya di semua perangkat</translation>
 <translation id="5677503058916217575">Bahasa halaman:</translation>
-<translation id="5677928146339483299">Dicekal</translation>
+<translation id="5677928146339483299">Diblokir</translation>
 <translation id="5678550637669481956">Akses membaca dan menulis ke <ph name="VOLUME_NAME" /> telah diberikan.</translation>
 <translation id="5678784840044122290">Aplikasi Linux akan tersedia dalam Terminal Anda dan juga mungkin menampilkan ikon di Peluncur.</translation>
 <translation id="5678955352098267522">Membaca data Anda di <ph name="WEBSITE_1" /></translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">Ubah PIN</translation>
 <translation id="6199801702437275229">Menunggu info ruang...</translation>
 <translation id="6201792273624501289">Aplikasi Linux</translation>
+<translation id="6202304368170870640">Anda dapat menggunakan PIN untuk login atau membuka kunci perangkat.</translation>
 <translation id="6205710420833115353">Beberapa operasi berlangsung lebih lama dari biasanya. Ingin membatalkannya?</translation>
 <translation id="6206311232642889873">Sali&amp;n Gambar</translation>
 <translation id="6207200176136643843">Setel ulang ke tingkat zoom default</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">Sertifikat CA server</translation>
 <translation id="7497981768003291373">Anda tidak memiliki log teks WebRTC yang direkam baru-baru ini.</translation>
 <translation id="7502658306369382406">Alamat IPv6</translation>
+<translation id="7503127198245469314">Lepaskan headset untuk memblokir atau mengizinkan di layar desktop</translation>
 <translation id="7503191893372251637">Netscape Certificate Type</translation>
 <translation id="7503821294401948377">Tidak dapat memuat ikon '<ph name="ICON" />' untuk tindakan browser.</translation>
 <translation id="750509436279396091">Buka folder download</translation>
@@ -4868,6 +4876,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8425213833346101688">Ubah</translation>
 <translation id="8425492902634685834">Pasang Pin ke Taskbar</translation>
 <translation id="8425755597197517046">Tempel dan Telu&amp;suri</translation>
+<translation id="8425768983279799676">Anda dapat menggunakan PIN untuk membuka kunci perangkat.</translation>
 <translation id="8426713856918551002">Mengaktifkan</translation>
 <translation id="8427292751741042100">disematkan di host mana saja</translation>
 <translation id="8428213095426709021">Setelan</translation>

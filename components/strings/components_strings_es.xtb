@@ -450,7 +450,7 @@
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar fecha y hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo en conflicto</translation>
-<translation id="3885155851504623709">Parroquia</translation>
+<translation id="3885155851504623709">Municipio</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio web se ha enviado a <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Añadir correo electrónico</translation>
 <translation id="3901925938762663762">La tarjeta ha caducado</translation>
@@ -618,7 +618,7 @@
 <translation id="5086888986931078152">Es posible que dejes de tener acceso al contenido protegido de algunos sitios web.</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
-<translation id="5089810972385038852">Estado</translation>
+<translation id="5089810972385038852">Estado/provincia</translation>
 <translation id="5094747076828555589">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, Chromium no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5098332213681597508">Este nombre proviene de tu cuenta de Google.</translation>

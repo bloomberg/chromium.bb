@@ -1283,6 +1283,7 @@
 <translation id="2908162660801918428">Adicionar Galeria Multimédia por Diretório</translation>
 <translation id="2910318910161511225">Estabeleça ligação a uma rede e tente novamente.</translation>
 <translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
+<translation id="2915102088417824677">Ver o registo de atividade</translation>
 <translation id="2916073183900451334">Premir Separador numa página Web realça links e campos de formulários</translation>
 <translation id="2916745397441987255">Pesquisar extensões</translation>
 <translation id="2921081876747860777">Crie uma palavra-passe para proteger os seus dados locais.</translation>
@@ -2072,6 +2073,7 @@ Pretende pará-lo?</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar e ejetar dispositivos de armazenamento</translation>
 <translation id="4109135793348361820">Mover a janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Transferência concluída: <ph name="FILE_NAME" />. Prima Shift+F6 para aceder à área da barra de transferências.</translation>
 <translation id="4110895898888439383">Navegar na Web no Modo de alto contraste</translation>
 <translation id="4115002065223188701">Rede fora do alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo utilizam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
@@ -2232,6 +2234,7 @@ Pretende pará-lo?</translation>
 <translation id="44141919652824029">Pretende permitir que o "<ph name="APP_NAME" />" obtenha a lista dos seus dispositivos USB associados?</translation>
 <translation id="4414232939543644979">Nova Janela de Navegação Anón&amp;ima</translation>
 <translation id="4415245286584082850">Não foram encontrados dispositivos. Abra um artigo do Centro de Ajuda num novo separador.</translation>
+<translation id="4415276339145661267">Gerir a sua Conta Google</translation>
 <translation id="4415748029120993980">SECG de curva elíptica secp384r1 (também denominada NIST P-384)</translation>
 <translation id="4416582610654027550">Introduza um URL válido.</translation>
 <translation id="4419409365248380979">Permitir sempre que <ph name="HOST" /> instale cookies</translation>
@@ -2327,6 +2330,7 @@ Pretende pará-lo?</translation>
 <translation id="4568213207643490790">Lamentamos, mas as Contas Google não são permitidas neste dispositivo.</translation>
 <translation id="4568854179928172494">Hora da modificação</translation>
 <translation id="4569747168316751899">Quanto estiver inativo</translation>
+<translation id="4570387585180509432">Endereços, números de telefone e muito mais</translation>
 <translation id="4572659312570518089">A autenticação foi cancelada ao ligar a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Ficheiro <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mais...</translation>
@@ -2429,7 +2433,7 @@ Pretende pará-lo?</translation>
 <translation id="473546211690256853">Esta conta é gerida por <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">O sistema não conseguiu determinar identificadores de dispositivos para este dispositivo.</translation>
 <translation id="4737715515457435632">Ligue-se a uma rede</translation>
-<translation id="473775607612524610">Actualizar</translation>
+<translation id="473775607612524610">Atualizar</translation>
 <translation id="474217410105706308">Desativar Som do Separador</translation>
 <translation id="4742746985488890273">Afixar na prateleira</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saiba como atualizar aplicações<ph name="END_LINK" /></translation>
@@ -3005,6 +3009,7 @@ Pretende pará-lo?</translation>
 <translation id="5585912436068747822">Falha na formatação</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">A carregar aplicações…</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> pretende sincronizar com dispositivos.</translation>
 <translation id="5592595402373377407">Ainda não estão disponíveis dados suficientes.</translation>
 <translation id="5593357315997824387">Sincronizar os meus ficheiros</translation>
 <translation id="5595152862129936745">Muito afastado</translation>
@@ -3038,6 +3043,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="5627676517703583263">Navegue de forma mais inteligente com o Chrome</translation>
 <translation id="562935524653278697">O seu gestor desativou a sincronização dos seus marcadores, histórico, palavras-passe e outras definições.</translation>
 <translation id="5632566673632479864">A sua conta <ph name="EMAIL" /> já não é permitida como a conta principal. Como esta conta é gerida por <ph name="DOMAIN" />, os marcadores, o histórico, as palavras-passe e outras definições serão apagados deste dispositivo.</translation>
+<translation id="5632592977009207922">A transferir, resta(m) <ph name="PERCENT_REMAINING" />%…</translation>
 <translation id="563535393368633106">Perguntar antes de aceder (recomendado)</translation>
 <translation id="5636996382092289526">Para utilizar <ph name="NETWORK_ID" /> poderá ter primeiro de <ph name="LINK_START" />visitar a página de início de sessão da rede<ph name="LINK_END" />, que será aberta automaticamente dentro de alguns segundos. Se isso não acontecer, a rede não pode ser utilizada.</translation>
 <translation id="5637476008227280525">Ativar dados móveis</translation>
@@ -3420,6 +3426,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6199801702437275229">A aguardar informações de espaço...</translation>
 <translation id="6201792273624501289">Aplicações para Linux</translation>
+<translation id="6202304368170870640">Pode utilizar o PIN para iniciar sessão ou desbloquear o dispositivo.</translation>
 <translation id="6205710420833115353">Algumas operações estão a demorar mais tempo do que o previsto. Pretende interrompê-las?</translation>
 <translation id="6206311232642889873">Cop&amp;iar Imagem</translation>
 <translation id="6207200176136643843">Repor o nível de zoom predefinido</translation>
@@ -4255,6 +4262,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7497215489070763236">Certificado da AC do servidor</translation>
 <translation id="7497981768003291373">Não existem registos de textos WebRTC capturados recentemente.</translation>
 <translation id="7502658306369382406">Endereço IPv6</translation>
+<translation id="7503127198245469314">Remova o capacete de realidade virtual para bloquear ou permitir no ecrã do computador.</translation>
 <translation id="7503191893372251637">Tipo de certificado Netscape</translation>
 <translation id="7503821294401948377">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação do navegador.</translation>
 <translation id="750509436279396091">Abrir a pasta de transferências</translation>
@@ -4868,6 +4876,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="8425492902634685834">Afixar na Barra de tarefas</translation>
 <translation id="8425755597197517046">Colar e pesqui&amp;sar</translation>
+<translation id="8425768983279799676">Pode utilizar o PIN para desbloquear o dispositivo.</translation>
 <translation id="8426713856918551002">A ativar…</translation>
 <translation id="8427292751741042100">incorporada em qualquer anfitrião</translation>
 <translation id="8428213095426709021">Definições</translation>

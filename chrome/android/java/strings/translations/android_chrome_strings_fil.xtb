@@ -471,7 +471,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4720023427747327413">Buksan sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="4720982865791209136">Tumulong na pahusayin ang Chrome. <ph name="BEGIN_LINK" />Sagutan ang survey<ph name="END_LINK" /></translation>
 <translation id="4730876730346568982">Lilipat ka ng account sa pag-sync mula sa <ph name="ACCOUNT_EMAIL_OLD" /> papunta sa <ph name="ACCOUNT_EMAIL_NEW" />. Pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> ang iyong kasalukuyang data ng Chrome. Ide-delete nito ang iyong data mula sa device na ito, ngunit mananatili ang iyong data sa <ph name="ACCOUNT_EMAIL_OLD" />.</translation>
-<translation id="473775607612524610">Mag-update</translation>
+<translation id="473775607612524610">I-update</translation>
 <translation id="4738836084190194332">Huling na-sync: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">Magbukas ng bagong tab</translation>
 <translation id="4751476147751820511">Mga motion o light sensor</translation>
@@ -824,7 +824,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ang napili</translation>
 <translation id="7253272406652746122">Magdagdag ng Google Account mula sa page na Mga Account sa app na Mga Setting ng iyong device.</translation>
 <translation id="7274013316676448362">Naka-block na site</translation>
-<translation id="728491846437309531">Matutulungan ka ng Google Assistant na mas mabilis at mas madaling magsagawa ng mga bagay-bagay sa web</translation>
 <translation id="729975465115245577">Walang app sa iyong device upang ma-store ang file ng mga password.</translation>
 <translation id="7302081693174882195">Mga detalye: Pinagbukud-bukod ayon sa laki ng natipid na data</translation>
 <translation id="7333031090786104871">Nagdaragdag pa rin ng nakaraang site</translation>

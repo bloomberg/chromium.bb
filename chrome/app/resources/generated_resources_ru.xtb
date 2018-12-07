@@ -918,7 +918,7 @@
 <translation id="2356070529366658676">Спрашивать</translation>
 <translation id="2357949918965361754">Транслируйте контент из Chrome на телевизор и другие устройства.</translation>
 <translation id="2359345697448000899">Управлять расширениями можно на вкладке "Расширения" в меню "Инструменты".</translation>
-<translation id="2359808026110333948">Далее</translation>
+<translation id="2359808026110333948">Продолжить</translation>
 <translation id="236117173274098341">Оптимизировать</translation>
 <translation id="236141728043665931">Всегда блокировать доступ к микрофону</translation>
 <translation id="2365507699358342471">У этого сайта есть доступ к тексту и изображениям, скопированным в буфер обмена</translation>
@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Добавление галереи мультимедиа из папки</translation>
 <translation id="2910318910161511225">Подключитесь к сети и повторите попытку.</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
+<translation id="2915102088417824677">Показать журнал активности</translation>
 <translation id="2916073183900451334">Нажатие клавиши Tab на веб-странице приводит к выделению ссылок, а также полей формы</translation>
 <translation id="2916745397441987255">Поиск по расширениям</translation>
 <translation id="2921081876747860777">Введите пароль, чтобы защитить свои локальные данные</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">Э&amp;кспорт...</translation>
 <translation id="4107048419833779140">Идентификация и извлечение запоминающих устройств</translation>
 <translation id="4109135793348361820">Перенести окно на рабочий стол пользователя <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Скачивание завершено: <ph name="FILE_NAME" />. Чтобы перейти к панели загрузок, нажмите Shift + F6.</translation>
 <translation id="4110895898888439383">Просматривайте веб-страницы в режиме высокой контрастности.</translation>
 <translation id="4115002065223188701">Сеть вне зоны доступа</translation>
 <translation id="4115080753528843955">Некоторые сервисы используют уникальные идентификаторы, чтобы предоставлять доступ к защищенному контенту.</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Разрешить приложению "<ph name="APP_NAME" />" доступ к списку подключенных USB-устройств?</translation>
 <translation id="4414232939543644979">Новое окно в режиме инкогнито</translation>
 <translation id="4415245286584082850">Устройства не найдены. Открыть статью Справочного центра в новой вкладке.</translation>
+<translation id="4415276339145661267">Перейти в настройки аккаунта Google</translation>
 <translation id="4415748029120993980">Эллиптическая кривая SECG secp384r1 (она же NIST P-384)</translation>
 <translation id="4416582610654027550">Введите действительный URL.</translation>
 <translation id="4419409365248380979">Разрешить сайту <ph name="HOST" /> сохранять файлы cookie</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">К сожалению, на этом устройстве нельзя использовать аккаунты Google.</translation>
 <translation id="4568854179928172494">Время изменения</translation>
 <translation id="4569747168316751899">При простое</translation>
+<translation id="4570387585180509432">Адреса, номера телефонов и не только</translation>
 <translation id="4572659312570518089">При подключении к "<ph name="DEVICE_NAME" />" аутентификация была отменена.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-файл</translation>
 <translation id="457386861538956877">Ещё...</translation>
@@ -2429,7 +2433,7 @@
 <translation id="473546211690256853">Этот аккаунт находится в домене <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Не удалось определить идентификаторы устройства.</translation>
 <translation id="4737715515457435632">Подключитесь к Интернету</translation>
-<translation id="473775607612524610">Обновление</translation>
+<translation id="473775607612524610">Обновить</translation>
 <translation id="474217410105706308">Отключить звук на вкладке</translation>
 <translation id="4742746985488890273">Закрепить на панели запуска</translation>
 <translation id="4743260470722568160">Подробнее о том, <ph name="BEGIN_LINK" />как обновлять приложения<ph name="END_LINK" />…</translation>
@@ -2693,7 +2697,7 @@
 <translation id="5151354047782775295">Освободите пространство или выберите данные для автоматического удаления.</translation>
 <translation id="5153234146675181447">Удаление телефона</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" /> – дополнительные настройки</translation>
-<translation id="5154702632169343078">Субъект</translation>
+<translation id="5154702632169343078">Тема</translation>
 <translation id="5157635116769074044">Прикрепить эту страницу к экрану запуска…</translation>
 <translation id="5158593464696388225">Не удалось сохранить изображение.</translation>
 <translation id="5158983316805876233">Использовать единый прокси-сервер для всех протоколов</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Ошибка форматирования</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Загрузка...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> запрашивает подключение к устройствам</translation>
 <translation id="5592595402373377407">Недостаточно данных.</translation>
 <translation id="5593357315997824387">Синхронизировать мои файлы</translation>
 <translation id="5595152862129936745">Слишком далеко</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Умный браузер Chrome</translation>
 <translation id="562935524653278697">Ваш администратор отключил синхронизацию закладок, истории, паролей и настроек.</translation>
 <translation id="5632566673632479864">Ваш аккаунт (<ph name="EMAIL" />) больше нельзя использовать в качестве основного. Поскольку этот аккаунт находится под управлением администраторов домена <ph name="DOMAIN" />, все закладки, пароли и настройки, а также история будут удалены с устройства.</translation>
+<translation id="5632592977009207922">Идет скачивание: осталось <ph name="PERCENT_REMAINING" /> %</translation>
 <translation id="563535393368633106">Спрашивать разрешение на доступ (рекомендуется)</translation>
 <translation id="5636996382092289526">Чтобы подключиться к сети "<ph name="NETWORK_ID" />", <ph name="LINK_START" />перейдите на страницу входа<ph name="LINK_END" /> – она автоматически откроется через несколько секунд. Если этого не произойдет, значит использование сети невозможно.</translation>
 <translation id="5637476008227280525">Включить мобильные данные</translation>
@@ -3061,7 +3067,7 @@
 <translation id="5671641761787789573">Показ изображений запрещен</translation>
 <translation id="567643736130151854">Чтобы закладки, пароли и другие данные стали доступны на всех ваших устройствах, войдите в Chrome и включите синхронизацию.</translation>
 <translation id="5677503058916217575">Язык страницы:</translation>
-<translation id="5677928146339483299">Заблокировано</translation>
+<translation id="5677928146339483299">Пользователь заблокирован</translation>
 <translation id="5678550637669481956">Предоставлен доступ к тому <ph name="VOLUME_NAME" /> (чтение и запись данных).</translation>
 <translation id="5678784840044122290">Приложение Linux будет доступно в терминале. Кроме того, на панель запуска мог быть добавлен значок.</translation>
 <translation id="5678955352098267522">Просмотр данных на сайте <ph name="WEBSITE_1" /></translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">Изменить PIN-код</translation>
 <translation id="6199801702437275229">Получение информации о свободном месте…</translation>
 <translation id="6201792273624501289">Приложения для Linux</translation>
+<translation id="6202304368170870640">Вы можете использовать PIN-код для входа в аккаунт или разблокировки устройства.</translation>
 <translation id="6205710420833115353">Некоторые операции займут больше времени, чем ожидалось. Прервать?</translation>
 <translation id="6206311232642889873">Копировать изображение</translation>
 <translation id="6207200176136643843">Восстановить масштаб по умолчанию</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">Серверный сертификат ЦС</translation>
 <translation id="7497981768003291373">Не обнаружено недавно сохраненных текстовых журналов WebRTC.</translation>
 <translation id="7502658306369382406">Адрес IPv6</translation>
+<translation id="7503127198245469314">Чтобы разрешить или запретить действие на экране, снимите очки</translation>
 <translation id="7503191893372251637">Тип сертификата Netscape</translation>
 <translation id="7503821294401948377">Не удалось загрузить значок "<ph name="ICON" />" для действия браузера.</translation>
 <translation id="750509436279396091">Открыть папку скачанных файлов</translation>
@@ -4867,6 +4875,7 @@
 <translation id="8425213833346101688">Изменить</translation>
 <translation id="8425492902634685834">Закрепить на панели задач</translation>
 <translation id="8425755597197517046">Вст&amp;авить из буфера и найти</translation>
+<translation id="8425768983279799676">Вы можете использовать PIN-код, чтобы разблокировать устройство.</translation>
 <translation id="8426713856918551002">Включение</translation>
 <translation id="8427292751741042100">встроено на любом хосте</translation>
 <translation id="8428213095426709021">Настройки</translation>

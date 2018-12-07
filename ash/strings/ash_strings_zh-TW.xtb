@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
-<translation id="2790844815106384441">選擇網站是否可使用定位服務，或是裝置的麥克風、相機或其他功能</translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="2803734122639935495">如要解鎖，請輸入你的密碼</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
@@ -224,6 +223,7 @@
 <translation id="4628757576491864469">裝置</translation>
 <translation id="4659419629803378708">ChromeVox 已啟用</translation>
 <translation id="4734965478015604180">橫向</translation>
+<translation id="476166673298332917">裝置管理員可能會監控你的瀏覽活動。</translation>
 <translation id="4774338217796918551"><ph name="COME_BACK_TIME" /> 裝置就會解除鎖定。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4778095205580009397">Google 助理不適用於示範工作階段。</translation>
@@ -338,7 +338,6 @@
 <translation id="6751826523481687655">效能追蹤已啟用</translation>
 <translation id="6785414152754474415">電池電量為 <ph name="PERCENTAGE" />% (充電中)。</translation>
 <translation id="6803622936009808957">找不到系統支援的解析度，因此無法顯示鏡像。已改為進入延伸桌面。</translation>
-<translation id="6814658242098378692">管理應用程式、擴充功能和主題</translation>
 <translation id="6820676911989879663">目前禁止使用裝置！</translation>
 <translation id="683971173229319003">搜尋鍵 + L 鍵</translation>
 <translation id="6857811139397017780">啟用 <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +377,6 @@
 <translation id="7564874036684306347">將視窗移至其他桌面可能會導致未預期的行為。後續的通知、視窗和對話方塊可能會分開顯示在不同桌面上。</translation>
 <translation id="7569509451529460200">點字模式和 ChromeVox 已啟用</translation>
 <translation id="7593891976182323525">搜尋鍵或 Shift 鍵</translation>
-<translation id="7604942372593434070">存取你的瀏覽活動</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (擁有者)</translation>
 <translation id="7647488630410863958">解鎖裝置即可查看通知</translation>
 <translation id="7649070708921625228">說明</translation>

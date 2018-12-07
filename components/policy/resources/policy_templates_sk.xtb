@@ -107,6 +107,13 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
 
           Pre spravované zariadenia nie sú predvolene k dispozícii žiadne režimy rýchleho odomknutia.</translation>
 <translation id="123081309365616809">Povolenie prenášania obsahu do zariadenia</translation>
+<translation id="1231349879329465225">Umožňuje povoliť alebo zakázať rýchly prechod.
+      Platí pre všetkých používateľov a rozhrania v zariadení.
+      Ak chcete používať rýchly prechod, musíte povoliť toto nastavenie aj vlastnosť ONC konkrétnej siete.
+      Rýchly prechod je po nastavení povolený dovtedy, kým pravidlo nezmeníte a nezakážete ho.
+
+      Ak pravidlo nenastavíte alebo ho nastavíte na hodnotu false, rýchly prechod sa nebude používať.
+      Ak ho nastavíte na hodnotu true, rýchly prechod sa použije, keď ho bezdrôtový prístupový bod podporuje.</translation>
 <translation id="1243570869342663665">Ovládať filtrovanie obsahu pre dospelých SafeSites</translation>
 <translation id="1257550411839719984">Nastaviť predvolený adresár na sťahovanie</translation>
 <translation id="1265053460044691532">Stanovte časový limit prihlásenia v režime offline pre používateľa, ktorého totožnosť bola overená prostredníctvom štandardu SAML</translation>
@@ -676,7 +683,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
 <translation id="2693108589792503178">Konfiguruje webovú adresu zmeny hesla.</translation>
-<translation id="2696531058295423290">Povoľte zariadeniam používať <ph name="PLUGIN_VM_NAME" /> v systéme<ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="2696531058295423290">Povoľte zariadeniam používať <ph name="PLUGIN_VM_NAME" /> v systéme <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="2742843273354638707">Skryje na stránke Nová karta a v spúšťači systému <ph name="PRODUCT_OS_NAME" /> aplikáciu Internetový obchod Chrome a odkaz na pätu stránky.
 

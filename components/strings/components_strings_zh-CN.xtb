@@ -36,7 +36,7 @@
 <translation id="1173894706177603556">重命名</translation>
 <translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="1181037720776840403">删除</translation>
-<translation id="1201402288615127009">下一步</translation>
+<translation id="1201402288615127009">下一页</translation>
 <translation id="1201895884277373915">来自该网站的更多内容</translation>
 <translation id="1206967143813997005">初始签名不正确</translation>
 <translation id="1209206284964581585">暂时隐藏</translation>
@@ -447,7 +447,7 @@
 <translation id="385051799172605136">后退</translation>
 <translation id="3858027520442213535">更新日期和时间</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
-<translation id="3885155851504623709">区</translation>
+<translation id="3885155851504623709">教区</translation>
 <translation id="3886446263141354045">系统已将您想访问此网站的请求发送给<ph name="NAME" /></translation>
 <translation id="3890664840433101773">添加电子邮件地址</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
@@ -615,7 +615,7 @@
 <translation id="5086888986931078152">您可能会无法再访问某些网站上的受保护内容。</translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5087580092889165836">添加新卡</translation>
-<translation id="5089810972385038852">州</translation>
+<translation id="5089810972385038852">州/省/直辖市/自治区</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5095208057601539847">省</translation>
 <translation id="5098332213681597508">此名称来自您的 Google 帐号。</translation>
@@ -879,7 +879,7 @@
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7064851114919012435">联系信息</translation>
 <translation id="7079718277001814089">此网站包含恶意软件</translation>
-<translation id="7087282848513945231">县/郡</translation>
+<translation id="7087282848513945231">县</translation>
 <translation id="7090678807593890770">请在 Google 中搜索“<ph name="LINK" />”</translation>
 <translation id="7108338896283013870">隐藏</translation>
 <translation id="7108819624672055576">某款扩展程序允许</translation>

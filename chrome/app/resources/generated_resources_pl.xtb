@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Dodaj galerię multimediów na podstawie katalogu</translation>
 <translation id="2910318910161511225">Połącz się z siecią i spróbuj ponownie</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
+<translation id="2915102088417824677">Wyświetl historię aktywności</translation>
 <translation id="2916073183900451334">Naciśnięcie klawisza Tab na stronie internetowej powoduje podświetlenie linków, a także pól formularza</translation>
 <translation id="2916745397441987255">Szukaj w rozszerzeniach</translation>
 <translation id="2921081876747860777">Utwórz hasło, by chronić swoje dane lokalne.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">E&amp;ksportuj</translation>
 <translation id="4107048419833779140">Rozpoznawanie i wysuwanie urządzeń pamięci</translation>
 <translation id="4109135793348361820">Przesuń okno do: <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Pobrano plik: <ph name="FILE_NAME" />. Naciśnij Shift+F6, by przejść do obszaru paska pobranych plików.</translation>
 <translation id="4110895898888439383">Przeglądaj strony w trybie dużego kontrastu</translation>
 <translation id="4115002065223188701">Sieć poza zasięgiem</translation>
 <translation id="4115080753528843955">Niektóre usługi związane z treściami używają unikalnych identyfikatorów na potrzeby autoryzacji dostępu do chronionych treści</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Zezwolić aplikacji <ph name="APP_NAME" /> na odczyt listy podłączonych urządzeń USB?</translation>
 <translation id="4414232939543644979">Nowe okno &amp;incognito</translation>
 <translation id="4415245286584082850">Nie znaleziono żadnego urządzenia. Otwórz artykuł w Centrum pomocy na nowej karcie.</translation>
+<translation id="4415276339145661267">Zarządzaj kontem Google</translation>
 <translation id="4415748029120993980">Kryptografia krzywych eliptycznych SECG secp384r1 (inna nazwa: NIST P-384)</translation>
 <translation id="4416582610654027550">Wpisz prawidłowy URL</translation>
 <translation id="4419409365248380979">Zawsze zezwalaj witrynie <ph name="HOST" /> na zapisywanie plików cookie</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Konta Google nie są dozwolone na tym urządzeniu.</translation>
 <translation id="4568854179928172494">Czas modyfikacji</translation>
 <translation id="4569747168316751899">Podczas bezczynności</translation>
+<translation id="4570387585180509432">Adresy, numery telefonów i inne dane</translation>
 <translation id="4572659312570518089">Podczas łączenia się z urządzeniem „<ph name="DEVICE_NAME" />” zostało anulowane uwierzytelnianie.</translation>
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
@@ -2693,7 +2697,7 @@
 <translation id="5151354047782775295">Zwolnij miejsce na dysku albo wybierz dane, które mogą być usuwane automatycznie</translation>
 <translation id="5153234146675181447">Zapomnij telefon</translation>
 <translation id="5154108062446123722">Ustawienia zaawansowane dla <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Podmiot</translation>
+<translation id="5154702632169343078">Temat</translation>
 <translation id="5157635116769074044">Przypnij tę stronę do ekranu startowego...</translation>
 <translation id="5158593464696388225">Nie udało się zapisać obrazu.</translation>
 <translation id="5158983316805876233">Używaj tego samego serwera proxy dla wszystkich protokołów</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Formatowanie nie powiodło się</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Wczytuję aplikacje…</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> chce się sparować z urządzeniami</translation>
 <translation id="5592595402373377407">Brak wystarczającej ilości danych.</translation>
 <translation id="5593357315997824387">Synchronizuj moje pliki</translation>
 <translation id="5595152862129936745">Bardzo daleko</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Przeglądaj inteligentnie z Chrome</translation>
 <translation id="562935524653278697">Synchronizację zakładek, historii, haseł i innych ustawień wyłączył administrator.</translation>
 <translation id="5632566673632479864">Twoje konto <ph name="EMAIL" /> nie może być już kontem podstawowym. To konto jest zarządzane przez <ph name="DOMAIN" />, dlatego Twoje zakładki, historia, hasła i inne ustawienia zostaną usunięte z tego urządzenia.</translation>
+<translation id="5632592977009207922">Pobieram, pozostało <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">Pytaj przed uzyskaniem dostępu (zalecane)</translation>
 <translation id="5636996382092289526">Skorzystanie z <ph name="NETWORK_ID" /> może wymagać <ph name="LINK_START" />wejścia na stronę logowania się do sieci<ph name="LINK_END" />, która otworzy się automatycznie za kilka sekund. Jeśli tak się nie stanie, nie będzie można użyć tej sieci.</translation>
 <translation id="5637476008227280525">Włączanie komórkowej transmisji danych</translation>
@@ -3061,7 +3067,7 @@
 <translation id="5671641761787789573">Obrazy zablokowane</translation>
 <translation id="567643736130151854">Zaloguj się w Chromium, by mieć dostęp do swoich zakładek, haseł i innych ustawień na wszystkich swoich urządzeniach.</translation>
 <translation id="5677503058916217575">Język strony:</translation>
-<translation id="5677928146339483299">Zablokowane</translation>
+<translation id="5677928146339483299">Zablokowany</translation>
 <translation id="5678550637669481956">Uprawnienia do zapisu i odczytu nośnika <ph name="VOLUME_NAME" /> zostały przyznane.</translation>
 <translation id="5678784840044122290">Aplikacja na Linuksa będzie dostępna na terminalu. Może mieć też ikonę w Menu z aplikacjami.</translation>
 <translation id="5678955352098267522">Odczyt Twoich danych na stronie <ph name="WEBSITE_1" /></translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">Zmień kod PIN</translation>
 <translation id="6199801702437275229">Oczekuję na informacje o wolnym miejscu...</translation>
 <translation id="6201792273624501289">Aplikacje na Linuksa</translation>
+<translation id="6202304368170870640">Kodu PIN możesz używać do logowania się lub do odblokowywania urządzenia.</translation>
 <translation id="6205710420833115353">Niektóre operacje trwają dłużej niż powinny. Chcesz je przerwać?</translation>
 <translation id="6206311232642889873">Kop&amp;iuj grafikę</translation>
 <translation id="6207200176136643843">Przywróć domyślny poziom powiększenia</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">Certyfikat CA serwera</translation>
 <translation id="7497981768003291373">Nie ma zapisanych ostatnio logów tekstowych WebRTC.</translation>
 <translation id="7502658306369382406">Adres IPv6</translation>
+<translation id="7503127198245469314">Zdejmij gogle, by przyznać lub odebrać uprawnienia na monitorze komputera</translation>
 <translation id="7503191893372251637">Typ certyfikatu firmy Netscape</translation>
 <translation id="7503821294401948377">Nie można wczytać ikony „<ph name="ICON" />” dla czynności wykonywanej w przeglądarce.</translation>
 <translation id="750509436279396091">Otwórz folder pobierania</translation>
@@ -4869,6 +4877,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8425213833346101688">Zmień</translation>
 <translation id="8425492902634685834">Przypnij na pasku zadań</translation>
 <translation id="8425755597197517046">Wkl&amp;ej i wyszukaj</translation>
+<translation id="8425768983279799676">Kodu PIN możesz używać do odblokowywania urządzenia.</translation>
 <translation id="8426713856918551002">Włączam</translation>
 <translation id="8427292751741042100">umieszczone na dowolnym hoście</translation>
 <translation id="8428213095426709021">Ustawienia</translation>

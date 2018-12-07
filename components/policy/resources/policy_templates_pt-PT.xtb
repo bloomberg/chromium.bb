@@ -123,6 +123,13 @@
 
           Por predefinição, não estão disponíveis modos de desbloqueio rápido para dispositivos geridos.</translation>
 <translation id="123081309365616809">Permite a transmissão de conteúdo para o dispositivo</translation>
+<translation id="1231349879329465225">Permite ativar ou desativar a Transição rápida.
+      Aplica-se a todos os utilizadores e a todas as interfaces no dispositivo.
+      Para poder utilizar a Transição rápida, esta definição e a propriedade ONC por rede têm de estar ativadas.
+      Depois de definida, a Transição rápida mantém-se até a política ser alterada de modo a desativá-la.
+
+      Se a política não estiver definida ou estiver definida como falsa, a Transição rápida não é utilizada.
+      Se estiver definida como verdadeira, a Transição rápida é utilizada quando o ponto de acesso sem fios for compatível.</translation>
 <translation id="1243570869342663665">Controlar a filtragem de conteúdo para adultos do SafeSites</translation>
 <translation id="1257550411839719984">Defina o diretório de transferências predefinido.</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
@@ -465,9 +472,9 @@
 <translation id="2149330464730004005">Ativar impressão a cores</translation>
 <translation id="2156132677421487971">Configura políticas para o <ph name="PRODUCT_NAME" />, uma funcionalidade que permite aos utilizadores enviar o conteúdo de separadores, de sites ou do ambiente de trabalho a partir do navegador para sistemas de som e ecrãs remotos.</translation>
 <translation id="2163878108829382394">
-        Se esta política estiver definida como verdadeira, a inscrição na gestão na nuvem é obrigatória e, se falhar, bloqueia o processo de início do Chrome.
+        Se esta política estiver definida como verdadeira, a inscrição na gestão na nuvem é obrigatória e, se falhar, bloqueia o processo de iniciação do Chrome.
 
-        Se esta política estiver definida como falsa, a inscrição na gestão na nuvem é opcional e, se falhar, não bloqueia o processo de início do Chrome.</translation>
+        Se esta política estiver definida como falsa, a inscrição na gestão na nuvem é opcional e, se falhar, não bloqueia o processo de iniciação do Chrome.</translation>
 <translation id="2166472654199325139">Não filtrar sites de conteúdo para adultos</translation>
 <translation id="2168397434410358693">Atraso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
@@ -3092,7 +3099,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
       Se esta definição estivar ativada ou não definida, o histórico de transferências e de navegação poderão ser eliminados.
 
       Se esta definição estiver desativada, o histórico de transferências e de navegação não poderão ser eliminados.</translation>
-<translation id="8758831693895931466">Ativar a inscrição na gestão na nuvem obrigatória</translation>
+<translation id="8758831693895931466">Ativar a inscrição na gestão da nuvem obrigatória</translation>
 <translation id="8759829385824155666">Tipos de encriptação Kerberos permitidos.</translation>
 <translation id="8764119899999036911">Especifica se o SPN do Kerberos gerado é baseado no nome de DNS canónico ou no nome introduzido originalmente. Se ativar esta definição, a procura de CNAME será ignorada e será utilizado o nome do servidor introduzido. Se desativar esta definição ou não a definir, o nome canónico do servidor será determinado através da procura de CNAME.</translation>
 <translation id="8782750230688364867">Especifica a percentagem que determina a escala do atraso de esbatimento do ecrã quando o dispositivo está no modo de apresentação.

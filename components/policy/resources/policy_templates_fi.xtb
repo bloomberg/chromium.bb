@@ -117,6 +117,13 @@
 
           Oletuksena mitkään lukituksen pika-avaamisen tilat eivät ole käytettävissä ylläpidetyillä laitteilla.</translation>
 <translation id="123081309365616809">Salli sisällön suoratoisto laitteeseen</translation>
+<translation id="1231349879329465225">Sallii nopean siirtymisen käyttöön ottamisen ja käytöstä poistamisen.
+      Tämä koskee kaikkia käyttäjiä ja kaikkia laitteen käyttöliittymiä.
+      Nopean siirtymisen käyttö edellyttää sekä tämän asetuksen että verkkokohtaisen ONC-arvon käyttöönottoa.
+      Kun tämä on määritetty, nopea siirtyminen on käytössä, kunnes käytännön muutos poistaa sen käytöstä.
+
+      Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty epätosi, nopeaa siirtymistä ei käytetä.
+      Jos käytännön arvoksi on määritetty tosi, nopeaa siirtymistä käytetään, kun langaton tukiasema sallii sen.</translation>
 <translation id="1243570869342663665">Vain aikuisille suunnatun sisällön SafeSites-suodatuksen määritys</translation>
 <translation id="1257550411839719984">Aseta oletuslataushakemisto</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>

@@ -40,6 +40,7 @@
 <translation id="15373452373711364">نشانگر موشواره بزرگ</translation>
 <translation id="1550523713251050646">برای گزینه‌های بیشتر کلیک کنید</translation>
 <translation id="1570871743947603115">روشن/خاموش کردن بلوتوث. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">به همه فعالیت‌هایتان در این جلسه دسترسی پیدا کنید</translation>
 <translation id="1608626060424371292">حذف این کاربر</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">شروع پُرسمان صوتی</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
-<translation id="2790844815106384441">انتخاب کند وب‌سایت‌ها امکان استفاده از خدمات مکان، میکروفون، دوربین یا سایر ویژگی‌های دستگاه را داشته باشند یا نه</translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
 <translation id="2803734122639935495">برای باز کردن قفل، گذرواژه‌تان را وارد کنید</translation>
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">افزودن اتصال</translation>
 <translation id="2961963223658824723">مشکلی پیش آمد. چند ثانیه دیگر دوباره امتحان کنید.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">نصب برنامه‌ها، افزونه‌ها و طرح‌های زمینه</translation>
 <translation id="2995447421581609334">نمایش دستگاه‌های ارسال محتوا.</translation>
 <translation id="2996462380875591307">‏«ذره‌بین متصل» فعال شد. برای خاموش کردن آن، Ctrl+Search+D را دوباره فشار دهید.</translation>
 <translation id="3000461861112256445">صدای مونو</translation>
@@ -225,6 +226,7 @@
 <translation id="4628757576491864469">دستگاه‌ها</translation>
 <translation id="4659419629803378708">‏ChromeVox فعال شد</translation>
 <translation id="4734965478015604180">افقی</translation>
+<translation id="476166673298332917">سرپرست دستگاه ممکن است فعالیت مرور شما را پایش کند.</translation>
 <translation id="4774338217796918551">فردا ساعت <ph name="COME_BACK_TIME" /> برگردید.</translation>
 <translation id="4776917500594043016">گذرواژه <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏«دستیار Google» در جلسه نمایشی در دسترس نیست.</translation>
@@ -329,6 +331,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">گذرواژه</translation>
+<translation id="6665545700722362599">به وب‌سایت‌ها، برنامه‌ها و افزونه‌ها برای استفاده از سرویس‌ها، میکروفون و دوربین یا سایر ویژگی‌های دستگاه مجوز بدهید</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">لازم است صفحه‌کلید قابل جدا شدن به‌روزرسانی ضروری شود</translation>
 <translation id="6700713906295497288">‏دکمه منو IME</translation>
@@ -339,7 +342,6 @@
 <translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
-<translation id="6814658242098378692">مدیریت برنامه‌ها، برنامه‌های افزودنی و طرح‌های زمینه</translation>
 <translation id="6820676911989879663">استراحت کنید!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">فعال سازی <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +381,6 @@
 <translation id="7564874036684306347">انتقال پنجره‌ها به میز کار دیگر می‌تواند به رفتار غیرمنتظره منجر شود. اعلان‌ها، پنجره‌ها و کادرهای گفتگوی بعدی ممکن است بین میز کارها تقسیم شوند.</translation>
 <translation id="7569509451529460200">‏بریل و ChromeVox فعال هستند</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
-<translation id="7604942372593434070">دسترسی به فعالیت مرور شما</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (مالک)</translation>
 <translation id="7647488630410863958">برای مشاهده اعلان‌هایتان، قفل دستگاه را باز کنید</translation>
 <translation id="7649070708921625228">راهنما</translation>

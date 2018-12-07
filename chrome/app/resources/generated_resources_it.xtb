@@ -1282,6 +1282,7 @@
 <translation id="2908162660801918428">Aggiungi Galleria Media per directory</translation>
 <translation id="2910318910161511225">Collegati a una rete e riprova</translation>
 <translation id="2913331724188855103">Consenti ai siti di salvare e leggere i dati dei cookie (opzione consigliata)</translation>
+<translation id="2915102088417824677">Apri log delle attività</translation>
 <translation id="2916073183900451334">Se premi Tab in una pagina web vengono evidenziati i link, così come i campi dei moduli</translation>
 <translation id="2916745397441987255">Cerca tra le estensioni</translation>
 <translation id="2921081876747860777">Crea una password per proteggere i tuoi dati locali.</translation>
@@ -2068,6 +2069,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4104163789986725820">E&amp;sporta...</translation>
 <translation id="4107048419833779140">Identifica ed espelli i dispositivi di archiviazione</translation>
 <translation id="4109135793348361820">Sposta finestra su <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Download completato: <ph name="FILE_NAME" />. Premi MAIUSC+F6 per passare alla parte con la barra dei download.</translation>
 <translation id="4110895898888439383">Naviga sul Web in modalità Contrasto elevato</translation>
 <translation id="4115002065223188701">Rete fuori portata</translation>
 <translation id="4115080753528843955">Alcuni servizi di contenuti utilizzano identificatori univoci al fine di autorizzare l'accesso ai contenuti protetti</translation>
@@ -2228,6 +2230,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="44141919652824029">Vuoi consentire a "<ph name="APP_NAME" />" di recuperare l'elenco di dispositivi USB collegati?</translation>
 <translation id="4414232939543644979">Nuova finestra di navigazione in &amp;incognito</translation>
 <translation id="4415245286584082850">Nessun dispositivo trovato. Apri un articolo del Centro assistenza in una nuova scheda.</translation>
+<translation id="4415276339145661267">Gestisci il tuo Account Google</translation>
 <translation id="4415748029120993980">Curva ellittica SECG secp384r1 (anche nota come NIST P-384)</translation>
 <translation id="4416582610654027550">Digita un URL valido</translation>
 <translation id="4419409365248380979">Consenti sempre a <ph name="HOST" /> di impostare cookie</translation>
@@ -2323,6 +2326,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4568213207643490790">Spiacenti, gli account Google non sono consentiti su questo dispositivo.</translation>
 <translation id="4568854179928172494">Data/ora modifica</translation>
 <translation id="4569747168316751899">Quando non attivo</translation>
+<translation id="4570387585180509432">Indirizzi, numeri di telefono e non solo</translation>
 <translation id="4572659312570518089">Autenticazione annullata durante la connessione a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Altro...</translation>
@@ -2689,7 +2693,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5151354047782775295">Libera spazio sul disco, altrimenti alcuni dati potrebbero essere eliminati automaticamente</translation>
 <translation id="5153234146675181447">Elimina telefono</translation>
 <translation id="5154108062446123722">Impostazioni avanzate per <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Soggetto</translation>
+<translation id="5154702632169343078">Oggetto</translation>
 <translation id="5157635116769074044">Esponi questa pagina nella schermata iniziale...</translation>
 <translation id="5158593464696388225">Impossibile salvare l'immagine.</translation>
 <translation id="5158983316805876233">Usa lo stesso proxy per tutti i protocolli</translation>
@@ -3000,6 +3004,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5585912436068747822">Formattazione non riuscita</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Caricamento app...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> vuole accoppiare i dispositivi</translation>
 <translation id="5592595402373377407">Dati disponibili insufficienti.</translation>
 <translation id="5593357315997824387">Sincronizza i miei file</translation>
 <translation id="5595152862129936745">Molto lontano</translation>
@@ -3032,6 +3037,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5627676517703583263">Naviga in modo intelligente con Chrome</translation>
 <translation id="562935524653278697">L'amministratore ha disattivato la sincronizzazione dei tuoi preferiti, della cronologia, delle password e di altre impostazioni.</translation>
 <translation id="5632566673632479864">Il tuo account <ph name="EMAIL" /> non è più consentito come account principale. Siccome l'account è gestito da <ph name="DOMAIN" />, i preferiti, la cronologia, le password e altre impostazioni verranno cancellati da questo dispositivo.</translation>
+<translation id="5632592977009207922">Download in corso: <ph name="PERCENT_REMAINING" />% rimanente</translation>
 <translation id="563535393368633106">Chiedi prima di accedere (opzione consigliata)</translation>
 <translation id="5636996382092289526">Per poter utilizzare la rete <ph name="NETWORK_ID" />, potrebbe essere necessario <ph name="LINK_START" />visitare la pagina di accesso della rete<ph name="LINK_END" />, che si aprirà automaticamente tra alcuni secondi. In caso contrario, non è possibile utilizzare la rete.</translation>
 <translation id="5637476008227280525">Attivazione dati mobili</translation>
@@ -3056,7 +3062,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5671641761787789573">Immagini bloccate</translation>
 <translation id="567643736130151854">Accedi e attiva la sincronizzazione per trovare i tuoi preferiti, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="5677503058916217575">Lingua della pagina:</translation>
-<translation id="5677928146339483299">Bloccati</translation>
+<translation id="5677928146339483299">Bloccato</translation>
 <translation id="5678550637669481956">È stato concesso l'accesso in lettura e scrittura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678784840044122290">L'applicazione Linux sarà disponibile nel terminale e potrebbe anche essere visualizzata un'icona nell'Avvio app.</translation>
 <translation id="5678955352098267522">Lettura dei dati su <ph name="WEBSITE_1" /></translation>
@@ -3414,6 +3420,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6198252989419008588">Modifica PIN</translation>
 <translation id="6199801702437275229">In attesa di informazioni sullo spazio...</translation>
 <translation id="6201792273624501289">App Linux</translation>
+<translation id="6202304368170870640">Puoi utilizzare il PIN per accedere al tuo dispositivo o per sbloccarlo.</translation>
 <translation id="6205710420833115353">Alcune operazioni richiedono più tempo del previsto. Vuoi interromperle?</translation>
 <translation id="6206311232642889873">Cop&amp;ia immagine</translation>
 <translation id="6207200176136643843">Ripristina il livello di zoom predefinito</translation>
@@ -4249,6 +4256,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7497215489070763236">Certificato CA del server</translation>
 <translation id="7497981768003291373">Nessun log di testo WebRTC acquisito di recente.</translation>
 <translation id="7502658306369382406">Indirizzo IPv6</translation>
+<translation id="7503127198245469314">Togli il visore per dare il consenso o impostare il blocco sul display del computer desktop</translation>
 <translation id="7503191893372251637">Tipo di certificato Netscape</translation>
 <translation id="7503821294401948377">Impossibile caricare l'icona "<ph name="ICON" />" per l'azione del browser.</translation>
 <translation id="750509436279396091">Apri cartella dei download</translation>
@@ -4860,6 +4868,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8425213833346101688">Cambia</translation>
 <translation id="8425492902634685834">Aggiungi alla barra delle applicazioni</translation>
 <translation id="8425755597197517046">Incolla ed e&amp;segui ricerca</translation>
+<translation id="8425768983279799676">Puoi usare il PIN per sbloccare il dispositivo.</translation>
 <translation id="8426713856918551002">Attivazione in corso</translation>
 <translation id="8427292751741042100">incorporata su qualsiasi host</translation>
 <translation id="8428213095426709021">Impostazioni</translation>

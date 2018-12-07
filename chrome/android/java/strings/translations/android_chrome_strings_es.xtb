@@ -604,7 +604,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignorar la solicitud de un sitio web para no ampliar la imagen</translation>
 <translation id="5676636989614905379">No se puede reproducir el vídeo en <ph name="SCREEN_NAME" />.</translation>
-<translation id="5677928146339483299">Con bloqueo</translation>
+<translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">¡Vaya! No se ha podido traducir esta página.</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
@@ -824,7 +824,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Añade una cuenta de Google desde la sección Cuentas de la aplicación de ajustes de tu dispositivo.</translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
-<translation id="728491846437309531">El Asistente de Google puede ayudarte a realizar tareas en la Web de forma más rápida y sencilla</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene ninguna aplicación para almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está añadiendo el sitio web anterior</translation>

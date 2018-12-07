@@ -919,7 +919,7 @@
 <translation id="2356070529366658676">ጠይቅ</translation>
 <translation id="2357949918965361754">ከChrome የመጡ ይዘቶችን በእርስዎ ቴሌቪዥን ወይም በሌሎች መሣሪያዎች ላይ ለማሳየት ይህን ባሕሪ መጠቀም ይችላሉ።</translation>
 <translation id="2359345697448000899">በመሣሪያዎች ምናሌ ውስጥ ቅጥያዎች የሚለውን ጠቅ በማድረግ ቅጥያዎችዎን ያቀናብሩ።</translation>
-<translation id="2359808026110333948">ቀጥል</translation>
+<translation id="2359808026110333948">ይቀጥሉ</translation>
 <translation id="236117173274098341">አትባ</translation>
 <translation id="236141728043665931">ሁልጊዜ የማይክሮፎን መዳረሻ አግድ</translation>
 <translation id="2365507699358342471">ይህ ጣቢያ ወደ ቅንጥብ ሰሌዳው የተቀዱ ጽሑፍን እና ምስሎችን መመልከት ይችላል።</translation>
@@ -1283,6 +1283,7 @@
 <translation id="2908162660801918428">የሚዲያ ማዕከለ ስዕላት በአቃፊ ያክሉ</translation>
 <translation id="2910318910161511225">ከአውታረ መረብ ጋር ያገናኙና እንደገና ይሞክሩ</translation>
 <translation id="2913331724188855103">ጣቢያዎች የኩኪ ውሂብ እንዲያስቀምጡ እና እንዲያነቡ ይፍቀዱ (የሚመከር)</translation>
+<translation id="2915102088417824677">የእንቅስቃሴ ምዝግብ ማስታወሻን ይመልከቱ</translation>
 <translation id="2916073183900451334">አንድ ድረ-ገጽ ላይ Tabን መጫን አገናኞችንና እንዲሁም የቅጽ መስኮችን ያደምቃል።</translation>
 <translation id="2916745397441987255">በቅጥያዎች ውስጥ ይፈልጉ</translation>
 <translation id="2921081876747860777">እባክዎ አካባቢያዊ ውሂብዎን ለመጠበቅ የይለፍ ቃል ይፍጠሩ</translation>
@@ -2069,6 +2070,7 @@
 <translation id="4104163789986725820">ወደ &amp;ውጪ ላክ...</translation>
 <translation id="4107048419833779140">የማከማቻ መሣሪያዎችን ለይተው ይወቁ እና ያስወጡ</translation>
 <translation id="4109135793348361820">መስኮት ወደ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ውሰድ</translation>
+<translation id="4110490973560452005">ውርድ ተጠናቅቋል፦ <ph name="FILE_NAME" />። የውርዶች አሞሌ አካባቢውን ለመቀየር Shift+F6 ይጫኑ።</translation>
 <translation id="4110895898888439383">ድሩን በከፍተኛ ንጽጽር ሁነታ ያስሱ</translation>
 <translation id="4115002065223188701">አውታረ መረብ ከክልል ውጭ ነው</translation>
 <translation id="4115080753528843955">አንዳንድ የይዘት አገልግሎቶች የሚጠበቅ ይዘት መዳረሻን ለመፍቀድ ዓላማዎች ልዩ ለዪዎችን ይጠቀማሉ</translation>
@@ -2229,6 +2231,7 @@
 <translation id="44141919652824029">«<ph name="APP_NAME" />» የተያያዙ ዩኤስቢ መሣሪያዎችዎን ዝርዝር እንዲያገኝ ይፈቀድለት?</translation>
 <translation id="4414232939543644979">አዲስ ማን&amp;ነትን የማያሳውቅ መስኮት</translation>
 <translation id="4415245286584082850">ምንም መሣሪያዎች አልተገኙም። የእገዛ ማዕከል ጽሑፍ በአዲስ ትር ላይ ይክፈቱ።</translation>
+<translation id="4415276339145661267">የGoogle መለያዎን ያቀናብሩ</translation>
 <translation id="4415748029120993980">የSECG ሞላላ ጥምዝ secp384r1 (እንዲሁም NIST P-384 በመባል የሚታወቅ)</translation>
 <translation id="4416582610654027550">የሚሠራ ዩአርኤል ይተይቡ</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> ኩኪዎችን እንዲያስቀምጥ ሁልጊዜ ይፍቀዱ</translation>
@@ -2324,6 +2327,7 @@
 <translation id="4568213207643490790">ይቅርታ፣ የGoogle መለያዎች በዚህ መሣሪያ ላይ አይፈቀዱም።</translation>
 <translation id="4568854179928172494">የተሻሻለበት ጊዜ</translation>
 <translation id="4569747168316751899">ቦዝኖ ሳለ</translation>
+<translation id="4570387585180509432">አድራሻዎች፣ ስልክ ቁጥሮች እና ተጨማሪ ነገሮች</translation>
 <translation id="4572659312570518089">ከ«<ph name="DEVICE_NAME" />» ጋር በመገናኘት ሳለ ፈቀዳ ተሰርዟል።</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ፋይል</translation>
 <translation id="457386861538956877">ተጨማሪ...</translation>
@@ -3002,6 +3006,7 @@
 <translation id="5585912436068747822">ቅርጸት መስራት አልተሳካም</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">መተግበሪያዎችን በመጫን ላይ...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> መሣሪያዎችን ለማጣመር ይፈልጋል</translation>
 <translation id="5592595402373377407">ገና ምንም በቂ ውሂብ የለም።</translation>
 <translation id="5593357315997824387">የእኔን ፋይሎች አሳምር</translation>
 <translation id="5595152862129936745">በጣም ሩቅ</translation>
@@ -3034,6 +3039,7 @@
 <translation id="5627676517703583263">ከChrome ጋር በዘመናዊ መንገድ ያስሱ</translation>
 <translation id="562935524653278697">የእርስዎ አስተዳዳሪ የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ስምረትን አሰናክለዋል።</translation>
 <translation id="5632566673632479864">የእርስዎ <ph name="EMAIL" /> ከእንግዲህ እንደ ተቀዳሚ መለያ አይፈቀድም። ይህ መለያ በ<ph name="DOMAIN" /> የሚተዳደር ስለሆነ የእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት፣እና ሌላ ቅንብሮች ከዚህ መሣሪያ ላይ ይጸዳሉ።</translation>
+<translation id="5632592977009207922">በማውረድ ላይ፣ <ph name="PERCENT_REMAINING" />% ይቀራል</translation>
 <translation id="563535393368633106">ከመድረስ በፊት ጠይቅ (የሚመከር)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" />ን ለመጠቀም መጀመሪያ <ph name="LINK_START" />የአውታረ መረቡ መግቢያ ገጹን መጎብኘት<ph name="LINK_END" /> አለብዎት፣ ይህም በጥቂት ሰከንዶች ውስጥ በራስ-ሰር ይከፈታል። ካልሆነ አውታረ መረቡ ስራ ላይ ሊውል አይችልም።</translation>
 <translation id="5637476008227280525">የተንቀሳቃሽ ስልክ ውሂብን አንቃ</translation>
@@ -3415,6 +3421,7 @@
 <translation id="6198252989419008588">ፒን ይቀይሩ</translation>
 <translation id="6199801702437275229">የቦታ መረጃን በመጠበቅ ላይ...</translation>
 <translation id="6201792273624501289">Linux መተግበሪያዎች</translation>
+<translation id="6202304368170870640">ወደ መሣሪያዎ ለመግባት ወይም መሣሪያዎን ለመቆለፍ የእርስዎን ፒን መጠቀም ይችላሉ።</translation>
 <translation id="6205710420833115353">አንዳንድ ክወናዎች ከሚጠበቀው በላይ ጊዜ እየወሰዱ ነው። ሊያቋርጧቸው ይፈልጋሉ?</translation>
 <translation id="6206311232642889873">ምስል ቅ&amp;ዳ</translation>
 <translation id="6207200176136643843">ወደ ነባሪ የማጉላት ደረጃ ዳግም አስጀምር</translation>
@@ -4250,6 +4257,7 @@
 <translation id="7497215489070763236">የአገልጋይ CA እውቅና ማረጋገጫ</translation>
 <translation id="7497981768003291373">ምንም በቅርብ ጊዜ የተቀረጹ WebRTC የጽሑፍ ምዝግብ ማስታወሻዎች የለዎትም።</translation>
 <translation id="7502658306369382406">የIPv6 አድራሻ</translation>
+<translation id="7503127198245469314">በዴስክቶፕ ማሳያ ላይ ለማገድ ወይም ለመፍቀድ ጆሮ መመልከቻን አስወግድ</translation>
 <translation id="7503191893372251637">የNetscape ሰርቲፊኬት አይነት</translation>
 <translation id="7503821294401948377">አዶ «<ph name="ICON" />»ን ለአሳሽ እርምጃ መጫን አልተቻለም።</translation>
 <translation id="750509436279396091">የውርዶች አቃፊን ከፍት</translation>
@@ -4868,6 +4876,7 @@ nil</translation>
 <translation id="8425213833346101688">ለውጥ</translation>
 <translation id="8425492902634685834">ከተግባር አሞሌ ጋር አጣብቅ</translation>
 <translation id="8425755597197517046">ለ&amp;ጥፍ እና ፈልግ</translation>
+<translation id="8425768983279799676">መሣሪያዎን ለመክፈት የእርስዎን ፒን መጠቀም ይችላሉ።</translation>
 <translation id="8426713856918551002">በማንቃት ላይ</translation>
 <translation id="8427292751741042100">በማንኛውም አስተናጋጅ ላይ ተከትቷል</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>

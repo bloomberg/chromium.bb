@@ -179,7 +179,7 @@
 <translation id="20817612488360358">የስርዓት ተኪ ቅንብሮች ስራ ላይ እንዲውሉ ተቀናብረዋል ግን ግልጽ የሆነ የተኪ ውቅርም ተገልጿል።</translation>
 <translation id="2091887806945687916">ድምፅ</translation>
 <translation id="2094505752054353250">የጎራ አለመዛመድ</translation>
-<translation id="2096368010154057602">ክፍል</translation>
+<translation id="2096368010154057602">መመሪያ</translation>
 <translation id="2102134110707549001">ጠንካራ የይለፍ ቃል ጠቁም...</translation>
 <translation id="2108755909498034140">ኮምፒውተርዎን ዳግም ያስጀምሩት</translation>
 <translation id="2113977810652731515">ካርታ</translation>
@@ -220,7 +220,7 @@
 <translation id="2355395290879513365">አጥቂዎች በዚህ ጣቢያ ላይ እርስዎ እየተመለከቱዋቸው ያሉ ምስሎችን ማየት እና በላያቸው ላይ ለውጦችን በማድረግ ሊያታልልዎት ይችሉ ይሆናል።</translation>
 <translation id="2356070529366658676">ጠይቅ</translation>
 <translation id="2359629602545592467">በርካታ</translation>
-<translation id="2359808026110333948">ቀጥል</translation>
+<translation id="2359808026110333948">ይቀጥሉ</translation>
 <translation id="2360873523816792727">ካርዶችዎን በሁሉም መሣሪያዎች ላይ ለመጠቀም ስምረትን ያብሩ።</translation>
 <translation id="2365563543831475020">በ<ph name="CRASH_TIME" /> ላይ የተያዘው የብልሽት ሪፖርት አልተሰቀለም</translation>
 <translation id="2367567093518048410">ደረጃ</translation>
@@ -449,7 +449,7 @@
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3858027520442213535">ቀን እና ሰዓትን አዘምን</translation>
 <translation id="3884278016824448484">የሚጋጭ የመሣሪያ ለዪ</translation>
-<translation id="3885155851504623709">ቤተ-ክህነት አካባቢ</translation>
+<translation id="3885155851504623709">ፓሪሽ</translation>
 <translation id="3886446263141354045">ይህን ጣቢያ የመድረስ ጥያቄዎ ለ<ph name="NAME" /> ተልኳል</translation>
 <translation id="3890664840433101773">ኢሜይል ያክሉ</translation>
 <translation id="3901925938762663762">ካርዱ አገልግሎት ጊዜው አብቅቷል</translation>
@@ -841,6 +841,7 @@
 <translation id="6744009308914054259">ግንኙነትን እየተጠባበቁ ሳሉ የመስመር ውጪ ጽሑፎችን ለማንበብ ውርዶችን መጎብኘት ይችላሉ።</translation>
 <translation id="6753269504797312559">የመምሪያ እሴት</translation>
 <translation id="6757797048963528358">የእርስዎ መሣሪያ ተኝቷል።</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{ይህ ካርድ አሁን ሊታከል አይችልም}one{እነዚህ ካርዶች አሁን ሊታከሉ አይችሉም}other{እነዚህ ካርዶች አሁን ሊታከሉ አይችሉም}}</translation>
 <translation id="6778737459546443941">የእርስዎ ወላጅ ገና አላጸደቁትም</translation>
 <translation id="679355240208270552">ነባሪው ፍለጋ በመምሪያ ስላልነቃ ችላ ተብሏል።</translation>
 <translation id="681021252041861472">የሚያስፈልግ መስክ</translation>
@@ -853,6 +854,7 @@
 <translation id="6865412394715372076">ይህ ካርድ አሁን ላይ ሊረጋገጥ አይችልም</translation>
 <translation id="6868206169573555318">ለማዘመን ዳግም ያስነሱት</translation>
 <translation id="6874604403660855544">&amp;አክልን ድገም</translation>
+<translation id="6885646002011712606">የራስ-ሙላ ረዳት ከማያ ገጹ ታች አጠገብ ይገኛል</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">የመመሪያ ደረጃ አይደገፍም።</translation>
 <translation id="6895330447102777224">የእርስዎ ካርድ ተረጋግጧል</translation>
@@ -882,7 +884,7 @@
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7064851114919012435">የእውቂያ መረጃ</translation>
 <translation id="7079718277001814089">ይህ ጣቢያ ተንኮል-አዘል ዌር ይዟል</translation>
-<translation id="7087282848513945231">አውራጃ</translation>
+<translation id="7087282848513945231">ክፍለ ሀገር</translation>
 <translation id="7090678807593890770"><ph name="LINK" />ን በGoogle ላይ ይፈልጉ</translation>
 <translation id="7108338896283013870">ደብቅ</translation>
 <translation id="7108819624672055576">በቅጥያ የተፈቀደ</translation>
@@ -995,6 +997,7 @@
 <translation id="7716424297397655342">ይህ ጣቢያ ከመሸጎጫው ላይ ሊጫን አይችልም</translation>
 <translation id="7723047071702270851">ካርትን ያርትዑ</translation>
 <translation id="774634243536837715">አደገኛ ይዘት ታግዷል።</translation>
+<translation id="7747182086178764941">የራስ-ሙላ ረዳት የመጀመሪያ አሂድ ማያ ገጽ ይታያል</translation>
 <translation id="7752995774971033316">አይቀናበርም</translation>
 <translation id="7755287808199759310">የእርስዎ ወላጅ እገዳውን ሊያነሱልዎ ይችላሉ</translation>
 <translation id="7758069387465995638">የኬላ ወይም የፀረ-ቫይረስ ሶፍትዌር ግንኙነቱን አግዶት ሊሆን ይችላል።</translation>
@@ -1002,7 +1005,7 @@
 <translation id="7761701407923456692">የአገልጋይ እውቅና ማረጋገጫ ከዩ አር ኤሉ ጋር አይዛመድም።</translation>
 <translation id="7763386264682878361">የክፍያ ዝርዝር ሰነድ ተንታኝ</translation>
 <translation id="7764225426217299476">አድራሻ አክል</translation>
-<translation id="777702478322588152">የፕሪፌክት ስልጣን</translation>
+<translation id="777702478322588152">መስተዳድር</translation>
 <translation id="7791543448312431591">አክል</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> ላይ ያለው ድረ-ገጽ ለጊዜው የማይሰራ ወይም እስከመጨረሻው ወደ አዲስ የድር አድራሻ ተዛውሮ ሊሆን ይችላል።</translation>
 <translation id="7800304661137206267"><ph name="MAC" /> ለመልዕክት ማረጋገጥ እና ደግሞ <ph name="KX" /> ለቁልፍ መቀያየሪያ ስልቶች በማድረግ ግንኙነቱ <ph name="CIPHER" />ን በመጠቀም የተመሰጠረ ነው።</translation>

@@ -28,7 +28,7 @@
 <translation id="1181037720776840403">Noņemt</translation>
 <translation id="1197267115302279827">Pārvietot grāmatzīmes</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
-<translation id="1201402288615127009">Nākamais</translation>
+<translation id="1201402288615127009">Tālāk</translation>
 <translation id="1204037785786432551">Lejupielādēt saiti</translation>
 <translation id="1206892813135768548">Kopēt saites tekstu</translation>
 <translation id="1208340532756947324">Lai sinhronizētu un personalizētu saturu dažādās ierīcēs, ieslēdziet sinhronizāciju.</translation>
@@ -185,7 +185,7 @@
 <translation id="2342981853652716282">Pierakstieties pārlūkā Chrome, lai iegūtu savas grāmatzīmes, paroles un citu saturu visās savās ierīcēs.</translation>
 <translation id="2349710944427398404">Kopējais pārlūkā Chrome izmantoto datu apjoms, ieskaitot kontus, grāmatzīmes un saglabātos iestatījumus</translation>
 <translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
-<translation id="2359808026110333948">Turpināt</translation>
+<translation id="2359808026110333948">Turpiniet</translation>
 <translation id="2369533728426058518">atvērt cilnes</translation>
 <translation id="2387895666653383613">Teksta mērogošana</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -824,7 +824,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7250468141469952378">Atlasīti vienumi: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pievienojiet Google kontu no lapas Konti savas ierīces lietotnē Iestatījumi.</translation>
 <translation id="7274013316676448362">Bloķēta vietne</translation>
-<translation id="728491846437309531">Google asistents var palīdzēt jums ātrāk un vieglāk veikt darbu tīmeklī.</translation>
 <translation id="729975465115245577">Ierīcē nav lietotnes, kurā uzglabāt paroļu failu.</translation>
 <translation id="7302081693174882195">Detalizēta informācija: kārtota pēc ietaupīto datu apjoma</translation>
 <translation id="7333031090786104871">Joprojām notiek iepriekšējās vietnes pievienošana</translation>

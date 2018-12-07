@@ -108,6 +108,13 @@
 
           Za upravljane uređaje prema zadanim postavkama nije dostupan nijedan način brzog otključavanja.</translation>
 <translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
+<translation id="1231349879329465225">Dopušta omogućivanje ili onemogućivanje Brzog prijelaza.
+      Primjenjuje se na sve korisnike i sva sučelja na uređaju.
+      Da bi se koristio Brzi prijelaz, ova postavka i ONC svojstvo po mreži moraju biti omogućeni.
+      Kad se postavi, Brzi prijelaz traje dok se ne isključi tim pravilom.
+
+      Ako se pravilo ne postavi ili se postavi na False, neće se upotrebljavati Brzi prijelaz.
+      Ako se postavi na True, Brzi prijelaz upotrebljava se kad ga podržava točka bežičnog pristupa.</translation>
 <translation id="1243570869342663665">Kontroliraj filtriranje sadržaja za odrasle za SafeSites.</translation>
 <translation id="1257550411839719984">Postavi zadani direktorij za preuzimanje</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>

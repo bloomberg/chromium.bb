@@ -604,7 +604,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular la solicitud de inhabilitación del zoom de un sitio web</translation>
 <translation id="5676636989614905379">No se puede reproducir el video en <ph name="SCREEN_NAME" />.</translation>
-<translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
@@ -824,7 +824,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Agrega una cuenta de Google desde la página Cuentas en la app de Configuración del dispositivo.</translation>
 <translation id="7274013316676448362">Sitio bloqueado</translation>
-<translation id="728491846437309531">El Asistente de Google te ayuda a completar tus tareas en la Web de forma más rápida y fácil</translation>
 <translation id="729975465115245577">Tu dispositivo no tiene una app que pueda almacenar el archivo de contraseñas.</translation>
 <translation id="7302081693174882195">Detalles: Ordenados por cantidad de datos ahorrados</translation>
 <translation id="7333031090786104871">Aún se está agregando el sitio anterior</translation>

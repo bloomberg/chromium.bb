@@ -87,7 +87,7 @@
 <translation id="2341729377289034582">నిలువు ప్రదర్శనకు లాక్ చేయబడింది</translation>
 <translation id="2352467521400612932">స్టైలస్ సెట్టింగ్‌లు</translation>
 <translation id="2354174487190027830"><ph name="NAME" />ని సక్రియం చేస్తోంది</translation>
-<translation id="2359808026110333948">కొనసాగు</translation>
+<translation id="2359808026110333948">కొనసాగించు</translation>
 <translation id="2365393535144473978">మొబైల్ డేటాను ప్రారంభించడం, బ్లూటూత్‌ను ప్రారంభిస్తుంది.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">అంతరాయం కలిగించవద్దు ఎంపికను టోగుల్ చేయండి</translation>
@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
 <translation id="2761704814324807722">స్థితి ట్రే, సమయం <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" />కి మళ్లీ కనెక్ట్ చేస్తోంది</translation>
-<translation id="2790844815106384441">స్థాన సేవలు లేదా పరికర మైక్రోఫోన్, కెమెరా లేదా ఇతర ఫీచర్‌లను వెబ్‌సైట్‌లు ఉపయోగించవచ్చో లేదో ఎంచుకోండి</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">అన్‌లాక్ చేయడానికి, మీ పాస్‌వర్డ్‌ని నమోదు చేయండి</translation>
 <translation id="2819276065543622893">మీరు ఇప్పుడు సైన్ అవుట్ చేయబడతారు.</translation>
@@ -225,6 +224,7 @@
 <translation id="4628757576491864469">పరికరాలు</translation>
 <translation id="4659419629803378708">ChromeVox ప్రారంభించబడింది</translation>
 <translation id="4734965478015604180">అడ్డంగా ఉంది</translation>
+<translation id="476166673298332917">పరికర నిర్వాహకులు మీ బ్రౌజింగ్ కార్యకలాపాన్ని పర్యవేక్షించవచ్చు.</translation>
 <translation id="4774338217796918551">రేపు <ph name="COME_BACK_TIME" />కి తిరిగి రండి.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> కోసం పాస్‌వర్డ్</translation>
 <translation id="4778095205580009397">Google అసిస్టెంట్ డెమో సెషన్‌లో అందుబాటులో లేదు.</translation>
@@ -339,7 +339,6 @@
 <translation id="6751826523481687655">పనితీరు స్థితిగతి కనుగొనడం ఆన్‌లో ఉంది</translation>
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
 <translation id="6803622936009808957">మద్దతు ఉన్న రిజల్యూషన్‌లు కనుగొనబడనందున ప్రదర్శనలను ప్రతిబింబించడం సాధ్యపడలేదు. దానికి బదులుగా విస్తారిత డెస్క్‌టాప్‌కు మారారు.</translation>
-<translation id="6814658242098378692">యాప్‌లు, ఎక్స్‌టెన్షన్‌లు మరియు థీమ్‌లను నిర్వహించండి</translation>
 <translation id="6820676911989879663">విరామం తీసుకోండి!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" />ని సక్రియం చెయ్యి</translation>
@@ -379,7 +378,6 @@
 <translation id="7564874036684306347">విండోలను మరొక డెస్క్‌టాప్‌కు తరలించడం వలన ఊహించని ప్రవర్తన చోటు చేసుకోవచ్చు. తర్వాత చూపబడే నోటిఫికేషన్‌లు, విండోలు మరియు డైలాగ్‌లు డెస్క్‌టాప్‌ల మధ్య విభజించబడవచ్చు.</translation>
 <translation id="7569509451529460200">బ్రెయిలీ మరియు ChromeVox ప్రారంభించబడ్డాయి</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
-<translation id="7604942372593434070">మీ బ్రౌజింగ్ కార్యాచరణను ప్రాప్యత చేయండి</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (యజమాని)</translation>
 <translation id="7647488630410863958">మీ నోటిఫికేషన్‌లను వీక్షించడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="7649070708921625228">సహాయం</translation>

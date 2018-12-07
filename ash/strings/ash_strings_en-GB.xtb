@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1570871743947603115">Toggle Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Access all your activity in this session</translation>
 <translation id="1608626060424371292">Remove this user</translation>
 <translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start a voice query</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Reconnecting to <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Choose whether websites can use location services or the device’s microphone, camera or other features</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">To unlock, enter your password</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">Add connection</translation>
 <translation id="2961963223658824723">Something went wrong. Try again in a few seconds.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Install apps, extensions and themes</translation>
 <translation id="2995447421581609334">Show cast devices.</translation>
 <translation id="2996462380875591307">Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">Devices</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">The device admin may monitor your browsing activity.</translation>
 <translation id="4774338217796918551">Come back tomorrow at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">The Google Assistant is not available in a demo session.</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
+<translation id="6665545700722362599">Grant websites, apps and extensions permission to use location services, the device’s microphone, camera or other features</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Your detachable keyboard needs a critical update</translation>
 <translation id="6700713906295497288">IME menu button</translation>
@@ -338,7 +341,6 @@
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
-<translation id="6814658242098378692">Manage apps, extensions and themes</translation>
 <translation id="6820676911989879663">Take a break!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +380,6 @@
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
-<translation id="7604942372593434070">Access your browsing activity</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>

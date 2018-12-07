@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Adicionar galeria de mídias por diretório</translation>
 <translation id="2910318910161511225">Conecte-se a uma rede e tente novamente</translation>
 <translation id="2913331724188855103">Permitir que os sites salvem e leiam os dados de arquivos "cookies" - que armazenam temporariamente o que você visitou na rede. (Recomendado)</translation>
+<translation id="2915102088417824677">Ver registro de atividades</translation>
 <translation id="2916073183900451334">Ao pressionar Tab em uma página da Web, os links e os campos de formulário são destacados</translation>
 <translation id="2916745397441987255">Pesquisar extensões</translation>
 <translation id="2921081876747860777">Crie uma senha para proteger seus dados locais.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar e ejetar dispositivos de armazenamento</translation>
 <translation id="4109135793348361820">Mover janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Download concluído: <ph name="FILE_NAME" />. Pressione Shift+F6 para voltar à área da barra de downloads.</translation>
 <translation id="4110895898888439383">Navegue na Web usando o modo de alto contraste</translation>
 <translation id="4115002065223188701">Rede fora de alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo usam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Permitir que o app <ph name="APP_NAME" /> receba a lista dos seus dispositivos USB conectados?</translation>
 <translation id="4414232939543644979">Nova janela &amp;anônima</translation>
 <translation id="4415245286584082850">Nenhum dispositivo encontrado. Abrir um artigo da Central de Ajuda em uma nova guia.</translation>
+<translation id="4415276339145661267">Gerenciar sua Conta do Google</translation>
 <translation id="4415748029120993980">Curva elíptica SECG secp384r1 (também conhecida como NIST P-384)</translation>
 <translation id="4416582610654027550">Digite um URL válido</translation>
 <translation id="4419409365248380979">Sempre permitir que <ph name="HOST" /> configure cookies</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Contas do Google não são permitidas neste dispositivo.</translation>
 <translation id="4568854179928172494">Horário modificado</translation>
 <translation id="4569747168316751899">Quando estiver ocioso</translation>
+<translation id="4570387585180509432">Endereços, números de telefone e muito mais</translation>
 <translation id="4572659312570518089">Autenticação cancelada durante a conexão com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Arquivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mais...</translation>
@@ -2693,7 +2697,7 @@
 <translation id="5151354047782775295">Libere espaço em disco, ou dados específicos podem ser excluídos automaticamente</translation>
 <translation id="5153234146675181447">Esquecer o smartphone</translation>
 <translation id="5154108062446123722">Configurações avançadas para <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Requerente</translation>
+<translation id="5154702632169343078">Assunto</translation>
 <translation id="5157635116769074044">Fixar guia dessa página na tela inicial.</translation>
 <translation id="5158593464696388225">Falha ao salvar imagem.</translation>
 <translation id="5158983316805876233">Use o mesmo proxy para todos os protocolos</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Falha na formatação</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Carregando apps…</translation>
+<translation id="5592010267127539419">Solicitação de pareamento de dispositivos feita por <ph name="URL_HOST" /></translation>
 <translation id="5592595402373377407">Ainda não há dados suficientes.</translation>
 <translation id="5593357315997824387">Sincronizar meus arquivos</translation>
 <translation id="5595152862129936745">Muito longe</translation>
@@ -3038,6 +3043,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5627676517703583263">Navegue com inteligência com o Chrome</translation>
 <translation id="562935524653278697">Seu administrador desativou a sincronização dos seus favoritos, histórico, senhas e outras configurações.</translation>
 <translation id="5632566673632479864">Não é mais permitido usar sua conta <ph name="EMAIL" /> como a principal. Como essa conta é gerenciada por <ph name="DOMAIN" />, seus favoritos, histórico, senhas e outras configurações serão excluídos deste dispositivo.</translation>
+<translation id="5632592977009207922">Download em andamento, <ph name="PERCENT_REMAINING" />% restante(s)</translation>
 <translation id="563535393368633106">Perguntar antes de acessar (recomendado)</translation>
 <translation id="5636996382092289526">Para usar <ph name="NETWORK_ID" />, talvez seja necessário primeiro <ph name="LINK_START" />visitar a página de login da rede<ph name="LINK_END" />, que abrirá automaticamente em alguns segundos. Se isso não acontecer, significa que a rede não pode ser usada.</translation>
 <translation id="5637476008227280525">Ativar dados móveis</translation>
@@ -3062,7 +3068,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5671641761787789573">Imagens bloqueadas</translation>
 <translation id="567643736130151854">Faça login e ative a sincronização para ver seus favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
 <translation id="5677503058916217575">Idioma da página:</translation>
-<translation id="5677928146339483299">Bloqueados</translation>
+<translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5678550637669481956">Foi concedido acesso de leitura e gravação a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678784840044122290">O aplicativo Linux estará disponível no seu terminal e também poderá mostrar um ícone no acesso rápido.</translation>
 <translation id="5678955352098267522">Leia seus dados em <ph name="WEBSITE_1" /></translation>
@@ -3421,6 +3427,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6198252989419008588">Alterar PIN</translation>
 <translation id="6199801702437275229">Aguardando informações sobre espaço...</translation>
 <translation id="6201792273624501289">Aplicativos Linux</translation>
+<translation id="6202304368170870640">Use seu PIN para fazer login ou desbloquear seu dispositivo.</translation>
 <translation id="6205710420833115353">Algumas operações estão demorando mais tempo que o esperado. Quer cancelar?</translation>
 <translation id="6206311232642889873">&amp;Copiar imagem</translation>
 <translation id="6207200176136643843">Redefinir para o nível de zoom padrão</translation>
@@ -4256,6 +4263,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7497215489070763236">Certificado de CA do servidor</translation>
 <translation id="7497981768003291373">Você não tem nenhum registro de texto WebRTC capturado recentemente.</translation>
 <translation id="7502658306369382406">Endereço IPv6</translation>
+<translation id="7503127198245469314">Remova o fone de ouvido para bloquear ou permitir na tela do computador</translation>
 <translation id="7503191893372251637">Tipo de certificado do Netscape</translation>
 <translation id="7503821294401948377">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação do navegador.</translation>
 <translation id="750509436279396091">Abrir pasta de downloads</translation>
@@ -4871,6 +4879,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="8425492902634685834">Fixar na barra de tarefas</translation>
 <translation id="8425755597197517046">&amp;Colar e pesquisar</translation>
+<translation id="8425768983279799676">Você pode usar o PIN para desbloquear seu dispositivo.</translation>
 <translation id="8426713856918551002">Ativando</translation>
 <translation id="8427292751741042100">incorporado em qualquer host</translation>
 <translation id="8428213095426709021">Configurações</translation>

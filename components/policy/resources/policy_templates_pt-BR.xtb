@@ -115,6 +115,13 @@
 
           Por padrão, nenhum modo de desbloqueio rápido é disponibilizado para dispositivos gerenciados.</translation>
 <translation id="123081309365616809">Ativa transmissão de conteúdo para o dispositivo</translation>
+<translation id="1231349879329465225">Permite ativar ou desativar a transição rápida.
+      Isso se aplica a todos os usuários e a todas as interfaces no dispositivo.
+      Para usar a transição rápida, é necessário ativar esta configuração e a propriedade ONC por rede.
+      Depois de configurada, a transição rápida continua até que a política seja alterada para desativá-la.
+
+      Se esta política não for definida ou for definida como falsa, a transição rápida não será usada.
+      Se for definida como verdadeira, a transição rápida será usada quando for compatível com o ponto de acesso sem fio.</translation>
 <translation id="1243570869342663665">Controlar a filtragem de conteúdo adulto SafeSites.</translation>
 <translation id="1257550411839719984">Definir diretório de download padrão</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>

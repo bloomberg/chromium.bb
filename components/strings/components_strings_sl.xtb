@@ -179,7 +179,7 @@
 <translation id="20817612488360358">Za uporabo so nastavljene sistemske nastavitve strežnika proxy, vendar je navedena tudi izrecna konfiguracija proxyja.</translation>
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2094505752054353250">Neujemanje domen</translation>
-<translation id="2096368010154057602">Departma</translation>
+<translation id="2096368010154057602">Področje</translation>
 <translation id="2102134110707549001">Predlagaj zapleteno geslo …</translation>
 <translation id="2108755909498034140">Znova zaženite računalnik</translation>
 <translation id="2113977810652731515">Kartica</translation>
@@ -220,7 +220,7 @@
 <translation id="2355395290879513365">Napadalci morda vidijo slike, ki si jih ogledujete na tem spletnem mestu, in vas ukanijo, tako da jih spremenijo.</translation>
 <translation id="2356070529366658676">Vprašaj</translation>
 <translation id="2359629602545592467">Več valut</translation>
-<translation id="2359808026110333948">Nadaljuj</translation>
+<translation id="2359808026110333948">Naprej</translation>
 <translation id="2360873523816792727">Če želite uporabljati kartice v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="2365563543831475020">Poročilo o zrušitvi, zajeto takrat: <ph name="CRASH_TIME" />, ni bilo naloženo</translation>
 <translation id="2367567093518048410">Raven</translation>
@@ -450,7 +450,7 @@
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
-<translation id="3885155851504623709">Okrožje</translation>
+<translation id="3885155851504623709">Župnija</translation>
 <translation id="3886446263141354045">Vaša zahteva za dostop do tega mesta je poslana uporabniku <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Dodajanje e-poštnega naslova</translation>
 <translation id="3901925938762663762">Kartica je potekla</translation>
@@ -618,7 +618,7 @@
 <translation id="5086888986931078152">Morda boste izgubili dostop do zaščitene vsebine na nekaterih spletnih mestih.</translation>
 <translation id="5087286274860437796">Potrdilo strežnika trenutno ni veljavno.</translation>
 <translation id="5087580092889165836">Dodaj kartico</translation>
-<translation id="5089810972385038852">Zvezna država</translation>
+<translation id="5089810972385038852">Država:</translation>
 <translation id="5094747076828555589">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chromium ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="5098332213681597508">To ime je iz vašega Google Računa.</translation>
@@ -870,7 +870,7 @@
 <translation id="6964255747740675745">Omrežne konfiguracije ni bilo mogoče razčleniti (neveljaven JSON).</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="6965978654500191972">Naprava</translation>
-<translation id="6970216967273061347">Okraj</translation>
+<translation id="6970216967273061347">Okrožje</translation>
 <translation id="6973656660372572881">Določeni so stalni strežniki proxy in URL skripta .pac.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Izklop zvoka (privzeto)</translation>
@@ -883,7 +883,7 @@
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7064851114919012435">Podatki o stiku</translation>
 <translation id="7079718277001814089">To spletno mesto vsebuje zlonamerno programsko opremo</translation>
-<translation id="7087282848513945231">Okraj</translation>
+<translation id="7087282848513945231">Okrožje</translation>
 <translation id="7090678807593890770">Iščite v Googlu s poizvedbo <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skrij</translation>
 <translation id="7108819624672055576">Omogoča razširitev</translation>
@@ -891,7 +891,7 @@
 <translation id="7119414471315195487">Zaprite druge zavihke ali programe</translation>
 <translation id="7129409597930077180">Pošiljanje na ta naslov ni mogoče. Izberite drugega.</translation>
 <translation id="7138472120740807366">Način dostave</translation>
-<translation id="7139724024395191329">Emirat</translation>
+<translation id="7139724024395191329">Emirat:</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="717330890047184534">ID za Gaio:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>

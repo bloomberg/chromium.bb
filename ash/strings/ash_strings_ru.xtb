@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Большой курсор мыши</translation>
 <translation id="1550523713251050646">Чтобы изменить источник питания, нажмите здесь.</translation>
 <translation id="1570871743947603115">Изменить настройки Bluetooth. <ph name="STATE_TEXT" />.</translation>
+<translation id="1589090746204042747">Получать доступ к данным о ваших действиях во время этого сеанса.</translation>
 <translation id="1608626060424371292">Удалить профиль</translation>
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
 <translation id="1654477262762802994">Произнесите запрос</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">Заблокировано в вертикальном положении</translation>
 <translation id="2352467521400612932">Настройки стилуса</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME" /></translation>
-<translation id="2359808026110333948">Далее</translation>
+<translation id="2359808026110333948">Продолжить</translation>
 <translation id="2365393535144473978">Вместе с мобильным Интернетом включится Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Изменить настройки режима "Не беспокоить"</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
-<translation id="2790844815106384441">Настраивать доступ сайтов к местоположению устройства, его камере, микрофону и другим функциям.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
 <translation id="2803734122639935495">Чтобы разблокировать устройство, введите пароль</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">Добавить подключение</translation>
 <translation id="2961963223658824723">Произошла ошибка. Повторите попытку через несколько секунд.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Устанавливать приложения, расширения и темы.</translation>
 <translation id="2995447421581609334">Показать устройства Google Cast</translation>
 <translation id="2996462380875591307">Закрепленная лупа включена. Чтобы отключить ее, нажмите Ctrl + Поиск + D.</translation>
 <translation id="3000461861112256445">Монофонический звук</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">Устройства</translation>
 <translation id="4659419629803378708">Функция ChromeVox включена</translation>
 <translation id="4734965478015604180">Горизонтальная ориентация</translation>
+<translation id="476166673298332917">Администратору устройства доступна информация о том, какие страницы вы просматриваете в браузере.</translation>
 <translation id="4774338217796918551">Возвращайтесь завтра в <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google Ассистент в демонстрационном сеансе недоступен</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Поиск + Shift + K</translation>
 <translation id="6650933572246256093">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth. Введите на нем код: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Пароль</translation>
+<translation id="6665545700722362599">Разрешать сайтам, приложениям и расширениям использовать геолокацию, микрофон, камеру и другие функции устройства.</translation>
 <translation id="6691659475504239918">ПОИСК + SHIFT + H</translation>
 <translation id="6696025732084565524">Необходимо обновить внешнюю клавиатуру</translation>
 <translation id="6700713906295497288">Кнопка меню редактора методов ввода</translation>
@@ -338,7 +341,6 @@
 <translation id="6751826523481687655">Отслеживание эффективности включено.</translation>
 <translation id="6785414152754474415">Батарея заряжена на <ph name="PERCENTAGE" />% и подключена к источнику питания.</translation>
 <translation id="6803622936009808957">Не удалось дублировать изображение экрана, т. к. указанное разрешение не поддерживается. Включен режим расширенного рабочего стола.</translation>
-<translation id="6814658242098378692">Управлять приложениями, расширениями и темами.</translation>
 <translation id="6820676911989879663">Пора отдохнуть!</translation>
 <translation id="683971173229319003">Клавиша поиска + L</translation>
 <translation id="6857811139397017780">Активировать <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +380,6 @@
 <translation id="7564874036684306347">При переносе окон на другой рабочий стол иногда возникают ошибки. Уведомления и диалоговые окна могут появляться на разных рабочих столах.</translation>
 <translation id="7569509451529460200">Шрифт Брайля и функция ChromeVox включены</translation>
 <translation id="7593891976182323525">Search или Shift</translation>
-<translation id="7604942372593434070">Доступ к данным о посещенных веб-страницах</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (владелец)</translation>
 <translation id="7647488630410863958">Чтобы просмотреть уведомления, разблокируйте устройство</translation>
 <translation id="7649070708921625228">Справка</translation>

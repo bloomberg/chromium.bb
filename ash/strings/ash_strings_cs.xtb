@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
 <translation id="1570871743947603115">Přepnout Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Získat přístup k veškeré vaší aktivitě v této relaci</translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Obnovování připojení k síti <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Určete, zda weby mohou používat určování polohy nebo mikrofon, fotoaparát a další funkce zařízení</translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
 <translation id="2803734122639935495">Chcete-li zařízení odemknout, zadejte heslo</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">Přidat připojení</translation>
 <translation id="2961963223658824723">Něco se pokazilo. Zkuste to znovu za několik minut.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Instalovat aplikace, rozšíření a motivy</translation>
 <translation id="2995447421581609334">Zobrazit zařízení Cast.</translation>
 <translation id="2996462380875591307">Zadokovaná lupa je zapnutá. Vypnete ji opětovným stisknutím kombinace kláves Ctrl+Hledat+D.</translation>
 <translation id="3000461861112256445">Zvuk mono</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">Zařízení</translation>
 <translation id="4659419629803378708">Funkce ChromeVox je zapnutá</translation>
 <translation id="4734965478015604180">Na šířku</translation>
+<translation id="476166673298332917">Správce tohoto zařízení může monitorovat vaše aktivity v prohlížeči.</translation>
 <translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Asistent Google není v ukázkové relaci k dispozici.</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Vyhledávací tlačítko + Shift + K</translation>
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
+<translation id="6665545700722362599">Udělit webům, aplikacím a rozšířením oprávnění používat služby určování polohy, mikrofon či fotoaparát zařízení nebo další funkce</translation>
 <translation id="6691659475504239918">Hledat+Shift+H</translation>
 <translation id="6696025732084565524">Odpojitelná klávesnice vyžaduje kritickou aktualizaci</translation>
 <translation id="6700713906295497288">Tlačítko nabídky IME</translation>
@@ -338,7 +341,6 @@
 <translation id="6751826523481687655">Trasování výkonu je zapnuté</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
-<translation id="6814658242098378692">Správa aplikací, rozšíření a motivů</translation>
 <translation id="6820676911989879663">Dejte si pauzu.</translation>
 <translation id="683971173229319003">Hledat+L</translation>
 <translation id="6857811139397017780">Aktivovat: <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +380,6 @@
 <translation id="7564874036684306347">Přesunutí oken na jinou plochu může vést k neočekávanému chování. Následná oznámení, okna a dialogy mohou být rozděleny mezi plochy.</translation>
 <translation id="7569509451529460200">Jsou zapnuty funkce Braille a ChromeVox</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
-<translation id="7604942372593434070">Přistupovat k vaší aktivitě prohlížení</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Chcete-li zobrazit oznámení, odemkněte zařízení</translation>
 <translation id="7649070708921625228">Nápověda</translation>

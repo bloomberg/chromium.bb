@@ -1279,6 +1279,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Mediengalerie nach Verzeichnis hinzufügen</translation>
 <translation id="2910318910161511225">Stellen Sie eine Verbindung zu einem Netzwerk her und versuchen Sie es noch einmal</translation>
 <translation id="2913331724188855103">Websites dürfen Cookiedaten speichern und lesen (empfohlen)</translation>
+<translation id="2915102088417824677">Aktivitätsprotokoll ansehen</translation>
 <translation id="2916073183900451334">Durch Drücken der Tab-Taste auf einer Webseite werden Links sowie Formularfelder markiert.</translation>
 <translation id="2916745397441987255">In Erweiterungen suchen</translation>
 <translation id="2921081876747860777">Erstellen Sie ein Passwort, um Ihre lokalen Daten zu schützen.</translation>
@@ -2067,6 +2068,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4104163789986725820">E&amp;xportieren...</translation>
 <translation id="4107048419833779140">Speichergeräte ermitteln und auswerfen</translation>
 <translation id="4109135793348361820">Fenster zu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) verschieben</translation>
+<translation id="4110490973560452005">Download abgeschlossen: <ph name="FILE_NAME" />. Drücken Sie Umschalttaste + F6, um zum Bereich mit der Downloadleiste zu wechseln.</translation>
 <translation id="4110895898888439383">Das Web in Modus mit hohem Kontrast durchsuchen</translation>
 <translation id="4115002065223188701">Netzwerk außer Reichweite</translation>
 <translation id="4115080753528843955">Einige Inhaltsdienste verwenden eindeutige IDs, um den Zugriff auf geschützte Inhalte zu gestatten</translation>
@@ -2227,6 +2229,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" erlauben, die Liste der angeschlossenen USB-Geräte abzurufen?</translation>
 <translation id="4414232939543644979">Neues &amp;Inkognito-Fenster</translation>
 <translation id="4415245286584082850">Keine Geräte gefunden. Durch Klicken wird ein Hilfe-Artikel in einem neuen Tab geöffnet.</translation>
+<translation id="4415276339145661267">Google-Konto verwalten</translation>
 <translation id="4415748029120993980">Elliptische SECG-Kurve secp384r1 (NIST P-384)</translation>
 <translation id="4416582610654027550">Geben Sie eine gültige URL ein</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> darf immer Cookies setzen</translation>
@@ -2322,6 +2325,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4568213207643490790">Google-Konten sind auf diesem Gerät nicht zugelassen.</translation>
 <translation id="4568854179928172494">Änderungszeitpunkt</translation>
 <translation id="4569747168316751899">Bei Inaktivität</translation>
+<translation id="4570387585180509432">Adressen, Telefonnummern…</translation>
 <translation id="4572659312570518089">Beim Herstellen der Verbindung zu "<ph name="DEVICE_NAME" />" wurde die Authentifizierung abgebrochen.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-Datei</translation>
 <translation id="457386861538956877">Mehr...</translation>
@@ -2688,7 +2692,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5151354047782775295">Geben Sie Speicherplatz frei oder ausgewählte Daten werden automatisch gelöscht</translation>
 <translation id="5153234146675181447">Smartphone entfernen</translation>
 <translation id="5154108062446123722">Erweiterte Einstellungen für <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Antragsteller</translation>
+<translation id="5154702632169343078">Betreff</translation>
 <translation id="5157635116769074044">Diese Seite am Startbildschirm anpinnen...</translation>
 <translation id="5158593464696388225">Bild konnte nicht gespeichert werden.</translation>
 <translation id="5158983316805876233">Denselben Proxy für alle Protokolle verwenden</translation>
@@ -3000,6 +3004,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5585912436068747822">Fehler bei der Formatierung</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Apps werden geladen...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> möchte sich mit Geräten koppeln</translation>
 <translation id="5592595402373377407">Noch nicht genügend Daten vorhanden</translation>
 <translation id="5593357315997824387">Meine Dateien synchronisieren</translation>
 <translation id="5595152862129936745">Sehr weit entfernt</translation>
@@ -3032,6 +3037,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5627676517703583263">Intelligent surfen mit Chrome</translation>
 <translation id="562935524653278697">Ihr Administrator hat die Synchronisierung Ihres Verlaufs sowie Ihrer Lesezeichen, Passwörter und sonstigen Einstellungen deaktiviert.</translation>
 <translation id="5632566673632479864">Ihr Konto <ph name="EMAIL" /> ist nicht mehr als primäres Konto zugelassen. Da dieses Konto von <ph name="DOMAIN" /> verwaltet wird, werden Ihr Verlauf sowie Ihre Lesezeichen, Passwörter und sonstigen Einstellungen von diesem Gerät gelöscht.</translation>
+<translation id="5632592977009207922">Wird heruntergeladen, <ph name="PERCENT_REMAINING" /> % verbleibend</translation>
 <translation id="563535393368633106">Vor dem Zugriff nachfragen (empfohlen)</translation>
 <translation id="5636996382092289526">Zur Verwendung von <ph name="NETWORK_ID" /> müssen Sie eventuell zuerst die <ph name="LINK_START" />Anmeldeseite des Netzwerks besuchen<ph name="LINK_END" />. Diese wird in einigen Sekunden automatisch geöffnet. Anderenfalls kann das Netzwerk nicht verwendet werden.</translation>
 <translation id="5637476008227280525">Aktivierung der mobilen Daten</translation>
@@ -3414,6 +3420,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6198252989419008588">PIN ändern</translation>
 <translation id="6199801702437275229">Speicherplatzangaben werden abgerufen...</translation>
 <translation id="6201792273624501289">Linux-Apps</translation>
+<translation id="6202304368170870640">Mit Ihrer PIN können Sie sich auf Ihrem Gerät anmelden oder es entsperren.</translation>
 <translation id="6205710420833115353">Einige Vorgänge dauern länger als erwartet. Möchten Sie sie abbrechen?</translation>
 <translation id="6206311232642889873">Bild kop&amp;ieren</translation>
 <translation id="6207200176136643843">Auf Standard-Zoomstufe zurücksetzen</translation>
@@ -4249,6 +4256,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7497215489070763236">CA-Serverzertifikat</translation>
 <translation id="7497981768003291373">Es sind keine kürzlich erfassten WebRTC-Textprotokolle vorhanden.</translation>
 <translation id="7502658306369382406">IPv6-Adresse</translation>
+<translation id="7503127198245469314">Entfernen Sie das Headset, um die Anzeige auf dem Desktop zu blockieren oder zuzulassen</translation>
 <translation id="7503191893372251637">Netscape-Zertifikatstyp</translation>
 <translation id="7503821294401948377">Symbol "<ph name="ICON" />" konnte nicht für Browseraktion geladen werden.</translation>
 <translation id="750509436279396091">Downloadordner öffnen</translation>
@@ -4863,6 +4871,7 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8425213833346101688">Ändern</translation>
 <translation id="8425492902634685834">An Taskleiste anpinnen</translation>
 <translation id="8425755597197517046">Einfügen und &amp;suchen</translation>
+<translation id="8425768983279799676">Mit Ihrer PIN können Sie Ihr Gerät entsperren.</translation>
 <translation id="8426713856918551002">Wird aktiviert</translation>
 <translation id="8427292751741042100">auf beliebigem Host eingebettet</translation>
 <translation id="8428213095426709021">Einstellungen</translation>

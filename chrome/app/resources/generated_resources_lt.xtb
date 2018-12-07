@@ -150,7 +150,7 @@
 <translation id="1195447618553298278">Nežinoma klaida.</translation>
 <translation id="1197979282329025000">Nuskaitant „<ph name="PRINTER_NAME" />“ spausdintuvo charakteristikas įvyko klaida. Šio spausdintuvo nepavyko užregistruoti „<ph name="CLOUD_PRINT_NAME" />“.</translation>
 <translation id="119944043368869598">Valyti viską</translation>
-<translation id="1201402288615127009">Toliau</translation>
+<translation id="1201402288615127009">Kitas</translation>
 <translation id="1202596434010270079">Viešojo terminalo buvo atnaujinta. Atjunkite USB atmintuką.</translation>
 <translation id="120368089816228251">Muzikos nata</translation>
 <translation id="1205489148908752564">Skaityti ir keisti į baltąjį sąrašą įtrauktus naudotojus</translation>
@@ -919,7 +919,7 @@
 <translation id="2356070529366658676">Paklausti</translation>
 <translation id="2357949918965361754">Šią funkciją galite naudoti, jei TV arba kituose įrenginiuose norite pateikti turinį iš „Chrome“.</translation>
 <translation id="2359345697448000899">„Įrankių“ meniu spustelėję „Plėtiniai“, tvarkykite plėtinius.</translation>
-<translation id="2359808026110333948">Tęsti</translation>
+<translation id="2359808026110333948">Tęskite</translation>
 <translation id="236117173274098341">Optimizuoti</translation>
 <translation id="236141728043665931">Visada blokuoti prieigą prie mikrofono</translation>
 <translation id="2365507699358342471">Ši svetainė gali peržiūrėti tekstą ir vaizdus, nukopijuotus į iškarpinę.</translation>
@@ -2693,7 +2693,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5151354047782775295">Atlaisvinkite vietos diske arba pasirinkite duomenis, kuriuos galima automatiškai ištrinti</translation>
 <translation id="5153234146675181447">Pamiršti telefoną</translation>
 <translation id="5154108062446123722">Išplėstiniai <ph name="PRINTING_DESTINATION" /> nustatymai</translation>
-<translation id="5154702632169343078">Subjektas</translation>
+<translation id="5154702632169343078">Tema</translation>
 <translation id="5157635116769074044">Prisegti šį puslapį pradžios ekrane...</translation>
 <translation id="5158593464696388225">Nepavyko išsaugoti vaizdo.</translation>
 <translation id="5158983316805876233">Naudoti tą patį visų protokolų tarpinį serverį</translation>
@@ -3062,7 +3062,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5671641761787789573">Vaizdai užblokuoti</translation>
 <translation id="567643736130151854">Prisijunkite ir įjunkite sinchronizavimą, kad gautumėte žymes, slaptažodžius ir daugiau visuose įrenginiuose</translation>
 <translation id="5677503058916217575">Puslapio kalba:</translation>
-<translation id="5677928146339483299">Užblokuota</translation>
+<translation id="5677928146339483299">Užblokuoti</translation>
 <translation id="5678550637669481956">„<ph name="VOLUME_NAME" />“ suteiktas leidimas skaityti ir rašyti.</translation>
 <translation id="5678784840044122290">„Linux“ programa pasiekiama jūsų terminale ir piktograma taip pat gali būti rodoma Paleidimo priemonėje.</translation>
 <translation id="5678955352098267522">Skaityti duomenis svetainėje <ph name="WEBSITE_1" /></translation>
@@ -3325,7 +3325,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6057381398996433816">Ši svetainė užblokuota, kad nebūtų naudojami judesio ir šviesos jutikliai.</translation>
 <translation id="6059652578941944813">Sertifikatų hierarchija</translation>
 <translation id="6059925163896151826">USB įrenginiai</translation>
-<translation id="60628369828239652">Atidaromas failas <ph name="FILE_NAME" /></translation>
+<translation id="60628369828239652">Atidaromas failas „<ph name="FILE_NAME" />“</translation>
 <translation id="6064217302520318294">Ekrano užraktas</translation>
 <translation id="6065289257230303064">Sertifikato subjekto katalogo atributai</translation>
 <translation id="6068338049763724728">Įgalinti nuotolinę registraciją</translation>

@@ -108,6 +108,13 @@
 
           De manera predeterminada, no es pot utilitzar cap mode de desbloqueig ràpid als dispositius gestionats.</translation>
 <translation id="123081309365616809">Activa l'emissió de contingut al dispositiu</translation>
+<translation id="1231349879329465225">Permet activar o desactivar la transició ràpida.
+      S'aplica a tots els usuaris i a totes les interfícies del dispositiu.
+      Per poder utilitzar la transició ràpida, s'ha d'activar tant aquesta opció com la propietat ONC de cada xarxa.
+      Un cop establerta la transició ràpida, es manté activada fins que no es canvia la política per desactivar-la.
+
+      Si no s'estableix la política o s'estableix en "false", no s'utilitza la transició ràpida.
+      Si s'estableix en "true", la transició ràpida s'utilitza quan el punt d'accés sense fil ho admet.</translation>
 <translation id="1243570869342663665">Controla el filtre SafeSites de contingut per a adults.</translation>
 <translation id="1257550411839719984">Estableix el directori de baixada predeterminat</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
@@ -441,7 +448,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2163878108829382394">
         Si aquesta política s'estableix en "true", la inscripció a la gestió al núvol és obligatòria i bloqueja el procés per obrir Chrome si falla.
 
-        Si aquesta política es deixa sense establir, la inscripció a la gestió al núvol és opcional i bloqueja el procés per obrir Chrome si falla.</translation>
+        Si aquesta política s'estableix en "false" o es deixa sense establir, la inscripció a la gestió al núvol és opcional i no bloqueja el procés per obrir Chrome si falla.</translation>
 <translation id="2166472654199325139">No filtris llocs web amb contingut per a adults</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>

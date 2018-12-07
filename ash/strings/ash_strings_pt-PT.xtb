@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1570871743947603115">Ativar/desativar Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Aceda a toda a sua atividade nesta sessão.</translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">A restabelecer ligação a <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Escolha se os Websites podem utilizar serviços de localização ou o microfone, a câmara ou outras funcionalidades do dispositivo</translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
 <translation id="2803734122639935495">Para desbloquear, introduza a palavra-passe.</translation>
 <translation id="2819276065543622893">A sessão será terminada agora.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2961963223658824723">Ocorreu um erro. Tente novamente dentro de alguns segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Instalar aplicações, extensões e temas</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmissão.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
 <translation id="4734965478015604180">Horizontal</translation>
+<translation id="476166673298332917">O administrador deste dispositivo poderá monitorizar a sua atividade de navegação.</translation>
 <translation id="4774338217796918551">Volte amanhã à(s) <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Palavra-passe para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">O Assistente Google não está disponível numa sessão de demonstração.</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
+<translation id="6665545700722362599">Conceda aos Websites, às aplicações e às extensões autorização para utilizar os Serviços de localização, o microfone, a câmara ou outras funcionalidades do dispositivo.</translation>
 <translation id="6691659475504239918">Pesquisa + Shift + H</translation>
 <translation id="6696025732084565524">O teclado amovível necessita de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
@@ -338,7 +341,6 @@
 <translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
-<translation id="6814658242098378692">Gerir aplicações, extensões e temas</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
 <translation id="683971173229319003">Pesquisa+L</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +380,6 @@
 <translation id="7564874036684306347">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado. É possível dividir as notificações, as janelas e as caixas de diálogo subsequentes entre ambientes de trabalho.</translation>
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
-<translation id="7604942372593434070">Acesso à sua atividade de navegação</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
 <translation id="7647488630410863958">Desbloquear o dispositivo para ver as notificações</translation>
 <translation id="7649070708921625228">Ajuda</translation>

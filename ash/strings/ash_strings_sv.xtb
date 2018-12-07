@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Stor muspekare</translation>
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Få tillgång till all aktivitet i sessionen</translation>
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Välj om webbplatser ska kunna använda platstjänster eller enhetens mikrofon, kamera eller andra funktioner</translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
 <translation id="2803734122639935495">Lås upp med lösenordet</translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">Lägg till anslutning</translation>
 <translation id="2961963223658824723">Ett fel har uppstått. Försök igen om några sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Installera appar, tillägg och teman</translation>
 <translation id="2995447421581609334">Visa cast-enheter</translation>
 <translation id="2996462380875591307">Dockad skärmförstoring har aktiverats. Tryck på Ctrl + Sök + D igen om du vill inaktivera funktionen.</translation>
 <translation id="3000461861112256445">Monoljud</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
 <translation id="4734965478015604180">Horisontell</translation>
+<translation id="476166673298332917">Enhetens administratör kan övervaka din webbhistorik</translation>
 <translation id="4774338217796918551">Prova igen i morgon klockan <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Google-assistenten är inte tillgänglig i en demosession.</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Söktangenten + Skift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Lösenord</translation>
+<translation id="6665545700722362599">Ge webbplatser, appar och tillägg behörighet att använda platstjänster, enhetens mikrofon, kamera eller andra funktioner</translation>
 <translation id="6691659475504239918">Sök+Skift+H</translation>
 <translation id="6696025732084565524">Det behövs en viktig uppdatering till ditt frånkopplingsbara tangentbord</translation>
 <translation id="6700713906295497288">IME-menyknapp</translation>
@@ -338,7 +341,6 @@
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
-<translation id="6814658242098378692">Hantera appar, tillägg och teman</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
 <translation id="683971173229319003">Sök+L</translation>
 <translation id="6857811139397017780">Aktivera <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +380,6 @@
 <translation id="7564874036684306347">Om du flyttar fönster till ett annat skrivbord kan det leda till oväntat beteende. Efterföljande meddelanden, fönster och dialogrutor kan delas upp mellan skrivborden.</translation>
 <translation id="7569509451529460200">Punktskrift och ChromeVox har aktiverats</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
-<translation id="7604942372593434070">Få tillgång till webbaktiviteten</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>
 <translation id="7647488630410863958">Lås upp enheten om du vill visa aviseringarna</translation>
 <translation id="7649070708921625228">Hjälp</translation>

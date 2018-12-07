@@ -179,7 +179,7 @@
 <translation id="20817612488360358">Die System-Proxy-Einstellungen sind zur Verwendung angegeben, gleichzeitig wurde aber auch eine explizite Proxy-Konfiguration festgelegt.</translation>
 <translation id="2091887806945687916">Ton</translation>
 <translation id="2094505752054353250">Domains stimmen nicht überein.</translation>
-<translation id="2096368010154057602">Verwaltungsbezirk</translation>
+<translation id="2096368010154057602">Abteilung</translation>
 <translation id="2102134110707549001">Starkes Passwort vorschlagen…</translation>
 <translation id="2108755909498034140">Computer neu starten</translation>
 <translation id="2113977810652731515">Karte</translation>
@@ -617,7 +617,7 @@
 <translation id="5086888986931078152">Eventuell verlieren Sie den Zugriff auf geschützte Inhalte von einigen Websites.</translation>
 <translation id="5087286274860437796">Das Serverzertifikat ist zurzeit ungültig.</translation>
 <translation id="5087580092889165836">Karte hinzufügen</translation>
-<translation id="5089810972385038852">Bundesstaat/-land</translation>
+<translation id="5089810972385038852">Bundesstaat</translation>
 <translation id="5094747076828555589">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird von Chromium als nicht vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5095208057601539847">Provinz</translation>
 <translation id="5098332213681597508">Dieser Name stammt aus Ihrem Google-Konto.</translation>
@@ -841,6 +841,7 @@
 <translation id="6744009308914054259">Während Sie auf eine Verbindung warten, können Sie "Downloads" aufrufen und Offline-Artikel lesen.</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="6757797048963528358">Ihr Gerät ist im Ruhemodus.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Diese Karte kann momentan nicht hinzugefügt werden}other{Diese Karten können momentan nicht hinzugefügt werden}}</translation>
 <translation id="6778737459546443941">Dein Elternteil hat die Berechtigung noch nicht erteilt</translation>
 <translation id="679355240208270552">Ignoriert, da die Standardsuchmaschine durch die Richtlinie deaktiviert ist.</translation>
 <translation id="681021252041861472">Pflichtfeld</translation>
@@ -848,11 +849,12 @@
 <translation id="6824266427216888781">Fehler beim Laden der Regionsdaten</translation>
 <translation id="6825578344716086703">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet, zum Beispiel SHA-1. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren.</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
-<translation id="6839929833149231406">Stadtteil</translation>
+<translation id="6839929833149231406">Region</translation>
 <translation id="6852204201400771460">App neu laden?</translation>
 <translation id="6865412394715372076">Diese Karte kann momentan nicht geprüft werden</translation>
 <translation id="6868206169573555318">Zum Aktualisieren neu starten</translation>
 <translation id="6874604403660855544">&amp;Hinzufügen wiederholen</translation>
+<translation id="6885646002011712606">AutoFill-Assistent ist unten auf dem Bildschirm verfügbar</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
 <translation id="6895330447102777224">Ihre Karte wurde bestätigt</translation>
@@ -995,6 +997,7 @@ Weitere Details:
 <translation id="7716424297397655342">Diese Website kann nicht aus dem Cache geladen werden</translation>
 <translation id="7723047071702270851">Karte bearbeiten</translation>
 <translation id="774634243536837715">Gefährliche Inhalte blockiert.</translation>
+<translation id="7747182086178764941">Bildschirm für die erste Ausführung des AutoFill-Assistenten wird angezeigt</translation>
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="7755287808199759310">Deine Eltern können die Blockierung aufheben</translation>
 <translation id="7758069387465995638">Möglicherweise wurde die Verbindung von einer Firewall oder Antivirensoftware blockiert.</translation>

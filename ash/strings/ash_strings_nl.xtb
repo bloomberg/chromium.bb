@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
 <translation id="1550523713251050646">Klik voor meer opties</translation>
 <translation id="1570871743947603115">Bluetooth schakelen. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Al je activiteit in deze sessie bekijken</translation>
 <translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
 <translation id="1621499497873603021">Resterende tijd totdat de batterij leeg is: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
 <translation id="2761704814324807722">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Opnieuw verbinding maken met <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Kies of websites mogen gebruikmaken van locatieservices of de microfoon, de camera of andere functies van het apparaat</translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="2803734122639935495">Geef je wachtwoord om te ontgrendelen</translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">Verbinding toevoegen</translation>
 <translation id="2961963223658824723">Er is iets misgegaan. Probeer het over een paar seconden opnieuw.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Apps, extensies en thema's installeren</translation>
 <translation id="2995447421581609334">Cast-apparaten weergeven.</translation>
 <translation id="2996462380875591307">'Gedockt vergrootglas' is ingeschakeld. Druk nogmaals op Ctrl+Zoeken+D om dit uit te schakelen.</translation>
 <translation id="3000461861112256445">Monogeluid</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">Apparaten</translation>
 <translation id="4659419629803378708">ChromeVox ingeschakeld</translation>
 <translation id="4734965478015604180">Horizontaal</translation>
+<translation id="476166673298332917">De apparaatbeheerder kan je browseactiviteit controleren.</translation>
 <translation id="4774338217796918551">Kom morgen terug om <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Wachtwoord voor <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">De Google Assistent is niet beschikbaar in een demosessie.</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Zoeken+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Voer de volgende toegangscode in op dat apparaat: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Wachtwoord</translation>
+<translation id="6665545700722362599">Kies of websites, apps en extensies mogen gebruikmaken van locatieservices of de microfoon, de camera of andere functies van het apparaat</translation>
 <translation id="6691659475504239918">Zoeken+Shift+H</translation>
 <translation id="6696025732084565524">Je afneembare toetsenbord heeft een essentiële update nodig</translation>
 <translation id="6700713906295497288">IME-menuknop</translation>
@@ -338,7 +341,6 @@
 <translation id="6751826523481687655">Bijhouden van prestaties is ingeschakeld</translation>
 <translation id="6785414152754474415">De batterij is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
-<translation id="6814658242098378692">Apps, extensies en thema's beheren</translation>
 <translation id="6820676911989879663">Neem een pauze</translation>
 <translation id="683971173229319003">Zoeken+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> activeren</translation>
@@ -378,7 +380,6 @@
 <translation id="7564874036684306347">Verplaatsing van vensters naar een ander bureaublad kan leiden tot onverwacht gedrag. Verdere meldingen, vensters en dialoogvensters worden mogelijk verdeeld over de bureaubladen.</translation>
 <translation id="7569509451529460200">Braille en ChromeVox zijn ingeschakeld</translation>
 <translation id="7593891976182323525">Zoeken of Shift</translation>
-<translation id="7604942372593434070">Toegang krijgen tot je browseactiviteit</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eigenaar)</translation>
 <translation id="7647488630410863958">Ontgrendel het apparaat om je meldingen weer te geven</translation>
 <translation id="7649070708921625228">Help</translation>

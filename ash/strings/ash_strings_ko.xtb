@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581"><ph name="NAME" />에 다시 연결</translation>
-<translation id="2790844815106384441">웹사이트에서 위치 서비스 또는 기기의 마이크, 카메라, 기타 기능을 사용하도록 허용할지 선택합니다.</translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
 <translation id="2803734122639935495">잠금 해제하려면 비밀번호를 입력하세요.</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
@@ -224,6 +223,7 @@
 <translation id="4628757576491864469">기기</translation>
 <translation id="4659419629803378708">ChromeVox가 사용 설정됨</translation>
 <translation id="4734965478015604180">가로</translation>
+<translation id="476166673298332917">기기 관리자가 탐색 활동을 모니터링할 수 있습니다.</translation>
 <translation id="4774338217796918551">내일 <ph name="COME_BACK_TIME" />에 다시 사용해 주세요.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" />의 비밀번호</translation>
 <translation id="4778095205580009397">데모 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
@@ -338,7 +338,6 @@
 <translation id="6751826523481687655">성능 추적이 사용 설정되어 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
 <translation id="6803622936009808957">지원되는 해상도가 없으므로 디스플레이를 그대로 반영할 수 없습니다. 대신 확장 데스크톱을 시작했습니다.</translation>
-<translation id="6814658242098378692">앱, 확장 프로그램 및 테마 관리</translation>
 <translation id="6820676911989879663">잠시 쉬어 가세요.</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE" /> 활성화</translation>
@@ -378,7 +377,6 @@
 <translation id="7564874036684306347">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다. 이후의 알림, 창, 대화상자가 데스크톱 간에 분할될 수 있습니다.</translation>
 <translation id="7569509451529460200">점자와 ChromeVox가 사용 설정되었습니다.</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
-<translation id="7604942372593434070">탐색 활동에 액세스</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />(소유자)</translation>
 <translation id="7647488630410863958">기기를 잠금 해제하여 알림 보기</translation>
 <translation id="7649070708921625228">도움말</translation>

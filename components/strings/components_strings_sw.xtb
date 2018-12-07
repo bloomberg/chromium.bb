@@ -36,7 +36,7 @@
 <translation id="1173894706177603556">Ipe jina jipya</translation>
 <translation id="1175364870820465910">&amp;Chapisha...</translation>
 <translation id="1181037720776840403">Ondoa</translation>
-<translation id="1201402288615127009">Ifuatayo</translation>
+<translation id="1201402288615127009">Endelea</translation>
 <translation id="1201895884277373915">Zaidi kutoka kwenye tovuti hii</translation>
 <translation id="1206967143813997005">Sahihi mbaya ya mwanzo</translation>
 <translation id="1209206284964581585">Ficha kwa sasa</translation>
@@ -450,7 +450,7 @@
 <translation id="385051799172605136">Nyuma</translation>
 <translation id="3858027520442213535">Sasisha tarehe na saa</translation>
 <translation id="3884278016824448484">Kitambulisho cha kifaa kinachokinzana</translation>
-<translation id="3885155851504623709">Parish</translation>
+<translation id="3885155851504623709">Parokia</translation>
 <translation id="3886446263141354045">Ombi lako la kufikia tovuti hii limetumwa kwa <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Ongeza anwani ya barua pepe</translation>
 <translation id="3901925938762663762">Kadi imekwisha muda</translation>
@@ -842,6 +842,7 @@
 <translation id="6744009308914054259">Wakati unasubiri muunganisho, unaweza kutembelea Vipakuliwa ili usome makala yaliyo nje ya mtandao.</translation>
 <translation id="6753269504797312559">Thamani ya sera</translation>
 <translation id="6757797048963528358">Kifaa chako kiko katika hali tuli.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Huwezi kuongeza kadi hii sasa hivi}other{Huwezi kuongeza kadi hizi sasa hivi}}</translation>
 <translation id="6778737459546443941">Mzazi wako bado hajaiidhinisha</translation>
 <translation id="679355240208270552">Imepuuzwa kwa sababu utafutaji chaguomsingi umezimwa na sera.</translation>
 <translation id="681021252041861472">Sehemu Hii Sharti Ijazwe</translation>
@@ -854,6 +855,7 @@
 <translation id="6865412394715372076">Imeshindwa kuthibitisha kadi hii kwa sasa</translation>
 <translation id="6868206169573555318">Fungua Upya ili Usasishe</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
+<translation id="6885646002011712606">Kipengele cha Mratibu wa Kujaza Kiotomatiki kinapatikana karibu na sehemu ya chini ya skrini</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Kiwango cha sera hakitumiki.</translation>
 <translation id="6895330447102777224">Kadi yako imethibitishwa</translation>
@@ -883,7 +885,7 @@
 <translation id="7053983685419859001">Zuia</translation>
 <translation id="7064851114919012435">Maelezo ya mawasiliano</translation>
 <translation id="7079718277001814089">Tovuti hii ina programu hasidi</translation>
-<translation id="7087282848513945231">Nchi</translation>
+<translation id="7087282848513945231">Jimbo</translation>
 <translation id="7090678807593890770">Tafuta <ph name="LINK" /> kwenye Google</translation>
 <translation id="7108338896283013870">Ficha</translation>
 <translation id="7108819624672055576">Imeruhusiwa na kiendelezi</translation>
@@ -994,6 +996,7 @@
 <translation id="7716424297397655342">Faili hii haiwezi kupakiwa kutoka akiba</translation>
 <translation id="7723047071702270851">Badilisha Kadi</translation>
 <translation id="774634243536837715">Maudhui hatari yamezuiwa.</translation>
+<translation id="7747182086178764941">Inaonyesha skrini ya programu ya Mratibu ya Kujaza Kiotomatiki haraka</translation>
 <translation id="7752995774971033316">Haidhibitiwi</translation>
 <translation id="7755287808199759310">Mzazi wako anaweza kukuondolea kizuizi</translation>
 <translation id="7758069387465995638">Huenda muunganisho huu umezuiwa na kinga mtandao au kingavirusi.</translation>
@@ -1001,7 +1004,7 @@
 <translation id="7761701407923456692">Cheti cha seva hakilingani na URL.</translation>
 <translation id="7763386264682878361">Kichanganuzi cha Faili za Maelezo ya Malipo</translation>
 <translation id="7764225426217299476">Ongeza anwani</translation>
-<translation id="777702478322588152">Wilaya</translation>
+<translation id="777702478322588152">Mkoa</translation>
 <translation id="7791543448312431591">Ongeza</translation>
 <translation id="7793809570500803535">Ukurasa wa wavuti ulio kwenye <ph name="SITE" /> unaweza kuwa haupatikani kwa muda au huenda umehamishwa kabisa hadi kwenye anwani mpya ya wavuti.</translation>
 <translation id="7800304661137206267">Muunganisho umesimbwa fiche kwa kutumia <ph name="CIPHER" />, kwa <ph name="MAC" /> ya uthibitishaji wa ujumbe na <ph name="KX" /> kama utaratibu muhimu wa ubadilishanaji.</translation>

@@ -105,6 +105,13 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
           Per impostazione predefinita, non ci sono modalità di sblocco rapido disponibili per i dispositivi gestiti.</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
+<translation id="1231349879329465225">Consente di attivare o disattivare Fast Transition.
+      La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo.
+      Per poter usare Fast Transition è necessario attivare sia questa impostazione, sia la proprietà ONC per ogni rete.
+      Una volta impostato, Fast Transition rimane valido fino alla modifica della norma per disattivarlo.
+
+      Se la norma non è impostata o è impostata su false, Fast Transition non viene utilizzato.
+      Se è impostata su true, Fast Transition viene utilizzato quando il punto di accesso wireless lo supporta.</translation>
 <translation id="1243570869342663665">Controlla il filtro dei contenuti per adulti di SafeSites.</translation>
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
@@ -265,7 +272,7 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
 <translation id="1810261428246410396">Consenti l'uso del tethering istantaneo.</translation>
-<translation id="1817685358399181673">Questa norma consente di specificare l'immagine <ph name="PLUGIN_VM_NAME" /> per un utente. Per impostare la norma, devi specificare l'URL da cui scaricare l'immagine e specificare l'hash SHA-256 utilizzato per verificare l'integrità del download.
+<translation id="1817685358399181673">Questa norma consente di specificare l'immagine <ph name="PLUGIN_VM_NAME" /> per un utente. Per impostare la norma, è necessario specificare l'URL da cui scaricare l'immagine e specificare l'hash SHA-256 utilizzato per verificare l'integrità del download.
 
       La norma deve essere specificata sotto forma di stringa contenente l'URL e l'hash in formato JSON.</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>

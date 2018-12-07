@@ -3047,7 +3047,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5646558797914161501">Om de afaceri</translation>
 <translation id="5648166631817621825">Ultimele 7 zile</translation>
 <translation id="5649053991847567735">Descărcări automate</translation>
-<translation id="5649768706273821470">Ascultați</translation>
+<translation id="5649768706273821470">Ascultă</translation>
 <translation id="5653140146600257126">Dosarul numit „$1” există deja. Alegeți un alt nume.</translation>
 <translation id="5657667036353380798">Extensia externă necesită instalarea versiunii Chrome <ph name="MINIMUM_CHROME_VERSION" /> sau a unei versiuni superioare.</translation>
 <translation id="5658415415603568799">Pentru mai multă siguranță, Smart Lock îți solicită să introduci parola după 20 de ore.</translation>
@@ -4223,7 +4223,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7453008956351770337">Selectând această imprimantă, acorzi următoarei extensii permisiunea de a accesa imprimanta:</translation>
 <translation id="7456142309650173560">dezvoltatori</translation>
 <translation id="7456847797759667638">Deschide o locație...</translation>
-<translation id="7461924472993315131">Fixați</translation>
+<translation id="7461924472993315131">PIN</translation>
 <translation id="7463006580194749499">Adăugați o persoană</translation>
 <translation id="7464490149090366184">Arhivarea nu a reușit, elementul există: „$1”</translation>
 <translation id="7465778193084373987">Adresă URL de revocare a certificatului Netscape</translation>

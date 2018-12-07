@@ -119,6 +119,13 @@
 
           Par défaut, aucun mode de déverrouillage rapide n'est activé sur les appareils gérés.</translation>
 <translation id="123081309365616809">Activer la diffusion de contenus sur l'appareil</translation>
+<translation id="1231349879329465225">Permet d'activer ou de désactiver la transition rapide.
+      Cette règle s'applique à l'ensemble des utilisateurs et des interfaces de l'appareil.
+      Pour utiliser la transition rapide, ce paramètre et la propriété ONC par réseau doivent être activés.
+      La transition rapide reste active jusqu'à ce que vous la désactiviez en modifiant la règle.
+
+      Si cette règle n'est pas configurée, la transition rapide n'est pas utilisée.
+      Si elle est définie sur "True", la transition rapide est utilisée lorsque le point d'accès sans fil est compatible.</translation>
 <translation id="1243570869342663665">Contrôler le filtrage SafeSites des contenus réservés aux adultes.</translation>
 <translation id="1257550411839719984">Définir le répertoire de téléchargement par défaut</translation>
 <translation id="1265053460044691532">Limiter la durée pendant laquelle un utilisateur authentifié via SAML peut se connecter hors connexion</translation>
@@ -704,7 +711,7 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
 <translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
-<translation id="2696531058295423290">Autoriser l'appareil à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="2696531058295423290">Autoriser les appareils à utiliser un <ph name="PLUGIN_VM_NAME" /> pour <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
 

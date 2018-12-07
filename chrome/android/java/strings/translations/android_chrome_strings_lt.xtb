@@ -28,7 +28,7 @@
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1197267115302279827">Perkelti žymes</translation>
 <translation id="119944043368869598">Valyti viską</translation>
-<translation id="1201402288615127009">Toliau</translation>
+<translation id="1201402288615127009">Kitas</translation>
 <translation id="1204037785786432551">Atsisiųsti nuorodą</translation>
 <translation id="1206892813135768548">Kopijuoti nuorodos tekstą</translation>
 <translation id="1208340532756947324">Kad turinys būtų sinchronizuojamas visuose įrenginiuose, įjunkite sinchronizavimą</translation>
@@ -185,7 +185,7 @@ Tačiau nesate nematomi. Kai naudojate privatų režimą, jūsų darbdavys, inte
 <translation id="2342981853652716282">Prisijunkite prie „Chrome“, kad galėtumėte naudoti žymes, slaptažodžius ir kitus nustatymus visuose įrenginiuose.</translation>
 <translation id="2349710944427398404">Bendras „Chrome“ naudojamų duomenų kiekis, įskaitant paskyras, žymes ir išsaugotus nustatymus</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
-<translation id="2359808026110333948">Tęsti</translation>
+<translation id="2359808026110333948">Tęskite</translation>
 <translation id="2369533728426058518">atidaryti skirtukus</translation>
 <translation id="2387895666653383613">Teksto mastelio keitimas</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> MB</translation>
@@ -604,7 +604,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5665379678064389456">Sukurti įvykį naudojant „<ph name="APP_NAME" />“</translation>
 <translation id="5668404140385795438">Nepaisyti svetainės mastelio keitimo vengimo užklausos</translation>
 <translation id="5676636989614905379">Nepavyko paleisti vaizdo įrašo ekrane „<ph name="SCREEN_NAME" />“.</translation>
-<translation id="5677928146339483299">Užblokuota</translation>
+<translation id="5677928146339483299">Užblokuoti</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
 <translation id="5686790454216892815">Failo pavadinimas per ilgas</translation>
 <translation id="5689516760719285838">Vieta</translation>
@@ -824,7 +824,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7250468141469952378">Pasirinkta: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Pridėkite „Google“ paskyrą iš įrenginio Nustatymų programos puslapio „Paskyros“.</translation>
 <translation id="7274013316676448362">Užblokuota svetainė</translation>
-<translation id="728491846437309531">„Google“ padėjėjas gali padėti sparčiau ir paprasčiau atlikti užduotis žiniatinklyje</translation>
 <translation id="729975465115245577">Įrenginyje nėra slaptažodžių failo saugojimo programos.</translation>
 <translation id="7302081693174882195">Išsami informacija: surūšiuota pagal išsaugotų duomenų kiekį</translation>
 <translation id="7333031090786104871">Vis dar pridedama ankstesnė svetainė</translation>

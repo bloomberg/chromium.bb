@@ -150,7 +150,7 @@
 <translation id="1195447618553298278">Nepoznata pogreška.</translation>
 <translation id="1197979282329025000">Došlo je do pogreške tijekom dohvata mogućosti pisača za pisač <ph name="PRINTER_NAME" />. Ovaj se pisač ne može registrirati s nazivom <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Očisti sve</translation>
-<translation id="1201402288615127009">Sljedeće</translation>
+<translation id="1201402288615127009">Dalje</translation>
 <translation id="1202596434010270079">Aplikacija kioska ažurirana je. Uklonite USB privjesak.</translation>
 <translation id="120368089816228251">Glazbena nota</translation>
 <translation id="1205489148908752564">čitati i mijenjati korisnike na popisu dopuštenih</translation>
@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Dodavanje galerije medija po direktoriju</translation>
 <translation id="2910318910161511225">Povežite se s mrežom i pokušajte ponovo</translation>
 <translation id="2913331724188855103">Dopuštanje web-lokacijama da spremaju i čitaju podatke kolačića (preporučeno)</translation>
+<translation id="2915102088417824677">Pregledajte zapisnik aktivnosti</translation>
 <translation id="2916073183900451334">Pritiskom na Tab na web-stranici ističu se veze, isto kao i iz polja</translation>
 <translation id="2916745397441987255">Pretražite proširenja</translation>
 <translation id="2921081876747860777">Napravite zaporku da biste zaštitili lokalne podatke.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">I&amp;zvoz...</translation>
 <translation id="4107048419833779140">Prepoznaj i izbaci uređaje za pohranu</translation>
 <translation id="4109135793348361820">Premjesti prozor korisniku <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Preuzimanje je dovršeno: <ph name="FILE_NAME" />. Pritisnite Shift + F6 da biste došli do područja trake preuzimanja.</translation>
 <translation id="4110895898888439383">Pregledavajte web u načinu rada s visokim kontrastom</translation>
 <translation id="4115002065223188701">Mreža je izvan dometa</translation>
 <translation id="4115080753528843955">Neke usluge sadržaja upotrebljavaju jedinstvene identifikatore radi autorizacije pristupa zaštićenom sadržaju</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Dopustiti aplikaciji "<ph name="APP_NAME" />" pristup popisu vaših spojenih USB uređaja?</translation>
 <translation id="4414232939543644979">&amp;Novi anoniman prozor</translation>
 <translation id="4415245286584082850">Uređaji nisu pronađeni. Otvorite članak centra za pomoć u novoj kartici.</translation>
+<translation id="4415276339145661267">Upravljajte svojim Google računom</translation>
 <translation id="4415748029120993980">SECG eliptična krivulja secp384r1 (poznata i kao NIST P-384)</translation>
 <translation id="4416582610654027550">Unesite važeći URL</translation>
 <translation id="4419409365248380979">Hostu <ph name="HOST" /> uvijek dopusti postavljanje kolačića</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Google računi nisu dopušteni na ovom uređaju.</translation>
 <translation id="4568854179928172494">Vrijeme izmjene</translation>
 <translation id="4569747168316751899">Kada je u mirovanju</translation>
+<translation id="4570387585180509432">Adrese, telefonski brojevi i ostalo</translation>
 <translation id="4572659312570518089">Autentifikacija je otkazana prilikom povezivanja s uređajem "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> datoteka</translation>
 <translation id="457386861538956877">Više...</translation>
@@ -2693,7 +2697,7 @@
 <translation id="5151354047782775295">Oslobodite prostor na disku ili će se određeni podaci automatski izbrisati.</translation>
 <translation id="5153234146675181447">Zaboravljanje telefona</translation>
 <translation id="5154108062446123722">Napredne postavke za <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Predmet</translation>
+<translation id="5154702632169343078">Naslov</translation>
 <translation id="5157635116769074044">Prikvači ovu stranicu na početni zaslon...</translation>
 <translation id="5158593464696388225">Slika nije spremljena.</translation>
 <translation id="5158983316805876233">Koristi isti proxy za sve protokole</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Formatiranje nije uspjelo</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Učitavanje aplikacija...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> želi se upariti s uređajima</translation>
 <translation id="5592595402373377407">Još nije dostupno dovoljno podataka.</translation>
 <translation id="5593357315997824387">Sinkroniziraj moje datoteke</translation>
 <translation id="5595152862129936745">Vrlo daleko</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Pametno pregledavajte uz Chrome</translation>
 <translation id="562935524653278697">Administrator je onemogućio sinkronizaciju vaših oznaka, povijesti, zaporki i ostalih postavki.</translation>
 <translation id="5632566673632479864">Vaš račun <ph name="EMAIL" /> više nije dopušten kao primarni račun. Budući da tim računom upravlja <ph name="DOMAIN" />, vaše oznake, povijest, zaporke i druge postavke izbrisat će se s ovog uređaja.</translation>
+<translation id="5632592977009207922">Preuzimanje, preostalo je <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">Pitanje prije pristupa (preporučeno)</translation>
 <translation id="5636996382092289526">Za upotrebu mreže <ph name="NETWORK_ID" /> možda ćete prvo morati <ph name="LINK_START" />posjetiti njezinu stranicu za prijavu<ph name="LINK_END" /> koja će se automatski otvoriti za nekoliko sekundi. Ako se to ne dogodi, mreža se ne može upotrebljavati.</translation>
 <translation id="5637476008227280525">Omogućivanje mobilnih podataka</translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">Promijeni PIN</translation>
 <translation id="6199801702437275229">Čekanje na informacije o prostoru...</translation>
 <translation id="6201792273624501289">Linux aplikacije</translation>
+<translation id="6202304368170870640">PIN možete upotrebljavati za prijavu na uređaj ili otključavanje uređaja.</translation>
 <translation id="6205710420833115353">Neki procesi traju dulje nego što je to uobičajeno. Želite li ih prekinuti?</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliku</translation>
 <translation id="6207200176136643843">Vraćanje na zadanu razinu zumiranja</translation>
@@ -3432,7 +3439,7 @@
 <translation id="6220413761270491930">Pogreška prilikom učitavanja proširenja</translation>
 <translation id="6223447490656896591">Prilagođena slika:</translation>
 <translation id="6224481128663248237">Formatiranje je uspješno dovršeno!</translation>
-<translation id="622537739776246443">Profil će biti izbrisan</translation>
+<translation id="622537739776246443">Profil će se izbrisati</translation>
 <translation id="6225475702458870625">Dostupna je podatkovna veza s vašeg telefona <ph name="PHONE_NAME" /></translation>
 <translation id="6226777517901268232">Datoteka privatnog ključa (neobavezno)</translation>
 <translation id="6227235786875481728">Nije bilo moguće reproducirati datoteku.</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">CA certifikat poslužitelja</translation>
 <translation id="7497981768003291373">Nemate nedavno snimljenih WebRTC tekstnih zapisnika.</translation>
 <translation id="7502658306369382406">IPv6 adresa</translation>
+<translation id="7503127198245469314">Uklonite slušalice da biste blokirali ili dopustili na zaslonu računala</translation>
 <translation id="7503191893372251637">Vrsta Netscape certifikata</translation>
 <translation id="7503821294401948377">Nije uspjelo učitavanje ikone "<ph name="ICON" />" za radnju preglednika.</translation>
 <translation id="750509436279396091">Otvori mapu preuzimanja</translation>
@@ -4869,6 +4877,7 @@ Osobe sa sporom vezom možda neće vidjeti vaš sadržaj.</translation>
 <translation id="8425213833346101688">Promijeni</translation>
 <translation id="8425492902634685834">Pričvrsti na alatnu traku</translation>
 <translation id="8425755597197517046">Za&amp;lijepi i pretraži</translation>
+<translation id="8425768983279799676">PIN možete upotrijebiti za otključavanje uređaja.</translation>
 <translation id="8426713856918551002">Omogućivanje</translation>
 <translation id="8427292751741042100">ugrađeno na bilo kojem hostu</translation>
 <translation id="8428213095426709021">Postavke</translation>

@@ -40,6 +40,7 @@
 <translation id="15373452373711364">مؤشر الماوس الكبير</translation>
 <translation id="1550523713251050646">انقر للحصول على المزيد من الخيارات</translation>
 <translation id="1570871743947603115">تبديل البلوتوث. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">الوصول إلى جميع أنشطتك في جلسة واحدة</translation>
 <translation id="1608626060424371292">إزالة هذا المستخدم</translation>
 <translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">تم القفل على الوضع العمودي</translation>
 <translation id="2352467521400612932">إعدادات قلم الشاشة</translation>
 <translation id="2354174487190027830">تفعيل <ph name="NAME" /></translation>
-<translation id="2359808026110333948">المتابعة</translation>
+<translation id="2359808026110333948">متابعة</translation>
 <translation id="2365393535144473978">سيؤدي تفعيل ميزة بيانات الجوّال إلى تفعيل البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="239188844683466770">تبديل حالة "الرجاء عدم الإزعاج"</translation>
@@ -111,7 +112,6 @@
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
 <translation id="277257480934873581">إعادة الاتصال بـ <ph name="NAME" /></translation>
-<translation id="2790844815106384441">اختيار ما إذا كان يمكن لمواقع الويب استخدام خدمات الموقع الجغرافي أو ميكروفون الجهاز أو الكاميرا أو ميزات أخرى</translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
 <translation id="2803734122639935495">لفتح القفل، أدخِل كلمة مرورك</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
@@ -127,6 +127,7 @@
 <translation id="2946119680249604491">إضافة اتصال</translation>
 <translation id="2961963223658824723">حدث خطأ. يُرجى إعادة المحاولة خلال بضع ثوانٍ.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">تثبيت التطبيقات والإضافات والتصاميم</translation>
 <translation id="2995447421581609334">عرض أجهزة البث.</translation>
 <translation id="2996462380875591307">‏تم تفعيل المكبّر. يمكنك إيقافه بالضغط على Ctrl+Search+D مرة أخرى.</translation>
 <translation id="3000461861112256445">صوت أحادي</translation>
@@ -224,6 +225,7 @@
 <translation id="4628757576491864469">الأجهزة</translation>
 <translation id="4659419629803378708">‏تم تفعيل ChromeVox</translation>
 <translation id="4734965478015604180">أفقي</translation>
+<translation id="476166673298332917">قد يراقب مشرف الجهاز نشاط التصفُح.</translation>
 <translation id="4774338217796918551">يمكنك العودة غدًا في <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">كلمة مرور <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">‏لا يتوفَّر "مساعد Google" في جلسة تجريبية.</translation>
@@ -329,6 +331,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. يُرجى إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
+<translation id="6665545700722362599">يمنح مواقع الويب والتطبيقات والإضافات الإذن لاستخدام خدمات الموقع الجغرافي أو كاميرا وميكروفون الجهاز أو الميزات الأخرى</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">تحتاج لوحة المفاتيح القابلة للفصل إلى تحديث مهم</translation>
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
@@ -339,7 +342,6 @@
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
-<translation id="6814658242098378692">إدارة التطبيقات والإضافات والمظاهر</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">تفعيل <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +381,6 @@
 <translation id="7564874036684306347">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع. من الممكن أن يتم تقسيم مربعات الحوار والنوافذ والإشعارات المتتالية بين سطحَي المكتب.</translation>
 <translation id="7569509451529460200">‏تم تفعيل Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
-<translation id="7604942372593434070">الدخول إلى نشاط التصفح</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>
 <translation id="7647488630410863958">إلغاء قفل الجهاز لعرض الإشعارات</translation>
 <translation id="7649070708921625228">مساعدة</translation>

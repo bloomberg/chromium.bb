@@ -604,7 +604,7 @@
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">עקוף בקשה של אתר שנועדה למנוע שינוי של מרחק התצוגה</translation>
 <translation id="5676636989614905379">לא ניתן להפעיל את הסרטון ב-<ph name="SCREEN_NAME" /></translation>
-<translation id="5677928146339483299">במצב חסום</translation>
+<translation id="5677928146339483299">חסום</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5689516760719285838">מיקום</translation>
@@ -824,7 +824,6 @@
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">‏הוסף חשבון Google מהדף 'חשבונות' שבאפליקציית ההגדרות של המכשיר.</translation>
 <translation id="7274013316676448362">אתר חסום</translation>
-<translation id="728491846437309531">‏Google Assistant יכול לעזור לך לבצע דברים באינטרנט בצורה קלה ומהירה יותר</translation>
 <translation id="729975465115245577">אין במכשיר אפליקציה לאחסון קובץ הסיסמאות.</translation>
 <translation id="7302081693174882195">פרטים: מיון לפי נפח הנתונים שנחסכו</translation>
 <translation id="7333031090786104871">עדיין מוסיף את האתר הקודם</translation>

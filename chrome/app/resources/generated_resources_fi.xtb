@@ -1285,6 +1285,7 @@
 <translation id="2908162660801918428">Lisää mediagalleria hakemiston mukaan</translation>
 <translation id="2910318910161511225">Muodosta yhteys verkkoon ja yritä uudelleen.</translation>
 <translation id="2913331724188855103">Salli sivustojen tallentaa ja lukea evästetietoja (suositus).</translation>
+<translation id="2915102088417824677">Näytä tapahtumaloki</translation>
 <translation id="2916073183900451334">Sarkaimen painaminen verkkosivulla korostaa linkit ja lomakekentät</translation>
 <translation id="2916745397441987255">Hae laajennuksia</translation>
 <translation id="2921081876747860777">Suojaa paikalliset tiedot luomalla salasana</translation>
@@ -2070,6 +2071,7 @@
 <translation id="4104163789986725820">V&amp;ie...</translation>
 <translation id="4107048419833779140">Tunnistaa ja poistaa tallennuslaitteet</translation>
 <translation id="4109135793348361820">Siirrä ikkuna käyttäjälle <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Lataus valmis: <ph name="FILE_NAME" />. Paina Shift + F6 siirtyäksesi latauspalkkialueelle.</translation>
 <translation id="4110895898888439383">Selaa internetiä Suuri kontrasti ‑tilassa</translation>
 <translation id="4115002065223188701">Verkon kantama ei riitä</translation>
 <translation id="4115080753528843955">Jotkin sisältöpalvelut käyttävät yksilöllisiä tunnuksia suojatun sisällön käyttöoikeuden myöntämiseen.</translation>
@@ -2230,6 +2232,7 @@
 <translation id="44141919652824029">Haluatko, että <ph name="APP_NAME" /> voi noutaa yhdistettyjen USB-laitteiden luettelon?</translation>
 <translation id="4414232939543644979">Uusi &amp;incognito-ikkuna</translation>
 <translation id="4415245286584082850">Laitteita ei löytynyt. Avaa ohjekeskuksen artikkeli uudella välilehdellä.</translation>
+<translation id="4415276339145661267">Ylläpidä Google-tiliäsi</translation>
 <translation id="4415748029120993980">SECG elliptinen käyrä secp384r1 (eli NIST P-384)</translation>
 <translation id="4416582610654027550">Kirjoita kelvollinen URL-osoite</translation>
 <translation id="4419409365248380979">Salli aina verkkotunnuksen <ph name="HOST" /> asettamat evästeet</translation>
@@ -2325,6 +2328,7 @@
 <translation id="4568213207643490790">Google-tilit eivät ole sallittuja tällä laitteella.</translation>
 <translation id="4568854179928172494">Muokkausaika</translation>
 <translation id="4569747168316751899">Kun laite ei ole käytössä</translation>
+<translation id="4570387585180509432">Osoitteet, puhelinnumerot ja muut</translation>
 <translation id="4572659312570518089">Todennus peruutettiin yhdistettäessä laitteeseen <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-tiedosto</translation>
 <translation id="457386861538956877">Lisää...</translation>
@@ -2691,7 +2695,7 @@
 <translation id="5151354047782775295">Vapauta levytilaa, tai tiettyjä tietoja voidaan poistaa automaattisesti.</translation>
 <translation id="5153234146675181447">Unohda puhelin</translation>
 <translation id="5154108062446123722">Tulostimen <ph name="PRINTING_DESTINATION" /> lisäasetukset</translation>
-<translation id="5154702632169343078">Kohde</translation>
+<translation id="5154702632169343078">Aihe</translation>
 <translation id="5157635116769074044">Kiinnitä tämä sivu aloitusruutuun…</translation>
 <translation id="5158593464696388225">Kuvan tallennus epäonnistui.</translation>
 <translation id="5158983316805876233">Käytä samaa välityspalvelinta kaikille protokollille</translation>
@@ -3003,6 +3007,7 @@
 <translation id="5585912436068747822">Alustaminen epäonnistui</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Ladataan sovelluksia…</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> haluaa muodostaa laiteparin laitteisiin</translation>
 <translation id="5592595402373377407">Tietoja ei ole vielä saatavilla tarpeeksi.</translation>
 <translation id="5593357315997824387">Synkronoi tiedostoni</translation>
 <translation id="5595152862129936745">Erittäin kaukana</translation>
@@ -3035,6 +3040,7 @@
 <translation id="5627676517703583263">Selaa älykkäästi Chromella.</translation>
 <translation id="562935524653278697">Järjestelmänvalvoja on poistanut käytöstä kirjanmerkkien, historian, salasanojen ja muiden asetusten synkronoinnin.</translation>
 <translation id="5632566673632479864">Tilisi <ph name="EMAIL" /> ei ole enää sallittu ensisijaisena tilinä. Koska <ph name="DOMAIN" /> ylläpitää tätä tiliä, kirjanmerkit, historia, salasanat ja muut asetukset tyhjennetään tältä laitteelta.</translation>
+<translation id="5632592977009207922">Ladataan, <ph name="PERCENT_REMAINING" /> % jäljellä</translation>
 <translation id="563535393368633106">Kysy ennen käyttöä (suositus)</translation>
 <translation id="5636996382092289526">Jos haluat käyttää verkkoa <ph name="NETWORK_ID" />, voit joutua <ph name="LINK_START" />käymään verkon kirjautumissivulla<ph name="LINK_END" />, joka avautuu automaattisesti muutaman sekunnin kuluttua. Jos sivu ei avaudu, tätä verkkoa ei voi käyttää.</translation>
 <translation id="5637476008227280525">Ota käyttöön mobiilidata</translation>
@@ -3419,6 +3425,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
 <translation id="6199801702437275229">Odotetaan tietoja tallennustilasta...</translation>
 <translation id="6201792273624501289">Linux-sovellukset</translation>
+<translation id="6202304368170870640">PIN-koodin avulla voit kirjautua laitteeseen tai avata sen lukituksen.</translation>
 <translation id="6205710420833115353">Jotkin toiminnot kestävät odotettua kauemmin. Haluatko keskeyttää ne?</translation>
 <translation id="6206311232642889873">K&amp;opioi kuva</translation>
 <translation id="6207200176136643843">Palauta zoomauksen oletustaso</translation>
@@ -4254,6 +4261,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7497215489070763236">Palvelimen CA-varmenne</translation>
 <translation id="7497981768003291373">Sinulla ei ole äskettäin tallennettuja WebRTC-tekstilokeja.</translation>
 <translation id="7502658306369382406">IPv6-osoite</translation>
+<translation id="7503127198245469314">Poista kuulokemikrofoni estääksesi tai salliaksesi työpöydän näyttämisen</translation>
 <translation id="7503191893372251637">Netscape-varmennetyyppi</translation>
 <translation id="7503821294401948377">Kuvakkeen <ph name="ICON" /> lataaminen selaintoimintoa varten epäonnistui.</translation>
 <translation id="750509436279396091">Avaa latauskansio</translation>
@@ -4867,6 +4875,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8425213833346101688">Vaihda</translation>
 <translation id="8425492902634685834">Kiinnitä tehtäväpalkkiin</translation>
 <translation id="8425755597197517046">&amp;Liitä ja hae</translation>
+<translation id="8425768983279799676">Voit avata laitteen lukituksen PIN-koodilla.</translation>
 <translation id="8426713856918551002">Otetaan käyttöön</translation>
 <translation id="8427292751741042100">verkkopalveluun upotettu</translation>
 <translation id="8428213095426709021">Asetukset</translation>

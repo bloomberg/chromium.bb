@@ -290,9 +290,9 @@
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
 <translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ kết nối tức thì.</translation>
-<translation id="1817685358399181673">Chính sách này nêu rõ hình ảnh <ph name="PLUGIN_VM_NAME" /> cho người dùng. Bạn có thể đặt chính sách này bằng cách nêu rõ URL mà từ đó thiết bị có thể tải xuống hình ảnh và một hàm băm SHA-256 dùng để xác minh tính toàn vẹn của nội dung tải xuống.
+<translation id="1817685358399181673">Chính sách này chỉ định hình ảnh <ph name="PLUGIN_VM_NAME" /> cho người dùng. Bạn có thể đặt chính sách này bằng cách chỉ định URL mà từ đó thiết bị có thể tải hình ảnh xuống và một hàm băm SHA-256 dùng để xác minh tính toàn vẹn của nội dung tải xuống.
 
-      Chính sách này phải được xác định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON.</translation>
+      Chính sách này phải được chỉ định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON.</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
@@ -3184,7 +3184,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu cài đặt này được bật hoặc không được đặt, lịch sử duyệt web và lịch sử tải xuống có thể bị xóa.
 
       Nếu cài đặt này bị tắt, không thể xóa lịch sử duyệt web và lịch sử tải xuống.</translation>
-<translation id="8758831693895931466">Cho phép chính sách đăng ký tính năng quản lý đám mây bắt buộc</translation>
+<translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
 <translation id="8764119899999036911">Chỉ định Kerberos SPN được tạo sẽ dựa trên tên DNS chuẩn hay tên gốc đã nhập.
 

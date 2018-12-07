@@ -150,7 +150,7 @@
 <translation id="1195447618553298278">Ismeretlen hiba.</translation>
 <translation id="1197979282329025000">Hiba történt a(z) <ph name="PRINTER_NAME" /> nyomtató képességeinek lekérésekor. Ez a nyomtató nem regisztrálható itt: <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Összes törlése</translation>
-<translation id="1201402288615127009">Következő</translation>
+<translation id="1201402288615127009">Tovább</translation>
 <translation id="1202596434010270079">A kioszkalkalmazás frissítve. Kérjük, távolítsa el az USB-meghajtót.</translation>
 <translation id="120368089816228251">Hangjegy</translation>
 <translation id="1205489148908752564">Engedélyezőlistára tett felhasználók megtekintése és módosítása</translation>
@@ -919,7 +919,7 @@
 <translation id="2356070529366658676">Kérés</translation>
 <translation id="2357949918965361754">E funkcióval a Chrome-ban megjelenő tartalmakat jeleníthet meg tévén vagy más készüléken.</translation>
 <translation id="2359345697448000899">Bővítményeit az Eszközök menü Bővítmények elemére kattintva kezelheti.</translation>
-<translation id="2359808026110333948">Folytatás</translation>
+<translation id="2359808026110333948">Tovább</translation>
 <translation id="236117173274098341">Optimalizálás</translation>
 <translation id="236141728043665931">Mikrofon elérésének állandó tiltása</translation>
 <translation id="2365507699358342471">Ez a webhely megtekintheti a vágólapra másolt szövegeket és képeket.</translation>
@@ -2693,7 +2693,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5151354047782775295">Szabadítson fel tárhelyet, vagy bizonyos adatok automatikusan törlődhetnek</translation>
 <translation id="5153234146675181447">Telefon elfelejtése</translation>
 <translation id="5154108062446123722">A(z) <ph name="PRINTING_DESTINATION" /> speciális beállításai</translation>
-<translation id="5154702632169343078">Tulajdonos</translation>
+<translation id="5154702632169343078">Tárgy</translation>
 <translation id="5157635116769074044">Az oldal rögzítése a kezdőképernyőn...</translation>
 <translation id="5158593464696388225">Nem sikerült menteni a képet.</translation>
 <translation id="5158983316805876233">Azonos proxy használata minden protokollhoz</translation>
@@ -4799,7 +4799,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8274924778568117936">A frissítés befejezéséig ne kapcsolja ki vagy csukja le <ph name="DEVICE_TYPE" /> eszközét. <ph name="DEVICE_TYPE" /> eszköze a telepítést követően újraindul.</translation>
 <translation id="8275038454117074363">Importálás</translation>
 <translation id="8276560076771292512">Gyorsítótár ürítése és teljes újratöltés</translation>
-<translation id="8281886186245836920">Átugrás</translation>
+<translation id="8281886186245836920">Kihagyás</translation>
 <translation id="8282356762694872144">Továbblép az e-mail-fiókjába?</translation>
 <translation id="8282947398454257691">Az egyedi eszközazonosító megtekintése</translation>
 <translation id="8283475148136688298">A(z) „<ph name="DEVICE_NAME" />” eszközhöz való csatlakozás közben a rendszer visszautasította a hitelesítési kódot.</translation>

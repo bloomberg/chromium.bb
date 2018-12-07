@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Mediagalerij toevoegen op directory</translation>
 <translation id="2910318910161511225">Maak verbinding met een netwerk en probeer het opnieuw</translation>
 <translation id="2913331724188855103">Sites toestaan cookiegegevens op te slaan en te lezen (aanbevolen)</translation>
+<translation id="2915102088417824677">Activiteitenlogboek bekijken</translation>
 <translation id="2916073183900451334">Als je op een webpagina op Tab drukt, worden links en velden in formulieren gemarkeerd</translation>
 <translation id="2916745397441987255">Extensies zoeken</translation>
 <translation id="2921081876747860777">Stel een wachtwoord in om je lokale gegevens te beschermen.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">E&amp;xporteren...</translation>
 <translation id="4107048419833779140">Opslagapparaten identificeren en verwijderen</translation>
 <translation id="4109135793348361820">Venster verplaatsen naar <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Download voltooid: <ph name="FILE_NAME" />. Druk op Shift+F6 om naar het gedeelte met de downloadbalk te schakelen.</translation>
 <translation id="4110895898888439383">Surf op internet in de modus voor hoog contrast</translation>
 <translation id="4115002065223188701">Netwerk buiten bereik</translation>
 <translation id="4115080753528843955">Sommige contentservices gebruiken unieke ID's om de toegang tot beveiligde content te autoriseren</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029"><ph name="APP_NAME" /> toestaan om de lijst met je aangesloten USB-apparaten op te halen?</translation>
 <translation id="4414232939543644979">Nieuw &amp;incognitovenster</translation>
 <translation id="4415245286584082850">Geen apparaten gevonden. Open een Helpcentrum-artikel op een nieuw tabblad.</translation>
+<translation id="4415276339145661267">Je Google-account beheren</translation>
 <translation id="4415748029120993980">Elliptische SECG-kromme secp384r1 (ook wel NIST P-384)</translation>
 <translation id="4416582610654027550">Voer een geldige URL in</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> altijd toestaan om cookies in te stellen</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Google-accounts zijn niet toegestaan op dit apparaat.</translation>
 <translation id="4568854179928172494">Laatst gewijzigd op</translation>
 <translation id="4569747168316751899">Indien inactief</translation>
+<translation id="4570387585180509432">Adressen, telefoonnummers en meer</translation>
 <translation id="4572659312570518089">Verificatie geannuleerd tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
 <translation id="457386861538956877">Meer...</translation>
@@ -2693,7 +2697,7 @@
 <translation id="5151354047782775295">Maak schijfruimte vrij of bepaalde gegevens kunnen automatisch worden verwijderd</translation>
 <translation id="5153234146675181447">Telefoon vergeten</translation>
 <translation id="5154108062446123722">Geavanceerde instellingen voor <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Entiteit</translation>
+<translation id="5154702632169343078">Onderwerp</translation>
 <translation id="5157635116769074044">Deze pagina vastzetten op het startscherm…</translation>
 <translation id="5158593464696388225">Kan afbeelding niet opslaan.</translation>
 <translation id="5158983316805876233">Dezelfde proxy gebruiken voor alle protocollen</translation>
@@ -3006,6 +3010,7 @@
 <translation id="5585912436068747822">Formatteren mislukt</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Apps laden...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> wil met apparaten koppelen</translation>
 <translation id="5592595402373377407">Nog niet voldoende gegevens beschikbaar.</translation>
 <translation id="5593357315997824387">Mijn bestanden synchroniseren</translation>
 <translation id="5595152862129936745">Heel veraf</translation>
@@ -3038,6 +3043,7 @@
 <translation id="5627676517703583263">Slim browsen met Chrome</translation>
 <translation id="562935524653278697">Je beheerder heeft de synchronisatie van je bladwijzers, geschiedenis, wachtwoorden en andere instellingen uitgeschakeld.</translation>
 <translation id="5632566673632479864">Je account <ph name="EMAIL" /> is niet meer toegestaan als het primaire account. Omdat dit account wordt beheerd door <ph name="DOMAIN" />, worden je bladwijzers, geschiedenis, wachtwoorden en andere instellingen gewist op dit apparaat.</translation>
+<translation id="5632592977009207922">Downloaden, <ph name="PERCENT_REMAINING" />% resterend</translation>
 <translation id="563535393368633106">Vragen vóór toegang (aanbevolen)</translation>
 <translation id="5636996382092289526">Als je <ph name="NETWORK_ID" /> wilt gebruiken, moet je mogelijk eerst <ph name="LINK_START" />de inlogpagina van het netwerk bezoeken<ph name="LINK_END" />, die over enkele seconden automatisch wordt geopend. Als de pagina niet wordt geopend, kan het netwerk niet worden gebruikt.</translation>
 <translation id="5637476008227280525">Mobiele data inschakelen</translation>
@@ -3420,6 +3426,7 @@
 <translation id="6198252989419008588">Pincode wijzigen</translation>
 <translation id="6199801702437275229">Wachten op ruimte-informatie...</translation>
 <translation id="6201792273624501289">Linux-apps</translation>
+<translation id="6202304368170870640">Je kunt je pincode gebruiken om in te loggen of je apparaat te ontgrendelen.</translation>
 <translation id="6205710420833115353">Sommige bewerkingen duren langer dan verwacht. Wil je deze afbreken?</translation>
 <translation id="6206311232642889873">A&amp;fbeelding kopiëren</translation>
 <translation id="6207200176136643843">Standaardzoomniveau resetten</translation>
@@ -4255,6 +4262,7 @@
 <translation id="7497215489070763236">CA-certificaat van server</translation>
 <translation id="7497981768003291373">Je hebt geen onlangs vastgelegde WebRTC-tekstlogboeken.</translation>
 <translation id="7502658306369382406">IPv6-adres</translation>
+<translation id="7503127198245469314">Verwijder de headset om dit te blokkeren of sta dit toe op het desktopdisplay</translation>
 <translation id="7503191893372251637">Type Netscape-certificaat</translation>
 <translation id="7503821294401948377">Kan pictogram '<ph name="ICON" />' voor browseractie niet laden.</translation>
 <translation id="750509436279396091">Map 'Downloads' openen</translation>
@@ -4868,6 +4876,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8425492902634685834">Vastzetten op taakbalk</translation>
 <translation id="8425755597197517046">&amp;Plakken en zoeken</translation>
+<translation id="8425768983279799676">Je kunt je pincode gebruiken om je apparaat te ontgrendelen.</translation>
 <translation id="8426713856918551002">Inschakelen</translation>
 <translation id="8427292751741042100">ingesloten in een host</translation>
 <translation id="8428213095426709021">Instellingen</translation>

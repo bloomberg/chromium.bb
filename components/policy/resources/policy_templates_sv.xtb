@@ -119,6 +119,13 @@
 
           Som standard är inga metoder för snabb upplåsning tillgängliga på hanterade enheter.</translation>
 <translation id="123081309365616809">Aktivera möjlighet att casta till enheten</translation>
+<translation id="1231349879329465225">Gör det möjligt att aktivera eller inaktivera Fast Transition.
+      Detta gäller alla användare och alla gränssnitt på enheten.
+      Både den här inställningen och ONC-egenskapen som ställs in per nätverk måste ha aktiverats för att Fast Transition ska kunna användas.
+      När principen har ställts in används Fast Transition tills det inaktiveras via principen.
+
+      Om principen saknar inställning eller är inställd på falskt används inte Fast Transition.
+      När principen är inställd på sant används Fast Transition om den trådlösa åtkomstpunkten har stöd för det.</translation>
 <translation id="1243570869342663665">Styr SafeSites-filtrering av barnförbjudet innehåll.</translation>
 <translation id="1257550411839719984">Ange standardkatalog för nedladdning</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>

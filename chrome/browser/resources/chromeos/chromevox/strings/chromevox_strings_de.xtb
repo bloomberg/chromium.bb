@@ -51,6 +51,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1334095593597963605">Zeichen- und Wortecho</translation>
 <translation id="1339428534620983148">Vorherige Tabellenspalte</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">Trinkgeld</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="135978014023467274">ChromeVox wurde auf Version 63 aktualisiert.</translation>
 <translation id="136718599399906424">Nächste Tabellenzeile</translation>
@@ -103,6 +104,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Spalte</translation>
 <translation id="1845944666972354496">Zum Aktivieren doppeltippen</translation>
+<translation id="1846771122725914429">Bluetooth-Braillezeile</translation>
 <translation id="1865601187525349519">Ende des Texts</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Uhrzeit und Datum ansagen</translation>
@@ -159,6 +161,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2422937916923936891">Kästchen für Menüpunkt</translation>
 <translation id="2428534162001909979">Befehlsmenüs</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">Untertitel</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> ist jetzt der neue Modifikator für ChromeVox.</translation>
 <translation id="2450814015951372393">Kästchen</translation>
 <translation id="2462626033734746142">Optionsfeldgruppe</translation>
@@ -645,6 +648,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5887397643266327462">Braille-Untertitel aktiviert</translation>
 <translation id="5891934789323004067">Tabelle</translation>
 <translation id="5899860758576822363">Mit geringerer Lautstärke wiedergeben, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
+<translation id="5906974869830879618">Bitte geben Sie eine PIN ein</translation>
 <translation id="5921587111466148855">Kapitel</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{Gleichheitszeichen}other{# Gleichheitszeichen}}</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
@@ -701,6 +705,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="641759969622533235">{COUNT,plural, =1{Doppelpunkt}other{# Doppelpunkte}}</translation>
 <translation id="6438968337250688271">Menü "<ph name="NAME" />"</translation>
 <translation id="6444046323172968959">Benachrichtigungsdialogfeld</translation>
+<translation id="6452403590345320472">Inhaltsverzeichnis</translation>
 <translation id="6459511626086141404">Flache Tastaturbelegung</translation>
 <translation id="6468049171101508116">Nächste Schaltfläche</translation>
 <translation id="646954774886932461">Index</translation>
@@ -995,6 +1000,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="948171205378458592">Sprechgeschwindigkeit verringern</translation>
 <translation id="958854023026327378">Mit einem Finger nach unten wischen</translation>
 <translation id="962913030769097253">Nächste Überschrift der Ebene 1</translation>
+<translation id="966588271015727539">Wählen Sie eine Bluetooth-Braillezeile aus</translation>
 <translation id="973955474346881951">Fixierten Modus aktivieren/deaktivieren</translation>
 <translation id="976849232629612000">Keine Elemente.</translation>
 <translation id="995852680044449248">Anfang durchgestrichener Text</translation>

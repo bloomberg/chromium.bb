@@ -150,7 +150,7 @@
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
 <translation id="1197979282329025000"><ph name="PRINTER_NAME" /> yazıcısının yazıcı özellikleri alınırken bir hata oluştu. Bu yazıcı <ph name="CLOUD_PRINT_NAME" /> ile kaydettirilemedi.</translation>
 <translation id="119944043368869598">Tümünü temizle</translation>
-<translation id="1201402288615127009">Sonraki</translation>
+<translation id="1201402288615127009">İleri</translation>
 <translation id="1202596434010270079">Kiosk uygulaması güncellendi. Lütfen USB çubuğunu çıkarın.</translation>
 <translation id="120368089816228251">Müzik notası</translation>
 <translation id="1205489148908752564">Beyaz listedeki kullanıcıları okuma ve değiştirme</translation>
@@ -919,7 +919,7 @@
 <translation id="2356070529366658676">Sor</translation>
 <translation id="2357949918965361754">Bu özelliği, Chrome'daki içerikleri TV'nizde ve diğer cihazlarda görüntülemek için kullanabilirsiniz.</translation>
 <translation id="2359345697448000899">Araçlar menüsünden Uzantılar'ı tıklayarak uzantılarınızı yönetin.</translation>
-<translation id="2359808026110333948">Devam Et</translation>
+<translation id="2359808026110333948">Devam et</translation>
 <translation id="236117173274098341">Optimize et</translation>
 <translation id="236141728043665931">Mikrofon erişimini her zaman engelle</translation>
 <translation id="2365507699358342471">Bu site, panoya kopyalanan metin ve resimleri görebilir.</translation>

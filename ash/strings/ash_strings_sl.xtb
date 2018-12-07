@@ -87,7 +87,7 @@
 <translation id="2341729377289034582">Zaklenjeno na pokončno</translation>
 <translation id="2352467521400612932">Nastavitve pisala</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
-<translation id="2359808026110333948">Nadaljuj</translation>
+<translation id="2359808026110333948">Naprej</translation>
 <translation id="2365393535144473978">Če omogočite prenos podatkov v mobilnem omrežju, bo omogočen Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Preklop načina »ne moti«</translation>
@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Vnovično vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
-<translation id="2790844815106384441">Izberite, ali lahko spletna mesta uporabljajo lokacijske storitve ali mikrofon, fotoaparat ali druge funkcije naprave</translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
 <translation id="2803734122639935495">Če želite odkleniti, vnesite geslo</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
@@ -224,6 +223,7 @@
 <translation id="4628757576491864469">Naprave</translation>
 <translation id="4659419629803378708">Omogočen je ChromeVox</translation>
 <translation id="4734965478015604180">Vodoravno</translation>
+<translation id="476166673298332917">Skrbnik naprave morda spremlja vašo dejavnost brskanja.</translation>
 <translation id="4774338217796918551">Vrni se jutri ob <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Geslo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4778095205580009397">Pomočnik Google ni na voljo v predstavitveni seji.</translation>
@@ -338,7 +338,6 @@
 <translation id="6751826523481687655">Sledenje učinkovitosti delovanja je vklopljeno</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
-<translation id="6814658242098378692">Upravljanje aplikacij, razširitev in tem</translation>
 <translation id="6820676911989879663">Čas za odmor!</translation>
 <translation id="683971173229319003">Iskanje + L</translation>
 <translation id="6857811139397017780">Aktiviraj <ph name="NETWORKSERVICE" /></translation>
@@ -378,7 +377,6 @@
 <translation id="7564874036684306347">Če okna premaknete na drugo namizje, lahko pride do nepričakovanega delovanja. Nadaljnja obvestila, okna in pogovorna okna so lahko razdeljena med namizji.</translation>
 <translation id="7569509451529460200">Omogočena sta braillova pisava in ChromeVox</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
-<translation id="7604942372593434070">Dostop do dejavnosti brskanja</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (lastnik)</translation>
 <translation id="7647488630410863958">Če si želite ogledati obvestila, odklenite napravo</translation>
 <translation id="7649070708921625228">Pomoč</translation>

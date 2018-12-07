@@ -119,6 +119,13 @@ Beispiel: Wenn Sie alle Modi für das schnelle Entsperren erlauben möchten, ver
 
 Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsperren verfügbar.</translation>
 <translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
+<translation id="1231349879329465225">Ermöglicht die Aktivierung oder Deaktivierung von "Fast Transition".
+      Diese Richtlinie gilt für alle Nutzer und alle Oberflächen auf diesem Gerät.
+      Damit "Fast Transition" verwendet werden kann, müssen sowohl diese Einstellung als auch die netzwerkeigene ONC-Eigenschaft aktiviert sein.
+      Nach dem Festlegen bleibt "Fast Transition" so lange bestehen, bis die Richtlinie wieder deaktiviert wird.
+
+      Ist diese Richtlinie nicht festgelegt oder auf "false" gesetzt, wird "Fast Transition" nicht verwendet.
+      Ist die Richtlinie auf "true" gesetzt, wird "Fast Transition" verwendet, wenn dies vom WLAN-Zugangspunkt unterstützt wird.</translation>
 <translation id="1243570869342663665">Filterung von Inhalten nur für Erwachsene durch "SafeSites" konfigurieren.</translation>
 <translation id="1257550411839719984">Standard-Downloadverzeichnis festlegen</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>

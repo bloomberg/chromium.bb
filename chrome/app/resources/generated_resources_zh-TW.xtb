@@ -2691,7 +2691,7 @@
 <translation id="5151354047782775295">請釋出磁碟空間，或選取系統可自動刪除的資料</translation>
 <translation id="5153234146675181447">移除手機</translation>
 <translation id="5154108062446123722">「<ph name="PRINTING_DESTINATION" />」進階設定</translation>
-<translation id="5154702632169343078">主體</translation>
+<translation id="5154702632169343078">主旨</translation>
 <translation id="5157635116769074044">將網頁固定到開始畫面...</translation>
 <translation id="5158593464696388225">無法儲存圖片。</translation>
 <translation id="5158983316805876233">對所有通訊協定使用相同的 Proxy</translation>
@@ -3034,7 +3034,7 @@
 <translation id="5627086634964711283">這個擴充功能也會控管你點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="5627676517703583263">使用 Chrome 享有智慧瀏覽體驗</translation>
 <translation id="562935524653278697">你的管理員停用了書籤、歷史記錄、密碼和其他設定的同步功能。</translation>
-<translation id="5632566673632479864">你的帳戶 <ph name="EMAIL" /> 已不是主要帳戶。這個帳戶是由 <ph name="DOMAIN" /> 所管理，因此系統會將您的書籤、歷史記錄、密碼和其他設定從這個裝置上清除。</translation>
+<translation id="5632566673632479864">你已不能再將 <ph name="EMAIL" /> 設為主要帳戶。這個帳戶是由 <ph name="DOMAIN" /> 所管理，因此系統會將您的書籤、歷史記錄、密碼和其他設定從這個裝置上清除。</translation>
 <translation id="563535393368633106">存取前詢問我 (建議)</translation>
 <translation id="5636996382092289526">如要使用 <ph name="NETWORK_ID" />，你必須先<ph name="LINK_START" />造訪網路的登入頁面<ph name="LINK_END" />，系統隨即會自動開啟登入頁面；如果沒有，你就無法使用這個網路。</translation>
 <translation id="5637476008227280525">啟用行動數據</translation>

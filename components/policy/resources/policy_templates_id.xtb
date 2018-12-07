@@ -108,6 +108,13 @@ Misalnya, untuk mengaktifkan setiap mode buka kunci cepat, gunakan ["semua"]. Un
 
 Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat yang dikelola.</translation>
 <translation id="123081309365616809">Mengaktifkan casting konten ke perangkat</translation>
+<translation id="1231349879329465225">Mengizinkan pengaktifan atau penonaktifan Transisi Cepat.
+      Berlaku untuk semua pengguna dan semua antarmuka pada perangkat.
+      Agar Transisi Cepat dapat digunakan, setelan ini dan properti ONC per jaringan perlu diaktifkan.
+      Setelah disetel, Transisi Cepat dapat terus digunakan hingga kebijakan ini dinonaktifkan.
+
+      Jika kebijakan tidak disetel atau disetel ke false, Transisi Cepat tidak dapat digunakan.
+      Jika disetel ke true, Transisi Cepat dapat digunakan saat titik akses nirkabel mendukungnya.</translation>
 <translation id="1243570869342663665">Mengontrol pemfilteran konten khusus dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Setel direktori download default</translation>
 <translation id="1265053460044691532">Batasi waktu bagi pengguna yang diautentikasi melalui SAML untuk dapat masuk saat offline.</translation>

@@ -111,7 +111,6 @@
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
-<translation id="2790844815106384441">Valige, kas veebisaidid tohivad kasutada asukohateenuseid ja seadme mikrofoni, kaamerat või muid funktsioone</translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
 <translation id="2803734122639935495">Avamiseks sisestage parool</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
@@ -225,6 +224,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4628757576491864469">Seadmed</translation>
 <translation id="4659419629803378708">ChromeVox on lubatud</translation>
 <translation id="4734965478015604180">Horisontaalne</translation>
+<translation id="476166673298332917">Seadme administraator võib jälgida teie sirvimistegevust.</translation>
 <translation id="4774338217796918551">Tulge tagasi homme kell <ph name="COME_BACK_TIME" />.</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
 <translation id="4778095205580009397">Google'i assistent ei ole demoseansi puhul saadaval.</translation>
@@ -339,7 +339,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6751826523481687655">Toimivuse jälgimine on sisse lülitatud</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
-<translation id="6814658242098378692">Rakenduste, laienduste ja teemade haldamine</translation>
 <translation id="6820676911989879663">Tehke paus!</translation>
 <translation id="683971173229319003">Otsing + L</translation>
 <translation id="6857811139397017780">Aktiveeri <ph name="NETWORKSERVICE" /></translation>
@@ -379,7 +378,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7564874036684306347">Kui teisaldate aknad teisele töölauale, võib tagajärjeks olla ootamatu käitumine. Järgmised märguanded, aknad ja dialoogid võivad jaguneda eri töölaudade vahel.</translation>
 <translation id="7569509451529460200">Punktkiri ja ChromeVox on lubatud</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
-<translation id="7604942372593434070">Juurdepääs teie sirvimistegevustele</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (omanik)</translation>
 <translation id="7647488630410863958">Märguannete vaatamiseks avage seade</translation>
 <translation id="7649070708921625228">Abi</translation>

@@ -118,6 +118,13 @@
 
           Domyślnie na urządzeniach zarządzanych nie jest dostępny żaden tryb szybkiego odblokowywania.</translation>
 <translation id="123081309365616809">Włącz przesyłanie treści na urządzenie</translation>
+<translation id="1231349879329465225">Umożliwia włączanie i wyłączanie szybkiego roamingu.
+      Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu.
+      Z szybkiego roamingu można korzystać tylko wtedy, gdy włączono zarówno to ustawienie, jak i odpowiednią właściwość w konfiguracji ONC danej sieci.
+      Po włączeniu szybki roaming pozostaje włączony, dopóki nie zmienisz ustawień zasady.
+
+      Jeśli zasada nie jest skonfigurowana lub ma wartość Fałsz, szybki roaming nie jest używany.
+      Jeśli zasada ma wartość Prawda, szybki roaming jest używany, o ile obsługuje go bezprzewodowy punkt dostępu.</translation>
 <translation id="1243570869342663665">Ustaw filtrowanie treści dla dorosłych SafeSites.</translation>
 <translation id="1257550411839719984">Ustaw domyślny katalog pobierania</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
