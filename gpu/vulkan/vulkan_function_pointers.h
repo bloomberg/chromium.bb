@@ -57,8 +57,6 @@ struct VulkanFunctionPointers {
   PFN_vkCreateDevice vkCreateDeviceFn = nullptr;
   PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn =
       nullptr;
-  PFN_vkGetPhysicalDeviceMemoryProperties2KHR
-      vkGetPhysicalDeviceMemoryProperties2KHRFn = nullptr;
   PFN_vkGetPhysicalDeviceQueueFamilyProperties
       vkGetPhysicalDeviceQueueFamilyPropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
@@ -71,14 +69,11 @@ struct VulkanFunctionPointers {
   // Device functions
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn = nullptr;
   PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn = nullptr;
-  PFN_vkAllocateMemory vkAllocateMemoryFn = nullptr;
-  PFN_vkBindImageMemory vkBindImageMemoryFn = nullptr;
   PFN_vkCreateCommandPool vkCreateCommandPoolFn = nullptr;
   PFN_vkCreateDescriptorPool vkCreateDescriptorPoolFn = nullptr;
   PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayoutFn = nullptr;
   PFN_vkCreateFence vkCreateFenceFn = nullptr;
   PFN_vkCreateFramebuffer vkCreateFramebufferFn = nullptr;
-  PFN_vkCreateImage vkCreateImageFn = nullptr;
   PFN_vkCreateImageView vkCreateImageViewFn = nullptr;
   PFN_vkCreateRenderPass vkCreateRenderPassFn = nullptr;
   PFN_vkCreateSampler vkCreateSamplerFn = nullptr;
@@ -102,17 +97,13 @@ struct VulkanFunctionPointers {
   PFN_vkFreeMemory vkFreeMemoryFn = nullptr;
   PFN_vkGetDeviceQueue vkGetDeviceQueueFn = nullptr;
   PFN_vkGetFenceStatus vkGetFenceStatusFn = nullptr;
-  PFN_vkGetImageMemoryRequirements2KHR vkGetImageMemoryRequirements2KHRFn =
-      nullptr;
   PFN_vkResetFences vkResetFencesFn = nullptr;
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
-  // Android only device functions.
+// Android only device functions.
 #if defined(OS_ANDROID)
   PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
-  PFN_vkGetAndroidHardwareBufferPropertiesANDROID
-      vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
   PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
 #endif
 
@@ -162,8 +153,6 @@ struct VulkanFunctionPointers {
 #define vkCreateDevice gpu::GetVulkanFunctionPointers()->vkCreateDeviceFn
 #define vkEnumerateDeviceLayerProperties \
   gpu::GetVulkanFunctionPointers()->vkEnumerateDeviceLayerPropertiesFn
-#define vkGetPhysicalDeviceMemoryProperties2KHR \
-  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceMemoryProperties2KHRFn
 #define vkGetPhysicalDeviceQueueFamilyProperties \
   gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceQueueFamilyPropertiesFn
 #define vkGetPhysicalDeviceSurfaceCapabilitiesKHR \
@@ -178,8 +167,6 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkAllocateCommandBuffersFn
 #define vkAllocateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkAllocateDescriptorSetsFn
-#define vkAllocateMemory gpu::GetVulkanFunctionPointers()->vkAllocateMemoryFn
-#define vkBindImageMemory gpu::GetVulkanFunctionPointers()->vkBindImageMemoryFn
 #define vkCreateCommandPool \
   gpu::GetVulkanFunctionPointers()->vkCreateCommandPoolFn
 #define vkCreateDescriptorPool \
@@ -189,7 +176,6 @@ struct VulkanFunctionPointers {
 #define vkCreateFence gpu::GetVulkanFunctionPointers()->vkCreateFenceFn
 #define vkCreateFramebuffer \
   gpu::GetVulkanFunctionPointers()->vkCreateFramebufferFn
-#define vkCreateImage gpu::GetVulkanFunctionPointers()->vkCreateImageFn
 #define vkCreateImageView gpu::GetVulkanFunctionPointers()->vkCreateImageViewFn
 #define vkCreateRenderPass \
   gpu::GetVulkanFunctionPointers()->vkCreateRenderPassFn
@@ -225,8 +211,6 @@ struct VulkanFunctionPointers {
 #define vkFreeMemory gpu::GetVulkanFunctionPointers()->vkFreeMemoryFn
 #define vkGetDeviceQueue gpu::GetVulkanFunctionPointers()->vkGetDeviceQueueFn
 #define vkGetFenceStatus gpu::GetVulkanFunctionPointers()->vkGetFenceStatusFn
-#define vkGetImageMemoryRequirements2KHR \
-  gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirements2KHRFn
 #define vkResetFences gpu::GetVulkanFunctionPointers()->vkResetFencesFn
 #define vkUpdateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
@@ -235,9 +219,6 @@ struct VulkanFunctionPointers {
 #if defined(OS_ANDROID)
 #define vkImportSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
-#define vkGetAndroidHardwareBufferPropertiesANDROID \
-  gpu::GetVulkanFunctionPointers()                  \
-      ->vkGetAndroidHardwareBufferPropertiesANDROIDFn
 #define vkGetSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
 #endif
