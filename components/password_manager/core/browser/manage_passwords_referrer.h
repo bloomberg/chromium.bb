@@ -9,13 +9,17 @@ namespace password_manager {
 
 // Enumerates referrers that can trigger a navigation to the manage passwords
 // page.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.password_manager
 enum class ManagePasswordsReferrer {
   // Corresponds to Chrome's settings page.
   kChromeSettings = 0,
   // Corresponds to the manage passwords bubble when clicking the key icon.
+  // Only used on desktop.
   kManagePasswordsBubble = 1,
   // Corresponds to the context menu following a right click into a password
   // field.
+  // Only used on desktop.
   kPasswordContextMenu = 2,
   // Corresponds to the password dropdown shown when clicking into a password
   // field.
@@ -24,8 +28,13 @@ enum class ManagePasswordsReferrer {
   // was generated.
   kPasswordGenerationConfirmation = 4,
   // Corresponds to the profile chooser next to the omnibar ("Autofill Home").
+  // Only used on desktop.
   kProfileChooser = 5,
-  kMaxValue = kProfileChooser,
+  // Corresponds to the passwords accessory sheet on Android, triggered by
+  // tapping on the key icon above in the keyboard accessory bar.
+  // Only used on Android
+  kPasswordsAccessorySheet = 6,
+  kMaxValue = kPasswordsAccessorySheet,
 };
 
 }  // namespace password_manager
