@@ -104,40 +104,6 @@ static UsbTransferStatus ConvertTransferStatus(
   return UsbTransferStatus::TRANSFER_ERROR;
 }
 
-static void RunTransferCallback(
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    UsbDeviceHandle::TransferCallback callback,
-    UsbTransferStatus status,
-    scoped_refptr<base::RefCountedBytes> buffer,
-    size_t result) {
-  if (callback_task_runner->RunsTasksInCurrentSequence()) {
-    std::move(callback).Run(status, buffer, result);
-  } else {
-    callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), status, buffer, result));
-  }
-}
-
-void ReportIsochronousTransferError(
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    UsbDeviceHandle::IsochronousTransferCallback callback,
-    const std::vector<uint32_t> packet_lengths,
-    UsbTransferStatus status) {
-  std::vector<UsbDeviceHandle::IsochronousPacket> packets(
-      packet_lengths.size());
-  for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i].length = packet_lengths[i];
-    packets[i].transferred_length = 0;
-    packets[i].status = status;
-  }
-  if (callback_task_runner->RunsTasksInCurrentSequence()) {
-    std::move(callback).Run(nullptr, packets);
-  } else {
-    callback_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), nullptr, packets));
-  }
-}
-
 }  // namespace
 
 class UsbDeviceHandleImpl::InterfaceClaimer
@@ -209,7 +175,6 @@ class UsbDeviceHandleImpl::Transfer {
       uint16_t length,
       scoped_refptr<base::RefCountedBytes> buffer,
       unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
       TransferCallback* callback);
   static std::unique_ptr<Transfer> CreateBulkTransfer(
       scoped_refptr<UsbDeviceHandleImpl> device_handle,
@@ -217,7 +182,6 @@ class UsbDeviceHandleImpl::Transfer {
       scoped_refptr<base::RefCountedBytes> buffer,
       int length,
       unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
       TransferCallback* callback);
   static std::unique_ptr<Transfer> CreateInterruptTransfer(
       scoped_refptr<UsbDeviceHandleImpl> device_handle,
@@ -225,7 +189,6 @@ class UsbDeviceHandleImpl::Transfer {
       scoped_refptr<base::RefCountedBytes> buffer,
       int length,
       unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
       TransferCallback* callback);
   static std::unique_ptr<Transfer> CreateIsochronousTransfer(
       scoped_refptr<UsbDeviceHandleImpl> device_handle,
@@ -234,7 +197,6 @@ class UsbDeviceHandleImpl::Transfer {
       size_t length,
       const std::vector<uint32_t>& packet_lengths,
       unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
       IsochronousTransferCallback* callback);
 
   ~Transfer();
@@ -248,22 +210,16 @@ class UsbDeviceHandleImpl::Transfer {
     return claimed_interface_.get();
   }
 
-  scoped_refptr<base::TaskRunner> callback_task_runner() const {
-    return callback_task_runner_;
-  }
-
  private:
   Transfer(scoped_refptr<UsbDeviceHandleImpl> device_handle,
            scoped_refptr<InterfaceClaimer> claimed_interface,
            UsbTransferType transfer_type,
            scoped_refptr<base::RefCountedBytes> buffer,
            size_t length,
-           scoped_refptr<base::TaskRunner> callback_task_runner,
            TransferCallback callback);
   Transfer(scoped_refptr<UsbDeviceHandleImpl> device_handle,
            scoped_refptr<InterfaceClaimer> claimed_interface,
            scoped_refptr<base::RefCountedBytes> buffer,
-           scoped_refptr<base::TaskRunner> callback_task_runner,
            IsochronousTransferCallback callback);
 
   static void LIBUSB_CALL PlatformCallback(PlatformUsbTransferHandle handle);
@@ -278,7 +234,6 @@ class UsbDeviceHandleImpl::Transfer {
   size_t length_;
   bool cancelled_ = false;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_refptr<base::TaskRunner> callback_task_runner_;
   TransferCallback callback_;
   IsochronousTransferCallback iso_callback_;
 };
@@ -294,12 +249,10 @@ UsbDeviceHandleImpl::Transfer::CreateControlTransfer(
     uint16_t length,
     scoped_refptr<base::RefCountedBytes> buffer,
     unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
     TransferCallback* callback) {
   std::unique_ptr<Transfer> transfer(
       new Transfer(device_handle, nullptr, UsbTransferType::CONTROL, buffer,
-                   length + LIBUSB_CONTROL_SETUP_SIZE, callback_task_runner,
-                   std::move(*callback)));
+                   length + LIBUSB_CONTROL_SETUP_SIZE, std::move(*callback)));
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
@@ -326,12 +279,10 @@ UsbDeviceHandleImpl::Transfer::CreateBulkTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     int length,
     unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
     TransferCallback* callback) {
   std::unique_ptr<Transfer> transfer(new Transfer(
       device_handle, device_handle->GetClaimedInterfaceForEndpoint(endpoint),
-      UsbTransferType::BULK, buffer, length, callback_task_runner,
-      std::move(*callback)));
+      UsbTransferType::BULK, buffer, length, std::move(*callback)));
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
@@ -356,12 +307,10 @@ UsbDeviceHandleImpl::Transfer::CreateInterruptTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     int length,
     unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
     TransferCallback* callback) {
   std::unique_ptr<Transfer> transfer(new Transfer(
       device_handle, device_handle->GetClaimedInterfaceForEndpoint(endpoint),
-      UsbTransferType::INTERRUPT, buffer, length, callback_task_runner,
-      std::move(*callback)));
+      UsbTransferType::INTERRUPT, buffer, length, std::move(*callback)));
 
   transfer->platform_transfer_ = libusb_alloc_transfer(0);
   if (!transfer->platform_transfer_) {
@@ -387,11 +336,10 @@ UsbDeviceHandleImpl::Transfer::CreateIsochronousTransfer(
     size_t length,
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
     IsochronousTransferCallback* callback) {
   std::unique_ptr<Transfer> transfer(new Transfer(
       device_handle, device_handle->GetClaimedInterfaceForEndpoint(endpoint),
-      buffer, callback_task_runner, std::move(*callback)));
+      buffer, std::move(*callback)));
 
   int num_packets = static_cast<int>(packet_lengths.size());
   transfer->platform_transfer_ = libusb_alloc_transfer(num_packets);
@@ -418,14 +366,12 @@ UsbDeviceHandleImpl::Transfer::Transfer(
     UsbTransferType transfer_type,
     scoped_refptr<base::RefCountedBytes> buffer,
     size_t length,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
     TransferCallback callback)
     : transfer_type_(transfer_type),
       device_handle_(device_handle),
       buffer_(buffer),
       claimed_interface_(claimed_interface),
       length_(length),
-      callback_task_runner_(callback_task_runner),
       callback_(std::move(callback)) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
@@ -434,13 +380,11 @@ UsbDeviceHandleImpl::Transfer::Transfer(
     scoped_refptr<UsbDeviceHandleImpl> device_handle,
     scoped_refptr<InterfaceClaimer> claimed_interface,
     scoped_refptr<base::RefCountedBytes> buffer,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
     IsochronousTransferCallback callback)
     : transfer_type_(UsbTransferType::ISOCHRONOUS),
       device_handle_(device_handle),
       buffer_(buffer),
       claimed_interface_(claimed_interface),
-      callback_task_runner_(callback_task_runner),
       iso_callback_(std::move(callback)) {
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
@@ -712,18 +656,44 @@ void UsbDeviceHandleImpl::ControlTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     unsigned int timeout,
     TransferCallback callback) {
-  if (task_runner_->BelongsToCurrentThread()) {
-    ControlTransferInternal(direction, request_type, recipient, request, value,
-                            index, buffer, timeout, task_runner_,
-                            std::move(callback));
-  } else {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!device_) {
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ControlTransferInternal,
-                                  this, direction, request_type, recipient,
-                                  request, value, index, buffer, timeout,
-                                  base::ThreadTaskRunnerHandle::Get(),
-                                  std::move(callback)));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  UsbTransferStatus::DISCONNECT, buffer, 0));
+    return;
   }
+
+  if (!base::IsValueInRangeForNumericType<uint16_t>(buffer->size())) {
+    USB_LOG(USER) << "Transfer too long.";
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       buffer, 0));
+    return;
+  }
+
+  const size_t resized_length = LIBUSB_CONTROL_SETUP_SIZE + buffer->size();
+  auto resized_buffer =
+      base::MakeRefCounted<base::RefCountedBytes>(resized_length);
+  memcpy(resized_buffer->front() + LIBUSB_CONTROL_SETUP_SIZE, buffer->front(),
+         buffer->size());
+
+  std::unique_ptr<Transfer> transfer = Transfer::CreateControlTransfer(
+      this, CreateRequestType(direction, request_type, recipient), request,
+      value, index, static_cast<uint16_t>(buffer->size()), resized_buffer,
+      timeout, &callback);
+  if (!transfer) {
+    DCHECK(callback);
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       buffer, 0));
+    return;
+  }
+
+  SubmitTransfer(std::move(transfer));
 }
 
 void UsbDeviceHandleImpl::IsochronousTransferIn(
@@ -731,19 +701,24 @@ void UsbDeviceHandleImpl::IsochronousTransferIn(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     IsochronousTransferCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!device_) {
+    ReportIsochronousTransferError(std::move(callback), packet_lengths,
+                                   UsbTransferStatus::DISCONNECT);
+    return;
+  }
+
   uint8_t endpoint_address =
       ConvertTransferDirection(UsbTransferDirection::INBOUND) | endpoint_number;
-  if (task_runner_->BelongsToCurrentThread()) {
-    IsochronousTransferInInternal(endpoint_address, packet_lengths, timeout,
-                                  task_runner_, std::move(callback));
-  } else {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UsbDeviceHandleImpl::IsochronousTransferInInternal,
-                       this, endpoint_address, packet_lengths, timeout,
-                       base::ThreadTaskRunnerHandle::Get(),
-                       std::move(callback)));
-  }
+  size_t length =
+      std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
+  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
+  std::unique_ptr<Transfer> transfer = Transfer::CreateIsochronousTransfer(
+      this, endpoint_address, buffer, length, packet_lengths, timeout,
+      &callback);
+  DCHECK(transfer);
+  SubmitTransfer(std::move(transfer));
 }
 
 void UsbDeviceHandleImpl::IsochronousTransferOut(
@@ -752,20 +727,24 @@ void UsbDeviceHandleImpl::IsochronousTransferOut(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     IsochronousTransferCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!device_) {
+    ReportIsochronousTransferError(std::move(callback), packet_lengths,
+                                   UsbTransferStatus::DISCONNECT);
+    return;
+  }
+
   uint8_t endpoint_address =
       ConvertTransferDirection(UsbTransferDirection::OUTBOUND) |
       endpoint_number;
-  if (task_runner_->BelongsToCurrentThread()) {
-    IsochronousTransferOutInternal(endpoint_address, buffer, packet_lengths,
-                                   timeout, task_runner_, std::move(callback));
-  } else {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&UsbDeviceHandleImpl::IsochronousTransferOutInternal,
-                       this, endpoint_address, buffer, packet_lengths, timeout,
-                       base::ThreadTaskRunnerHandle::Get(),
-                       std::move(callback)));
-  }
+  size_t length =
+      std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
+  std::unique_ptr<Transfer> transfer = Transfer::CreateIsochronousTransfer(
+      this, endpoint_address, buffer, length, packet_lengths, timeout,
+      &callback);
+  DCHECK(transfer);
+  SubmitTransfer(std::move(transfer));
 }
 
 void UsbDeviceHandleImpl::GenericTransfer(
@@ -774,18 +753,59 @@ void UsbDeviceHandleImpl::GenericTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     unsigned int timeout,
     TransferCallback callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!device_) {
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  UsbTransferStatus::DISCONNECT, buffer, 0));
+    return;
+  }
+
   uint8_t endpoint_address =
       ConvertTransferDirection(direction) | endpoint_number;
-  if (task_runner_->BelongsToCurrentThread()) {
-    GenericTransferInternal(endpoint_address, buffer, timeout, task_runner_,
-                            std::move(callback));
-  } else {
+  const auto endpoint_it = endpoint_map_.find(endpoint_address);
+  if (endpoint_it == endpoint_map_.end()) {
+    USB_LOG(DEBUG) << "Failed to submit transfer because endpoint "
+                   << static_cast<int>(endpoint_address)
+                   << " not part of a claimed interface.";
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::GenericTransferInternal,
-                                  this, endpoint_address, buffer, timeout,
-                                  base::ThreadTaskRunnerHandle::Get(),
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       buffer, 0));
+    return;
   }
+
+  if (!base::IsValueInRangeForNumericType<int>(buffer->size())) {
+    USB_LOG(DEBUG) << "Transfer too long.";
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       buffer, 0));
+    return;
+  }
+
+  std::unique_ptr<Transfer> transfer;
+  UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
+  if (transfer_type == UsbTransferType::BULK) {
+    transfer = Transfer::CreateBulkTransfer(this, endpoint_address, buffer,
+                                            static_cast<int>(buffer->size()),
+                                            timeout, &callback);
+  } else if (transfer_type == UsbTransferType::INTERRUPT) {
+    transfer = Transfer::CreateInterruptTransfer(
+        this, endpoint_address, buffer, static_cast<int>(buffer->size()),
+        timeout, &callback);
+  } else {
+    USB_LOG(DEBUG) << "Endpoint " << static_cast<int>(endpoint_address)
+                   << " is not a bulk or interrupt endpoint.";
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), UsbTransferStatus::TRANSFER_ERROR,
+                       buffer, 0));
+    return;
+  }
+  DCHECK(transfer);
+  SubmitTransfer(std::move(transfer));
 }
 
 const UsbInterfaceDescriptor* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
@@ -981,152 +1001,20 @@ UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8_t endpoint) {
   return nullptr;
 }
 
-void UsbDeviceHandleImpl::ControlTransferInternal(
-    UsbTransferDirection direction,
-    UsbControlTransferType request_type,
-    UsbControlTransferRecipient recipient,
-    uint8_t request,
-    uint16_t value,
-    uint16_t index,
-    scoped_refptr<base::RefCountedBytes> buffer,
-    unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    TransferCallback callback) {
+void UsbDeviceHandleImpl::ReportIsochronousTransferError(
+    UsbDeviceHandle::IsochronousTransferCallback callback,
+    const std::vector<uint32_t> packet_lengths,
+    UsbTransferStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!device_) {
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::DISCONNECT, buffer, 0);
-    return;
+  std::vector<UsbDeviceHandle::IsochronousPacket> packets(
+      packet_lengths.size());
+  for (size_t i = 0; i < packet_lengths.size(); ++i) {
+    packets[i].length = packet_lengths[i];
+    packets[i].transferred_length = 0;
+    packets[i].status = status;
   }
-
-  if (!base::IsValueInRangeForNumericType<uint16_t>(buffer->size())) {
-    USB_LOG(USER) << "Transfer too long.";
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
-    return;
-  }
-
-  const size_t resized_length = LIBUSB_CONTROL_SETUP_SIZE + buffer->size();
-  auto resized_buffer =
-      base::MakeRefCounted<base::RefCountedBytes>(resized_length);
-  memcpy(resized_buffer->front() + LIBUSB_CONTROL_SETUP_SIZE, buffer->front(),
-         buffer->size());
-
-  std::unique_ptr<Transfer> transfer = Transfer::CreateControlTransfer(
-      this, CreateRequestType(direction, request_type, recipient), request,
-      value, index, static_cast<uint16_t>(buffer->size()), resized_buffer,
-      timeout, callback_task_runner, &callback);
-  if (!transfer) {
-    DCHECK(callback);
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
-    return;
-  }
-
-  SubmitTransfer(std::move(transfer));
-}
-
-void UsbDeviceHandleImpl::IsochronousTransferInInternal(
-    uint8_t endpoint_address,
-    const std::vector<uint32_t>& packet_lengths,
-    unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    IsochronousTransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!device_) {
-    ReportIsochronousTransferError(callback_task_runner, std::move(callback),
-                                   packet_lengths,
-                                   UsbTransferStatus::DISCONNECT);
-    return;
-  }
-
-  size_t length =
-      std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
-  auto buffer = base::MakeRefCounted<base::RefCountedBytes>(length);
-  std::unique_ptr<Transfer> transfer = Transfer::CreateIsochronousTransfer(
-      this, endpoint_address, buffer, length, packet_lengths, timeout,
-      callback_task_runner, &callback);
-  DCHECK(transfer);
-  SubmitTransfer(std::move(transfer));
-}
-
-void UsbDeviceHandleImpl::IsochronousTransferOutInternal(
-    uint8_t endpoint_address,
-    scoped_refptr<base::RefCountedBytes> buffer,
-    const std::vector<uint32_t>& packet_lengths,
-    unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    IsochronousTransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!device_) {
-    ReportIsochronousTransferError(callback_task_runner, std::move(callback),
-                                   packet_lengths,
-                                   UsbTransferStatus::DISCONNECT);
-    return;
-  }
-
-  size_t length =
-      std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
-  std::unique_ptr<Transfer> transfer = Transfer::CreateIsochronousTransfer(
-      this, endpoint_address, buffer, length, packet_lengths, timeout,
-      callback_task_runner, &callback);
-  DCHECK(transfer);
-  SubmitTransfer(std::move(transfer));
-}
-
-void UsbDeviceHandleImpl::GenericTransferInternal(
-    uint8_t endpoint_address,
-    scoped_refptr<base::RefCountedBytes> buffer,
-    unsigned int timeout,
-    scoped_refptr<base::TaskRunner> callback_task_runner,
-    TransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!device_) {
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::DISCONNECT, buffer, 0);
-    return;
-  }
-
-  const auto endpoint_it = endpoint_map_.find(endpoint_address);
-  if (endpoint_it == endpoint_map_.end()) {
-    USB_LOG(DEBUG) << "Failed to submit transfer because endpoint "
-                   << static_cast<int>(endpoint_address)
-                   << " not part of a claimed interface.";
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
-    return;
-  }
-
-  if (!base::IsValueInRangeForNumericType<int>(buffer->size())) {
-    USB_LOG(DEBUG) << "Transfer too long.";
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
-    return;
-  }
-
-  std::unique_ptr<Transfer> transfer;
-  UsbTransferType transfer_type = endpoint_it->second.endpoint->transfer_type;
-  if (transfer_type == UsbTransferType::BULK) {
-    transfer = Transfer::CreateBulkTransfer(
-        this, endpoint_address, buffer, static_cast<int>(buffer->size()),
-        timeout, callback_task_runner, &callback);
-  } else if (transfer_type == UsbTransferType::INTERRUPT) {
-    transfer = Transfer::CreateInterruptTransfer(
-        this, endpoint_address, buffer, static_cast<int>(buffer->size()),
-        timeout, callback_task_runner, &callback);
-  } else {
-    USB_LOG(DEBUG) << "Endpoint " << static_cast<int>(endpoint_address)
-                   << " is not a bulk or interrupt endpoint.";
-    RunTransferCallback(callback_task_runner, std::move(callback),
-                        UsbTransferStatus::TRANSFER_ERROR, buffer, 0);
-    return;
-  }
-  DCHECK(transfer);
-  SubmitTransfer(std::move(transfer));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(std::move(callback), nullptr, packets));
 }
 
 void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {
@@ -1148,11 +1036,7 @@ void UsbDeviceHandleImpl::TransferComplete(Transfer* transfer,
       << "Missing transfer completed";
   transfers_.erase(transfer);
 
-  if (transfer->callback_task_runner()->RunsTasksInCurrentSequence()) {
-    std::move(callback).Run();
-  } else {
-    transfer->callback_task_runner()->PostTask(FROM_HERE, std::move(callback));
-  }
+  std::move(callback).Run();
 
   // libusb_free_transfer races with libusb_submit_transfer and only work-
   // around is to make sure to call them on the same thread.

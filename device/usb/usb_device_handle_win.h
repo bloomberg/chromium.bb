@@ -137,19 +137,11 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
       DWORD win32_result,
       size_t bytes_transferred);
   void TransferComplete(
-      scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
       TransferCallback callback,
       scoped_refptr<base::RefCountedBytes> buffer,
       Request* request_ptr,
       DWORD win32_result,
       size_t bytes_transferred);
-  void GenericTransferInternal(
-      UsbTransferDirection direction,
-      uint8_t endpoint_number,
-      scoped_refptr<base::RefCountedBytes> buffer,
-      unsigned int timeout,
-      TransferCallback callback,
-      scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner);
   void ReportIsochronousError(const std::vector<uint32_t>& packet_lengths,
                               IsochronousTransferCallback callback,
                               UsbTransferStatus status);

@@ -25,7 +25,6 @@ namespace base {
 class RefCountedBytes;
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
-class TaskRunner;
 }
 
 namespace device {
@@ -127,39 +126,10 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
       uint8_t endpoint);
 
-  void ControlTransferInternal(
-      UsbTransferDirection direction,
-      UsbControlTransferType request_type,
-      UsbControlTransferRecipient recipient,
-      uint8_t request,
-      uint16_t value,
-      uint16_t index,
-      scoped_refptr<base::RefCountedBytes> buffer,
-      unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      TransferCallback callback);
-
-  void IsochronousTransferInInternal(
-      uint8_t endpoint_address,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      IsochronousTransferCallback callback);
-
-  void IsochronousTransferOutInternal(
-      uint8_t endpoint_address,
-      scoped_refptr<base::RefCountedBytes> buffer,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      IsochronousTransferCallback callback);
-
-  void GenericTransferInternal(
-      uint8_t endpoint_address,
-      scoped_refptr<base::RefCountedBytes> buffer,
-      unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      TransferCallback callback);
+  void ReportIsochronousTransferError(
+      UsbDeviceHandle::IsochronousTransferCallback callback,
+      const std::vector<uint32_t> packet_lengths,
+      UsbTransferStatus status);
 
   // Submits a transfer and starts tracking it. Retains the buffer and copies
   // the completion callback until the transfer finishes, whereupon it invokes
