@@ -12,36 +12,11 @@ Polymer({
     indicatorModel: Object,
   },
 
-  /**
-   * This element can receive an |onRouteChange| notification after it's
-   * detached. This will make it no-op.
-   * @private
-   */
-  isDetached_: false,
-
-  /** @override */
-  detached: function() {
-    this.isDetached_ = true;
+  onRouteEnter: function() {
+    this.$.emailChooser.initializeSection();
   },
 
-  /**
-   * Elements can override onRouteChange to handle route changes.
-   * Overrides function in behavior.
-   * @param {!welcome.Routes} route
-   * @param {number} step
-   */
-  onRouteChange: function(route, step) {
-    if (`step-${step}` == this.id) {
-      nux.BookmarkProxyImpl.getInstance().isBookmarkBarShown().then(
-          bookmarkBarShown => {
-            if (this.isDetached_)
-              return;
-
-            this.$.emailChooser.bookmarkBarWasShown = bookmarkBarShown;
-            this.$.emailChooser.initializeSection();
-          });
-    } else {
-      this.$.emailChooser.finalizeSection();
-    }
+  onRouteExit: function() {
+    this.$.emailChooser.finalizeSection();
   },
 });

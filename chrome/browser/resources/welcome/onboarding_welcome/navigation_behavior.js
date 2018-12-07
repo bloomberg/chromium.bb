@@ -52,14 +52,36 @@ cr.define('welcome', function() {
   /** @type {!Set<!PolymerElement>} */
   const routeObservers = new Set();
 
+  /** @type {?PolymerElement} */
+  let currentRouteElement;
+
   // Notifies all the elements that extended NavigationBehavior.
   function notifyObservers() {
+    if (currentRouteElement) {
+      (/** @type {{onRouteExit: Function}} */ (currentRouteElement))
+          .onRouteExit();
+      currentRouteElement = null;
+    }
+
     const route = /** @type {!welcome.Routes} */ (history.state.route);
     const step = history.state.step;
     routeObservers.forEach((observer) => {
       (/** @type {{onRouteChange: Function}} */ (observer))
           .onRouteChange(route, step);
+
+      // Modules are only attached to DOM if they're for the current route, so
+      // as long as the id of an element matches up to the current step, it
+      // means that element is for the current route.
+      if (observer.id == `step-${step}`) {
+        currentRouteElement = observer;
+      }
     });
+
+    // If currentRouteElement is not null, it means there was a new route.
+    if (currentRouteElement) {
+      (/** @type {{onRouteEnter: Function}} */ (currentRouteElement))
+          .onRouteEnter();
+    }
   }
 
   // Notifies all elements when browser history is popped.
@@ -95,18 +117,35 @@ cr.define('welcome', function() {
     notifyObservers();
   }
 
-  /** @polymerBehavior */
+  /**
+   * Elements can override onRoute(Change|Enter|Exit) to handle route changes.
+   * Order of hooks being called:
+   *   1) onRouteExit() on the old route
+   *   2) onRouteChange() on all subscribed routes
+   *   3) onRouteEnter() on the new route
+   *
+   * @polymerBehavior
+   */
   const NavigationBehavior = {
     /** @override */
     attached: function() {
       assert(!routeObservers.has(this));
       routeObservers.add(this);
 
+      const route = /** @type {!welcome.Routes} */ (history.state.route);
+      const step = history.state.step;
+
       // history state was set when page loaded, so when the element first
       // attaches, call the route-change handler to initialize first.
-      this.onRouteChange(
-          /** @type {!welcome.Routes} */ (history.state.route),
-          history.state.step);
+      this.onRouteChange(route, step);
+
+      // Modules are only attached to DOM if they're for the current route, so
+      // as long as the id of an element matches up to the current step, it
+      // means that element is for the current route.
+      if (this.id == `step-${step}`) {
+        currentRouteElement = this;
+        this.onRouteEnter();
+      }
     },
 
     /** @override */
@@ -115,11 +154,14 @@ cr.define('welcome', function() {
     },
 
     /**
-     * Elements can override onRouteChange to handle route changes.
      * @param {!welcome.Routes} route
      * @param {number} step
      */
     onRouteChange: function(route, step) {},
+
+    onRouteEnter: function() {},
+
+    onRouteExit: function() {},
   };
 
   return {
