@@ -342,12 +342,7 @@ interface MyExtendedAttributeInterface {
  *      Promise(Promise)
  *        Type()
  *          Any()
- *  Operation(method4)
- *    Arguments()
- *    Type()
- *      Promise(Promise)
- *        Type()
- *          Any()
+ *  Error(Unexpected identifier "method4" after keyword "Promise".)
  */
 interface MyIfacePromise {
   Promise<void> method1();
