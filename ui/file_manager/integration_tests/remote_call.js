@@ -331,6 +331,25 @@ RemoteCall.prototype.waitForAFile = function(volumeType, name) {
 };
 
 /**
+ * Shorthand for clicking an element.
+ * @param {AppWindow} appWindow Application window.
+ * @param {string|!Array<string>} query Query to specify the element.
+ *     If query is an array, |query[0]| specifies the first
+ *     element(s), |query[1]| specifies elements inside the shadow DOM of
+ *     the first element, and so on.
+ * @param {Promise} Promise to be fulfilled with the clicked element.
+ */
+RemoteCall.prototype.waitAndClickElement = function(windowId, query) {
+  return this.waitForElement(windowId, query).then(element => {
+    return this.callRemoteTestUtil('fakeMouseClick', windowId, [query])
+        .then((result) => {
+          chrome.test.assertTrue(result, 'mouse click failed.');
+          return element;
+        });
+  });
+};
+
+/**
  * Class to manipulate the window in the remote extension.
  *
  * @param {string} extensionId ID of extension to be manipulated.
@@ -486,6 +505,8 @@ RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged = function(
 
 /**
  * Expands tree item.
+ * @param {string} windowId Target window ID.
+ * @param {string} query Query to the <tree-item> element.
  */
 RemoteCallFilesApp.prototype.expandTreeItemInDirectoryTree = function(
     windowId, query) {
@@ -500,11 +521,14 @@ RemoteCallFilesApp.prototype.expandTreeItemInDirectoryTree = function(
           return this.callRemoteTestUtil(
               'focus', windowId, ['#directory-tree']);
         }
-        // Expand directory volume and set the focus to directory tree.
-        // Focus to directory tree.
-        return this
-            .callRemoteTestUtil(
-                'fakeMouseClick', windowId, [`${query} .expand-icon`])
+
+        // We must wait until <tree-item> has attribute [has-children=true]
+        // otherwise it won't expand. We must also to account for the case
+        // :not([expanded]) to ensure it has NOT been expanded by some async
+        // operation since the [expanded] checks above.
+        const expandIcon = query +
+            ':not([expanded]) > .tree-row[has-children=true] > .expand-icon';
+        return this.waitAndClickElement(windowId, expandIcon)
             .then(() => {
               // Wait for the expansion to finish.
               return this.waitForElement(windowId, query + '[expanded]');
@@ -534,13 +558,14 @@ RemoteCallFilesApp.prototype.expandDirectoryTreeForInternal_ = function(
   if (index >= components.length - 1)
     return Promise.resolve();
 
+  // First time we should expand the root/volume first.
   if (index === 0) {
     return this.expandVolumeInDirectoryTree(windowId, volumeType).then(() => {
       return this.expandDirectoryTreeForInternal_(
           windowId, components, index + 1, volumeType);
     });
   }
-  const path = `/${components.slice(1, index + 1).join('/')}`;
+  const path = '/' + components.slice(1, index + 1).join('/');
   return this
       .expandTreeItemInDirectoryTree(
           windowId, `[full-path-for-testing="${path}"]`)
@@ -664,22 +689,6 @@ RemoteCallGallery.prototype.changeNameAndWait = function(windowId, newName) {
   return this.callRemoteTestUtil('changeName', windowId, [newName]
   ).then(function() {
     return this.waitForSlideImage(windowId, 0, 0, newName);
-  }.bind(this));
-};
-
-/**
- * Shorthand for clicking an element.
- * @param {AppWindow} appWindow Application window.
- * @param {string|!Array<string>} query Query to specify the element.
- *     If query is an array, |query[0]| specifies the first
- *     element(s), |query[1]| specifies elements inside the shadow DOM of
- *     the first element, and so on.
- * @param {Promise} Promise to be fulfilled with the clicked element.
- */
-RemoteCallGallery.prototype.waitAndClickElement = function(windowId, query) {
-  return this.waitForElement(windowId, query).then(function(element) {
-    return this.callRemoteTestUtil('fakeMouseClick', windowId, [query])
-    .then(function() { return element; });
   }.bind(this));
 };
 

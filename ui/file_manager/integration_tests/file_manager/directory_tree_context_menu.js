@@ -50,7 +50,7 @@ async function clickDirectoryTreeContextMenuItem(appId, path, id) {
 
   chrome.test.assertTrue(
       !!await remoteCall.callRemoteTestUtil('focus', appId, [pathQuery]),
-      'focus failed');
+      'focus failed: ' + pathQuery);
 
   // Right click photos directory.
   chrome.test.assertTrue(
@@ -156,7 +156,7 @@ async function createDirectoryFromDirectoryTree(
   } else {
     const downloadsQuery =
         '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
-    await remoteCall.expandDirectoryTreeFor(appId, downloadsQuery);
+    await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
   }
   if (useKeyboardShortcut) {
     await remoteCall.callRemoteTestUtil(
@@ -325,12 +325,7 @@ testcase.dirPasteWithoutChangingCurrent = async function() {
       '#directory-tree [entry-label="My files"] [entry-label="Downloads"]';
 
   const appId = await setupForDirectoryTreeContextMenuTest();
-  await remoteCall.expandDirectoryTreeFor(appId, downloadsQuery);
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil(
-          'fakeMouseClick', appId, [`${downloadsQuery} .expand-icon`]),
-      'click on expand icon failed');
-  await remoteCall.waitForElement(appId, downloadsQuery + '[expanded]');
+  await remoteCall.expandTreeItemInDirectoryTree(appId, downloadsQuery);
   await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
   await clickDirectoryTreeContextMenuItem(
       appId, RootPath.DOWNLOADS_PATH + '/photos', 'copy');
