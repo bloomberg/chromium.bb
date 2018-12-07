@@ -733,9 +733,11 @@ void LockContentsView::OnAuthEnabledForUserChanged(
 
   DCHECK(enabled || auth_reenabled_time);
   state->disable_auth = !enabled;
-  // TODO(crbug.com/845287): Reenable lock screen note when auth is reenabled.
-  if (state->disable_auth)
-    DisableLockScreenNote();
+  disable_lock_screen_note_ = state->disable_auth;
+  OnLockScreenNoteStateChanged(
+      disable_lock_screen_note_
+          ? mojom::TrayActionState::kNotAvailable
+          : Shell::Get()->tray_action()->GetLockScreenNoteState());
 
   LoginBigUserView* big_user =
       TryToFindBigUser(user, true /*require_auth_active*/);
@@ -1757,11 +1759,6 @@ void LockContentsView::SetDisplayStyle(DisplayStyle style) {
   main_view_->SetVisible(!show_expanded_view);
   top_header_->SetVisible(!show_expanded_view);
   Layout();
-}
-
-void LockContentsView::DisableLockScreenNote() {
-  disable_lock_screen_note_ = true;
-  OnLockScreenNoteStateChanged(mojom::TrayActionState::kNotAvailable);
 }
 
 void LockContentsView::RegisterAccelerators() {
