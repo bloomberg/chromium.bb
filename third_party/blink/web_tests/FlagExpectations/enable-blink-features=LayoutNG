@@ -375,6 +375,7 @@ crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touc
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/wheel/mainthread-touchpad-fling-latching.html [ Pass ]
 crbug.com/591099 virtual/new-remote-playback-pipeline/ [ Skip ]
+crbug.com/591099 virtual/not-blink-gen-property-trees/ [ Skip ]
 crbug.com/591099 virtual/omt-worker-fetch/external/wpt/workers/interfaces/WorkerUtils/navigator/language.html [ Pass ]
 crbug.com/591099 virtual/omt-worker-fetch/external/wpt/workers/semantics/multiple-workers/003.html [ Pass ]
 crbug.com/591099 virtual/omt-worker-fetch/external/wpt/workers/semantics/reporting-errors/002.html [ Pass ]
