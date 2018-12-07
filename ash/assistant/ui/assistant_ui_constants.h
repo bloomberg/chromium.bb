@@ -25,9 +25,8 @@ constexpr int kMarginDip = 8;
 constexpr int kUiElementHorizontalMarginDip = 32;
 
 // Typography.
-constexpr SkColor kTextColorHint = gfx::kGoogleGrey500;
+constexpr SkColor kTextColorHint = gfx::kGoogleGrey700;
 constexpr SkColor kTextColorPrimary = gfx::kGoogleGrey900;
-constexpr SkColor kTextColorSecondary = gfx::kGoogleGrey700;
 
 // TODO(dmblack): Move the other constants into ash::assistant::ui.
 namespace assistant {
