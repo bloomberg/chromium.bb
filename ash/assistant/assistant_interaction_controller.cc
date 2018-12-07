@@ -17,18 +17,24 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/services/assistant/public/features.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
 
 namespace {
+
+constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
 
 // Helpers ---------------------------------------------------------------------
 
@@ -598,19 +604,49 @@ void AssistantInteractionController::OnUiVisible(
       // Assistant UI will immediately start a voice interaction.
       const bool launch_with_mic_open =
           Shell::Get()->voice_interaction_controller()->launch_with_mic_open();
-      if (launch_with_mic_open || IsTabletMode())
+      if (launch_with_mic_open || IsTabletMode()) {
         StartVoiceInteraction();
+        // TODO(yileili): Currently WW is only allowed when user logins and the
+        // entrypoint does not automatically start a user interaction, e.g.
+        // stylus or hotword, to avoid WW interrupts the user interaction.
+        // Need further UX design if to attempt WW after the first interaction.
+        should_attempt_warmer_welcome_ = false;
+      }
       break;
     }
     case AssistantEntryPoint::kStylus:
       model_.SetInputModality(InputModality::kStylus);
-      break;
-    case AssistantEntryPoint::kUnspecified:
+      FALLTHROUGH;
     case AssistantEntryPoint::kDeepLink:
     case AssistantEntryPoint::kHotword:
+      should_attempt_warmer_welcome_ = false;
+      break;
+    case AssistantEntryPoint::kUnspecified:
     case AssistantEntryPoint::kSetup:
       // No action necessary.
       break;
+  }
+
+  if (should_attempt_warmer_welcome_) {
+    if (chromeos::assistant::features::IsWarmerWelcomeEnabled()) {
+      auto* pref_service =
+          Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+
+      DCHECK(pref_service);
+
+      auto num_warmer_welcome_triggered =
+          pref_service->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
+      if (num_warmer_welcome_triggered < kWarmerWelcomesMaxTimesTriggered) {
+        // TODO(b/120242181): If allow_tts is true, Assistant response updates
+        // mic and starts a new voice interaction automatically. A void voice
+        // input could return a communication error or empty response.
+        assistant_->StartWarmerWelcomeInteraction(num_warmer_welcome_triggered,
+                                                  /*allow_tts=*/false);
+        pref_service->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
+                                 ++num_warmer_welcome_triggered);
+      }
+    }
+    should_attempt_warmer_welcome_ = false;
   }
 }
 
