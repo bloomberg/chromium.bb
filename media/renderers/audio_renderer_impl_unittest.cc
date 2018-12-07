@@ -57,12 +57,8 @@ class MockMediaClient : public MediaClient {
       std::vector<std::unique_ptr<KeySystemProperties>>* key_systems) override {
   }
   bool IsKeySystemsUpdateNeeded() override { return false; }
-  bool IsSupportedAudioConfig(const AudioConfig& config) override {
-    return true;
-  }
-  bool IsSupportedVideoConfig(const VideoConfig& config) override {
-    return true;
-  }
+  bool IsSupportedAudioType(const AudioType& type) override { return true; }
+  bool IsSupportedVideoType(const VideoType& type) override { return true; }
   bool IsSupportedBitstreamAudioCodec(AudioCodec codec) override {
     return true;
   }

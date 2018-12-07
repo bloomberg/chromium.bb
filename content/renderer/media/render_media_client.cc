@@ -34,14 +34,12 @@ bool RenderMediaClient::IsKeySystemsUpdateNeeded() {
   return GetContentClient()->renderer()->IsKeySystemsUpdateNeeded();
 }
 
-bool RenderMediaClient::IsSupportedAudioConfig(
-    const media::AudioConfig& config) {
-  return GetContentClient()->renderer()->IsSupportedAudioConfig(config);
+bool RenderMediaClient::IsSupportedAudioType(const media::AudioType& type) {
+  return GetContentClient()->renderer()->IsSupportedAudioType(type);
 }
 
-bool RenderMediaClient::IsSupportedVideoConfig(
-    const media::VideoConfig& config) {
-  return GetContentClient()->renderer()->IsSupportedVideoConfig(config);
+bool RenderMediaClient::IsSupportedVideoType(const media::VideoType& type) {
+  return GetContentClient()->renderer()->IsSupportedVideoType(type);
 }
 
 bool RenderMediaClient::IsSupportedBitstreamAudioCodec(

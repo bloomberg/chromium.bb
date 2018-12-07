@@ -11,8 +11,8 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
-#include "media/base/media_client.h"
 #include "media/base/media_switches.h"
+#include "media/base/supported_types.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/media_buildflags.h"
@@ -911,37 +911,19 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
 
   AudioCodec audio_codec = MimeUtilToAudioCodec(codec);
   if (audio_codec != kUnknownAudioCodec) {
-    AudioConfig audio_config = {audio_codec};
-
-    // If MediaClient is provided use it to check for decoder support.
-    MediaClient* media_client = GetMediaClient();
-    if (media_client && !media_client->IsSupportedAudioConfig(audio_config))
-      return IsNotSupported;
-
-    // When no MediaClient is provided, assume default decoders are available
-    // as described by media::IsSupportedAudioConfig().
-    if (!media_client && !IsSupportedAudioConfig(audio_config))
+    if (!IsSupportedAudioType({audio_codec}))
       return IsNotSupported;
   }
 
   if (video_codec != kUnknownVideoCodec) {
-    VideoConfig video_config = {video_codec, video_profile, video_level,
-                                color_space};
-
-    // If MediaClient is provided use it to check for decoder support.
-    MediaClient* media_client = GetMediaClient();
-    if (media_client && !media_client->IsSupportedVideoConfig(video_config))
-      return IsNotSupported;
-
-    // When no MediaClient is provided, assume default decoders are available
-    // as described by media::IsSupportedVideoConfig().
-    if (!media_client && !IsSupportedVideoConfig(video_config))
+    if (!IsSupportedVideoType(
+            {video_codec, video_profile, video_level, color_space}))
       return IsNotSupported;
   }
 
 #if defined(OS_ANDROID)
   // TODO(chcunningham): Delete this. Android platform support should be
-  // handled by (android specific) media::IsSupportedVideoConfig() above.
+  // handled by (android specific) media::IsSupportedVideoType() above.
   if (!IsCodecSupportedOnAndroid(codec, mime_type_lower_case, is_encrypted,
                                  platform_info_)) {
     return IsNotSupported;
