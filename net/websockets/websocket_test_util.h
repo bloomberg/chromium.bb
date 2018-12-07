@@ -222,11 +222,9 @@ class TestWebSocketHandshakeStreamCreateHelper
  public:
   // Constructor for using dummy ConnectDelegate and WebSocketStreamRequestAPI.
   TestWebSocketHandshakeStreamCreateHelper()
-      : WebSocketHandshakeStreamCreateHelper(
-            &connect_delegate_,
-            std::vector<std::string>() /* requested_subprotocols */) {
-    WebSocketHandshakeStreamCreateHelper::set_stream_request(&request_);
-  }
+      : WebSocketHandshakeStreamCreateHelper(&connect_delegate_,
+                                             /* requested_subprotocols = */ {},
+                                             &request_) {}
 
   ~TestWebSocketHandshakeStreamCreateHelper() override = default;
 

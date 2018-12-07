@@ -131,9 +131,8 @@ class WebSocketHandshakeStreamCreateHelperTest
     const GURL url("wss://www.example.org/");
     NetLogWithSource net_log;
 
-    WebSocketHandshakeStreamCreateHelper create_helper(&connect_delegate_,
-                                                       sub_protocols);
-    create_helper.set_stream_request(&stream_request_);
+    WebSocketHandshakeStreamCreateHelper create_helper(
+        &connect_delegate_, sub_protocols, &stream_request_);
 
     switch (GetParam()) {
       case BASIC_HANDSHAKE_STREAM:

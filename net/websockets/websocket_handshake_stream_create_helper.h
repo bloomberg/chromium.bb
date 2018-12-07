@@ -30,10 +30,11 @@ class WebSocketEndpointLockManager;
 class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
     : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  // |connect_delegate| must out-live this object.
-  explicit WebSocketHandshakeStreamCreateHelper(
+  // |*connect_delegate| and |*request| must out-live this object.
+  WebSocketHandshakeStreamCreateHelper(
       WebSocketStream::ConnectDelegate* connect_delegate,
-      const std::vector<std::string>& requested_subprotocols);
+      const std::vector<std::string>& requested_subprotocols,
+      WebSocketStreamRequestAPI* request);
 
   ~WebSocketHandshakeStreamCreateHelper() override;
 
@@ -49,21 +50,10 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateHttp2Stream(
       base::WeakPtr<SpdySession> session) override;
 
-  // WebSocketHandshakeStreamCreateHelper methods
-
-  // This method must be called before calling CreateBasicStream()
-  // or CreateHttp2Stream().
-  // The |request| pointer must remain valid as long as this object exists.
-  void set_stream_request(WebSocketStreamRequestAPI* request) {
-    request_ = request;
-  }
-
  private:
+  WebSocketStream::ConnectDelegate* const connect_delegate_;
   const std::vector<std::string> requested_subprotocols_;
-
-  WebSocketStream::ConnectDelegate* connect_delegate_;
-
-  WebSocketStreamRequestAPI* request_;
+  WebSocketStreamRequestAPI* const request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketHandshakeStreamCreateHelper);
 };

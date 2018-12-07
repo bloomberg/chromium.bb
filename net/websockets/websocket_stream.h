@@ -43,7 +43,6 @@ class URLRequestContext;
 struct WebSocketFrame;
 class WebSocketBasicHandshakeStream;
 class WebSocketHttp2HandshakeStream;
-class WebSocketHandshakeStreamCreateHelper;
 
 // WebSocketStreamRequest is the caller's handle to the process of creation of a
 // WebSocketStream. Deleting the object before the ConnectDelegate OnSuccess or
@@ -151,7 +150,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   // it is safe to delete.
   static std::unique_ptr<WebSocketStreamRequest> CreateAndConnectStream(
       const GURL& socket_url,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+      const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
       const HttpRequestHeaders& additional_headers,
@@ -166,7 +165,7 @@ class NET_EXPORT_PRIVATE WebSocketStream {
   static std::unique_ptr<WebSocketStreamRequest>
   CreateAndConnectStreamForTesting(
       const GURL& socket_url,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+      const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
       const HttpRequestHeaders& additional_headers,

@@ -38,7 +38,6 @@ class URLRequest;
 class URLRequestContext;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
-class WebSocketHandshakeStreamCreateHelper;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -51,7 +50,7 @@ class NET_EXPORT WebSocketChannel {
   // WebSocketStream::CreateAndConnectStream().
   typedef base::Callback<std::unique_ptr<WebSocketStreamRequest>(
       const GURL&,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper>,
+      const std::vector<std::string>&,
       const url::Origin&,
       const GURL&,
       const HttpRequestHeaders&,
