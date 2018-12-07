@@ -322,6 +322,13 @@ TEST_F(ScriptPreconditionTest, FormValueMatch) {
   match->mutable_element()->add_selectors("exists");
   EXPECT_TRUE(Check(proto));
 
+  match->set_value("bar");
+  EXPECT_FALSE(Check(proto));
+
+  match->set_value("foo");
+  EXPECT_TRUE(Check(proto));
+
+  match->clear_value();
   match->mutable_element()->set_selectors(0, "does_not_exist");
   EXPECT_FALSE(Check(proto));
 }
