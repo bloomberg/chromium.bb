@@ -53,7 +53,7 @@ class UI_BASE_IME_EXPORT MockInputMethodManager
     void SetInputMethodLoginDefaultFromVPD(const std::string& locale,
                                            const std::string& layout) override;
     void SwitchToNextInputMethod() override;
-    void SwitchToPreviousInputMethod() override;
+    void SwitchToLastUsedInputMethod() override;
     InputMethodDescriptor GetCurrentInputMethod() const override;
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;

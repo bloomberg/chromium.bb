@@ -26,8 +26,8 @@ void TestImeControllerClient::SwitchToNextIme() {
   ++next_ime_count_;
 }
 
-void TestImeControllerClient::SwitchToPreviousIme() {
-  ++previous_ime_count_;
+void TestImeControllerClient::SwitchToLastUsedIme() {
+  ++last_used_ime_count_;
 }
 
 void TestImeControllerClient::SwitchImeById(const std::string& id,

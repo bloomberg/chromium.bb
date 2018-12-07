@@ -38,7 +38,7 @@ class ImeControllerClient
 
   // ash::mojom::ImeControllerClient:
   void SwitchToNextIme() override;
-  void SwitchToPreviousIme() override;
+  void SwitchToLastUsedIme() override;
   void SwitchImeById(const std::string& id, bool show_message) override;
   void ActivateImeMenuItem(const std::string& key) override;
   void SetCapsLockEnabled(bool caps_enabled) override;

@@ -325,7 +325,7 @@ bool CanHandleCycleMru(const ui::Accelerator& accelerator) {
   return !keyboard::KeyboardController::Get()->IsKeyboardVisible();
 }
 
-void HandleNextIme() {
+void HandleSwitchToNextIme() {
   base::RecordAction(UserMetricsAction("Accel_Next_Ime"));
   RecordImeSwitchByAccelerator();
   Shell::Get()->ime_controller()->SwitchToNextIme();
@@ -336,11 +336,11 @@ void HandleOpenFeedbackPage() {
   Shell::Get()->new_window_controller()->OpenFeedbackPage();
 }
 
-void HandlePreviousIme(const ui::Accelerator& accelerator) {
+void HandleSwitchToLastUsedIme(const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Previous_Ime"));
   if (accelerator.key_state() == ui::Accelerator::KeyState::PRESSED) {
     RecordImeSwitchByAccelerator();
-    Shell::Get()->ime_controller()->SwitchToPreviousIme();
+    Shell::Get()->ime_controller()->SwitchToLastUsedIme();
   }
   // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
 }
@@ -1298,10 +1298,6 @@ bool AcceleratorController::CanPerformAction(
           CanHandleMoveActiveWindowBetweenDisplays();
     case NEW_INCOGNITO_WINDOW:
       return CanHandleNewIncognitoWindow();
-    case NEXT_IME:
-      return CanCycleInputMethod();
-    case PREVIOUS_IME:
-      return CanCycleInputMethod();
     case ROTATE_SCREEN:
       return true;
     case SCALE_UI_DOWN:
@@ -1316,6 +1312,10 @@ bool AcceleratorController::CanPerformAction(
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
     case SWITCH_IME:
       return CanHandleSwitchIme(accelerator);
+    case SWITCH_TO_NEXT_IME:
+      return CanCycleInputMethod();
+    case SWITCH_TO_LAST_USED_IME:
+      return CanCycleInputMethod();
     case SWITCH_TO_PREVIOUS_USER:
     case SWITCH_TO_NEXT_USER:
       return CanHandleCycleUser();
@@ -1561,9 +1561,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case NEW_WINDOW:
       HandleNewWindow();
       break;
-    case NEXT_IME:
-      HandleNextIme();
-      break;
     case OPEN_CROSH:
       HandleCrosh();
       break;
@@ -1588,9 +1585,6 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       // (power button events are reported to us from powerm via
       // D-BUS), but we consume them to prevent them from getting
       // passed to apps -- see http://crbug.com/146609.
-      break;
-    case PREVIOUS_IME:
-      HandlePreviousIme(accelerator);
       break;
     case PRINT_UI_HIERARCHIES:
       debug::PrintUIHierarchies();
@@ -1636,6 +1630,12 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case SWITCH_IME:
       HandleSwitchIme(accelerator);
+      break;
+    case SWITCH_TO_LAST_USED_IME:
+      HandleSwitchToLastUsedIme(accelerator);
+      break;
+    case SWITCH_TO_NEXT_IME:
+      HandleSwitchToNextIme();
       break;
     case SWITCH_TO_NEXT_USER:
       HandleCycleUser(CycleUserDirection::NEXT);
