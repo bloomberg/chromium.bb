@@ -163,8 +163,6 @@ typedef struct AV1Decoder {
 
   DECLARE_ALIGNED(32, AV1_COMMON, common);
 
-  int refresh_frame_flags;
-
   AVxWorker lf_worker;
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;

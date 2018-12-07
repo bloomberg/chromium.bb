@@ -4522,6 +4522,72 @@ static int encode_without_recode_loop(AV1_COMP *cpi) {
   return AOM_CODEC_OK;
 }
 
+static int get_refresh_frame_flags(const AV1_COMP *const cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+
+  // Switch frames and shown key-frames overwrite all reference slots
+  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
+      frame_is_sframe(cm))
+    return 0xFF;
+
+  int refresh_mask = 0;
+
+  // NOTE(zoeliu): When LAST_FRAME is to get refreshed, the decoder will be
+  // notified to get LAST3_FRAME refreshed and then the virtual indexes for all
+  // the 3 LAST reference frames will be updated accordingly, i.e.:
+  // (1) The original virtual index for LAST3_FRAME will become the new virtual
+  //     index for LAST_FRAME; and
+  // (2) The original virtual indexes for LAST_FRAME and LAST2_FRAME will be
+  //     shifted and become the new virtual indexes for LAST2_FRAME and
+  //     LAST3_FRAME.
+  refresh_mask |=
+      (cpi->refresh_last_frame << get_ref_frame_map_idx(cm, LAST3_FRAME));
+
+#if USE_SYMM_MULTI_LAYER
+  const int bwd_ref_frame =
+      (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
+#else
+  const int bwd_ref_frame = BWDREF_FRAME;
+#endif
+  refresh_mask |=
+      (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cm, bwd_ref_frame));
+
+  refresh_mask |=
+      (cpi->refresh_alt2_ref_frame << get_ref_frame_map_idx(cm, ALTREF2_FRAME));
+
+  if (av1_preserve_existing_gf(cpi)) {
+    // We have decided to preserve the previously existing golden frame as our
+    // new ARF frame. However, in the short term we leave it in the GF slot and,
+    // if we're updating the GF with the current decoded frame, we save it
+    // instead to the ARF slot.
+    // Later, in the function av1_encoder.c:av1_update_reference_frames() we
+    // will swap gld_fb_idx and alt_fb_idx to achieve our objective. We do it
+    // there so that it can be done outside of the recode loop.
+    // Note: This is highly specific to the use of ARF as a forward reference,
+    // and this needs to be generalized as other uses are implemented
+    // (like RTC/temporal scalability).
+
+    if (!cpi->preserve_arf_as_gld) {
+      refresh_mask |= (cpi->refresh_golden_frame
+                       << get_ref_frame_map_idx(cm, ALTREF_FRAME));
+    }
+  } else {
+    refresh_mask |=
+        (cpi->refresh_golden_frame << get_ref_frame_map_idx(cm, GOLDEN_FRAME));
+    refresh_mask |=
+        (cpi->refresh_alt_ref_frame << get_ref_frame_map_idx(cm, ALTREF_FRAME));
+  }
+  return refresh_mask;
+}
+
+static void finalize_encoded_frame(AV1_COMP *const cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+
+  // This bitfield indicates which reference frame slots will be overwritten by
+  // the current frame
+  cm->current_frame.refresh_frame_flags = get_refresh_frame_flags(cpi);
+}
+
 static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
@@ -4632,6 +4698,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     if (cpi->sf.recode_loop >= ALLOW_RECODE_KFARFGF) {
       restore_coding_context(cpi);
 
+      finalize_encoded_frame(cpi);
       if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
         return AOM_CODEC_ERROR;
 
@@ -5054,6 +5121,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     restore_coding_context(cpi);
 
+    finalize_encoded_frame(cpi);
     // Build the bitstream
     if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
@@ -5266,6 +5334,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   aom_write_one_yuv_frame(cm, &cm->cur_frame->buf);
 #endif
 
+  finalize_encoded_frame(cpi);
   // Build the bitstream
   if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
@@ -5274,11 +5343,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   if (skip_adapt) return AOM_CODEC_OK;
 
+  // Update reference frame ids for reference frames this frame will overwrite
   if (seq_params->frame_id_numbers_present_flag) {
-    int i;
-    // Update reference frame id values based on the value of refresh_frame_mask
-    for (i = 0; i < REF_FRAMES; i++) {
-      if ((cpi->refresh_frame_mask >> i) & 1) {
+    for (int i = 0; i < REF_FRAMES; i++) {
+      if ((current_frame->refresh_frame_flags >> i) & 1) {
         cm->ref_frame_id[i] = cm->current_frame_id;
       }
     }

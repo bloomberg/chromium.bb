@@ -315,6 +315,7 @@ typedef struct {
   unsigned int order_hint;
   unsigned int frame_number;
   SkipModeInfo skip_mode_info;
+  int refresh_frame_flags;  // Which ref frames are overwritten by this frame
 } CurrentFrame;
 
 typedef struct AV1Common {

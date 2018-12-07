@@ -908,7 +908,8 @@ static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
       AVxWorker *const worker = ctx->frame_workers;
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
-      *update_info = frame_worker_data->pbi->refresh_frame_flags;
+      *update_info =
+          frame_worker_data->pbi->common.current_frame.refresh_frame_flags;
       return AOM_CODEC_OK;
     } else {
       return AOM_CODEC_ERROR;

@@ -358,14 +358,15 @@ static void swap_frame_buffers(AV1Decoder *pbi, int frame_decoded) {
     if (!pbi->camera_frame_header_ready) {
       // If we are not holding reference buffers in cm->next_ref_frame_map,
       // assert that the following two for loops are no-ops.
-      assert(IMPLIES(!pbi->hold_ref_buf, pbi->refresh_frame_flags == 0));
+      assert(IMPLIES(!pbi->hold_ref_buf,
+                     cm->current_frame.refresh_frame_flags == 0));
       assert(IMPLIES(!pbi->hold_ref_buf,
                      cm->show_existing_frame && !cm->reset_decoder_state));
 
       // The following two for loops need to release the reference stored in
       // cm->ref_frame_map[ref_index] before transferring the reference stored
       // in cm->next_ref_frame_map[ref_index] to cm->ref_frame_map[ref_index].
-      for (mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+      for (mask = cm->current_frame.refresh_frame_flags; mask; mask >>= 1) {
         decrease_ref_count(cm->ref_frame_map[ref_index], pool);
         cm->ref_frame_map[ref_index] = cm->next_ref_frame_map[ref_index];
         cm->next_ref_frame_map[ref_index] = NULL;

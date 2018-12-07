@@ -2190,65 +2190,6 @@ static void write_ext_tile_info(const AV1_COMMON *const cm,
   }
 }
 
-static int get_refresh_mask(AV1_COMP *cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-
-  if ((cm->current_frame.frame_type == KEY_FRAME && cm->show_frame) ||
-      frame_is_sframe(cm))
-    return 0xFF;
-
-  int refresh_mask = 0;
-
-  // NOTE(zoeliu): When LAST_FRAME is to get refreshed, the decoder will be
-  // notified to get LAST3_FRAME refreshed and then the virtual indexes for all
-  // the 3 LAST reference frames will be updated accordingly, i.e.:
-  // (1) The original virtual index for LAST3_FRAME will become the new virtual
-  //     index for LAST_FRAME; and
-  // (2) The original virtual indexes for LAST_FRAME and LAST2_FRAME will be
-  //     shifted and become the new virtual indexes for LAST2_FRAME and
-  //     LAST3_FRAME.
-  refresh_mask |=
-      (cpi->refresh_last_frame << get_ref_frame_map_idx(cm, LAST3_FRAME));
-
-#if USE_SYMM_MULTI_LAYER
-  const int bwd_ref_frame =
-      (cpi->new_bwdref_update_rule == 1) ? EXTREF_FRAME : BWDREF_FRAME;
-#else
-  const int bwd_ref_frame = BWDREF_FRAME;
-#endif
-  refresh_mask |=
-      (cpi->refresh_bwd_ref_frame << get_ref_frame_map_idx(cm, bwd_ref_frame));
-
-  refresh_mask |=
-      (cpi->refresh_alt2_ref_frame << get_ref_frame_map_idx(cm, ALTREF2_FRAME));
-
-  if (av1_preserve_existing_gf(cpi)) {
-    // We have decided to preserve the previously existing golden frame as our
-    // new ARF frame. However, in the short term we leave it in the GF slot and,
-    // if we're updating the GF with the current decoded frame, we save it
-    // instead to the ARF slot.
-    // Later, in the function av1_encoder.c:av1_update_reference_frames() we
-    // will swap gld_fb_idx and alt_fb_idx to achieve our objective. We do it
-    // there so that it can be done outside of the recode loop.
-    // Note: This is highly specific to the use of ARF as a forward reference,
-    // and this needs to be generalized as other uses are implemented
-    // (like RTC/temporal scalability).
-
-    if (cpi->preserve_arf_as_gld) {
-      return refresh_mask;
-    } else {
-      return refresh_mask | (cpi->refresh_golden_frame
-                             << get_ref_frame_map_idx(cm, ALTREF_FRAME));
-    }
-  } else {
-    const int arf_idx = get_ref_frame_map_idx(cm, ALTREF_FRAME);
-    return refresh_mask |
-           (cpi->refresh_golden_frame
-            << get_ref_frame_map_idx(cm, GOLDEN_FRAME)) |
-           (cpi->refresh_alt_ref_frame << arf_idx);
-  }
-}
-
 static INLINE int find_identical_tile(
     const int tile_row, const int tile_col,
     TileBufferEnc (*const tile_buffers)[MAX_TILE_COLS]) {
@@ -3018,63 +2959,33 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       }
     }
   }
-  cpi->refresh_frame_mask = get_refresh_mask(cpi);
-  if (current_frame->frame_type == KEY_FRAME) {
-    if (!cm->show_frame) {  // unshown keyframe (forward keyframe)
-      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-    } else {
-      assert(cpi->refresh_frame_mask == 0xFF);
-    }
-  } else {
-    if (current_frame->frame_type == INTRA_ONLY_FRAME) {
-      assert(cpi->refresh_frame_mask != 0xFF);
-      int updated_fb = -1;
-      for (int i = 0; i < REF_FRAMES; i++) {
-        // If more than one frame is refreshed, it doesn't matter which one
-        // we pick, so pick the first.
-        if (cpi->refresh_frame_mask & (1 << i)) {
-          updated_fb = i;
-          break;
-        }
-      }
-      assert(updated_fb >= 0);
-      cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
-      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-    } else if (current_frame->frame_type == INTER_FRAME ||
-               frame_is_sframe(cm)) {
-      if (current_frame->frame_type == INTER_FRAME) {
-        aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-      } else {
-        assert(frame_is_sframe(cm) && cpi->refresh_frame_mask == 0xFF);
-      }
-      int updated_fb = -1;
-      for (int i = 0; i < REF_FRAMES; i++) {
-        // If more than one frame is refreshed, it doesn't matter which one
-        // we pick, so pick the first.
-        if (cpi->refresh_frame_mask & (1 << i)) {
-          updated_fb = i;
-          break;
-        }
-      }
-      // large scale tile sometimes won't refresh any fbs
-      if (updated_fb >= 0) {
-        cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
+
+  // Shown keyframes and switch-frames automatically refreshes all reference
+  // frames.  For all other frame types, we need to write refresh_frame_flags.
+  if ((current_frame->frame_type == KEY_FRAME && !cm->show_frame) ||
+      current_frame->frame_type == INTER_FRAME ||
+      current_frame->frame_type == INTRA_ONLY_FRAME)
+    aom_wb_write_literal(wb, current_frame->refresh_frame_flags, REF_FRAMES);
+
+  // For non-keyframes, we need to update the buffer of reference frame ids.
+  // If more than one frame is refreshed, it doesn't matter which one we pick,
+  // so pick the first.  LST sometimes doesn't refresh any: this is ok
+  if (current_frame->frame_type != KEY_FRAME) {
+    for (int i = 0; i < REF_FRAMES; i++) {
+      if (current_frame->refresh_frame_flags & (1 << i)) {
+        cm->fb_of_context_type[cm->frame_context_idx] = i;
+        break;
       }
     }
   }
 
-  if (!frame_is_intra_only(cm) || cpi->refresh_frame_mask != 0xFF) {
+  if (!frame_is_intra_only(cm) || current_frame->refresh_frame_flags != 0xff) {
     // Write all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode &&
         seq_params->order_hint_info.enable_order_hint) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
-        // Get buffer index
-        const RefCntBuffer *buf = cm->ref_frame_map[ref_idx];
-        assert(buf != NULL);
-
-        // Write order hint to bit stream
         aom_wb_write_literal(
-            wb, buf->order_hint,
+            wb, cm->ref_frame_map[ref_idx]->order_hint,
             seq_params->order_hint_info.order_hint_bits_minus_1 + 1);
       }
     }

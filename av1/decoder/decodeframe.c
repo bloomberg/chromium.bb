@@ -4696,7 +4696,7 @@ static void generate_next_ref_frame_map(AV1Decoder *const pbi) {
   // frame buffer index in cm->next_ref_frame_map, we need to increase the
   // frame buffer's ref_count.
   int ref_index = 0;
-  for (int mask = pbi->refresh_frame_flags; mask; mask >>= 1) {
+  for (int mask = cm->current_frame.refresh_frame_flags; mask; mask >>= 1) {
     if (mask & 1) {
       cm->next_ref_frame_map[ref_index] = cm->cur_frame;
     } else {
@@ -4724,7 +4724,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
 
   cm->current_frame.frame_type = KEY_FRAME;
 
-  pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
+  cm->current_frame.refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
   for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
     cm->remapped_ref_idx[i] = INVALID_IDX;
@@ -4741,7 +4741,7 @@ static void show_existing_frame_reset(AV1Decoder *const pbi,
        Note that the displayed frame be valid for referencing
        in order to have been selected.
     */
-    int refresh_frame_flags = pbi->refresh_frame_flags;
+    int refresh_frame_flags = cm->current_frame.refresh_frame_flags;
     int display_frame_id = cm->ref_frame_id[existing_frame_idx];
     for (int i = 0; i < REF_FRAMES; i++) {
       if ((refresh_frame_flags >> i) & 1) {
@@ -4870,7 +4870,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       if (cm->reset_decoder_state) {
         show_existing_frame_reset(pbi, existing_frame_idx);
       } else {
-        pbi->refresh_frame_flags = 0;
+        current_frame->refresh_frame_flags = 0;
       }
 
       return 0;
@@ -5015,10 +5015,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   }
   if (current_frame->frame_type == KEY_FRAME) {
-    if (!cm->show_frame)  // unshown keyframe (forward keyframe)
-      pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
-    else  // shown keyframe
-      pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
+    if (!cm->show_frame) {  // unshown keyframe (forward keyframe)
+      current_frame->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+    } else {  // shown keyframe
+      current_frame->refresh_frame_flags = (1 << REF_FRAMES) - 1;
+    }
 
     for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
       cm->remapped_ref_idx[i] = INVALID_IDX;
@@ -5029,8 +5030,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
   } else {
     if (current_frame->frame_type == INTRA_ONLY_FRAME) {
-      pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
-      if (pbi->refresh_frame_flags == 0xFF) {
+      current_frame->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+      if (current_frame->refresh_frame_flags == 0xFF) {
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Intra only frames cannot have refresh flags 0xFF");
       }
@@ -5039,12 +5040,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         pbi->need_resync = 0;
       }
     } else if (pbi->need_resync != 1) { /* Skip if need resync */
-      pbi->refresh_frame_flags =
+      current_frame->refresh_frame_flags =
           frame_is_sframe(cm) ? 0xFF : aom_rb_read_literal(rb, REF_FRAMES);
     }
   }
 
-  if (!frame_is_intra_only(cm) || pbi->refresh_frame_flags != 0xFF) {
+  if (!frame_is_intra_only(cm) || current_frame->refresh_frame_flags != 0xFF) {
     // Read all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode &&
         seq_params->order_hint_info.enable_order_hint) {
@@ -5229,7 +5230,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (seq_params->frame_id_numbers_present_flag) {
     /* If bitmask is set, update reference frame id values and
        mark frames as valid for reference */
-    int refresh_frame_flags = pbi->refresh_frame_flags;
+    int refresh_frame_flags = current_frame->refresh_frame_flags;
     for (int i = 0; i < REF_FRAMES; i++) {
       if ((refresh_frame_flags >> i) & 1) {
         cm->ref_frame_id[i] = cm->current_frame_id;
