@@ -226,14 +226,15 @@ PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
   double start_time_monotonic =
       performance_->GetTimeOrigin() + start_time / 1000.0;
   double end_time_monotonic = performance_->GetTimeOrigin() + end_time / 1000.0;
+  unsigned hash = WTF::StringHash::GetHash(measure_name);
+  WTF::AddFloatToHash(hash, start_time);
+  WTF::AddFloatToHash(hash, end_time);
 
   TRACE_EVENT_COPY_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(),
-      WTF::StringHash::GetHash(measure_name),
+      "blink.user_timing", measure_name.Utf8().data(), hash,
       trace_event::ToTraceTimestamp(start_time_monotonic));
   TRACE_EVENT_COPY_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-      "blink.user_timing", measure_name.Utf8().data(),
-      WTF::StringHash::GetHash(measure_name),
+      "blink.user_timing", measure_name.Utf8().data(), hash,
       trace_event::ToTraceTimestamp(end_time_monotonic));
 
   PerformanceMeasure* measure = PerformanceMeasure::Create(
