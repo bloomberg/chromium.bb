@@ -133,7 +133,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='authpolicyd', gid=254, users={'authpolicyd',
                                                     'authpolicyd-exec'}),
     GroupEntry(group='scanner', gid=255, users={'saned'}),
-    GroupEntry(group='uinput', gid=258, users={'bluetooth', 'volume'}),
+    GroupEntry(group='uinput', gid=258, users={'bluetooth', 'volume', 'biod'}),
     GroupEntry(group='apmanager', gid=259, users={'apmanager', 'buffet'}),
     GroupEntry(group='peerd', gid=260, users={'buffet', 'chronos', 'peerd'}),
     GroupEntry(group='buffet', gid=264, users={'chronos', 'buffet', 'power'}),
