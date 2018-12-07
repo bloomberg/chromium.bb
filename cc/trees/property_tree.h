@@ -625,8 +625,8 @@ class CC_EXPORT PropertyTrees final {
   // respective property node. This will eventually allow simplifying logic in
   // various places that today has to map from element id to layer id, and then
   // from layer id to the respective property node. Completing that work is
-  // pending the launch of Slimming Paint v2 and reworking UI compositor logic
-  // to produce cc property trees and these maps.
+  // pending the launch of BlinkGenPropertyTrees and reworking UI compositor
+  // logic to produce cc property trees and these maps.
   base::flat_map<ElementId, int> element_id_to_effect_node_index;
   base::flat_map<ElementId, int> element_id_to_scroll_node_index;
   base::flat_map<ElementId, int> element_id_to_transform_node_index;

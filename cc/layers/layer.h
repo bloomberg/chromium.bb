@@ -851,9 +851,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void UpdateScrollOffset(const gfx::ScrollOffset&);
 
   // Encapsulates all data, callbacks or interfaces received from the embedder.
-  // TODO(khushalsagar): This is only valid when PropertyTrees are built
-  // internally in cc. Update this for the SPv2 path where blink generates
-  // PropertyTrees.
   struct Inputs {
     explicit Inputs(int layer_id);
     ~Inputs();
