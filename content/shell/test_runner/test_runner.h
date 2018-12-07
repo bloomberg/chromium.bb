@@ -168,8 +168,6 @@ class TestRunner : public WebTestRunner {
 
   bool ShouldDumpJavaScriptDialogs() const;
 
-  void SetShouldUseInnerTextDump(bool value);
-
   blink::WebEffectiveConnectionType effective_connection_type() const {
     return effective_connection_type_;
   }
