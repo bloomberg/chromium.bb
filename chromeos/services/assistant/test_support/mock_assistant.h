@@ -29,6 +29,8 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD0(StartVoiceInteraction, void());
 
+  MOCK_METHOD2(StartWarmerWelcomeInteraction, void(int, bool));
+
   MOCK_METHOD1(StopActiveInteraction, void(bool));
 
   MOCK_METHOD1(
