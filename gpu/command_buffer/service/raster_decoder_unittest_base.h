@@ -250,6 +250,8 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
   gles2::TraceOutputter outputter_;
   std::unique_ptr<MockRasterDecoder> mock_decoder_;
+  std::unique_ptr<FakeCommandBufferServiceBase>
+      command_buffer_service_for_mock_decoder_;
   std::unique_ptr<RasterDecoder> decoder_;
 
   GLuint client_texture_id_;

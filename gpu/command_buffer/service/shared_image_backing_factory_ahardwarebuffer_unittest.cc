@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -56,6 +57,7 @@ class SharedImageBackingFactoryAHBTest : public testing::Test {
         std::move(share_group), surface_, context_,
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
+    context_state_->InitializeGL(workarounds, GpuFeatureInfo());
 
     memory_type_tracker_ = std::make_unique<MemoryTypeTracker>(nullptr);
     shared_image_representation_factory_ =

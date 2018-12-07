@@ -8,6 +8,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -38,6 +39,7 @@ class GrCacheControllerTest : public testing::Test {
         std::move(share_group), std::move(surface), std::move(context),
         false /* use_virtualized_gl_contexts */, base::DoNothing());
     context_state_->InitializeGrContext(workarounds, nullptr);
+    context_state_->InitializeGL(workarounds, GpuFeatureInfo());
 
     controller_ =
         std::make_unique<GrCacheController>(context_state_.get(), task_runner_);
