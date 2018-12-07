@@ -171,8 +171,8 @@ class AutofillCapturedSitesInteractiveTest
           type == autofill::CREDIT_CARD_NAME_LAST) {
         card_.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
                          base::ASCIIToUTF16(""));
-        card_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
       }
+      card_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
     } else {
       profile_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
     }
