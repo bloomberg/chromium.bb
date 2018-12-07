@@ -78,5 +78,5 @@ public class UrlConstants {
             "https://myactivity.google.com/myactivity/?utm_source=chrome_h";
 
     public static final String EXPLORE_HOST = "explore";
-    public static final String EXPLORE_URL = "chrome-native://explore";
+    public static final String EXPLORE_URL = "chrome-native://explore/";
 }
