@@ -6240,7 +6240,7 @@ fuzzer_test("net_spdy_session_fuzzer") {
 
 fuzzer_test("net_http2_frame_decoder_fuzzer") {
   sources = [
-    "third_party/http2/decoder/http2_frame_decoder_fuzzer.cc",
+    "spdy/fuzzing/http2_frame_decoder_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
@@ -6252,7 +6252,7 @@ fuzzer_test("net_http2_frame_decoder_fuzzer") {
 
 fuzzer_test("net_hpack_decoder_fuzzer") {
   sources = [
-    "third_party/http2/hpack/decoder/hpack_decoder_fuzzer.cc",
+    "spdy/fuzzing/hpack_decoder_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
