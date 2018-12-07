@@ -224,7 +224,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLsdPermissionPrompt;
 
 #if defined(OS_MACOSX)
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kMacRTL;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacFullSizeContentView;
 #endif

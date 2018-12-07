@@ -1801,9 +1801,6 @@ extern const char kHostedAppsInWindowsDescription[];
 extern const char kCreateAppWindowsInAppShimProcessName[];
 extern const char kCreateAppWindowsInAppShimProcessDescription[];
 
-extern const char kMacRTLName[];
-extern const char kMacRTLDescription[];
-
 extern const char kMacTouchBarName[];
 extern const char kMacTouchBarDescription[];
 
