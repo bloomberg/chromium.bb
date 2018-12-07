@@ -67,13 +67,6 @@ interface Assistant {
   // Invoked when accessibility status is changed. Note that though
   // accessibility status has changed, |spoken_feedback_enabled| may not have.
   OnAccessibilityStatusChanged(bool spoken_feedback_enabled);
-
-  // ===== Timer management methods =====
-  // Stops timer or alarm ringing.
-  StopRinging();
-
-  // Add |extra_time| to the timer |timer_id|.
-  AddTimeToTimer(string timer_id, mojo_base.mojom.TimeDelta extra_time);
 };
 
 // Subscribes to assistant's interaction event. These events are server driven

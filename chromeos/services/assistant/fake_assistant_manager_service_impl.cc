@@ -89,10 +89,5 @@ void FakeAssistantManagerServiceImpl::CacheScreenContext(
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}
 
-void FakeAssistantManagerServiceImpl::StopRinging() {}
-void FakeAssistantManagerServiceImpl::AddTimeToTimer(
-    const std::string& timer_id,
-    base::TimeDelta extra_time) {}
-
 }  // namespace assistant
 }  // namespace chromeos

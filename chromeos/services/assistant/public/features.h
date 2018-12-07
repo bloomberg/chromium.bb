@@ -11,20 +11,8 @@ namespace chromeos {
 namespace assistant {
 namespace features {
 
-// Enables Assistant alarm timer manager integration.
-extern const base::Feature kAssistantAlarmTimerManagerFeature;
-
-// Enables Assistant timer notificaiton.
-extern const base::Feature kAssistantTimerNotificationFeature;
-
 // Enables Assistant voice match enrollment.
 extern const base::Feature kAssistantVoiceMatch;
-
-// Chrome OS Assistant Dogfood.
-extern const base::Feature kChromeOSAssistantDogfood;
-
-// Enable Assistant warmer welcome.
-extern const base::Feature kAssistantWarmerWelcomeFeature;
 
 // Enables DSP for hotword detection.
 extern const base::Feature kEnableDspHotword;

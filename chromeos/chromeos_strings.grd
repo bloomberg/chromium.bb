@@ -139,12 +139,6 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASSISTANT_STOP_BUTTON_TEXT" desc="Text shown on stop button in Assistant timer notification.">
         STOP
       </message>
-      <message name="IDS_ASSISTANT_ADD_ONE_MIN_QUERY" desc="Query for adding one minute to Assistant timer.">
-        Add 1 min to timer
-      </message>
-      <message name="IDS_ASSISTANT_ADD_ONE_MIN_BUTTON_TEXT" desc="Text shown on add one minute button in Assistant timer notification.">
-        Add 1 min
-      </message>
 
       <!-- The following strings are located here for accessibility from both //ash and //chrome -->
       <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
