@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/optional.h"
 
 namespace media {
 namespace learning {
@@ -43,20 +44,36 @@ RandomTreeTrainer::Split::BranchInfo::BranchInfo(BranchInfo&& rhs) = default;
 RandomTreeTrainer::Split::BranchInfo::~BranchInfo() = default;
 
 struct InteriorNode : public Model {
-  InteriorNode(const LearningTask& task, int split_index)
+  InteriorNode(const LearningTask& task,
+               int split_index,
+               FeatureValue split_point)
       : split_index_(split_index),
-        rt_unknown_value_handling_(task.rt_unknown_value_handling) {}
+        rt_unknown_value_handling_(task.rt_unknown_value_handling),
+        ordering_(task.feature_descriptions[split_index].ordering),
+        split_point_(split_point) {}
 
   // Model
   TargetDistribution PredictDistribution(
       const FeatureVector& features) override {
-    auto iter = children_.find(features[split_index_]);
+    // Figure out what feature value we should use for the split.
+    FeatureValue f;
+    switch (ordering_) {
+      case LearningTask::Ordering::kUnordered:
+        // Use the nominal value directly.
+        f = features[split_index_];
+        break;
+      case LearningTask::Ordering::kNumeric:
+        // Use 0 for "<=" and 1 for ">".
+        f = FeatureValue(features[split_index_] > split_point_);
+        break;
+    }
+
+    auto iter = children_.find(f);
+
     // If we've never seen this feature value, then average all our branches.
     // This is an attempt to mimic one-hot encoding, where we'll take the zero
     // branch but it depends on the tree structure which of the one-hot values
     // we're choosing.
-    // TODO(liberato): Let the LearningTask select whether we do this, or just
-    // return an empty distribution.
     if (iter == children_.end()) {
       switch (rt_unknown_value_handling_) {
         case LearningTask::RTUnknownValueHandling::kEmptyDistribution:
@@ -95,6 +112,12 @@ struct InteriorNode : public Model {
 
   // How we handle unknown values.
   LearningTask::RTUnknownValueHandling rt_unknown_value_handling_;
+
+  // How is our feature value ordered?
+  LearningTask::Ordering ordering_;
+
+  // For kNumeric features, this is the split point.
+  FeatureValue split_point_;
 };
 
 struct LeafNode : public Model {
@@ -120,7 +143,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Train(
     const LearningTask& task,
     const TrainingData& training_data) {
   if (training_data.empty())
-    return std::make_unique<InteriorNode>(task, -1);
+    return std::make_unique<LeafNode>(training_data);
 
   return Build(task, training_data, FeatureSet());
 }
@@ -145,7 +168,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 
   // Find the best split among the candidates that we have.
   for (int i : feature_candidates) {
-    Split potential_split = ConstructSplit(training_data, i);
+    Split potential_split = ConstructSplit(task, training_data, i);
     if (potential_split.nats_remaining < best_potential_split.nats_remaining) {
       best_potential_split = std::move(potential_split);
     }
@@ -160,12 +183,18 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
   }
 
   // Build an interior node
-  std::unique_ptr<InteriorNode> node =
-      std::make_unique<InteriorNode>(task, best_potential_split.split_index);
+  std::unique_ptr<InteriorNode> node = std::make_unique<InteriorNode>(
+      task, best_potential_split.split_index, best_potential_split.split_point);
 
-  // Don't let the subtree use this feature.
+  // Don't let the subtree use this feature if this is nominal split, since
+  // there's nothing left to split.  For numeric splits, we might want to split
+  // it further.  Note that if there is only one branch for this split, then
+  // we returned a leaf anyway.
   FeatureSet new_used_set(used_set);
-  new_used_set.insert(best_potential_split.split_index);
+  if (task.feature_descriptions[best_potential_split.split_index].ordering ==
+      LearningTask::Ordering::kUnordered) {
+    new_used_set.insert(best_potential_split.split_index);
+  }
 
   for (auto& branch_iter : best_potential_split.branch_infos) {
     node->AddChild(branch_iter.first,
@@ -176,6 +205,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 }
 
 RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
+    const LearningTask& task,
     const TrainingData& training_data,
     int index) {
   // We should not be given a training set of size 0, since there's no need to
@@ -183,6 +213,15 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
   DCHECK_GT(training_data.size(), 0u);
 
   Split split(index);
+  base::Optional<FeatureValue> split_point;
+
+  // For a numeric split, find the split point.  Otherwise, we'll split on every
+  // nominal value that this feature has in |training_data|.
+  if (task.feature_descriptions[index].ordering ==
+      LearningTask::Ordering::kNumeric) {
+    split_point = FindNumericSplitPoint(split.split_index, training_data);
+    split.split_point = *split_point;
+  }
 
   // Find the split's feature values and construct the training set for each.
   // I think we want to iterate on the underlying vector, and look up the int in
@@ -191,10 +230,19 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     // Get the value of the |index|-th feature for
     FeatureValue v_i = example->features[split.split_index];
 
+    // Figure out what value this example would use for splitting.  For nominal,
+    // it's just |v_i|.  For numeric, it's whether |v_i| is <= the split point
+    // or not (0 for <=, 1 for >).
+    FeatureValue split_feature;
+    if (split_point)
+      split_feature = FeatureValue(v_i > *split_point);
+    else
+      split_feature = v_i;
+
     // Add |v_i| to the right training set.  Remember that emplace will do
     // nothing if the key already exists.
     auto result = split.branch_infos.emplace(
-        v_i, Split::BranchInfo(training_data.storage()));
+        split_feature, Split::BranchInfo(training_data.storage()));
     auto iter = result.first;
 
     Split::BranchInfo& branch_info = iter->second;
@@ -208,13 +256,57 @@ RandomTreeTrainer::Split RandomTreeTrainer::ConstructSplit(
     Split::BranchInfo& branch_info = info_iter.second;
 
     const int total_counts = branch_info.training_data.size();
+    // |p_branch| is the probability of following this branch.
+    const double p_branch = ((double)total_counts) / training_data.size();
     for (auto& iter : branch_info.class_counts) {
       double p = ((double)iter.second) / total_counts;
-      split.nats_remaining -= p * log(p);
+      // p*log(p) is the expected nats if the answer is |iter|.  We multiply
+      // that by the probability of being in this bucket at all.
+      split.nats_remaining -= (p * log(p)) * p_branch;
     }
   }
 
   return split;
+}
+
+FeatureValue RandomTreeTrainer::FindNumericSplitPoint(
+    size_t index,
+    const TrainingData& training_data) {
+  // We should not be given a training set of size 0, since there's no need to
+  // check an empty split.
+  DCHECK_GT(training_data.size(), 0u);
+
+  // We should either (a) choose the single best split point given all our
+  // training data (i.e., choosing between the splits that are equally between
+  // adjacent feature values), or (b) choose the best split point by drawing
+  // uniformly over the range that contains our feature values.  (a) is
+  // appropriate with RandomForest, while (b) is appropriate with ExtraTrees.
+  FeatureValue v_min = (*training_data.begin())->features[index];
+  FeatureValue v_max = (*training_data.begin())->features[index];
+  for (const TrainingExample* example : training_data) {
+    // Get the value of the |index|-th feature for
+    FeatureValue v_i = example->features[index];
+    if (v_i < v_min)
+      v_min = v_i;
+
+    if (v_i > v_max)
+      v_max = v_i;
+  }
+
+  FeatureValue v_split;
+  if (v_max == v_min) {
+    // Pick |v_split| to return a trivial split, so that this ends up as a
+    // leaf node anyway.
+    v_split = v_max;
+  } else {
+    // Choose a random split point.  Note that we want to end up with two
+    // buckets, so we don't have a trivial split.  By picking [v_min, v_max),
+    // |v_min| will always be in one bucket and |v_max| will always not be.
+    v_split = FeatureValue((rand() % (v_max.value() - v_min.value())) +
+                           v_min.value());
+  }
+
+  return v_split;
 }
 
 }  // namespace learning

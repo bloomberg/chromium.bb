@@ -34,6 +34,7 @@ class COMPONENT_EXPORT(LEARNING_COMMON) Value {
   bool operator==(const Value& rhs) const;
   bool operator!=(const Value& rhs) const;
   bool operator<(const Value& rhs) const;
+  bool operator>(const Value& rhs) const;
 
   int64_t value() const { return value_; }
 
