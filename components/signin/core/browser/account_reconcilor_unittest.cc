@@ -10,12 +10,12 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
@@ -292,7 +292,7 @@ class AccountReconcilorTest : public ::testing::Test {
   void DeleteReconcilor() { mock_reconcilor_.reset(); }
 
  private:
-  base::MessageLoop loop;
+  base::test::ScopedTaskEnvironment task_environment_;
   signin::AccountConsistencyMethod account_consistency_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient test_signin_client_;

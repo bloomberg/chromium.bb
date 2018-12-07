@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_consistency_method.h"
@@ -112,7 +112,7 @@ class SigninHeaderHelperTest : public testing::Test {
   }
 #endif
 
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
 
   bool sync_enabled_ = false;
   bool sync_has_auth_error_ = false;

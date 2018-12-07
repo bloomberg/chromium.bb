@@ -5,7 +5,7 @@
 #include "components/signin/core/browser/signin_tracker.h"
 
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -76,7 +76,7 @@ class SigninTrackerTest : public testing::Test {
 
   ~SigninTrackerTest() override { tracker_.reset(); }
 
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<SigninTracker> tracker_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   AccountTrackerService account_tracker_;
