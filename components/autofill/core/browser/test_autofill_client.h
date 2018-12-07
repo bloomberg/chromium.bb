@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_legacy_strike_database.h"
+#include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
@@ -165,6 +166,7 @@ class TestAutofillClient : public AutofillClient {
   identity::IdentityTestEnvironment identity_test_env_;
   syncer::SyncService* test_sync_service_ = nullptr;
   TestAddressNormalizer test_address_normalizer_;
+  TestPersonalDataManager test_personal_data_manager_;
 
   // NULL by default.
   std::unique_ptr<PrefService> prefs_;

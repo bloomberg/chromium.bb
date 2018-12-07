@@ -26,6 +26,7 @@
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/browser/suggestion.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -136,6 +137,9 @@ class PersonalDataManager : public KeyedService,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override {}
   void OnGaiaCookieDeletedByUserAction() override;
+
+  // Returns the current sync status.
+  AutofillSyncSigninState GetSyncSigninState() const;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);

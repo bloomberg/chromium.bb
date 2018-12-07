@@ -47,6 +47,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/sync/driver/sync_auth_util.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/version_info/version_info.h"
@@ -681,6 +682,8 @@ AccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
              : identity_manager_->GetPrimaryAccountInfo();
 }
 
+// TODO(crbug.com/903914): Clean up this function so that it's more clear what
+// it's checking. It should not check the database helper.
 bool PersonalDataManager::IsSyncFeatureEnabled() const {
   if (!sync_service_)
     return false;
@@ -692,6 +695,32 @@ bool PersonalDataManager::IsSyncFeatureEnabled() const {
 void PersonalDataManager::OnGaiaCookieDeletedByUserAction() {
   // Clear all the Sync Transport feature opt-ins.
   ::autofill::prefs::ClearSyncTransportOptIns(pref_service_);
+}
+
+// TODO(crbug.com/903896): Generalize this to all the possible states relavant
+// to Autofill.
+AutofillSyncSigninState PersonalDataManager::GetSyncSigninState() const {
+  // Check if the user is signed out.
+  if (!sync_service_ || !identity_manager_ ||
+      syncer::DetermineAccountToUse(identity_manager_,
+                                    /*allow_secondary_accounts=*/true)
+          .account_info.IsEmpty()) {
+    return AutofillSyncSigninState::kSignedOut;
+  }
+
+  // Check if the user has turned on sync.
+  if (sync_service_->IsSyncFeatureEnabled()) {
+    return AutofillSyncSigninState::kSignedInAndSyncFeature;
+  }
+
+  // Check if the feature is enabled and if Wallet data types are supported.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAccountWalletStorage) &&
+      sync_service_->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
+    return AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
+  }
+
+  return AutofillSyncSigninState::kSignedIn;
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
