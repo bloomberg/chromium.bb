@@ -237,10 +237,27 @@ Polymer({
       return;
     }
 
-    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')
+    let selectNext = e.key == 'ArrowDown';
+    if (e.key == 'Enter') {
+      // If a menu item has focus, don't change focus or close menu on 'Enter'.
+      const options = this.querySelectorAll('.dropdown-item');
+      let focusedIndex =
+          Array.prototype.indexOf.call(options, getDeepActiveElement());
+      if (focusedIndex != -1)
+        return;
+
+      if (cr.isWindows || cr.isMac) {
+        this.close();
+        e.preventDefault();
+        return;
+      }
+      selectNext = true;
+    }
+
+    if (e.key !== 'ArrowUp' && !selectNext)
       return;
 
-    const nextOption = this.getNextOption_(e.key == 'ArrowDown' ? 1 : -1);
+    const nextOption = this.getNextOption_(selectNext ? 1 : -1);
     if (nextOption) {
       if (!this.hasMousemoveListener_) {
         this.hasMousemoveListener_ = true;

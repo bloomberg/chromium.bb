@@ -57,6 +57,10 @@ suite('CrActionMenu', function() {
     MockInteractions.keyDownOn(menu, 'ArrowUp', [], 'ArrowUp');
   }
 
+  function enter() {
+    MockInteractions.keyDownOn(menu, 'Enter', [], 'Enter');
+  }
+
   test('close event bubbles', function() {
     menu.showAt(dots);
     const whenFired = test_util.eventToPromise('close', menu);
@@ -119,6 +123,24 @@ suite('CrActionMenu', function() {
 
     up();
     assertEquals(items[items.length - 1], getDeepActiveElement());
+  });
+
+  test('pressing enter when no focus', function() {
+    if (cr.isWindows || cr.isMac)
+      return testFocusAfterClosing('Enter');
+
+    // First item is selected
+    menu.showAt(dots);
+    assertEquals(menu, document.activeElement);
+    enter();
+    assertEquals(items[0], getDeepActiveElement());
+  });
+
+  test('pressing enter when when item has focus', function() {
+    menu.showAt(dots);
+    down();
+    enter();
+    assertEquals(items[0], getDeepActiveElement());
   });
 
   test('can navigate to dynamically added items', function() {
