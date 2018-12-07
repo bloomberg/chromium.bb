@@ -5010,6 +5010,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Opened"/>
 </enum>
 
+<enum name="BooleanOptionConditionsChanged">
+  <int value="0" label="Conditions unchanged"/>
+  <int value="1" label="Conditions changed"/>
+</enum>
+
 <enum name="BooleanOriginHeaderSameAsRequestOrigin">
   <int value="0" label="Headers differ"/>
   <int value="1" label="Headers match"/>
