@@ -247,7 +247,9 @@
         },
       },
       'Oreo Phone Tester': {
-        'experiment_percentage': 100,
+        # TODO(https://crbug.com/884413): Re-enable this once the tests are
+        # either passing or there is more capacity.
+        'experiment_percentage': 0,
       },
       # chromium.swarm
       'Android N5X Swarm': {
@@ -1614,7 +1616,9 @@
     'modifications': {
       'Oreo Phone Tester': {
         # TODO(crbug.com/863089): Enable this once it's passing.
-        'experiment_percentage': 100,
+        # TODO(https://crbug.com/884413): Re-enable this once the tests are
+        # either passing or there is more capacity.
+        'experiment_percentage': 0,
       },
     },
   },
