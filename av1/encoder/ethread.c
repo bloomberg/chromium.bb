@@ -386,7 +386,7 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
   }
 #endif
 
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = &cpi->tile_thr_data[i];
 
@@ -397,7 +397,7 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
     thread_data->cpi = cpi;
     thread_data->thread_id = i;
 
-    if (i < num_workers - 1) {
+    if (i > 0) {
       // Allocate thread data.
       CHECK_MEM_ERROR(cm, thread_data->td,
                       aom_memalign(32, sizeof(*thread_data->td)));
@@ -478,14 +478,14 @@ static void create_enc_workers(AV1_COMP *cpi, int num_workers) {
 static void launch_enc_workers(AV1_COMP *cpi, int num_workers) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   // Encode a frame
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
 
     // Set the starting tile for each thread.
     thread_data->start = i;
 
-    if (i == cpi->num_workers - 1)
+    if (i == 0)
       winterface->execute(worker);
     else
       winterface->launch(worker);
@@ -497,7 +497,7 @@ static void sync_enc_workers(AV1_COMP *cpi, int num_workers) {
   int had_error = 0;
 
   // Encoding ends.
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     had_error |= !winterface->sync(worker);
   }
@@ -508,12 +508,12 @@ static void sync_enc_workers(AV1_COMP *cpi, int num_workers) {
 }
 
 static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
     cpi->intrabc_used |= thread_data->td->intrabc_used;
     // Accumulate counters.
-    if (i < cpi->num_workers - 1) {
+    if (i > 0) {
       av1_accumulate_frame_counts(&cpi->counts, thread_data->td->counts);
       accumulate_rd_opt(&cpi->td, thread_data->td);
       cpi->td.mb.txb_split_count += thread_data->td->mb.txb_split_count;
@@ -523,7 +523,7 @@ static void accumulate_counters_enc_workers(AV1_COMP *cpi, int num_workers) {
 
 static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
                                 int num_workers) {
-  for (int i = 0; i < num_workers; i++) {
+  for (int i = num_workers - 1; i >= 0; i--) {
     AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = &cpi->tile_thr_data[i];
 
@@ -560,7 +560,7 @@ static void prepare_enc_workers(AV1_COMP *cpi, AVxWorkerHook hook,
       memcpy(thread_data->td->counts, &cpi->counts, sizeof(cpi->counts));
     }
 
-    if (i < num_workers - 1) {
+    if (i > 0) {
       thread_data->td->mb.palette_buffer = thread_data->td->palette_buffer;
       thread_data->td->mb.tmp_conv_dst = thread_data->td->tmp_conv_dst;
       for (int j = 0; j < 2; ++j) {

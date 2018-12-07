@@ -3103,7 +3103,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     cpi->tpl_stats[frame].is_valid = 0;
   }
 
-  for (t = 0; t < cpi->num_workers; ++t) {
+  for (t = cpi->num_workers - 1; t >= 0; --t) {
     AVxWorker *const worker = &cpi->workers[t];
     EncWorkerData *const thread_data = &cpi->tile_thr_data[t];
 
@@ -3112,7 +3112,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 
     // Deallocate allocated thread data.
     if (cpi->row_mt == 1) aom_free(thread_data->td->tctx);
-    if (t < cpi->num_workers - 1) {
+    if (t > 0) {
       aom_free(thread_data->td->palette_buffer);
       aom_free(thread_data->td->tmp_conv_dst);
       for (int j = 0; j < 2; ++j) {
