@@ -360,9 +360,6 @@ Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ S
 Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
 # ==== Regressions introduced by BlinkGenPropertyTrees =====
-# Opacity not applied to descendant of animated filter node.
-crbug.com/912380 transitions/opacity-transition-zindex.html [ Failure ]
-crbug.com/912380 virtual/threaded/transitions/opacity-transition-zindex.html [ Failure ]
 # Reflection / mask ordering issue
 crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 # Incorrect scrollbar invalidation.
