@@ -307,9 +307,9 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     std::unique_ptr<base::ListValue> beacon_seed_list(new base::ListValue());
     for (const auto& beacon_seed : device.beacon_seeds()) {
       std::string b64_beacon_seed;
-      base::Base64UrlEncode(beacon_seed.SerializeAsString(),
-                            base::Base64UrlEncodePolicy::INCLUDE_PADDING,
-                            &b64_beacon_seed);
+      base::Base64UrlEncode(
+          multidevice::ToCryptAuthSeed(beacon_seed).SerializeAsString(),
+          base::Base64UrlEncodePolicy::INCLUDE_PADDING, &b64_beacon_seed);
       beacon_seed_list->AppendString(b64_beacon_seed);
     }
 
@@ -321,7 +321,7 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
 
     // This differentiates the local device from the remote device.
     bool unlock_key = device.GetSoftwareFeatureState(
-                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+                          multidevice::SoftwareFeature::kSmartLockHost) ==
                       multidevice::SoftwareFeatureState::kEnabled;
     dict->SetBoolean(key_names::kKeyUnlockKey, unlock_key);
 
@@ -530,7 +530,7 @@ bool EasyUnlockServiceRegular::IsInLegacyHostMode() const {
        device_sync_client_->GetSyncedDevices()) {
     multidevice::SoftwareFeatureState better_together_host_state =
         remote_device_ref.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+            multidevice::SoftwareFeature::kBetterTogetherHost);
     // If there's any valid Better Together host, don't support legacy mode.
     if (better_together_host_state ==
             multidevice::SoftwareFeatureState::kSupported ||
@@ -541,7 +541,7 @@ bool EasyUnlockServiceRegular::IsInLegacyHostMode() const {
 
     multidevice::SoftwareFeatureState easy_unlock_host_state =
         remote_device_ref.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::EASY_UNLOCK_HOST);
+            multidevice::SoftwareFeature::kSmartLockHost);
     if (easy_unlock_host_state ==
             multidevice::SoftwareFeatureState::kSupported ||
         easy_unlock_host_state == multidevice::SoftwareFeatureState::kEnabled) {
@@ -828,7 +828,7 @@ multidevice::RemoteDeviceRefList EasyUnlockServiceRegular::GetUnlockKeys() {
   multidevice::RemoteDeviceRefList unlock_keys;
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
     bool unlock_key = remote_device.GetSoftwareFeatureState(
-                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+                          multidevice::SoftwareFeature::kSmartLockHost) ==
                       multidevice::SoftwareFeatureState::kEnabled;
     if (unlock_key)
       unlock_keys.push_back(remote_device);

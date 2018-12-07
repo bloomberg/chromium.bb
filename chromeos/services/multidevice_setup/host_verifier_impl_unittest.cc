@@ -10,6 +10,8 @@
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
@@ -24,10 +26,10 @@ namespace {
 
 const int64_t kTestTimeMs = 1500000000000;
 
-constexpr const cryptauth::SoftwareFeature kPotentialHostSoftwareFeatures[] = {
-    cryptauth::SoftwareFeature::EASY_UNLOCK_HOST,
-    cryptauth::SoftwareFeature::MAGIC_TETHER_HOST,
-    cryptauth::SoftwareFeature::SMS_CONNECT_HOST};
+constexpr const multidevice::SoftwareFeature kPotentialHostSoftwareFeatures[] =
+    {multidevice::SoftwareFeature::kSmartLockHost,
+     multidevice::SoftwareFeature::kInstantTetheringHost,
+     multidevice::SoftwareFeature::kMessagesForWebHost};
 
 const char kRetryTimestampPrefName[] =
     "multidevice_setup.current_retry_timestamp_ms";

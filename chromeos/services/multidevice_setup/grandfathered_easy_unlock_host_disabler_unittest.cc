@@ -52,9 +52,9 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
   }
 
   void SetHost(const base::Optional<multidevice::RemoteDeviceRef>& host_device,
-               cryptauth::SoftwareFeature host_type) {
-    if (host_type != cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST &&
-        host_type != cryptauth::SoftwareFeature::EASY_UNLOCK_HOST)
+               multidevice::SoftwareFeature host_type) {
+    if (host_type != multidevice::SoftwareFeature::kBetterTogetherHost &&
+        host_type != multidevice::SoftwareFeature::kSmartLockHost)
       return;
 
     for (const auto& remote_device : test_devices_) {
@@ -67,7 +67,7 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
                          : multidevice::SoftwareFeatureState::kSupported;
     }
 
-    if (host_type == cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST)
+    if (host_type == multidevice::SoftwareFeature::kBetterTogetherHost)
       fake_host_backend_delegate_->NotifyHostChangedOnBackend(host_device);
   }
 
@@ -79,9 +79,9 @@ class MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest
                                   initial_device_id_pref_value);
 
     SetHost(initial_better_together_host,
-            cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+            multidevice::SoftwareFeature::kBetterTogetherHost);
     SetHost(initial_easy_unlock_host,
-            cryptauth::SoftwareFeature::EASY_UNLOCK_HOST);
+            multidevice::SoftwareFeature::kSmartLockHost);
 
     auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
@@ -141,7 +141,7 @@ TEST_F(
                  test_devices()[0] /* initial_better_together_host */,
                  test_devices()[0] /* initial_easy_unlock_host */);
 
-  SetHost(base::nullopt, cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(base::nullopt, multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(test_devices()[0].GetDeviceId(),
             GetEasyUnlockHostIdToDisablePrefValue());
@@ -175,7 +175,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
                  base::nullopt /* initial_better_together_host */,
                  test_devices()[0] /* initial_easy_unlock_host */);
 
-  SetHost(test_devices()[1], cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(test_devices()[1], multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
@@ -202,7 +202,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
                  test_devices()[0] /* initial_better_together_host */,
                  test_devices()[0] /* initial_easy_unlock_host */);
 
-  SetHost(test_devices()[1], cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(test_devices()[1], multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(test_devices()[0].GetDeviceId(),
             GetEasyUnlockHostIdToDisablePrefValue());
@@ -247,7 +247,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
   // Remove device[0] from list
   fake_device_sync_client()->set_synced_devices({test_devices()[1]});
 
-  SetHost(base::nullopt, cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(base::nullopt, multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(kNoDevice, GetEasyUnlockHostIdToDisablePrefValue());
   EXPECT_EQ(
@@ -268,7 +268,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
                  test_devices()[0] /* initial_better_together_host */,
                  test_devices()[0] /* initial_easy_unlock_host */);
 
-  SetHost(base::nullopt, cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(base::nullopt, multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(
       1,
@@ -340,7 +340,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
                  test_devices()[0] /* initial_better_together_host */,
                  test_devices()[0] /* initial_easy_unlock_host */);
 
-  SetHost(base::nullopt, cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(base::nullopt, multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(
       1,
@@ -350,7 +350,7 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
 
   EXPECT_TRUE(mock_timer()->IsRunning());
 
-  SetHost(test_devices()[0], cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(test_devices()[0], multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(
       0,
@@ -371,12 +371,12 @@ TEST_F(MultiDeviceSetupGrandfatheredEasyUnlockHostDisablerTest,
                  test_devices()[0] /* initial_better_together_host */,
                  test_devices()[0] /* initial_easy_unlock_host */);
 
-  SetHost(base::nullopt, cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(base::nullopt, multidevice::SoftwareFeature::kBetterTogetherHost);
 
-  SetHost(test_devices()[1], cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
-  SetHost(test_devices()[1], cryptauth::SoftwareFeature::EASY_UNLOCK_HOST);
+  SetHost(test_devices()[1], multidevice::SoftwareFeature::kBetterTogetherHost);
+  SetHost(test_devices()[1], multidevice::SoftwareFeature::kSmartLockHost);
 
-  SetHost(base::nullopt, cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  SetHost(base::nullopt, multidevice::SoftwareFeature::kBetterTogetherHost);
 
   EXPECT_EQ(
       2,

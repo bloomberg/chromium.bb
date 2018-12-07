@@ -11,9 +11,18 @@ namespace chromeos {
 
 namespace multidevice {
 
+// State of a multi-device feature (see SoftwareFeature).
+//
+// Note that numerical enum values must not be changed as these values are
+// serialized to numbers and stored persistently.
 enum class SoftwareFeatureState {
+  // Not supported by the device (e.g., hardware does not support feature).
   kNotSupported = 0,
+
+  // Supported by device, but device has not enabled the feature.
   kSupported = 1,
+
+  // Supported by device, and device has enabled the feature.
   kEnabled = 2
 };
 

@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/remote_device.h"
+#include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
@@ -19,14 +21,17 @@ namespace mojo {
 
 template <>
 class StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
-                   cryptauth::BeaconSeed> {
+                   chromeos::multidevice::BeaconSeed> {
  public:
-  static const std::string& data(const cryptauth::BeaconSeed& beacon_seed);
-  static base::Time start_time(const cryptauth::BeaconSeed& beacon_seed);
-  static base::Time end_time(const cryptauth::BeaconSeed& beacon_seed);
+  static const std::string& data(
+      const chromeos::multidevice::BeaconSeed& beacon_seed);
+  static base::Time start_time(
+      const chromeos::multidevice::BeaconSeed& beacon_seed);
+  static base::Time end_time(
+      const chromeos::multidevice::BeaconSeed& beacon_seed);
 
   static bool Read(chromeos::device_sync::mojom::BeaconSeedDataView in,
-                   cryptauth::BeaconSeed* out);
+                   chromeos::multidevice::BeaconSeed* out);
 };
 
 template <>
@@ -43,10 +48,10 @@ class StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
       const chromeos::multidevice::RemoteDevice& remote_device);
   static base::Time last_update_time(
       const chromeos::multidevice::RemoteDevice& remote_device);
-  static const std::map<cryptauth::SoftwareFeature,
+  static const std::map<chromeos::multidevice::SoftwareFeature,
                         chromeos::multidevice::SoftwareFeatureState>&
   software_features(const chromeos::multidevice::RemoteDevice& remote_device);
-  static const std::vector<cryptauth::BeaconSeed>& beacon_seeds(
+  static const std::vector<chromeos::multidevice::BeaconSeed>& beacon_seeds(
       const chromeos::multidevice::RemoteDevice& remote_device);
 
   static bool Read(chromeos::device_sync::mojom::RemoteDeviceDataView in,
@@ -55,12 +60,12 @@ class StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
 
 template <>
 class EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
-                 cryptauth::SoftwareFeature> {
+                 chromeos::multidevice::SoftwareFeature> {
  public:
   static chromeos::device_sync::mojom::SoftwareFeature ToMojom(
-      cryptauth::SoftwareFeature input);
+      chromeos::multidevice::SoftwareFeature input);
   static bool FromMojom(chromeos::device_sync::mojom::SoftwareFeature input,
-                        cryptauth::SoftwareFeature* out);
+                        chromeos::multidevice::SoftwareFeature* out);
 };
 
 template <>

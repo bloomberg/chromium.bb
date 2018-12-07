@@ -690,7 +690,7 @@ class DeviceSyncServiceTest : public testing::Test {
     // kErrorNotInitialized error code.
     CallSetSoftwareFeatureState(
         test_devices()[0].public_key,
-        cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST, true /* enabled */,
+        multidevice::SoftwareFeature::kBetterTogetherHost, true /* enabled */,
         true /* is_exclusive */);
     auto last_set_response = GetLastSetSoftwareFeatureStateResponseAndReset();
     EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
@@ -698,7 +698,7 @@ class DeviceSyncServiceTest : public testing::Test {
 
     // Likewise, FindEligibleDevices() should also return a struct with the same
     // error code.
-    CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+    CallFindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
     auto last_find_response = GetLastFindEligibleDevicesResponseAndReset();
     EXPECT_EQ(mojom::NetworkRequestResult::kServiceNotYetInitialized,
               last_find_response->first);
@@ -768,10 +768,11 @@ class DeviceSyncServiceTest : public testing::Test {
     return last_synced_devices_result_;
   }
 
-  void CallSetSoftwareFeatureState(const std::string& public_key,
-                                   cryptauth::SoftwareFeature software_feature,
-                                   bool enabled,
-                                   bool is_exclusive) {
+  void CallSetSoftwareFeatureState(
+      const std::string& public_key,
+      multidevice::SoftwareFeature software_feature,
+      bool enabled,
+      bool is_exclusive) {
     base::RunLoop run_loop;
     cryptauth::FakeSoftwareFeatureManager* manager =
         fake_software_feature_manager();
@@ -802,7 +803,7 @@ class DeviceSyncServiceTest : public testing::Test {
     fake_software_feature_manager_factory_->instance()->set_delegate(nullptr);
   }
 
-  void CallFindEligibleDevices(cryptauth::SoftwareFeature software_feature) {
+  void CallFindEligibleDevices(multidevice::SoftwareFeature software_feature) {
     base::RunLoop run_loop;
     cryptauth::FakeSoftwareFeatureManager* manager =
         fake_software_feature_manager();
@@ -1123,20 +1124,20 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
       fake_software_feature_manager()->set_software_feature_state_calls();
   EXPECT_EQ(0u, set_software_calls.size());
 
-  // Set the BETTER_TOGETHER_HOST field to "supported".
+  // Set the kBetterTogetherHost field to "supported".
   multidevice::RemoteDevice device_for_test = test_devices()[0];
   device_for_test
-      .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kSupported;
   EXPECT_TRUE(CallForceSyncNow());
   SimulateSync(true /* success */, {device_for_test});
 
-  // Enable BETTER_TOGETHER_HOST for the device.
+  // Enable kBetterTogetherHost for the device.
   CallSetSoftwareFeatureState(device_for_test.public_key,
-                              cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                              multidevice::SoftwareFeature::kBetterTogetherHost,
                               true /* enabled */, true /* is_exclusive */);
   EXPECT_EQ(1u, set_software_calls.size());
-  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
             set_software_calls[0]->software_feature);
   EXPECT_TRUE(set_software_calls[0]->enabled);
   EXPECT_TRUE(set_software_calls[0]->is_exclusive);
@@ -1153,7 +1154,7 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Success) {
 
   // Simulate a sync which includes the device with the correct "enabled" state.
   device_for_test
-      .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kEnabled;
   base::RunLoop().RunUntilIdle();
   SimulateSync(true /* success */, {device_for_test});
@@ -1181,20 +1182,20 @@ TEST_F(DeviceSyncServiceTest,
       fake_software_feature_manager()->set_software_feature_state_calls();
   EXPECT_EQ(0u, set_software_calls.size());
 
-  // Set the BETTER_TOGETHER_HOST field to "supported".
+  // Set the kBetterTogetherHost field to "supported".
   multidevice::RemoteDevice device_for_test = test_devices()[0];
   device_for_test
-      .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kSupported;
   EXPECT_TRUE(CallForceSyncNow());
   SimulateSync(true /* success */, {device_for_test});
 
-  // Enable BETTER_TOGETHER_HOST for the device.
+  // Enable kBetterTogetherHost for the device.
   CallSetSoftwareFeatureState(device_for_test.public_key,
-                              cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                              multidevice::SoftwareFeature::kBetterTogetherHost,
                               true /* enabled */, true /* is_exclusive */);
   EXPECT_EQ(1u, set_software_calls.size());
-  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
             set_software_calls[0]->software_feature);
   EXPECT_TRUE(set_software_calls[0]->enabled);
   EXPECT_TRUE(set_software_calls[0]->is_exclusive);
@@ -1230,20 +1231,20 @@ TEST_F(DeviceSyncServiceTest, SetSoftwareFeatureState_Error) {
       fake_software_feature_manager()->set_software_feature_state_calls();
   EXPECT_EQ(0u, set_software_calls.size());
 
-  // Set the BETTER_TOGETHER_HOST field to "supported".
+  // Set the kBetterTogetherHost field to "supported".
   multidevice::RemoteDevice device_for_test = test_devices()[0];
   device_for_test
-      .software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      .software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kSupported;
   EXPECT_TRUE(CallForceSyncNow());
   SimulateSync(true /* success */, {device_for_test});
 
-  // Enable BETTER_TOGETHER_HOST for the device.
+  // Enable kBetterTogetherHost for the device.
   CallSetSoftwareFeatureState(device_for_test.public_key,
-                              cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                              multidevice::SoftwareFeature::kBetterTogetherHost,
                               true /* enabled */, true /* is_exclusive */);
   ASSERT_EQ(1u, set_software_calls.size());
-  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
             set_software_calls[0]->software_feature);
   EXPECT_TRUE(set_software_calls[0]->enabled);
   EXPECT_TRUE(set_software_calls[0]->is_exclusive);
@@ -1276,10 +1277,10 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
       fake_software_feature_manager()->find_eligible_multidevice_host_calls();
   EXPECT_EQ(0u, find_eligible_calls.size());
 
-  // Find devices which are BETTER_TOGETHER_HOSTs.
-  CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  // Find devices which are kBetterTogetherHost.
+  CallFindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
   EXPECT_EQ(1u, find_eligible_calls.size());
-  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
             find_eligible_calls[0]->software_feature);
 
   // The callback has not yet been invoked.
@@ -1311,9 +1312,9 @@ TEST_F(DeviceSyncServiceTest, FindEligibleDevices) {
       "MultiDevice.DeviceSyncService.FindEligibleDevices.Result", true, 1);
 
   // Find devices which are BETTER_TOGETHER_HOSTs again.
-  CallFindEligibleDevices(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+  CallFindEligibleDevices(multidevice::SoftwareFeature::kBetterTogetherHost);
   EXPECT_EQ(2u, find_eligible_calls.size());
-  EXPECT_EQ(cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+  EXPECT_EQ(multidevice::SoftwareFeature::kBetterTogetherHost,
             find_eligible_calls[1]->software_feature);
 
   // The callback has not yet been invoked.

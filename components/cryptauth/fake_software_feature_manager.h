@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "components/cryptauth/network_request_error.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/software_feature_manager.h"
 
 namespace cryptauth {
@@ -28,7 +28,7 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
   struct SetSoftwareFeatureStateArgs {
     SetSoftwareFeatureStateArgs(
         const std::string& public_key,
-        SoftwareFeature software_feature,
+        chromeos::multidevice::SoftwareFeature software_feature,
         bool enabled,
         const base::Closure& success_callback,
         const base::Callback<void(NetworkRequestError)>& error_callback,
@@ -36,7 +36,7 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
     ~SetSoftwareFeatureStateArgs();
 
     std::string public_key;
-    SoftwareFeature software_feature;
+    chromeos::multidevice::SoftwareFeature software_feature;
     bool enabled;
     base::Closure success_callback;
     base::Callback<void(NetworkRequestError)> error_callback;
@@ -48,14 +48,14 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
 
   struct FindEligibleDevicesArgs {
     FindEligibleDevicesArgs(
-        SoftwareFeature software_feature,
+        chromeos::multidevice::SoftwareFeature software_feature,
         const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                   const std::vector<IneligibleDevice>&)>&
             success_callback,
         const base::Callback<void(NetworkRequestError)>& error_callback);
     ~FindEligibleDevicesArgs();
 
-    SoftwareFeature software_feature;
+    chromeos::multidevice::SoftwareFeature software_feature;
     base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                         const std::vector<IneligibleDevice>&)>
         success_callback;
@@ -83,13 +83,13 @@ class FakeSoftwareFeatureManager : public SoftwareFeatureManager {
   // SoftwareFeatureManager:
   void SetSoftwareFeatureState(
       const std::string& public_key,
-      SoftwareFeature software_feature,
+      chromeos::multidevice::SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
       const base::Callback<void(NetworkRequestError)>& error_callback,
       bool is_exclusive = false) override;
   void FindEligibleDevices(
-      SoftwareFeature software_feature,
+      chromeos::multidevice::SoftwareFeature software_feature,
       const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                 const std::vector<IneligibleDevice>&)>&
           success_callback,

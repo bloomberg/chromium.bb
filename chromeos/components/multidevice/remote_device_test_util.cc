@@ -46,15 +46,14 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetPublicKey(
 
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSupportsMobileHotspot(
     bool supports_mobile_hotspot) {
-  remote_device_
-      ->software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+  remote_device_->software_features[SoftwareFeature::kInstantTetheringHost] =
       supports_mobile_hotspot ? SoftwareFeatureState::kSupported
                               : SoftwareFeatureState::kNotSupported;
   return *this;
 }
 
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetSoftwareFeatureState(
-    const cryptauth::SoftwareFeature feature,
+    const SoftwareFeature feature,
     const SoftwareFeatureState new_state) {
   remote_device_->software_features[feature] = new_state;
   return *this;
@@ -67,7 +66,7 @@ RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetLastUpdateTimeMillis(
 }
 
 RemoteDeviceRefBuilder& RemoteDeviceRefBuilder::SetBeaconSeeds(
-    const std::vector<cryptauth::BeaconSeed>& beacon_seeds) {
+    const std::vector<BeaconSeed>& beacon_seeds) {
   remote_device_->beacon_seeds = beacon_seeds;
   return *this;
 }
@@ -77,10 +76,10 @@ RemoteDeviceRef RemoteDeviceRefBuilder::Build() {
 }
 
 RemoteDevice CreateRemoteDeviceForTest() {
-  std::map<cryptauth::SoftwareFeature, SoftwareFeatureState> software_features;
-  software_features[cryptauth::SoftwareFeature::EASY_UNLOCK_HOST] =
+  std::map<SoftwareFeature, SoftwareFeatureState> software_features;
+  software_features[SoftwareFeature::kSmartLockHost] =
       SoftwareFeatureState::kEnabled;
-  software_features[cryptauth::SoftwareFeature::MAGIC_TETHER_HOST] =
+  software_features[SoftwareFeature::kInstantTetheringHost] =
       SoftwareFeatureState::kSupported;
 
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,

@@ -11,30 +11,6 @@ namespace chromeos {
 
 namespace multidevice {
 
-namespace {
-
-// Returns true if both vectors of BeaconSeeds are equal.
-bool AreBeaconSeedsEqual(
-    const std::vector<cryptauth::BeaconSeed> beacon_seeds1,
-    const std::vector<cryptauth::BeaconSeed> beacon_seeds2) {
-  if (beacon_seeds1.size() != beacon_seeds2.size())
-    return false;
-
-  for (size_t i = 0; i < beacon_seeds1.size(); ++i) {
-    const cryptauth::BeaconSeed& seed1 = beacon_seeds1[i];
-    const cryptauth::BeaconSeed& seed2 = beacon_seeds2[i];
-    if (seed1.start_time_millis() != seed2.start_time_millis() ||
-        seed1.end_time_millis() != seed2.end_time_millis() ||
-        seed1.data() != seed2.data()) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-}  // namespace
-
 // static
 std::string RemoteDevice::GenerateDeviceId(const std::string& public_key) {
   std::string device_id;
@@ -50,9 +26,8 @@ RemoteDevice::RemoteDevice(
     const std::string& public_key,
     const std::string& persistent_symmetric_key,
     int64_t last_update_time_millis,
-    const std::map<cryptauth::SoftwareFeature, SoftwareFeatureState>&
-        software_features,
-    const std::vector<cryptauth::BeaconSeed>& beacon_seeds)
+    const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
+    const std::vector<BeaconSeed>& beacon_seeds)
     : user_id(user_id),
       name(name),
       public_key(public_key),
@@ -75,7 +50,7 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
          persistent_symmetric_key == other.persistent_symmetric_key &&
          last_update_time_millis == other.last_update_time_millis &&
          software_features == other.software_features &&
-         AreBeaconSeedsEqual(beacon_seeds, other.beacon_seeds);
+         beacon_seeds == other.beacon_seeds;
 }
 
 bool RemoteDevice::operator<(const RemoteDevice& other) const {

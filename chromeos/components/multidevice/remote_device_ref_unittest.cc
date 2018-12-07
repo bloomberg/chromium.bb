@@ -20,17 +20,14 @@ class RemoteDeviceRefTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    std::map<cryptauth::SoftwareFeature, SoftwareFeatureState>
+    std::map<SoftwareFeature, SoftwareFeatureState>
         software_feature_to_state_map;
-    software_feature_to_state_map
-        [cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT] =
-            SoftwareFeatureState::kSupported;
-    software_feature_to_state_map
-        [cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
-            SoftwareFeatureState::kEnabled;
+    software_feature_to_state_map[SoftwareFeature::kBetterTogetherClient] =
+        SoftwareFeatureState::kSupported;
+    software_feature_to_state_map[SoftwareFeature::kBetterTogetherHost] =
+        SoftwareFeatureState::kEnabled;
 
-    std::vector<cryptauth::BeaconSeed> beacon_seeds(
-        {cryptauth::BeaconSeed(), cryptauth::BeaconSeed()});
+    std::vector<BeaconSeed> beacon_seeds({BeaconSeed(), BeaconSeed()});
 
     remote_device_ = std::make_shared<RemoteDevice>(
         "user_id", "name", "public_key", "persistent_symmetric_key",
@@ -58,13 +55,13 @@ TEST_F(RemoteDeviceRefTest, TestFields) {
 
   EXPECT_EQ(SoftwareFeatureState::kNotSupported,
             remote_device_ref.GetSoftwareFeatureState(
-                cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT));
+                SoftwareFeature::kInstantTetheringClient));
   EXPECT_EQ(SoftwareFeatureState::kSupported,
             remote_device_ref.GetSoftwareFeatureState(
-                cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT));
+                SoftwareFeature::kBetterTogetherClient));
   EXPECT_EQ(SoftwareFeatureState::kEnabled,
             remote_device_ref.GetSoftwareFeatureState(
-                cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST));
+                SoftwareFeature::kBetterTogetherHost));
 
   EXPECT_EQ(remote_device_->GetDeviceId(), remote_device_ref.GetDeviceId());
   EXPECT_EQ(

@@ -327,7 +327,7 @@ class DeviceSyncClientImplTest : public testing::Test {
 
     client_->SetSoftwareFeatureState(
         test_remote_device_ref_list_[0].public_key(),
-        cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST, true /* enabled */,
+        multidevice::SoftwareFeature::kBetterTogetherHost, true /* enabled */,
         true /* enabled */,
         base::BindOnce(
             &DeviceSyncClientImplTest::OnSetSoftwareFeatureStateCompleted,
@@ -349,7 +349,7 @@ class DeviceSyncClientImplTest : public testing::Test {
     base::RunLoop run_loop;
 
     client_->FindEligibleDevices(
-        cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+        multidevice::SoftwareFeature::kBetterTogetherHost,
         base::BindOnce(
             &DeviceSyncClientImplTest::OnFindEligibleDevicesCompleted,
             base::Unretained(this), run_loop.QuitClosure()));

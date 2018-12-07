@@ -48,7 +48,8 @@ class CryptAuthBleAdvertisementGeneratorTest : public testing::Test {
   CryptAuthBleAdvertisementGeneratorTest()
       : test_remote_device_(
             chromeos::multidevice::RemoteDeviceRefBuilder()
-                .SetBeaconSeeds(CreateBeaconSeedsForDevice("remote device id"))
+                .SetBeaconSeeds(chromeos::multidevice::FromCryptAuthSeedList(
+                    CreateBeaconSeedsForDevice("remote device id")))
                 .Build()),
         fake_advertisement_("advertisement1", 1000L, 2000L) {}
 

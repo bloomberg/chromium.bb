@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -67,10 +67,10 @@ TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest, Empty) {
 
 TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest, NoEligibleDevices) {
   GetMutableRemoteDevice(test_devices()[0])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kNotSupported;
   GetMutableRemoteDevice(test_devices()[1])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kNotSupported;
 
   multidevice::RemoteDeviceRefList devices{test_devices()[0],
@@ -85,23 +85,23 @@ TEST_F(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
        SupportedAndEnabled) {
   // Devices 0, 1, and 2 are supported.
   GetMutableRemoteDevice(test_devices()[0])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kSupported;
   GetMutableRemoteDevice(test_devices()[1])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kSupported;
   GetMutableRemoteDevice(test_devices()[2])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kSupported;
 
   // Device 3 is enabled.
   GetMutableRemoteDevice(test_devices()[3])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kEnabled;
 
   // Device 4 is not supported.
   GetMutableRemoteDevice(test_devices()[4])
-      ->software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      ->software_features[multidevice::SoftwareFeature::kBetterTogetherHost] =
       multidevice::SoftwareFeatureState::kNotSupported;
 
   multidevice::RemoteDeviceRefList devices{test_devices()[0], test_devices()[1],

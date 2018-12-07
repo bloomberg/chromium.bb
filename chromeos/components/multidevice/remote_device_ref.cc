@@ -43,7 +43,7 @@ RemoteDeviceRef::RemoteDeviceRef(const RemoteDeviceRef& other) = default;
 RemoteDeviceRef::~RemoteDeviceRef() = default;
 
 SoftwareFeatureState RemoteDeviceRef::GetSoftwareFeatureState(
-    const cryptauth::SoftwareFeature& software_feature) const {
+    const SoftwareFeature& software_feature) const {
   if (!base::ContainsKey(remote_device_->software_features, software_feature))
     return SoftwareFeatureState::kNotSupported;
 

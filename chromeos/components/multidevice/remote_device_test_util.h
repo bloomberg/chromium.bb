@@ -29,12 +29,12 @@ class RemoteDeviceRefBuilder {
   RemoteDeviceRefBuilder& SetSupportsMobileHotspot(
       bool supports_mobile_hotspot);
   RemoteDeviceRefBuilder& SetSoftwareFeatureState(
-      const cryptauth::SoftwareFeature feature,
+      const SoftwareFeature feature,
       const SoftwareFeatureState new_state);
   RemoteDeviceRefBuilder& SetLastUpdateTimeMillis(
       int64_t last_update_time_millis);
   RemoteDeviceRefBuilder& SetBeaconSeeds(
-      const std::vector<cryptauth::BeaconSeed>& beacon_seeds);
+      const std::vector<BeaconSeed>& beacon_seeds);
   RemoteDeviceRef Build();
 
  private:

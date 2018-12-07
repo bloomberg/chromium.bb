@@ -41,13 +41,13 @@ class SoftwareFeatureManagerImpl : public SoftwareFeatureManager {
   // SoftwareFeatureManager:
   void SetSoftwareFeatureState(
       const std::string& public_key,
-      SoftwareFeature software_feature,
+      chromeos::multidevice::SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
       const base::Callback<void(NetworkRequestError)>& error_callback,
       bool is_exclusive = false) override;
   void FindEligibleDevices(
-      SoftwareFeature software_feature,
+      chromeos::multidevice::SoftwareFeature software_feature,
       const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                 const std::vector<IneligibleDevice>&)>&
           success_callback,

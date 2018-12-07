@@ -129,7 +129,7 @@ TetherHostFetcherImpl::GenerateHostDeviceList() {
          device_sync_client_->GetSyncedDevices()) {
       multidevice::SoftwareFeatureState magic_tether_host_state =
           remote_device_ref.GetSoftwareFeatureState(
-              cryptauth::SoftwareFeature::MAGIC_TETHER_HOST);
+              chromeos::multidevice::SoftwareFeature::kInstantTetheringHost);
       if (magic_tether_host_state ==
               multidevice::SoftwareFeatureState::kSupported ||
           magic_tether_host_state ==
@@ -153,7 +153,7 @@ bool TetherHostFetcherImpl::IsInLegacyHostMode() {
        device_sync_client_->GetSyncedDevices()) {
     multidevice::SoftwareFeatureState better_together_host_state =
         remote_device_ref.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+            chromeos::multidevice::SoftwareFeature::kBetterTogetherHost);
     // If there's any valid Better Together host, don't support legacy mode.
     if (better_together_host_state ==
             multidevice::SoftwareFeatureState::kSupported ||
@@ -164,7 +164,7 @@ bool TetherHostFetcherImpl::IsInLegacyHostMode() {
 
     multidevice::SoftwareFeatureState magic_tether_host_state =
         remote_device_ref.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::MAGIC_TETHER_HOST);
+            chromeos::multidevice::SoftwareFeature::kInstantTetheringHost);
     if (magic_tether_host_state ==
             multidevice::SoftwareFeatureState::kSupported ||
         magic_tether_host_state ==

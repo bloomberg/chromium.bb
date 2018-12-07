@@ -96,11 +96,11 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void GetSyncedDevices(GetSyncedDevicesCallback callback) override;
   void SetSoftwareFeatureState(
       const std::string& device_public_key,
-      cryptauth::SoftwareFeature software_feature,
+      multidevice::SoftwareFeature software_feature,
       bool enabled,
       bool is_exclusive,
       SetSoftwareFeatureStateCallback callback) override;
-  void FindEligibleDevices(cryptauth::SoftwareFeature software_feature,
+  void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
 
@@ -138,7 +138,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
    public:
     PendingSetSoftwareFeatureRequest(
         const std::string& device_public_key,
-        cryptauth::SoftwareFeature software_feature,
+        multidevice::SoftwareFeature software_feature,
         bool enabled,
         cryptauth::RemoteDeviceProvider* remote_device_provider,
         SetSoftwareFeatureStateCallback callback);
@@ -150,7 +150,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
     void InvokeCallback(mojom::NetworkRequestResult result);
 
-    cryptauth::SoftwareFeature software_feature() const {
+    multidevice::SoftwareFeature software_feature() const {
       return software_feature_;
     }
 
@@ -158,7 +158,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
 
    private:
     std::string device_public_key_;
-    cryptauth::SoftwareFeature software_feature_;
+    multidevice::SoftwareFeature software_feature_;
     bool enabled_;
     cryptauth::RemoteDeviceProvider* remote_device_provider_;
     SetSoftwareFeatureStateCallback callback_;

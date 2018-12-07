@@ -11,6 +11,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -241,7 +243,7 @@ void HostBackendDelegateImpl::AttemptNetworkRequest(bool is_retry) {
 
   device_sync_client_->SetSoftwareFeatureState(
       device_to_set.public_key(),
-      cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+      multidevice::SoftwareFeature::kBetterTogetherHost,
       should_enable /* enabled */, should_enable /* is_exclusive */,
       base::BindOnce(&HostBackendDelegateImpl::OnSetSoftwareFeatureStateResult,
                      weak_ptr_factory_.GetWeakPtr(), device_to_set,
@@ -285,7 +287,7 @@ HostBackendDelegateImpl::GetHostFromDeviceSync() {
       [](const auto& remote_device) {
         multidevice::SoftwareFeatureState host_state =
             remote_device.GetSoftwareFeatureState(
-                cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+                multidevice::SoftwareFeature::kBetterTogetherHost);
         return host_state == multidevice::SoftwareFeatureState::kEnabled;
       });
 

@@ -6,8 +6,8 @@
 #define COMPONENTS_CRYPTAUTH_SOFTWARE_FEATURE_MANAGER_H_
 
 #include "base/callback.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "components/cryptauth/network_request_error.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 
@@ -27,7 +27,7 @@ class SoftwareFeatureManager {
   // ignored.
   virtual void SetSoftwareFeatureState(
       const std::string& public_key,
-      SoftwareFeature software_feature,
+      chromeos::multidevice::SoftwareFeature software_feature,
       bool enabled,
       const base::Closure& success_callback,
       const base::Callback<void(NetworkRequestError)>& error_callback,
@@ -36,7 +36,7 @@ class SoftwareFeatureManager {
   // Finds eligible devices associated with the logged-in account which support
   // |software_feature|.
   virtual void FindEligibleDevices(
-      SoftwareFeature software_feature,
+      chromeos::multidevice::SoftwareFeature software_feature,
       const base::Callback<void(const std::vector<ExternalDeviceInfo>&,
                                 const std::vector<IneligibleDevice>&)>&
           success_callback,

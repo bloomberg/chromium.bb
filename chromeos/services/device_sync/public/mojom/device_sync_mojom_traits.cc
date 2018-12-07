@@ -10,29 +10,29 @@
 
 namespace mojo {
 
-const std::string& StructTraits<
-    chromeos::device_sync::mojom::BeaconSeedDataView,
-    cryptauth::BeaconSeed>::data(const cryptauth::BeaconSeed& beacon_seed) {
+const std::string&
+StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+             chromeos::multidevice::BeaconSeed>::
+    data(const chromeos::multidevice::BeaconSeed& beacon_seed) {
   return beacon_seed.data();
 }
 
-base::Time
-StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
-             cryptauth::BeaconSeed>::start_time(const cryptauth::BeaconSeed&
-                                                    beacon_seed) {
-  return base::Time::FromJavaTime(beacon_seed.start_time_millis());
+base::Time StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+                        chromeos::multidevice::BeaconSeed>::
+    start_time(const chromeos::multidevice::BeaconSeed& beacon_seed) {
+  return beacon_seed.start_time();
 }
 
-base::Time StructTraits<
-    chromeos::device_sync::mojom::BeaconSeedDataView,
-    cryptauth::BeaconSeed>::end_time(const cryptauth::BeaconSeed& beacon_seed) {
-  return base::Time::FromJavaTime(beacon_seed.end_time_millis());
+base::Time StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+                        chromeos::multidevice::BeaconSeed>::
+    end_time(const chromeos::multidevice::BeaconSeed& beacon_seed) {
+  return beacon_seed.end_time();
 }
 
 bool StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
-                  cryptauth::BeaconSeed>::
+                  chromeos::multidevice::BeaconSeed>::
     Read(chromeos::device_sync::mojom::BeaconSeedDataView in,
-         cryptauth::BeaconSeed* out) {
+         chromeos::multidevice::BeaconSeed* out) {
   std::string beacon_seed_data;
   base::Time start_time;
   base::Time end_time;
@@ -42,9 +42,8 @@ bool StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
     return false;
   }
 
-  out->set_data(beacon_seed_data);
-  out->set_start_time_millis(start_time.ToJavaTime());
-  out->set_end_time_millis(end_time.ToJavaTime());
+  *out =
+      chromeos::multidevice::BeaconSeed(beacon_seed_data, start_time, end_time);
 
   return true;
 }
@@ -83,7 +82,7 @@ base::Time StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
   return base::Time::FromJavaTime(remote_device.last_update_time_millis);
 }
 
-const std::map<cryptauth::SoftwareFeature,
+const std::map<chromeos::multidevice::SoftwareFeature,
                chromeos::multidevice::SoftwareFeatureState>&
 StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
@@ -92,7 +91,7 @@ StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
   return remote_device.software_features;
 }
 
-const std::vector<cryptauth::BeaconSeed>&
+const std::vector<chromeos::multidevice::BeaconSeed>&
 StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
     beacon_seeds(const chromeos::multidevice::RemoteDevice& remote_device) {
@@ -122,67 +121,63 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
   return true;
 }
 
-chromeos::device_sync::mojom::SoftwareFeature EnumTraits<
-    chromeos::device_sync::mojom::SoftwareFeature,
-    cryptauth::SoftwareFeature>::ToMojom(cryptauth::SoftwareFeature input) {
+chromeos::device_sync::mojom::SoftwareFeature
+EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+           chromeos::multidevice::SoftwareFeature>::
+    ToMojom(chromeos::multidevice::SoftwareFeature input) {
   switch (input) {
-    case cryptauth::SoftwareFeature::UNKNOWN_FEATURE:
-      return chromeos::device_sync::mojom::SoftwareFeature::UNKNOWN_FEATURE;
-    case cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST:
+    case chromeos::multidevice::SoftwareFeature::kBetterTogetherHost:
       return chromeos::device_sync::mojom::SoftwareFeature::
           BETTER_TOGETHER_HOST;
-    case cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT:
+    case chromeos::multidevice::SoftwareFeature::kBetterTogetherClient:
       return chromeos::device_sync::mojom::SoftwareFeature::
           BETTER_TOGETHER_CLIENT;
-    case cryptauth::SoftwareFeature::EASY_UNLOCK_HOST:
+    case chromeos::multidevice::SoftwareFeature::kSmartLockHost:
       return chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_HOST;
-    case cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT:
+    case chromeos::multidevice::SoftwareFeature::kSmartLockClient:
       return chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT;
-    case cryptauth::SoftwareFeature::MAGIC_TETHER_HOST:
+    case chromeos::multidevice::SoftwareFeature::kInstantTetheringHost:
       return chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_HOST;
-    case cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT:
+    case chromeos::multidevice::SoftwareFeature::kInstantTetheringClient:
       return chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT;
-    case cryptauth::SoftwareFeature::SMS_CONNECT_HOST:
+    case chromeos::multidevice::SoftwareFeature::kMessagesForWebHost:
       return chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_HOST;
-    case cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT:
+    case chromeos::multidevice::SoftwareFeature::kMessagesForWebClient:
       return chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_CLIENT;
   }
 
   NOTREACHED();
-  return chromeos::device_sync::mojom::SoftwareFeature::UNKNOWN_FEATURE;
+  return chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_HOST;
 }
 
 bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
-                cryptauth::SoftwareFeature>::
+                chromeos::multidevice::SoftwareFeature>::
     FromMojom(chromeos::device_sync::mojom::SoftwareFeature input,
-              cryptauth::SoftwareFeature* out) {
+              chromeos::multidevice::SoftwareFeature* out) {
   switch (input) {
-    case chromeos::device_sync::mojom::SoftwareFeature::UNKNOWN_FEATURE:
-      *out = cryptauth::SoftwareFeature::UNKNOWN_FEATURE;
-      return true;
     case chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_HOST:
-      *out = cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST;
+      *out = chromeos::multidevice::SoftwareFeature::kBetterTogetherHost;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_CLIENT:
-      *out = cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT;
+      *out = chromeos::multidevice::SoftwareFeature::kBetterTogetherClient;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_HOST:
-      *out = cryptauth::SoftwareFeature::EASY_UNLOCK_HOST;
+      *out = chromeos::multidevice::SoftwareFeature::kSmartLockHost;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT:
-      *out = cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT;
+      *out = chromeos::multidevice::SoftwareFeature::kSmartLockClient;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_HOST:
-      *out = cryptauth::SoftwareFeature::MAGIC_TETHER_HOST;
+      *out = chromeos::multidevice::SoftwareFeature::kInstantTetheringHost;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT:
-      *out = cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT;
+      *out = chromeos::multidevice::SoftwareFeature::kInstantTetheringClient;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_HOST:
-      *out = cryptauth::SoftwareFeature::SMS_CONNECT_HOST;
+      *out = chromeos::multidevice::SoftwareFeature::kMessagesForWebHost;
       return true;
     case chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_CLIENT:
-      *out = cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT;
+      *out = chromeos::multidevice::SoftwareFeature::kMessagesForWebClient;
       return true;
   }
 

@@ -115,9 +115,9 @@ void LoadDataForUser(
 // than outside the user session (sign-in). RemoteDevices are serialized as
 // protocol buffers inside the user session, but we have a custom serialization
 // scheme for sign-in due to slightly different data requirements.
-std::vector<cryptauth::BeaconSeed> DeserializeBeaconSeeds(
+std::vector<multidevice::BeaconSeed> DeserializeBeaconSeeds(
     const std::string& serialized_beacon_seeds) {
-  std::vector<cryptauth::BeaconSeed> beacon_seeds;
+  std::vector<multidevice::BeaconSeed> beacon_seeds;
 
   JSONStringValueDeserializer deserializer(serialized_beacon_seeds);
   std::string error;
@@ -155,7 +155,8 @@ std::vector<cryptauth::BeaconSeed> DeserializeBeaconSeeds(
       continue;
     }
 
-    beacon_seeds.push_back(beacon_seed);
+    beacon_seeds.push_back(
+        chromeos::multidevice::FromCryptAuthSeed(beacon_seed));
   }
 
   PA_LOG(VERBOSE) << "Deserialized " << beacon_seeds.size() << " BeaconSeeds.";
@@ -518,13 +519,13 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
       continue;
     }
 
-    std::map<cryptauth::SoftwareFeature, multidevice::SoftwareFeatureState>
+    std::map<multidevice::SoftwareFeature, multidevice::SoftwareFeatureState>
         software_features;
-    software_features[cryptauth::SoftwareFeature::EASY_UNLOCK_HOST] =
+    software_features[multidevice::SoftwareFeature::kSmartLockHost] =
         device.unlock_key ? multidevice::SoftwareFeatureState::kEnabled
                           : multidevice::SoftwareFeatureState::kNotSupported;
 
-    std::vector<cryptauth::BeaconSeed> beacon_seeds;
+    std::vector<multidevice::BeaconSeed> beacon_seeds;
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(VERBOSE) << "Deserializing BeaconSeeds: "
                       << device.serialized_beacon_seeds;
@@ -579,9 +580,9 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
   for (const auto& remote_device : remote_devices) {
     if (base::ContainsKey(remote_device.software_features,
-                          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) &&
+                          multidevice::SoftwareFeature::kSmartLockHost) &&
         remote_device.software_features.at(
-            cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+            multidevice::SoftwareFeature::kSmartLockHost) ==
             multidevice::SoftwareFeatureState::kEnabled) {
       if (!unlock_key_id.empty()) {
         PA_LOG(ERROR) << "Only one of the devices should be an unlock key.";
