@@ -1488,7 +1488,7 @@ config("default_warnings") {
         # recognize.
         cflags += [
           # Ignore warnings about MSVC optimization pragmas.
-          # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
+          # TODO(thakis): Only for no_chromium_code? http://crbug.com/912662
           "-Wno-ignored-pragma-optimize",
         ]
         if (is_fuchsia) {
