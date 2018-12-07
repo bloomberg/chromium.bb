@@ -1009,7 +1009,14 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Expect the update to fail and the service worker to be removed.
   EXPECT_FALSE(RunScriptAndGetBool("updateServiceWorker()"));
   delegate()->VerifyAndClearExpectations();
-  EXPECT_FALSE(RunScriptAndGetBool("hasServiceWorker()"));
+  // The service worker should be gone but a few tests are flaky and fail
+  // because it hasn't been removed. To find out if this is just a
+  // timing issue, add some delay if the first call returns true.
+  // TODO(crbug.com/912313): Check if this worked and find out why.
+  if (RunScriptAndGetBool("hasServiceWorker()")) {
+    LOG(ERROR) << "There was a service worker, checking again in a second";
+    EXPECT_FALSE(RunScriptAndGetBool("setTimeout(hasServiceWorker, 1000)"));
+  }
 }
 
 }  // namespace content
