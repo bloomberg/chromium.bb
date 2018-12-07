@@ -368,6 +368,7 @@ static jlong JNI_SigninManager_Init(JNIEnv* env,
 
 static jboolean JNI_SigninManager_ShouldLoadPolicyForUser(
     JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username) {
   std::string username =
       base::android::ConvertJavaStringToUTF8(env, j_username);
@@ -376,6 +377,7 @@ static jboolean JNI_SigninManager_ShouldLoadPolicyForUser(
 
 static void JNI_SigninManager_IsUserManaged(
     JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_username,
     const JavaParamRef<jobject>& j_callback) {
   base::android::ScopedJavaGlobalRef<jobject> callback(env, j_callback);
@@ -395,6 +397,7 @@ static void JNI_SigninManager_IsUserManaged(
 
 base::android::ScopedJavaLocalRef<jstring> JNI_SigninManager_ExtractDomainName(
     JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& j_email) {
   std::string email = base::android::ConvertJavaStringToUTF8(env, j_email);
   std::string domain = gaia::ExtractDomainName(email);
