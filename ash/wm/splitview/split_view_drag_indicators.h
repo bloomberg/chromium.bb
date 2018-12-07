@@ -81,15 +81,16 @@ class ASH_EXPORT SplitViewDragIndicators {
   // root window than |widget_|, |widget_| will reparent.
   void SetIndicatorState(IndicatorState indicator_state,
                          const gfx::Point& event_location);
-  IndicatorState current_indicator_state() const {
-    return current_indicator_state_;
-  }
 
   // Called by owner of this class when display bounds changes are observed, so
   // that this class can relayout accordingly.
   void OnDisplayBoundsChanged();
 
   bool GetIndicatorTypeVisibilityForTesting(IndicatorType type) const;
+
+  IndicatorState current_indicator_state() const {
+    return current_indicator_state_;
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SplitViewWindowSelectorTest,
