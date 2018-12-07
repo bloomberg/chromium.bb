@@ -33,6 +33,12 @@ void WindowProxyManager::ClearForSwap() {
     entry.value->ClearForSwap();
 }
 
+void WindowProxyManager::ClearForMummification() {
+  window_proxy_->ClearForMummification();
+  for (auto& entry : isolated_worlds_)
+    entry.value->ClearForMummification();
+}
+
 void WindowProxyManager::ReleaseGlobalProxies(
     GlobalProxyVector& global_proxies) {
   DCHECK(global_proxies.IsEmpty());

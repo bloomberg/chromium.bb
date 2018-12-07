@@ -74,6 +74,10 @@ void WindowProxy::ClearForSwap() {
   DisposeContext(Lifecycle::kGlobalObjectIsDetached, kFrameWillNotBeReused);
 }
 
+void WindowProxy::ClearForMummification() {
+  DisposeContext(Lifecycle::kForciblyPurgeV8Memory, kFrameWillNotBeReused);
+}
+
 v8::Local<v8::Object> WindowProxy::GlobalProxyIfNotDetached() {
   if (lifecycle_ == Lifecycle::kContextIsInitialized) {
     DLOG_IF(FATAL, !is_global_object_attached_)
