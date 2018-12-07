@@ -2811,6 +2811,8 @@ void WebContentsImpl::CreateNewWindow(
         new_contents_impl->delayed_load_url_params_ = std::move(load_params);
       } else {
         new_contents_impl->controller_.LoadURLWithParams(*load_params.get());
+        if (!is_guest)
+          new_contents_impl->Focus();
       }
     }
   }

@@ -31,6 +31,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -57,6 +58,7 @@ class ChromeNavigationBrowserTest : public InProcessBrowserTest {
     // tests don't time out.
     command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
 
+    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -1024,6 +1026,55 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
     if (!item->IsDone())
       item->Cancel(true);
   }
+}
+
+// Test which verifies that a noopener link/window.open() properly focus the
+// newly opened tab. See https://crbug.com/912348.
+IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
+                       NoopenerCorrectlyFocusesNewTab) {
+  content::WebContents* main_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a test page with links.
+  {
+    content::TestNavigationObserver observer(main_contents);
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL("/click-noreferrer-links.html"));
+    observer.Wait();
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // Click a link with noopener that navigates in a new window.
+  content::WebContents* link_web_contents = nullptr;
+  {
+    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
+        content::NotificationService::AllSources());
+    EXPECT_TRUE(
+        content::ExecJs(main_contents, "clickSameSiteNoOpenerTargetedLink();"));
+    tab_added_observer.Wait();
+    link_web_contents = tab_added_observer.GetTab();
+  }
+
+  EXPECT_NE(main_contents, link_web_contents);
+  EXPECT_TRUE(link_web_contents->GetRenderWidgetHostView()->HasFocus());
+
+  // Execute window.open() with noopener.
+  content::WebContents* open_web_contents = nullptr;
+  {
+    ui_test_utils::WindowedTabAddedNotificationObserver tab_added_observer(
+        content::NotificationService::AllSources());
+    EXPECT_TRUE(content::ExecJs(
+        main_contents, content::JsReplace("window.open($1, 'bar', 'noopener');",
+                                          embedded_test_server()->GetURL(
+                                              "a.com", "/title1.html"))));
+    tab_added_observer.Wait();
+    open_web_contents = tab_added_observer.GetTab();
+  }
+
+  EXPECT_NE(main_contents, open_web_contents);
+  EXPECT_NE(link_web_contents, open_web_contents);
+  EXPECT_TRUE(open_web_contents->GetRenderWidgetHostView()->HasFocus());
 }
 
 // TODO(csharrison): These tests should become tentative WPT, once the feature
