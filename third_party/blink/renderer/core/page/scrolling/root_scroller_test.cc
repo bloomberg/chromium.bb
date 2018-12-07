@@ -2557,8 +2557,8 @@ TEST_F(ImplicitRootScrollerSimTest, PromotionChangesLayoutSize) {
       << "Once loaded, the iframe should be promoted.";
 }
 
-// Test that we don't promote any elements implicitly if the main document have
-// vertical overflow.
+// Test that we don't promote any elements implicitly if the main document has
+// vertical scrolling.
 TEST_F(ImplicitRootScrollerSimTest, OverflowInMainDocumentRestrictsImplicit) {
   WebView().ResizeWithBrowserControls(IntSize(800, 600), 50, 0, true);
   SimRequest main_request("https://example.com/test.html", "text/html");
@@ -2609,15 +2609,6 @@ TEST_F(ImplicitRootScrollerSimTest, OverflowInMainDocumentRestrictsImplicit) {
 
   Element* spacer = GetDocument().getElementById("spacer");
   spacer->style()->setProperty(&GetDocument(), "height", "100%", String(),
-                               ASSERT_NO_EXCEPTION);
-  Compositor().BeginFrame();
-
-  EXPECT_EQ(GetDocument(),
-            GetDocument().GetRootScrollerController().EffectiveRootScroller())
-      << "iframe still shouldn't be promoted due to horizontal overflow in "
-      << "the main document.";
-
-  spacer->style()->setProperty(&GetDocument(), "width", "100%", String(),
                                ASSERT_NO_EXCEPTION);
   Compositor().BeginFrame();
 

@@ -310,10 +310,8 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
       PaintLayerScrollableArea* area = ancestor->GetScrollableArea();
       DCHECK(area);
 
-      if ((style->ScrollsOverflowX() && area->HasHorizontalOverflow()) ||
-          (style->ScrollsOverflowY() && area->HasVerticalOverflow())) {
+      if (style->ScrollsOverflowY() && area->HasVerticalOverflow())
         return false;
-      }
     } else {
       if (ancestor->ShouldClipOverflow() || ancestor->HasMask() ||
           ancestor->HasClip() || ancestor->HasClipPath()) {
