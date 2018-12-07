@@ -166,6 +166,7 @@ source_set("chromeos") {
     "//components/ukm/content",
     "//components/user_manager",
     "//components/viz/host",
+    "//components/webdata/common:common",
     "//google_apis/drive",
     "//services/identity/public/cpp",
     "//services/metrics/public/cpp:ukm_builders",
