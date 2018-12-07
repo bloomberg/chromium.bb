@@ -1574,6 +1574,3 @@ crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/r
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-form-data-gc-crash.html [ Slow ]
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-json-gc-crash.html [ Slow ]
 crbug.com/893015 [ Linux ] virtual/streaming-preload/http/tests/fetch/chromium/response-text-gc-crash.html [ Slow ]
-
-crbug.com/912240 external/wpt/worklets/animation-worklet-csp.https.html [ Slow ]
-crbug.com/912240 external/wpt/worklets/audio-worklet-csp.https.html [ Slow ]
