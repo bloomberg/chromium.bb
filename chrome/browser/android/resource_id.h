@@ -48,7 +48,7 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MEDIA_STREAM_SCREEN,
                     R.drawable.infobar_screen_share)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MIDI, R.drawable.infobar_midi)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MULTIPLE_DOWNLOADS,
-                    R.drawable.infobar_multiple_downloads)
+                    R.drawable.infobar_downloading)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_NOTIFICATIONS,
                     R.drawable.infobar_desktop_notifications)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PREVIEWS,
