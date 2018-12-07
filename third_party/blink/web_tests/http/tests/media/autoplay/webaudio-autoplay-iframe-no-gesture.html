@@ -7,10 +7,11 @@
 async_test(t => {
   // Make sure this overrides any preset autoplay policy.
   internals.settings.setAutoplayPolicy('document-user-activation-required');
+  internals.settings.autoplayIgnoresWebAudioEnabled = false;
 
   // Setup the event listener.
   window.addEventListener('message', t.step_func_done((e) => {
-    assert_equals(e.data, navigator.userAgent.search('Android') > 0 ? 'suspended' : 'running');
+    assert_equals(e.data, 'suspended');
   }), { once: true });
 
   // Navigate the iframe to a cross origin site.
