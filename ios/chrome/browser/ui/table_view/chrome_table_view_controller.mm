@@ -277,14 +277,6 @@
 
 #pragma mark - MDCAppBarViewController support
 
-- (UIViewController*)childViewControllerForStatusBarHidden {
-  return self.appBarViewController;
-}
-
-- (UIViewController*)childViewControllerForStatusBarStyle {
-  return self.appBarViewController;
-}
-
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   MDCFlexibleHeaderView* headerView = self.appBarViewController.headerView;
   if (scrollView == headerView.trackingScrollView) {
