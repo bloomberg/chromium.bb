@@ -147,28 +147,22 @@ StylePropertyMapReadOnlyMainThread::StartIteration(ScriptState* script_state,
   const ExecutionContext& execution_context =
       *ExecutionContext::From(script_state);
 
-  ForEachProperty([&result, &execution_context](const String& property_name,
+  ForEachProperty([&result, &execution_context](const CSSPropertyName& name,
                                                 const CSSValue& css_value) {
-    const auto property_id = cssPropertyID(property_name);
-
     const CSSValue* value = &css_value;
-    AtomicString custom_property_name = g_null_atom;
 
-    if (property_id == CSSPropertyVariable) {
-      custom_property_name = AtomicString(property_name);
-
+    // TODO(andruud): Refactor this. ForEachProperty should yield the correct,
+    // already-parsed value in the first place.
+    if (name.IsCustomProperty()) {
       const auto* document = DynamicTo<Document>(execution_context);
       if (document) {
         value = PropertyRegistry::ParseIfRegistered(
-            *document, custom_property_name, value);
+            *document, name.ToAtomicString(), value);
       }
     }
 
-    auto name = (property_id == CSSPropertyVariable)
-                    ? CSSPropertyName(custom_property_name)
-                    : CSSPropertyName(property_id);
     auto values = StyleValueFactory::CssValueToStyleValueVector(name, *value);
-    result.emplace_back(property_name, std::move(values));
+    result.emplace_back(name.ToAtomicString(), std::move(values));
   });
 
   return MakeGarbageCollected<StylePropertyMapIterationSource>(result);

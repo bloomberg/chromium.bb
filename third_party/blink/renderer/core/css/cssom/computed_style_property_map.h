@@ -44,7 +44,8 @@ class CORE_EXPORT ComputedStylePropertyMap
   // ComputedStylePropertyMap needs to be sorted. This puts CSS properties
   // first, then prefixed properties, then custom properties. Everything is
   // sorted by code point within each category.
-  static bool ComparePropertyNames(const String&, const String&);
+  static bool ComparePropertyNames(const CSSPropertyName&,
+                                   const CSSPropertyName&);
 
  protected:
   const CSSValue* GetProperty(CSSPropertyID) override;

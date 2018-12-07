@@ -100,15 +100,7 @@ void DeclaredStylePropertyMap::ForEachProperty(
   const CSSPropertyValueSet& declared_style_set = GetStyleRule()->Properties();
   for (unsigned i = 0; i < declared_style_set.PropertyCount(); i++) {
     const auto& property_reference = declared_style_set.PropertyAt(i);
-    if (property_reference.Id() == CSSPropertyVariable) {
-      const auto& decl =
-          ToCSSCustomPropertyDeclaration(property_reference.Value());
-      callback(decl.GetName(), property_reference.Value());
-    } else {
-      const CSSProperty& property = CSSProperty::Get(property_reference.Id());
-      callback(property.GetPropertyNameAtomicString(),
-               property_reference.Value());
-    }
+    callback(property_reference.Name(), property_reference.Value());
   }
 }
 

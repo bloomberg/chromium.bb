@@ -96,17 +96,16 @@ void PrepopulatedComputedStylePropertyMap::ForEachProperty(
     const IterationCallback& callback) {
   // Have to sort by all properties by code point, so we have to store
   // them in a buffer first.
-  HeapVector<std::pair<AtomicString, Member<const CSSValue>>> values;
+  HeapVector<std::pair<CSSPropertyName, Member<const CSSValue>>> values;
 
   for (const auto& entry : native_values_) {
     DCHECK(entry.value);
-    values.emplace_back(
-        CSSProperty::Get(entry.key).GetPropertyNameAtomicString(), entry.value);
+    values.emplace_back(CSSPropertyName(entry.key), entry.value);
   }
 
   for (const auto& entry : custom_values_) {
     DCHECK(entry.value);
-    values.emplace_back(entry.key, entry.value);
+    values.emplace_back(CSSPropertyName(entry.key), entry.value);
   }
 
   std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {

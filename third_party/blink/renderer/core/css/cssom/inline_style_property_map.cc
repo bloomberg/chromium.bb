@@ -74,14 +74,7 @@ void InlineStylePropertyMap::ForEachProperty(
       owner_element_->EnsureMutableInlineStyle();
   for (unsigned i = 0; i < inline_style_set.PropertyCount(); i++) {
     const auto& property_reference = inline_style_set.PropertyAt(i);
-    if (property_reference.Id() == CSSPropertyVariable) {
-      const auto& decl =
-          ToCSSCustomPropertyDeclaration(property_reference.Value());
-      callback(decl.GetName(), property_reference.Value());
-    } else {
-      callback(property_reference.Property().GetPropertyNameAtomicString(),
-               property_reference.Value());
-    }
+    callback(property_reference.Name(), property_reference.Value());
   }
 }
 
