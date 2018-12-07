@@ -31,6 +31,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/bubble/tooltip_icon.h"
 #include "ui/views/controls/button/label_button.h"
@@ -46,6 +47,7 @@
 namespace autofill {
 
 namespace {
+const int kTooltipBubbleWidth = 320;
 const int kTooltipIconSize = 12;
 }  // namespace
 
@@ -55,6 +57,21 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
+}
+
+views::View* SaveCardOfferBubbleViews::CreateExtraView() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillSaveCardImprovedUserConsent)) {
+    return nullptr;
+  }
+
+  auto* upload_explanation_tooltip =
+      new views::TooltipIcon(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION_TOOLTIP));
+  upload_explanation_tooltip->set_bubble_width(kTooltipBubbleWidth);
+  upload_explanation_tooltip->set_anchor_point_arrow(
+      views::BubbleBorder::Arrow::TOP_RIGHT);
+  return upload_explanation_tooltip;
 }
 
 views::View* SaveCardOfferBubbleViews::CreateFootnoteView() {
