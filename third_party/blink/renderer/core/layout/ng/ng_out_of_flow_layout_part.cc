@@ -386,6 +386,11 @@ bool NGOutOfFlowLayoutPart::IsContainingBlockForDescendant(
   // Descendants whose containing block is inline are always positioned
   // inside closest parent block flow.
   if (descendant.inline_container) {
+    DCHECK(
+        descendant.node.Style().GetPosition() == EPosition::kAbsolute &&
+            descendant.inline_container->CanContainAbsolutePositionObjects() ||
+        (descendant.node.Style().GetPosition() == EPosition::kFixed &&
+         descendant.inline_container->CanContainFixedPositionObjects()));
     return true;
   }
   return (contains_absolute_ && position == EPosition::kAbsolute) ||
