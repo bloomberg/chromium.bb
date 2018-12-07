@@ -4,7 +4,7 @@
 
 package org.chromium.example.jni_generator;
 
-import org.chromium.base.annotations.JniStaticNatives;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Sample class that uses the JNI annotation processor for static methods.
@@ -22,7 +22,7 @@ class SampleForAnnotationProcessor {
      * with the name SampleForAnnotationProcessorJni which will implement
      * Natives.
      */
-    @JniStaticNatives
+    @NativeMethods
     interface Natives {
         void foo();
         SampleForAnnotationProcessor bar(SampleForAnnotationProcessor sample);

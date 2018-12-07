@@ -57,7 +57,7 @@ _EXTRACT_METHODS_REGEX = re.compile(
     flags=re.DOTALL)
 
 _NATIVE_PROXY_EXTRACTION_REGEX = re.compile(
-    r'@JniStaticNatives\s*(public|private)*\s*interface\s*'
+    r'@NativeMethods\s*(public|private)*\s*interface\s*'
     r'(?P<interface_name>\w*)\s*(?P<interface_body>{(\s*.*)+?\s*})')
 
 # Use 100 columns rather than 80 because it makes many lines more readable.
@@ -837,7 +837,7 @@ class JNIFromJavaP(object):
     return jni_from_javap
 
 
-# 'Proxy' native methods are declared in an @JniStaticNatives interface without
+# 'Proxy' native methods are declared in an @NativeMethods interface without
 # a native qualifier and indicate that the JNI annotation processor should
 # generate code to link between the equivalent native method as if it were
 # declared statically.

@@ -2894,7 +2894,7 @@ if (is_android) {
   java_library("jni_java") {
     supports_android = true
     java_files = [
-      "android/java/src/org/chromium/base/annotations/JniStaticNatives.java",
+      "android/java/src/org/chromium/base/annotations/NativeMethods.java",
       "android/java/src/org/chromium/base/JniStaticTestMocker.java",
     ]
   }

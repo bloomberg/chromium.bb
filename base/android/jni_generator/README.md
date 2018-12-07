@@ -69,11 +69,11 @@ There are two ways to call native methods:
   bindings will automatically generate the appropriate cast and call into C++
   code (JNI itself is only C).
 
-**Method 2 - Using an interface annotated with @JniStaticNatives**
+**Method 2 - Using an interface annotated with @NativeMethods**
 
 - Only works for static methods.
 - Supports mocking in tests.
-- Inner-interfaces annotated with `@JniStaticNatives` defines the native
+- Inner-interfaces annotated with `@NativeMethods` defines the native
   interface.
 - A companion JNI class is generated which implements this interface with the
   proper bindings to forward calls to C++ functions (that you must write).
@@ -94,7 +94,7 @@ Usage:
 1. Enable the JNI processor by adding
    `annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]`
    to the Java target.
-2. Create an inner-interface annotated with `@JniStaticNatives` that contains
+2. Create an inner-interface annotated with `@NativeMethods` that contains
    the declaration of the corresponding static methods you wish to have
    implemented.
 3. Call native functions using `${OriginalClassName}Jni.get().${method}` e.g.
@@ -125,7 +125,7 @@ class A {
     // Using AJni.get() everywhere has no overhead when running in release with R8.
   }
 
-  @JniStaticNatives
+  @NativeMethods
   interface Natives {
     void foo();
     double bar(int a, int b);
@@ -133,7 +133,7 @@ class A {
 }
 ```
 
-- If a class contains an interface annotated with `@JniStaticNatives`, the JNI
+- If a class contains an interface annotated with `@NativeMethods`, the JNI
   annotation processor generates a class named `${OriginalClassName}Jni` which
   has a function `get()` which returns an implementation of the annotated
   interface (and will call the corresponding static method as if it

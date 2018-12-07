@@ -1244,7 +1244,7 @@ class ProxyTestGenerator(BaseTest):
 
     class Foo {
 
-    @JniStaticNatives
+    @NativeMethods
     interface Natives {
        void foo();
        String bar(String s, int y, char x, short z);
@@ -1267,7 +1267,7 @@ class ProxyTestGenerator(BaseTest):
   def testEscapingProxyNatives(self):
     test_data = """
     class SampleProxyJni {
-      @JniStaticNatives
+      @NativeMethods
       interface Natives {
         void foo_bar();
         void foo__bar();
@@ -1306,7 +1306,7 @@ class ProxyTestGenerator(BaseTest):
     test_data = """
     @MainDex
     class Foo() {
-      @JniStaticNatives
+      @NativeMethods
       interface Natives {
         void thisismaindex();
       }
@@ -1318,7 +1318,7 @@ class ProxyTestGenerator(BaseTest):
 
     non_main_dex_test_data = """
     class Bar() {
-      @JniStaticNatives
+      @NativeMethods
       interface Natives {
         void foo();
         void bar();
@@ -1382,7 +1382,7 @@ class ProxyTestGenerator(BaseTest):
     test_data = """
     class SampleProxyJni {
       private void do_not_match();
-      @JniStaticNatives
+      @NativeMethods
       interface Natives {
         void foo();
         int bar(int x, int y);
@@ -1396,7 +1396,7 @@ class ProxyTestGenerator(BaseTest):
 
     bad_spaced_test_data = """
     class SampleProxyJni{
-      @JniStaticNatives interface 
+      @NativeMethods interface 
       Natives 
       
       
