@@ -95,6 +95,27 @@ bool IsMalformedBlobUrl(const GURL& url) {
   return true;
 }
 
+// Helper function that checks to make sure calls on
+// CanAccessDataForOrigin() are only made on valid threads.
+// TODO(acolwell): Expand the usage of this check to other
+// ChildProcessSecurityPolicyImpl methods.
+bool IsRunningOnExpectedThread() {
+  if (BrowserThread::CurrentlyOn(BrowserThread::IO) ||
+      BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    return true;
+  }
+
+  std::string thread_name(base::PlatformThread::GetName());
+
+  // TODO(acolwell): Remove once all tests are updated to properly
+  // identify that they are running on the UI or IO threads.
+  if (thread_name.empty())
+    return true;
+
+  LOG(ERROR) << "Running on unexpected thread '" << thread_name << "'";
+  return false;
+}
+
 }  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
@@ -1119,6 +1140,8 @@ bool ChildProcessSecurityPolicyImpl::ChildProcessHasPermissionsForFile(
 
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& url) {
+  DCHECK(IsRunningOnExpectedThread());
+
   // It's important to call DetermineProcessLockURL before
   // acquiring |lock_|, since DetermineProcessLockURL consults
   // IsIsolatedOrigin, which needs to grab the same lock.

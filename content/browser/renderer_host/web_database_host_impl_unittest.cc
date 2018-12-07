@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/web_database_host_impl.h"
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -35,14 +36,24 @@ class BadMessageObserver {
         mojo::core::ProcessErrorCallback());
   }
 
-  const std::string& last_error() const { return last_error_; }
+  const std::string& WaitForError() {
+    if (last_error_.empty())
+      run_loop_.Run();
+
+    return last_error_;
+  }
 
  private:
-  void ReportBadMessage(const std::string& error) { last_error_ = error; }
+  void ReportBadMessage(const std::string& error) {
+    DCHECK(!error.empty());
+    last_error_ = error;
+    run_loop_.Quit();
+  }
 
   mojo::Message dummy_message_;
   mojo::internal::MessageDispatchContext context_;
   std::string last_error_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(BadMessageObserver);
 };
@@ -70,14 +81,14 @@ class WebDatabaseHostImplTest : public ::testing::Test {
   void CheckUnauthorizedOrigin(const Callable& func) {
     BadMessageObserver bad_message_observer;
     func();
-    EXPECT_EQ("Unauthorized origin.", bad_message_observer.last_error());
+    EXPECT_EQ("Unauthorized origin.", bad_message_observer.WaitForError());
   }
 
   template <typename Callable>
   void CheckInvalidOrigin(const Callable& func) {
     BadMessageObserver bad_message_observer;
     func();
-    EXPECT_EQ("Invalid origin.", bad_message_observer.last_error());
+    EXPECT_EQ("Invalid origin.", bad_message_observer.WaitForError());
   }
 
   WebDatabaseHostImpl* host() { return host_.get(); }

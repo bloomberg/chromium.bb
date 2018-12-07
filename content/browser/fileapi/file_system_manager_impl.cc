@@ -828,12 +828,21 @@ void FileSystemManagerImpl::GetPlatformPathOnFileThread(
     storage::FileSystemContext* context,
     base::WeakPtr<FileSystemManagerImpl> file_system_manager,
     GetPlatformPathCallback callback) {
-  base::FilePath platform_path;
-  SyncGetPlatformPath(context, process_id, path, &platform_path);
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
-                     file_system_manager, std::move(callback), platform_path));
+  DCHECK(context->default_file_task_runner()->RunsTasksInCurrentSequence());
+
+  SyncGetPlatformPath(
+      context, process_id, path,
+      base::BindOnce(
+          [](base::WeakPtr<FileSystemManagerImpl> file_system_manager,
+             GetPlatformPathCallback callback,
+             const base::FilePath& platform_path) {
+            base::PostTaskWithTraits(
+                FROM_HERE, {BrowserThread::IO},
+                base::BindOnce(&FileSystemManagerImpl::DidGetPlatformPath,
+                               std::move(file_system_manager),
+                               std::move(callback), platform_path));
+          },
+          std::move(file_system_manager), std::move(callback)));
 }
 
 base::Optional<base::File::Error> FileSystemManagerImpl::ValidateFileSystemURL(

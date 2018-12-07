@@ -12,6 +12,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -113,6 +114,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
   }
 
  private:
+  TestBrowserThreadBundle thread_bundle_;
   ChildProcessSecurityPolicyTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;
 };
