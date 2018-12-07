@@ -13,7 +13,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
-struct AutofillMetadata;
 class AutofillProfile;
 class AutofillWebDataService;
 class CreditCard;
@@ -62,14 +61,6 @@ void UpdateServerCardMetadata(int profile,
 void UpdateServerAddressMetadata(
     int profile,
     const autofill::AutofillProfile& server_address);
-
-void GetServerCardsMetadata(
-    int profile,
-    std::map<std::string, autofill::AutofillMetadata>* cards_metadata);
-
-void GetServerAddressesMetadata(
-    int profile,
-    std::map<std::string, autofill::AutofillMetadata>* addresses_metadata);
 
 sync_pb::SyncEntity CreateDefaultSyncWalletCard();
 

@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill/core/browser/autofill_metadata.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -25,7 +24,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/driver/sync_driver_switches.h"
 
-using autofill::AutofillMetadata;
 using autofill::AutofillProfile;
 using autofill::AutofillTable;
 using autofill::AutofillWebDataService;
@@ -180,22 +178,6 @@ void SetPaymentsCustomerDataOnDBSequence(
       ->SetPaymentsCustomerData(&customer_data);
 }
 
-void GetServerCardsMetadataOnDBSequence(
-    AutofillWebDataService* wds,
-    std::map<std::string, AutofillMetadata>* cards_metadata) {
-  DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
-      ->GetServerCardsMetadata(cards_metadata);
-}
-
-void GetServerAddressesMetadataOnDBSequence(
-    AutofillWebDataService* wds,
-    std::map<std::string, AutofillMetadata>* addresses_metadata) {
-  DCHECK(wds->GetDBTaskRunner()->RunsTasksInCurrentSequence());
-  AutofillTable::FromWebDatabase(wds->GetDatabase())
-      ->GetServerAddressesMetadata(addresses_metadata);
-}
-
 }  // namespace
 
 namespace wallet_helper {
@@ -259,27 +241,6 @@ void UpdateServerAddressMetadata(int profile,
                                  const AutofillProfile& server_address) {
   scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
   wds->UpdateServerAddressMetadata(server_address);
-  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
-}
-
-void GetServerCardsMetadata(
-    int profile,
-    std::map<std::string, AutofillMetadata>* cards_metadata) {
-  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
-  wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(&GetServerCardsMetadataOnDBSequence,
-                                base::Unretained(wds.get()), cards_metadata));
-  WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
-}
-
-void GetServerAddressesMetadata(
-    int profile,
-    std::map<std::string, AutofillMetadata>* addresses_metadata) {
-  scoped_refptr<AutofillWebDataService> wds = GetProfileWebDataService(profile);
-  wds->GetDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&GetServerAddressesMetadataOnDBSequence,
-                     base::Unretained(wds.get()), addresses_metadata));
   WaitForCurrentTasksToComplete(wds->GetDBTaskRunner());
 }
 
