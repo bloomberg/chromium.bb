@@ -556,6 +556,23 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkQualityFast) {
       static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
 }
 
+TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkOffline) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  InitializeUIService();
+
+  PreviewsUserData user_data(kDefaultPageId);
+
+  ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_OFFLINE);
+  base::HistogramTester histogram_tester;
+  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
+      &user_data, GURL("https://www.google.com"), false,
+      PreviewsType::OFFLINE));
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.Offline",
+      static_cast<int>(PreviewsEligibilityReason::DEVICE_OFFLINE), 1);
+}
+
 TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineOnReload) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
@@ -1163,9 +1180,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
 
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.ResourceLoadingHints",
-        static_cast<int>(
-            PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
-        1);
+        static_cast<int>(PreviewsEligibilityReason::DEVICE_OFFLINE), 1);
 
     // Expect no triggered ECT logged.
     histogram_tester.ExpectTotalCount(
@@ -1489,6 +1504,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
       PreviewsEligibilityReason::USER_BLACKLISTED,
       PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
+      PreviewsEligibilityReason::DEVICE_OFFLINE,
   };
   PreviewsUserData user_data(kDefaultPageId);
   previews_decider_impl()->ShouldAllowPreviewAtNavigationStart(
@@ -1531,6 +1547,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
       PreviewsEligibilityReason::USER_BLACKLISTED,
       PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
+      PreviewsEligibilityReason::DEVICE_OFFLINE,
       PreviewsEligibilityReason::NETWORK_NOT_SLOW,
   };
 
@@ -1604,6 +1621,7 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeAllowClientPreviewsWithECT) {
       PreviewsEligibilityReason::USER_BLACKLISTED,
       PreviewsEligibilityReason::HOST_BLACKLISTED,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
+      PreviewsEligibilityReason::DEVICE_OFFLINE,
       PreviewsEligibilityReason::NETWORK_NOT_SLOW,
       PreviewsEligibilityReason::RELOAD_DISALLOWED,
   };

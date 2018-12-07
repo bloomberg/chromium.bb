@@ -83,6 +83,9 @@ std::string GetReasonDescription(PreviewsEligibilityReason reason,
       return want_inverse_description
                  ? "Network is slow enough for the session"
                  : "Network not slow enough for the session";
+    case PreviewsEligibilityReason::DEVICE_OFFLINE:
+      return want_inverse_description ? "Device is online"
+                                      : "Device is offline";
   }
   NOTREACHED();
   return "";
