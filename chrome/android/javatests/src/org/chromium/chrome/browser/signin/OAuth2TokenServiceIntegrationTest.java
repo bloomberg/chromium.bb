@@ -87,6 +87,7 @@ public class OAuth2TokenServiceIntegrationTest {
             mChromeSigninController.setSignedInAccountName(null);
             mOAuth2TokenService.validateAccounts(false);
         });
+        SigninHelper.resetSharedPrefs();
     }
 
     private void mapAccountNamesToIds() {
