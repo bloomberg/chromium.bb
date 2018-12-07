@@ -297,9 +297,14 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "blink-gen-property-trees",
-    "base": "paint/transparency",
-    "args": ["--enable-blink-features=BlinkGenPropertyTrees"]
+    "prefix": "not-blink-gen-property-trees",
+    "base": "compositing",
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
+  },
+  {
+    "prefix": "not-blink-gen-property-trees",
+    "base": "paint",
+    "args": ["--disable-blink-features=BlinkGenPropertyTrees"]
   },
   {
     "prefix": "scalefactor200",
