@@ -38,6 +38,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/timer_slack.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 
 #if defined(__OBJC__)
@@ -124,6 +125,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // Get the current mode mask from |enabled_modes_|.
   int GetModeMask() const;
 
+  // Controls whether the timer invalidation performance optimization is
+  // allowed.
+  void SetTimerInvalidationAllowed(bool allowed);
+
  private:
   class ScopedModeEnabler;
 
@@ -144,6 +149,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // Sets a Core Foundation object's "invalid" bit to |valid|. Based on code
   // from CFRunLoop.c.
   static void ChromeCFRunLoopTimerSetValid(CFRunLoopTimerRef timer, bool valid);
+
+  // Controls the validity of the delayed work timer. Does nothing if timer
+  // invalidation is disallowed.
+  void SetDelayedWorkTimerValid(bool valid);
 
   // Timer callback scheduled by ScheduleDelayedWork.  This does not do any
   // work, but it signals work_source_ so that delayed work can be performed
@@ -249,6 +258,14 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // work on entry and redispatch it as needed once a delegate is available.
   bool delegateless_work_;
   bool delegateless_idle_work_;
+
+  // Whether or not timer invalidation can be used in order to reduce the number
+  // of reschedulings.
+  bool allow_timer_invalidation_;
+
+  // If changing timer validitity was attempted while it was disallowed, this
+  // value tracks the desired state of the timer.
+  Optional<bool> pending_timer_validity_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCFRunLoopBase);
 };

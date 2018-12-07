@@ -208,7 +208,7 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
   //
   // Please see the comment in RunDelayedWorkTimer() for more info on the whys
   // of invalidation.
-  ChromeCFRunLoopTimerSetValid(delayed_work_timer_, true);
+  SetDelayedWorkTimerValid(true);
 
   CFRunLoopTimerSetNextFireDate(delayed_work_timer_, delayed_work_fire_time_);
   if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
@@ -231,7 +231,8 @@ MessagePumpCFRunLoopBase::MessagePumpCFRunLoopBase(int initial_mode_mask)
       run_nesting_level_(0),
       deepest_nesting_level_(0),
       delegateless_work_(false),
-      delegateless_idle_work_(false) {
+      delegateless_idle_work_(false),
+      allow_timer_invalidation_(true) {
   run_loop_ = CFRunLoopGetCurrent();
   CFRetain(run_loop_);
 
@@ -383,6 +384,24 @@ void MessagePumpCFRunLoopBase::ChromeCFRunLoopTimerSetValid(
 #endif  // !defined(OS_IOS)
 }
 
+void MessagePumpCFRunLoopBase::SetDelayedWorkTimerValid(bool valid) {
+  if (allow_timer_invalidation_) {
+    ChromeCFRunLoopTimerSetValid(delayed_work_timer_, valid);
+  } else {
+    pending_timer_validity_ = valid;
+  }
+}
+
+void MessagePumpCFRunLoopBase::SetTimerInvalidationAllowed(bool allowed) {
+  if (!allowed)
+    ChromeCFRunLoopTimerSetValid(delayed_work_timer_, true);
+  allow_timer_invalidation_ = allowed;
+  if (allowed && pending_timer_validity_.has_value()) {
+    SetDelayedWorkTimerValid(*pending_timer_validity_);
+    pending_timer_validity_ = nullopt;
+  }
+}
+
 // Called from the run loop.
 // static
 void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
@@ -415,7 +434,7 @@ void MessagePumpCFRunLoopBase::RunDelayedWorkTimer(CFRunLoopTimerRef timer,
   //
   // ScheduleDelayedWork() flips the valid bit back just before setting the
   // timer's new firing time.
-  ChromeCFRunLoopTimerSetValid(self->delayed_work_timer_, false);
+  self->SetDelayedWorkTimerValid(false);
 
   // CFRunLoopTimers fire outside of the priority scheme for CFRunLoopSources.
   // In order to establish the proper priority in which work and delayed work
@@ -765,13 +784,17 @@ ScopedPumpMessagesInPrivateModes::ScopedPumpMessagesInPrivateModes() {
   DCHECK_EQ(kNSApplicationModalSafeModeMask, g_app_pump->GetModeMask());
   // Pumping events in private runloop modes is known to interact badly with
   // app modal windows like NSAlert.
-  if (![NSApp modalWindow])
-    g_app_pump->SetModeMask(kAllModesMask);
+  if ([NSApp modalWindow])
+    return;
+  g_app_pump->SetModeMask(kAllModesMask);
+  // Disable timer invalidation to avoid hangs. See crbug.com/912273.
+  g_app_pump->SetTimerInvalidationAllowed(false);
 }
 
 ScopedPumpMessagesInPrivateModes::~ScopedPumpMessagesInPrivateModes() {
   DCHECK(g_app_pump);
   g_app_pump->SetModeMask(kNSApplicationModalSafeModeMask);
+  g_app_pump->SetTimerInvalidationAllowed(true);
 }
 
 int ScopedPumpMessagesInPrivateModes::GetModeMaskForTest() {

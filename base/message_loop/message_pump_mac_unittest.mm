@@ -207,6 +207,77 @@ TEST(MessagePumpMacTest, ScopedPumpMessagesAttemptWithModalDialog) {
   EXPECT_EQ(NSAlertFirstButtonReturn, result);
 }
 
+// This is a regression test for a scenario where the invalidation of the
+// delayed work timer (using non-public APIs) causes a nested native run loop to
+// hang. The exact root cause of the hang is unknown since it involves the
+// closed-source Core Foundation runtime, but the steps needed to trigger it
+// are:
+//
+//   1. Post a delayed task that will run some time after step #4.
+//   2. Allow Chrome tasks to run in nested run loops (with
+//      ScopedNestableTaskAllower).
+//   3. Allow running Chrome tasks during private run loop modes (with
+//      ScopedPumpMessagesInPrivateModes).
+//   4. Open a pop-up menu via [NSMenu popupContextMenu]. This will start a
+//      private native run loop to process menu interaction.
+//   5. In a posted task, close the menu with [NSMenu cancelTracking].
+//
+// At this point the menu closes visually but the nested run loop (flakily)
+// hangs forever in a live-lock, i.e., Chrome tasks keep executing but the
+// NSMenu call in #4 never returns.
+//
+// The workaround is to avoid timer invalidation during nested native run loops.
+//
+// DANGER: As the pop-up menu captures keyboard input, the bug will make the
+// machine's keyboard inoperable during the live-lock. Use a TTY-based remote
+// terminal such as SSH (as opposed to Chromoting) to investigate the issue.
+//
+TEST(MessagePumpMacTest, DontInvalidateTimerInNativeRunLoop) {
+  MessageLoopForUI message_loop;
+  NSWindow* window =
+      [[[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100)
+                                   styleMask:NSBorderlessWindowMask
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO] autorelease];
+  NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Test menu"];
+  [menu insertItemWithTitle:@"Dummy item"
+                     action:@selector(dummy)
+              keyEquivalent:@"a"
+                    atIndex:0];
+  NSEvent* event = [NSEvent otherEventWithType:NSApplicationDefined
+                                      location:NSZeroPoint
+                                 modifierFlags:0
+                                     timestamp:0
+                                  windowNumber:0
+                                       context:nil
+                                       subtype:0
+                                         data1:0
+                                         data2:0];
+
+  // Post a task to open the menu. This needs to be a separate task so that
+  // nested task execution can be allowed.
+  ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](NSWindow* window, NSMenu* menu, NSEvent* event) {
+                       MessageLoopCurrent::ScopedNestableTaskAllower allow;
+                       ScopedPumpMessagesInPrivateModes pump_private;
+                       // When the bug triggers, this call never returns.
+                       [NSMenu popUpContextMenu:menu
+                                      withEvent:event
+                                        forView:[window contentView]];
+                     },
+                     window, menu, event));
+
+  // Post another task to close the menu. The 100ms delay was determined
+  // experimentally on a 2013 Mac Pro.
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](NSMenu* menu) { [menu cancelTracking]; }, menu),
+      base::TimeDelta::FromMilliseconds(100));
+
+  EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+}
+
 }  // namespace base
 
 @implementation TestModalAlertCloser
