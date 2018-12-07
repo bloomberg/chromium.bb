@@ -57,6 +57,9 @@ class PasswordPendingView : public PasswordBubbleViewBase,
   bool Cancel() override;
   bool Close() override;
 
+  // View:
+  void AddedToWidget() override;
+
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void ReplaceWithPromo();

@@ -423,6 +423,11 @@ bool PasswordPendingView::ShouldShowCloseButton() const {
   return true;
 }
 
+void PasswordPendingView::AddedToWidget() {
+  static_cast<views::Label*>(GetBubbleFrameView()->title())
+      ->SetAllowCharacterBreak(true);
+}
+
 void PasswordPendingView::TogglePasswordVisibility() {
   if (!are_passwords_revealed_ && !model()->RevealPasswords())
     return;
