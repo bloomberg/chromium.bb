@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
+import("features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//build/buildflag_header.gni")
 import("//testing/test.gni")
-import("features.gni")
 
 # Generate a buildflag header for compile-time checking of Vulkan support.
 buildflag_header("buildflags") {
@@ -40,9 +40,6 @@ if (enable_vulkan) {
     configs += [ "//build/config:precompiled_headers" ]
 
     defines = [ "VULKAN_IMPLEMENTATION" ]
-    if (is_android) {
-      defines += [ "VK_USE_PLATFORM_ANDROID_KHR" ]
-    }
 
     all_dependent_configs = [ "//third_party/vulkan:vulkan_config" ]
 
