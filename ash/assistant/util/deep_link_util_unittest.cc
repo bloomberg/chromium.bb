@@ -60,7 +60,9 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParams) {
 
 TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   std::map<std::string, std::string> params = {
-      {"page", "main"}, {"q", "query"}, {"relaunch", "true"}};
+      {"action", "0"},  {"extra_time_sec", "60"}, {"id", "timer_id_1"},
+      {"page", "main"}, {"q", "query"},           {"relaunch", "true"},
+  };
 
   auto AssertDeepLinkParamEq = [&params](
                                    const base::Optional<std::string>& expected,
@@ -72,6 +74,9 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   AssertDeepLinkParamEq("main", DeepLinkParam::kPage);
   AssertDeepLinkParamEq("query", DeepLinkParam::kQuery);
   AssertDeepLinkParamEq("true", DeepLinkParam::kRelaunch);
+  AssertDeepLinkParamEq("0", DeepLinkParam::kAction);
+  AssertDeepLinkParamEq("timer_id_1", DeepLinkParam::kId);
+  AssertDeepLinkParamEq("60", DeepLinkParam::kExtraTimeSec);
 
   // Case: Deep link parameter present, URL encoded.
   params["q"] = "multiple+word+query";
@@ -117,6 +122,52 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
 }
 
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsInt) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq = [&params](const base::Optional<int>& expected,
+                                         DeepLinkParam param) {
+    ASSERT_EQ(expected, GetDeepLinkParamAsInt(params, param));
+  };
+
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kExtraTimeSec);
+
+  // Case: Deep link parameter present, well formed "60".
+  params["extra_time_sec"] = "60";
+  AssertDeepLinkParamEq(60, DeepLinkParam::kExtraTimeSec);
+  params["extra_time_sec"] = "00";
+  AssertDeepLinkParamEq(0, DeepLinkParam::kExtraTimeSec);
+
+  // Case: Deep link paramter present, non-int value.
+  params["extra_time_sec"] = "true";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kExtraTimeSec);
+}
+
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsTimerAction) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq =
+      [&params](const base::Optional<TimerAction>& expected) {
+        ASSERT_EQ(expected, GetDeepLinkParamAsTimerAction(params));
+      };
+
+  AssertDeepLinkParamEq(base::nullopt);
+
+  // Case: Deep link parameter present, well formed.
+  params["action"] = "0";
+  AssertDeepLinkParamEq(TimerAction::kAddTimeToTimer);
+  params["action"] = "1";
+  AssertDeepLinkParamEq(TimerAction::kStop);
+
+  // Case: Deep link paramter present, non-int value.
+  params["action"] = "true";
+  AssertDeepLinkParamEq(base::nullopt);
+
+  // Case: Deep link paramter present, non-TimerAction value.
+  params["action"] = "100";
+  AssertDeepLinkParamEq(base::nullopt);
+}
+
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
@@ -128,6 +179,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"googleassistant://settings", DeepLinkType::kSettings},
       {"googleassistant://take-screenshot", DeepLinkType::kScreenshot},
       {"googleassistant://task-manager", DeepLinkType::kTaskManager},
+      {"googleassistant://timer", DeepLinkType::kTimer},
       {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep links.
@@ -141,6 +193,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"googleassistant://take-screenshot?param=true",
        DeepLinkType::kScreenshot},
       {"googleassistant://task-manager?param=true", DeepLinkType::kTaskManager},
+      {"googleassistant://timer?param=true", DeepLinkType::kTimer},
       {"googleassistant://whats-on-my-screen?param=true",
        DeepLinkType::kWhatsOnMyScreen},
 
@@ -153,6 +206,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://TAKE-SCREENSHOT", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://TASK-MANAGER", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://TIMER", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://WHATS-ON-MY-SCREEN", DeepLinkType::kUnsupported},
 
       // UNSUPPORTED: Unknown deep links.
@@ -178,6 +232,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"googleassistant://settings", DeepLinkType::kSettings},
       {"googleassistant://take-screenshot", DeepLinkType::kScreenshot},
       {"googleassistant://task-manager", DeepLinkType::kTaskManager},
+      {"googleassistant://timer", DeepLinkType::kTimer},
       {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep link types.
@@ -191,6 +246,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"googleassistant://take-screenshot?param=true",
        DeepLinkType::kScreenshot},
       {"googleassistant://task-manager?param=true", DeepLinkType::kTaskManager},
+      {"googleassistant://timer?param=true", DeepLinkType::kTimer},
       {"googleassistant://whats-on-my-screen?param=true",
        DeepLinkType::kWhatsOnMyScreen},
 
@@ -202,6 +258,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"GOOGLEASSISTANT://SEND-QUERY", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://SETTINGS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://TASK-MANAGER", DeepLinkType::kUnsupported},
+      {"GOOGLEASSISTANT://TIMER", DeepLinkType::kUnsupported},
 
       // UNSUPPORTED: Unknown deep links.
       {"googleassistant://", DeepLinkType::kUnsupported},
@@ -226,6 +283,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://settings", true},
       {"googleassistant://take-screenshot", true},
       {"googleassistant://task-manager", true},
+      {"googleassistant://timer", true},
       {"googleassistant://whats-on-my-screen", true},
 
       // OK: Parameterized deep links.
@@ -237,6 +295,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://settings?param=true", true},
       {"googleassistant://take-screenshot?param=true", true},
       {"googleassistant://task-manager?param=true", true},
+      {"googleassistant://timer?param=true", true},
       {"googleassistant://whats-on-my-screen?param=true", true},
 
       // FAIL: Deep links are case sensitive.
@@ -248,6 +307,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"GOOGLEASSISTANT://SETTINGS", false},
       {"GOOGLEASSISTANT://TAKE-SCREENSHOT", false},
       {"GOOGLEASSISTANT://TASK-MANAGER", false},
+      {"GOOGLEASSISTANT://TIMER", false},
       {"GOOGLEASSISTANT://WHATS-ON-MY-SCREEN", false},
 
       // FAIL: Unknown deep links.
@@ -325,6 +385,7 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
       {"googleassistant://send-query", base::nullopt},
       {"googleassistant://take-screenshot", base::nullopt},
       {"googleassistant://task-manager", base::nullopt},
+      {"googleassistant://timer", base::nullopt},
       {"googleassistant://whats-on-my-screen", base::nullopt},
 
       // FAIL: Non-deep link URLs.
@@ -421,6 +482,7 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
       {"googleassistant://send-query", false},
       {"googleassistant://take-screenshot", false},
       {"googleassistant://task-manager", false},
+      {"googleassistant://timer", false},
       {"googleassistant://whats-on-my-screen", false},
 
       // FAIL: Non-deep link URLs.

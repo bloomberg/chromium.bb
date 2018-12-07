@@ -61,6 +61,9 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
       mojom::AssistantNotificationPtr notification) override;
   void CacheScreenContext(CacheScreenContextCallback callback) override;
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
+  void StopRinging() override;
+  void AddTimeToTimer(const std::string& timer_id,
+                      base::TimeDelta extra_time) override;
 
  private:
   State state_ = State::STOPPED;
