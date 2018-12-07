@@ -614,8 +614,10 @@ void PaintOpReader::AlignMemory(size_t alignment) {
 }
 
 inline void PaintOpReader::SetInvalid() {
-  if (valid_ && options_.crash_dump_on_failure)
-    base::debug::DumpWithoutCrashing();
+  if (valid_ && options_.crash_dump_on_failure) {
+    // TODO(enne): make this DumpWithoutCrashing after http://crbug.com/910772
+    // base::debug::DumpWithoutCrashing();
+  }
   valid_ = false;
 }
 
