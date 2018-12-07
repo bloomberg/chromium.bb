@@ -32,6 +32,7 @@ constexpr struct GamepadInfo {
     {0x0079, 0x1844, kXInputTypeNone, GamepadId::kDragonRiseProduct1844},
     // Steelseries ApS (Bluetooth)
     {0x0111, 0x1417, kXInputTypeNone, GamepadId::kSteelSeriesBtProduct1417},
+    {0x0111, 0x1419, kXInputTypeNone, GamepadId::kSteelSeriesBtProduct1419},
     {0x0111, 0x1420, kXInputTypeNone, GamepadId::kSteelSeriesBtProduct1420},
     {0x0113, 0xf900, kXInputTypeNone, GamepadId::kVendor0113Productf900},
     // Creative Technology, Ltd
@@ -391,7 +392,7 @@ constexpr struct GamepadInfo {
     {0x0f30, 0x8888, kXInputTypeXbox, GamepadId::kJessTechnologyProduct8888},
     // Etoms Electronics Corp.
     {0x102c, 0xff0c, kXInputTypeXbox, GamepadId::kEtomsElectronicsProductff0c},
-    // SteelSeries ApS
+    // SteelSeries ApS (USB)
     {0x1038, 0x1412, kXInputTypeNone, GamepadId::kSteelSeriesProduct1412},
     {0x1038, 0x1418, kXInputTypeNone, GamepadId::kSteelSeriesProduct1418},
     {0x1038, 0x1420, kXInputTypeNone, GamepadId::kSteelSeriesProduct1420},

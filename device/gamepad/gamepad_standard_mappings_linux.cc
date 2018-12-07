@@ -495,7 +495,7 @@ void MapperSteelSeriesZeemote(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
-void MapperSteelSeriesStratusXL(const Gamepad& input, Gamepad* mapped) {
+void MapperSteelSeriesStratusXLUsb(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
   mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
@@ -521,6 +521,39 @@ void MapperSteelSeriesStratusXL(const Gamepad& input, Gamepad* mapped) {
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
 
   mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperSteelSeriesStratusXLBt(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
+  mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
+  mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = NullButton();
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[7]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[6]);
+  mapped->buttons[BUTTON_INDEX_META] = NullButton();
+  // The BACK_SELECT and META button currently aren't mappable since they are
+  // handled separately as key events, causing browser HOME and BACK actions. If
+  // this is fixed, they should be added here.
+
+  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = input.axes[0];
+  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = input.axes[1];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[2];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[3];
+
+  mapped->buttons_length = BUTTON_INDEX_META;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -736,7 +769,9 @@ constexpr struct MappingData {
     // Zeemote: SteelSeries FREE
     {GamepadId::kSteelSeriesProduct1412, MapperSteelSeriesZeemote},
     // SteelSeries Stratus XL USB
-    {GamepadId::kSteelSeriesProduct1418, MapperSteelSeriesStratusXL},
+    {GamepadId::kSteelSeriesProduct1418, MapperSteelSeriesStratusXLUsb},
+    // SteelSeries Stratus XL Bluetooth
+    {GamepadId::kSteelSeriesBtProduct1419, MapperSteelSeriesStratusXLBt},
     // Razer Serval Controller
     {GamepadId::kRazer1532Product0900, MapperRazerServal},
     // ADT-1 Controller
