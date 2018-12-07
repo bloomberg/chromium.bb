@@ -57,11 +57,6 @@ class MockAssistant : public mojom::Assistant {
 
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 
-  MOCK_METHOD0(StopRinging, void());
-
-  MOCK_METHOD2(AddTimeToTimer,
-               void(const std::string& timer_id, base::TimeDelta));
-
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAssistant);
 };

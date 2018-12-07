@@ -9,7 +9,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
@@ -24,11 +23,9 @@ namespace {
 
 // Supported deep link param keys. These values must be kept in sync with the
 // server. See more details at go/cros-assistant-deeplink.
-constexpr char kActionParamKey[] = "action";
-constexpr char kExtraTimeSecParamKey[] = "extra_time_sec";
 constexpr char kIdParamKey[] = "id";
-constexpr char kPageParamKey[] = "page";
 constexpr char kQueryParamKey[] = "q";
+constexpr char kPageParamKey[] = "page";
 constexpr char kRelaunchParamKey[] = "relaunch";
 
 // Supported deep link prefixes. These values must be kept in sync with the
@@ -42,7 +39,6 @@ constexpr char kAssistantScreenshotPrefix[] =
     "googleassistant://take-screenshot";
 constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 constexpr char kAssistantTaskManagerPrefix[] = "googleassistant://task-manager";
-constexpr char kAssistantTimerPrefix[] = "googleassistant://timer";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
 
@@ -95,8 +91,6 @@ base::Optional<std::string> GetDeepLinkParam(
     DeepLinkParam param) {
   // Map of supported deep link params to their keys.
   static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
-      {DeepLinkParam::kAction, kActionParamKey},
-      {DeepLinkParam::kExtraTimeSec, kExtraTimeSecParamKey},
       {DeepLinkParam::kId, kIdParamKey},
       {DeepLinkParam::kPage, kPageParamKey},
       {DeepLinkParam::kQuery, kQueryParamKey},
@@ -123,36 +117,6 @@ base::Optional<bool> GetDeepLinkParamAsBool(
   return base::nullopt;
 }
 
-base::Optional<int> GetDeepLinkParamAsInt(
-    const std::map<std::string, std::string>& params,
-    DeepLinkParam param) {
-  const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
-  if (value.has_value()) {
-    int result;
-    if (base::StringToInt(value.value(), &result))
-      return result;
-  }
-
-  return base::nullopt;
-}
-
-base::Optional<TimerAction> GetDeepLinkParamAsTimerAction(
-    const std::map<std::string, std::string>& params) {
-  const base::Optional<int>& action_int_value =
-      GetDeepLinkParamAsInt(params, DeepLinkParam::kAction);
-  if (!action_int_value.has_value())
-    return base::nullopt;
-
-  switch (action_int_value.value()) {
-    case static_cast<int>(TimerAction::kAddTimeToTimer):
-      return TimerAction::kAddTimeToTimer;
-    case static_cast<int>(TimerAction::kStop):
-      return TimerAction::kStop;
-  }
-
-  return base::nullopt;
-}
-
 DeepLinkType GetDeepLinkType(const GURL& url) {
   // Map of supported deep link types to their prefixes.
   static const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
@@ -164,7 +128,6 @@ DeepLinkType GetDeepLinkType(const GURL& url) {
       {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
       {DeepLinkType::kSettings, kAssistantSettingsPrefix},
       {DeepLinkType::kTaskManager, kAssistantTaskManagerPrefix},
-      {DeepLinkType::kTimer, kAssistantTimerPrefix},
       {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
 
   for (const auto& supported_deep_link : kSupportedDeepLinks) {
@@ -237,7 +200,6 @@ base::Optional<GURL> GetWebUrl(
     case DeepLinkType::kQuery:
     case DeepLinkType::kScreenshot:
     case DeepLinkType::kTaskManager:
-    case DeepLinkType::kTimer:
     case DeepLinkType::kWhatsOnMyScreen:
       NOTREACHED();
       return base::nullopt;

@@ -10,20 +10,8 @@ namespace chromeos {
 namespace assistant {
 namespace features {
 
-const base::Feature kAssistantAlarmTimerManagerFeature{
-    "ChromeOSAssistantAlarmTimerManager", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAssistantTimerNotificationFeature{
-    "ChromeOSAssistantTimerNotification", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAssistantVoiceMatch{"AssistantVoiceMatch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAssistantWarmerWelcomeFeature{
-    "AssistantWarmerWelcome", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kChromeOSAssistantDogfood{
-    "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

@@ -105,25 +105,6 @@ void AssistantInteractionController::OnDeepLinkReceived(
     return;
   }
 
-  // TODO(dmblack): Move timer interaction to AssistantAlarmTimerController
-  // after it is created.
-  if (type == DeepLinkType::kTimer) {
-    const base::Optional<assistant::util::TimerAction>& timer_action =
-        assistant::util::GetDeepLinkParamAsTimerAction(params);
-    if (!timer_action.has_value())
-      return;
-
-    // Timer ID is optional. Only used for adding time to timer.
-    const base::Optional<std::string>& timer_id =
-        GetDeepLinkParam(params, DeepLinkParam::kId);
-
-    // Extra time is optional. Only used for adding time to timer.
-    const base::Optional<int>& extra_time_sec =
-        GetDeepLinkParamAsInt(params, DeepLinkParam::kExtraTimeSec);
-
-    StartTimerInteraction(timer_action.value(), timer_id, extra_time_sec);
-  }
-
   if (type != DeepLinkType::kQuery)
     return;
 
@@ -654,24 +635,6 @@ void AssistantInteractionController::StartScreenContextInteraction(
 
   // Note that screen context was cached when the UI was launched.
   assistant_->StartCachedScreenContextInteraction();
-}
-
-void AssistantInteractionController::StartTimerInteraction(
-    const assistant::util::TimerAction& timer_action,
-    const base::Optional<std::string>& timer_id,
-    const base::Optional<int>& extra_time_sec) {
-  switch (timer_action) {
-    case assistant::util::TimerAction::kAddTimeToTimer:
-      if (!timer_id.has_value() || !extra_time_sec.has_value())
-        return;
-
-      assistant_->AddTimeToTimer(timer_id.value(), base::TimeDelta::FromMinutes(
-                                                       extra_time_sec.value()));
-      break;
-    case assistant::util::TimerAction::kStop:
-      assistant_->StopRinging();
-      break;
-  }
 }
 
 void AssistantInteractionController::StartTextInteraction(

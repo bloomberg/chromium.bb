@@ -23,12 +23,6 @@
 
 namespace ash {
 
-namespace assistant {
-namespace util {
-enum class TimerAction;
-}  // namespace util
-}  // namespace assistant
-
 class AssistantController;
 class AssistantInteractionModelObserver;
 enum class AssistantQuerySource;
@@ -128,9 +122,6 @@ class AssistantInteractionController
 
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
-  void StartTimerInteraction(const assistant::util::TimerAction& timer_action,
-                             const base::Optional<std::string>& timer_id,
-                             const base::Optional<int>& extra_time_sec);
 
   void OpenUrl(const GURL& url);
 
