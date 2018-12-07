@@ -4421,6 +4421,16 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceEnableSystemAecDescription, kOsMac | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kForceEnableSystemAec)},
 #endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+    {"autofill-always-show-server-cards-in-sync-transport",
+     flag_descriptions::kAutofillAlwaysShowServerCardsInSyncTransportName,
+     flag_descriptions::
+         kAutofillAlwaysShowServerCardsInSyncTransportDescription,
+     kOsMac | kOsWin | kOsLinux,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillAlwaysShowServerCardsInSyncTransport)},
+#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 };
 
 class FlagsStateSingleton {

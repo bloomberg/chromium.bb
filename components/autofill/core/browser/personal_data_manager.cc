@@ -1448,15 +1448,20 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   if (!sync_service_)
     return false;
 
-  // For SyncTransport, only show server cards if the user has opted in to
-  // seeing them in the dropdown.
+  // Check if the user is in sync transport mode for wallet data.
   if (!sync_service_->IsSyncFeatureEnabled() &&
       base::FeatureList::IsEnabled(
-          features::kAutofillEnableAccountWalletStorage) &&
-      !prefs::IsUserOptedInWalletSyncTransport(
-          pref_service_,
-          sync_service_->GetAuthenticatedAccountInfo().account_id)) {
-    return false;
+          features::kAutofillEnableAccountWalletStorage)) {
+    // For SyncTransport, only show server cards if the user has opted in to
+    // seeing them in the dropdown, or if the feature to always show server
+    // cards is enabled.
+    if (!base::FeatureList::IsEnabled(
+            features::kAutofillAlwaysShowServerCardsInSyncTransport) &&
+        !prefs::IsUserOptedInWalletSyncTransport(
+            pref_service_,
+            sync_service_->GetAuthenticatedAccountInfo().account_id)) {
+      return false;
+    }
   }
 
   // Server cards should be suggested if the sync service is active.
