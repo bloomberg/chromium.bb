@@ -31,10 +31,6 @@ class PrefRegistrySyncable;
 
 namespace translate {
 
-// Enables or disables the new improved language settings.
-// These settings support the new UI.
-extern const base::Feature kImprovedLanguageSettings;
-
 // Enables or disables the regional locales as valid selection for the display
 // UI.
 extern const base::Feature kRegionalLocalesAsDisplayUI;
