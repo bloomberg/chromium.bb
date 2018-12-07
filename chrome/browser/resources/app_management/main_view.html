@@ -1,17 +1,84 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
 <dom-module id="app-management-main-view">
   <template>
     <style>
-    cr-toolbar {
-      color: rgba(0, 0, 0, 0.54);
-    }
+      :host {
+        --primary-text-color: rgba(0, 0, 0, 0.87);
+        --secondary-text-color: rgba(0, 0, 0, 0.54);
+        --card-title-text-color: rgba(90, 90, 90, 1);
+      }
+
+      cr-toolbar {
+        color: var(--secondary-text-color);
+      }
+
+      #app-list {
+        @apply --cr-card-elevation;
+        background-color: #fff;
+        border-radius: var(--cr-card-border-radius);
+        font-size: 13px;
+        margin: 24px auto;
+        width: 676px;
+      }
+
+      #app-list-title {
+        color: var(--card-title-text-color);
+        font-weight: 400;
+        padding: 16px 24px;
+      }
+
+      .app-list-item {
+        align-items: center;
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        color: var(--primary-text-color);
+        display: flex;
+        flex-direction: row;
+        font-weight: 400;
+        height: 64px;
+      }
+
+      #app-icon {
+        height: 32px;
+        margin-inline-end: 20px;
+        margin-inline-start: 24px;
+        width: 32px;
+      }
+
+      #app-title {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #subpage-arrow {
+        margin-inline-end: 8px;
+        padding: 12px;
+      }
+
+      #more-apps {
+        border-top: 1px solid rgba(0, 0, 0, 0.12);
+        color: var(--secondary-text-color);
+        padding: 16px 24px;
+      }
     </style>
-    <cr-toolbar page-name="Apps"
-        search-prompt="Search Settings">
+    <cr-toolbar page-name="Apps" search-prompt="Search Settings">
     </cr-toolbar>
+    <div id="app-list">
+      <div id="app-list-title">Recently opened apps</div>
+      <template is="dom-repeat" items="[[apps_]]">
+        <div class="app-list-item">
+          <img id="app-icon" src="[[iconUrlFromId_(item)]]">
+          <div id="app-title">[[item]]</div>
+          <img id="subpage-arrow"
+            src="chrome://resources/images/arrow_right.svg">
+        </div>
+      </template>
+      <div id="more-apps">See more apps</div>
+    </div>
   </template>
   <script src="chrome://apps/main_view.js"></script>
 </dom-module>
