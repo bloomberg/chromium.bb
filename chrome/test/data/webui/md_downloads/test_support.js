@@ -81,29 +81,6 @@ class TestDownloadsMojoHandler {
   openDownloadsFolderRequiringGesture() {}
 }
 
-class TestIconLoader extends TestBrowserProxy {
-  constructor() {
-    super(['loadIcon']);
-
-    /** @private */
-    this.shouldIconsLoad_ = true;
-  }
-
-  /** @param {boolean} shouldIconsLoad */
-  setShouldIconsLoad(shouldIconsLoad) {
-    this.shouldIconsLoad_ = shouldIconsLoad;
-  }
-
-  /**
-   * @param {!HTMLImageElement} imageEl
-   * @param {string} filePath
-   */
-  loadIcon(imageEl, filePath) {
-    this.methodCalled('loadIcon', filePath);
-    return Promise.resolve(this.shouldIconsLoad_);
-  }
-}
-
 /**
  * @param {Object=} config
  * @return {!downloads.Data}

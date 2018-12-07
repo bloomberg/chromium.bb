@@ -666,7 +666,7 @@ cr.define('print_preview', function() {
         return 'print-preview:save-to-drive';
       }
       if (this.id_ == Destination.GooglePromotedId.SAVE_AS_PDF) {
-        return 'cr:insert-drive-file';
+        return 'print-preview:insert-drive-file';
       }
       if (this.isEnterprisePrinter) {
         return 'print-preview:business';
