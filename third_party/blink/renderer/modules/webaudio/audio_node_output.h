@@ -70,7 +70,6 @@ class MODULES_EXPORT AudioNodeOutput final {
   void DisconnectAll();
 
   // Disconnect a specific input or AudioParam.
-  void DisconnectInput(AudioNodeInput&);
   void DisconnectAudioParam(AudioParamHandler&);
 
   void SetNumberOfChannels(unsigned);
@@ -78,10 +77,6 @@ class MODULES_EXPORT AudioNodeOutput final {
   bool IsChannelCountKnown() const { return NumberOfChannels() > 0; }
 
   bool IsConnected() { return FanOutCount() > 0 || ParamFanOutCount() > 0; }
-
-  // Probe if the output node is connected with a certain input or AudioParam
-  bool IsConnectedToInput(AudioNodeInput&);
-  bool IsConnectedToAudioParam(AudioParamHandler&);
 
   // Disable/Enable happens when there are still JavaScript references to a
   // node, but it has otherwise "finished" its work.  For example, when a note
@@ -106,16 +101,6 @@ class MODULES_EXPORT AudioNodeOutput final {
   // This reference is safe because the AudioHandler owns this AudioNodeOutput
   // object.
   AudioHandler& handler_;
-
-  friend class AudioNodeInput;
-  friend class AudioParamHandler;
-
-  // These are called from AudioNodeInput.
-  // They must be called with the context's graph lock.
-  void AddInput(AudioNodeInput&);
-  void RemoveInput(AudioNodeInput&);
-  void AddParam(AudioParamHandler&);
-  void RemoveParam(AudioParamHandler&);
 
   // fanOutCount() is the number of AudioNodeInputs that we're connected to.
   // This method should not be called in audio thread rendering code, instead
@@ -180,6 +165,8 @@ class MODULES_EXPORT AudioNodeOutput final {
   // This collection of raw pointers is safe because they are retained by
   // AudioParam objects retained by m_connectedParams of the owner AudioNode.
   HashSet<AudioParamHandler*> params_;
+
+  friend class AudioNodeWiring;
 };
 
 }  // namespace blink

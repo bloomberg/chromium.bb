@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_node_wiring.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_param.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -729,9 +730,8 @@ AudioNode* AudioNode::connect(AudioNode* destination,
     return nullptr;
   }
 
-  destination->Handler()
-      .Input(input_index)
-      .Connect(Handler().Output(output_index));
+  AudioNodeWiring::Connect(Handler().Output(output_index),
+                           destination->Handler().Input(input_index));
   if (!connected_nodes_[output_index]) {
     connected_nodes_[output_index] =
         MakeGarbageCollected<HeapHashSet<Member<AudioNode>>>();
@@ -779,7 +779,7 @@ void AudioNode::connect(AudioParam* param,
     return;
   }
 
-  param->Handler().Connect(Handler().Output(output_index));
+  AudioNodeWiring::Connect(Handler().Output(output_index), param->Handler());
   if (!connected_params_[output_index]) {
     connected_params_[output_index] =
         MakeGarbageCollected<HeapHashSet<Member<AudioParam>>>();
@@ -802,9 +802,9 @@ bool AudioNode::DisconnectFromOutputIfConnected(
   AudioNodeOutput& output = Handler().Output(output_index);
   AudioNodeInput& input =
       destination.Handler().Input(input_index_of_destination);
-  if (!output.IsConnectedToInput(input))
+  if (!AudioNodeWiring::IsConnected(output, input))
     return false;
-  output.DisconnectInput(input);
+  AudioNodeWiring::Disconnect(output, input);
   connected_nodes_[output_index]->erase(&destination);
   return true;
 }
@@ -812,9 +812,9 @@ bool AudioNode::DisconnectFromOutputIfConnected(
 bool AudioNode::DisconnectFromOutputIfConnected(unsigned output_index,
                                                 AudioParam& param) {
   AudioNodeOutput& output = Handler().Output(output_index);
-  if (!output.IsConnectedToAudioParam(param.Handler()))
+  if (!AudioNodeWiring::IsConnected(output, param.Handler()))
     return false;
-  output.DisconnectAudioParam(param.Handler());
+  AudioNodeWiring::Disconnect(output, param.Handler());
   connected_params_[output_index]->erase(&param);
   return true;
 }

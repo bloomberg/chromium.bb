@@ -92,6 +92,8 @@ enum AudioParamType {
 // processing classes have additional references. An AudioParamHandler can
 // outlive the owner AudioParam, and it never dies before the owner AudioParam
 // dies.
+//
+// Connected to AudioNodeOutput using AudioNodeWiring.
 class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
                                 public AudioSummingJunction {
  public:
@@ -194,10 +196,6 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   // Must be called in the context's render thread.
   void CalculateSampleAccurateValues(float* values, unsigned number_of_values);
 
-  // Connect an audio-rate signal to control this parameter.
-  void Connect(AudioNodeOutput&);
-  void Disconnect(AudioNodeOutput&);
-
   float IntrinsicValue() const {
     return intrinsic_value_.load(std::memory_order_relaxed);
   }
@@ -254,6 +252,8 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   // Audio bus to sum in any connections to the AudioParam.
   scoped_refptr<AudioBus> summing_bus_;
+
+  friend class AudioNodeWiring;
 };
 
 // AudioParam class represents web-exposed AudioParam interface.
