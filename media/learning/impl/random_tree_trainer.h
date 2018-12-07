@@ -85,6 +85,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
     // Feature index to split on.
     size_t split_index = 0;
 
+    // For numeric splits, branch 0 is <= |split_point|, and 1 is > .
+    FeatureValue split_point;
+
     // Expected nats needed to compute the class, given that we're at this
     // node in the tree.
     // "nat" == entropy measured with natural log rather than base-2.
@@ -124,7 +127,13 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
                                const FeatureSet& used_set);
 
   // Compute and return a split of |training_data| on the |index|-th feature.
-  Split ConstructSplit(const TrainingData& training_data, int index);
+  Split ConstructSplit(const LearningTask& task,
+                       const TrainingData& training_data,
+                       int index);
+
+  // Compute the split point for |training_data| for a numeric feature.
+  FeatureValue FindNumericSplitPoint(size_t index,
+                                     const TrainingData& training_data);
 
   DISALLOW_COPY_AND_ASSIGN(RandomTreeTrainer);
 };

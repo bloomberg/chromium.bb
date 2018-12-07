@@ -12,25 +12,39 @@
 namespace media {
 namespace learning {
 
-class RandomTreeTest : public testing::Test {
+class RandomTreeTest : public testing::TestWithParam<LearningTask::Ordering> {
  public:
-  RandomTreeTest() : storage_(base::MakeRefCounted<TrainingDataStorage>()) {}
+  RandomTreeTest()
+      : storage_(base::MakeRefCounted<TrainingDataStorage>()),
+        ordering_(GetParam()) {}
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  // Set up |task_| to have |n| features with the given ordering.
+  void SetupFeatures(size_t n) {
+    for (size_t i = 0; i < n; i++) {
+      LearningTask::ValueDescription desc;
+      desc.ordering = ordering_;
+      task_.feature_descriptions.push_back(desc);
+    }
+  }
 
   RandomTreeTrainer trainer_;
   LearningTask task_;
   scoped_refptr<TrainingDataStorage> storage_;
+  // Feature ordering.
+  LearningTask::Ordering ordering_;
 };
 
-TEST_F(RandomTreeTest, EmptyTrainingDataWorks) {
+TEST_P(RandomTreeTest, EmptyTrainingDataWorks) {
   TrainingData empty(storage_);
   std::unique_ptr<Model> model = trainer_.Train(task_, empty);
   EXPECT_NE(model.get(), nullptr);
   EXPECT_EQ(model->PredictDistribution(FeatureVector()), TargetDistribution());
 }
 
-TEST_F(RandomTreeTest, UniformTrainingDataWorks) {
+TEST_P(RandomTreeTest, UniformTrainingDataWorks) {
+  SetupFeatures(2);
   TrainingExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
   const int n_examples = 10;
@@ -47,7 +61,8 @@ TEST_F(RandomTreeTest, UniformTrainingDataWorks) {
   EXPECT_EQ(distribution[example.target_value], n_examples);
 }
 
-TEST_F(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
+TEST_P(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
+  SetupFeatures(2);
   TrainingExample example({FeatureValue(123), FeatureValue(456)},
                           TargetValue(789));
   const int n_examples = 10;
@@ -74,7 +89,8 @@ TEST_F(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
   EXPECT_EQ(distribution[example.target_value], n_examples);
 }
 
-TEST_F(RandomTreeTest, SimpleSeparableTrainingData) {
+TEST_P(RandomTreeTest, SimpleSeparableTrainingData) {
+  SetupFeatures(1);
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
   storage_->push_back(example_1);
@@ -94,7 +110,8 @@ TEST_F(RandomTreeTest, SimpleSeparableTrainingData) {
   EXPECT_EQ(distribution[example_2.target_value], 1);
 }
 
-TEST_F(RandomTreeTest, ComplexSeparableTrainingData) {
+TEST_P(RandomTreeTest, ComplexSeparableTrainingData) {
+  SetupFeatures(4);
   // Build a four-feature training set that's completely separable, but one
   // needs all four features to do it.
   for (int f1 = 0; f1 < 2; f1++) {
@@ -125,12 +142,16 @@ TEST_F(RandomTreeTest, ComplexSeparableTrainingData) {
   for (const TrainingExample* example : training_data) {
     TargetDistribution distribution =
         model->PredictDistribution(example->features);
-    EXPECT_EQ(distribution.size(), 1u);
-    EXPECT_EQ(distribution[example->target_value], 2);
+    TargetValue singular_max;
+    EXPECT_TRUE(distribution.FindSingularMax(&singular_max));
+    EXPECT_EQ(singular_max, example->target_value);
+    // EXPECT_EQ(distribution.size(), 1u);
+    // EXPECT_EQ(distribution[example->target_value], 2);
   }
 }
 
-TEST_F(RandomTreeTest, UnseparableTrainingData) {
+TEST_P(RandomTreeTest, UnseparableTrainingData) {
+  SetupFeatures(2);
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(123)}, TargetValue(2));
   storage_->push_back(example_1);
@@ -152,7 +173,9 @@ TEST_F(RandomTreeTest, UnseparableTrainingData) {
   EXPECT_EQ(distribution[example_2.target_value], 1);
 }
 
-TEST_F(RandomTreeTest, UnknownFeatureValueHandling) {
+TEST_P(RandomTreeTest, UnknownFeatureValueHandling) {
+  // Verify how a previously unseen feature value is handled.
+  SetupFeatures(2);
   TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
   TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
   storage_->push_back(example_1);
@@ -162,20 +185,65 @@ TEST_F(RandomTreeTest, UnknownFeatureValueHandling) {
   task_.rt_unknown_value_handling =
       LearningTask::RTUnknownValueHandling::kEmptyDistribution;
   std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
-  // OOV data should return an empty distribution.
   TargetDistribution distribution =
       model->PredictDistribution(FeatureVector({FeatureValue(789)}));
-  EXPECT_EQ(distribution.size(), 0u);
+  if (ordering_ == LearningTask::Ordering::kUnordered) {
+    // OOV data should return an empty distribution (nominal).
+    EXPECT_EQ(distribution.size(), 0u);
+  } else {
+    // OOV data should end up in the |example_2| bucket, since the feature is
+    // numerically higher.
+    EXPECT_EQ(distribution.size(), 1u);
+    EXPECT_EQ(distribution[example_2.target_value], 1);
+  }
 
   task_.rt_unknown_value_handling =
       LearningTask::RTUnknownValueHandling::kUseAllSplits;
   model = trainer_.Train(task_, training_data);
-  // OOV data should return something with two nonzero counts.
   distribution = model->PredictDistribution(FeatureVector({FeatureValue(789)}));
-  EXPECT_EQ(distribution.size(), 2u);
-  EXPECT_EQ(distribution[example_1.target_value], 1);
-  EXPECT_EQ(distribution[example_2.target_value], 1);
+  if (ordering_ == LearningTask::Ordering::kUnordered) {
+    // OOV data should return with the sum of all splits.
+    EXPECT_EQ(distribution.size(), 2u);
+    EXPECT_EQ(distribution[example_1.target_value], 1);
+    EXPECT_EQ(distribution[example_2.target_value], 1);
+  } else {
+    // The unknown feature is numerically higher than |example_2|, so we
+    // expect it to fall into that bucket.
+    EXPECT_EQ(distribution.size(), 1u);
+    EXPECT_EQ(distribution[example_2.target_value], 1);
+  }
 }
+
+TEST_P(RandomTreeTest, NumericFeaturesSplitMultipleTimes) {
+  // Verify that numeric features can be split more than once in the tree.
+  // This should also pass for nominal features, though it's less interesting.
+  SetupFeatures(2);
+  const int feature_mult = 10;
+  for (size_t i = 0; i < 4; i++) {
+    TrainingExample example({FeatureValue(i * feature_mult)}, TargetValue(i));
+    storage_->push_back(example);
+  }
+  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+
+  task_.rt_unknown_value_handling =
+      LearningTask::RTUnknownValueHandling::kEmptyDistribution;
+  std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
+  for (size_t i = 0; i < 4; i++) {
+    // Get a prediction for the |i|-th feature value.
+    TargetDistribution distribution = model->PredictDistribution(
+        FeatureVector({FeatureValue(i * feature_mult)}));
+    // The distribution should have one count that should be correct.  If
+    // the feature isn't split four times, then some feature value will have too
+    // many or too few counts.
+    EXPECT_EQ(distribution.total_counts(), 1);
+    EXPECT_EQ(distribution[TargetValue(i)], 1);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(RandomTreeTest,
+                        RandomTreeTest,
+                        testing::ValuesIn({LearningTask::Ordering::kUnordered,
+                                           LearningTask::Ordering::kNumeric}));
 
 }  // namespace learning
 }  // namespace media

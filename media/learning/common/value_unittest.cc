@@ -42,6 +42,12 @@ TEST_F(LearnerValueTest, IntsCompareCorrectly) {
   EXPECT_TRUE(v1 != v3);
   EXPECT_TRUE(v1 < v3);
   EXPECT_FALSE(v3 < v1);
+  EXPECT_FALSE(v3 < v3);
+  EXPECT_FALSE(v1 < v1);
+  EXPECT_TRUE(v3 > v1);
+  EXPECT_FALSE(v1 > v3);
+  EXPECT_FALSE(v1 > v1);
+  EXPECT_FALSE(v3 > v3);
 }
 
 }  // namespace learning
