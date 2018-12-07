@@ -25,6 +25,7 @@ class Size;
 
 namespace cc {
 class DisplayItemList;
+class PaintWorkletInput;
 class SkottieWrapper;
 
 void DrawDisplayList(unsigned char* buffer,
@@ -38,6 +39,8 @@ bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
 Region ImageRectsToRegion(const DiscardableImageMap::Rects& rects);
 
 sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size);
+
+PaintImage CreatePaintWorkletPaintImage(scoped_refptr<PaintWorkletInput> input);
 
 PaintImage CreateDiscardablePaintImage(
     const gfx::Size& size,

@@ -195,10 +195,10 @@ class DiscardableImageGenerator {
       PaintOpType op_type = static_cast<PaintOpType>(op->type);
       if (op_type == PaintOpType::DrawImage) {
         auto* image_op = static_cast<DrawImageOp*>(op);
-        auto* sk_image = image_op->image.GetSkImage().get();
-        AddImage(image_op->image,
-                 SkRect::MakeIWH(sk_image->width(), sk_image->height()),
-                 op_rect, ctm, image_op->flags.getFilterQuality());
+        AddImage(
+            image_op->image,
+            SkRect::MakeIWH(image_op->image.width(), image_op->image.height()),
+            op_rect, ctm, image_op->flags.getFilterQuality());
       } else if (op_type == PaintOpType::DrawImageRect) {
         auto* image_rect_op = static_cast<DrawImageRectOp*>(op);
         SkMatrix matrix = ctm;
@@ -355,14 +355,16 @@ class DiscardableImageGenerator {
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
 
-    // Make a note if any image was originally specified in a non-sRGB color
-    // space.
-    SkColorSpace* source_color_space = paint_image.color_space();
-    color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
-    color_stats_total_image_count_++;
-    if (!source_color_space || source_color_space->isSRGB()) {
-      color_stats_srgb_pixel_count_ += image_rect.size().GetCheckedArea();
-      color_stats_srgb_image_count_++;
+    if (!paint_image.IsPaintWorklet()) {
+      // Make a note if any image was originally specified in a non-sRGB color
+      // space.
+      SkColorSpace* source_color_space = paint_image.color_space();
+      color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
+      color_stats_total_image_count_++;
+      if (!source_color_space || source_color_space->isSRGB()) {
+        color_stats_srgb_pixel_count_ += image_rect.size().GetCheckedArea();
+        color_stats_srgb_image_count_++;
+      }
     }
 
     auto& rects = image_id_to_rects_[paint_image.stable_id()];

@@ -90,6 +90,15 @@ sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size) {
       SkImageInfo::MakeN32Premul(size.width(), size.height()));
 }
 
+PaintImage CreatePaintWorkletPaintImage(
+    scoped_refptr<PaintWorkletInput> input) {
+  auto paint_image = PaintImageBuilder::WithDefault()
+                         .set_id(1)
+                         .set_paint_worklet_input(std::move(input))
+                         .TakePaintImage();
+  return paint_image;
+}
+
 PaintImage CreateDiscardablePaintImage(const gfx::Size& size,
                                        sk_sp<SkColorSpace> color_space,
                                        bool allocate_encoded_data,

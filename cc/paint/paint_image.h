@@ -184,6 +184,7 @@ class CC_PAINT_EXPORT PaintImage {
   bool IsLazyGenerated() const {
     return paint_worklet_input_ ? false : GetSkImage()->isLazyGenerated();
   }
+  bool IsPaintWorklet() const { return !!paint_worklet_input_; }
   bool IsTextureBacked() const {
     return paint_worklet_input_ ? false : GetSkImage()->isTextureBacked();
   }
