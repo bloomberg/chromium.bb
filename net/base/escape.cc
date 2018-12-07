@@ -390,11 +390,10 @@ static const Charmap kUrlEscape = {{
   0xffffffffL, 0xffffffffL, 0xffffffffL, 0xffffffffL
 }};
 
-// non-7bit
-static const Charmap kNonASCIICharmap = {{
-  0x00000000L, 0x00000000L, 0x00000000L, 0x00000000L,
-  0xffffffffL, 0xffffffffL, 0xffffffffL, 0xffffffffL
-}};
+// non-7bit, as well as %.
+static const Charmap kNonASCIICharmapAndPercent = {
+    {0x00000000L, 0x00000020L, 0x00000000L, 0x00000000L, 0xffffffffL,
+     0xffffffffL, 0xffffffffL, 0xffffffffL}};
 
 // Everything except alphanumerics, the reserved characters(;/?:@&=+$,) and
 // !'()*-._~#[]
@@ -427,8 +426,8 @@ std::string EscapeUrlEncodedData(base::StringPiece path, bool use_plus) {
   return Escape(path, kUrlEscape, use_plus);
 }
 
-std::string EscapeNonASCII(base::StringPiece input) {
-  return Escape(input, kNonASCIICharmap, false);
+std::string EscapeNonASCIIAndPercent(base::StringPiece input) {
+  return Escape(input, kNonASCIICharmapAndPercent, false);
 }
 
 std::string EscapeExternalHandlerValue(base::StringPiece text) {

@@ -237,6 +237,18 @@ class NET_EXPORT NetLog {
   DISALLOW_COPY_AND_ASSIGN(NetLog);
 };
 
+// Creates a base::Value() to represent the byte string |raw| when adding it to
+// the NetLog.
+//
+// When |raw| is an ASCII string, the returned value is a base::Value()
+// containing that exact string. Otherwise it is represented by a
+// percent-escaped version of the original string, along with a special prefix.
+//
+// This wrapper exists because base::Value strings are required to be UTF-8.
+// Often times NetLog consumers just want to log a std::string, and that string
+// may not be UTF-8.
+NET_EXPORT base::Value NetLogStringValue(base::StringPiece raw);
+
 }  // namespace net
 
 #endif  // NET_LOG_NET_LOG_H_
