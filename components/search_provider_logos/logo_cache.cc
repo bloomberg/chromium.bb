@@ -34,6 +34,13 @@ const char kNumBytesKey[] = "num_bytes";
 const char kAnimatedUrlKey[] = "animated_url";
 const char kLogUrlKey[] = "log_url";
 const char kCtaLogUrlKey[] = "cta_log_url";
+const char kShortLinkKey[] = "short_link";
+
+const char kShareButtonX[] = "share_button_x";
+const char kShareButtonY[] = "share_button_y";
+const char kShareButtonOpacity[] = "share_button_opacity";
+const char kShareButtonIcon[] = "share_button_icon";
+const char kShareButtonBg[] = "share_button_bg";
 
 const char kSimpleType[] = "SIMPLE";
 const char kAnimatedType[] = "ANIMATED";
@@ -170,6 +177,7 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   std::string animated_url;
   std::string log_url;
   std::string cta_log_url;
+  std::string short_link;
   if (!dict->GetString(kSourceUrlKey, &source_url) ||
       !dict->GetString(kFingerprintKey, &metadata->fingerprint) ||
       !dict->GetString(kTypeKey, &type) ||
@@ -179,10 +187,16 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kAnimatedUrlKey, &animated_url) ||
       !dict->GetString(kLogUrlKey, &log_url) ||
       !dict->GetString(kCtaLogUrlKey, &cta_log_url) ||
+      !dict->GetString(kShortLinkKey, &short_link) ||
       !dict->GetString(kMimeTypeKey, &metadata->mime_type) ||
       !dict->GetBoolean(kCanShowAfterExpirationKey,
                         &metadata->can_show_after_expiration) ||
       !dict->GetInteger(kNumBytesKey, logo_num_bytes) ||
+      !dict->GetInteger(kShareButtonX, &metadata->share_button_x) ||
+      !dict->GetInteger(kShareButtonY, &metadata->share_button_y) ||
+      !dict->GetDouble(kShareButtonOpacity, &metadata->share_button_opacity) ||
+      !dict->GetString(kShareButtonIcon, &metadata->share_button_icon) ||
+      !dict->GetString(kShareButtonBg, &metadata->share_button_bg) ||
       !GetTimeValue(*dict, kExpirationTimeKey, &metadata->expiration_time)) {
     return nullptr;
   }
@@ -193,6 +207,7 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
   metadata->animated_url = GURL(animated_url);
   metadata->log_url = GURL(log_url);
   metadata->cta_log_url = GURL(cta_log_url);
+  metadata->short_link = GURL(short_link);
 
   return metadata;
 }
@@ -211,10 +226,16 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetString(kAnimatedUrlKey, metadata.animated_url.spec());
   dict.SetString(kLogUrlKey, metadata.log_url.spec());
   dict.SetString(kCtaLogUrlKey, metadata.cta_log_url.spec());
+  dict.SetString(kShortLinkKey, metadata.short_link.spec());
   dict.SetString(kMimeTypeKey, metadata.mime_type);
   dict.SetBoolean(kCanShowAfterExpirationKey,
                   metadata.can_show_after_expiration);
   dict.SetInteger(kNumBytesKey, num_bytes);
+  dict.SetInteger(kShareButtonX, metadata.share_button_x);
+  dict.SetInteger(kShareButtonY, metadata.share_button_y);
+  dict.SetDouble(kShareButtonOpacity, metadata.share_button_opacity);
+  dict.SetString(kShareButtonIcon, metadata.share_button_icon);
+  dict.SetString(kShareButtonBg, metadata.share_button_bg);
   SetTimeValue(dict, kExpirationTimeKey, metadata.expiration_time);
   base::JSONWriter::Write(dict, str);
 }

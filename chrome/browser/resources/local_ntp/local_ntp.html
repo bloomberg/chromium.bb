@@ -40,9 +40,11 @@
       <div id="logo-non-white" title="Google"></div>
       <!-- A doodle, if any: its link and image. -->
       <div id="logo-doodle">
-        <button id="logo-doodle-button">
-          <img id="logo-doodle-image" tabindex="-1"></img>
-        </button>
+        <div id="logo-doodle-container">
+          <button id="logo-doodle-button">
+            <img id="logo-doodle-image" tabindex="-1"></img>
+          </button>
+        </div>
         <iframe id="logo-doodle-iframe" scrolling="no"></iframe>
         <!-- A spinner, visible on dark-themed NTPs, prompting the doodle -->
         <button id="logo-doodle-notifier">
@@ -118,6 +120,24 @@
       <div id="edit-bg-restore-default" class="bg-option bg-option-disabled" tabindex="0">
         <div class="bg-option-img"></div>
         <div id="edit-bg-restore-default-text" class="bg-option-text"></div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- TODO(crbug.com/896461): Add a11y to doodle sharing. -->
+  <dialog id="ddlsd">
+    <div id="ddlsd-title"></div>
+    <button id="ddlsd-close" title="Close"></button>
+    <div id="ddlsd-content">
+      <button id="ddlsd-fbb" class="ddlsd-sbtn" title="Facebook"></button>
+      <button id="ddlsd-twb" class="ddlsd-sbtn" title="Twitter"></button>
+      <button id="ddlsd-emb" class="ddlsd-sbtn" title="Email"></button>
+      <hr id="ddlsd-hr">
+      <div id="ddlsd-link">
+        <button id="ddlsd-copy" title="Copy"></button>
+        <span id="ddlsd-text-ctr">
+          <input type="text" id="ddlsd-text" dir="ltr" title="Share Link">
+        </span>
       </div>
     </div>
   </dialog>

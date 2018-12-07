@@ -200,6 +200,29 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
       return nullptr;
   }
 
+  const bool is_eligible_for_share_button =
+      (logo->metadata.type == LogoType::ANIMATED ||
+       logo->metadata.type == LogoType::SIMPLE);
+
+  if (is_eligible_for_share_button) {
+    const base::DictionaryValue* share_button = nullptr;
+    std::string short_link_str;
+    // The short link in the doodle proto is an incomplete URL with the format
+    // //g.co/*. Complete the URL if possible.
+    if (ddljson->GetDictionary("share_button", &share_button) &&
+        ddljson->GetString("short_link", &short_link_str) &&
+        short_link_str.find("//g.co") == 0) {
+      share_button->GetInteger("offset_x", &logo->metadata.share_button_x);
+      share_button->GetInteger("offset_y", &logo->metadata.share_button_y);
+      share_button->GetDouble("opacity", &logo->metadata.share_button_opacity);
+      share_button->GetString("icon_image", &logo->metadata.share_button_icon);
+      share_button->GetString("background_color",
+                              &logo->metadata.share_button_bg);
+      short_link_str.insert(0, "https:");
+      logo->metadata.short_link = GURL(short_link_str);
+    }
+  }
+
   logo->metadata.full_page_url =
       ParseUrl(*ddljson, "fullpage_interactive_url", base_url);
 
