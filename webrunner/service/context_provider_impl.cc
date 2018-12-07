@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #include "webrunner/service/common.h"
 
 namespace webrunner {
@@ -93,20 +94,10 @@ void ContextProviderImpl::Create(
 
   base::LaunchOptions launch_options;
 
-  // Clone job because the context needs to be able to spawn child processes.
-  launch_options.spawn_flags = FDIO_SPAWN_CLONE_JOB;
-
-  // Clone stdout/stderr to get logs in system debug log.
-  launch_options.fds_to_remap.push_back(
-      std::make_pair(STDERR_FILENO, STDERR_FILENO));
-  launch_options.fds_to_remap.push_back(
-      std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
-
-  // Context and child processes need access to the read-only package files.
-  launch_options.paths_to_clone.push_back(base::FilePath("/pkg"));
-
-  // Context needs access to the read-only SSL root certificates list.
-  launch_options.paths_to_clone.push_back(base::FilePath("/config/ssl"));
+  service_manager::SandboxPolicyFuchsia sandbox_policy;
+  sandbox_policy.Initialize(service_manager::SANDBOX_TYPE_WEB_CONTEXT);
+  sandbox_policy.SetServiceDirectory(std::move(params.service_directory));
+  sandbox_policy.UpdateLaunchOptionsForSandbox(&launch_options);
 
   if (use_shared_tmp_)
     launch_options.paths_to_clone.push_back(base::FilePath("/tmp"));
@@ -116,10 +107,6 @@ void ContextProviderImpl::Create(
   zx::channel context_handle(context_request.TakeChannel());
   launch_options.handles_to_transfer.push_back(
       {kContextRequestHandleId, context_handle.get()});
-
-  // Pass /svc directory specified by the caller.
-  launch_options.paths_to_transfer.push_back(base::PathToTransfer{
-      base::FilePath("/svc"), std::move(params.service_directory.release())});
 
   // Bind |data_directory| to /data directory, if provided.
   if (params.data_directory) {

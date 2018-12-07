@@ -29,22 +29,64 @@
 namespace service_manager {
 namespace {
 
-constexpr const char* const kRendererServices[] = {
-    fuchsia::fonts::Provider::Name_, fuchsia::mediacodec::CodecFactory::Name_};
+enum SandboxFeature {
+  // Clones the job. This is required to start new processes (to make it useful
+  // the process will also need access to the fuchsia.process.Launcher service).
+  kCloneJob = 1 << 0,
 
-constexpr const char* const kGpuServices[] = {
-    fuchsia::ui::scenic::Scenic::Name_};
+  // Provides access to resources required by Vulkan.
+  kProvideVulkanResources = 1 << 1,
 
-base::span<const char* const> GetServicesListForSandboxType(
-    service_manager::SandboxType type) {
-  switch (type) {
-    case service_manager::SANDBOX_TYPE_RENDERER:
-      return base::make_span(kRendererServices);
-    case service_manager::SANDBOX_TYPE_GPU:
-      return base::make_span(kGpuServices);
-    default:
-      return base::span<const char* const>();
+  // Read only access to /config/ssl, which contains root certs info.
+  kProvideSslConfig = 1 << 2,
+};
+
+struct SandboxConfig {
+  SandboxType type;
+  base::span<const char* const> services;
+  uint32_t features;
+};
+
+constexpr SandboxConfig kSandboxConfigs[] = {
+    {
+        SANDBOX_TYPE_WEB_CONTEXT,
+
+        // Services directory is passed by calling SetServiceDirectory().
+        base::span<const char* const>(),
+
+        // kCloneJob: context process needs to be able to spawn child processes.
+        // kProvideVulkanResources: Vulkan access is required to delegate to the
+        // GPU process. kProvideSslConfig: Context process is responsible for
+        // cert verification.
+        kCloneJob | kProvideVulkanResources | kProvideSslConfig,
+    },
+    {
+        SANDBOX_TYPE_RENDERER,
+        base::make_span(
+            (const char* const[]){fuchsia::fonts::Provider::Name_,
+                                  fuchsia::mediacodec::CodecFactory::Name_}),
+        0,
+    },
+    {
+        SANDBOX_TYPE_GPU,
+        base::make_span(
+            (const char* const[]){fuchsia::ui::scenic::Scenic::Name_}),
+        kProvideVulkanResources,
+    },
+};
+
+constexpr SandboxConfig kDefaultConfig = {
+    SANDBOX_TYPE_INVALID,
+    base::span<const char* const>(),
+    0,
+};
+
+const SandboxConfig& GetConfigForSandboxType(SandboxType type) {
+  for (auto& config : kSandboxConfigs) {
+    if (config.type == type)
+      return config;
   }
+  return kDefaultConfig;
 }
 
 }  // namespace
@@ -73,13 +115,13 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
   // |sandbox_directory_| and initialize it with the corresponding list of
   // services. FilteredServiceDirectory must be initialized on a thread that has
   // async_dispatcher.
-  auto services_list = GetServicesListForSandboxType(type_);
-  if (!services_list.empty()) {
+  const SandboxConfig& config = GetConfigForSandboxType(type_);
+  if (!config.services.empty()) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ =
         std::make_unique<base::fuchsia::FilteredServiceDirectory>(
             base::fuchsia::ComponentContext::GetDefault());
-    for (const char* service_name : services_list)
+    for (const char* service_name : config.services)
       service_directory_->AddService(service_name);
 
     // Bind the service directory and store the client channel for
@@ -89,12 +131,22 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
   }
 }
 
+void SandboxPolicyFuchsia::SetServiceDirectory(
+    zx::channel service_directory_client_channel) {
+  DCHECK_EQ(type_, SANDBOX_TYPE_WEB_CONTEXT);
+  DCHECK(!service_directory_client_channel_);
+
+  service_directory_client_channel_ =
+      std::move(service_directory_client_channel);
+}
+
 void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     base::LaunchOptions* options) {
   DCHECK_NE(type_, service_manager::SANDBOX_TYPE_INVALID);
 
   // Always clone stderr to get logs output.
   options->fds_to_remap.push_back(std::make_pair(STDERR_FILENO, STDERR_FILENO));
+  options->fds_to_remap.push_back(std::make_pair(STDOUT_FILENO, STDOUT_FILENO));
 
   if (type_ == service_manager::SANDBOX_TYPE_NO_SANDBOX) {
     options->spawn_flags = FDIO_SPAWN_CLONE_NAMESPACE | FDIO_SPAWN_CLONE_JOB;
@@ -105,7 +157,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   // Map /pkg (read-only files deployed from the package) into the child's
   // namespace.
   base::FilePath package_root;
-  base::PathService::Get(base::DIR_SOURCE_ROOT, &package_root);
+  base::PathService::Get(base::DIR_ASSETS, &package_root);
   options->paths_to_clone.push_back(package_root);
 
   // Clear environmental variables to better isolate the child from
@@ -115,7 +167,23 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   // Don't clone anything by default.
   options->spawn_flags = 0;
 
-  if (service_directory_) {
+  const SandboxConfig& config = GetConfigForSandboxType(type_);
+
+  if (config.features & kCloneJob)
+    options->spawn_flags |= FDIO_SPAWN_CLONE_JOB;
+
+  if (config.features & kProvideSslConfig)
+    options->paths_to_clone.push_back(base::FilePath("/config/ssl"));
+
+  if (config.features & kProvideVulkanResources) {
+    // /system/lib is used to load Vilkan libraries. /dev/class/gpu and
+    // /config/vulkan/icd.d are to used configure and access the GPU.
+    options->paths_to_clone.push_back(base::FilePath("/system/lib"));
+    options->paths_to_clone.push_back(base::FilePath("/dev/class/gpu"));
+    options->paths_to_clone.push_back(base::FilePath("/config/vulkan/icd.d"));
+  }
+
+  if (service_directory_client_channel_) {
     // Provide the child process with a restricted set of services.
     options->paths_to_transfer.push_back(base::PathToTransfer{
         base::FilePath("/svc"), service_directory_client_channel_.release()});
