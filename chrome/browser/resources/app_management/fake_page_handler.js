@@ -11,10 +11,17 @@ cr.define('app_management', function() {
     }
 
     getApps() {
-      this.page.onAppsAdded(['asdfghjkl']);
+      const fakeAppIdList = [
+        'ahfgeienlihckogmohjhadlkjgocpleb',
+        'aohghmighlieiainnegkcijnfilokake',
+        'blpcfgokakmgnkcojhhkbfbldkacnbeo',
+        'pjkljhegncpnkpknbcohdijeoejaedia',
+        'aapocclcgogkmnckokdopfmhonfmgoek',
+      ];
+
+      this.page.onAppsAdded(fakeAppIdList);
     }
   }
-
 
   return {FakePageHandler: FakePageHandler};
 });
