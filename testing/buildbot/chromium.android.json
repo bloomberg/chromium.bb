@@ -3203,6 +3203,7 @@
           "--num-retries=3",
           "--debug",
           "--android",
+          "--disable-breakpad",
           "--additional-driver-flag=--use-gpu-in-tests"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",

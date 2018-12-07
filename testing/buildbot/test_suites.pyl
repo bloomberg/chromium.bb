@@ -544,6 +544,11 @@
       'base_junit_tests': {},
     },
 
+    'chromium_android_webkit_gtests': {
+      'blink_heap_unittests': {},
+      'webkit_unit_tests': {},
+    },
+
     'chromium_browser_tests': {
       'browser_tests': {
         'swarming': {
