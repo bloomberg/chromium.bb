@@ -15,11 +15,8 @@
 <script>
     var t = async_test('Makes sure that Link headers support the imagesrcset and imagesizes attributes and respond to <meta content=viewport>');
     addEventListener("message", t.step_func(function(event) {
-        if (event.data == "largeloaded")
-            assert_unreached("FAIL: large resource was loaded");
-        if (event.data == "smallnotloaded")
-            assert_unreached("FAIL: small resource was not loaded");
+        assert_array_equals(event.data.sort(), ["300", "small"])
         t.done();
-        }, false));
+    }, false));
     window.open("resources/enable-viewport-and-refresh.html?media-link-headers-imagesrcset.php");
 </script>
