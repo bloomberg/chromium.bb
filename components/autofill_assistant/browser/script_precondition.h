@@ -65,7 +65,7 @@ class ScriptPrecondition {
       const std::map<std::string, ScriptStatusProto>& executed_scripts) const;
 
   void OnCheckElementExists(bool exists);
-  void OnGetFieldValue(bool exists, const std::string& value);
+  void OnGetFieldValue(int index, bool exists, const std::string& value);
   void ReportCheckResult(bool success);
 
   std::vector<Selector> elements_exist_;

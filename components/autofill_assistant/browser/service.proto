@@ -156,6 +156,11 @@ message FormValueMatchProto {
   // Required. The selector associated to the form element whose value should be
   // checked.
   optional ElementReferenceProto element = 1;
+
+  // Optional value. If specified, the element value must match the given value,
+  // even if it's empty. If not specified, we just check that the element value
+  // is non empty.
+  optional string value = 2;
 }
 
 enum PolicyType {
