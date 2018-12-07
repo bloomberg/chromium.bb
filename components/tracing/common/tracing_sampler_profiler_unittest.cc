@@ -144,7 +144,6 @@ class TracingSampleProfilerTest : public testing::Test {
 
 TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
-  profiler->OnMessageLoopStarted();
   BeginTrace();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
@@ -156,7 +155,6 @@ TEST_F(TracingSampleProfilerTest, OnSampleCompleted) {
 TEST_F(TracingSampleProfilerTest, JoinRunningTracing) {
   BeginTrace();
   auto profiler = TracingSamplerProfiler::CreateOnMainThread();
-  profiler->OnMessageLoopStarted();
   base::RunLoop().RunUntilIdle();
   WaitForEvents();
   EndTracing();

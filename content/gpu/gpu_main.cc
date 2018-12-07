@@ -340,7 +340,6 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Setup tracing sampler profiler as early as possible.
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
       tracing::TracingSamplerProfiler::CreateOnMainThread();
-  tracing_sampler_profiler->OnMessageLoopStarted();
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

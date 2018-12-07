@@ -20,9 +20,15 @@ namespace tracing {
 
 // This class is a bridge between the base stack sampling profiler and chrome
 // tracing. It's listening to TraceLog enabled/disabled events and it's starting
-// a stack profiler on the current thread if needed.
+// a stack profiler on the current thread if needed. The sampling profiler is
+// lazily instantiated when tracing is activated and released when tracing is
+// disabled.
+//
+// The TracingSamplerProfiler must be created and destroyed on the sampled
+// thread. The tracelog observers can be called on any thread which force the
+// field |profiler_| to be thread-safe.
 class TRACING_EXPORT TracingSamplerProfiler
-    : public base::trace_event::TraceLog::AsyncEnabledStateObserver {
+    : public base::trace_event::TraceLog::EnabledStateObserver {
  public:
   // Creates sampling profiler on main thread. Since the message loop might not
   // be setup when creating this profiler, the client must call
@@ -36,11 +42,8 @@ class TRACING_EXPORT TracingSamplerProfiler
 
   ~TracingSamplerProfiler() override;
 
-  // Notify the profiler that the message loop for current thread is started.
-  // Only required for main thread.
-  void OnMessageLoopStarted();
-
   // trace_event::TraceLog::EnabledStateObserver implementation:
+  // These methods are thread-safe.
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
@@ -48,9 +51,9 @@ class TRACING_EXPORT TracingSamplerProfiler
   explicit TracingSamplerProfiler(base::PlatformThreadId sampled_thread_id);
 
   const base::PlatformThreadId sampled_thread_id_;
-  std::unique_ptr<base::StackSamplingProfiler> profiler_;
 
-  base::WeakPtrFactory<TracingSamplerProfiler> weak_ptr_factory_;
+  base::Lock lock_;
+  std::unique_ptr<base::StackSamplingProfiler> profiler_;  // under |lock_|
 
   DISALLOW_COPY_AND_ASSIGN(TracingSamplerProfiler);
 };
