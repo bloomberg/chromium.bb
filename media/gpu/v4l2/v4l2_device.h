@@ -415,8 +415,8 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Returns the supported texture target for the V4L2Device.
   virtual GLenum GetTextureTarget() = 0;
 
-  // Returns the preferred V4L2 input format for |type| or 0 if none.
-  virtual uint32_t PreferredInputFormat(Type type) = 0;
+  // Returns the preferred V4L2 input formats for |type| or empty if none.
+  virtual std::vector<uint32_t> PreferredInputFormat(Type type) = 0;
 
   // NOTE: The below methods to query capabilities have a side effect of
   // closing the previously-open device, if any, and should not be called after
