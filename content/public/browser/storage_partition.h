@@ -23,10 +23,6 @@ namespace base {
 class Time;
 }
 
-namespace cast {
-class CastTransportHostFilter;
-}
-
 namespace storage {
 class FileSystemContext;
 }
@@ -69,16 +65,6 @@ class HostZoomMap;
 class ZoomLevelDelegate;
 #endif  // !defined(OS_ANDROID)
 
-// See comment below on GetURLRequestContext.
-class CONTENT_EXPORT ScopedAllowGetURLRequestContext {
- private:
-  // https://crbug.com/806817
-  friend class cast::CastTransportHostFilter;
-  ScopedAllowGetURLRequestContext();
-  ~ScopedAllowGetURLRequestContext();
-  DISALLOW_COPY_AND_ASSIGN(ScopedAllowGetURLRequestContext);
-};
-
 // Defines what persistent state a child process can access.
 //
 // The StoragePartition defines the view each child process has of the
@@ -88,10 +74,8 @@ class CONTENT_EXPORT ScopedAllowGetURLRequestContext {
 class CONTENT_EXPORT StoragePartition {
  public:
   virtual base::FilePath GetPath() = 0;
-  // http://crbug.com/837753 these methods shouldn't be called when the network
-  // service is enabled. There are a few remaining callers which have to
-  // instantiate a ScopedAllowGetURLRequestContext object while they make this
-  // call.
+  // These can't be called when the network service is enabled, since net/ runs
+  // in a separate process.
   virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
   virtual net::URLRequestContextGetter* GetMediaURLRequestContext() = 0;
 
