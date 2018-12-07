@@ -85,6 +85,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mHomeButton = toolbarRoot.findViewById(R.id.home_button);
         mHomeButton.setOnClickListener(homeButtonListener);
+        mHomeButton.setActivityTabProvider(tabProvider);
 
         mShareButton = toolbarRoot.findViewById(R.id.share_button);
         mShareButton.setOnClickListener(shareButtonListener);

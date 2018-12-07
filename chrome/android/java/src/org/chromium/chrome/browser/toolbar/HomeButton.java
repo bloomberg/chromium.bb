@@ -17,7 +17,11 @@ import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -32,6 +36,9 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
 
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
+
+    /** The {@link sActivityTabTabObserver} used to know when the active page changed. */
+    private ActivityTabTabObserver mActivityTabTabObserver;
 
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -50,6 +57,10 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeObserver(this);
             mThemeColorProvider = null;
+        }
+        if (mActivityTabTabObserver != null) {
+            mActivityTabTabObserver.destroy();
+            mActivityTabTabObserver = null;
         }
     }
 
@@ -73,5 +84,26 @@ public class HomeButton extends ChromeImageButton implements ThemeColorObserver,
         assert item.getItemId() == ID_REMOVE;
         HomepageManager.getInstance().setPrefHomepageEnabled(false);
         return true;
+    }
+
+    public void setActivityTabProvider(ActivityTabProvider activityTabProvider) {
+        mActivityTabTabObserver = new ActivityTabTabObserver(activityTabProvider) {
+            @Override
+            public void onObservingDifferentTab(Tab tab) {
+                if (tab == null) return;
+                setEnabled(shouldEnableHome(tab));
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab, String url) {
+                if (tab == null) return;
+                setEnabled(shouldEnableHome(tab));
+            }
+        };
+    }
+
+    private static boolean shouldEnableHome(Tab tab) {
+        if (!FeatureUtilities.isBottomToolbarEnabled()) return true;
+        return !NewTabPage.isNTPUrl(tab.getUrl());
     }
 }
