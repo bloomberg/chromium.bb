@@ -69,14 +69,46 @@ class DarkModeHandlerTest : public testing::Test {
   std::unique_ptr<content::TestWebUIDataSource> source_;
 };
 
-TEST_F(DarkModeHandlerTest, WebUIDarkModeDisabled) {
+TEST_F(DarkModeHandlerTest, WebUIDarkModeDisabledLightMode) {
   features()->InitAndDisableFeature(features::kWebUIDarkMode);
+  theme()->SetDarkMode(false);
 
   InitializeHandler();
 
-  EXPECT_EQ(web_ui()->GetHandlersForTesting()->size(), 0u);
+  EXPECT_EQ(web_ui()->GetHandlersForTesting()->size(), 1u);
   EXPECT_EQ(web_ui()->call_data().size(), 0u);
 
+  EXPECT_FALSE(IsSourceDark());
+}
+
+TEST_F(DarkModeHandlerTest, WebUIDarkModeDisabledDarkMode) {
+  features()->InitAndDisableFeature(features::kWebUIDarkMode);
+  theme()->SetDarkMode(true);
+
+  InitializeHandler();
+
+  EXPECT_EQ(web_ui()->GetHandlersForTesting()->size(), 1u);
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
+
+  // Even if in dark mode, if the feature's disabled we shouldn't be telling the
+  // page to be dark.
+  EXPECT_FALSE(IsSourceDark());
+}
+
+TEST_F(DarkModeHandlerTest, WebUIDarkModeDisabledNoNotifications) {
+  features()->InitAndDisableFeature(features::kWebUIDarkMode);
+  theme()->SetDarkMode(false);
+
+  InitializeHandler();
+
+  EXPECT_EQ(web_ui()->GetHandlersForTesting()->size(), 1u);
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
+  EXPECT_FALSE(IsSourceDark());
+
+  theme()->SetDarkMode(true);
+  theme()->NotifyObservers();
+
+  EXPECT_EQ(web_ui()->call_data().size(), 0u);
   EXPECT_FALSE(IsSourceDark());
 }
 

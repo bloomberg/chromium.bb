@@ -124,3 +124,12 @@ Navigator.prototype.clipboard;
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap
  */
 Array.prototype.flatMap = function(callback, opt_this) {};
+
+/**
+ * @param {string} name
+ * @param {boolean=} force
+ * @return {boolean}
+ * @throws {DOMException}
+ * @see https://dom.spec.whatwg.org/#dom-element-toggleattribute
+ */
+Element.prototype.toggleAttribute = function(name, force) {};

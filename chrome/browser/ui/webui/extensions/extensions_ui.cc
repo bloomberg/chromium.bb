@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_browser_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -358,6 +359,7 @@ ExtensionsUI::ExtensionsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
       base::Bind(&ExtensionsUI::OnDevModeChanged, base::Unretained(this)));
 
   source = CreateMdExtensionsSource(*in_dev_mode_);
+  DarkModeHandler::Initialize(web_ui, source);
 
 #if defined(OS_CHROMEOS)
   auto kiosk_app_handler = std::make_unique<chromeos::KioskAppsHandler>(

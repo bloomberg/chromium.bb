@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
+#include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
@@ -203,6 +204,7 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* data_source =
       CreateMdHistoryUIHTMLSource(profile, use_test_title_);
+  DarkModeHandler::Initialize(web_ui, data_source);
   content::WebUIDataSource::Add(profile, data_source);
 
   web_ui->AddMessageHandler(std::make_unique<BrowsingHistoryHandler>());
