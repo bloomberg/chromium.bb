@@ -14,7 +14,9 @@
 #include "base/macros.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
-#include "ios/web/public/web_state/global_web_state_observer.h"
+#import "ios/chrome/browser/tabs/tab_model_list_observer.h"
+#include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+#include "ios/web/public/web_state/web_state_observer.h"
 
 class GURL;
 
@@ -30,7 +32,9 @@ class SyncSessionsClient;
 // web::WebState-related events.
 class IOSChromeLocalSessionEventRouter
     : public sync_sessions::LocalSessionEventRouter,
-      public web::GlobalWebStateObserver {
+      public web::WebStateObserver,
+      public WebStateListObserver,
+      public TabModelListObserver {
  public:
   IOSChromeLocalSessionEventRouter(
       ios::ChromeBrowserState* browser_state,
@@ -43,7 +47,15 @@ class IOSChromeLocalSessionEventRouter
       sync_sessions::LocalSessionEventHandler* handler) override;
   void Stop() override;
 
-  // web::GlobalWebStateObserver:
+  // TabModelListObserver:
+  void TabModelRegisteredWithBrowserState(
+      TabModel* tab_model,
+      ios::ChromeBrowserState* browser_state) override;
+  void TabModelUnregisteredFromBrowserState(
+      TabModel* tab_model,
+      ios::ChromeBrowserState* browser_state) override;
+
+  // web::WebStateObserver:
   void NavigationItemsPruned(web::WebState* web_state,
                              size_t pruned_item_count) override;
   void NavigationItemChanged(web::WebState* web_state) override;
@@ -55,7 +67,24 @@ class IOSChromeLocalSessionEventRouter
       web::PageLoadCompletionStatus load_completion_status) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
+  // web::WebStateListObserver:
+  void WebStateInsertedAt(WebStateList* web_state_list,
+                          web::WebState* web_state,
+                          int index,
+                          bool activating) override;
+  void WebStateReplacedAt(WebStateList* web_state_list,
+                          web::WebState* old_web_state,
+                          web::WebState* new_web_state,
+                          int index) override;
+  void WebStateDetachedAt(WebStateList* web_state_list,
+                          web::WebState* web_state,
+                          int index) override;
+
  private:
+  // Methods to add and remove WebStateList observer.
+  void StartObservingWebStateList(WebStateList* web_state_list);
+  void StopObservingWebStateList(WebStateList* web_state_list);
+
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);
 
