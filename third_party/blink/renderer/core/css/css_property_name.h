@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector_traits.h"
 
 namespace blink {
 
@@ -55,5 +56,7 @@ class CORE_EXPORT CSSPropertyName {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::CSSPropertyName);
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_NAME_H_

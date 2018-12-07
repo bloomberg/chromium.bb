@@ -10,6 +10,7 @@
 namespace blink {
 
 class CSSProperty;
+class CSSPropertyName;
 
 class CORE_EXPORT StylePropertyMapReadOnlyMainThread
     : public StylePropertyMapReadOnly {
@@ -37,7 +38,7 @@ class CORE_EXPORT StylePropertyMapReadOnlyMainThread
   virtual const CSSValue* GetCustomProperty(AtomicString) = 0;
 
   using IterationCallback =
-      std::function<void(const AtomicString&, const CSSValue&)>;
+      std::function<void(const CSSPropertyName&, const CSSValue&)>;
   virtual void ForEachProperty(const IterationCallback&) = 0;
 
   virtual String SerializationForShorthand(const CSSProperty&) = 0;

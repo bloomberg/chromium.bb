@@ -175,8 +175,11 @@ unsigned int ComputedStylePropertyMap::size() {
              .size();
 }
 
-bool ComputedStylePropertyMap::ComparePropertyNames(const String& a,
-                                                    const String& b) {
+bool ComputedStylePropertyMap::ComparePropertyNames(
+    const CSSPropertyName& name_a,
+    const CSSPropertyName& name_b) {
+  AtomicString a = name_a.ToAtomicString();
+  AtomicString b = name_b.ToAtomicString();
   if (a.StartsWith("--"))
     return b.StartsWith("--") && WTF::CodePointCompareLessThan(a, b);
   if (a.StartsWith("-")) {
@@ -259,7 +262,7 @@ void ComputedStylePropertyMap::ForEachProperty(
 
   // Have to sort by all properties by code point, so we have to store
   // them in a buffer first.
-  HeapVector<std::pair<AtomicString, Member<const CSSValue>>> values;
+  HeapVector<std::pair<CSSPropertyName, Member<const CSSValue>>> values;
   for (const CSSProperty* property :
        CSSComputedStyleDeclaration::ComputableProperties()) {
     DCHECK(property);
@@ -267,7 +270,7 @@ void ComputedStylePropertyMap::ForEachProperty(
     const CSSValue* value = property->CSSValueFromComputedStyle(
         *style, nullptr /* layout_object */, StyledNode(), false);
     if (value)
-      values.emplace_back(property->GetPropertyNameAtomicString(), value);
+      values.emplace_back(CSSPropertyName(property->PropertyID()), value);
   }
 
   PropertyRegistry* registry =
@@ -275,7 +278,7 @@ void ComputedStylePropertyMap::ForEachProperty(
 
   for (const auto& name_value :
        ComputedStyleCSSValueMapping::GetVariables(*style, registry)) {
-    values.emplace_back(name_value.key, name_value.value);
+    values.emplace_back(CSSPropertyName(name_value.key), name_value.value);
   }
 
   std::sort(values.begin(), values.end(), [](const auto& a, const auto& b) {
