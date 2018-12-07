@@ -1248,8 +1248,8 @@ static INLINE TX_SIZE get_tx_size(int width, int height) {
   return TX_4X4;
 }
 
-static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
-                                         TXFM_CONTEXT *left_ctx,
+static INLINE int txfm_partition_context(const TXFM_CONTEXT *const above_ctx,
+                                         const TXFM_CONTEXT *const left_ctx,
                                          BLOCK_SIZE bsize, TX_SIZE tx_size) {
   const uint8_t txw = tx_size_wide[tx_size];
   const uint8_t txh = tx_size_high[tx_size];

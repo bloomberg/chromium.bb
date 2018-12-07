@@ -145,7 +145,7 @@ static void write_inter_compound_mode(MACROBLOCKD *xd, aom_writer *w,
 static void write_tx_size_vartx(MACROBLOCKD *xd, const MB_MODE_INFO *mbmi,
                                 TX_SIZE tx_size, int depth, int blk_row,
                                 int blk_col, aom_writer *w) {
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
   const int max_blocks_high = max_block_high(xd, mbmi->sb_type, 0);
   const int max_blocks_wide = max_block_wide(xd, mbmi->sb_type, 0);
 
@@ -896,7 +896,7 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
                                    int mi_row, int mi_col, int skip,
                                    int preskip) {
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  MB_MODE_INFO *const mbmi = xd->mi[0];
   AV1_COMMON *const cm = &cpi->common;
 
   if (seg->update_map) {
@@ -906,7 +906,7 @@ static void write_inter_segment_id(AV1_COMP *cpi, aom_writer *w,
       if (seg->segid_preskip) return;
       if (skip) {
         write_segment_id(cpi, mbmi, w, seg, segp, mi_row, mi_col, 1);
-        if (seg->temporal_update) ((MB_MODE_INFO *)mbmi)->seg_id_predicted = 0;
+        if (seg->temporal_update) mbmi->seg_id_predicted = 0;
         return;
       }
     }
@@ -1267,28 +1267,26 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
 #if ENC_MISMATCH_DEBUG
 static void enc_dump_logs(AV1_COMP *cpi, int mi_row, int mi_col) {
   AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
-  xd->mi = cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col);
-  const MB_MODE_INFO *const *mbmi = xd->mi[0];
+  const MB_MODE_INFO *const *mbmi =
+      *(cm->mi_grid_visible + (mi_row * cm->mi_stride + mi_col));
+  const MB_MODE_INFO_EXT *const *mbmi_ext =
+      cpi->mbmi_ext_base + (mi_row * cm->mi_cols + mi_col);
   if (is_inter_block(mbmi)) {
 #define FRAME_TO_CHECK 11
     if (cm->current_frame.frame_number == FRAME_TO_CHECK &&
         cm->show_frame == 1) {
       const BLOCK_SIZE bsize = mbmi->sb_type;
 
-      int_mv mv[2];
-      int is_comp_ref = has_second_ref(mbmi);
-      int ref;
+      int_mv mv[2] = { 0 };
+      const int is_comp_ref = has_second_ref(mbmi);
 
-      for (ref = 0; ref < 1 + is_comp_ref; ++ref)
+      for (int ref = 0; ref < 1 + is_comp_ref; ++ref)
         mv[ref].as_mv = mbmi->mv[ref].as_mv;
 
       if (!is_comp_ref) {
         mv[1].as_int = 0;
       }
 
-      MACROBLOCK *const x = &cpi->td.mb;
-      const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
       const int16_t mode_ctx =
           is_comp_ref ? mbmi_ext->compound_mode_context[mbmi->ref_frame[0]]
                       : av1_mode_context_analyzer(mbmi_ext->mode_context,
@@ -1868,8 +1866,8 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   assert(!cm->all_lossless);
 
   const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
-  WienerInfo *wiener_info = xd->wiener_info + plane;
-  SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
+  WienerInfo *ref_wiener_info = &xd->wiener_info[plane];
+  SgrprojInfo *ref_sgrproj_info = &xd->sgrproj_info[plane];
   RestorationType unit_rtype = rui->restoration_type;
 
   if (frame_rtype == RESTORE_SWITCHABLE) {
@@ -1880,10 +1878,10 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 #endif
     switch (unit_rtype) {
       case RESTORE_WIENER:
-        write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
+        write_wiener_filter(wiener_win, &rui->wiener_info, ref_wiener_info, w);
         break;
       case RESTORE_SGRPROJ:
-        write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
+        write_sgrproj_filter(&rui->sgrproj_info, ref_sgrproj_info, w);
         break;
       default: assert(unit_rtype == RESTORE_NONE); break;
     }
@@ -1894,7 +1892,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
     ++counts->wiener_restore[unit_rtype != RESTORE_NONE];
 #endif
     if (unit_rtype != RESTORE_NONE) {
-      write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
+      write_wiener_filter(wiener_win, &rui->wiener_info, ref_wiener_info, w);
     }
   } else if (frame_rtype == RESTORE_SGRPROJ) {
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
@@ -1903,7 +1901,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
     ++counts->sgrproj_restore[unit_rtype != RESTORE_NONE];
 #endif
     if (unit_rtype != RESTORE_NONE) {
-      write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
+      write_sgrproj_filter(&rui->sgrproj_info, ref_sgrproj_info, w);
     }
   }
 }
@@ -2630,7 +2628,7 @@ static void write_film_grain_params(AV1_COMP *cpi,
   aom_wb_write_bit(wb, pars->clip_to_restricted_range);
 }
 
-static void write_sb_size(SequenceHeader *seq_params,
+static void write_sb_size(const SequenceHeader *const seq_params,
                           struct aom_write_bit_buffer *wb) {
   (void)seq_params;
   (void)wb;
@@ -2641,41 +2639,16 @@ static void write_sb_size(SequenceHeader *seq_params,
   aom_wb_write_bit(wb, seq_params->sb_size == BLOCK_128X128 ? 1 : 0);
 }
 
-static void write_sequence_header(AV1_COMP *cpi,
+static void write_sequence_header(const SequenceHeader *const seq_params,
                                   struct aom_write_bit_buffer *wb) {
-  AV1_COMMON *const cm = &cpi->common;
-  SequenceHeader *seq_params = &cm->seq_params;
+  aom_wb_write_literal(wb, seq_params->num_bits_width - 1, 4);
+  aom_wb_write_literal(wb, seq_params->num_bits_height - 1, 4);
+  aom_wb_write_literal(wb, seq_params->max_frame_width - 1,
+                       seq_params->num_bits_width);
+  aom_wb_write_literal(wb, seq_params->max_frame_height - 1,
+                       seq_params->num_bits_height);
 
-  int max_frame_width = cpi->oxcf.forced_max_frame_width
-                            ? cpi->oxcf.forced_max_frame_width
-                            : cpi->oxcf.width;
-  int max_frame_height = cpi->oxcf.forced_max_frame_height
-                             ? cpi->oxcf.forced_max_frame_height
-                             : cpi->oxcf.height;
-  // max((int)ceil(log2(max_frame_width)), 1)
-  const int num_bits_width =
-      (max_frame_width > 1) ? get_msb(max_frame_width - 1) + 1 : 1;
-  // max((int)ceil(log2(max_frame_height)), 1)
-  const int num_bits_height =
-      (max_frame_height > 1) ? get_msb(max_frame_height - 1) + 1 : 1;
-  assert(num_bits_width <= 16);
-  assert(num_bits_height <= 16);
-
-  seq_params->num_bits_width = num_bits_width;
-  seq_params->num_bits_height = num_bits_height;
-  seq_params->max_frame_width = max_frame_width;
-  seq_params->max_frame_height = max_frame_height;
-
-  aom_wb_write_literal(wb, num_bits_width - 1, 4);
-  aom_wb_write_literal(wb, num_bits_height - 1, 4);
-  aom_wb_write_literal(wb, max_frame_width - 1, num_bits_width);
-  aom_wb_write_literal(wb, max_frame_height - 1, num_bits_height);
-
-  /* Placeholder for actually writing to the bitstream */
   if (!seq_params->reduced_still_picture_hdr) {
-    seq_params->frame_id_length = FRAME_ID_LENGTH;
-    seq_params->delta_frame_id_length = DELTA_FRAME_ID_LENGTH;
-
     aom_wb_write_bit(wb, seq_params->frame_id_numbers_present_flag);
     if (seq_params->frame_id_numbers_present_flag) {
       // We must always have delta_frame_id_length < frame_id_length,
@@ -3530,7 +3503,7 @@ uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst) {
       }
     }
   }
-  write_sequence_header(cpi, &wb);
+  write_sequence_header(&cm->seq_params, &wb);
 
   write_color_config(&cm->seq_params, &wb);
 

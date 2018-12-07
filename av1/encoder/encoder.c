@@ -1104,6 +1104,21 @@ static void init_seq_coding_tools(SequenceHeader *seq, AV1_COMMON *cm,
           ? DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1
           : -1;
 
+  seq->max_frame_width =
+      oxcf->forced_max_frame_width ? oxcf->forced_max_frame_width : oxcf->width;
+  seq->max_frame_height = oxcf->forced_max_frame_height
+                              ? oxcf->forced_max_frame_height
+                              : oxcf->height;
+  seq->num_bits_width =
+      (seq->max_frame_width > 1) ? get_msb(seq->max_frame_width - 1) + 1 : 1;
+  seq->num_bits_height =
+      (seq->max_frame_height > 1) ? get_msb(seq->max_frame_height - 1) + 1 : 1;
+  assert(seq->num_bits_width <= 16);
+  assert(seq->num_bits_height <= 16);
+
+  seq->frame_id_length = FRAME_ID_LENGTH;
+  seq->delta_frame_id_length = DELTA_FRAME_ID_LENGTH;
+
   seq->enable_dual_filter = oxcf->enable_dual_filter;
   seq->order_hint_info.enable_jnt_comp = oxcf->enable_jnt_comp;
   seq->order_hint_info.enable_jnt_comp &=
@@ -5139,7 +5154,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   if (seq_params->frame_id_numbers_present_flag) {
     /* Non-normative definition of current_frame_id ("frame counter" with
      * wraparound) */
-    const int frame_id_length = FRAME_ID_LENGTH;
     if (cm->current_frame_id == -1) {
       int lsb, msb;
       /* quasi-random initialization of current_frame_id for a key frame */
@@ -5150,7 +5164,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
         lsb = cpi->source->y_buffer[0] & 0xff;
         msb = cpi->source->y_buffer[1] & 0xff;
       }
-      cm->current_frame_id = ((msb << 8) + lsb) % (1 << frame_id_length);
+      cm->current_frame_id =
+          ((msb << 8) + lsb) % (1 << seq_params->frame_id_length);
 
       // S_frame is meant for stitching different streams of different
       // resolutions together, so current_frame_id must be the
@@ -5160,8 +5175,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
       if (cpi->oxcf.sframe_enabled) cm->current_frame_id = 0x37;
     } else {
       cm->current_frame_id =
-          (cm->current_frame_id + 1 + (1 << frame_id_length)) %
-          (1 << frame_id_length);
+          (cm->current_frame_id + 1 + (1 << seq_params->frame_id_length)) %
+          (1 << seq_params->frame_id_length);
     }
   }
 
