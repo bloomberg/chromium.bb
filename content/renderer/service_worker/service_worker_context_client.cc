@@ -236,26 +236,20 @@ WebURLRequest::Priority ConvertNetPriorityToWebKitPriority(
   return WebURLRequest::Priority::kVeryLow;
 }
 
-// If |is_for_fetch_event| is true, some headers may be omitted according
-// to the embedder. It's always true now, but it might change with
-// more Onion Souping, and future callsites like Background Fetch probably don't
-// want to do the header filtering, since it's important for them to have the
-// exact request as sent to network.
-void ToWebServiceWorkerRequest(const network::ResourceRequest& request,
-                               const std::string request_body_blob_uuid,
-                               uint64_t request_body_blob_size,
-                               blink::mojom::BlobPtrInfo request_body_blob,
-                               const std::string& client_id,
-                               std::vector<blink::mojom::BlobPtrInfo> blob_ptrs,
-                               blink::WebServiceWorkerRequest* web_request,
-                               bool is_for_fetch_event) {
+void ToWebServiceWorkerRequestForFetchEvent(
+    const network::ResourceRequest& request,
+    const std::string request_body_blob_uuid,
+    uint64_t request_body_blob_size,
+    blink::mojom::BlobPtrInfo request_body_blob,
+    const std::string& client_id,
+    std::vector<blink::mojom::BlobPtrInfo> blob_ptrs,
+    blink::WebServiceWorkerRequest* web_request) {
   DCHECK(web_request);
   web_request->SetURL(blink::WebURL(request.url));
   web_request->SetMethod(blink::WebString::FromUTF8(request.method));
   if (!request.headers.IsEmpty()) {
     for (net::HttpRequestHeaders::Iterator it(request.headers); it.GetNext();) {
-      if (!is_for_fetch_event ||
-          !GetContentClient()
+      if (!GetContentClient()
                ->renderer()
                ->IsExcludedHeaderForServiceWorkerFetchEvent(it.name())) {
         web_request->SetHeader(blink::WebString::FromUTF8(it.name()),
@@ -1623,11 +1617,11 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
 
   // Dispatch the event to the service worker execution context.
   blink::WebServiceWorkerRequest web_request;
-  ToWebServiceWorkerRequest(
+  ToWebServiceWorkerRequestForFetchEvent(
       std::move(params->request), params->request_body_blob_uuid,
       params->request_body_blob_size, std::move(params->request_body_blob),
       params->client_id, std::move(params->request_body_blob_ptrs),
-      &web_request, true /* is_for_fetch_event */);
+      &web_request);
   proxy_->DispatchFetchEvent(event_id, web_request, navigation_preload_sent);
 }
 
