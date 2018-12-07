@@ -116,20 +116,6 @@ class InterceptingCanvasBase : public SkCanvas {
   void onDrawDRRect(const SkRRect& outer,
                     const SkRRect& inner,
                     const SkPaint&) override = 0;
-  void onDrawText(const void* text,
-                  size_t byte_length,
-                  SkScalar x,
-                  SkScalar y,
-                  const SkPaint&) override = 0;
-  void onDrawPosText(const void* text,
-                     size_t byte_length,
-                     const SkPoint pos[],
-                     const SkPaint&) override = 0;
-  void onDrawPosTextH(const void* text,
-                      size_t byte_length,
-                      const SkScalar xpos[],
-                      SkScalar const_y,
-                      const SkPaint&) override = 0;
   void onDrawTextBlob(const SkTextBlob*,
                       SkScalar x,
                       SkScalar y,
@@ -256,32 +242,6 @@ class InterceptingCanvas : public InterceptingCanvasBase {
                     const SkPaint& paint) override {
     Interceptor interceptor(this);
     this->SkCanvas::onDrawDRRect(outer, inner, paint);
-  }
-
-  void onDrawText(const void* text,
-                  size_t byte_length,
-                  SkScalar x,
-                  SkScalar y,
-                  const SkPaint& paint) override {
-    Interceptor interceptor(this);
-    this->SkCanvas::onDrawText(text, byte_length, x, y, paint);
-  }
-
-  void onDrawPosText(const void* text,
-                     size_t byte_length,
-                     const SkPoint pos[],
-                     const SkPaint& paint) override {
-    Interceptor interceptor(this);
-    this->SkCanvas::onDrawPosText(text, byte_length, pos, paint);
-  }
-
-  void onDrawPosTextH(const void* text,
-                      size_t byte_length,
-                      const SkScalar xpos[],
-                      SkScalar const_y,
-                      const SkPaint& paint) override {
-    Interceptor interceptor(this);
-    this->SkCanvas::onDrawPosTextH(text, byte_length, xpos, const_y, paint);
   }
 
   void onDrawTextBlob(const SkTextBlob* blob,
