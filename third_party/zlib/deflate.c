@@ -2274,7 +2274,7 @@ local INLINE Pos insert_string_sse(deflate_state *const s, const Pos str)
         val &= 0xFFFFFF;
 
 /* Windows clang should use inline asm */
-#if defined(_MSC_VER) && !defined(__clang__)
+#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_IX86) || defined(_M_X64))
     h = _mm_crc32_u32(h, val);
 #elif defined(__i386__) || defined(__amd64__)
     __asm__ __volatile__ (
