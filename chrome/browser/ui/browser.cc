@@ -228,7 +228,6 @@
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #endif
 
@@ -1987,31 +1986,14 @@ void Browser::FileSelectedWithExtraInfo(const ui::SelectedFileInfo& file_info,
                                         void* params) {
   profile_->set_last_selected_directory(file_info.file_path.DirName());
 
-  GURL url = net::FilePathToFileURL(file_info.local_path);
+  GURL url = std::move(file_info.url)
+                 .value_or(net::FilePathToFileURL(file_info.local_path));
 
   if (url.is_empty())
     return;
 
-#if defined(OS_CHROMEOS)
-  chromeos::ResolveExternalFileUrlFromPath(
-      profile_, file_info.file_path,
-      base::BindOnce(
-          [](base::WeakPtr<Browser> weak_this, GURL url, GURL external_url) {
-            if (!weak_this)
-              return;
-
-            if (!external_url.is_empty())
-              url = std::move(external_url);
-
-            weak_this->OpenURL(OpenURLParams(url, Referrer(),
-                                             WindowOpenDisposition::CURRENT_TAB,
-                                             ui::PAGE_TRANSITION_TYPED, false));
-          },
-          weak_factory_.GetWeakPtr(), std::move(url)));
-#else
   OpenURL(OpenURLParams(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
                         ui::PAGE_TRANSITION_TYPED, false));
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

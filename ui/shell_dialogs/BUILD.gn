@@ -45,6 +45,7 @@ jumbo_component("shell_dialogs") {
     "//skia",
     "//ui/base",
     "//ui/strings",
+    "//url",
   ]
 
   if (use_aura) {
