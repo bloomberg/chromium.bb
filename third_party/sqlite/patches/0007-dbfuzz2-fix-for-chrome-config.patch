@@ -1,0 +1,22 @@
+diff --git a/third_party/sqlite/src/test/dbfuzz2.c b/third_party/sqlite/src/test/dbfuzz2.c
+index 0833f0386884..4ec43302ac37 100644
+--- a/third_party/sqlite/src/test/dbfuzz2.c
++++ b/third_party/sqlite/src/test/dbfuzz2.c
+@@ -56,7 +56,9 @@ static const char *azSql[] = {
+   "ALTER TABLE t1 RENAME TO alkjalkjdfiiiwuer987lkjwer82mx97sf98788s9789s;",
+   "INSERT INTO t3 SELECT * FROM t2;",
+   "DELETE FROM t3 WHERE x IN (SELECT x FROM t4);",
++#if !defined(SQLITE_OMIT_REINDEX)
+   "REINDEX;",
++#endif
+   "DROP TABLE t3;",
+   "VACUUM;",
+ };
+@@ -78,6 +80,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *aData, size_t nByte){
+     printf("************** nByte=%d ***************\n", (int)nByte);
+     fflush(stdout);
+   }
++  if( sqlite3_initialize() ) return 0;
+   rc = sqlite3_open(0, &db);
+   if( rc ) return 1;
+   a = sqlite3_malloc64(nByte+1);
