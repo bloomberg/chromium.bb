@@ -115,13 +115,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;
 
-// Add a new tab with the given url, at the given |position|,
-// and makes it the selected tab. The selected tab is returned.
-// If |position| == NSNotFound the tab will be added at the end of the stack.
-- (Tab*)addSelectedTabWithURL:(const GURL&)url
-                      atIndex:(NSUInteger)position
-                   transition:(ui::PageTransition)transition;
-
 // Adds |tabAddedCompletion| to the completion block (if any) that will be run
 // the next time a tab is added to the TabModel this object was initialized
 // with.
