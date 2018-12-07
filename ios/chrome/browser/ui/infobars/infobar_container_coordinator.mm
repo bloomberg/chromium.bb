@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/infobars/infobar_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
 
 #include <memory>
 
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/infobars/infobar_container_mediator.h"
-#include "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
+#include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
@@ -19,13 +19,13 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarCoordinator ()<SigninPresenter>
+@interface InfobarContainerCoordinator () <SigninPresenter>
 
 @property(nonatomic, assign) TabModel* tabModel;
 
 // UIViewController that contains Infobars.
 @property(nonatomic, strong)
-    InfobarContainerViewController* containerViewController;
+    LegacyInfobarContainerViewController* containerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
 
@@ -35,7 +35,7 @@
 
 @end
 
-@implementation InfobarCoordinator
+@implementation InfobarContainerCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                               browserState:
@@ -54,7 +54,8 @@
   DCHECK(self.dispatcher);
 
   // Create and setup the ViewController.
-  self.containerViewController = [[InfobarContainerViewController alloc] init];
+  self.containerViewController =
+      [[LegacyInfobarContainerViewController alloc] init];
   [self.baseViewController addChildViewController:self.containerViewController];
   // TODO(crbug.com/892376): We shouldn't modify the BaseVC hierarchy, BVC needs
   // to handle this.

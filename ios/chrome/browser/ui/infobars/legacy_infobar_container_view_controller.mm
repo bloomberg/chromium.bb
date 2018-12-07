@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/infobars/infobar_container_view_controller.h"
+#import "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 
 #include "base/ios/block_types.h"
 #include "base/logging.h"
@@ -17,7 +17,7 @@ namespace {
 const CGFloat kAlphaChangeAnimationDuration = 0.35;
 }  // namespace
 
-@interface InfobarContainerViewController ()
+@interface LegacyInfobarContainerViewController ()
 
 // Whether the controller's view is currently available.
 // YES from viewDidAppear to viewDidDisappear.
@@ -25,7 +25,7 @@ const CGFloat kAlphaChangeAnimationDuration = 0.35;
 
 @end
 
-@implementation InfobarContainerViewController
+@implementation LegacyInfobarContainerViewController
 
 // Whenever the container or contained views are re-drawn update the layout to
 // match their new size or position.

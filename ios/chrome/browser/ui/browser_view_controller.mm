@@ -142,7 +142,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/image_util/image_copier.h"
 #import "ios/chrome/browser/ui/image_util/image_saver.h"
-#import "ios/chrome/browser/ui/infobars/infobar_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_container_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
@@ -597,7 +597,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Coordinator for tablet tab strip.
 @property(nonatomic, strong) TabStripLegacyCoordinator* tabStripCoordinator;
 // Coordinator for Infobars.
-@property(nonatomic, strong) InfobarCoordinator* infoBarCoordinator;
+@property(nonatomic, strong)
+    InfobarContainerCoordinator* infobarContainerCoordinator;
 // A weak reference to the view of the tab strip on tablet.
 @property(nonatomic, weak) UIView* tabStripView;
 // Helper for saving images.
@@ -1453,8 +1454,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   _downloadManagerCoordinator = nil;
   self.toolbarInterface = nil;
   self.tabStripView = nil;
-  [self.infoBarCoordinator stop];
-  self.infoBarCoordinator = nil;
+  [self.infobarContainerCoordinator stop];
+  self.infobarContainerCoordinator = nil;
   // SideSwipeController is a tab model observer, so it needs to stop observing
   // before self.tabModel is released.
   _sideSwipeController = nil;
@@ -1674,7 +1675,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [super didReceiveMemoryWarning];
 
   if (![self isViewLoaded]) {
-    // Do not release |_infoBarCoordinator|, as this must have the same
+    // Do not release |_infobarContainerCoordinator|, as this must have the same
     // lifecycle as the BrowserViewController.
     [_browserContainerCoordinator stop];
     _browserContainerCoordinator = nil;
@@ -2039,15 +2040,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     [self.tabStripCoordinator start];
   }
 
-  // Create the Infobar Coordinator.
-  self.infoBarCoordinator =
-      [[InfobarCoordinator alloc] initWithBaseViewController:self
-                                                browserState:_browserState
-                                                    tabModel:self.tabModel];
-  self.infoBarCoordinator.dispatcher = self.dispatcher;
-  self.infoBarCoordinator.positioner = self;
-  self.infoBarCoordinator.syncPresenter = self;
-  [self.infoBarCoordinator start];
+  // Create the Infobar Container Coordinator.
+  self.infobarContainerCoordinator = [[InfobarContainerCoordinator alloc]
+      initWithBaseViewController:self
+                    browserState:_browserState
+                        tabModel:self.tabModel];
+  self.infobarContainerCoordinator.dispatcher = self.dispatcher;
+  self.infobarContainerCoordinator.positioner = self;
+  self.infobarContainerCoordinator.syncPresenter = self;
+  [self.infobarContainerCoordinator start];
 }
 
 // Called by NSNotificationCenter when the view's window becomes key to account
@@ -2311,8 +2312,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // Place the toolbar controller above the infobar container and adds the
   // layout guides.
   if (initialLayout) {
-    UIView* bottomView =
-        IsIPadIdiom() ? _fakeStatusBarView : [self.infoBarCoordinator view];
+    UIView* bottomView = IsIPadIdiom()
+                             ? _fakeStatusBarView
+                             : [self.infobarContainerCoordinator view];
     [[self view]
         insertSubview:self.primaryToolbarCoordinator.viewController.view
          aboveSubview:bottomView];
@@ -2860,7 +2862,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // TODO(crbug.com/785238): Remove the need for this check.
   if (tab.webState->GetJSInjectionReceiver()) {
     ChromeIOSTranslateClient::CreateForWebState(
-        tab.webState, self.infoBarCoordinator.languageSelectionHandler);
+        tab.webState,
+        self.infobarContainerCoordinator.languageSelectionHandler);
     language::IOSLanguageDetectionTabHelper::CreateForWebState(
         tab.webState,
         ChromeIOSTranslateClient::FromWebState(tab.webState)
@@ -3136,10 +3139,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   Tab* currentTab = self.tabModel.currentTab;
   if (currentTab && tab == currentTab) {
     DCHECK(currentTab.webState);
-    DCHECK(self.infoBarCoordinator);
-    if ([self.infoBarCoordinator
+    DCHECK(self.infobarContainerCoordinator);
+    if ([self.infobarContainerCoordinator
             isInfobarPresentingForWebState:currentTab.webState]) {
-      return [self.infoBarCoordinator view];
+      return [self.infobarContainerCoordinator view];
     }
   }
   return nil;
@@ -3147,9 +3150,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 // Returns a vertical infobar offset relative to the tab content.
 - (CGFloat)infoBarOverlayYOffsetForTab:(Tab*)tab {
-  if (tab != self.tabModel.currentTab || !self.infoBarCoordinator) {
+  if (tab != self.tabModel.currentTab || !self.infobarContainerCoordinator) {
     // There is no UI representation for non-current tabs or there is
-    // no _infoBarCoordinator instantiated yet.
+    // no _infobarContainerCoordinator instantiated yet.
     // Return offset outside of tab.
     return CGRectGetMaxY(self.view.frame);
   } else if (IsIPadIdiom()) {
@@ -3159,7 +3162,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     // The infobars on iPhone are displayed at the bottom of a tab.
     CGRect visibleFrame = [self visibleFrameForTab:self.tabModel.currentTab];
     return CGRectGetMaxY(visibleFrame) -
-           CGRectGetHeight([self.infoBarCoordinator view].frame);
+           CGRectGetHeight([self.infobarContainerCoordinator view].frame);
   }
 }
 
@@ -3916,8 +3919,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     [self.secondaryToolbarContainerView layoutIfNeeded];
   }
 
-  // Resize the infobars to take into account the changes in the toolbar.
-  [self.infoBarCoordinator updateInfobarContainer];
+  // Resize the InfobarContainer to take into account the changes in the
+  // toolbar.
+  [self.infobarContainerCoordinator updateInfobarContainer];
 
   // Resize the NTP's contentInset.bottom to be above the secondary toolbar.
   id nativeController = [self nativeControllerForTab:self.tabModel.currentTab];
@@ -4963,7 +4967,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // Reset horizontal stack view.
   [sideSwipeView removeFromSuperview];
   [self.sideSwipeController setInSwipe:NO];
-  [[self.infoBarCoordinator view] setHidden:NO];
+  [[self.infobarContainerCoordinator view] setHidden:NO];
 
   if (base::FeatureList::IsEnabled(kPresentSadTabInViewController)) {
     web::WebState* webState = self.tabModel.currentTab.webState;
@@ -5006,12 +5010,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 - (void)updateAccessoryViewsForSideSwipeWithVisibility:(BOOL)visible {
   if (visible) {
     [self updateToolbar];
-    [[self.infoBarCoordinator view] setHidden:NO];
+    [[self.infobarContainerCoordinator view] setHidden:NO];
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
     [self hideFindBarWithAnimation:NO];
-    [[self.infoBarCoordinator view] setHidden:YES];
+    [[self.infobarContainerCoordinator view] setHidden:YES];
   }
 }
 
@@ -5024,7 +5028,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   BOOL seenInfoBarContainer = NO;
   BOOL seenContentArea = NO;
   for (UIView* view in views.subviews) {
-    if (view == [self.infoBarCoordinator view])
+    if (view == [self.infobarContainerCoordinator view])
       seenInfoBarContainer = YES;
     else if (view == self.contentArea)
       seenContentArea = YES;
