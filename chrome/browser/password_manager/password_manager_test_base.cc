@@ -93,6 +93,8 @@ class CustomManagePasswordsUIController : public ManagePasswordsUIController {
 
   void WaitForFallbackForSaving();
 
+  bool WaitForFallbackForSaving(const base::TimeDelta timeout);
+
   bool was_prompt_automatically_shown() {
     return was_prompt_automatically_shown_;
   }
@@ -183,6 +185,25 @@ void CustomManagePasswordsUIController::WaitForFallbackForSaving() {
   wait_for_fallback_ = true;
   run_loop_ = &run_loop;
   run_loop_->Run();
+}
+
+bool CustomManagePasswordsUIController::WaitForFallbackForSaving(
+    const base::TimeDelta timeout = base::TimeDelta::Max()) {
+  // If the browser is currently showing the save fallback, return true
+  // without waiting.
+  if (BubbleIsManualFallbackForSaving())
+    return true;
+
+  base::RunLoop run_loop;
+  wait_for_fallback_ = true;
+  run_loop_ = &run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop_->QuitClosure(), timeout);
+  run_loop_->Run();
+  bool shownFallbackForSaving = !wait_for_fallback_;
+  run_loop_ = nullptr;
+  wait_for_fallback_ = false;
+  return shownFallbackForSaving;
 }
 
 void CustomManagePasswordsUIController::OnPasswordSubmitted(
@@ -390,10 +411,11 @@ void BubbleObserver::WaitForAutomaticSavePrompt() const {
   controller->WaitForState(password_manager::ui::PENDING_PASSWORD_STATE);
 }
 
-void BubbleObserver::WaitForFallbackForSaving() const {
+bool BubbleObserver::WaitForFallbackForSaving(
+    const base::TimeDelta timeout) const {
   CustomManagePasswordsUIController* controller =
       static_cast<CustomManagePasswordsUIController*>(passwords_ui_controller_);
-  controller->WaitForFallbackForSaving();
+  return controller->WaitForFallbackForSaving(timeout);
 }
 
 PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase()

@@ -164,6 +164,7 @@ class TestRecipeReplayChromeFeatureActionExecutor {
                              const std::string& password);
   virtual bool SavePassword();
   virtual bool UpdatePassword();
+  virtual bool WaitForSaveFallback();
   virtual bool HasChromeShownSavePasswordPrompt();
   virtual bool HasChromeStoredCredential(const std::string& origin,
                                          const std::string& username,
@@ -255,6 +256,7 @@ class TestRecipeReplayer {
   bool ExecuteValidateFieldValueAction(const base::DictionaryValue& action);
   bool ExecuteValidateNoSavePasswordPromptAction(
       const base::DictionaryValue& action);
+  bool ExecuteValidateSaveFallbackAction(const base::DictionaryValue& action);
   bool ExecuteWaitForStateAction(const base::DictionaryValue& action);
   bool GetTargetHTMLElementXpathFromAction(const base::DictionaryValue& action,
                                            std::string* xpath);

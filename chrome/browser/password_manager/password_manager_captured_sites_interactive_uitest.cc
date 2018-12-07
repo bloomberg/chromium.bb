@@ -19,6 +19,9 @@
 
 namespace {
 
+constexpr base::TimeDelta kWaitForSaveFallbackInterval =
+    base::TimeDelta::FromSeconds(5);
+
 struct TestParams {
   std::string scenarioDir;
   std::string siteName;
@@ -137,6 +140,14 @@ class CapturedSitesPasswordManagerBrowserTest
       return true;
     }
     ADD_FAILURE() << "No Update Password prompt!";
+    return false;
+  }
+
+  bool WaitForSaveFallback() override {
+    BubbleObserver bubble_observer(WebContents());
+    if (bubble_observer.WaitForFallbackForSaving(kWaitForSaveFallbackInterval))
+      return true;
+    ADD_FAILURE() << "Chrome did not show the save fallback icon!";
     return false;
   }
 
