@@ -153,12 +153,6 @@ void GestureEventQueue::ForwardGestureEvent(
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingStart);
   DCHECK_NE(gesture_event.event.GetType(), WebInputEvent::kGestureFlingCancel);
   sent_events_awaiting_ack_.push_back(gesture_event);
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollBegin) {
-    fling_controller_.RegisterFlingSchedulerObserver();
-  } else if (gesture_event.event.GetType() ==
-             WebInputEvent::kGestureScrollEnd) {
-    fling_controller_.UnregisterFlingSchedulerObserver();
-  }
   client_->SendGestureEventImmediately(gesture_event);
 }
 

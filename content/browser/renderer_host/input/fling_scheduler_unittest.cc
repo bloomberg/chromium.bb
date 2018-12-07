@@ -18,13 +18,15 @@ class FakeFlingScheduler : public FlingScheduler {
  public:
   FakeFlingScheduler(RenderWidgetHostImpl* host) : FlingScheduler(host) {}
 
-  void ScheduleFlingProgress() override {
-    FlingScheduler::ScheduleFlingProgress();
+  void ScheduleFlingProgress(
+      base::WeakPtr<FlingController> fling_controller) override {
+    FlingScheduler::ScheduleFlingProgress(fling_controller);
     fling_in_progress_ = true;
   }
 
-  void DidStopFlingingOnBrowser() override {
-    FlingScheduler::DidStopFlingingOnBrowser();
+  void DidStopFlingingOnBrowser(
+      base::WeakPtr<FlingController> fling_controller) override {
+    FlingScheduler::DidStopFlingingOnBrowser(fling_controller);
     fling_in_progress_ = false;
   }
 
@@ -54,7 +56,6 @@ class FlingSchedulerTest : public testing::Test,
     fling_scheduler_ = std::make_unique<FakeFlingScheduler>(widget_host_);
     fling_controller_ = std::make_unique<FlingController>(
         this, fling_scheduler_.get(), FlingController::Config());
-    fling_controller_->RegisterFlingSchedulerObserver();
   }
 
   void TearDown() override {
@@ -103,12 +104,7 @@ class FlingSchedulerTest : public testing::Test,
   void SendGeneratedWheelEvent(
       const MouseWheelEventWithLatencyInfo& wheel_event) override {}
   void SendGeneratedGestureScrollEvents(
-      const GestureEventWithLatencyInfo& gesture_event) override {
-    if (gesture_event.event.GetType() ==
-        blink::WebInputEvent::kGestureScrollEnd) {
-      fling_controller_->UnregisterFlingSchedulerObserver();
-    }
-  }
+      const GestureEventWithLatencyInfo& gesture_event) override {}
 
   std::unique_ptr<FlingController> fling_controller_;
   std::unique_ptr<FakeFlingScheduler> fling_scheduler_;
