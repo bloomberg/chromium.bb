@@ -17,8 +17,10 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/clock.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/offline_page_item_generator.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -134,7 +136,7 @@ void BuildTestStoreWithSchemaFromM53(const base::FilePath& file) {
   statement.BindString(7, kTestClientId2.id);
   statement.BindCString(8, kTestURL);
   statement.BindString(9, base::FilePath(kFilePath).MaybeAsASCII());
-  statement.BindInt64(10, store_utils::ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(10, store_utils::ToDatabaseTime(OfflineClock()->Now()));
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(connection.DoesTableExist(OFFLINE_PAGES_TABLE_V1));
   ASSERT_FALSE(connection.DoesColumnExist(OFFLINE_PAGES_TABLE_V1, "title"));
@@ -180,7 +182,7 @@ void BuildTestStoreWithSchemaFromM54(const base::FilePath& file) {
   statement.BindString(7, kTestClientId2.id);
   statement.BindCString(8, kTestURL);
   statement.BindString(9, base::FilePath(kFilePath).MaybeAsASCII());
-  statement.BindInt64(10, store_utils::ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(10, store_utils::ToDatabaseTime(OfflineClock()->Now()));
   statement.BindString16(11, base::UTF8ToUTF16("Test title"));
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(connection.DoesTableExist(OFFLINE_PAGES_TABLE_V1));
@@ -227,7 +229,7 @@ void BuildTestStoreWithSchemaFromM55(const base::FilePath& file) {
   statement.BindString(6, kTestClientId2.id);
   statement.BindCString(7, kTestURL);
   statement.BindString(8, base::FilePath(kFilePath).MaybeAsASCII());
-  statement.BindInt64(9, store_utils::ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(9, store_utils::ToDatabaseTime(OfflineClock()->Now()));
   statement.BindString16(10, base::UTF8ToUTF16("Test title"));
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(connection.DoesTableExist(OFFLINE_PAGES_TABLE_V1));
@@ -272,7 +274,7 @@ void BuildTestStoreWithSchemaFromM56(const base::FilePath& file) {
   statement.BindString(6, kTestClientId2.id);
   statement.BindCString(7, kTestURL);
   statement.BindString(8, base::FilePath(kFilePath).MaybeAsASCII());
-  statement.BindInt64(9, store_utils::ToDatabaseTime(base::Time::Now()));
+  statement.BindInt64(9, store_utils::ToDatabaseTime(OfflineClock()->Now()));
   statement.BindString16(10, base::UTF8ToUTF16("Test title"));
   statement.BindCString(11, kOriginalTestURL);
   ASSERT_TRUE(statement.Run());
@@ -894,7 +896,7 @@ TEST_F(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
       base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
   OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
                                  kTestClientId2, file_path_2, 12345,
-                                 base::Time::Now(), kTestRequestOrigin);
+                                 OfflineClock()->Now(), kTestRequestOrigin);
   offline_page_2.original_url = GURL("https://example.com/bar");
   offline_page_2.system_download_id = kTestSystemDownloadId;
   offline_page_2.digest = kTestDigest;

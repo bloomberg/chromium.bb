@@ -8,7 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/simple_test_clock.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -18,6 +18,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/test_download_client.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,6 @@ class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
 
     auto downloader = std::make_unique<PrefetchDownloaderImpl>(
         &download_service_, kTestChannel);
-    downloader->SetClockForTesting(&clock_);
     download_service_.SetFailedDownload(kFailedDownloadId, false);
     download_service_.SetIsReady(true);
     download_client_ = std::make_unique<TestDownloadClient>(downloader.get());
@@ -82,7 +82,7 @@ class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
     return prefetch_dispatcher()->download_results;
   }
 
-  base::SimpleTestClock* clock() { return &clock_; }
+  TestScopedOfflineClock* clock() { return &clock_; }
 
   PrefetchDownloader* prefetch_downloader() const {
     return prefetch_service_taco_->prefetch_service()->GetPrefetchDownloader();
@@ -97,7 +97,7 @@ class PrefetchDownloaderImplTest : public PrefetchRequestTestBase {
   download::test::TestDownloadService download_service_;
   std::unique_ptr<TestDownloadClient> download_client_;
   std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_taco_;
-  base::SimpleTestClock clock_;
+  TestScopedOfflineClock clock_;
 };
 
 TEST_F(PrefetchDownloaderImplTest, DownloadParams) {
