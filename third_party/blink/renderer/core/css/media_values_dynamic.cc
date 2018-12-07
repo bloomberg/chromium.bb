@@ -52,17 +52,17 @@ MediaValues* MediaValuesDynamic::Copy() const {
 bool MediaValuesDynamic::ComputeLength(double value,
                                        CSSPrimitiveValue::UnitType type,
                                        int& result) const {
-  return MediaValues::ComputeLength(
-      value, type, CalculateDefaultFontSize(frame_),
-      CalculateViewportWidth(frame_), CalculateViewportHeight(frame_), result);
+  return MediaValues::ComputeLength(value, type,
+                                    CalculateDefaultFontSize(frame_),
+                                    ViewportWidth(), ViewportHeight(), result);
 }
 
 bool MediaValuesDynamic::ComputeLength(double value,
                                        CSSPrimitiveValue::UnitType type,
                                        double& result) const {
-  return MediaValues::ComputeLength(
-      value, type, CalculateDefaultFontSize(frame_),
-      CalculateViewportWidth(frame_), CalculateViewportHeight(frame_), result);
+  return MediaValues::ComputeLength(value, type,
+                                    CalculateDefaultFontSize(frame_),
+                                    ViewportWidth(), ViewportHeight(), result);
 }
 
 double MediaValuesDynamic::ViewportWidth() const {
