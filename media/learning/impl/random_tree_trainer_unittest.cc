@@ -19,12 +19,13 @@ class RandomTreeTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   RandomTreeTrainer trainer_;
+  LearningTask task_;
   scoped_refptr<TrainingDataStorage> storage_;
 };
 
 TEST_F(RandomTreeTest, EmptyTrainingDataWorks) {
   TrainingData empty(storage_);
-  std::unique_ptr<Model> model = trainer_.Train(empty);
+  std::unique_ptr<Model> model = trainer_.Train(task_, empty);
   EXPECT_NE(model.get(), nullptr);
   EXPECT_EQ(model->PredictDistribution(FeatureVector()), TargetDistribution());
 }
@@ -36,7 +37,7 @@ TEST_F(RandomTreeTest, UniformTrainingDataWorks) {
   for (int i = 0; i < n_examples; i++)
     storage_->push_back(example);
   TrainingData training_data(storage_, storage_->begin(), storage_->end());
-  std::unique_ptr<Model> model = trainer_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
 
   // The tree should produce a distribution for one value (our target), which
   // has |n_examples| counts.
@@ -63,8 +64,8 @@ TEST_F(RandomTreeTest, UniformTrainingDataWorksWithCallback) {
       &model);
 
   // Run the trainer.
-  RandomTreeTrainer::GetTrainingAlgorithmCB().Run(training_data,
-                                                  std::move(model_cb));
+  RandomTreeTrainer::GetTrainingAlgorithmCB(task_).Run(training_data,
+                                                       std::move(model_cb));
   base::RunLoop().RunUntilIdle();
 
   TargetDistribution distribution =
@@ -79,7 +80,7 @@ TEST_F(RandomTreeTest, SimpleSeparableTrainingData) {
   storage_->push_back(example_1);
   storage_->push_back(example_2);
   TrainingData training_data(storage_, storage_->begin(), storage_->end());
-  std::unique_ptr<Model> model = trainer_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
 
   // Each value should have a distribution with one target value with one count.
   TargetDistribution distribution =
@@ -117,7 +118,7 @@ TEST_F(RandomTreeTest, ComplexSeparableTrainingData) {
     training_data.push_back(&example);
   }
 
-  std::unique_ptr<Model> model = trainer_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
   EXPECT_NE(model.get(), nullptr);
 
   // Each example should have a distribution by itself, with two counts.
@@ -135,7 +136,7 @@ TEST_F(RandomTreeTest, UnseparableTrainingData) {
   storage_->push_back(example_1);
   storage_->push_back(example_2);
   TrainingData training_data(storage_, storage_->begin(), storage_->end());
-  std::unique_ptr<Model> model = trainer_.Train(training_data);
+  std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
   EXPECT_NE(model.get(), nullptr);
 
   // Each value should have a distribution with two targets with one count each.
@@ -146,6 +147,31 @@ TEST_F(RandomTreeTest, UnseparableTrainingData) {
   EXPECT_EQ(distribution[example_2.target_value], 1);
 
   distribution = model->PredictDistribution(example_2.features);
+  EXPECT_EQ(distribution.size(), 2u);
+  EXPECT_EQ(distribution[example_1.target_value], 1);
+  EXPECT_EQ(distribution[example_2.target_value], 1);
+}
+
+TEST_F(RandomTreeTest, UnknownFeatureValueHandling) {
+  TrainingExample example_1({FeatureValue(123)}, TargetValue(1));
+  TrainingExample example_2({FeatureValue(456)}, TargetValue(2));
+  storage_->push_back(example_1);
+  storage_->push_back(example_2);
+  TrainingData training_data(storage_, storage_->begin(), storage_->end());
+
+  task_.rt_unknown_value_handling =
+      LearningTask::RTUnknownValueHandling::kEmptyDistribution;
+  std::unique_ptr<Model> model = trainer_.Train(task_, training_data);
+  // OOV data should return an empty distribution.
+  TargetDistribution distribution =
+      model->PredictDistribution(FeatureVector({FeatureValue(789)}));
+  EXPECT_EQ(distribution.size(), 0u);
+
+  task_.rt_unknown_value_handling =
+      LearningTask::RTUnknownValueHandling::kUseAllSplits;
+  model = trainer_.Train(task_, training_data);
+  // OOV data should return something with two nonzero counts.
+  distribution = model->PredictDistribution(FeatureVector({FeatureValue(789)}));
   EXPECT_EQ(distribution.size(), 2u);
   EXPECT_EQ(distribution[example_1.target_value], 1);
   EXPECT_EQ(distribution[example_2.target_value], 1);

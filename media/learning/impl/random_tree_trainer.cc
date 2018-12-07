@@ -13,11 +13,14 @@ namespace media {
 namespace learning {
 
 // static
-TrainingAlgorithmCB RandomTreeTrainer::GetTrainingAlgorithmCB() {
+TrainingAlgorithmCB RandomTreeTrainer::GetTrainingAlgorithmCB(
+    const LearningTask& task) {
   return base::BindRepeating(
-      [](TrainingData training_data, TrainedModelCB model_cb) {
-        std::move(model_cb).Run(RandomTreeTrainer().Train(training_data));
-      });
+      [](LearningTask task, TrainingData training_data,
+         TrainedModelCB model_cb) {
+        std::move(model_cb).Run(RandomTreeTrainer().Train(task, training_data));
+      },
+      task);
 }
 
 RandomTreeTrainer::Split::Split() = default;
@@ -40,17 +43,43 @@ RandomTreeTrainer::Split::BranchInfo::BranchInfo(BranchInfo&& rhs) = default;
 RandomTreeTrainer::Split::BranchInfo::~BranchInfo() = default;
 
 struct InteriorNode : public Model {
-  InteriorNode(int split_index) : split_index_(split_index) {}
+  InteriorNode(const LearningTask& task, int split_index)
+      : split_index_(split_index),
+        rt_unknown_value_handling_(task.rt_unknown_value_handling) {}
 
   // Model
   TargetDistribution PredictDistribution(
       const FeatureVector& features) override {
     auto iter = children_.find(features[split_index_]);
-    // If we've never seen this feature value, then make no prediction.
-    if (iter == children_.end())
-      return TargetDistribution();
+    // If we've never seen this feature value, then average all our branches.
+    // This is an attempt to mimic one-hot encoding, where we'll take the zero
+    // branch but it depends on the tree structure which of the one-hot values
+    // we're choosing.
+    // TODO(liberato): Let the LearningTask select whether we do this, or just
+    // return an empty distribution.
+    if (iter == children_.end()) {
+      switch (rt_unknown_value_handling_) {
+        case LearningTask::RTUnknownValueHandling::kEmptyDistribution:
+          return TargetDistribution();
+        case LearningTask::RTUnknownValueHandling::kUseAllSplits:
+          return PredictDistributionWithMissingValues(features);
+      }
+    }
 
     return iter->second->PredictDistribution(features);
+  }
+
+  TargetDistribution PredictDistributionWithMissingValues(
+      const FeatureVector& features) {
+    TargetDistribution total;
+    for (auto& child_pair : children_) {
+      TargetDistribution predicted =
+          child_pair.second->PredictDistribution(features);
+      // TODO(liberato): Normalize?  Weight?
+      total += predicted;
+    }
+
+    return total;
   }
 
   // Add |child| has the node for feature value |v|.
@@ -63,6 +92,9 @@ struct InteriorNode : public Model {
   // Feature value that we split on.
   int split_index_ = -1;
   base::flat_map<FeatureValue, std::unique_ptr<Model>> children_;
+
+  // How we handle unknown values.
+  LearningTask::RTUnknownValueHandling rt_unknown_value_handling_;
 };
 
 struct LeafNode : public Model {
@@ -85,14 +117,16 @@ RandomTreeTrainer::RandomTreeTrainer() = default;
 RandomTreeTrainer::~RandomTreeTrainer() = default;
 
 std::unique_ptr<Model> RandomTreeTrainer::Train(
+    const LearningTask& task,
     const TrainingData& training_data) {
   if (training_data.empty())
-    return std::make_unique<InteriorNode>(-1);
+    return std::make_unique<InteriorNode>(task, -1);
 
-  return Build(training_data, FeatureSet());
+  return Build(task, training_data, FeatureSet());
 }
 
 std::unique_ptr<Model> RandomTreeTrainer::Build(
+    const LearningTask& task,
     const TrainingData& training_data,
     const FeatureSet& used_set) {
   DCHECK(training_data.size());
@@ -127,7 +161,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 
   // Build an interior node
   std::unique_ptr<InteriorNode> node =
-      std::make_unique<InteriorNode>(best_potential_split.split_index);
+      std::make_unique<InteriorNode>(task, best_potential_split.split_index);
 
   // Don't let the subtree use this feature.
   FeatureSet new_used_set(used_set);
@@ -135,7 +169,7 @@ std::unique_ptr<Model> RandomTreeTrainer::Build(
 
   for (auto& branch_iter : best_potential_split.branch_infos) {
     node->AddChild(branch_iter.first,
-                   Build(branch_iter.second.training_data, new_used_set));
+                   Build(task, branch_iter.second.training_data, new_used_set));
   }
 
   return node;

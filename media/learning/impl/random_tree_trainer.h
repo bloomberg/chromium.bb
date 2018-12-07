@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "media/learning/common/learning_task.h"
 #include "media/learning/impl/training_algorithm.h"
 
 namespace media {
@@ -62,9 +63,10 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
   ~RandomTreeTrainer();
 
   // Return a callback that can be used to train a random tree.
-  static TrainingAlgorithmCB GetTrainingAlgorithmCB();
+  static TrainingAlgorithmCB GetTrainingAlgorithmCB(const LearningTask& task);
 
-  std::unique_ptr<Model> Train(const TrainingData& examples);
+  std::unique_ptr<Model> Train(const LearningTask& task,
+                               const TrainingData& examples);
 
  private:
   // Set of feature indices.
@@ -117,7 +119,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer {
 
   // Build this node from |training_data|.  |used_set| is the set of features
   // that we already used higher in the tree.
-  std::unique_ptr<Model> Build(const TrainingData& training_data,
+  std::unique_ptr<Model> Build(const LearningTask& task,
+                               const TrainingData& training_data,
                                const FeatureSet& used_set);
 
   // Compute and return a split of |training_data| on the |index|-th feature.
