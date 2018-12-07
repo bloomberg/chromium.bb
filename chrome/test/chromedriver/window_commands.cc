@@ -263,6 +263,29 @@ Status ExecuteTouchEvent(
   return web_view->DispatchTouchEvents(events);
 }
 
+Status WindowViewportSize(Session* session,
+                          WebView* web_view,
+                          int* innerWidth,
+                          int* innerHeight) {
+  std::unique_ptr<base::Value> value;
+  base::ListValue args;
+  Status status =
+      web_view->CallFunction(std::string(),
+                             "function() {"
+                             "  return {"
+                             "    view_width: Math.floor(window.innerWidth),"
+                             "    view_height: Math.floor(window.innerHeight)};"
+                             "}",
+                             args, &value);
+  if (!status.IsOk())
+    return status;
+  base::DictionaryValue* view_attrib;
+  value->GetAsDictionary(&view_attrib);
+  view_attrib->GetInteger("view_width", innerWidth);
+  view_attrib->GetInteger("view_height", innerHeight);
+  return Status(kOk);
+}
+
 }  // namespace
 
 Status ExecuteWindowCommand(const WindowCommand& command,
@@ -1001,11 +1024,37 @@ Status ProcessInputActionSequence(
           return Status(kInvalidArgument, "'y' must be an int");
         action->SetInteger("x", x);
         action->SetInteger("y", y);
+
+        std::string origin;
+        if (action_item->HasKey("origin")) {
+          if (!action_item->GetString("origin", &origin)) {
+            const base::DictionaryValue* origin_dict;
+            if (!action_item->GetDictionary("origin", &origin_dict))
+              return Status(kInvalidArgument,
+                            "'origin' must be either a string or a dictionary");
+            std::string element_id;
+            if (!origin_dict->GetString(GetElementKey(), &element_id))
+              return Status(kInvalidArgument, "'element' is missing");
+            std::unique_ptr<base::DictionaryValue> origin_result =
+                std::make_unique<base::DictionaryValue>();
+            origin_result->SetString(GetElementKey(), element_id);
+            action->SetDictionary("origin", std::move(origin_result));
+          } else {
+            if (origin != "viewport" && origin != "pointer")
+              return Status(kInvalidArgument,
+                            "if 'origin' is a string, it must be either "
+                            "'viewport' or 'pointer'");
+            action->SetString("origin", origin);
+          }
+        } else {
+          action->SetString("origin", "viewport");
+        }
+
         int duration;
         if (action_item->HasKey("duration")) {
           if (!action_item->GetInteger("duration", &duration) || duration < 0) {
             return Status(kInvalidArgument,
-                          "duration must be a non-negative int");
+                          "'duration' must be a non-negative int");
           }
           action->SetInteger("duration", duration);
         }
@@ -1014,7 +1063,7 @@ Status ProcessInputActionSequence(
         if (action_item->HasKey("duration")) {
           if (!action_item->GetInteger("duration", &duration) || duration < 0) {
             return Status(kInvalidArgument,
-                          "duration must be a non-negative int");
+                          "'duration' must be a non-negative int");
           }
           action->SetInteger("duration", duration);
         }
@@ -1032,8 +1081,15 @@ Status ExecutePerformActions(Session* session,
                              std::unique_ptr<base::Value>* value,
                              Timeout* timeout) {
   // extract action sequence
+  const base::DictionaryValue* actions_dict;
   const base::ListValue* actions_input;
-  if (!params.GetList("actions", &actions_input))
+
+  // TODO(lanwei): The below line will be removed after this pull request is
+  // merged, https://github.com/web-platform-tests/wpt/pull/14345.
+  if (!params.GetDictionary("actions", &actions_dict))
+    actions_dict = &params;
+
+  if (!actions_dict->GetList("actions", &actions_input))
     return Status(kInvalidArgument, "'actions' must be an array");
 
   // the processed actions
@@ -1161,7 +1217,44 @@ Status ExecutePerformActions(Session* session,
           if (action_type == "pointerMove") {
             mouse_action->GetDouble("x", &x);
             mouse_action->GetDouble("y", &y);
+            const base::DictionaryValue* origin_dict;
+            if (mouse_action->HasKey("origin") &&
+                mouse_action->GetDictionary("origin", &origin_dict)) {
+              std::string element_id;
+              origin_dict->GetString(GetElementKey(), &element_id);
+              WebRect region;
+              Status status =
+                  GetElementRegion(session, web_view, element_id, &region);
+              if (status.IsError())
+                return status;
+              WebPoint region_offset;
+              status = ScrollElementRegionIntoView(
+                  session, web_view, element_id, region, true /* center */,
+                  std::string(), &region_offset);
+              if (status.IsError())
+                return status;
+              int innerWidth, innerHeight;
+              status = WindowViewportSize(session, web_view, &innerWidth,
+                                          &innerHeight);
+              if (status.IsError())
+                return status;
+              int left = std::max(
+                  0,
+                  std::min(region_offset.x, region_offset.x + region.Width()));
+              int right = std::min(
+                  innerWidth,
+                  std::max(region_offset.x, region_offset.x + region.Width()));
+              int top = std::max(
+                  0,
+                  std::min(region_offset.y, region_offset.y + region.Height()));
+              int bottom = std::min(
+                  innerHeight,
+                  std::max(region_offset.y, region_offset.y + region.Height()));
+              x += (left + right) / 2;
+              y += (top + bottom) / 2;
+            }
           }
+
           std::string button_type;
           int click_count = 0;
           if (action_type == "pointerDown" || action_type == "pointerUp") {
