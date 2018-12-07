@@ -20,7 +20,7 @@
 namespace {
 
 // The default size of an overflow button in pixels.
-constexpr int kDefaultButtonSize = 36;
+constexpr int kDefaultButtonSize = 48;
 
 const char kOverflowContainerWithSubtitleCSSClass[] = "with-subtitle";
 const char kOverflowSubtitleCSSClass[] = "subtitle";
