@@ -51,6 +51,7 @@ public class FeedConfigurationTest {
         Assert.assertEquals(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 FeedConfiguration.getSessionLifetimeMs());
         Assert.assertFalse(FeedConfiguration.getTriggerImmediatePagination());
+        Assert.assertTrue(FeedConfiguration.getUseTimeoutScheduler());
         Assert.assertEquals(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT,
                 FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
     }
@@ -146,6 +147,16 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:use_timeout_scheduler/false"})
+    public void
+    testUseTimeoutScheduler() {
+        Assert.assertFalse(FeedConfiguration.getUseTimeoutScheduler());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:view_log_threshold/0.33"})
     public void testViewLogThreshold() {
         Assert.assertEquals(
@@ -177,6 +188,7 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
+        Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.USE_TIMEOUT_SCHEDULER, false));
         Assert.assertEquals(Double.valueOf(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT),
                 configuration.getValueOrDefault(ConfigKey.VIEW_LOG_THRESHOLD, 0d),
                 ASSERT_EQUALS_DOUBLE_DELTA);
