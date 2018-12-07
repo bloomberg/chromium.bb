@@ -33,10 +33,6 @@ body {
       document.body.appendChild(iframe);
       beforeRender = performance.now();
     };
-    t.step_timeout( () => {
-      // We were idle long enough to wait for PerfomanceObserver callback.
-      assert_unreached("PerformanceObserver callback should have been fired.");
-    }, 100);
   }, 'Element from same-origin iframe is observable.');
 </script>
 

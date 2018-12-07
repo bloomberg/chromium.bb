@@ -5620,11 +5620,6 @@ crbug.com/891155 [ Linux ] fast/events/middleClickAutoscroll-drag.html [ Failure
 crbug.com/895777 external/wpt/css/css-transforms/text-perspective-001.html [ Pass Crash ]
 crbug.com/895777 external/wpt/infrastructure/assumptions/blank.html [ Failure Crash ]
 
-#Sheriff 2018-10-18
-crbug.com/896765 [ Linux ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
-crbug.com/896765 [ Mac ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
-crbug.com/896765 [ Win ] http/tests/performance-timing/element-timing/observe-child-element.html [ Failure Pass ]
-
 #Sheriff 2018-10-23
 crbug.com/898214 [ Mac10.11 ] virtual/outofblink-cors-ns/external/wpt/fetch/api/credentials/authentication-basic.any.html [ Failure ]
 crbug.com/898050 [ Mac ] fast/workers/taskqueue/basic.html [ Pass Timeout ]
