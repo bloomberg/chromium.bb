@@ -29,6 +29,13 @@ const wchar_t kRegAccountsPath[] = L"Software\\Google\\Accounts";
 const wchar_t kRegAccountsPath[] = L"Software\\Chromium\\Accounts";
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
+// Retry count when attempting to determine if the user's OS profile has
+// been created.  In slow envrionments, like VMs used for testing, it may
+// take some time to create the OS profile so checks are done periodically.
+// Ideally the OS would send out a notification when a profile is created and
+// retrying would not be needed, but this notification does not exist.
+const int kWaitForProfileCreationRetryCount = 30;
+
 std::string GetEncryptedRefreshToken(
     base::win::ScopedHandle::Handle logon_handle,
     const base::DictionaryValue& properties) {
@@ -216,8 +223,8 @@ bool ScopedUserProfile::WaitForProfileCreation(const base::string16& sid) {
   wchar_t profile_dir[MAX_PATH];
   bool created = false;
 
-  for (int i = 0; i < 10; ++i) {
-    Sleep(1000);
+  for (int i = 0; i < kWaitForProfileCreationRetryCount; ++i) {
+    ::Sleep(1000);
     DWORD length = base::size(profile_dir);
     if (::GetUserProfileDirectoryW(token_.Get(), profile_dir, &length)) {
       LOGFN(INFO) << "GetUserProfileDirectoryW " << i << " " << profile_dir;
@@ -243,8 +250,8 @@ bool ScopedUserProfile::WaitForProfileCreation(const base::string16& sid) {
              kRegAccountsPath);
   LOGFN(INFO) << "HKU\\" << key_name;
 
-  for (int i = 0; i < 10; ++i) {
-    Sleep(1000);
+  for (int i = 0; i < kWaitForProfileCreationRetryCount; ++i) {
+    ::Sleep(1000);
     LONG sts = key.Create(HKEY_USERS, key_name, KEY_READ | KEY_WRITE);
     if (sts == ERROR_SUCCESS) {
       LOGFN(INFO) << "Registry hive created " << i;
