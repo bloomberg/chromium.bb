@@ -624,7 +624,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
                                       blink::ServiceWorkerStatusCode::kOk, 1);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ResponseReceivedToCompleted",
+      "ResponseReceivedToCompleted2",
       1);
 }
 
@@ -709,7 +709,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   // Test histogram of reading body.
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ResponseReceivedToCompleted",
+      "ResponseReceivedToCompleted2",
       1);
 }
 
@@ -751,7 +751,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
       0);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ResponseReceivedToCompleted",
+      "ResponseReceivedToCompleted2",
       0);
 }
 
@@ -798,7 +798,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
   // Test histogram of reading body.
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ResponseReceivedToCompleted",
+      "ResponseReceivedToCompleted2",
       1);
 }
 
@@ -848,7 +848,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
       0);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ResponseReceivedToCompleted",
+      "ResponseReceivedToCompleted2",
       0);
 }
 
@@ -905,7 +905,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
       0);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.MainFrame.MainResource."
-      "ResponseReceivedToCompleted",
+      "ResponseReceivedToCompleted2",
       0);
 }
 

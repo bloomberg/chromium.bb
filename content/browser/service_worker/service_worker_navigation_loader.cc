@@ -600,9 +600,9 @@ void ServiceWorkerNavigationLoader::RecordTimingMetrics(bool handled) {
             fetch_event_timing_->respond_with_settled_time);
 
     // Time spent reading response body.
-    UMA_HISTOGRAM_TIMES(
+    UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.LoadTiming.MainFrame.MainResource."
-        "ResponseReceivedToCompleted",
+        "ResponseReceivedToCompleted2",
         completion_time_ - response_head_.load_timing.receive_headers_end);
   } else {
     // Renderer -> Browser IPC delay (network fallback case).
