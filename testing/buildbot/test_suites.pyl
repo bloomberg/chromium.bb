@@ -1026,7 +1026,6 @@
       'net_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter',
-          '--test-launcher-batch-limit=200',
         ],
       },
       'service_manager_unittests': {},
