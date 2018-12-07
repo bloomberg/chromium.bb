@@ -4,8 +4,20 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_time_display_element.h"
 
+#include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+
+namespace {
+
+// These constants are used to estimate the size of time display element
+// when the time display is hidden.
+constexpr int kDefaultTimeDisplayDigitWidth = 8;
+constexpr int kDefaultTimeDisplayColonWidth = 3;
+constexpr int kDefaultTimeDisplayHeight = 48;
+
+}  // namespace
 
 namespace blink {
 
@@ -21,6 +33,18 @@ void MediaControlTimeDisplayElement::SetCurrentValue(double time) {
 
 double MediaControlTimeDisplayElement::CurrentValue() const {
   return current_value_;
+}
+
+WebSize MediaControlTimeDisplayElement::GetSizeOrDefault() const {
+  return MediaControlElementsHelper::GetSizeOrDefault(
+      *this, WebSize(EstimateElementWidth(), kDefaultTimeDisplayHeight));
+}
+
+int MediaControlTimeDisplayElement::EstimateElementWidth() const {
+  String formatted_time = MediaControlTimeDisplayElement::FormatTime();
+  int colons = formatted_time.length() > 5 ? 2 : 1;
+  return kDefaultTimeDisplayColonWidth * colons +
+         kDefaultTimeDisplayDigitWidth * (formatted_time.length() - colons);
 }
 
 String MediaControlTimeDisplayElement::FormatTime() const {

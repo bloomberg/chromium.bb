@@ -19,8 +19,12 @@ class MediaControlTimeDisplayElement : public MediaControlDivElement {
   // Exported to be used by modules/accessibility.
   MODULES_EXPORT double CurrentValue() const;
 
+  WebSize GetSizeOrDefault() const override;
+
  protected:
   MediaControlTimeDisplayElement(MediaControlsImpl&, MediaControlElementType);
+
+  virtual int EstimateElementWidth() const;
 
   virtual String FormatTime() const;
 

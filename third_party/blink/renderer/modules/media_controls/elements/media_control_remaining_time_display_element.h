@@ -17,6 +17,8 @@ class MediaControlRemainingTimeDisplayElement final
   explicit MediaControlRemainingTimeDisplayElement(MediaControlsImpl&);
 
  private:
+  int EstimateElementWidth() const override;
+
   String FormatTime() const override;
 };
 
