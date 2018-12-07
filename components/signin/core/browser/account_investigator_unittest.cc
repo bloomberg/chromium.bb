@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -162,7 +162,7 @@ class AccountInvestigatorTest : public testing::Test {
 
  private:
   // Timer needs a message loop.
-  base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   AccountTrackerService account_tracker_service_;
   TestSigninClient signin_client_;
