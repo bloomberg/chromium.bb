@@ -40,8 +40,10 @@ constexpr char kScreenStateLastStateChanged[] = "last_state_changed";
 
 // static
 void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
+  // TODO(agawronska): Move preference registration when implementing PAC.
+  registry->RegisterDictionaryPref(prefs::kParentAccessCodeConfig);
   registry->RegisterDictionaryPref(prefs::kScreenTimeLastState);
+  registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
 }
 
 ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
