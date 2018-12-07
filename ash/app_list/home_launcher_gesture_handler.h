@@ -29,9 +29,10 @@ class AppListControllerImpl;
 // Additionally hides windows which may block the home launcher. All
 // modifications are either transitioned to their final state, or back to their
 // initial state on release event.
-class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
-                                              TabletModeObserver,
-                                              ui::ImplicitAnimationObserver {
+class ASH_EXPORT HomeLauncherGestureHandler
+    : public aura::WindowObserver,
+      public TabletModeObserver,
+      public ui::ImplicitAnimationObserver {
  public:
   // Enum which tracks which mode the current scroll process is in.
   enum class Mode {
@@ -66,6 +67,10 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   bool HideHomeLauncherForWindow(const display::Display& display,
                                  aura::Window* window);
 
+  // Returns the windows being tracked. May be null.
+  aura::Window* GetWindow1();
+  aura::Window* GetWindow2();
+
   bool IsDragInProgress() const { return last_event_location_.has_value(); }
 
   // TODO(sammiequon): Investigate if it is needed to observe potential window
@@ -80,14 +85,13 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   void OnImplicitAnimationsCompleted() override;
 
   Mode mode() const { return mode_; }
-  aura::Window* window() { return window_; }
-  aura::Window* window2() { return window2_; }
 
  private:
+  class ScopedWindowModifier;
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
                            AnimatingToEndResetsState);
 
-  // Stores the initial and target opacities and transforms of a window.
+  // Stores the initial and target opacities and transforms of window.
   struct WindowValues {
     float initial_opacity;
     float target_opacity;
@@ -133,18 +137,8 @@ class ASH_EXPORT HomeLauncherGestureHandler : aura::WindowObserver,
   // The windows we are tracking. They are null if a drag is not underway, or if
   // overview without splitview is active. |window2_| is the secondary window
   // for splitview and is always null if |window1_| is null.
-  aura::Window* window_ = nullptr;
-  aura::Window* window2_ = nullptr;
-
-  // Original and target transform and opacity of |window_| and |window2_|.
-  WindowValues window_values_;
-  WindowValues window_values2_;
-
-  // Tracks the transient descendants of |window_| and their initial and target
-  // opacities and transforms.
-  std::map<aura::Window*, WindowValues> transient_descendants_values_;
-  // Transient descendants of |window2_|.
-  std::map<aura::Window*, WindowValues> transient_descendants_values2_;
+  std::unique_ptr<ScopedWindowModifier> window1_;
+  std::unique_ptr<ScopedWindowModifier> window2_;
 
   // Original and target transform and opacity of the backdrop window. Empty if
   // there is no backdrop on mouse pressed.

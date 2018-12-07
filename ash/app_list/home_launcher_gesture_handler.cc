@@ -24,6 +24,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
 #include "ui/aura/client/window_types.h"
+#include "ui/aura/null_window_targeter.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -164,6 +165,103 @@ aura::Window* GetDividerWindow() {
 
 }  // namespace
 
+// Class which allows us to make modifications to a window, and removes those
+// modifications on destruction.
+// TODO(sammiequon): Move to separate file and add test for
+// ComputeWindowValues.
+class HomeLauncherGestureHandler::ScopedWindowModifier
+    : public aura::WindowObserver {
+ public:
+  explicit ScopedWindowModifier(aura::Window* window) : window_(window) {
+    DCHECK(window_);
+    original_targeter_ =
+        window_->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
+  }
+  ~ScopedWindowModifier() override {
+    for (const auto& descendant : transient_descendants_values_)
+      descendant.first->RemoveObserver(this);
+
+    ResetOpacityAndTransform();
+    window_->SetEventTargeter(std::move(original_targeter_));
+  }
+
+  bool IsAnimating() const {
+    if (window_->layer()->GetAnimator()->is_animating())
+      return true;
+
+    for (const auto& descendant : transient_descendants_values_) {
+      if (descendant.first->layer()->GetAnimator()->is_animating())
+        return true;
+    }
+
+    return false;
+  }
+
+  void StopAnimating() {
+    window_->layer()->GetAnimator()->StopAnimating();
+    for (const auto& descendant : transient_descendants_values_) {
+      descendant.first->layer()->GetAnimator()->StopAnimating();
+    }
+  }
+
+  void ResetOpacityAndTransform() {
+    window_->SetTransform(window_values_.initial_transform);
+    window_->layer()->SetOpacity(window_values_.initial_opacity);
+  }
+
+  // Calculates the values for |window_| and its transient descendants.
+  void ComputeWindowValues(const gfx::RectF& work_area,
+                           const gfx::RectF& target_work_area) {
+    transient_descendants_values_.clear();
+    for (auto* window : wm::GetTransientTreeIterator(window_)) {
+      WindowValues values;
+      values.initial_opacity = window->layer()->opacity();
+      values.initial_transform = window->transform();
+      values.target_opacity = 0.f;
+      values.target_transform = CalculateTransform(
+          gfx::RectF(window->GetTargetBounds()),
+          GetOffscreenWindowBounds(window, work_area, target_work_area));
+      if (window == window_) {
+        window_values_ = values;
+        continue;
+      }
+
+      window->AddObserver(this);
+      transient_descendants_values_[window] = values;
+    }
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    auto it = transient_descendants_values_.find(window);
+    DCHECK(it != transient_descendants_values_.end());
+
+    window->RemoveObserver(this);
+    transient_descendants_values_.erase(it);
+  }
+
+  aura::Window* window() { return window_; }
+  WindowValues window_values() const { return window_values_; }
+  const std::map<aura::Window*, WindowValues>& transient_descendants_values()
+      const {
+    return transient_descendants_values_;
+  }
+
+ private:
+  aura::Window* window_;
+
+  // Original and target transform and opacity of |window_|.
+  WindowValues window_values_;
+
+  // Tracks the transient descendants of |window_| and their initial and
+  // target opacities and transforms.
+  std::map<aura::Window*, WindowValues> transient_descendants_values_;
+
+  std::unique_ptr<aura::WindowTargeter> original_targeter_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
+};
+
 HomeLauncherGestureHandler::HomeLauncherGestureHandler(
     AppListControllerImpl* app_list_controller)
     : app_list_controller_(app_list_controller) {
@@ -216,10 +314,10 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
     return false;
 
   if (!IsDragInProgress()) {
-    if (window_) {
-      // |window_| may not be nullptr when this release event is triggered by
-      // opening |window_| with modal dialog in OnPressEvent(). In that case,
-      // just leave the |window_| in show state and stop tracking.
+    if (GetWindow1()) {
+      // |window1_| may not be nullptr when this release event is triggered
+      // by opening |window1_| with modal dialog in OnPressEvent(). In that
+      // case, just leave the |window1_| in show state and stop tracking.
       AnimateToFinalState();
       RemoveObserversAndStopTracking();
       return true;
@@ -279,8 +377,20 @@ bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
   return true;
 }
 
+aura::Window* HomeLauncherGestureHandler::GetWindow1() {
+  if (!window1_)
+    return nullptr;
+  return window1_->window();
+}
+
+aura::Window* HomeLauncherGestureHandler::GetWindow2() {
+  if (!window2_)
+    return nullptr;
+  return window2_->window();
+}
+
 void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
-  if (window == window_) {
+  if (window1_ && window == GetWindow1()) {
     for (auto* hidden_window : hidden_windows_)
       hidden_window->Show();
 
@@ -288,24 +398,10 @@ void HomeLauncherGestureHandler::OnWindowDestroying(aura::Window* window) {
     return;
   }
 
-  if (window == window2_) {
-    DCHECK(window_);
+  if (window2_ && window == GetWindow2()) {
+    DCHECK(window1_);
     window->RemoveObserver(this);
-    window2_ = nullptr;
-    return;
-  }
-
-  if (transient_descendants_values_.find(window) !=
-      transient_descendants_values_.end()) {
-    window->RemoveObserver(this);
-    transient_descendants_values_.erase(window);
-    return;
-  }
-
-  if (transient_descendants_values2_.find(window) !=
-      transient_descendants_values2_.end()) {
-    window->RemoveObserver(this);
-    transient_descendants_values2_.erase(window);
+    window2_.reset();
     return;
   }
 
@@ -322,16 +418,11 @@ void HomeLauncherGestureHandler::OnTabletModeEnded() {
   // When leaving tablet mode advance to the end of the in progress scroll
   // session or animation.
   StopObservingImplicitAnimations();
-  if (window_)
-    window_->layer()->GetAnimator()->StopAnimating();
+  if (window1_)
+    window1_->StopAnimating();
   if (window2_)
-    window2_->layer()->GetAnimator()->StopAnimating();
-  for (const auto& descendant : transient_descendants_values_)
-    descendant.first->layer()->GetAnimator()->StopAnimating();
-  for (const auto& descendant : transient_descendants_values2_)
-    descendant.first->layer()->GetAnimator()->StopAnimating();
-  UpdateWindows(IsFinalStateShow() ? 1.0 : 0.0,
-                /*animate=*/false);
+    window2_->StopAnimating();
+  UpdateWindows(IsFinalStateShow() ? 1.0 : 0.0, /*animate=*/false);
   OnImplicitAnimationsCompleted();
 }
 
@@ -340,9 +431,9 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   const bool is_final_state_show = IsFinalStateShow();
   if (Shell::Get()->window_selector_controller()->IsSelecting()) {
     if (is_final_state_show) {
-      // Exit overview if event is released on the top half. This will also end
-      // splitview if it is active as SplitViewController observes overview mode
-      // ends.
+      // Exit overview if event is released on the top half. This will also
+      // end splitview if it is active as SplitViewController observes
+      // overview mode ends.
       Shell::Get()->window_selector_controller()->ToggleOverview(
           WindowSelector::EnterExitOverviewType::kSwipeFromShelf);
     } else {
@@ -356,7 +447,7 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   app_list_controller_->presenter()->UpdateYPositionAndOpacityForHomeLauncher(
       display_.work_area().y(), app_list_opacity, base::NullCallback());
 
-  if (!window_) {
+  if (!window1_) {
     RemoveObserversAndStopTracking();
     return;
   }
@@ -367,22 +458,19 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     Shell::Get()->split_view_controller()->EndSplitView();
   }
 
-  window_->SetTransform(window_values_.initial_transform);
-  window_->layer()->SetOpacity(window_values_.initial_opacity);
-  if (window2_) {
-    window2_->SetTransform(window_values2_.initial_transform);
-    window2_->layer()->SetOpacity(window_values2_.initial_opacity);
-  }
+  window1_->ResetOpacityAndTransform();
+  if (window2_)
+    window2_->ResetOpacityAndTransform();
 
   if (is_final_state_show) {
-    ScopedAnimationDisabler disable(window_);
-    window_->Hide();
-    wm::GetWindowState(window_)->Minimize();
+    ScopedAnimationDisabler disable(GetWindow1());
+    GetWindow1()->Hide();
+    wm::GetWindowState(GetWindow1())->Minimize();
 
     if (window2_) {
-      ScopedAnimationDisabler disable(window2_);
-      window2_->Hide();
-      wm::GetWindowState(window2_)->Minimize();
+      ScopedAnimationDisabler disable(GetWindow2());
+      GetWindow2()->Hide();
+      wm::GetWindowState(GetWindow2())->Minimize();
     }
 
     // Minimize the hidden windows so they can be used normally with alt+tab
@@ -401,9 +489,9 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
     }
   }
 
-  // Update the backdrop last as the backdrop controller listens for some state
-  // changes like minimizing above which may also alter the backdrop.
-  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  // Update the backdrop last as the backdrop controller listens for some
+  // state changes like minimizing above which may also alter the backdrop.
+  aura::Window* backdrop_window = GetBackdropWindow(GetWindow1());
   if (backdrop_window) {
     backdrop_window->SetTransform(gfx::Transform());
     backdrop_window->layer()->SetOpacity(1.f);
@@ -467,7 +555,7 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
             : base::NullCallback());
   }
 
-  if (!window_)
+  if (!window1_)
     return;
 
   // Helper to update a single windows opacity and transform based on by
@@ -485,19 +573,20 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
           window->layer()->GetAnimator());
       // There are multiple animations run on a release event (app list,
-      // overview and the stored windows). We only want to act on one animation
-      // end, so only observe one of the animations. If overview is active,
-      // observe the shield widget of the grid, else observe |window_|.
+      // overview and the stored windows). We only want to act on one
+      // animation end, so only observe one of the animations. If overview
+      // is active, observe the shield widget of the grid, else observe
+      // |window1_|.
       UpdateSettings(
           settings.get(),
-          this->window_ == window &&
+          this->GetWindow1() == window &&
               !Shell::Get()->window_selector_controller()->IsSelecting());
     }
     window->layer()->SetOpacity(opacity);
     window->SetTransform(transform);
   };
 
-  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  aura::Window* backdrop_window = GetBackdropWindow(GetWindow1());
   if (backdrop_window && backdrop_values_) {
     update_windows_helper(progress, animate, backdrop_window,
                           *backdrop_values_);
@@ -508,19 +597,21 @@ void HomeLauncherGestureHandler::UpdateWindows(double progress, bool animate) {
     update_windows_helper(progress, animate, divider_window, *divider_values_);
   }
 
-  for (const auto& descendant : transient_descendants_values_) {
+  if (window2_) {
+    for (const auto& descendant : window2_->transient_descendants_values()) {
+      update_windows_helper(progress, animate, descendant.first,
+                            descendant.second);
+    }
+    update_windows_helper(progress, animate, GetWindow2(),
+                          window2_->window_values());
+  }
+
+  for (const auto& descendant : window1_->transient_descendants_values()) {
     update_windows_helper(progress, animate, descendant.first,
                           descendant.second);
   }
-
-  for (const auto& descendant : transient_descendants_values2_) {
-    update_windows_helper(progress, animate, descendant.first,
-                          descendant.second);
-  }
-
-  if (window2_)
-    update_windows_helper(progress, animate, window2_, window_values2_);
-  update_windows_helper(progress, animate, window_, window_values_);
+  update_windows_helper(progress, animate, GetWindow1(),
+                        window1_->window_values());
 }
 
 void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
@@ -535,21 +626,13 @@ void HomeLauncherGestureHandler::RemoveObserversAndStopTracking() {
     window->RemoveObserver(this);
   hidden_windows_.clear();
 
-  for (const auto& descendant : transient_descendants_values_)
-    descendant.first->RemoveObserver(this);
-  transient_descendants_values_.clear();
-
-  if (window_)
-    window_->RemoveObserver(this);
-  window_ = nullptr;
-
-  for (const auto& descendant : transient_descendants_values2_)
-    descendant.first->RemoveObserver(this);
-  transient_descendants_values2_.clear();
+  if (window1_)
+    GetWindow1()->RemoveObserver(this);
+  window1_.reset();
 
   if (window2_)
-    window2_->RemoveObserver(this);
-  window2_ = nullptr;
+    GetWindow2()->RemoveObserver(this);
+  window2_.reset();
 }
 
 bool HomeLauncherGestureHandler::IsIdle() {
@@ -557,21 +640,11 @@ bool HomeLauncherGestureHandler::IsIdle() {
 }
 
 bool HomeLauncherGestureHandler::IsAnimating() {
-  if (window_ && window_->layer()->GetAnimator()->is_animating())
+  if (window1_ && window1_->IsAnimating())
     return true;
 
-  if (window2_ && window2_->layer()->GetAnimator()->is_animating())
+  if (window2_ && window2_->IsAnimating())
     return true;
-
-  for (const auto& descendant : transient_descendants_values_) {
-    if (descendant.first->layer()->GetAnimator()->is_animating())
-      return true;
-  }
-
-  for (const auto& descendant : transient_descendants_values2_) {
-    if (descendant.first->layer()->GetAnimator()->is_animating())
-      return true;
-  }
 
   if (Shell::Get()->window_selector_controller()->IsSelecting() &&
       Shell::Get()
@@ -615,119 +688,98 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   auto windows = Shell::Get()->mru_window_tracker()->BuildWindowForCycleList();
   if (window && (mode != Mode::kSlideDownToHide || overview_active ||
                  split_view_active)) {
-    window_ = nullptr;
+    window1_.reset();
     return false;
   }
 
   if (window && !windows.empty() && windows[0] != window &&
       windows[0]->IsVisible()) {
-    // Do not run slide down animation for the |window| if another active window
-    // in mru list exists.
-    window_ = nullptr;
+    // Do not run slide down animation for the |window| if another active
+    // window in mru list exists.
+    window1_.reset();
     return false;
   }
 
   if (IsTabletMode() && overview_active && !split_view_active) {
     DCHECK_EQ(Mode::kSlideUpToShow, mode);
-    window_ = nullptr;
+    window1_.reset();
     return true;
   }
 
-  // Always hide split view windows if they exist. Otherwise, hide the specified
-  // window if it is not null. If non of above is true, we want the first window
-  // in the mru list, if it exists and is usable.
-  window_ = split_view_active
-                ? split_view_controller->GetDefaultSnappedWindow()
-                : (window ? window : (windows.empty() ? nullptr : windows[0]));
-  if (!CanProcessWindow(window_, mode)) {
-    window_ = nullptr;
+  // Always hide split view windows if they exist. Otherwise, hide the
+  // specified window if it is not null. If none of above is true, we want
+  // the first window in the mru list, if it exists and is usable.
+  aura::Window* first_window =
+      split_view_active
+          ? split_view_controller->GetDefaultSnappedWindow()
+          : (window ? window : (windows.empty() ? nullptr : windows[0]));
+  if (!CanProcessWindow(first_window, mode)) {
+    window1_.reset();
     return false;
   }
 
-  DCHECK(base::ContainsValue(windows, window_));
+  DCHECK(base::ContainsValue(windows, first_window));
   DCHECK_NE(Mode::kNone, mode);
   base::RecordAction(base::UserMetricsAction(
       mode == Mode::kSlideDownToHide
           ? "AppList_HomeLauncherToMRUWindowAttempt"
           : "AppList_CurrentWindowToHomeLauncherAttempt"));
-  window_->AddObserver(this);
-  base::EraseIf(windows,
-                [this](aura::Window* elem) { return elem == this->window_; });
+  window1_ = std::make_unique<ScopedWindowModifier>(first_window);
+  GetWindow1()->AddObserver(this);
+  base::EraseIf(windows, [this](aura::Window* elem) {
+    return elem == this->GetWindow1();
+  });
 
   // Alter a second window if we are in split view mode with two windows
   // snapped.
   if (mode == Mode::kSlideUpToShow &&
       split_view_controller->state() == SplitViewController::BOTH_SNAPPED) {
     DCHECK_GT(windows.size(), 0u);
-    window2_ = split_view_controller->default_snap_position() ==
-                       SplitViewController::LEFT
-                   ? split_view_controller->right_window()
-                   : split_view_controller->left_window();
-    DCHECK(base::ContainsValue(windows, window2_));
-    window2_->AddObserver(this);
-    base::EraseIf(
-        windows, [this](aura::Window* elem) { return elem == this->window2_; });
+    aura::Window* second_window =
+        split_view_controller->default_snap_position() ==
+                SplitViewController::LEFT
+            ? split_view_controller->right_window()
+            : split_view_controller->left_window();
+    DCHECK(base::ContainsValue(windows, second_window));
+    window2_ = std::make_unique<ScopedWindowModifier>(second_window);
+    GetWindow2()->AddObserver(this);
+    base::EraseIf(windows, [this](aura::Window* elem) {
+      return elem == this->GetWindow2();
+    });
   }
 
-  // Show |window_| if we are swiping down to hide.
+  // Show |window1_| if we are swiping down to hide.
   if (mode == Mode::kSlideDownToHide) {
-    ScopedAnimationDisabler disable(window_);
-    window_->Show();
+    ScopedAnimationDisabler disable(GetWindow1());
+    GetWindow1()->Show();
 
-    // When |window_| has a modal dialog child, window_->Show() above would
+    // When |window1_| has a modal dialog child, window1_->Show() above would
     // cancel the current gesture and trigger OnReleaseEvent() to reset
-    // |window_|.
-    if (!window_)
+    // |window1_|.
+    if (!window1_ || !GetWindow1())
       return false;
 
-    wm::ActivateWindow(window_);
-    window_->layer()->SetOpacity(1.f);
+    wm::ActivateWindow(GetWindow1());
+    GetWindow1()->layer()->SetOpacity(1.f);
   }
 
   const gfx::RectF work_area =
-      gfx::RectF(screen_util::GetDisplayWorkAreaBoundsInParent(window_));
+      gfx::RectF(screen_util::GetDisplayWorkAreaBoundsInParent(GetWindow1()));
   const gfx::RectF target_work_area = GetOffscreenWorkspaceBounds(work_area);
 
-  // Helper function that calculates the values for |window| and its transient
-  // descendants.
-  auto compute_window_values =
-      [this, &work_area, &target_work_area](
-          aura::Window* window, WindowValues* out_window_values,
-          std::map<aura::Window*, WindowValues>* out_transient_values) {
-        out_transient_values->clear();
-        for (auto* it : wm::GetTransientTreeIterator(window)) {
-          WindowValues values;
-          values.initial_opacity = it->layer()->opacity();
-          values.initial_transform = it->transform();
-          values.target_opacity = 0.f;
-          values.target_transform = CalculateTransform(
-              gfx::RectF(it->GetTargetBounds()),
-              GetOffscreenWindowBounds(it, work_area, target_work_area));
-          if (it == window) {
-            *out_window_values = values;
-            continue;
-          }
+  window1_->ComputeWindowValues(work_area, target_work_area);
+  if (window2_)
+    window2_->ComputeWindowValues(work_area, target_work_area);
 
-          it->AddObserver(this);
-          (*out_transient_values)[it] = values;
-        }
-      };
-
-  compute_window_values(window_, &window_values_,
-                        &transient_descendants_values_);
-  if (window2_) {
-    compute_window_values(window2_, &window_values2_,
-                          &transient_descendants_values2_);
-  }
-
-  aura::Window* backdrop_window = GetBackdropWindow(window_);
+  aura::Window* backdrop_window = GetBackdropWindow(GetWindow1());
   if (backdrop_window) {
-    // Store the values needed to transform the backdrop. The backdrop actually
-    // covers the area behind the shelf as well, so initially transform it to be
-    // sized to the work area. Without the transform tweak, there is an extra
-    // shelf sized black area under |window_|. Go to 0.01 opacity instead of 0
-    // opacity otherwise animation end code will attempt to update the backdrop
-    // which will try to show a 0 opacity window which causes a crash.
+    // Store the values needed to transform the backdrop. The backdrop
+    // actually covers the area behind the shelf as well, so initially
+    // transform it to be sized to the work area. Without the transform
+    // tweak, there is an extra shelf sized black area under |window1_|. Go
+    // to 0.01 opacity instead of 0 opacity otherwise animation end code
+    // will attempt to update the backdrop which will try to show a 0
+    // opacity window which causes a crash.
     backdrop_values_ = base::make_optional(WindowValues());
     backdrop_values_->initial_opacity = 1.f;
     backdrop_values_->initial_transform = gfx::Transform(
@@ -753,8 +805,8 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   }
 
   // Hide all visible windows which are behind our window so that when we
-  // scroll, the home launcher will be visible. This is only needed when swiping
-  // up, and not when overview mode is active.
+  // scroll, the home launcher will be visible. This is only needed when
+  // swiping up, and not when overview mode is active.
   hidden_windows_.clear();
   if (mode == Mode::kSlideUpToShow && !overview_active) {
     for (auto* window : windows) {
