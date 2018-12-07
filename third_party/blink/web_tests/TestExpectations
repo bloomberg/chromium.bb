@@ -2413,7 +2413,7 @@ crbug.com/421412 [ Mac ] fast/text/international/bdo-bidi-width.html [ Failure ]
 crbug.com/574283 [ Mac ] fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-anchors.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/fixed-background-in-iframe.html [ Skip ]
-crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
+crbug.com/574283 virtual/threaded/fast/scroll-behavior/smooth-scroll/main-thread-scrolling-reason-correctness.html [ Skip ]
 crbug.com/574283 [ Mac ] virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll-interrupted.html [ Skip ]
 
 crbug.com/665577 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
@@ -4480,7 +4480,7 @@ crbug.com/873454 css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 crbug.com/874567 [ Mac ] svg/custom/getscreenctm-in-scrollable-div-area-nested.xhtml [ Pass Failure ]
 crbug.com/874837 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Pass Failure ]
 crbug.com/874866 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-backwards-at-start.html [ Pass Timeout ]
-crbug.com/874931 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
+crbug.com/874931 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure Crash ]
 crbug.com/875003 [ Win ] editing/caret/caret-is-hidden-when-no-focus.html [ Pass Failure ]
 
 crbug.com/715718 external/wpt/media-source/mediasource-remove.html [ Failure Pass ]
@@ -5684,7 +5684,7 @@ crbug.com/902645 [ Retina ] transforms/3d/point-mapping/3d-point-mapping-origins
 crbug.com/904389 http/tests/preload/delaying_onload_link_preload_after_discovery.html [ Failure Pass ]
 
 #Sheriff 2018-11-14
-crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass ]
+crbug.com/905694 [ Linux ] virtual/threaded/fast/scroll-behavior/smooth-scroll/scroll-during-selection.html [ Failure Pass Crash ]
 crbug.com/905772 [ Linux ] virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile-partition-alloc.js [ Failure Pass ]
 crbug.com/905827 [ Mac10.13 ] fast/dom/StyleSheet/stylesheet-move-between-documents-crash.html [ Failure Pass ]
 
@@ -5726,7 +5726,7 @@ crbug.com/911634 [ Linux ] fast/events/touch/gesture/touch-gesture-scroll-input-
 crbug.com/911782 [ Mac ] paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ Pass Failure ]
 
 #Sheriff 2018-12-06
-crbug.com/9121570 [ Linux ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Failure Pass ]
+crbug.com/912570 [ Linux ] virtual/threaded/compositing/visibility/overlays-persist-on-navigation.html [ Failure Pass ]
 
 # ssauleau 2018-12-06
 crbug.com/v8/8319 external/wpt/wasm/jsapi/interface.any.html [ Pass Failure ]
@@ -5735,3 +5735,7 @@ crbug.com/v8/8319 external/wpt/wasm/webapi/idlharness.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/idlharness.any.worker.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/idlharness.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/interface.any.worker.html [ Pass Failure ]
+
+#Sheriff 2018-12-06
+crbug.com/912793 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]
+crbug.com/912793 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Pass Failure ]
