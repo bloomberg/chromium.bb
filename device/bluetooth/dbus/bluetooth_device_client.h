@@ -126,6 +126,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // The MTU used in ATT communication with the remote device. Read-only.
     dbus::Property<uint16_t> mtu;
 
+    // The EIR advertised by the remote device. Read-only.
+    dbus::Property<std::vector<uint8_t>> eir;
+
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);
