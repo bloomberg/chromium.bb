@@ -153,10 +153,49 @@ LocalCaretRect ComputeLocalCaretRect(const NGCaretPosition& caret_position) {
   return {layout_object, LayoutRect()};
 }
 
+LocalCaretRect ComputeLocalSelectionRect(
+    const NGCaretPosition& caret_position) {
+  const LocalCaretRect caret_rect = ComputeLocalCaretRect(caret_position);
+  if (!caret_rect.layout_object)
+    return caret_rect;
+
+  const LayoutObject* layout_object = caret_rect.layout_object;
+  const LayoutRect rect = caret_rect.rect;
+
+  const NGPaintFragment& fragment = *caret_position.fragment;
+  const NGPaintFragment* line_box = fragment.ContainerLineBox();
+  // TODO(xiaochengh): We'll hit this DCHECK for caret in empty block if we
+  // enable LayoutNG in contenteditable.
+  DCHECK(line_box);
+
+  if (fragment.Style().IsHorizontalWritingMode()) {
+    const LayoutUnit line_top = line_box->InlineOffsetToContainerBox().top;
+    const LayoutUnit line_height = line_box->Size().height;
+    return LocalCaretRect(layout_object, LayoutRect(rect.X(), line_top,
+                                                    rect.Width(), line_height));
+  }
+
+  const LayoutUnit line_top = line_box->InlineOffsetToContainerBox().left;
+  const LayoutUnit line_height = line_box->Size().width;
+  LayoutRect layout_rect(line_top, rect.Y(), line_height, rect.Height());
+  // For vertical-rl, convert to "flipped block-flow" coordinates space.
+  // See core/layout/README.md#coordinate-spaces for details.
+  if (fragment.Style().IsFlippedBlocksWritingMode()) {
+    const LayoutBlockFlow* container = layout_object->ContainingNGBlockFlow();
+    container->FlipForWritingMode(layout_rect);
+  }
+  return LocalCaretRect(layout_object, layout_rect);
+}
+
 }  // namespace
 
 LocalCaretRect ComputeNGLocalCaretRect(const PositionWithAffinity& position) {
   return ComputeLocalCaretRect(ComputeNGCaretPosition(position));
+}
+
+LocalCaretRect ComputeNGLocalSelectionRect(
+    const PositionWithAffinity& position) {
+  return ComputeLocalSelectionRect(ComputeNGCaretPosition(position));
 }
 
 }  // namespace blink

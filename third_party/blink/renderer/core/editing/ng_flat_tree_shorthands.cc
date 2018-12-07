@@ -29,6 +29,11 @@ LocalCaretRect ComputeNGLocalCaretRect(
   return ComputeNGLocalCaretRect(ToPositionInDOMTreeWithAffinity(position));
 }
 
+LocalCaretRect ComputeNGLocalSelectionRect(
+    const PositionInFlatTreeWithAffinity& position) {
+  return ComputeNGLocalSelectionRect(ToPositionInDOMTreeWithAffinity(position));
+}
+
 bool InSameNGLineBox(const PositionInFlatTreeWithAffinity& position1,
                      const PositionInFlatTreeWithAffinity& position2) {
   return InSameNGLineBox(ToPositionInDOMTreeWithAffinity(position1),

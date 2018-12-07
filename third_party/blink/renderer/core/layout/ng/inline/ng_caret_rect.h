@@ -20,6 +20,11 @@ struct LocalCaretRect;
 // formatting context.
 CORE_EXPORT LocalCaretRect ComputeNGLocalCaretRect(const PositionWithAffinity&);
 
+// Almost the same as ComputeNGLocalCaretRect, except that the returned rect
+// is adjusted to span the containing line box in the block direction.
+CORE_EXPORT LocalCaretRect
+ComputeNGLocalSelectionRect(const PositionWithAffinity&);
+
 }  // namespace blink
 
 #endif  // NGCaretRect_h
