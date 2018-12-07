@@ -448,6 +448,15 @@ if (enable_java_templates) {
         args += [ "--use_proxy_hash" ]
       }
 
+      if (defined(invoker.enable_native_mocks) && invoker.enable_native_mocks) {
+        args += [ "--enable_proxy_mocks" ]
+      }
+
+      if (defined(invoker.require_native_mocks) &&
+          invoker.require_native_mocks) {
+        args += [ "--require_mocks" ]
+      }
+
       if (defined(invoker.header_output)) {
         outputs += [ invoker.header_output ]
         args += [
@@ -1292,6 +1301,8 @@ if (enable_java_templates) {
     _jni_srcjar_target = "${target_name}__final_jni"
     _outer_target_name = target_name
     generate_jni_registration(_jni_srcjar_target) {
+      enable_native_mocks = true
+      require_native_mocks = true
       target = ":$_outer_target_name"
     }
 
