@@ -552,14 +552,19 @@ cr.define('omnibox_output', function() {
     filter(filterText, filterHide) {
       this.hidden = false;
       this.classList.remove('filtered-highlighted');
+      this.allProperties_.forEach(
+          property => property.classList.remove('filtered-highlighted-nested'));
 
       if (!filterText)
         return;
 
-      const isMatch = this.allProperties_.some(
+      const matchedProperties = this.allProperties_.filter(
           property => FilterUtil.filterText(property.text, filterText));
+      const isMatch = matchedProperties.length > 0;
       this.hidden = filterHide && !isMatch;
       this.classList.toggle('filtered-highlighted', !filterHide && isMatch);
+      matchedProperties.forEach(
+          property => property.classList.add('filtered-highlighted-nested'));
     }
 
     /**

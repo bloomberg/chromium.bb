@@ -103,6 +103,10 @@ tbody:not(:first-of-type) td:first-of-type {
   /* TODO(manukh) This is a placholder color until other ui changes occur. */
 }
 
+.filtered-highlighted-nested {
+  background-color: #d0ffd0;
+}
+
 .toggle input,
 .toggle input:not(:checked) ~ .toggle-on,
 .toggle input:checked ~ .toggle-off {
