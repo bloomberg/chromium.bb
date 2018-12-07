@@ -1309,12 +1309,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnCrossDocumentCommitProcessed(int64_t navigation_id,
                                       blink::mojom::CommitResult result);
 
-  // Saves and clones URLLoaderFactoryBundleInfo for subresource loading.
-  // Must be called every time subresource_factories_bundle is updated.
-  void SaveSubresourceFactories(
-      std::unique_ptr<URLLoaderFactoryBundleInfo> bundle_info);
-  std::unique_ptr<URLLoaderFactoryBundleInfo> CloneSubresourceFactories();
-
   // Creates a TracedValue object containing the details of a committed
   // navigation, so it can be logged with the tracing system.
   std::unique_ptr<base::trace_event::TracedValue> CommitAsTracedValue(
@@ -1638,10 +1632,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // committed navigation.
   ContentBrowserClient::NonNetworkURLLoaderFactoryMap
       non_network_url_loader_factories_;
-
-  // A bundle of subresource loader factories used by this frame.
-  // A clone of this bundle is sent to the renderer process.
-  scoped_refptr<URLLoaderFactoryBundle> subresource_loader_factories_bundle_;
 
   // Bitfield for renderer-side state that blocks fast shutdown of the frame.
   blink::WebSuddenTerminationDisablerType
