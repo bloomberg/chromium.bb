@@ -35,6 +35,13 @@ class GoodDerived : public GarbageCollected<GoodDerived>, public Mixin {
 };
 class GoodDerived;
 
+// Same macro providing only a typedef is also ok.
+class GoodDerivedMacroUsingTypedef : public GarbageCollected<GoodDerived>,
+                                     public Mixin {
+  USING_GARBAGE_COLLECTED_MIXIN_NEW(GoodDerivedMacroUsingTypedef);
+};
+class GoodDerivedMacroUsingTypedef;
+
 // Abstract classes (i.e. ones with pure virtual methods) can't be constructed
 // and so it's assumed their derived classes will have
 // USING_GARBAGE_COLLECTED_MIXIN.
