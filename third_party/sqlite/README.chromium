@@ -220,6 +220,14 @@ git new-branch --upstream-current sqlite-new-cl
 ./scripts/generate_amalgamation.sh
 git cl format amalgamation/rename_exports.h
 
+#### Copy any new entries to the seed-corpus for dbfuzz2.
+# We use a set of seed databases for fuzzing SQLite's resilience to database
+# corruption. Sometimes, new seed databases are added upstream.
+# Find any files of the pattern src/test/dbfuzz2-seed*.db, and copy them to
+# the fuzz/db_corpus directory.
+cp --no-clobber third_party/sqlite/src/test/dbfuzz2-seed*.db \
+    third_party/sqlite/fuzz/db_corpus
+
 #### Validate the upgrade.
 # The goal is to have a set of reasonably-independent CLs which can be
 # understood separately, so that future importers can sensibly determine how to
