@@ -182,7 +182,7 @@
 <translation id="2342981853652716282">আপনার বুকমার্ক, পাসওয়ার্ড, এবং অন্যান্য জিনিস আপনার সমস্ত ডিভাইসে পেতে Chrome এ সাইন-ইন করুন।</translation>
 <translation id="2349710944427398404">অ্যাকাউন্ট, ​​বুকমার্ক, এবং সংরক্ষণ করা সেটিংস সহ Chrome এর দ্বারা ব্যবহৃত মোট ডেটা</translation>
 <translation id="2351097562818989364">আপনার অনুবাদ সেটিংস আবার সেট করা হয়েছে৷</translation>
-<translation id="2359808026110333948">চালিয়ে যান</translation>
+<translation id="2359808026110333948">অবিরত</translation>
 <translation id="2369533728426058518">খোলা ট্যাবগুলি</translation>
 <translation id="2387895666653383613">পাঠ্য স্কেলিং</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> এমবি</translation>
@@ -464,7 +464,7 @@
 <translation id="4720023427747327413"><ph name="PRODUCT_NAME" /> এ খুলুন</translation>
 <translation id="4720982865791209136">Chrome উন্নত করতে সাহায্য করুন। <ph name="BEGIN_LINK" />সমীক্ষাটিতে অংশ নিন।<ph name="END_LINK" /></translation>
 <translation id="4730876730346568982">আপনি সিঙ্ক অ্যাকাউন্টগুলি <ph name="ACCOUNT_EMAIL_OLD" /> থেকে <ph name="ACCOUNT_EMAIL_NEW" /> এ পাল্টাচ্ছেন। আপনার বিদ্যমান Chrome ডেটা <ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত হয়। এটা এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলবে, কিন্তু আপনার ডেটা <ph name="ACCOUNT_EMAIL_OLD" /> এ থেকে যাবে।</translation>
-<translation id="473775607612524610">আপডেট করুন</translation>
+<translation id="473775607612524610">আপডেট</translation>
 <translation id="4738836084190194332">সর্বশেষ সিঙ্ক হয়েছে: <ph name="WHEN" /></translation>
 <translation id="4749960740855309258">একটি নতুন ট্যাব খুলুন</translation>
 <translation id="4751476147751820511">মোশন বা হালকা সেন্সর</translation>

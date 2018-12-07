@@ -108,13 +108,6 @@
 
           Za upravljane uređaje prema zadanim postavkama nije dostupan nijedan način brzog otključavanja.</translation>
 <translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
-<translation id="1231349879329465225">Dopušta omogućivanje ili onemogućivanje Brzog prijelaza.
-      Primjenjuje se na sve korisnike i sva sučelja na uređaju.
-      Da bi se koristio Brzi prijelaz, ova postavka i ONC svojstvo po mreži moraju biti omogućeni.
-      Kad se postavi, Brzi prijelaz traje dok se ne isključi tim pravilom.
-
-      Ako se pravilo ne postavi ili se postavi na False, neće se upotrebljavati Brzi prijelaz.
-      Ako se postavi na True, Brzi prijelaz upotrebljava se kad ga podržava točka bežičnog pristupa.</translation>
 <translation id="1243570869342663665">Kontroliraj filtriranje sadržaja za odrasle za SafeSites.</translation>
 <translation id="1257550411839719984">Postavi zadani direktorij za preuzimanje</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
@@ -132,7 +125,6 @@
       Za razliku od pravila <ph name="URL_LIST_POLICY_NAME" />, pravila se primjenjuju u oba smjera. To znači da kada je prisutan i omogućen dodatak Internet Explorera, ono također određuje treba li <ph name="IE_PRODUCT_NAME" /> otvoriti te URL-ove u pregledniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
 <translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
-<translation id="1307415922184340052">Korisničko ime i naziv datoteke šalju se poslužitelju nativnih pisača sa svakim zadatkom ispisa. Prema zadanim se postavkama ne šalje.</translation>
 <translation id="1307454923744766368">Uzorci polazišta ili naziva hosta na koje se ograničenja o nesigurnim polazištima ne bi trebala primjenjivati</translation>
 <translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
 
@@ -3295,5 +3287,4 @@ za preglednike imaju isti raspored.
       Tijekom navedenih intervala uređaji neće moći automatski provjeravati postoje li ažuriranja. To pravilo neće utjecati na uređaje koji se moraju vratiti na stariju verziju ili čija je verzija starija od minimalne verzije <ph name="PRODUCT_OS_NAME" /> zbog potencijalnih sigurnosnih poteškoća. Isto tako, pravilo neće blokirati provjere ažuriranja koje zatraže korisnici ili administratori.
       Ako se pravilo ne postavi ili ne sadrži nijedan interval:
       Pravilo neće blokirati automatske provjere ažuriranja, ali one mogu biti blokirane drugim pravilima.</translation>
-<translation id="991560005425213776">Pošalji korisničko ime i naziv datoteke nativnim pisačima</translation>
 </translationbundle>

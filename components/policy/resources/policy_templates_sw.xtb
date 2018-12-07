@@ -106,13 +106,6 @@ Kumbuka kuwa hapo awali sera hii iliwashwa kimakosa kwenye Android, lakini kipen
 
           Kwa chaguomsingi, hamna hali za kufungua haraka zinazopatikana katika vifaa vinavyodhibitiwa.</translation>
 <translation id="123081309365616809">Washa kipengele cha kutuma maudhui kwenye kifaa</translation>
-<translation id="1231349879329465225">Huruhusu kuwasha au kuzima kipengele cha Kubadilisha Haraka.
-      Hali hii inaathiri watumiaji na violesura vyote katika kifaa.
-      Ili utumie kipengele cha Kubadilisha Haraka, unahitaji kuwasha mipangilio hii na kipengee cha ONC kwa kila mtandao.
-      Baada ya kuweka mipangilio hii, kipengele cha Kubadilisha Haraka kitaendelea kuonekana hadi wakati sera itabadilishwa ili kukizima.
-
-      Ikiwa sera hii haijawekwa au imewekwa kuwa sivyo, kipengele cha Kubadilisha Haraka hakitumiki.
-      Ikiwa sera imewekwa kuwa ndivyo, kipengele cha Kubadilisha Haraka kinatumika wakati mlango wa mtandao usiotumia waya unaweza kukitumia.</translation>
 <translation id="1243570869342663665">Dhibiti uchujaji wa maudhui ya watu wazima katika SafeSites.</translation>
 <translation id="1257550411839719984">Weka saraka chaguomsingi ya kupakua</translation>
 <translation id="1265053460044691532">Weka kikomo cha muda ambao mtumiaji aliyethibitishwa kupitia SAML anaweza kuingia katika akunti nje ya mtandaoni</translation>
@@ -130,7 +123,6 @@ Kumbuka kuwa hapo awali sera hii iliwashwa kimakosa kwenye Android, lakini kipen
       Tofauti na <ph name="URL_LIST_POLICY_NAME" />, masharti yanatumika pande zote mbili. Yaani, wakati programu jalizi ya Internet Explorer inapatikana na imewashwa, inabaini pia iwapo <ph name="IE_PRODUCT_NAME" /> inapaswa kufungua URL hizi katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Tumia hati ya  proksi ya .pac</translation>
 <translation id="1304973015437969093">Vitambulisho vya Viendelezi/Programu na URL za sasisho vitasakinishwa kimyakimya</translation>
-<translation id="1307415922184340052">Tuma jina la mtumiaji na jina la faili kwa seva za printa zinazotokana na mfumo kwa kila kazi ya kuchapisha. Haitatuma kwenye seva chaguomsingi.</translation>
 <translation id="1307454923744766368">Mitindo ya vyanzo au ya majina ya seva pangishi ambako vizuizi vya vyanzo visivyo salama havipaswi kutumika</translation>
 <translation id="1313457536529613143">Hubainisha asilimia ambayo kuchelewa kwa mwangaza wa skrini kutaongezwa wakati shughuli ya mtumiaji inazingatiwa wakati skrini inapunguza mwangaza au mara baada ya skrini kuzimwa. 
 
@@ -3358,5 +3350,4 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
       Vifaa havitaweza kuangalia masasisho kiotomatiki katika kipindi kilichobainishwa. Vifaa ambavyo vinahitaji matoleo ya zamani au viko chini ya toleo la <ph name="PRODUCT_OS_NAME" /> havitaathiriwa na sera hii kutokana na matatizo ya usalama yanayoweza kutokea. Zaidi ya hayo, sera hii haitazuia ukaguzi wa masasisho uliyoombwa na watumiaji au wasimamizi.
       Iwapo sera hii haijawekwa au haina kipindi chochote cha muda:
       Hamna ukaguzi wa masasisho ya kiotomatiki utakaozuiliwa na sera hii, lakini unaweza kuzuiliwa na sera zingine.</translation>
-<translation id="991560005425213776">Tuma jina la mtumiaji na la faili kwenye printa zinazotokana na mfumo</translation>
 </translationbundle>

@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">Tillåt (standard)</translation>
 <translation id="3427342743765426898">&amp;Gör om Redigera</translation>
 <translation id="342781501876943858">Du rekommenderas att återställa lösenordet om du har återanvänt det på andra webbplatser.</translation>
+<translation id="3430691998045392297">Filmvisningen skiljer. Vill du fortsätta?</translation>
 <translation id="3431636764301398940">Spara kortet på enheten</translation>
 <translation id="3447661539832366887">Enhetens ägare har stängt av dinosauriespelet.</translation>
 <translation id="3447884698081792621">Visa certifikat (utfärdat av <ph name="ISSUER" />)</translation>
@@ -617,7 +618,7 @@
 <translation id="5086888986931078152">Du kan förlora tillgången till skyddat innehåll från några webbplatser.</translation>
 <translation id="5087286274860437796">Servercertifikatet är inte giltigt för närvarande.</translation>
 <translation id="5087580092889165836">Lägg till kort</translation>
-<translation id="5089810972385038852">Stat</translation>
+<translation id="5089810972385038852">Delstat</translation>
 <translation id="5094747076828555589">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom Chromium inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="5098332213681597508">Det här namnet har hämtats från Google-kontot.</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">Du visar en tilläggssida</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
 <translation id="6604181099783169992">Rörelse- eller ljussensorer</translation>
+<translation id="6607617806003952240">Jag kan inte hjälpa till mer. Fortsätt på egen hand.</translation>
 <translation id="6624427990725312378">Kontaktuppgifter</translation>
 <translation id="6626291197371920147">Lägg till ett giltigt kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Sök</translation>
@@ -840,7 +842,6 @@
 <translation id="6744009308914054259">Du kan öppna Nedladdningar och läsa artiklar offline medan du väntar på anslutningen.</translation>
 <translation id="6753269504797312559">Policyvärde</translation>
 <translation id="6757797048963528358">Enheten gick i viloläge.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Det går inte att lägga till kortet just nu}other{Det går inte att lägga till korten just nu}}</translation>
 <translation id="6778737459546443941">Din förälder har inte godkänt den ännu</translation>
 <translation id="679355240208270552">Ignoreras eftersom standardsökmotorn inte har aktiverats av principen.</translation>
 <translation id="681021252041861472">Obligatoriskt fält</translation>
@@ -848,12 +849,11 @@
 <translation id="6824266427216888781">Det gick inte att läsa in regionsuppgifter</translation>
 <translation id="6825578344716086703">Du försökte besöka <ph name="DOMAIN" />, men servern skickade ett certifikat som signerats med en svag signaturalgoritm (t.ex. SHA-1). Det innebär att säkerhetsuppgifterna som servern uppgav kan vara förfalskade och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server).</translation>
 <translation id="6831043979455480757">Översätt</translation>
-<translation id="6839929833149231406">Område</translation>
+<translation id="6839929833149231406">Huvudområde</translation>
 <translation id="6852204201400771460">Vill du läsa in appen igen?</translation>
 <translation id="6865412394715372076">Det går inte att verifiera kortet just nu</translation>
 <translation id="6868206169573555318">Starta om för att uppdatera</translation>
 <translation id="6874604403660855544">&amp;Gör om Lägg till</translation>
-<translation id="6885646002011712606">Du hittar Autofyll-assistenten nära skärmens nederkant</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />, <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Policynivån stöds inte.</translation>
 <translation id="6895330447102777224">Kortet har bekräftats</translation>
@@ -883,7 +883,7 @@
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
 <translation id="7079718277001814089">Webbplatsen innehåller skadlig programvara.</translation>
-<translation id="7087282848513945231">Kommun</translation>
+<translation id="7087282848513945231">Grevskap</translation>
 <translation id="7090678807593890770">Sök efter <ph name="LINK" /> på Google</translation>
 <translation id="7108338896283013870">Dölj</translation>
 <translation id="7108819624672055576">Beviljades av ett tillägg</translation>
@@ -893,7 +893,6 @@
 <translation id="7138472120740807366">Leveranssätt</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}other{<ph name="PAYMENT_METHOD_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> till}}</translation>
-<translation id="7158980942472052083">Ogiltig webbadress. Måste vara en webbadress med ett standardprotokoll.</translation>
 <translation id="717330890047184534">Gaia-id:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}other{<ph name="SHIPPING_OPTION_PREVIEW" /> och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}}</translation>
 <translation id="7179323680825933600">Spara och fyll i betalningsmetoder</translation>
@@ -997,7 +996,6 @@ Mer information.
 <translation id="7716424297397655342">Det går inte att läsa in webbplatsen från cachelagringen</translation>
 <translation id="7723047071702270851">Redigera kortet</translation>
 <translation id="774634243536837715">Farligt innehåll har blockerats.</translation>
-<translation id="7747182086178764941">Skärmen vid första användningen av Autofyll-assistenten visas</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
 <translation id="7755287808199759310">En förälder kan ta bort blockeringen</translation>
 <translation id="7758069387465995638">Anslutningen kan ha blockerats av en brandvägg eller antivirusprogram.</translation>

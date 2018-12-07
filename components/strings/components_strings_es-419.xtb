@@ -386,6 +386,7 @@
 <translation id="3427092606871434483">Permitir (predeterminado)</translation>
 <translation id="3427342743765426898">&amp;Rehacer Editar</translation>
 <translation id="342781501876943858">Chromium te recomienda que restablezcas tu contraseña si la volviste a usar en otros sitios.</translation>
+<translation id="3430691998045392297">El filtro de la película es diferente. ¿Quieres continuar?</translation>
 <translation id="3431636764301398940">Guardar esta tarjeta para este dispositivo</translation>
 <translation id="3447661539832366887">El propietario del dispositivo desactivó el juego de dinosaurios.</translation>
 <translation id="3447884698081792621">Mostrar certificado (emitido por <ph name="ISSUER" />)</translation>
@@ -450,7 +451,7 @@
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar fecha y hora</translation>
 <translation id="3884278016824448484">Hay un identificador de dispositivo en conflicto.</translation>
-<translation id="3885155851504623709">Distrito</translation>
+<translation id="3885155851504623709">Parroquia</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio se envió a <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Agregar correo electrónico</translation>
 <translation id="3901925938762663762">Caducó la tarjeta.</translation>
@@ -823,6 +824,7 @@
 <translation id="6569060085658103619">Estás viendo la página de una extensión</translation>
 <translation id="6596325263575161958">Opciones de encriptación</translation>
 <translation id="6604181099783169992">Sensores de luz o movimiento</translation>
+<translation id="6607617806003952240">No puedo ayudarte más. Continúa de forma manual.</translation>
 <translation id="6624427990725312378">Información de contacto</translation>
 <translation id="6626291197371920147">Agregar un número de tarjeta válido</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Búsqueda</translation>

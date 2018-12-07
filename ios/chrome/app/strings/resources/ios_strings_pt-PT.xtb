@@ -226,7 +226,7 @@
 <translation id="4666531726415300315">Sessão iniciada como <ph name="EMAIL" />.
 
 Os dados estão encriptados com a sua frase de acesso de sincronização. Introduza-a para iniciar a sincronização.</translation>
-<translation id="473775607612524610">Atualizar</translation>
+<translation id="473775607612524610">Actualizar</translation>
 <translation id="4747097190499141774">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay. Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Localizar na página…</translation>
 <translation id="4751645464639803239">Novo separador de navegação anónima</translation>
@@ -347,7 +347,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6464071786529933911">Abrir num novo separador de navegação anónima</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens eliminados</translation>
 <translation id="6541915733953096570">Hora anterior</translation>
-<translation id="6548479190262846511">Não foi encontrada qualquer palavra-passe para este site</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6656103420185847513">Editar Pasta</translation>
 <translation id="6657585470893396449">Palavra-passe</translation>

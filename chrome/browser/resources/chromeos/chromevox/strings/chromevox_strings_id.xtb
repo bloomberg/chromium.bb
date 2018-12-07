@@ -51,7 +51,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="1334095593597963605">pengulangan karakter dan kata</translation>
 <translation id="1339428534620983148">Kolom tabel sebelumnya</translation>
 <translation id="1342835525016946179">article</translation>
-<translation id="1346059596910821859">Tips</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="135978014023467274">Update ke ChromeVox 63 berhasil.</translation>
 <translation id="136718599399906424">Baris tabel berikutnya</translation>
@@ -104,7 +103,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="1828385960365606039">Mei</translation>
 <translation id="1834891354138622109">Kolom</translation>
 <translation id="1845944666972354496">Tap dua kali untuk mengaktifkan</translation>
-<translation id="1846771122725914429">Tampilan Braille Bluetooth</translation>
 <translation id="1865601187525349519">Akhir teks</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Mengucapkan waktu dan tanggal saat ini.</translation>
@@ -162,7 +160,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="2422937916923936891">Kotak centang item menu</translation>
 <translation id="2428534162001909979">Menu Perintah</translation>
 <translation id="2429669115401274487">PM</translation>
-<translation id="242998846562331953">Subjudul</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> sekarang adalah pengubah ChromeVox yang baru.</translation>
 <translation id="2450814015951372393">Kotak centang</translation>
 <translation id="2462626033734746142">Grup tombol radio</translation>
@@ -649,7 +646,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5887397643266327462">Teks braille diaktifkan.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Putar dengan volume rendah saat ChromeVox sedang berbicara</translation>
-<translation id="5906974869830879618">Harap masukkan pin</translation>
 <translation id="5921587111466148855">Bab</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{sama dengan}other{# tanda sama dengan}}</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
@@ -706,7 +702,6 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="641759969622533235">{COUNT,plural, =1{titik dua}other{# titik dua}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialog notifikasi</translation>
-<translation id="6452403590345320472">Daftar isi</translation>
 <translation id="6459511626086141404">Peta tombol datar</translation>
 <translation id="6468049171101508116">Tombol berikutnya</translation>
 <translation id="646954774886932461">Indeks</translation>
@@ -1001,7 +996,6 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="948171205378458592">Mengurangi laju ucapan</translation>
 <translation id="958854023026327378">Geser satu jari ke bawah</translation>
 <translation id="962913030769097253">Judul tingkat 1 berikutnya</translation>
-<translation id="966588271015727539">Pilih tampilan braille bluetooth</translation>
 <translation id="973955474346881951">Mengaktifkan/Menonaktifkan mode lekat</translation>
 <translation id="976849232629612000">Tidak ada item.</translation>
 <translation id="995852680044449248">Awal teks yang dicoret</translation>

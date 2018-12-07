@@ -2424,7 +2424,7 @@
 <translation id="473546211690256853">このアカウントは <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="4735803855089279419">この端末の端末識別子を特定できませんでした。</translation>
 <translation id="4737715515457435632">ネットワークに接続してください</translation>
-<translation id="473775607612524610">更新</translation>
+<translation id="473775607612524610">アップデート</translation>
 <translation id="474217410105706308">タブをミュート</translation>
 <translation id="4742746985488890273">シェルフに固定</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />アプリケーションの更新方法を確認<ph name="END_LINK" /></translation>
@@ -2688,7 +2688,7 @@
 <translation id="5151354047782775295">ディスクの空き領域を確保してください。十分な空き領域がない場合、一部のデータが自動的に削除される可能性があります</translation>
 <translation id="5153234146675181447">スマートフォンを削除</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" /> の詳細設定</translation>
-<translation id="5154702632169343078">件名</translation>
+<translation id="5154702632169343078">サブジェクト</translation>
 <translation id="5157635116769074044">このページを起動画面に固定...</translation>
 <translation id="5158593464696388225">画像を保存できませんでした。</translation>
 <translation id="5158983316805876233">すべてのプロトコルで同じプロキシを使用する</translation>
@@ -3056,7 +3056,7 @@
 <translation id="5671641761787789573">画像がブロックされました</translation>
 <translation id="567643736130151854">ログインして同期を有効にすれば、ブックマーク、パスワード、その他の設定をどの端末からでもご利用いただけます</translation>
 <translation id="5677503058916217575">ページの言語:</translation>
-<translation id="5677928146339483299">ブロック中</translation>
+<translation id="5677928146339483299">ブロック</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> への読み書きのアクセス権が許可されました。</translation>
 <translation id="5678784840044122290">Linux アプリケーションはお使いの端末でご利用いただけるようになります。ランチャーにアイコンが追加されている可能性もあります。</translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> でのユーザーデータの読み取り</translation>
@@ -3738,7 +3738,6 @@
 <translation id="6706210727756204531">範囲</translation>
 <translation id="6707389671160270963">SSL クライアント証明書</translation>
 <translation id="6708242697268981054">保存元:</translation>
-<translation id="6709133671862442373">ニュース</translation>
 <translation id="6709357832553498500">「<ph name="EXTENSIONNAME" />」を使用して接続</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6718273304615422081">圧縮しています...</translation>

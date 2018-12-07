@@ -118,13 +118,6 @@
 
           Domyślnie na urządzeniach zarządzanych nie jest dostępny żaden tryb szybkiego odblokowywania.</translation>
 <translation id="123081309365616809">Włącz przesyłanie treści na urządzenie</translation>
-<translation id="1231349879329465225">Umożliwia włączanie i wyłączanie szybkiego roamingu.
-      Dotyczy to wszystkich użytkowników oraz wszystkich interfejsów na urządzeniu.
-      Z szybkiego roamingu można korzystać tylko wtedy, gdy włączono zarówno to ustawienie, jak i odpowiednią właściwość w konfiguracji ONC danej sieci.
-      Po włączeniu szybki roaming pozostaje włączony, dopóki nie zmienisz ustawień zasady.
-
-      Jeśli zasada nie jest skonfigurowana lub ma wartość Fałsz, szybki roaming nie jest używany.
-      Jeśli zasada ma wartość Prawda, szybki roaming jest używany, o ile obsługuje go bezprzewodowy punkt dostępu.</translation>
 <translation id="1243570869342663665">Ustaw filtrowanie treści dla dorosłych SafeSites.</translation>
 <translation id="1257550411839719984">Ustaw domyślny katalog pobierania</translation>
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
@@ -142,7 +135,6 @@
       W przeciwieństwie do zasady <ph name="URL_LIST_POLICY_NAME" /> reguły są stosowane w obu kierunkach, czyli gdy dodatek do Internet Explorera jest zainstalowany i włączony, ta zasada określa również, czy <ph name="IE_PRODUCT_NAME" /> ma otwierać te adresy URL w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
 <translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
-<translation id="1307415922184340052">Wysyłaj nazwę użytkownika i nazwę pliku na serwer drukarek natywnych przy każdym zadaniu drukowania. Ustawienie domyślne nie zezwala na wysyłanie tych danych.</translation>
 <translation id="1307454923744766368">Źródła lub wzorce nazw hosta, w przypadku których nie należy stosować
       ograniczeń dotyczących niezabezpieczonych źródeł</translation>
 <translation id="1313457536529613143">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy aktywność użytkownika zostanie wykryta po przyciemnieniu lub wkrótce po wyłączeniu ekranu.
@@ -3321,5 +3313,4 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
       Urządzenia nie mogą automatycznie sprawdzać dostępności aktualizacji w określonych przedziałach czasu. Ze względów bezpieczeństwa ta zasada nie obowiązuje urządzeń wymagających przywrócenia wcześniejszej wersji systemu <ph name="PRODUCT_OS_NAME" /> lub gdy wersja systemu jest starsza od minimalnej. Zasada ta nie blokuje sprawdzania dostępności aktualizacji przez użytkowników bądź administratorów.
       Gdy ta zasada jest nieokreślona lub nie zawiera przedziałów czasu:
       Zasada z takim ustawieniem nie blokuje automatycznego sprawdzania dostępności aktualizacji, ale mogą to powodować inne zasady.</translation>
-<translation id="991560005425213776">Wysyłaj nazwę użytkownika i nazwę pliku do drukarek natywnych</translation>
 </translationbundle>

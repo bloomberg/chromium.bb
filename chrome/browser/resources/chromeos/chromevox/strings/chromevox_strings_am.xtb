@@ -51,7 +51,6 @@
 <translation id="1334095593597963605">የቁምፊ እና ቃል ማስተጋባት</translation>
 <translation id="1339428534620983148">ቀዳሚ የሠንጠረዥ አምድ</translation>
 <translation id="1342835525016946179">ጽሑፍ</translation>
-<translation id="1346059596910821859">ጠቃሚ ምክር</translation>
 <translation id="1346748346194534595">ቀኝ</translation>
 <translation id="135978014023467274">ወደ ChromeVox 63 አዘምነዋል!</translation>
 <translation id="136718599399906424">ቀጣይ የሠንጠረዥ ረድፍ</translation>
@@ -104,7 +103,6 @@
 <translation id="1828385960365606039">ሜይ</translation>
 <translation id="1834891354138622109">አምድ</translation>
 <translation id="1845944666972354496">ለማግበር ሁለቴ መታ አድርግ</translation>
-<translation id="1846771122725914429">የብሉቱዝ ብሬይል ማሳያ</translation>
 <translation id="1865601187525349519">የጽሑፉ መጨረሻ</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">የአሁኑን ሰዓት እና ቀን ተናገር።</translation>
@@ -161,7 +159,6 @@
 <translation id="2422937916923936891">የምናሌ ንጥል አመልካች ሳጥን</translation>
 <translation id="2428534162001909979">የትዕዛዝ ምናሌዎች</translation>
 <translation id="2429669115401274487">ከሰዓት</translation>
-<translation id="242998846562331953">የግርጌ ጽሑፍ</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> አሁን አዲሱ የChromeVox መቀየሪያ ነው።</translation>
 <translation id="2450814015951372393">አመልካች ሳጥን</translation>
 <translation id="2462626033734746142">የሬዲዮ አዝራር ቡድን</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">የብሬይል መግለጫዎች ነቅተዋል።</translation>
 <translation id="5891934789323004067">ሠንጠረዥ</translation>
 <translation id="5899860758576822363">ChromeVox እየተናገረ ሳለ ባነሰ የድምጽ መጠን ላይ አጫውት</translation>
-<translation id="5906974869830879618">እባክዎ ፒን ያስገቡ</translation>
 <translation id="5921587111466148855">ምዕራፍ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{እኩል}one{# የእኩል ምልክቶች}other{# የእኩል ምልክቶች}}</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
@@ -705,7 +701,6 @@
 <translation id="641759969622533235">{COUNT,plural, =1{ሁለት ነጥብ}one{# ሁለት ነጥቦች}other{# ሁለት ነጥቦች}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />፣ ምናሌ</translation>
 <translation id="6444046323172968959">የማንቂያ መገናኛ</translation>
-<translation id="6452403590345320472">ማውጫ</translation>
 <translation id="6459511626086141404">ልሙጥ የቁልፍ አደራደር</translation>
 <translation id="6468049171101508116">ቀጣይ አዝራር</translation>
 <translation id="646954774886932461">መረጃ ጠቋሚ</translation>
@@ -1000,7 +995,6 @@
 <translation id="948171205378458592">የንግግር ፍጥነት ይቀንሱ</translation>
 <translation id="958854023026327378">አንድ ጣት ወደ ታች ያንሸራትቱ</translation>
 <translation id="962913030769097253">ቀጣይ የደረጃ 1 ርዕስ</translation>
-<translation id="966588271015727539">የብሉቱዝ ብሬይል ማሳያ</translation>
 <translation id="973955474346881951">አጣባቂ ሁነታን አንቃ/አሰናክል</translation>
 <translation id="976849232629612000">ምንም ንጥሎች የሉም።</translation>
 <translation id="995852680044449248">የስክረዛ መጀመሪያ</translation>

@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">Разрешаване (по подразбиране)</translation>
 <translation id="3427342743765426898">&amp;Възстановяване на редактирането</translation>
 <translation id="342781501876943858">Chromium препоръчва да зададете повторно паролата си, ако сте я използвали и на други сайтове.</translation>
+<translation id="3430691998045392297">Прожекцията на филма е различна. Искате ли да продължите?</translation>
 <translation id="3431636764301398940">Запазване на картата на това устройство</translation>
 <translation id="3447661539832366887">Собственикът на това устройство е изключил играта с динозавъра.</translation>
 <translation id="3447884698081792621">Показване на сертификата (издаден от <ph name="ISSUER" />)</translation>
@@ -449,7 +450,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Актуализиране на датата и часа</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
-<translation id="3885155851504623709">Енория</translation>
+<translation id="3885155851504623709">Община</translation>
 <translation id="3886446263141354045">Заявката ви за достъп до този сайт бе изпратена до <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Добавяне на имейл адрес</translation>
 <translation id="3901925938762663762">Картата е с изтекла валидност</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">Преглеждате страница на разширение</translation>
 <translation id="6596325263575161958">Опции за шифроване</translation>
 <translation id="6604181099783169992">Сензори за движение или светлина</translation>
+<translation id="6607617806003952240">Не мога да помогна повече. Моля, продължете ръчно.</translation>
 <translation id="6624427990725312378">Информация за връзка</translation>
 <translation id="6626291197371920147">Добавяне на валиден номер на карта</translation>
 <translation id="6628463337424475685">Търсене с/ъс <ph name="ENGINE" /></translation>
@@ -881,7 +883,7 @@
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7064851114919012435">Информация за връзка</translation>
 <translation id="7079718277001814089">Този сайт съдържа злонамерен софтуер</translation>
-<translation id="7087282848513945231">Област</translation>
+<translation id="7087282848513945231">Окръг</translation>
 <translation id="7090678807593890770">Потърсете „<ph name="LINK" />“ с Google</translation>
 <translation id="7108338896283013870">Скриване</translation>
 <translation id="7108819624672055576">Разрешено от разширение</translation>

@@ -2687,7 +2687,7 @@
 <translation id="5151354047782775295">Освободете място на диска, в противен случай е възможно автоматично да бъдат изтрити определени данни</translation>
 <translation id="5153234146675181447">Забравяне на телефона</translation>
 <translation id="5154108062446123722">Разширени настройки за „<ph name="PRINTING_DESTINATION" />“</translation>
-<translation id="5154702632169343078">Тема</translation>
+<translation id="5154702632169343078">Субект</translation>
 <translation id="5157635116769074044">Фиксиране на тази страница в стартовия екран...</translation>
 <translation id="5158593464696388225">Запазването на изображението не бе успешно.</translation>
 <translation id="5158983316805876233">Да се използва един и същ прокси сървър за всички протоколи</translation>
@@ -3056,7 +3056,7 @@
 <translation id="5671641761787789573">Изображенията са блокирани</translation>
 <translation id="567643736130151854">Влезте в профила си и включете синхронизирането, за да получите отметките, паролите и другите си неща на всичките си устройства</translation>
 <translation id="5677503058916217575">Език на страницата:</translation>
-<translation id="5677928146339483299">Блокиран/а</translation>
+<translation id="5677928146339483299">Блокирано</translation>
 <translation id="5678550637669481956">Предоставен е достъп до „<ph name="VOLUME_NAME" />“ за четене и запис.</translation>
 <translation id="5678784840044122290">Приложението за Linux ще бъде налично в терминала и може също да има икона в стартовия панел.</translation>
 <translation id="5678955352098267522">Четене на данните ви от <ph name="WEBSITE_1" /></translation>
@@ -3738,7 +3738,6 @@
 <translation id="6706210727756204531">Обхват</translation>
 <translation id="6707389671160270963">SSL сертификат на клиент</translation>
 <translation id="6708242697268981054">Източник:</translation>
-<translation id="6709133671862442373">Новини</translation>
 <translation id="6709357832553498500">Свързване посредством <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6718273304615422081">Компресира се...</translation>

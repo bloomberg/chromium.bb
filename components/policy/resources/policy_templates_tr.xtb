@@ -279,7 +279,7 @@
 <translation id="1803646570632580723">Başlatıcıda gösterilecek sabitlenmiş uygulamalar listesi</translation>
 <translation id="1808715480127969042">Bu sitelerdeki çerezleri engelle</translation>
 <translation id="1810261428246410396">Anında Tethering'in kullanılmasına izin ver.</translation>
-<translation id="1817685358399181673">Bu politika bir kullanıcı için <ph name="PLUGIN_VM_NAME" /> görüntüsünü belirtir. Bu politika, cihazın görüntüyü indirebileceği URL'nin yanı sıra indirme işleminin bütünlüğünü doğrulamak için bir SHA-256 karması belirlenerek ayarlanır.
+<translation id="1817685358399181673">Bu politika bir kullanıcı için <ph name="PLUGIN_VM_NAME" /> resmi belirtiyor. Bu politika, cihazın resmi indirebileceği URL'nin yanı sıra indirme işleminin bütünlüğünü doğrulamak için bir SHA-256 karması belirlenerek ayarlanır.
 
       Bu politika, URL'yi ve karmayı JSON biçiminde gösteren bir dize olarak belirtilmelidir.</translation>
 <translation id="1827523283178827583">Sabit proxy sunucuları kullan</translation>
@@ -2695,7 +2695,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Güvenli Tarama hakkında daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="7642803091923523695">Bu cihazın PluginVm çalıştırmasını etkinleştirir.
 
-      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verilebilmesi için <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması ve <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının da ayarlanması gerekir.</translation>
+      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması ve <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verecek şekilde ayarlanması gerekiyor.</translation>
 <translation id="7643883929273267746"><ph name="PRODUCT_NAME" /> içinde görülebilen hesapları kısıtlama</translation>
 <translation id="7651739109954974365">Veri dolaşımının etkin olup olmayacağını belirler. True olarak ayarlanırsa, veri dolaşımına izin verilir. Hiç ayarlanmazsa veya false değerine ayarlanırsa, veri dolaşımına izin verilmez.</translation>
 <translation id="7673194325208122247">Dönem (milisaniye)</translation>

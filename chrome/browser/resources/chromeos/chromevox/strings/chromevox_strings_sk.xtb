@@ -51,7 +51,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1334095593597963605">zvuková odozva na znaky a slová</translation>
 <translation id="1339428534620983148">Predchádzajúci stĺpec tabuľky</translation>
 <translation id="1342835525016946179">článok</translation>
-<translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="135978014023467274">Čítačka ChromeVox bola aktualizovaná na verziu 63.</translation>
 <translation id="136718599399906424">Ďalší riadok tabuľky</translation>
@@ -104,7 +103,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1828385960365606039">máj</translation>
 <translation id="1834891354138622109">Stĺpec</translation>
 <translation id="1845944666972354496">Aktivujte dvojitým klepnutím</translation>
-<translation id="1846771122725914429">Braillov displej s rozhraním Bluetooth</translation>
 <translation id="1865601187525349519">Koniec textu</translation>
 <translation id="1876229593313240038">dokument</translation>
 <translation id="188130072164734898">Prečítať nahlas aktuálny čas a dátum</translation>
@@ -161,7 +159,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2422937916923936891">Začiarkavacie políčko položky ponuky</translation>
 <translation id="2428534162001909979">Ponuky s príkazmi</translation>
 <translation id="2429669115401274487">PM</translation>
-<translation id="242998846562331953">Titulky</translation>
 <translation id="2435413342408885429">Kláves <ph name="KEY" /> je teraz nový modifikátor služby ChromeVox.</translation>
 <translation id="2450814015951372393">Začiarkavacie políčko</translation>
 <translation id="2462626033734746142">Skupina prepínačov</translation>
@@ -648,7 +645,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5887397643266327462">Titulky v Braillovom písme sú zapnuté</translation>
 <translation id="5891934789323004067">Tabuľka</translation>
 <translation id="5899860758576822363">Pri hlasovej odozve ChromeVox znížiť hlasitosť prehrávania</translation>
-<translation id="5906974869830879618">Zadajte PIN</translation>
 <translation id="5921587111466148855">Kapitola</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{znak rovnosti}few{# znaky rovnosti}many{# equal signs}other{# znakov rovnosti}}</translation>
 <translation id="5939518447894949180">Resetovať</translation>
@@ -705,7 +701,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="641759969622533235">{COUNT,plural, =1{dvojbodka}few{# dvojbodky}many{# colons}other{# dvojbodiek}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, ponuka</translation>
 <translation id="6444046323172968959">Dialógové okno s upozornením</translation>
-<translation id="6452403590345320472">Obsah</translation>
 <translation id="6459511626086141404">Plochá mapa klávesov</translation>
 <translation id="6468049171101508116">Ďalšie tlačidlo</translation>
 <translation id="646954774886932461">Index</translation>
@@ -1000,7 +995,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="948171205378458592">Znížiť rýchlosť reči</translation>
 <translation id="958854023026327378">Potiahnite prstom nadol</translation>
 <translation id="962913030769097253">Ďalší nadpis 1. úrovne</translation>
-<translation id="966588271015727539">Vybrať Braillov displej s rozhraním Bluetooth</translation>
 <translation id="973955474346881951">Povoliť alebo zakázať rýchly režim</translation>
 <translation id="976849232629612000">Žiadne položky.</translation>
 <translation id="995852680044449248">Začiatok prečiarknutia</translation>
