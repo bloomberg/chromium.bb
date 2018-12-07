@@ -2155,11 +2155,11 @@
     },
 
     'shared_release_bot': {
-      'mixins': ['shared', 'release', 'goma']
+      'mixins': ['shared', 'release', 'goma'],
     },
 
     'shared_release_trybot': {
-      'mixins': ['shared', 'release_trybot', ],
+      'mixins': ['shared_release_bot', 'minimal_symbols', 'dcheck_always_on'],
     },
 
     'static': {
