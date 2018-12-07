@@ -85,9 +85,6 @@ namespace content {
 
 namespace {
 
-// Only used when the network service is enabled.
-bool g_allow_get_url_request_context = false;
-
 base::LazyInstance<StoragePartitionImpl::CreateNetworkFactoryCallback>::Leaky
     g_url_loader_factory_callback_for_test = LAZY_INSTANCE_INITIALIZER;
 
@@ -257,20 +254,6 @@ void ClearSessionStorageOnUIThread(
 }
 
 }  // namespace
-
-ScopedAllowGetURLRequestContext::ScopedAllowGetURLRequestContext() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-  DCHECK(!g_allow_get_url_request_context);
-  g_allow_get_url_request_context = true;
-}
-
-ScopedAllowGetURLRequestContext::~ScopedAllowGetURLRequestContext() {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-  DCHECK(g_allow_get_url_request_context);
-  g_allow_get_url_request_context = false;
-}
 
 // Class to own the NetworkContext wrapping a storage partitions
 // URLRequestContext, when the ContentBrowserClient doesn't provide a
@@ -768,7 +751,7 @@ net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    DCHECK(g_allow_get_url_request_context);
+    NOTREACHED();
 #endif
   return url_request_context_.get();
 }
@@ -778,7 +761,7 @@ StoragePartitionImpl::GetMediaURLRequestContext() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    DCHECK(g_allow_get_url_request_context);
+    NOTREACHED();
 #endif
   return media_url_request_context_.get();
 }
