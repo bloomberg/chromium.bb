@@ -32,6 +32,10 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxPolicyFuchsia {
   // IO thread.
   void Initialize(service_manager::SandboxType type);
 
+  // Sets the service directory that's passed to the child process as /svc. Must
+  // be used only for the web context process.
+  void SetServiceDirectory(zx::channel service_directory_client_channel);
+
   // Modifies the process launch |options| to achieve  the level of
   // isolation appropriate for current the sandbox type. The caller may then add
   // any descriptors or handles afterward to grant additional capabilities
