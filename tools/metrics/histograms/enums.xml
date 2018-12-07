@@ -37404,6 +37404,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="Clicked disabled next button then navigated away"/>
   <int value="7" label="Clicked disabled next button then chose skip"/>
   <int value="8" label="Clicked disabled next button then chose next"/>
+  <int value="9" label="Did nothing and clicked next"/>
+  <int value="10" label="Navigated away through browser history"/>
 </enum>
 
 <enum name="NuxEmailProvidersSelections">

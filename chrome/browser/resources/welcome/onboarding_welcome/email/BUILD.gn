@@ -33,6 +33,7 @@ js_library("email_chooser") {
 
 js_library("nux_email_proxy") {
   deps = [
+    "../shared:module_metrics_proxy",
     "../shared:nux_types",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",

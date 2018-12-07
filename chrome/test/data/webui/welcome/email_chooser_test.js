@@ -22,6 +22,9 @@ cr.define('onboarding_welcome_email_chooser', function() {
     /** @type {nux.NuxEmailProxy} */
     let testEmailBrowserProxy;
 
+    /** @type {nux.ModuleMetricsProxy} */
+    let testEmailMetricsProxy;
+
     /** @type {nux.BookmarkProxy} */
     let testBookmarkBrowserProxy;
 
@@ -31,6 +34,8 @@ cr.define('onboarding_welcome_email_chooser', function() {
     setup(function() {
       testEmailBrowserProxy = new TestNuxEmailProxy();
       nux.NuxEmailProxyImpl.instance_ = testEmailBrowserProxy;
+      testEmailMetricsProxy = new TestEmailMetricsProxy();
+      nux.EmailMetricsProxyImpl.instance_ = testEmailMetricsProxy;
       testBookmarkBrowserProxy = new TestBookmarkProxy();
       nux.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
       // Reset w/ new proxy for test.
@@ -44,7 +49,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
       // Simulate nux-email's onRouteEnter call.
       testElement.initializeSection();
       return Promise.all([
-        testEmailBrowserProxy.whenCalled('recordPageInitialized'),
+        testEmailMetricsProxy.whenCalled('recordPageShown'),
         testEmailBrowserProxy.whenCalled('getEmailList'),
       ]);
     });
@@ -62,13 +67,8 @@ cr.define('onboarding_welcome_email_chooser', function() {
       assertFalse(testElement.$$('.action-button').disabled);
 
       options[0].click();
-      return Promise
-          .all([
-            testBookmarkBrowserProxy.whenCalled('removeBookmark'),
-            testEmailBrowserProxy.whenCalled('recordClickedOption'),
-          ])
-          .then(responses => {
-            let removedId = responses[0];
+      return testBookmarkBrowserProxy.whenCalled('removeBookmark')
+          .then(removedId => {
             assertEquals(removedId, 1);
             assertFalse(!!testElement.$$('.option[active]'));
             assertTrue(testElement.$$('.action-button').disabled);
@@ -113,7 +113,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
           .all([
             testBookmarkBrowserProxy.whenCalled('removeBookmark'),
             testBookmarkBrowserProxy.whenCalled('toggleBookmarkBar'),
-            testEmailBrowserProxy.whenCalled('recordNoThanks'),
+            testEmailMetricsProxy.whenCalled('recordDidNothingAndChoseSkip'),
           ])
           .then(responses => {
             let removeBookmarkResponse = responses[0];
@@ -134,7 +134,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
       return Promise
           .all([
             testEmailBrowserProxy.whenCalled('recordProviderSelected'),
-            testEmailBrowserProxy.whenCalled('recordGetStarted'),
+            testEmailMetricsProxy.whenCalled('recordDidNothingAndChoseNext'),
           ])
           .then(responses => {
             let recordProviderSelectedResponse = responses[0];
