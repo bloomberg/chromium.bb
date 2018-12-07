@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -153,7 +152,7 @@ class DeclarativeContentCssConditionTracker
       tracked_predicates_;
 
   // Maps WebContents to the tracker for that WebContents state.
-  std::map<content::WebContents*, linked_ptr<PerWebContentsTracker>>
+  std::map<content::WebContents*, std::unique_ptr<PerWebContentsTracker>>
       per_web_contents_tracker_;
 
   // Manages our notification registrations.
