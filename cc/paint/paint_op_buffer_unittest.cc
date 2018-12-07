@@ -1167,8 +1167,7 @@ std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
 
       SkTextBlobBuilder builder;
       int glyph_count = 5;
-      const auto& run =
-          builder.allocRun(font, glyph_count, 1.2f, 2.3f, &test_rects[0]);
+      const auto& run = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
       // allocRun() allocates only the glyph buffer.
       std::fill(run.glyphs, run.glyphs + glyph_count, 0);
       return builder.make();
@@ -1179,13 +1178,12 @@ std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
 
       SkTextBlobBuilder builder;
       int glyph_count = 5;
-      const auto& run1 =
-          builder.allocRun(font, glyph_count, 1.2f, 2.3f, &test_rects[0]);
+      const auto& run1 = builder.allocRun(font, glyph_count, 1.2f, 2.3f);
       // allocRun() allocates only the glyph buffer.
       std::fill(run1.glyphs, run1.glyphs + glyph_count, 0);
 
       glyph_count = 16;
-      const auto& run2 = builder.allocRunPos(font, glyph_count, &test_rects[1]);
+      const auto& run2 = builder.allocRunPos(font, glyph_count);
       // allocRun() allocates the glyph buffer, and 2 scalars per glyph for the
       // pos buffer.
       std::fill(run2.glyphs, run2.glyphs + glyph_count, 0);
@@ -1193,8 +1191,7 @@ std::vector<sk_sp<SkTextBlob>> test_paint_blobs = {
 
       font.setTypeface(test_typefaces[1][1]);
       glyph_count = 8;
-      const auto& run3 =
-          builder.allocRunPosH(font, glyph_count, 0, &test_rects[2]);
+      const auto& run3 = builder.allocRunPosH(font, glyph_count, 0);
       // allocRun() allocates the glyph buffer, and 1 scalar per glyph for the
       // pos buffer.
       std::fill(run3.glyphs, run3.glyphs + glyph_count, 0);
