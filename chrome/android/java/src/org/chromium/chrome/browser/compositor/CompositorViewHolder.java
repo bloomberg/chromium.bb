@@ -32,6 +32,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.InsetObserverView;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardExtensionSizeManager;
@@ -269,6 +270,10 @@ public class CompositorViewHolder extends FrameLayout
             }
         });
         handleSystemUiVisibilityChange();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ApiHelperForO.setDefaultFocusHighlightEnabled(this, false);
+        }
     }
 
     private Point getViewportSize() {
