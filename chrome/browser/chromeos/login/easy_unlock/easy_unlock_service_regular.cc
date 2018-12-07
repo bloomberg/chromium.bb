@@ -47,7 +47,6 @@
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
 #include "components/cryptauth/cryptauth_gcm_manager_impl.h"
-#include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_device_loader.h"
 #include "components/cryptauth/secure_message_delegate_impl.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -248,11 +247,8 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
   // When EasyUnlock is enabled, only one EasyUnlock host should exist.
   DCHECK(remote_devices.size() == 1u);
 
-  SetProximityAuthDevices(
-      GetAccountId(), remote_devices,
-      base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
-          ? device_sync_client_->GetLocalDeviceMetadata()
-          : base::nullopt);
+  SetProximityAuthDevices(GetAccountId(), remote_devices,
+                          device_sync_client_->GetLocalDeviceMetadata());
 
   // We need to store a copy of |local_and_remote_devices| in the TPM, so it can
   // be retrieved on the sign-in screen when a user session has not been started
