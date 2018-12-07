@@ -121,11 +121,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Called before capturing a snapshot for Tab.
 - (void)willUpdateSnapshot;
 
-// Loads the original url of the last non-redirect item (including non-history
-// items). Used by request desktop/mobile site so that the updated user agent is
-// used.
-- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType;
-
 // Evaluates U2F result.
 - (void)evaluateU2FResultFromURL:(const GURL&)url;
 
