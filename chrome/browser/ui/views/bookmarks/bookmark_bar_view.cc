@@ -971,12 +971,14 @@ void BookmarkBarView::PaintChildren(const views::PaintInfo& paint_info) {
     int y = 0;
     int h = height();
     if (index == GetBookmarkButtonCount()) {
-      if (index == 0) {
+      if (index != 0)
+        x = GetBookmarkButton(index - 1)->bounds().right();
+      else if (managed_bookmarks_button_->visible())
+        x = managed_bookmarks_button_->bounds().right();
+      else if (apps_page_shortcut_->visible())
+        x = apps_page_shortcut_->bounds().right();
+      else
         x = kBookmarkBarHorizontalMargin;
-      } else {
-        x = GetBookmarkButton(index - 1)->x() +
-            GetBookmarkButton(index - 1)->width();
-      }
     } else {
       x = GetBookmarkButton(index)->x();
     }
