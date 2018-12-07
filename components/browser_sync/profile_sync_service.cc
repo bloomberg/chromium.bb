@@ -1977,11 +1977,6 @@ base::WeakPtr<syncer::JsController> ProfileSyncService::GetJsController() {
 }
 
 // static
-void ProfileSyncService::SyncEvent(SyncEventCodes code) {
-  UMA_HISTOGRAM_ENUMERATION("Sync.EventCodes", code, MAX_SYNC_EVENT_CODE);
-}
-
-// static
 bool ProfileSyncService::IsSyncAllowedByFlag() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSync);

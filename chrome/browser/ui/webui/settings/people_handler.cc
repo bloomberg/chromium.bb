@@ -50,6 +50,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/unified_consent_metrics.h"
@@ -782,7 +783,7 @@ void PeopleHandler::HandleSignout(const base::ListValue* args) {
         SigninManagerFactory::GetForProfile(profile_);
     if (signin_manager->IsAuthenticated()) {
       if (GetSyncService())
-        ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+        syncer::RecordSyncEvent(syncer::STOP_FROM_OPTIONS);
 
       signin_metrics::SignoutDelete delete_metric =
           delete_profile ? signin_metrics::SignoutDelete::DELETED
@@ -847,8 +848,7 @@ void PeopleHandler::CloseSyncSetup() {
           sync_service->GetAuthError().state() ==
               GoogleServiceAuthError::NONE))) {
       if (configuring_sync_) {
-        ProfileSyncService::SyncEvent(
-            ProfileSyncService::CANCEL_DURING_CONFIGURE);
+        syncer::RecordSyncEvent(syncer::CANCEL_DURING_CONFIGURE);
 
         // If the user clicked "Cancel" while setting up sync, disable sync
         // because we don't want the sync engine to remain in the

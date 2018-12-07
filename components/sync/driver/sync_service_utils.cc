@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/sync_service_utils.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -73,6 +74,10 @@ UploadState GetUploadToGoogleState(const SyncService* sync_service,
   }
   NOTREACHED();
   return UploadState::NOT_ACTIVE;
+}
+
+void RecordSyncEvent(SyncEventCodes code) {
+  UMA_HISTOGRAM_ENUMERATION("Sync.EventCodes", code, MAX_SYNC_EVENT_CODE);
 }
 
 }  // namespace syncer

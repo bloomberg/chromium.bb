@@ -59,7 +59,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
@@ -69,6 +68,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -672,8 +672,7 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
         break;
       case sync_ui_util::UNRECOVERABLE_ERROR:
         if (ProfileSyncServiceFactory::GetForProfile(browser_->profile())) {
-          browser_sync::ProfileSyncService::SyncEvent(
-              browser_sync::ProfileSyncService::STOP_FROM_OPTIONS);
+          syncer::RecordSyncEvent(syncer::STOP_FROM_OPTIONS);
         }
 
         // GetPrimaryAccountMutator() might return nullptr on some platforms.
