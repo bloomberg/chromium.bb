@@ -118,6 +118,8 @@ class AssistantManagerServiceImpl
   void StartMetalayerInteraction(const gfx::Rect& region) override;
   void StartTextInteraction(const std::string& query, bool allow_tts) override;
   void StartVoiceInteraction() override;
+  void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
+                                     bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
       mojom::AssistantInteractionSubscriberPtr subscriber) override;

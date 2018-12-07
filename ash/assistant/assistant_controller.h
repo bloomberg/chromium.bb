@@ -28,6 +28,8 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
+class PrefRegistrySimple;
+
 namespace ash {
 
 class AssistantCacheController;
@@ -47,6 +49,8 @@ class ASH_EXPORT AssistantController
  public:
   AssistantController();
   ~AssistantController() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void BindRequest(mojom::AssistantControllerRequest request);
   void BindRequest(mojom::AssistantVolumeControlRequest request);

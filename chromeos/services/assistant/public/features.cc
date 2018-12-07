@@ -13,6 +13,9 @@ namespace features {
 const base::Feature kAssistantVoiceMatch{"AssistantVoiceMatch",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantWarmerWelcomeFeature{
+    "AssistantWarmerWelcome", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -25,6 +28,10 @@ bool IsDspHotwordEnabled() {
 
 bool IsStereoAudioInputEnabled() {
   return base::FeatureList::IsEnabled(kEnableStereoAudioInput);
+}
+
+bool IsWarmerWelcomeEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
 }
 
 }  // namespace features
