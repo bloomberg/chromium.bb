@@ -711,6 +711,14 @@ class CBuildBotTest(ChromeosConfigTestBase):
     # Get a list of all active Paladins.
     return [self.site_config[n] for n in master_config.slave_configs]
 
+  def testNoCqPrebuilts(self):
+    """Make sure every master has a sane list of slaves"""
+    for build_name, config in self.site_config.iteritems():
+      if config.build_type == constants.PALADIN_TYPE:
+        self.assertFalse(
+            config.prebuilts,
+            'Paladin %s should not generate prebuilts.' % build_name)
+
   def testPreCQHasVMTests(self):
     """Make sure that at least one pre-cq builder enables VM tests."""
     pre_cq_configs = constants.PRE_CQ_DEFAULT_CONFIGS

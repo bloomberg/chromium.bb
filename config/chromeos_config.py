@@ -183,7 +183,6 @@ def GeneralTemplates(site_config, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
-      prebuilts=constants.PUBLIC,
       manifest_version=True,
       description='Commit Queue',
       upload_standalone_images=False,
@@ -206,7 +205,6 @@ def GeneralTemplates(site_config, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_CQ,
       build_type=constants.PALADIN_TYPE,
       overlays=constants.PUBLIC_OVERLAYS,
-      prebuilts=False,
       manifest_version=True,
       unittests=True,
       compilecheck=True,
@@ -567,7 +565,6 @@ def GeneralTemplates(site_config, ge_build_config):
       site_config.templates.official_chrome,
       manifest=constants.OFFICIAL_MANIFEST,
       overlays=constants.BOTH_OVERLAYS,
-      prebuilts=constants.PRIVATE,
       vm_tests=[],
       description=site_config.templates.paladin.description + ' (internal)',
   )
@@ -579,7 +576,6 @@ def GeneralTemplates(site_config, ge_build_config):
       useflags=config_lib.append_useflags(['-cros-debug']),
       description=(site_config.templates.paladin.description +
                    ' (internal, nowithdebug)'),
-      prebuilts=False,
   )
 
   # Internal incremental builders don't use official chrome because we want
@@ -1958,11 +1954,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
     if base_config.get('internal'):
       customizations.update(
-          prebuilts=constants.PRIVATE,
           description=(site_config.templates.paladin.description +
                        ' (internal)'))
-    else:
-      customizations.update(prebuilts=constants.PUBLIC)
 
     if board in _paladin_active:
       customizations.update(
@@ -2073,7 +2066,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.cq_luci_slave,
           boards=['reef'],
           build_before_patching=True,
-          prebuilts=False,
           compilecheck=True,
           unittests=False,
           important=False,
@@ -2095,7 +2087,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
           compilecheck=True,
           cpe_export=False,
           debug_symbols=False,
-          prebuilts=False,
           unittests=False,
           upload_hw_test_artifacts=False,
           vm_tests=[],

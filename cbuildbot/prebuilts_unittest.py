@@ -204,32 +204,6 @@ class BinhostConfWriterTest(
     self.assertCommandContains([self.cmd, '--set-version', self.VERSION],
                                expected=self._run.config.manifest_version)
 
-  def testMasterPaladinUpload(self):
-    self._Run('master-paladin')
-
-    # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic', 'daisy')
-    private_slave_boards = ('cyan', 'samus', 'daisy_spring')
-
-    self._VerifyResults(public_slave_boards=public_slave_boards,
-                        private_slave_boards=private_slave_boards)
-
-  def testMasterPaladinExperimentalBuilders(self):
-    """Tests that commands are not run for experimental builders."""
-    self._Prepare('master-paladin')
-    confwriter = prebuilts.BinhostConfWriter(self._run)
-    self._run.attrs.metadata.UpdateWithDict({
-        constants.METADATA_EXPERIMENTAL_BUILDERS: ['samus', 'daisy']
-    })
-    confwriter.Perform()
-
-    # Provide a sample of private/public slave boards that are expected.
-    public_slave_boards = ('amd64-generic',)
-    private_slave_boards = ('cyan', 'daisy_spring')
-
-    self._VerifyResults(public_slave_boards=public_slave_boards,
-                        private_slave_boards=private_slave_boards)
-
   def testMasterChromiumPFQUpload(self):
     self._Run('master-chromium-pfq')
 
