@@ -46,12 +46,7 @@ Polymer({
   /** @private */
   onNoThanksClick_: function() {
     // It's safe to assume sign-view is always going to be the last step, so
-    // either go to the target url directly, or go to NTP directly.
-    const targetUrl = this.getTargetUrl_();
-    if (targetUrl) {
-      this.welcomeBrowserProxy_.goToURL(targetUrl);
-    } else {
-      this.welcomeBrowserProxy_.goToNewTabPage();
-    }
+    // go to the target url directly. If there's no target, it lands on NTP.
+    this.welcomeBrowserProxy_.handleUserDecline(this.getTargetUrl_());
   }
 });

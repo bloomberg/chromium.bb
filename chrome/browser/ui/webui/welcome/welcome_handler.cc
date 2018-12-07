@@ -106,7 +106,17 @@ void WelcomeHandler::HandleUserDecline(const base::ListValue* args) {
   result_ = (result_ == WelcomeResult::ATTEMPTED)
                 ? WelcomeResult::ATTEMPTED_DECLINED
                 : WelcomeResult::DECLINED;
-  GoToNewTabPage();
+
+  if (args->GetSize() == 1U) {
+    std::string url_string;
+    CHECK(args->GetString(0, &url_string));
+    GURL redirect_url = GURL(url_string);
+    DCHECK(redirect_url.is_valid());
+
+    GoToURL(redirect_url);
+  } else {
+    GoToNewTabPage();
+  }
 }
 
 // Override from WebUIMessageHandler.
@@ -127,7 +137,11 @@ void WelcomeHandler::RegisterMessages() {
 }
 
 void WelcomeHandler::GoToNewTabPage() {
-  NavigateParams params(GetBrowser(), GURL(chrome::kChromeUINewTabURL),
+  WelcomeHandler::GoToURL(GURL(chrome::kChromeUINewTabURL));
+}
+
+void WelcomeHandler::GoToURL(GURL url) {
+  NavigateParams params(GetBrowser(), url,
                         ui::PageTransition::PAGE_TRANSITION_LINK);
   params.source_contents = web_ui()->GetWebContents();
   Navigate(&params);

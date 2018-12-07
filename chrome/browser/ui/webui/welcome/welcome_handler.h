@@ -11,6 +11,7 @@
 
 class Browser;
 class Profile;
+class GURL;
 
 // Handles actions on Welcome page.
 class WelcomeHandler : public content::WebUIMessageHandler,
@@ -47,6 +48,7 @@ class WelcomeHandler : public content::WebUIMessageHandler,
   void HandleActivateSignIn(const base::ListValue* args);
   void HandleUserDecline(const base::ListValue* args);
   void GoToNewTabPage();
+  void GoToURL(GURL url);
   bool isValidRedirectUrl();
 
   Browser* GetBrowser();
