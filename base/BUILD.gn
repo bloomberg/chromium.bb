@@ -3073,6 +3073,7 @@ if (is_android) {
     testonly = true
     deps = [
       ":base_java",
+      ":jni_java",
       "//testing/android/reporter:reporter_java",
       "//third_party/android_deps:android_support_annotations_java",
       "//third_party/android_deps:android_support_compat_java",
@@ -3124,6 +3125,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/InMemorySharedPreferences.java",
       "test/android/javatests/src/org/chromium/base/test/util/InstrumentationUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/IntegrationTest.java",
+      "test/android/javatests/src/org/chromium/base/test/util/JniMocker.java",
       "test/android/javatests/src/org/chromium/base/test/util/Manual.java",
       "test/android/javatests/src/org/chromium/base/test/util/Matchers.java",
       "test/android/javatests/src/org/chromium/base/test/util/MetricsUtils.java",
@@ -3177,6 +3179,7 @@ if (is_android) {
 
   junit_binary("base_junit_tests") {
     java_files = [
+      "android/junit/src/org/chromium/base/AnimationFrameTimeHistogramTest.java",
       "android/junit/src/org/chromium/base/ApplicationStatusTest.java",
       "android/junit/src/org/chromium/base/DiscardableReferencePoolTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
@@ -3204,6 +3207,7 @@ if (is_android) {
       ":base_java_process_launcher_test_support",
       ":base_java_test_support",
       ":base_junit_test_support",
+      ":jni_java",
       "//third_party/hamcrest:hamcrest_java",
     ]
   }
