@@ -3749,11 +3749,32 @@
     },
   },
   {
+    'name': 'tryserver.chromium.android',
+    'machines': {
+      'android_blink_rel': {
+        'test_suites': {
+          'gtest_tests': 'chromium_android_webkit_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'device_os': 'KTU84P',
+              'device_type': 'hammerhead',
+              'os': 'Android',
+            },
+          ],
+        },
+        'os_type': 'android',
+      },
+    },
+  },
+  {
     'name': 'tryserver.chromium.linux',
     'machines': {
       'linux-coverage-rel': {
         'mixins': [
-	  'code-coverage',
+          'code-coverage',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_coverage_gtests',
