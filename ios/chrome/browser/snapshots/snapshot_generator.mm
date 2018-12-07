@@ -270,11 +270,14 @@ BOOL ViewHierarchyContainsWKWebView(UIView* view) {
         SnapshotGenerator* strongSelf = weakSelf;
         if (!strongSelf || !_webState)
           return;
-        UIImage* snapshot = image.ToUIImage();
-        if (overlays.count > 0) {
-          snapshot = [strongSelf snapshotWithOverlays:overlays
-                                             snapshot:snapshot
-                                                frame:webViewSnapshotFrame];
+        UIImage* snapshot = nil;
+        if (!image.IsEmpty()) {
+          snapshot = image.ToUIImage();
+          if (overlays.count > 0) {
+            snapshot = [strongSelf snapshotWithOverlays:overlays
+                                               snapshot:snapshot
+                                                  frame:webViewSnapshotFrame];
+          }
         }
         [strongSelf.snapshotCache setImage:snapshot
                              withSessionID:_snapshotSessionId];
