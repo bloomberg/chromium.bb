@@ -155,8 +155,6 @@ enum WebFeature {
   kFormAssociationByParser = 248,
   kSVGSVGElementInDocument = 250,
   kSVGDocumentRootElement = 251,
-  kWorkerSubjectToCSP = 257,
-  kWorkerAllowedByChildBlockedByScript = 258,
   kDeprecatedWebKitGradient = 260,
   kDeprecatedWebKitLinearGradient = 261,
   kDeprecatedWebKitRepeatingLinearGradient = 262,
