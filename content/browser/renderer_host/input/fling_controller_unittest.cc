@@ -69,16 +69,15 @@ class FlingControllerTest : public FlingControllerEventSenderClient,
   }
 
   // FlingControllerSchedulerClient
-  void ScheduleFlingProgress() override {
+  void ScheduleFlingProgress(
+      base::WeakPtr<FlingController> fling_controller) override {
     DCHECK(!scheduled_next_fling_progress_);
     scheduled_next_fling_progress_ = true;
   }
-  void DidStopFlingingOnBrowser() override {
+  void DidStopFlingingOnBrowser(
+      base::WeakPtr<FlingController> fling_controller) override {
     notified_client_after_fling_stop_ = true;
   }
-  void RegisterFlingSchedulerObserver(
-      base::WeakPtr<FlingController> fling_controller) override {}
-  void UnregisterFlingSchedulerObserver() override {}
   bool NeedsBeginFrameForFlingProgress() override {
     return needs_begin_frame_for_fling_progress_;
   }
