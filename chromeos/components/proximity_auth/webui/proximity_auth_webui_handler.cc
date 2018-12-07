@@ -32,15 +32,15 @@ namespace proximity_auth {
 
 namespace {
 
-constexpr const cryptauth::SoftwareFeature kAllSoftareFeatures[] = {
-    cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
-    cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
-    cryptauth::SoftwareFeature::EASY_UNLOCK_HOST,
-    cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT,
-    cryptauth::SoftwareFeature::MAGIC_TETHER_HOST,
-    cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT,
-    cryptauth::SoftwareFeature::SMS_CONNECT_HOST,
-    cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT};
+constexpr const chromeos::multidevice::SoftwareFeature kAllSoftareFeatures[] = {
+    chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
+    chromeos::multidevice::SoftwareFeature::kBetterTogetherClient,
+    chromeos::multidevice::SoftwareFeature::kSmartLockHost,
+    chromeos::multidevice::SoftwareFeature::kSmartLockClient,
+    chromeos::multidevice::SoftwareFeature::kInstantTetheringHost,
+    chromeos::multidevice::SoftwareFeature::kInstantTetheringClient,
+    chromeos::multidevice::SoftwareFeature::kMessagesForWebHost,
+    chromeos::multidevice::SoftwareFeature::kMessagesForWebClient};
 
 // Keys in the JSON representation of a log message.
 const char kLogMessageTextKey[] = "text";
@@ -261,7 +261,7 @@ void ProximityAuthWebUIHandler::ToggleUnlockKey(const base::ListValue* args) {
   }
 
   device_sync_client_->SetSoftwareFeatureState(
-      public_key, cryptauth::SoftwareFeature::EASY_UNLOCK_HOST,
+      public_key, chromeos::multidevice::SoftwareFeature::kSmartLockHost,
       true /* enabled */, true /* is_exclusive */,
       base::BindOnce(&ProximityAuthWebUIHandler::OnSetSoftwareFeatureState,
                      weak_ptr_factory_.GetWeakPtr(), public_key));
@@ -270,7 +270,7 @@ void ProximityAuthWebUIHandler::ToggleUnlockKey(const base::ListValue* args) {
 void ProximityAuthWebUIHandler::FindEligibleUnlockDevices(
     const base::ListValue* args) {
   device_sync_client_->FindEligibleDevices(
-      cryptauth::SoftwareFeature::EASY_UNLOCK_HOST,
+      chromeos::multidevice::SoftwareFeature::kSmartLockHost,
       base::BindOnce(&ProximityAuthWebUIHandler::OnFindEligibleDevices,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -378,12 +378,12 @@ ProximityAuthWebUIHandler::RemoteDeviceToDictionary(
   dictionary->SetBoolean(
       kExternalDeviceUnlockKey,
       remote_device.GetSoftwareFeatureState(
-          cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) ==
+          chromeos::multidevice::SoftwareFeature::kSmartLockHost) ==
           chromeos::multidevice::SoftwareFeatureState::kEnabled);
   dictionary->SetBoolean(
       kExternalDeviceMobileHotspot,
       remote_device.GetSoftwareFeatureState(
-          cryptauth::SoftwareFeature::MAGIC_TETHER_HOST) ==
+          chromeos::multidevice::SoftwareFeature::kInstantTetheringHost) ==
           chromeos::multidevice::SoftwareFeatureState::kSupported);
   dictionary->SetString(kExternalDeviceConnectionStatus,
                         kExternalDeviceDisconnected);

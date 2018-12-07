@@ -112,7 +112,8 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LoadOneDevice) {
   EXPECT_EQ(device_infos[0].public_key(), remote_devices_[0].public_key);
   ASSERT_EQ(1u, remote_devices_[0].beacon_seeds.size());
 
-  const BeaconSeed& beacon_seed = remote_devices_[0].beacon_seeds[0];
+  const BeaconSeed& beacon_seed = chromeos::multidevice::ToCryptAuthSeed(
+      remote_devices_[0].beacon_seeds[0]);
   EXPECT_EQ(kBeaconSeedData, beacon_seed.data());
   EXPECT_EQ(kBeaconSeedStartTimeMs, beacon_seed.start_time_millis());
   EXPECT_EQ(kBeaconSeedEndTimeMs, beacon_seed.end_time_millis());
@@ -170,12 +171,17 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, SoftwareFeatures) {
 
   EXPECT_EQ(1u, remote_devices_.size());
 
-  EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kSupported,
-            remote_devices_[0].software_features[BETTER_TOGETHER_CLIENT]);
+  EXPECT_EQ(
+      chromeos::multidevice::SoftwareFeatureState::kSupported,
+      remote_devices_[0].software_features
+          [chromeos::multidevice::SoftwareFeature::kBetterTogetherClient]);
   EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kEnabled,
-            remote_devices_[0].software_features[BETTER_TOGETHER_HOST]);
-  EXPECT_EQ(chromeos::multidevice::SoftwareFeatureState::kNotSupported,
-            remote_devices_[0].software_features[MAGIC_TETHER_HOST]);
+            remote_devices_[0].software_features
+                [chromeos::multidevice::SoftwareFeature::kBetterTogetherHost]);
+  EXPECT_EQ(
+      chromeos::multidevice::SoftwareFeatureState::kNotSupported,
+      remote_devices_[0].software_features
+          [chromeos::multidevice::SoftwareFeature::kInstantTetheringHost]);
 }
 
 }  // namespace cryptauth

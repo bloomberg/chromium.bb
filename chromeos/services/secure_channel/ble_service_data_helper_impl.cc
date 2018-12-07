@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -144,7 +145,9 @@ BleServiceDataHelperImpl::PerformIdentifyRemoteDevice(
   // First try, identifying |service_data| as a foreground advertisement.
   if (service_data.size() >= kMinNumBytesInForegroundServiceData) {
     std::vector<cryptauth::BeaconSeed> beacon_seeds =
-        remote_device_cache_->GetRemoteDevice(local_device_id)->beacon_seeds();
+        multidevice::ToCryptAuthSeedList(
+            remote_device_cache_->GetRemoteDevice(local_device_id)
+                ->beacon_seeds());
 
     identified_device_id =
         foreground_eid_generator_->IdentifyRemoteDeviceByAdvertisement(

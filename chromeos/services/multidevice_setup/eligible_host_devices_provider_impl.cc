@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace chromeos {
 
@@ -67,7 +67,7 @@ void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
   for (const auto& remote_device : device_sync_client_->GetSyncedDevices()) {
     multidevice::SoftwareFeatureState host_state =
         remote_device.GetSoftwareFeatureState(
-            cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST);
+            multidevice::SoftwareFeature::kBetterTogetherHost);
     if (host_state == multidevice::SoftwareFeatureState::kSupported ||
         host_state == multidevice::SoftwareFeatureState::kEnabled) {
       eligible_devices_from_last_sync_.push_back(remote_device);

@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/pref_service.h"
@@ -317,16 +318,16 @@ bool FeatureStateManagerImpl::IsAllowedByPolicy(mojom::Feature feature) {
 }
 
 bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
-  static const std::pair<mojom::Feature, cryptauth::SoftwareFeature>
+  static const std::pair<mojom::Feature, multidevice::SoftwareFeature>
       kFeatureAndClientSoftwareFeaturePairs[] = {
           {mojom::Feature::kBetterTogetherSuite,
-           cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT},
+           multidevice::SoftwareFeature::kBetterTogetherClient},
           {mojom::Feature::kInstantTethering,
-           cryptauth::SoftwareFeature::MAGIC_TETHER_CLIENT},
+           multidevice::SoftwareFeature::kInstantTetheringClient},
           {mojom::Feature::kMessages,
-           cryptauth::SoftwareFeature::SMS_CONNECT_CLIENT},
+           multidevice::SoftwareFeature::kMessagesForWebClient},
           {mojom::Feature::kSmartLock,
-           cryptauth::SoftwareFeature::EASY_UNLOCK_CLIENT}};
+           multidevice::SoftwareFeature::kSmartLockClient}};
 
   for (const auto& pair : kFeatureAndClientSoftwareFeaturePairs) {
     if (pair.first != feature)
@@ -348,26 +349,26 @@ bool FeatureStateManagerImpl::HasSufficientSecurity(
     return true;
 
   // Special case for Smart Lock: if the host device does not have a lock screen
-  // set, its SoftwareFeatureState for EASY_UNLOCK_HOST is supported but not
+  // set, its SoftwareFeatureState for kSmartLockHost is supported but not
   // enabled.
   return host_device.GetSoftwareFeatureState(
-             cryptauth::SoftwareFeature::EASY_UNLOCK_HOST) !=
+             multidevice::SoftwareFeature::kSmartLockHost) !=
          multidevice::SoftwareFeatureState::kSupported;
 }
 
 bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
     mojom::Feature feature,
     const multidevice::RemoteDeviceRef& host_device) {
-  static const std::pair<mojom::Feature, cryptauth::SoftwareFeature>
+  static const std::pair<mojom::Feature, multidevice::SoftwareFeature>
       kFeatureAndHostSoftwareFeaturePairs[] = {
           {mojom::Feature::kBetterTogetherSuite,
-           cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST},
+           multidevice::SoftwareFeature::kBetterTogetherHost},
           {mojom::Feature::kInstantTethering,
-           cryptauth::SoftwareFeature::MAGIC_TETHER_HOST},
+           multidevice::SoftwareFeature::kInstantTetheringHost},
           {mojom::Feature::kMessages,
-           cryptauth::SoftwareFeature::SMS_CONNECT_HOST},
+           multidevice::SoftwareFeature::kMessagesForWebHost},
           {mojom::Feature::kSmartLock,
-           cryptauth::SoftwareFeature::EASY_UNLOCK_HOST}};
+           multidevice::SoftwareFeature::kSmartLockHost}};
 
   for (const auto& pair : kFeatureAndHostSoftwareFeaturePairs) {
     if (pair.first != feature)

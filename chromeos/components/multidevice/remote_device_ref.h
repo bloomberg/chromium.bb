@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace chromeos {
 class EasyUnlockServiceRegular;
@@ -67,13 +66,13 @@ class RemoteDeviceRef {
   int64_t last_update_time_millis() const {
     return remote_device_->last_update_time_millis;
   }
-  const std::vector<cryptauth::BeaconSeed>& beacon_seeds() const {
+  const std::vector<BeaconSeed>& beacon_seeds() const {
     return remote_device_->beacon_seeds;
   }
 
   std::string GetDeviceId() const;
   SoftwareFeatureState GetSoftwareFeatureState(
-      const cryptauth::SoftwareFeature& software_feature) const;
+      const SoftwareFeature& software_feature) const;
 
   // Returns a shortened device ID for the purpose of concise logging (device
   // IDs are often so long that logs are difficult to read). Note that this

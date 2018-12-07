@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
+#include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -99,7 +100,8 @@ class CryptAuthBackgroundEidGeneratorTest : public testing::Test {
     chromeos::multidevice::RemoteDeviceRef device_1 =
         chromeos::multidevice::RemoteDeviceRefBuilder()
             .SetPublicKey("publicKey1")
-            .SetBeaconSeeds(beacon_seeds_)
+            .SetBeaconSeeds(
+                chromeos::multidevice::FromCryptAuthSeedList(beacon_seeds_))
             .Build();
     chromeos::multidevice::RemoteDeviceRef device_2 =
         chromeos::multidevice::RemoteDeviceRefBuilder()

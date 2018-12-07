@@ -23,6 +23,7 @@
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/tether/fake_notification_presenter.h"
 #include "chromeos/components/tether/fake_tether_component.h"
 #include "chromeos/components/tether/fake_tether_host_fetcher.h"
@@ -79,7 +80,7 @@ chromeos::multidevice::RemoteDeviceRefList CreateTestDevices() {
         chromeos::multidevice::RemoteDeviceRefBuilder()
             .SetSupportsMobileHotspot(true)
             .SetSoftwareFeatureState(
-                cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST,
+                chromeos::multidevice::SoftwareFeature::kBetterTogetherHost,
                 chromeos::multidevice::SoftwareFeatureState::kSupported)
             .Build());
   }

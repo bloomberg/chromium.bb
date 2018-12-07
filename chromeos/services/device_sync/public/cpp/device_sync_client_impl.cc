@@ -111,7 +111,7 @@ DeviceSyncClientImpl::GetLocalDeviceMetadata() {
 
 void DeviceSyncClientImpl::SetSoftwareFeatureState(
     const std::string public_key,
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     bool is_exclusive,
     mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) {
@@ -120,7 +120,7 @@ void DeviceSyncClientImpl::SetSoftwareFeatureState(
 }
 
 void DeviceSyncClientImpl::FindEligibleDevices(
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
   device_sync_ptr_->FindEligibleDevices(
       software_feature,

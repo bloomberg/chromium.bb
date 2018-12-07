@@ -12,6 +12,8 @@
 #include "base/timer/mock_timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
+#include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
@@ -183,7 +185,7 @@ class MultiDeviceSetupHostBackendDelegateImplTest : public testing::Test {
 
       GetMutableRemoteDevice(remote_device)
           ->software_features
-              [cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+              [multidevice::SoftwareFeature::kBetterTogetherHost] =
           should_be_host ? multidevice::SoftwareFeatureState::kEnabled
                          : multidevice::SoftwareFeatureState::kSupported;
     }

@@ -73,7 +73,7 @@ void FakeDeviceSync::GetSyncedDevices(GetSyncedDevicesCallback callback) {
 
 void FakeDeviceSync::SetSoftwareFeatureState(
     const std::string& device_public_key,
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     bool is_exclusive,
     SetSoftwareFeatureStateCallback callback) {
@@ -81,7 +81,7 @@ void FakeDeviceSync::SetSoftwareFeatureState(
 }
 
 void FakeDeviceSync::FindEligibleDevices(
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
   find_eligible_devices_callback_queue_.push(std::move(callback));
 }

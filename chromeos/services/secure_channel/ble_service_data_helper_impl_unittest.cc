@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/time.h"
 #include "chromeos/components/multidevice/remote_device_cache.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
@@ -57,20 +58,22 @@ CreateFakeBackgroundScanFilter() {
       current, std::move(adjacent));
 }
 
-std::vector<cryptauth::BeaconSeed> CreateFakeBeaconSeeds(int id) {
+std::vector<multidevice::BeaconSeed> CreateFakeBeaconSeeds(int id) {
   std::string id_str = std::to_string(id);
 
-  cryptauth::BeaconSeed seed1;
-  seed1.set_data(fake_beacon_seed1_data + id_str);
-  seed1.set_start_time_millis(fake_beacon_seed1_start_ms * id);
-  seed1.set_start_time_millis(fake_beacon_seed1_end_ms * id);
+  multidevice::BeaconSeed seed1(
+      fake_beacon_seed1_data + id_str /* data */,
+      base::Time::FromJavaTime(fake_beacon_seed1_start_ms *
+                               id) /* start_time */,
+      base::Time::FromJavaTime(fake_beacon_seed1_end_ms * id) /* end_time */);
 
-  cryptauth::BeaconSeed seed2;
-  seed2.set_data(fake_beacon_seed2_data + id_str);
-  seed2.set_start_time_millis(fake_beacon_seed2_start_ms * id);
-  seed2.set_start_time_millis(fake_beacon_seed2_end_ms * id);
+  multidevice::BeaconSeed seed2(
+      fake_beacon_seed2_data + id_str /* data */,
+      base::Time::FromJavaTime(fake_beacon_seed2_start_ms *
+                               id) /* start_time */,
+      base::Time::FromJavaTime(fake_beacon_seed2_end_ms * id) /* end_time */);
 
-  std::vector<cryptauth::BeaconSeed> seeds = {seed1, seed2};
+  std::vector<multidevice::BeaconSeed> seeds = {seed1, seed2};
   return seeds;
 }
 

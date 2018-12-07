@@ -6,6 +6,8 @@ assert(is_chromeos, "MultiDevice is Chrome OS only")
 
 static_library("multidevice") {
   sources = [
+    "beacon_seed.cc",
+    "beacon_seed.h",
     "expiring_remote_device_cache.cc",
     "expiring_remote_device_cache.h",
     "remote_device.cc",
@@ -14,12 +16,15 @@ static_library("multidevice") {
     "remote_device_cache.h",
     "remote_device_ref.cc",
     "remote_device_ref.h",
+    "software_feature.cc",
+    "software_feature.h",
     "software_feature_state.cc",
     "software_feature_state.h",
   ]
 
   deps = [
     "//base",
+    "//base:i18n",
     "//chromeos",
     "//components/cryptauth/proto",
     "//components/cryptauth/proto:util",
@@ -58,7 +63,6 @@ source_set("unit_tests") {
     ":multidevice",
     ":test_support",
     "//base/test:test_support",
-    "//components/cryptauth/proto",
     "//components/cryptauth/proto",
     "//testing/gtest",
   ]

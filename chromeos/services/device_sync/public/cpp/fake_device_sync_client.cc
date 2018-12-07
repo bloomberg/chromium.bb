@@ -36,7 +36,7 @@ FakeDeviceSyncClient::GetLocalDeviceMetadata() {
 
 void FakeDeviceSyncClient::SetSoftwareFeatureState(
     const std::string public_key,
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     bool is_exclusive,
     mojom::DeviceSync::SetSoftwareFeatureStateCallback callback) {
@@ -44,7 +44,7 @@ void FakeDeviceSyncClient::SetSoftwareFeatureState(
 }
 
 void FakeDeviceSyncClient::FindEligibleDevices(
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
   find_eligible_devices_callback_queue_.push(std::move(callback));
 }

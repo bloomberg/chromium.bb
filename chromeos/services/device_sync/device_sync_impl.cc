@@ -127,17 +127,15 @@ void RecordSetSoftwareFeatureStateResultFailureReason(
 }
 
 DeviceSyncSetSoftwareFeature GetDeviceSyncSoftwareFeature(
-    cryptauth::SoftwareFeature software_feature) {
+    multidevice::SoftwareFeature software_feature) {
   switch (software_feature) {
-    case cryptauth::SoftwareFeature::UNKNOWN_FEATURE:
-      return DeviceSyncSetSoftwareFeature::kUnknown;
-    case cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST:
+    case multidevice::SoftwareFeature::kBetterTogetherHost:
       return DeviceSyncSetSoftwareFeature::kBetterTogetherSuite;
-    case cryptauth::SoftwareFeature::EASY_UNLOCK_HOST:
+    case multidevice::SoftwareFeature::kSmartLockHost:
       return DeviceSyncSetSoftwareFeature::kSmartLock;
-    case cryptauth::SoftwareFeature::MAGIC_TETHER_HOST:
+    case multidevice::SoftwareFeature::kInstantTetheringHost:
       return DeviceSyncSetSoftwareFeature::kInstantTethering;
-    case cryptauth::SoftwareFeature::SMS_CONNECT_HOST:
+    case multidevice::SoftwareFeature::kMessagesForWebHost:
       return DeviceSyncSetSoftwareFeature::kMessages;
     default:
       NOTREACHED();
@@ -146,7 +144,7 @@ DeviceSyncSetSoftwareFeature GetDeviceSyncSoftwareFeature(
 }
 
 void RecordSetSoftwareFailedFeature(bool enabled,
-                                    cryptauth::SoftwareFeature feature) {
+                                    multidevice::SoftwareFeature feature) {
   if (enabled) {
     UMA_HISTOGRAM_ENUMERATION(
         "MultiDevice.DeviceSyncService.SetSoftwareFeatureState.Enable."
@@ -238,7 +236,7 @@ void DeviceSyncImpl::PrefConnectionDelegate::ConnectToPrefService(
 DeviceSyncImpl::PendingSetSoftwareFeatureRequest::
     PendingSetSoftwareFeatureRequest(
         const std::string& device_public_key,
-        cryptauth::SoftwareFeature software_feature,
+        multidevice::SoftwareFeature software_feature,
         bool enabled,
         cryptauth::RemoteDeviceProvider* remote_device_provider,
         SetSoftwareFeatureStateCallback callback)
@@ -379,7 +377,7 @@ void DeviceSyncImpl::GetSyncedDevices(GetSyncedDevicesCallback callback) {
 
 void DeviceSyncImpl::SetSoftwareFeatureState(
     const std::string& device_public_key,
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     bool enabled,
     bool is_exclusive,
     SetSoftwareFeatureStateCallback callback) {
@@ -413,7 +411,7 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
 }
 
 void DeviceSyncImpl::FindEligibleDevices(
-    cryptauth::SoftwareFeature software_feature,
+    multidevice::SoftwareFeature software_feature,
     FindEligibleDevicesCallback callback) {
   if (status_ != Status::READY) {
     PA_LOG(WARNING) << "DeviceSyncImpl::FindEligibleDevices() invoked before "

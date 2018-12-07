@@ -56,8 +56,9 @@ BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
   }
 
   std::unique_ptr<DataWithTimestamp> service_data =
-      eid_generator_->GenerateAdvertisement(local_device_public_key,
-                                            remote_device.beacon_seeds());
+      eid_generator_->GenerateAdvertisement(
+          local_device_public_key, chromeos::multidevice::ToCryptAuthSeedList(
+                                       remote_device.beacon_seeds()));
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
                     << remote_device.GetTruncatedDeviceIdForLogs() << ". "

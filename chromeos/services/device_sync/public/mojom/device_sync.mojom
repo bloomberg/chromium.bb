@@ -12,29 +12,27 @@ import "mojo/public/mojom/base/time.mojom";
 // account), and "client" refers to the Chromebook which consumes the feature
 // (multiple clients allowed per account).
 enum SoftwareFeature {
-  UNKNOWN_FEATURE,
-
   // The Better Together (MultiDevice) setup flow feature allows users to go
   // through a unified setup flow which enrolls the device for all multi-device
   // features.
-  BETTER_TOGETHER_HOST,
-  BETTER_TOGETHER_CLIENT,
+  BETTER_TOGETHER_HOST = 1,
+  BETTER_TOGETHER_CLIENT = 2,
 
   // EasyUnlock gives users the ability to unlock their Chromebooks with their
   // phone instead of by typing a password.
-  EASY_UNLOCK_HOST,
-  EASY_UNLOCK_CLIENT,
+  EASY_UNLOCK_HOST = 3,
+  EASY_UNLOCK_CLIENT = 4,
 
   // Magic Tether (Instant Tethering) gives users the ability to use their
   // phone's Internet connectivity on their Chromebooks via an automated flow
   // which does not require any phone-side interaction.
-  MAGIC_TETHER_HOST,
-  MAGIC_TETHER_CLIENT,
+  MAGIC_TETHER_HOST = 5,
+  MAGIC_TETHER_CLIENT = 6,
 
   // SMS Connect gives users the ability to read and reply to their text
   // messages from their Chromebooks.
-  SMS_CONNECT_HOST,
-  SMS_CONNECT_CLIENT
+  SMS_CONNECT_HOST = 7,
+  SMS_CONNECT_CLIENT = 8
 };
 
 // Enumeration of what value a SoftwareFeature can be.

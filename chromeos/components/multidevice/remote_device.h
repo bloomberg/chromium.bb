@@ -9,15 +9,15 @@
 #include <string>
 #include <vector>
 
+#include "chromeos/components/multidevice/beacon_seed.h"
+#include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace chromeos {
 
 namespace multidevice {
 
 struct RemoteDevice {
- public:
   // Generates the device ID for a device given its public key.
   static std::string GenerateDeviceId(const std::string& public_key);
 
@@ -26,18 +26,18 @@ struct RemoteDevice {
   std::string public_key;
   std::string persistent_symmetric_key;
   int64_t last_update_time_millis;
-  std::map<cryptauth::SoftwareFeature, SoftwareFeatureState> software_features;
-  std::vector<cryptauth::BeaconSeed> beacon_seeds;
+  std::map<SoftwareFeature, SoftwareFeatureState> software_features;
+  std::vector<BeaconSeed> beacon_seeds;
 
   RemoteDevice();
-  RemoteDevice(const std::string& user_id,
-               const std::string& name,
-               const std::string& public_key,
-               const std::string& persistent_symmetric_key,
-               int64_t last_update_time_millis,
-               const std::map<cryptauth::SoftwareFeature, SoftwareFeatureState>&
-                   software_features,
-               const std::vector<cryptauth::BeaconSeed>& beacon_seeds);
+  RemoteDevice(
+      const std::string& user_id,
+      const std::string& name,
+      const std::string& public_key,
+      const std::string& persistent_symmetric_key,
+      int64_t last_update_time_millis,
+      const std::map<SoftwareFeature, SoftwareFeatureState>& software_features,
+      const std::vector<BeaconSeed>& beacon_seeds);
   RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
 

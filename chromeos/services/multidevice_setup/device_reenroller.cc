@@ -149,7 +149,11 @@ DeviceReenroller::GetSupportedFeaturesForLocalDevice() {
        i <= cryptauth::SoftwareFeature_MAX; ++i) {
     cryptauth::SoftwareFeature feature =
         static_cast<cryptauth::SoftwareFeature>(i);
-    if (local_device_metadata.GetSoftwareFeatureState(feature) !=
+    if (feature == cryptauth::UNKNOWN_FEATURE)
+      continue;
+
+    if (local_device_metadata.GetSoftwareFeatureState(
+            chromeos::multidevice::FromCryptAuthFeature(feature)) !=
         multidevice::SoftwareFeatureState::kNotSupported) {
       sorted_and_deduped_set.insert(feature);
     }
