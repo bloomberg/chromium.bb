@@ -11,7 +11,6 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "services/device/hid/hid_connection.h"
 
 namespace base {
@@ -48,8 +47,6 @@ class HidConnectionLinux : public HidConnection {
   std::unique_ptr<BlockingTaskHelper> helper_;
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-
-  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<HidConnectionLinux> weak_factory_;
 

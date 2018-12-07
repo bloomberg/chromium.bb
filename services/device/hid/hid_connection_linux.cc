@@ -18,7 +18,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_service.h"
 
@@ -39,7 +39,7 @@ class HidConnectionLinux::BlockingTaskHelper {
                      base::WeakPtr<HidConnectionLinux> connection)
       : fd_(std::move(fd)),
         connection_(connection),
-        origin_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+        origin_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
     DETACH_FROM_SEQUENCE(sequence_checker_);
     // Report buffers must always have room for the report ID.
     report_buffer_size_ = device_info->max_input_report_size() + 1;
@@ -192,9 +192,7 @@ HidConnectionLinux::HidConnectionLinux(
                                 base::Unretained(helper_.get())));
 }
 
-HidConnectionLinux::~HidConnectionLinux() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
+HidConnectionLinux::~HidConnectionLinux() {}
 
 void HidConnectionLinux::PlatformClose() {
   // By closing the device on the blocking task runner 1) the requirement that

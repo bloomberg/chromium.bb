@@ -50,7 +50,7 @@ HidServiceWin::~HidServiceWin() {}
 
 void HidServiceWin::Connect(const std::string& device_guid,
                             const ConnectCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
     task_runner_->PostTask(FROM_HERE, base::BindOnce(callback, nullptr));

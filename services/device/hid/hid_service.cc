@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 
@@ -46,12 +46,12 @@ std::unique_ptr<HidService> HidService::Create() {
 }
 
 void HidService::GetDevices(GetDevicesCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool was_empty = pending_enumerations_.empty();
   pending_enumerations_.push_back(std::move(callback));
   if (enumeration_ready_ && was_empty) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&HidService::RunPendingEnumerations, GetWeakPtr()));
   }
@@ -68,11 +68,11 @@ void HidService::RemoveObserver(HidService::Observer* observer) {
 HidService::HidService() = default;
 
 HidService::~HidService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string device_guid =
       FindDeviceIdByPlatformDeviceId(device_info->platform_device_id());
@@ -95,7 +95,7 @@ void HidService::AddDevice(scoped_refptr<HidDeviceInfo> device_info) {
 }
 
 void HidService::RemoveDevice(const HidPlatformDeviceId& platform_device_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string device_guid = FindDeviceIdByPlatformDeviceId(platform_device_id);
   if (!device_guid.empty()) {
