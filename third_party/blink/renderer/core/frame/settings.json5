@@ -951,6 +951,10 @@
       initial: true,
     },
 
+    {
+      name: "lazyLoadEnabled",
+      initial: false,
+    },
     //
     // Lazy frame loading distance-from-viewport thresholds for different effective connection types.
     //

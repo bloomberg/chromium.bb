@@ -711,6 +711,10 @@ void WebSettingsImpl::SetLowPriorityIframesThreshold(
   settings_->SetLowPriorityIframesThreshold(effective_connection_type);
 }
 
+void WebSettingsImpl::SetLazyLoadEnabled(bool enabled) {
+  settings_->SetLazyLoadEnabled(enabled);
+}
+
 void WebSettingsImpl::SetLazyFrameLoadingDistanceThresholdPxUnknown(
     int distance_px) {
   settings_->SetLazyFrameLoadingDistanceThresholdPxUnknown(distance_px);

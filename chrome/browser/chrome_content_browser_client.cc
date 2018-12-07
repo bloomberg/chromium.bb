@@ -3194,6 +3194,12 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
+  web_prefs->lazy_load_enabled =
+      (base::FeatureList::IsEnabled(features::kLazyFrameLoading) ||
+       base::FeatureList::IsEnabled(features::kLazyImageLoading)) &&
+      (!contents || !contents->GetDelegate() ||
+       contents->GetDelegate()->ShouldAllowLazyLoad());
+
   if (base::FeatureList::IsEnabled(features::kLazyFrameLoading)) {
     const char* param_name =
         web_prefs->data_saver_enabled

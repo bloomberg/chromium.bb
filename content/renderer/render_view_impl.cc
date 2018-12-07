@@ -932,6 +932,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetDataSaverHoldbackMediaApi(
       prefs.data_saver_holdback_media_api_enabled);
 
+  settings->SetLazyLoadEnabled(prefs.lazy_load_enabled);
+
   for (const auto& ect_distance_pair :
        prefs.lazy_frame_loading_distance_thresholds_px) {
     switch (ect_distance_pair.first) {

@@ -620,6 +620,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void UpdateUserGestureCarryoverInfo(WebContents* web_contents) {}
 #endif
 
+  // Returns true if lazy loading of images and frames should be enabled.
+  virtual bool ShouldAllowLazyLoad();
+
   // Requests the delegate to replace |old_contents| with |new_contents| in the
   // container that holds |old_contents|. If the  delegate successfully replaces
   // |old_contents|, the return parameter passes ownership of |old_contents|.

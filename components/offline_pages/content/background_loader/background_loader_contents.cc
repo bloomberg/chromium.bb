@@ -148,6 +148,10 @@ void BackgroundLoaderContents::AdjustPreviewsStateForNavigation(
   }
 }
 
+bool BackgroundLoaderContents::ShouldAllowLazyLoad() {
+  return false;
+}
+
 BackgroundLoaderContents::BackgroundLoaderContents()
     : browser_context_(nullptr) {
   web_contents_.reset();

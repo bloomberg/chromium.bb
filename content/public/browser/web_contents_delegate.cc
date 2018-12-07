@@ -300,4 +300,8 @@ std::unique_ptr<content::WebContents> WebContentsDelegate::SwapWebContents(
   return new_contents;
 }
 
+bool WebContentsDelegate::ShouldAllowLazyLoad() {
+  return true;
+}
+
 }  // namespace content
