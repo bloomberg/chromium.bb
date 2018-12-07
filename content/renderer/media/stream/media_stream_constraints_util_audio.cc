@@ -200,13 +200,6 @@ class EchoCancellationContainer {
     if (goog_ec_allowed_values_.IsEmpty())
       return constraint_set.goog_echo_cancellation.GetName();
 
-    // Make sure that the results from googEchoCancellation and echoCancellation
-    // constraints do not contradict each other.
-    auto ec_intersection =
-        ec_allowed_values_.Intersection(goog_ec_allowed_values_);
-    if (ec_intersection.IsEmpty())
-      return constraint_set.echo_cancellation.GetName();
-
     ec_type_allowed_values_ = ec_type_allowed_values_.Intersection(
         media_constraints::StringSetFromConstraint(
             constraint_set.echo_cancellation_type));
@@ -221,7 +214,9 @@ class EchoCancellationContainer {
       return constraint_set.echo_cancellation_type.GetName();
     }
 
-    return nullptr;
+    // Finally, if this container is empty, fail due to contradiction of the
+    // resulting allowed values for goog_ec, ec, and/or ec_type.
+    return IsEmpty() ? constraint_set.echo_cancellation.GetName() : nullptr;
   }
 
   std::tuple<double, EchoCancellationType> SelectSettingsAndScore(
@@ -241,8 +236,15 @@ class EchoCancellationContainer {
   }
 
   bool IsEmpty() const {
-    return ec_allowed_values_.IsEmpty() || goog_ec_allowed_values_.IsEmpty() ||
-           ec_type_allowed_values_.IsEmpty();
+    // This container is empty when googEchoCancellation and echoCancellation
+    // constraints contradict each other.
+    auto ec_intersection =
+        ec_allowed_values_.Intersection(goog_ec_allowed_values_);
+    // This container is also empty if echoCancellation and
+    // echoCancellationType contraddict each other.
+    bool ec_type_contraddicts_ec = !ec_allowed_values_.Contains(false) &&
+                                   ec_type_allowed_values_.IsEmpty();
+    return ec_type_contraddicts_ec || ec_intersection.IsEmpty();
   }
 
   // Audio-processing properties are disabled by default for content capture,
@@ -697,9 +699,8 @@ class CandidatesContainer {
                       std::string& default_device_id)
       : default_device_id_(default_device_id) {
     for (const auto& capability : capabilities) {
-      DeviceContainer device(capability, media_stream_source.empty());
-      if (!device.IsEmpty())
-        devices_.push_back(std::move(device));
+      devices_.emplace_back(capability, media_stream_source.empty());
+      DCHECK(!devices_.back().IsEmpty());
     }
   }
 
@@ -800,8 +801,7 @@ AudioCaptureSettings SelectSettingsAudioCapture(
 
   CandidatesContainer candidates(capabilities, media_stream_source,
                                  default_device_id);
-  if (candidates.IsEmpty())
-    return AudioCaptureSettings();
+  DCHECK(!candidates.IsEmpty());
 
   auto* failed_constraint_name =
       candidates.ApplyConstraintSet(constraints.Basic());
