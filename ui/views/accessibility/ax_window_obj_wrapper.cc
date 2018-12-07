@@ -18,6 +18,27 @@
 #include "ui/views/widget/widget.h"
 
 namespace views {
+namespace {
+
+Widget* GetWidgetForWindow(aura::Window* window) {
+  Widget* widget = Widget::GetWidgetForNativeView(window);
+  if (!widget)
+    return nullptr;
+
+  // Under mus/mash both the WindowTreeHost's root aura::Window and the content
+  // aura::Window will return the same Widget for GetWidgetForNativeView(). Only
+  // return the Widget for the content window, not the root, since otherwise
+  // we'll end up with two children in the AX node tree that have the same
+  // parent.
+  if (widget->GetNativeWindow() != window) {
+    DCHECK(window->IsRootWindow());
+    return nullptr;
+  }
+
+  return widget;
+}
+
+}  // namespace
 
 // A helper to fire an event on a window, taking into account its associated
 // widget and that widget's root view.
@@ -25,7 +46,7 @@ void FireEvent(aura::Window* window, ax::mojom::Event event_type) {
   AXAuraObjCache::GetInstance()->FireEvent(
       AXAuraObjCache::GetInstance()->GetOrCreate(window), event_type);
 
-  Widget* widget = Widget::GetWidgetForNativeView(window);
+  Widget* widget = GetWidgetForWindow(window);
   if (widget) {
     AXAuraObjCache::GetInstance()->FireEvent(
         AXAuraObjCache::GetInstance()->GetOrCreate(widget), event_type);
@@ -81,7 +102,7 @@ void AXWindowObjWrapper::GetChildren(
   }
 
   // Also consider any associated widgets as children.
-  Widget* widget = Widget::GetWidgetForNativeView(window_);
+  Widget* widget = GetWidgetForWindow(window_);
   if (widget && widget->IsVisible())
     out_children->push_back(AXAuraObjCache::GetInstance()->GetOrCreate(widget));
 }
@@ -111,7 +132,7 @@ void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
     // To avoid this double-parenting, only add the child tree ID of this
     // window if the top-level window doesn't have an associated Widget.
     if (!window_->GetToplevelWindow() ||
-        Widget::GetWidgetForNativeView(window_->GetToplevelWindow())) {
+        GetWidgetForWindow(window_->GetToplevelWindow())) {
       return;
     }
 
@@ -129,7 +150,7 @@ void AXWindowObjWrapper::OnWindowDestroyed(aura::Window* window) {
 }
 
 void AXWindowObjWrapper::OnWindowDestroying(aura::Window* window) {
-  Widget* widget = Widget::GetWidgetForNativeView(window);
+  Widget* widget = GetWidgetForWindow(window);
   if (widget)
     AXAuraObjCache::GetInstance()->Remove(widget);
 }
