@@ -9,6 +9,13 @@
 
 namespace blink {
 
+namespace {
+
+using resource_coordinator::mojom::InterventionPolicy;
+using resource_coordinator::mojom::PolicyControlledIntervention;
+
+}  // namespace
+
 // static
 std::unique_ptr<FrameResourceCoordinator> FrameResourceCoordinator::Create(
     service_manager::InterfaceProvider* interface_provider) {
@@ -35,6 +42,12 @@ void FrameResourceCoordinator::SetLifecycleState(
 void FrameResourceCoordinator::SetHasNonEmptyBeforeUnload(
     bool has_nonempty_beforeunload) {
   service_->SetHasNonEmptyBeforeUnload(has_nonempty_beforeunload);
+}
+
+void FrameResourceCoordinator::SetInterventionPolicy(
+    PolicyControlledIntervention intervention,
+    InterventionPolicy policy) {
+  service_->SetInterventionPolicy(intervention, policy);
 }
 
 void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {

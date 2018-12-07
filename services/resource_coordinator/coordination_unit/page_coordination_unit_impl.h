@@ -97,6 +97,29 @@ class PageCoordinationUnitImpl
   void OnFrameLifecycleStateChanged(FrameCoordinationUnitImpl* frame_cu,
                                     mojom::LifecycleState old_state);
 
+  void OnFrameInterventionPolicyChanged(
+      FrameCoordinationUnitImpl* frame,
+      mojom::PolicyControlledIntervention intervention,
+      mojom::InterventionPolicy old_policy,
+      mojom::InterventionPolicy new_policy);
+
+  // Gets the current policy for the specified |intervention|, recomputing it
+  // from individual frame policies if necessary. Returns kUnknown until there
+  // are 1 or more frames, and they have all computed their local policy
+  // settings.
+  mojom::InterventionPolicy GetInterventionPolicy(
+      mojom::PolicyControlledIntervention intervention);
+
+  // Similar to GetInterventionPolicy, but doesn't trigger recomputes.
+  mojom::InterventionPolicy GetRawInterventionPolicyForTesting(
+      mojom::PolicyControlledIntervention intervention) const {
+    return intervention_policy_[static_cast<size_t>(intervention)];
+  }
+
+  size_t GetInterventionPolicyFramesReportedForTesting() const {
+    return intervention_policy_frames_reported_;
+  }
+
  private:
   friend class FrameCoordinationUnitImpl;
 
@@ -114,6 +137,22 @@ class PageCoordinationUnitImpl
   // the page. Calling this with |num_frozen_frames_delta == 0| implies that the
   // number of frames itself has changed.
   void OnNumFrozenFramesStateChange(int num_frozen_frames_delta);
+
+  // Invalidates all currently aggregated intervention policies.
+  void InvalidateAllInterventionPolicies();
+
+  // Invoked when adding or removing a frame. This will update
+  // |intervention_policy_frames_reported_| if necessary and potentially
+  // invalidate the aggregated intervention policies. This should be called
+  // after the frame has already been added or removed from
+  // |frame_coordination_units_|.
+  void MaybeInvalidateInterventionPolicies(FrameCoordinationUnitImpl* frame_cu,
+                                           bool adding_frame);
+
+  // Recomputes intervention policy aggregation. This is invoked on demand when
+  // a policy is queried.
+  void RecomputeInterventionPolicy(
+      mojom::PolicyControlledIntervention intervention);
 
   std::set<FrameCoordinationUnitImpl*> frame_coordination_units_;
 
@@ -147,6 +186,20 @@ class PageCoordinationUnitImpl
   // the associated navigation handle.
   std::string main_frame_url_;
   int64_t navigation_id_ = 0;
+
+  // The aggregate intervention policy states for this page. These are
+  // aggregated from the corresponding per-frame values. If an individual value
+  // is kUnknown then a frame in the frame tree has changed values and
+  // a new aggregation is required.
+  mojom::InterventionPolicy intervention_policy_
+      [static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue) + 1];
+
+  // The number of child frames that have checked in with initial intervention
+  // policy values. If this doesn't match the number of known child frames, then
+  // aggregation isn't possible. Child frames check in with all properties once
+  // immediately after document parsing, and the *last* value being set
+  // is used as a signal that the frame has reported.
+  size_t intervention_policy_frames_reported_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PageCoordinationUnitImpl);
 };

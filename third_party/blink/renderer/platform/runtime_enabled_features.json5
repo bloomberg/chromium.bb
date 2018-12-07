@@ -930,9 +930,24 @@
       name: "OverscrollCustomization",
       settable_from_internals: true,
     },
+    // This feature refers to the API that delivers notifications to pages on
+    // lifecycle state changes.
     {
       name: "PageLifecycle",
       status: "stable",
+    },
+    // The following are developer opt-outs and opt-ins for PageLifecycle state
+    // transitions. If neither is specified then heuristics will be applied to
+    // determine whether the page is eligible.
+    {
+      name: "PageLifecycleTransitionsOptIn",
+      origin_trial_feature_name: "PageLifecycleTransitionsOptIn",
+      status: "experimental",
+    },
+    {
+      name: "PageLifecycleTransitionsOptOut",
+      origin_trial_feature_name: "PageLifecycleTransitionsOptOut",
+      status: "experimental",
     },
     {
       name: "PagePopup",

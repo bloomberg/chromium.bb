@@ -32,11 +32,13 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom-shared.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
@@ -269,6 +271,7 @@
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
@@ -6086,6 +6089,51 @@ LocalDOMWindow* Document::defaultView() const {
   return frame_ ? dom_window_ : nullptr;
 }
 
+namespace {
+
+using resource_coordinator::mojom::InterventionPolicy;
+using resource_coordinator::mojom::PolicyControlledIntervention;
+
+typedef bool (*InterventionPolicyGetter)(const ExecutionContext*);
+struct InterventionPolicyGetters {
+  InterventionPolicyGetter opt_in_getter;
+  InterventionPolicyGetter opt_out_getter;
+};
+
+constexpr InterventionPolicyGetters kInterventionPolicyGetters[] = {
+    {&origin_trials::PageLifecycleTransitionsOptInEnabled,
+     &origin_trials::PageLifecycleTransitionsOptOutEnabled}};
+
+static_assert(base::size(kInterventionPolicyGetters) ==
+                  static_cast<size_t>(PolicyControlledIntervention::kMaxValue) +
+                      1,
+              "kInterventionPolicyGetters array must be kept in sync with "
+              "mojom::PolicyControlledIntervention enum.");
+
+// A helper function for setting intervention policy values on a frame en masse.
+void SetInitialInterventionPolicies(FrameResourceCoordinator* frame_coordinator,
+                                    const ExecutionContext* context) {
+  // Note that these must be emitted in order, as the *last* policy being set
+  // is used as a sentinel in the browser-side logic to infer that the frame has
+  // transmitted all of its policy data.
+  for (size_t i = 0; i < base::size(kInterventionPolicyGetters); ++i) {
+    bool opt_in = (*kInterventionPolicyGetters[i].opt_in_getter)(context);
+    bool opt_out = (*kInterventionPolicyGetters[i].opt_out_getter)(context);
+
+    // An explicit opt-out overrides an explicit opt-in if both are present.
+    InterventionPolicy policy = InterventionPolicy::kDefault;
+    if (opt_out)
+      policy = InterventionPolicy::kOptOut;
+    else if (opt_in)
+      policy = InterventionPolicy::kOptIn;
+
+    frame_coordinator->SetInterventionPolicy(
+        static_cast<PolicyControlledIntervention>(i), policy);
+  }
+}
+
+}  // namespace
+
 void Document::FinishedParsing() {
   DCHECK(!GetScriptableDocumentParser() || !parser_->IsParsing());
   DCHECK(!GetScriptableDocumentParser() || ready_state_ != kLoading);
@@ -6143,6 +6191,13 @@ void Document::FinishedParsing() {
                          inspector_mark_load_event::Data(frame));
     probe::domContentLoadedEventFired(frame);
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
+
+    // Forward intervention policy state to the corresponding frame object
+    // in the resource coordinator.
+    // TODO(chrisha): Plumb in dynamic policy changes driven from Javascript.
+    if (auto* frame_coordinator = frame->GetFrameResourceCoordinator()) {
+      SetInitialInterventionPolicies(frame_coordinator, this);
+    }
   }
 
   // Schedule dropping of the ElementDataCache. We keep it alive for a while

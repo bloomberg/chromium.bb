@@ -26,6 +26,9 @@ class PLATFORM_EXPORT FrameResourceCoordinator final {
   void SetNetworkAlmostIdle(bool);
   void SetLifecycleState(resource_coordinator::mojom::LifecycleState);
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
+  void SetInterventionPolicy(
+      resource_coordinator::mojom::PolicyControlledIntervention intervention,
+      resource_coordinator::mojom::InterventionPolicy policy);
   void OnNonPersistentNotificationCreated();
 
  private:

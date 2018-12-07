@@ -37,6 +37,8 @@ class FrameCoordinationUnitImpl
   void SetNetworkAlmostIdle(bool idle) override;
   void SetLifecycleState(mojom::LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
+  void SetInterventionPolicy(mojom::PolicyControlledIntervention intervention,
+                             mojom::InterventionPolicy policy) override;
   void OnAlertFired() override;
   void OnNonPersistentNotificationCreated() override;
 
@@ -49,10 +51,17 @@ class FrameCoordinationUnitImpl
   base::TimeTicks last_audible_time() const { return last_audible_time_; }
   bool has_nonempty_beforeunload() const { return has_nonempty_beforeunload_; }
 
+  // Returns true if all intervention policies have been set for this frame.
+  bool AreAllInterventionPoliciesSet() const;
+
   const std::set<FrameCoordinationUnitImpl*>&
   child_frame_coordination_units_for_testing() const {
     return child_frame_coordination_units_;
   }
+
+  // Sets the same policy for all intervention types in this frame. Causes
+  // Page::OnFrameInterventionPolicyChanged to be invoked.
+  void SetAllInterventionPoliciesForTesting(mojom::InterventionPolicy policy);
 
  private:
   friend class PageCoordinationUnitImpl;
@@ -88,6 +97,11 @@ class FrameCoordinationUnitImpl
   mojom::LifecycleState lifecycle_state_ = mojom::LifecycleState::kRunning;
   bool has_nonempty_beforeunload_ = false;
   base::TimeTicks last_audible_time_;
+
+  // Intervention policy for this frame. These are communicated from the
+  // renderer process and are controlled by origin trials.
+  mojom::InterventionPolicy intervention_policy_
+      [static_cast<size_t>(mojom::PolicyControlledIntervention::kMaxValue) + 1];
 
   DISALLOW_COPY_AND_ASSIGN(FrameCoordinationUnitImpl);
 };
