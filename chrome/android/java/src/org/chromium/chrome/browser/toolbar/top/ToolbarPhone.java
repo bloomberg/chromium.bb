@@ -52,7 +52,6 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.Invalidator;
@@ -582,9 +581,6 @@ public class ToolbarPhone
 
             if (mNewTabListener != null) {
                 mNewTabListener.onClick(v);
-                RecordUserAction.record("MobileToolbarStackViewNewTab");
-                RecordUserAction.record("MobileNewTabOpened");
-                // TODO(kkimlabs): Record UMA action for homepage button.
             }
         } else if (mHomeButton != null && mHomeButton == v) {
             openHomepage();
