@@ -12,7 +12,11 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/dom_distiller/core/pref_names.h"
+#include "components/feed/buildflags.h"
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/feed/core/pref_names.h"
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+#include "components/ntp_snippets/pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 
 // A preference exposed to Java.
@@ -41,8 +45,15 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kAllowDeletingBrowserHistory,
     contextual_suggestions::prefs::kContextualSuggestionsEnabled,
     prefs::kIncognitoModeAvailability,
+
+#if BUILDFLAG(ENABLE_FEED_IN_CHROME)
     feed::prefs::kEnableSnippets,
     feed::prefs::kArticlesListVisible,
+#else   // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+    ntp_snippets::prefs::kEnableSnippets,
+    ntp_snippets::prefs::kArticlesListVisible,
+#endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
+
     dom_distiller::prefs::kReaderForAccessibility,
     prefs::kPromptForDownloadAndroid,
     prefs::kShowMissingSdCardErrorAndroid,
