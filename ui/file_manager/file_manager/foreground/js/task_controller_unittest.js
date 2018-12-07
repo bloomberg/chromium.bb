@@ -31,9 +31,6 @@ function setUp() {
         callback(false);
       },
     },
-    fileManagerPrivate: {
-        // Test cases set this object as needed.
-    },
     runtime: {
       id: 'test-extension-id',
       lastError: null,
@@ -51,6 +48,7 @@ function setUp() {
     },
   };
 
+  setupFileManagerPrivate();
   installMockChrome(mockChrome);
 
   // Install cr.ui <command> elements on the page.
@@ -166,9 +164,8 @@ function setupFileManagerPrivate() {
  * Tests that executeEntryTask() runs the expected task.
  */
 function testExecuteEntryTask(callback) {
-  setupFileManagerPrivate();
-
   var selectionHandler = new MockFileSelectionHandler();
+
   var fileSystem = new MockFileSystem('volumeId');
   fileSystem.entries['/test.png'] = new MockFileEntry(fileSystem, '/test.png');
   var taskController = createTaskController(selectionHandler);
@@ -190,9 +187,8 @@ function testExecuteEntryTask(callback) {
  * multiple times when the selected entries are not changed.
  */
 function testGetFileTasksShouldNotBeCalledMultipleTimes(callback) {
-  setupFileManagerPrivate();
-
   var selectionHandler = new MockFileSelectionHandler();
+
   var fileSystem = new MockFileSystem('volumeId');
   selectionHandler.updateSelection(
       [new MockFileEntry(fileSystem, '/test.png')], ['image/png']);
@@ -228,9 +224,8 @@ function testGetFileTasksShouldNotBeCalledMultipleTimes(callback) {
  * called.
  */
 function testGetFileTasksShouldNotReturnObsoletePromise(callback) {
-  setupFileManagerPrivate();
-
   var selectionHandler = new MockFileSelectionHandler();
+
   var fileSystem = new MockFileSystem('volumeId');
   selectionHandler.updateSelection(
       [new MockFileEntry(fileSystem, '/test.png')], ['image/png']);
@@ -260,9 +255,8 @@ function testGetFileTasksShouldNotReturnObsoletePromise(callback) {
  * the getFileTasks() promise to reject.
  */
 function testGetFileTasksShouldNotCacheRejectedPromise(callback) {
-  setupFileManagerPrivate();
-
   var selectionHandler = new MockFileSelectionHandler();
+
   var fileSystem = new MockFileSystem('volumeId');
   selectionHandler.updateSelection(
       [new MockFileEntry(fileSystem, '/test.png')], ['image/png']);
