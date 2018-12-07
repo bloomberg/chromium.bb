@@ -7,6 +7,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/command_buffer/service/context_state.h"
+#include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/vulkan/buildflags.h"
@@ -30,17 +32,19 @@ RasterDecoderContextState::RasterDecoderContextState(
     bool use_virtualized_gl_contexts,
     base::OnceClosure context_lost_callback,
     viz::VulkanContextProvider* vulkan_context_provider)
-    : share_group(std::move(share_group)),
-      surface(std::move(surface)),
-      context(std::move(context)),
-      use_virtualized_gl_contexts(use_virtualized_gl_contexts),
+    : use_virtualized_gl_contexts(use_virtualized_gl_contexts),
       context_lost_callback(std::move(context_lost_callback)),
       vk_context_provider(vulkan_context_provider),
 #if BUILDFLAG(ENABLE_VULKAN)
       gr_context(vk_context_provider ? vk_context_provider->GetGrContext()
                                      : nullptr),
 #endif
-      use_vulkan_gr_context(!!gr_context) {
+      use_vulkan_gr_context(!!gr_context),
+      share_group_(std::move(share_group)),
+      context_(context),
+      real_context_(std::move(context)),
+      surface_(std::move(surface)),
+      weak_ptr_factory_(this) {
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
@@ -60,10 +64,10 @@ void RasterDecoderContextState::InitializeGrContext(
     GpuProcessActivityFlags* activity_flags,
     gl::ProgressReporter* progress_reporter) {
   if (!use_vulkan_gr_context) {
-    DCHECK(context->IsCurrent(surface.get()));
+    DCHECK(context_->IsCurrent(surface()));
 
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
-        *context->GetVersionInfo(), workarounds.use_es2_for_oopr,
+        *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
         progress_reporter));
     if (!interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
@@ -111,6 +115,77 @@ void RasterDecoderContextState::InitializeGrContext(
   transfer_cache = std::make_unique<ServiceTransferCache>();
 }
 
+bool RasterDecoderContextState::InitializeGL(
+    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds,
+    const GpuFeatureInfo& gpu_feature_info) {
+  if (use_vulkan_gr_context)
+    return true;
+  DCHECK(!context_state_);
+
+  feature_info_ = base::MakeRefCounted<gles2::FeatureInfo>(
+      gpu_driver_bug_workarounds, gpu_feature_info);
+
+  feature_info_->Initialize(gpu::CONTEXT_TYPE_OPENGLES2,
+                            false /* is_passthrough_cmd_decoder */,
+                            gles2::DisallowedFeatures());
+
+  auto* api = gl::g_current_gl_context;
+  const GLint kGLES2RequiredMinimumVertexAttribs = 8u;
+  GLint max_vertex_attribs = 0;
+  api->glGetIntegervFn(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
+  if (max_vertex_attribs < kGLES2RequiredMinimumVertexAttribs)
+    return false;
+
+  context_state_ = std::make_unique<gles2::ContextState>(
+      feature_info_.get(), false /* track_texture_and_sampler_units */);
+
+  context_state_->set_api(api);
+  context_state_->InitGenericAttribs(max_vertex_attribs);
+
+  // Set all the default state because some GL drivers get it wrong.
+  // TODO(backer): Not all of this state needs to be initialized. Reduce the set
+  // if perf becomes a problem.
+  context_state_->InitCapabilities(nullptr);
+  context_state_->InitState(nullptr);
+
+  if (use_virtualized_gl_contexts) {
+    auto virtual_context = base::MakeRefCounted<GLContextVirtual>(
+        share_group_.get(), real_context_.get(),
+        weak_ptr_factory_.GetWeakPtr());
+    if (!virtual_context->Initialize(surface_.get(), gl::GLContextAttribs()))
+      return false;
+    context_ = std::move(virtual_context);
+    MakeCurrent(nullptr);
+  }
+  return true;
+}
+
+bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* surface) {
+  if (context_lost_)
+    return false;
+
+  if (!context_->MakeCurrent(surface ? surface : surface_.get())) {
+    MarkContextLost();
+    return false;
+  }
+  return true;
+}
+
+void RasterDecoderContextState::MarkContextLost() {
+  if (!context_lost_) {
+    context_lost_ = true;
+    context_state_->MarkContextLost();
+    if (gr_context)
+      gr_context->abandonContext();
+    std::move(context_lost_callback).Run();
+  }
+  // TODO notify gpu channel manager.
+}
+
+bool RasterDecoderContextState::IsCurrent(gl::GLSurface* surface) {
+  return context_->IsCurrent(surface);
+}
+
 bool RasterDecoderContextState::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
@@ -127,7 +202,7 @@ void RasterDecoderContextState::PurgeMemory(
   }
 
   // Ensure the context is current before doing any GPU cleanup.
-  context->MakeCurrent(surface.get());
+  MakeCurrent(nullptr);
 
   switch (memory_pressure_level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
@@ -155,28 +230,92 @@ void RasterDecoderContextState::PessimisticallyResetGrContext() const {
     gr_context->resetContext();
 }
 
-void RasterDecoderContextState::MarkContextLost() {
-  if (!context_lost) {
-    context_lost = true;
-    if (gr_context)
-      gr_context->abandonContext();
-    std::move(context_lost_callback).Run();
-  }
+bool RasterDecoderContextState::initialized() const {
+  return true;
 }
 
-bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* current_surface) {
-  if (context_lost)
-    return false;
-
-  if (context->IsCurrent(current_surface))
-    return true;
-
-  if (!context->MakeCurrent(current_surface ? current_surface
-                                            : surface.get())) {
-    MarkContextLost();
-    return false;
+const gles2::ContextState* RasterDecoderContextState::GetContextState() {
+  if (need_context_state_reset) {
+    // Returning nullptr to force full state restoration by the caller.  We do
+    // this because GrContext changes to GL state are untracked in our
+    // context_state_.
+    return nullptr;
   }
-  return true;
+  return context_state_.get();
+}
+
+void RasterDecoderContextState::RestoreState(
+    const gles2::ContextState* prev_state) {
+  PessimisticallyResetGrContext();
+  context_state_->RestoreState(prev_state);
+}
+
+void RasterDecoderContextState::RestoreGlobalState() const {
+  PessimisticallyResetGrContext();
+  context_state_->RestoreGlobalState(nullptr);
+}
+void RasterDecoderContextState::ClearAllAttributes() const {}
+
+void RasterDecoderContextState::RestoreActiveTexture() const {
+  PessimisticallyResetGrContext();
+}
+
+void RasterDecoderContextState::RestoreAllTextureUnitAndSamplerBindings(
+    const gles2::ContextState* prev_state) const {
+  PessimisticallyResetGrContext();
+}
+
+void RasterDecoderContextState::RestoreActiveTextureUnitBinding(
+    unsigned int target) const {
+  PessimisticallyResetGrContext();
+}
+
+void RasterDecoderContextState::RestoreBufferBinding(unsigned int target) {
+  PessimisticallyResetGrContext();
+  if (target == GL_PIXEL_PACK_BUFFER) {
+    context_state_->UpdatePackParameters();
+  } else if (target == GL_PIXEL_UNPACK_BUFFER) {
+    context_state_->UpdateUnpackParameters();
+  }
+  context_state_->api()->glBindBufferFn(target, 0);
+}
+
+void RasterDecoderContextState::RestoreBufferBindings() const {
+  PessimisticallyResetGrContext();
+  context_state_->RestoreBufferBindings();
+}
+
+void RasterDecoderContextState::RestoreFramebufferBindings() const {
+  PessimisticallyResetGrContext();
+  context_state_->fbo_binding_for_scissor_workaround_dirty = true;
+  context_state_->stencil_state_changed_since_validation = true;
+}
+
+void RasterDecoderContextState::RestoreRenderbufferBindings() {
+  PessimisticallyResetGrContext();
+  context_state_->RestoreRenderbufferBindings();
+}
+
+void RasterDecoderContextState::RestoreProgramBindings() const {
+  PessimisticallyResetGrContext();
+  context_state_->RestoreProgramSettings(nullptr, false);
+}
+
+void RasterDecoderContextState::RestoreTextureUnitBindings(
+    unsigned unit) const {
+  PessimisticallyResetGrContext();
+}
+
+void RasterDecoderContextState::RestoreVertexAttribArray(unsigned index) {
+  NOTIMPLEMENTED();
+}
+
+void RasterDecoderContextState::RestoreAllExternalTextureBindingsIfNeeded() {
+  PessimisticallyResetGrContext();
+}
+
+QueryManager* RasterDecoderContextState::GetQueryManager() {
+  return nullptr;
 }
 
 }  // namespace raster

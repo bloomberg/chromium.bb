@@ -72,16 +72,16 @@
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
-  ERRORSTATE_SET_GL_ERROR(GetErrorState(), error, function_name, msg)
-#define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label)   \
-  ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(GetErrorState(), function_name, \
+  ERRORSTATE_SET_GL_ERROR(error_state_.get(), error, function_name, msg)
+#define LOCAL_SET_GL_ERROR_INVALID_ENUM(function_name, value, label)      \
+  ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(error_state_.get(), function_name, \
                                        static_cast<uint32_t>(value), label)
 #define LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(function_name) \
-  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(GetErrorState(), function_name)
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state_.get(), function_name)
 #define LOCAL_PEEK_GL_ERROR(function_name) \
-  ERRORSTATE_PEEK_GL_ERROR(GetErrorState(), function_name)
+  ERRORSTATE_PEEK_GL_ERROR(error_state_.get(), function_name)
 #define LOCAL_CLEAR_REAL_GL_ERRORS(function_name) \
-  ERRORSTATE_CLEAR_REAL_GL_ERRORS(GetErrorState(), function_name)
+  ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_.get(), function_name)
 #define LOCAL_PERFORMANCE_WARNING(msg) \
   PerformanceWarning(__FILE__, __LINE__, msg)
 #define LOCAL_RENDER_WARNING(msg) RenderWarning(__FILE__, __LINE__, msg)
@@ -284,6 +284,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   }
   Capabilities GetCapabilities() override;
   const gles2::ContextState* GetContextState() override;
+
+  // TODO(penghuang): Remove unused context state related methods.
   void RestoreGlobalState() const override;
   void ClearAllAttributes() const override;
   void RestoreAllAttributes() const override;
@@ -302,6 +304,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void RestoreVertexAttribArray(unsigned index) override;
   void RestoreAllExternalTextureBindingsIfNeeded() override;
   QueryManager* GetQueryManager() override;
+
   void SetQueryCallback(unsigned int query_client_id,
                         base::OnceClosure callback) override;
   gles2::GpuFenceManager* GetGpuFenceManager() override;
@@ -404,7 +407,10 @@ class RasterDecoderImpl final : public RasterDecoder,
     return &it->second;
   }
 
-  gl::GLApi* api() const { return state_.api(); }
+  gles2::ContextState* state() const {
+    return raster_decoder_context_state_->context_state();
+  }
+  gl::GLApi* api() const { return state()->api(); }
   GrContext* gr_context() const {
     return raster_decoder_context_state_->gr_context;
   }
@@ -422,7 +428,8 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   bool IsRobustnessSupported() {
     return has_robustness_extension_ &&
-           context_->WasAllocatedUsingRobustnessExtension();
+           raster_decoder_context_state_->context()
+               ->WasAllocatedUsingRobustnessExtension();
   }
 
   const gl::GLVersionInfo& gl_version_info() {
@@ -598,7 +605,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   // only if not returning an error.
   error::Error current_decoder_error_ = error::kNoError;
 
-  scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
 
   DecoderClient* client_;
@@ -606,6 +612,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   gles2::DebugMarkerManager debug_marker_manager_;
   gles2::Logger logger_;
   std::unique_ptr<gles2::ErrorState> error_state_;
+  bool context_lost_ = false;
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<gles2::ContextGroup> group_;
@@ -614,9 +621,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
   std::unique_ptr<QueryManager> query_manager_;
-
-  // All the state for this context.
-  gles2::ContextState state_;
 
   gles2::GLES2Util util_;
 
@@ -737,8 +741,6 @@ RasterDecoderImpl::RasterDecoderImpl(
       raster_decoder_context_state_(std::move(raster_decoder_context_state)),
       validators_(new Validators),
       feature_info_(group_->feature_info()),
-      state_(group_->feature_info(),
-             false /* track_texture_and_sampler_units */),
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -767,8 +769,6 @@ ContextResult RasterDecoderImpl::Initialize(
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
 
-  state_.set_api(gl::g_current_gl_context);
-
   set_initialized();
 
   if (!offscreen) {
@@ -781,7 +781,8 @@ ContextResult RasterDecoderImpl::Initialize(
   if (group_->gpu_preferences().enable_gpu_command_logging)
     SetLogCommands(true);
 
-  surface_ = surface;
+  DCHECK_EQ(surface.get(), raster_decoder_context_state_->surface());
+  DCHECK_EQ(context.get(), raster_decoder_context_state_->context());
   context_ = context;
 
   // Create GPU Tracer for timing values.
@@ -799,21 +800,14 @@ ContextResult RasterDecoderImpl::Initialize(
     Destroy(true);
     return result;
   }
+
   CHECK_GL_ERROR();
 
-  state_.InitGenericAttribs(group_->max_vertex_attribs());
-
-  query_manager_.reset(new QueryManager());
+  query_manager_ = std::make_unique<QueryManager>();
 
   has_robustness_extension_ = features().arb_robustness ||
                               features().khr_robustness ||
                               features().ext_robustness;
-
-  // Set all the default state because some GL drivers get it wrong.
-  // TODO(backer): Not all of this state needs to be initialized. Reduce the set
-  // if perf becomes a problem.
-  state_.InitCapabilities(nullptr);
-  state_.InitState(nullptr);
 
   if (attrib_helper.enable_oop_rasterization) {
     if (!features().chromium_raster_transport) {
@@ -836,7 +830,8 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   if (!initialized())
     return;
 
-  DCHECK(!have_context || context_->IsCurrent(nullptr));
+  DCHECK(!have_context ||
+         raster_decoder_context_state_->context()->IsCurrent(nullptr));
 
   if (have_context) {
     if (copy_tex_image_blit_.get()) {
@@ -861,13 +856,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
     if (group_ && group_->texture_manager()) {
       group_->texture_manager()->MarkContextLost();
     }
-
-    state_.MarkContextLost();
   }
-
-  // Unbind everything.
-  state_.bound_pixel_pack_buffer = nullptr;
-  state_.bound_pixel_unpack_buffer = nullptr;
 
   copy_tex_image_blit_.reset();
   copy_texture_chromium_.reset();
@@ -884,8 +873,6 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
   // Destroy the surface before the context, some surface destructors make GL
   // calls.
-  surface_ = nullptr;
-
   if (context_.get()) {
     context_->ReleaseCurrent(nullptr);
     context_ = nullptr;
@@ -897,23 +884,22 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
 // Make this decoder's GL context current.
 bool RasterDecoderImpl::MakeCurrent() {
-  DCHECK(surface_);
   if (!context_.get())
     return false;
 
-  if (WasContextLost()) {
+  if (context_lost_) {
     LOG(ERROR) << "  RasterDecoderImpl: Trying to make lost context current.";
     return false;
   }
 
-  // TODO(https://crbug.com/902904): Switch to
-  // raster_decoder_context_state_->MakeCurrent(nullptr).
-  if (!context_->MakeCurrent(surface_.get())) {
+  if (raster_decoder_context_state_->context_lost() ||
+      !raster_decoder_context_state_->MakeCurrent(nullptr)) {
     LOG(ERROR) << "  RasterDecoderImpl: Context lost during MakeCurrent.";
     MarkContextLost(error::kMakeCurrentFailed);
     group_->LoseContexts(error::kUnknown);
     return false;
   }
+
   DCHECK_EQ(api(), gl::g_current_gl_context);
 
   if (CheckResetStatus()) {
@@ -934,7 +920,7 @@ gl::GLContext* RasterDecoderImpl::GetGLContext() {
 }
 
 gl::GLSurface* RasterDecoderImpl::GetGLSurface() {
-  return surface_.get();
+  return raster_decoder_context_state_->surface();
 }
 
 Capabilities RasterDecoderImpl::GetCapabilities() {
@@ -966,18 +952,12 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
 }
 
 const gles2::ContextState* RasterDecoderImpl::GetContextState() {
-  if (raster_decoder_context_state_->need_context_state_reset) {
-    // Returning nullptr to force full state restoration by the caller.  We do
-    // this because GrContext changes to GL state are untracked in our state_.
-    return nullptr;
-  }
-
-  return &state_;
+  NOTREACHED();
+  return nullptr;
 }
 
 void RasterDecoderImpl::RestoreGlobalState() const {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  state_.RestoreGlobalState(nullptr);
 }
 
 void RasterDecoderImpl::ClearAllAttributes() const {}
@@ -987,10 +967,6 @@ void RasterDecoderImpl::RestoreAllAttributes() const {
 }
 
 void RasterDecoderImpl::RestoreState(const gles2::ContextState* prev_state) {
-  TRACE_EVENT1("gpu", "RasterDecoderImpl::RestoreState", "context",
-               logger_.GetLogPrefix());
-  state_.RestoreState(prev_state);
-  raster_decoder_context_state_->need_context_state_reset = false;
   raster_decoder_context_state_->PessimisticallyResetGrContext();
 }
 
@@ -1010,36 +986,22 @@ void RasterDecoderImpl::RestoreActiveTextureUnitBinding(
 
 void RasterDecoderImpl::RestoreBufferBinding(unsigned int target) {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  if (target == GL_PIXEL_PACK_BUFFER) {
-    state_.UpdatePackParameters();
-  } else if (target == GL_PIXEL_UNPACK_BUFFER) {
-    state_.UpdateUnpackParameters();
-  }
-  api()->glBindBufferFn(target, 0);
 }
 
 void RasterDecoderImpl::RestoreBufferBindings() const {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  state_.RestoreBufferBindings();
 }
 
 void RasterDecoderImpl::RestoreFramebufferBindings() const {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  state_.fbo_binding_for_scissor_workaround_dirty = true;
-  state_.stencil_state_changed_since_validation = true;
-
-  if (workarounds().flush_on_framebuffer_change)
-    api()->glFlushFn();
 }
 
 void RasterDecoderImpl::RestoreRenderbufferBindings() {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  state_.RestoreRenderbufferBindings();
 }
 
 void RasterDecoderImpl::RestoreProgramBindings() const {
   raster_decoder_context_state_->PessimisticallyResetGrContext();
-  state_.RestoreProgramSettings(nullptr, false);
 }
 
 void RasterDecoderImpl::RestoreTextureState(unsigned service_id) const {
@@ -1067,7 +1029,7 @@ void RasterDecoderImpl::RestoreTextureUnitBindings(unsigned unit) const {
 }
 
 void RasterDecoderImpl::RestoreVertexAttribArray(unsigned index) {
-  NOTIMPLEMENTED();
+  raster_decoder_context_state_->PessimisticallyResetGrContext();
 }
 
 void RasterDecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
@@ -1096,13 +1058,12 @@ gles2::GpuFenceManager* RasterDecoderImpl::GetGpuFenceManager() {
 }
 
 bool RasterDecoderImpl::HasPendingQueries() const {
-  return query_manager_.get() && query_manager_->HavePendingQueries();
+  return query_manager_ && query_manager_->HavePendingQueries();
 }
 
 void RasterDecoderImpl::ProcessPendingQueries(bool did_finish) {
-  if (!query_manager_.get())
-    return;
-  query_manager_->ProcessPendingQueries(did_finish);
+  if (query_manager_)
+    query_manager_->ProcessPendingQueries(did_finish);
 }
 
 bool RasterDecoderImpl::HasMoreIdleWork() const {
@@ -1137,7 +1098,7 @@ void RasterDecoderImpl::SetLevelInfo(uint32_t client_id,
 }
 
 bool RasterDecoderImpl::WasContextLost() const {
-  return raster_decoder_context_state_->context_lost;
+  return context_lost_;
 }
 
 bool RasterDecoderImpl::WasContextLostByRobustnessExtension() const {
@@ -1150,16 +1111,14 @@ void RasterDecoderImpl::MarkContextLost(error::ContextLostReason reason) {
     return;
 
   // Don't make GL calls in here, the context might not be current.
+  context_lost_ = true;
   command_buffer_service()->SetContextLostReason(reason);
   current_decoder_error_ = error::kLostContext;
-
-  state_.MarkContextLost();
-  raster_decoder_context_state_->MarkContextLost();
 }
 
 bool RasterDecoderImpl::CheckResetStatus() {
   DCHECK(!WasContextLost());
-  DCHECK(context_->IsCurrent(nullptr));
+  DCHECK(raster_decoder_context_state_->context()->IsCurrent(nullptr));
 
   if (IsRobustnessSupported()) {
     // If the reason for the call was a GL error, we can try to determine the
@@ -1201,7 +1160,7 @@ gles2::Logger* RasterDecoderImpl::GetLogger() {
 }
 
 void RasterDecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
-  state_.SetIgnoreCachedStateForTest(ignore);
+  state()->SetIgnoreCachedStateForTest(ignore);
 }
 
 gles2::ImageManager* RasterDecoderImpl::GetImageManagerForTest() {
@@ -1440,12 +1399,12 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
   {
     const bool state_is_dirty =
         raster_decoder_context_state_->need_context_state_reset;
-    ScopedTextureBinder binder(&state_, texture->target(),
+    ScopedTextureBinder binder(state(), texture->target(),
                                texture->service_id(), gr_context(),
                                state_is_dirty);
     base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
     if (raster_decoder_context_state_->need_context_state_reset) {
-      pixel_unpack_state.emplace(&state_, gr_context(), group_->feature_info());
+      pixel_unpack_state.emplace(state(), gr_context(), group_->feature_info());
     }
     // Add extra scope to destroy zero and the object it owns right
     // after its usage.
@@ -1882,7 +1841,7 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
   GLint dest_level = 0;
 
   ScopedTextureBinder binder(
-      &state_, texture_manager(), dest_texture_ref, dest_target, gr_context(),
+      state(), texture_manager(), dest_texture_ref, dest_target, gr_context(),
       raster_decoder_context_state_->need_context_state_reset);
   base::Optional<ScopedPixelUnpackState> pixel_unpack_state;
 
@@ -1921,7 +1880,7 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
       // If the image is in shared memory, we may need upload the pixel data
       // with SubTexImage2D, so we need reset pixel unpack state if gl context
       // state has been touched by skia.
-      pixel_unpack_state.emplace(&state_, gr_context(), group_->feature_info());
+      pixel_unpack_state.emplace(state(), gr_context(), group_->feature_info());
     }
   } else {
     if (!source_texture->GetLevelSize(source_target, 0 /* level */,
@@ -1982,7 +1941,7 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
             source_internal_format) == GL_SRGB ||
         gles2::GLES2Util::GetColorEncodingFromInternalFormat(
             dest_internal_format) == GL_SRGB;
-    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
+    state()->EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
   }
 
   // Clear the source texture if necessary.
@@ -2095,7 +2054,8 @@ void RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(gles2::Texture* texture,
     gl::GLImage* image = texture->GetLevelImage(textarget, 0, &image_state);
     if (image && image_state == gles2::Texture::UNBOUND) {
       ScopedGLErrorSuppressor suppressor(
-          "RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded", GetErrorState());
+          "RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded",
+          error_state_.get());
       api()->glBindTextureFn(textarget, texture->service_id());
       if (!image->BindTexImage(textarget)) {
         // Note: We update the state to COPIED prior to calling CopyTexImage()

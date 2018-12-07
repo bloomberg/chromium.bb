@@ -71,12 +71,14 @@ void GLStateRestorerImpl::RestoreVertexAttribArray(unsigned int index) {
 
 void GLStateRestorerImpl::PauseQueries() {
   DCHECK(delegate_.get());
-  delegate_->GetQueryManager()->PauseQueries();
+  if (auto* query_manager = delegate_->GetQueryManager())
+    query_manager->PauseQueries();
 }
 
 void GLStateRestorerImpl::ResumeQueries() {
   DCHECK(delegate_.get());
-  delegate_->GetQueryManager()->ResumeQueries();
+  if (auto* query_manager = delegate_->GetQueryManager())
+    query_manager->ResumeQueries();
 }
 
 const gles2::ContextState* GLStateRestorerImpl::GetContextState() const {
