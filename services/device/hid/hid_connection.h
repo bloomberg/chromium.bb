@@ -13,7 +13,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "services/device/hid/hid_device_info.h"
 
 namespace base {
@@ -38,7 +38,6 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
 
   scoped_refptr<HidDeviceInfo> device_info() const { return device_info_; }
   bool has_protected_collection() const { return has_protected_collection_; }
-  const base::ThreadChecker& thread_checker() const { return thread_checker_; }
   bool closed() const { return closed_; }
 
   // Closes the connection. This must be called before the object is freed.
@@ -86,12 +85,13 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
  private:
   scoped_refptr<HidDeviceInfo> device_info_;
   bool has_protected_collection_;
-  base::ThreadChecker thread_checker_;
   bool closed_;
 
   base::queue<std::tuple<scoped_refptr<base::RefCountedBytes>, size_t>>
       pending_reports_;
   base::queue<ReadCallback> pending_reads_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(HidConnection);
 };

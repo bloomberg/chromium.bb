@@ -46,7 +46,6 @@ class HidServiceLinux : public HidService {
   static void OpenOnBlockingThread(std::unique_ptr<ConnectParams> params);
 #endif
   static void FinishOpen(std::unique_ptr<ConnectParams> params);
-  static void CreateConnection(std::unique_ptr<ConnectParams> params);
 
   const scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

@@ -16,9 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequence_checker.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_checker.h"
 #include "services/device/hid/hid_device_info.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -83,7 +82,7 @@ class HidService {
 
   const DeviceMap& devices() const { return devices_; }
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
  private:
   void RunPendingEnumerations();

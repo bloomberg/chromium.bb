@@ -15,13 +15,11 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/device/hid/hid_connection_mac.h"
 
@@ -129,11 +127,11 @@ HidServiceMac::~HidServiceMac() {}
 
 void HidServiceMac::Connect(const std::string& device_guid,
                             const ConnectCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const auto& map_entry = devices().find(device_guid);
   if (map_entry == devices().end()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, nullptr));
     return;
   }
@@ -215,7 +213,7 @@ void HidServiceMac::TerminatedCallback(void* context, io_iterator_t iterator) {
 }
 
 void HidServiceMac::AddDevices() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::mac::ScopedIOObject<io_service_t> device;
   while (device.reset(IOIteratorNext(devices_added_iterator_)), device) {
@@ -227,7 +225,7 @@ void HidServiceMac::AddDevices() {
 }
 
 void HidServiceMac::RemoveDevices() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   base::mac::ScopedIOObject<io_service_t> device;
   while (device.reset(IOIteratorNext(devices_removed_iterator_)), device) {
