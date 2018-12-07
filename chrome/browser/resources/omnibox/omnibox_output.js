@@ -186,6 +186,8 @@ cr.define('omnibox_output', function() {
 
       /** @type {!Array<!mojom.OmniboxResult>} */
       this.responses = [];
+      /** @private {!Array<!OutputResultsGroup>} */
+      this.resultsGroups_ = [];
       /** @private {!QueryInputs} */
       this.queryInputs_ = /** @type {!QueryInputs} */ ({});
       /** @private {!DisplayInputs} */
@@ -205,21 +207,18 @@ cr.define('omnibox_output', function() {
 
     clearAutocompleteResponses() {
       this.responses = [];
+      this.resultsGroups_ = [];
+      clearChildren(this.$$('contents'));
     }
 
     /** @param {!mojom.OmniboxResult} response */
     addAutocompleteResponse(response) {
       this.responses.push(response);
 
-      /** @private {!Array<!OutputResultsGroup>} */
-      this.resultsGroups_ = this.responses.map(response => {
-        return OutputResultsGroup.create(
-            response, this.queryInputs_.cursorPosition);
-      });
-
-      clearChildren(this.$$('contents'));
-      this.resultsGroups_.forEach(
-          resultsGroup => this.$$('contents').appendChild(resultsGroup));
+      const resultsGroup =
+          OutputResultsGroup.create(response, this.queryInputs_.cursorPosition);
+      this.resultsGroups_.push(resultsGroup);
+      this.$$('contents').appendChild(resultsGroup);
 
       this.updateVisibility_();
     }
