@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
@@ -17,12 +18,14 @@ class Window;
 }  // namespace aura
 
 namespace views {
+class AXAuraObjCache;
 
 // Describes a |Window| for use with other AX classes.
 class AXWindowObjWrapper : public AXAuraObjWrapper,
                            public aura::WindowObserver {
  public:
-  explicit AXWindowObjWrapper(aura::Window* window);
+  // |aura_obj_cache| and |window| must outlive this object.
+  AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache, aura::Window* window);
   ~AXWindowObjWrapper() override;
 
   // Whether this window is an alert window.
@@ -55,6 +58,12 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   void OnWindowTitleChanged(aura::Window* window) override;
 
  private:
+  // Fires an event on a window, taking into account its associated widget and
+  // that widget's root view.
+  void FireEvent(aura::Window* window, ax::mojom::Event event_type);
+
+  AXAuraObjCache* const aura_obj_cache_;
+
   aura::Window* window_;
 
   bool is_alert_;

@@ -207,7 +207,7 @@ AXAuraObjWrapper* AXAuraObjCache::CreateInternal(
   if (it != aura_view_to_id_map.end())
     return Get(it->second);
 
-  auto wrapper = std::make_unique<AuraViewWrapper>(aura_view);
+  auto wrapper = std::make_unique<AuraViewWrapper>(this, aura_view);
   int32_t id = wrapper->GetUniqueId();
   aura_view_to_id_map[aura_view] = id;
   cache_[id] = std::move(wrapper);
