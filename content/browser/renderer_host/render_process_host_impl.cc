@@ -2256,20 +2256,15 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   associated_registry->AddInterface(base::Bind(
       &RenderProcessHostImpl::CreateRendererHost, base::Unretained(this)));
 
+  // TODO(lukasza): https://crbug.com/891872: Stop vending out non-origin-bound
+  // URLLoaderFactories to the renderer process.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // Using an opaque origin here should be safe - the URLLoaderFactory created
-    // for such origin shouldn't have any special privileges.
-    //
-    // TODO(lukasza): https://crbug.com/871827: Use the actual origin that will
-    // be used as |request_initiator|.  The origin should come from the browser
-    // process.
-    const url::Origin kSafeOrigin = url::Origin();
-
+    const base::Optional<url::Origin> kNoOrigin = base::nullopt;
     AddUIThreadInterface(
         registry.get(),
-        base::Bind(&RenderProcessHostImpl::CreateURLLoaderFactory,
-                   base::Unretained(this), kSafeOrigin,
-                   nullptr /* header_client */));
+        base::BindRepeating(&RenderProcessHostImpl::CreateURLLoaderFactory,
+                            base::Unretained(this), kNoOrigin,
+                            nullptr /* header_client */));
   }
 
   registry->AddInterface(
@@ -2530,7 +2525,7 @@ RenderProcessHostImpl::GetProcessResourceCoordinator() {
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
-    const url::Origin& origin,
+    const base::Optional<url::Origin>& origin,
     network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
     network::mojom::URLLoaderFactoryRequest request) {
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
@@ -2543,9 +2538,12 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
 
   network::mojom::NetworkContext* network_context =
       storage_partition_impl_->GetNetworkContext();
-  network::mojom::URLLoaderFactoryPtrInfo embedder_provided_factory =
-      GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
-          this, network_context, &header_client, origin);
+  network::mojom::URLLoaderFactoryPtrInfo embedder_provided_factory;
+  if (origin.has_value()) {
+    embedder_provided_factory =
+        GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
+            this, network_context, &header_client, origin.value());
+  }
   if (embedder_provided_factory) {
     mojo::FuseInterface(std::move(request),
                         std::move(embedder_provided_factory));
@@ -2553,6 +2551,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactory(
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = GetID();
+    params->request_initiator_site_lock = origin;
     params->disable_web_security =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);

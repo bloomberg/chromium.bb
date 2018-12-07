@@ -138,6 +138,37 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   static const void* const kUserDataKey;
 
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "RequestInitiatorOriginLockCompatibility" in
+  // tools/metrics/histograms/enums.xml.
+  enum class RequestInitiatorOriginLockCompatibility {
+    // Request came from a browser process and so the
+    // |request_initiator_site_lock| doesn't apply.
+    kBrowserProcess = 0,
+
+    // |request_initiator_site_lock| is missing - see https://crbug.com/891872
+    // and RenderProcessHostImpl::CreateURLLoaderFactoryWithOptionalOrigin.
+    kNoLock = 1,
+
+    // |request_initiator| is missing.
+    kNoInitiator = 2,
+
+    // |request.request_initiator| is compatible with
+    // |factory_params_.request_initiator_site_lock| - either
+    // |request.request_initiator| is opaque or it is equal to
+    // |request_initiator_site_lock|.
+    kCompatibleLock = 3,
+
+    // |request.request_initiator| is incompatible with
+    // |factory_params_.request_initiator_site_lock|.  Cases known so far where
+    // this can occur:
+    // - HTML Imports (see https://crbug.com/871827#c9).
+    kIncorrectLock = 4,
+
+    kMaxValue = kIncorrectLock,
+  };
+
  private:
   // This class is used to set the URLLoader as user data on a URLRequest. This
   // is used instead of URLLoader directly because SetUserData requires a

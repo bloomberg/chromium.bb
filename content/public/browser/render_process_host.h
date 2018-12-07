@@ -14,6 +14,7 @@
 
 #include "base/callback_list.h"
 #include "base/containers/id_map.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "base/supports_user_data.h"
@@ -415,8 +416,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //
   // |header_client| will be used in URLLoaderFactoryParams when creating the
   // factory.
+  //
+  // TODO(lukasza, nasko): https://crbug.com/888079: Make |origin| mandatory.
   virtual void CreateURLLoaderFactory(
-      const url::Origin& origin,
+      const base::Optional<url::Origin>& origin,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
       network::mojom::URLLoaderFactoryRequest request) = 0;
 

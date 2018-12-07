@@ -82,6 +82,7 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
   // TODO(lukasza): https://crbug.com/846346: Use more granular CORB enforcement
   // based on the specific |extension|'s permissions.
   params->is_corb_enabled = false;
+  params->request_initiator_site_lock = url::Origin::Create(extension.url());
 
   // Create the URLLoaderFactory.
   network::mojom::URLLoaderFactoryPtrInfo factory_info;

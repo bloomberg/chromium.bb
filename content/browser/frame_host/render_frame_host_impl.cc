@@ -427,22 +427,22 @@ void LogRendererKillCrashKeys(const GURL& site_url) {
   base::debug::SetCrashKeyString(site_url_key, site_url.spec());
 }
 
-url::Origin GetOriginForURLLoaderFactory(GURL target_url,
-                                         SiteInstanceImpl* site_instance) {
-  // Calculate the origin that will be used as a fallback for URLs such as
-  // about:blank and/or data:.  If full site isolation is enabled, then
-  // |site_instance|-based origin will be correct.  Otherwise, falling back to a
-  // unique/opaque origin should be safe.
-  //
-  // TODO(lukasza, nasko): https://crbug.com/888079: Do not fall back to
-  // |site_instance| - instead the browser process should already know at
-  // ready-to-commit time the origin to be committed.
-  url::Origin fallback_origin =
-      SiteIsolationPolicy::UseDedicatedProcessesForAllSites()
-          ? url::Origin::Create(site_instance->GetSiteURL())
-          : url::Origin();
+base::Optional<url::Origin> GetOriginForURLLoaderFactory(
+    GURL target_url,
+    SiteInstanceImpl* site_instance) {
+  // TODO(lukasza, nasko): https://crbug.com/888079: Use exact origin, instead
+  // of falling back to site URL for about:blank and about:srcdoc.
+  if (target_url.SchemeIs(url::kAboutScheme)) {
+    if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+      return url::Origin::Create(site_instance->GetSiteURL());
+    return base::nullopt;
+  }
 
-  return url::Origin::Resolve(target_url, fallback_origin);
+  // In cases not covered above, URLLoaderFactory should be associated with the
+  // origin of |target_url|.  This works fine for all URLs, including data: URLs
+  // (which should use an opaque origin for their subresource requests) and
+  // blob: URLs (which embed their origin inside the |target_url|).
+  return url::Origin::Create(target_url);
 }
 
 service_manager::Connector* MaybeGetConnectorForProcess() {
@@ -4536,7 +4536,8 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           false /* is_navigation */,
-          GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance()),
+          GetOriginForURLLoaderFactory(common_params.url, GetSiteInstance())
+              .value_or(url::Origin()),
           &factory_request, nullptr /* header_client */,
           nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
@@ -5234,7 +5235,7 @@ std::set<int> RenderFrameHostImpl::GetNavigationEntryIdsPendingCommit() {
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
-    const url::Origin& origin,
+    const base::Optional<url::Origin>& origin,
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryInternal(
       origin, std::move(default_factory_request));
@@ -5261,7 +5262,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 }
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
-    const url::Origin& origin,
+    const base::Optional<url::Origin>& origin,
     network::mojom::URLLoaderFactoryRequest default_factory_request) {
   auto* context = GetSiteInstance()->GetBrowserContext();
   bool bypass_redirect_checks = false;
@@ -5269,8 +5270,9 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client;
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        context, this, GetProcess()->GetID(), false /* is_navigation */, origin,
-        &default_factory_request, &header_client, &bypass_redirect_checks);
+        context, this, GetProcess()->GetID(), false /* is_navigation */,
+        origin.value_or(url::Origin()), &default_factory_request,
+        &header_client, &bypass_redirect_checks);
   }
 
   // Keep DevTools proxy last, i.e. closest to the network.

@@ -44217,6 +44217,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Docked window state"/>
 </enum>
 
+<enum name="RequestInitiatorOriginLockCompatibility">
+  <int value="0" label="BrowserProcess">
+    Request came from a browser process and so the |request_initiator_site_lock|
+    doesn't apply.
+  </int>
+  <int value="1" label="NoLock">
+    |request_initiator_site_lock| is missing - see https://crbug.com/891872 and
+    RenderProcessHostImpl::CreateURLLoaderFactoryWithOptionalOrigin.
+  </int>
+  <int value="2" label="NoInitiator">|request_initiator| is missing.</int>
+  <int value="3" label="CompatibleLock">
+    |request.request_initiator| is compatible with
+    |factory_params_.request_initiator_site_lock| - either
+    |request.request_initiator| is opaque or it is equal to
+    |request_initiator_site_lock|.
+  </int>
+  <int value="4" label="IncorrectLock">
+    |request.request_initiator| is non-opaque/unique and differs from
+    |factory_params_.request_initiator_site_lock|.
+  </int>
+</enum>
+
 <enum name="RequestMediaKeySystemAccessStatus">
   <int value="0" label="Requested"/>
   <int value="1" label="Supported"/>

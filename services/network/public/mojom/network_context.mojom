@@ -373,6 +373,13 @@ struct URLLoaderFactoryParams {
   // Set to kBrowserProcessId to indicate the browser process.
   uint32 process_id = kInvalidProcessId;
 
+  // If specified, then |request_initiator_site_lock| locks
+  // |ResourceRequest::request_initiator| to the specified origin.
+  // TODO(lukasza): https://crbug.com/891872: Make this non-optional.
+  // TODO(lukasza, nasko): https://crbug.com/888079: Make this an *origin* lock
+  // (rather than just a site lock).
+  url.mojom.Origin? request_initiator_site_lock;
+
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
   // TODO(lukasza): The field below in practice is always set to
