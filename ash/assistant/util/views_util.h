@@ -32,7 +32,7 @@ views::ImageButton* CreateImageButton(views::ButtonListener* listener,
                                       int icon_size_in_dip,
                                       int accessible_name_id,
                                       AssistantButtonId button_id,
-                                      SkColor icon_color = gfx::kGoogleGrey600);
+                                      SkColor icon_color = gfx::kGoogleGrey700);
 
 }  // namespace util
 }  // namespace assistant
