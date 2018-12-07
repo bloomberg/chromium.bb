@@ -128,6 +128,8 @@ ASH_PUBLIC_EXPORT extern const char kDetachableBaseDevices[];
 
 ASH_PUBLIC_EXPORT extern const char kCursorMotionBlurEnabled[];
 
+ASH_PUBLIC_EXPORT extern const char kAssistantNumWarmerWelcomeTriggered[];
+
 }  // namespace prefs
 
 }  // namespace ash

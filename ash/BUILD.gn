@@ -1334,6 +1334,7 @@ component("ash") {
     "//chromeos:power_manager_proto",
     "//chromeos/assistant:buildflags",
     "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/assistant/public:feature_flags",
     "//chromeos/services/assistant/public/mojom",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/strings",

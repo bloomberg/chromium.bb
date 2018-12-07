@@ -21,8 +21,10 @@
 #include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
+#include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/dbus/util/version_loader.h"
+#include "chromeos/services/assistant/assistant_warmer_welcome_log.pb.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -340,6 +342,25 @@ void AssistantManagerServiceImpl::StopActiveInteraction(
   }
   assistant_manager_internal_->StopAssistantInteractionInternal(
       cancel_conversation);
+}
+
+void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
+    int num_warmer_welcome_triggered,
+    bool allow_tts) {
+  DCHECK(assistant_manager_internal_ != nullptr);
+
+  const std::string interaction =
+      CreateWarmerWelcomeInteraction(num_warmer_welcome_triggered);
+
+  assistant_client::VoicelessOptions options;
+  options.is_user_initiated = true;
+  options.modality =
+      allow_tts ? assistant_client::VoicelessOptions::Modality::VOICE_MODALITY
+                : assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
+
+  assistant_manager_internal_->SendVoicelessInteraction(
+      interaction, /*description=*/"warmer_welcome_trigger", options,
+      [](auto) {});
 }
 
 void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
