@@ -700,6 +700,20 @@ TEST(FormParserTest, TextAndPasswordFields) {
   });
 }
 
+TEST(FormParserTest, TextFieldValueIsNotUsername) {
+  CheckTestData({{
+      "Text field value is unlikely username so it should be ignored on saving",
+      {
+          {.role_filling = ElementRole::USERNAME,
+           .form_control_type = "text",
+           .value = "12"},
+          {.role = ElementRole::CURRENT_PASSWORD,
+           .form_control_type = "password",
+           .value = "strong_pw"},
+      },
+  }});
+}
+
 TEST(FormParserTest, TestAutocomplete) {
   CheckTestData({
       {
