@@ -157,28 +157,36 @@ public final class Http2TestServer {
 
         @Override
         public void run() {
-            try {
-                // Configure the server.
-                EventLoopGroup group = new NioEventLoopGroup();
+            boolean retry = false;
+            do {
                 try {
-                    ServerBootstrap b = new ServerBootstrap();
-                    b.option(ChannelOption.SO_BACKLOG, 1024);
-                    b.group(group)
-                            .channel(NioServerSocketChannel.class)
-                            .handler(new LoggingHandler(LogLevel.INFO))
-                            .childHandler(new Http2ServerInitializer(mSslCtx));
+                    // Configure the server.
+                    EventLoopGroup group = new NioEventLoopGroup();
+                    try {
+                        ServerBootstrap b = new ServerBootstrap();
+                        b.option(ChannelOption.SO_BACKLOG, 1024);
+                        b.group(group)
+                                .channel(NioServerSocketChannel.class)
+                                .handler(new LoggingHandler(LogLevel.INFO))
+                                .childHandler(new Http2ServerInitializer(mSslCtx));
 
-                    sServerChannel = b.bind(PORT).sync().channel();
-                    Log.i(TAG, "Netty HTTP/2 server started on " + getServerUrl());
-                    mBlock.open();
-                    sServerChannel.closeFuture().sync();
-                } finally {
-                    group.shutdownGracefully();
+                        sServerChannel = b.bind(PORT).sync().channel();
+                        Log.i(TAG, "Netty HTTP/2 server started on " + getServerUrl());
+                        mBlock.open();
+                        sServerChannel.closeFuture().sync();
+                    } finally {
+                        group.shutdownGracefully();
+                    }
+                    Log.i(TAG, "Stopped Http2TestServerRunnable!");
+                    retry = false;
+                } catch (Exception e) {
+                    Log.e(TAG, "Netty server failed to start", e);
+                    // Retry once if we hit https://github.com/netty/netty/issues/2616 before the
+                    // server starts.
+                    retry = !retry && sServerChannel == null
+                            && e.toString().contains("java.nio.channels.ClosedChannelException");
                 }
-                Log.i(TAG, "Stopped Http2TestServerRunnable!");
-            } catch (Exception e) {
-                Log.e(TAG, e.toString());
-            }
+            } while (retry);
         }
     }
 
