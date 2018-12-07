@@ -11,7 +11,7 @@ Polymer({
 
   behaviors: [
     SiteSettingsBehavior,
-    FocusRowBehavior,
+    cr.ui.FocusRowBehavior,
   ],
 
   properties: {

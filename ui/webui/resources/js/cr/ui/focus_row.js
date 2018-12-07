@@ -300,6 +300,13 @@ cr.define('cr.ui', function() {
      * @param {!Event} e
      */
     onFocus(row, e) {}
+
+    /**
+     * @param {!Element} sampleElement An element to find an equivalent for.
+     * @return {?Element} An equivalent element to focus, or null to use the
+     *     default FocusRow element.
+     */
+    getCustomEquivalent(sampleElement) {}
   }
 
   return {

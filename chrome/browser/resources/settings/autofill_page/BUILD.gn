@@ -79,8 +79,8 @@ js_library("credit_card_edit_dialog") {
 js_library("password_list_item") {
   deps = [
     ":show_password_behavior",
-    "..:focus_row_behavior",
     "//ui/webui/resources/js:load_time_data",
+    "//ui/webui/resources/js/cr/ui:focus_row_behavior",
   ]
 }
 

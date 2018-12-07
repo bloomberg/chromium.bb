@@ -76,7 +76,7 @@ js_library("history_item") {
     "//ui/webui/resources/js:icon",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js/cr/ui:focus_row",
+    "//ui/webui/resources/js/cr/ui:focus_row_behavior",
   ]
 }
 

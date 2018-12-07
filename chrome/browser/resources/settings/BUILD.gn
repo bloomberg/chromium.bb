@@ -109,7 +109,6 @@ js_type_check("settings_resources") {
   deps = [
     ":extension_control_browser_proxy",
     ":find_shortcut_behavior",
-    ":focus_row_behavior",
     ":global_scroll_target_behavior",
     ":lifetime_browser_proxy",
     ":open_window_proxy",
@@ -132,12 +131,6 @@ js_library("find_shortcut_behavior") {
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js/cr/ui:command",
-  ]
-}
-
-js_library("focus_row_behavior") {
-  deps = [
-    "//ui/webui/resources/js/cr/ui:focus_row",
   ]
 }
 

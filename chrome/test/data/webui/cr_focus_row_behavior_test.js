@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-suite('focus-row-behavior', function() {
+suite('cr-focus-row-behavior-test', function() {
   /** @type {FocusableIronListItemElement} */ let testElement;
 
   suiteSetup(function() {
@@ -43,7 +43,7 @@ suite('focus-row-behavior', function() {
 
     Polymer({
       is: 'focus-row-element',
-      behaviors: [FocusRowBehavior],
+      behaviors: [cr.ui.FocusRowBehavior],
     });
   });
 

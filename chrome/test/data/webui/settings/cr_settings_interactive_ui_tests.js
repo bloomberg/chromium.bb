@@ -42,31 +42,6 @@ CrSettingsInteractiveUITest.prototype = {
   },
 };
 
-/**
- * Test fixture for FocusRowBehavior.
- * @constructor
- * @extends {CrSettingsInteractiveUITest}
- */
-function CrSettingsFocusRowBehavior() {}
-
-CrSettingsFocusRowBehavior.prototype = {
-  __proto__: CrSettingsInteractiveUITest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://settings/focus_row_behavior.html',
-
-  /** @override */
-  extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
-    'focus_row_behavior_test.js',
-    'test_util.js',
-  ]),
-};
-
-TEST_F('CrSettingsFocusRowBehavior', 'FocusTest', function() {
-  mocha.run();
-});
-
 
 /**
  * Test fixture for Sync Page.

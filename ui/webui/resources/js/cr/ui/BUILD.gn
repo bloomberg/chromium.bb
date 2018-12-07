@@ -17,6 +17,7 @@ js_type_check("closure_compile") {
     ":focus_manager",
     ":focus_outline_manager",
     ":focus_row",
+    ":focus_row_behavior",
     ":focus_without_ink",
     ":grid",
     ":list",
@@ -106,6 +107,12 @@ js_library("focus_manager") {
 js_library("focus_outline_manager") {
   deps = [
     "../..:cr",
+  ]
+}
+
+js_library("focus_row_behavior") {
+  deps = [
+    ":focus_row",
   ]
 }
 

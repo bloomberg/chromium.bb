@@ -11,7 +11,7 @@ Polymer({
   is: 'password-list-item',
 
   behaviors: [
-    FocusRowBehavior,
+    cr.ui.FocusRowBehavior,
     ShowPasswordBehavior,
   ],
 

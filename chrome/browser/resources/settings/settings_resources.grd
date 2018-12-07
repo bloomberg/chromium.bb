@@ -299,12 +299,6 @@
       <structure name="IDR_SETTINGS_GLOBAL_SCROLL_TARGET_BEHAVIOR_JS"
                  file="global_scroll_target_behavior.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_FOCUS_ROW_BEHAVIOR_HTML"
-                 file="focus_row_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_FOCUS_ROW_BEHAVIOR_JS"
-                 file="focus_row_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CHANGE_PASSWORD_BROWSER_PROXY_HTML"
                  file="change_password_page/change_password_browser_proxy.html"
                  type="chrome_html" />
