@@ -127,6 +127,7 @@ UILabel* CreateLabel() {
   UILabel* label = [[UILabel alloc] init];
   label.translatesAutoresizingMaskIntoConstraints = NO;
   label.adjustsFontForContentSizeCategory = YES;
+  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   return label;
 }
 
