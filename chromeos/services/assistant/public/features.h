@@ -14,9 +14,6 @@ namespace features {
 // Enables Assistant voice match enrollment.
 extern const base::Feature kAssistantVoiceMatch;
 
-// Enable Assistant warmer welcome.
-extern const base::Feature kAssistantWarmerWelcomeFeature;
-
 // Enables DSP for hotword detection.
 extern const base::Feature kEnableDspHotword;
 
@@ -26,8 +23,6 @@ extern const base::Feature kEnableStereoAudioInput;
 bool IsDspHotwordEnabled();
 
 bool IsStereoAudioInputEnabled();
-
-bool IsWarmerWelcomeEnabled();
 
 }  // namespace features
 }  // namespace assistant

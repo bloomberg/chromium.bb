@@ -17,14 +17,12 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
-#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -58,11 +56,6 @@ AssistantController::~AssistantController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->voice_interaction_controller()->RemoveLocalObserver(this);
   RemoveObserver(this);
-}
-
-// static
-void AssistantController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kAssistantNumWarmerWelcomeTriggered, 0);
 }
 
 void AssistantController::BindRequest(
