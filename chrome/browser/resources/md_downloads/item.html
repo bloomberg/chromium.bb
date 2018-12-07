@@ -16,6 +16,7 @@
 <link rel="import" href="chrome://downloads/browser_proxy.html">
 <link rel="import" href="chrome://downloads/constants.html">
 <link rel="import" href="chrome://downloads/i18n_setup.html">
+<link rel="import" href="chrome://downloads/icon_loader.html">
 <link rel="import" href="chrome://downloads/icons.html">
 
 <dom-module id="downloads-item">
@@ -93,9 +94,14 @@
         margin: 0 24px;
       }
 
-      .icon {
+      .icon,
+      #file-icon-wrapper {
         height: 32px;
         width: 32px;
+      }
+
+      #file-icon-wrapper {
+        overflow: hidden;  /* Reduces file icon flicker on initial load. */
       }
 
       #content:-webkit-any(.show-progress, .dangerous) #file-icon-wrapper {
@@ -110,12 +116,11 @@
         opacity: .5;
       }
 
-      #danger-icon {
-        height: 32px;
-        width: 32px;
+      #file-icon-wrapper iron-icon[icon='cr:insert-drive-file'] {
+        color: var(--paper-grey-400);
       }
 
-      #danger-icon[icon='cr:warning'],
+      #file-icon-wrapper iron-icon[icon='cr:warning'],
       .dangerous #description {
         color: var(--google-red-700);
       }
@@ -233,10 +238,10 @@
     <div id="content" on-dragstart="onDragStart_"
         class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
-        <img class="icon" id="file-icon" alt="" hidden="[[isDangerous_]]">
-        <iron-icon id="danger-icon"
-            icon$="[[computeDangerIcon_(isDangerous_, data.dangerType)]]"
-            hidden="[[!isDangerous_]]"></iron-icon>
+        <img class="icon" id="file-icon" alt="" hidden="[[!useFileIcon_]]">
+        <iron-icon class="icon" icon$="[[computeIcon_(
+            isDangerous_, data.dangerType, useFileIcon_)]]"
+            hidden="[[useFileIcon_]]"></iron-icon>
       </div>
 
       <div id="details">

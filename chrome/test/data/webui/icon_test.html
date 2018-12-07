@@ -33,6 +33,12 @@ function testGetFavicon_IconUrl() {
   assertEquals(expected, cr.icon.getFavicon(url));
 }
 
+function testGetFileIconUrl() {
+  assertEquals(cr.icon.getFileIconUrl('file path'),
+               'chrome://fileicon/file%20path?scale=' +
+                   window.devicePixelRatio + 'x');
+}
+
 </script>
 </body>
 </html>
