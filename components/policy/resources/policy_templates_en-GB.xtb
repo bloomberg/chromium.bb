@@ -119,13 +119,6 @@
 
           By default, no quick unlock modes are available for managed devices.</translation>
 <translation id="123081309365616809">Enable casting content to the device</translation>
-<translation id="1231349879329465225">Allows enabling or disabling Fast Transition.
-      This applies to all users, and to all interfaces on the device.
-      In order for Fast Transition to be used, both this setting and the per-network ONC property need to be enabled.
-      Once set, Fast Transition persists until the policy is changed to disable it.
-
-      If this policy is not set or set to false, Fast Transition is not used.
-      If set to true, Fast Transition is used when the wireless access point supports it.</translation>
 <translation id="1243570869342663665">Control SafeSites adult content filtering.</translation>
 <translation id="1257550411839719984">Set default download directory</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
@@ -143,7 +136,6 @@
       Unlike <ph name="URL_LIST_POLICY_NAME" />, rules apply to both directions. That is, when the Internet Explorer add-in is present and enabled, it also controls whether <ph name="IE_PRODUCT_NAME" /> should open these URLs in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
 <translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
-<translation id="1307415922184340052">Send username and filename to native printers server with every print job. The default is not to send.</translation>
 <translation id="1307454923744766368">Origins or hostname patterns for which restrictions on
       insecure origins should not apply</translation>
 <translation id="1313457536529613143">Specifies the percentage by which the screen dim delay is scaled when user activity is observed while the screen is dimmed or soon after the screen has been turned off.
@@ -3445,5 +3437,4 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       Devices will not be able to check for updates automatically during the specified time intervals. Devices that require a rollback or are below the minimum <ph name="PRODUCT_OS_NAME" /> version will not be affected by this policy due to potential security issues. Furthermore, this policy will not block update checks requested by users or administrators.
       When this policy is unset or contains no time intervals:
       No automatic update checks will be blocked by this policy, but they may be blocked by other policies.</translation>
-<translation id="991560005425213776">Send username and filename to native printers</translation>
 </translationbundle>

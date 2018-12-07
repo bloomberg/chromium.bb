@@ -87,7 +87,7 @@
 <translation id="2320166752086256636">إخفاء لوحة المفاتيح</translation>
 <translation id="2339560363438331454">‏خدمات Google والمزامنة</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
-<translation id="2359808026110333948">متابعة</translation>
+<translation id="2359808026110333948">المتابعة</translation>
 <translation id="2360196772093551345">طلب موقع ويب متوافق مع الأجهزة الجوَّالة</translation>
 <translation id="2381405137052800939">الأساسيات</translation>
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
@@ -347,7 +347,6 @@
 <translation id="6464071786529933911">فتح في علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="6482629121755362506">تم حذف <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> من العناصر</translation>
 <translation id="6541915733953096570">الساعة الماضية</translation>
-<translation id="6548479190262846511">لم يتم العثور على كلمات مرور لهذا الموقع الإلكتروني</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="6656103420185847513">تعديل مجلد</translation>
 <translation id="6657585470893396449">كلمة المرور</translation>

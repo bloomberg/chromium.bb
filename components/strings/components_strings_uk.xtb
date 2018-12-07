@@ -84,7 +84,7 @@
 <translation id="1407135791313364759">Відкрити все</translation>
 <translation id="1413809658975081374">Помилка через порушення конфіденційності</translation>
 <translation id="14171126816530869">Ідентифікаційну інформацію <ph name="ORGANIZATION" /> із <ph name="LOCALITY" /> було перевірено <ph name="ISSUER" />.</translation>
-<translation id="1426410128494586442">Так</translation>
+<translation id="1426410128494586442">так</translation>
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1484290072879560759">Вибрати адресу доставки</translation>
 <translation id="1501859676467574491">Показує картки з облікового запису Google</translation>
@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">Дозволяти (за умовчанням)</translation>
 <translation id="3427342743765426898">&amp;Повторити редагування</translation>
 <translation id="342781501876943858">Chromium радить скинути пароль, якщо ви застосовували його на інших сайтах.</translation>
+<translation id="3430691998045392297">Кінопоказ відрізняється. Продовжити?</translation>
 <translation id="3431636764301398940">Зберегти цю картку на пристрої</translation>
 <translation id="3447661539832366887">Власник цього пристрою вимкнув гру з динозавром.</translation>
 <translation id="3447884698081792621">Показати сертифікат (видавець: <ph name="ISSUER" />)</translation>
@@ -449,7 +450,7 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Оновити дату й час</translation>
 <translation id="3884278016824448484">Конфліктуючий ідентифікатор пристрою</translation>
-<translation id="3885155851504623709">Цивільний округ</translation>
+<translation id="3885155851504623709">Община</translation>
 <translation id="3886446263141354045">Запит на доступ до цього сайту надіслано користувачу <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Додати електронну адресу</translation>
 <translation id="3901925938762663762">Термін дії картки минув</translation>
@@ -617,9 +618,9 @@
 <translation id="5086888986931078152">Ви можете втратити доступ до захищеного вмісту на деяких сайтах.</translation>
 <translation id="5087286274860437796">Сертифікат сервера зараз недійсний.</translation>
 <translation id="5087580092889165836">Додати картку</translation>
-<translation id="5089810972385038852">Штат/провінція</translation>
+<translation id="5089810972385038852">Штат</translation>
 <translation id="5094747076828555589">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Chromium не вважає його сертифікат безпеки надійним. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
-<translation id="5095208057601539847">Провінція</translation>
+<translation id="5095208057601539847">Провінція чи область</translation>
 <translation id="5098332213681597508">Це ім’я з вашого облікового запису Google.</translation>
 <translation id="5115563688576182185">(64-розрядна версія)</translation>
 <translation id="5128122789703661928">Сеанс із цією назвою не можна видалити.</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">Ви переглядаєте сторінку розширень</translation>
 <translation id="6596325263575161958">Параметри шифрування</translation>
 <translation id="6604181099783169992">Датчики руху чи світла</translation>
+<translation id="6607617806003952240">Я більше не можу допомагати, продовжуйте вручну.</translation>
 <translation id="6624427990725312378">Контактна інформація</translation>
 <translation id="6626291197371920147">Додати дійсний номер картки</translation>
 <translation id="6628463337424475685">Пошук <ph name="ENGINE" /></translation>
@@ -840,7 +842,6 @@
 <translation id="6744009308914054259">Очікуючи на з’єднання, можете перейти в папку "Завантаження" й переглянути статті, доступні в режимі офлайн.</translation>
 <translation id="6753269504797312559">Значення правила</translation>
 <translation id="6757797048963528358">Ваш пристрій перейшов у режим сну.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Зараз не вдається додати цю картку}one{Зараз не вдається додати ці картки}few{Зараз не вдається додати ці картки}many{Зараз не вдається додати ці картки}other{Зараз не вдається додати ці картки}}</translation>
 <translation id="6778737459546443941">Батьки ще не схвалили його</translation>
 <translation id="679355240208270552">Ігнорується, оскільки пошукову систему за умовчанням вимкнено правилом.</translation>
 <translation id="681021252041861472">Обов’язкове поле</translation>
@@ -848,12 +849,11 @@
 <translation id="6824266427216888781">Не вдалося завантажити дані регіонів</translation>
 <translation id="6825578344716086703">Ви спробували зв’язатися з доменом <ph name="DOMAIN" />, проте сервер надав сертифікат, підписаний із використанням слабкого алгоритму підпису (як-от SHA-1). Це означає, що облікові дані безпеки, надані сервером, можуть бути сфальсифікованими, а сервер – не тим, який вам потрібен (ви можете передавати свої дані зловмиснику).</translation>
 <translation id="6831043979455480757">Перекласти</translation>
-<translation id="6839929833149231406">Область</translation>
+<translation id="6839929833149231406">Регіон або територія</translation>
 <translation id="6852204201400771460">Перезапустити додаток?</translation>
 <translation id="6865412394715372076">Зараз цю картку не можна підтвердити</translation>
 <translation id="6868206169573555318">Перезапустити, щоб оновити</translation>
 <translation id="6874604403660855544">&amp;Повторити додавання</translation>
-<translation id="6885646002011712606">Асистент автозаповнення доступний унизу екрана</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Правило не підтримується.</translation>
 <translation id="6895330447102777224">Дані картки підтверджено</translation>
@@ -870,7 +870,7 @@
 <translation id="6964255747740675745">Не вдалося виконати синтаксичний аналіз конфігурації мережі (недійсний формат JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Пристрій</translation>
-<translation id="6970216967273061347">Округ</translation>
+<translation id="6970216967273061347">Район або округ</translation>
 <translation id="6973656660372572881">Указано фіксовані проксі-сервери та URL-адреса сценарію .pac.</translation>
 <translation id="6979158407327259162">Диск Google</translation>
 <translation id="6979440798594660689">Без звуку (за умовчанням)</translation>
@@ -883,7 +883,7 @@
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7064851114919012435">Контактна інформація</translation>
 <translation id="7079718277001814089">Цей сайт містить зловмисне програмне забезпечення</translation>
-<translation id="7087282848513945231">Країна</translation>
+<translation id="7087282848513945231">Округ або графство</translation>
 <translation id="7090678807593890770">Пошукайте за запитом "<ph name="LINK" />" у Google</translation>
 <translation id="7108338896283013870">Сховати</translation>
 <translation id="7108819624672055576">Дозволено розширенням</translation>
@@ -893,7 +893,6 @@
 <translation id="7138472120740807366">Спосіб доставки</translation>
 <translation id="7139724024395191329">Емірат</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7158980942472052083">Недійсна URL-адреса. Потрібно вказати URL-адресу зі стандартною схемою.</translation>
 <translation id="717330890047184534">Ідентифікатор GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> і ще <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Зберігати й заповнювати способи оплати</translation>
@@ -997,7 +996,6 @@
 <translation id="7716424297397655342">Не вдається завантажити цей сайт із кешу</translation>
 <translation id="7723047071702270851">Відредагуйте картку</translation>
 <translation id="774634243536837715">Заблоковано небезпечний вміст.</translation>
-<translation id="7747182086178764941">Показано екран першого запуску Асистента автозаповнення</translation>
 <translation id="7752995774971033316">Некерований клієнт</translation>
 <translation id="7755287808199759310">Хтось із батьків може розблокувати його</translation>
 <translation id="7758069387465995638">Можливо, брандмауер або антивірусна програма заблокували з’єднання.</translation>

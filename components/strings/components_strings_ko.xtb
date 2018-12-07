@@ -179,7 +179,7 @@
 <translation id="20817612488360358">시스템 프록시 설정이 사용하도록 설정되었지만 명시적 프록시 설정도 지정되어 있습니다.</translation>
 <translation id="2091887806945687916">소리</translation>
 <translation id="2094505752054353250">도메인이 일치하지 않음</translation>
-<translation id="2096368010154057602">부서</translation>
+<translation id="2096368010154057602">자치구</translation>
 <translation id="2102134110707549001">강력한 비밀번호 추천...</translation>
 <translation id="2108755909498034140">컴퓨터 다시 시작</translation>
 <translation id="2113977810652731515">카드</translation>
@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">허용(기본값)</translation>
 <translation id="3427342743765426898">수정 다시 실행(&amp;R)</translation>
 <translation id="342781501876943858">다른 사이트에서 비밀번호를 재사용했다면 비밀번호를 재설정하는 것이 좋습니다.</translation>
+<translation id="3430691998045392297">상영 영화가 다릅니다. 계속하시겠습니까?</translation>
 <translation id="3431636764301398940">기기에 카드 저장</translation>
 <translation id="3447661539832366887">이 기기의 소유자가 공룡 게임을 사용 중지했습니다.</translation>
 <translation id="3447884698081792621">인증서 표시(발급 기관: <ph name="ISSUER" />)</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">확장 프로그램 페이지를 보는 중</translation>
 <translation id="6596325263575161958">암호화 옵션</translation>
 <translation id="6604181099783169992">모션 또는 조도 센서</translation>
+<translation id="6607617806003952240">더 이상 도움을 드릴 수 없습니다. 직접 계속해 주세요.</translation>
 <translation id="6624427990725312378">연락처 정보</translation>
 <translation id="6626291197371920147">유효한 카드 번호 추가</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 검색</translation>
@@ -847,7 +849,7 @@
 <translation id="6824266427216888781">지역 데이터를 로드하지 못했습니다.</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" />에 접속하려 했으나 서버에서 안전성이 낮은 서명 알고리즘을 사용하여 서명된 인증서(예: SHA-1)를 전달했습니다. 이는 서버에서 전달한 보안 사용자 인증 정보가 위조되었을 수 있으며 사용하려는 서버가 아님을 의미합니다. 서버를 가장한 공격자와 통신 중일 수 있습니다.</translation>
 <translation id="6831043979455480757">번역</translation>
-<translation id="6839929833149231406">지구</translation>
+<translation id="6839929833149231406">지역</translation>
 <translation id="6852204201400771460">앱을 새로고침하시겠습니까?</translation>
 <translation id="6865412394715372076">지금은 이 카드를 인증할 수 없습니다.</translation>
 <translation id="6868206169573555318">업데이트를 위해 다시 시작</translation>
@@ -868,7 +870,7 @@
 <translation id="6964255747740675745">네트워크 구성을 파싱하지 못했습니다(잘못된 JSON).</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6965978654500191972">기기</translation>
-<translation id="6970216967273061347">주소</translation>
+<translation id="6970216967273061347">구</translation>
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="6979440798594660689">음소거(기본값)</translation>
@@ -889,7 +891,7 @@
 <translation id="7119414471315195487">다른 탭 또는 프로그램 닫기</translation>
 <translation id="7129409597930077180">이 주소로 배송할 수 없습니다. 다른 주소를 선택하세요.</translation>
 <translation id="7138472120740807366">배달 방법</translation>
-<translation id="7139724024395191329">에미레이트</translation>
+<translation id="7139724024395191329">에미리트</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}other{<ph name="PAYMENT_METHOD_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />개}}</translation>
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}other{<ph name="SHIPPING_OPTION_PREVIEW" /> 외 <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />개}}</translation>
@@ -1000,7 +1002,7 @@
 <translation id="7761701407923456692">서버의 인증서가 URL과 일치하지 않습니다.</translation>
 <translation id="7763386264682878361">결제 매니페스트 파서</translation>
 <translation id="7764225426217299476">주소 추가</translation>
-<translation id="777702478322588152">현</translation>
+<translation id="777702478322588152">도</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="7793809570500803535"><ph name="SITE" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="7800304661137206267">메시지 인증(<ph name="MAC" />)과 키 교환 메커니즘(<ph name="KX" />)을 설정하고 <ph name="CIPHER" />을(를) 사용하여 연결이 암호화되어 있습니다.</translation>

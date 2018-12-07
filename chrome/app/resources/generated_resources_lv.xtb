@@ -150,7 +150,7 @@
 <translation id="1195447618553298278">Nezināma kļūda.</translation>
 <translation id="1197979282329025000">Izgūstot printera <ph name="PRINTER_NAME" /> iespējas, radās kļūda. Šo printeri nevarēja reģistrēt pakalpojumā <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="119944043368869598">Notīrīt visu</translation>
-<translation id="1201402288615127009">Tālāk</translation>
+<translation id="1201402288615127009">Nākamais</translation>
 <translation id="1202596434010270079">Kioska lietotne ir atjaunināta. Lūdzu, izņemiet USB atmiņas karti.</translation>
 <translation id="120368089816228251">Nots</translation>
 <translation id="1205489148908752564">Lasīt un mainīt baltajā sarakstā iekļautos lietotājus</translation>
@@ -915,7 +915,7 @@
 <translation id="2356070529366658676">Vaicāt</translation>
 <translation id="2357949918965361754">Varat izmantot šo funkciju, lai rādītu Chrome saturu televizorā vai citās ierīcēs.</translation>
 <translation id="2359345697448000899">Pārvaldiet savus paplašinājumus, izvēlnē Rīki noklikšķinot uz Paplašinājumi.</translation>
-<translation id="2359808026110333948">Turpiniet</translation>
+<translation id="2359808026110333948">Turpināt</translation>
 <translation id="236117173274098341">Optimizēt</translation>
 <translation id="236141728043665931">Vienmēr bloķēt piekļuvi mikrofonam</translation>
 <translation id="2365507699358342471">Šī vietne var skatīt starpliktuvē kopēto tekstu un attēlus.</translation>
@@ -2688,7 +2688,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5151354047782775295">Atbrīvojiet diskā vietu; pretējā gadījumā atlasītie dati var tikt automātiski dzēsti.</translation>
 <translation id="5153234146675181447">Tālruņa aizmiršana</translation>
 <translation id="5154108062446123722"><ph name="PRINTING_DESTINATION" />: papildu iestatījumi</translation>
-<translation id="5154702632169343078">Tēma</translation>
+<translation id="5154702632169343078">Subjekts</translation>
 <translation id="5157635116769074044">Piespraust šo lapu sākuma ekrānam...</translation>
 <translation id="5158593464696388225">Neizdevās saglabāt attēlu.</translation>
 <translation id="5158983316805876233">Izmantojiet vienu starpniekserveri visiem protokoliem</translation>
@@ -3738,7 +3738,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6706210727756204531">Tvērums</translation>
 <translation id="6707389671160270963">SSL klienta sertifikāts</translation>
 <translation id="6708242697268981054">Avots:</translation>
-<translation id="6709133671862442373">Ziņas</translation>
 <translation id="6709357832553498500">Izveidot savienojumu, izmantojot paplašinājumu <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6718273304615422081">Notiek tilpsaspiešana...</translation>

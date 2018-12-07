@@ -87,7 +87,7 @@
 <translation id="1426410128494586442">Có</translation>
 <translation id="1430915738399379752">In</translation>
 <translation id="1484290072879560759">Chọn địa chỉ giao hàng</translation>
-<translation id="1501859676467574491">Hiển thị các thẻ trong Tài khoản Google của bạn</translation>
+<translation id="1501859676467574491">Hiển thị các thẻ từ Tài khoản Google của bạn</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
 <translation id="1507202001669085618">&lt;p&gt;Bạn sẽ gặp lỗi này nếu đang sử dụng cổng Wi-Fi yêu cầu bạn đăng nhập để có thể vào mạng.&lt;/p&gt;
     &lt;p&gt;Để khắc phục lỗi này, hãy nhấp vào &lt;strong&gt;Kết nối&lt;/strong&gt; trên trang mà bạn đang cố mở.&lt;/p&gt;</translation>
@@ -179,7 +179,7 @@
 <translation id="20817612488360358">Cài đặt proxy hệ thống được đặt để sử dụng nhưng cấu hình proxy rõ ràng cũng được chỉ định.</translation>
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2094505752054353250">Miền không khớp</translation>
-<translation id="2096368010154057602">Khu vực hành chính</translation>
+<translation id="2096368010154057602">Khu hành chính</translation>
 <translation id="2102134110707549001">Đề xuất mật khẩu mạnh…</translation>
 <translation id="2108755909498034140">Khởi động lại máy tính của bạn</translation>
 <translation id="2113977810652731515">Thẻ</translation>
@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">Cho phép (mặc định)</translation>
 <translation id="3427342743765426898">&amp;Làm lại chỉnh sửa</translation>
 <translation id="342781501876943858">Chromium khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
+<translation id="3430691998045392297">Thời gian chiếu phim là khác nhau. Bạn có muốn tiếp tục không?</translation>
 <translation id="3431636764301398940">Lưu thẻ này vào thiết bị này</translation>
 <translation id="3447661539832366887">Chủ sở hữu của thiết bị này đã tắt trò chơi khủng long.</translation>
 <translation id="3447884698081792621">Hiển thị chứng chỉ (do <ph name="ISSUER" /> cấp)</translation>
@@ -449,7 +450,7 @@
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
-<translation id="3885155851504623709">Giáo xứ</translation>
+<translation id="3885155851504623709">Xã</translation>
 <translation id="3886446263141354045">Yêu cầu truy cập trang web này của bạn đã được gửi tới <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Thêm email</translation>
 <translation id="3901925938762663762">Thẻ đã hết hạn</translation>
@@ -617,9 +618,9 @@
 <translation id="5086888986931078152">Bạn có thể mất quyền truy cập vào nội dung được bảo vệ của một số trang web.</translation>
 <translation id="5087286274860437796">Chứng chỉ của máy chủ không hợp lệ tại thời điểm này.</translation>
 <translation id="5087580092889165836">Thêm thẻ</translation>
-<translation id="5089810972385038852">Tỉnh</translation>
+<translation id="5089810972385038852">Tiểu bang</translation>
 <translation id="5094747076828555589">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không được Chromium tin cậy. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
-<translation id="5095208057601539847">Tỉnh</translation>
+<translation id="5095208057601539847">Tỉnh/thành phố</translation>
 <translation id="5098332213681597508">Tên này lấy từ Tài khoản Google của bạn.</translation>
 <translation id="5115563688576182185">(64 bit)</translation>
 <translation id="5128122789703661928">Không thể xóa phiên do tên phiên không hợp lệ.</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">Bạn đang xem trang tiện ích</translation>
 <translation id="6596325263575161958">Tùy chọn mã hóa</translation>
 <translation id="6604181099783169992">Cảm biến chuyển động hoặc ánh sáng</translation>
+<translation id="6607617806003952240">Tôi không thể trợ giúp được nữa, vui lòng tiếp tục theo cách thủ công.</translation>
 <translation id="6624427990725312378">Thông tin liên hệ</translation>
 <translation id="6626291197371920147">Thêm số thẻ hợp lệ</translation>
 <translation id="6628463337424475685">Tìm kiếm trên <ph name="ENGINE" /></translation>
@@ -847,7 +849,7 @@
 <translation id="6824266427216888781">Không tải được dữ liệu khu vực</translation>
 <translation id="6825578344716086703">Bạn đã cố gắng truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu (chẳng hạn như SHA-1). Điều này có nghĩa là thông tin đăng nhập bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang kết nối với kẻ tấn công).</translation>
 <translation id="6831043979455480757">Dịch</translation>
-<translation id="6839929833149231406">Vùng</translation>
+<translation id="6839929833149231406">Khu vực</translation>
 <translation id="6852204201400771460">Tải lại ứng dụng?</translation>
 <translation id="6865412394715372076">Hiện không thể xác minh thẻ này</translation>
 <translation id="6868206169573555318">Khởi động lại để cập nhật</translation>
@@ -889,7 +891,7 @@
 <translation id="7119414471315195487">Đóng các tab hoặc chương trình khác</translation>
 <translation id="7129409597930077180">Không thể giao hàng đến địa chỉ này. Chọn một địa chỉ khác.</translation>
 <translation id="7138472120740807366">Phương thức phân phối</translation>
-<translation id="7139724024395191329">Tiểu vương quốc Ả rập</translation>
+<translation id="7139724024395191329">Tiểu vương quốc</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> phương thức thanh toán khác}other{<ph name="PAYMENT_METHOD_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> phương thức thanh toán khác}}</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}other{<ph name="SHIPPING_OPTION_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> tùy chọn giao hàng khác}}</translation>

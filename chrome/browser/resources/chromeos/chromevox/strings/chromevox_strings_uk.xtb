@@ -51,7 +51,6 @@
 <translation id="1334095593597963605">озвучення символів і слів</translation>
 <translation id="1339428534620983148">Попередній стовпець таблиці</translation>
 <translation id="1342835525016946179">стаття</translation>
-<translation id="1346059596910821859">Чайові</translation>
 <translation id="1346748346194534595">Праворуч</translation>
 <translation id="135978014023467274">Тепер ви використовуєте ChromeVox 63!</translation>
 <translation id="136718599399906424">Наступний рядок таблиці</translation>
@@ -104,7 +103,6 @@
 <translation id="1828385960365606039">травень</translation>
 <translation id="1834891354138622109">Стовпець</translation>
 <translation id="1845944666972354496">Двічі торкніться, щоб активувати</translation>
-<translation id="1846771122725914429">Брайлівський Bluetooth-дисплей</translation>
 <translation id="1865601187525349519">Кінець тексту</translation>
 <translation id="1876229593313240038">документ</translation>
 <translation id="188130072164734898">Диктувати поточну дату та час.</translation>
@@ -161,7 +159,6 @@
 <translation id="2422937916923936891">Прапорець пункту меню</translation>
 <translation id="2428534162001909979">Меню команд</translation>
 <translation id="2429669115401274487">пп</translation>
-<translation id="242998846562331953">Підзаголовок</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> – тепер нова клавіша-модифікатор ChromeVox.</translation>
 <translation id="2450814015951372393">Прапорець</translation>
 <translation id="2462626033734746142">Група перемикачів</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">Брайлівські субтитри ввімкнено.</translation>
 <translation id="5891934789323004067">Таблиця</translation>
 <translation id="5899860758576822363">Відтворювати тихіше, коли ChromeVox зчитує з екрана</translation>
-<translation id="5906974869830879618">Введіть PIN-код</translation>
 <translation id="5921587111466148855">Розділ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак рівності}one{# знак рівності}few{# знаки рівності}many{# знаків рівності}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Скинути</translation>
@@ -705,7 +701,6 @@
 <translation id="641759969622533235">{COUNT,plural, =1{двокрапка}one{# двокрапка}few{# двокрапки}many{# двокрапок}other{# colons}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, меню</translation>
 <translation id="6444046323172968959">Діалогове вікно сповіщень</translation>
-<translation id="6452403590345320472">Зміст</translation>
 <translation id="6459511626086141404">Звичайна розкладка</translation>
 <translation id="6468049171101508116">Наступна кнопка</translation>
 <translation id="646954774886932461">Покажчик</translation>
@@ -1000,7 +995,6 @@
 <translation id="948171205378458592">Зменшити темп мовлення</translation>
 <translation id="958854023026327378">Проведіть пальцем униз</translation>
 <translation id="962913030769097253">Наступний заголовок рівня 1</translation>
-<translation id="966588271015727539">Виберіть брайлівський Bluetooth-дисплей</translation>
 <translation id="973955474346881951">Увімкнути чи вимкнути режим закріплення</translation>
 <translation id="976849232629612000">Немає елементів.</translation>
 <translation id="995852680044449248">Початок закресленого тексту</translation>

@@ -105,13 +105,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
           Per impostazione predefinita, non ci sono modalità di sblocco rapido disponibili per i dispositivi gestiti.</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
-<translation id="1231349879329465225">Consente di attivare o disattivare Fast Transition.
-      La scelta è valida per tutti gli utenti e per tutte le interfacce sul dispositivo.
-      Per poter usare Fast Transition è necessario attivare sia questa impostazione, sia la proprietà ONC per ogni rete.
-      Una volta impostato, Fast Transition rimane valido fino alla modifica della norma per disattivarlo.
-
-      Se la norma non è impostata o è impostata su false, Fast Transition non viene utilizzato.
-      Se è impostata su true, Fast Transition viene utilizzato quando il punto di accesso wireless lo supporta.</translation>
 <translation id="1243570869342663665">Controlla il filtro dei contenuti per adulti di SafeSites.</translation>
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
@@ -129,7 +122,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       A differenza della norma <ph name="URL_LIST_POLICY_NAME" />, le regole vengono applicate in entrambe le direzioni. In altre parole, quando il componente aggiuntivo Internet Explorer è presente e attivato, la norma stabilisce se <ph name="IE_PRODUCT_NAME" /> deve aprire questi URL in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utilizza uno script proxy .pac</translation>
 <translation id="1304973015437969093">ID app/estensioni e URL di aggiornamento da installare automaticamente</translation>
-<translation id="1307415922184340052">Invia nome utente e nome file al server delle stampanti native per ogni processo di stampa. L'impostazione predefinita non prevede l'invio.</translation>
 <translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni previste per le origini non sicure.</translation>
 <translation id="1313457536529613143">Consente di specificare la percentuale di regolazione del ritardo di oscuramento dello schermo quando viene osservata l'attività dell'utente mentre lo schermo è oscurato o subito dopo lo spegnimento dello schermo.
 
@@ -273,7 +265,7 @@ Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME" 
 <translation id="1803646570632580723">Elenco di applicazioni bloccate da visualizzare in Avvio applicazioni</translation>
 <translation id="1808715480127969042">Blocca cookie su questi siti</translation>
 <translation id="1810261428246410396">Consenti l'uso del tethering istantaneo.</translation>
-<translation id="1817685358399181673">Questa norma consente di specificare l'immagine <ph name="PLUGIN_VM_NAME" /> per un utente. Per impostare la norma, è necessario specificare l'URL da cui scaricare l'immagine e specificare l'hash SHA-256 utilizzato per verificare l'integrità del download.
+<translation id="1817685358399181673">Questa norma consente di specificare l'immagine <ph name="PLUGIN_VM_NAME" /> per un utente. Per impostare la norma, devi specificare l'URL da cui scaricare l'immagine e specificare l'hash SHA-256 utilizzato per verificare l'integrità del download.
 
       La norma deve essere specificata sotto forma di stringa contenente l'URL e l'hash in formato JSON.</translation>
 <translation id="1827523283178827583">Utilizza server proxy definiti</translation>
@@ -3225,5 +3217,4 @@ https://www.w3.org/TR/secure-contexts/
       Ai dispositivi non sarà consentito verificare automaticamente la disponibilità di aggiornamenti durante gli intervalli di tempo specificati. A causa di possibili motivi di sicurezza, questa norma non avrà conseguenze sui dispositivi che richiedono il rollback o dispongono di una versione inferiore alla versione minima di <ph name="PRODUCT_OS_NAME" />. Inoltre questa norma non impedirà le verifiche degli aggiornamenti richieste dagli utenti o dagli amministratori.
       Quando la norma non viene impostata o non contiene intervalli di tempo:
       Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme.</translation>
-<translation id="991560005425213776">Invia nome utente e nome file alle stampanti native</translation>
 </translationbundle>

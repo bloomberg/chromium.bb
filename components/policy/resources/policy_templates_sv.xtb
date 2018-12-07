@@ -119,13 +119,6 @@
 
           Som standard är inga metoder för snabb upplåsning tillgängliga på hanterade enheter.</translation>
 <translation id="123081309365616809">Aktivera möjlighet att casta till enheten</translation>
-<translation id="1231349879329465225">Gör det möjligt att aktivera eller inaktivera Fast Transition.
-      Detta gäller alla användare och alla gränssnitt på enheten.
-      Både den här inställningen och ONC-egenskapen som ställs in per nätverk måste ha aktiverats för att Fast Transition ska kunna användas.
-      När principen har ställts in används Fast Transition tills det inaktiveras via principen.
-
-      Om principen saknar inställning eller är inställd på falskt används inte Fast Transition.
-      När principen är inställd på sant används Fast Transition om den trådlösa åtkomstpunkten har stöd för det.</translation>
 <translation id="1243570869342663665">Styr SafeSites-filtrering av barnförbjudet innehåll.</translation>
 <translation id="1257550411839719984">Ange standardkatalog för nedladdning</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
@@ -143,7 +136,6 @@
       Till skillnad från <ph name="URL_LIST_POLICY_NAME" /> gäller reglerna åt båda hållen. Det innebär att när tillägget för Internet Explorer är installerat och aktiverat styr det även huruvida <ph name="IE_PRODUCT_NAME" /> ska öppna dessa webbadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
 <translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
-<translation id="1307415922184340052">Skicka användarnamn och filnamn till den lokala skrivarservern för alla utskriftsjobb. Standardinställningen är att inte skicka dem.</translation>
 <translation id="1307454923744766368">Ursprung eller värdnamnsmönster som begränsningar av
       osäkra ursprung inte ska gälla för</translation>
 <translation id="1313457536529613143">Anger den procentsats med vilken fördröjningen av skärmdämpningen skalanpassas när användaren gör något då skärmen är dämpad eller strax efter det att skärmen har stängts av.
@@ -3448,5 +3440,4 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       får inte enheter söka efter uppdateringar automatiskt inom de angivna tidsintervallen. Enheter som behöver återställas eller inte uppfyller de lägsta versionskraven för <ph name="PRODUCT_OS_NAME" /> påverkas inte av principen på grund av möjliga säkerhetsproblem. Dessutom kan principen inte blockera sökningar efter uppdateringar som har begärts av användare eller administratörer.
       Om principen inte är inställd alls
       blockeras inga automatiska sökningar efter uppdateringar av principen, men de kan blockeras av andra principer.</translation>
-<translation id="991560005425213776">Skicka användarnamn och filnamn till lokala skrivare</translation>
 </translationbundle>

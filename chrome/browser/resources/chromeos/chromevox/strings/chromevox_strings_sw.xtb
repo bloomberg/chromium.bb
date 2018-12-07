@@ -32,7 +32,7 @@
 <translation id="1177863135347784049">Maalum</translation>
 <translation id="1188858454923323853">nyongeza</translation>
 <translation id="1195238899008218998">Maelezo kuhusu kitabu</translation>
-<translation id="1201402288615127009">Endelea</translation>
+<translation id="1201402288615127009">Ifuatayo</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Inaipa Chrome Sauti</translation>
 <translation id="1225437811932752266">Hongera! Umejifunza mambo muhimu kuhusu kutumia ChromeVox. Kumbuka kwamba unaweza kufungua menyu ya amri za ChromeVox wakati wowote kwa kubonyeza Tafuta+Nukta. Ili upate maelezo zaidi kuhusu ChromeVox na mfumo wa uendeshaji wa Chrome, soma makala yafuatayo. Ikiwa umemaliza mafunzo, tumia ChromeVox kusogeza hadi kwenye kitufe cha Kufunga na ukibofye.</translation>
@@ -50,7 +50,6 @@
 <translation id="1334095593597963605">herufi na mwangwi wa neno</translation>
 <translation id="1339428534620983148">Safu wima ya jedwali lililotangulia</translation>
 <translation id="1342835525016946179">makala</translation>
-<translation id="1346059596910821859">Kidokezo</translation>
 <translation id="1346748346194534595">Kulia</translation>
 <translation id="135978014023467274">Kifaa chako kimesasishwa kitumie ChromeVox 63!</translation>
 <translation id="136718599399906424">Safu mlalo ya jedwali linalofuata</translation>
@@ -103,7 +102,6 @@
 <translation id="1828385960365606039">Mei</translation>
 <translation id="1834891354138622109">Safu wima</translation>
 <translation id="1845944666972354496">Gusa mara mbili ili uwashe</translation>
-<translation id="1846771122725914429">Onyesho la Braille ya Bluetooth</translation>
 <translation id="1865601187525349519">Mwisho wa maandishi</translation>
 <translation id="1876229593313240038">hati</translation>
 <translation id="188130072164734898">Tamka saa ya sasa na tarehe.</translation>
@@ -161,7 +159,6 @@
 <translation id="2422937916923936891">Kisanduku cha kuteua cha kipengee cha menyu</translation>
 <translation id="2428534162001909979">Menyu za Amri</translation>
 <translation id="2429669115401274487">PM</translation>
-<translation id="242998846562331953">Manukuu</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> sasa ni kirekebishaji kipya cha ChromeVox.</translation>
 <translation id="2450814015951372393">Kisanduku cha kuteua</translation>
 <translation id="2462626033734746142">Vitufe kadhaa vya mviringo</translation>
@@ -648,7 +645,6 @@
 <translation id="5887397643266327462">Manukuu ya breli yamewashwa.</translation>
 <translation id="5891934789323004067">Jedwali</translation>
 <translation id="5899860758576822363">Cheza kwa sauti ya chini ChromeVox inapozungumza</translation>
-<translation id="5906974869830879618">Tafadhali weka PIN</translation>
 <translation id="5921587111466148855">Sura</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{sawa}other{alama # za sawa}}</translation>
 <translation id="5939518447894949180">Weka upya</translation>
@@ -705,7 +701,6 @@
 <translation id="641759969622533235">{COUNT,plural, =1{nuktambili}other{nuktambili #}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menyu</translation>
 <translation id="6444046323172968959">Arifa ya mazungumzo</translation>
-<translation id="6452403590345320472">Yaliyomo</translation>
 <translation id="6459511626086141404">Ramani msingi bapa</translation>
 <translation id="6468049171101508116">Kitufe kinachofuata</translation>
 <translation id="646954774886932461">Faharasa</translation>
@@ -1000,7 +995,6 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="948171205378458592">Punguza kasi ya usemi</translation>
 <translation id="958854023026327378">Telezesha kidole kimoja kuelekea chini</translation>
 <translation id="962913030769097253">Kichwa cha ngazi ya 1 kinachofuata</translation>
-<translation id="966588271015727539">Chagua onyesho la braille ya bluetooth</translation>
 <translation id="973955474346881951">Washa/Zima hali ya kunata</translation>
 <translation id="976849232629612000">Hakuna vipengee.</translation>
 <translation id="995852680044449248">Mwanzo wa maandishi yaliyokatwa kati</translation>

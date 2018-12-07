@@ -179,7 +179,7 @@
 <translation id="20817612488360358">Подешено је да се користе системска подешавања проксија, али је наведена експлицитна конфигурација проксија.</translation>
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Домени се не подударају</translation>
-<translation id="2096368010154057602">Одсек</translation>
+<translation id="2096368010154057602">Департман</translation>
 <translation id="2102134110707549001">Предложи јаку лозинку…</translation>
 <translation id="2108755909498034140">Поново покрените рачунар</translation>
 <translation id="2113977810652731515">Картица</translation>
@@ -220,7 +220,7 @@
 <translation id="2355395290879513365">Нападачи ће моћи да виде слике које гледате на овом сајту и да их измене како би вас преварили.</translation>
 <translation id="2356070529366658676">Питај</translation>
 <translation id="2359629602545592467">Више</translation>
-<translation id="2359808026110333948">Наставите</translation>
+<translation id="2359808026110333948">Настави</translation>
 <translation id="2360873523816792727">Да бисте користили картице на свим уређајима, укључите синхронизацију.</translation>
 <translation id="2365563543831475020">Извештај о отказивању снимљен у <ph name="CRASH_TIME" /> није отпремљен</translation>
 <translation id="2367567093518048410">Ниво</translation>
@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">Дозволи (подразумевано)</translation>
 <translation id="3427342743765426898">&amp;Понови измену</translation>
 <translation id="342781501876943858">Chromium вам препоручује да ресетујете лозинку ако сте је користили на другим сајтовима.</translation>
+<translation id="3430691998045392297">Приказ филма се разликује. Желите ли да наставите?</translation>
 <translation id="3431636764301398940">Сачувај ову картицу на овом уређају</translation>
 <translation id="3447661539832366887">Власник овог уређаја је искључио ову застарелу игру.</translation>
 <translation id="3447884698081792621">Прикажи сертификат (издаје <ph name="ISSUER" />)</translation>
@@ -619,7 +620,7 @@
 <translation id="5087580092889165836">Додај картицу</translation>
 <translation id="5089810972385038852">Држава</translation>
 <translation id="5094747076828555589">Овај сервер не може да докаже да је <ph name="DOMAIN" />; Chromium нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
-<translation id="5095208057601539847">Покрајина</translation>
+<translation id="5095208057601539847">Провинција</translation>
 <translation id="5098332213681597508">То је име са вашег Google налога.</translation>
 <translation id="5115563688576182185">(64-битни)</translation>
 <translation id="5128122789703661928">Сесија са овим називом није доступна за брисање.</translation>
@@ -821,6 +822,7 @@
 <translation id="6569060085658103619">Прегледате страницу додатка.</translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
 <translation id="6604181099783169992">Сензори за покрет или светло</translation>
+<translation id="6607617806003952240">Више не могу да вам помажем, наставите ручно.</translation>
 <translation id="6624427990725312378">Контакт информације</translation>
 <translation id="6626291197371920147">Додајте важећи број картице</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> претрага</translation>
@@ -839,7 +841,6 @@
 <translation id="6744009308914054259">Док чекате на везу, посетите Преузимања и читајте офлајн чланке.</translation>
 <translation id="6753269504797312559">Вредност смерница</translation>
 <translation id="6757797048963528358">Уређај је прешао у режим спавања.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Ова картица тренутно не може да се дода}one{Ове картице тренутно не могу да се додају}few{Ове картице тренутно не могу да се додају}other{Ове картице тренутно не могу да се додају}}</translation>
 <translation id="6778737459546443941">Родитељ га још увек није одобрио</translation>
 <translation id="679355240208270552">Занемарује се зато што смернице нису омогућиле подразумевани претраживач.</translation>
 <translation id="681021252041861472">Обавезно поље</translation>
@@ -852,7 +853,6 @@
 <translation id="6865412394715372076">Тренутно не можемо да верификујемо ову картицу</translation>
 <translation id="6868206169573555318">Поново покрените да би се ажурирало</translation>
 <translation id="6874604403660855544">&amp;Понови додавање</translation>
-<translation id="6885646002011712606">Помоћник за аутоматско попуњавање је доступан у дну екрана</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Ниво смерница није подржан.</translation>
 <translation id="6895330447102777224">Картица је потврђена</translation>
@@ -869,7 +869,7 @@
 <translation id="6964255747740675745">Рашчлањивање конфигурације мреже није успело (неважећи JSON).</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="6965978654500191972">Уређај</translation>
-<translation id="6970216967273061347">Округ</translation>
+<translation id="6970216967273061347">Дистрикт</translation>
 <translation id="6973656660372572881">Наведени су и фиксни прокси сервери и URL адреса .pac скрипте.</translation>
 <translation id="6979158407327259162">Google диск</translation>
 <translation id="6979440798594660689">Искључен (подразумевано)</translation>
@@ -892,7 +892,6 @@
 <translation id="7138472120740807366">Начин испоруке</translation>
 <translation id="7139724024395191329">Емират</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7158980942472052083">URL је неважећи. Мора да буде URL са стандардном шемом.</translation>
 <translation id="717330890047184534">Gaia ИД:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> и још <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Чувај и уноси начине плаћања</translation>
@@ -996,7 +995,6 @@
 <translation id="7716424297397655342">Није могуће учитати овај сајт из кеша</translation>
 <translation id="7723047071702270851">Измените картицу</translation>
 <translation id="774634243536837715">Опасан садржај је блокиран.</translation>
-<translation id="7747182086178764941">Приказује се прво покретање екрана помоћника аутоматског попуњавања</translation>
 <translation id="7752995774971033316">Не управља</translation>
 <translation id="7755287808199759310">Родитељ може да га деблокира за тебе</translation>
 <translation id="7758069387465995638">Можда је заштитни зид или антивирусни софтвер блокирао везу.</translation>

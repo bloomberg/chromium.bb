@@ -36,7 +36,7 @@
 <translation id="1173894706177603556">Pervadinti</translation>
 <translation id="1175364870820465910">&amp;Spausdinti...</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
-<translation id="1201402288615127009">Kitas</translation>
+<translation id="1201402288615127009">Toliau</translation>
 <translation id="1201895884277373915">Daugiau iš šios svetainės</translation>
 <translation id="1206967143813997005">Netinkamas pirminis parašas</translation>
 <translation id="1209206284964581585">Slėpti dabar</translation>
@@ -220,7 +220,7 @@
 <translation id="2355395290879513365">Užpuolikai galbūt galės matyti, kuriuos šios svetainės vaizdus peržiūrite, ir juos pakeis siekdami jus suklaidinti.</translation>
 <translation id="2356070529366658676">Paklausti</translation>
 <translation id="2359629602545592467">Kelios</translation>
-<translation id="2359808026110333948">Tęskite</translation>
+<translation id="2359808026110333948">Tęsti</translation>
 <translation id="2360873523816792727">Norėdami naudoti korteles visuose įrenginiuose, įjunkite sinchronizavimą.</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> užfiksuota strigčių ataskaita nebuvo įkelta</translation>
 <translation id="2367567093518048410">Lygis</translation>
@@ -386,6 +386,7 @@
 <translation id="3427092606871434483">Leisti (numatytoji parinktis)</translation>
 <translation id="3427342743765426898">&amp;Redaguoti dar kartą</translation>
 <translation id="342781501876943858">„Chromium“ rekomenduoja iš naujo nustatyti slaptažodį, jei naudojate jį kitose svetainėse.</translation>
+<translation id="3430691998045392297">Filmo vaizdas ekrane skiriasi, ar norite tęsti?</translation>
 <translation id="3431636764301398940">Išsaugoti šią kortelę šiame įrenginyje</translation>
 <translation id="3447661539832366887">Įrenginio savininkas išjungė dinozauro žaidimą.</translation>
 <translation id="3447884698081792621">Rodyti sertifikatą (išdavė „<ph name="ISSUER" />“)</translation>
@@ -450,7 +451,7 @@
 <translation id="385051799172605136">Grįžti</translation>
 <translation id="3858027520442213535">Atnaujinti datą ir laiką</translation>
 <translation id="3884278016824448484">Nesuderinamas įrenginio identifikatorius</translation>
-<translation id="3885155851504623709">Parapija</translation>
+<translation id="3885155851504623709">Apylinkė</translation>
 <translation id="3886446263141354045">Jūsų užklausa pasiekti šią svetainę išsiųsta <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Pridėti el. pašto adresą</translation>
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
@@ -823,6 +824,7 @@
 <translation id="6569060085658103619">Peržiūrite plėtinio puslapį</translation>
 <translation id="6596325263575161958">Šifravimo parinktys</translation>
 <translation id="6604181099783169992">Judesio arba šviesos jutikliai</translation>
+<translation id="6607617806003952240">Nebegaliu padėti, tęskite patys.</translation>
 <translation id="6624427990725312378">Kontaktinė informacija</translation>
 <translation id="6626291197371920147">Galiojančios kortelės numerio pridėjimas</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
@@ -882,7 +884,7 @@
 <translation id="7053983685419859001">Blokuoti</translation>
 <translation id="7064851114919012435">Kontaktinė informacija</translation>
 <translation id="7079718277001814089">Šioje svetainėje yra kenkėjiškų programų</translation>
-<translation id="7087282848513945231">Apskritis</translation>
+<translation id="7087282848513945231">Apygarda</translation>
 <translation id="7090678807593890770">Sistemoje „Google“ atlikite paiešką pagal užklausą „<ph name="LINK" />“</translation>
 <translation id="7108338896283013870">Slėpti</translation>
 <translation id="7108819624672055576">Leidžiama pagal plėtinį</translation>

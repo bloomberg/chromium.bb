@@ -179,7 +179,7 @@
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
 <translation id="2091887806945687916">صدا</translation>
 <translation id="2094505752054353250">عدم تطابق دامنه</translation>
-<translation id="2096368010154057602">اداره</translation>
+<translation id="2096368010154057602">حوزه</translation>
 <translation id="2102134110707549001">پیشنهاد گذرواژه قوی…</translation>
 <translation id="2108755909498034140">رایانه را راه‌اندازی مجدد کنید</translation>
 <translation id="2113977810652731515">کارت</translation>
@@ -338,7 +338,7 @@
 <translation id="3162559335345991374">‏شبکه Wi-Fi مورد استفاده‌تان احتمالاً نیاز دارد که به یک صفحه ورود به سیستم بروید.</translation>
 <translation id="3167968892399408617">صفحه‌هایی که در برگه‌های حالت ناشناس مرور می‌کنید، بعد از بستن همه برگه‌های حالت ناشناس در سابقه مرورگر، فضای ذخیره کوکی یا سابقه جستجو باقی نمی‌مانند. فایل‌هایی که بارگیری می‌کنید یا نشانک‌هایی که ایجاد می‌کنید حفظ می‌شود.</translation>
 <translation id="3169472444629675720">کشف کردن</translation>
-<translation id="3174168572213147020">ایسلند</translation>
+<translation id="3174168572213147020">جزیره</translation>
 <translation id="3176929007561373547">تنظیمات پروکسی‌ را بررسی کنید یا با سرپرست شبکه‌‌تان تماس بگیرید تا
       مطمئن شوید سرور پروکسی کار می‌کند. اگر مطمئن نیستید که باید از سرور
       پروکسی استفاده کنید:
@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">اجازه (پیش‌فرض)</translation>
 <translation id="3427342743765426898">&amp;انجام مجدد ویرایش</translation>
 <translation id="342781501876943858">‏Chromium توصیه می‌کند اگر از گذرواژه‌تان در سایت‌های دیگری استفاده کردید آن را بازنشانی کنید.</translation>
+<translation id="3430691998045392297">نمایش فیلم متفاوت است، می‌خواهید ادامه دهید؟</translation>
 <translation id="3431636764301398940">این کارت را در این دستگاه ذخیره کنید</translation>
 <translation id="3447661539832366887">مالک این دستگاه بازی دایناسور را خاموش کرده است</translation>
 <translation id="3447884698081792621">نمایش  گواهی (صادرشده توسط <ph name="ISSUER" />)</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">درحال مشاهده یک صفحه افزونه هستید</translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
 <translation id="6604181099783169992">حسگرهای نوری یا حرکتی</translation>
+<translation id="6607617806003952240">دیگر نمی‌توانم کمک کنم، لطفاً به‌صورت دستی ادامه دهید.</translation>
 <translation id="6624427990725312378">اطلاعات تماس</translation>
 <translation id="6626291197371920147">افزودن شماره کارت معتبر</translation>
 <translation id="6628463337424475685">جستجوی <ph name="ENGINE" /></translation>
@@ -840,7 +842,6 @@
 <translation id="6744009308914054259">وقتی درانتظار اتصال هستید، می‌توانید برای خواندن مقاله‌های آفلاین، «بارگیری‌ها» را مشاهده کنید.</translation>
 <translation id="6753269504797312559">مقدار خط‌‌مشی</translation>
 <translation id="6757797048963528358">دستگاهتان به خواب رفته است.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{درحال‌حاضر نمی‌توان این کارت را اضافه کرد}one{درحال‌حاضر نمی‌توان این کارت‌ها را اضافه کرد}other{درحال‌حاضر نمی‌توان این کارت‌ها را اضافه کرد}}</translation>
 <translation id="6778737459546443941">والدینتان هنوز این سایت را تأیید نکرده‌اند</translation>
 <translation id="679355240208270552">نادیده گرفته شد، زیرا جستجوی پیش‌فرض توسط خط‌مشی فعال نشده است.</translation>
 <translation id="681021252041861472">فیلد ضروری</translation>
@@ -848,12 +849,11 @@
 <translation id="6824266427216888781">داده‌های منطقه‌ها بارگیری نشد</translation>
 <translation id="6825578344716086703">‏تلاش کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهینامه ارائه‌شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف (مانند SHA-1) امضا شده است. یعنی ممکن است اعتبارنامه امنیتی ارائه‌شده از سوی سرور جعلی باشد و ممکن است سرور، سرور موردانتظار شما نباشد (ممکن است با یک مهاجم در ارتباط باشید).</translation>
 <translation id="6831043979455480757">ترجمه</translation>
-<translation id="6839929833149231406">ناحیه</translation>
+<translation id="6839929833149231406">منطقه حکومتی</translation>
 <translation id="6852204201400771460">برنامه تازه‌سازی شود؟</translation>
 <translation id="6865412394715372076">درحال‌حاضر نمی‌توان این کارت را به تأیید رساند</translation>
 <translation id="6868206169573555318">برای به‌روزرسانی، دوباره راه‌اندازی کنید</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
-<translation id="6885646002011712606">دستیار تکمیل خودکار نزدیک پایین صفحه نمایش دردسترس است</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="6895330447102777224">کارتتان تأیید شد</translation>
@@ -870,7 +870,7 @@
 <translation id="6964255747740675745">‏پیکربندی شبکه تجزیه نشد (JSON نامعتبر).</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="6965978654500191972">دستگاه</translation>
-<translation id="6970216967273061347">منطقه</translation>
+<translation id="6970216967273061347">حوزه</translation>
 <translation id="6973656660372572881">‏هم سرورهای پروکسی ثابت و هم آدرس اسکریپت pac. مشخص شده‌اند.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">بی‌صدا (پیش‌فرض)</translation>
@@ -883,7 +883,7 @@
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7064851114919012435">اطلاعات تماس</translation>
 <translation id="7079718277001814089">این سایت حاوی بدافزار است</translation>
-<translation id="7087282848513945231">بخش/شهرستان</translation>
+<translation id="7087282848513945231">شهرستان</translation>
 <translation id="7090678807593890770">‏جستجوی <ph name="LINK" /> در Google</translation>
 <translation id="7108338896283013870">عدم نمایش</translation>
 <translation id="7108819624672055576">توسط افزونه مجاز شده است</translation>
@@ -891,9 +891,8 @@
 <translation id="7119414471315195487">برگه‌ها یا برنامه‌های دیگر را ببندید</translation>
 <translation id="7129409597930077180">ارسال به این نشانی ممکن نیست. نشانی دیگری را انتخاب کنید.</translation>
 <translation id="7138472120740807366">روش تحویل</translation>
-<translation id="7139724024395191329">امارات</translation>
+<translation id="7139724024395191329">امارت</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}one{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> روش دیگر}}</translation>
-<translation id="7158980942472052083">نشانی وب نامعتبر است. باید یک نشانی وب با طرح استاندارد باشد.</translation>
 <translation id="717330890047184534">‏شناسه Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}one{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> گزینه دیگر}}</translation>
 <translation id="7179323680825933600">ذخیره و تکمیل روش‌های پرداخت</translation>
@@ -997,7 +996,6 @@
 <translation id="7716424297397655342">این سایت نمی‌تواند از حافظه پنهان بار شود</translation>
 <translation id="7723047071702270851">ویرایش کارت</translation>
 <translation id="774634243536837715">محتوای خطرناک مسدود شد.</translation>
-<translation id="7747182086178764941">صفحه اولین اجرای دستیار تکمیل خودکار نشان داده می‌شود</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
 <translation id="7755287808199759310">والدینتان می‌توانند این سایت را برای شما بگشایند</translation>
 <translation id="7758069387465995638">دیوار آتش یا نرم‌افزار ضدویروس ممکن است مانع اتصال شده باشد.</translation>
@@ -1005,7 +1003,7 @@
 <translation id="7761701407923456692">گواهی سرور با نشانی وب مطابقت ندارد.</translation>
 <translation id="7763386264682878361">تجزیه‌کننده مانیفست پرداخت</translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
-<translation id="777702478322588152">اداره ریاست</translation>
+<translation id="777702478322588152">حوزه اداری</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7793809570500803535">ممکن است صفحهٔ وب در <ph name="SITE" /> موقتاً خراب باشد یا ممکن است برای همیشه به یک آدرس وب جدید منتقل شده باشد.</translation>
 <translation id="7800304661137206267">اتصال با استفاده از <ph name="CIPHER" /> و با <ph name="MAC" /> برای راستی‌آزمایی پیام و <ph name="KX" /> به‌عنوان مکانیسم تبدیل کلید رمزگذاری می‌شود.</translation>

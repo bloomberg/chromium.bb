@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">Zezwalaj (domyślnie)</translation>
 <translation id="3427342743765426898">&amp;Ponów edycję</translation>
 <translation id="342781501876943858">Chromium zaleca zresetowanie hasła, jeśli zostało użyte na innej stronie.</translation>
+<translation id="3430691998045392297">Wyświetlany jest inny film. Czy chcesz kontynuować?</translation>
 <translation id="3431636764301398940">Zapisz tę kartę na tym urządzeniu</translation>
 <translation id="3447661539832366887">Właściciel tego urządzenia wyłączył grę z dinozaurem.</translation>
 <translation id="3447884698081792621">Pokaż certyfikat (wydany przez: <ph name="ISSUER" />)</translation>
@@ -449,7 +450,7 @@
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3858027520442213535">Zaktualizuj datę i godzinę</translation>
 <translation id="3884278016824448484">Konflikt identyfikatorów urządzeń</translation>
-<translation id="3885155851504623709">Parafia</translation>
+<translation id="3885155851504623709">Gmina</translation>
 <translation id="3886446263141354045">Twoja prośba o dostęp to tej strony została wysłana do: <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Dodaj adres e-mail</translation>
 <translation id="3901925938762663762">Karta straciła ważność</translation>
@@ -822,6 +823,7 @@
 <translation id="6569060085658103619">Przeglądasz stronę rozszerzenia</translation>
 <translation id="6596325263575161958">Opcje szyfrowania</translation>
 <translation id="6604181099783169992">Czujniki ruchu lub światła</translation>
+<translation id="6607617806003952240">Nie mogę Ci tutaj pomóc. Kontynuuj samodzielnie.</translation>
 <translation id="6624427990725312378">Dane kontaktowe</translation>
 <translation id="6626291197371920147">Dodaj prawidłowy numer karty</translation>
 <translation id="6628463337424475685">Wyszukiwarka <ph name="ENGINE" /></translation>
@@ -840,7 +842,6 @@
 <translation id="6744009308914054259">Dopóki nie masz połączenia, możesz poczytać artykuły offline z Pobranych plików.</translation>
 <translation id="6753269504797312559">Wartość zasady</translation>
 <translation id="6757797048963528358">Twoje urządzenie przeszło w tryb uśpienia.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Nie można teraz dodać tej karty}few{Nie można teraz dodać tych kart}many{Nie można teraz dodać tych kart}other{Nie można teraz dodać tych kart}}</translation>
 <translation id="6778737459546443941">Twój rodzic jeszcze na to nie zezwolił</translation>
 <translation id="679355240208270552">Ignorowana, ponieważ wyszukiwarka domyślna nie jest dozwolona przez zasadę.</translation>
 <translation id="681021252041861472">Pole wymagane</translation>
@@ -848,12 +849,11 @@
 <translation id="6824266427216888781">Nie udało się załadować danych dotyczących regionów</translation>
 <translation id="6825578344716086703">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat podpisany słabym algorytmem (takim jak SHA-1). Oznacza to, że dane uwierzytelniające podane przez serwer mogły zostać sfałszowane, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem).</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
-<translation id="6839929833149231406">Obszar</translation>
+<translation id="6839929833149231406">Dzielnica</translation>
 <translation id="6852204201400771460">Załadować ponownie aplikację?</translation>
 <translation id="6865412394715372076">Nie można teraz zweryfikować karty</translation>
 <translation id="6868206169573555318">Uruchom ponownie, by zaktualizować</translation>
 <translation id="6874604403660855544">&amp;Ponów dodanie</translation>
-<translation id="6885646002011712606">Asystent autouzupełniania jest dostępny u dołu ekranu</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
 <translation id="6895330447102777224">Karta została potwierdzona</translation>
@@ -893,7 +893,6 @@
 <translation id="7138472120740807366">Metoda dostawy</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7158980942472052083">Nieprawidłowy URL. Wymagany jest URL zgodny ze schematem standardowym.</translation>
 <translation id="717330890047184534">Identyfikator GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Zapisuj i automatycznie uzupełniaj informacje o formach płatności</translation>
@@ -997,7 +996,6 @@ Dodatkowe informacje:
 <translation id="7716424297397655342">Nie można załadować tej strony z pamięci podręcznej</translation>
 <translation id="7723047071702270851">Edytuj kartę</translation>
 <translation id="774634243536837715">Zablokowano niebezpieczne treści.</translation>
-<translation id="7747182086178764941">Wyświetlony został ekran pierwszego uruchomienia Asystenta autouzupełniania</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
 <translation id="7755287808199759310">Może ją dla Ciebie odblokować Twój rodzic</translation>
 <translation id="7758069387465995638">Połączenie mogło zostać zablokowane przez zaporę sieciową lub program antywirusowy.</translation>

@@ -87,7 +87,7 @@
 <translation id="2320166752086256636">Sembunyikan keyboard</translation>
 <translation id="2339560363438331454">Sinkronisasi dan Layanan Google</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
-<translation id="2359808026110333948">Lanjutkan</translation>
+<translation id="2359808026110333948">Lanjut</translation>
 <translation id="2360196772093551345">Minta Situs Seluler</translation>
 <translation id="2381405137052800939">Dasar-Dasar</translation>
 <translation id="2386793615875593361">1 dipilih</translation>
@@ -226,7 +226,7 @@
 <translation id="4666531726415300315">Masuk sebagai <ph name="EMAIL" />.
 
 Data Anda dienkripsi dengan frasa sandi sinkronisasi. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
-<translation id="473775607612524610">Perbarui</translation>
+<translation id="473775607612524610">Mutakhirkan</translation>
 <translation id="4747097190499141774">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay. Hanya pengguna yang memiliki frasa sandi Anda yang dapat membaca data yang telah Anda enkripsi. Frasa sandi tidak dikirim atau disimpan oleh Google. Jika lupa frasa sandi Anda atau ingin mengubah setelan ini, Anda harus menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Cari pada Halaman...</translation>
 <translation id="4751645464639803239">Tab Penyamaran Baru</translation>
@@ -347,7 +347,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="6464071786529933911">Buka di Tab Penyamaran Baru</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dihapus</translation>
 <translation id="6541915733953096570">Satu Jam Terakhir</translation>
-<translation id="6548479190262846511">Tidak ditemukan sandi untuk situs ini</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
 <translation id="6657585470893396449">Sandi</translation>

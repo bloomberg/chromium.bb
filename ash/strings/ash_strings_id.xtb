@@ -40,7 +40,6 @@
 <translation id="15373452373711364">Kursor mouse besar</translation>
 <translation id="1550523713251050646">Klik untuk opsi lainnya</translation>
 <translation id="1570871743947603115">Alihkan Bluetooth. <ph name="STATE_TEXT" /></translation>
-<translation id="1589090746204042747">Akses semua aktivitas Anda di sesi ini</translation>
 <translation id="1608626060424371292">Hapus pengguna ini</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Mulai kueri suara</translation>
@@ -88,7 +87,7 @@
 <translation id="2341729377289034582">Terkunci ke vertikal</translation>
 <translation id="2352467521400612932">Setelan stilus</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME" /></translation>
-<translation id="2359808026110333948">Lanjutkan</translation>
+<translation id="2359808026110333948">Lanjut</translation>
 <translation id="2365393535144473978">Mengaktifkan data seluler akan mengaktifkan Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Alihkan mode Jangan ganggu</translation>
@@ -127,7 +126,6 @@
 <translation id="2946119680249604491">Tambahkan koneksi</translation>
 <translation id="2961963223658824723">Terjadi kesalahan. Coba lagi dalam beberapa detik.</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2970920913501714344">Instal aplikasi, ekstensi, dan tema</translation>
 <translation id="2995447421581609334">Tampilkan perangkat transmisi.</translation>
 <translation id="2996462380875591307">Kaca Pembesar yang Dipasang ke Dok diaktifkan. Tekan Ctrl+Search+D lagi untuk menonaktifkannya.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
@@ -240,7 +238,6 @@
 <translation id="4924411785043111640">Mulai ulang dan setel ulang</translation>
 <translation id="4961318399572185831">Transmisikan layar</translation>
 <translation id="5030687792513154421">Waktu habis</translation>
-<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> terhubung ke ponsel baru</translation>
 <translation id="5083553833479578423">Dapatkan lebih banyak fitur Asisten.</translation>
 <translation id="5136175204352732067">Keyboard yang berbeda terhubung</translation>
 <translation id="5168181903108465623">Perangkat transmisi tersedia</translation>
@@ -328,7 +325,6 @@
 <translation id="6627638273713273709">Tombol Penelusuran+Shift+K</translation>
 <translation id="6650933572246256093">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding. Masukkan kunci sandi ini pada perangkat tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Sandi</translation>
-<translation id="6665545700722362599">Berikan izin ke situs, aplikasi, atau ekstensi untuk menggunakan layanan lokasi, mikrofon perangkat, kamera, atau fitur lainnya</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Keyboard yang dapat dilepas memerlukan update penting</translation>
 <translation id="6700713906295497288">Tombol menu IME</translation>
@@ -348,7 +344,6 @@
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="698231206551913481">Semua file dan data lokal yang dikaitkan ke pengguna ini akan dihapus secara permanen setelah pengguna ini dihapus.</translation>
 <translation id="7015766095477679451">Coba lagi pukul <ph name="COME_BACK_TIME" />.</translation>
-<translation id="7025533177575372252">Hubungkan <ph name="DEVICE_NAME" /> dengan ponsel Anda</translation>
 <translation id="7029814467594812963">Keluar dari sesi</translation>
 <translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
 <translation id="7067196344162293536">Putar otomatis</translation>
@@ -425,7 +420,6 @@
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Buat catatan</translation>
-<translation id="8375916635258623388"><ph name="DEVICE_NAME" /> ini dan ponsel Anda akan terhubung otomatis</translation>
 <translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Orang tuamu mengunci perangkat ini</translation>
 <translation id="8406981827175133772">Kaca Pembesar Layar Penuh</translation>

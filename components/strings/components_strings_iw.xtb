@@ -385,6 +385,7 @@
 <translation id="3427092606871434483">התר (ברירת מחדל)</translation>
 <translation id="3427342743765426898">&amp;ביצוע מחדש של עריכה</translation>
 <translation id="342781501876943858">‏אם הזנת את הסיסמה שלך באתרים אחרים, ההמלצה של Chromium היא לאפס אותה.</translation>
+<translation id="3430691998045392297">מועד ההקרנה של הסרט השתנה, להמשיך?</translation>
 <translation id="3431636764301398940">שמור כרטיס זה במכשיר הנוכחי</translation>
 <translation id="3447661539832366887">הבעלים של המכשיר הזה כיבה את משחק הדינוזאורים.</translation>
 <translation id="3447884698081792621">הצגת אישור (נופק על-ידי <ph name="ISSUER" />)</translation>
@@ -449,7 +450,7 @@
 <translation id="385051799172605136">חזור</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
 <translation id="3884278016824448484">מזהה מכשיר מתנגש</translation>
-<translation id="3885155851504623709">פאריש</translation>
+<translation id="3885155851504623709">קהילה</translation>
 <translation id="3886446263141354045">הבקשה שלך לגשת לאתר הזה נשלחה אל <ph name="NAME" /></translation>
 <translation id="3890664840433101773">הוספת כתובת אימייל</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
@@ -827,6 +828,7 @@ Del</translation>
 <translation id="6569060085658103619">אתה מציג דף של תוסף</translation>
 <translation id="6596325263575161958">אפשרויות הצפנה</translation>
 <translation id="6604181099783169992">חיישני תנועה או אור</translation>
+<translation id="6607617806003952240">אני כבר לא יכול לעזור. יש להמשיך באופן ידני.</translation>
 <translation id="6624427990725312378">פרטי איש קשר</translation>
 <translation id="6626291197371920147">הוסף מספר כרטיס חוקי</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
@@ -886,7 +888,7 @@ Del</translation>
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7064851114919012435">פרטים ליצירת קשר</translation>
 <translation id="7079718277001814089">האתר הזה מכיל תוכנה זדונית</translation>
-<translation id="7087282848513945231">מחוז</translation>
+<translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
 <translation id="7090678807593890770">‏חפש ב-Google את <ph name="LINK" /></translation>
 <translation id="7108338896283013870">הסתר</translation>
 <translation id="7108819624672055576">אושרה על-ידי תוסף</translation>
@@ -894,7 +896,7 @@ Del</translation>
 <translation id="7119414471315195487">סגירת כרטיסיות או תוכניות אחרות</translation>
 <translation id="7129409597930077180">לא ניתן לבצע משלוח לכתובת הזו. עליך לבחור כתובת אחרת.</translation>
 <translation id="7138472120740807366">שיטת מסירה</translation>
-<translation id="7139724024395191329">האמירויות הערביות</translation>
+<translation id="7139724024395191329">אמירות</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="717330890047184534">‏מזהה GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
@@ -1006,7 +1008,7 @@ Del</translation>
 <translation id="7761701407923456692">אישור השרת אינו תואם לכתובת האתר.</translation>
 <translation id="7763386264682878361">מנתח מניפסט התשלום</translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
-<translation id="777702478322588152">תחום שיפוט</translation>
+<translation id="777702478322588152">משטרת מחוז</translation>
 <translation id="7791543448312431591">הוסף</translation>
 <translation id="7793809570500803535">ייתכן שדף האינטרנט בכתובת <ph name="SITE" /> אינו פעיל זמנית, או שהועבר לכתובת אינטרנט חדשה לצמיתות.</translation>
 <translation id="7800304661137206267">החיבור מוצפן באמצעות <ph name="CIPHER" /> עם <ph name="MAC" /> לאימות הודעות ועם <ph name="KX" /> בתור מנגנון להחלפת מפתחות.</translation>

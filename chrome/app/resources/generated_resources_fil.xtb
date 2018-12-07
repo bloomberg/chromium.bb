@@ -2424,7 +2424,7 @@
 <translation id="473546211690256853">Pinamamahalaan ang account na ito ng <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">Hindi natukoy ng system ang mga pagkakakilanlan ng device para sa device na ito.</translation>
 <translation id="4737715515457435632">Mangyaring kumonekta sa isang network.</translation>
-<translation id="473775607612524610">I-update</translation>
+<translation id="473775607612524610">Mag-update</translation>
 <translation id="474217410105706308">I-mute ang Tab</translation>
 <translation id="4742746985488890273">I-pin sa Shelf</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Alamin kung paano i-update ang mga application<ph name="END_LINK" /></translation>
@@ -3738,7 +3738,6 @@
 <translation id="6706210727756204531">Saklaw</translation>
 <translation id="6707389671160270963">SSL Client Certificate</translation>
 <translation id="6708242697268981054">Pinanggalingan:</translation>
-<translation id="6709133671862442373">Balita</translation>
 <translation id="6709357832553498500">Kumonekta sa pamamagitan ng <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="6718273304615422081">Nagzi-zip...</translation>
