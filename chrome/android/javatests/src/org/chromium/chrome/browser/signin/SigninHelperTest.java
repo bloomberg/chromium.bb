@@ -32,6 +32,7 @@ public class SigninHelperTest {
 
     @Before
     public void setUp() {
+        SigninHelper.resetSharedPrefs();
         mEventChecker = new MockChangeEventChecker();
 
         mAccountManager = new FakeAccountManagerDelegate(
@@ -42,6 +43,7 @@ public class SigninHelperTest {
     @After
     public void tearDown() {
         AccountManagerFacade.resetAccountManagerFacadeForTests();
+        SigninHelper.resetSharedPrefs();
     }
 
     @Test
