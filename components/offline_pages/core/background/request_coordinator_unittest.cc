@@ -162,6 +162,7 @@ class RequestCoordinatorTest : public testing::Test {
   RequestCoordinator* coordinator() const {
     return coordinator_taco_->request_coordinator();
   }
+  OfflinerStub* offliner() const { return offliner_; }
   SchedulerStub* scheduler_stub() const {
     return reinterpret_cast<SchedulerStub*>(coordinator()->scheduler());
   }
@@ -224,6 +225,8 @@ class RequestCoordinatorTest : public testing::Test {
   void EnableSnapshotOnLastRetry() {
     offliner_->enable_snapshot_on_last_retry();
   }
+
+  bool OfflinerCalled() const { return offliner_->load_and_save_called(); }
 
   void SetEffectiveConnectionTypeForTest(net::EffectiveConnectionType type) {
     network_quality_tracker_->ReportEffectiveConnectionTypeForTesting(type);
@@ -331,6 +334,11 @@ class RequestCoordinatorTest : public testing::Test {
     return coordinator()->last_offlining_status_;
   }
 
+  // Calls the private method |StopProcessing| on |coordinator()|.
+  void StopProcessing(Offliner::RequestStatus stop_status) {
+    coordinator()->StopProcessing(stop_status);
+  }
+
   bool OfflinerWasCanceled() const { return offliner_->cancel_called(); }
 
   void ResetOfflinerWasCanceled() { offliner_->reset_cancel_called(); }
@@ -366,6 +374,10 @@ class RequestCoordinatorTest : public testing::Test {
   }
 
   bool add_request_callback_called() { return add_request_callback_called_; }
+
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner() const {
+    return task_runner_;
+  }
 
  protected:
   ActiveTabInfoStub* active_tab_info_ = nullptr;
@@ -1078,9 +1090,9 @@ TEST_F(RequestCoordinatorTest,
                                                       processing_callback()));
   EXPECT_TRUE(state() == RequestCoordinatorState::PICKING);
 
-  // Now, quick, before it can do much (we haven't called PumpLoop), cancel it.
-  coordinator()->StopProcessing(
-      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
+  // Now, quick, before it can do much (we haven't called PumpLoop), cancel it
+  // with a status that precludes trying again.
+  StopProcessing(Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED);
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
@@ -1090,7 +1102,7 @@ TEST_F(RequestCoordinatorTest,
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
   // since we cancelled the event before it called offliner_->LoadAndSave().
-  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
+  EXPECT_EQ(Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED,
             last_offlining_status());
 
   // Since offliner was not started, it will not have seen cancel call.
@@ -1128,8 +1140,7 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_FALSE(state() == RequestCoordinatorState::PICKING);
 
   // Now we cancel it while the background loader is busy.
-  coordinator()->StopProcessing(
-      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED);
+  StopProcessing(Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED);
 
   // Let the async callbacks in the cancel run.
   PumpLoop();
@@ -1143,11 +1154,59 @@ TEST_F(RequestCoordinatorTest,
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
   // since we cancelled the event before the LoadAndSave completed.
-  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
+  EXPECT_EQ(Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED,
             last_offlining_status());
 
   // Since offliner was started, it will have seen cancel call.
   EXPECT_TRUE(OfflinerWasCanceled());
+}
+
+// Test handling of StartScheduledProcessing before a previous attempt has been
+// fully stopped.
+TEST_F(RequestCoordinatorTest, StartAttemptBeforeFullyStopped) {
+  // Add a request to the queue, wait for callbacks to finish.
+  AddRequest1();
+  PumpLoop();
+
+  // Ensure the start processing request stops before the completion callback.
+  EnableOfflinerCallback(false);
+
+  ASSERT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      processing_callback()));
+  // Let all the async parts of the start processing pipeline run to completion.
+  PumpLoop();
+
+  // Observer called for starting processing.
+  ASSERT_TRUE(observer().changed_called());
+  ASSERT_EQ(SavePageRequest::RequestState::OFFLINING, observer().state());
+  observer().Clear();
+
+  // Now we cancel it while the background loader is busy, and attempt to start
+  // another request. Because the previous request hasn't completely stopped,
+  // the second request will not start.
+  StopProcessing(Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED);
+
+  AddRequest2();
+  EXPECT_FALSE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                       processing_callback()));
+  PumpLoop();
+  EXPECT_FALSE(offliner()->has_pending_request());
+}
+
+// Verify the request coordinator can stop while in the picking state.
+TEST_F(RequestCoordinatorTest, StopProcessingWhilePicking) {
+  // Add a request and start processing.
+  AddRequest1();
+  ASSERT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      processing_callback()));
+  ASSERT_EQ(RequestCoordinatorState::PICKING, state());
+
+  StopProcessing(Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED);
+
+  // Let all the async parts of the start processing pipeline run to completion.
+  // The offliner should have never been called.
+  PumpLoop();
+  EXPECT_FALSE(OfflinerCalled());
 }
 
 // This tests that canceling a request will result in TryNextRequest() getting
@@ -1179,6 +1238,44 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
 
   // Since offliner was started, it will have seen cancel call.
   EXPECT_TRUE(OfflinerWasCanceled());
+}
+
+TEST_F(RequestCoordinatorTest, RemoveInflightRequestAndAddAnother) {
+  // Add a request to the queue, wait for callbacks to finish.
+  AddRequest1();
+  PumpLoop();
+  // Test a different ordering of tasks, by delaying the offliner cancellation.
+  offliner()->set_cancel_delay(base::TimeDelta::FromSeconds(1));
+  // Ensure the start processing request stops before the completion callback.
+  EnableOfflinerCallback(false);
+
+  EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
+                                                      processing_callback()));
+
+  // Let all the async parts of the start processing pipeline run to completion.
+  PumpLoop();
+  // Since the offliner is disabled, this callback should not be called.
+  EXPECT_FALSE(processing_callback_called());
+
+  // Add a new request, and remove current request while it is processing.
+  RequestCoordinator::SavePageLaterParams request2;
+  request2.url = kUrl2;
+  request2.client_id = kClientId2;
+  request2.user_requested = true;
+  coordinator()->SavePageLater(request2, base::DoNothing());
+
+  std::vector<int64_t> request_ids{kRequestId1};
+  coordinator()->RemoveRequests(
+      request_ids, base::BindOnce(&RequestCoordinatorTest::RemoveRequestsDone,
+                                  base::Unretained(this)));
+
+  AdvanceClockBy(base::TimeDelta::FromSeconds(2));
+
+  // Since offliner was started, it will have seen cancel call.
+  EXPECT_TRUE(OfflinerWasCanceled());
+  // The second request should be offlining now.
+  EXPECT_TRUE(offliner()->has_pending_request());
+  EXPECT_TRUE(state() == RequestCoordinatorState::OFFLINING);
 }
 
 TEST_F(RequestCoordinatorTest, MarkRequestCompleted) {

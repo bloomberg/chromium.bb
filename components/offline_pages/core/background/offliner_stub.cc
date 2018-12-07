@@ -4,6 +4,8 @@
 
 #include "components/offline_pages/core/background/offliner_stub.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -21,6 +23,7 @@ OfflinerStub::~OfflinerStub() {}
 bool OfflinerStub::LoadAndSave(const SavePageRequest& request,
                                CompletionCallback completion_callback,
                                const ProgressCallback& progress_callback) {
+  load_and_save_called_ = true;
   if (disable_loading_)
     return false;
 
@@ -45,8 +48,9 @@ bool OfflinerStub::Cancel(CancelCallback callback) {
   if (!pending_request_)
     return false;
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), *pending_request_));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(std::move(callback), *pending_request_),
+      cancel_delay_);
   pending_request_.reset();
   return true;
 }
