@@ -309,7 +309,7 @@ const char* kShiftCapslock[] = {
     u8"\u0020",        // Space
 };
 const char** kKeyMap[8] = {kNormal,        kShift,        kAltGr,
-                           kShift,         kCapslock,     kShiftCapslock,
-                           kAltgrCapslock, kShiftCapslock};
+                           kAltGr,         kCapslock,     kShiftCapslock,
+                           kAltgrCapslock, kAltgrCapslock};
 
 }  // namespace lo

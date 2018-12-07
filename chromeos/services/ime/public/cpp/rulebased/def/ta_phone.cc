@@ -310,9 +310,8 @@ const char* kShiftCapslock[] = {
     u8"?",       // Slash
     u8"\u0020",  // Space
 };
-const char** kKeyMap[8] = {kNormal,     kShift,        kAltGr,
-                           kShiftAltGr, kCapslock,     kShiftCapslock,
-                           kCapslock,   kShiftCapslock};
+const char** kKeyMap[8] = {kNormal,   kShift,         kAltGr, kShiftAltGr,
+                           kCapslock, kShiftCapslock, kAltGr, kShiftAltGr};
 const char* kTransforms[] = {u8"\u0bcd\u0bb1\u0bcd\u0bb1\u0bcd\u001d?i",
                              u8"\u0bcd\u0bb0\u0bbf",
                              u8"\u0bcd\u0bb1\u0bcd\u001d?\\^i",
