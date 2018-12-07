@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h"
+#include "chromeos/components/multidevice/mojom/multidevice_mojom_traits.h"
 
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/beacon_seed.h"
+#include "chromeos/components/multidevice/mojom/multidevice_types.mojom.h"
 #include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,19 +27,19 @@ chromeos::multidevice::BeaconSeed CreateTestBeaconSeed() {
 
 }  // namespace
 
-TEST(DeviceSyncMojomStructTraitsTest, BeaconSeed) {
+TEST(MultiDeviceMojomStructTraitsTest, BeaconSeed) {
   chromeos::multidevice::BeaconSeed input = CreateTestBeaconSeed();
 
   chromeos::multidevice::BeaconSeed output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              chromeos::device_sync::mojom::BeaconSeed>(&input, &output));
+              chromeos::multidevice::mojom::BeaconSeed>(&input, &output));
 
   EXPECT_EQ(kTestBeaconSeedData, output.data());
   EXPECT_EQ(kTestBeaconSeedStartTimeMillis, output.start_time().ToJavaTime());
   EXPECT_EQ(kTestBeaconSeedEndTimeMillis, output.end_time().ToJavaTime());
 }
 
-TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
+TEST(MultiDeviceMojomStructTraitsTest, RemoteDevice) {
   std::map<chromeos::multidevice::SoftwareFeature,
            chromeos::multidevice::SoftwareFeatureState>
       software_features =
@@ -63,7 +63,7 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
 
   chromeos::multidevice::RemoteDevice output;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
-              chromeos::device_sync::mojom::RemoteDevice>(&input, &output));
+              chromeos::multidevice::mojom::RemoteDevice>(&input, &output));
 
   EXPECT_EQ("userId", output.user_id);
   EXPECT_EQ("name", output.name);
@@ -94,11 +94,11 @@ TEST(DeviceSyncMojomEnumTraitsTest, SoftwareFeature) {
   for (auto feature_in : kTestSoftwareFeatures) {
     chromeos::multidevice::SoftwareFeature feature_out;
 
-    chromeos::device_sync::mojom::SoftwareFeature serialized_feature =
+    chromeos::multidevice::mojom::SoftwareFeature serialized_feature =
         mojo::EnumTraits<
-            chromeos::device_sync::mojom::SoftwareFeature,
+            chromeos::multidevice::mojom::SoftwareFeature,
             chromeos::multidevice::SoftwareFeature>::ToMojom(feature_in);
-    ASSERT_TRUE((mojo::EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+    ASSERT_TRUE((mojo::EnumTraits<chromeos::multidevice::mojom::SoftwareFeature,
                                   chromeos::multidevice::SoftwareFeature>::
                      FromMojom(serialized_feature, &feature_out)));
     EXPECT_EQ(feature_in, feature_out);

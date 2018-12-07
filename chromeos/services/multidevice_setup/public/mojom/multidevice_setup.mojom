@@ -4,7 +4,7 @@
 
 module chromeos.multidevice_setup.mojom;
 
-import "chromeos/services/device_sync/public/mojom/device_sync.mojom";
+import "chromeos/components/multidevice/mojom/multidevice_types.mojom";
 
 // Enumeration of event types which can be dispatched. Only used for debugging
 // purposes.
@@ -122,7 +122,7 @@ interface HostStatusObserver {
   // HostStatus::kNoEligibleHosts or
   // HostStatus::kEligibleHostExistsButNoHostSet, |host_device| is null.
   OnHostStatusChanged(HostStatus host_status,
-                      chromeos.device_sync.mojom.RemoteDevice? host_device);
+                      chromeos.multidevice.mojom.RemoteDevice? host_device);
 };
 
 interface FeatureStateObserver {
@@ -151,7 +151,7 @@ interface MultiDeviceSetup {
   // Provides a list of all eligible host devices (i.e., those which can be
   // passed to SetHostDevice()).
   GetEligibleHostDevices() =>
-      (array<chromeos.device_sync.mojom.RemoteDevice> eligible_host_devices);
+      (array<chromeos.multidevice.mojom.RemoteDevice> eligible_host_devices);
 
   // Sets the host associated with the provided device ID as the host device
   // for this account. The provided auth token must be valid in order to prove
@@ -172,7 +172,7 @@ interface MultiDeviceSetup {
   // HostStatus::kNoEligibleHosts or
   // HostStatus::kEligibleHostExistsButNoHostSet, |host_device| is null.
   GetHostStatus() => (HostStatus host_status,
-                      chromeos.device_sync.mojom.RemoteDevice? host_device);
+                      chromeos.multidevice.mojom.RemoteDevice? host_device);
 
   // Attempts to enable or disable |feature|. This function succeeds only if
   // |feature|'s current state is FeatureState::kEnabledByUser or

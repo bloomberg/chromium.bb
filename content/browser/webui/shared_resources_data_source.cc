@@ -88,6 +88,8 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
        "js/chromeos/multidevice_setup.mojom.js"},
       {IDR_MULTIDEVICE_MULTIDEVICE_SETUP_CONSTANTS_MOJOM_JS,
        "js/chromeos/multidevice_setup_constants.mojom.js"},
+      {IDR_MULTIDEVICE_MULTIDEVICE_TYPES_MOJOM_JS,
+       "js/chromeos/multidevice_types.mojom.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)

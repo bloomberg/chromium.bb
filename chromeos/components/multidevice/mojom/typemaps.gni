@@ -2,5 +2,4 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps =
-    [ "//chromeos/services/device_sync/public/mojom/device_sync.typemap" ]
+typemaps = [ "//chromeos/components/multidevice/mojom/multidevice.typemap" ]

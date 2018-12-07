@@ -63,6 +63,7 @@ source_set("unit_tests") {
     ":multidevice",
     ":test_support",
     "//base/test:test_support",
+    "//chromeos/components/multidevice/mojom:unit_tests",
     "//components/cryptauth/proto",
     "//testing/gtest",
   ]

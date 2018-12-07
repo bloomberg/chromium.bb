@@ -95,7 +95,7 @@ cr.define('multidevice_setup', function() {
       /**
        * Array of objects representing all potential MultiDevice hosts.
        *
-       * @private {!Array<!chromeos.deviceSync.mojom.RemoteDevice>}
+       * @private {!Array<!chromeos.multidevice.mojom.RemoteDevice>}
        */
       devices_: Array,
 
