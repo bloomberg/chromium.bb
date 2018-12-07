@@ -85,8 +85,6 @@ cr.define('downloads', function() {
         type: Boolean,
         value: false,
       },
-
-      useFileIcon_: Boolean,
     },
 
     observers: [
@@ -103,11 +101,6 @@ cr.define('downloads', function() {
     ready: function() {
       this.mojoHandler_ = downloads.BrowserProxy.getInstance().handler;
       this.content = this.$.content;
-    },
-
-    /** @return {!HTMLElement} */
-    getFileIcon: function() {
-      return assert(this.$['file-icon']);
     },
 
     /**
@@ -170,6 +163,14 @@ cr.define('downloads', function() {
      * @return {string}
      * @private
      */
+    computeDangerIcon_: function() {
+      return this.isDangerous_ ? 'cr:warning' : '';
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
     computeDate_: function() {
       assert(typeof this.data.hideDate == 'boolean');
       if (this.data.hideDate)
@@ -209,18 +210,6 @@ cr.define('downloads', function() {
           return data.progressStatusText;
       }
 
-      return '';
-    },
-
-    /**
-     * @return {string}
-     * @private
-     */
-    computeIcon_: function() {
-      if (this.isDangerous_)
-        return 'cr:warning';
-      if (!this.useFileIcon_)
-        return 'cr:insert-drive-file';
       return '';
     },
 
@@ -356,16 +345,11 @@ cr.define('downloads', function() {
 
       if (this.isDangerous_) {
         this.$.url.removeAttribute('href');
-        this.useFileIcon_ = false;
       } else {
         this.$.url.href = assert(this.data.url);
-        const path = this.data.filePath;
-        downloads.IconLoader.getInstance()
-            .loadIcon(this.$['file-icon'], path)
-            .then(success => {
-              if (path == this.data.filePath)
-                this.useFileIcon_ = success;
-            });
+        const filePath = encodeURIComponent(this.data.filePath);
+        const scaleFactor = `?scale=${window.devicePixelRatio}x`;
+        this.$['file-icon'].src = `chrome://fileicon/${filePath}${scaleFactor}`;
       }
     },
 

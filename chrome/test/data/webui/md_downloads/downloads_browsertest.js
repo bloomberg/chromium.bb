@@ -47,9 +47,6 @@ DownloadsItemTest.prototype = {
 
   /** @override */
   extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
-    ROOT_PATH + 'ui/webui/resources/js/cr.js',
-    '../test_browser_proxy.js',
-    'test_support.js',
     'item_tests.js',
   ]),
 };
