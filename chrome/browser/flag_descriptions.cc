@@ -3269,6 +3269,10 @@ const char kEnableAssistantVoiceMatchName[] = "Enable Assistant Voice Match";
 const char kEnableAssistantVoiceMatchDescription[] =
     "Enable the Assistant Voice Match feature";
 
+const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
+const char kEnableAssistantAppSupportDescription[] =
+    "Enable the Assistant App Support feature";
+
 const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher and Tab Switcher.";

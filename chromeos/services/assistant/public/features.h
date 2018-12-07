@@ -17,6 +17,9 @@ extern const base::Feature kAssistantVoiceMatch;
 // Enable Assistant warmer welcome.
 extern const base::Feature kAssistantWarmerWelcomeFeature;
 
+// Enables Assistant app support.
+extern const base::Feature kAssistantAppSupport;
+
 // Enables DSP for hotword detection.
 extern const base::Feature kEnableDspHotword;
 

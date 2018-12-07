@@ -129,7 +129,10 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
     network::NetworkConnectionTracker* network_connection_tracker)
-    : action_module_(std::make_unique<action::CrosActionModule>(this)),
+    : action_module_(std::make_unique<action::CrosActionModule>(
+          this,
+          base::FeatureList::IsEnabled(
+              assistant::features::kAssistantAppSupport))),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       chromium_api_delegate_(service->io_task_runner()),
       assistant_settings_manager_(

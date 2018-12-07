@@ -29280,6 +29280,7 @@ from previous Chrome versions.
   <int value="-2133892372" label="ResamplingInputEvents:disabled"/>
   <int value="-2133277113" label="CCTModuleCustomHeader:disabled"/>
   <int value="-2132591642" label="enable-input-view"/>
+  <int value="-2128705444" label="AssistantAppSupport:enabled"/>
   <int value="-2124839789"
       label="OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains:enabled"/>
   <int value="-2124685253" label="USBGuard:enabled"/>
@@ -30127,6 +30128,7 @@ from previous Chrome versions.
   <int value="-718884399" label="NewTabPageUIMd:enabled"/>
   <int value="-718626298" label="SysInternals:enabled"/>
   <int value="-716953514" label="disable-password-separated-signin-flow"/>
+  <int value="-716272467" label="AssistantAppSupport:disabled"/>
   <int value="-715733307" label="force-effective-connection-type"/>
   <int value="-714712077" label="ClickToOpenPDFPlaceholder:disabled"/>
   <int value="-714710496" label="VideoFullscreenOrientationLock:disabled"/>
