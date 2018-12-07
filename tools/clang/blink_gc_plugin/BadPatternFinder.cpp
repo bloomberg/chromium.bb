@@ -100,8 +100,10 @@ class MissingMixinMarker : public MatchFinder::MatchCallback {
         isDerivedFrom(cxxRecordDecl(decl().bind("mixin_base_class"),
                                     hasName("::blink::GarbageCollectedMixin"))),
         // ...and doesn't use USING_GARBAGE_COLLECTED_MIXIN
-        unless(isSameOrDerivedFrom(
-            has(fieldDecl(hasName("mixin_constructor_marker_"))))),
+        unless(anyOf(isSameOrDerivedFrom(has(typedefNameDecl(
+                         hasName("HasUsingGarbageCollectedMixinMacro")))),
+                     isSameOrDerivedFrom(has(
+                         fieldDecl(hasName("mixin_constructor_marker_")))))),
         // ...and might end up actually being constructed
         unless(hasMethod(isPure())), unless(matchesName("::SameSizeAs")));
     match_finder.addDynamicMatcher(class_missing_mixin_marker, this);
