@@ -36,7 +36,7 @@
 <translation id="1173894706177603556">नाम बदलें</translation>
 <translation id="1175364870820465910">&amp;प्रिंट करें...</translation>
 <translation id="1181037720776840403">निकालें</translation>
-<translation id="1201402288615127009">अगला</translation>
+<translation id="1201402288615127009">आगे बढ़ें</translation>
 <translation id="1201895884277373915">इस साइट की ओर से अधिक</translation>
 <translation id="1206967143813997005">नाम के पहले अक्षर के गलत हस्ताक्षर</translation>
 <translation id="1209206284964581585">अभी छिपाएं</translation>
@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">अनुमति दें (डिफ़ॉल्ट)</translation>
 <translation id="3427342743765426898">&amp;संपादित करना फिर से करें</translation>
 <translation id="342781501876943858">अगर आपने अपने पासवर्ड का दूसरी साइटों पर दोबारा इस्तेमाल किया है, तो क्रोमियम आपको उसे रीसेट करने का सुझाव देता है.</translation>
-<translation id="3430691998045392297">मूवी स्क्रीनिंग अलग है, क्या आप जारी रखना चाहते हैं?</translation>
 <translation id="3431636764301398940">इस कार्ड को इस डिवाइस पर सहेजें</translation>
 <translation id="3447661539832366887">इस डिवाइस के मालिक ने डायनासोर गेम को बंद कर दिया है.</translation>
 <translation id="3447884698081792621">प्रमाणपत्र (<ph name="ISSUER" /> की ओर से जारी किया गया) दिखाएं</translation>
@@ -823,7 +822,6 @@
 <translation id="6569060085658103619">आप एक एक्सटेंशन पेज देख रहे हैं</translation>
 <translation id="6596325263575161958">सुरक्षित तरीका विकल्प</translation>
 <translation id="6604181099783169992">गति या लाइट सेंसर</translation>
-<translation id="6607617806003952240">मैं ज़्यादा मदद नहीं कर सकती, कृपया मैन्युअल तरीके से जारी रखें.</translation>
 <translation id="6624427990725312378">संपर्क जानकारी</translation>
 <translation id="6626291197371920147">मान्य कार्ड नंबर जोड़ें</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> खोज</translation>
@@ -1003,7 +1001,7 @@
 <translation id="7761701407923456692">सर्वर का प्रमाणपत्र यूआरएल से मेल नहीं खाता.</translation>
 <translation id="7763386264682878361">भुगतान मेनिफ़ेस्ट पार्सर</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
-<translation id="777702478322588152">प्रशासक प्रांत</translation>
+<translation id="777702478322588152">प्रांत</translation>
 <translation id="7791543448312431591">जोड़ें</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> पर मौजूद वेबपेज संभवत: अस्थायी रूप से कार्य नहीं कर रहा है या उसे स्थायी रूप से नए वेब पते पर स्थानांतरित कर दिया गया है.</translation>
 <translation id="7800304661137206267">कनेक्शन को संदेश प्रमाणीकरण के लिए <ph name="MAC" /> और मुख्य एक्सचेंज क्रियाविधि के रूप में <ph name="KX" /> के साथ, <ph name="CIPHER" /> का उपयोग करते हुए एन्क्रिप्ट किया गया है.</translation>

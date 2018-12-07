@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Large mouse cursor</translation>
 <translation id="1550523713251050646">Click for more options</translation>
 <translation id="1570871743947603115">Toggle Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Access all your activity in this session</translation>
 <translation id="1608626060424371292">Remove this user</translation>
 <translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start a voice query</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Add connection</translation>
 <translation id="2961963223658824723">Something went wrong. Try again in a few seconds.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Install apps, extensions and themes</translation>
 <translation id="2995447421581609334">Show cast devices.</translation>
 <translation id="2996462380875591307">Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">Restart and reset</translation>
 <translation id="4961318399572185831">Cast screen</translation>
 <translation id="5030687792513154421">Time is up</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> connected to a new phone</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="5136175204352732067">Different keyboard connected</translation>
 <translation id="5168181903108465623">Cast devices available</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Please enter this passkey on that device: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
+<translation id="6665545700722362599">Grant websites, apps and extensions permission to use location services, the device’s microphone, camera or other features</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Your detachable keyboard needs a critical update</translation>
 <translation id="6700713906295497288">IME menu button</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="698231206551913481">All files and local data associated with this user will be permanently deleted once this user is removed.</translation>
 <translation id="7015766095477679451">Come back at <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Connect your <ph name="DEVICE_NAME" /> with your phone</translation>
 <translation id="7029814467594812963">Exit session</translation>
 <translation id="7066646422045619941">This network is disabled by your administrator.</translation>
 <translation id="7067196344162293536">Auto rotate</translation>
@@ -420,6 +425,7 @@
 <translation id="8308637677604853869">Previous menu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Create note</translation>
+<translation id="8375916635258623388">This <ph name="DEVICE_NAME" /> and your phone will connect automatically</translation>
 <translation id="8392451568018454956">Options menu for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Your parent has locked this device</translation>
 <translation id="8406981827175133772">Full-screen Magnifier</translation>

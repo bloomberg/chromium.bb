@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">Permitir (predeterminado)</translation>
 <translation id="3427342743765426898">&amp;Rehacer edición</translation>
 <translation id="342781501876943858">Chromium te recomienda que cambies tu contraseña si la has vuelto a utilizar en otros sitios web.</translation>
-<translation id="3430691998045392297">El filtro de película es diferente. ¿Quieres continuar?</translation>
 <translation id="3431636764301398940">Guardar esta tarjeta en el dispositivo</translation>
 <translation id="3447661539832366887">El propietario de este dispositivo ha desactivado el juego del dinosaurio.</translation>
 <translation id="3447884698081792621">Mostrar certificado (emitido por <ph name="ISSUER" />)</translation>
@@ -450,7 +449,7 @@
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar fecha y hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo en conflicto</translation>
-<translation id="3885155851504623709">Parroquia</translation>
+<translation id="3885155851504623709">Municipio</translation>
 <translation id="3886446263141354045">Tu solicitud de acceso a este sitio web se ha enviado a <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Añadir correo electrónico</translation>
 <translation id="3901925938762663762">La tarjeta ha caducado</translation>
@@ -618,7 +617,7 @@
 <translation id="5086888986931078152">Es posible que dejes de tener acceso al contenido protegido de algunos sitios web.</translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
-<translation id="5089810972385038852">Estado</translation>
+<translation id="5089810972385038852">Estado/provincia</translation>
 <translation id="5094747076828555589">Este servidor no ha podido probar que su dominio es <ph name="DOMAIN" />, Chromium no confía en su certificado de seguridad. Este problema puede deberse a una configuración incorrecta o a que un atacante haya interceptado la conexión.</translation>
 <translation id="5095208057601539847">Provincia</translation>
 <translation id="5098332213681597508">Este nombre proviene de tu cuenta de Google.</translation>
@@ -823,7 +822,6 @@
 <translation id="6569060085658103619">Estas viendo la página de una extensión</translation>
 <translation id="6596325263575161958">Opciones de cifrado</translation>
 <translation id="6604181099783169992">Sensores de luz o movimiento</translation>
-<translation id="6607617806003952240">Ya no puedo ayudarte. Puedes continuar de forma manual.</translation>
 <translation id="6624427990725312378">Información de contacto</translation>
 <translation id="6626291197371920147">Añadir un número de tarjeta válido</translation>
 <translation id="6628463337424475685">Búsqueda de <ph name="ENGINE" /></translation>

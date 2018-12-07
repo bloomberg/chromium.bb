@@ -179,7 +179,7 @@
 <translation id="20817612488360358">Innstillinger for systemmellomtjener er stilt inn på å brukes, men en uttrykkelig mellomtjenerkonfigurasjon er også angitt.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2094505752054353250">Domenene samsvarer ikke</translation>
-<translation id="2096368010154057602">Avdeling</translation>
+<translation id="2096368010154057602">Departement</translation>
 <translation id="2102134110707549001">Foreslå et sterkt passord…</translation>
 <translation id="2108755909498034140">Start datamaskinen på nytt.</translation>
 <translation id="2113977810652731515">Kort</translation>
@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">Tillat (standard)</translation>
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
 <translation id="342781501876943858">Chromium anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
-<translation id="3430691998045392297">Dette er en annen filmfremvisning. Vil du fortsette?</translation>
 <translation id="3431636764301398940">Lagre dette kortet på denne enheten</translation>
 <translation id="3447661539832366887">Eieren av denne enheten har slått av dinosaurspillet.</translation>
 <translation id="3447884698081792621">Vis sertifikat (utstedt av <ph name="ISSUER" />)</translation>
@@ -450,7 +449,7 @@
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3858027520442213535">Oppdater dato og klokkeslett</translation>
 <translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
-<translation id="3885155851504623709">Kommune</translation>
+<translation id="3885155851504623709">Sogn</translation>
 <translation id="3886446263141354045">Forespørselen din om å få tilgang til dette nettstedet er sendt til <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Legg til e-post</translation>
 <translation id="3901925938762663762">Kortet er utløpt</translation>
@@ -618,7 +617,7 @@
 <translation id="5086888986931078152">Det kan hende du mister tilgangen til beskyttet innhold fra enkelte nettsteder.</translation>
 <translation id="5087286274860437796">Sertifikatet til tjeneren er ikke gyldig for øyeblikket.</translation>
 <translation id="5087580092889165836">Legg til et kort</translation>
-<translation id="5089810972385038852">Fylke / delstat</translation>
+<translation id="5089810972385038852">Fylke/delstat</translation>
 <translation id="5094747076828555589">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chromium. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="5098332213681597508">Dette navnet er fra Google-kontoen din.</translation>
@@ -823,7 +822,6 @@
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
 <translation id="6604181099783169992">Bevegelses- eller lyssensorer</translation>
-<translation id="6607617806003952240">Jeg kan ikke hjelpe deg lenger. Fortsett manuelt.</translation>
 <translation id="6624427990725312378">Kontaktinformasjon</translation>
 <translation id="6626291197371920147">Legg til et gyldig kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>

@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">Allow (default)</translation>
 <translation id="3427342743765426898">&amp;Redo Edit</translation>
 <translation id="342781501876943858">Chromium recommends resetting your password if you reused it on other sites.</translation>
-<translation id="3430691998045392297">The film screening is different. Do you want to continue?</translation>
 <translation id="3431636764301398940">Save this card to this device</translation>
 <translation id="3447661539832366887">The owner of this device turned off the dinosaur game.</translation>
 <translation id="3447884698081792621">Show certificate (issued by <ph name="ISSUER" />)</translation>
@@ -618,7 +617,7 @@
 <translation id="5086888986931078152">You may lose access to protected content from some sites.</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5087580092889165836">Add card</translation>
-<translation id="5089810972385038852">County</translation>
+<translation id="5089810972385038852">State</translation>
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5098332213681597508">This name is from your Google account.</translation>
@@ -823,7 +822,6 @@
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="6604181099783169992">Motion or light sensors</translation>
-<translation id="6607617806003952240">I cannot help anymore, please continue manually.</translation>
 <translation id="6624427990725312378">Contact Info</translation>
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
@@ -842,6 +840,7 @@
 <translation id="6744009308914054259">While waiting for a connection, you can visit Downloads to read offline articles.</translation>
 <translation id="6753269504797312559">Policy Value</translation>
 <translation id="6757797048963528358">Your device went to sleep.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{This card can't be added at the moment}other{These cards can't be added at the moment}}</translation>
 <translation id="6778737459546443941">Your parent hasn't approved it yet</translation>
 <translation id="679355240208270552">Ignored because default search is not enabled by policy.</translation>
 <translation id="681021252041861472">Required Field</translation>
@@ -854,6 +853,7 @@
 <translation id="6865412394715372076">This card can't be verified at the moment</translation>
 <translation id="6868206169573555318">Relaunch to update</translation>
 <translation id="6874604403660855544">&amp;Redo add</translation>
+<translation id="6885646002011712606">Auto-fill assistant is available near bottom of the screen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
 <translation id="6895330447102777224">Your card is confirmed</translation>
@@ -893,6 +893,7 @@
 <translation id="7138472120740807366">Delivery method</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
+<translation id="7158980942472052083">Invalid URL. Must be a URL with a standard scheme.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
 <translation id="7179323680825933600">Save and fill payment methods</translation>
@@ -996,6 +997,7 @@ Additional details:
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
 <translation id="7723047071702270851">Edit Card</translation>
 <translation id="774634243536837715">Dangerous content blocked.</translation>
+<translation id="7747182086178764941">Auto-fill assistant first run screen is shown</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="7755287808199759310">Your parent can unblock it for you</translation>
 <translation id="7758069387465995638">Firewall or antivirus software may have blocked the connection.</translation>

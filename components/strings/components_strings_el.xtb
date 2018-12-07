@@ -179,7 +179,7 @@
 <translation id="20817612488360358">Οι ρυθμίσεις διακομιστή μεσολάβησης του συστήματος έχουν οριστεί για να χρησιμοποιηθούν, αλλά καθορίζεται επίσης μια ρητή διαμόρφωση του διακομιστή μεσολάβησης.</translation>
 <translation id="2091887806945687916">Ήχος</translation>
 <translation id="2094505752054353250">Αναντιστοιχία τομέα</translation>
-<translation id="2096368010154057602">Νομός</translation>
+<translation id="2096368010154057602">Διαμέρισμα</translation>
 <translation id="2102134110707549001">Πρόταση για ισχυρό κωδικό πρόσβασης…</translation>
 <translation id="2108755909498034140">Επανεκκινήστε τον υπολογιστή σας</translation>
 <translation id="2113977810652731515">Παιχνίδια με κάρτες</translation>
@@ -338,7 +338,7 @@
 <translation id="3162559335345991374">Το Wi-Fi που χρησιμοποιείτε ενδέχεται να σας ζητήσει να επισκεφτείτε τη σελίδα σύνδεσής του.</translation>
 <translation id="3167968892399408617">Οι σελίδες που προβάλλετε στις καρτέλες της ανώνυμης περιήγησης δεν διατηρούνται στο ιστορικό του προγράμματος περιήγησης, στα cookie ή στο ιστορικό αναζήτησης, αφού κλείσετε όλες τις καρτέλες της ανώνυμης περιήγησης. Τα αρχεία που κατεβάζετε ή οι σελιδοδείκτες που δημιουργείτε θα διατηρούνται.</translation>
 <translation id="3169472444629675720">Discover</translation>
-<translation id="3174168572213147020">Νησί</translation>
+<translation id="3174168572213147020">Νήσος</translation>
 <translation id="3176929007561373547">Ελέγξτε τις ρυθμίσεις του διακομιστή μεσολάβησης ή επικοινωνήστε με το διαχειριστή του δικτύου σας, για
       να βεβαιωθείτε ότι ο διακομιστής μεσολάβησης λειτουργεί. Εάν δεν πιστεύετε ότι
       απαιτείται η χρήση διακομιστή μεσολάβησης:
@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">Να επιτρέπεται (προεπιλογή)</translation>
 <translation id="3427342743765426898">&amp;Επανάληψη επεξεργασίας</translation>
 <translation id="342781501876943858">Το Chromium συνιστά την επαναφορά του κωδικού πρόσβασης, εάν τον έχετε χρησιμοποιήσει και σε άλλους ιστοτόπους.</translation>
-<translation id="3430691998045392297">Η προβολή ταινιών είναι διαφορετική, θέλετε να συνεχίσετε;</translation>
 <translation id="3431636764301398940">Αποθήκευση αυτής της κάρτας στη συγκεκριμένη συσκευή</translation>
 <translation id="3447661539832366887">Ο κάτοχος αυτής της συσκευής απενεργοποίησε το παιχνίδι με τους δεινοσαύρους.</translation>
 <translation id="3447884698081792621">Εμφάνιση πιστοποιητικού (εκδόθηκε από <ph name="ISSUER" />)</translation>
@@ -824,7 +823,6 @@
 <translation id="6569060085658103619">Βλέπετε μια σελίδα επέκτασης</translation>
 <translation id="6596325263575161958">Επιλογές κρυπτογράφησης</translation>
 <translation id="6604181099783169992">Αισθητήρες κίνησης ή φωτός</translation>
-<translation id="6607617806003952240">Δεν μπορώ να σας προσφέρω περαιτέρω βοήθεια. Θα πρέπει να συνεχίσετε με μη αυτόματο τρόπο.</translation>
 <translation id="6624427990725312378">Στοιχεία επικοινωνίας</translation>
 <translation id="6626291197371920147">Προσθήκη έγκυρου αριθμού κάρτας</translation>
 <translation id="6628463337424475685">Αναζήτηση <ph name="ENGINE" /></translation>
@@ -843,6 +841,7 @@
 <translation id="6744009308914054259">Ενώ περιμένετε για την επίτευξη κάποιας σύνδεσης, μπορείτε να μεταβείτε στις Λήψεις, για να διαβάσετε άρθρα εκτός σύνδεσης.</translation>
 <translation id="6753269504797312559">Τιμή πολιτικής</translation>
 <translation id="6757797048963528358">Η συσκευή σας τέθηκε σε αδράνεια.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Δεν είναι δυνατή η προσθήκη αυτής της κάρτας αυτήν τη στιγμή}other{Δεν είναι δυνατή η προσθήκη αυτών των καρτών αυτήν τη στιγμή}}</translation>
 <translation id="6778737459546443941">Ο γονέας σου δεν τον έχει εγκρίνει ακόμα</translation>
 <translation id="679355240208270552">Έγινε παράβλεψη επειδή η προεπιλεγμένη αναζήτηση δεν έχει ενεργοποιηθεί από την πολιτική.</translation>
 <translation id="681021252041861472">Υποχρεωτικό πεδίο</translation>
@@ -855,6 +854,7 @@
 <translation id="6865412394715372076">Δεν είναι δυνατή η επαλήθευση της κάρτας αυτήν τη στιγμή</translation>
 <translation id="6868206169573555318">Επανεκκίνηση για ενημέρωση</translation>
 <translation id="6874604403660855544">&amp;Επανάληψη προσθήκης</translation>
+<translation id="6885646002011712606">Ο βοηθός αυτόματης συμπλήρωσης είναι διαθέσιμος κοντά στο κάτω μέρος της οθόνης</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Το επίπεδο πολιτικής δεν υποστηρίζεται.</translation>
 <translation id="6895330447102777224">Η κάρτα σας επιβεβαιώθηκε</translation>
@@ -871,7 +871,7 @@
 <translation id="6964255747740675745">Απέτυχε η ανάλυση της διαμόρφωσης δικτύου (μη έγκυρο JSON).</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Συσκευή</translation>
-<translation id="6970216967273061347">Περιοχή</translation>
+<translation id="6970216967273061347">Περιφέρεια</translation>
 <translation id="6973656660372572881">Καθορίζονται τόσο οι σταθεροί διακομιστές μεσολάβησης όσο και μια διεύθυνση URL σεναρίου .pac.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Σίγαση (προεπιλογή)</translation>
@@ -884,7 +884,7 @@
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="7064851114919012435">Στοιχεία επικοινωνίας</translation>
 <translation id="7079718277001814089">Ο ιστότοπος περιέχει κακόβουλο πρόγραμμα</translation>
-<translation id="7087282848513945231">Περιφέρεια</translation>
+<translation id="7087282848513945231">Κομητεία</translation>
 <translation id="7090678807593890770">Αναζητήστε στο Google για <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Απόκρυψη</translation>
 <translation id="7108819624672055576">Επιτρέπεται από μια επέκταση</translation>
@@ -894,6 +894,7 @@
 <translation id="7138472120740807366">Μέθοδος προβολής</translation>
 <translation id="7139724024395191329">Εμιράτο</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}other{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}}</translation>
+<translation id="7158980942472052083">Μη έγκυρο URL. Πρέπει να είναι URL με τυπικό σχήμα.</translation>
 <translation id="717330890047184534">Αναγνωριστικό Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}other{<ph name="SHIPPING_OPTION_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ακόμη}}</translation>
 <translation id="7179323680825933600">Αποθήκευση και συμπλήρωση τρόπων πληρωμής</translation>
@@ -997,6 +998,7 @@
 <translation id="7716424297397655342">Δεν είναι δυνατή η φόρτωση αυτού του ιστότοπου από την κρυφή μνήμη</translation>
 <translation id="7723047071702270851">Επεξεργασία κάρτας</translation>
 <translation id="774634243536837715">Το επικίνδυνο περιεχόμενο αποκλείστηκε.</translation>
+<translation id="7747182086178764941">Εμφανίζεται η οθόνη πρώτης εκτέλεσης του βοηθού της αυτόματης συμπλήρωσης</translation>
 <translation id="7752995774971033316">Χωρίς διαχείριση</translation>
 <translation id="7755287808199759310">Ο γονέας σας μπορεί να καταργήσει τον αποκλεισμό του για εσάς</translation>
 <translation id="7758069387465995638">Το τείχος προστασίας ή το λογισμικό προστασίας από ιούς ενδέχεται να έχει αποκλείσει τη σύνδεση.</translation>
@@ -1004,7 +1006,7 @@
 <translation id="7761701407923456692">Το πιστοποιητικό του διακομιστή δεν συμφωνεί με τη διεύθυνση URL.</translation>
 <translation id="7763386264682878361">Συντακτικός αναλυτής διακήρυξης πληρωμών</translation>
 <translation id="7764225426217299476">Προσθήκη διεύθυνσης</translation>
-<translation id="777702478322588152">Νομαρχία</translation>
+<translation id="777702478322588152">Νομός</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="7793809570500803535">Η ιστοσελίδα στη διεύθυνση <ph name="SITE" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε νέα διεύθυνση ιστού.</translation>
 <translation id="7800304661137206267">Η σύνδεση είναι κρυπτογραφημένη με χρήση <ph name="CIPHER" />, με <ph name="MAC" /> για έλεγχο ταυτότητας μηνυμάτων και <ph name="KX" /> ως μηχανισμό ανταλλαγής κλειδιών.</translation>

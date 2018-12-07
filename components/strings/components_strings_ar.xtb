@@ -179,7 +179,7 @@
 <translation id="20817612488360358">تم تعيين إعدادات الخادم الوكيل ليتم استخدامها وتم أيضًا تحديد تهيئة صريحة للخادم الوكيل.</translation>
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2094505752054353250">النطاق غير متطابق</translation>
-<translation id="2096368010154057602">الإدارة</translation>
+<translation id="2096368010154057602">القسم</translation>
 <translation id="2102134110707549001">اقتراح كلمة مرور قوية…</translation>
 <translation id="2108755909498034140">إعادة تشغيل جهاز الكمبيوتر</translation>
 <translation id="2113977810652731515">البطاقة</translation>
@@ -220,7 +220,7 @@
 <translation id="2355395290879513365">قد يتمكن المهاجمون من رؤية الصور التي تتطلع عليها على هذا الموقع وخداعك من خلال تعديلها.</translation>
 <translation id="2356070529366658676">طلب</translation>
 <translation id="2359629602545592467">متعددة</translation>
-<translation id="2359808026110333948">المتابعة</translation>
+<translation id="2359808026110333948">متابعة</translation>
 <translation id="2360873523816792727">لاستخدام بطاقاتك على جميع الأجهزة، يُرجى تفعيل المزامنة.</translation>
 <translation id="2365563543831475020">لم يتم تحميل تقرير الأعطال الذي تم الحصول عليه في <ph name="CRASH_TIME" /></translation>
 <translation id="2367567093518048410">المستوى</translation>
@@ -385,7 +385,6 @@
 <translation id="3427092606871434483">السماح (تلقائي)</translation>
 <translation id="3427342743765426898">إعادة الت&amp;حرير</translation>
 <translation id="342781501876943858">‏يُوصي Chromium بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
-<translation id="3430691998045392297">تُعد مشاهدة الفيلم أمرًا مختلفًا، هل تريد المتابعة؟</translation>
 <translation id="3431636764301398940">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="3447661539832366887">أوقف مالك هذا الجهاز تشغيل لعبة الديناصور.</translation>
 <translation id="3447884698081792621">عرض الشهادة (من إصدار <ph name="ISSUER" />)</translation>
@@ -450,7 +449,7 @@
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3858027520442213535">تحديث التاريخ والوقت</translation>
 <translation id="3884278016824448484">معرف جهاز متضارب</translation>
-<translation id="3885155851504623709">دائرة</translation>
+<translation id="3885155851504623709">الأبرشية</translation>
 <translation id="3886446263141354045">تمّ إرسال طلبك للدخول إلى هذا الموقع إلى <ph name="NAME" /></translation>
 <translation id="3890664840433101773">إضافة بريد إلكتروني</translation>
 <translation id="3901925938762663762">انتهت صلاحية البطاقة</translation>
@@ -618,9 +617,9 @@
 <translation id="5086888986931078152">قد تفقد إمكانية الوصول إلى محتوى محمي من بعض المواقع.</translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
-<translation id="5089810972385038852">بلد/دولة</translation>
+<translation id="5089810972385038852">الولاية</translation>
 <translation id="5094747076828555589">‏هذا الخادم لم يتمكن من إثبات أن ذلك <ph name="DOMAIN" />؛ بل إنه شهادة أمان غير موثوقة من قبل Chromium. وربما يكون السبب في ذلك خطأ في التكوين أو مهاجمًا يعترض الاتصال.</translation>
-<translation id="5095208057601539847">الإقليم</translation>
+<translation id="5095208057601539847">المقاطعة</translation>
 <translation id="5098332213681597508">‏هذا الاسم من حسابك على Google.</translation>
 <translation id="5115563688576182185">(64 بت)</translation>
 <translation id="5128122789703661928">الجلسة التي تحمل هذا الاسم غير صالحة للحذف.</translation>
@@ -823,7 +822,6 @@
 <translation id="6569060085658103619">أنت تعرض صفحة إضافة</translation>
 <translation id="6596325263575161958">خيارات التشفير</translation>
 <translation id="6604181099783169992">أجهزة استشعار الإضاءة والحركة</translation>
-<translation id="6607617806003952240">لا يمكنني مساعدتك بعد ذلك، يُرجى المتابعة يدويًا.</translation>
 <translation id="6624427990725312378">معلومات الاتصال</translation>
 <translation id="6626291197371920147">إضافة رقم بطاقة صالح</translation>
 <translation id="6628463337424475685">بحث <ph name="ENGINE" /></translation>
@@ -842,6 +840,7 @@
 <translation id="6744009308914054259">أثناء انتظار اتصال، يمكنك الانتقال إلى "التنزيلات" للاطِّلاع على المقالات بلا اتصال بالإنترنت.</translation>
 <translation id="6753269504797312559">قيمة السياسة</translation>
 <translation id="6757797048963528358">خضع جهازك إلى وضع السكون.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{يتعذَّر إضافة هذه البطاقة حاليًا}zero{يتعذِّر إضافة هذه البطاقات حاليًا}two{يتعذَّر إضافة هاتين البطاقتين حاليًا}few{يتعذَّر إضافة هذه البطاقات حاليًا}many{يتعذَّر إضافة هذه البطاقات حاليًا}other{يتعذَّر إضافة هذه البطاقات حاليًا}}</translation>
 <translation id="6778737459546443941">لم يوافق عليه والداك حتى الآن</translation>
 <translation id="679355240208270552">تم التجاهل نظرًا لأنه لم يتم تفعيل البحث التلقائي بواسطة السياسة.</translation>
 <translation id="681021252041861472">الحقل مطلوب</translation>
@@ -854,6 +853,7 @@
 <translation id="6865412394715372076">يتعذَّر إثبات ملكية هذه البطاقة الآن</translation>
 <translation id="6868206169573555318">إعادة التشغيل للتحديث</translation>
 <translation id="6874604403660855544">إعا&amp;دة الإضافة</translation>
+<translation id="6885646002011712606">يتوفر مساعد الملء التلقائي بالقرب من أسفل الشاشة</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">مستوى السياسة غير مدعوم.</translation>
 <translation id="6895330447102777224">تم التأكد من بطاقتك</translation>
@@ -870,7 +870,7 @@
 <translation id="6964255747740675745">‏تعذّر تحليل ضبط الشبكة (JSON غير صالح).</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="6965978654500191972">جهاز</translation>
-<translation id="6970216967273061347">المنطقة</translation>
+<translation id="6970216967273061347">حي</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">كتم الصوت (تلقائي)</translation>
@@ -883,7 +883,7 @@
 <translation id="7053983685419859001">منع</translation>
 <translation id="7064851114919012435">معلومات الاتصال</translation>
 <translation id="7079718277001814089">يحتوي هذا الموقع على برامج ضارة</translation>
-<translation id="7087282848513945231">المقاطعة/الإقليم/المنطقة</translation>
+<translation id="7087282848513945231">مقاطعة</translation>
 <translation id="7090678807593890770">‏البحث في Google عن <ph name="LINK" /></translation>
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7108819624672055576">تم السماح بواسطة إحدى الإضافات</translation>
@@ -891,8 +891,9 @@
 <translation id="7119414471315195487">إغلاق علامات التبويب أو البرامج الأخرى</translation>
 <translation id="7129409597930077180">لا يمكن الشحن على هذا العنوان. حدِّد عنوانًا آخر.</translation>
 <translation id="7138472120740807366">طريقة التسليم</translation>
-<translation id="7139724024395191329">الإمارة</translation>
+<translation id="7139724024395191329">إمارة</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> وطريقة دفع <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> أخرى}two{<ph name="PAYMENT_METHOD_PREVIEW" /> وطريقتا دفع <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> أخريان}few{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طرق دفع أخرى}many{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع أخرى}other{<ph name="PAYMENT_METHOD_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> طريقة دفع أخرى}}</translation>
+<translation id="7158980942472052083">‏عنوان URL غير صالح. يجب أن يكون عنوان URL يحتوي على نظام قياسي.</translation>
 <translation id="717330890047184534">‏معرّف GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> وخيار <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> آخر}two{<ph name="SHIPPING_OPTION_PREVIEW" /> وخياران (<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />) آخران}few{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارات أخرى}many{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيارًا آخر}other{<ph name="SHIPPING_OPTION_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> خيار آخر}}</translation>
 <translation id="7179323680825933600">حفظ طرق الدفع وملء استماراتها</translation>
@@ -996,6 +997,7 @@
 <translation id="7716424297397655342">لا يمكن تحميل موقع الويب هذا من ذاكرة التخزين المؤقت</translation>
 <translation id="7723047071702270851">تعديل البطاقة</translation>
 <translation id="774634243536837715">تم حظر المحتوى الخطير.</translation>
+<translation id="7747182086178764941">يتم عرض مساعد الملء التلقائي الذي يُشغِّل الشاشة أولاً</translation>
 <translation id="7752995774971033316">غير مُدار</translation>
 <translation id="7755287808199759310">قد يلغي والداك الحظر لك</translation>
 <translation id="7758069387465995638">ربما حظر الجدار الناري أو برامج مكافحة الفيروسات الاتصال.</translation>
@@ -1003,7 +1005,7 @@
 <translation id="7761701407923456692">‏لا تتطابق شهادة الخادم مع عنوان URL.</translation>
 <translation id="7763386264682878361">المحلل اللغوي لبيان الدفع</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
-<translation id="777702478322588152">الإدارة الأمنية</translation>
+<translation id="777702478322588152">المديرية</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="7793809570500803535">قد تكون صفحة الويب على العنوان <ph name="SITE" /> غير متاحة مؤقتًا أو تم نقلها نهائيًا إلى عنوان ويب جديد.</translation>
 <translation id="7800304661137206267">تم تشفير الاتصال باستخدام <ph name="CIPHER" />، مع <ph name="MAC" /> لمصادقة الرسالة و<ph name="KX" /> كآلية التبادل الرئيسية.</translation>

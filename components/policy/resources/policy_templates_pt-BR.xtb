@@ -115,6 +115,13 @@
 
           Por padrão, nenhum modo de desbloqueio rápido é disponibilizado para dispositivos gerenciados.</translation>
 <translation id="123081309365616809">Ativa transmissão de conteúdo para o dispositivo</translation>
+<translation id="1231349879329465225">Permite ativar ou desativar a transição rápida.
+      Isso se aplica a todos os usuários e a todas as interfaces no dispositivo.
+      Para usar a transição rápida, é necessário ativar esta configuração e a propriedade ONC por rede.
+      Depois de configurada, a transição rápida continua até que a política seja alterada para desativá-la.
+
+      Se esta política não for definida ou for definida como falsa, a transição rápida não será usada.
+      Se for definida como verdadeira, a transição rápida será usada quando for compatível com o ponto de acesso sem fio.</translation>
 <translation id="1243570869342663665">Controlar a filtragem de conteúdo adulto SafeSites.</translation>
 <translation id="1257550411839719984">Definir diretório de download padrão</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>
@@ -132,6 +139,7 @@
       Ao contrário da <ph name="URL_LIST_POLICY_NAME" />, as regras se aplicam nas duas direções. Ou seja, quando o suplemento do Internet Explorer estiver presente e ativado, isso também controlará se o <ph name="IE_PRODUCT_NAME" /> abrirá esses URLs no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Usar um script de proxy .pac</translation>
 <translation id="1304973015437969093">IDs de extensões//aplicativos e URLs de atualização deverão ser instalados silenciosamente</translation>
+<translation id="1307415922184340052">Envia o nome de usuário e de arquivo para o servidor de impressoras nativas com cada trabalho de impressão. O padrão é não enviar.</translation>
 <translation id="1307454923744766368">Origens ou padrões de nome de host aos quais as restrições sobre
       origens não seguras não se aplicam</translation>
 <translation id="1313457536529613143">Especifica o percentual pelo qual calcular o intervalo de escurecimento da tela quando é observada atividade do usuário enquanto a tela está esmaecida ou logo após a tela ser desligada.
@@ -3299,4 +3307,5 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Os dispositivos não poderão procurar atualizações automaticamente durante os intervalos de tempo especificados. Dispositivos que exijam um rollback ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política, devido a possíveis problemas de segurança. Além disso, esta política não bloqueará verificações de atualização solicitadas por usuários ou administradores.
       Quando esta política não for definida ou se não contiver nenhum intervalo de tempo:
       Nenhuma verificação automática de atualização será bloqueada por ela, mas as verificações poderão ser bloqueadas por outras políticas.</translation>
+<translation id="991560005425213776">Enviar nome de usuário e de arquivo para impressoras nativas</translation>
 </translationbundle>

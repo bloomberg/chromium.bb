@@ -449,9 +449,9 @@
 <translation id="2149330464730004005">Habilitar la impresión a color</translation>
 <translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio del navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2163878108829382394">
-        Si se configura esta política como verdadera, la inscripción en la administración de nube será obligatoria y se bloqueará el proceso de ejecución de Chrome en caso de que falle.
+        Si se configura esta política como verdadera, la inscripción en la administración de nube será obligatoria y bloqueará el proceso de ejecución de Chrome en caso de que falle.
 
-        Si no se configura esta política o se configura como falsa, la inscripción en la administración de la nube será opcional y no se bloqueará el proceso de ejecución de Chrome en caso de que falle.</translation>
+        Si no se configura esta política o se configura como falsa, la inscripción en la administración de la nube será opcional y no bloqueará el proceso de ejecución de Chrome en caso de que falle.</translation>
 <translation id="2166472654199325139">No aplicar filtros de contenido para adultos a los sitios</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
@@ -2627,7 +2627,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre la Navegación segura.</translation>
 <translation id="7642803091923523695">Permite que este dispositivo ejecute PluginVm.
 
-      Si se configura la política como falsa o no se configura, no se habilitará <ph name="PLUGIN_VM_NAME" /> para este dispositivo. Si se configura como verdadera, se habilitará <ph name="PLUGIN_VM_NAME" /> para el dispositivo, siempre y cuando lo permitan otras opciones de configuración. Para que se pueda ejecutar, la política <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> debe ser verdadera y la política <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> debe configurarse como <ph name="PLUGIN_VM_NAME" />.</translation>
+      Si se configura la política como falsa o no se configura, no se habilitará <ph name="PLUGIN_VM_NAME" /> para este dispositivo. Si se configura como verdadera, se habilitará <ph name="PLUGIN_VM_NAME" /> para el dispositivo, siempre y cuando lo permitan otras opciones de configuración. Para que se pueda ejecutar, la política <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> debe ser verdadera, y la política <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> debe configurarse como <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="7643883929273267746">Restringir las cuentas visibles en <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determina si la itinerancia de datos debe activarse en el dispositivo. Si el valor se establece en "true", se permite la itinerancia de datos. Si no se configura o si se establece en "false", la itinerancia de datos no estará disponible.</translation>
 <translation id="7673194325208122247">Período (milisegundos)</translation>

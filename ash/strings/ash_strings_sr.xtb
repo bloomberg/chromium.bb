@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
 <translation id="1570871743947603115">Укључите/искључите Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Приступите свој активности у овој сесији</translation>
 <translation id="1608626060424371292">Уклони овог корисника</translation>
 <translation id="1621499497873603021">Време које је преостало док се батерија не испразни, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Започните гласовну претрагу</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">Вертикални приказ је закључан</translation>
 <translation id="2352467521400612932">Подешавања писаљке</translation>
 <translation id="2354174487190027830">Активирање мреже <ph name="NAME" /></translation>
-<translation id="2359808026110333948">Настави</translation>
+<translation id="2359808026110333948">Наставите</translation>
 <translation id="2365393535144473978">Ако омогућите мобилне податке, омогућавате Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Укључите/искључите Не узнемиравај</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Додај везу</translation>
 <translation id="2961963223658824723">Нешто није у реду. Пробајте поново за пар секунди.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Инсталирајте апликације, додатке и теме</translation>
 <translation id="2995447421581609334">Прегледајте уређаје за пребацивање.</translation>
 <translation id="2996462380875591307">Монтирана лупа екрана је омогућена. Притисните Ctrl + тастер за претрагу + D поново да бисте је искључили.</translation>
 <translation id="3000461861112256445">Моно звук</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">Рестартуј и ресетуј</translation>
 <translation id="4961318399572185831">Пребацивање екрана</translation>
 <translation id="5030687792513154421">Време је истекло</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> се повезао са новим телефоном</translation>
 <translation id="5083553833479578423">Откључајте још функција Помоћника.</translation>
 <translation id="5136175204352732067">Нека друга тастатура је повезана</translation>
 <translation id="5168181903108465623">Доступни су уређаји за пребацивање</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Тастер за претрагу+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Унесите ову шифру на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
+<translation id="6665545700722362599">Дозволите веб-сајтовима, апликацијама и додацима да користе услуге локације или микрофон, камеру или друге функције уређаја</translation>
 <translation id="6691659475504239918">Тастер за претрагу + Shift + H</translation>
 <translation id="6696025732084565524">Треба да инсталирате важно ажурирање за одвојиву тастатуру</translation>
 <translation id="6700713906295497288">Дугме IME менија</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="698231206551913481">Све датотеке и локални подаци повезани са овим корисником ће бити трајно избрисани када уклоните овог корисника.</translation>
 <translation id="7015766095477679451">Вратите се у <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Повежите <ph name="DEVICE_NAME" /> са телефоном</translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
@@ -420,6 +425,7 @@
 <translation id="8308637677604853869">Претходни мени</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Направите белешку</translation>
+<translation id="8375916635258623388">Овај <ph name="DEVICE_NAME" /> и телефон ће се аутоматски повезати</translation>
 <translation id="8392451568018454956">Мени са опцијама за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Родитељ је закључао овај уређај</translation>
 <translation id="8406981827175133772">Лупа за цео екран</translation>
