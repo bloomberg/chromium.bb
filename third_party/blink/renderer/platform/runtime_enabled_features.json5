@@ -419,10 +419,6 @@
       status: "test",
     },
     {
-      name: "EncodingStreams",
-      status: "stable",
-    },
-    {
       name: "EncryptedMediaEncryptionSchemeQuery",
       status: "test",
     },

@@ -8,8 +8,7 @@
     Constructor(optional DOMString label = "utf-8", optional TextDecoderOptions options),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
-    MeasureAs=TextDecoderStreamConstructor,
-    RuntimeEnabled=EncodingStreams
+    MeasureAs=TextDecoderStreamConstructor
 ] interface TextDecoderStream {
     readonly attribute DOMString encoding;
     readonly attribute boolean fatal;
