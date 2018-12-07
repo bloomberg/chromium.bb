@@ -2392,37 +2392,37 @@ TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandler) {
   HomeLauncherGestureHandler* gesture_handler =
       Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
   ASSERT_TRUE(gesture_handler);
-  ASSERT_FALSE(gesture_handler->window());
+  ASSERT_FALSE(gesture_handler->GetWindow1());
 
   // Tests that after scrolling up on the shelf, the home launcher gesture
   // handler will be acting on |window|.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, -1.f));
-  EXPECT_EQ(window.get(), gesture_handler->window());
+  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
 
   // Tests that since the initial scroll event was scrolled up, the home
   // launcher gesture handler will continue to act on |window| regardless of
   // direction of scroll updates.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
-  EXPECT_EQ(window.get(), gesture_handler->window());
+  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, 1.f));
-  EXPECT_EQ(window.get(), gesture_handler->window());
+  EXPECT_EQ(window.get(), gesture_handler->GetWindow1());
 
   // End the scroll.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_END, 1.f));
-  ASSERT_FALSE(gesture_handler->window());
+  ASSERT_FALSE(gesture_handler->GetWindow1());
 
   // Tests that if the initial scroll event is directed downwards, the home
   // launcher gesture handler will not act on |window|.
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_BEGIN, 1.f));
-  EXPECT_FALSE(gesture_handler->window());
+  EXPECT_FALSE(gesture_handler->GetWindow1());
   manager->ProcessGestureEvent(
       create_scroll_event(ui::ET_GESTURE_SCROLL_UPDATE, -1.f));
-  EXPECT_FALSE(gesture_handler->window());
+  EXPECT_FALSE(gesture_handler->GetWindow1());
 }
 
 // Tests that tap outside of the AUTO_HIDE_SHOWN shelf should hide it.
