@@ -28,15 +28,24 @@ enum class DeepLinkType {
   kScreenshot,
   kSettings,
   kTaskManager,
+  kTimer,
   kWhatsOnMyScreen,
 };
 
 // Enumeration of deep link parameters.
 enum class DeepLinkParam {
+  kAction,
+  kExtraTimeSec,
   kId,
   kPage,
   kQuery,
   kRelaunch,
+};
+
+// Enumeration of deep link parameter timer action.
+enum class TimerAction {
+  kAddTimeToTimer,
+  kStop,
 };
 
 // Returns a deep link to top level Assistant Settings.
@@ -62,6 +71,17 @@ ASH_EXPORT base::Optional<std::string> GetDeepLinkParam(
 ASH_EXPORT base::Optional<bool> GetDeepLinkParamAsBool(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param);
+
+// Returns a specific int |param| from the given parameters. If the desired
+// parameter is not found or is not an int, an empty value is returned.
+ASH_EXPORT base::Optional<int> GetDeepLinkParamAsInt(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns TimerAction from the given parameters. If the desired
+//// parameter is not found or is not an int, an empty value is returned.
+ASH_EXPORT base::Optional<TimerAction> GetDeepLinkParamAsTimerAction(
+    const std::map<std::string, std::string>& params);
 
 // Returns the deep link type of the specified |url|. If the specified url is
 // not a supported deep link, DeepLinkType::kUnsupported is returned.

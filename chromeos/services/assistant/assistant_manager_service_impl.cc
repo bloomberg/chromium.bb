@@ -29,6 +29,8 @@
 #include "chromeos/services/assistant/service.h"
 #include "chromeos/services/assistant/utils.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "libassistant/shared/internal_api/alarm_timer_manager.h"
+#include "libassistant/shared/internal_api/alarm_timer_types.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
@@ -56,11 +58,15 @@ constexpr char kDoNotDisturbDeviceSettingId[] = "DO_NOT_DISTURB";
 constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
 constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
 constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
-constexpr base::Feature kAssistantTimerNotificationFeature{
-    "ChromeOSAssistantTimerNotification", base::FEATURE_ENABLED_BY_DEFAULT};
-constexpr base::Feature kChromeOSAssistantDogfood{
-    "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
+// TODO(b/119684508): Use the TimerAction enum to construct the URL after the
+// enum is accessible here.
+constexpr char kStopTimerDeeplink[] = "googleassistant://timer?action=1";
+constexpr char kAddOneMinToTimerDeeplinkPrefix[] =
+    "googleassistant://timer?action=0&extra_time_sec=60&timer_id=";
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
+// TODO(llin): Migrate to use the AlarmTimerManager API to better support
+// multiple timers when the API is available.
+constexpr char kTimerId[] = "0";
 
 constexpr float kDefaultSliderStep = 0.1f;
 
@@ -1047,9 +1053,10 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
-  // TODO(llin): Migrate to use the AlarmManager API to better support multiple
-  // timers when the API is available.
-  if (!base::FeatureList::IsEnabled(kAssistantTimerNotificationFeature))
+  // TODO(llin): Migrate to use the AlarmTimerManager API to better support
+  // multiple timers when the API is available.
+  if (!base::FeatureList::IsEnabled(
+          features::kAssistantTimerNotificationFeature))
     return;
 
   const std::string notification_title =
@@ -1059,26 +1066,44 @@ void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
   const std::string stop_timer_query =
       l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_TIMER_QUERY);
 
-  const std::string action_url = kQueryDeeplinkPrefix + stop_timer_query;
+  std::string stop_timer_action_url;
+  std::string add_time_to_timer_action_url;
+  if (base::FeatureList::IsEnabled(
+          features::kAssistantAlarmTimerManagerFeature)) {
+    stop_timer_action_url = kStopTimerDeeplink;
+    add_time_to_timer_action_url =
+        std::string(kAddOneMinToTimerDeeplinkPrefix) + kTimerId;
+  } else {
+    stop_timer_action_url =
+        std::string(kQueryDeeplinkPrefix) +
+        l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_TIMER_QUERY);
+    add_time_to_timer_action_url =
+        std::string(kQueryDeeplinkPrefix) +
+        l10n_util::GetStringUTF8(IDS_ASSISTANT_ADD_ONE_MIN_QUERY);
+  }
+
   action::Notification notification(
       /*title=*/notification_title,
       /*text=*/notification_content,
-      /*action_url=*/action_url,
+      /*action_url=*/stop_timer_action_url,
       /*notification_id=*/{},
       /*consistency_token=*/{},
       /*opaque_token=*/{},
-      /*grouping_key=*/kTimerFireNotificationGroupId,
+      /*grouping_key=*/std::string(kTimerFireNotificationGroupId) + kTimerId,
       /*obfuscated_gaia_id=*/{},
-      /*buttons=*/
-      {{l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_BUTTON_TEXT), action_url}});
+      {{l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_BUTTON_TEXT),
+        stop_timer_action_url},
+       {l10n_util::GetStringUTF8(IDS_ASSISTANT_ADD_ONE_MIN_BUTTON_TEXT),
+        add_time_to_timer_action_url}});
   OnShowNotification(notification);
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
-  if (!base::FeatureList::IsEnabled(kAssistantTimerNotificationFeature))
+  if (!base::FeatureList::IsEnabled(
+          features::kAssistantTimerNotificationFeature))
     return;
 
-  OnNotificationRemoved(kTimerFireNotificationGroupId);
+  OnNotificationRemoved(std::string(kTimerFireNotificationGroupId) + kTimerId);
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
@@ -1292,6 +1317,25 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
         speaker_id_enrollment_done_);
 }
 
+void AssistantManagerServiceImpl::StopRinging() {
+  if (!assistant_manager_internal_)
+    return;
+
+  auto* alarm_timer_manager =
+      assistant_manager_internal_->GetAlarmTimerManager();
+  alarm_timer_manager->StopRinging();
+}
+
+void AssistantManagerServiceImpl::AddTimeToTimer(const std::string& timer_id,
+                                                 base::TimeDelta extra_time) {
+  if (!assistant_manager_internal_)
+    return;
+
+  auto* alarm_timer_manager =
+      assistant_manager_internal_->GetAlarmTimerManager();
+  alarm_timer_manager->AddTimeToTimer(timer_id, extra_time.InSeconds());
+}
+
 void AssistantManagerServiceImpl::CacheAssistantStructure(
     base::OnceClosure on_done,
     ax::mojom::AssistantExtraPtr assistant_extra,
@@ -1337,7 +1381,7 @@ std::string AssistantManagerServiceImpl::GetLastSearchSource() {
 
 void AssistantManagerServiceImpl::FillServerExperimentIds(
     std::vector<std::string>* server_experiment_ids) {
-  if (base::FeatureList::IsEnabled(kChromeOSAssistantDogfood)) {
+  if (base::FeatureList::IsEnabled(features::kChromeOSAssistantDogfood)) {
     server_experiment_ids->emplace_back(kServersideDogfoodExperimentId);
   }
 }
