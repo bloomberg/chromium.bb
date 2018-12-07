@@ -1076,8 +1076,10 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
     return false;
 
   // Don't hide if the mouse is over the controls.
+  // Touch focus shouldn't affect controls visibility.
   const bool ignore_controls_hover = behavior_flags & kIgnoreControlsHover;
-  if (!ignore_controls_hover && AreVideoControlsHovered())
+  if (!ignore_controls_hover && AreVideoControlsHovered() &&
+      !is_touch_interaction_)
     return false;
 
   // Don't hide if the mouse is over the video area.
@@ -1484,7 +1486,8 @@ void MediaControlsImpl::MaybeToggleControlsFromTap() {
     MakeTransparent();
   } else {
     MakeOpaque();
-    if (ShouldHideMediaControls(kIgnoreWaitForTimer)) {
+    // Touch focus shouldn't affect controls visibility.
+    if (ShouldHideMediaControls(kIgnoreWaitForTimer | kIgnoreFocus)) {
       keep_showing_until_timer_fires_ = true;
       StartHideMediaControlsTimer();
     }
@@ -1836,7 +1839,8 @@ void MediaControlsImpl::OnVolumeChange() {
 }
 
 void MediaControlsImpl::OnFocusIn() {
-  if (!MediaElement().ShouldShowControls())
+  // Touch focus shouldn't affect controls visibility.
+  if (!MediaElement().ShouldShowControls() || is_touch_interaction_)
     return;
 
   ResetHideMediaControlsTimer();
