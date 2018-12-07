@@ -29,7 +29,7 @@ void FocusElementAction::InternalProcessAction(ActionDelegate* delegate,
     delegate->ShowStatusMessage(focus_element.title());
   }
   delegate->ShortWaitForElementExist(
-      ExtractSelector(focus_element.element()),
+      Selector(focus_element.element()),
       base::BindOnce(&FocusElementAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -45,7 +45,7 @@ void FocusElementAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->FocusElement(
-      ExtractSelector(proto_.focus_element().element()),
+      Selector(proto_.focus_element().element()),
       base::BindOnce(&FocusElementAction::OnFocusElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -56,7 +56,7 @@ void FocusElementAction::OnFocusElement(ActionDelegate* delegate,
                                         bool status) {
   std::vector<Selector> touchable_elements;
   for (const auto& ref : proto().focus_element().touchable_element_area()) {
-    touchable_elements.emplace_back(ExtractSelector(ref));
+    touchable_elements.emplace_back(Selector(ref));
   }
   if (!touchable_elements.empty())
     delegate->SetTouchableElements(touchable_elements);

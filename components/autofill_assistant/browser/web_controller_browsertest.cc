@@ -523,6 +523,17 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, TapElementInIFrame) {
   WaitForElementRemove(selector);
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ClickPseudoElement) {
+  const std::string javascript = R"(
+    document.querySelector("#terms-and-conditions").checked;
+  )";
+  EXPECT_FALSE(content::EvalJs(shell(), javascript).ExtractBool());
+  Selector selector({R"(label[for="terms-and-conditions"])"},
+                    PseudoType::BEFORE);
+  ClickElement(selector);
+  EXPECT_TRUE(content::EvalJs(shell(), javascript).ExtractBool());
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, FindElement) {
   Selector selector;
   selector.selectors.emplace_back("#button");

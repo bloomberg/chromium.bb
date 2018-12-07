@@ -30,11 +30,7 @@ std::unique_ptr<ScriptPrecondition> ScriptPrecondition::FromProto(
       continue;
     }
 
-    Selector a_selector;
-    for (const auto& selector : element.selectors()) {
-      a_selector.selectors.emplace_back(selector);
-    }
-    elements_exist.emplace_back(std::move(a_selector));
+    elements_exist.emplace_back(Selector(element));
   }
 
   std::set<std::string> domain_match;
@@ -106,14 +102,10 @@ void ScriptPrecondition::Check(
   }
   for (const auto& value_match : form_value_match_) {
     DCHECK(!value_match.element().selectors().empty());
-    Selector a_selector;
-    for (const auto& selector : value_match.element().selectors()) {
-      a_selector.selectors.emplace_back(selector);
-    }
-
     batch_checks->AddFieldValueCheck(
-        a_selector, base::BindOnce(&ScriptPrecondition::OnGetFieldValue,
-                                   weak_ptr_factory_.GetWeakPtr()));
+        Selector(value_match.element()),
+        base::BindOnce(&ScriptPrecondition::OnGetFieldValue,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

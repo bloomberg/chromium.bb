@@ -49,6 +49,37 @@ found in the LICENSE file.
       #touch_area_three {
         position: absolute;
       }
+
+      #terms-and-conditions {
+        position: absolute;
+        z-index: -1;
+        left: -9999px;
+      }
+
+      label[for="terms-and-conditions"] {
+        padding-left: 48px;
+        position: relative;
+        display: inline-block;
+        min-height: 48px;
+        font-weight: normal;
+      }
+
+      label[for="terms-and-conditions"]:before {
+        content: "";
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        border: 1px solid #acacac;
+        position: absolute;
+        z-index: 0;
+        top: 0;
+        left: 0;
+        text-align: center;
+      }
+
+      #terms-and-conditions:checked + label[for="terms-and-conditions"]:before {
+        content: "\2714";
+      }
     </style>
   </head>
 
@@ -123,6 +154,11 @@ found in the LICENSE file.
 
     <iframe id="iframe" name="test_iframe" width="100%" height="500" src=
         "autofill_assistant_target_website_iframe_one.html"></iframe>
+
+    <input type="checkbox" id="terms-and-conditions" />
+    <label for="terms-and-conditions" >
+      <a href="#">I have read and understood <br />the terms and conditions</a>
+    </label>
 
     <script>
       let upperCaseInput = document.querySelector("#uppercase_input");

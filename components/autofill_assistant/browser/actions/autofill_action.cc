@@ -99,7 +99,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     is_autofill_card_ = false;
     prompt_ = proto.use_address().prompt();
     name_ = proto.use_address().name();
-    selector_ = ExtractSelector(proto.use_address().form_field_element());
+    selector_ = Selector(proto.use_address().form_field_element());
     fill_form_message_ = proto.use_address().strings().fill_form();
     check_form_message_ = proto.use_address().strings().check_form();
     required_fields_value_status_.resize(
@@ -110,7 +110,7 @@ AutofillAction::AutofillAction(const ActionProto& proto)
     is_autofill_card_ = true;
     prompt_ = proto.use_card().prompt();
     name_ = "";
-    selector_ = ExtractSelector(proto.use_card().form_field_element());
+    selector_ = Selector(proto.use_card().form_field_element());
     fill_form_message_ = proto.use_card().strings().fill_form();
     check_form_message_ = proto.use_card().strings().check_form();
     show_overlay_ = proto.use_card().show_overlay();
@@ -292,7 +292,7 @@ void AutofillAction::CheckRequiredFields(ActionDelegate* delegate,
     auto& required_address_field = proto_.use_address().required_fields(i);
     DCHECK_GT(required_address_field.element().selectors_size(), 0);
     batch_element_checker_->AddFieldValueCheck(
-        ExtractSelector(required_address_field.element()),
+        Selector(required_address_field.element()),
         base::BindOnce(&AutofillAction::OnGetRequiredFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), i));
   }
@@ -397,7 +397,7 @@ void AutofillAction::SetFallbackFieldValuesSequentially(
   DCHECK_GT(
       required_fields.Get(required_fields_index).element().selectors_size(), 0);
   delegate->SetFieldValue(
-      ExtractSelector(required_fields.Get(required_fields_index).element()),
+      Selector(required_fields.Get(required_fields_index).element()),
       fallback_value,
       required_fields.Get(required_fields_index).simulate_key_presses(),
       base::BindOnce(&AutofillAction::OnSetFallbackFieldValue,

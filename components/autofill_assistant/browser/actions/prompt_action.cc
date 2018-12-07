@@ -49,7 +49,7 @@ void PromptAction::InternalProcessAction(ActionDelegate* delegate,
     std::string payload;
     choice_proto.SerializeToString(&payload);
     batch_element_checker_->AddElementCheck(
-        kExistenceCheck, ExtractSelector(choice_proto.element_exists()),
+        kExistenceCheck, Selector(choice_proto.element_exists()),
         base::BindOnce(&PromptAction::OnElementExist,
                        weak_ptr_factory_.GetWeakPtr(), payload));
   }

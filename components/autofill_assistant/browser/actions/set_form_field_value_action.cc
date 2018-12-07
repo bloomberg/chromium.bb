@@ -26,7 +26,7 @@ void SetFormFieldValueAction::InternalProcessAction(
     ActionDelegate* delegate,
     ProcessActionCallback callback) {
   delegate->ShortWaitForElementExist(
-      ExtractSelector(proto_.set_form_value().element()),
+      Selector(proto_.set_form_value().element()),
       base::BindOnce(&SetFormFieldValueAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
                      std::move(callback)));
@@ -61,7 +61,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
   }
 
   const auto& key_field = proto_.set_form_value().value(next);
-  const auto& selector = ExtractSelector(proto_.set_form_value().element());
+  const auto& selector = Selector(proto_.set_form_value().element());
   switch (key_field.keypress_case()) {
     case SetFormFieldValueProto_KeyPress::kText:
       delegate->SetFieldValue(
