@@ -59,6 +59,10 @@ public final class FeedConfiguration {
     /** Default value for triggering immediate pagination. */
     public static final boolean TRIGGER_IMMEDIATE_PAGINATION_DEFAULT = false;
 
+    private static final String USE_TIMEOUT_SCHEDULER = "use_timeout_scheduler";
+    /** Default value for the type of scheduler handling. */
+    public static final boolean USE_TIMEOUT_SCHEDULER_DEFAULT = true;
+
     private static final String VIEW_LOG_THRESHOLD = "view_log_threshold";
     /** Default value for logging view threshold. */
     public static final double VIEW_LOG_THRESHOLD_DEFAULT = 0.66d;
@@ -139,6 +143,17 @@ public final class FeedConfiguration {
                 TRIGGER_IMMEDIATE_PAGINATION_DEFAULT);
     }
 
+    /**
+     * @return Whether the Feed's session handling should use logic to deal with timeouts and
+     * placing new results below the fold.
+     */
+    @VisibleForTesting
+    static boolean getUseTimeoutScheduler() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, USE_TIMEOUT_SCHEDULER,
+                USE_TIMEOUT_SCHEDULER_DEFAULT);
+    }
+
     /** @return How much of a card must be on screen to generate a UMA log view. */
     @VisibleForTesting
     static double getViewLogThreshold() {
@@ -166,6 +181,7 @@ public final class FeedConfiguration {
                 .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
+                .put(ConfigKey.USE_TIMEOUT_SCHEDULER, FeedConfiguration.getUseTimeoutScheduler())
                 .put(ConfigKey.VIEW_LOG_THRESHOLD, FeedConfiguration.getViewLogThreshold())
                 .build();
     }
