@@ -3232,6 +3232,8 @@ jumbo_split_static_library("ui") {
         "app_list/page_break_app_item.h",
         "app_list/page_break_constants.cc",
         "app_list/page_break_constants.h",
+        "app_list/search/app_service_app_result.cc",
+        "app_list/search/app_service_app_result.h",
         "app_list/search/arc_app_result.cc",
         "app_list/search/arc_app_result.h",
         "app_list/search/crostini_app_result.cc",

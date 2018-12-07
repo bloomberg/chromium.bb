@@ -47,7 +47,8 @@ AppServiceAppItem::~AppServiceAppItem() = default;
 void AppServiceAppItem::Activate(int event_flags) {
   apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
   if (proxy) {
-    proxy->Launch(id(), event_flags, apps::mojom::LaunchSource::kFromAppList,
+    proxy->Launch(id(), event_flags,
+                  apps::mojom::LaunchSource::kFromAppListGrid,
                   GetController()->GetAppListDisplayId());
   }
 }

@@ -135,4 +135,24 @@ TEST_F(AppUpdateTest, BasicOps) {
   EXPECT_FALSE(u.IconKey().is_null());
   EXPECT_EQ(apps::mojom::IconType::kExtension, u.IconKey()->icon_type);
   EXPECT_FALSE(u.IconKeyChanged());
+
+  // ShowInSearch tests.
+
+  EXPECT_EQ(apps::mojom::OptionalBool::kUnknown, u.ShowInSearch());
+  EXPECT_FALSE(u.ShowInSearchChanged());
+
+  state->show_in_search = apps::mojom::OptionalBool::kFalse;
+
+  EXPECT_EQ(apps::mojom::OptionalBool::kFalse, u.ShowInSearch());
+  EXPECT_FALSE(u.ShowInSearchChanged());
+
+  delta->show_in_search = apps::mojom::OptionalBool::kTrue;
+
+  EXPECT_EQ(apps::mojom::OptionalBool::kTrue, u.ShowInSearch());
+  EXPECT_TRUE(u.ShowInSearchChanged());
+
+  apps::AppUpdate::Merge(state.get(), delta);
+
+  EXPECT_EQ(apps::mojom::OptionalBool::kTrue, u.ShowInSearch());
+  EXPECT_FALSE(u.ShowInSearchChanged());
 }

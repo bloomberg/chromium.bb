@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,6 +39,10 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;
+  app->show_in_search = internal_app.searchable
+                            ? apps::mojom::OptionalBool::kTrue
+                            : apps::mojom::OptionalBool::kFalse;
+
   return app;
 }
 
@@ -68,6 +73,16 @@ void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
     // TODO(crbug.com/826982): move source of truth for built-in apps from
     // ui/app_list to here when the AppService feature is enabled by default.
     for (const auto& internal_app : app_list::GetInternalAppList(profile_)) {
+      // TODO(crbug.com/826982): support the "continue reading" app? Or leave
+      // it specifically to the chrome/browser/ui/app_list/search code? If
+      // moved here, it might mean calling sync_sessions::SessionSyncService's
+      // SubscribeToForeignSessionsChanged. See also app_search_provider.cc's
+      // InternalDataSource.
+      if (internal_app.internal_app_name ==
+          app_list::InternalAppName::kContinueReading) {
+        continue;
+      }
+
       apps::mojom::AppPtr app = Convert(internal_app);
       if (!app.is_null()) {
         apps.push_back(std::move(app));
@@ -108,17 +123,17 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
       break;
-    case apps::mojom::LaunchSource::kFromAppList:
+    case apps::mojom::LaunchSource::kFromAppListGrid:
       InternalAppItem::RecordActiveHistogram(app_id);
       break;
-    case apps::mojom::LaunchSource::kFromAppListSearch:
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+      app_list::InternalAppResult::RecordOpenHistogram(app_id);
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQueryResult:
+      app_list::RecordHistogram(app_list::APP_SEARCH_RESULT);
       app_list::InternalAppResult::RecordOpenHistogram(app_id);
       break;
   }
-  // TODO(crbug.com/826982): we should also update a UMA histogram when an app
-  // result is *shown* in the app list search box, not just *launched*.
-  //
-  // See //chrome/browser/ui/app_list/search/internal_app_result.cc.
 
   app_list::OpenInternalApp(app_id, profile_, event_flags);
 }
