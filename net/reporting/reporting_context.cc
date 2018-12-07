@@ -17,12 +17,12 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/rand_callback.h"
 #include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_cache_observer.h"
 #include "net/reporting/reporting_delegate.h"
 #include "net/reporting/reporting_delivery_agent.h"
 #include "net/reporting/reporting_endpoint_manager.h"
 #include "net/reporting/reporting_garbage_collector.h"
 #include "net/reporting/reporting_network_change_observer.h"
-#include "net/reporting/reporting_observer.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_uploader.h"
 
@@ -55,19 +55,24 @@ std::unique_ptr<ReportingContext> ReportingContext::Create(
 
 ReportingContext::~ReportingContext() = default;
 
-void ReportingContext::AddObserver(ReportingObserver* observer) {
-  DCHECK(!observers_.HasObserver(observer));
-  observers_.AddObserver(observer);
+void ReportingContext::AddCacheObserver(ReportingCacheObserver* observer) {
+  DCHECK(!cache_observers_.HasObserver(observer));
+  cache_observers_.AddObserver(observer);
 }
 
-void ReportingContext::RemoveObserver(ReportingObserver* observer) {
-  DCHECK(observers_.HasObserver(observer));
-  observers_.RemoveObserver(observer);
+void ReportingContext::RemoveCacheObserver(ReportingCacheObserver* observer) {
+  DCHECK(cache_observers_.HasObserver(observer));
+  cache_observers_.RemoveObserver(observer);
 }
 
-void ReportingContext::NotifyCacheUpdated() {
-  for (auto& observer : observers_)
-    observer.OnCacheUpdated();
+void ReportingContext::NotifyCachedReportsUpdated() {
+  for (auto& observer : cache_observers_)
+    observer.OnReportsUpdated();
+}
+
+void ReportingContext::NotifyCachedClientsUpdated() {
+  for (auto& observer : cache_observers_)
+    observer.OnClientsUpdated();
 }
 
 ReportingContext::ReportingContext(const ReportingPolicy& policy,

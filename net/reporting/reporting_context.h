@@ -22,12 +22,12 @@ class TickClock;
 namespace net {
 
 class ReportingCache;
+class ReportingCacheObserver;
 class ReportingDelegate;
 class ReportingDeliveryAgent;
 class ReportingEndpointManager;
 class ReportingGarbageCollector;
 class ReportingNetworkChangeObserver;
-class ReportingObserver;
 class ReportingUploader;
 class URLRequestContext;
 
@@ -57,10 +57,11 @@ class NET_EXPORT ReportingContext {
     return garbage_collector_.get();
   }
 
-  void AddObserver(ReportingObserver* observer);
-  void RemoveObserver(ReportingObserver* observer);
+  void AddCacheObserver(ReportingCacheObserver* observer);
+  void RemoveCacheObserver(ReportingCacheObserver* observer);
 
-  void NotifyCacheUpdated();
+  void NotifyCachedReportsUpdated();
+  void NotifyCachedClientsUpdated();
 
  protected:
   ReportingContext(const ReportingPolicy& policy,
@@ -77,8 +78,8 @@ class NET_EXPORT ReportingContext {
   const base::TickClock* tick_clock_;
   std::unique_ptr<ReportingUploader> uploader_;
 
-  base::ObserverList<ReportingObserver, /* check_empty= */ true>::Unchecked
-      observers_;
+  base::ObserverList<ReportingCacheObserver, /* check_empty= */ true>::Unchecked
+      cache_observers_;
 
   std::unique_ptr<ReportingDelegate> delegate_;
 
