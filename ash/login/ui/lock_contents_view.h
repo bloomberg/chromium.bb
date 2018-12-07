@@ -332,10 +332,6 @@ class ASH_EXPORT LockContentsView
   // Change the visibility of child views based on the |style|.
   void SetDisplayStyle(DisplayStyle style);
 
-  // Set the lock screen note state to |mojom::TrayActionState::kNotAvailable|.
-  // All the subsequent calls of |OnLockScreenNoteStateChanged| will be ignored.
-  void DisableLockScreenNote();
-
   // Register accelerators used in login screen.
   void RegisterAccelerators();
 
