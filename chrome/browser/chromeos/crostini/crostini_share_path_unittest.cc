@@ -567,4 +567,80 @@ TEST_F(CrostiniSharePathTest, UnsharePathInvalidPath) {
   run_loop()->Run();
 }
 
+TEST_F(CrostiniSharePathTest, GetPersistedSharedPaths) {
+  base::ListValue shared_paths = base::ListValue();
+  base::FilePath downloads_file = profile()->GetPath().Append("Downloads/file");
+  shared_paths.AppendString(downloads_file.value());
+  base::FilePath not_downloads("/not/downloads");
+  shared_paths.AppendString(not_downloads.value());
+  std::string prefstr;
+  // CrostiniFiles disabled, MyFilesVolume disabled.
+  // Result is empty, prefs unchanged.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures({}, {chromeos::features::kCrostiniFiles,
+                                   chromeos::features::kMyFilesVolume});
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        file_manager::util::GetDownloadsMountPointName(profile()));
+    profile()->GetPrefs()->Set(prefs::kCrostiniSharedPaths, shared_paths);
+    std::vector<base::FilePath> paths =
+        crostini_share_path()->GetPersistedSharedPaths();
+    EXPECT_EQ(paths.size(), 0U);
+    const base::ListValue* prefs =
+        profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+    EXPECT_EQ(prefs->GetSize(), 2U);
+    prefs->GetString(0, &prefstr);
+    EXPECT_EQ(prefstr, downloads_file.value());
+    prefs->GetString(1, &prefstr);
+    EXPECT_EQ(prefstr, not_downloads.value());
+  }
+  // CrostiniFiles enabled, MyFilesVolume disabled.
+  // Return prefs unchanged.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures({chromeos::features::kCrostiniFiles},
+                              {chromeos::features::kMyFilesVolume});
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        file_manager::util::GetDownloadsMountPointName(profile()));
+    profile()->GetPrefs()->Set(prefs::kCrostiniSharedPaths, shared_paths);
+    std::vector<base::FilePath> paths =
+        crostini_share_path()->GetPersistedSharedPaths();
+    EXPECT_EQ(paths.size(), 2U);
+    EXPECT_EQ(paths[0], downloads_file);
+    EXPECT_EQ(paths[1], not_downloads);
+    const base::ListValue* prefs =
+        profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+    EXPECT_EQ(prefs->GetSize(), 2U);
+    prefs->GetString(0, &prefstr);
+    EXPECT_EQ(prefstr, downloads_file.value());
+    prefs->GetString(1, &prefstr);
+    EXPECT_EQ(prefstr, not_downloads.value());
+  }
+  // CrostiniFiles enabled, MyFilesVolume enabled.
+  // Migrate prefs and return.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures({chromeos::features::kCrostiniFiles,
+                               chromeos::features::kMyFilesVolume},
+                              {});
+    storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
+        file_manager::util::GetDownloadsMountPointName(profile()));
+    profile()->GetPrefs()->Set(prefs::kCrostiniSharedPaths, shared_paths);
+    base::FilePath myfiles_file =
+        profile()->GetPath().Append("MyFiles/Downloads/file");
+    std::vector<base::FilePath> paths =
+        crostini_share_path()->GetPersistedSharedPaths();
+    EXPECT_EQ(paths.size(), 2U);
+    EXPECT_EQ(paths[0], myfiles_file);
+    EXPECT_EQ(paths[1], not_downloads);
+    const base::ListValue* prefs =
+        profile()->GetPrefs()->GetList(prefs::kCrostiniSharedPaths);
+    EXPECT_EQ(prefs->GetSize(), 2U);
+    prefs->GetString(0, &prefstr);
+    EXPECT_EQ(prefstr, myfiles_file.value());
+    prefs->GetString(1, &prefstr);
+    EXPECT_EQ(prefstr, not_downloads.value());
+  }
+}
+
 }  // namespace crostini
