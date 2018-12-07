@@ -1089,10 +1089,11 @@ FileManager.prototype = /** @struct */ {
     this.folderShortcutsModel_ = new FolderShortcutsDataModel(
         this.volumeManager_);
 
+    assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
         assert(this.directoryModel_), assert(this.fileOperationManager_),
         assert(this.ui_.listContainer), assert(this.metadataModel_),
-        assert(this.volumeManager_));
+        assert(this.volumeManager_), this.launchParams_.allowedPaths);
 
     this.directoryModel_.getFileListSelection().addEventListener('change',
         this.selectionHandler_.onFileSelectionChanged.bind(
@@ -1159,7 +1160,6 @@ FileManager.prototype = /** @struct */ {
     this.spinnerController_.blink();
 
     // Create dialog action controller.
-    assert(this.launchParams_);
     this.dialogActionController_ = new DialogActionController(
         this.dialogType,
         this.ui_.dialogFooter,

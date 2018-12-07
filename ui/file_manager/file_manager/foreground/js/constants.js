@@ -36,6 +36,7 @@ constants.EXECUTABLE_EXTENSIONS = Object.freeze([
 constants.FILE_SELECTION_METADATA_PREFETCH_PROPERTY_NAMES = [
   'availableOffline',
   'contentMimeType',
+  'hosted',
 ];
 
 /**

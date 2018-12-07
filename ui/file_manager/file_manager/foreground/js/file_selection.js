@@ -45,7 +45,12 @@ function FileSelection(indexes, entries) {
   /**
    * @public {boolean}
    */
-  this.allFilesPresent = false;
+  this.anyFilesNotInCache = true;
+
+  /**
+   * @public {boolean}
+   */
+  this.anyFilesHosted = true;
 
   /**
    * @public {?string}
@@ -87,7 +92,11 @@ FileSelection.prototype.computeAdditional = function(metadataModel) {
                 // If no availableOffline property, then assume it's available.
                 return !('availableOffline' in p) || p.availableOffline;
               });
-              this.allFilesPresent = present.length === props.length;
+              const hosted = props.filter(function(p) {
+                return p.hosted;
+              });
+              this.anyFilesNotInCache = present.length !== props.length;
+              this.anyFilesHosted = !!hosted.length;
               this.mimeTypes = props.map(function(value) {
                 return value.contentMimeType || '';
               });
@@ -105,13 +114,14 @@ FileSelection.prototype.computeAdditional = function(metadataModel) {
  * @param {!ListContainer} listContainer
  * @param {!MetadataModel} metadataModel
  * @param {!VolumeManager} volumeManager
+ * @param {!AllowedPaths} allowedPaths
  * @extends {cr.EventTarget}
  * @constructor
  * @struct
  */
 function FileSelectionHandler(
     directoryModel, fileOperationManager, listContainer, metadataModel,
-    volumeManager) {
+    volumeManager, allowedPaths) {
   cr.EventTarget.call(this);
 
   /**
@@ -152,6 +162,12 @@ function FileSelectionHandler(
    * @private {number}
    */
   this.lastFileSelectionTime_ = Date.now();
+
+  /**
+   * @private {AllowedPaths}
+   * @const
+   */
+  this.allowedPaths_ = allowedPaths;
 
   util.addEventListenerToBackgroundComponent(
       assert(fileOperationManager), 'entries-changed',
@@ -262,13 +278,39 @@ FileSelectionHandler.prototype.updateFileSelectionAsync_ = function(selection) {
 };
 
 /**
- * Returns whether all the selected files are available currently or not.
- * Should be called after the selection initialized.
+ * Returns true if all files in the selection files are selectable.
  * @return {boolean}
  */
 FileSelectionHandler.prototype.isAvailable = function() {
-  return !this.directoryModel_.isOnDrive() ||
-      this.volumeManager_.getDriveConnectionState().type !==
-      VolumeManagerCommon.DriveConnectionType.OFFLINE ||
-      this.selection.allFilesPresent;
+  if (!this.directoryModel_.isOnDrive()) {
+    return true;
+  }
+
+  return !(
+      this.isOfflineWithUncachedFilesSelected_() ||
+      this.isDialogWithHostedFilesSelected_());
+};
+
+
+/**
+ * Returns true if we're offline with any selected files absent from the cache.
+ * @return {boolean}
+ * @private
+ */
+FileSelectionHandler.prototype.isOfflineWithUncachedFilesSelected_ =
+    function() {
+  return this.volumeManager_.getDriveConnectionState().type ===
+      VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+      this.selection.anyFilesNotInCache;
+};
+
+/**
+ * Returns true if we're a dialog requiring real files with hosted files
+ * selected.
+ * @return {boolean}
+ * @private
+ */
+FileSelectionHandler.prototype.isDialogWithHostedFilesSelected_ = function() {
+  return this.allowedPaths_ !== AllowedPaths.ANY_PATH_OR_URL &&
+      this.selection.anyFilesHosted;
 };

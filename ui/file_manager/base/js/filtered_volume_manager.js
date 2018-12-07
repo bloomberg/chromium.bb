@@ -124,6 +124,7 @@ FilteredVolumeManager.prototype.__proto__ = cr.EventTarget.prototype;
 FilteredVolumeManager.prototype.isAllowedVolumeType_ = function(volumeType) {
   switch (this.allowedPaths_) {
     case AllowedPaths.ANY_PATH:
+    case AllowedPaths.ANY_PATH_OR_URL:
       return true;
     case AllowedPaths.NATIVE_OR_DRIVE_PATH:
       return (VolumeManagerCommon.VolumeType.isNative(volumeType) ||
