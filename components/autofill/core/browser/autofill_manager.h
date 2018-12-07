@@ -94,6 +94,9 @@ class AutofillManager : public AutofillHandler,
   virtual bool ShouldShowCreditCardSigninPromo(const FormData& form,
                                                const FormFieldData& field);
 
+  virtual bool ShouldShowCardsFromAccountOption(const FormData& form,
+                                                const FormFieldData& field);
+
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
                                  int query_id,
