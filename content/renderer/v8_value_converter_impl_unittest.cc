@@ -170,7 +170,7 @@ class V8ValueConverterImplTest : public testing::Test {
     return child->IsNull();
   }
 
-  void TestWeirdType(const V8ValueConverterImpl& converter,
+  void TestWeirdType(V8ValueConverterImpl& converter,
                      v8::Local<v8::Value> val,
                      base::Value::Type expected_type,
                      std::unique_ptr<base::Value> expected_value) {
@@ -1042,29 +1042,29 @@ class V8ValueConverterOverridingStrategyForTesting
   bool FromV8Object(v8::Local<v8::Object> value,
                     std::unique_ptr<base::Value>* out,
                     v8::Isolate* isolate,
-                    const FromV8ValueCallback& callback) const override {
+                    const FromV8ValueCallback& callback) override {
     *out = NewReferenceValue();
     return true;
   }
   bool FromV8Array(v8::Local<v8::Array> value,
                    std::unique_ptr<base::Value>* out,
                    v8::Isolate* isolate,
-                   const FromV8ValueCallback& callback) const override {
+                   const FromV8ValueCallback& callback) override {
     *out = NewReferenceValue();
     return true;
   }
   bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
                          std::unique_ptr<base::Value>* out,
-                         v8::Isolate* isolate) const override {
+                         v8::Isolate* isolate) override {
     *out = NewReferenceValue();
     return true;
   }
   bool FromV8Number(v8::Local<v8::Number> value,
-                    std::unique_ptr<base::Value>* out) const override {
+                    std::unique_ptr<base::Value>* out) override {
     *out = NewReferenceValue();
     return true;
   }
-  bool FromV8Undefined(std::unique_ptr<base::Value>* out) const override {
+  bool FromV8Undefined(std::unique_ptr<base::Value>* out) override {
     *out = NewReferenceValue();
     return true;
   }
@@ -1131,25 +1131,25 @@ class V8ValueConverterBypassStrategyForTesting
   bool FromV8Object(v8::Local<v8::Object> value,
                     std::unique_ptr<base::Value>* out,
                     v8::Isolate* isolate,
-                    const FromV8ValueCallback& callback) const override {
+                    const FromV8ValueCallback& callback) override {
     return false;
   }
   bool FromV8Array(v8::Local<v8::Array> value,
                    std::unique_ptr<base::Value>* out,
                    v8::Isolate* isolate,
-                   const FromV8ValueCallback& callback) const override {
+                   const FromV8ValueCallback& callback) override {
     return false;
   }
   bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
                          std::unique_ptr<base::Value>* out,
-                         v8::Isolate* isolate) const override {
+                         v8::Isolate* isolate) override {
     return false;
   }
   bool FromV8Number(v8::Local<v8::Number> value,
-                    std::unique_ptr<base::Value>* out) const override {
+                    std::unique_ptr<base::Value>* out) override {
     return false;
   }
-  bool FromV8Undefined(std::unique_ptr<base::Value>* out) const override {
+  bool FromV8Undefined(std::unique_ptr<base::Value>* out) override {
     return false;
   }
 };

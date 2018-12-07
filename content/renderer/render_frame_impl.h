@@ -482,7 +482,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const url::Origin& main_frame_origin,
       const url::Origin& content_origin,
       const gfx::Size& unobscured_size,
-      RecordPeripheralDecision record_decision) const override;
+      RecordPeripheralDecision record_decision) override;
   void WhitelistContentOrigin(const url::Origin& content_origin) override;
   void PluginDidStartLoading() override;
   void PluginDidStopLoading() override;
@@ -494,12 +494,12 @@ class CONTENT_EXPORT RenderFrameImpl
                        size_t offset,
                        const gfx::Range& range) override;
   void SetZoomLevel(double zoom_level) override;
-  double GetZoomLevel() const override;
+  double GetZoomLevel() override;
   void AddMessageToConsole(ConsoleMessageLevel level,
                            const std::string& message) override;
   void SetPreviewsState(PreviewsState previews_state) override;
-  PreviewsState GetPreviewsState() const override;
-  bool IsPasting() const override;
+  PreviewsState GetPreviewsState() override;
+  bool IsPasting() override;
   bool IsBrowserSideNavigationPending() override;
   void LoadHTMLString(const std::string& html,
                       const GURL& base_url,
@@ -508,7 +508,7 @@ class CONTENT_EXPORT RenderFrameImpl
                       bool replace_current_item) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       blink::TaskType task_type) override;
-  int GetEnabledBindings() const override;
+  int GetEnabledBindings() override;
   void SetAccessibilityModeForTest(ui::AXMode new_mode) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 

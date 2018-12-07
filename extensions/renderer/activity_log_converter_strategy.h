@@ -30,11 +30,11 @@ class ActivityLogConverterStrategy
   bool FromV8Object(v8::Local<v8::Object> value,
                     std::unique_ptr<base::Value>* out,
                     v8::Isolate* isolate,
-                    const FromV8ValueCallback& callback) const override;
+                    const FromV8ValueCallback& callback) override;
   bool FromV8Array(v8::Local<v8::Array> value,
                    std::unique_ptr<base::Value>* out,
                    v8::Isolate* isolate,
-                   const FromV8ValueCallback& callback) const override;
+                   const FromV8ValueCallback& callback) override;
 
  private:
   bool FromV8Internal(v8::Local<v8::Object> value,

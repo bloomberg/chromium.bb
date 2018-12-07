@@ -71,7 +71,7 @@ bool ActivityLogConverterStrategy::FromV8Object(
     v8::Local<v8::Object> value,
     std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
-    const FromV8ValueCallback& callback) const {
+    const FromV8ValueCallback& callback) {
   return FromV8Internal(value, out, isolate, callback);
 }
 
@@ -79,7 +79,7 @@ bool ActivityLogConverterStrategy::FromV8Array(
     v8::Local<v8::Array> value,
     std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
-    const FromV8ValueCallback& callback) const {
+    const FromV8ValueCallback& callback) {
   return FromV8Internal(value, out, isolate, callback);
 }
 

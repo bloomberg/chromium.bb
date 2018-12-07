@@ -52,11 +52,11 @@ class MediaStreamAudioRenderer
 
   // Time stamp that reflects the current render time. Should not be updated
   // when paused.
-  virtual base::TimeDelta GetCurrentRenderTime() const = 0;
+  virtual base::TimeDelta GetCurrentRenderTime() = 0;
 
   // Returns true if the implementation is a local renderer and false
   // otherwise.
-  virtual bool IsLocalRenderer() const = 0;
+  virtual bool IsLocalRenderer() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<MediaStreamAudioRenderer>;

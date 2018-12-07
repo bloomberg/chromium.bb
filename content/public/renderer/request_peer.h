@@ -46,8 +46,8 @@ class CONTENT_EXPORT RequestPeer {
   class CONTENT_EXPORT ReceivedData {
    public:
     virtual ~ReceivedData() {}
-    virtual const char* payload() const = 0;
-    virtual int length() const = 0;
+    virtual const char* payload() = 0;
+    virtual int length() = 0;
   };
 
   // A ThreadSafeReceivedData can be deleted on ANY thread.
@@ -98,7 +98,7 @@ class CONTENT_EXPORT RequestPeer {
       const network::URLLoaderCompletionStatus& status) = 0;
 
   // Returns the task runner on which this request peer is running.
-  virtual scoped_refptr<base::TaskRunner> GetTaskRunner() const = 0;
+  virtual scoped_refptr<base::TaskRunner> GetTaskRunner() = 0;
 
   virtual ~RequestPeer() {}
 };

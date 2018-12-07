@@ -72,7 +72,7 @@ class TestRequestPeer : public RequestPeer {
     context_->error_code = status.error_code;
     context_->run_loop_quit_closure.Run();
   }
-  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+  scoped_refptr<base::TaskRunner> GetTaskRunner() override {
     return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
   }
 

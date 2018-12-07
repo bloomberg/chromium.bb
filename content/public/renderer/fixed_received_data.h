@@ -23,8 +23,8 @@ class CONTENT_EXPORT FixedReceivedData final
   FixedReceivedData(const std::vector<char>& data);
   ~FixedReceivedData() override;
 
-  const char* payload() const override;
-  int length() const override;
+  const char* payload() override;
+  int length() override;
 
  private:
   std::vector<char> data_;

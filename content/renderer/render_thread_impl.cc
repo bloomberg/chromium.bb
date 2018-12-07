@@ -1496,7 +1496,7 @@ void RenderThreadImpl::SetRendererProcessType(
   main_thread_scheduler_->SetRendererProcessType(type);
 }
 
-blink::WebString RenderThreadImpl::GetUserAgent() const {
+blink::WebString RenderThreadImpl::GetUserAgent() {
   DCHECK(!user_agent_.IsNull());
   return user_agent_;
 }

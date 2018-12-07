@@ -266,19 +266,19 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
 
   bool Send(IPC::Message* message) override;
   RenderFrameImpl* GetMainRenderFrame() override;
-  int GetRoutingID() const override;
-  gfx::Size GetSize() const override;
-  float GetDeviceScaleFactor() const override;
-  float GetZoomLevel() const override;
+  int GetRoutingID() override;
+  gfx::Size GetSize() override;
+  float GetDeviceScaleFactor() override;
+  float GetZoomLevel() override;
   const WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
   blink::WebFrameWidget* GetWebFrameWidget() override;
-  bool GetContentStateImmediately() const override;
+  bool GetContentStateImmediately() override;
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
   void ClearEditCommands() override;
-  const std::string& GetAcceptLanguages() const override;
+  const std::string& GetAcceptLanguages() override;
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;

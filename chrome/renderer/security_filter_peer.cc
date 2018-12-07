@@ -115,7 +115,7 @@ void SecurityFilterPeer::OnCompletedRequest(
   original_peer_->OnCompletedRequest(ok_status);
 }
 
-scoped_refptr<base::TaskRunner> SecurityFilterPeer::GetTaskRunner() const {
+scoped_refptr<base::TaskRunner> SecurityFilterPeer::GetTaskRunner() {
   return original_peer_->GetTaskRunner();
 }
 

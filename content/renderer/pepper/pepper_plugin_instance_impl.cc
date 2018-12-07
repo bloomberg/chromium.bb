@@ -3064,7 +3064,9 @@ blink::WebPluginContainer* PepperPluginInstanceImpl::GetContainer() {
   return container_;
 }
 
-v8::Isolate* PepperPluginInstanceImpl::GetIsolate() const { return isolate_; }
+v8::Isolate* PepperPluginInstanceImpl::GetIsolate() {
+  return isolate_;
+}
 
 ppapi::VarTracker* PepperPluginInstanceImpl::GetVarTracker() {
   return HostGlobals::Get()->GetVarTracker();

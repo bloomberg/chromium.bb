@@ -1707,7 +1707,7 @@ void RenderViewImpl::ClearEditCommands() {
   GetWidget()->ClearEditCommands();
 }
 
-const std::string& RenderViewImpl::GetAcceptLanguages() const {
+const std::string& RenderViewImpl::GetAcceptLanguages() {
   return renderer_preferences_.accept_languages;
 }
 
@@ -1800,19 +1800,19 @@ RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
   return main_render_frame_;
 }
 
-int RenderViewImpl::GetRoutingID() const {
+int RenderViewImpl::GetRoutingID() {
   return routing_id_;
 }
 
-gfx::Size RenderViewImpl::GetSize() const {
+gfx::Size RenderViewImpl::GetSize() {
   return size();
 }
 
-float RenderViewImpl::GetDeviceScaleFactor() const {
+float RenderViewImpl::GetDeviceScaleFactor() {
   return GetWebScreenInfo().device_scale_factor;
 }
 
-float RenderViewImpl::GetZoomLevel() const {
+float RenderViewImpl::GetZoomLevel() {
   return page_zoom_level_;
 }
 
@@ -1832,7 +1832,7 @@ blink::WebFrameWidget* RenderViewImpl::GetWebFrameWidget() {
   return frame_widget_;
 }
 
-bool RenderViewImpl::GetContentStateImmediately() const {
+bool RenderViewImpl::GetContentStateImmediately() {
   return send_content_state_immediately_;
 }
 

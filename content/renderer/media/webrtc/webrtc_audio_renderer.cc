@@ -131,12 +131,12 @@ class SharedAudioRenderer : public MediaStreamAudioRenderer {
     return delegate_->SwitchOutputDevice(device_id, std::move(callback));
   }
 
-  base::TimeDelta GetCurrentRenderTime() const override {
+  base::TimeDelta GetCurrentRenderTime() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return delegate_->GetCurrentRenderTime();
   }
 
-  bool IsLocalRenderer() const override {
+  bool IsLocalRenderer() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     return delegate_->IsLocalRenderer();
   }
@@ -354,13 +354,13 @@ media::OutputDeviceInfo WebRtcAudioRenderer::GetOutputDeviceInfo() {
   return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
 }
 
-base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() const {
+base::TimeDelta WebRtcAudioRenderer::GetCurrentRenderTime() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::AutoLock auto_lock(lock_);
   return current_time_;
 }
 
-bool WebRtcAudioRenderer::IsLocalRenderer() const {
+bool WebRtcAudioRenderer::IsLocalRenderer() {
   return false;
 }
 

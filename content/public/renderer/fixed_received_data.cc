@@ -18,11 +18,11 @@ FixedReceivedData::FixedReceivedData(const std::vector<char>& data)
 FixedReceivedData::~FixedReceivedData() {
 }
 
-const char* FixedReceivedData::payload() const {
+const char* FixedReceivedData::payload() {
   return data_.empty() ? nullptr : &data_[0];
 }
 
-int FixedReceivedData::length() const {
+int FixedReceivedData::length() {
   return static_cast<int>(data_.size());
 }
 

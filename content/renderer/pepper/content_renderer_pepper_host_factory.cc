@@ -53,7 +53,7 @@ namespace content {
 
 namespace {
 
-static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
+static bool CanUseCameraDeviceAPI(RendererPpapiHost* host,
                                   PP_Instance instance) {
   blink::WebPluginContainer* container =
       host->GetContainerForInstance(instance);
@@ -67,7 +67,7 @@ static bool CanUseCameraDeviceAPI(const RendererPpapiHost* host,
       document_url);
 }
 
-bool CanUseCompositorAPI(const RendererPpapiHost* host, PP_Instance instance) {
+bool CanUseCompositorAPI(RendererPpapiHost* host, PP_Instance instance) {
   blink::WebPluginContainer* container =
       host->GetContainerForInstance(instance);
   if (!container)

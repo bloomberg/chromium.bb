@@ -43,7 +43,7 @@ class CONTENT_EXPORT V8ValueConverter {
     virtual bool FromV8Object(v8::Local<v8::Object> value,
                               std::unique_ptr<base::Value>* out,
                               v8::Isolate* isolate,
-                              const FromV8ValueCallback& callback) const;
+                              const FromV8ValueCallback& callback);
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
@@ -52,24 +52,24 @@ class CONTENT_EXPORT V8ValueConverter {
     virtual bool FromV8Array(v8::Local<v8::Array> value,
                              std::unique_ptr<base::Value>* out,
                              v8::Isolate* isolate,
-                             const FromV8ValueCallback& callback) const;
+                             const FromV8ValueCallback& callback);
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior. v8::Object is passed as ArrayBuffer and ArrayBufferView
     // classes are siblings.
     virtual bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
                                    std::unique_ptr<base::Value>* out,
-                                   v8::Isolate* isolate) const;
+                                   v8::Isolate* isolate);
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior. This allows to intercept "non-finite" values and do something
     // with them.
     virtual bool FromV8Number(v8::Local<v8::Number> value,
-                              std::unique_ptr<base::Value>* out) const;
+                              std::unique_ptr<base::Value>* out);
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
-    virtual bool FromV8Undefined(std::unique_ptr<base::Value>* out) const;
+    virtual bool FromV8Undefined(std::unique_ptr<base::Value>* out);
   };
 
   static std::unique_ptr<V8ValueConverter> Create();
@@ -112,9 +112,8 @@ class CONTENT_EXPORT V8ValueConverter {
   // while setting a value, that property or item is skipped, leaving a hole in
   // the case of arrays.
   // TODO(dcheng): This should just take a const reference.
-  virtual v8::Local<v8::Value> ToV8Value(
-      const base::Value* value,
-      v8::Local<v8::Context> context) const = 0;
+  virtual v8::Local<v8::Value> ToV8Value(const base::Value* value,
+                                         v8::Local<v8::Context> context) = 0;
 
   // Converts a v8::Value to base::Value.
   //
@@ -127,7 +126,7 @@ class CONTENT_EXPORT V8ValueConverter {
   // converted to Value(Type::NONE).
   virtual std::unique_ptr<base::Value> FromV8Value(
       v8::Local<v8::Value> value,
-      v8::Local<v8::Context> context) const = 0;
+      v8::Local<v8::Context> context) = 0;
 };
 
 }  // namespace content

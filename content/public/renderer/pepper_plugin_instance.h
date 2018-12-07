@@ -63,7 +63,7 @@ class PepperPluginInstance {
 
   virtual blink::WebPluginContainer* GetContainer() = 0;
 
-  virtual v8::Isolate* GetIsolate() const = 0;
+  virtual v8::Isolate* GetIsolate() = 0;
 
   virtual ppapi::VarTracker* GetVarTracker() = 0;
 

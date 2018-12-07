@@ -27,7 +27,7 @@ bool V8ValueConverter::Strategy::FromV8Object(
     v8::Local<v8::Object> value,
     std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
-    const FromV8ValueCallback& callback) const {
+    const FromV8ValueCallback& callback) {
   return false;
 }
 
@@ -35,28 +35,27 @@ bool V8ValueConverter::Strategy::FromV8Array(
     v8::Local<v8::Array> value,
     std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
-    const FromV8ValueCallback& callback) const {
+    const FromV8ValueCallback& callback) {
   return false;
 }
 
 bool V8ValueConverter::Strategy::FromV8ArrayBuffer(
     v8::Local<v8::Object> value,
     std::unique_ptr<base::Value>* out,
-    v8::Isolate* isolate) const {
+    v8::Isolate* isolate) {
   return false;
 }
 
 bool V8ValueConverter::Strategy::FromV8Number(
     v8::Local<v8::Number> value,
-    std::unique_ptr<base::Value>* out) const {
+    std::unique_ptr<base::Value>* out) {
   return false;
 }
 
 bool V8ValueConverter::Strategy::FromV8Undefined(
-    std::unique_ptr<base::Value>* out) const {
+    std::unique_ptr<base::Value>* out) {
   return false;
 }
-
 
 namespace {
 
@@ -212,7 +211,8 @@ void V8ValueConverterImpl::SetStrategy(Strategy* strategy) {
 }
 
 v8::Local<v8::Value> V8ValueConverterImpl::ToV8Value(
-    const base::Value* value, v8::Local<v8::Context> context) const {
+    const base::Value* value,
+    v8::Local<v8::Context> context) {
   v8::Context::Scope context_scope(context);
   v8::EscapableHandleScope handle_scope(context->GetIsolate());
   return handle_scope.Escape(
@@ -221,7 +221,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Value(
 
 std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Value(
     v8::Local<v8::Value> val,
-    v8::Local<v8::Context> context) const {
+    v8::Local<v8::Context> context) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
   FromV8ValueState state(avoid_identity_hash_for_testing_);
