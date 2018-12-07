@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/services/device_sync/public/mojom/device_sync_mojom_traits.h"
+#include "chromeos/components/multidevice/mojom/multidevice_mojom_traits.h"
 
 #include "base/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
@@ -11,27 +11,27 @@
 namespace mojo {
 
 const std::string&
-StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+StructTraits<chromeos::multidevice::mojom::BeaconSeedDataView,
              chromeos::multidevice::BeaconSeed>::
     data(const chromeos::multidevice::BeaconSeed& beacon_seed) {
   return beacon_seed.data();
 }
 
-base::Time StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+base::Time StructTraits<chromeos::multidevice::mojom::BeaconSeedDataView,
                         chromeos::multidevice::BeaconSeed>::
     start_time(const chromeos::multidevice::BeaconSeed& beacon_seed) {
   return beacon_seed.start_time();
 }
 
-base::Time StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+base::Time StructTraits<chromeos::multidevice::mojom::BeaconSeedDataView,
                         chromeos::multidevice::BeaconSeed>::
     end_time(const chromeos::multidevice::BeaconSeed& beacon_seed) {
   return beacon_seed.end_time();
 }
 
-bool StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
+bool StructTraits<chromeos::multidevice::mojom::BeaconSeedDataView,
                   chromeos::multidevice::BeaconSeed>::
-    Read(chromeos::device_sync::mojom::BeaconSeedDataView in,
+    Read(chromeos::multidevice::mojom::BeaconSeedDataView in,
          chromeos::multidevice::BeaconSeed* out) {
   std::string beacon_seed_data;
   base::Time start_time;
@@ -48,35 +48,35 @@ bool StructTraits<chromeos::device_sync::mojom::BeaconSeedDataView,
   return true;
 }
 
-std::string StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+std::string StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
                          chromeos::multidevice::RemoteDevice>::
     device_id(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.GetDeviceId();
 }
 
 const std::string&
-StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
     user_id(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.user_id;
 }
 
 const std::string&
-StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
     device_name(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.name;
 }
 
 const std::string&
-StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
     persistent_symmetric_key(
         const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.persistent_symmetric_key;
 }
 
-base::Time StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+base::Time StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
                         chromeos::multidevice::RemoteDevice>::
     last_update_time(const chromeos::multidevice::RemoteDevice& remote_device) {
   return base::Time::FromJavaTime(remote_device.last_update_time_millis);
@@ -84,7 +84,7 @@ base::Time StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
 
 const std::map<chromeos::multidevice::SoftwareFeature,
                chromeos::multidevice::SoftwareFeatureState>&
-StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
     software_features(
         const chromeos::multidevice::RemoteDevice& remote_device) {
@@ -92,15 +92,15 @@ StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
 }
 
 const std::vector<chromeos::multidevice::BeaconSeed>&
-StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
              chromeos::multidevice::RemoteDevice>::
     beacon_seeds(const chromeos::multidevice::RemoteDevice& remote_device) {
   return remote_device.beacon_seeds;
 }
 
-bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
+bool StructTraits<chromeos::multidevice::mojom::RemoteDeviceDataView,
                   chromeos::multidevice::RemoteDevice>::
-    Read(chromeos::device_sync::mojom::RemoteDeviceDataView in,
+    Read(chromeos::multidevice::mojom::RemoteDeviceDataView in,
          chromeos::multidevice::RemoteDevice* out) {
   std::string device_id;
   base::Time last_update_time;
@@ -121,62 +121,62 @@ bool StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
   return true;
 }
 
-chromeos::device_sync::mojom::SoftwareFeature
-EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+chromeos::multidevice::mojom::SoftwareFeature
+EnumTraits<chromeos::multidevice::mojom::SoftwareFeature,
            chromeos::multidevice::SoftwareFeature>::
     ToMojom(chromeos::multidevice::SoftwareFeature input) {
   switch (input) {
     case chromeos::multidevice::SoftwareFeature::kBetterTogetherHost:
-      return chromeos::device_sync::mojom::SoftwareFeature::
+      return chromeos::multidevice::mojom::SoftwareFeature::
           BETTER_TOGETHER_HOST;
     case chromeos::multidevice::SoftwareFeature::kBetterTogetherClient:
-      return chromeos::device_sync::mojom::SoftwareFeature::
+      return chromeos::multidevice::mojom::SoftwareFeature::
           BETTER_TOGETHER_CLIENT;
     case chromeos::multidevice::SoftwareFeature::kSmartLockHost:
-      return chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_HOST;
+      return chromeos::multidevice::mojom::SoftwareFeature::EASY_UNLOCK_HOST;
     case chromeos::multidevice::SoftwareFeature::kSmartLockClient:
-      return chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT;
+      return chromeos::multidevice::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT;
     case chromeos::multidevice::SoftwareFeature::kInstantTetheringHost:
-      return chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_HOST;
+      return chromeos::multidevice::mojom::SoftwareFeature::MAGIC_TETHER_HOST;
     case chromeos::multidevice::SoftwareFeature::kInstantTetheringClient:
-      return chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT;
+      return chromeos::multidevice::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT;
     case chromeos::multidevice::SoftwareFeature::kMessagesForWebHost:
-      return chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_HOST;
+      return chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_HOST;
     case chromeos::multidevice::SoftwareFeature::kMessagesForWebClient:
-      return chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_CLIENT;
+      return chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_CLIENT;
   }
 
   NOTREACHED();
-  return chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_HOST;
+  return chromeos::multidevice::mojom::SoftwareFeature::BETTER_TOGETHER_HOST;
 }
 
-bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
+bool EnumTraits<chromeos::multidevice::mojom::SoftwareFeature,
                 chromeos::multidevice::SoftwareFeature>::
-    FromMojom(chromeos::device_sync::mojom::SoftwareFeature input,
+    FromMojom(chromeos::multidevice::mojom::SoftwareFeature input,
               chromeos::multidevice::SoftwareFeature* out) {
   switch (input) {
-    case chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_HOST:
+    case chromeos::multidevice::mojom::SoftwareFeature::BETTER_TOGETHER_HOST:
       *out = chromeos::multidevice::SoftwareFeature::kBetterTogetherHost;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::BETTER_TOGETHER_CLIENT:
+    case chromeos::multidevice::mojom::SoftwareFeature::BETTER_TOGETHER_CLIENT:
       *out = chromeos::multidevice::SoftwareFeature::kBetterTogetherClient;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_HOST:
+    case chromeos::multidevice::mojom::SoftwareFeature::EASY_UNLOCK_HOST:
       *out = chromeos::multidevice::SoftwareFeature::kSmartLockHost;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT:
+    case chromeos::multidevice::mojom::SoftwareFeature::EASY_UNLOCK_CLIENT:
       *out = chromeos::multidevice::SoftwareFeature::kSmartLockClient;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_HOST:
+    case chromeos::multidevice::mojom::SoftwareFeature::MAGIC_TETHER_HOST:
       *out = chromeos::multidevice::SoftwareFeature::kInstantTetheringHost;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT:
+    case chromeos::multidevice::mojom::SoftwareFeature::MAGIC_TETHER_CLIENT:
       *out = chromeos::multidevice::SoftwareFeature::kInstantTetheringClient;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_HOST:
+    case chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_HOST:
       *out = chromeos::multidevice::SoftwareFeature::kMessagesForWebHost;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeature::SMS_CONNECT_CLIENT:
+    case chromeos::multidevice::mojom::SoftwareFeature::SMS_CONNECT_CLIENT:
       *out = chromeos::multidevice::SoftwareFeature::kMessagesForWebClient;
       return true;
   }
@@ -185,35 +185,35 @@ bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
   return false;
 }
 
-chromeos::device_sync::mojom::SoftwareFeatureState
-EnumTraits<chromeos::device_sync::mojom::SoftwareFeatureState,
+chromeos::multidevice::mojom::SoftwareFeatureState
+EnumTraits<chromeos::multidevice::mojom::SoftwareFeatureState,
            chromeos::multidevice::SoftwareFeatureState>::
     ToMojom(chromeos::multidevice::SoftwareFeatureState input) {
   switch (input) {
     case chromeos::multidevice::SoftwareFeatureState::kNotSupported:
-      return chromeos::device_sync::mojom::SoftwareFeatureState::kNotSupported;
+      return chromeos::multidevice::mojom::SoftwareFeatureState::kNotSupported;
     case chromeos::multidevice::SoftwareFeatureState::kSupported:
-      return chromeos::device_sync::mojom::SoftwareFeatureState::kSupported;
+      return chromeos::multidevice::mojom::SoftwareFeatureState::kSupported;
     case chromeos::multidevice::SoftwareFeatureState::kEnabled:
-      return chromeos::device_sync::mojom::SoftwareFeatureState::kEnabled;
+      return chromeos::multidevice::mojom::SoftwareFeatureState::kEnabled;
   }
 
   NOTREACHED();
-  return chromeos::device_sync::mojom::SoftwareFeatureState::kNotSupported;
+  return chromeos::multidevice::mojom::SoftwareFeatureState::kNotSupported;
 }
 
-bool EnumTraits<chromeos::device_sync::mojom::SoftwareFeatureState,
+bool EnumTraits<chromeos::multidevice::mojom::SoftwareFeatureState,
                 chromeos::multidevice::SoftwareFeatureState>::
-    FromMojom(chromeos::device_sync::mojom::SoftwareFeatureState input,
+    FromMojom(chromeos::multidevice::mojom::SoftwareFeatureState input,
               chromeos::multidevice::SoftwareFeatureState* out) {
   switch (input) {
-    case chromeos::device_sync::mojom::SoftwareFeatureState::kNotSupported:
+    case chromeos::multidevice::mojom::SoftwareFeatureState::kNotSupported:
       *out = chromeos::multidevice::SoftwareFeatureState::kNotSupported;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeatureState::kSupported:
+    case chromeos::multidevice::mojom::SoftwareFeatureState::kSupported:
       *out = chromeos::multidevice::SoftwareFeatureState::kSupported;
       return true;
-    case chromeos::device_sync::mojom::SoftwareFeatureState::kEnabled:
+    case chromeos::multidevice::mojom::SoftwareFeatureState::kEnabled:
       *out = chromeos::multidevice::SoftwareFeatureState::kEnabled;
       return true;
   }
