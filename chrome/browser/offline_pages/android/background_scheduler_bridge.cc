@@ -57,8 +57,7 @@ static void JNI_BackgroundSchedulerBridge_StopScheduledProcessing(JNIEnv* env) {
   DVLOG(2) << "resource_coordinator: " << coordinator;
   if (!coordinator)
     return;
-  coordinator->StopProcessing(
-      Offliner::RequestStatus::BACKGROUND_SCHEDULER_CANCELED);
+  coordinator->CancelProcessing();
 }
 
 BackgroundSchedulerBridge::BackgroundSchedulerBridge() = default;
