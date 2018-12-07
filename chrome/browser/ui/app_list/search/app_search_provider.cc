@@ -26,6 +26,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -44,11 +45,13 @@
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
+#include "chrome/browser/ui/app_list/search/app_service_app_result.h"
 #include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #include "chrome/browser/ui/app_list/search/crostini_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_search_result_ranker.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/base/model_type.h"
@@ -247,6 +250,57 @@ class AppSearchProvider::DataSource {
 
 namespace {
 
+class AppServiceDataSource : public AppSearchProvider::DataSource {
+ public:
+  AppServiceDataSource(Profile* profile, AppSearchProvider* owner)
+      : AppSearchProvider::DataSource(profile, owner) {
+    // TODO(crbug.com/826982): observe the cache for apps being installed and
+    // uninstalled, and in the callback, call RefreshAppsAndUpdateResultsXxx().
+  }
+
+  ~AppServiceDataSource() override = default;
+
+  // AppSearchProvider::DataSource overrides:
+  void AddApps(AppSearchProvider::Apps* apps_vector) override {
+    apps::AppServiceProxy* proxy = apps::AppServiceProxy::Get(profile());
+    if (!proxy) {
+      return;
+    }
+    proxy->Cache().ForEachApp(
+        [this, apps_vector](const apps::AppUpdate& update) {
+          if (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue) {
+            return;
+          }
+
+          // TODO(crbug.com/826982): add the "can load in incognito" concept to
+          // the App Service and use it here, similar to ExtensionDataSource.
+
+          apps_vector->emplace_back(std::make_unique<AppSearchProvider::App>(
+              this, update.AppId(),
+              // TODO(crbug.com/826982): add the "short name" concept to the App
+              // Service, and use it here.
+              update.Name(),
+              // TODO(crbug.com/826982): add the "last launch time" and "install
+              // time" concepts to the App Service, and use them here.
+              base::Time(), base::Time(),
+              // TODO(crbug.com/826982): add the "installed internally" concept
+              // to the App Service, and use it here.
+              true));
+        });
+  }
+
+  std::unique_ptr<AppResult> CreateResult(
+      const std::string& app_id,
+      AppListControllerDelegate* list_controller,
+      bool is_recommended) override {
+    return std::make_unique<AppServiceAppResult>(
+        profile(), app_id, list_controller, is_recommended);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppServiceDataSource);
+};
+
 class ExtensionDataSource : public AppSearchProvider::DataSource,
                             public extensions::ExtensionRegistryObserver {
  public:
@@ -392,8 +446,11 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
 class InternalDataSource : public AppSearchProvider::DataSource {
  public:
-  InternalDataSource(Profile* profile, AppSearchProvider* owner)
-      : AppSearchProvider::DataSource(profile, owner) {
+  InternalDataSource(Profile* profile,
+                     AppSearchProvider* owner,
+                     bool just_continue_reading)
+      : AppSearchProvider::DataSource(profile, owner),
+        just_continue_reading_(just_continue_reading) {
     sync_sessions::SessionSyncService* service =
         SessionSyncServiceFactory::GetInstance()->GetForProfile(profile);
     if (!service)
@@ -420,6 +477,8 @@ class InternalDataSource : public AppSearchProvider::DataSource {
         if (!service || !service->GetOpenTabsUIDelegate()) {
           continue;
         }
+      } else if (just_continue_reading_) {
+        continue;
       }
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
@@ -445,6 +504,15 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   }
 
  private:
+  // Whether InternalDataSource provides just the kInternalAppIdContinueReading
+  // app. If true, other internal apps are provided by AppServiceDataSource.
+  //
+  // TODO(crbug.com/826982): move the "foreign session updated subscription"
+  // into the App Service? Or if, in terms of UI, "continue reading" is exposed
+  // only in the app list search UI, it might make more sense to leave it in
+  // this code. See also built_in_chromeos_apps.cc.
+  bool just_continue_reading_;
+
   std::unique_ptr<base::CallbackList<void()>::Subscription>
       foreign_session_updated_subscription_;
 
@@ -535,16 +603,25 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
           chromeos::ProfileHelper::IsEphemeralUserProfile(profile))),
       refresh_apps_factory_(this),
       update_results_factory_(this) {
-  data_sources_.emplace_back(
-      std::make_unique<ExtensionDataSource>(profile, this));
-  if (arc::IsArcAllowedForProfile(profile))
-    data_sources_.emplace_back(std::make_unique<ArcDataSource>(profile, this));
-  if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
+  bool app_service_enabled =
+      base::FeatureList::IsEnabled(features::kAppService);
+  if (app_service_enabled) {
     data_sources_.emplace_back(
-        std::make_unique<CrostiniDataSource>(profile, this));
+        std::make_unique<AppServiceDataSource>(profile, this));
+  } else {
+    data_sources_.emplace_back(
+        std::make_unique<ExtensionDataSource>(profile, this));
+    if (arc::IsArcAllowedForProfile(profile)) {
+      data_sources_.emplace_back(
+          std::make_unique<ArcDataSource>(profile, this));
+    }
+    if (crostini::IsCrostiniUIAllowedForProfile(profile)) {
+      data_sources_.emplace_back(
+          std::make_unique<CrostiniDataSource>(profile, this));
+    }
   }
   data_sources_.emplace_back(
-      std::make_unique<InternalDataSource>(profile, this));
+      std::make_unique<InternalDataSource>(profile, this, app_service_enabled));
 }
 
 AppSearchProvider::~AppSearchProvider() {}

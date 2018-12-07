@@ -77,4 +77,12 @@ void AppRegistryCache::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   }
 }
 
+apps::mojom::AppType AppRegistryCache::GetAppType(const std::string& app_id) {
+  auto iter = states_.find(app_id);
+  if (iter != states_.end()) {
+    return iter->second->app_type;
+  }
+  return apps::mojom::AppType::kUnknown;
+}
+
 }  // namespace apps

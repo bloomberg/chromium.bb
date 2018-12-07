@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -43,9 +44,10 @@ ash::ShelfLaunchSource ConvertLaunchSource(
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
       return ash::LAUNCH_FROM_UNKNOWN;
-    case apps::mojom::LaunchSource::kFromAppList:
+    case apps::mojom::LaunchSource::kFromAppListGrid:
       return ash::LAUNCH_FROM_APP_LIST;
-    case apps::mojom::LaunchSource::kFromAppListSearch:
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+    case apps::mojom::LaunchSource::kFromAppListQueryResult:
       return ash::LAUNCH_FROM_APP_LIST_SEARCH;
   }
 }
@@ -125,10 +127,13 @@ void ExtensionApps::Launch(const std::string& app_id,
   switch (launch_source) {
     case apps::mojom::LaunchSource::kUnknown:
       break;
-    case apps::mojom::LaunchSource::kFromAppList:
+    case apps::mojom::LaunchSource::kFromAppListGrid:
       extensions::RecordAppListMainLaunch(extension);
       break;
-    case apps::mojom::LaunchSource::kFromAppListSearch:
+    case apps::mojom::LaunchSource::kFromAppListRecommendation:
+      break;
+    case apps::mojom::LaunchSource::kFromAppListQueryResult:
+      app_list::RecordHistogram(app_list::APP_SEARCH_RESULT);
       extensions::RecordAppListSearchLaunch(extension);
       break;
   }
@@ -152,9 +157,12 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->icon_key->s_key = extension->id();
   app->icon_key->u_key = next_u_key_++;
 
-  app->show_in_launcher = app_list::ShouldShowInLauncher(extension, profile_)
-                              ? apps::mojom::OptionalBool::kTrue
-                              : apps::mojom::OptionalBool::kFalse;
+  auto show = app_list::ShouldShowInLauncher(extension, profile_)
+                  ? apps::mojom::OptionalBool::kTrue
+                  : apps::mojom::OptionalBool::kFalse;
+  app->show_in_launcher = show;
+  app->show_in_search = show;
+
   return app;
 }
 

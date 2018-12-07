@@ -16,7 +16,11 @@ struct App {
   Readiness readiness;
   string? name;
   IconKey? icon_key;
+
+  // TODO(nigeltao): be more principled, instead of ad hoc show_in_xxx and
+  // show_in_yyy fields?
   OptionalBool show_in_launcher;
+  OptionalBool show_in_search;
 
   // When adding new fields, also update the Merge method and other helpers in
   // chrome/services/app_service/public/cpp/app_update.*
@@ -76,6 +80,7 @@ struct IconValue {
 
 enum LaunchSource {
   kUnknown,
-  kFromAppList,
-  kFromAppListSearch,
+  kFromAppListGrid,            // Grid of apps, not the search box.
+  kFromAppListRecommendation,  // Query-less recommendations (smaller icons).
+  kFromAppListQueryResult,     // Query-dependent results (larger icons).
 };

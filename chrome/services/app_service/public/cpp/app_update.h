@@ -58,6 +58,9 @@ class AppUpdate {
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 
+  apps::mojom::OptionalBool ShowInSearch() const;
+  bool ShowInSearchChanged() const;
+
  private:
   const apps::mojom::AppPtr& state_;
   const apps::mojom::AppPtr& delta_;

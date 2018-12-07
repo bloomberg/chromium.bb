@@ -27,6 +27,9 @@ void AppUpdate::Merge(apps::mojom::App* state,
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
   }
+  if (delta->show_in_search != apps::mojom::OptionalBool::kUnknown) {
+    state->show_in_search = delta->show_in_search;
+  }
 
   // When adding new fields to the App Mojo type, this function should also be
   // updated.
@@ -95,6 +98,17 @@ apps::mojom::OptionalBool AppUpdate::ShowInLauncher() const {
 bool AppUpdate::ShowInLauncherChanged() const {
   return (delta_->show_in_launcher != apps::mojom::OptionalBool::kUnknown) &&
          (delta_->show_in_launcher != state_->show_in_launcher);
+}
+
+apps::mojom::OptionalBool AppUpdate::ShowInSearch() const {
+  return (delta_->show_in_search != apps::mojom::OptionalBool::kUnknown)
+             ? delta_->show_in_search
+             : state_->show_in_search;
+}
+
+bool AppUpdate::ShowInSearchChanged() const {
+  return (delta_->show_in_search != apps::mojom::OptionalBool::kUnknown) &&
+         (delta_->show_in_search != state_->show_in_search);
 }
 
 }  // namespace apps

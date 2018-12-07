@@ -69,6 +69,8 @@ class AppRegistryCache {
   // merges the cached states with the deltas.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas);
 
+  apps::mojom::AppType GetAppType(const std::string& app_id);
+
   // Calls f, a void-returning function whose arguments are (const
   // apps::AppUpdate&), on each app in the cache. The AppUpdate (a
   // state-and-delta) is equivalent to the delta being "all unknown" or "no
