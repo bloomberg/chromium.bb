@@ -284,6 +284,21 @@ const char* GetQualityMetricTypeSuffix(
   }
 }
 
+const char* GetSyncStateSuffix(AutofillSyncSigninState sync_state) {
+  switch (sync_state) {
+    case AutofillSyncSigninState::kSignedOut:
+      return ".SignedOut";
+    case AutofillSyncSigninState::kSignedIn:
+      return ".SignedIn";
+    case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
+      return ".SignedInAndWalletSyncTransportEnabled";
+    case AutofillSyncSigninState::kSignedInAndSyncFeature:
+      return ".SignedInAndSyncFeature";
+    case AutofillSyncSigninState::kNumSyncStates:
+      return ".Unknown";
+  }
+}
+
 // Given a set of |possible_types| for a field, select the best type to use as
 // the "actual" field type when calculating metrics. If the |predicted_type| is
 // among the |possible_types] then use that as the best type (i.e., the
@@ -747,7 +762,8 @@ void AutofillMetrics::LogSaveCardPromptMetric(
     bool is_requesting_cardholder_name,
     bool is_requesting_expiration_date,
     int previous_save_credit_card_prompt_user_decision,
-    security_state::SecurityLevel security_level) {
+    security_state::SecurityLevel security_level,
+    AutofillSyncSigninState sync_state) {
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
   std::string destination = is_uploading ? ".Upload" : ".Local";
   std::string show = is_reshow ? ".Reshows" : ".FirstShow";
@@ -755,6 +771,9 @@ void AutofillMetrics::LogSaveCardPromptMetric(
       "Autofill.SaveCreditCardPrompt" + destination + show;
   base::UmaHistogramEnumeration(metric_with_destination_and_show, metric,
                                 NUM_SAVE_CARD_PROMPT_METRICS);
+  base::UmaHistogramEnumeration(
+      metric_with_destination_and_show + GetSyncStateSuffix(sync_state), metric,
+      NUM_SAVE_CARD_PROMPT_METRICS);
   if (is_requesting_cardholder_name) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".RequestingCardholderName", metric,
@@ -1236,8 +1255,12 @@ void AutofillMetrics::LogIsAutofillEnabledAtStartup(bool enabled) {
 }
 
 // static
-void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(bool enabled) {
-  UMA_HISTOGRAM_BOOLEAN("Autofill.IsEnabled.PageLoad", enabled);
+void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
+    bool enabled,
+    AutofillSyncSigninState sync_state) {
+  std::string name("Autofill.IsEnabled.PageLoad");
+  UMA_HISTOGRAM_BOOLEAN(name, enabled);
+  base::UmaHistogramBoolean(name + GetSyncStateSuffix(sync_state), enabled);
 }
 
 // static
@@ -1671,7 +1694,9 @@ AutofillMetrics::FormEventLogger::FormEventLogger(
       form_interactions_ukm_logger_(form_interactions_ukm_logger) {}
 
 void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm(
-    FormSignature form_signature) {
+    FormSignature form_signature,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   if (!has_logged_interacted_) {
     has_logged_interacted_ = true;
     form_interactions_ukm_logger_->LogInteractedWithForm(
@@ -1682,7 +1707,9 @@ void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm(
 }
 
 void AutofillMetrics::FormEventLogger::OnDidPollSuggestions(
-    const FormFieldData& field) {
+    const FormFieldData& field,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   // Record only one poll user action for consecutive polls of the same field.
   // This is to avoid recording too many poll actions (for example when a user
   // types in a field, triggering multiple queries) to make the analysis more
@@ -1703,7 +1730,9 @@ void AutofillMetrics::FormEventLogger::OnDidPollSuggestions(
 void AutofillMetrics::FormEventLogger::OnDidShowSuggestions(
     const FormStructure& form,
     const AutofillField& field,
-    const base::TimeTicks& form_parsed_timestamp) {
+    const base::TimeTicks& form_parsed_timestamp,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   form_interactions_ukm_logger_->LogSuggestionsShown(
       form, field, form_parsed_timestamp);
 
@@ -1727,7 +1756,9 @@ void AutofillMetrics::FormEventLogger::OnDidShowSuggestions(
 }
 
 void AutofillMetrics::FormEventLogger::OnDidSelectMaskedServerCardSuggestion(
-    const base::TimeTicks& form_parsed_timestamp) {
+    const base::TimeTicks& form_parsed_timestamp,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   DCHECK(is_for_credit_card_);
   form_interactions_ukm_logger_->LogSelectedMaskedServerCard(
       form_parsed_timestamp);
@@ -1743,7 +1774,9 @@ void AutofillMetrics::FormEventLogger::OnDidSelectMaskedServerCardSuggestion(
 void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
     const CreditCard& credit_card,
     const FormStructure& form,
-    const AutofillField& field) {
+    const AutofillField& field,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   DCHECK(is_for_credit_card_);
   form_interactions_ukm_logger_->LogDidFillSuggestion(
       static_cast<int>(credit_card.record_type()),
@@ -1788,7 +1821,9 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
 void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
     const AutofillProfile& profile,
     const FormStructure& form,
-    const AutofillField& field) {
+    const AutofillField& field,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   DCHECK(!is_for_credit_card_);
   form_interactions_ukm_logger_->LogDidFillSuggestion(
       static_cast<int>(profile.record_type()),
@@ -1812,7 +1847,9 @@ void AutofillMetrics::FormEventLogger::OnDidFillSuggestion(
       base::UserMetricsAction("Autofill_FilledProfileSuggestion"));
 }
 
-void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
+void AutofillMetrics::FormEventLogger::OnWillSubmitForm(
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   // Not logging this kind of form if we haven't logged a user interaction.
   if (!has_logged_interacted_)
     return;
@@ -1842,7 +1879,9 @@ void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
 
 void AutofillMetrics::FormEventLogger::OnFormSubmitted(
     bool force_logging,
-    CardNumberStatus card_number_status) {
+    CardNumberStatus card_number_status,
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   // Not logging this kind of form if we haven't logged a user interaction.
   if (!has_logged_interacted_)
     return;
@@ -1875,15 +1914,21 @@ void AutofillMetrics::FormEventLogger::SetBankNameAvailable() {
   has_logged_bank_name_available_ = true;
 }
 
-void AutofillMetrics::FormEventLogger::OnDidSeeFillableDynamicForm() {
+void AutofillMetrics::FormEventLogger::OnDidSeeFillableDynamicForm(
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   Log(AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM);
 }
 
-void AutofillMetrics::FormEventLogger::OnDidRefill() {
+void AutofillMetrics::FormEventLogger::OnDidRefill(
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   Log(AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL);
 }
 
-void AutofillMetrics::FormEventLogger::OnSubsequentRefillAttempt() {
+void AutofillMetrics::FormEventLogger::OnSubsequentRefillAttempt(
+    AutofillSyncSigninState sync_state) {
+  sync_state_ = sync_state;
   Log(AutofillMetrics::FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL);
 }
 
@@ -1920,6 +1965,8 @@ void AutofillMetrics::FormEventLogger::Log(FormEvent event) const {
   else
     name += ".WithBothServerAndLocalData";
   base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
+  base::UmaHistogramEnumeration(name + GetSyncStateSuffix(sync_state_), event,
+                                NUM_FORM_EVENTS);
 }
 
 void AutofillMetrics::FormEventLogger::Log(

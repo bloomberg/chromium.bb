@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
@@ -65,6 +66,10 @@ class TestSaveCardBubbleControllerImpl : public SaveCardBubbleControllerImpl {
  protected:
   security_state::SecurityLevel GetSecurityLevel() const override {
     return security_level_;
+  }
+
+  AutofillSyncSigninState GetSyncState() const override {
+    return AutofillSyncSigninState::kSignedInAndSyncFeature;
   }
 
  private:

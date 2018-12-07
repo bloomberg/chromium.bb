@@ -9,6 +9,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/legacy_strike_database_factory.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -28,6 +29,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/legacy_strike_database.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -54,6 +56,10 @@ SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
   SecurityStateTabHelper::FromWebContents(web_contents)
       ->GetSecurityInfo(&security_info);
   security_level_ = security_info.security_level;
+
+  personal_data_manager_ =
+      PersonalDataManagerFactory::GetInstance()->GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
 }
 
 SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
@@ -86,7 +92,7 @@ void SaveCardBubbleControllerImpl::OfferLocalSave(
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
   } else {
     ShowIconOnly();
   }
@@ -122,7 +128,7 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
   }
 
   if (!LegalMessageLine::Parse(*legal_message, &legal_message_lines_,
@@ -133,7 +139,7 @@ void SaveCardBubbleControllerImpl::OfferUploadSave(
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     return;
   }
 
@@ -190,7 +196,7 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
   }
 
   ShowBubble();
@@ -367,7 +373,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     pref_service_->SetInteger(
         prefs::kAutofillAcceptSaveCreditCardPromptState,
         prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED);
@@ -390,7 +396,7 @@ void SaveCardBubbleControllerImpl::OnCancelButton() {
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     pref_service_->SetInteger(
         prefs::kAutofillAcceptSaveCreditCardPromptState,
         prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED);
@@ -418,7 +424,7 @@ void SaveCardBubbleControllerImpl::OnLegalMessageLinkClicked(const GURL& url) {
       should_request_expiration_date_from_user_,
       pref_service_->GetInteger(
           prefs::kAutofillAcceptSaveCreditCardPromptState),
-      GetSecurityLevel());
+      GetSecurityLevel(), GetSyncState());
 }
 
 void SaveCardBubbleControllerImpl::OnManageCardsClicked() {
@@ -515,7 +521,7 @@ void SaveCardBubbleControllerImpl::DidFinishNavigation(
         should_request_expiration_date_from_user_,
         pref_service_->GetInteger(
             prefs::kAutofillAcceptSaveCreditCardPromptState),
-        GetSecurityLevel());
+        GetSecurityLevel(), GetSyncState());
     if (base::FeatureList::IsEnabled(
             features::kAutofillSaveCreditCardUsesStrikeSystem) &&
         show_bubble_) {
@@ -596,7 +602,7 @@ void SaveCardBubbleControllerImpl::ShowBubble() {
           should_request_expiration_date_from_user_,
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState),
-          GetSecurityLevel());
+          GetSecurityLevel(), GetSyncState());
       break;
     case BubbleType::MANAGE_CARDS:
       AutofillMetrics::LogManageCardsPromptMetric(
@@ -638,7 +644,7 @@ void SaveCardBubbleControllerImpl::ShowIconOnly() {
           should_request_expiration_date_from_user_,
           pref_service_->GetInteger(
               prefs::kAutofillAcceptSaveCreditCardPromptState),
-          GetSecurityLevel());
+          GetSecurityLevel(), GetSyncState());
       break;
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:
@@ -670,6 +676,10 @@ void SaveCardBubbleControllerImpl::OnStrikeChangeComplete(
 security_state::SecurityLevel SaveCardBubbleControllerImpl::GetSecurityLevel()
     const {
   return security_level_;
+}
+
+AutofillSyncSigninState SaveCardBubbleControllerImpl::GetSyncState() const {
+  return personal_data_manager_->GetSyncSigninState();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SaveCardBubbleControllerImpl)

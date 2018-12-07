@@ -94,9 +94,8 @@ class MockAutofillClient : public TestAutofillClient {
 class MockAutofillManager : public AutofillManager {
  public:
   MockAutofillManager(AutofillDriver* driver, MockAutofillClient* client)
-      // Force to use the constructor designated for unit test, but we don't
-      // really need personal_data in this test so we pass a NULL pointer.
-      : AutofillManager(driver, client, nullptr) {}
+      // Force to use the constructor designated for unit test.
+      : AutofillManager(driver, client, client->GetPersonalDataManager()) {}
   ~MockAutofillManager() override {}
 
   PopupType GetPopupType(const FormData& form,
