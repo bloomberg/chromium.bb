@@ -299,7 +299,7 @@ class MockNativeWidgetMac : public NativeWidgetMac {
   explicit MockNativeWidgetMac(internal::NativeWidgetDelegate* delegate)
       : NativeWidgetMac(delegate) {}
   using NativeWidgetMac::bridge_impl;
-  using NativeWidgetMac::bridge_host_for_testing;
+  using NativeWidgetMac::bridge_host;
 
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(const Widget::InitParams& params) override {
@@ -311,19 +311,19 @@ class MockNativeWidgetMac : public NativeWidgetMac {
                       styleMask:NSBorderlessWindowMask
                         backing:NSBackingStoreBuffered
                           defer:NO]);
-    bridge_host_for_testing()->CreateLocalBridge(window);
+    bridge_host()->CreateLocalBridge(window);
     if (auto* parent =
             BridgedNativeWidgetHostImpl::GetFromNativeView(params.parent)) {
-      bridge_host_for_testing()->SetParent(parent);
+      bridge_host()->SetParent(parent);
     }
-    bridge_host_for_testing()->InitWindow(params);
+    bridge_host()->InitWindow(params);
 
     // Usually the bridge gets initialized here. It is skipped to run extra
     // checks in tests, and so that a second window isn't created.
     delegate()->OnNativeWidgetCreated(true);
 
     // To allow events to dispatch to a view, it needs a way to get focus.
-    bridge_host_for_testing()->SetFocusManager(GetWidget()->GetFocusManager());
+    bridge_host()->SetFocusManager(GetWidget()->GetFocusManager());
   }
 
   void ReorderNativeViews() override {
@@ -350,7 +350,7 @@ class BridgedNativeWidgetTestBase : public ui::CocoaTest {
     return native_widget_mac_->bridge_impl();
   }
   BridgedNativeWidgetHostImpl* bridge_host() {
-    return native_widget_mac_->bridge_host_for_testing();
+    return native_widget_mac_->bridge_host();
   }
 
   // Generate an autoreleased KeyDown NSEvent* in |widget_| for pressing the

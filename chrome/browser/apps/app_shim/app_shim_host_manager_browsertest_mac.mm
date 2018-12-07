@@ -60,6 +60,7 @@ class TestShimClient : public chrome::mojom::AppShim {
       override {}
   void CreateContentNSViewBridgeFactory(
       content::mojom::NSViewBridgeFactoryAssociatedRequest request) override {}
+  void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void Hide() override {}
   void UnhideWithoutActivation() override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}

@@ -11,6 +11,8 @@
 #include "base/files/file_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app_shim/app_shim_delegate.h"
+#include "chrome/browser/ui/cocoa/browser_window_command_handler.h"
+#include "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/cocoa/main_menu_builder.h"
 #include "content/public/browser/ns_view_bridge_factory_impl.h"
 #include "content/public/common/ns_view_bridge_factory.mojom.h"
@@ -19,6 +21,7 @@
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views_bridge_mac/bridge_factory_impl.h"
+#include "ui/views_bridge_mac/bridged_native_widget_impl.h"
 #include "ui/views_bridge_mac/mojo/bridge_factory.mojom.h"
 
 AppShimController::AppShimController(
@@ -158,6 +161,16 @@ void AppShimController::CreateViewsBridgeFactory(
 void AppShimController::CreateContentNSViewBridgeFactory(
     content::mojom::NSViewBridgeFactoryAssociatedRequest request) {
   content::NSViewBridgeFactoryImpl::Get()->BindRequest(std::move(request));
+}
+
+void AppShimController::CreateCommandDispatcherForWidget(uint64_t widget_id) {
+  if (auto* bridge = views::BridgedNativeWidgetImpl::GetFromId(widget_id)) {
+    bridge->SetCommandDispatcher(
+        [[[ChromeCommandDispatcherDelegate alloc] init] autorelease],
+        [[[BrowserWindowCommandHandler alloc] init] autorelease]);
+  } else {
+    LOG(ERROR) << "Failed to find host for command dispatcher.";
+  }
 }
 
 void AppShimController::Hide() {
