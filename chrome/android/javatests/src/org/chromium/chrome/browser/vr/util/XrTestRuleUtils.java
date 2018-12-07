@@ -4,16 +4,11 @@
 
 package org.chromium.chrome.browser.vr.util;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.uiautomator.UiDevice;
-
 import org.junit.Assert;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.junit.runner.Description;
 
 import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityXrTestRule;
 import org.chromium.chrome.browser.vr.rules.CustomTabActivityXrTestRule;
 import org.chromium.chrome.browser.vr.rules.WebappActivityXrTestRule;
@@ -22,7 +17,6 @@ import org.chromium.chrome.browser.vr.rules.XrActivityRestrictionRule;
 import org.chromium.chrome.browser.vr.rules.XrTestRule;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 /**
@@ -81,28 +75,6 @@ public class XrTestRuleUtils {
         return RuleChain
                 .outerRule(new XrActivityRestrictionRule(((XrTestRule) rule).getRestriction()))
                 .around(rule);
-    }
-
-    /**
-     * Works around https://crbug.com/908917, where web contents can be darker due to Android doing
-     * really weird things when some keyevents are input over adb. This normally isn't an issue, but
-     * can cause flakiness in RenderTests, so only apply the workaround to those. The issue gets
-     * resolved when there is touchscreen input, so perform a swipe that should be a no-op.
-     *
-     * This would ideally be worked around in the test runner, but attempts to do so have not been
-     * completely successful.
-     *
-     * @param desc The Description of the Rule currently being applied.
-     */
-    public static void maybeWorkaroundWebContentFlakiness(Description desc) {
-        Feature annotation = desc.getAnnotation(Feature.class);
-        if (annotation == null) return;
-        if (!Arrays.asList(annotation.value()).contains("RenderTest")) return;
-
-        UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        uiDevice.drag(uiDevice.getDisplayWidth() / 2, uiDevice.getDisplayHeight() / 2,
-                uiDevice.getDisplayWidth() / 2, 3 * uiDevice.getDisplayHeight() / 4,
-                10 /* steps */);
     }
 
     /**
