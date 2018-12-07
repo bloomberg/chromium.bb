@@ -178,7 +178,7 @@ def _ParseManifestAttributes(apk_path):
     skip_extract_lib = not bool(int(m.group(1)))
 
   # Dex decompression overhead varies by Android version.
-  m = re.search(r'android:minSdkVersion\(\w+\)=\(type \w+\)(\w+)\n', output)
+  m = re.search(r'android:minSdkVersion\(\w+\)=\(type \w+\)(\w+)', output)
   sdk_version = int(m.group(1), 16)
 
   return sdk_version, skip_extract_lib
