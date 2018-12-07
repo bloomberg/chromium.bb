@@ -258,6 +258,10 @@ DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
   if (!AllowTimingDetails())
     return 0.0;
   ResourceLoadTiming* timing = GetResourceLoadTiming();
+  // Step 1 of
+  // https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-secureconnectionstart.
+  if (DidReuseConnection())
+    return fetchStart();
   // SslStart will be zero when a secure connection is not negotiated.
   if (!timing || timing->SslStart().is_null())
     return 0.0;
