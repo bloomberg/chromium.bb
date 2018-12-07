@@ -72,6 +72,7 @@ message InProgressInfo {
   optional bool paused = 24;
   optional bool metered = 25;
   optional int64 bytes_wasted = 26;
+  optional int32 auto_resume_count = 27;
 }
 
 // Stores various metadata related to a download.

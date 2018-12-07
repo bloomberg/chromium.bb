@@ -997,17 +997,18 @@ public class DownloadManagerService
             incrementDownloadRetryCount(item.getId(), false);
         }
         nativeResumeDownload(getNativeDownloadManagerService(), item.getId(),
-                item.getDownloadInfo().isOffTheRecord());
+                item.getDownloadInfo().isOffTheRecord(), hasUserGesture);
     }
 
     /**
      * Called to retry a download. May resume the current download or start a new one.
      * @param id The {@link ContentId} of the download to retry.
      * @param item The current download that needs to retry.
+     * @param hasUserGesture Whether the request was originated due to user gesture.
      */
-    public void retryDownload(ContentId id, DownloadItem item) {
+    public void retryDownload(ContentId id, DownloadItem item, boolean hasUserGesture) {
         nativeRetryDownload(getNativeDownloadManagerService(), item.getId(),
-                item.getDownloadInfo().isOffTheRecord());
+                item.getDownloadInfo().isOffTheRecord(), hasUserGesture);
     }
 
     /**
@@ -1904,10 +1905,10 @@ public class DownloadManagerService
     private native long nativeInit(boolean isFullBrowserStarted);
     private native void nativeOpenDownload(long nativeDownloadManagerService, String downloadGuid,
             boolean isOffTheRecord, int source);
-    private native void nativeResumeDownload(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
-    private native void nativeRetryDownload(
-            long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
+    private native void nativeResumeDownload(long nativeDownloadManagerService, String downloadGuid,
+            boolean isOffTheRecord, boolean hasUserGesture);
+    private native void nativeRetryDownload(long nativeDownloadManagerService, String downloadGuid,
+            boolean isOffTheRecord, boolean hasUserGesture);
     private native void nativeCancelDownload(
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord);
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid,

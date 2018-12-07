@@ -240,7 +240,7 @@ void MdDownloadsDOMHandler::Resume(const std::string& id) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_RESUME);
   download::DownloadItem* file = GetDownloadByStringId(id);
   if (file)
-    file->Resume();
+    file->Resume(true);
 }
 
 void MdDownloadsDOMHandler::Remove(const std::string& id) {

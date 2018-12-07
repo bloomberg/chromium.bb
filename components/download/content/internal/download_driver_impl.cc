@@ -209,7 +209,7 @@ void DownloadDriverImpl::Resume(const std::string& guid) {
     return;
   DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
   if (item)
-    item->Resume();
+    item->Resume(true);
 }
 
 base::Optional<DriverEntry> DownloadDriverImpl::Find(const std::string& guid) {

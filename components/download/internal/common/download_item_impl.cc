@@ -293,11 +293,13 @@ DownloadItemImpl::DownloadItemImpl(
     const std::string& last_modified,
     int64_t received_bytes,
     int64_t total_bytes,
+    int32_t auto_resume_count,
     const std::string& hash,
     DownloadItem::DownloadState state,
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool paused,
+    bool allow_metered,
     bool opened,
     base::Time last_access_time,
     bool transient,
@@ -324,6 +326,7 @@ DownloadItemImpl::DownloadItemImpl(
       danger_type_(danger_type),
       delegate_(delegate),
       paused_(paused),
+      allow_metered_(allow_metered),
       opened_(opened),
       last_access_time_(last_access_time),
       transient_(transient),
@@ -333,6 +336,7 @@ DownloadItemImpl::DownloadItemImpl(
                         state == COMPLETE,
                         hash,
                         end_time),
+      auto_resume_count_(auto_resume_count),
       last_modified_time_(last_modified),
       etag_(etag),
       received_slices_(received_slices),
@@ -386,6 +390,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
       weak_ptr_factory_(this) {
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_ACTIVE_DOWNLOAD);
+  allow_metered_ |= delegate_->IsActiveNetworkMetered();
 
   TRACE_EVENT_INSTANT0("download", "DownloadStarted", TRACE_EVENT_SCOPE_THREAD);
 }
@@ -526,6 +531,7 @@ void DownloadItemImpl::Pause() {
     case RESUMING_INTERNAL:
       // No active request.
       paused_ = true;
+      UpdateObservers();
       return;
 
     case IN_PROGRESS_INTERNAL:
@@ -541,7 +547,7 @@ void DownloadItemImpl::Pause() {
   }
 }
 
-void DownloadItemImpl::Resume() {
+void DownloadItemImpl::Resume(bool user_resume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
   switch (state_) {
@@ -560,12 +566,17 @@ void DownloadItemImpl::Resume() {
       paused_ = false;
       if (job_)
         job_->Resume(true);
+
+      UpdateResumptionInfo(true);
       UpdateObservers();
       return;
 
     case INTERRUPTED_INTERNAL:
+      UpdateResumptionInfo(paused_ || user_resume);
       paused_ = false;
-      auto_resume_count_ = 0;  // User input resets the counter.
+      if (auto_resume_count_ >= kMaxAutoResumeAttempts)
+        return;
+
       ResumeInterruptedDownload(ResumptionRequestSource::USER);
       UpdateObservers();
       return;
@@ -574,6 +585,13 @@ void DownloadItemImpl::Resume() {
     case TARGET_RESOLVED_INTERNAL:
       NOTREACHED();
   }
+}
+
+void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
+  if (user_resume)
+    allow_metered_ |= delegate_->IsActiveNetworkMetered();
+
+  auto_resume_count_ = user_resume ? 0 : auto_resume_count_++;
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
@@ -651,6 +669,10 @@ bool DownloadItemImpl::IsPaused() const {
   return paused_;
 }
 
+bool DownloadItemImpl::AllowMetered() const {
+  return allow_metered_;
+}
+
 bool DownloadItemImpl::IsTemporary() const {
   return is_temporary_;
 }
@@ -691,6 +713,10 @@ bool DownloadItemImpl::IsDone() const {
 
 int64_t DownloadItemImpl::GetBytesWasted() const {
   return bytes_wasted_;
+}
+
+int32_t DownloadItemImpl::GetAutoResumeCount() const {
+  return auto_resume_count_;
 }
 
 const GURL& DownloadItemImpl::GetURL() const {

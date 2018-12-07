@@ -237,7 +237,7 @@ void FakeDownloadItem::Pause() {
   NOTREACHED();
 }
 
-void FakeDownloadItem::Resume() {
+void FakeDownloadItem::Resume(bool user_resume) {
   NOTREACHED();
 }
 
@@ -261,6 +261,11 @@ bool FakeDownloadItem::IsPaused() const {
   return false;
 }
 
+bool FakeDownloadItem::AllowMetered() const {
+  NOTREACHED();
+  return false;
+}
+
 bool FakeDownloadItem::IsTemporary() const {
   NOTREACHED();
   return false;
@@ -272,6 +277,11 @@ bool FakeDownloadItem::CanResume() const {
 }
 
 int64_t FakeDownloadItem::GetBytesWasted() const {
+  NOTREACHED();
+  return 0;
+}
+
+int32_t FakeDownloadItem::GetAutoResumeCount() const {
   NOTREACHED();
   return 0;
 }

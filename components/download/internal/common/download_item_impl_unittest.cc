@@ -591,7 +591,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 
   ASSERT_TRUE(item->IsPaused());
 
-  item->Resume();
+  item->Resume(false);
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
 
   task_environment_.RunUntilIdle();

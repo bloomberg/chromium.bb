@@ -80,13 +80,15 @@ class DownloadManagerService
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
                       const JavaParamRef<jstring>& jdownload_guid,
-                      bool is_off_the_record);
+                      bool is_off_the_record,
+                      bool has_user_gesture);
 
   // Called to retry a download.
   void RetryDownload(JNIEnv* env,
                      jobject obj,
                      const JavaParamRef<jstring>& jdownload_guid,
-                     bool is_off_the_record);
+                     bool is_off_the_record,
+                     bool has_user_gesture);
 
   // Called to cancel a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, retry after a while.
@@ -172,11 +174,13 @@ class DownloadManagerService
 
   // Helper function to start the download resumption.
   void ResumeDownloadInternal(const std::string& download_guid,
-                              bool is_off_the_record);
+                              bool is_off_the_record,
+                              bool has_user_gesture);
 
   // Helper function to retry the download.
   void RetryDownloadInternal(const std::string& download_guid,
-                             bool is_off_the_record);
+                             bool is_off_the_record,
+                             bool has_user_gesture);
 
   // Helper function to cancel a download.
   void CancelDownloadInternal(const std::string& download_guid,
@@ -230,11 +234,24 @@ class DownloadManagerService
   int pending_get_downloads_actions_;
 
   enum DownloadAction { RESUME, RETRY, PAUSE, CANCEL, REMOVE, UNKNOWN };
-  using PendingDownloadActions = std::map<std::string, DownloadAction>;
+
+  // Holds params provided to the download function calls.
+  struct DownloadActionParams {
+    DownloadActionParams(DownloadAction download_action);
+    DownloadActionParams(DownloadAction download_action, bool user_gesture);
+    DownloadActionParams(const DownloadActionParams& other);
+
+    ~DownloadActionParams() = default;
+
+    DownloadAction action;
+    bool has_user_gesture;
+  };
+
+  using PendingDownloadActions = std::map<std::string, DownloadActionParams>;
   PendingDownloadActions pending_actions_;
 
   void EnqueueDownloadAction(const std::string& download_guid,
-                             DownloadAction action);
+                             const DownloadActionParams& params);
 
   ResumeCallback resume_callback_for_testing_;
 
