@@ -35,6 +35,7 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
                            SaveCardBubbleController* controller);
 
   // BubbleDialogDelegateView:
+  views::View* CreateExtraView() override;
   views::View* CreateFootnoteView() override;
   bool Accept() override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
