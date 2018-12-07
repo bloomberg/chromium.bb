@@ -609,6 +609,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
 }
 
 bool HTMLMediaElement::SupportsFocus() const {
+  // TODO(https://crbug.com/911882): Depending on result of discussion, remove.
   if (ownerDocument()->IsMediaDocument())
     return false;
 
@@ -618,7 +619,7 @@ bool HTMLMediaElement::SupportsFocus() const {
 }
 
 bool HTMLMediaElement::IsMouseFocusable() const {
-  return false;
+  return !IsFullscreen();
 }
 
 void HTMLMediaElement::ParseAttribute(
