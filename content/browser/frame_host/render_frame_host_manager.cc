@@ -2186,11 +2186,16 @@ void RenderFrameHostManager::CommitPending() {
   // so that's probably good.
   // Note the RenderWidgetHostView can be missing if the process for the old
   // RenderFrameHost crashed.
-  // TODO(creis): As long as show/hide are on RVH, we don't want to hide on
-  // subframe navigations or we will interfere with the top-level frame.
-  // TODO(danakj): For subframes the old_render_frame_host will get swapped out
-  // and eventually deleted on SwapOutACK. So why would we want to Hide() it
-  // here anyways?
+  // TODO(crbug.com/419087): This is only done for the main frame, as for sub
+  // frames the RenderWidget and its view will be destroyed when the frame is
+  // detached, but for the main frame it is not. This call to Hide() can go away
+  // when the main frame's RenderWidget is destroyed on frame detach. Note that
+  // calling this on a subframe that is not a local root would be incorrect as
+  // it would hide an ancestor local root's RenderWidget when that frame is not
+  // necessarily navigating. Removing this Hide() has previously been attempted
+  // without success in r426913 (https://crbug.com/658688) and r438516 (broke
+  // assumptions about RenderWidgetHosts not changing RenderWidgetHostViews over
+  // time).
   if (is_main_frame && old_render_frame_host->GetView()) {
     // Note that this hides the RenderWidget but does not hide the Page. If it
     // did hide the Page then making a new RenderFrameHost on another call to
