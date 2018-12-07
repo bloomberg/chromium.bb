@@ -91,6 +91,12 @@
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_I18N_SETUP_HTML"
                  file="shared\i18n_setup.html"
                  type="chrome_html" />
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_MODULE_METRICS_PROXY_HTML"
+                 file="shared\module_metrics_proxy.html"
+                 type="chrome_html" />
+      <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_MODULE_METRICS_PROXY_JS"
+                 file="shared\module_metrics_proxy.js"
+                 type="chrome_html" />
       <structure name="IDR_WELCOME_ONBOARDING_WELCOME_SHARED_ONBOARDING_BACKGROUND_HTML"
                  file="shared\onboarding_background.html"
                  type="chrome_html" />

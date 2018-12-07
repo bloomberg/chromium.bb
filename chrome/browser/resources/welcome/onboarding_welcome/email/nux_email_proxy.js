@@ -5,37 +5,8 @@
 cr.define('nux', function() {
 
   // The metrics name corresponding to Nux EmailProvidersInteraction histogram.
-  const INTERACTION_METRIC_NAME =
-      'FirstRun.NewUserExperience.EmailProvidersInteraction';
-
   const SELECTION_METRIC_NAME =
       'FirstRun.NewUserExperience.EmailProvidersSelection';
-
-  /**
-   * NuxEmailProvidersInteractions enum.
-   * These values are persisted to logs and should not be renumbered or re-used.
-   * See tools/metrics/histograms/enums.xml.
-   * @enum {number}
-   */
-  const NuxEmailProvidersInteractions = {
-    PageShown: 0,
-    DidNothingAndNavigatedAway: 1,
-    DidNothingAndChoseSkip: 2,
-    ChoseAnOptionAndNavigatedAway: 3,
-    ChoseAnOptionAndChoseSkip: 4,
-    ChoseAnOptionAndChoseNext: 5,
-    ClickedDisabledNextButtonAndNavigatedAway: 6,
-    ClickedDisabledNextButtonAndChoseSkip: 7,
-    ClickedDisabledNextButtonAndChoseNext: 8,
-  };
-
-  /**
-   * The number of enum values in NuxEmailProvidersInteractions. This should
-   * be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
-   * @type {number}
-   */
-  const INTERACTION_METRIC_COUNT =
-      Object.keys(NuxEmailProvidersInteractions).length;
 
   /** @interface */
   class NuxEmailProxy {
@@ -55,35 +26,17 @@ cr.define('nux', function() {
     /** @return {number} */
     getSavedProvider() {}
 
-    recordPageInitialized() {}
-
-    recordClickedOption() {}
-
-    recordClickedDisabledButton() {}
-
     /**
      * @param {number} providerId This should match one of the histogram enum
      *     value for NuxEmailProvidersSelections.
      * @param {number} length
      */
     recordProviderSelected(providerId, length) {}
-
-    recordNoThanks() {}
-
-    recordGetStarted() {}
-
-    recordFinalize() {}
   }
 
   /** @implements {nux.NuxEmailProxy} */
   class NuxEmailProxyImpl {
     constructor() {
-      /** @private {string} */
-      this.firstPart = '';
-
-      /** @private {string} */
-      this.lastPart = '';
-
       /** @private {number} */
       this.savedProvider_;
     }
@@ -104,62 +57,11 @@ cr.define('nux', function() {
     }
 
     /** @override */
-    recordPageInitialized() {
-      chrome.metricsPrivate.recordEnumerationValue(
-          INTERACTION_METRIC_NAME, NuxEmailProvidersInteractions.PageShown,
-          INTERACTION_METRIC_COUNT);
-
-      // These two flags are used at the end to determine what to record in
-      // metrics. Their values should map to first or last half of an enum
-      // name within NuxEmailProvidersInteractions.
-      this.firstPart = 'DidNothing';
-      this.lastPart = 'AndNavigatedAway';
-    }
-
-    /** @override */
-    recordClickedOption() {
-      // Only overwrite this.firstPart if it's not overwritten already
-      if (this.firstPart == 'DidNothing')
-        this.firstPart = 'ChoseAnOption';
-    }
-
-    /** @override */
-    recordClickedDisabledButton() {
-      // Only overwrite this.firstPart if it's not overwritten already
-      if (this.firstPart == 'DidNothing')
-        this.firstPart = 'ClickedDisabledNextButton';
-    }
-
-    /** @override */
     recordProviderSelected(providerId, length) {
       this.savedProvider_ = providerId;
       chrome.metricsPrivate.recordEnumerationValue(
           SELECTION_METRIC_NAME, providerId,
           loadTimeData.getInteger('email_providers_enum_count'));
-    }
-
-    /** @override */
-    recordNoThanks() {
-      this.lastPart = 'AndChoseSkip';
-      this.recordFinalize();
-    }
-
-    /** @override */
-    recordGetStarted() {
-      this.lastPart = 'AndChoseNext';
-      this.recordFinalize();
-    }
-
-    /** @override */
-    recordFinalize() {
-      let finalValue = this.firstPart + this.lastPart;
-
-      // TODO(hcarmona): revisit this metric.
-      let metric = NuxEmailProvidersInteractions[finalValue];
-      if (metric) {
-        chrome.metricsPrivate.recordEnumerationValue(
-            INTERACTION_METRIC_NAME, metric, INTERACTION_METRIC_COUNT);
-      }
     }
   }
 
