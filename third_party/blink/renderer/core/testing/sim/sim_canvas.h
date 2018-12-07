@@ -62,20 +62,6 @@ class SimCanvas : public SkCanvas {
                        SrcRectConstraint) override;
 
   // Text
-  void onDrawText(const void* text,
-                  size_t byte_length,
-                  SkScalar x,
-                  SkScalar y,
-                  const SkPaint&) override;
-  void onDrawPosText(const void* text,
-                     size_t byte_length,
-                     const SkPoint pos[],
-                     const SkPaint&) override;
-  void onDrawPosTextH(const void* text,
-                      size_t byte_length,
-                      const SkScalar xpos[],
-                      SkScalar const_y,
-                      const SkPaint&) override;
   void onDrawTextBlob(const SkTextBlob*,
                       SkScalar x,
                       SkScalar y,

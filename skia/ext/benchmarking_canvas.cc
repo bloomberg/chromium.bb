@@ -654,41 +654,6 @@ void BenchmarkingCanvas::onDrawBitmapNine(const SkBitmap& bitmap,
   INHERITED::onDrawBitmapNine(bitmap, center, dst, op.paint());
 }
 
-void BenchmarkingCanvas::onDrawText(const void* text, size_t byteLength,
-                                    SkScalar x, SkScalar y,
-                                    const SkPaint& paint) {
-  AutoOp op(this, "DrawText", &paint);
-  op.addParam("count", AsValue(SkIntToScalar(paint.countText(text, byteLength))));
-  op.addParam("x", AsValue(x));
-  op.addParam("y", AsValue(y));
-
-  INHERITED::onDrawText(text, byteLength, x, y, *op.paint());
-}
-
-void BenchmarkingCanvas::onDrawPosText(const void* text, size_t byteLength,
-                                       const SkPoint pos[], const SkPaint& paint) {
-  AutoOp op(this, "DrawPosText", &paint);
-
-  int count = paint.countText(text, byteLength);
-  op.addParam("count", AsValue(SkIntToScalar(count)));
-  op.addParam("pos", AsListValue(pos, count));
-
-  INHERITED::onDrawPosText(text, byteLength, pos, *op.paint());
-}
-
-void BenchmarkingCanvas::onDrawPosTextH(const void* text, size_t byteLength,
-                                        const SkScalar xpos[], SkScalar constY,
-                                        const SkPaint& paint)  {
-  AutoOp op(this, "DrawPosTextH", &paint);
-  op.addParam("constY", AsValue(constY));
-
-  int count = paint.countText(text, byteLength);
-  op.addParam("count", AsValue(SkIntToScalar(count)));
-  op.addParam("pos", AsListValue(xpos, count));
-
-  INHERITED::onDrawPosTextH(text, byteLength, xpos, constY, *op.paint());
-}
-
 void BenchmarkingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y,
                                         const SkPaint& paint) {
   DCHECK(blob);
