@@ -213,8 +213,6 @@ crbug.com/802029 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 
 crbug.com/592183 external/wpt/webusb/usbDevice.https.html [ Slow ]
 
-crbug.com/594189 virtual/composite-after-paint/fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ]
-
 crbug.com/614910 virtual/gpu-rasterization/images/color-profile-filter.html [ Slow ]
 
 crbug.com/623798 paint/images/animated-gif-last-frame-crash.html [ Slow ]

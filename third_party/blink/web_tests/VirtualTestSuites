@@ -263,37 +263,7 @@
   },
   {
     "prefix": "composite-after-paint",
-    "base": "fast/block",
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "composite-after-paint",
-    "base": "fast/borders",
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "composite-after-paint",
-    "base": "fast/clip",
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "composite-after-paint",
-    "base": "fast/css",
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "composite-after-paint",
-    "base": "fast/overflow",
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "composite-after-paint",
     "base": "paint",
-    "args": ["--enable-blink-features=CompositeAfterPaint"]
-  },
-  {
-    "prefix": "composite-after-paint",
-    "base": "svg",
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {

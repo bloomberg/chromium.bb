@@ -202,25 +202,33 @@ crbug.com/759632 http/tests/devtools/network/network-datasaver-warning.js [ Fail
 #  display-lock
 # Some additional bugs that are caused by painting problems are also within this section.
 
-# Failures due to CompositeAfterPaint. DO NOT REBASELINE.
-#
-# These tests should not be rebaselined automatically, as our goal is to exactly
-# match existing tests. We have skipped the entire composite-after-paint
-# directory and are adding [ Pass ] lines as we go. Please remove [ Pass ] lines
-# instead of rebaselining these tests.
-crbug.com/537409 virtual/composite-after-paint/ [ Skip ]
-# End whitlelisted paint invalidation tests
-crbug.com/596780 virtual/composite-after-paint/compositing/framesets/composited-frame-alignment.html [ Pass ]
-crbug.com/596780 [ Mac ] virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
-crbug.com/596780 [ Win ] virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
-
-# Re-add this once it rebaselines.
-# crbug.com/600618 virtual/composite-after-paint/svg/custom/object-sizing-explicit-height.xhtml [ Pass ]
-# SkiaBitLocker should avoid allocating huge offscreen buffer
-crbug.com/605812 [ Mac ] virtual/composite-after-paint/fast/overflow/overflow-height-float-not-removed-crash.html [ Skip ]
-crbug.com/605812 [ Mac ] virtual/composite-after-paint/fast/overflow/overflow-height-float-not-removed-crash2.html [ Skip ]
-crbug.com/619427 [ Mac ] virtual/composite-after-paint/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
-crbug.com/619427 [ Linux ] virtual/composite-after-paint/fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
+# --- Begin CompositeAfterPaint Tests --
+# Only whitelisted tests run under the virtual suite.
+# More tests run with CompositeAfterPaint on the flag-specific try bot.
+Bug(none) virtual/composite-after-paint/ [ Skip ]
+Bug(none) virtual/composite-after-paint/compositing/backface-visibility/ [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/backgrounds/ [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/geometry/abs-position-inside-opacity.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/geometry/composited-html-size.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/geometry/outline-change.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/geometry/tall-page-composited.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-img.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/gestures/gesture-tapHighlight-simple-scaledY.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/iframes/iframe-in-composited-layer.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/images/direct-image-clip-path.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/masks/mask-of-clipped-layer.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/overflow/clip-rotate-opacity-fixed.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/overlap-blending/children-opacity-huge.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/plugins/ [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/reflections/reflection-ordering.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/rtl/rtl-overflow-scrolling.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/squashing/squash-composited-input.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/transitions/opacity-on-inline.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/will-change/stacking-context-creation.html [ Pass ]
+Bug(none) virtual/composite-after-paint/compositing/z-order/ [ Pass ]
+Bug(none) virtual/composite-after-paint/paint/background/ [ Pass ]
+Bug(none) virtual/composite-after-paint/paint/filters/ [ Pass ]
+Bug(none) virtual/composite-after-paint/paint/frames [ Pass ]
 # --- End CompositeAfterPaint Tests --
 
 # Subpixel differences
