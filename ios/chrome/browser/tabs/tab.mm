@@ -286,14 +286,6 @@ NSString* const kTabUrlKey = @"url";
   }
 }
 
-#pragma mark - Public API (relatinge to User agent)
-
-- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
-  web::NavigationManager* navigationManager = [self navigationManager];
-  DCHECK(navigationManager);
-  navigationManager->ReloadWithUserAgentType(userAgentType);
-}
-
 #pragma mark - Public API (relating to U2F)
 
 - (void)evaluateU2FResultFromURL:(const GURL&)URL {

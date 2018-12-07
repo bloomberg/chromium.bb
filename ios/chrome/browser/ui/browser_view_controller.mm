@@ -4570,16 +4570,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (void)requestDesktopSite {
-  if (self.userAgentType != web::UserAgentType::MOBILE)
-    return;
-  [self.tabModel.currentTab
-      reloadWithUserAgentType:web::UserAgentType::DESKTOP];
+  [self reloadWithUserAgentType:web::UserAgentType::DESKTOP];
 }
 
 - (void)requestMobileSite {
-  if (self.userAgentType != web::UserAgentType::DESKTOP)
-    return;
-  [self.tabModel.currentTab reloadWithUserAgentType:web::UserAgentType::MOBILE];
+  [self reloadWithUserAgentType:web::UserAgentType::MOBILE];
 }
 
 - (void)closeCurrentTab {
@@ -4635,6 +4630,18 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   id nativeController = [self nativeControllerForTab:self.tabModel.currentTab];
   DCHECK([nativeController conformsToProtocol:@protocol(NewTabPageOwning)]);
   [nativeController focusFakebox];
+}
+
+#pragma mark - BrowserCommands helpers
+
+// Reloads the original url of the last non-redirect item (including non-history
+// items) with |userAgentType|.
+- (void)reloadWithUserAgentType:(web::UserAgentType)userAgentType {
+  if (self.userAgentType == userAgentType)
+    return;
+  web::WebState* webState = self.tabModel.currentTab.webState;
+  web::NavigationManager* navigationManager = webState->GetNavigationManager();
+  navigationManager->ReloadWithUserAgentType(userAgentType);
 }
 
 #pragma mark - TabModelObserver methods
