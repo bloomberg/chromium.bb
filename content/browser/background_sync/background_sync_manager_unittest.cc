@@ -17,6 +17,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -946,6 +947,37 @@ TEST_F(BackgroundSyncManagerTest, MultipleRegistrationsFireOnNetworkChange) {
   EXPECT_EQ(2, sync_events_called_);
   EXPECT_FALSE(GetRegistration(sync_options_1_));
   EXPECT_FALSE(GetRegistration(sync_options_2_));
+}
+
+TEST_F(BackgroundSyncManagerTest, DispatchCancelledOnNetworkFailure) {
+  InitSyncEventTest();
+  base::HistogramTester histogram_tester;
+
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_NONE);
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_EQ(0, sync_events_called_);
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+
+  BackgroundSyncNetworkObserver* network_observer =
+      test_background_sync_manager_->GetNetworkObserverForTesting();
+  ASSERT_TRUE(network_observer);
+
+  // Set the network, then immediately remove it.
+  network_observer->NotifyManagerIfConnectionChangedForTesting(
+      network::mojom::ConnectionType::CONNECTION_WIFI);
+  network_observer->NotifyManagerIfConnectionChangedForTesting(
+      network::mojom::ConnectionType::CONNECTION_NONE);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, sync_events_called_);
+  ASSERT_TRUE(GetRegistration(sync_options_1_));
+
+  // The event fires after the network is restored.
+  SetNetwork(network::mojom::ConnectionType::CONNECTION_WIFI);
+  EXPECT_EQ(1, sync_events_called_);
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
+  histogram_tester.ExpectBucketCount("BackgroundSync.OptionConditionsChanged",
+                                     false, 1);
 }
 
 TEST_F(BackgroundSyncManagerTest, FiresOnManagerRestart) {

@@ -71,7 +71,6 @@ bool BackgroundSyncNetworkObserver::NetworkSufficient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   return connection_type_ != network::mojom::ConnectionType::CONNECTION_NONE;
-  return false;
 }
 
 void BackgroundSyncNetworkObserver::OnConnectionChanged(

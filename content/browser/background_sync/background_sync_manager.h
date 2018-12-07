@@ -251,6 +251,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEvents();
   void FireReadyEventsImpl(base::OnceClosure callback);
   void FireReadyEventsDidFindRegistration(
+      int64_t service_worker_id,
       const std::string& tag,
       base::OnceClosure event_fired_callback,
       base::OnceClosure event_completed_callback,
