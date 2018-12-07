@@ -1,6 +1,7 @@
 # Multi profile: https://crbug.com/910241
 -MultiUserWindowManagerChromeOSTest.*
 -MultiUserWindowManagerChromeOSMashTest.*
+-MultiUserWindowManagerClientImpl*
 -MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest.*
 -MultiUserContextMenuChromeOSTest.*
 -BrowserFinderChromeOSTest.FindBrowserOwnedByAnotherProfile
@@ -11,6 +12,12 @@
 -ImmersiveModeControllerAshTest.LockedFullscreenDisablesImmersive
 -ImmersiveModeControllerAshTest.RegularToLockedFullscreenDisablesImmersive
 -ImmersiveModeControllerAshTest.TabAndBrowserFullscreen
+
+# https://crbug.com/912700
+-ChromeKeyboardUITest.ChromeKeyboardContentsDelegate
+
+# https://crbug.com/910240
+-ArcInputMethodManagerServiceTest.DisableFallbackVirtualKeyboard
 
 # Fails because a MusClient is needed. Blocked on folding views_mus_test_suite
 # into views_test_suite.
