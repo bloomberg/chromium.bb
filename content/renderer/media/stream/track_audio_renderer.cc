@@ -223,7 +223,7 @@ media::OutputDeviceInfo TrackAudioRenderer::GetOutputDeviceInfo() {
   return sink_ ? sink_->GetOutputDeviceInfo() : media::OutputDeviceInfo();
 }
 
-base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() const {
+base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(thread_lock_);
   if (source_params_.IsValid()) {
@@ -234,7 +234,7 @@ base::TimeDelta TrackAudioRenderer::GetCurrentRenderTime() const {
   return prior_elapsed_render_time_;
 }
 
-bool TrackAudioRenderer::IsLocalRenderer() const {
+bool TrackAudioRenderer::IsLocalRenderer() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return MediaStreamAudioTrack::From(audio_track_)->is_local_track();
 }

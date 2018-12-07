@@ -85,11 +85,11 @@ void PluginInstanceThrottlerImpl::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool PluginInstanceThrottlerImpl::IsThrottled() const {
+bool PluginInstanceThrottlerImpl::IsThrottled() {
   return state_ == THROTTLER_STATE_PLUGIN_THROTTLED;
 }
 
-bool PluginInstanceThrottlerImpl::IsHiddenForPlaceholder() const {
+bool PluginInstanceThrottlerImpl::IsHiddenForPlaceholder() {
   return is_hidden_for_placeholder_;
 }
 
@@ -117,12 +117,12 @@ void PluginInstanceThrottlerImpl::SetHiddenForPlaceholder(bool hidden) {
     observer.OnHiddenForPlaceholder(hidden);
 }
 
-PepperWebPluginImpl* PluginInstanceThrottlerImpl::GetWebPlugin() const {
+PepperWebPluginImpl* PluginInstanceThrottlerImpl::GetWebPlugin() {
   DCHECK(web_plugin_);
   return web_plugin_;
 }
 
-const gfx::Size& PluginInstanceThrottlerImpl::GetSize() const {
+const gfx::Size& PluginInstanceThrottlerImpl::GetSize() {
   return unobscured_size_;
 }
 

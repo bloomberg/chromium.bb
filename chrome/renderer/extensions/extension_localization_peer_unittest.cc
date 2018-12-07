@@ -80,7 +80,7 @@ class MockRequestPeer : public content::RequestPeer {
   MOCK_METHOD1(OnTransferSizeUpdated, void(int transfer_size_diff));
   MOCK_METHOD1(OnCompletedRequest,
                void(const network::URLLoaderCompletionStatus& status));
-  scoped_refptr<base::TaskRunner> GetTaskRunner() const override {
+  scoped_refptr<base::TaskRunner> GetTaskRunner() override {
     NOTREACHED();
     return nullptr;
   }

@@ -385,7 +385,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // PluginInstance implementation
   RenderFrame* GetRenderFrame() override;
   blink::WebPluginContainer* GetContainer() override;
-  v8::Isolate* GetIsolate() const override;
+  v8::Isolate* GetIsolate() override;
   ppapi::VarTracker* GetVarTracker() override;
   const GURL& GetPluginURL() override;
   base::FilePath GetModulePath() override;

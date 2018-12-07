@@ -34,8 +34,8 @@ class DelegateThreadSafeReceivedData final
     }
   }
 
-  const char* payload() const override { return data_->payload(); }
-  int length() const override { return data_->length(); }
+  const char* payload() override { return data_->payload(); }
+  int length() override { return data_->length(); }
 
  private:
   std::unique_ptr<RequestPeer::ReceivedData> data_;

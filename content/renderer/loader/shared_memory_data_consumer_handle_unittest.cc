@@ -79,10 +79,8 @@ class LoggingFixedReceivedData final : public RequestPeer::ReceivedData {
     logger_->Add(name_ + " is destructed.");
   }
 
-  const char* payload() const override {
-    return data_.empty() ? nullptr : &data_[0];
-  }
-  int length() const override { return static_cast<int>(data_.size()); }
+  const char* payload() override { return data_.empty() ? nullptr : &data_[0]; }
+  int length() override { return static_cast<int>(data_.size()); }
 
  private:
   const std::string name_;

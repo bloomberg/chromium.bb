@@ -25,8 +25,8 @@ class URLResponseBodyConsumer::ReceivedData final
 
   ~ReceivedData() override { consumer_->Reclaim(length_); }
 
-  const char* payload() const override { return payload_; }
-  int length() const override { return length_; }
+  const char* payload() override { return payload_; }
+  int length() override { return length_; }
 
  private:
   const char* const payload_;

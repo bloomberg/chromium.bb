@@ -3022,7 +3022,7 @@ RenderFrameImpl::GetPeripheralContentStatus(
     const url::Origin& main_frame_origin,
     const url::Origin& content_origin,
     const gfx::Size& unobscured_size,
-    RecordPeripheralDecision record_decision) const {
+    RecordPeripheralDecision record_decision) {
   return plugin_power_saver_helper_->GetPeripheralContentStatus(
       main_frame_origin, content_origin, unobscured_size, record_decision);
 }
@@ -3064,7 +3064,7 @@ void RenderFrameImpl::SetZoomLevel(double zoom_level) {
   render_view_->UpdateZoomLevel(zoom_level);
 }
 
-double RenderFrameImpl::GetZoomLevel() const {
+double RenderFrameImpl::GetZoomLevel() {
   return render_view_->page_zoom_level();
 }
 
@@ -3095,11 +3095,11 @@ void RenderFrameImpl::SetPreviewsState(PreviewsState previews_state) {
   previews_state_ = previews_state;
 }
 
-PreviewsState RenderFrameImpl::GetPreviewsState() const {
+PreviewsState RenderFrameImpl::GetPreviewsState() {
   return previews_state_;
 }
 
-bool RenderFrameImpl::IsPasting() const {
+bool RenderFrameImpl::IsPasting() {
   return is_pasting_;
 }
 
@@ -7099,7 +7099,7 @@ scoped_refptr<base::SingleThreadTaskRunner> RenderFrameImpl::GetTaskRunner(
   return GetWebFrame()->GetTaskRunner(task_type);
 }
 
-int RenderFrameImpl::GetEnabledBindings() const {
+int RenderFrameImpl::GetEnabledBindings() {
   return enabled_bindings_;
 }
 

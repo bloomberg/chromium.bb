@@ -213,7 +213,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsOnline() override;
   void SetRendererProcessType(
       blink::scheduler::WebRendererProcessType type) override;
-  blink::WebString GetUserAgent() const override;
+  blink::WebString GetUserAgent() override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   void OnAssociatedInterfaceRequest(

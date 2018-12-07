@@ -46,7 +46,7 @@ class TestRequestPeer : public RequestPeer {
   void OnReceivedCachedMetadata(const char* data, int len) override;
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
-  scoped_refptr<base::TaskRunner> GetTaskRunner() const override;
+  scoped_refptr<base::TaskRunner> GetTaskRunner() override;
 
   struct Context final {
     Context();

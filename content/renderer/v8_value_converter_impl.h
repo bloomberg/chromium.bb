@@ -31,12 +31,11 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   void SetStripNullFromObjects(bool val) override;
   void SetConvertNegativeZeroToInt(bool val) override;
   void SetStrategy(Strategy* strategy) override;
-  v8::Local<v8::Value> ToV8Value(
-      const base::Value* value,
-      v8::Local<v8::Context> context) const override;
+  v8::Local<v8::Value> ToV8Value(const base::Value* value,
+                                 v8::Local<v8::Context> context) override;
   std::unique_ptr<base::Value> FromV8Value(
       v8::Local<v8::Value> value,
-      v8::Local<v8::Context> context) const override;
+      v8::Local<v8::Context> context) override;
 
  private:
   friend class ScopedAvoidIdentityHashForTesting;

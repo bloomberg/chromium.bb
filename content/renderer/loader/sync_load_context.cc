@@ -217,7 +217,7 @@ void SyncLoadContext::OnCompletedRequest(
   CompleteRequest(true /* remove_pending_request */);
 }
 
-scoped_refptr<base::TaskRunner> SyncLoadContext::GetTaskRunner() const {
+scoped_refptr<base::TaskRunner> SyncLoadContext::GetTaskRunner() {
   return task_runner_;
 }
 

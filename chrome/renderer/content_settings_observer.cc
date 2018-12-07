@@ -96,7 +96,7 @@ ContentSetting GetContentSettingFromRules(
   return CONTENT_SETTING_DEFAULT;
 }
 
-bool IsScriptDisabledForPreview(const content::RenderFrame* render_frame) {
+bool IsScriptDisabledForPreview(content::RenderFrame* render_frame) {
   return render_frame->GetPreviewsState() & content::NOSCRIPT_ON;
 }
 

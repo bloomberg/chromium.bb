@@ -25,8 +25,8 @@ class StringData final : public content::RequestPeer::ReceivedData {
  public:
   explicit StringData(const std::string& data) : data_(data) {}
 
-  const char* payload() const override { return data_.data(); }
-  int length() const override { return data_.size(); }
+  const char* payload() override { return data_.data(); }
+  int length() override { return data_.size(); }
 
  private:
   const std::string data_;
@@ -115,8 +115,7 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
   original_peer_->OnCompletedRequest(status);
 }
 
-scoped_refptr<base::TaskRunner> ExtensionLocalizationPeer::GetTaskRunner()
-    const {
+scoped_refptr<base::TaskRunner> ExtensionLocalizationPeer::GetTaskRunner() {
   return original_peer_->GetTaskRunner();
 }
 

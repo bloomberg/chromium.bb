@@ -98,7 +98,7 @@ void TestRequestPeer::OnCompletedRequest(
   context_->completion_status = status;
 }
 
-scoped_refptr<base::TaskRunner> TestRequestPeer::GetTaskRunner() const {
+scoped_refptr<base::TaskRunner> TestRequestPeer::GetTaskRunner() {
   return blink::scheduler::GetSingleThreadTaskRunnerForTesting();
 }
 

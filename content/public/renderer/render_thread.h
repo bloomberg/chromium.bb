@@ -106,7 +106,7 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
       blink::scheduler::WebRendererProcessType type) = 0;
 
   // Returns the user-agent string.
-  virtual blink::WebString GetUserAgent() const = 0;
+  virtual blink::WebString GetUserAgent() = 0;
 };
 
 }  // namespace content
