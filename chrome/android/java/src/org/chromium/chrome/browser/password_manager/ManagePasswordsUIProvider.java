@@ -16,8 +16,9 @@ public class ManagePasswordsUIProvider {
      * Mehod called from the main settings to show the UI to manage passwords.
      *
      * @param activity the activity from which to launch the settings page.
+     * @param referrer the place that requested to show the passwords settings. Used for metrics.
      */
-    public void showManagePasswordsUI(Activity activity) {
+    public void showManagePasswordsUI(Activity activity, @ManagePasswordsReferrer int referrer) {
         if (activity == null) return;
         // Launch preference activity with SavePasswordsPreferences fragment.
         PreferencesLauncher.launchSettingsPage(activity, SavePasswordsPreferences.class);

@@ -13,6 +13,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/strings/grit/components_strings.h"
@@ -24,7 +25,9 @@ GeneratedPasswordSavedInfoBarDelegateAndroid::
 
 void GeneratedPasswordSavedInfoBarDelegateAndroid::OnInlineLinkClicked() {
   chrome::android::PreferencesLauncher::ShowPasswordSettings(
-      InfoBarService::WebContentsFromInfoBar(infobar()));
+      InfoBarService::WebContentsFromInfoBar(infobar()),
+      password_manager::ManagePasswordsReferrer::
+          kPasswordGenerationConfirmation);
 }
 
 GeneratedPasswordSavedInfoBarDelegateAndroid::

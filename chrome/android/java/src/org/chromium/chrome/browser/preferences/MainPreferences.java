@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsEnabledStateUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.developer.DeveloperPreferences;
 import org.chromium.chrome.browser.search_engines.TemplateUrl;
@@ -255,7 +256,8 @@ public class MainPreferences extends PreferenceFragment
     private void updatePasswordsPreference() {
         Preference passwordsPreference = findPreference(PREF_SAVED_PASSWORDS);
         passwordsPreference.setOnPreferenceClickListener(preference -> {
-            AppHooks.get().createManagePasswordsUIProvider().showManagePasswordsUI(getActivity());
+            AppHooks.get().createManagePasswordsUIProvider().showManagePasswordsUI(
+                    getActivity(), ManagePasswordsReferrer.CHROME_SETTINGS);
             return true;
         });
     }
