@@ -85,6 +85,12 @@ bool GpuDataManagerImpl::HardwareAccelerationEnabled() const {
   return private_->HardwareAccelerationEnabled();
 }
 
+void GpuDataManagerImpl::AppendGpuCommandLine(
+    base::CommandLine* command_line) const {
+  base::AutoLock auto_lock(lock_);
+  private_->AppendGpuCommandLine(command_line);
+}
+
 void GpuDataManagerImpl::RequestGpuSupportedRuntimeVersion() const {
   base::AutoLock auto_lock(lock_);
   private_->RequestGpuSupportedRuntimeVersion();
@@ -139,12 +145,6 @@ gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
     const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuFeatureInfoForHardwareGpu();
-}
-
-void GpuDataManagerImpl::AppendGpuCommandLine(
-    base::CommandLine* command_line) const {
-  base::AutoLock auto_lock(lock_);
-  private_->AppendGpuCommandLine(command_line);
 }
 
 void GpuDataManagerImpl::UpdateGpuPreferences(

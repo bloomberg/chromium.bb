@@ -31,10 +31,6 @@
 
 class GURL;
 
-namespace base {
-class CommandLine;
-}
-
 namespace gpu {
 struct GpuPreferences;
 struct VideoMemoryUsageStats;
@@ -67,6 +63,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void RemoveObserver(GpuDataManagerObserver* observer) override;
   void DisableHardwareAcceleration() override;
   bool HardwareAccelerationEnabled() const override;
+  void AppendGpuCommandLine(base::CommandLine* command_line) const override;
 
   void RequestGpuSupportedRuntimeVersion() const;
   bool GpuProcessStartAllowed() const;
@@ -92,9 +89,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
 
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
-
-  // Insert switches into gpu process command line: kUseGL, etc.
-  void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences) const;

@@ -84,6 +84,7 @@ include_rules = [
   "+services/shape_detection/public/mojom",
   "+services/video_capture/public",
   "+services/viz/privileged",
+  "+services/viz/public/interfaces",
   "+services/ws/common",
   "+services/ws/public",
   "+skia/ext",
