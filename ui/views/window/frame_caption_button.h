@@ -77,10 +77,6 @@ class VIEWS_EXPORT FrameCaptionButton : public views::Button {
 
   bool paint_as_active() const { return paint_as_active_; }
 
-  SkColor background_color() const { return background_color_; }
-
-  ColorMode color_mode() const { return color_mode_; }
-
   CaptionButtonIcon icon() const { return icon_; }
 
   const gfx::ImageSkia& icon_image() const { return icon_image_; }

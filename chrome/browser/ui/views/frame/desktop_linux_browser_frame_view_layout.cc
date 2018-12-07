@@ -44,9 +44,3 @@ int DesktopLinuxBrowserFrameViewLayout::GetWindowCaptionSpacing(
     spacing += nav_button_provider_->GetInterNavButtonSpacing();
   return spacing;
 }
-
-bool DesktopLinuxBrowserFrameViewLayout::ShouldDrawImageMirrored(
-    views::ImageButton* button,
-    ButtonAlignment alignment) const {
-  return false;
-}

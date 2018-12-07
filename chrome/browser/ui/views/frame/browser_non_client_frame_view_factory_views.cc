@@ -25,13 +25,11 @@
 
 namespace chrome {
 
-BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
+namespace {
+
+OpaqueBrowserFrameView* CreateOpaqueBrowserFrameView(
     BrowserFrame* frame,
     BrowserView* browser_view) {
-#if defined(OS_WIN)
-  if (frame->ShouldUseNativeFrame())
-    return new GlassBrowserFrameView(frame, browser_view);
-#endif
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   std::unique_ptr<views::NavButtonProvider> nav_button_provider;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -50,6 +48,21 @@ BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
 #endif
   return new OpaqueBrowserFrameView(frame, browser_view,
                                     new OpaqueBrowserFrameViewLayout());
+}
+
+}  // namespace
+
+BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
+    BrowserFrame* frame,
+    BrowserView* browser_view) {
+#if defined(OS_WIN)
+  if (frame->ShouldUseNativeFrame())
+    return new GlassBrowserFrameView(frame, browser_view);
+#endif
+  OpaqueBrowserFrameView* view =
+      CreateOpaqueBrowserFrameView(frame, browser_view);
+  view->InitViews();
+  return view;
 }
 
 }  // namespace chrome

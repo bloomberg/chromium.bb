@@ -131,7 +131,6 @@ class DesktopLinuxBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
     auto layout = std::make_unique<DesktopLinuxBrowserFrameViewLayout>(
         nav_button_provider_.get());
     layout->set_delegate(delegate_.get());
-    layout->set_extra_caption_y(0);
     layout->set_forced_window_caption_spacing_for_test(0);
     widget_ = new views::Widget;
     widget_->Init(CreateParams(views::Widget::InitParams::TYPE_POPUP));
