@@ -232,6 +232,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "autofill-always-show-server-cards-in-sync-transport",
+    "owners": [ "sebsg" ],
+    "expiry_milestone": 74
+  },
+  {
     "name": "autofill-cache-query-responses",
     "owners": [ "rogerm" ],
     "expiry_milestone": 72

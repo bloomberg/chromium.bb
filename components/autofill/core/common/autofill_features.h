@@ -24,6 +24,7 @@ namespace features {
 extern const base::Feature kAutofillAllowNonHttpActivation;
 extern const base::Feature kAutofillAddressNormalizer;
 extern const base::Feature kAutofillAlwaysFillAddresses;
+extern const base::Feature kAutofillAlwaysShowServerCardsInSyncTransport;
 extern const base::Feature kAutofillCacheQueryResponses;
 extern const base::Feature kAutofillCreateDataForTest;
 extern const base::Feature kAutofillCreditCardAblationExperiment;
