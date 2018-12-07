@@ -76,6 +76,9 @@ constexpr int kAnchorViewUserMenuHorizontalSpacingDp = 98;
 // Vertical spacing between the anchor view and user menu.
 constexpr int kAnchorViewUserMenuVerticalSpacingDp = 4;
 
+// The amount of time for bubble show/hide animation.
+constexpr int kBubbleAnimationDurationMs = 300;
+
 views::Label* CreateLabel(const base::string16& message, SkColor color) {
   views::Label* label = new views::Label(message, views::style::CONTEXT_LABEL,
                                          views::style::STYLE_PRIMARY);
@@ -183,7 +186,8 @@ class ViewWithAccessibleName : public views::View {
 class LoginUserMenuView : public LoginBaseBubbleView,
                           public views::ButtonListener {
  public:
-  LoginUserMenuView(const base::string16& username,
+  LoginUserMenuView(LoginBubble* bubble,
+                    const base::string16& username,
                     const base::string16& email,
                     user_manager::UserType type,
                     bool is_owner,
@@ -193,6 +197,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
                     base::OnceClosure on_remove_user_warning_shown,
                     base::OnceClosure on_remove_user_requested)
       : LoginBaseBubbleView(anchor_view),
+        bubble_(bubble),
         bubble_opener_(bubble_opener_),
         on_remove_user_warning_shown_(std::move(on_remove_user_warning_shown)),
         on_remove_user_requested_(std::move(on_remove_user_requested)) {
@@ -371,7 +376,9 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       return;
     }
 
-    Hide();
+    // Close the bubble before calling |on_remove_user_requested_|. |bubble_| is
+    // an unowned reference; |on_remove_user_requested_| may delete it.
+    bubble_->Close();
 
     if (on_remove_user_requested_)
       std::move(on_remove_user_requested_).Run();
@@ -384,6 +391,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
   views::Label* username_label() { return username_label_; }
 
  private:
+  LoginBubble* bubble_ = nullptr;
   LoginButton* bubble_opener_ = nullptr;
   base::OnceClosure on_remove_user_warning_shown_;
   base::OnceClosure on_remove_user_requested_;
@@ -436,9 +444,12 @@ views::Label* LoginBubble::TestApi::username_label() {
   return static_cast<LoginUserMenuView*>(bubble_view_)->username_label();
 }
 
-LoginBubble::LoginBubble() = default;
+LoginBubble::LoginBubble() {
+  Shell::Get()->AddPreTargetHandler(this);
+}
 
 LoginBubble::~LoginBubble() {
+  Shell::Get()->RemovePreTargetHandler(this);
   if (bubble_view_)
     CloseImmediately();
 }
@@ -454,7 +465,7 @@ void LoginBubble::ShowErrorBubble(views::View* content,
   bubble_view_ = new LoginErrorBubbleView(content, anchor_view, menu_container,
                                           show_persistently);
 
-  bubble_view_->Show();
+  Show();
 }
 
 void LoginBubble::ShowUserMenu(const base::string16& username,
@@ -470,13 +481,13 @@ void LoginBubble::ShowUserMenu(const base::string16& username,
     CloseImmediately();
 
   bubble_view_ = new LoginUserMenuView(
-      username, email, type, is_owner, anchor_view, bubble_opener,
+      this, username, email, type, is_owner, anchor_view, bubble_opener,
       show_remove_user, std::move(on_remove_user_warning_shown),
       std::move(on_remove_user_requested));
   // Prevent focus from going into |bubble_view_|.
   bool had_focus = bubble_view_->GetBubbleOpener() &&
                    bubble_view_->GetBubbleOpener()->HasFocus();
-  bubble_view_->Show();
+  Show();
   if (had_focus) {
     // Try to focus the bubble view only if the bubble opener was focused.
     bubble_view_->RequestFocus();
@@ -489,7 +500,7 @@ void LoginBubble::ShowTooltip(const base::string16& message,
     CloseImmediately();
 
   bubble_view_ = new LoginTooltipView(message, anchor_view);
-  bubble_view_->Show();
+  Show();
 }
 
 void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
@@ -501,7 +512,7 @@ void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
 
   // Transfer the ownership of |menu| to bubble widget.
   bubble_view_ = menu;
-  bubble_view_->Show();
+  Show();
 
   if (had_focus) {
     // Try to focus the bubble view only if the bubble opener was focused.
@@ -510,8 +521,7 @@ void LoginBubble::ShowSelectionMenu(LoginMenuView* menu) {
 }
 
 void LoginBubble::Close() {
-  if (bubble_view_)
-    bubble_view_->Hide();
+  ScheduleAnimation(false /*visible*/);
 }
 
 void LoginBubble::CloseImmediately() {
@@ -523,12 +533,193 @@ bool LoginBubble::IsVisible() {
   return bubble_view_ && bubble_view_->GetWidget()->IsVisible();
 }
 
+void LoginBubble::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(bubble_view_->GetWidget(), widget);
+  Reset(true /*widget_already_closing*/);
+}
+
+void LoginBubble::OnWidgetDestroying(views::Widget* widget) {
+  OnWidgetClosing(widget);
+}
+
+void LoginBubble::OnWidgetBoundsChanged(views::Widget* widget,
+                                        const gfx::Rect& new_bounds) {
+  EnsureBubbleInScreen();
+}
+
+void LoginBubble::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessPressedEvent(event->AsLocatedEvent());
+}
+
+void LoginBubble::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->type() == ui::ET_GESTURE_TAP ||
+      event->type() == ui::ET_GESTURE_TAP_DOWN) {
+    ProcessPressedEvent(event->AsLocatedEvent());
+  }
+}
+
+void LoginBubble::OnKeyEvent(ui::KeyEvent* event) {
+  // Ignore VKEY_PROCESSKEY; it is an IME event saying that the key has been
+  // processed. This event is also generated in tablet mode, ie, after
+  // submitting a password a VKEY_PROCESSKEY event is generated. If we treat
+  // that as a normal key event the password bubble will be dismissed
+  // immediately after submitting.
+  if (!bubble_view_ || event->type() != ui::ET_KEY_PRESSED ||
+      event->key_code() == ui::VKEY_PROCESSKEY) {
+    return;
+  }
+
+  // If current focus view is the button view, don't process the event here,
+  // let the button logic handle the event and determine show/hide behavior.
+  if (bubble_view_->GetBubbleOpener() &&
+      bubble_view_->GetBubbleOpener()->HasFocus())
+    return;
+
+  // If |bubble_view_| is interactive do not close it.
+  if (bubble_view_->GetWidget()->IsActive())
+    return;
+
+  if (!bubble_view_->IsPersistent()) {
+    Close();
+  }
+}
+
+void LoginBubble::OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) {
+  if (!bubble_view_)
+    return;
+
+  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
+  if (!is_visible_)
+    CloseImmediately();
+}
+
+void LoginBubble::OnWindowFocused(aura::Window* gained_focus,
+                                  aura::Window* lost_focus) {
+  if (!bubble_view_ || !IsVisible())
+    return;
+
+  aura::Window* bubble_window = bubble_view_->GetWidget()->GetNativeView();
+  // Bubble window has the focus, do nothing.
+  if (gained_focus && bubble_window->Contains(gained_focus))
+    return;
+
+  if (!bubble_view_->IsPersistent())
+    Close();
+}
+
+void LoginBubble::Show() {
+  DCHECK(bubble_view_);
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
+  EnsureBubbleInScreen();
+  widget->ShowInactive();
+  widget->AddObserver(this);
+  widget->StackAtTop();
+  aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
+
+  ScheduleAnimation(true /*visible*/);
+
+  // Fire an alert so ChromeVox will read the contents of the bubble.
+  bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert,
+                                         true /*send_native_event*/);
+}
+
+void LoginBubble::ProcessPressedEvent(const ui::LocatedEvent* event) {
+  if (!bubble_view_)
+    return;
+
+  // Don't process event inside the bubble.
+  gfx::Point screen_location = event->location();
+  ::wm::ConvertPointToScreen(static_cast<aura::Window*>(event->target()),
+                             &screen_location);
+  gfx::Rect bounds = bubble_view_->GetWidget()->GetWindowBoundsInScreen();
+  if (bounds.Contains(screen_location))
+    return;
+
+  // If the user clicks on the button view, don't process the event here,
+  // let the button logic handle the event and determine show/hide behavior.
+  if (bubble_view_->GetBubbleOpener()) {
+    gfx::Rect bubble_opener_bounds =
+        bubble_view_->GetBubbleOpener()->GetBoundsInScreen();
+    if (bubble_opener_bounds.Contains(screen_location))
+      return;
+  }
+
+  if (!bubble_view_->IsPersistent())
+    Close();
+}
+
+void LoginBubble::ScheduleAnimation(bool visible) {
+  if (!bubble_view_ || is_visible_ == visible)
+    return;
+
+  if (bubble_view_->GetBubbleOpener()) {
+    bubble_view_->GetBubbleOpener()->AnimateInkDrop(
+        visible ? views::InkDropState::ACTIVATED
+                : views::InkDropState::DEACTIVATED,
+        nullptr /*event*/);
+  }
+
+  ui::Layer* layer = bubble_view_->layer();
+  layer->GetAnimator()->StopAnimating();
+  is_visible_ = visible;
+
+  float opacity_start = 0.0f;
+  float opacity_end = 1.0f;
+  if (!is_visible_)
+    std::swap(opacity_start, opacity_end);
+
+  layer->GetAnimator()->AddObserver(this);
+  layer->SetOpacity(opacity_start);
+  {
+    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kBubbleAnimationDurationMs));
+    settings.SetTweenType(is_visible_ ? gfx::Tween::EASE_OUT
+                                      : gfx::Tween::EASE_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    layer->SetOpacity(opacity_end);
+  }
+}
+
 void LoginBubble::Reset(bool widget_already_closing) {
   DCHECK(bubble_view_);
+  aura::client::GetFocusClient(bubble_view_->GetWidget()->GetNativeView())
+      ->RemoveObserver(this);
+  bubble_view_->GetWidget()->RemoveObserver(this);
+  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
 
   if (!widget_already_closing)
     bubble_view_->GetWidget()->Close();
+  is_visible_ = false;
   bubble_view_ = nullptr;
+}
+
+void LoginBubble::EnsureBubbleInScreen() {
+  DCHECK(bubble_view_);
+  DCHECK(bubble_view_->GetWidget());
+
+  const gfx::Rect view_bounds = bubble_view_->GetBoundsInScreen();
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(
+              bubble_view_->GetWidget()->GetNativeWindow())
+          .work_area();
+
+  int horizontal_offset = 0;
+
+  // If the widget extends past the right side of the screen, make it go to
+  // the left instead.
+  if (work_area.right() < view_bounds.right()) {
+    horizontal_offset = -view_bounds.width();
+  }
+
+  bubble_view_->set_anchor_view_insets(
+      bubble_view_->anchor_view_insets().Offset(
+          gfx::Vector2d(horizontal_offset, 0)));
+  bubble_view_->OnAnchorBoundsChanged();
 }
 
 }  // namespace ash
