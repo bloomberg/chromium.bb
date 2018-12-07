@@ -518,12 +518,10 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   chrome_feature_list_creator_->CreateFeatureList();
   PostFieldTrialInitialization();
 
-  // Initializes the resouce bundle and determines the locale.
+  // Initializes the resource bundle and determines the locale.
   std::string actual_locale =
       LoadLocalState(chrome_feature_list_creator_.get(), is_running_tests);
   chrome_feature_list_creator_->SetApplicationLocale(actual_locale);
-
-  tracing_sampler_profiler_->OnMessageLoopStarted();
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {

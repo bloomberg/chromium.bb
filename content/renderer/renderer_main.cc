@@ -214,7 +214,6 @@ int RendererMain(const MainFunctionParams& parameters) {
     // Setup tracing sampler profiler as early as possible.
     auto tracing_sampler_profiler =
         tracing::TracingSamplerProfiler::CreateOnMainThread();
-    tracing_sampler_profiler->OnMessageLoopStarted();
 
     if (need_sandbox)
       should_run_loop = platform.EnableSandbox();
