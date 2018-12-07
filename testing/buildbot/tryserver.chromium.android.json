@@ -94,7 +94,7 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug",
+          "--release",
           "--android",
           "--disable-breakpad",
           "--additional-driver-flag=--use-gpu-in-tests"

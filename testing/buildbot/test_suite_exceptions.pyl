@@ -1578,7 +1578,7 @@
       # tryserver.chromium.android
       'android_blink_rel': {
         'args': [
-          '--debug',
+          '--release',
           '--android',
           # TODO(crbug.com/912120): Breakpad was entirely disabled on
           # Android. Remove this when it no longer affects Android crash
