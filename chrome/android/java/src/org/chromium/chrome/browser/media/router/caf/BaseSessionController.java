@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.media.router.caf;
 
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.framework.CastSession;
@@ -25,19 +24,16 @@ import java.util.List;
  *
  * Has persistent lifecycle and always attaches itself to the current {@link CastSession}.
  */
-public class BaseSessionController {
+public abstract class BaseSessionController {
     private static final String TAG = "BaseSessionCtrl";
 
     private CastSession mCastSession;
     private final CafBaseMediaRouteProvider mProvider;
     private CreateRouteRequestInfo mRouteCreationInfo;
-    @VisibleForTesting
-    CafNotificationController mNotificationController;
     private final RemoteMediaClient.Callback mRemoteMediaClientCallback;
 
     public BaseSessionController(CafBaseMediaRouteProvider provider) {
         mProvider = provider;
-        mNotificationController = new CafNotificationController(this);
         mRemoteMediaClientCallback = new RemoteMediaClientCallback();
     }
 
@@ -72,9 +68,7 @@ public class BaseSessionController {
         return isConnected() ? mCastSession.getRemoteMediaClient() : null;
     }
 
-    public CafNotificationController getNotificationController() {
-        return mNotificationController;
-    }
+    public abstract BaseNotificationController getNotificationController();
 
     public void endSession() {
         CastUtils.getCastContext().getSessionManager().endCurrentSession(/* stopCasting= */ true);
@@ -133,12 +127,12 @@ public class BaseSessionController {
 
     /** Called when session started. */
     public void onSessionStarted() {
-        mNotificationController.onSessionStarted();
+        getNotificationController().onSessionStarted();
     }
 
     /** Called when session ended. */
     public void onSessionEnded() {
-        mNotificationController.onSessionEnded();
+        getNotificationController().onSessionEnded();
         mRouteCreationInfo = null;
     }
 
@@ -172,11 +166,11 @@ public class BaseSessionController {
     }
 
     protected void onStatusUpdated() {
-        mNotificationController.onStatusUpdated();
+        getNotificationController().onStatusUpdated();
     }
 
     protected void onMetadataUpdated() {
-        mNotificationController.onMetadataUpdated();
+        getNotificationController().onMetadataUpdated();
     }
 
     @Nullable

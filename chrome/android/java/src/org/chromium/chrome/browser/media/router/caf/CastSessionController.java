@@ -25,10 +25,12 @@ public class CastSessionController extends BaseSessionController {
 
     private List<String> mNamespaces = new ArrayList<String>();
     private CastListener mCastListener;
+    private CafNotificationController mNotificationController;
 
     public CastSessionController(CafBaseMediaRouteProvider provider) {
         super(provider);
         mCastListener = new CastListener();
+        mNotificationController = new CafNotificationController(this);
     }
 
     public List<String> getNamespaces() {
@@ -61,6 +63,11 @@ public class CastSessionController extends BaseSessionController {
     public void onSessionEnded() {
         getMessageHandler().onSessionEnded();
         super.onSessionEnded();
+    }
+
+    @Override
+    public BaseNotificationController getNotificationController() {
+        return mNotificationController;
     }
 
     private class CastListener extends Cast.Listener {
