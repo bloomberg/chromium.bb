@@ -2347,7 +2347,8 @@
       },
       {
         "args": [
-          "--site-per-process"
+          "--site-per-process",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/site_isolation_android.content_browsertests.filter"
         ],
         "name": "site_per_process_content_browsertests",
         "swarming": {
