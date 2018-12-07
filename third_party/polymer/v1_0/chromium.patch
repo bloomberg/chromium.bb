@@ -214,6 +214,7 @@ index 7306c651407e..9c88699a3924 100644
       * @implements {Polymer_ElementMixin}
       * @implements {Polymer_GestureEventListeners}
 -     * @implements {Polymer_DirMixin}
+      * @private
       */
 -    const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
 +    const legacyElementBase = Polymer.GestureEventListeners(Polymer.ElementMixin(base));

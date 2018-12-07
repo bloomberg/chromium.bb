@@ -252,7 +252,7 @@ Tree link: https://github.com/Polymer/polymer/tree/v1.11.2
 
 Name: polymer
 Repository: https://github.com/Polymer/polymer.git
-Tree: v2.6.0
-Revision: 00d510f17a19b5b2ffed2fab5c2220b562b69b4f
-Tree link: https://github.com/Polymer/polymer/tree/v2.6.0
+Tree: v2.7.0
+Revision: 176bc8fb41da317b1b2fa647227e6b1fd47ced11
+Tree link: https://github.com/Polymer/polymer/tree/v2.7.0
 
