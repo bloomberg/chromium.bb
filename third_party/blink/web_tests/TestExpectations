@@ -1918,6 +1918,8 @@ crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.htm
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Pass Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
+# Flaky timeout: https://crbug.com/912748
+crbug.com/912748 external/wpt/css/filter-effects/backdrop-filter-plus-filter.html [ Skip ]
 # ====== Backdrop-filter related tests END ======
 
 
