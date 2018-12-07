@@ -11,6 +11,8 @@ source_set("file_transfer") {
   ]
 
   sources = [
+    "buffered_file_writer.cc",
+    "buffered_file_writer.h",
     "local_file_operations.cc",
   ]
 
@@ -24,6 +26,9 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "buffered_file_writer_unittest.cc",
+    "fake_file_operations.cc",
+    "fake_file_operations.h",
     "local_file_operations_unittest.cc",
   ]
 
