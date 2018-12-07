@@ -827,7 +827,9 @@ void AssistantManagerServiceImpl::PostInitAssistant(
 
   std::move(post_init_callback).Run();
   UpdateDeviceSettings();
-  SyncSpeakerIdEnrollmentStatus();
+
+  if (base::FeatureList::IsEnabled(assistant::features::kAssistantVoiceMatch))
+    SyncSpeakerIdEnrollmentStatus();
 }
 
 void AssistantManagerServiceImpl::SyncSpeakerIdEnrollmentStatus() {
