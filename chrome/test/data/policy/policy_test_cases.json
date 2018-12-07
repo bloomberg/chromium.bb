@@ -4125,6 +4125,28 @@
     ]
   },
 
+  "ParentAccessCodeConfig": {
+    "os": ["chromeos"],
+    "test_policy": { "ParentAccessCodeConfig": {
+      "current_config": {
+        "shared_secret": "oOA9nX02LdhYdOzwMsGof+QA3wUKP4YMNlk9S/W3o+w=",
+        "access_code_ttl": 600,
+        "clock_drift_tolerance": 300
+      },
+      "future_config": {
+        "shared_secret": "KMsoIjnpvcWmiU1GHchp2blR96mNyJwS",
+        "access_code_ttl": 600,
+        "clock_drift_tolerance": 300
+      },
+      "old_configs": [{
+        "shared_secret": "sTr6jqMTJGCbLhWI5plFTQb/VsqxwX2Q",
+        "access_code_ttl": 600,
+        "clock_drift_tolerance": 300
+      }]
+    }},
+    "pref_mappings": [{ "pref": "child_user.parent_access_code.config" }]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

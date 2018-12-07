@@ -13976,6 +13976,84 @@
 
       The policy should be specified as a string that expresses the URL and hash in the JSON format.''',
     },
+    {
+      'name': 'ParentAccessCodeConfig',
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'current_config': {
+            'id': 'Config',
+            'type': 'object',
+            'description': 'Configuration used to generate and verify Parent Access Code.',
+            'properties': {
+              'shared_secret': {
+                'type': 'string',
+                'description': 'Secret shared between child and parent devices.'
+              },
+              'access_code_ttl': {
+                'type': 'integer',
+                'minimum': 30,
+                'maximum': 3600,
+                'description': 'Time that access code is valid for (in seconds).'
+              },
+              'clock_drift_tolerance': {
+                'type': 'integer',
+                'minimum': 0,
+                'maximum': 1800,
+                'description': 'The allowed difference between the clock on child and parent devices (in seconds).'
+              }
+            }
+          },
+          'future_config': {
+            '$ref': 'Config',
+          },
+          'old_configs': {
+            'type': 'array',
+            'items': { '$ref': 'Config'},
+          }
+        },
+      },
+      'sensitiveValue': True,
+      'supported_on': ['chrome_os:73-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': {
+        'current_config': {
+          'shared_secret': 'oOA9nX02LdhYdOzwMsGof+QA3wUKP4YMNlk9S/W3o+w=',
+          'access_code_ttl': 600,
+          'clock_drift_tolerance': 300
+        },
+        'future_config': {
+          'shared_secret': 'KMsoIjnpvcWmiU1GHchp2blR96mNyJwS',
+          'access_code_ttl': 600,
+          'clock_drift_tolerance': 300
+        },
+        'old_configs': [{
+          'shared_secret': 'sTr6jqMTJGCbLhWI5plFTQb/VsqxwX2Q',
+          'access_code_ttl': 600,
+          'clock_drift_tolerance': 300
+        }],
+      },
+      'id': 507,
+      'caption': '''Parent Access Code Configuration''',
+      'tags': [],
+      'desc': '''This policy specifies configuration that is used to generate and verify Parent Access Code.
+
+      |current_config| is always used for generating access code and should be used for validating access code only when it cannot be validated with |future_config|.
+      |future_config| is the primary config used for validating access code.
+      |old_configs| should be used for validating access code only when it cannot be validated with |future_config| nor |current_config|.
+
+      The expected way of using this policy is to gradually rotate access code configuration. New configuration is always put into |future_config| and at the same
+      time the existing value is moved into |current_config|. |current_config|'s previous values are moved into |old_configs| and removed after rotation cycle is finished.
+
+      This policy applies only to child user.
+      When this policy is set Parent Access Code can be verified on child user's device.
+      When this policy is unset it is not possible to verify Parent Access Code on child user's device.'''
+    },
+
   ],
 
   'messages': {
@@ -14117,5 +14195,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 506,
+  'highest_id_currently_used': 507,
 }

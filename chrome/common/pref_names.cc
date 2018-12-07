@@ -889,6 +889,10 @@ const char kLastChildScreenTimeReset[] = "last_child_screen_time_reset";
 const char kNTLMShareAuthenticationEnabled[] =
     "network_file_shares.ntlm_share_authentication.enabled";
 
+// Dictionary pref containing configuration used to verify Parent Access Code.
+// Controlled by ParentAccessCodeConfig policy.
+const char kParentAccessCodeConfig[] = "child_user.parent_access_code.config";
+
 // List of preconfigured network file shares.
 const char kNetworkFileSharesPreconfiguredShares[] =
     "network_file_shares.preconfigured_shares";
