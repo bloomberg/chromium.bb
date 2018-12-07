@@ -266,6 +266,7 @@ void View::ReorderChildView(View* view, int index) {
     observer.OnChildViewReordered(this, view);
 
   ReorderLayers();
+  InvalidateLayout();
 }
 
 void View::RemoveChildView(View* view) {
@@ -439,6 +440,12 @@ int View::GetHeightForWidth(int w) const {
 }
 
 void View::SetVisible(bool visible) {
+  if (parent_) {
+    LayoutManager* const layout_manager = parent_->GetLayoutManager();
+    if (layout_manager && layout_manager->view_setting_visibility_on_ != this)
+      layout_manager->ViewVisibilitySet(parent_, this, visible);
+  }
+
   if (visible != visible_) {
     // If the View is currently visible, schedule paint to refresh parent.
     // TODO(beng): not sure we should be doing this if we have a layer.

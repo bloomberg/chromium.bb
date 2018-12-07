@@ -4,6 +4,7 @@
 
 #include "ui/views/layout/layout_manager.h"
 
+#include "base/auto_reset.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -37,6 +38,14 @@ void LayoutManager::ViewAdded(View* host, View* view) {
 }
 
 void LayoutManager::ViewRemoved(View* host, View* view) {
+}
+
+void LayoutManager::ViewVisibilitySet(View* host, View* view, bool visible) {}
+
+void LayoutManager::SetViewVisibility(View* view, bool visible) {
+  DCHECK_EQ(view->parent()->GetLayoutManager(), this);
+  base::AutoReset<View*> setter(&view_setting_visibility_on_, view);
+  view->SetVisible(visible);
 }
 
 }  // namespace views

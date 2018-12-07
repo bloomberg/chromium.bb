@@ -71,6 +71,20 @@ class VIEWS_EXPORT LayoutManager {
   // been installed on. This function allows the LayoutManager to cleanup any
   // state it has kept specific to a View.
   virtual void ViewRemoved(View* host, View* view);
+
+  // Called when View::SetVisible() is called by external code. Classes derived
+  // from LayoutManager can call SetViewVisibility() below to avoid triggering
+  // this event.
+  virtual void ViewVisibilitySet(View* host, View* view, bool visible);
+
+ protected:
+  // Sets the visibility of a view without triggering ViewVisibilitySet().
+  // During Layout(), use this method instead of View::SetVisibility().
+  void SetViewVisibility(View* view, bool visible);
+
+ private:
+  friend class views::View;
+  View* view_setting_visibility_on_ = nullptr;
 };
 
 }  // namespace views
