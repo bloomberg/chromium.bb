@@ -225,7 +225,7 @@ gfx::NativeViewAccessible ViewAccessibility::GetNativeObject() {
 gfx::NativeViewAccessible ViewAccessibility::GetFocusedDescendant() {
   if (focused_virtual_child_)
     return focused_virtual_child_->GetNativeObject();
-  return GetNativeObject();
+  return view_->GetNativeViewAccessible();
 }
 
 }  // namespace views
