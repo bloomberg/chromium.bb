@@ -15,7 +15,21 @@
 
 namespace sync_sessions {
 
+const base::Feature kDeferRecyclingOfSyncTabNodesIfUnsynced{
+    "DeferRecyclingOfSyncTabNodesIfUnsynced",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
+
+// Maximum time we allow a local tab stay unmapped (i.e. closed) but not freed
+// due to data not having been committed yet. After that time, the data will
+// be dropped.
+constexpr base::TimeDelta kMaxUnmappedButUnsyncedLocalTabAge =
+    base::TimeDelta::FromDays(1);
+// This is a generous cap to avoid issues with situations like sync being in
+// error state (e.g. auth error) during which many tabs could be opened and
+// closed, and still the information would not be committed.
+constexpr int kMaxUnmappedButUnsyncedLocalTabCount = 20;
 
 // Helper for iterating through all tabs within a window, and all navigations
 // within a tab, to find if there's a valid syncable url.
@@ -319,7 +333,10 @@ std::vector<const SyncedSession*> SyncedSessionTracker::LookupSessions(
   return sessions;
 }
 
-void SyncedSessionTracker::CleanupSessionImpl(const std::string& session_tag) {
+void SyncedSessionTracker::CleanupSessionImpl(
+    const std::string& session_tag,
+    const base::RepeatingCallback<bool(int /*tab_node_id*/)>&
+        is_tab_node_unsynced_cb) {
   TrackedSession* session = LookupTrackedSession(session_tag);
   if (!session)
     return;
@@ -328,13 +345,36 @@ void SyncedSessionTracker::CleanupSessionImpl(const std::string& session_tag) {
     session->synced_window_map.erase(window_pair.first);
   session->unmapped_windows.clear();
 
-  for (const auto& tab_pair : session->unmapped_tabs) {
-    session->synced_tab_map.erase(tab_pair.first);
+  int num_unmapped_and_unsynced = 0;
+  auto tab_it = session->unmapped_tabs.begin();
+  while (tab_it != session->unmapped_tabs.end()) {
+    SessionID tab_id = tab_it->first;
 
-    if (session_tag == local_session_tag_)
-      session->tab_node_pool.FreeTab(tab_pair.first);
+    if (session_tag == local_session_tag_) {
+      int tab_node_id = session->tab_node_pool.GetTabNodeIdFromTabId(tab_id);
+      const base::TimeDelta time_since_last_modified =
+          base::Time::Now() - tab_it->second->timestamp;
+
+      if ((time_since_last_modified < kMaxUnmappedButUnsyncedLocalTabAge) &&
+          num_unmapped_and_unsynced < kMaxUnmappedButUnsyncedLocalTabCount &&
+          is_tab_node_unsynced_cb.Run(tab_node_id) &&
+          base::FeatureList::IsEnabled(
+              kDeferRecyclingOfSyncTabNodesIfUnsynced)) {
+        // Our caller has decided that this tab node cannot be reused at this
+        // point because there are pending changes to be committed that would
+        // otherwise be lost). Hence, it stays unmapped but we do not free the
+        // tab node for now (until future retries).
+        ++tab_it;
+        ++num_unmapped_and_unsynced;
+        continue;
+      }
+
+      session->tab_node_pool.FreeTab(tab_id);
+    }
+
+    session->synced_tab_map.erase(tab_id);
+    tab_it = session->unmapped_tabs.erase(tab_it);
   }
-  session->unmapped_tabs.clear();
 }
 
 bool SyncedSessionTracker::IsTabUnmappedForTesting(SessionID tab_id) {
@@ -490,14 +530,23 @@ sessions::SessionTab* SyncedSessionTracker::GetTab(
 }
 
 void SyncedSessionTracker::CleanupSession(const std::string& session_tag) {
-  CleanupSessionImpl(session_tag);
+  DCHECK_NE(session_tag, local_session_tag_);
+  // |is_tab_node_unsynced_cb| is only used for the local session, not needed
+  // here.
+  CleanupSessionImpl(
+      session_tag,
+      /*=is_tab_node_unsynced_cb=*/base::RepeatingCallback<bool(int)>());
 }
 
-void SyncedSessionTracker::CleanupLocalTabs(std::set<int>* deleted_node_ids) {
+std::set<int> SyncedSessionTracker::CleanupLocalTabs(
+    const base::RepeatingCallback<bool(int /*tab_node_id*/)>&
+        is_tab_node_unsynced_cb) {
   DCHECK(!local_session_tag_.empty());
   TrackedSession* session = GetTrackedSession(local_session_tag_);
-  CleanupSessionImpl(local_session_tag_);
-  session->tab_node_pool.CleanupTabNodes(deleted_node_ids);
+  CleanupSessionImpl(local_session_tag_, is_tab_node_unsynced_cb);
+  std::set<int> deleted_node_ids;
+  session->tab_node_pool.CleanupTabNodes(&deleted_node_ids);
+  return deleted_node_ids;
 }
 
 int SyncedSessionTracker::LookupTabNodeFromTabId(const std::string& session_tag,
@@ -647,8 +696,11 @@ void UpdateTrackerWithSpecifics(const sync_pb::SessionSpecifics& specifics,
     PopulateSyncedSessionFromSpecifics(session_tag, header, modification_time,
                                        session, tracker);
 
-    // Delete any closed windows and unused tabs as necessary.
-    tracker->CleanupSession(session_tag);
+    // Delete any closed windows and unused tabs as necessary. We exclude the
+    // local session here because it should be cleaned up explicitly with
+    // CleanupLocalTabs().
+    if (session_tag != tracker->GetLocalSessionTag())
+      tracker->CleanupSession(session_tag);
   } else if (specifics.has_tab()) {
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID tab_id = SessionID::FromSerializedValue(tab_s.tab_id());

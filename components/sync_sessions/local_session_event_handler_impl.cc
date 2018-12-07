@@ -91,6 +91,9 @@ LocalSessionEventHandlerImpl::~LocalSessionEventHandlerImpl() {}
 
 void LocalSessionEventHandlerImpl::OnSessionRestoreComplete() {
   std::unique_ptr<WriteBatch> batch = delegate_->CreateLocalSessionWriteBatch();
+  // The initial state of the tracker may contain tabs that are unmmapped but
+  // haven't been marked as free yet.
+  CleanupLocalTabs(batch.get());
   AssociateWindows(RELOAD_TABS, batch.get());
   batch->Commit();
 }
@@ -99,6 +102,16 @@ sync_pb::SessionTab
 LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegateForTest(
     const SyncedTabDelegate& tab_delegate) const {
   return GetTabSpecificsFromDelegate(tab_delegate);
+}
+
+void LocalSessionEventHandlerImpl::CleanupLocalTabs(WriteBatch* batch) {
+  std::set<int> deleted_tab_node_ids =
+      session_tracker_->CleanupLocalTabs(base::BindRepeating(
+          &Delegate::IsTabNodeUnsynced, base::Unretained(delegate_)));
+
+  for (int tab_node_id : deleted_tab_node_ids) {
+    batch->Delete(tab_node_id);
+  }
 }
 
 void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
@@ -219,11 +232,7 @@ void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
     }
   }
 
-  std::set<int> deleted_tab_node_ids;
-  session_tracker_->CleanupLocalTabs(&deleted_tab_node_ids);
-  for (int tab_node_id : deleted_tab_node_ids) {
-    batch->Delete(tab_node_id);
-  }
+  CleanupLocalTabs(batch);
 
   // Always update the header.  Sync takes care of dropping this update
   // if the entity specifics are identical (i.e windows, client name did

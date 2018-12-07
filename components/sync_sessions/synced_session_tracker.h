@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
@@ -26,6 +27,10 @@ class SessionSpecifics;
 namespace sync_sessions {
 
 class SyncSessionsClient;
+
+// TODO(crbug.com/882489): Remove feature toggle during code cleanup when a
+// satisfying solution is found for closed tabs.
+extern const base::Feature kDeferRecyclingOfSyncTabNodesIfUnsynced;
 
 // Class to manage synced sessions. The tracker will own all SyncedSession
 // and SyncedSessionTab objects it creates, and deletes them appropriately on
@@ -172,10 +177,15 @@ class SyncedSessionTracker {
   // Gets the session tag previously set with InitLocalSession().
   const std::string& GetLocalSessionTag() const;
 
-  // Similar to CleanupSession() but also triggers garbage collection of free
-  // tab nodes and consequently fills |deleted_node_ids| with the set of
-  // locally free tab nodes to be deleted.
-  void CleanupLocalTabs(std::set<int>* deleted_node_ids);
+  // Similar to CleanupSession() but also marks unmapped tabs (i.e. closed ones)
+  // as free tab nodes (which can be reused by future tabs) and triggers garbage
+  // collection (i.e. deletion) of free tab nodes. It returns the set of locally
+  // free tab nodes to be deleted. |is_tab_node_unsynced_cb| allows callers to
+  // prevent tab nodes from being "free" (and hence reusable), which in practice
+  // is useful to avoid overriding data that hasn't been synced yet.
+  std::set<int> CleanupLocalTabs(
+      const base::RepeatingCallback<bool(int /*tab_node_id*/)>&
+          is_tab_node_unsynced_cb);
 
   // Returns the tab node ID for |tab_id| if an existing tab node was found, or
   // kInvalidTabNodeID otherwise.
@@ -265,7 +275,10 @@ class SyncedSessionTracker {
       bool exclude_local_session) const;
 
   // Implementation of CleanupSession()/CleanupLocalTabs().
-  void CleanupSessionImpl(const std::string& session_tag);
+  void CleanupSessionImpl(
+      const std::string& session_tag,
+      const base::RepeatingCallback<bool(int /*tab_node_id*/)>&
+          is_tab_node_unsynced_cb);
 
   // The client of the sync sessions datatype.
   SyncSessionsClient* const sessions_client_;
