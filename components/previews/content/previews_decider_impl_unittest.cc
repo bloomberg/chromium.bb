@@ -855,6 +855,10 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
         1);
+
+    // Expect no triggered ECT logged.
+    histogram_tester.ExpectTotalCount(
+        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 
   // Now verify preview for whitelisted url.
@@ -868,6 +872,11 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
 
     // Expect no eligibility logging.
     histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+
+    // Triggered ECT logged.
+    histogram_tester.ExpectUniqueSample(
+        "Previews.Triggered.EffectiveConnectionType.NoScript",
+        static_cast<int>(net::EFFECTIVE_CONNECTION_TYPE_2G), 1);
   }
 
   // Verify preview not allowed for whitelisted url when network is not slow.
@@ -882,6 +891,10 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
     histogram_tester.ExpectUniqueSample(
         "Previews.EligibilityReason.NoScript",
         static_cast<int>(PreviewsEligibilityReason::NETWORK_NOT_SLOW), 1);
+
+    // Expect no triggered ECT logged.
+    histogram_tester.ExpectTotalCount(
+        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 
   // Verify preview not allowed for whitelisted url for unknown network quality.
@@ -898,6 +911,34 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
         static_cast<int>(
             PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
         1);
+
+    // Expect no triggered ECT logged.
+    histogram_tester.ExpectTotalCount(
+        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
+  }
+
+  // Verify preview not allowed for session limited ECT threshold.
+  {
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering,
+        {{"session_max_ect_trigger", "Slow-2G"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::NOSCRIPT));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.NoScript",
+        static_cast<int>(
+            PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
+        1);
+
+    // Expect no triggered ECT logged.
+    histogram_tester.ExpectTotalCount(
+        "Previews.Triggered.EffectiveConnectionType.NoScript", 0);
   }
 }
 
@@ -1124,6 +1165,30 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
         "Previews.EligibilityReason.ResourceLoadingHints",
         static_cast<int>(
             PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE),
+        1);
+
+    // Expect no triggered ECT logged.
+    histogram_tester.ExpectTotalCount(
+        "Previews.Triggered.EffectiveConnectionType.ResourceLoadingHints", 0);
+  }
+
+  // Verify preview not allowed for session limited ECT threshold.
+  {
+    base::test::ScopedFeatureList nested_scoped_list;
+    nested_scoped_list.InitAndEnableFeatureWithParameters(
+        features::kSlowPageTriggering,
+        {{"session_max_ect_trigger", "Offline"}});
+    base::HistogramTester histogram_tester;
+    PreviewsUserData user_data(kDefaultPageId);
+    user_data.set_navigation_ect(net::EFFECTIVE_CONNECTION_TYPE_2G);
+    EXPECT_FALSE(previews_decider_impl()->ShouldCommitPreview(
+        &user_data, GURL("https://whitelisted.example.com"),
+        PreviewsType::RESOURCE_LOADING_HINTS));
+
+    histogram_tester.ExpectUniqueSample(
+        "Previews.EligibilityReason.ResourceLoadingHints",
+        static_cast<int>(
+            PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION),
         1);
 
     // Expect no triggered ECT logged.

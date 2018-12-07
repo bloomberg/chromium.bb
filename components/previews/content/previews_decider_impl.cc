@@ -474,6 +474,11 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     return PreviewsEligibilityReason::NETWORK_NOT_SLOW;
   }
   passed_reasons->push_back(PreviewsEligibilityReason::NETWORK_NOT_SLOW);
+  if (previews_data->navigation_ect() > params::GetSessionMaxECTThreshold()) {
+    return PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION;
+  }
+  passed_reasons->push_back(
+      PreviewsEligibilityReason::NETWORK_NOT_SLOW_FOR_SESSION);
   LogTriggeredPreviewEffectiveConnectionType(previews_data->navigation_ect(),
                                              type);
 

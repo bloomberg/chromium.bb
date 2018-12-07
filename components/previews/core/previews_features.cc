@@ -90,5 +90,9 @@ const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
 const base::Feature kAndroidOmniboxPreviewsBadge{
     "AndroidOmniboxPreviewsBadge", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Provides slow page triggering parameters.
+const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews
