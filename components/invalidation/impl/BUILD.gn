@@ -291,10 +291,16 @@ if (is_android) {
       "$proto_path/serialized_invalidation.proto",
     ]
   }
+  android_resources("javatests__resources") {
+    testonly = true
+    resource_dirs = []
+    android_manifest = "android/javatests/AndroidManifest.xml"
+  }
   android_library("javatests") {
     testonly = true
     deps = [
       ":java",
+      ":javatests__resources",
       "//base:base_java",
       "//base:base_java_test_support",
       "//components/signin/core/browser/android:java",
