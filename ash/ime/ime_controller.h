@@ -71,7 +71,7 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
 
   // Wrappers for mojom::ImeControllerClient methods.
   void SwitchToNextIme();
-  void SwitchToPreviousIme();
+  void SwitchToLastUsedIme();
   void SwitchImeById(const std::string& ime_id, bool show_message);
   void ActivateImeMenuItem(const std::string& key);
   void SetCapsLockEnabled(bool caps_enabled);

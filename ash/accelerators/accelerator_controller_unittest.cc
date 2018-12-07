@@ -1364,7 +1364,8 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
   // Add below the new accelerators that replaced the deprecated ones (if any).
   const AcceleratorData kNewAccelerators[] = {
       {true, ui::VKEY_L, ui::EF_COMMAND_DOWN, LOCK_SCREEN},
-      {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN, NEXT_IME},
+      {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
+       SWITCH_TO_NEXT_IME},
       {true, ui::VKEY_ESCAPE, ui::EF_COMMAND_DOWN, SHOW_TASK_MANAGER},
       {true, ui::VKEY_K, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN,
        SHOW_IME_MENU_BUBBLE},
@@ -1372,7 +1373,7 @@ TEST_F(DeprecatedAcceleratorTester, TestNewAccelerators) {
        TOGGLE_HIGH_CONTRAST},
   };
 
-  // The NEXT_IME accelerator requires multiple IMEs to be available.
+  // The SWITCH_TO_NEXT_IME accelerator requires multiple IMEs to be available.
   AddTestImes();
 
   EXPECT_TRUE(IsMessageCenterEmpty());

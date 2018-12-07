@@ -87,11 +87,11 @@ void ImeControllerClient::SwitchToNextIme() {
     state->SwitchToNextInputMethod();
 }
 
-void ImeControllerClient::SwitchToPreviousIme() {
+void ImeControllerClient::SwitchToLastUsedIme() {
   InputMethodManager::State* state =
       input_method_manager_->GetActiveIMEState().get();
   if (state)
-    state->SwitchToPreviousInputMethod();
+    state->SwitchToLastUsedInputMethod();
 }
 
 void ImeControllerClient::SwitchImeById(const std::string& id,

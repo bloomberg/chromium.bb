@@ -123,8 +123,8 @@
   <message name="IDS_KSV_SHORTCUT_HIGHLIGHT_NEXT_ITEM_ON_SHELF" desc="Human readable version of the keyboard shortcut.">
     <ph name="shift">$1<ex>Shift</ex></ph><ph name="separator1">$2<ex>+</ex></ph><ph name="alt">$3<ex>Alt</ex></ph><ph name="separator2">$4<ex>+</ex></ph><ph name="l">$5<ex>v</ex></ph>, then <ph name="tab">$6<ex>v</ex></ph> or <ph name="right">$7<ex>v</ex></ph>
   </message>
-  <message name="IDS_KSV_DESCRIPTION_PREVIOUS_IME" desc="Description of the command in keyboard shortcut viewer.">
-    Switch to the input method of the previous language
+  <message name="IDS_KSV_DESCRIPTION_SWITCH_TO_LAST_USED_IME" desc="Description of the command in keyboard shortcut viewer.">
+    Switch to the last used input method
   </message>
   <message name="IDS_KSV_DESCRIPTION_CYCLE_FORWARD_MRU" desc="Description of the command in keyboard shortcut viewer.">
     Switch quickly between windows
@@ -171,8 +171,8 @@
   <message name="IDS_KSV_DESCRIPTION_TOGGLE_CAPS_LOCK" desc="Description of the command in keyboard shortcut viewer.">
     Turn Caps Lock on and off
   </message>
-  <message name="IDS_KSV_DESCRIPTION_NEXT_IME" desc="Description of the command in keyboard shortcut viewer.">
-    Switch to the input method of the next language
+  <message name="IDS_KSV_DESCRIPTION_SWITCH_TO_NEXT_IME" desc="Description of the command in keyboard shortcut viewer.">
+    Switch to the next available input method
   </message>
   <message name="IDS_KSV_DESCRIPTION_NEW_WINDOW" desc="Description of the command in keyboard shortcut viewer.">
     Open new window

@@ -214,9 +214,9 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     // Switches the current input method (or keyboard layout) to the next one.
     virtual void SwitchToNextInputMethod() = 0;
 
-    // Switches the current input method (or keyboard layout) to the previous
+    // Switches the current input method (or keyboard layout) to the last used
     // one.
-    virtual void SwitchToPreviousInputMethod() = 0;
+    virtual void SwitchToLastUsedInputMethod() = 0;
 
     // Gets the descriptor of the input method which is currently selected.
     virtual InputMethodDescriptor GetCurrentInputMethod() const = 0;

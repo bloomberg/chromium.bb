@@ -130,7 +130,7 @@ InputMethodManagerImpl::StateImpl::~StateImpl() {
 }
 
 void InputMethodManagerImpl::StateImpl::InitFrom(const StateImpl& other) {
-  previous_input_method = other.previous_input_method;
+  last_used_input_method = other.last_used_input_method;
   current_input_method = other.current_input_method;
 
   active_input_method_ids = other.active_input_method_ids;
@@ -156,8 +156,8 @@ std::string InputMethodManagerImpl::StateImpl::Dump() const {
      << (profile ? profile->GetProfileUserName() : std::string("NULL"))
      << " #################\n";
 
-  os << "previous_input_method: '"
-     << previous_input_method.GetPreferredKeyboardLayout() << "'\n";
+  os << "last_used_input_method: '"
+     << last_used_input_method.GetPreferredKeyboardLayout() << "'\n";
   os << "current_input_method: '"
      << current_input_method.GetPreferredKeyboardLayout() << "'\n";
   os << "active_input_method_ids (size=" << active_input_method_ids.size()
@@ -535,7 +535,7 @@ void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
     pending_input_method_id = input_method_id;
 
   if (descriptor->id() != current_input_method.id()) {
-    previous_input_method = current_input_method;
+    last_used_input_method = current_input_method;
     current_input_method = *descriptor;
     notify_menu = true;
   }
@@ -822,22 +822,21 @@ void InputMethodManagerImpl::StateImpl::SwitchToNextInputMethod() {
                                   current_input_method.id());
 }
 
-void InputMethodManagerImpl::StateImpl::SwitchToPreviousInputMethod() {
+void InputMethodManagerImpl::StateImpl::SwitchToLastUsedInputMethod() {
   if (!CanCycleInputMethod())
     return;
 
-  if (previous_input_method.id().empty() ||
-      previous_input_method.id() == current_input_method.id()) {
+  if (last_used_input_method.id().empty() ||
+      last_used_input_method.id() == current_input_method.id()) {
     SwitchToNextInputMethod();
     return;
   }
 
   std::vector<std::string>::const_iterator iter =
-      std::find(active_input_method_ids.begin(),
-                active_input_method_ids.end(),
-                previous_input_method.id());
+      std::find(active_input_method_ids.begin(), active_input_method_ids.end(),
+                last_used_input_method.id());
   if (iter == active_input_method_ids.end()) {
-    // previous_input_method is not supported.
+    // last_used_input_method is not supported.
     SwitchToNextInputMethod();
     return;
   }

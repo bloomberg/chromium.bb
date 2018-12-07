@@ -20,7 +20,7 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
 
   // mojom::ImeControllerClient:
   void SwitchToNextIme() override;
-  void SwitchToPreviousIme() override;
+  void SwitchToLastUsedIme() override;
   void SwitchImeById(const std::string& id, bool show_message) override;
   void ActivateImeMenuItem(const std::string& key) override;
   void SetCapsLockEnabled(bool enabled) override;
@@ -28,7 +28,7 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
                               OverrideKeyboardKeysetCallback callback) override;
 
   int next_ime_count_ = 0;
-  int previous_ime_count_ = 0;
+  int last_used_ime_count_ = 0;
   int switch_ime_count_ = 0;
   int set_caps_lock_count_ = 0;
   std::string last_switch_ime_id_;

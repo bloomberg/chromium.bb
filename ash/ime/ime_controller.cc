@@ -49,9 +49,9 @@ void ImeController::SwitchToNextIme() {
     client_->SwitchToNextIme();
 }
 
-void ImeController::SwitchToPreviousIme() {
+void ImeController::SwitchToLastUsedIme() {
   if (client_)
-    client_->SwitchToPreviousIme();
+    client_->SwitchToLastUsedIme();
 }
 
 void ImeController::SwitchImeById(const std::string& ime_id,
