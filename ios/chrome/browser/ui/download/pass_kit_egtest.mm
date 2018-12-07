@@ -9,8 +9,8 @@
 
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/app/main_controller.h"
+#include "ios/chrome/browser/download/download_test_util.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
-#include "ios/chrome/browser/download/pass_kit_test_util.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -53,7 +53,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     result->set_content("corrupted");
   } else if (request.GetURL().path() == "/good") {
     result->AddCustomHeader("Content-Type", kPkPassMimeType);
-    result->set_content(testing::GetTestPass());
+    result->set_content(testing::GetTestFileContents(testing::kPkPassFilePath));
   }
 
   return result;

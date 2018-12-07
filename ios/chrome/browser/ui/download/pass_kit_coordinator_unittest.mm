@@ -10,8 +10,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "ios/chrome/browser/download/download_test_util.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
-#include "ios/chrome/browser/download/pass_kit_test_util.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -65,7 +65,7 @@ class PassKitCoordinatorTest : public PlatformTest {
 // valid PKPass object.
 // TODO(crbug.com/804250): this test is flaky.
 TEST_F(PassKitCoordinatorTest, ValidPassKitObject) {
-  std::string data = testing::GetTestPass();
+  std::string data = testing::GetTestFileContents(testing::kPkPassFilePath);
   NSData* nsdata = [NSData dataWithBytes:data.c_str() length:data.size()];
   PKPass* pass = [[PKPass alloc] initWithData:nsdata error:nil];
   ASSERT_TRUE(pass);
@@ -107,7 +107,7 @@ TEST_F(PassKitCoordinatorTest, MultiplePassKitObjects) {
     return;
   }
 
-  std::string data = testing::GetTestPass();
+  std::string data = testing::GetTestFileContents(testing::kPkPassFilePath);
   NSData* nsdata = [NSData dataWithBytes:data.c_str() length:data.size()];
   PKPass* pass = [[PKPass alloc] initWithData:nsdata error:nil];
   ASSERT_TRUE(pass);
@@ -173,7 +173,7 @@ TEST_F(PassKitCoordinatorTest, AnotherViewControllerIsPresented) {
       }));
 
   // Attempt to present "Add pkpass UI".
-  std::string data = testing::GetTestPass();
+  std::string data = testing::GetTestFileContents(testing::kPkPassFilePath);
   NSData* nsdata = [NSData dataWithBytes:data.c_str() length:data.size()];
   PKPass* pass = [[PKPass alloc] initWithData:nsdata error:nil];
   ASSERT_TRUE(pass);

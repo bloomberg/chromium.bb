@@ -351,6 +351,10 @@ const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
 
+const char kUsdzPreviewName[] = "Preview USDZ format 3D models";
+const char kUsdzPreviewDescription[] =
+    "Enables previewing USDZ format 3D models in AR Quick Look.";
+
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";

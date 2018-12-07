@@ -122,6 +122,12 @@ void ARQuickLookTabHelper::Download(
 
 void ARQuickLookTabHelper::DidFinishDownload() {
   DCHECK_EQ(download_task_->GetState(), web::DownloadTask::State::kComplete);
+  // Inform the delegate only if the download has been successful.
+  if (download_task_->GetHttpCode() == 401 ||
+      download_task_->GetHttpCode() == 403 || download_task_->GetErrorCode() ||
+      download_task_->GetMimeType() != kUsdzMimeType) {
+    return;
+  }
 
   net::URLFetcherFileWriter* file_writer =
       download_task_->GetResponseWriter()->AsFileWriter();
