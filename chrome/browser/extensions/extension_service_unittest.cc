@@ -146,6 +146,7 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 // The blacklist tests rely on the safe-browsing database.
 #if defined(SAFE_BROWSING_DB_LOCAL)
@@ -4888,7 +4889,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   // "known" origins.
   IndexedDBContext* idb_context = BrowserContext::GetDefaultStoragePartition(
                                       profile())->GetIndexedDBContext();
-  base::FilePath idb_path = idb_context->GetFilePathForTesting(ext_url);
+  base::FilePath idb_path =
+      idb_context->GetFilePathForTesting(url::Origin::Create(ext_url));
   EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
   idb_context->ResetCachesForTesting();
@@ -5031,7 +5033,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   // "known" origins.
   IndexedDBContext* idb_context = BrowserContext::GetDefaultStoragePartition(
                                       profile())->GetIndexedDBContext();
-  base::FilePath idb_path = idb_context->GetFilePathForTesting(origin1);
+  base::FilePath idb_path =
+      idb_context->GetFilePathForTesting(url::Origin::Create(origin1));
   EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
   idb_context->ResetCachesForTesting();
