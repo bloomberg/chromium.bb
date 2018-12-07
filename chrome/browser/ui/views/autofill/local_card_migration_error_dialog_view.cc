@@ -82,6 +82,11 @@ void LocalCardMigrationErrorDialogView::WindowClosing() {
   }
 }
 
+bool LocalCardMigrationErrorDialogView::Cancel() {
+  controller_->OnDoneButtonClicked();
+  return true;
+}
+
 bool LocalCardMigrationErrorDialogView::Close() {
   // Close the dialog if the user exits the browser when dialog is visible.
   return true;
