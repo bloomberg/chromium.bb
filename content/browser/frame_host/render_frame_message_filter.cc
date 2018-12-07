@@ -295,6 +295,10 @@ network::mojom::CookieManagerPtr* RenderFrameMessageFilter::GetCookieManager() {
   return &cookie_manager_;
 }
 
+void RenderFrameMessageFilter::ClearResourceContext() {
+  resource_context_ = nullptr;
+}
+
 void RenderFrameMessageFilter::InitializeCookieManager(
     network::mojom::CookieManagerRequest cookie_manager_request) {
   RenderProcessHost* render_process_host =
@@ -458,6 +462,9 @@ void RenderFrameMessageFilter::OnCookiesEnabled(int render_frame_id,
                                                 const GURL& url,
                                                 const GURL& site_for_cookies,
                                                 bool* cookies_enabled) {
+  if (!resource_context_)
+    return;
+
   // TODO(ananta): If this render frame is associated with an automation
   // channel, aka ChromeFrame then we need to retrieve cookie settings from the
   // external host.
@@ -472,6 +479,11 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
     const GURL& site_for_cookies,
     GetCookiesCallback callback,
     const net::CookieList& cookie_list) {
+  if (!resource_context_) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
   if (GetContentClient()->browser()->AllowGetCookie(
@@ -538,6 +550,11 @@ void RenderFrameMessageFilter::SetCookie(int32_t render_frame_id,
                                          const GURL& site_for_cookies,
                                          const std::string& cookie_line,
                                          SetCookieCallback callback) {
+  if (!resource_context_) {
+    std::move(callback).Run();
+    return;
+  }
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
@@ -598,6 +615,11 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
                                           const GURL& url,
                                           const GURL& site_for_cookies,
                                           GetCookiesCallback callback) {
+  if (!resource_context_) {
+    std::move(callback).Run(std::string());
+    return;
+  }
+
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (!policy->CanAccessDataForOrigin(render_process_id_, url)) {
@@ -663,6 +685,9 @@ void RenderFrameMessageFilter::OnGetPluginInfo(
     bool* found,
     WebPluginInfo* info,
     std::string* actual_mime_type) {
+  if (!resource_context_)
+    return;
+
   bool allow_wildcard = true;
   *found = plugin_service_->GetPluginInfo(
       render_process_id_, render_frame_id, resource_context_, url,
