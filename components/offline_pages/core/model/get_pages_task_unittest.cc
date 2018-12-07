@@ -5,9 +5,9 @@
 #include "components/offline_pages/core/model/get_pages_task.h"
 
 #include <stdint.h>
-
 #include <utility>
 
+#include "base/time/time.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/model/model_task_test_base.h"
 #include "components/offline_pages/core/offline_page_types.h"

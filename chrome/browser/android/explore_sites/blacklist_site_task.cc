@@ -4,7 +4,9 @@
 
 #include "chrome/browser/android/explore_sites/blacklist_site_task.h"
 
+#include "base/time/clock.h"
 #include "chrome/browser/android/explore_sites/explore_sites_schema.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -33,7 +35,7 @@ bool BlacklistSiteTaskSync(std::string url, sql::Database* db) {
     return false;
 
   // Get current time as a unix time.
-  base::Time time_now = base::Time::Now();
+  base::Time time_now = offline_pages::OfflineClock()->Now();
   time_t unix_time = time_now.ToTimeT();
 
   // Then insert the URL.

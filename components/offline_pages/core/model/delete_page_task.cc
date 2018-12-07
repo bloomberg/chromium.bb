@@ -8,10 +8,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/offline_pages/core/client_policy_controller.h"
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
+#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_client_policy.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -82,7 +84,7 @@ DeletedPageInfoWrapper::DeletedPageInfoWrapper(
 void ReportDeletePageHistograms(
     const std::vector<DeletedPageInfoWrapper>& info_wrappers) {
   const int max_minutes = base::TimeDelta::FromDays(365).InMinutes();
-  base::Time delete_time = base::Time::Now();
+  base::Time delete_time = OfflineClock()->Now();
   for (const auto& info_wrapper : info_wrappers) {
     base::UmaHistogramCustomCounts(
         model_utils::AddHistogramSuffix(info_wrapper.client_id.name_space,

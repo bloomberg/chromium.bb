@@ -675,8 +675,8 @@ void OfflinePageRequestHandlerTestBase::CreateFileWithContentOnIO(
   file_name += base::IntToString(file_name_sequence_num_++);
   file_name += ".mht";
   temp_file_path_ = temp_dir_.GetPath().AppendASCII(file_name);
-  ASSERT_TRUE(base::WriteFile(temp_file_path_, content.c_str(),
-                              content.length()) != -1);
+  ASSERT_NE(base::WriteFile(temp_file_path_, content.c_str(), content.length()),
+            -1);
   callback.Run();
 }
 
@@ -975,8 +975,7 @@ OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel(
 
   return std::unique_ptr<KeyedService>(new OfflinePageModelTaskified(
       std::move(metadata_store), std::move(archive_manager),
-      std::move(download_manager), task_runner,
-      base::DefaultClock::GetInstance()));
+      std::move(download_manager), task_runner));
 }
 
 // static
