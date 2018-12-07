@@ -222,32 +222,36 @@ base::ScopedFD ArcSessionDelegateImpl::CreateSocketInternal() {
     return socket_fd;
   }
 
-  // Change permissions on the socket.
-  struct group arc_bridge_group;
-  struct group* arc_bridge_group_res = nullptr;
-  int ret = 0;
-  char buf[10000];
-  do {
-    ret = getgrnam_r(kArcBridgeSocketGroup, &arc_bridge_group, buf, sizeof(buf),
-                     &arc_bridge_group_res);
-  } while (ret == EINTR);
-  if (ret != 0) {
-    LOG(ERROR) << "getgrnam_r: " << strerror_r(ret, buf, sizeof(buf));
-    return base::ScopedFD();
-  }
+  // Change permissions on the socket. Note that since arcvm doesn't directly
+  // share the socket with ARC, it can use 0600 and the default group. arcvm
+  // build doesn't have |kArcBridgeSocketGroup| in the first place.
+  if (!IsArcVmEnabled()) {
+    struct group arc_bridge_group;
+    struct group* arc_bridge_group_res = nullptr;
+    int ret = 0;
+    char buf[10000];
+    do {
+      ret = getgrnam_r(kArcBridgeSocketGroup, &arc_bridge_group, buf,
+                       sizeof(buf), &arc_bridge_group_res);
+    } while (ret == EINTR);
+    if (ret != 0) {
+      LOG(ERROR) << "getgrnam_r: " << strerror_r(ret, buf, sizeof(buf));
+      return base::ScopedFD();
+    }
 
-  if (!arc_bridge_group_res) {
-    LOG(ERROR) << "Group '" << kArcBridgeSocketGroup << "' not found";
-    return base::ScopedFD();
-  }
+    if (!arc_bridge_group_res) {
+      LOG(ERROR) << "Group '" << kArcBridgeSocketGroup << "' not found";
+      return base::ScopedFD();
+    }
 
-  if (chown(kArcBridgeSocketPath, -1, arc_bridge_group.gr_gid) < 0) {
-    PLOG(ERROR) << "chown failed";
-    return base::ScopedFD();
+    if (chown(kArcBridgeSocketPath, -1, arc_bridge_group.gr_gid) < 0) {
+      PLOG(ERROR) << "chown failed";
+      return base::ScopedFD();
+    }
   }
 
   if (!base::SetPosixFilePermissions(base::FilePath(kArcBridgeSocketPath),
-                                     0660)) {
+                                     IsArcVmEnabled() ? 0600 : 0660)) {
     PLOG(ERROR) << "Could not set permissions: " << kArcBridgeSocketPath;
     return base::ScopedFD();
   }
