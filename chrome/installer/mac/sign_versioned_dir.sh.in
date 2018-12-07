@@ -92,6 +92,15 @@ helper_app="${versioned_dir}/@MAC_PRODUCT_NAME@ Helper.app"
 app_mode_loader_app="${framework}/Resources/app_mode_loader.app"
 app_mode_loader="${app_mode_loader_app}/Contents/MacOS/app_mode_loader"
 
+libraries_dir="${framework}/Libraries"
+libraries=(
+  "${libraries_dir}/libEGL.dylib"
+  "${libraries_dir}/libGLESv2.dylib"
+  "${libraries_dir}/libswiftshader_libEGL.dylib"
+  "${libraries_dir}/libswiftshader_libGLESv2.dylib"
+  "${libraries_dir}/WidevineCdm/_platform_specific/mac_x64/libwidevinecdm.dylib"
+)
+
 codesign_with_options "${crashpad_handler}" \
                       "${enforcement_flags_helpers}" \
                       "crashpad_handler"
@@ -119,6 +128,15 @@ codesign_with_options "${notification_service}" \
                       "${enforcement_flags_helpers}" \
                       "${xpc_bundle_id}"
 
+# Sign the other Libraries. Some of these could be missing, if they are
+# excluded from the build via GN args, so do test for their presence first.
+for library in "${libraries[@]}"; do
+  if [ -f "${library}" ]; then
+    # No ${enforcement_flags_helpers} since they only apply to executables.
+    codesign_with_options "${library}" "" "$(basename "$library" .dylib)"
+  fi
+done
+
 # The framework is a dylib, so ${enforcement_flags_helpers} are meaningless.
 codesign_with_options "${framework}" "" "com.google.Chrome.framework"
 
@@ -134,3 +152,9 @@ codesign_display_and_verify "${notification_service}" --deep
 codesign_display_and_verify "${framework}" --deep --no-strict
 codesign_display_and_verify "${framework}" --strict
 codesign_display_and_verify "${helper_app}" --deep
+
+for library in "${libraries[@]}"; do
+  if [ -f "${library}" ]; then
+    codesign_display_and_verify "${library}" --deep
+  fi
+done
