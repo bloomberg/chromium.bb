@@ -405,6 +405,11 @@ void Controller::UpdateTouchableArea() {
   touchable_element_area_.UpdatePositions();
 }
 
+void Controller::OnUserInteractionInsideTouchableArea() {
+  script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
+  StartPeriodicScriptChecks();
+}
+
 std::string Controller::GetDebugContext() {
   base::Value dict(base::Value::Type::DICTIONARY);
 
@@ -469,21 +474,6 @@ void Controller::OnRunnableScriptsChanged(
 
 void Controller::DidAttachInterstitialPage() {
   GetUiController()->Shutdown();
-}
-
-void Controller::DidGetUserInteraction(const blink::WebInputEvent::Type type) {
-  switch (type) {
-    case blink::WebInputEvent::kTouchStart:
-    case blink::WebInputEvent::kGestureTapDown:
-      if (!script_tracker_->running()) {
-        script_tracker_->CheckScripts(kPeriodicScriptCheckInterval);
-        StartPeriodicScriptChecks();
-      }
-      break;
-
-    default:
-      break;
-  }
 }
 
 void Controller::DidFinishLoad(content::RenderFrameHost* render_frame_host,

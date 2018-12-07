@@ -28,6 +28,10 @@ class UiDelegate {
   // that the current coordinates are out of date, such as while scrolling.
   virtual void UpdateTouchableArea() = 0;
 
+  // Called when user interaction within the allowed touchable area was
+  // detected. This should cause rerun of preconditions check.
+  virtual void OnUserInteractionInsideTouchableArea() = 0;
+
   // Called when a script was selected for execution.
   virtual void OnScriptSelected(const std::string& script_path) = 0;
 

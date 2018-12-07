@@ -126,6 +126,12 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     }
 
     @Override
+    public void onUserInteractionInsideTouchableArea() {
+        if (mUiControllerAndroid != 0)
+            nativeOnUserInteractionInsideTouchableArea(mUiControllerAndroid);
+    }
+
+    @Override
     public void onScriptSelected(String scriptPath) {
         if (mUiControllerAndroid != 0) nativeOnScriptSelected(mUiControllerAndroid, scriptPath);
     }
@@ -494,6 +500,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
     private native void nativeStart(long nativeUiControllerAndroid, String initialUrl);
     private native void nativeDestroy(long nativeUiControllerAndroid);
     private native void nativeUpdateTouchableArea(long nativeUiControllerAndroid);
+    private native void nativeOnUserInteractionInsideTouchableArea(long nativeUiControllerAndroid);
     private native void nativeOnScriptSelected(long nativeUiControllerAndroid, String scriptPath);
     private native void nativeOnChoice(long nativeUiControllerAndroid, byte[] serverPayload);
     private native void nativeOnAddressSelected(long nativeUiControllerAndroid, String guid);

@@ -104,6 +104,7 @@ class Controller : public ScriptExecutorDelegate,
   void OnClickOverlay() override;
   void OnDestroy() override;
   void UpdateTouchableArea() override;
+  void OnUserInteractionInsideTouchableArea() override;
   void OnScriptSelected(const std::string& script_path) override;
   std::string GetDebugContext() override;
   bool Terminate() override;
@@ -115,7 +116,6 @@ class Controller : public ScriptExecutorDelegate,
 
   // Overrides content::WebContentsObserver:
   void DidAttachInterstitialPage() override;
-  void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void DidStartNavigation(
