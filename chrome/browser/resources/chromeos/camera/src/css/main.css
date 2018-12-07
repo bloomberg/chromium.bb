@@ -66,6 +66,11 @@ body {
   pointer-events: none;
 }
 
+.buttons[hidden],
+#record-time[hidden] {
+  display: none;  /* Required for flexbox hidden. */
+}
+
 .buttons button,
 .buttons input {
   pointer-events: auto;
@@ -584,11 +589,6 @@ body.capturing.grid #preview-grid-vertical {
   border-radius: 4px;
   height: 32px;
   padding: 0 12px;
-  visibility: hidden;
-}
-
-#record-time.visible {
-  visibility: visible;
 }
 
 #record-time .icon {
@@ -788,11 +788,9 @@ body.settings #settings .menu {
   -webkit-transform: translateX(0);
 }
 
-.menu-header,
-.menu-item {
+.buttons.menu-header,
+.buttons.menu-item {
   flex-shrink: 0;
-  align-items: center;
-  display: flex;
   justify-content: flex-start;
   padding: 0 24px;
   height: 64px;
@@ -801,14 +799,14 @@ body.settings #settings .menu {
   font-family: 'Roboto', sans-serif;
 }
 
-.menu-header {
+.buttons.menu-header {
   height: 88px;
   color: white;
   font-size: 20px;
 }
 
-.menu-header .icon,
-.menu-item .icon {
+.buttons.menu-header .icon,
+.buttons.menu-item .icon {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -817,11 +815,11 @@ body.settings #settings .menu {
   background-repeat: no-repeat;
 }
 
-.menu-item.buttons {
+.buttons.menu-item {
   pointer-events: auto;
 }
 
-.menu-item.buttons button {
+.buttons.menu-item button {
   width: 36px;
   height: 36px;
   margin-left: auto;
@@ -831,10 +829,15 @@ body.settings #settings .menu {
   background-image: url(../images/settings_button_back.svg);
 }
 
+#settings-feedback .icon {
+  background-image: url(../images/settings_feedback.svg);
+}
+
 #settings-help .icon {
   background-image: url(../images/settings_help.svg);
 }
 
+#settings-feedback button,
 #settings-help button {
   background-image: url(../images/settings_button_external.svg);
 }

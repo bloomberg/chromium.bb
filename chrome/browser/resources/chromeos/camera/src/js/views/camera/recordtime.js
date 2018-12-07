@@ -65,7 +65,7 @@ cca.views.camera.RecordTime.prototype.update_ = function(time) {
  */
 cca.views.camera.RecordTime.prototype.start = function() {
   this.update_(0);
-  this.recordTime_.classList.add('visible');
+  this.recordTime_.hidden = false;
 
   var ticks = 0;
   this.tickTimeout_ = setInterval(() => {
@@ -83,6 +83,6 @@ cca.views.camera.RecordTime.prototype.stop = function() {
     clearInterval(this.tickTimeout_);
     this.tickTimeout_ = null;
   }
-  this.recordTime_.classList.remove('visible');
+  this.recordTime_.hidden = true;
   this.update_(0);
 };

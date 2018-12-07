@@ -25,11 +25,14 @@ cca.views.Settings = function() {
   // End of properties, seal the object.
   Object.seal(this);
 
+  document.querySelector('#settings-feedback').hidden =
+      !cca.util.isChromeVersionAbove(72); // Feedback available since M72.
+
+  // Add event listeners for menu header and items.
   document.querySelector('#settings-back').addEventListener(
       'click', () => this.leave());
-
-  // Add event listeners for menu items.
   var items = [
+    ['#settings-feedback', 'onFeedbackClicked_'],
     ['#settings-help', 'onHelpClicked_'],
   ];
   items.forEach(([selector, fn]) => {
@@ -48,10 +51,29 @@ cca.views.Settings.prototype = {
 };
 
 /**
- * Handles clicking on the help button.
- * @param {Event} event Click event.
+ * Handles clicking on the feedback button.
  * @private
  */
-cca.views.Settings.prototype.onHelpClicked_ = function(event) {
+cca.views.Settings.prototype.onFeedbackClicked_ = function() {
+  var data = {
+    'categoryTag': 'chromeos-camera-app',
+    'requestFeedback': true,
+    'feedbackInfo': {
+      'description': '',
+      'systemInformation': [
+        {key: 'APP ID', value: chrome.runtime.id},
+        {key: 'APP VERSION', value: chrome.runtime.getManifest().version},
+      ],
+    },
+  };
+  const id = 'gfdkimpbcpahaombhbimeihdjnejgicl'; // Feedback extension id.
+  chrome.runtime.sendMessage(id, data);
+};
+
+/**
+ * Handles clicking on the help button.
+ * @private
+ */
+cca.views.Settings.prototype.onHelpClicked_ = function() {
   window.open('https://support.google.com/chromebook/answer/4487486');
 };
