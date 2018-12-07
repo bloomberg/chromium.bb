@@ -8,20 +8,27 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/dbus/upstart_client.h"
 
 namespace arc {
 
 namespace {
 
-// TODO(yusukes): Move ArcContainerStopReason to arc:: and remove the #include.
+// TODO(yusukes): Move ArcContainerStopReason to arc:: and stop including
+// chromeos/dbus/session_manager_client.h.
 constexpr login_manager::ArcContainerStopReason kDummyReason =
     login_manager::ArcContainerStopReason::SESSION_MANAGER_SHUTDOWN;
-constexpr char kDummyInstanceId[] = "dummyinstanceid";
+
+// The conversion of upstart job names to dbus object paths is undocumented. See
+// arc_data_remover.cc for more information.
+constexpr char kArcVmUpstartJob[] = "arcvm";
 
 }  // namespace
 
@@ -44,33 +51,61 @@ class ArcVmClientAdapter : public ArcClientAdapter {
   void UpgradeArc(const UpgradeArcContainerRequest& request,
                   base::OnceClosure success_callback,
                   UpgradeErrorCallback error_callback) override {
-    // TODO(yusukes): Start arcvm.
-    base::PostTask(
-        FROM_HERE,
-        base::BindOnce(&ArcVmClientAdapter::OnArcInstanceUpgradeFailed,
-                       weak_factory_.GetWeakPtr(), std::move(error_callback)));
+    // TODO(yusukes): Consider doing the same as crostini rather than taking to
+    // Upstart.
+    VLOG(1) << "Starting arcvm";
+    auto* upstart_client =
+        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    DCHECK(upstart_client);
+    upstart_client->StartJob(
+        kArcVmUpstartJob,
+        {},  // TODO(yusukes): Pass the content of the |request| to the job.
+        base::BindOnce(&ArcVmClientAdapter::OnArcInstanceUpgraded,
+                       weak_factory_.GetWeakPtr(), std::move(success_callback),
+                       std::move(error_callback)));
   }
 
   void StopArcInstance() override {
-    // TODO(yusukes): Stop arcvm.
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(&ArcVmClientAdapter::OnArcInstanceStopped,
-                                  weak_factory_.GetWeakPtr()));
+    // TODO(yusukes): Consider doing the same as crostini rather than taking to
+    // Upstart.
+    VLOG(1) << "Stopping arcvm";
+    auto* upstart_client =
+        chromeos::DBusThreadManager::Get()->GetUpstartClient();
+    DCHECK(upstart_client);
+    upstart_client->StopJob(
+        kArcVmUpstartJob,
+        base::BindOnce(&ArcVmClientAdapter::OnArcInstanceStopped,
+                       weak_factory_.GetWeakPtr()));
   }
 
  private:
   void OnArcMiniInstanceStarted(StartMiniArcCallback callback) {
-    std::move(callback).Run(kDummyInstanceId);
+    current_instance_id_ = base::GenerateGUID();
+    std::move(callback).Run(current_instance_id_);
   }
 
-  void OnArcInstanceUpgradeFailed(UpgradeErrorCallback callback) {
-    std::move(callback).Run(/*low_free_disk_space=*/false);
+  void OnArcInstanceUpgraded(base::OnceClosure success_callback,
+                             UpgradeErrorCallback error_callback,
+                             bool result) {
+    VLOG(1) << "OnArcInstanceUpgraded result=" << result;
+    if (result)
+      std::move(success_callback).Run();
+    else
+      std::move(error_callback).Run(/*low_free_disk_space=*/false);
   }
 
-  void OnArcInstanceStopped() {
+  void OnArcInstanceStopped(bool result) {
+    VLOG(1) << "OnArcInstanceStopped result=" << result;
+    if (!result)
+      LOG(WARNING) << "Failed to stop arcvm. Instance not running?";
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped(kDummyReason, kDummyInstanceId);
+      observer.ArcInstanceStopped(kDummyReason, current_instance_id_);
+    if (result)
+      current_instance_id_.clear();
   }
+
+  // A unique ID associated with the current Upstart job.
+  std::string current_instance_id_;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_;
