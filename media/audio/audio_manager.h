@@ -34,9 +34,6 @@ class AudioSourceDiverter;
 
 // Manages all audio resources.  Provides some convenience functions that avoid
 // the need to provide iterators over the existing streams.
-//
-// Except on OSX, a hang monitor for the audio thread is always created. When a
-// thread hang is detected, it is reported to UMA.
 class MEDIA_EXPORT AudioManager {
  public:
   virtual ~AudioManager();
@@ -62,13 +59,6 @@ class MEDIA_EXPORT AudioManager {
   // A convenience wrapper of AudioManager::Create for testing.
   static std::unique_ptr<AudioManager> CreateForTesting(
       std::unique_ptr<AudioThread> audio_thread);
-
-  // Starts monitoring AudioManager task runner for hangs.
-  // Runs the monitor on the given |task_runner|, which must be different from
-  // AudioManager::GetTaskRunner to be meaningful.
-  // This must be called only after an AudioManager instance is created.
-  static void StartHangMonitorIfNeeded(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
 #if defined(OS_LINUX)
   // Sets the name of the audio source as seen by external apps. Only actually

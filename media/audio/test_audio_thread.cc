@@ -36,6 +36,11 @@ void TestAudioThread::Stop() {
     base::RunLoop().RunUntilIdle();
 }
 
+bool TestAudioThread::IsHung() const {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return false;
+}
+
 base::SingleThreadTaskRunner* TestAudioThread::GetTaskRunner() {
   return task_runner_.get();
 }
