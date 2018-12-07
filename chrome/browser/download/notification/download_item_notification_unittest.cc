@@ -178,7 +178,7 @@ TEST_F(DownloadItemNotificationTest, PauseAndResumeNotification) {
   download_item_->NotifyObserversDownloadUpdated();
 
   // Resumes and makes sure the DownloadItem::Resume() is called.
-  EXPECT_CALL(*download_item_, Resume()).Times(1);
+  EXPECT_CALL(*download_item_, Resume(true)).Times(1);
   EXPECT_CALL(*download_item_, IsPaused()).WillRepeatedly(Return(false));
   download_item_notification_->Click(0, base::nullopt);
   download_item_->NotifyObserversDownloadUpdated();

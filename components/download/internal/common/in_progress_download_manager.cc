@@ -53,11 +53,11 @@ std::unique_ptr<DownloadItemImpl> CreateDownloadItemImpl(
       in_progress_info->original_mime_type, in_progress_info->start_time,
       in_progress_info->end_time, in_progress_info->etag,
       in_progress_info->last_modified, in_progress_info->received_bytes,
-      in_progress_info->total_bytes, in_progress_info->hash,
-      in_progress_info->state, in_progress_info->danger_type,
-      in_progress_info->interrupt_reason, in_progress_info->paused, false,
-      base::Time(), in_progress_info->transient,
-      in_progress_info->received_slices);
+      in_progress_info->total_bytes, in_progress_info->auto_resume_count,
+      in_progress_info->hash, in_progress_info->state,
+      in_progress_info->danger_type, in_progress_info->interrupt_reason,
+      in_progress_info->paused, in_progress_info->metered, false, base::Time(),
+      in_progress_info->transient, in_progress_info->received_slices);
 }
 
 void OnUrlDownloadHandlerCreated(

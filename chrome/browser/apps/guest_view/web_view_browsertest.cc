@@ -2974,7 +2974,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation) {
     ASSERT_TRUE(download->CanResume());
     EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
-    download->Resume();
+    download->Resume(false);
   }
 
   completion_observer->WaitForFinished();
@@ -3104,7 +3104,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation_CrossSession) {
     ASSERT_TRUE(download->GetFullPath().empty());
     EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED,
               download->GetLastReason());
-    download->Resume();
+    download->Resume(false);
   }
 
   completion_observer->WaitForFinished();

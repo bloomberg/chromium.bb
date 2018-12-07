@@ -139,7 +139,8 @@ public class DownloadGlue implements DownloadObserver {
             DownloadManagerService.getDownloadManagerService().resumeDownload(
                     item.id, downloadItem, hasUserGesture);
         } else {
-            DownloadManagerService.getDownloadManagerService().retryDownload(item.id, downloadItem);
+            DownloadManagerService.getDownloadManagerService().retryDownload(
+                    item.id, downloadItem, hasUserGesture);
         }
     }
 

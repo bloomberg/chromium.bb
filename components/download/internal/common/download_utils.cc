@@ -379,7 +379,9 @@ DownloadDBEntry CreateDownloadDBEntryFromItem(const DownloadItemImpl& item) {
   in_progress_info.danger_type = item.GetDangerType();
   in_progress_info.interrupt_reason = item.GetLastReason();
   in_progress_info.paused = item.IsPaused();
+  in_progress_info.metered = item.AllowMetered();
   in_progress_info.bytes_wasted = item.GetBytesWasted();
+  in_progress_info.auto_resume_count = item.GetAutoResumeCount();
 
   download_info.in_progress_info = in_progress_info;
 
@@ -424,8 +426,15 @@ ResumeMode GetDownloadResumeMode(const GURL& url,
     return ResumeMode::INVALID;
 
   switch (reason) {
-    case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
+#if defined(OS_ANDROID)
+      // If resume mode is USER_CONTINUE, android can still resume
+      // the download automatically if we didn't reach the auto resumption
+      // limit and the interruption was due to network related reasons.
+      user_action_required = true;
+      break;
+#endif
+    case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:
       break;
 

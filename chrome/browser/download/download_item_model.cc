@@ -442,7 +442,7 @@ void DownloadItemModel::Pause() {
 }
 
 void DownloadItemModel::Resume() {
-  download_->Resume();
+  download_->Resume(true /* has_user_gesture */);
 }
 
 void DownloadItemModel::Cancel(bool user_cancel) {

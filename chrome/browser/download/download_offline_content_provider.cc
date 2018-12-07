@@ -85,7 +85,7 @@ void DownloadOfflineContentProvider::ResumeDownload(const ContentId& id,
                                                     bool has_user_gesture) {
   download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
   if (item)
-    item->Resume();
+    item->Resume(has_user_gesture);
 }
 
 void DownloadOfflineContentProvider::GetItemById(

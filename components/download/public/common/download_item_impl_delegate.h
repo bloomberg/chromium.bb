@@ -107,6 +107,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   // Whether the download is off the record.
   virtual bool IsOffTheRecord() const;
 
+  // Check if the current network is a metered network.
+  virtual bool IsActiveNetworkMetered() const;
+
   // Report extra bytes wasted during resumption.
   virtual void ReportBytesWasted(DownloadItemImpl* download);
 

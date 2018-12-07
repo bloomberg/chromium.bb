@@ -748,10 +748,10 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
       url_chain, GURL("http://example.com/a"), GURL("http://example.com/a"),
       GURL("http://example.com/a"), GURL("http://example.com/a"),
       "application/octet-stream", "application/octet-stream", base::Time::Now(),
-      base::Time::Now(), std::string(), std::string(), 10, 10, std::string(),
+      base::Time::Now(), std::string(), std::string(), 10, 10, 0, std::string(),
       download::DownloadItem::INTERRUPTED,
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false,
+      download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false, false, false,
       base::Time::Now(), true,
       std::vector<download::DownloadItem::ReceivedSlice>());
   in_progress_manager->AddDownloadItem(std::move(in_progress_item));

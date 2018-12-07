@@ -4268,7 +4268,7 @@ IN_PROC_BROWSER_TEST_F(
   // Downloads that are restarted on resumption trigger another download target
   // determination.
   RemoveFilenameDeterminer(host);
-  item->Resume();
+  item->Resume(true);
 
   // Errors caught before filename determination is complete are delayed until
   // after filename determination so that, on resumption, filename determination

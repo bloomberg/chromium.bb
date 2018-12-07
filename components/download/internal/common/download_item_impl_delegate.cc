@@ -93,6 +93,10 @@ bool DownloadItemImplDelegate::IsOffTheRecord() const {
   return false;
 }
 
+bool DownloadItemImplDelegate::IsActiveNetworkMetered() const {
+  return false;
+}
+
 void DownloadItemImplDelegate::ReportBytesWasted(DownloadItemImpl* download) {}
 
 }  // namespace download

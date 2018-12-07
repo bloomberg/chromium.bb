@@ -1049,7 +1049,7 @@ class ParallelDownloadTest : public DownloadContentTest {
         intermediate_file_path, url_chain, received_slices, parameters);
 
     // Resume the parallel download with sparse file and received slices data.
-    download->Resume();
+    download->Resume(false);
     WaitForCompletion(download);
     // TODO(qinmin): count the failed partial responses in DownloadJob when
     // support_partial_response is false. EmbeddedTestServer doesn't know
@@ -1522,7 +1522,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
@@ -1615,7 +1615,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectBeforeResume) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, download_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_NO_FATAL_FAILURE(ReadAndVerifyFileContents(
@@ -1652,7 +1652,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
                          "Location: %s\r\n\r\n",
                          second_url.spec().c_str()),
       first_url);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
             download->GetLastReason());
@@ -1661,7 +1661,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
   // use the partial data it had prior to the first interruption.
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, first_url);
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
@@ -1775,7 +1775,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
       "Content-Range: bytes 1000000-2000000/3000000\r\n"
       "\r\n",
       server_url);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
@@ -1787,7 +1787,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
       "Content-Range: ooga-booga-booga-booga\r\n"
       "\r\n",
       server_url);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
@@ -1798,7 +1798,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
       "Some-Headers: ooga-booga-booga-booga\r\n"
       "\r\n",
       server_url);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
   EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
@@ -1807,7 +1807,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
   // use the partial data it had prior to the first interruption.
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
@@ -1864,7 +1864,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNotPartialResponse) {
   parameters.pattern_generator_seed = kNewPatternGeneratorSeed;
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(interruption_offset, download->GetBytesWasted());
@@ -1928,7 +1928,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoETag) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
@@ -1976,7 +1976,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(interruption_offset, download->GetBytesWasted());
@@ -2023,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromInitFileError) {
   injector->ClearError();
 
   // Resume and watch completion.
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
   EXPECT_EQ(download->GetState(), download::DownloadItem::COMPLETE);
 }
@@ -2066,7 +2066,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   // Clear the old errors list.
   injector->ClearError();
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
   EXPECT_EQ(download->GetState(), download::DownloadItem::COMPLETE);
 }
@@ -2106,7 +2106,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
   // Clear the old errors list.
   injector->ClearError();
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
   EXPECT_EQ(download->GetState(), download::DownloadItem::COMPLETE);
 }
@@ -2146,27 +2146,27 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, Resume_Hash) {
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume();
+  download->Resume(false);
   WaitForInterrupt(download);
 
   parameters.injected_errors.pop();
   TestDownloadHttpResponse::StartServing(parameters, server_url2);
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_EQ(expected_hash, download->GetHash());
@@ -2273,7 +2273,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   parameters.pause_offset = -1;
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   request_pause_handler.WaitForCallback();
 
   // At this point, the download resumption request has been sent out, but the
@@ -2326,7 +2326,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   request_pause_handler.WaitForCallback();
 
   // At this point, the download item has initiated a network request for the
@@ -2386,7 +2386,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_RemoveResumedDownload) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForInProgress(download);
 
   download->Remove();
@@ -2431,7 +2431,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_CancelResumedDownload) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForInProgress(download);
 
   download->Cancel(true);
@@ -2470,7 +2470,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_FALSE(PathExists(intermediate_file_path));
@@ -2536,7 +2536,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_FALSE(PathExists(intermediate_file_path));
@@ -2589,7 +2589,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_EQ(kIntermediateSize, download->GetBytesWasted());
@@ -2649,7 +2649,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_FALSE(PathExists(intermediate_file_path));
@@ -2715,7 +2715,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_FALSE(PathExists(intermediate_file_path));
@@ -2790,7 +2790,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   EXPECT_FALSE(PathExists(intermediate_file_path));
@@ -2863,7 +2863,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
           base::Time(), false,
           std::vector<download::DownloadItem::ReceivedSlice>());
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   // The amount "extra" that was added to the file.
@@ -2908,7 +2908,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
   parameters.ClearInjectedErrors();
   TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   ASSERT_EQ(parameters.size, download->GetReceivedBytes());
@@ -3762,7 +3762,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
 
   // The fetch error body should be cached in download item. The download should
   // start from beginning.
-  download->Resume();
+  download->Resume(false);
   WaitForCompletion(download);
 
   // The file should be empty.

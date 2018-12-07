@@ -194,6 +194,7 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   proto.set_paused(in_progress_info.paused);
   proto.set_metered(in_progress_info.metered);
   proto.set_bytes_wasted(in_progress_info.bytes_wasted);
+  proto.set_auto_resume_count(in_progress_info.auto_resume_count);
   return proto;
 }
 
@@ -247,6 +248,7 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
   info.paused = proto.paused();
   info.metered = proto.metered();
   info.bytes_wasted = proto.bytes_wasted();
+  info.auto_resume_count = proto.auto_resume_count();
   return info;
 }
 

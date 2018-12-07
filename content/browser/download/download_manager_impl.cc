@@ -236,8 +236,9 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         delegate, guid, download_id, current_path, target_path, url_chain,
         referrer_url, site_url, tab_url, tab_refererr_url, mime_type,
         original_mime_type, start_time, end_time, etag, last_modified,
-        received_bytes, total_bytes, hash, state, danger_type, interrupt_reason,
-        false /* paused */, opened, last_access_time, transient,
+        received_bytes, total_bytes, 0 /* auto_resume_count */, hash, state,
+        danger_type, interrupt_reason, false /* paused */,
+        false /* allow_metered */, opened, last_access_time, transient,
         received_slices);
   }
 
@@ -771,6 +772,11 @@ base::Optional<download::DownloadEntry> DownloadManagerImpl::GetInProgressEntry(
 
 bool DownloadManagerImpl::IsOffTheRecord() const {
   return browser_context_->IsOffTheRecord();
+}
+
+bool DownloadManagerImpl::IsActiveNetworkMetered() const {
+  // TODO(shaktisahu): Call ChromeDownloadManagerDelegate to get this.
+  return false;
 }
 
 void DownloadManagerImpl::ReportBytesWasted(

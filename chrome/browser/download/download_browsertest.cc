@@ -3274,7 +3274,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_PauseResumeCancel) {
   EXPECT_NE(DownloadItem::CANCELLED, download_item->GetState());
   download_item->Pause();
   EXPECT_TRUE(download_item->IsPaused());
-  download_item->Resume();
+  download_item->Resume(false);
   EXPECT_FALSE(download_item->IsPaused());
   EXPECT_NE(DownloadItem::CANCELLED, download_item->GetState());
   download_item->Cancel(true);
@@ -3360,7 +3360,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_NoPrompt) {
       error_injector.get(), download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
   ASSERT_TRUE(download);
 
-  download->Resume();
+  download->Resume(false);
   completion_observer->WaitForFinished();
 
   EXPECT_EQ(
@@ -3383,7 +3383,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPrompt) {
       error_injector.get(), download::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE);
   ASSERT_TRUE(download);
 
-  download->Resume();
+  download->Resume(true);
   completion_observer->WaitForFinished();
 
   EXPECT_EQ(
@@ -3410,7 +3410,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_WithPromptAlways) {
   // Prompts the user initially because of the kPromptForDownload preference.
   EXPECT_TRUE(DidShowFileChooser());
 
-  download->Resume();
+  download->Resume(true);
   completion_observer->WaitForFinished();
 
   EXPECT_EQ(
@@ -3439,7 +3439,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_Automatic) {
 
   std::unique_ptr<content::DownloadTestObserver> completion_observer(
       CreateWaiter(browser(), 1));
-  download->Resume();
+  download->Resume(true);
   completion_observer->WaitForFinished();
 
   // Automatic resumption causes download target determination to be run
@@ -3474,7 +3474,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
 
   // Resuming should cause the download to be interrupted again due to the
   // errors we are injecting.
-  download->Resume();
+  download->Resume(false);
   resumable_observer->WaitForFinished();
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
   ASSERT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_FAILED,
@@ -3485,7 +3485,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
   // No errors this time. The download should complete successfully.
   EXPECT_FALSE(completion_observer->IsFinished());
   completion_observer->StartObserving();
-  download->Resume();
+  download->Resume(false);
   completion_observer->WaitForFinished();
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
 

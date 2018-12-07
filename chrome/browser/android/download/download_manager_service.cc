@@ -145,6 +145,19 @@ static jlong JNI_DownloadManagerService_Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(service);
 }
 
+DownloadManagerService::DownloadActionParams::DownloadActionParams(
+    DownloadAction download_action)
+    : action(download_action), has_user_gesture(false) {}
+
+DownloadManagerService::DownloadActionParams::DownloadActionParams(
+    DownloadAction download_action,
+    bool user_gesture)
+    : action(download_action), has_user_gesture(user_gesture) {}
+
+DownloadManagerService::DownloadActionParams::DownloadActionParams(
+    const DownloadActionParams& other)
+    : action(other.action), has_user_gesture(other.has_user_gesture) {}
+
 DownloadManagerService::DownloadManagerService()
     : is_history_query_complete_(false),
       is_pending_downloads_loaded_(false),
@@ -253,24 +266,28 @@ void DownloadManagerService::ResumeDownload(
     JNIEnv* env,
     jobject obj,
     const JavaParamRef<jstring>& jdownload_guid,
-    bool is_off_the_record) {
+    bool is_off_the_record,
+    bool has_user_gesture) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
   if (is_pending_downloads_loaded_ || is_off_the_record)
-    ResumeDownloadInternal(download_guid, is_off_the_record);
-  else
-    EnqueueDownloadAction(download_guid, RESUME);
+    ResumeDownloadInternal(download_guid, is_off_the_record, has_user_gesture);
+  else {
+    EnqueueDownloadAction(download_guid,
+                          DownloadActionParams(RESUME, has_user_gesture));
+  }
 }
 
 void DownloadManagerService::RetryDownload(
     JNIEnv* env,
     jobject obj,
     const JavaParamRef<jstring>& jdownload_guid,
-    bool is_off_the_record) {
+    bool is_off_the_record,
+    bool has_user_gesture) {
   std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
   if (is_pending_downloads_loaded_ || is_off_the_record)
-    RetryDownloadInternal(download_guid, is_off_the_record);
+    RetryDownloadInternal(download_guid, is_off_the_record, has_user_gesture);
   else
-    EnqueueDownloadAction(download_guid, RETRY);
+    EnqueueDownloadAction(download_guid, DownloadActionParams(RETRY));
 }
 
 void DownloadManagerService::PauseDownload(
@@ -282,7 +299,7 @@ void DownloadManagerService::PauseDownload(
   if (is_pending_downloads_loaded_ || is_off_the_record)
     PauseDownloadInternal(download_guid, is_off_the_record);
   else
-    EnqueueDownloadAction(download_guid, PAUSE);
+    EnqueueDownloadAction(download_guid, DownloadActionParams(PAUSE));
 }
 
 void DownloadManagerService::RemoveDownload(
@@ -294,7 +311,7 @@ void DownloadManagerService::RemoveDownload(
   if (is_history_query_complete_ || is_off_the_record)
     RemoveDownloadInternal(download_guid, is_off_the_record);
   else
-    EnqueueDownloadAction(download_guid, REMOVE);
+    EnqueueDownloadAction(download_guid, DownloadActionParams(REMOVE));
 }
 
 void DownloadManagerService::GetAllDownloads(JNIEnv* env,
@@ -378,7 +395,7 @@ void DownloadManagerService::CancelDownload(
   if (is_pending_downloads_loaded_ || is_off_the_record)
     CancelDownloadInternal(download_guid, is_off_the_record);
   else
-    EnqueueDownloadAction(download_guid, CANCEL);
+    EnqueueDownloadAction(download_guid, DownloadActionParams(CANCEL));
 }
 
 void DownloadManagerService::OnHistoryQueryComplete() {
@@ -432,7 +449,9 @@ void DownloadManagerService::OnDownloadRemoved(
 }
 
 void DownloadManagerService::ResumeDownloadInternal(
-    const std::string& download_guid, bool is_off_the_record) {
+    const std::string& download_guid,
+    bool is_off_the_record,
+    bool has_user_gesture) {
   download::DownloadItem* item = GetDownload(download_guid, is_off_the_record);
   if (!item) {
     OnResumptionFailed(download_guid);
@@ -443,14 +462,15 @@ void DownloadManagerService::ResumeDownloadInternal(
     return;
   }
   DownloadControllerBase::Get()->AboutToResumeDownload(item);
-  item->Resume();
+  item->Resume(has_user_gesture);
   if (!resume_callback_for_testing_.is_null())
     resume_callback_for_testing_.Run(true);
 }
 
 void DownloadManagerService::RetryDownloadInternal(
     const std::string& download_guid,
-    bool is_off_the_record) {
+    bool is_off_the_record,
+    bool has_user_gesture) {
   content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
   if (!manager)
     return;
@@ -461,7 +481,7 @@ void DownloadManagerService::RetryDownloadInternal(
 
   // Try to resume first.
   if (item->CanResume()) {
-    item->Resume();
+    item->Resume(has_user_gesture);
     return;
   }
 
@@ -541,26 +561,26 @@ void DownloadManagerService::RemoveDownloadInternal(
 
 void DownloadManagerService::EnqueueDownloadAction(
     const std::string& download_guid,
-    DownloadAction action) {
+    const DownloadActionParams& params) {
   auto iter = pending_actions_.find(download_guid);
   if (iter == pending_actions_.end()) {
-    pending_actions_[download_guid] = action;
+    pending_actions_.insert(std::make_pair(download_guid, params));
     return;
   }
-  switch (action) {
+  switch (params.action) {
     case RESUME:
-      if (iter->second == PAUSE)
-        iter->second = action;
+      if (iter->second.action == PAUSE)
+        iter->second = params;
       break;
     case PAUSE:
-      if (iter->second == RESUME)
-        iter->second = action;
+      if (iter->second.action == RESUME)
+        iter->second = params;
       break;
     case CANCEL:
-      iter->second = action;
+      iter->second = params;
       break;
     case REMOVE:
-      iter->second = action;
+      iter->second = params;
       break;
     default:
       NOTREACHED();
@@ -631,11 +651,11 @@ void DownloadManagerService::OnPendingDownloadsLoaded() {
   is_pending_downloads_loaded_ = true;
   for (auto iter = pending_actions_.begin(); iter != pending_actions_.end();
        ++iter) {
-    DownloadAction action = iter->second;
+    DownloadActionParams params = iter->second;
     std::string download_guid = iter->first;
-    switch (action) {
+    switch (params.action) {
       case RESUME:
-        ResumeDownloadInternal(download_guid, false);
+        ResumeDownloadInternal(download_guid, false, params.has_user_gesture);
         break;
       case PAUSE:
         PauseDownloadInternal(download_guid, false);
@@ -691,10 +711,11 @@ void DownloadManagerService::CreateInterruptedDownloadForTest(
           ConvertJavaStringToUTF8(env, jdownload_guid), 1,
           target_path.AddExtension("crdownload"), target_path, url_chain,
           GURL(), GURL(), GURL(), GURL(), "", "", base::Time(), base::Time(),
-          "", "", 0, -1, "", download::DownloadItem::INTERRUPTED,
+          "", "", 0, -1, 0, "", download::DownloadItem::INTERRUPTED,
           download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          download::DOWNLOAD_INTERRUPT_REASON_CRASH, false, false, base::Time(),
-          false, std::vector<download::DownloadItem::ReceivedSlice>()));
+          download::DOWNLOAD_INTERRUPT_REASON_CRASH, false, false, false,
+          base::Time(), false,
+          std::vector<download::DownloadItem::ReceivedSlice>()));
 }
 
 // static

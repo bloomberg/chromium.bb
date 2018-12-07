@@ -1218,7 +1218,7 @@ ExtensionFunction::ResponseAction DownloadsResumeFunction::Run() {
   }
   // Note that if the item isn't paused, this will be a no-op, and the extension
   // call will seem successful.
-  download_item->Resume();
+  download_item->Resume(user_gesture());
   RecordApiFunctions(DOWNLOADS_FUNCTION_RESUME);
   return RespondNow(NoArguments());
 }
