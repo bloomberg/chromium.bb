@@ -1034,19 +1034,9 @@ class IDLParser(object):
     else:
       p[0] = ''
 
-  # Add unqualified Promise
   def p_PromiseType(self, p):
-    """PromiseType : PROMISE '<' ReturnType '>'
-                   | PROMISE"""
-    if len(p) == 2:
-      # Promise without resolution type is not specified in the Web IDL spec.
-      # As it is used in some specs and in the blink implementation,
-      # we allow that here.
-      resolution_type = self.BuildProduction('Type', p, 1,
-                                             self.BuildProduction('Any', p, 1))
-      p[0] = self.BuildNamed('Promise', p, 1, resolution_type)
-    else:
-      p[0] = self.BuildNamed('Promise', p, 1, p[3])
+    """PromiseType : PROMISE '<' ReturnType '>'"""
+    p[0] = self.BuildNamed('Promise', p, 1, p[3])
 
   def p_Null(self, p):
     """Null : '?'
