@@ -44,6 +44,7 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
 
   void OnFocus() override {
     SetText(base::UTF8ToUTF16(folder_header_view_->folder_item_->name()));
+    folder_header_view_->previous_folder_name_ = text();
     SelectAll(false);
     Textfield::OnFocus();
   }
@@ -221,10 +222,15 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
 
   folder_item_->RemoveObserver(this);
   // Enforce the maximum folder name length in UI.
-  std::string name = base::UTF16ToUTF8(
-      folder_name_view_->text().substr(0, kMaxFolderNameChars));
-  if (name != folder_item_->name())
-    delegate_->SetItemName(folder_item_, name);
+  if (new_contents.length() > kMaxFolderNameChars) {
+    folder_name_view_->SetText(previous_folder_name_.value());
+    sender->SelectRange(gfx::Range(previous_cursor_position_.value(),
+                                   previous_cursor_position_.value()));
+  } else {
+    previous_folder_name_ = new_contents;
+    delegate_->SetItemName(folder_item_, base::UTF16ToUTF8(new_contents));
+  }
+
   folder_item_->AddObserver(this);
 
   UpdateFolderNameAccessibleName();
@@ -245,8 +251,22 @@ bool FolderHeaderView::HandleKeyEvent(views::Textfield* sender,
   return ProcessLeftRightKeyTraversalForTextfield(folder_name_view_, key_event);
 }
 
+void FolderHeaderView::OnBeforeUserAction(views::Textfield* sender) {
+  previous_cursor_position_ = sender->GetCursorPosition();
+}
+
 void FolderHeaderView::ItemNameChanged() {
   Update();
+}
+
+void FolderHeaderView::SetPreviousCursorPositionForTest(
+    const size_t cursor_position) {
+  previous_cursor_position_ = cursor_position;
+}
+
+void FolderHeaderView::SetPreviousFolderNameForTest(
+    const base::string16& previous_name) {
+  previous_folder_name_ = previous_name;
 }
 
 }  // namespace app_list
