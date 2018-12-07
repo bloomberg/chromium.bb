@@ -38,7 +38,6 @@
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -743,7 +742,7 @@ class MockWebSocketStreamRequest : public WebSocketStreamRequest {
 struct WebSocketStreamCreationCallbackArgumentSaver {
   std::unique_ptr<WebSocketStreamRequest> Create(
       const GURL& socket_url,
-      std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+      const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
       const GURL& site_for_cookies,
       const HttpRequestHeaders& additional_headers,
@@ -751,21 +750,17 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
       const NetLogWithSource& net_log,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
     this->socket_url = socket_url;
-    this->create_helper = std::move(create_helper);
     this->origin = origin;
     this->site_for_cookies = site_for_cookies;
     this->url_request_context = url_request_context;
-    this->net_log = net_log;
     this->connect_delegate = std::move(connect_delegate);
     return std::make_unique<MockWebSocketStreamRequest>();
   }
 
   GURL socket_url;
-  std::unique_ptr<WebSocketHandshakeStreamCreateHelper> create_helper;
   url::Origin origin;
   GURL site_for_cookies;
   URLRequestContext* url_request_context;
-  NetLogWithSource net_log;
   std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate;
 };
 

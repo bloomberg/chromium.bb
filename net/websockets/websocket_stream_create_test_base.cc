@@ -14,7 +14,6 @@
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
-#include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "net/websockets/websocket_stream.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -101,13 +100,11 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
     std::unique_ptr<base::OneShotTimer> timer) {
   auto connect_delegate = std::make_unique<TestConnectDelegate>(
       this, connect_run_loop_.QuitClosure());
-  auto create_helper = std::make_unique<WebSocketHandshakeStreamCreateHelper>(
-      connect_delegate.get(), sub_protocols);
   auto api_delegate = std::make_unique<TestWebSocketStreamRequestAPI>();
   stream_request_ = WebSocketStream::CreateAndConnectStreamForTesting(
-      socket_url, std::move(create_helper), origin, site_for_cookies,
-      additional_headers, url_request_context_host_.GetURLRequestContext(),
-      NetLogWithSource(), std::move(connect_delegate),
+      socket_url, sub_protocols, origin, site_for_cookies, additional_headers,
+      url_request_context_host_.GetURLRequestContext(), NetLogWithSource(),
+      std::move(connect_delegate),
       timer ? std::move(timer) : std::make_unique<base::OneShotTimer>(),
       std::move(api_delegate));
 }
