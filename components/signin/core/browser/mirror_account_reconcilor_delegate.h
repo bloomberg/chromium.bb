@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_MIRROR_ACCOUNT_RECONCILOR_DELEGATE_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_MIRROR_ACCOUNT_RECONCILOR_DELEGATE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "services/identity/public/cpp/identity_manager.h"
@@ -16,12 +19,18 @@ class MirrorAccountReconcilorDelegate
     : public AccountReconcilorDelegate,
       public identity::IdentityManager::Observer {
  public:
-  MirrorAccountReconcilorDelegate(identity::IdentityManager* identity_manager);
+  explicit MirrorAccountReconcilorDelegate(
+      identity::IdentityManager* identity_manager);
   ~MirrorAccountReconcilorDelegate() override;
+
+ protected:
+  // AccountReconcilorDelegate:
+  // TODO(sinhak): Make this private after deleting
+  // |ChromeOSAccountReconcilorDelegate|.
+  bool IsReconcileEnabled() const override;
 
  private:
   // AccountReconcilorDelegate:
-  bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
   gaia::GaiaSource GetGaiaApiSource() const override;
   bool ShouldAbortReconcileIfPrimaryHasError() const override;

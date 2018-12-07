@@ -24,7 +24,10 @@
 #if defined(OS_CHROMEOS)
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
+#include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #endif
@@ -68,7 +71,42 @@ class ChromeOSChildAccountReconcilorDelegate
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeOSChildAccountReconcilorDelegate);
 };
-#endif
+
+// An |AccountReconcilorDelegate| for Chrome OS that is exactly the same as
+// |MirrorAccountReconcilorDelegate|, except that it does not begin account
+// reconciliation until accounts have been migrated to Chrome OS Account
+// Manager.
+// TODO(sinhak): Remove this when all users have been migrated to Chrome OS
+// Account Manager.
+class ChromeOSAccountReconcilorDelegate
+    : public signin::MirrorAccountReconcilorDelegate {
+ public:
+  ChromeOSAccountReconcilorDelegate(
+      identity::IdentityManager* identity_manager,
+      chromeos::AccountManagerMigrator* account_migrator)
+      : signin::MirrorAccountReconcilorDelegate(identity_manager),
+        account_migrator_(account_migrator) {}
+  ~ChromeOSAccountReconcilorDelegate() override = default;
+
+ private:
+  // AccountReconcilorDelegate:
+  bool IsReconcileEnabled() const override {
+    if (!MirrorAccountReconcilorDelegate::IsReconcileEnabled()) {
+      return false;
+    }
+
+    const chromeos::AccountMigrationRunner::Status status =
+        account_migrator_->GetStatus();
+    return status != chromeos::AccountMigrationRunner::Status::kNotStarted &&
+           status != chromeos::AccountMigrationRunner::Status::kRunning;
+  }
+
+  // A non-owning pointer.
+  const chromeos::AccountManagerMigrator* const account_migrator_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeOSAccountReconcilorDelegate);
+};
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -121,6 +159,16 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       if (profile->IsChild()) {
         return std::make_unique<ChromeOSChildAccountReconcilorDelegate>(
             IdentityManagerFactory::GetForProfile(profile));
+      }
+
+      // TODO(sinhak): Remove the if-condition (and use
+      // |MirrorAccountReconcilorDelegate|) when all Chrome OS users have been
+      // migrated to Account Manager.
+      if (chromeos::switches::IsAccountManagerEnabled()) {
+        return std::make_unique<ChromeOSAccountReconcilorDelegate>(
+            IdentityManagerFactory::GetForProfile(profile),
+            chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
+                profile));
       }
 #endif
       return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
