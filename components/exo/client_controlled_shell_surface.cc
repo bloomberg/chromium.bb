@@ -911,21 +911,12 @@ bool ClientControlledShellSurface::OnPreWidgetCommit() {
 
   // PIP windows should not be able to be active.
   if (pending_window_state_ == ash::mojom::WindowStateType::PIP) {
-    auto* window = widget_->GetNativeWindow();
-    if (wm::IsActiveWindow(window)) {
-      // In the case that a window changed state into PIP while activated,
-      // make sure to deactivate it now.
-      wm::DeactivateWindow(window);
-    }
-    widget_->widget_delegate()->set_can_activate(false);
-
     if (ash::features::IsPipRoundedCornersEnabled()) {
       decorator_ = std::make_unique<ash::RoundedCornerDecorator>(
           window_state->window(), host_window(), host_window()->layer(),
           ash::kPipRoundedCornerRadius);
     }
   } else {
-    widget_->widget_delegate()->set_can_activate(true);
     decorator_.reset();  // Remove rounded corners.
   }
 
