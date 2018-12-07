@@ -154,21 +154,11 @@ WebString WebDocument::Title() const {
   return WebString(ConstUnwrap<Document>()->title());
 }
 
-WebString WebDocument::ContentAsTextForTesting(bool use_inner_text) const {
+WebString WebDocument::ContentAsTextForTesting() const {
   Element* document_element = ConstUnwrap<Document>()->documentElement();
   if (!document_element)
     return WebString();
-  if (use_inner_text)
-    return document_element->innerText();
-
-  // TODO(editing-dev): We should use |Element::innerText()|.
-  const_cast<Document*>(ConstUnwrap<Document>())
-      ->UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(document_element);
-  if (!document_element->GetLayoutObject())
-    return document_element->textContent(true);
-  return WebString(
-      PlainText(EphemeralRange::RangeOfContents(*document_element),
-                TextIteratorBehavior::Builder().SetForInnerText(true).Build()));
+  return document_element->innerText();
 }
 
 WebElementCollection WebDocument::All() {

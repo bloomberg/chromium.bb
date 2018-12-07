@@ -60,9 +60,7 @@ std::string DumpLayout(WebLocalFrame* frame, const WebTestRuntimeFlags& flags) {
 
   if (flags.dump_as_text()) {
     result = DumpFrameHeaderIfNeeded(frame);
-    result += frame->GetDocument()
-                  .ContentAsTextForTesting(flags.should_use_inner_text_dump())
-                  .Utf8();
+    result += frame->GetDocument().ContentAsTextForTesting().Utf8();
     result += "\n";
   } else if (flags.dump_as_markup()) {
     DCHECK(!flags.is_printing());

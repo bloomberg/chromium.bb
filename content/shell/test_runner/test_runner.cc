@@ -2457,11 +2457,6 @@ void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
   OnWebTestRuntimeFlagsChanged();
 }
 
-void TestRunner::SetShouldUseInnerTextDump(bool value) {
-  web_test_runtime_flags_.set_should_use_inner_text_dump(value);
-  OnWebTestRuntimeFlagsChanged();
-}
-
 void TestRunner::SetWillSendRequestClearHeader(const std::string& header) {
   if (!header.empty())
     http_headers_to_clear_.insert(header);
