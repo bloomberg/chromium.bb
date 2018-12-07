@@ -1815,7 +1815,12 @@ if (modularize_vr) {
 android_app_bundle("chrome_public_bundle") {
   bundle_name = "ChromePublic"
   base_module_target = ":chrome_public_base_module"
-  proguard_enabled = !is_java_debug
+  if (!is_java_debug) {
+    proguard_enabled = true
+    if (!experimental_use_r8) {
+      enable_multidex = true
+    }
+  }
 
   # Signing is very slow, only do that for official builds.
   sign_bundle = is_official_build
