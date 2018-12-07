@@ -84,20 +84,13 @@ void CheckPolicyForCookies(const GURL& url,
       std::move(callback));
 }
 
-}  // namespace
-
-static void RequestPlaformPathFromFileSystemURL(
-    const GURL& url,
-    int render_process_id,
+void OnSyncGetPlatformPathDone(
     scoped_refptr<storage::FileSystemContext> file_system_context,
-    media::MediaResourceGetter::GetPlatformPathCB callback) {
+    media::MediaResourceGetter::GetPlatformPathCB callback,
+    const base::FilePath& platform_path) {
   DCHECK(file_system_context->default_file_task_runner()
              ->RunsTasksInCurrentSequence());
-  base::FilePath platform_path;
-  SyncGetPlatformPath(file_system_context.get(),
-                      render_process_id,
-                      url,
-                      &platform_path);
+
   base::FilePath data_storage_path;
   base::PathService::Get(base::DIR_ANDROID_APP_DATA, &data_storage_path);
   if (data_storage_path.IsParent(platform_path))
@@ -105,6 +98,20 @@ static void RequestPlaformPathFromFileSystemURL(
   else
     ReturnResultOnUIThread(std::move(callback), std::string());
 }
+
+void RequestPlatformPathFromFileSystemURL(
+    const GURL& url,
+    int render_process_id,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    media::MediaResourceGetter::GetPlatformPathCB callback) {
+  DCHECK(file_system_context->default_file_task_runner()
+             ->RunsTasksInCurrentSequence());
+  SyncGetPlatformPath(file_system_context.get(), render_process_id, url,
+                      base::BindOnce(&OnSyncGetPlatformPathDone,
+                                     file_system_context, std::move(callback)));
+}
+
+}  // namespace
 
 // The task object that retrieves media resources on the IO thread.
 // TODO(qinmin): refactor this class to make the code reusable by others as
@@ -247,7 +254,7 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
 
   scoped_refptr<storage::FileSystemContext> context(file_system_context_);
   context->default_file_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&RequestPlaformPathFromFileSystemURL, url,
+      FROM_HERE, base::BindOnce(&RequestPlatformPathFromFileSystemURL, url,
                                 render_process_id_, context, std::move(cb)));
 }
 

@@ -69,6 +69,48 @@ FileSystemOptions CreateBrowserFileSystemOptions(bool is_incognito) {
                            additional_allowed_schemes);
 }
 
+bool CheckCanReadFileSystemFileOnUIThread(int process_id,
+                                          const storage::FileSystemURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  return policy->CanReadFileSystemFile(process_id, url);
+}
+
+void GrantReadAccessOnUIThread(int process_id,
+                               const base::FilePath& platform_path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!policy->CanReadFile(process_id, platform_path)) {
+    policy->GrantReadFile(process_id, platform_path);
+  }
+}
+
+// Helper function that used by SyncGetPlatformPath() to get the platform
+// path, grant read access, and send return the path via a callback.
+void GetPlatformPathOnFileThread(
+    scoped_refptr<storage::FileSystemContext> context,
+    int process_id,
+    const storage::FileSystemURL& url,
+    SyncGetPlatformPathCB callback,
+    bool can_read_filesystem_file) {
+  DCHECK(context->default_file_task_runner()->RunsTasksInCurrentSequence());
+
+  if (!can_read_filesystem_file) {
+    std::move(callback).Run(base::FilePath());
+    return;
+  }
+
+  base::FilePath platform_path;
+  context->operation_runner()->SyncGetPlatformPath(url, &platform_path);
+
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&GrantReadAccessOnUIThread, process_id, platform_path),
+      base::BindOnce(std::move(callback), platform_path));
+}
+
 }  // namespace
 
 scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
@@ -120,30 +162,27 @@ bool FileSystemURLIsValid(storage::FileSystemContext* context,
 void SyncGetPlatformPath(storage::FileSystemContext* context,
                          int process_id,
                          const GURL& path,
-                         base::FilePath* platform_path) {
+                         SyncGetPlatformPathCB callback) {
   DCHECK(context->default_file_task_runner()->
          RunsTasksInCurrentSequence());
-  DCHECK(platform_path);
-  *platform_path = base::FilePath();
   storage::FileSystemURL url(context->CrackURL(path));
-  if (!FileSystemURLIsValid(context, url))
+  if (!FileSystemURLIsValid(context, url)) {
+    // Note: Posting a task here so this function always returns
+    // before the callback is called no matter which path is taken.
+    base::PostTask(FROM_HERE,
+                   base::BindOnce(std::move(callback), base::FilePath()));
     return;
+  }
 
   // Make sure if this file is ok to be read (in the current architecture
   // which means roughly same as the renderer is allowed to get the platform
   // path to the file).
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadFileSystemFile(process_id, url))
-    return;
-
-  context->operation_runner()->SyncGetPlatformPath(url, platform_path);
-
-  // The path is to be attached to URLLoader so we grant read permission
-  // for the file. (We need to check first because a parent directory may
-  // already have the permissions and we don't need to grant it to the file.)
-  if (!policy->CanReadFile(process_id, *platform_path))
-    policy->GrantReadFile(process_id, *platform_path);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&CheckCanReadFileSystemFileOnUIThread, process_id, url),
+      base::BindOnce(&GetPlatformPathOnFileThread,
+                     scoped_refptr<storage::FileSystemContext>(context),
+                     process_id, url, std::move(callback)));
 }
 
 void PrepareDropDataForChildProcess(
