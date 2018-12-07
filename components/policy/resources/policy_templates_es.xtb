@@ -118,6 +118,13 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
           Ningún modo de desbloqueo rápido está disponible para los dispositivos administrados de forma predeterminada.</translation>
 <translation id="123081309365616809">Habilita el envío de contenido al dispositivo</translation>
+<translation id="1231349879329465225">Permite habilitar o inhabilitar la transición rápida.
+      Se aplica a todos los usuarios y todas las interfaces del dispositivo.
+      Para poder usar la transición rápida, es necesario habilitar este ajuste y la propiedad ONC en cada red.
+      Una vez configurada la transición rápida, se mantendrá hasta que se cambie la política para inhabilitarla.
+
+      Si no se define la política, la transición rápida no se usará.
+      Si se le asigna el valor "True", la transición rápida se usa si el punto de acceso inalámbrico lo admite.</translation>
 <translation id="1243570869342663665">Controlar el filtrado de contenido para adultos de SafeSites.</translation>
 <translation id="1257550411839719984">Establecer directorio de descargas predeterminado</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>

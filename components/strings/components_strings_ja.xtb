@@ -842,6 +842,7 @@
 <translation id="6744009308914054259">接続するまでの間、[ダウンロード] に移動してオフラインで記事を読むことができます。</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
 <translation id="6757797048963528358">デバイスがスリープ状態です。</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{現在、このカードは追加できません}other{現在、これらのカードは追加できません}}</translation>
 <translation id="6778737459546443941">保護者がまだサイトを開くことを許可していません</translation>
 <translation id="679355240208270552">ポリシーによって既定の検索エンジンが有効になっていないため、無視されました。</translation>
 <translation id="681021252041861472">必須項目</translation>
@@ -854,6 +855,7 @@
 <translation id="6865412394715372076">現在、このカードを確認できません</translation>
 <translation id="6868206169573555318">再起動して更新する</translation>
 <translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
+<translation id="6885646002011712606">画面下部にある自動入力アシスタントを使用できます</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
 <translation id="6895330447102777224">カードを確認しました</translation>
@@ -996,6 +998,7 @@
 <translation id="7716424297397655342">このサイトをキャッシュから読み込むことができません</translation>
 <translation id="7723047071702270851">カードの編集</translation>
 <translation id="774634243536837715">危険なコンテンツがブロックされました。</translation>
+<translation id="7747182086178764941">自動入力アシスタントの初回実行画面が表示されました</translation>
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="7755287808199759310">ブロックの解除は保護者が行うことができます</translation>
 <translation id="7758069387465995638">ファイアウォールまたはウイルス対策ソフトウェアによって接続がブロックされた可能性があります。</translation>

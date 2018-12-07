@@ -40,6 +40,7 @@
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक पर्यायांसाठी क्लिक करा</translation>
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करा. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">या सेशनमध्ये तुमची सर्व अ‍ॅक्टिव्हिटी अ‍ॅक्सेस करा</translation>
 <translation id="1608626060424371292">हा वापरकर्ता काढून टाका</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">कनेक्शन जोडा</translation>
 <translation id="2961963223658824723">काहीतरी चूक झाली. काही सेकंदांनी पुन्हा प्रयत्न करा.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">अॅप्स, एक्स्टेंशन आणि थीम इंस्टॉल करा</translation>
 <translation id="2995447421581609334">कास्‍ट डिव्‍हाइस दाखवा.</translation>
 <translation id="2996462380875591307">डॉक केलेले मॅग्निफायर सुरू केले. ते टॉगल करून बंद करण्यासाठी पुन्हा Ctrl+Search+D दाबा.</translation>
 <translation id="3000461861112256445">मोनो ऑडिओ</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस पेअरिंगसाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी एंटर करा: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
+<translation id="6665545700722362599">वेबसाइट, अ‍ॅप्स आणि एक्स्टेंशनना स्थान सेवा, डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरण्याची परवानगी द्या</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">तुमच्या वेगळ्या करण्यायोग्य कीबोर्डला महत्त्वाच्या अपडेटची आवश्यकता आहे</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>

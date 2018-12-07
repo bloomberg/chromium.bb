@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">เพิ่มแกลเลอรีสื่อตามไดเรกทอรี</translation>
 <translation id="2910318910161511225">เชื่อมต่อกับเครือข่ายแล้วลองอีกครั้ง</translation>
 <translation id="2913331724188855103">อนุญาตให้ไซต์บันทึกและอ่านข้อมูลคุกกี้ (แนะนำ)</translation>
+<translation id="2915102088417824677">ดูบันทึกกิจกรรม</translation>
 <translation id="2916073183900451334">การกดแท็บบนหน้าเว็บจะเน้นลิงก์ และฟิลด์ของฟอร์ม</translation>
 <translation id="2916745397441987255">ค้นหาส่วนขยาย</translation>
 <translation id="2921081876747860777">โปรดสร้างรหัสผ่านเพื่อปกป้องข้อมูลในเครื่อง</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">ส่ง&amp;ออก</translation>
 <translation id="4107048419833779140">ระบุและยกเลิกการต่อเชื่อมอุปกรณ์จัดเก็บข้อมูล</translation>
 <translation id="4109135793348361820">ย้ายหน้าต่างไปยัง <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">ดาวน์โหลดเสร็จสมบูรณ์: <ph name="FILE_NAME" /> กด Shift+F6 เพื่อวนกลับไปยังบริเวณแถบดาวน์โหลด</translation>
 <translation id="4110895898888439383">ท่องเว็บในโหมดคอนทราสต์สูง</translation>
 <translation id="4115002065223188701">เครือข่ายอยู่นอกช่วงสัญญาณ</translation>
 <translation id="4115080753528843955">บริการเนื้อหาบางอย่างใช้ตัวระบุที่ไม่ซ้ำกันเพื่อการให้สิทธิ์เข้าถึงเนื้อหาที่มีการป้องกัน</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">อนุญาตให้ "<ph name="APP_NAME" />" เรียกรายการอุปกรณ์ USB ที่เชื่อมต่ออยู่ใช่ไหม</translation>
 <translation id="4414232939543644979">หน้าต่างใหม่&amp;ที่ไม่ระบุตัวตน</translation>
 <translation id="4415245286584082850">ไม่พบอุปกรณ์ โปรดเปิดบทความในศูนย์ช่วยเหลือในแท็บใหม่</translation>
+<translation id="4415276339145661267">จัดการบัญชี Google</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (เรียกอีกอย่างว่า NIST P-384)</translation>
 <translation id="4416582610654027550">พิมพ์ URL ที่ถูกต้อง</translation>
 <translation id="4419409365248380979">อนุญาตให้ <ph name="HOST" /> ตั้งค่าคุกกี้ได้ตลอดเวลา</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">ขออภัย เราไม่อนุญาตให้ใช้บัญชี Google ในอุปกรณ์เครื่องนี้</translation>
 <translation id="4568854179928172494">เวลาที่แก้ไข</translation>
 <translation id="4569747168316751899">เมื่อไม่ได้ใช้งาน</translation>
+<translation id="4570387585180509432">ที่อยู่ หมายเลขโทรศัพท์ และอื่นๆ</translation>
 <translation id="4572659312570518089">การตรวจสอบสิทธิ์ถูกยกเลิกขณะที่เชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">การจัดรูปแบบล้มเหลว</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">กำลังโหลดแอป...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> ต้องการจับคู่กับอุปกรณ์ต่างๆ</translation>
 <translation id="5592595402373377407">ยังไม่มีข้อมูลเพียงพอ</translation>
 <translation id="5593357315997824387">ซิงค์ไฟล์</translation>
 <translation id="5595152862129936745">ไกลมาก</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">ท่องเว็บอย่างมีประสิทธิภาพด้วย Chrome</translation>
 <translation id="562935524653278697">ผู้ดูแลระบบของคุณได้ปิดใช้การซิงค์ของบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ</translation>
 <translation id="5632566673632479864">บัญชี <ph name="EMAIL" /> ของคุณไม่ได้รับอนุญาตในฐานะบัญชีหลักอีกต่อไป เนื่องจากบัญชีนี้จัดการโดย <ph name="DOMAIN" /> ระบบจะล้างบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ของคุณจากอุปกรณ์นี้</translation>
+<translation id="5632592977009207922">กำลังดาวน์โหลด เหลือ <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">ถามก่อนที่จะเข้าถึง (แนะนำ)</translation>
 <translation id="5636996382092289526">หากต้องการใช้ <ph name="NETWORK_ID" /> ก่อนอื่น คุณอาจจำเป็นต้อง<ph name="LINK_START" />ไปที่หน้าลงชื่อเข้าใช้ของเครือข่าย<ph name="LINK_END" /> ซึ่งจะเปิดขึ้นโดยอัตโนมัติในอีกไม่กี่วินาที ถ้าหน้าดังกล่าวไม่เปิดขึ้น แสดงว่าไม่สามารถใช้เครือข่ายดังกล่าวได้</translation>
 <translation id="5637476008227280525">เปิดใช้อินเทอร์เน็ตมือถือ</translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
 <translation id="6199801702437275229">กำลังรอข้อมูลพื้นที่...</translation>
 <translation id="6201792273624501289">แอป Linux</translation>
+<translation id="6202304368170870640">คุณใช้ PIN เพื่อลงชื่อเข้าใช้หรือปลดล็อกอุปกรณ์ได้</translation>
 <translation id="6205710420833115353">การดำเนินการบางอย่างใช้เวลานานกว่าที่คาดไว้ คุณต้องการล้มเลิกไหม</translation>
 <translation id="6206311232642889873">คัดลอ&amp;กรูปภาพ</translation>
 <translation id="6207200176136643843">รีเซ็ตเป็นระดับการซูมเริ่มต้น</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">ใบรับรอง CA ของเซิร์ฟเวอร์</translation>
 <translation id="7497981768003291373">คุณไม่มีบันทึกข้อความ WebRTC ที่จับภาพเมื่อเร็วๆ นี้</translation>
 <translation id="7502658306369382406">ที่อยู่ IPv6</translation>
+<translation id="7503127198245469314">ถอดอุปกรณ์ครอบศีรษะออกเพื่อบล็อกหรืออนุญาตในจอแสดงผลของเดสก์ท็อป</translation>
 <translation id="7503191893372251637">ประเภทใบรับรองของ Netscape </translation>
 <translation id="7503821294401948377">ไม่สามารถโหลดไอคอน "<ph name="ICON" />" เพื่อให้เกิดการทำงานของเบราว์เซอร์</translation>
 <translation id="750509436279396091">เปิดโฟลเดอร์ดาวน์โหลด</translation>
@@ -4868,6 +4876,7 @@
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8425492902634685834">กำหนดลงบนทาสก์บาร์</translation>
 <translation id="8425755597197517046">&amp;วางและค้นหา</translation>
+<translation id="8425768983279799676">คุณใช้ PIN เพื่อปลดล็อกอุปกรณ์ได้</translation>
 <translation id="8426713856918551002">กำลังเปิดใช้</translation>
 <translation id="8427292751741042100">ฝังในโฮสต์ใดก็ได้</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>

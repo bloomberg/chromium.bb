@@ -1282,6 +1282,7 @@
 <translation id="2908162660801918428">Tilføj mediegalleri efter mappe</translation>
 <translation id="2910318910161511225">Opret forbindelse til et netværk, og prøv igen</translation>
 <translation id="2913331724188855103">Tillad, at websites gemmer og læser cookiedata (anbefales)</translation>
+<translation id="2915102088417824677">Se din aktivitetshistorik</translation>
 <translation id="2916073183900451334">Tryk på Tab på en webside fremhæver links og felter i formularer</translation>
 <translation id="2916745397441987255">Søg efter udvidelser</translation>
 <translation id="2921081876747860777">Opret en adgangskode for at beskytte dine lokale data.</translation>
@@ -2070,6 +2071,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4104163789986725820">E&amp;ksporter...</translation>
 <translation id="4107048419833779140">Identificer og fjern lagerenheder</translation>
 <translation id="4109135793348361820">Flyt vindue til <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">[=1]1 download er gennemført: <ph name="FILE_NAME" />. Tryk på Shift+F6 for at skifte til downloadlinjen.</translation>
 <translation id="4110895898888439383">Brug internettet i tilstanden Stor kontrast</translation>
 <translation id="4115002065223188701">Netværket er uden for rækkevidde</translation>
 <translation id="4115080753528843955">Nogle indholdstjenester anvender unikke id'er for at give adgang til beskyttet indhold</translation>
@@ -2230,6 +2232,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="44141919652824029">Vil du give "<ph name="APP_NAME" />" adgang til listen over dine tilsluttede USB-enheder?</translation>
 <translation id="4414232939543644979">Nyt &amp;inkognitovindue</translation>
 <translation id="4415245286584082850">Der blev ikke fundet nogen enheder. Åbn en artikel i Hjælp på en ny fane.</translation>
+<translation id="4415276339145661267">Administrer din Google-konto</translation>
 <translation id="4415748029120993980">SECG elliptisk kurve secp384r1 (også kaldet NIST P-384)</translation>
 <translation id="4416582610654027550">Angiv en gyldig webadresse</translation>
 <translation id="4419409365248380979">Giv altid <ph name="HOST" /> tilladelse til at gemme cookies</translation>
@@ -2325,6 +2328,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4568213207643490790">Google-konti er ikke tilladte på denne enhed.</translation>
 <translation id="4568854179928172494">Ændringstidspunkt</translation>
 <translation id="4569747168316751899">Når den er inaktiv</translation>
+<translation id="4570387585180509432">Adresser, telefonnumre og meget mere</translation>
 <translation id="4572659312570518089">Godkendelsen blev annulleret under tilslutning til "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Flere...</translation>
@@ -3003,6 +3007,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5585912436068747822">Formatering mislykkedes</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Indlæser apps...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> vil gerne oprette forbindelse til enheder</translation>
 <translation id="5592595402373377407">Der er ikke nok data til rådighed endnu.</translation>
 <translation id="5593357315997824387">Synkroniser mine filer</translation>
 <translation id="5595152862129936745">Meget langt væk</translation>
@@ -3035,6 +3040,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5627676517703583263">Smart browsing med Chrome</translation>
 <translation id="562935524653278697">Din administrator har deaktiveret synkroniseringen af bogmærker, historik, adgangskoder og andre indstillinger.</translation>
 <translation id="5632566673632479864">Din konto, <ph name="EMAIL" />, kan ikke længere være den primære konto. Da denne konto administreres af <ph name="DOMAIN" />, ryddes dine bogmærker, din historik, dine adgangskoder og andre indstillinger fra denne enhed.</translation>
+<translation id="5632592977009207922">Downloader. <ph name="PERCENT_REMAINING" /> % tilbage</translation>
 <translation id="563535393368633106">Spørg inden brug (anbefales)</translation>
 <translation id="5636996382092289526">Hvis du vil bruge <ph name="NETWORK_ID" />, skal du først <ph name="LINK_START" />gå til netværkets loginside<ph name="LINK_END" />, som åbner automatisk om et par sekunder. Hvis ikke, kan netværket ikke bruges.</translation>
 <translation id="5637476008227280525">Aktivér mobildata</translation>
@@ -3418,6 +3424,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6198252989419008588">Skift pinkode</translation>
 <translation id="6199801702437275229">Venter på oplysninger om ledig plads...</translation>
 <translation id="6201792273624501289">Linux-apps</translation>
+<translation id="6202304368170870640">Du kan bruge din pinkode til at logge ind på din enhed eller låse den op.</translation>
 <translation id="6205710420833115353">Nogle handlinger tager længere tid end forventet. Vil du afbryde dem?</translation>
 <translation id="6206311232642889873">Ko&amp;pier billede</translation>
 <translation id="6207200176136643843">Nulstil til standardniveauet for zoom</translation>
@@ -4253,6 +4260,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7497215489070763236">Serverens CA-certifikat</translation>
 <translation id="7497981768003291373">Du har ingen nyligt registrerede WebRTC-tekstlogfiler.</translation>
 <translation id="7502658306369382406">IPv6-adresse</translation>
+<translation id="7503127198245469314">Fjern headsettet for at blokere eller tillade indhold på computerskærmen</translation>
 <translation id="7503191893372251637">Netscape-certifikatstype</translation>
 <translation id="7503821294401948377">Ikonet '<ph name="ICON" />' for browserhandling kunne ikke indlæses.</translation>
 <translation id="750509436279396091">Åbn mappen med downloads</translation>
@@ -4866,6 +4874,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8425213833346101688">Skift</translation>
 <translation id="8425492902634685834">Fastgør til proceslinje</translation>
 <translation id="8425755597197517046">Ind&amp;sæt og søg</translation>
+<translation id="8425768983279799676">Du kan bruge pinkoden til at låse din enhed op.</translation>
 <translation id="8426713856918551002">Aktiverer</translation>
 <translation id="8427292751741042100">indlejret på hvilken som helst host</translation>
 <translation id="8428213095426709021">Indstillinger</translation>

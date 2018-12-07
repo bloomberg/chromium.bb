@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1550523713251050646">Mag-click para sa higit pang mga opsyon</translation>
 <translation id="1570871743947603115">I-toggle ang Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">I-access ang lahat ng iyong aktibidad sa session na ito</translation>
 <translation id="1608626060424371292">Alisin ang user na ito</translation>
 <translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Magsimula ng query gamit ang boses</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Magdagdag ng koneksyon</translation>
 <translation id="2961963223658824723">Nagkaproblema. Subukang muli sa loob ng ilang segundo.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Mag-install ng mga app, extension, at tema</translation>
 <translation id="2995447421581609334">Ipakita ang mga cast device.</translation>
 <translation id="2996462380875591307">Na-enable ang Naka-dock na Magnifier. Pinduting muli ang Ctrl+Search+D para i-off ito.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
+<translation id="6665545700722362599">Nagbibigay ng pahintulot sa mga website, app, at extension na gumamit ng mga serbisyo ng lokasyon, gamitin ang mikropono, camera, o iba pang feature ng device</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Nangangailangan ng mahalagang update ang iyong naaalis na keyboard</translation>
 <translation id="6700713906295497288">Button ng menu ng IME</translation>

@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">ডিরেক্টরি অনুসারে মিডিয়া গ্যালারি জুড়ুন</translation>
 <translation id="2910318910161511225">নেটওয়ার্কে সংযোগ করে আবার চেষ্টা করুন</translation>
 <translation id="2913331724188855103">সাইটগুলিকে কুকি ডেটা পড়ার এবং সংরক্ষণ করার অনুমতি দিন (প্রস্তাবিত)</translation>
+<translation id="2915102088417824677">অ্যাক্টিভিটি লগ দেখুন</translation>
 <translation id="2916073183900451334">কোনও ওয়েবপৃষ্ঠায় লিঙ্কগুলি হাইলাইট করে ট্যাব টেপা পাশাপাশি ফর্ম ক্ষেত্রগুলি</translation>
 <translation id="2916745397441987255">এক্সটেনশানগুলি খুঁজুন</translation>
 <translation id="2921081876747860777">আপনার স্থানীয় ডেটা রক্ষা করার জন্য দয়া করে একটি পাসওয়ার্ড তৈরি করুন।</translation>
@@ -2068,6 +2069,7 @@
 <translation id="4104163789986725820">র&amp;প্তানি...</translation>
 <translation id="4107048419833779140">স্টোরেজ ডিভাইসগুলি শনাক্ত করে সরিয়ে দিন</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) এ উইন্ডো সরান</translation>
+<translation id="4110490973560452005">ডাউনলোড হয়ে গেছে: <ph name="FILE_NAME" />। Shift+F6 প্রেস করে ডাউনলোড বার এরিয়াতে যান।</translation>
 <translation id="4110895898888439383">উচ্চ কনট্রাস্ট মোডে ওয়েব ব্রাউজ করুন</translation>
 <translation id="4115002065223188701">নেটওয়ার্ক সীমার বাইরে</translation>
 <translation id="4115080753528843955">কিছু কনটেন্ট পরিষেবা অনন্য আইডেন্টিফায়ার ব্যবহার করে সুরক্ষিত কনটেন্টে অ্যাক্সেস দেয়</translation>
@@ -2228,6 +2230,7 @@
 <translation id="44141919652824029">"<ph name="APP_NAME" />" অ্যাপকে কানেক্ট করা ইউএসবি ডিভাইসগুলির তালিকা নিয়ে আসতে দেবেন?</translation>
 <translation id="4414232939543644979">নতুন &amp;ছদ্মবেশী উইন্ডো</translation>
 <translation id="4415245286584082850">কোনও ডিভাইস খুঁজে পাওয়া যায় নি। একটি নতুন ট্যাবে সহায়তা কেন্দ্রের একটি নিবন্ধ খুলুন।</translation>
+<translation id="4415276339145661267">আপনার Google অ্যাকাউন্ট ম্যানেজ করুন</translation>
 <translation id="4415748029120993980">SECG এলিপ্টিক কার্ভ secp384r1 (ওরফে NIST P-384)</translation>
 <translation id="4416582610654027550">একটি সঠিক URL লিখুন</translation>
 <translation id="4419409365248380979">কুকিজ সেট করতে <ph name="HOST" />-কে সব সময় অনুমতি দিন</translation>
@@ -2323,6 +2326,7 @@
 <translation id="4568213207643490790">দুঃখিত, এই ডিভাইসে Google অ্যাকাউন্টস অনুমোদিত নয়।</translation>
 <translation id="4568854179928172494">পরিবর্তিত সময়</translation>
 <translation id="4569747168316751899">কখন নিষ্ক্রিয়</translation>
+<translation id="4570387585180509432">ঠিকানা, ফোন নম্বর এবং আরও অনেক কিছু</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" এ সংযুক্ত করার সময় প্রমাণীকরণ বাতিল করা হয়েছে৷</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরও...</translation>
@@ -3000,6 +3004,7 @@
 <translation id="5585912436068747822">ফরম্যাটিং ব্যর্থ হয়েছে</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">অ্যাপ্লিকেশানগুলি লোড হচ্ছে...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> ডিভাইস যোগ করতে চায়</translation>
 <translation id="5592595402373377407">এখনও যথেষ্ট ডেটা উপলব্ধ নেই৷</translation>
 <translation id="5593357315997824387">আমার ফাইল সিঙ্ক করুন</translation>
 <translation id="5595152862129936745">অনেক দূরে</translation>
@@ -3033,6 +3038,7 @@
 <translation id="5627676517703583263">Chrome দিয়ে স্মার্টভাবে ব্রাউজ করুন</translation>
 <translation id="562935524653278697">আপনার প্রশাসক বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংসের সিঙ্ক করা অক্ষম করেছে।</translation>
 <translation id="5632566673632479864">আপনার <ph name="EMAIL" /> অ্যাকাউন্ট আর প্রাথমিক অ্যাকাউন্ট হিসেবে ব্যবহার করা যাবে না। যেহেতু <ph name="DOMAIN" /> আপনার এই অ্যাকাউন্ট ম্যানেজ করে তাই আপনার বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস এই ডিভাইস থেকে মুছে ফেলা হবে।</translation>
+<translation id="5632592977009207922">ডাউনলোড করা হচ্ছে <ph name="PERCENT_REMAINING" />% বাকি আছে</translation>
 <translation id="563535393368633106">অ্যাক্সেস করার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> ব্যবহার করতে গেলে আপনাকে প্রথমে <ph name="LINK_START" />নেটওয়ার্কের সাইন-ইন পৃষ্ঠায় যেতে হবে<ph name="LINK_END" />, যা কয়েক সেকেন্ডের মধ্যে স্বয়ংক্রিয়ভাবে খুলবে৷ যদি এমন না হয়, তাহলে নেটওয়ার্কটি ব্যবহার করা যেতে পারে৷</translation>
 <translation id="5637476008227280525">মোবাইল ডেটা সক্ষম করুন</translation>
@@ -3416,6 +3422,7 @@
 <translation id="6198252989419008588">পিন পরিবর্তন করুন</translation>
 <translation id="6199801702437275229">স্থান তথ্যের জন্য অপেক্ষারত...</translation>
 <translation id="6201792273624501289">Linux অ্যাপ</translation>
+<translation id="6202304368170870640">আপনি পিন ব্যবহার করে ডিভাইসে সাইন-ইন করতে বা ডিভাইস আনলক করতে পারেন।</translation>
 <translation id="6205710420833115353">কিছু অ্যাক্টিভিটি প্রত্যাশিত সময়ের থেকে বেশি সময় নিচ্ছে। আপনি কি সেগুলি থামাতে চান?</translation>
 <translation id="6206311232642889873">ছবি ক&amp;পি করুন</translation>
 <translation id="6207200176136643843">ডিফল্ট জুমে রিসেট করুন</translation>
@@ -4251,6 +4258,7 @@
 <translation id="7497215489070763236">সার্ভার CA শংসাপত্র</translation>
 <translation id="7497981768003291373">আপনার সাম্প্রতিক কোনও ক্যাপচার করা WebRTC টেক্সট লগ নেই।</translation>
 <translation id="7502658306369382406">IPv6 ঠিকানা</translation>
+<translation id="7503127198245469314">ডেস্কটপ ডিসপ্লে ব্লক করতে বা দেখাতে হেডসেট সরান</translation>
 <translation id="7503191893372251637">Netscape শংসাপত্রের প্রকার</translation>
 <translation id="7503821294401948377">ব্রাউজার ক্রিয়ার জন্য '<ph name="ICON" />' আইকন লোড করা যায়নি৷</translation>
 <translation id="750509436279396091">ডাউনলোডগুলির ফোল্ডার খুলুন</translation>
@@ -4864,6 +4872,7 @@
 <translation id="8425213833346101688">পরিবর্তন</translation>
 <translation id="8425492902634685834">কার্যদন্ডে পিন করুন</translation>
 <translation id="8425755597197517046">আট&amp;কান এবং খুঁজুন</translation>
+<translation id="8425768983279799676">আপনি পিন ব্যবহার করে ডিভাইস আনলক করতে পারেন।</translation>
 <translation id="8426713856918551002">সক্ষম করা হচ্ছে</translation>
 <translation id="8427292751741042100">অন্য কোনও হোস্টে এম্বেড করা হয়েছে</translation>
 <translation id="8428213095426709021">সেটিংস</translation>

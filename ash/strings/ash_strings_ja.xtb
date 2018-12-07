@@ -40,6 +40,7 @@
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
 <translation id="1570871743947603115">Bluetooth を切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">このセッションのすべてのアクティビティにアクセスする</translation>
 <translation id="1608626060424371292">このユーザーを削除</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">音声検索を開始</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">接続を追加</translation>
 <translation id="2961963223658824723">エラーが発生しました。数秒後にもう一度お試しください。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">アプリ、拡張機能、テーマをインストールする</translation>
 <translation id="2995447421581609334">キャスト デバイスを表示します。</translation>
 <translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="3000461861112256445">モノラル音声</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">パスワード</translation>
+<translation id="6665545700722362599">ウェブサイト、アプリ、拡張機能に対して、位置情報サービスまたはデバイスのマイクやカメラなどの機能の使用を許可する</translation>
 <translation id="6691659475504239918">検索+Shift+H</translation>
 <translation id="6696025732084565524">お使いのキーボード（取り外し可能）に重要なアップデートを適用する必要があります</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>

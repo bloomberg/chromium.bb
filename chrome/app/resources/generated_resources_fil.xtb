@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Magdagdag ng Media Gallery ayon sa Direktoryo</translation>
 <translation id="2910318910161511225">Kumonekta sa isang network at subukang muli</translation>
 <translation id="2913331724188855103">Payagan ang mga site na mag-save at magbasa ng data ng cookie (inirerekomenda)</translation>
+<translation id="2915102088417824677">Tingnan ang log ng aktibidad</translation>
 <translation id="2916073183900451334">Ang pagpindot sa Tab sa isang webpage ay nagha-highlight ng mga link, pati na rin ang mga field ng form</translation>
 <translation id="2916745397441987255">Maghanap sa mga extension</translation>
 <translation id="2921081876747860777">Mangyaring gumawa ng password upang protektahan ang iyong lokal na data.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">I-e&amp;xport...</translation>
 <translation id="4107048419833779140">Kumilala at mag-eject ng mga storage device</translation>
 <translation id="4109135793348361820">Ilipat ang window sa <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Na-download na: <ph name="FILE_NAME" />. Pindutin ang Shift+F6 para mag-cycle sa lugar ng bar ng mga download.</translation>
 <translation id="4110895898888439383">I-browse ang web sa high contrast mode</translation>
 <translation id="4115002065223188701">Hindi nasasagap ang network</translation>
 <translation id="4115080753528843955">Gumagamit ang ilang serbisyo ng content ng mga natatanging identifier para sa pagpapahintulot ng access sa pinoprotektahang content</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Payagan ang "<ph name="APP_NAME" />" na makuha ang listahan ng iyong mga naka-attach na USB device?</translation>
 <translation id="4414232939543644979">Bagong &amp;Incognito Window</translation>
 <translation id="4415245286584082850">Walang nakitang device. Magbukas ng artikulo sa help center sa isang bagong tab.</translation>
+<translation id="4415276339145661267">Pamahalaan ang iyong Google Account</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (na tinatawag ding NIST P-384)</translation>
 <translation id="4416582610654027550">Mag-type ng valid na URL</translation>
 <translation id="4419409365248380979">Laging payagan ang <ph name="HOST" /> na magset ng cookies</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Paumanhin, hindi pinapayagan ang mga Google account sa device na ito.</translation>
 <translation id="4568854179928172494">Oras ng pagbago</translation>
 <translation id="4569747168316751899">Kapag idle</translation>
+<translation id="4570387585180509432">Mga address, numero ng telepono, at higit pa</translation>
 <translation id="4572659312570518089">Nakansela ang pagpapatunay habang kumokonekta sa "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> na file</translation>
 <translation id="457386861538956877">Higit pa...</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Nabigo ang pag-format</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Nilo-load ang mga app...</translation>
+<translation id="5592010267127539419">Gustong makipagpares ng <ph name="URL_HOST" /> sa mga device</translation>
 <translation id="5592595402373377407">Wala pang available na sapat na data.</translation>
 <translation id="5593357315997824387">I-sync ang aking mga file</translation>
 <translation id="5595152862129936745">Napakalayo</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Mag-browse nang mahusay gamit ang Chrome</translation>
 <translation id="562935524653278697">Na-disable ng administrator mo ang pag-sync ng iyong mga bookmark, history, password at iba pang mga setting.</translation>
 <translation id="5632566673632479864">Hindi na pinapayagan ang iyong account na <ph name="EMAIL" /> bilang pangunahing account. Dahil pinapamahalaan ng <ph name="DOMAIN" /> ang account na ito, iki-clear ang iyong mga bookmark, history, password, at iba pang setting sa device na ito.</translation>
+<translation id="5632592977009207922">Nagda-download, <ph name="PERCENT_REMAINING" />% ang natitira</translation>
 <translation id="563535393368633106">Magtanong bago mag-access (inirerekomenda)</translation>
 <translation id="5636996382092289526">Upang gamitin ang <ph name="NETWORK_ID" />, maaaring kailangan mo munang <ph name="LINK_START" />bisitahin ang pahina sa pag-sign in ng network<ph name="LINK_END" />, na awtomatikong bubukas sa loob ng ilang segundo. Kung hindi ito mangyayari, hindi magagamit ang network.</translation>
 <translation id="5637476008227280525">Pag-enable sa mobile data</translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">Palitan ang PIN</translation>
 <translation id="6199801702437275229">Hinihintay ang impormasyon ng espasyo...</translation>
 <translation id="6201792273624501289">Mga Linux App</translation>
+<translation id="6202304368170870640">Maaari mong gamitin ang iyong PIN para mag-sign in sa o para ma-unlock ang device mo.</translation>
 <translation id="6205710420833115353">Mas matagal kaysa sa inaasahan ang ilang operasyon. Gusto mo bang i-abort ang mga ito?</translation>
 <translation id="6206311232642889873">Kop&amp;yahin ang Imahe</translation>
 <translation id="6207200176136643843">I-reset sa default na antas ng pag-zoom</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">CA certificate ng server</translation>
 <translation id="7497981768003291373">Wala kang kamakailang nakuhang log ng text ng WebRTC.</translation>
 <translation id="7502658306369382406">IPv6 address</translation>
+<translation id="7503127198245469314">Alisin ang headset para i-block o payagan sa display ng desktop</translation>
 <translation id="7503191893372251637">Uri ng Netscape Certificate</translation>
 <translation id="7503821294401948377">Maaaring hindi mai-load ang icon na '<ph name="ICON" />' para sa pagkilos ng browser.</translation>
 <translation id="750509436279396091">Buksan ang folder ng mga download</translation>
@@ -4868,6 +4876,7 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8425213833346101688">Baguhin</translation>
 <translation id="8425492902634685834">I-pin sa Taskbar</translation>
 <translation id="8425755597197517046">I-pa&amp;ste at Maghanap</translation>
+<translation id="8425768983279799676">Maaari mong gamitin ang iyong PIN para i-unlock ang iyong device.</translation>
 <translation id="8426713856918551002">Ine-enable</translation>
 <translation id="8427292751741042100">naka-embed sa anumang host</translation>
 <translation id="8428213095426709021">Mga Setting</translation>

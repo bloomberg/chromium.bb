@@ -40,6 +40,7 @@
 <translation id="15373452373711364">பெரிய மவுஸ் இடஞ்சுட்டி</translation>
 <translation id="1550523713251050646">மேலும் விருப்பங்களுக்குக் கிளிக் செய்யவும்</translation>
 <translation id="1570871743947603115">புளூடூத்தை நிலைமாற்றும். <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">இந்த அமர்விலுள்ள உங்கள் அனைத்துச் செயல்பாடுகளையும் அணுகுதல்</translation>
 <translation id="1608626060424371292">இவரை அகற்று</translation>
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT" /> இல் பேட்டரி காலியாகிவிடும்</translation>
 <translation id="1654477262762802994">குரல் வினவலைத் தொடங்கு</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">இணைப்பைச் சேர்</translation>
 <translation id="2961963223658824723">ஏதோ தவறாகிவிட்டது. சில வினாடிகள் கழித்து மீண்டும் முயலவும்.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">ஆப்ஸ், நீட்டிப்புகள் மற்றும் தீம்களை நிறுவுதல்</translation>
 <translation id="2995447421581609334">அனுப்பும் சாதனங்களைக் காண்பிக்கும்.</translation>
 <translation id="2996462380875591307">டாக் செய்யப்பட்ட பெரிதாக்கி இயக்கப்பட்டது. அதை முடக்க, Ctrl+Search+Dயை மீண்டும் அழுத்தவும்.</translation>
 <translation id="3000461861112256445">மோனோ ஆடியோ</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">தேடல்+Shift+K</translation>
 <translation id="6650933572246256093">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" இணைப்பதற்கான அனுமதியை விரும்புகிறது. அந்தச் சாதனத்தில் இந்தக் கடவுச்சொல்லை உள்ளிடவும்: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">கடவுச்சொல்</translation>
+<translation id="6665545700722362599">இருப்பிடச் சேவைகள், சாதனத்தின் மைக்ரோஃபோன், கேமரா அல்லது பிற அம்சங்களை இணையதளங்கள், ஆப்ஸ், நீட்டிப்புகள் ஆகியவை பயன்படுத்த அனுமதி அளித்தல்</translation>
 <translation id="6691659475504239918">தேடல்+Shift+H</translation>
 <translation id="6696025732084565524">உங்கள் அகற்றத்தக்க விசைப்பலகைக்கு முக்கியப் புதுப்பிப்பு வேண்டும்</translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>

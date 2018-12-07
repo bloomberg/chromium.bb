@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="1550523713251050646">Klik for at se flere muligheder</translation>
 <translation id="1570871743947603115">Slå Bluetooth til eller fra. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Få adgang til al din aktivtet i denne session</translation>
 <translation id="1608626060424371292">Fjern denne bruger</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start en stemmeforespørgsel</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Tilføj forbindelse</translation>
 <translation id="2961963223658824723">Der opstod en fejl. Prøv igen om et par sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Installer apps, udvidelser og temaer</translation>
 <translation id="2995447421581609334">Vis Cast-enheder.</translation>
 <translation id="2996462380875591307">Fastgjort lupvindue er aktiveret. Tryk på Ctrl+Søg+D igen for at deaktivere tilstanden.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
@@ -329,6 +331,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6627638273713273709">Søgetast+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Angiv din adgangsnøgle på enheden: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Adgangskode</translation>
+<translation id="6665545700722362599">Tillad, at websites, apps og udvidelser anvender placeringstjenester, enhedens mikrofon, kamera og andre funktioner</translation>
 <translation id="6691659475504239918">Søg+Shift+H</translation>
 <translation id="6696025732084565524">Dit aftagelige tastatur kræver en vigtig opdatering</translation>
 <translation id="6700713906295497288">IME-menuknap</translation>

@@ -1285,6 +1285,7 @@
 <translation id="2908162660801918428">Tambah Galeri Media mengikut Direktori</translation>
 <translation id="2910318910161511225">Sambung ke rangkaian dan cuba lagi</translation>
 <translation id="2913331724188855103">Benarkan tapak untuk menyimpan dan membaca data kuki (disyorkan)</translation>
+<translation id="2915102088417824677">Lihat log aktiviti</translation>
 <translation id="2916073183900451334">Menekan Tab pada pautan serlahan halaman web, dan juga medan borang</translation>
 <translation id="2916745397441987255">Cari sambungan</translation>
 <translation id="2921081876747860777">Sila buat kata laluan untuk melindungi data setempat anda.</translation>
@@ -2073,6 +2074,7 @@
 <translation id="4104163789986725820">E&amp;ksport...</translation>
 <translation id="4107048419833779140">Kenal pasti dan keluarkan peranti storan</translation>
 <translation id="4109135793348361820">Alihkan tetingkap ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Muat turun selesai: <ph name="FILE_NAME" />. Tekan Shift+F6 untuk pergi ke kawasan bar muat turun.</translation>
 <translation id="4110895898888439383">Semak imbas web dalam mod kontras tinggi</translation>
 <translation id="4115002065223188701">Rangkaian di luar liputan</translation>
 <translation id="4115080753528843955">Sesetengah perkhidmatan kandungan menggunakan pengecam unik bagi tujuan membenarkan akses kepada kandungan yang dilindungi</translation>
@@ -2233,6 +2235,7 @@
 <translation id="44141919652824029">Benarkan "<ph name="APP_NAME" />" mendapatkan senarai peranti anda yang ada USB?</translation>
 <translation id="4414232939543644979">Tetingkap &amp;Inkognito Baharu</translation>
 <translation id="4415245286584082850">Tiada peranti ditemui. Buka artikel pusat bantuan dalam tab baharu.</translation>
+<translation id="4415276339145661267">Urus Akaun Google anda</translation>
 <translation id="4415748029120993980">Lengkung eliptik SECG secp384r1 (alias NIST P-384)</translation>
 <translation id="4416582610654027550">Taip URL yang sah</translation>
 <translation id="4419409365248380979">Sentiasa benarkan <ph name="HOST" /> untuk menetapkan kuki</translation>
@@ -2328,6 +2331,7 @@
 <translation id="4568213207643490790">Maaf, akaun Google tidak dibenarkan pada peranti ini.</translation>
 <translation id="4568854179928172494">Masa diubah suai</translation>
 <translation id="4569747168316751899">Apabila melahu</translation>
+<translation id="4570387585180509432">Alamat, nombor telefon dan pelbagai lagi</translation>
 <translation id="4572659312570518089">Pengesahan dibatalkan semasa menyambung ke "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Fail <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Lagi...</translation>
@@ -3006,6 +3010,7 @@
 <translation id="5585912436068747822">Pemformatan gagal</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Memuatkan apl...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> mahu bergandingan dengan peranti</translation>
 <translation id="5592595402373377407">Data yang mencukupi belum tersedia lagi.</translation>
 <translation id="5593357315997824387">Segerakkan fail saya</translation>
 <translation id="5595152862129936745">Sangat jauh</translation>
@@ -3038,6 +3043,7 @@
 <translation id="5627676517703583263">Semak imbas dengan bijak menggunakan Chrome</translation>
 <translation id="562935524653278697">Pentadbir anda telah melumpuhkan penyegerakan penanda halaman, sejarah, kata laluan dan tetapan lain.</translation>
 <translation id="5632566673632479864">Akaun <ph name="EMAIL" /> anda tidak dibenarkan menjadi akaun utama lagi. Oleh sebab akaun ini diurus oleh <ph name="DOMAIN" />, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan dipadamkan daripada peranti ini.</translation>
+<translation id="5632592977009207922">Memuat turun, tinggal <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">Tanya sebelum mengakses (disyorkan)</translation>
 <translation id="5636996382092289526">Untuk menggunakan <ph name="NETWORK_ID" /> anda mungkin perlu <ph name="LINK_START" />melawat halaman log masuk rangkaian<ph name="LINK_END" /> terlebih dahulu, yang akan terbuka secara automatik dalam beberapa saat. Jika ini tidak berlaku, rangkaian tersebut tidak boleh digunakan.</translation>
 <translation id="5637476008227280525">Data mudah alih didayakan</translation>
@@ -3420,6 +3426,7 @@
 <translation id="6198252989419008588">Tukar PIN</translation>
 <translation id="6199801702437275229">Menunggu maklumat ruang...</translation>
 <translation id="6201792273624501289">Apl Linux</translation>
+<translation id="6202304368170870640">Anda boleh menggunakan PIN anda untuk log masuk atau membuka kunci peranti anda.</translation>
 <translation id="6205710420833115353">Sesetengah operasi mengambil masa lebih lama daripada yang dijangkakan. Adakah anda ingin menghenti paksanya?</translation>
 <translation id="6206311232642889873">Sal&amp;in Imej</translation>
 <translation id="6207200176136643843">Tetapkan semula kepada tahap zum lalai</translation>
@@ -4255,6 +4262,7 @@
 <translation id="7497215489070763236">Sijil CA pelayan</translation>
 <translation id="7497981768003291373">Anda tiada log teks WebRTC yang dirakam baru-baru ini.</translation>
 <translation id="7502658306369382406">Alamat IPv6</translation>
+<translation id="7503127198245469314">Alih keluar set kepala untuk menyekat atau membenarkan paparan pada desktop</translation>
 <translation id="7503191893372251637">Jenis Sijil Netscape</translation>
 <translation id="7503821294401948377">Tidak dapat memuatkan ikon '<ph name="ICON" />' untuk tindakan penyemak imbas.</translation>
 <translation id="750509436279396091">Buka folder muat turun</translation>
@@ -4870,6 +4878,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8425213833346101688">Tukar</translation>
 <translation id="8425492902634685834">Pin ke Bar Tugas</translation>
 <translation id="8425755597197517046">Ta&amp;mpal dan Cari</translation>
+<translation id="8425768983279799676">Anda boleh menggunakan PIN anda untuk membuka kunci peranti anda.</translation>
 <translation id="8426713856918551002">Mendayakan</translation>
 <translation id="8427292751741042100">dibenam pada mana-mana hos</translation>
 <translation id="8428213095426709021">Tetapan</translation>

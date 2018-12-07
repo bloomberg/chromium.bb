@@ -107,6 +107,13 @@
 
           Varsayılan olarak, yönetilen cihazlarda hiçbir hızlı kilit açma moduna izin verilmez.</translation>
 <translation id="123081309365616809">Cihaza içerik yayınlamayı etkinleştirme</translation>
+<translation id="1231349879329465225">Fast Transition'ın etkinleştirilmesini veya devre dışı bırakılmasını sağlar.
+      Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir.
+      Fast Transition'ın kullanılabilmesi için hem bu ayarın hem de ağ başına ONC özelliğinin etkinleştirilmesi gerekir.
+      Ayarlandığında, politika bu özelliği devre dışı bırakacak şekilde değiştirilmedikçe Fast Transition devam eder.
+
+      Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa, Fast Transition kullanılmaz.
+      Doğru (true) değerine ayarlanırsa Fast Transition, kablosuz erişim noktası tarafından desteklendiğinde kullanılır.</translation>
 <translation id="1243570869342663665">SafeSites yetişkinlere uygun içerik filtrelemeyi kontrol et.</translation>
 <translation id="1257550411839719984">Varsayılan indirme dizinini ayarlama</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>

@@ -104,6 +104,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Coloană</translation>
 <translation id="1845944666972354496">Atinge de două ori pentru a activa</translation>
+<translation id="1846771122725914429">Afișajul Braille prin Bluetooth</translation>
 <translation id="1865601187525349519">Sfârșitul textului</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">Rostește ora și data actuale.</translation>
@@ -161,6 +162,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="2422937916923936891">Casetă de selectare pentru element de meniu</translation>
 <translation id="2428534162001909979">Meniuri de comenzi</translation>
 <translation id="2429669115401274487">p.m.</translation>
+<translation id="242998846562331953">Subtitrare</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> este noul modificator ChromeVox.</translation>
 <translation id="2450814015951372393">Casetă de selectare</translation>
 <translation id="2462626033734746142">Grup buton radio</translation>
@@ -647,6 +649,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5887397643266327462">Subtitrările Braille sunt activate.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Redă la un volum redus când ChromeVox vorbește</translation>
+<translation id="5906974869830879618">Introdu un cod PIN</translation>
 <translation id="5921587111466148855">Capitol</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{egal}few{# semne egal}other{# de semne egal}}</translation>
 <translation id="5939518447894949180">Resetează</translation>
@@ -703,6 +706,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="641759969622533235">{COUNT,plural, =1{semn două puncte}few{# semne două puncte}other{# de semne două puncte}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, meniu</translation>
 <translation id="6444046323172968959">Casetă de dialog de alertă</translation>
+<translation id="6452403590345320472">Cuprins</translation>
 <translation id="6459511626086141404">Hartă taste plată</translation>
 <translation id="6468049171101508116">Butonul următor</translation>
 <translation id="646954774886932461">Index</translation>
@@ -997,6 +1001,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="948171205378458592">Scădeți viteza de vorbire</translation>
 <translation id="958854023026327378">Glisează cu un deget în jos</translation>
 <translation id="962913030769097253">Titlul de nivel 1 următor</translation>
+<translation id="966588271015727539">Selectează un afișaj braille prin Bluetooth</translation>
 <translation id="973955474346881951">Activează/dezactivează modul taste persistente</translation>
 <translation id="976849232629612000">Niciun element.</translation>
 <translation id="995852680044449248">Începutul textului tăiat cu o linie</translation>

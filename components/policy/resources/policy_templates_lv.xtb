@@ -108,6 +108,13 @@
 
           Pēc noklusējuma pārvaldītās ierīcēs nav pieejami ātrās atbloķēšanas režīmi.</translation>
 <translation id="123081309365616809">Iespējot satura apraidi ierīcē</translation>
+<translation id="1231349879329465225">Ļauj iespējot vai atspējot ātro pāreju.
+      Tā attiecas uz visiem ierīces lietotājiem un saskarnēm.
+      Lai varētu izmantot ātro pāreju, ir jāiespējo gan šis iestatījums, gan tīkla ONC īpašums.
+      Ja šī politika ir iestatīta, ātrā pāreja darbojas, līdz politika tiek atspējota.
+
+      Ja politika nav iestatīta vai ir iestatīts vērtība "False", ātrā pāreja netiek lietota.
+      Ja ir iestatīta vērtība “True”, ātrā pāreja tiek lietota, kad bezvadu piekļuves punkts to atbalsta.</translation>
 <translation id="1243570869342663665">Pārvaldīt SafeSites pieaugušajiem paredzētā satura filtrēšanu</translation>
 <translation id="1257550411839719984">Noklusējuma lejupielāžu direktorija iestatīšana</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>

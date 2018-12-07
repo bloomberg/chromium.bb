@@ -166,6 +166,7 @@
 <translation id="2154484045852737596">カードを編集</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2156074688469523661">その他のサイト（<ph name="NUMBER_OF_SITES" /> 件）</translation>
+<translation id="2173302385160625112">インターネット接続を確認してください</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> はウェブアプリです（<ph name="APP_URL" />）。</translation>
 <translation id="2221802148287197464">自動化</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> として続行</translation>
@@ -343,6 +344,7 @@
 <translation id="3712575778697986964">データセーバーをリセットしますか？</translation>
 <translation id="3714981814255182093">検索バーを開く</translation>
 <translation id="3716182511346448902">このページは大量のメモリを使用しているため、Chrome により一時停止されました。</translation>
+<translation id="3724958268700778519">Google アシスタントがウェブサイトでの購入手続きをお手伝いするので手間を省くことができます。</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB を他のアプリで使用中</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
@@ -361,6 +363,7 @@
 <translation id="3868004864571585162">Cookie、メディア ライセンス、サイトデータ</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="3895926599014793903">強制的にズームを有効にする</translation>
+<translation id="3912508018559818924">ウェブで最適なデータを探しています。</translation>
 <translation id="3918221729963301892">次回から表示しない</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">データを統合する</translation>
@@ -379,6 +382,7 @@
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ？</translation>
 <translation id="3997476611815694295">重要度の低いストレージ</translation>
 <translation id="4002066346123236978">タイトル</translation>
+<translation id="4008040567710660924">特定のサイトの Cookie を許可します。</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="4046123991198612571">次のトラック</translation>
@@ -395,6 +399,7 @@
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="4113030288477039509">管理者により管理されています</translation>
+<translation id="411332046216682877">ここをタップすると、すばやく検索できます</translation>
 <translation id="4116038641877404294">ページをダウンロードするとオフラインで使用できるようになります</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d 個のブックマーク}other{%1$d 個のブックマーク}}</translation>
 <translation id="4149994727733219643">ウェブページの簡易表示</translation>
@@ -541,6 +546,7 @@
 <translation id="5224771365102442243">動画あり</translation>
 <translation id="5233638681132016545">新しいタブ</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />はいつでも変更できます。Google は、Chrome やその他の Google サービス（翻訳、検索、広告など）をカスタマイズする目的で、ユーザーがアクセスしたサイトのコンテンツ、ユーザーの閲覧行動や操作を使用することがあります。</translation>
+<translation id="526421993248218238">ページを読み込めません</translation>
 <translation id="5271967389191913893">デバイスでダウンロード コンテンツを開くことができません。</translation>
 <translation id="5274381992091475657">自動入力アシスタント</translation>
 <translation id="528192093759286357">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
@@ -882,6 +888,7 @@
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />（<ph name="SPACE_OTHER" />）</translation>
 <translation id="773905249182896430">危険なサイトからユーザーと端末を保護します</translation>
 <translation id="7759822418208302953">自動入力アシスタントは停止中です</translation>
+<translation id="7761870125254530914">続行すると、簡単なお支払い手続きに関する Google の利用規約に同意したことになります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="7762668264895820836">SD カード <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7765158879357617694">移動</translation>
@@ -1025,6 +1032,7 @@
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="8901170036886848654">ブックマークが見つかりません</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d 個のタブが開いています。タブを切り替えるにはタップします}other{%1$d 個のタブが開いています。タブを切り替えるにはタップします}}</translation>
 <translation id="8905378131945614900">VR モジュールをインストールできませんでした</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
@@ -1033,6 +1041,7 @@
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">別のウィンドウで開く</translation>
 <translation id="8951232171465285730">Chrome で <ph name="MEGABYTES" /> MB の容量を節約しました</translation>
+<translation id="8958424370300090006">特定のサイトの Cookie をブロックします。</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
 <translation id="8965591936373831584">保留中</translation>
 <translation id="8972098258593396643">デフォルトのフォルダにダウンロードしますか？</translation>
@@ -1051,6 +1060,7 @@
 <translation id="9070377983101773829">音声検索を開始</translation>
 <translation id="9071742570345586758">バーチャル リアリティ コンテンツを表示するには、Google VR サービスをインストールしてください</translation>
 <translation id="9074336505530349563">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、ログインして同期を有効にします</translation>
+<translation id="9079796397681444569">画面下部にあるボタンを使って Chrome を自由かつ手軽に操作できます</translation>
 <translation id="9080642952018487277">プライベート モードを開始</translation>
 <translation id="9086455579313502267">ネットワークにアクセスできません</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB をダウンロードで使用中</translation>

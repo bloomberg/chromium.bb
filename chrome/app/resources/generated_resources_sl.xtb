@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Dodajanje galerije predstavnosti po imeniku</translation>
 <translation id="2910318910161511225">Vzpostavite povezavo z omrežjem in poskusite znova</translation>
 <translation id="2913331724188855103">Dovoli spletnim mestom shranjevanje in branje podatkov piškotkov (priporočljivo)</translation>
+<translation id="2915102088417824677">Ogled dnevnika dejavnosti</translation>
 <translation id="2916073183900451334">S pritiskom tabulatorke na spletni strani označite povezavo in tudi polja obrazcev</translation>
 <translation id="2916745397441987255">Iskanje razširitev</translation>
 <translation id="2921081876747860777">Ustvarite geslo za zaščito lokalnih podatkov.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">I&amp;zvozi ...</translation>
 <translation id="4107048419833779140">Prepoznavanje in izmet naprav za shranjevanje</translation>
 <translation id="4109135793348361820">Premakni okno uporabniku <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Prenos je končan: <ph name="FILE_NAME" />. Pritisnite Shift + F6, če želite krožiti do območja vrstice s prenosi.</translation>
 <translation id="4110895898888439383">Brskajte po spletu v visokokontrastnem načinu</translation>
 <translation id="4115002065223188701">Omrežje zunaj dosega</translation>
 <translation id="4115080753528843955">Nekatere storitve za zagotavljanje vsebine uporabljajo enolične identifikatorje zaradi pooblaščanja dostopa do zaščitene vsebine</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Dovolite aplikaciji »<ph name="APP_NAME" />«, da pridobi seznam priključenih naprav USB?</translation>
 <translation id="4414232939543644979">Novo &amp;okno brez beleženja zgodovine</translation>
 <translation id="4415245286584082850">Ni naprav. Odprite članek v centru za pomoč na novem zavihku.</translation>
+<translation id="4415276339145661267">Upravljanje Google Računa</translation>
 <translation id="4415748029120993980">Eliptična krivulja SECG secp384r1 (oziroma NIST P-384)</translation>
 <translation id="4416582610654027550">Vnesite veljaven URL</translation>
 <translation id="4419409365248380979">Vedno dovoli, da <ph name="HOST" /> nastavi piškotke</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Google Računi v tej napravi niso dovoljeni.</translation>
 <translation id="4568854179928172494">Ura spremembe</translation>
 <translation id="4569747168316751899">Pri nedejavnosti</translation>
+<translation id="4570387585180509432">Naslovi, telefonske številke in drugo</translation>
 <translation id="4572659312570518089">Med povezovanjem z napravo »<ph name="DEVICE_NAME" />« je bilo preklicano preverjanje pristnosti.</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Več ...</translation>
@@ -3006,6 +3010,7 @@
 <translation id="5585912436068747822">Formatiranje ni uspelo</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Nalaganje aplikacij ...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> se želi seznaniti z napravami</translation>
 <translation id="5592595402373377407">Na voljo še ni dovolj podatkov.</translation>
 <translation id="5593357315997824387">Sinhroniziraj moje datoteke</translation>
 <translation id="5595152862129936745">Zelo daleč</translation>
@@ -3039,6 +3044,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5627676517703583263">Pametno brskanje s Chromom</translation>
 <translation id="562935524653278697">Skrbnik je onemogočil sinhroniziranje zaznamkov, zgodovine, gesel in drugih nastavitev.</translation>
 <translation id="5632566673632479864">Vaš račun <ph name="EMAIL" /> ni več dovoljen kot glavni račun. Ker ta račun upravlja domena <ph name="DOMAIN" />, bodo vaši zaznamki, zgodovina, gesla in druge nastavitve izbrisani iz te naprave.</translation>
+<translation id="5632592977009207922">Prenos, še <ph name="PERCENT_REMAINING" /> %</translation>
 <translation id="563535393368633106">Vprašaj pred dostopom (priporočljivo)</translation>
 <translation id="5636996382092289526">Če želite uporabljati omrežje <ph name="NETWORK_ID" />, morate najprej <ph name="LINK_START" />obiskati stran za prijavo v omrežje<ph name="LINK_END" />, ki se bo samodejno odprla čez nekaj sekund. Če se ne odpre, omrežja ne morete uporabljati.</translation>
 <translation id="5637476008227280525">Omogoči prenos podatkov v mobilnih omrežjih</translation>
@@ -3421,6 +3427,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6198252989419008588">Spremeni PIN</translation>
 <translation id="6199801702437275229">Čakanje na podatke o prostoru ...</translation>
 <translation id="6201792273624501289">Aplikacije za Linux</translation>
+<translation id="6202304368170870640">Kodo PIN lahko uporabite za prijavo ali odklepanje naprave.</translation>
 <translation id="6205710420833115353">Nekateri postopki trajajo dlje, kot je pričakovano. Ali jih želite opustiti?</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliko</translation>
 <translation id="6207200176136643843">Ponastavitev na privzeto stopnjo povečave/pomanjšave</translation>
@@ -4256,6 +4263,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7497215489070763236">Strežniško overjeno potrdilo</translation>
 <translation id="7497981768003291373">Nimate nedavno zajetih besedilnih dnevnikov za WebRTC.</translation>
 <translation id="7502658306369382406">Naslov IPv6</translation>
+<translation id="7503127198245469314">Odstranite naglavni komplet, če želite blokirati ali dovoliti na zaslonu namiznega računalnika</translation>
 <translation id="7503191893372251637">Vrsta Netscapeovega potrdila</translation>
 <translation id="7503821294401948377">Ikone »<ph name="ICON" />« za dejanje brskalnika ni bilo mogoče naložiti.</translation>
 <translation id="750509436279396091">Odpiranje mape s prenosi</translation>
@@ -4870,6 +4878,7 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8425213833346101688">Spremeni</translation>
 <translation id="8425492902634685834">Pripni v opravilno vrstico</translation>
 <translation id="8425755597197517046">&amp;Prilepi in išči</translation>
+<translation id="8425768983279799676">Kodo PIN lahko uporabite za odklepanje naprave.</translation>
 <translation id="8426713856918551002">Omogočanje</translation>
 <translation id="8427292751741042100">vdelano v katerem koli gostitelju</translation>
 <translation id="8428213095426709021">Nastavitve</translation>

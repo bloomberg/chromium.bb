@@ -51,6 +51,7 @@
 <translation id="1334095593597963605">অক্ষর ও শব্দ ইকো</translation>
 <translation id="1339428534620983148">পরবর্তী সারণী কলাম</translation>
 <translation id="1342835525016946179">নিবন্ধ</translation>
+<translation id="1346059596910821859">টিপ</translation>
 <translation id="1346748346194534595">ডানে</translation>
 <translation id="135978014023467274">আপনার ChormeVox, ChromeVox 63 তে আপগ্রেড করা হয়েছে!</translation>
 <translation id="136718599399906424">পরবর্তী সারণী সারি</translation>
@@ -103,6 +104,7 @@
 <translation id="1828385960365606039">মে</translation>
 <translation id="1834891354138622109">কলাম</translation>
 <translation id="1845944666972354496">চালু করতে ডবল ট্যাপ করুন</translation>
+<translation id="1846771122725914429">ব্লুটুথ ব্রেইল ডিসপ্লে</translation>
 <translation id="1865601187525349519">পাঠ্যের শেষে</translation>
 <translation id="1876229593313240038">দস্তাবেজ</translation>
 <translation id="188130072164734898">বর্তমান সময় ও তারিখ বলে৷</translation>
@@ -160,6 +162,7 @@
 <translation id="2422937916923936891">মেনু আইটেম চেক বাক্স</translation>
 <translation id="2428534162001909979">কম্যান্ড মেনুগুলি</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">সাবটাইটেল</translation>
 <translation id="2435413342408885429">এখন <ph name="KEY" /> হল নতুন ChromeVox সংশোধক৷</translation>
 <translation id="2450814015951372393">চেকবাক্স</translation>
 <translation id="2462626033734746142">রেডিও বোতাম গ্রুপ</translation>
@@ -646,6 +649,7 @@
 <translation id="5887397643266327462">ব্রেইল পরিচয়লিপিগুলি সক্ষম করা হয়েছে৷</translation>
 <translation id="5891934789323004067">সারণী</translation>
 <translation id="5899860758576822363">ChromeVox কথা বলতে থাকলে কম ভলিউমে বাজান</translation>
+<translation id="5906974869830879618">পিন নম্বর লিখুন</translation>
 <translation id="5921587111466148855">অধ্যায়</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{সমান}one{#টি সমান চিহ্ন}other{#টি সমান চিহ্ন}}</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
@@ -702,6 +706,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{কোলন}one{#টি কোলন}other{#টি কোলন}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, মেনু</translation>
 <translation id="6444046323172968959">সতর্কতা কথোপকথন</translation>
+<translation id="6452403590345320472">সূচিপত্র</translation>
 <translation id="6459511626086141404">ফ্ল্যাট কীম্যাপ</translation>
 <translation id="6468049171101508116">পরবর্তী বোতাম</translation>
 <translation id="646954774886932461">সূচি</translation>
@@ -996,6 +1001,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="948171205378458592">স্পিচের হার কমান</translation>
 <translation id="958854023026327378">এক আঙ্গুল দিয়ে নিচের দিকে সোয়াইপ করুন</translation>
 <translation id="962913030769097253">পরবর্তী স্তর ১ শিরোনাম</translation>
+<translation id="966588271015727539">ব্লুটুথ ব্রেইলি ডিসপ্লে বেছে নিন</translation>
 <translation id="973955474346881951">স্টিকি মোড সক্ষম/অক্ষম করুন</translation>
 <translation id="976849232629612000">কোনো আইটেম নেই।</translation>
 <translation id="995852680044449248">কাটা অক্ষর শুরু</translation>

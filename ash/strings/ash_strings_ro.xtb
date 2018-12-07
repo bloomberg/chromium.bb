@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1550523713251050646">Dă clic pentru mai multe opțiuni</translation>
 <translation id="1570871743947603115">Comută Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Accesează toată activitatea din această sesiune</translation>
 <translation id="1608626060424371292">Eliminați acest utilizator</translation>
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Începe o interogare vocală</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Adăugați o conexiune</translation>
 <translation id="2961963223658824723">A apărut o eroare. Încearcă din nou în câteva secunde.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Instalează aplicații, extensii și teme</translation>
 <translation id="2995447421581609334">Afișează dispozitivele de proiecție.</translation>
 <translation id="2996462380875591307">Lupa andocată este activată. Apasă din nou pe Ctrl + tasta de căutare + D pentru a o dezactiva.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Tasta de căutare + Shift + K</translation>
 <translation id="6650933572246256093">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta. Introduceți această parolă pe dispozitivul respectiv: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parolă</translation>
+<translation id="6665545700722362599">Permite site-urilor, aplicațiilor și extensiilor să folosească serviciile de localizare, microfonul, camera foto sau alte funcții ale dispozitivului.</translation>
 <translation id="6691659475504239918">Tasta de căutare + Shift + H</translation>
 <translation id="6696025732084565524">Tastatura detașabilă necesită o actualizare esențială</translation>
 <translation id="6700713906295497288">Butonul de meniu IME</translation>

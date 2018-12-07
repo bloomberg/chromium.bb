@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">Thêm thư viện của phương tiện theo thư mục</translation>
 <translation id="2910318910161511225">Hãy kết nối với mạng rồi thử lại</translation>
 <translation id="2913331724188855103">Cho phép trang web lưu và đọc dữ liệu cookie (được đề xuất)</translation>
+<translation id="2915102088417824677">Xem nhật ký hoạt động</translation>
 <translation id="2916073183900451334">Bấm Tab trên liên kết đánh dấu của trang web, cũng như các trường biểu mẫu</translation>
 <translation id="2916745397441987255">Tìm kiếm trong tiện ích</translation>
 <translation id="2921081876747860777">Vui lòng tạo mật khẩu để bảo vệ dữ liệu cục bộ của bạn.</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">X&amp;uất...</translation>
 <translation id="4107048419833779140">Nhận dạng và ngắt kết nối thiết bị lưu trữ</translation>
 <translation id="4109135793348361820">Di chuyển cửa sổ đến <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Quá trình tải xuống hoàn tất: <ph name="FILE_NAME" />. Nhấn tổ hợp phím Shift + F6 để chuyển tới khu vực thanh Tài nguyên đã tải xuống.</translation>
 <translation id="4110895898888439383">Duyệt web trong chế độ tương phản cao</translation>
 <translation id="4115002065223188701">Mạng nằm ngoài phạm vi</translation>
 <translation id="4115080753528843955">Một số dịch vụ nội dung sử dụng số nhận dạng duy nhất nhằm mục đích cho phép truy cập vào nội dung được bảo vệ</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">Cho phép "<ph name="APP_NAME" />" nhận danh sách các thiết bị USB đính kèm?</translation>
 <translation id="4414232939543644979">Cửa sổ ẩn &amp;danh mới</translation>
 <translation id="4415245286584082850">Không tìm thấy thiết bị nào. Hãy mở một bài viết trong trung tâm trợ giúp trên một tab mới.</translation>
+<translation id="4415276339145661267">Quản lý Tài khoản Google của bạn</translation>
 <translation id="4415748029120993980">Đường cong elip SECG secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Nhập một URL hợp lệ</translation>
 <translation id="4419409365248380979">Luôn cho phép <ph name="HOST" /> đặt cookie</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">Rất tiếc, không được phép đăng nhập tài khoản Google trên thiết bị này.</translation>
 <translation id="4568854179928172494">Thời gian sửa đổi</translation>
 <translation id="4569747168316751899">Khi không hoạt động</translation>
+<translation id="4570387585180509432">Địa chỉ, số điện thoại, v.v.</translation>
 <translation id="4572659312570518089">Đã hủy xác thực trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Tệp <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Thêm...</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">Định dạng không thành công</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Đang tải ứng dụng...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> muốn ghép nối với các thiết bị</translation>
 <translation id="5592595402373377407">Chưa có đủ dữ liệu.</translation>
 <translation id="5593357315997824387">Đồng bộ hóa các tệp</translation>
 <translation id="5595152862129936745">Rất xa</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Duyệt web thông minh bằng Chrome</translation>
 <translation id="562935524653278697">Quản trị viên của bạn đã tắt đồng bộ hóa dấu trang, lịch sử, mật khẩu và các cài đặt khác của bạn.</translation>
 <translation id="5632566673632479864">Tài khoản <ph name="EMAIL" /> của bạn không còn được phép làm tài khoản chính nữa. Vì tài khoản này do <ph name="DOMAIN" /> quản lý, nên dấu trang, lịch sử, mật khẩu và các tùy chọn cài đặt khác sẽ bị xóa khỏi thiết bị này.</translation>
+<translation id="5632592977009207922">Đang tải xuống, còn <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">Hỏi trước khi truy cập (được đề xuất)</translation>
 <translation id="5636996382092289526">Để sử dụng <ph name="NETWORK_ID" />, trước hết bạn cần <ph name="LINK_START" />truy cập vào trang đăng nhập của mạng<ph name="LINK_END" />. Trang này thường tự động mở sau vài giây. Nếu trang này không mở thì không thể sử dụng mạng này.</translation>
 <translation id="5637476008227280525">Bật dữ liệu di động</translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
 <translation id="6199801702437275229">Đang chờ thông tin dung lượng...</translation>
 <translation id="6201792273624501289">Ứng dụng Linux</translation>
+<translation id="6202304368170870640">Bạn có thể sử dụng mã PIN để đăng nhập hoặc mở khóa thiết bị của mình.</translation>
 <translation id="6205710420833115353">Một số tác vụ đang diễn ra lâu hơn thông thường. Bạn có muốn hủy các tác vụ này không?</translation>
 <translation id="6206311232642889873">Sao ché&amp;p Hình ảnh</translation>
 <translation id="6207200176136643843">Đặt lại về mức thu phóng mặc định</translation>
@@ -4254,6 +4261,7 @@
 <translation id="7497215489070763236">Chứng chỉ CA máy chủ</translation>
 <translation id="7497981768003291373">Bạn không ghi nhật ký văn bản WebRTC nào gần đây.</translation>
 <translation id="7502658306369382406">Địa chỉ IPv6</translation>
+<translation id="7503127198245469314">Tháo bộ tai nghe để chặn hoặc cho phép trên màn hình nền</translation>
 <translation id="7503191893372251637">Loại Chứng chỉ Netscape</translation>
 <translation id="7503821294401948377">Không thể tải biểu tượng '<ph name="ICON" />' cho tác vụ của trình duyệt.</translation>
 <translation id="750509436279396091">Mở thư mục tải xuống</translation>
@@ -4868,6 +4876,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8425213833346101688">Thay đổi</translation>
 <translation id="8425492902634685834">Ghim lên thanh tác vụ</translation>
 <translation id="8425755597197517046">Dá&amp;n và Tìm kiếm</translation>
+<translation id="8425768983279799676">Bạn có thể sử dụng mã PIN để mở khóa thiết bị của mình.</translation>
 <translation id="8426713856918551002">Đang bật</translation>
 <translation id="8427292751741042100">được nhúng trên bất kỳ máy chủ nào</translation>
 <translation id="8428213095426709021">Cài đặt</translation>

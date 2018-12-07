@@ -104,6 +104,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1828385960365606039">Mai</translation>
 <translation id="1834891354138622109">Veerg</translation>
 <translation id="1845944666972354496">Topeltpuudutage aktiveerimiseks</translation>
+<translation id="1846771122725914429">Bluetoothiga Braille' ekraan</translation>
 <translation id="1865601187525349519">Teksti lõpp</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Esitage praegune kellaaeg ja kuupäev.</translation>
@@ -161,6 +162,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="2422937916923936891">Menüü-üksuse märkeruut</translation>
 <translation id="2428534162001909979">Käsumenüüd</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">Subtiitrid</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> on nüüd uus ChromeVoxi muuteklahv.</translation>
 <translation id="2450814015951372393">Märkeruut</translation>
 <translation id="2462626033734746142">Raadionuppude rühm</translation>
@@ -647,6 +649,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="5887397643266327462">Punktkirjas tiitrid on lubatud.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Esita väiksema helitugevusega, kui ChromeVox räägib</translation>
+<translation id="5906974869830879618">Sisestage PIN-kood</translation>
 <translation id="5921587111466148855">Peatükk</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{võrdusmärk}other{# võrdusmärki}}</translation>
 <translation id="5939518447894949180">Lähtesta</translation>
@@ -703,6 +706,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="641759969622533235">{COUNT,plural, =1{koolon}other{# koolonit}}</translation>
 <translation id="6438968337250688271">Menüü <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Hoiatusdialoog</translation>
+<translation id="6452403590345320472">Sisukord</translation>
 <translation id="6459511626086141404">Lame klahvitabel</translation>
 <translation id="6468049171101508116">Järgmine nupp</translation>
 <translation id="646954774886932461">Register</translation>
@@ -997,6 +1001,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="948171205378458592">Vähenda kõne kiirust</translation>
 <translation id="958854023026327378">Pühkige ühe sõrmega alla</translation>
 <translation id="962913030769097253">Järgmine 1. taseme pealkiri</translation>
+<translation id="966588271015727539">Valige Bluetoothiga Braille' ekraan</translation>
 <translation id="973955474346881951">Luba/keela püsiv režiim</translation>
 <translation id="976849232629612000">Üksusi ei ole.</translation>
 <translation id="995852680044449248">Läbikriipsutuse algus</translation>

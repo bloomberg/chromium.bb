@@ -40,6 +40,7 @@
 <translation id="15373452373711364">大号鼠标光标</translation>
 <translation id="1550523713251050646">点击即可查看更多选项</translation>
 <translation id="1570871743947603115">切换蓝牙设置。<ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">访问您在此次会话中的所有活动</translation>
 <translation id="1608626060424371292">移除此用户</translation>
 <translation id="1621499497873603021">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
 <translation id="1654477262762802994">启动语音查询</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">添加连接</translation>
 <translation id="2961963223658824723">出了点问题。请过几秒钟后重试。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">安装应用、扩展程序和主题背景</translation>
 <translation id="2995447421581609334">显示投射设备。</translation>
 <translation id="2996462380875591307">已启用停靠的放大镜。再按一次 Ctrl+搜索键+D 组合键即可将其停用。</translation>
 <translation id="3000461861112256445">单声道音频</translation>
@@ -329,6 +331,7 @@
 <translation id="6627638273713273709">搜索键+Shift+K</translation>
 <translation id="6650933572246256093">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下配对密钥：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密码</translation>
+<translation id="6665545700722362599">授权网站、应用和扩展程序使用位置信息服务或使用此设备的麦克风/摄像头/其他功能</translation>
 <translation id="6691659475504239918">搜索键+Shift+H</translation>
 <translation id="6696025732084565524">您的可拆卸式键盘需要安装一项重要更新</translation>
 <translation id="6700713906295497288">IME 菜单按钮</translation>

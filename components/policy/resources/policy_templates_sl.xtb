@@ -119,6 +119,13 @@
 
           Za upravljane naprave privzeto ni na voljo noben hiter način odklepanja.</translation>
 <translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
+<translation id="1231349879329465225">Omogoča omogočanje ali onemogočanje hitrega prehoda.
+      To velja za vse uporabnike in vse vmesnike v napravi.
+      Če želite uporabiti možnost hitrega prehoda, morate omogočiti to nastavitev in lastnost ONC za posamezno omrežje.
+      Ko je možnost hitrega prehoda nastavljena, ostane omogočena, dokler je ne onemogočite s spremembo pravilnika.
+
+      Če pravilnik ni nastavljen ali je onemogočen, se možnost hitrega prehoda ne uporablja.
+      Če je omogočen, se možnost hitrega prehoda uporablja, ko ga podpira brezžična dostopna točka.</translation>
 <translation id="1243570869342663665">Upravljanje filtriranja vsebine za odrasle s filtrom SafeSites</translation>
 <translation id="1257550411839719984">Določi privzeti imenik za prenos</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>

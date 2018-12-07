@@ -40,6 +40,7 @@
 <translation id="15373452373711364">ದೊಡ್ಡ ಮೌಸ್ ಕರ್ಸರ್</translation>
 <translation id="1550523713251050646">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳಿಗೆ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="1570871743947603115">ಬ್ಲೂಟೂತ್ ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">ಈ ಸೆಶನ್‌ನಲ್ಲಿ ನೀವು ನಡೆಸುವ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರವೇಶಿಸುವುದು</translation>
 <translation id="1608626060424371292">ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">ಧ್ವನಿ ಪ್ರಶ್ನೆಯನ್ನು ಕೇಳಲು ಪ್ರಾರಂಭಿಸಿ</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">ಸಂಪರ್ಕ ಸೇರಿಸಿ</translation>
 <translation id="2961963223658824723">ಏನೋ ಸಮಸ್ಯೆಯಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">ಆ್ಯಪ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು, ಮತ್ತು ಥೀಮ್‌ಗಳನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡುವುದು</translation>
 <translation id="2995447421581609334">ಬಿತ್ತರಿಸುವ ಸಾಧನಗಳನ್ನು ತೋರಿಸಿ.</translation>
 <translation id="2996462380875591307">ಡಾಕ್‌‌ ಮಾಡಿರುವ ವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು ಪುನಃ Ctrl+Search+D ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="3000461861112256445">ಮೊನೊ ಆಡಿಯೊ</translation>
@@ -329,6 +331,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6627638273713273709">ಹುಡುಕಾಟ+Shift+K</translation>
 <translation id="6650933572246256093">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತಿದೆ. ಆ ಸಾಧನದಲ್ಲಿ ಈ ಪಾಸ್‌ಕೀಲಿಯನ್ನು ನಮೂದಿಸಿ: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">ಪಾಸ್‌ವರ್ಡ್</translation>
+<translation id="6665545700722362599">ಸ್ಥಳ ಸೇವೆಗಳು, ಸಾಧನದ ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮೆರಾ, ಅಥವಾ ಇತರ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಬಳಸಲು ವೆಬ್‌ಸೈಟ್‌ಗಳು, ಆ್ಯಪ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳಿಗೆ ಅನುಮತಿಯನ್ನು ನೀಡುವುದು</translation>
 <translation id="6691659475504239918">ಹುಡುಕಾಟ+Shift+H</translation>
 <translation id="6696025732084565524">ನಿಮ್ಮ ಪ್ರತ್ಯೇಕಿಸಬಹುದಾದ ಕೀಬೋರ್ಡ್‌ಗೆ ವಿಷಮಸ್ಥಿತಿ ಅಪ್‌ಡೇಟ್‌ನ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6700713906295497288">IME ಮೆನು ಬಟನ್</translation>

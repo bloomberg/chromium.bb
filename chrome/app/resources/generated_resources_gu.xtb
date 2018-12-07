@@ -1280,6 +1280,7 @@
 <translation id="2908162660801918428">ડિરેક્ટરી દ્વારા મીડિયા ગૅલેરી ઉમેરો</translation>
 <translation id="2910318910161511225">નેટવર્કથી કનેક્ટ કરો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="2913331724188855103">સાઇટને કૂકી ડેટા સાચવવા અને વાંચવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
+<translation id="2915102088417824677">પ્રવૃત્તિ લૉગ જુઓ</translation>
 <translation id="2916073183900451334">વેબપેજ પર ટૅબને દબાવવાથી લિંકની સાથે ફોર્મ ફીલ્ડ હાઇલાઇટ થાય છે</translation>
 <translation id="2916745397441987255">એક્સ્ટેન્શન્સ શોધો</translation>
 <translation id="2921081876747860777">તમારો સ્થાનિક ડેટા સુરક્ષિત કરવા માટે કૃપા કરીને એક પાસવર્ડ બનાવો.</translation>
@@ -2068,6 +2069,7 @@
 <translation id="4104163789986725820">નિ&amp;કાસ કરો...</translation>
 <translation id="4107048419833779140">સ્ટોરેજ ઉપકરણોને ઓળખો અને તેને બહાર કાઢો</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) પર વિંડો ખસેડો</translation>
+<translation id="4110490973560452005">ડાઉનલોડ પૂર્ણ થયું: <ph name="FILE_NAME" />. ડાઉનલોડ બાર ક્ષેત્રમાં પહોંચવા માટે Shift+F6 દબાવો.</translation>
 <translation id="4110895898888439383">ઉચ્ચ કોન્ટ્રાસ્ટ મોડમાં વેબ બ્રાઉઝ કરો</translation>
 <translation id="4115002065223188701">નેટવર્ક પહોંચની બહાર છે</translation>
 <translation id="4115080753528843955">કેટલીક કન્ટેન્ટ સેવાઓ, સુરક્ષિત કન્ટેન્ટની ઍક્સેસને અધિકૃત કરવાના ઉદ્દેશ્યો માટે અનન્ય ઓળખકર્તાઓનો ઉપયોગ કરે છે</translation>
@@ -2228,6 +2230,7 @@
 <translation id="44141919652824029">"<ph name="APP_NAME" />"ને તમારા જોડાણ કરેલા USB ઉપકરણોની સૂચિ મેળવવાની મંજૂરી આપીએ?</translation>
 <translation id="4414232939543644979">નવી &amp;છુપી વિંડો</translation>
 <translation id="4415245286584082850">કોઈ ડિવાઇસ મળ્યાં નથી. નવા ટૅબમાં સહાયતા કેન્દ્રનો લેખ ખોલો.</translation>
+<translation id="4415276339145661267">તમારું Google એકાઉન્ટ મેનેજ કરો</translation>
 <translation id="4415748029120993980">SECG એલિપ્ટિક કર્વ secp384r1 (ઉર્ફ NIST P-384)</translation>
 <translation id="4416582610654027550">માન્ય URL લખો</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> ને હંમેશા કૂકીઝ સેટ કરવાની મંજૂરી આપો</translation>
@@ -2323,6 +2326,7 @@
 <translation id="4568213207643490790">માફ કરશો, આ ઉપકરણ પર Google એકાઉન્ટ મંજૂર નથી.</translation>
 <translation id="4568854179928172494">ફેરફાર કર્યાનો સમય</translation>
 <translation id="4569747168316751899">જ્યારે નિષ્ક્રિય હોય</translation>
+<translation id="4570387585180509432">ઍડ્રેસ, ફોન નંબર અને વધુ</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" થી કનેક્ટ કરતી વખતે પ્રમાણીકરણ રદ કરવામાં આવ્યું.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ફાઇલ</translation>
 <translation id="457386861538956877">વધુ...</translation>
@@ -3001,6 +3005,7 @@
 <translation id="5585912436068747822">ફોર્મેટિંગ નિષ્ફળ થયું</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">ઍપ્લિકેશનો લોડ કરી રહ્યું છે...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" />, ડિવાઇસ સાથે જોડાણ કરવા માગે છે</translation>
 <translation id="5592595402373377407">હજુ સુધી પર્યાપ્ત ડેટા ઉપલબ્ધ નથી.</translation>
 <translation id="5593357315997824387">મારી ફાઇલો સિંક કરો</translation>
 <translation id="5595152862129936745">ખૂબ દૂર</translation>
@@ -3034,6 +3039,7 @@
 <translation id="5627676517703583263">Chrome વડે સ્માર્ટ બ્રાઉઝ કરો</translation>
 <translation id="562935524653278697">તમારા વ્યવસ્થાપકે તમારા બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સને સમન્વયન કરવાનું અક્ષમ કર્યું છે.</translation>
 <translation id="5632566673632479864">તમારા એકાઉન્ટ <ph name="EMAIL" />ને હવે પ્રાથમિક એકાઉન્ટ તરીકે મંજૂરી નથી. આ એકાઉન્ટ <ph name="DOMAIN" /> દ્વારા મેનેજ થતું હોવાને કારણે, તમારાં બુકમાર્ક, ઇતિહાસ, પાસવર્ડ અને અન્ય સેટિંગ આ ડિવાઇસ પરથી સાફ કરવામાં આવશે.</translation>
+<translation id="5632592977009207922">ડાઉનલોડ કરી રહ્યાં છીએ, <ph name="PERCENT_REMAINING" />% બાકી</translation>
 <translation id="563535393368633106">ઍક્સેસ કરતાં પહેલાં પૂછો (ભલામણ કરેલ)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> નો ઉપયોગ કરવા માટે તમારે પહેલા <ph name="LINK_START" />નેટવર્કના સાઇન-ઇન પૃષ્ઠની મુલાકાત લેવી<ph name="LINK_END" /> જરૂરી છે, જે થોડીવારમાં આપમેળે ખુલશે. જો આવું ન થાય, તો નેટવર્કનો ઉપયોગ કરી શકાતો નથી.</translation>
 <translation id="5637476008227280525">મોબાઇલ ડેટા ચાલુ</translation>
@@ -3416,6 +3422,7 @@
 <translation id="6198252989419008588">PIN બદલો</translation>
 <translation id="6199801702437275229">સ્થાન માહિતી માટે રાહ જોઈ રહ્યું છે...</translation>
 <translation id="6201792273624501289">Linux ઍપ</translation>
+<translation id="6202304368170870640">તમે તમારા ડિવાઇસમાં સાઇન ઇન કરવા અથવા અનલૉક કરવા માટે તમારા પિનનો ઉપયોગ કરી શકો છો.</translation>
 <translation id="6205710420833115353">કેટલાક ઑપરેશન્સમાં અપેક્ષિત કરતાં વધુ સમય લાગી રહ્યો છે. શું તમે તેમને નિરસ્ત કરવા માગો છો?</translation>
 <translation id="6206311232642889873">છબીની કૉ&amp;પિ બનાવો</translation>
 <translation id="6207200176136643843">ડિફૉલ્ટ ઝૂમ સ્તર પર રીસેટ કરો</translation>
@@ -4251,6 +4258,7 @@
 <translation id="7497215489070763236">સર્વર CA પ્રમાણપત્ર</translation>
 <translation id="7497981768003291373">તમારી પાસે તાજેતરમાં કૅપ્ચર કરેલ કોઈ WebRTC ટેક્સ્ટ લૉગ નથી.</translation>
 <translation id="7502658306369382406">IPv6 સરનામું</translation>
+<translation id="7503127198245469314">ડેસ્કટૉપ ડિસ્પ્લે પર બ્લૉક કરવા અથવા મંજૂરી આપવા માટે હૅડસેટ કાઢી નાખો</translation>
 <translation id="7503191893372251637">નેટસ્કેપ પ્રમાણપત્રનો પ્રકાર</translation>
 <translation id="7503821294401948377">બ્રાઉઝર ક્રિયા માટે આયકન '<ph name="ICON" />' લોડ કરી શકાયું નથી.</translation>
 <translation id="750509436279396091">ડાઉનલોડ્સ ફોલ્ડર ખોલો</translation>
@@ -4857,6 +4865,7 @@
 <translation id="8425213833346101688">બદલો</translation>
 <translation id="8425492902634685834">ટાસ્કબારમાં પિન કરો</translation>
 <translation id="8425755597197517046">પે&amp;સ્ટ કરો અને શોધો</translation>
+<translation id="8425768983279799676">તમે તમારા ડિવાઇસને અનલૉક કરવા માટે તમારા પિનનો ઉપયોગ કરી શકો છો.</translation>
 <translation id="8426713856918551002">સક્ષમ કરી રહ્યાં છીએ</translation>
 <translation id="8427292751741042100">કોઈ પણ હોસ્ટ પર એમ્બેડ કરેલ</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>

@@ -121,6 +121,13 @@
 
           Secara lalai, tiada mod buka kunci pantas tersedia untuk peranti yang diurus.</translation>
 <translation id="123081309365616809">Dayakan penghantaran kandungan ke peranti</translation>
+<translation id="1231349879329465225">Membenarkan Peralihan Pantas didayakan atau dilumpuhkan.
+      Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti.
+      Untuk membolehkan penggunaan Peralihan Pantas, tetapan ini dan juga sifat ONC setiap rangkaian perlu didayakan.
+      Setelah ditetapkan, Peralihan Pantas akan terus digunakan sehingga dasar tersebut ditukar untuk melumpuhkannya.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, Peralihan Pantas tidak akan digunakan.
+      Jika ditetapkan kepada benar, Peralihan Pantas akan digunakan apabila titik akses wayarles menyokong ciri ini.</translation>
 <translation id="1243570869342663665">Kawal penapisan kandungan dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Tetapkan direktori muat turun lalai</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>

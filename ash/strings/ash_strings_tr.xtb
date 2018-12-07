@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Büyük fare imleci</translation>
 <translation id="1550523713251050646">Daha fazla seçenek için tıklayın</translation>
 <translation id="1570871743947603115">Bluetooth'u aç/kapat. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Bu oturumdaki tüm etkinliğinize erişme</translation>
 <translation id="1608626060424371292">Bu kullanıcıyı kaldır</translation>
 <translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Sesli sorgu başlat</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Bağlantı ekle</translation>
 <translation id="2961963223658824723">Bir sorun oluştu. Birkaç saniye sonra tekrar deneyin.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Uygulama, uzantı ve tema yükleme</translation>
 <translation id="2995447421581609334">Yayın cihazlarını göster.</translation>
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="3000461861112256445">Mono ses</translation>
@@ -329,6 +331,7 @@
 <translation id="6627638273713273709">Ara+Üst Karakter+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Lütfen söz konusu cihazda bu parolayı girin: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Şifre</translation>
+<translation id="6665545700722362599">Web sitelerine, uygulamalara ve uzantılara konum hizmetlerini, cihazın mikrofonunu, kamerasını ve diğer özelliklerini kullanma izni verme</translation>
 <translation id="6691659475504239918">Arama+Üst Karakter+H</translation>
 <translation id="6696025732084565524">Çıkarılabilir klavyenizde kritik bir güncelleme yapılması gerekiyor</translation>
 <translation id="6700713906295497288">IME menü düğmesi</translation>

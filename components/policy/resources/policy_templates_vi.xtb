@@ -119,6 +119,13 @@
 
           Theo mặc định, các thiết bị được quản lý sẽ không sử dụng được bất kỳ chế độ mở khóa nhanh nào.</translation>
 <translation id="123081309365616809">Bật tính năng truyền nội dung đến thiết bị</translation>
+<translation id="1231349879329465225">Cho phép bật hoặc tắt tính năng Chuyển đổi nhanh.
+      Tính năng này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị.
+      Để sử dụng tính năng Chuyển đổi nhanh, bạn cần phải bật cả tùy chọn cài đặt này và thuộc tính ONC trên mỗi mạng.
+      Sau khi bạn đặt, tính năng Chuyển đổi nhanh sẽ tiếp tục cho đến khi bạn thay đổi chính sách này thành tắt tính năng Chuyển đổi nhanh.
+
+      Nếu không đặt hoặc đặt chính sách này thành false, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
+      Nếu đặt chính sách này thành true, bạn có thể sử dụng tính năng Chuyển đổi nhanh khi điểm truy cập không dây hỗ trợ tính năng này.</translation>
 <translation id="1243570869342663665">Kiểm soát tùy chọn lọc nội dung người lớn của SafeSites.</translation>
 <translation id="1257550411839719984">Đặt thư mục tải xuống mặc định</translation>
 <translation id="1265053460044691532">Hạn chế thời gian người dùng được xác thực qua SAML có thể đăng nhập ngoại tuyến</translation>

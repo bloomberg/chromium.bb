@@ -838,6 +838,7 @@
 <translation id="6744009308914054259">在等待连接时，您可以前往“下载内容”页面阅读离线文章。</translation>
 <translation id="6753269504797312559">政策值</translation>
 <translation id="6757797048963528358">您的设备已进入休眠模式。</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{此刻无法添加这张卡}other{此刻无法添加这些卡}}</translation>
 <translation id="6778737459546443941">您的父亲/母亲尚未批准此网站</translation>
 <translation id="679355240208270552">由于政策未启用默认搜索引擎，因此政策值已被忽略。</translation>
 <translation id="681021252041861472">必填字段</translation>
@@ -850,6 +851,7 @@
 <translation id="6865412394715372076">暂时无法验证此信用卡</translation>
 <translation id="6868206169573555318">重新启动以进行更新</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
+<translation id="6885646002011712606">自动填充助理位于屏幕底部附近</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6895330447102777224">已确认您的信用卡</translation>
@@ -992,6 +994,7 @@
 <translation id="7716424297397655342">无法从缓存中加载此网站</translation>
 <translation id="7723047071702270851">修改支付卡</translation>
 <translation id="774634243536837715">危险内容已被拦截。</translation>
+<translation id="7747182086178764941">系统会显示自动填充助理首次运行屏幕</translation>
 <translation id="7752995774971033316">非托管</translation>
 <translation id="7755287808199759310">您的父亲/母亲可为您取消屏蔽此网站</translation>
 <translation id="7758069387465995638">防火墙或防病毒软件可能已阻止您连接到网络。</translation>

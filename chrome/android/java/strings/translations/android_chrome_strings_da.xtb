@@ -166,6 +166,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="2154484045852737596">Rediger kort</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2173302385160625112">Tjek din internetforbindelse</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2221802148287197464">Automatiser</translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
@@ -343,6 +344,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3712575778697986964">Vil du nulstille Datasparefunktion?</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
 <translation id="3716182511346448902">Denne side anvender for meget hukommelse, så Chrome har sat den på pause.</translation>
+<translation id="3724958268700778519">Med Google Assistent sparer du tid ved betalingsprocessen på websitet.</translation>
 <translation id="3739899004075612870">Tilføjet som bogmærke i <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB af andre apps</translation>
 <translation id="3744111561329211289">Synkronisering i baggrunden</translation>
@@ -361,6 +363,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3868004864571585162">Cookies, medielicenser og websitedata</translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="3895926599014793903">Tving aktivering af zoom</translation>
+<translation id="3912508018559818924">Finder det bedste fra nettet…</translation>
 <translation id="3918221729963301892">Vis ikke igen</translation>
 <translation id="3927692899758076493">Sans serif</translation>
 <translation id="3928666092801078803">Kombiner mine data</translation>
@@ -379,6 +382,7 @@ Husk, at du ikke er usynlig. Den private tilstand skjuler ikke dine søgninger o
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="3997476611815694295">Lagerplads, der ikke er vigtig</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4008040567710660924">Tillad cookies for et bestemt website.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t.}one{# t.}other{# t.}}</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
 <translation id="4046123991198612571">Næste nummer</translation>
@@ -395,6 +399,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4113030288477039509">Administreres af din administrator</translation>
+<translation id="411332046216682877">Tryk her for at foretage en hurtig søgning</translation>
 <translation id="4116038641877404294">Download sider for at bruge dem, mens du er offline</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d bogmærke}one{%1$d bogmærke}other{%1$d bogmærker}}</translation>
 <translation id="4149994727733219643">Enkel visning af websider</translation>
@@ -541,6 +546,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5224771365102442243">Med video</translation>
 <translation id="5233638681132016545">Ny fane</translation>
 <translation id="5264003212305142034"><ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" /> kan tilpasses når som helst. Google kan bruge indholdet på de websites, du besøger, samt browseraktivitet og -interaktioner til at tilpasse Chrome og andre Google-tjenester såsom Oversæt, Søgning og annoncer.</translation>
+<translation id="526421993248218238">Siden kunne ikke indlæses</translation>
 <translation id="5271967389191913893">Enheden kan ikke åbne det indhold, der skal downloades.</translation>
 <translation id="5274381992091475657">Assistent til AutoFyld</translation>
 <translation id="528192093759286357">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
@@ -882,6 +888,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Beskytter dig og din enhed mod farlige websites</translation>
 <translation id="7759822418208302953">Assistenten til AutoFyld stopper</translation>
+<translation id="7761870125254530914">Ved at fortsætte accepterer du Googles vilkår og betingelser for Hurtig betaling. <ph name="BEGIN_LINK" />Læs mere<ph name="END_LINK" /></translation>
 <translation id="7762668264895820836">SD-kort <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="7765158879357617694">Flyt</translation>
@@ -1025,6 +1032,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
 <translation id="8901170036886848654">Der blev ikke fundet nogen bogmærker</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d åben fane. Tryk for at skifte fane.}one{%1$d åben fane. Tryk for at skifte fane.}other{%1$d åben faner. Tryk for at skifte fane.}}</translation>
 <translation id="8905378131945614900">VR-modulet blev ikke installeret</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1033,6 +1041,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8941729603749328384">www.eksempel.com</translation>
 <translation id="8942627711005830162">Åbn i et andet vindue</translation>
 <translation id="8951232171465285730">Chrome har sparet dig <ph name="MEGABYTES" /> MB</translation>
+<translation id="8958424370300090006">Bloker cookies for et bestemt website.</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
 <translation id="8965591936373831584">afventer</translation>
 <translation id="8972098258593396643">Vil du downloade til standardmappen?</translation>
@@ -1051,6 +1060,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="9070377983101773829">Start talesøgning</translation>
 <translation id="9071742570345586758">Installer Google VR-tjenester for at se virtual reality-indhold</translation>
 <translation id="9074336505530349563">Log ind, og aktivér synkronisering for at hente brugertilpasset indhold, som er foreslået af Google</translation>
+<translation id="9079796397681444569">Find nemt rundt i Chrome via knapperne nederst på skærmen</translation>
 <translation id="9080642952018487277">Aktivér privat tilstand</translation>
 <translation id="9086455579313502267">Der kunne ikke opnås adgang til netværket</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> KB er downloadet</translation>

@@ -842,6 +842,7 @@
 <translation id="6744009308914054259">कनेक्शन का इंतज़ार करते समय, ऑफ़लाइन लेख पढ़ने के लिए आप 'डाउनलोड' पर जा सकते हैं.</translation>
 <translation id="6753269504797312559">नीति मान</translation>
 <translation id="6757797048963528358">आपका डिवाइस निष्क्रिय हो गया है.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{यह कार्ड इस समय नहीं जोड़ा जा सकता}one{ये कार्ड इस समय नहीं जोड़े जा सकते}other{ये कार्ड इस समय नहीं जोड़े जा सकते}}</translation>
 <translation id="6778737459546443941">आपके अभिभावक ने अभी तक इसकी स्वीकृति नहीं दी है</translation>
 <translation id="679355240208270552">अनदेखा किया गया क्योंकि पॉलिसी ने डिफ़ॉल्ट खोज सक्षम नहीं की है.</translation>
 <translation id="681021252041861472">ज़रूरी फ़ील्ड</translation>
@@ -854,6 +855,7 @@
 <translation id="6865412394715372076">इस कार्ड की पुष्टि अभी नहीं की जा सकती</translation>
 <translation id="6868206169573555318">अपडेट करने के लिए फिर से लॉन्च करें</translation>
 <translation id="6874604403660855544">&amp;जोड़ना फिर से करें</translation>
+<translation id="6885646002011712606">'ऑटोमैटिक भरना' सहायक, स्क्रीन के सबसे नीचे उपलब्ध है</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
@@ -996,6 +998,7 @@
 <translation id="7716424297397655342">इस साइट को संचय से लोड नहीं किया जा सकता</translation>
 <translation id="7723047071702270851">कार्ड में बदलाव करें</translation>
 <translation id="774634243536837715">खतरनाक सामग्री ब्लॉक की गई.</translation>
+<translation id="7747182086178764941">'ऑटोमैटिक भरना' सहायक के पहली बार चलने की स्क्रीन दिखाई गई है</translation>
 <translation id="7752995774971033316">अप्रबंधित</translation>
 <translation id="7755287808199759310">आपका अभिभावक इसे आपके लिए अनवरोधित कर सकता है</translation>
 <translation id="7758069387465995638">हो सकता है कि फायरवॉल या एंटीवायरस द्वारा कनेक्शन अवरुद्ध हो.</translation>

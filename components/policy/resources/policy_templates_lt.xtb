@@ -119,6 +119,13 @@
 
           Pagal numatytuosius nustatymus tvarkomuose įrenginiuose nepasiekiami jokie sparčiojo atrakinimo režimai.</translation>
 <translation id="123081309365616809">Įgalinamas turinio perdavimas į įrenginį</translation>
+<translation id="1231349879329465225">Leidžiama įjungti ir išjungti spartųjį perėjimą.
+      Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje.
+      Kad būtų galima naudoti spartųjį perėjimą, turi būti įgalintas ir šis nustatymas, ir tinklo ONC nuosavybė.
+      Nustatytas spartusis perėjimas lieka įjungtas, kol politika pakeičiama, kad jis būtų išjungtas.
+
+      Jei ši politika nustatyta kaip „false“, spartusis perėjimas nenaudojamas.
+      Jei politika nustatyta kaip „true“, spartusis perėjimas naudojamas, kai jį palaiko belaidis prieigos taškas.</translation>
 <translation id="1243570869342663665">Valdomas „SafeSites“ turinio suaugusiesiems filtravimas.</translation>
 <translation id="1257550411839719984">Numatytojo atsisiuntimų katalogo nustatymas</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>

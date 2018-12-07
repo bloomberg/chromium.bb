@@ -119,6 +119,13 @@
 
           A felügyelt eszközöknél alapértelmezés szerint nem lehet gyorsfeloldási módszert használni.</translation>
 <translation id="123081309365616809">Tartalom eszközre való átküldésének engedélyezése</translation>
+<translation id="1231349879329465225">Lehetővé teszi a Fast Transition (gyors váltás) funkció engedélyezését és letiltását.
+      Minden felhasználóra és az eszköz minden felületére vonatkozik.
+      A Fast Transition funkció használatához ezt a beállítást és a hálózatonkénti ONC tulajdonságot is engedélyezni kell.
+      Beállítása után a Fast Transition funkció addig érvényben marad, amíg a házirend módosításával le nem tiltják.
+
+      Ha a házirend nincs beállítva, vagy értéke hamis, a rendszer nem használja a Fast Transition funkciót.
+      Ha a házirend beállítása igaz, a rendszer használja a Fast Transition funkciót, amennyiben a vezeték nélküli hozzáférési pont is támogatja.</translation>
 <translation id="1243570869342663665">A SafeSites felnőtteknek szóló tartalmakra vonatkozó szűrőinek vezérlése.</translation>
 <translation id="1257550411839719984">Alapértelmezett letöltési könyvtár beállítása</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>

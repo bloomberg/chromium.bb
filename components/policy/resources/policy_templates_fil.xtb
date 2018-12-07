@@ -119,6 +119,13 @@
 
           Bilang default, walang available na mabilisang unlock mode para sa mga pinapamahalaang device.</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
+<translation id="1231349879329465225">Nagbibigay-daan sa pag-enable o pag-disable ng Mabilis ng Transition.
+      Nalalapat ito sa lahat ng user at sa lahat ng interface sa device.
+      Para magamit ang Mabilis na Transition, kailangang naka-enable ang setting na ito at ang ONC property sa bawat network.
+      Kapag naitakda na, magpapatuloy ang Mabilis na Transition hanggang baguhin ang patakaran para ma-disable ito.
+
+      Kung hindi itatakda ang patakaran, hindi gagamitin ang Mabilis na Transition.
+      Kung itatakda sa true, gagamitin ang Mabilis na Transition kapag sinusuportahan ito ng wireless na access point.</translation>
 <translation id="1243570869342663665">Kontrolin ang pag-filter ng pang-adult na content ng SafeSites.</translation>
 <translation id="1257550411839719984">Itakda ang default na directory sa pag-download</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>

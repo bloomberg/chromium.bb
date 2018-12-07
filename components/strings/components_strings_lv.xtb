@@ -841,6 +841,7 @@
 <translation id="6744009308914054259">Kamēr tiek gaidīts savienojums, varat apmeklēt Lejupielādes, lai lasītu rakstu bezsaistē.</translation>
 <translation id="6753269504797312559">Politikas vērtība</translation>
 <translation id="6757797048963528358">Ierīce tika pārslēgta miega režīmā.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Šo kartīti pašlaik nevar pievienot}zero{Šīs kartītes pašlaik nevar pievienot}one{Šīs kartītes pašlaik nevar pievienot}other{Šīs kartītes pašlaik nevar pievienot}}</translation>
 <translation id="6778737459546443941">Neviens no jūsu vecākiem vēl nav to apstiprinājis</translation>
 <translation id="679355240208270552">Politika ignorēta, jo noklusējuma meklēšana nav iespējota politikā.</translation>
 <translation id="681021252041861472">Obligātais lauks</translation>
@@ -853,6 +854,7 @@
 <translation id="6865412394715372076">Pašlaik nevar verificēt šo karti.</translation>
 <translation id="6868206169573555318">Palaist atkārtoti, lai atjauninātu</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
+<translation id="6885646002011712606">Automātiskās aizpildes palīgs ir pieejams ekrāna apakšējā daļā</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />: <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Politikas līmenis netiek atbalstīts.</translation>
 <translation id="6895330447102777224">Karte ir apstiprināta</translation>
@@ -995,6 +997,7 @@ Papildu informācija:
 <translation id="7716424297397655342">Šo vietni nevar ielādēt no kešatmiņas</translation>
 <translation id="7723047071702270851">Kartes informācijas rediģēšana</translation>
 <translation id="774634243536837715">Bloķēts bīstams saturs</translation>
+<translation id="7747182086178764941">Tiek rādīts automātiskās aizpildes palīga pirmās palaišanas ekrāns</translation>
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="7755287808199759310">Lai atbloķētu, vēsieties pie vecāka</translation>
 <translation id="7758069387465995638">Iespējams, savienojumu ir bloķējis ugunsmūris vai pretvīrusu programmatūra.</translation>

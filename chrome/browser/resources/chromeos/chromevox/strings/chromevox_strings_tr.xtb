@@ -104,6 +104,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1828385960365606039">Mayıs</translation>
 <translation id="1834891354138622109">Sütun</translation>
 <translation id="1845944666972354496">Etkinleştirmek için iki kez dokunun</translation>
+<translation id="1846771122725914429">Bluetooth Braille Ekran</translation>
 <translation id="1865601187525349519">Metnin sonu</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Geçerli saati ve tarihi söyle.</translation>
@@ -160,6 +161,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2422937916923936891">Menü öğesi onay kutusu</translation>
 <translation id="2428534162001909979">Komut Menüleri</translation>
 <translation id="2429669115401274487">ÖS</translation>
+<translation id="242998846562331953">Alt başlık</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> artık yeni ChromeVox değiştirici.</translation>
 <translation id="2450814015951372393">Onay kutusu</translation>
 <translation id="2462626033734746142">Radyo düğmesi grubu</translation>
@@ -646,6 +648,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5887397643266327462">Braille altyazıları etkinleştirildi.</translation>
 <translation id="5891934789323004067">Tablo</translation>
 <translation id="5899860758576822363">ChromeVox konuşurken daha düşük ses seviyesinde çal</translation>
+<translation id="5906974869830879618">Lütfen bir pin girin</translation>
 <translation id="5921587111466148855">Bölüm</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{eşit işareti}other{# eşit işareti}}</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
@@ -702,6 +705,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="641759969622533235">{COUNT,plural, =1{iki nokta}other{# iki nokta}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menü</translation>
 <translation id="6444046323172968959">Uyarı iletişim kutusu</translation>
+<translation id="6452403590345320472">İçindekiler</translation>
 <translation id="6459511626086141404">Düz tuş eşleme</translation>
 <translation id="6468049171101508116">Sonraki düğmesi</translation>
 <translation id="646954774886932461">Dizin</translation>
@@ -996,6 +1000,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="948171205378458592">Konuşma hızını düşür</translation>
 <translation id="958854023026327378">Bir parmağınızı aşağı kaydırın</translation>
 <translation id="962913030769097253">Sonraki 1. düzey başlık</translation>
+<translation id="966588271015727539">Bluetooth braille ekran seçin</translation>
 <translation id="973955474346881951">Yapışkan modu etkinleştir/devre dışı bırak</translation>
 <translation id="976849232629612000">Öğe yok.</translation>
 <translation id="995852680044449248">Üstü çizili metin başlangıcı</translation>

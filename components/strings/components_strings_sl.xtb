@@ -842,6 +842,7 @@
 <translation id="6744009308914054259">Med čakanjem na povezavo lahko berete članke za branje brez povezave med prenosi.</translation>
 <translation id="6753269504797312559">Vrednost pravilnika</translation>
 <translation id="6757797048963528358">Naprava je preklopila v stanje pripravljenosti.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Te kartice trenutno ni mogoče dodati}one{Teh kartic trenutno ni mogoče dodati}two{Teh kartic trenutno ni mogoče dodati}few{Teh kartic trenutno ni mogoče dodati}other{Teh kartic trenutno ni mogoče dodati}}</translation>
 <translation id="6778737459546443941">Starši še niso odobrili</translation>
 <translation id="679355240208270552">Prezrto, ker pravilnik ne omogoča privzetega iskanja.</translation>
 <translation id="681021252041861472">Obvezno polje</translation>
@@ -854,6 +855,7 @@
 <translation id="6865412394715372076">Te kartice trenutno ni mogoče preveriti</translation>
 <translation id="6868206169573555318">Znova zaženite za posodobitev</translation>
 <translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
+<translation id="6885646002011712606">Pomočnik za samodejno izpolnjevanje je na voljo pri dnu zaslona</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
 <translation id="6895330447102777224">Kartica je potrjena.</translation>
@@ -996,6 +998,7 @@ Dodatne podrobnosti:
 <translation id="7716424297397655342">Tega spletnega mesta ni mogoče naložiti iz predpomnilnika</translation>
 <translation id="7723047071702270851">Urejanje kartice</translation>
 <translation id="774634243536837715">Nevarna vsebina blokirana.</translation>
+<translation id="7747182086178764941">Prikazan je zaslon za prvi zagon pomočnika za samodejno izpolnjevanje</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="7755287808199759310">Starš ga lahko odblokira</translation>
 <translation id="7758069387465995638">Povezavo je morda blokiral požarni zid ali protivirusni program.</translation>

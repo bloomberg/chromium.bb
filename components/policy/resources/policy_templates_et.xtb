@@ -121,6 +121,13 @@
 
           Vaikimisi pole hallatud seadmetes saadaval ühtegi kiiravamisrežiimi.</translation>
 <translation id="123081309365616809">Sisu ülekandmise lubamine seadmesse</translation>
+<translation id="1231349879329465225">Võimaldab lubada või keelata kiire ülemineku.
+      See kehtib seadme kõigi kasutajate ja liideste puhul.
+      Kiire ülemineku kasutamiseks peab nii see seade kui ka võrgupõhine ONC atribuut olema lubatud.
+      Pärast määramist jääb kiire ülemineku funktsioon lubatuks, kuni see reeglis keelatakse.
+
+      Kui reegel on määramata või seatud olekule Väär, ei kasutata kiiret üleminekut.
+      Kui reegel on seatud väärtusele Tõene, kasutatakse kiiret üleminekut juhul, kui juhtmeta pääsupunkt seda toetab.</translation>
 <translation id="1243570869342663665">Teenuse SafeSites täiskasvanutele mõeldud sisu filtreerimise haldamine.</translation>
 <translation id="1257550411839719984">Allalaadimise vaikekataloogi määramine</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>

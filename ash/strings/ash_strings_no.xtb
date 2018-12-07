@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
 <translation id="1570871743947603115">Slå av/på Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">se all aktiviteten din i denne økten</translation>
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="2961963223658824723">Noe gikk galt. Prøv på nytt om noen sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">installere apper, utvidelser og temaer</translation>
 <translation id="2995447421581609334">Vis Cast-enheter.</translation>
 <translation id="2996462380875591307">Dokket lupe er slått på. Trykk på Ctrl + Søk + D igjen for å slå det av.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
+<translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon og kamera eller andre funksjoner</translation>
 <translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6696025732084565524">Det avtakbare tastaturet trenger en kritisk oppdatering</translation>
 <translation id="6700713906295497288">IME-menyknappen</translation>

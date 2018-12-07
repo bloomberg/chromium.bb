@@ -192,7 +192,7 @@
 <translation id="1244303850296295656">Feil med utvidelse</translation>
 <translation id="1249250836236328755">Sjanger</translation>
 <translation id="1252987234827889034">Det oppsto en profilfeil</translation>
-<translation id="1254593899333212300">Direkte Internett-tilkobling</translation>
+<translation id="1254593899333212300">Direkte internettilkobling</translation>
 <translation id="1260240842868558614">Vis:</translation>
 <translation id="1260451001046713751">Tillat alltid forgrunnsvinduer og viderekoblinger fra <ph name="HOST" /></translation>
 <translation id="126156426083987769">Det oppsto et problem med enhetslisenser i demomodus.</translation>
@@ -551,7 +551,7 @@
 <translation id="1794791083288629568">Send tilbakemelding så vi kan prøve å løse problemet.</translation>
 <translation id="1795214765651529549">Bruk klassisk</translation>
 <translation id="1799071797295057738">Utvidelsen «<ph name="EXTENSION_NAME" />» ble slått av automatisk.</translation>
-<translation id="180035236176489073">Du må ha Internett-tilkobling for å få tilgang til disse filene.</translation>
+<translation id="180035236176489073">Du må ha internettilkobling for å få tilgang til disse filene.</translation>
 <translation id="1802687198411089702">Siden svarer ikke. Du kan vente på den eller avslutte.</translation>
 <translation id="1802931390041703523">Flash ble blokkert på denne siden</translation>
 <translation id="1805738995123446102">En fane i bakgrunnen bruker mikrofonen din</translation>
@@ -1280,6 +1280,7 @@
 <translation id="2908162660801918428">Legg til mediegalleri etter katalog</translation>
 <translation id="2910318910161511225">Koble til et nettverk og prøv igjen</translation>
 <translation id="2913331724188855103">Tillat at nettsteder lagrer og leser data i informasjonskapsler (anbefales).</translation>
+<translation id="2915102088417824677">Se aktivitetsloggen</translation>
 <translation id="2916073183900451334">Trykk på Tab på en nettside for å utheve linker og skjemafelter</translation>
 <translation id="2916745397441987255">Søk i utvidelser</translation>
 <translation id="2921081876747860777">Opprett et passord for å beskytte de lokale dataene dine.</translation>
@@ -2065,6 +2066,7 @@
 <translation id="4104163789986725820">E&amp;ksportér</translation>
 <translation id="4107048419833779140">Identifiser og løs ut lagringsenheter</translation>
 <translation id="4109135793348361820">Flytt vinduet til <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Nedlastingen er fullført: <ph name="FILE_NAME" />. Trykk på Skift+F6 for å gå til nedlastingsraden.</translation>
 <translation id="4110895898888439383">Surf på nettet i høykontrastmodus</translation>
 <translation id="4115002065223188701">Nettverket er utenfor rekkevidde</translation>
 <translation id="4115080753528843955">Noen innholdstjenester bruker unike identifikatorer for å godkjenne tilgang til beskyttet innhold</translation>
@@ -2117,7 +2119,7 @@
 <translation id="4208390505124702064">Søk på <ph name="SITE_NAME" /></translation>
 <translation id="4209092469652827314">Stor</translation>
 <translation id="4209464433672152343">Dokumenter <ph name="BEGIN_LINK_HELP" />sendes til Google<ph name="END_LINK_HELP" /> for å forberede dem for utskrift. Se, rediger og administrer skriverne dine og skriverloggen i <ph name="BEGIN_LINK_DASHBOARD" />Google Cloud Print-oversikten<ph name="END_LINK_DASHBOARD" />.</translation>
-<translation id="421017592316736757">Du må ha Internett-tilkobling for å få tilgang til denne filen.</translation>
+<translation id="421017592316736757">Du må ha internettilkobling for å få tilgang til denne filen.</translation>
 <translation id="421182450098841253">&amp;Vis bokmerkerad</translation>
 <translation id="42126664696688958">Eksportér</translation>
 <translation id="42137655013211669">Tilgangen til denne ressursen ble avvist av tjeneren.</translation>
@@ -2175,7 +2177,7 @@
 <translation id="431076611119798497">&amp;Detaljer</translation>
 <translation id="4312866146174492540">Blokkér (standard)</translation>
 <translation id="4316850752623536204">Utviklernettsted</translation>
-<translation id="4320177379694898372">Ingen Internett-tilkobling</translation>
+<translation id="4320177379694898372">Ingen internettilkobling</translation>
 <translation id="4320948194796820126">Legg til et bokmerke i e-posten din</translation>
 <translation id="4322394346347055525">Lukk andre faner</translation>
 <translation id="4324577459193912240">Filen er ufullstendig</translation>
@@ -2225,6 +2227,7 @@
 <translation id="44141919652824029">Vil du gi «<ph name="APP_NAME" />» tilgang til listen over tilkoblede USB-enheter?</translation>
 <translation id="4414232939543644979">Nytt &amp;inkognitovindu</translation>
 <translation id="4415245286584082850">Fant ingen enheter. Åpne en brukerstøtteartikkel i en ny fane.</translation>
+<translation id="4415276339145661267">Administrer Google-kontoen din</translation>
 <translation id="4415748029120993980">SECG elliptisk kurve secp384r1 (også kjent som NIST P-384)</translation>
 <translation id="4416582610654027550">Skriv inn en gyldig nettadresse</translation>
 <translation id="4419409365248380979">Tillat alltid at <ph name="HOST" /> angir informasjonskapsler</translation>
@@ -2320,6 +2323,7 @@
 <translation id="4568213207643490790">Beklager, men Google-kontoer er ikke tillatt på denne enheten.</translation>
 <translation id="4568854179928172494">Endret</translation>
 <translation id="4569747168316751899">Når enheten er inaktiv</translation>
+<translation id="4570387585180509432">Adresser, telefonnumre og så videre</translation>
 <translation id="4572659312570518089">Autentiseringen ble avbrutt under tilkobling til <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer</translation>
@@ -2598,7 +2602,7 @@
 <translation id="4994474651455208930">Tillat at nettsteder kan be om å bli standard behandlere for protokoller</translation>
 <translation id="4994754230098574403">Konfigurerer</translation>
 <translation id="4996978546172906250">Del via</translation>
-<translation id="4997086284911172121">Ingen Internett-tilkobling.</translation>
+<translation id="4997086284911172121">Ingen internettilkobling.</translation>
 <translation id="4998873842614926205">Bekreft endringer</translation>
 <translation id="5000922062037820727">Blokkert (anbefales)</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> nye bilder</translation>
@@ -2998,6 +3002,7 @@
 <translation id="5585912436068747822">Formateringen mislyktes</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Laster inn apper …</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> vil koble seg til enheter</translation>
 <translation id="5592595402373377407">Nok data er ikke tilgjengelig ennå.</translation>
 <translation id="5593357315997824387">Synkroniser filene mine</translation>
 <translation id="5595152862129936745">Veldig langt unna</translation>
@@ -3030,6 +3035,7 @@
 <translation id="5627676517703583263">Surf smart med Chrome</translation>
 <translation id="562935524653278697">Administratoren din har slått av synkronisering av bokmerker, logg, passord og andre innstillinger du har.</translation>
 <translation id="5632566673632479864">Kontoen din (<ph name="EMAIL" />) er ikke tillatt som primærkonto lenger. Siden denne kontoen administreres av <ph name="DOMAIN" />, slettes bokmerkene, loggen, passordene og andre innstillinger du har, fra denne enheten.</translation>
+<translation id="5632592977009207922">Laster ned, <ph name="PERCENT_REMAINING" /> % gjenstår</translation>
 <translation id="563535393368633106">Spør før noe brukes (anbefales).</translation>
 <translation id="5636996382092289526">Hvis du vil bruke <ph name="NETWORK_ID" />, er det mulig du må <ph name="LINK_START" />gå til nettverkets påloggingsside<ph name="LINK_END" />, som åpnes automatisk om få sekunder. Hvis det ikke skjer, kan ikke nettverket brukes.</translation>
 <translation id="5637476008227280525">Slå på mobildata</translation>
@@ -3412,6 +3418,7 @@
 <translation id="6198252989419008588">Endre personlig kode</translation>
 <translation id="6199801702437275229">Venter på informasjon om lagringsplass …</translation>
 <translation id="6201792273624501289">Linux-apper</translation>
+<translation id="6202304368170870640">Du kan bruke PIN-koden til å logge på eller låse opp enheten.</translation>
 <translation id="6205710420833115353">Noen handlinger tar lengre tid enn vanlig. Vil du avbryte dem?</translation>
 <translation id="6206311232642889873">&amp;Kopier bilde</translation>
 <translation id="6207200176136643843">Tilbakestill til standard zoomnivå</translation>
@@ -4247,6 +4254,7 @@
 <translation id="7497215489070763236">Tjenerens CA-sertifikat</translation>
 <translation id="7497981768003291373">Du har ingen nylig lagrede WebRTC-tekstlogger.</translation>
 <translation id="7502658306369382406">IPv6-adresse</translation>
+<translation id="7503127198245469314">Ta av deg VR-brillene for å blokkere eller tillate i skrivebordsvisning</translation>
 <translation id="7503191893372251637">Netscape sertifikattype</translation>
 <translation id="7503821294401948377">Kan ikke laste inn ikonet «<ph name="ICON" />» for nettleserhandling.</translation>
 <translation id="750509436279396091">Åpne nedlastingsmappen</translation>
@@ -4859,6 +4867,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8425213833346101688">Endre</translation>
 <translation id="8425492902634685834">Festet til oppgavelinjen</translation>
 <translation id="8425755597197517046">&amp;Lim inn og søk</translation>
+<translation id="8425768983279799676">Du kan bruke PIN-koden til å låse opp enheten.</translation>
 <translation id="8426713856918551002">Aktiverer</translation>
 <translation id="8427292751741042100">innebygd på et hvilket som helst nettsted</translation>
 <translation id="8428213095426709021">Innstillinger</translation>

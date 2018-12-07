@@ -40,6 +40,7 @@
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
 <translation id="1570871743947603115">블루투스를 전환합니다. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">이 세션의 모든 활동에 액세스</translation>
 <translation id="1608626060424371292">이 사용자 삭제</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
 <translation id="1654477262762802994">음성 검색 시작</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">연결 추가</translation>
 <translation id="2961963223658824723">문제가 발생했습니다. 잠시 후 다시 시도해 주세요.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">앱, 확장 프로그램 및 테마 설치</translation>
 <translation id="2995447421581609334">전송 기기를 표시합니다.</translation>
 <translation id="2996462380875591307">고정 돋보기가 사용 설정되었습니다. 사용 중지하려면 다시 Ctrl+Search+D를 누르세요.</translation>
 <translation id="3000461861112256445">모노 오디오</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">검색+Shift+K</translation>
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
+<translation id="6665545700722362599">웹사이트, 앱, 확장 프로그램에 위치 서비스, 기기의 마이크, 카메라 또는 기타 기능을 사용할 권한 부여</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">분리식 키보드에 중요 업데이트 필요</translation>
 <translation id="6700713906295497288">IME 메뉴 버튼</translation>

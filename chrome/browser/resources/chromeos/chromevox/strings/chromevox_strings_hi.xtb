@@ -104,6 +104,7 @@
 <translation id="1828385960365606039">मई</translation>
 <translation id="1834891354138622109">स्तंभ</translation>
 <translation id="1845944666972354496">चालू करने के लिए दो बार टैप करें</translation>
+<translation id="1846771122725914429">ब्लूटूथ ब्रेल डिसप्ले</translation>
 <translation id="1865601187525349519">लेख का अंत</translation>
 <translation id="1876229593313240038">दस्तावेज़</translation>
 <translation id="188130072164734898">वर्तमान समय और दिनांक बोलें.</translation>
@@ -161,6 +162,7 @@
 <translation id="2422937916923936891">मेनू आइटम चेक बॉक्स</translation>
 <translation id="2428534162001909979">निर्देश मेन्यू</translation>
 <translation id="2429669115401274487">अपराह्न</translation>
+<translation id="242998846562331953">सबटाइटल</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> अब नया ChromeVox संशोधक है.</translation>
 <translation id="2450814015951372393">चेक बॉक्स</translation>
 <translation id="2462626033734746142">रेडियो बटन समूह</translation>
@@ -647,6 +649,7 @@
 <translation id="5887397643266327462">ब्रेल कैप्शन सक्षम किए गए.</translation>
 <translation id="5891934789323004067">तालिका</translation>
 <translation id="5899860758576822363">जब ChromeVox बोल रहा हो, तब कम वॉल्यूम में चलाएं</translation>
+<translation id="5906974869830879618">कृपया एक पिन डालें</translation>
 <translation id="5921587111466148855">पाठ</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{बराबर}one{# बराबर चिह्न}other{# बराबर चिह्न}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
@@ -703,6 +706,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{विरामचिह्न}one{# विरामचिह्न}other{# विरामचिह्न}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, मेनू</translation>
 <translation id="6444046323172968959">सूचना डॉयलॉग</translation>
+<translation id="6452403590345320472">विषय सूची</translation>
 <translation id="6459511626086141404">फ़्लैट कीमैप</translation>
 <translation id="6468049171101508116">अगला बटन</translation>
 <translation id="646954774886932461">इंडेक्स</translation>
@@ -997,6 +1001,7 @@
 <translation id="948171205378458592">बोली की दर घटाएं</translation>
 <translation id="958854023026327378">एक उंगली से नीचे स्वाइप करें</translation>
 <translation id="962913030769097253">अगले स्तर 1 का शीर्षक</translation>
+<translation id="966588271015727539">एक ब्लूटूथ ब्रेल स्क्रीन चुनें</translation>
 <translation id="973955474346881951">स्टिकी मोड चालू/बंद करें</translation>
 <translation id="976849232629612000">कोई आइटम नहीं.</translation>
 <translation id="995852680044449248">स्ट्राइक थ्रू शुरू</translation>

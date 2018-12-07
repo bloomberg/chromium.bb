@@ -1284,6 +1284,7 @@
 <translation id="2908162660801918428">メディア ギャラリーをディレクトリ単位で追加</translation>
 <translation id="2910318910161511225">ネットワークに接続してから、もう一度お試しください</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
+<translation id="2915102088417824677">アクティビティ ログを表示</translation>
 <translation id="2916073183900451334">ウェブページで Tab キーを押すと、リンクやフォーム欄がハイライト表示されます</translation>
 <translation id="2916745397441987255">拡張機能を検索</translation>
 <translation id="2921081876747860777">ローカルデータを保護するパスワードを作成してください。</translation>
@@ -2072,6 +2073,7 @@
 <translation id="4104163789986725820">エクスポート(&amp;X)</translation>
 <translation id="4107048419833779140">ストレージ デバイスの認識と取り外し</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" />（<ph name="USER_EMAIL" />）にウィンドウを移動</translation>
+<translation id="4110490973560452005">ダウンロードが完了しました（<ph name="FILE_NAME" />）。ダウンロード バーの領域に切り替えるには Shift+F6 キーを押してください。</translation>
 <translation id="4110895898888439383">ハイ コントラスト モードでウェブをブラウジングする</translation>
 <translation id="4115002065223188701">ネットワークが圏外です</translation>
 <translation id="4115080753528843955">コンテンツ サービスによっては、保護されたコンテンツへのアクセスを認証する目的で、固有の識別子が使用されます</translation>
@@ -2232,6 +2234,7 @@
 <translation id="44141919652824029">接続された USB デバイスのリストを「<ph name="APP_NAME" />」が取得することを許可しますか？</translation>
 <translation id="4414232939543644979">新しいシークレット ウインドウ(&amp;I)</translation>
 <translation id="4415245286584082850">デバイスが見つかりませんでした。新しいタブでヘルプセンター記事を開いてください。</translation>
+<translation id="4415276339145661267">Google アカウントの管理</translation>
 <translation id="4415748029120993980">SECG 楕円曲線 secp384r1（別名 NIST P-384）</translation>
 <translation id="4416582610654027550">有効な URL を入力してください</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> による Cookie 設定を常に許可する</translation>
@@ -2327,6 +2330,7 @@
 <translation id="4568213207643490790">この端末では Google アカウントをご利用いただけません。</translation>
 <translation id="4568854179928172494">更新日時</translation>
 <translation id="4569747168316751899">アイドル状態のとき</translation>
+<translation id="4570387585180509432">住所、電話番号など</translation>
 <translation id="4572659312570518089">「<ph name="DEVICE_NAME" />」への接続中に、認証がキャンセルされました。</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ファイル</translation>
 <translation id="457386861538956877">その他...</translation>
@@ -3005,6 +3009,7 @@
 <translation id="5585912436068747822">フォーマット エラー</translation>
 <translation id="5588033542900357244">（<ph name="RATING_COUNT" />）</translation>
 <translation id="558918721941304263">アプリを読み込んでいます...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> がデバイスにペア設定を要求しています</translation>
 <translation id="5592595402373377407">利用可能なデータがまだ十分にありません。</translation>
 <translation id="5593357315997824387">ファイルを同期</translation>
 <translation id="5595152862129936745">非常に遠い</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5627676517703583263">Chrome で賢くブラウジング</translation>
 <translation id="562935524653278697">管理者がブックマーク、履歴、パスワードなどの設定の同期を無効にしました。</translation>
 <translation id="5632566673632479864">お使いのアカウント <ph name="EMAIL" /> は、メイン アカウントとして使用できなくなりました。このアカウントは <ph name="DOMAIN" /> で管理されているため、ブックマーク、履歴、パスワードなどの設定はこの端末から削除されます。</translation>
+<translation id="5632592977009207922">ダウンロードしています（残り <ph name="PERCENT_REMAINING" />%）</translation>
 <translation id="563535393368633106">アクセスする前に確認する（推奨）</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> を使用するには、最初に<ph name="LINK_START" />ネットワークのログイン ページにアクセス<ph name="LINK_END" />する必要がある場合があります。その場合は、数秒でログイン ページが自動的に開きます。ログイン ページが自動的に開かない場合、そのネットワークは使用できません。</translation>
 <translation id="5637476008227280525">モバイルデータの有効化</translation>
@@ -3419,6 +3425,7 @@
 <translation id="6198252989419008588">PIN を変更</translation>
 <translation id="6199801702437275229">空き容量情報を待機中...</translation>
 <translation id="6201792273624501289">Linux アプリ</translation>
+<translation id="6202304368170870640">端末のログインやロック解除に PIN を使用できます。</translation>
 <translation id="6205710420833115353">一部の操作に予想より時間がかかっています。中止しますか？</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="6207200176136643843">リセットしてデフォルトのズームレベルに戻す</translation>
@@ -4255,6 +4262,7 @@
 <translation id="7497215489070763236">サーバーの CA 証明書</translation>
 <translation id="7497981768003291373">最近記録された WebRTC テキストログはありません。</translation>
 <translation id="7502658306369382406">IPv6 アドレス</translation>
+<translation id="7503127198245469314">デスクトップ ディスプレイでブロックまたは許可を設定するには、ヘッドセットを外してください</translation>
 <translation id="7503191893372251637">Netscape 証明書タイプ</translation>
 <translation id="7503821294401948377">ブラウザ操作のアイコン「<ph name="ICON" />」を読み込むことができませんでした。</translation>
 <translation id="750509436279396091">ダウンロード フォルダを開く</translation>
@@ -4869,6 +4877,7 @@
 <translation id="8425213833346101688">変更</translation>
 <translation id="8425492902634685834">タスクバーに固定</translation>
 <translation id="8425755597197517046">貼り付けて検索(&amp;S)</translation>
+<translation id="8425768983279799676">PIN を使用してデバイスのロックを解除できます。</translation>
 <translation id="8426713856918551002">有効にしています</translation>
 <translation id="8427292751741042100">ホストに埋め込まれたページ</translation>
 <translation id="8428213095426709021">設定</translation>

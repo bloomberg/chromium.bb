@@ -104,6 +104,7 @@
 <translation id="1828385960365606039">5월</translation>
 <translation id="1834891354138622109">열</translation>
 <translation id="1845944666972354496">활성화하려면 두 번 탭하세요.</translation>
+<translation id="1846771122725914429">블루투스 점자 디스플레이</translation>
 <translation id="1865601187525349519">텍스트의 끝</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">현재 날짜와 시간을 말합니다.</translation>
@@ -161,6 +162,7 @@
 <translation id="2422937916923936891">메뉴 항목 체크박스</translation>
 <translation id="2428534162001909979">명령 메뉴</translation>
 <translation id="2429669115401274487">오후</translation>
+<translation id="242998846562331953">부제목</translation>
 <translation id="2435413342408885429"><ph name="KEY" />이(가) 새로운 ChromeVox 특수키로 설정되었습니다.</translation>
 <translation id="2450814015951372393">체크박스</translation>
 <translation id="2462626033734746142">라디오 버튼 그룹</translation>
@@ -647,6 +649,7 @@
 <translation id="5887397643266327462">점자 캡션을 사용 설정했습니다.</translation>
 <translation id="5891934789323004067">표</translation>
 <translation id="5899860758576822363">ChromeVox 음성이 나올 때는 낮은 볼륨으로 재생합니다.</translation>
+<translation id="5906974869830879618">PIN 입력</translation>
 <translation id="5921587111466148855">장</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{등호}other{등호 #개}}</translation>
 <translation id="5939518447894949180">초기화</translation>
@@ -703,6 +706,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{콜론}other{콜론 #개}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, 메뉴</translation>
 <translation id="6444046323172968959">알림 대화상자</translation>
+<translation id="6452403590345320472">목차</translation>
 <translation id="6459511626086141404">플랫 키맵</translation>
 <translation id="6468049171101508116">다음 버튼</translation>
 <translation id="646954774886932461">색인</translation>
@@ -997,6 +1001,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="948171205378458592">말하기 속도 줄이기</translation>
 <translation id="958854023026327378">손가락 한 개를 사용하여 아래로 스와이프</translation>
 <translation id="962913030769097253">다음 수준 1 제목</translation>
+<translation id="966588271015727539">블루투스 점자 디스플레이 선택</translation>
 <translation id="973955474346881951">고정 모드 사용/사용 중지</translation>
 <translation id="976849232629612000">항목 없음</translation>
 <translation id="995852680044449248">취소선 시작 부분</translation>

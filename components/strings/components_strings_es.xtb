@@ -842,6 +842,7 @@
 <translation id="6744009308914054259">Mientras esperas a que haya conexión, puedes ir a Descargas para leer artículos sin conexión.</translation>
 <translation id="6753269504797312559">Valor de la política</translation>
 <translation id="6757797048963528358">El dispositivo se ha suspendido.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Ahora no se puede añadir esta tarjeta}other{Ahora no se pueden añadir estas tarjetas}}</translation>
 <translation id="6778737459546443941">Uno de tus padres aún no lo ha aprobado</translation>
 <translation id="679355240208270552">Se ha ignorado el valor porque se ha establecido una política que inhabilita la búsqueda predeterminada.</translation>
 <translation id="681021252041861472">Campo obligatorio</translation>
@@ -854,6 +855,7 @@
 <translation id="6865412394715372076">No se puede verificar la tarjeta en este momento</translation>
 <translation id="6868206169573555318">Reinicia para actualizar</translation>
 <translation id="6874604403660855544">&amp;Rehacer acción de añadir</translation>
+<translation id="6885646002011712606">El Asistente de Autocompletar está disponible en la parte inferior de la pantalla</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">No se admite el nivel de la política.</translation>
 <translation id="6895330447102777224">Tu tarjeta se ha confirmado</translation>
@@ -996,6 +998,7 @@ Más información:
 <translation id="7716424297397655342">No se puede cargar este sitio web desde la caché</translation>
 <translation id="7723047071702270851">Edita la tarjeta</translation>
 <translation id="774634243536837715">Contenido peligroso bloqueado.</translation>
+<translation id="7747182086178764941">Se muestra la primera pantalla de ejecución del Asistente de Autocompletar</translation>
 <translation id="7752995774971033316">No administrado</translation>
 <translation id="7755287808199759310">Uno de tus padres puede desbloquearlo</translation>
 <translation id="7758069387465995638">Puede que el cortafuegos o el software antivirus hayan bloqueado la conexión.</translation>

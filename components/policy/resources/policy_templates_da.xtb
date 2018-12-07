@@ -108,6 +108,13 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 
           Som standard er ingen tilstande for hurtig oplåsning tilgængelige på administrerede enheder.</translation>
 <translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
+<translation id="1231349879329465225">Gør det muligt at aktivere eller deaktivere Fast Transition.
+      Denne indstilling gælder for alle brugere og på alle grænseflader på enheden.
+      Både denne indstilling og ONC-ejendommen pr. netværk skal aktiveres, før Fast Transition kan bruges.
+      Når indstillingen er angivet, anvendes Fast Transition, indtil den deaktiveres ved en ændring af politikken.
+
+      Hvis denne politik ikke er angivet eller er angivet som falsk, anvendes Fast Transition ikke.
+      Hvis den er angivet som sand, anvendes Fast Transition, hvis det trådløse adgangspunkt understøtter funktionen.</translation>
 <translation id="1243570869342663665">Administrer filtrering af voksenindhold for SafeSites.</translation>
 <translation id="1257550411839719984">Angiv standardmappe til downloads</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>

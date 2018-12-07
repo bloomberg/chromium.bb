@@ -40,6 +40,7 @@
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1550523713251050646">আরও বিকল্পের জন্য ক্লিক করুন</translation>
 <translation id="1570871743947603115">ব্লুটুথ টগল করুন। <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">এই সেশনে আপনার সব অ্যাক্টিভিটি অ্যাক্সেস করুন</translation>
 <translation id="1608626060424371292">এই ব্যবহারকারীকে সরান</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT" /> সময় বাকি আছে</translation>
 <translation id="1654477262762802994">ভয়েস কোয়েরি শুরু করুন</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">সংযোগ জুড়ুন</translation>
 <translation id="2961963223658824723">কিছু সমস্যা হয়েছে। কয়েক সেকেন্ডের মধ্যে আবার চেষ্টা করুন।</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">অ্যাপ, এক্সটেনশন এবং থিম ইনস্টল করুন</translation>
 <translation id="2995447421581609334">কাস্ট ডিভাইসগুলি দেখান।</translation>
 <translation id="2996462380875591307">ডক করা ম্যাগনিফায়ার চালু আছে। আবার Ctrl+Search+D প্রেস করে সেটিকে বন্ধ করুন।</translation>
 <translation id="3000461861112256445">মোনো অডিও</translation>
@@ -329,6 +331,7 @@
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
+<translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহার করতে অনুমতি দেয়</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">আলাদা করা যায় এমন কীবোর্ডের একটি জরুরি আপডেট প্রয়োজন</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>

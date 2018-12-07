@@ -108,6 +108,13 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 
           Niciun mod de deblocare rapidă nu este disponibil în mod prestabilit pentru dispozitivele gestionate.</translation>
 <translation id="123081309365616809">Activează proiectarea conținutului pe dispozitiv</translation>
+<translation id="1231349879329465225">Permite activarea sau dezactivarea Tranziției rapide.
+      Se aplică pentru toți utilizatorii și toate interfețele de pe dispozitiv.
+      Ca să poți folosi Tranziția rapidă, trebuie activate această setare și proprietatea ONC pe rețea.
+      După ce este setată, Tranziția rapidă rămâne activă până când politica este modificată pentru a o dezactiva.
+
+      Dacă politica nu este setată sau este dezactivată, Tranziția rapidă nu se folosește.
+      Dacă este activată, Tranziția rapidă se folosește atunci când este compatibilă cu punctul de acces wireless.</translation>
 <translation id="1243570869342663665">Gestionează filtrarea conținutului pentru adulți cu SafeSites.</translation>
 <translation id="1257550411839719984">Setează directorul prestabilit pentru descărcare</translation>
 <translation id="1265053460044691532">Limitați intervalul de timp pentru care un utilizator autentificat prin SAML se poate conecta offline</translation>

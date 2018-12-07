@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Suur hiirekursor</translation>
 <translation id="1550523713251050646">Klõpsake lisavalikute nägemiseks</translation>
 <translation id="1570871743947603115">Lülitab Bluetoothi sisse või välja. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Juurdepääs kõigile teie tegevustele selle seansi ajal</translation>
 <translation id="1608626060424371292">Eemalda see kasutaja</translation>
 <translation id="1621499497873603021">Aku tühjenemiseni on aega <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Häälpäringu alustamine</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Lisa ühendus</translation>
 <translation id="2961963223658824723">Midagi läks valesti. Proovige mõne sekundi pärast uuesti.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Installige rakendusi, laiendusi ja teemasid</translation>
 <translation id="2995447421581609334">Kuvab ülekandeseadmed.</translation>
 <translation id="2996462380875591307">Dokitud luup on lubatud. Vajutage selle väljalülitamiseks klahvikombinatsiooni Ctrl + otsinguklahv + D.</translation>
 <translation id="3000461861112256445">Monoheli</translation>
@@ -329,6 +331,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6627638273713273709">Otsing + Tõstuklahv + K</translation>
 <translation id="6650933572246256093">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Sisestage seadmesse see parool: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Parool</translation>
+<translation id="6665545700722362599">Andke veebisaitidele, rakendustele ja laiendustele luba kasutada asukohateenuseid, seadme mikrofoni, kaamerat ning teisi funktsioone</translation>
 <translation id="6691659475504239918">Otsinguklahv + tõstuklahv + H</translation>
 <translation id="6696025732084565524">Eemaldatav klaviatuur vajab kriitilist värskendust</translation>
 <translation id="6700713906295497288">IME menüünupp</translation>

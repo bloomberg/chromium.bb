@@ -104,6 +104,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1828385960365606039">Geg.</translation>
 <translation id="1834891354138622109">Stulpelis</translation>
 <translation id="1845944666972354496">Dukart palieskite, kad suaktyvintumėte</translation>
+<translation id="1846771122725914429">„Bluetooth“ Brailio rašmenų ekranas</translation>
 <translation id="1865601187525349519">Teksto pabaiga</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Pasakykite dabartinį laiką ir datą.</translation>
@@ -161,6 +162,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2422937916923936891">Meniu elemento žymimasis laukelis</translation>
 <translation id="2428534162001909979">Komandų meniu</translation>
 <translation id="2429669115401274487">popiet</translation>
+<translation id="242998846562331953">Paantraštė</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> dabar yra naujasis „ChromeVox“ modifikatorius.</translation>
 <translation id="2450814015951372393">Žymimasis laukelis</translation>
 <translation id="2462626033734746142">Akučių grupė</translation>
@@ -647,6 +649,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5887397643266327462">Brailio rašmenų antraštės įgalintos.</translation>
 <translation id="5891934789323004067">Lentelė</translation>
 <translation id="5899860758576822363">Leisti mažesniu garsumu, kai kalba „ChromeVox“</translation>
+<translation id="5906974869830879618">Įveskite PIN kodą</translation>
 <translation id="5921587111466148855">Skyrius</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{lygybės ženklas}one{# lygybės ženklas}few{# lygybės ženklai}many{# equal signs}other{# lygybės ženklų}}</translation>
 <translation id="5939518447894949180">Nustatyti iš naujo</translation>
@@ -703,6 +706,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="641759969622533235">{COUNT,plural, =1{dvitaškis}one{# dvitaškis}few{# dvitaškiai}many{# colons}other{# dvitaškių}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, meniu</translation>
 <translation id="6444046323172968959">Įspėjimo dialogo langas</translation>
+<translation id="6452403590345320472">Turinys</translation>
 <translation id="6459511626086141404">Plokščiasis klavišų žemėlapis</translation>
 <translation id="6468049171101508116">Kitas mygtukas</translation>
 <translation id="646954774886932461">Rodyklė</translation>
@@ -997,6 +1001,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="948171205378458592">Sumažinti kalbos tempą</translation>
 <translation id="958854023026327378">Perbraukite vienu pirštu žemyn</translation>
 <translation id="962913030769097253">Kita 1 lygio antraštė</translation>
+<translation id="966588271015727539">Pasirinkti „Bluetooth“ Brailio rašmenų ekraną</translation>
 <translation id="973955474346881951">Įgalinti pritraukimo režimą / neleisti jo</translation>
 <translation id="976849232629612000">Elementų nėra.</translation>
 <translation id="995852680044449248">Perbraukimo pradžia</translation>

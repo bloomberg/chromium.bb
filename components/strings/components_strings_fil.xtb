@@ -842,6 +842,7 @@
 <translation id="6744009308914054259">Habang naghihintay ng koneksyon, maaari mong bisitahin ang Mga Download para magbasa ng mga offline na artikulo.</translation>
 <translation id="6753269504797312559">Halaga ng patakaran</translation>
 <translation id="6757797048963528358">Nag-sleep ang iyong device.</translation>
+<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Hindi maaaring idagdag ang card na ito sa ngayon}one{Hindi maaaring idagdag ang mga card na ito sa ngayon}other{Hindi maaaring idagdag ang mga card na ito sa ngayon}}</translation>
 <translation id="6778737459546443941">Hindi pa ito inaaprubahan ng iyong magulang</translation>
 <translation id="679355240208270552">Binalewala dahil hindi na-enable ng patakaran ang default na paghahanap.</translation>
 <translation id="681021252041861472">Kinakailangang Field</translation>
@@ -854,6 +855,7 @@
 <translation id="6865412394715372076">Hindi ma-verify ang card na ito sa ngayon.</translation>
 <translation id="6868206169573555318">Muling Ilunsad para I-update</translation>
 <translation id="6874604403660855544">&amp;Gawing muli ang pagdagdag</translation>
+<translation id="6885646002011712606">Available ang autofill assistant malapit sa ibaba ng screen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Hindi sinusuportahan ang antas ng patakaran.</translation>
 <translation id="6895330447102777224">Nakumpirma na ang iyong card</translation>
@@ -996,6 +998,7 @@ Mga karagdagang detalye:
 <translation id="7716424297397655342">Hindi maaaring i-load ang site na ito mula sa cache</translation>
 <translation id="7723047071702270851">I-edit ang Card</translation>
 <translation id="774634243536837715">Na-block ang mapanganib na content.</translation>
+<translation id="7747182086178764941">Ipinapakita ang unang screen ng pagtakbo ng autofill assistant</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="7755287808199759310">Maaari itong i-unblock ng iyong magulang para sa iyo</translation>
 <translation id="7758069387465995638">Maaaring na-block ng firewall o antivirus software ang koneksyon.</translation>

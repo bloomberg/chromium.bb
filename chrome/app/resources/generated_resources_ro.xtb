@@ -1284,6 +1284,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Adăugați galeria media după directoare</translation>
 <translation id="2910318910161511225">Conectează-te la o rețea și încearcă din nou</translation>
 <translation id="2913331724188855103">Permite site-urilor să salveze și să citească datele asociate cookie-urilor (recomandat)</translation>
+<translation id="2915102088417824677">Vezi Jurnalul de activități</translation>
 <translation id="2916073183900451334">Dacă apeși Tab când ești pe o pagină, se evidențiază linkurile și câmpurile formularelor</translation>
 <translation id="2916745397441987255">Caută extensii</translation>
 <translation id="2921081876747860777">Creează o parolă ca să protejezi datele locale.</translation>
@@ -2072,6 +2073,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4104163789986725820">E&amp;xportă...</translation>
 <translation id="4107048419833779140">Identifică și elimină dispozitivele de stocare</translation>
 <translation id="4109135793348361820">Mutați fereastra la <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Descărcare finalizată: <ph name="FILE_NAME" />. Apasă Shift+F6 ca să revii la zona barei de descărcări.</translation>
 <translation id="4110895898888439383">Navighează pe web în modul Contrast ridicat</translation>
 <translation id="4115002065223188701">Rețea în afara ariei de acoperire</translation>
 <translation id="4115080753528843955">Unele servicii de conținut folosesc identificatori unici pentru autorizarea accesului la conținutul protejat</translation>
@@ -2232,6 +2234,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="44141919652824029">Permiți ca „<ph name="APP_NAME" />” să obțină lista dispozitivelor USB atașate?</translation>
 <translation id="4414232939543644979">Fereastră nouă &amp;incognito</translation>
 <translation id="4415245286584082850">Nu s-au găsit dispozitive. Deschide într-o nouă filă un articol din centrul de ajutor.</translation>
+<translation id="4415276339145661267">Gestionează-ți Contul Google</translation>
 <translation id="4415748029120993980">Curbură eliptică SECG secp384r1 (cunoscută și sub numele de NIST P-384)</translation>
 <translation id="4416582610654027550">Introdu o adresă URL validă</translation>
 <translation id="4419409365248380979">Permite întotdeauna ca <ph name="HOST" /> să seteze cookie-uri</translation>
@@ -2327,6 +2330,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4568213207643490790">Ne pare rău, conturile Google nu sunt permise pe dispozitiv.</translation>
 <translation id="4568854179928172494">Ora modificării</translation>
 <translation id="4569747168316751899">În inactivitate</translation>
+<translation id="4570387585180509432">Adrese, numere de telefon și altele</translation>
 <translation id="4572659312570518089">Autentificarea a fost anulată în timpul conectării la „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="4572815280350369984">Fișier <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Mai multe...</translation>
@@ -3005,6 +3009,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5585912436068747822">Formatarea nu a reușit</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Se încarcă aplicațiile...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> vrea să se asocieze cu dispozitivele</translation>
 <translation id="5592595402373377407">Nu există încă date suficiente.</translation>
 <translation id="5593357315997824387">Sincronizează-mi fișierele</translation>
 <translation id="5595152862129936745">Foarte departe</translation>
@@ -3037,6 +3042,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5627676517703583263">Navighează inteligent folosind Chrome</translation>
 <translation id="562935524653278697">Administratorul a dezactivat sincronizarea marcajelor, istoricului, parolelor și a altor setări.</translation>
 <translation id="5632566673632479864">Contul tău <ph name="EMAIL" /> nu mai are permisiunea de a fi contul principal. Deoarece acest cont este gestionat de <ph name="DOMAIN" />, vor fi șterse marcajele, istoricul, parolele și alte setări de pe acest dispozitiv.</translation>
+<translation id="5632592977009207922">Se descarcă, a mai rămas <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">Solicită permisiunea înainte de accesare (recomandat)</translation>
 <translation id="5636996382092289526">Pentru a utiliza <ph name="NETWORK_ID" /> ar putea fi necesar să <ph name="LINK_START" />accesați mai întâi pagina de conectare a rețelei<ph name="LINK_END" />, care se va deschide automat în câteva secunde. Dacă acest lucru nu se întâmplă, rețeaua nu poate fi utilizată.</translation>
 <translation id="5637476008227280525">Activează datele mobile</translation>
@@ -3419,6 +3425,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
 <translation id="6199801702437275229">Se așteaptă informațiile despre spațiu...</translation>
 <translation id="6201792273624501289">Aplicații Linux</translation>
+<translation id="6202304368170870640">Poți folosi codul PIN ca să te conectezi la sau să deblochezi dispozitivul.</translation>
 <translation id="6205710420833115353">Unele operațiuni durează mai mult decât ar trebui. Dorești să le anulezi?</translation>
 <translation id="6206311232642889873">Cop&amp;iază imaginea</translation>
 <translation id="6207200176136643843">Resetează la nivelul de zoom prestabilit</translation>
@@ -4254,6 +4261,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7497215489070763236">Certificat CA de server</translation>
 <translation id="7497981768003291373">Nu ai jurnale text WebRTC înregistrate recent.</translation>
 <translation id="7502658306369382406">Adresă IPv6</translation>
+<translation id="7503127198245469314">Elimină căștile ca să blochezi sau să permiți de pe afișajul desktop-ului</translation>
 <translation id="7503191893372251637">Tip de certificat Netscape</translation>
 <translation id="7503821294401948377">Nu se poate încărca pictograma „<ph name="ICON" />” pentru acțiunea browserului.</translation>
 <translation id="750509436279396091">Deschideți dosarul de descărcări</translation>
@@ -4868,6 +4876,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8425213833346101688">Modificați</translation>
 <translation id="8425492902634685834">Fixează pe Bara de activități</translation>
 <translation id="8425755597197517046">In&amp;serează și caută</translation>
+<translation id="8425768983279799676">Poți folosi codul PIN ca să deblochezi dispozitivul.</translation>
 <translation id="8426713856918551002">Se activează</translation>
 <translation id="8427292751741042100">încorporată în orice gazdă</translation>
 <translation id="8428213095426709021">Setări</translation>

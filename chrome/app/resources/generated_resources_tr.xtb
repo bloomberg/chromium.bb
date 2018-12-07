@@ -1284,6 +1284,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2908162660801918428">Medya Galerisini Dizine Göre Ekle</translation>
 <translation id="2910318910161511225">Bir ağa bağlanın ve tekrar deneyin</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
+<translation id="2915102088417824677">Etkinlik günlüğünü göster</translation>
 <translation id="2916073183900451334">Bir web sayfasında Sekme tuşuna basıldığında bağlantılar ve form alanları vurgulanır</translation>
 <translation id="2916745397441987255">Uzantılarda ara</translation>
 <translation id="2921081876747860777">Yerel verilerinizi korumak için lütfen bir şifre oluşturun.</translation>
@@ -2072,6 +2073,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4104163789986725820">&amp;Dışa Aktar...</translation>
 <translation id="4107048419833779140">Depolama cihazlarını tanımlama ve çıkarma</translation>
 <translation id="4109135793348361820">Pencereyi <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) kullanıcısına taşı</translation>
+<translation id="4110490973560452005">İndirme işlemi tamamlandı: <ph name="FILE_NAME" />. İndirme çubuğu alanına gitmek için Üst Karakter+F6 tuşlarına basın.</translation>
 <translation id="4110895898888439383">Web'e yüksek karşıtlık modunda göz atın</translation>
 <translation id="4115002065223188701">Ağ, kapsama alanı dışında</translation>
 <translation id="4115080753528843955">Bazı içerik hizmetleri, korumalı içeriğe erişimi yetkilendirmek amacıyla benzersiz tanımlayıcılar kullanır</translation>
@@ -2232,6 +2234,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="44141919652824029">"<ph name="APP_NAME" />" uygulamasının, takılı USB cihazlarınızın listesini almasına izin verilsin mi?</translation>
 <translation id="4414232939543644979">Yeni &amp;Gizli Pencere</translation>
 <translation id="4415245286584082850">Hiç cihaz bulunamadı. Yardım merkezi makalesini yeni sekmede açın.</translation>
+<translation id="4415276339145661267">Google Hesabınızı yönetin</translation>
 <translation id="4415748029120993980">SECG eliptik eğri secp384r1 (önceki adı NIST P-384)</translation>
 <translation id="4416582610654027550">Geçerli bir URL yazın</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> ana makinesinin her zaman çerezleri ayarlamasına izin ver</translation>
@@ -2327,6 +2330,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4568213207643490790">Maalesef bu cihazda Google hesaplarına izin verilmiyor.</translation>
 <translation id="4568854179928172494">Değiştirilme zamanı</translation>
 <translation id="4569747168316751899">Boştayken</translation>
+<translation id="4570387585180509432">Adresler, telefon numaraları ve daha fazlası</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" cihazına bağlanırken kimlik doğrulaması iptal edildi.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> dosyası</translation>
 <translation id="457386861538956877">Diğer...</translation>
@@ -3005,6 +3009,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5585912436068747822">Biçimlendirme başarısız oldu</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Uygulamalar yükleniyor...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" />, cihazlarla eşlenmek istiyor</translation>
 <translation id="5592595402373377407">Henüz yeterli veri yok.</translation>
 <translation id="5593357315997824387">Dosyalarımı senkronize et</translation>
 <translation id="5595152862129936745">Çok uzak</translation>
@@ -3038,6 +3043,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5627676517703583263">Chrome ile akıllıca göz atın</translation>
 <translation id="562935524653278697">İşaretleyiciler, geçmiş, şifreler ve diğer ayarlarınızın senkronizasyonunu yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="5632566673632479864"><ph name="EMAIL" /> hesabınızın artık birincil hesap olmasına izin verilmiyor. Bu hesap <ph name="DOMAIN" /> tarafından yönetildiğinden yer işaretleri, geçmiş, şifreler ve diğer ayarlarınız bu cihazdan silinecektir.</translation>
+<translation id="5632592977009207922">İndiriliyor, %<ph name="PERCENT_REMAINING" /> kaldı</translation>
 <translation id="563535393368633106">Erişmeden önce sor (önerilir)</translation>
 <translation id="5636996382092289526"><ph name="NETWORK_ID" /> ağını kullanabilmek için öncelikle <ph name="LINK_START" />ağın oturum açma sayfasını ziyaret etmeniz<ph name="LINK_END" /> gerekebilir. Söz konusu sayfa birkaç saniye içinde otomatik olarak açılacaktır. Açılmazsa, ağ kullanılamaz.</translation>
 <translation id="5637476008227280525">Mobil veriyi etkinleştir</translation>
@@ -3420,6 +3426,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
 <translation id="6199801702437275229">Alan bilgileri bekleniyor...</translation>
 <translation id="6201792273624501289">Linux Uygulamaları</translation>
+<translation id="6202304368170870640">Cihazınızda oturum açmak veya cihazınızın kilidini açmak için PIN'inizi kullanabilirsiniz.</translation>
 <translation id="6205710420833115353">Bazı işlemler beklenenden daha uzun sürüyor. Bunları iptal etmek istiyor musunuz?</translation>
 <translation id="6206311232642889873">Resmi Kop&amp;yala</translation>
 <translation id="6207200176136643843">Varsayılan yakınlaştırma seviyesine sıfırla</translation>
@@ -4255,6 +4262,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7497215489070763236">Sunucu CA sertifikası</translation>
 <translation id="7497981768003291373">Yakın zamanda yakalanmış herhangi bir WebRTC metin günlüğünüz yok.</translation>
 <translation id="7502658306369382406">IPv6 adresi</translation>
+<translation id="7503127198245469314">Masaüstü ekranında engellemek veya izin vermek için başlığı çıkarın</translation>
 <translation id="7503191893372251637">Netscape Sertifika Türü</translation>
 <translation id="7503821294401948377">Tarayıcı işlemine ilişkin '<ph name="ICON" />' simgesi yüklenemedi.</translation>
 <translation id="750509436279396091">İndirilenler klasörünü aç</translation>
@@ -4868,6 +4876,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8425213833346101688">Değiştir</translation>
 <translation id="8425492902634685834">Görev Çubuğuna sabitle</translation>
 <translation id="8425755597197517046">Ya&amp;pıştır ve Ara</translation>
+<translation id="8425768983279799676">Cihazınızın kilidini açmak için PIN'inizi kullanabilirsiniz.</translation>
 <translation id="8426713856918551002">Etkinleştiriliyor</translation>
 <translation id="8427292751741042100">herhangi bir ana makinede yerleşik</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
