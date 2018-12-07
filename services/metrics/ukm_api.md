@@ -16,7 +16,7 @@ Important information to include:
 
 ### Example
 ```
-<event name="GoatTeleported">
+<event name="Goat.Teleported">
   <owner>teleporter@chromium.org</owner>
   <summary>
     Recorded when a page teleports a goat.
@@ -42,11 +42,11 @@ There are two main ways of getting a UkmRecorder instance.
 
 1) Use ukm::UkmRecorder::Get().  This currently only works from the Browser process.
 
-2) Use a service connector and get a MojoUkmRecorder.
+2) Use a service connector and get a UkmRecorder.
 
 ```
-std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder =
-    ukm::MojoUkmRecorder::Create(context()->connector());
+std::unique_ptr<ukm::UkmRecorder> ukm_recorder =
+    ukm::UkmRecorder::Create(context()->connector());
 ukm::builders::MyEvent(source_id)
     .SetMyMetric(metric_value)
     .Record(ukm_recorder.get());
@@ -54,7 +54,7 @@ ukm::builders::MyEvent(source_id)
 
 ## Get a ukm::SourceId
 
-UKM identifies navigations by thier source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
+UKM identifies navigations by their source ID and you'll need to associate and ID with your event in order to tie it to a main frame URL.  Preferrably, get an existing ID for the navigation from another object.
 
 The main methods for doing this are using one of the following methods:
 
@@ -68,9 +68,11 @@ Currently, however, the code for passing these IDs around is incomplete so you m
 Example:
 
 ```
-ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceId();
-recorder->UpdateSourceUrl(source_id, main_frame_url);
+ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+ukm_recorder->UpdateSourceURL(source_id, main_frame_url);
 ```
+
+You will also need to add your class as a friend of UkmRecorder in order to use this private API.
 
 ## Create some events
 
@@ -81,12 +83,14 @@ Helper objects for recording your event are generated from the descriptions in u
 
 void OnGoatTeleported() {
   ...
-  ukm::builders::GoatTeleported(source_id)
+  ukm::builders::Goat_Teleported(source_id)
       .SetDuration(duration.InNanoseconds())
       .SetMass(RoundedToMultiple(mass_kg, 10))
       .Record(ukm_recorder);
 }
 ```
+
+If the event name in the XML contains a period (`.`), it is replaced with an underscore (`_`) in the method name.
 
 ## Check that it works
 
