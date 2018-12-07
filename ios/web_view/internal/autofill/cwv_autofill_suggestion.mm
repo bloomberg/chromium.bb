@@ -64,6 +64,10 @@
   return _isPasswordSuggestion;
 }
 
+- (NSInteger)uniqueIdentifier {
+  return _formSuggestion.identifier;
+}
+
 #pragma mark - NSObject
 
 - (NSString*)debugDescription {
