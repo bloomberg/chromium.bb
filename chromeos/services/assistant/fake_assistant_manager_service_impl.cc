@@ -67,10 +67,6 @@ void FakeAssistantManagerServiceImpl::StartTextInteraction(
 
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
 
-void FakeAssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
-    int num_warmer_welcome_triggered,
-    bool allow_tts) {}
-
 void FakeAssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {}
 

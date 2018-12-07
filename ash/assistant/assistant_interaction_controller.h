@@ -135,8 +135,6 @@ class AssistantInteractionController
 
   AssistantInteractionModel model_;
 
-  bool should_attempt_warmer_welcome_ = true;
-
   base::WeakPtrFactory<AssistantInteractionController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionController);

@@ -32,13 +32,6 @@ interface Assistant {
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
 
-  // Starts a warmer welcome interaction for Assistant launch.
-  // |num_warmer_welcome_triggered| is the count of warmer welcomes
-  // already triggered. If |allow_tts| is true, the result may contain TTS.
-  // Otherwise TTS will not be present in the generated server response.
-  StartWarmerWelcomeInteraction(int32 num_warmer_welcome_triggered,
-      bool allow_tts);
-
   // Stops the active Assistant interaction and cancel the conversation if
   // |cancel_conversation|. If there is no active interaction, this method
   // is a no-op.

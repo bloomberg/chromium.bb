@@ -241,7 +241,6 @@ class AshVisibilityController : public ::wm::VisibilityController {
 // Registers prefs whose default values are same in user and signin prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   AccessibilityController::RegisterProfilePrefs(registry, for_test);
-  AssistantController::RegisterProfilePrefs(registry);
   BluetoothPowerController::RegisterProfilePrefs(registry);
   DockedMagnifierController::RegisterProfilePrefs(registry, for_test);
   LoginScreenController::RegisterProfilePrefs(registry, for_test);
