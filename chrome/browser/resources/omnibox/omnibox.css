@@ -4,7 +4,8 @@
 
 @import url(omnibox_column_widths.css);
 
-.details-and-table {
+output-results-group:not([hidden]) {
+  display: inline-block;
   margin-bottom: 60px;
 }
 
@@ -47,7 +48,7 @@ body {
 table {
   background-color: white;
   border: 2px solid #ccc;
-  border-collapse: collapse;
+  border-spacing: 0;
   font-family: monospace;
   font-size: 12px;
   min-width: 900px;
@@ -95,10 +96,6 @@ th {
 
 tbody:not(:first-of-type) td:first-of-type {
   font-size: 0;
-}
-
-.filtered-hidden {
-  display: none;
 }
 
 .filtered-highlighted {

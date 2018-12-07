@@ -3,6 +3,12 @@
 // found in the LICENSE file.
 
 cr.define('omnibox_output', function() {
+  /** @param {!Element} element*/
+  function clearChildren(element) {
+    while (element.firstChild)
+      element.firstChild.remove();
+  }
+
   /**
    * Details how to display an autocomplete result data field.
    * @typedef {{
@@ -11,6 +17,7 @@ cr.define('omnibox_output', function() {
    *   propertyName: string,
    *   displayAlways: boolean,
    *   tooltip: string,
+   *   className: string,
    * }}
    */
   let PresentationInfoRecord;
@@ -170,37 +177,12 @@ cr.define('omnibox_output', function() {
     }
   ];
 
-  /**
-   * In addition to representing the rendered HTML element, OmniboxOutput also
-   * provides a single public interface to interact with the output:
-   * 1. Render tables from responses  (RenderDelegate)
-   * 2. Control visibility based on display options (TODO)
-   * 3. Control visibility and coloring based on search text (FilterDelegate)
-   * 4. Export and copy output (CopyDelegate)
-   * 5. Preserve inputs and reset inputs to default (TODO)
-   * 6. Export and import inputs (TODO)
-   * With regards to interacting with RenderDelegate, OmniboxOutput tracks and
-   * aggregates responses from the C++ autocomplete controller. Typically, the
-   * C++ controller returns 3 sets of results per query, unless a new query is
-   * submitted before all 3 responses. OmniboxController also triggers
-   * appending to and clearing of OmniboxOutput when appropriate (e.g., upon
-   * receiving a new response or a change in display inputs).
-   */
   class OmniboxOutput extends OmniboxElement {
-    /** @return {string} */
-    static get is() {
-      return 'omnibox-output';
-    }
-
     constructor() {
       super('omnibox-output-template');
 
-      /** @type {!RenderDelegate} */
-      this.renderDelegate = new RenderDelegate(this.$$('contents'));
       /** @type {!CopyDelegate} */
       this.copyDelegate = new CopyDelegate(this);
-      /** @type {!FilterDelegate} */
-      this.filterDelegate = new FilterDelegate(this);
 
       /** @type {!Array<!mojom.OmniboxResult>} */
       this.responses = [];
@@ -213,93 +195,77 @@ cr.define('omnibox_output', function() {
     /** @param {!QueryInputs} queryInputs */
     updateQueryInputs(queryInputs) {
       this.queryInputs_ = queryInputs;
-      this.refresh_();
     }
 
     /** @param {!DisplayInputs} displayInputs */
     updateDisplayInputs(displayInputs) {
       this.displayInputs_ = displayInputs;
-      this.refresh_();
+      this.updateVisibility_();
     }
 
     clearAutocompleteResponses() {
       this.responses = [];
-      this.refresh_();
     }
 
     /** @param {!mojom.OmniboxResult} response */
     addAutocompleteResponse(response) {
       this.responses.push(response);
-      this.refresh_();
-    }
 
-    /** @private */
-    refresh_() {
-      this.renderDelegate.refresh(
-          this.queryInputs_, this.responses, this.displayInputs_);
-    }
+      /** @private {!Array<!OutputResultsGroup>} */
+      this.resultsGroups_ = this.responses.map(response => {
+        return OutputResultsGroup.create(
+            response, this.queryInputs_.cursorPosition);
+      });
 
-    /** @return {!Array<!OutputMatch>} */
-    get matches() {
-      return this.renderDelegate.matches;
-    }
-  }
+      clearChildren(this.$$('contents'));
+      this.resultsGroups_.forEach(
+          resultsGroup => this.$$('contents').appendChild(resultsGroup));
 
-  // Responsible for rendering the output HTML.
-  class RenderDelegate {
-    /** @param {!Element} containerElement */
-    constructor(containerElement) {
-      /** @private {!Element} */
-      this.containerElement_ = containerElement;
+      this.updateVisibility_();
     }
 
     /**
-     * @param {!QueryInputs} queryInputs
-     * @param {!Array<!mojom.OmniboxResult>} responses
-     * @param {!DisplayInputs} displayInputs
+     * Show or hide various output elements depending on display inputs.
+     * 1) Show non-last result groups only if showIncompleteResults is true.
+     * 2) Show the details section above each table if showDetails or
+     * showIncompleteResults are true.
+     * 3) Show individual results when showAllProviders is true.
+     * 4) Show certain columns and headers only if they showDetails is true.
+     * @private
      */
-    refresh(queryInputs, responses, displayInputs) {
-      if (!responses.length)
-        return;
+    updateVisibility_() {
+      // Show non-last result groups only if showIncompleteResults is true.
+      this.resultsGroups_.forEach(
+          (resultsGroup, index) => resultsGroup.hidden =
+              !this.displayInputs_.showIncompleteResults &&
+              index !== this.resultsGroups_.length - 1);
 
-      /** @private {!Array<OutputResultsGroup>} */
-      this.resultsGroup_;
-
-      if (displayInputs.showIncompleteResults) {
-        this.resultsGroup_ = responses.map(
-            response =>
-                new OutputResultsGroup(response, queryInputs.cursorPosition));
-      } else {
-        const lastResponse = responses[responses.length - 1];
-        this.resultsGroup_ =
-            [new OutputResultsGroup(lastResponse, queryInputs.cursorPosition)];
-      }
-
-      this.clearOutput_();
-      this.resultsGroup_.forEach(
-          resultsGroup =>
-              this.containerElement_.appendChild(resultsGroup.render(
-                  displayInputs.showDetails,
-                  displayInputs.showIncompleteResults,
-                  displayInputs.showAllProviders)));
+      this.resultsGroups_.forEach(resultsGroup => {
+        resultsGroup.updateVisibility(
+            this.displayInputs_.showIncompleteResults,
+            this.displayInputs_.showDetails,
+            this.displayInputs_.showAllProviders);
+      });
     }
 
-    /** @private */
-    clearOutput_() {
-      const contents = this.containerElement_;
-      // Clears all children.
-      while (contents.firstChild)
-        contents.removeChild(contents.firstChild);
-    }
-
-    /** @return {string} */
-    get visibletableText() {
-      return this.containerElement_.innerText;
+    /**
+     * @param {string} filterText
+     * @param {boolean} filterHide
+     */
+    filter(filterText, filterHide) {
+      this.matches.forEach(match => match.filter(filterText, filterHide));
     }
 
     /** @return {!Array<!OutputMatch>} */
     get matches() {
-      return this.resultsGroup_.flatMap(resultsGroup => resultsGroup.matches);
+      return this.resultsGroups_.flatMap(resultsGroup => resultsGroup.matches);
+    }
+
+    /** @return {string} */
+    get visibleTableText() {
+      return this.resultsGroups_
+          .flatMap(resultsGroup => resultsGroup.visibleText)
+          .reduce((prev, cur) => `${prev}${cur}\n`, '');
     }
   }
 
@@ -312,70 +278,81 @@ cr.define('omnibox_output', function() {
    * results. Each of these lists is tracked and rendered by OutputResultsTable
    * below.
    */
-  class OutputResultsGroup {
+  class OutputResultsGroup extends OmniboxElement {
     /**
      * @param {!mojom.OmniboxResult} resultsGroup
      * @param {number} cursorPosition
+     * @return {!OutputResultsGroup}
      */
-    constructor(resultsGroup, cursorPosition) {
-      /** @struct */
+    static create(resultsGroup, cursorPosition) {
+      const outputResultsGroup = new OutputResultsGroup();
+      outputResultsGroup.setResultsGroup(resultsGroup, cursorPosition);
+      return outputResultsGroup;
+    }
+
+    constructor() {
+      super('details-and-table-template');
+    }
+
+    /**
+     *  @param {!mojom.OmniboxResult} resultsGroup
+     *  @param {number} cursorPosition
+     */
+    setResultsGroup(resultsGroup, cursorPosition) {
+      /**
+       * @type {{cursorPosition: number, time: number, done: boolean, host:
+       *     string, isTypedHost: boolean}}
+       */
       this.details = {
-        cursorPosition,
+        cursorPosition: cursorPosition,
         time: resultsGroup.timeSinceOmniboxStartedMs,
         done: resultsGroup.done,
         host: resultsGroup.host,
         isTypedHost: resultsGroup.isTypedHost
       };
+      /** @type {!Array<!OutputHeader>} */
+      this.headers = PROPERTY_OUTPUT_ORDER.map(property => {
+        return OutputHeader.create(
+            property.header, property.propertyName, property.url,
+            property.tooltip);
+      });
       /** @type {!OutputResultsTable} */
       this.combinedResults =
-          new OutputResultsTable(resultsGroup.combinedResults);
+          OutputResultsTable.create(resultsGroup.combinedResults);
       /** @type {!Array<!OutputResultsTable>} */
       this.individualResultsList =
           resultsGroup.resultsByProvider
               .map(resultsWrapper => resultsWrapper.results)
               .filter(results => results.length > 0)
-              .map(results => new OutputResultsTable(results));
+              .map(OutputResultsTable.create);
+      if (this.hasAdditionalProperties)
+        this.headers.push(OutputHeader.create(
+            'Additional Properties', 'column-additional-properties', '', ''));
+      this.render_();
     }
 
     /**
      * Creates a HTML Node representing this data.
-     * @param {boolean} showDetails
-     * @param {boolean} showIncompleteResults
-     * @param {boolean} showAllProviders
-     * @return {!Element}
+     * @private
      */
-    render(showDetails, showIncompleteResults, showAllProviders) {
-      const detailsAndTable =
-          OmniboxElement.getTemplate('details-and-table-template');
-      if (showDetails || showIncompleteResults) {
-        detailsAndTable.querySelector('.details')
-            .appendChild(this.renderDetails_());
-      }
+    render_() {
+      clearChildren(this);
 
-      const showAdditionalPropertiesColumn =
-          this.showAdditionalPropertiesColumn_(showDetails);
+      /** @private {!Array<!Element>} */
+      this.innerHeaders_ = [];
 
-      detailsAndTable.querySelector('.table').appendChild(
-          OutputResultsTable.renderHeader(
-              showDetails, showAdditionalPropertiesColumn));
-      detailsAndTable.querySelector('.table').appendChild(
-          this.combinedResults.render(showDetails));
-      if (showAllProviders) {
-        this.individualResultsList.forEach(individualResults => {
-          detailsAndTable.querySelector('.table').appendChild(
-              individualResults.renderInnerHeader(
-                  showDetails, showAdditionalPropertiesColumn));
-          detailsAndTable.querySelector('.table').appendChild(
-              individualResults.render(showDetails));
-        });
-      }
-      return detailsAndTable;
+      this.$$('details').appendChild(this.renderDetails_());
+      this.$$('table').appendChild(this.renderHeader_());
+      this.$$('table').appendChild(this.combinedResults);
+      this.individualResultsList.forEach(results => {
+        const innerHeader = this.renderInnerHeader_(results);
+        this.innerHeaders_.push(innerHeader);
+        this.$$('table').appendChild(innerHeader);
+        this.$$('table').appendChild(results);
+      });
     }
 
-    /**
-     * @private
-     * @return {!Element}
-     */
+    /** @private @return {!Element} */
     renderDetails_() {
       const details = OmniboxElement.getTemplate('details-template');
       details.querySelector('.cursor-position').textContent =
@@ -388,16 +365,66 @@ cr.define('omnibox_output', function() {
       return details;
     }
 
+    /** @private @return {!Element} */
+    renderHeader_() {
+      const head = document.createElement('thead');
+      const row = document.createElement('tr');
+      this.headers.forEach(cell => row.appendChild(cell));
+      head.appendChild(row);
+      return head;
+    }
+
     /**
      * @private
+     * @param {!OutputResultsTable} results
+     * @return {!Element}
+     */
+    renderInnerHeader_(results) {
+      const head = document.createElement('thead');
+      const row = document.createElement('tr');
+      const cell = document.createElement('th');
+      // Reserve 1 more column for showing the additional properties column.
+      cell.colSpan = PROPERTY_OUTPUT_ORDER.length + 1;
+      cell.textContent = results.innerHeaderText;
+      row.appendChild(cell);
+      head.appendChild(row);
+      return head;
+    }
+
+    /**
+     * @param {boolean} showIncompleteResults
      * @param {boolean} showDetails
+     * @param {boolean} showAllProviders
+     */
+    updateVisibility(showIncompleteResults, showDetails, showAllProviders) {
+      // Show the details section above each table if showDetails or
+      // showIncompleteResults are true.
+      this.$$('details').hidden = !showDetails && !showIncompleteResults;
+
+      // Show individual results when showAllProviders is true.
+      this.individualResultsList.forEach(
+          individualResults => individualResults.hidden = !showAllProviders);
+      this.innerHeaders_.forEach(
+          innerHeader => innerHeader.hidden = !showAllProviders);
+
+      // Show certain column headers only if they showDetails is true.
+      PROPERTY_OUTPUT_ORDER.forEach((displayProperty, index) => {
+        this.headers[index].hidden =
+            !showDetails && !displayProperty.displayAlways;
+      });
+
+      // Show certain columns only if they showDetails is true.
+      this.matches.forEach(match => match.updateVisibility(showDetails));
+    }
+
+    /**
+     * @private
      * @return {boolean}
      */
-    showAdditionalPropertiesColumn_(showDetails) {
-      return showDetails &&
-          (this.combinedResults.hasAdditionalProperties ||
-           this.individualResultsList.some(
-               results => results.hasAdditionalProperties));
+    get hasAdditionalProperties() {
+      return this.combinedResults.hasAdditionalProperties ||
+          this.individualResultsList.some(
+              results => results.hasAdditionalProperties);
     }
 
     /** @return {!Array<!OutputMatch>} */
@@ -406,67 +433,52 @@ cr.define('omnibox_output', function() {
           .concat(this.individualResultsList)
           .flatMap(results => results.matches);
     }
+
+    /** @return {!Array<string>} */
+    get visibleText() {
+      return Array.from(this.shadowRoot.querySelectorAll(':host > :not(style)'))
+          .map(child => child.innerText);
+    }
   }
 
   /**
    * Helps track and render a list of results. Each result is tracked and
    * rendered by OutputMatch below.
    */
-  class OutputResultsTable {
-    /** @param {!Array<!mojom.AutocompleteMatch>} results */
-    constructor(results) {
+  class OutputResultsTable extends HTMLTableSectionElement {
+    /**
+     * @param {!Array<!mojom.AutocompleteMatch>} results
+     * @return {!OutputResultsTable}
+     */
+    static create(results) {
+      /**
+       * TODO (manukh): Remove all 4 occurances of suppressing type checking at
+       * document.createElement invocations once the Closure Compiler is
+       * updated. It currently supports the deprecated signature where the 2nd
+       * paramter is of type string.
+       * @suppress {checkTypes}
+       */
+      const resultsTable = new OutputResultsTable();
+      resultsTable.results = results;
+      return resultsTable;
+    }
+
+    constructor() {
+      super();
       /** @type {!Array<!OutputMatch>} */
-      this.matches = results.map(match => new OutputMatch(match));
+      this.matches = [];
     }
 
-    /**
-     * @param {boolean} showDetails
-     * @param {boolean} showAdditionalPropertiesColumn
-     * @return {Element}
-     */
-    static renderHeader(showDetails, showAdditionalPropertiesColumn) {
-      const head = document.createElement('thead');
-      const row = document.createElement('tr');
-      const cells =
-          OutputMatch.displayedProperties(showDetails)
-              .map(
-                  ({header, url, tooltip}) =>
-                      OutputMatch.renderHeaderCell(header, url, tooltip));
-      if (showAdditionalPropertiesColumn)
-        cells.push(OutputMatch.renderHeaderCell('Additional Properties'));
-      cells.forEach(cell => row.appendChild(cell));
-      head.appendChild(row);
-      return head;
+    /** @param {!Array<!mojom.AutocompleteMatch>} results */
+    set results(results) {
+      this.matches.forEach(match => match.remove());
+      this.matches = results.map(OutputMatch.create);
+      this.matches.forEach(this.appendChild.bind(this));
     }
 
-    /**
-     * Creates a HTML Node representing this data.
-     * @param {boolean} showDetails
-     * @return {!Element}
-     */
-    render(showDetails) {
-      const body = document.createElement('tbody');
-      this.matches.forEach(
-          match => body.appendChild(match.render(showDetails)));
-      return body;
-    }
-
-    /**
-     * @param {boolean} showDetails
-     * @param {boolean} showAdditionalPropertiesColumn
-     * @return {!Element}
-     */
-    renderInnerHeader(showDetails, showAdditionalPropertiesColumn) {
-      const head = document.createElement('thead');
-      const row = document.createElement('tr');
-      const cell = document.createElement('th');
-      // Reserve 1 more column if showing the additional properties column.
-      cell.colSpan = OutputMatch.displayedProperties(showDetails).length +
-          showAdditionalPropertiesColumn;
-      cell.textContent = this.matches[0].properties.providerName.value;
-      row.appendChild(cell);
-      head.appendChild(row);
-      return head;
+    /** @return {string} */
+    get innerHeaderText() {
+      return this.matches[0].providerName;
     }
 
     /** @return {boolean} */
@@ -476,83 +488,78 @@ cr.define('omnibox_output', function() {
   }
 
   /** Helps track and render a single match. */
-  class OutputMatch {
+  class OutputMatch extends HTMLTableRowElement {
+    /**
+     * @param {!mojom.AutocompleteMatch} match
+     * @return {!OutputMatch}
+     */
+    static create(match) {
+      /** @suppress {checkTypes} */
+      const outputMatch = new OutputMatch();
+      outputMatch.match = match;
+      return outputMatch;
+    }
+
     /** @param {!mojom.AutocompleteMatch} match */
-    constructor(match) {
-      /** @dict */
+    set match(match) {
+      /** @type {!Object} */
       this.properties = {};
-      let unconsumedProperties = {};
+      /** @type {string} */
+      this.providerName = match.providerName;
+      const unconsumedProperties = {};
       Object.entries(match).forEach(propertyNameValueTuple => {
-        // TODO(manukh) replace with destructuring when the styleguide is
-        // updated
-        // https://chromium-review.googlesource.com/c/chromium/src/+/1271915
         const propertyName = propertyNameValueTuple[0];
         const propertyValue = propertyNameValueTuple[1];
 
         if (PROPERTY_OUTPUT_ORDER.some(
                 property => property.propertyName === propertyName)) {
           this.properties[propertyName] =
-              OutputProperty.constructProperty(propertyName, propertyValue);
+              OutputProperty.create(propertyName, propertyValue);
         } else {
           unconsumedProperties[propertyName] = propertyValue;
         }
       });
       /** @type {!OutputProperty} */
-      this.additionalProperties = OutputProperty.constructProperty(
-          'additionalProperties', unconsumedProperties);
+      this.additionalProperties =
+          OutputProperty.create('additionalProperties', unconsumedProperties);
 
-      /** @type {!Element} */
-      this.associatedElement;
+      this.render_();
+    }
+
+    /** @private */
+    render_() {
+      clearChildren(this);
+      PROPERTY_OUTPUT_ORDER
+          .map(property => this.properties[property.propertyName])
+          .forEach(cell => this.appendChild(cell));
+      if (this.hasAdditionalProperties)
+        this.appendChild(this.additionalProperties);
+    }
+
+    /** @param {boolean} showDetails */
+    updateVisibility(showDetails) {
+      // Show certain columns only if they showDetails is true.
+      PROPERTY_OUTPUT_ORDER.forEach(displayProperty => {
+        this.properties[displayProperty.propertyName].hidden =
+            !showDetails && !displayProperty.displayAlways;
+      });
     }
 
     /**
-     * Creates a HTML Node representing this data.
-     * @param {boolean} showDetails
-     * @return {!Element}
+     * @param {string} filterText
+     * @param {boolean} filterHide
      */
-    render(showDetails) {
-      const row = document.createElement('tr');
-      OutputMatch.displayedProperties(showDetails)
-          .map(property => this.properties[property.propertyName].render())
-          .forEach(cell => row.appendChild(cell));
+    filter(filterText, filterHide) {
+      this.hidden = false;
+      this.classList.remove('filtered-highlighted');
 
-      if (showDetails && this.hasAdditionalProperties)
-        row.appendChild(this.additionalProperties.render());
+      if (!filterText)
+        return;
 
-      this.associatedElement = row;
-      return this.associatedElement;
-    }
-
-    /**
-     * @param {string} name
-     * @param {string=} url
-     * @param {string=} tooltip
-     * @return {!Element}
-     */
-    static renderHeaderCell(name, url, tooltip) {
-      const cell = document.createElement('th');
-      if (url) {
-        const link = document.createElement('a');
-        link.textContent = name;
-        link.href = url;
-        cell.appendChild(link);
-      } else {
-        cell.textContent = name;
-      }
-      cell.className =
-          'column-' + name.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
-      cell.title = tooltip || '';
-      return cell;
-    }
-
-    /**
-     * @return {!Array<!PresentationInfoRecord>} Array representing which
-     * columns need to be displayed.
-     */
-    static displayedProperties(showDetails) {
-      return showDetails ?
-          PROPERTY_OUTPUT_ORDER :
-          PROPERTY_OUTPUT_ORDER.filter(property => property.displayAlways);
+      const isMatch = this.allProperties_.some(
+          property => FilterUtil.filterText(property.text, filterText));
+      this.hidden = filterHide && !isMatch;
+      this.classList.toggle('filtered-highlighted', !filterHide && isMatch);
     }
 
     /**
@@ -560,144 +567,180 @@ cr.define('omnibox_output', function() {
      * needs to be displayed for this match.
      */
     get hasAdditionalProperties() {
-      return Object.keys(this.additionalProperties).length > 0;
+      return Object.keys(this.additionalProperties.value).length > 0;
     }
 
-    /** @return !Array<!OutputProperty> */
-    get allProperties() {
+    /** @private @return !Array<!OutputProperty> */
+    get allProperties_() {
       return Object.values(this.properties).concat(this.additionalProperties);
     }
   }
 
-  /** @abstract */
-  class OutputProperty {
+  class OutputHeader extends HTMLTableCellElement {
     /**
-     * @param {string} name
-     * @param {*} value
+     * @param {string} text
+     * @param {string} propertyName
+     * @param {string=} url
+     * @param {string=} tooltip
+     * @return {!OutputHeader}
      */
-    constructor(name, value) {
-      /** @type {string} */
-      this.name = name;
-      /** @type {*} */
-      this.value = value;
+    static create(text, propertyName, url, tooltip) {
+      /** @suppress {checkTypes} */
+      const header = new OutputHeader();
+      header.className = 'column-' +
+          propertyName.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+      header.setContents(text, url);
+      header.tooltip = tooltip;
+      return header;
+    }
+
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.div_ = document.createElement('div');
+      this.appendChild(this.div_);
+      /** @private {!Element} */
+      this.link_ = document.createElement('a');
+    }
+
+    /** @param {string=} tooltip */
+    set tooltip(tooltip) {
+      this.title = tooltip || '';
     }
 
     /**
+     * @param {string} text
+     * @param {string=} url
+     */
+    setContents(text, url) {
+      if (url) {
+        this.textContent = '';
+        this.link_.textContent = text;
+        this.link_.href = url;
+        this.appendChild(this.link_);
+      } else {
+        this.textContent = text;
+        this.link_.remove();
+      }
+    }
+  }
+
+  /** @abstract */
+  class OutputProperty extends HTMLTableCellElement {
+    /**
      * @param {string} name
-     * @param {*} value
+     * @param {!Object} value
      * @return {!OutputProperty}
      */
-    static constructProperty(name, value) {
-      if (typeof value === 'boolean')
-        return new OutputBooleanProperty(name, value);
-      if (typeof value === 'object')
+    static create(name, value) {
+      let property;
+      if (typeof value === 'boolean') {
+        property = new OutputBooleanProperty();
+      } else if (typeof value === 'object') {
         // We check if the first element has key and value properties.
         if (value && value[0] && value[0].key && value[0].value)
-          return new OutputKeyValueTuplesProperty(name, value);
+          property = new OutputKeyValueTuplesProperty();
         else
-          return new OutputJsonProperty(name, value);
-      const LINK_REGEX = /^(http|https|ftp|chrome|file):\/\//;
-      if (LINK_REGEX.test(value))
-        return new OutputLinkProperty(name, value);
-      return new OutputTextProperty(name, value);
+          property = new OutputJsonProperty();
+      } else if (/^(http|https|ftp|chrome|file):\/\//.test(value)) {
+        property = new OutputLinkProperty();
+      } else {
+        property = new OutputTextProperty();
+      }
+
+      property.value = value;
+      return property;
     }
 
-    /**
-     * @abstract
-     * @return {!Element}
-     */
-    render() {}
+    /** @return {!Object} */
+    get value() {
+      return this.value_;
+    }
+
+    /** @param {!Object} value */
+    set value(value) {
+      /** @private {!Object} */
+      this.value_ = value;
+      /** @override */
+      this.render_();
+    }
+
+    /** @abstract @private */
+    render_() {}
 
     /** @return {string} */
     get text() {
-      return this.value + '';
+      return this.value_ + '';
     }
   }
 
   class OutputBooleanProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const icon = document.createElement('div');
-      icon.className = this.value ? 'check-mark' : 'x-mark';
-      icon.textContent = this.value;
-      cell.appendChild(icon);
-      return cell;
-    }
-  }
-
-  class OutputKeyValueTuplesProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const pre = document.createElement('pre');
-      pre.textContent = this.text;
-      cell.appendChild(pre);
-      return cell;
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.icon_ = document.createElement('div');
+      this.appendChild(this.icon_);
     }
 
-    /**
-     * @override
-     * @return {string}
-     */
-    get text() {
-      return this.value.reduce(
-          (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
+    /** @private @override */
+    render_() {
+      this.icon_.className = this.value_ ? 'check-mark' : 'x-mark';
     }
   }
 
   class OutputJsonProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const pre = document.createElement('pre');
-      pre.textContent = this.text;
-      cell.appendChild(pre);
-      return cell;
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.pre_ = document.createElement('pre');
+      this.appendChild(this.pre_);
     }
 
-    /**
-     * @override
-     * @return {string}
-     */
+    /** @private @override */
+    render_() {
+      this.pre_.textContent = this.text;
+    }
+
+    /** @override @return {string} */
     get text() {
-      return JSON.stringify(this.value, null, 2);
+      return JSON.stringify(this.value_, null, 2);
+    }
+  }
+
+  class OutputKeyValueTuplesProperty extends OutputJsonProperty {
+    /** @override @return {string} */
+    get text() {
+      return this.value_.reduce(
+          (prev, {key, value}) => `${prev}${key}: ${value}\n`, '');
     }
   }
 
   class OutputLinkProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      const link = document.createElement('a');
-      link.textContent = this.value;
-      link.href = this.value;
-      cell.appendChild(link);
-      return cell;
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.link_ = document.createElement('a');
+      this.appendChild(this.link_);
+    }
+
+    /** @private @override */
+    render_() {
+      this.link_.textContent = this.value_;
+      this.link_.href = this.value_;
     }
   }
 
   class OutputTextProperty extends OutputProperty {
-    /**
-     * @override
-     * @return {!Element}
-     */
-    render() {
-      const cell = document.createElement('td');
-      cell.textContent = this.value;
-      return cell;
+    constructor() {
+      super();
+      /** @private {!Element} */
+      this.div_ = document.createElement('div');
+      this.appendChild(this.div_);
+    }
+
+    /** @private @override */
+    render_() {
+      this.div_.textContent = this.value_;
     }
   }
 
@@ -710,7 +753,7 @@ cr.define('omnibox_output', function() {
     }
 
     copyTextOutput() {
-      this.copy_(this.omniboxOutput_.renderDelegate.visibletableText);
+      this.copy_(this.omniboxOutput_.visibleTableText);
     }
 
     copyJsonOutput() {
@@ -728,37 +771,10 @@ cr.define('omnibox_output', function() {
   }
 
   /** Responsible for highlighting and hiding rows using filter text. */
-  class FilterDelegate {
-    /** @param {!omnibox_output.OmniboxOutput} omniboxOutput */
-    constructor(omniboxOutput) {
-      /** @private {!omnibox_output.OmniboxOutput} */
-      this.omniboxOutput_ = omniboxOutput;
-    }
-
+  class FilterUtil {
     /**
-     * @param {string} filterText
-     * @param {boolean} filterHide
-     */
-    filter(filterText, filterHide) {
-      this.omniboxOutput_.matches.filter(match => match.associatedElement)
-          .forEach(match => {
-            const row = match.associatedElement;
-            row.classList.remove('filtered-hidden');
-            row.classList.remove('filtered-highlighted');
-
-            if (!filterText)
-              return;
-
-            const isMatch = FilterDelegate.filterMatch_(match, filterText);
-            row.classList.toggle('filtered-hidden', filterHide && !isMatch);
-            row.classList.toggle(
-                'filtered-highlighted', !filterHide && isMatch);
-          });
-    }
-
-    /**
-     * Checks if a omnibox match fuzzy-matches a filter string. Each character
-     * of filterText must be present in the match text, either adjacent to the
+     * Checks if a string fuzzy-matches a filter string. Each character
+     * of filterText must be present in the search text, either adjacent to the
      * previous matched character, or at the start of a new word (see
      * textToWords_).
      * E.g. `abc` matches `abc`, `a big cat`, `a-bigCat`, `a very big cat`, and
@@ -766,24 +782,21 @@ cr.define('omnibox_output', function() {
      * `green rainbow` is matched by `gre rain`, but not by `gre bow`.
      * One exception is the first character, which may be matched mid-word.
      * E.g. `een rain` can also match `green rainbow`.
-     * @private
-     * @param {!OutputMatch} match
+     * @param {string} searchText
      * @param {string} filterText
      * @return {boolean}
      */
-    static filterMatch_(match, filterText) {
+    static filterText(searchText, filterText) {
       const regexFilter = Array.from(filterText).join('(.*\\.)?');
-      return match.allProperties
-          .map(property => property.text)
-          .map(text => FilterDelegate.textToWords_(text).join('.'))
-          .some(text => text.match(regexFilter));
+      const words = FilterUtil.textToWords_(searchText).join('.');
+      return words.match(regexFilter) !== null;
     }
 
     /**
      * Splits a string into words, delimited by either capital letters, groups
      * of digits, or non alpha characters.
      * E.g., `https://google.com/the-dog-ate-134pies` will be split to:
-     * https, :, /, /, google, ., com, /, the, -, dog, -, ate, -, 134, pies
+     * https, :, /, /, google, ., com, /, the, -,  dog, -, ate, -, 134, pies
      * We don't use `Array.split`, because we want to group digits, e.g. 134.
      * @private
      * @param {string} text
@@ -794,7 +807,23 @@ cr.define('omnibox_output', function() {
     }
   }
 
-  window.customElements.define(OmniboxOutput.is, OmniboxOutput);
+  customElements.define('omnibox-output', OmniboxOutput);
+  customElements.define('output-results-group', OutputResultsGroup);
+  customElements.define(
+      'output-results-table', OutputResultsTable, {extends: 'tbody'});
+  customElements.define('output-match', OutputMatch, {extends: 'tr'});
+  customElements.define('output-haeder', OutputHeader, {extends: 'th'});
+  customElements.define(
+      'output-boolean-property', OutputBooleanProperty, {extends: 'td'});
+  customElements.define(
+      'output-json-property', OutputJsonProperty, {extends: 'td'});
+  customElements.define(
+      'output-key-value-tuple-property', OutputKeyValueTuplesProperty,
+      {extends: 'td'});
+  customElements.define(
+      'output-link-property', OutputLinkProperty, {extends: 'td'});
+  customElements.define(
+      'output-text-property', OutputTextProperty, {extends: 'td'});
 
   return {OmniboxOutput: OmniboxOutput};
 });
