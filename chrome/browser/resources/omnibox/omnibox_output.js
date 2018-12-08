@@ -653,6 +653,7 @@ cr.define('omnibox_output', function() {
         property = new OutputTextProperty();
       }
 
+      property.name = name;
       property.value = value;
       return property;
     }
@@ -691,6 +692,10 @@ cr.define('omnibox_output', function() {
     render_() {
       this.icon_.classList.toggle('check-mark', !!this.value);
       this.icon_.classList.toggle('x-mark', !this.value);
+    }
+
+    get text() {
+      return (this.value_ ? 'is: ' : 'not: ') + this.name;
     }
   }
 
@@ -829,9 +834,12 @@ cr.define('omnibox_output', function() {
      * @return {boolean}
      */
     static filterText(searchText, filterText) {
-      const regexFilter = Array.from(filterText).join('(.*\\.)?');
+      const regexFilter =
+          Array.from(filterText)
+              .map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+              .join('(.*\\.)?');
       const words = FilterUtil.textToWords_(searchText).join('.');
-      return words.match(regexFilter) !== null;
+      return words.match(new RegExp(regexFilter, 'i')) !== null;
     }
 
     /**
