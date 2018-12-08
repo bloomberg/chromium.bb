@@ -189,7 +189,8 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig& proxy_config,
     return false;
   proxy_config.proxy_rules().Apply(url, data_reduction_proxy_info);
   data_reduction_proxy_info->DeprioritizeBadProxies(proxy_retry_info);
-  return !data_reduction_proxy_info->proxy_server().is_direct();
+  return !data_reduction_proxy_info->is_empty() &&
+         !data_reduction_proxy_info->proxy_server().is_direct();
 }
 
 int64_t CalculateOCLFromOFCL(const net::URLRequest& request) {
