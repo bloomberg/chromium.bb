@@ -311,6 +311,7 @@
     hana-postsubmit
     heli-postsubmit
     jecht-postsubmit
+    kalista-postsubmit
     kefka-postsubmit
     kevin-arcnext-postsubmit
     kevin-postsubmit
@@ -1977,6 +1978,7 @@
   kalista-no-vmtest-pre-cq
   kalista-paladin-tryjob
   kalista-payloads-tryjob
+  kalista-postsubmit-tryjob
   kalista-pre-cq
   kalista-release-afdo-generate-tryjob
   kalista-release-afdo-tryjob
@@ -2473,6 +2475,7 @@
     hana-postsubmit
     heli-postsubmit
     jecht-postsubmit
+    kalista-postsubmit
     kefka-postsubmit
     kevin-arcnext-postsubmit
     kevin-postsubmit

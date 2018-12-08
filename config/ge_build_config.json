@@ -1887,7 +1887,7 @@
       "reference_board_name": "kalista",
       "arch": "X86_INTERNAL",
       "builder": "RELEASE",
-      "experimental": true,
+      "experimental": false,
       "models": [
         {
           "board_name": "kalista",
