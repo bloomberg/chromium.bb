@@ -146,13 +146,7 @@ void ShortcutsBackend::AddOrUpdateShortcut(const base::string16& text,
 }
 
 ShortcutsBackend::~ShortcutsBackend() {
-  if (db_) {
-    auto* db = db_.get();
-    db->AddRef();
-    db_ = nullptr;
-    if (!db_runner_->ReleaseSoon(FROM_HERE, db))
-      db->Release();
-  }
+  db_runner_->ReleaseSoon(FROM_HERE, std::move(db_));
 }
 
 // static

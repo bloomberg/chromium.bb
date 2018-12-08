@@ -70,10 +70,7 @@ BlobDataHandle::BlobDataHandle(const BlobDataHandle& other) = default;
 
 BlobDataHandle::~BlobDataHandle() {
   if (!io_task_runner_->RunsTasksInCurrentSequence()) {
-    BlobDataHandleShared* raw = shared_.get();
-    raw->AddRef();
-    shared_ = nullptr;
-    io_task_runner_->ReleaseSoon(FROM_HERE, raw);
+    io_task_runner_->ReleaseSoon(FROM_HERE, std::move(shared_));
   }
 }
 

@@ -256,18 +256,14 @@ void PrinterJobHandler::OnJobChanged() {
 
 void PrinterJobHandler::OnJobSpoolSucceeded(const PlatformJobId& job_id) {
   DCHECK(CurrentlyOnPrintThread());
-  job_spooler_->AddRef();
-  print_thread_.task_runner()->ReleaseSoon(FROM_HERE, job_spooler_.get());
-  job_spooler_ = NULL;
+  print_thread_.task_runner()->ReleaseSoon(FROM_HERE, std::move(job_spooler_));
   job_handler_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&PrinterJobHandler::JobSpooled, this, job_id));
 }
 
 void PrinterJobHandler::OnJobSpoolFailed() {
   DCHECK(CurrentlyOnPrintThread());
-  job_spooler_->AddRef();
-  print_thread_.task_runner()->ReleaseSoon(FROM_HERE, job_spooler_.get());
-  job_spooler_ = NULL;
+  print_thread_.task_runner()->ReleaseSoon(FROM_HERE, std::move(job_spooler_));
   VLOG(1) << "CP_CONNECTOR: Job failed (spool failed)";
   job_handler_task_runner_->PostTask(
       FROM_HERE,

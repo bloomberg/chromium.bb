@@ -1766,11 +1766,7 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
     // Make sure the last reference to a ChainedBlobWriter is released (and
     // deleted) on the IDB sequence since it owns a transaction which has
     // sequence affinity.
-    IndexedDBBackingStore::Transaction::ChainedBlobWriter* raw_tmp =
-        chained_blob_writer_.get();
-    raw_tmp->AddRef();
-    chained_blob_writer_ = nullptr;
-    task_runner_->ReleaseSoon(FROM_HERE, raw_tmp);
+    task_runner_->ReleaseSoon(FROM_HERE, std::move(chained_blob_writer_));
   }
   friend class base::RefCountedThreadSafe<LocalWriteClosure>;
 

@@ -914,14 +914,11 @@ void HistoryService::Cleanup() {
     //
     // TODO(ajwong): Cleanup HistoryBackend lifetime issues.
     //     See http://crbug.com/99767.
-    history_backend_->AddRef();
     base::Closure closing_task =
         base::Bind(&HistoryBackend::Closing, history_backend_);
     ScheduleTask(PRIORITY_NORMAL, closing_task);
     closing_task.Reset();
-    HistoryBackend* raw_ptr = history_backend_.get();
-    history_backend_ = nullptr;
-    backend_task_runner_->ReleaseSoon(FROM_HERE, raw_ptr);
+    backend_task_runner_->ReleaseSoon(FROM_HERE, std::move(history_backend_));
   }
 
   // Clear |backend_task_runner_| to make sure it's not used after Cleanup().

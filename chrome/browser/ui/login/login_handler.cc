@@ -341,7 +341,8 @@ void LoginHandler::ReleaseSoon() {
       base::BindOnce(&LoginHandler::RemoveObservers, this));
 
   // Delete this object once all InvokeLaters have been called.
-  BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, this);
+  BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE,
+                             base::WrapRefCounted(this));
 }
 
 void LoginHandler::AddObservers() {

@@ -271,10 +271,7 @@ void VideoEncoderShim::EncoderImpl::Stop() {
     PendingEncode frame = frames_.front();
     frames_.pop_front();
 
-    frame.frame->AddRef();
-    media::VideoFrame* raw_frame = frame.frame.get();
-    frame.frame = nullptr;
-    renderer_task_runner_->ReleaseSoon(FROM_HERE, raw_frame);
+    renderer_task_runner_->ReleaseSoon(FROM_HERE, std::move(frame.frame));
   }
   buffers_.clear();
 }

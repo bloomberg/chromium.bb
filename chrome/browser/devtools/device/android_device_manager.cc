@@ -339,16 +339,15 @@ class DevicesRequest : public base::RefCountedThreadSafe<DevicesRequest> {
       const DeviceProviders& providers,
       const DescriptorsCallback& callback) {
     // Don't keep counted reference on calling thread;
-    DevicesRequest* request = new DevicesRequest(callback);
-    // Avoid destruction while sending requests
-    request->AddRef();
+    scoped_refptr<DevicesRequest> request =
+        base::WrapRefCounted(new DevicesRequest(callback));
     for (auto it = providers.begin(); it != providers.end(); ++it) {
       device_task_runner->PostTask(
           FROM_HERE, base::BindOnce(&DeviceProvider::QueryDevices, *it,
                                     base::Bind(&DevicesRequest::ProcessSerials,
                                                request, *it)));
     }
-    device_task_runner->ReleaseSoon(FROM_HERE, request);
+    device_task_runner->ReleaseSoon(FROM_HERE, std::move(request));
   }
 
  private:
@@ -554,10 +553,7 @@ std::unique_ptr<AndroidDeviceManager> AndroidDeviceManager::Create() {
 void AndroidDeviceManager::SetDeviceProviders(
     const DeviceProviders& providers) {
   for (auto it = providers_.begin(); it != providers_.end(); ++it) {
-    (*it)->AddRef();
-    DeviceProvider* raw_ptr = it->get();
-    *it = nullptr;
-    handler_thread_->message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
+    handler_thread_->message_loop()->ReleaseSoon(FROM_HERE, std::move(*it));
   }
   providers_ = providers;
 }
