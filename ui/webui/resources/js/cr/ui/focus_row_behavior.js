@@ -283,6 +283,11 @@ cr.define('cr.ui', function() {
     ironListTabIndexChanged_: function() {
       if (this.row_)
         this.row_.makeActive(this.ironListTabIndex == 0);
+
+      // If a new row is being focused, reset listBlurred. This means an item
+      // has been removed and iron-list is about to focus the next item.
+      if (this.ironListTabIndex == 0)
+        this.listBlurred = false;
     },
 
     /** @private */
