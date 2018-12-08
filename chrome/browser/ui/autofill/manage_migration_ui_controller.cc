@@ -11,13 +11,13 @@
 namespace autofill {
 
 ManageMigrationUiController::ManageMigrationUiController(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    content::WebContents* web_contents) {
   autofill::LocalCardMigrationBubbleControllerImpl::CreateForWebContents(
       web_contents);
   bubble_controller_ =
       autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
           web_contents);
+  bubble_controller_->AddObserver(this);
   autofill::LocalCardMigrationDialogControllerImpl::CreateForWebContents(
       web_contents);
   dialog_controller_ =
@@ -57,7 +57,7 @@ void ManageMigrationUiController::ShowCreditCardIcon(
   dialog_controller_->ShowCreditCardIcon(tip_message, migratable_credit_cards);
 }
 
-void ManageMigrationUiController::OnUserClickingCreditCardIcon() {
+void ManageMigrationUiController::OnUserClickedCreditCardIcon() {
   switch (flow_step_) {
     case LocalCardMigrationFlowStep::PROMO_BUBBLE: {
       ReshowBubble();
@@ -95,6 +95,10 @@ LocalCardMigrationDialog* ManageMigrationUiController::GetDialogView() const {
     return nullptr;
 
   return dialog_controller_->local_card_migration_dialog_view();
+}
+
+void ManageMigrationUiController::OnMigrationNoLongerAvailable() {
+  flow_step_ = LocalCardMigrationFlowStep::NOT_SHOWN;
 }
 
 void ManageMigrationUiController::ReshowBubble() {

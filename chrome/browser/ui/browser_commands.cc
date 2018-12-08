@@ -879,7 +879,7 @@ void MigrateLocalCards(Browser* browser) {
   autofill::ManageMigrationUiController* controller =
       autofill::ManageMigrationUiController::FromWebContents(web_contents);
   // Show migration-related Ui when the user clicks the credit card icon.
-  controller->OnUserClickingCreditCardIcon();
+  controller->OnUserClickedCreditCardIcon();
 }
 
 void Translate(Browser* browser) {
