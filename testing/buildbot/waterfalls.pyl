@@ -1241,6 +1241,24 @@
           'gtest_tests': 'vr_platform_specific_chromium_gtests',
         },
       },
+      'WebKit Linux composite_after_paint Dummy Builder': {
+        # Normally, FYI tests run with a lower priority than main CI tests.
+        # However, some optional CQ bots mirror FYI bots, so their tests need
+        # to run at the same priority as other non-optional CQ bots to avoid
+        # getting starved out.
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Ubuntu-14.04',
+            },
+          ],
+          'hard_timeout': 900,
+          'priority_adjustment': 30,
+        },
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'WebKit Linux layout_ng Dummy Builder': {
         'swarming': {
           'dimension_sets': [
@@ -1263,24 +1281,6 @@
             },
           ],
           'hard_timeout': 900,
-        },
-        'test_suites': {
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'WebKit Linux slimming_paint_v2 Dummy Builder': {
-        # Normally, FYI tests run with a lower priority than main CI tests.
-        # However, some optional CQ bots mirror FYI bots, so their tests need
-        # to run at the same priority as other non-optional CQ bots to avoid
-        # getting starved out.
-        'swarming': {
-          'dimension_sets': [
-            {
-              'os': 'Ubuntu-14.04',
-            },
-          ],
-          'hard_timeout': 900,
-          'priority_adjustment': 30,
         },
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
