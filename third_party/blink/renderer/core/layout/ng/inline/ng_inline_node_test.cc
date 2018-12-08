@@ -897,4 +897,19 @@ TEST_F(NGInlineNodeTest, RemoveInlineNodeDataIfBlockObtainsBlockChild) {
   EXPECT_FALSE(layout_block_flow_->HasNGInlineNodeData());
 }
 
+// https://crbug.com/911220
+TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
+  SetupHtml("container",
+            "<style>span{unicode-bidi:isolate}</style>"
+            "<pre id=container>foo<span>\n</span>bar<br></pre>");
+  EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\n"), GetText());
+
+  Node* new_text = Text::Create(GetDocument(), "baz");
+  GetElementById("container")->appendChild(new_text);
+  UpdateAllLifecyclePhasesForTest();
+
+  // The bidi context popping and re-entering should be preserved around '\n'.
+  EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\nbaz"), GetText());
+}
+
 }  // namespace blink
