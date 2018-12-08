@@ -109,8 +109,7 @@ class MEDIA_EXPORT MimeUtil {
 
   // Adds |mime_type| with the specified codecs to |media_format_map_|.
   void AddContainerWithCodecs(const std::string& mime_type,
-                              const CodecSet& codecs_list,
-                              bool is_proprietary_mime_type);
+                              const CodecSet& codecs_list);
 
   // Returns IsSupported if all codec IDs in |codecs| are unambiguous and are
   // supported in |mime_type_lower_case|. MayBeSupported is returned if at least
@@ -189,11 +188,6 @@ class MEDIA_EXPORT MimeUtil {
 
   // A map of mime_types and hash map of the supported codecs for the mime_type.
   MediaFormatMappings media_format_map_;
-
-  // List of proprietary containers in |media_format_map_|.
-  std::vector<std::string> proprietary_media_containers_;
-  // Whether proprietary codec support should be advertised to callers.
-  bool allow_proprietary_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeUtil);
 };

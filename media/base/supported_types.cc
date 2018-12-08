@@ -139,7 +139,38 @@ bool IsVp9ProfileSupported(VideoCodecProfile profile) {
   return false;
 }
 
+bool IsAudioCodecProprietary(AudioCodec codec) {
+  switch (codec) {
+    case media::kCodecAAC:
+    case media::kCodecAC3:
+    case media::kCodecEAC3:
+    case media::kCodecAMR_NB:
+    case media::kCodecAMR_WB:
+    case media::kCodecGSM_MS:
+    case media::kCodecALAC:
+    case media::kCodecMpegHAudio:
+      return true;
+
+    case media::kCodecFLAC:
+    case media::kCodecMP3:
+    case media::kCodecOpus:
+    case media::kCodecVorbis:
+    case media::kCodecPCM:
+    case media::kCodecPCM_MULAW:
+    case media::kCodecPCM_S16BE:
+    case media::kCodecPCM_S24BE:
+    case media::kCodecPCM_ALAW:
+    case media::kUnknownAudioCodec:
+      return false;
+  }
+}
+
 bool IsDefaultSupportedAudioType(const AudioType& type) {
+#if !BUILDFLAG(USE_PROPRIETARY_CODECS)
+  if (IsAudioCodecProprietary(type.codec))
+    return false;
+#endif
+
   switch (type.codec) {
     case media::kCodecAAC:
     case media::kCodecFLAC:
@@ -174,9 +205,32 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
   return false;
 }
 
+bool IsVideoCodecProprietary(VideoCodec codec) {
+  switch (codec) {
+    case kCodecVC1:
+    case kCodecH264:
+    case kCodecMPEG2:
+    case kCodecMPEG4:
+    case kCodecHEVC:
+    case kCodecDolbyVision:
+      return true;
+    case kUnknownVideoCodec:
+    case kCodecTheora:
+    case kCodecVP8:
+    case kCodecVP9:
+    case kCodecAV1:
+      return false;
+  }
+}
+
 // TODO(chcunningham): Add platform specific logic for Android (move from
 // MimeUtilIntenral).
 bool IsDefaultSupportedVideoType(const VideoType& type) {
+#if !BUILDFLAG(USE_PROPRIETARY_CODECS)
+  if (IsVideoCodecProprietary(type.codec))
+    return false;
+#endif
+
   switch (type.codec) {
     case media::kCodecAV1:
 #if BUILDFLAG(ENABLE_AV1_DECODER)

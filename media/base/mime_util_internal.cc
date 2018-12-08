@@ -123,7 +123,7 @@ static bool IsValidH264Level(uint8_t level_idc) {
           (level_idc >= 50 && level_idc <= 52));
 }
 
-MimeUtil::MimeUtil() : allow_proprietary_codecs_(false) {
+MimeUtil::MimeUtil() {
 #if defined(OS_ANDROID)
   // When the unified media pipeline is enabled, we need support for both GPU
   // video decoders and MediaCodec; indicated by HasPlatformDecoderSupport().
@@ -255,10 +255,6 @@ SupportsType MimeUtil::AreSupportedCodecs(
 }
 
 void MimeUtil::InitializeMimeTypeMaps() {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  allow_proprietary_codecs_ = true;
-#endif
-
   AddSupportedMediaFormats();
 }
 
@@ -329,36 +325,36 @@ void MimeUtil::AddSupportedMediaFormats() {
   mp4_codecs.insert(mp4_video_codecs.begin(), mp4_video_codecs.end());
 
   const CodecSet implicit_codec;
-  AddContainerWithCodecs("audio/wav", wav_codecs, false);
-  AddContainerWithCodecs("audio/x-wav", wav_codecs, false);
-  AddContainerWithCodecs("audio/webm", webm_audio_codecs, false);
+  AddContainerWithCodecs("audio/wav", wav_codecs);
+  AddContainerWithCodecs("audio/x-wav", wav_codecs);
+  AddContainerWithCodecs("audio/webm", webm_audio_codecs);
   DCHECK(!webm_video_codecs.empty());
-  AddContainerWithCodecs("video/webm", webm_codecs, false);
-  AddContainerWithCodecs("audio/ogg", ogg_audio_codecs, false);
+  AddContainerWithCodecs("video/webm", webm_codecs);
+  AddContainerWithCodecs("audio/ogg", ogg_audio_codecs);
   // video/ogg is only supported if an appropriate video codec is supported.
   // Note: This assumes such codecs cannot be later excluded.
   if (!ogg_video_codecs.empty())
-    AddContainerWithCodecs("video/ogg", ogg_codecs, false);
+    AddContainerWithCodecs("video/ogg", ogg_codecs);
   // TODO(ddorwin): Should the application type support Opus?
-  AddContainerWithCodecs("application/ogg", ogg_codecs, false);
-  AddContainerWithCodecs("audio/flac", implicit_codec, false);
-  AddContainerWithCodecs("audio/mpeg", mp3_codecs, false);  // Allow "mp3".
-  AddContainerWithCodecs("audio/mp3", implicit_codec, false);
-  AddContainerWithCodecs("audio/x-mp3", implicit_codec, false);
-  AddContainerWithCodecs("audio/mp4", mp4_audio_codecs, false);
+  AddContainerWithCodecs("application/ogg", ogg_codecs);
+  AddContainerWithCodecs("audio/flac", implicit_codec);
+  AddContainerWithCodecs("audio/mpeg", mp3_codecs);  // Allow "mp3".
+  AddContainerWithCodecs("audio/mp3", implicit_codec);
+  AddContainerWithCodecs("audio/x-mp3", implicit_codec);
+  AddContainerWithCodecs("audio/mp4", mp4_audio_codecs);
   DCHECK(!mp4_video_codecs.empty());
-  AddContainerWithCodecs("video/mp4", mp4_codecs, false);
+  AddContainerWithCodecs("video/mp4", mp4_codecs);
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  AddContainerWithCodecs("audio/aac", implicit_codec, true);  // AAC / ADTS.
+  AddContainerWithCodecs("audio/aac", implicit_codec);  // AAC / ADTS.
   // These strings are supported for backwards compatibility only and thus only
   // support the codecs needed for compatibility.
-  AddContainerWithCodecs("audio/x-m4a", aac, true);
-  AddContainerWithCodecs("video/x-m4v", avc_and_aac, true);
+  AddContainerWithCodecs("audio/x-m4a", aac);
+  AddContainerWithCodecs("video/x-m4v", avc_and_aac);
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
   CodecSet mp2t_codecs{H264, MPEG2_AAC, MPEG4_AAC, MP3};
-  AddContainerWithCodecs("video/mp2t", mp2t_codecs, true);
+  AddContainerWithCodecs("video/mp2t", mp2t_codecs);
 #endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 #if defined(OS_ANDROID)
   // HTTP Live Streaming (HLS).
@@ -369,28 +365,20 @@ void MimeUtil::AddSupportedMediaFormats() {
                       // Android HLS only supports MPEG4_AAC (missing demuxer
                       // support for MPEG2_AAC)
                       MPEG4_AAC};
-  AddContainerWithCodecs("application/x-mpegurl", hls_codecs, true);
-  AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs, true);
-  AddContainerWithCodecs("audio/mpegurl", hls_codecs, true);
+  AddContainerWithCodecs("application/x-mpegurl", hls_codecs);
+  AddContainerWithCodecs("application/vnd.apple.mpegurl", hls_codecs);
+  AddContainerWithCodecs("audio/mpegurl", hls_codecs);
   // Not documented by Apple, but unfortunately used extensively by Apple and
   // others for both audio-only and audio+video playlists. See
   // https://crbug.com/675552 for details and examples.
-  AddContainerWithCodecs("audio/x-mpegurl", hls_codecs, true);
+  AddContainerWithCodecs("audio/x-mpegurl", hls_codecs);
 #endif  // defined(OS_ANDROID)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 }
 
 void MimeUtil::AddContainerWithCodecs(const std::string& mime_type,
-                                      const CodecSet& codecs,
-                                      bool is_proprietary_mime_type) {
-#if !BUILDFLAG(USE_PROPRIETARY_CODECS)
-  DCHECK(!is_proprietary_mime_type);
-#endif
-
+                                      const CodecSet& codecs) {
   media_format_map_[mime_type] = codecs;
-
-  if (is_proprietary_mime_type)
-    proprietary_media_containers_.push_back(mime_type);
 }
 
 bool MimeUtil::IsSupportedMediaMimeType(const std::string& mime_type) const {
@@ -879,11 +867,6 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
     DCHECK_GT(video_level, 0);
   }
 
-  // Bail early for disabled proprietary codecs
-  if (!allow_proprietary_codecs_ && IsCodecProprietary(codec)) {
-    return IsNotSupported;
-  }
-
   // Check for cases of ambiguous platform support.
   // TODO(chcunningham): DELETE THIS. Platform should know its capabilities.
   // Answer should come from MediaClient.
@@ -931,34 +914,6 @@ SupportsType MimeUtil::IsCodecSupported(const std::string& mime_type_lower_case,
 #endif
 
   return ambiguous_platform_support ? MayBeSupported : IsSupported;
-}
-
-bool MimeUtil::IsCodecProprietary(Codec codec) const {
-  switch (codec) {
-    case INVALID_CODEC:
-    case AC3:
-    case EAC3:
-    case MPEG_H_AUDIO:
-    case MPEG2_AAC:
-    case MPEG4_AAC:
-    case H264:
-    case HEVC:
-    case DOLBY_VISION:
-      return true;
-
-    case MP3:
-    case PCM:
-    case VORBIS:
-    case OPUS:
-    case FLAC:
-    case VP8:
-    case VP9:
-    case THEORA:
-    case AV1:
-      return false;
-  }
-
-  return true;
 }
 
 bool MimeUtil::GetDefaultCodec(const std::string& mime_type,
