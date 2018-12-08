@@ -246,7 +246,7 @@ special_for_arm = [
     'linux64'
 ]
 for platform in [
-    'vista', 'win7', 'win8', 'win',
+    'win7', 'win8', 'win',
     'mac', 'linux'] + special_for_arm:
   if platform in special_for_arm:
     arch_variants = ['arm']
@@ -264,9 +264,9 @@ for platform in [
     # Test with Breakpad tools only on basic Linux builds.
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'
-    # GN executable can no longer run on Vista.
-    if platform == 'vista':
       arch_flags += ' --no-gn'
+    if arch != 'arm' and not 'win' in platform:
+      arch_flags += ' --clang'
     for mode in ['dbg', 'opt']:
       for libc in ['newlib', 'glibc']:
         # Buildbots.

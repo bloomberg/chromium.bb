@@ -2445,6 +2445,9 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 
 def SetUpLinuxEnvArm(env):
+  if env.Bit('clang'):
+    raise UserError('Clang build not supported with ARM '
+                    '(use --no-clang to disable)')
   jail = env.GetToolchainDir(toolchain_name='arm_trusted')
   if not platform.machine().startswith('arm'):
     # Allow emulation on non-ARM hosts.

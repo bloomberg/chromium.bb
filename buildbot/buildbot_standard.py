@@ -182,7 +182,7 @@ def DoGNBuild(status, context, force_clang=False, force_arch=None):
       'gen', gn_out,
   ]
 
-  gn_ninja_cmd = ['ninja', '-C', gn_out]
+  gn_ninja_cmd = ['ninja', '-C', gn_out, '-v']
   if gn_arch_name not in ('x86', 'x64') and not context.Linux():
     # On non-Linux non-x86, we can only build the untrusted code.
     gn_ninja_cmd.append('untrusted')
