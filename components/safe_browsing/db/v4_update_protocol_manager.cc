@@ -443,8 +443,14 @@ void V4UpdateProtocolManager::CollectUpdateInfo(
   if (last_response_code_)
     update_info->set_network_status_code(last_response_code_);
 
-  if (last_response_time_.ToJavaTime())
+  if (last_response_time_.ToJavaTime()) {
     update_info->set_last_update_time_millis(last_response_time_.ToJavaTime());
+
+    // We should only find the next update if the last_response is valid.
+    base::Time next_update = last_response_time_ + next_update_interval_;
+    if (next_update.ToJavaTime())
+      update_info->set_next_update_time_millis(next_update.ToJavaTime());
+  }
 }
 
 }  // namespace safe_browsing

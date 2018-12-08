@@ -197,36 +197,48 @@ base::Value UserReadableTimeFromMillisSinceEpoch(int64_t time_in_milliseconds) {
 
 void AddStoreInfo(const DatabaseManagerInfo::DatabaseInfo::StoreInfo store_info,
                   base::ListValue* database_info_list) {
-  if (store_info.has_file_size_bytes() && store_info.has_file_name()) {
+  if (store_info.has_file_name()) {
     database_info_list->GetList().push_back(
         base::Value(store_info.file_name()));
-    database_info_list->GetList().push_back(
-        base::Value(static_cast<double>(store_info.file_size_bytes())));
+  } else {
+    database_info_list->GetList().push_back(base::Value("Unknown store"));
   }
+
+  std::string store_info_string = "<blockquote>";
+  if (store_info.has_file_size_bytes()) {
+    store_info_string +=
+        "Size (in bytes): " + std::to_string(store_info.file_size_bytes()) +
+        "<br>";
+  }
+
   if (store_info.has_update_status()) {
-    database_info_list->GetList().push_back(base::Value("Store update status"));
-    database_info_list->GetList().push_back(
-        base::Value(store_info.update_status()));
+    store_info_string +=
+        "Update status: " + std::to_string(store_info.update_status()) + "<br>";
   }
+
   if (store_info.has_last_apply_update_time_millis()) {
-    database_info_list->GetList().push_back(base::Value("Last update time"));
-    database_info_list->GetList().push_back(
-        UserReadableTimeFromMillisSinceEpoch(
-            store_info.last_apply_update_time_millis()));
+    store_info_string += "Last update time: " +
+                         UserReadableTimeFromMillisSinceEpoch(
+                             store_info.last_apply_update_time_millis())
+                             .GetString() +
+                         "<br>";
   }
+
   if (store_info.has_checks_attempted()) {
-    database_info_list->GetList().push_back(
-        base::Value("Number of database checks"));
-    database_info_list->GetList().push_back(
-        base::Value(static_cast<int>(store_info.checks_attempted())));
+    store_info_string += "Number of database checks: " +
+                         std::to_string(store_info.checks_attempted()) + "<br>";
   }
+
+  store_info_string += "</blockquote>";
+
+  database_info_list->GetList().push_back(base::Value(store_info_string));
 }
 
 void AddDatabaseInfo(const DatabaseManagerInfo::DatabaseInfo database_info,
                      base::ListValue* database_info_list) {
   if (database_info.has_database_size_bytes()) {
     database_info_list->GetList().push_back(
-        base::Value("Database size in bytes"));
+        base::Value("Database size (in bytes)"));
     database_info_list->GetList().push_back(
         base::Value(static_cast<double>(database_info.database_size_bytes())));
   }
@@ -251,6 +263,12 @@ void AddUpdateInfo(const DatabaseManagerInfo::UpdateInfo update_info,
     database_info_list->GetList().push_back(
         UserReadableTimeFromMillisSinceEpoch(
             update_info.last_update_time_millis()));
+  }
+  if (update_info.has_next_update_time_millis()) {
+    database_info_list->GetList().push_back(base::Value("Next update time"));
+    database_info_list->GetList().push_back(
+        UserReadableTimeFromMillisSinceEpoch(
+            update_info.next_update_time_millis()));
   }
 }
 
