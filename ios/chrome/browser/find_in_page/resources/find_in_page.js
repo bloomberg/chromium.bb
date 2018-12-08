@@ -11,11 +11,9 @@
  * selected one in orange color;
  */
 
+// Requires __crWeb.findInPage provided by __crWeb.allFramesWebBundle.
+
 (function() {
-/**
- * Namespace for this file.  Depends on __gCrWeb having already been injected.
- */
-__gCrWeb.findInPage = {};
 
 /**
  * A string made by concatenating textContent.toLowerCase() of all TEXT nodes
