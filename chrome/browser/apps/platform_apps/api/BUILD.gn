@@ -10,7 +10,7 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 assert(enable_extensions)
 
 function_registration("api_registration") {
-  sources = chrome_apps_api_schema_files
+  sources = chrome_apps_api_schema_files + chrome_apps_uncompiled_schema_files
   impl_dir = "//chrome/browser/apps/platform_apps/api"
   configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "ChromeApps"
