@@ -809,7 +809,7 @@ int PaintLayerScrollableArea::PageStep(ScrollbarOrientation orientation) const {
 }
 
 LayoutBox* PaintLayerScrollableArea::GetLayoutBox() const {
-  return layer_->GetLayoutBox();
+  return layer_ ? layer_->GetLayoutBox() : nullptr;
 }
 
 PaintLayer* PaintLayerScrollableArea::Layer() const {
