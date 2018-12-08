@@ -229,6 +229,10 @@
     "label": "//media/capture:capture_unittests",
     "type": "windowed_test_launcher",
   },
+  "captured_sites_interactive_tests": {
+    "label": "//chrome/test:captured_sites_interactive_tests",
+    "type": "console_test_launcher",
+  },
   "cast_audio_backend_unittests": {
     "label": "//chromecast/media/cma/backend:cast_audio_backend_unittests",
     "type": "console_test_launcher",
