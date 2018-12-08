@@ -39,11 +39,14 @@ VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
 VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkAllocateCommandBuffers' },
 { 'name': 'vkAllocateDescriptorSets' },
+{ 'name': 'vkAllocateMemory' },
+{ 'name': 'vkBindImageMemory' },
 { 'name': 'vkCreateCommandPool' },
 { 'name': 'vkCreateDescriptorPool' },
 { 'name': 'vkCreateDescriptorSetLayout' },
 { 'name': 'vkCreateFence' },
 { 'name': 'vkCreateFramebuffer' },
+{ 'name': 'vkCreateImage' },
 { 'name': 'vkCreateImageView' },
 { 'name': 'vkCreateRenderPass' },
 { 'name': 'vkCreateSampler' },
@@ -74,6 +77,7 @@ VULKAN_DEVICE_FUNCTIONS = [
 
 VULKAN_DEVICE_FUNCTIONS_ANDROID = [
 { 'name': 'vkImportSemaphoreFdKHR' },
+{ 'name': 'vkGetAndroidHardwareBufferPropertiesANDROID' },
 { 'name': 'vkGetSemaphoreFdKHR' },
 ]
 
