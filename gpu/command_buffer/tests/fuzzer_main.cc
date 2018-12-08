@@ -367,10 +367,12 @@ class CommandBufferSetup {
             config_.workarounds.use_virtualized_gl_contexts, base::DoNothing());
     context_state->InitializeGrContext(config_.workarounds, nullptr);
     context_state->InitializeGL(config_.workarounds, gpu_feature_info);
+    auto* context = context_state->context();
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         context_group.get(), std::move(context_state)));
 #else
+    auto* context = context_.get();
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         context_group.get()));
@@ -378,7 +380,7 @@ class CommandBufferSetup {
 
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
-    auto result = decoder_->Initialize(surface_.get(), context_.get(), true,
+    auto result = decoder_->Initialize(surface_.get(), context, true,
                                        gles2::DisallowedFeatures(),
                                        config_.attrib_helper);
     if (result != gpu::ContextResult::kSuccess)
