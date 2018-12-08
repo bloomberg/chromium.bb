@@ -517,7 +517,7 @@ TEST_F(PasswordManagerTest, FormSubmitNoGoodMatch) {
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -677,7 +677,7 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   EXPECT_CALL(*store_, UpdateLogin(_));
   observed.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   EXPECT_EQ(1,
@@ -709,7 +709,7 @@ TEST_F(PasswordManagerTest, DoNotSaveOnChromeSignInForm) {
   OnPasswordFormSubmitted(form);
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
   observed.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
@@ -844,7 +844,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
   // Now navigate to a second page.
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
 
   // This page contains a form with the same markup, but on a different
   // URL.
@@ -1324,7 +1324,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1659,7 +1659,7 @@ TEST_F(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
 
   // Now the password manager waits for the navigation to complete.
   observed.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -1987,7 +1987,7 @@ TEST_F(PasswordManagerTest, PasswordGenerationPresavePasswordAndLogin) {
       EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, presaved_form));
     OnPasswordFormSubmitted(form);
     observed.clear();
-    manager()->DidNavigateMainFrame();
+    manager()->DidNavigateMainFrame(true);
     manager()->OnPasswordFormsParsed(&driver_, observed);
     manager()->OnPasswordFormsRendered(&driver_, observed, true);
 
@@ -2111,7 +2111,7 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _)).Times(0);
 
   observed_forms.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
   EXPECT_THAT(saved_form, FormMatches(android_form));
@@ -2145,7 +2145,7 @@ TEST_F(PasswordManagerTest, UpdatePasswordOfAffiliatedCredential) {
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
   observed_forms.clear();
-  manager()->DidNavigateMainFrame();
+  manager()->DidNavigateMainFrame(true);
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
 
@@ -2990,33 +2990,44 @@ TEST_F(PasswordManagerTest, AutofillPredictionBeforeFormParsed) {
 // 3. The password disappeared after navigation.
 // 4. A save prompt is shown.
 TEST_F(PasswordManagerTest, SavingAfterUserTypingAndNavigation) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  TurnOnNewParsingForSaving(&scoped_feature_list);
-  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
-      .WillRepeatedly(Return(true));
+  for (bool form_may_be_submitted : {false, true}) {
+    SCOPED_TRACE(testing::Message()
+                 << "form_may_be_submitted = " << form_may_be_submitted);
+    base::test::ScopedFeatureList scoped_feature_list;
+    TurnOnNewParsingForSaving(&scoped_feature_list);
+    EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+        .WillRepeatedly(Return(true));
 
-  PasswordForm form(MakeSimpleForm());
-  EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
-  manager()->OnPasswordFormsParsed(&driver_, {form});
+    PasswordForm form(MakeSimpleForm());
+    EXPECT_CALL(*store_, GetLogins(_, _))
+        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    manager()->OnPasswordFormsParsed(&driver_, {form});
 
-  // The user is typing as a result the saving manual fallback is shown.
-  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
-  EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
-  manager()->ShowManualFallbackForSaving(&driver_, form);
-  ASSERT_TRUE(form_manager_to_save);
-  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
+    // The user is typing as a result the saving manual fallback is shown.
+    std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+    EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
+        .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+    manager()->ShowManualFallbackForSaving(&driver_, form);
+    ASSERT_TRUE(form_manager_to_save);
+    EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
+                FormMatches(form));
 
-  // Check that a save prompt is shown when there is no password form after
-  // the navigation (which suggests that the submission was successful).
-  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
-      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+    // Check that a save prompt is shown when there is no password form after
+    // the navigation (which suggests that the submission was successful).
+    if (form_may_be_submitted) {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
+          .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+    } else {
+      EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
+    }
 
-  manager()->DidNavigateMainFrame();
-  manager()->OnPasswordFormsRendered(&driver_, {}, true);
+    manager()->DidNavigateMainFrame(form_may_be_submitted);
+    manager()->OnPasswordFormsRendered(&driver_, {}, true);
 
-  EXPECT_THAT(form_manager_to_save->GetPendingCredentials(), FormMatches(form));
+    EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),
+                FormMatches(form));
+    testing::Mock::VerifyAndClearExpectations(&client_);
+  }
 }
 
 // Check that when a form is submitted and a NewPasswordFormManager not present,

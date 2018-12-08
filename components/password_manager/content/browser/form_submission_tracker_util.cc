@@ -4,28 +4,24 @@
 
 #include "components/password_manager/content/browser/form_submission_tracker_util.h"
 
+#include "base/logging.h"
 #include "components/password_manager/core/browser/form_submission_observer.h"
-#include "content/public/browser/navigation_handle.h"
 
 namespace password_manager {
 
-void NotifyOnStartNavigation(content::NavigationHandle* navigation_handle,
-                             PasswordManagerDriver* driver,
-                             FormSubmissionObserver* observer) {
-  DCHECK(navigation_handle);
+void NotifyDidNavigateMainFrame(bool is_renderer_initiated,
+                                ui::PageTransition transition,
+                                FormSubmissionObserver* observer) {
   DCHECK(observer);
 
   // Password manager isn't interested in
-  // - subframe navigations,
   // - user initiated navigations (e.g. click on the bookmark),
   // - hyperlink navigations.
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->IsRendererInitiated() ||
-      ui::PageTransitionCoreTypeIs(navigation_handle->GetPageTransition(),
-                                   ui::PAGE_TRANSITION_LINK))
-    return;
+  bool form_may_be_submitted =
+      is_renderer_initiated &&
+      !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK);
 
-  observer->OnStartNavigation(driver);
+  observer->DidNavigateMainFrame(form_may_be_submitted);
 }
 
 }  // namespace password_manager

@@ -104,9 +104,8 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   void ProvisionallySavePassword(const autofill::PasswordForm& form,
                                  const PasswordManagerDriver* driver);
 
-  // Should be called when the user navigates the main frame. Not called for
-  // in-page navigation.
-  void DidNavigateMainFrame();
+  // FormSubmissionObserver:
+  void DidNavigateMainFrame(bool form_may_be_submitted) override;
 
   // Handles password forms being parsed.
   void OnPasswordFormsParsed(PasswordManagerDriver* driver,
@@ -192,9 +191,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
   FRIEND_TEST_ALL_PREFIXES(
       PasswordManagerTest,
       ShouldBlockPasswordForSameOriginButDifferentSchemeTest);
-
-  // FormSubmissionObserver:
-  void OnStartNavigation(PasswordManagerDriver* driver) override;
 
   // Clones |matched_manager| and keeps it as |provisional_save_manager_|.
   // |form| is saved provisionally to |provisional_save_manager_|.

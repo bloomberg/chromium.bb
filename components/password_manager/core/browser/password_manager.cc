@@ -531,6 +531,23 @@ void PasswordManager::ProvisionallySavePassword(
   }
 }
 
+void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
+  entry_to_check_ = NavigationEntryToCheck::LAST_COMMITTED;
+  pending_login_managers_.clear();
+
+  if (form_may_be_submitted) {
+    for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_) {
+      if (manager->is_submitted()) {
+        owned_submitted_form_manager_ = std::move(manager);
+        break;
+      }
+    }
+  }
+
+  form_managers_.clear();
+  predictions_.clear();
+}
+
 void PasswordManager::UpdateFormManagers() {
   std::vector<PasswordFormManagerInterface*> form_managers;
   for (const auto& form_manager : form_managers_)
@@ -600,21 +617,6 @@ void PasswordManager::AddObserverAndDeliverCredentials(
 
 void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void PasswordManager::DidNavigateMainFrame() {
-  entry_to_check_ = NavigationEntryToCheck::LAST_COMMITTED;
-  pending_login_managers_.clear();
-
-  for (std::unique_ptr<NewPasswordFormManager>& manager : form_managers_) {
-    if (manager->is_submitted()) {
-      owned_submitted_form_manager_ = std::move(manager);
-      break;
-    }
-  }
-
-  form_managers_.clear();
-  predictions_.clear();
 }
 
 void PasswordManager::OnPasswordFormSubmitted(
@@ -927,11 +929,6 @@ void PasswordManager::ReportSpecPriorityForGeneratedPassword(
     form_manager->GetMetricsRecorder()->ReportSpecPriorityForGeneratedPassword(
         spec_priority);
   }
-}
-
-void PasswordManager::OnStartNavigation(PasswordManagerDriver* driver) {
-  // TODO(crbug/842643): use this signal instead of DidStartProvisionalLoad in
-  // the renderer.
 }
 
 void PasswordManager::ProvisionallySaveManager(
