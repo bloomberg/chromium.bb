@@ -4,6 +4,7 @@
 
 #include "net/base/network_interfaces_fuchsia.h"
 
+#include <fuchsia/net/cpp/fidl.h>
 #include <fuchsia/netstack/cpp/fidl.h>
 #include <zircon/ethernet/cpp/fidl.h>
 
@@ -47,12 +48,13 @@ NetworkInterface NetworkInterfaceFromAddress(
   IPAddress address;
   uint8_t prefix_length;
   if (address_index == 0) {
-    address = NetAddressToIPAddress(interface.addr);
-    prefix_length = MaskPrefixLength(NetAddressToIPAddress(interface.netmask));
+    address = FuchsiaIpAddressToIPAddress(interface.addr);
+    prefix_length =
+        MaskPrefixLength(FuchsiaIpAddressToIPAddress(interface.netmask));
   } else {
     CHECK_LE(address_index, interface.ipv6addrs->size());
-    address =
-        NetAddressToIPAddress(interface.ipv6addrs->at(address_index - 1).addr);
+    address = FuchsiaIpAddressToIPAddress(
+        interface.ipv6addrs->at(address_index - 1).addr);
     prefix_length = interface.ipv6addrs->at(address_index - 1).prefix_len;
   }
 
@@ -63,12 +65,12 @@ NetworkInterface NetworkInterfaceFromAddress(
 
 }  // namespace
 
-IPAddress NetAddressToIPAddress(const fuchsia::netstack::NetAddress& addr) {
-  if (addr.ipv4) {
-    return IPAddress(addr.ipv4->addr.data(), addr.ipv4->addr.count());
+IPAddress FuchsiaIpAddressToIPAddress(const fuchsia::net::IpAddress& addr) {
+  if (addr.is_ipv4()) {
+    return IPAddress(addr.ipv4().addr.data(), addr.ipv4().addr.count());
   }
-  if (addr.ipv6) {
-    return IPAddress(addr.ipv6->addr.data(), addr.ipv6->addr.count());
+  if (addr.is_ipv6()) {
+    return IPAddress(addr.ipv6().addr.data(), addr.ipv6().addr.count());
   }
   return IPAddress();
 }
