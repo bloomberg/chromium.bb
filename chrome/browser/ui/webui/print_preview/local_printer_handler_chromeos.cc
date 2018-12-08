@@ -79,8 +79,9 @@ void FetchCapabilities(std::unique_ptr<chromeos::Printer> printer,
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&printing::GetSettingsOnBlockingPool, printer->id(),
-                     basic_info, nullptr),
+      base::BindOnce(
+          &printing::GetSettingsOnBlockingPool, printer->id(), basic_info,
+          printing::PrinterSemanticCapsAndDefaults::Papers(), nullptr),
       base::BindOnce(&CapabilitiesFetched, std::move(policies), std::move(cb)));
 }
 

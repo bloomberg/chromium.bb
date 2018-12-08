@@ -29,7 +29,8 @@ printing::PrinterList EnumeratePrintersAsync() {
 }
 
 std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
-    const std::string& device_name) {
+    const std::string& device_name,
+    const printing::PrinterSemanticCapsAndDefaults::Papers& additional_papers) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
@@ -47,7 +48,7 @@ std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
   }
 
   return printing::GetSettingsOnBlockingPool(device_name, basic_info,
-                                             print_backend);
+                                             additional_papers, print_backend);
 }
 
 std::string GetDefaultPrinterAsync() {
@@ -96,9 +97,13 @@ void LocalPrinterHandlerDefault::StartGetCapability(
     GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // TODO(thestig): Fetch custom paper sizes.
+  printing::PrinterSemanticCapsAndDefaults::Papers additional_papers;
+
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&FetchCapabilitiesAsync, device_name), std::move(cb));
+      base::BindOnce(&FetchCapabilitiesAsync, device_name, additional_papers),
+      std::move(cb));
 }
 
 void LocalPrinterHandlerDefault::StartPrint(
