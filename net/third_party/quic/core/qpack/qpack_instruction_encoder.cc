@@ -5,8 +5,8 @@
 #include "net/third_party/quic/core/qpack/qpack_instruction_encoder.h"
 
 #include "base/logging.h"
-#include "net/third_party/http2/hpack/huffman/hpack_huffman_encoder.h"
 #include "net/third_party/quic/platform/api/quic_string_utils.h"
+#include "net/third_party/quiche/src/http2/hpack/huffman/hpack_huffman_encoder.h"
 
 namespace quic {
 

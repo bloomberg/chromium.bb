@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "net/third_party/http2/decoder/http2_frame_decoder.h"
+#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
 #include "net/third_party/spdy/core/hpack/hpack_decoder_adapter.h"
 #include "net/third_party/spdy/core/hpack/hpack_header_table.h"
 #include "net/third_party/spdy/core/spdy_alt_svc_wire_format.h"

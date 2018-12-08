@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "net/third_party/http2/hpack/huffman/hpack_huffman_decoder.h"
+#include "net/third_party/quiche/src/http2/hpack/huffman/hpack_huffman_decoder.h"
 #include "net/third_party/spdy/core/hpack/hpack_constants.h"
 #include "net/third_party/spdy/core/hpack/hpack_output_stream.h"
 #include "net/third_party/spdy/platform/api/spdy_arraysize.h"

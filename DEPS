@@ -104,6 +104,7 @@ vars = {
   'chromium_git': 'https://chromium.googlesource.com',
   'dawn_git': 'https://dawn.googlesource.com',
   'pdfium_git': 'https://pdfium.googlesource.com',
+  'quiche_git': 'https://quiche.googlesource.com',
   'skia_git': 'https://skia.googlesource.com',
   'swiftshader_git': 'https://swiftshader.googlesource.com',
   'webrtc_git': 'https://webrtc.googlesource.com',
@@ -239,6 +240,10 @@ vars = {
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
   'dawn_revision': '672d29d14c26e39341d75b8d1dc1a4e7ee4b6f66',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling feed
+  # and whatever else without interference from each other.
+  'quiche_revision': '99ab07063ac358016b637d7f6521a6dd37263f90',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -252,6 +257,7 @@ allowed_hosts = [
   'chromium.googlesource.com',
   'dawn.googlesource.com',
   'pdfium.googlesource.com',
+  'quiche.googlesource.com',
   'skia.googlesource.com',
   'swiftshader.googlesource.com',
   'webrtc.googlesource.com',
@@ -401,6 +407,9 @@ deps = {
       'url': Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
       'condition': 'checkout_nacl',
   },
+
+  'src/net/third_party/quiche/src':
+    Var('quiche_git') + '/quiche.git' + '@' +  Var('quiche_revision'),
 
   'src/tools/luci-go': {
       'packages': [

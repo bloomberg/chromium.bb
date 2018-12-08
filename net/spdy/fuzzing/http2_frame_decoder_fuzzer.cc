@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/test/fuzzed_data_provider.h"
-#include "net/third_party/http2/decoder/http2_frame_decoder.h"
+#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
