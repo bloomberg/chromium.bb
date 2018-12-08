@@ -622,9 +622,7 @@ public class ChromeTabbedActivity
                         ChromePreferenceManager.PROMOS_SKIPPED_ON_FIRST_START, true);
             }
 
-            if (!isShowingPromo) {
-                ToolbarButtonInProductHelpController.maybeShowColdStartIPH(this);
-            }
+            ToolbarButtonInProductHelpController.create(this, isShowingPromo);
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
                 // We call getFeedAppLifecycle() here to ensure the app lifecycle is created so that
