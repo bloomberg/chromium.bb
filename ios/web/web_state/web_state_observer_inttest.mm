@@ -1539,10 +1539,6 @@ TEST_P(WebStateObserverTest, ReloadPostNavigation) {
 
 // Tests going forward to a page rendered from post response.
 TEST_P(WebStateObserverTest, ForwardPostNavigation) {
-  // TODO(crbug.com/851119): temporarily disable this failing test.
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    return;
-  }
   const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
@@ -1599,16 +1595,11 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
       /*target_main_frame=*/true, /*has_user_gesture=*/false);
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
-    EXPECT_CALL(*decider_,
-                ShouldAllowRequest(_, RequestInfoMatch(back_request_info)))
-        .WillOnce(Return(true));
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  } else {
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-    EXPECT_CALL(*decider_,
-                ShouldAllowRequest(_, RequestInfoMatch(back_request_info)))
-        .WillOnce(Return(true));
   }
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(back_request_info)))
+      .WillOnce(Return(true));
 
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   if (@available(iOS 12, *)) {
@@ -1637,22 +1628,29 @@ TEST_P(WebStateObserverTest, ForwardPostNavigation) {
   int32_t nav_id = 0;
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
-    // ShouldAllowRequest() not called on repost.
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  } else {
-    EXPECT_CALL(observer_, DidStartLoading(web_state()));
-    EXPECT_CALL(*decider_,
-                ShouldAllowRequest(_, RequestInfoMatch(forward_request_info)))
-        .WillOnce(Return(true));
   }
+
+  EXPECT_CALL(observer_, DidStartLoading(web_state()));
+  EXPECT_CALL(*decider_,
+              ShouldAllowRequest(_, RequestInfoMatch(forward_request_info)))
+      .WillOnce(Return(true));
+
+  // TODO(crbug.com/913052): propagate |has_user_gesture| on back/forward
+  // navigation in slim nav.
+  bool forward_navigation_has_user_gesture =
+      !GetWebClient()->IsSlimNavigationManagerEnabled();
+
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(VerifyPostStartedContext(
-          web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
-          /*renderer_initiated=*/false));
+      .WillOnce(VerifyPostStartedContext(web_state(), action,
+                                         forward_navigation_has_user_gesture,
+                                         &context, &nav_id,
+                                         /*renderer_initiated=*/false));
+
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyPostFinishedContext(
-          web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
-          /*renderer_initiated=*/false));
+      .WillOnce(VerifyPostFinishedContext(web_state(), action,
+                                          forward_navigation_has_user_gesture,
+                                          &context, &nav_id,
+                                          /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, TitleWasSet(web_state()))
       .WillOnce(VerifyTitle(action.GetContent()));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
