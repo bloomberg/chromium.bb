@@ -69,11 +69,14 @@ struct VulkanFunctionPointers {
   // Device functions
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn = nullptr;
   PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn = nullptr;
+  PFN_vkAllocateMemory vkAllocateMemoryFn = nullptr;
+  PFN_vkBindImageMemory vkBindImageMemoryFn = nullptr;
   PFN_vkCreateCommandPool vkCreateCommandPoolFn = nullptr;
   PFN_vkCreateDescriptorPool vkCreateDescriptorPoolFn = nullptr;
   PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayoutFn = nullptr;
   PFN_vkCreateFence vkCreateFenceFn = nullptr;
   PFN_vkCreateFramebuffer vkCreateFramebufferFn = nullptr;
+  PFN_vkCreateImage vkCreateImageFn = nullptr;
   PFN_vkCreateImageView vkCreateImageViewFn = nullptr;
   PFN_vkCreateRenderPass vkCreateRenderPassFn = nullptr;
   PFN_vkCreateSampler vkCreateSamplerFn = nullptr;
@@ -101,9 +104,11 @@ struct VulkanFunctionPointers {
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
-// Android only device functions.
+  // Android only device functions.
 #if defined(OS_ANDROID)
   PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHRFn = nullptr;
+  PFN_vkGetAndroidHardwareBufferPropertiesANDROID
+      vkGetAndroidHardwareBufferPropertiesANDROIDFn = nullptr;
   PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHRFn = nullptr;
 #endif
 
@@ -167,6 +172,8 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkAllocateCommandBuffersFn
 #define vkAllocateDescriptorSets \
   gpu::GetVulkanFunctionPointers()->vkAllocateDescriptorSetsFn
+#define vkAllocateMemory gpu::GetVulkanFunctionPointers()->vkAllocateMemoryFn
+#define vkBindImageMemory gpu::GetVulkanFunctionPointers()->vkBindImageMemoryFn
 #define vkCreateCommandPool \
   gpu::GetVulkanFunctionPointers()->vkCreateCommandPoolFn
 #define vkCreateDescriptorPool \
@@ -176,6 +183,7 @@ struct VulkanFunctionPointers {
 #define vkCreateFence gpu::GetVulkanFunctionPointers()->vkCreateFenceFn
 #define vkCreateFramebuffer \
   gpu::GetVulkanFunctionPointers()->vkCreateFramebufferFn
+#define vkCreateImage gpu::GetVulkanFunctionPointers()->vkCreateImageFn
 #define vkCreateImageView gpu::GetVulkanFunctionPointers()->vkCreateImageViewFn
 #define vkCreateRenderPass \
   gpu::GetVulkanFunctionPointers()->vkCreateRenderPassFn
@@ -219,6 +227,9 @@ struct VulkanFunctionPointers {
 #if defined(OS_ANDROID)
 #define vkImportSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkImportSemaphoreFdKHRFn
+#define vkGetAndroidHardwareBufferPropertiesANDROID \
+  gpu::GetVulkanFunctionPointers()                  \
+      ->vkGetAndroidHardwareBufferPropertiesANDROIDFn
 #define vkGetSemaphoreFdKHR \
   gpu::GetVulkanFunctionPointers()->vkGetSemaphoreFdKHRFn
 #endif

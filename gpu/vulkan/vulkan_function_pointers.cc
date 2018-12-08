@@ -111,6 +111,16 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   if (!vkAllocateDescriptorSetsFn)
     return false;
 
+  vkAllocateMemoryFn = reinterpret_cast<PFN_vkAllocateMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkAllocateMemory"));
+  if (!vkAllocateMemoryFn)
+    return false;
+
+  vkBindImageMemoryFn = reinterpret_cast<PFN_vkBindImageMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkBindImageMemory"));
+  if (!vkBindImageMemoryFn)
+    return false;
+
   vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateCommandPool"));
   if (!vkCreateCommandPoolFn)
@@ -135,6 +145,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkCreateFramebufferFn = reinterpret_cast<PFN_vkCreateFramebuffer>(
       vkGetDeviceProcAddrFn(vk_device, "vkCreateFramebuffer"));
   if (!vkCreateFramebufferFn)
+    return false;
+
+  vkCreateImageFn = reinterpret_cast<PFN_vkCreateImage>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateImage"));
+  if (!vkCreateImageFn)
     return false;
 
   vkCreateImageViewFn = reinterpret_cast<PFN_vkCreateImageView>(
@@ -273,6 +288,13 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
       vkGetDeviceProcAddrFn(vk_device, "vkImportSemaphoreFdKHR"));
   if (!vkImportSemaphoreFdKHRFn)
+    return false;
+
+  vkGetAndroidHardwareBufferPropertiesANDROIDFn =
+      reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
+          vkGetDeviceProcAddrFn(vk_device,
+                                "vkGetAndroidHardwareBufferPropertiesANDROID"));
+  if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn)
     return false;
 
   vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
