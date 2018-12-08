@@ -8,6 +8,12 @@
 
 namespace media {
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+const bool kPropCodecsEnabled = true;
+#else
+const bool kPropCodecsEnabled = false;
+#endif
+
 TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
   // Default to common 709.
   const media::VideoColorSpace kColorSpace = media::VideoColorSpace::REC709();
@@ -16,8 +22,6 @@ TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
   const int kUnspecifiedLevel = 0;
 
   // Expect support for baseline configuration of known codecs.
-  EXPECT_TRUE(IsSupportedVideoType(
-      {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kColorSpace}));
   EXPECT_TRUE(IsSupportedVideoType({media::kCodecVP8, media::VP8PROFILE_ANY,
                                     kUnspecifiedLevel, kColorSpace}));
   EXPECT_TRUE(
@@ -43,6 +47,12 @@ TEST(SupportedTypesTest, IsSupportedVideoTypeBasics) {
   EXPECT_FALSE(IsSupportedVideoType({media::kCodecHEVC,
                                      media::VIDEO_CODEC_PROFILE_UNKNOWN,
                                      kUnspecifiedLevel, kColorSpace}));
+
+  // Expect conditional support for the following.
+  EXPECT_EQ(
+      kPropCodecsEnabled,
+      IsSupportedVideoType(
+          {media::kCodecH264, media::H264PROFILE_BASELINE, 1, kColorSpace}));
 }
 
 TEST(SupportedTypesTest, IsSupportedVideoType_VP9TransferFunctions) {
