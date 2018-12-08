@@ -1707,6 +1707,10 @@ class NonCompositedMainThreadScrollingReasonTest
   }
 };
 
+INSTANTIATE_TEST_CASE_P(All,
+                        NonCompositedMainThreadScrollingReasonTest,
+                        ::testing::Bool());
+
 TEST_P(NonCompositedMainThreadScrollingReasonTest, TransparentTest) {
   TestNonCompositedReasons("transparent",
                            MainThreadScrollingReason::kHasOpacityAndLCDText);
