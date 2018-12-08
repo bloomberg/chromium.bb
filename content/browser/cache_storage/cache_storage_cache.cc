@@ -534,6 +534,11 @@ void CacheStorageCache::DropHandleRef() {
   }
 }
 
+bool CacheStorageCache::IsUnreferenced() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return !handle_ref_count_;
+}
+
 void CacheStorageCache::Match(blink::mojom::FetchAPIRequestPtr request,
                               blink::mojom::QueryParamsPtr match_params,
                               ResponseCallback callback) {

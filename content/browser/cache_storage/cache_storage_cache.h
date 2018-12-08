@@ -239,10 +239,7 @@ class CONTENT_EXPORT CacheStorageCache {
   virtual CacheStorageCacheHandle CreateHandle();
   void AddHandleRef();
   void DropHandleRef();
-  void AssertUnreferenced() const {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(!handle_ref_count_);
-  }
+  bool IsUnreferenced() const;
 
  private:
   // QueryCache types:

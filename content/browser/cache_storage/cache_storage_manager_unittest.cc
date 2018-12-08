@@ -1038,19 +1038,90 @@ TEST_F(CacheStorageManagerTest, BadOriginName) {
   EXPECT_STREQ("foo", GetFirstIndexName().c_str());
 }
 
-// With a persistent cache if the client drops its reference to a
-// CacheStorageCache it should be deleted.
+// Dropping a reference to a cache should not immediately destroy it.  These
+// warm cache objects are kept alive to optimize the next open.
 TEST_F(CacheStorageManagerTest, DropReference) {
+  CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
+
   EXPECT_TRUE(Open(origin1_, "foo"));
   base::WeakPtr<CacheStorageCache> cache =
       callback_cache_handle_.value()->AsWeakPtr();
   // Run a cache operation to ensure that the cache has finished initializing so
-  // that when the handle is dropped it can close immediately.
+  // that when the handle is dropped it could possibly close immediately.
   EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(),
                           GURL("http://example.com/foo")));
 
   callback_cache_handle_ = CacheStorageCacheHandle();
-  EXPECT_FALSE(cache);
+  EXPECT_TRUE(cache) << "unreferenced cache destroyed while owning "
+                        "CacheStorage is still referenced";
+
+  cache_storage = CacheStorageHandle();
+  EXPECT_FALSE(cache) << "unreferenced cache not destroyed after last "
+                         "CacheStorage reference removed";
+}
+
+// Deleting a cache should remove any warmed caches that been kept alive
+// without a reference.
+TEST_F(CacheStorageManagerTest, DropReferenceAndDelete) {
+  // Hold a reference to the CacheStorage to permit the warmed
+  // CacheStorageCache to be kept alive.
+  CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
+
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  base::WeakPtr<CacheStorageCache> cache =
+      callback_cache_handle_.value()->AsWeakPtr();
+  // Run a cache operation to ensure that the cache has finished initializing so
+  // that when the handle is dropped it could possibly close immediately.
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(),
+                          GURL("http://example.com/foo")));
+
+  callback_cache_handle_ = CacheStorageCacheHandle();
+  EXPECT_TRUE(cache) << "unreferenced cache destroyed while owning "
+                        "CacheStorage is still referenced";
+
+  // Delete() should trigger its destruction, however.
+  EXPECT_TRUE(Delete(origin1_, "foo"));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(cache)
+      << "deleted cache not destroyed after last reference removed";
+}
+
+// Critical memory pressure should remove any warmed caches that been kept
+// alive without a reference.
+TEST_F(CacheStorageManagerTest, DropReferenceAndMemoryPressure) {
+  // Hold a reference to the CacheStorage to permit the warmed
+  // CacheStorageCache to be kept alive.
+  CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
+
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  base::WeakPtr<CacheStorageCache> cache =
+      callback_cache_handle_.value()->AsWeakPtr();
+  // Run a cache operation to ensure that the cache has finished initializing so
+  // that when the handle is dropped it could possibly close immediately.
+  EXPECT_FALSE(CacheMatch(callback_cache_handle_.value(),
+                          GURL("http://example.com/foo")));
+
+  callback_cache_handle_ = CacheStorageCacheHandle();
+  EXPECT_TRUE(cache) << "unreferenced cache destroyed while owning "
+                        "CacheStorage is still referenced";
+
+  // Moderate memory pressure should not destroy unreferenced cache objects
+  // since reading data back in from disk can be expensive.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(cache);
+
+  // Critical memory pressure should destroy unreferenced cache objects.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(cache)
+      << "unreferenced cache not destroyed on critical memory pressure";
 }
 
 // A cache continues to work so long as there is a handle to it. Only after the

@@ -617,8 +617,10 @@ void CacheStorage::DropHandleRef() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(handle_ref_count_ > 0);
   handle_ref_count_ -= 1;
-  if (!handle_ref_count_ && cache_storage_manager_)
+  if (!handle_ref_count_ && cache_storage_manager_) {
+    ReleaseUnreferencedCaches();
     cache_storage_manager_->CacheStorageUnreferenced(this, origin_, owner_);
+  }
 }
 
 void CacheStorage::OpenCache(const std::string& cache_name,
@@ -1246,7 +1248,7 @@ void CacheStorage::SizeImpl(SizeCallback callback) {
 
 void CacheStorage::CacheUnreferenced(CacheStorageCache* cache) {
   DCHECK(cache);
-  cache->AssertUnreferenced();
+  DCHECK(cache->IsUnreferenced());
   auto doomed_caches_it = doomed_caches_.find(cache);
   if (doomed_caches_it != doomed_caches_.end()) {
     // The last reference to a doomed cache is gone, perform clean up.
@@ -1254,10 +1256,28 @@ void CacheStorage::CacheUnreferenced(CacheStorageCache* cache) {
     return;
   }
 
+  // Opportunistically keep warmed caches open when the CacheStorage is
+  // still actively referenced.  Repeatedly opening and closing simple
+  // disk_cache backends can be quite slow.  This is easy to trigger when
+  // a site uses caches.match() frequently because the a Cache object is
+  // never exposed to script to explicitly hold the backend open.
+  if (handle_ref_count_)
+    return;
+
+  // The CacheStorage is not actively being referenced.  Close the cache
+  // immediately.
   auto cache_map_it = cache_map_.find(cache->cache_name());
   DCHECK(cache_map_it != cache_map_.end());
 
   cache_map_it->second.reset();
+}
+
+void CacheStorage::ReleaseUnreferencedCaches() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (auto& entry : cache_map_) {
+    if (entry.second && entry.second->IsUnreferenced())
+      entry.second.reset();
+  }
 }
 
 }  // namespace content
