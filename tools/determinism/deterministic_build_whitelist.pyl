@@ -63,6 +63,9 @@
     'nacl_helper',
     'nacl_helper_bootstrap',
     'nacl_loader_unittests',
+
+    # https://crbug.com/913204
+    'captured_sites_interactive_tests',
   ],
 
   # https://crbug.com/330262
