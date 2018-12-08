@@ -921,6 +921,24 @@
             ]
         }
     ],
+    "AutofillUpstreamEditableExpirationDate": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillUpstreamEditableExpirationDate"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillUpstreamUseGooglePayOnAndroidBranding": [
         {
             "platforms": [
