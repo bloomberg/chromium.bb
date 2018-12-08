@@ -106,8 +106,12 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
   const bool is_beforeunload_event =
       event.IsBeforeUnloadEvent() &&
       event.type() == event_type_names::kBeforeunload;
+  const bool is_print_event =
+      // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
+      event.type() == event_type_names::kBeforeprint ||
+      event.type() == event_type_names::kAfterprint;
   if (!event_handler_->IsRunnableOrThrowException(
-          is_beforeunload_event
+          (is_beforeunload_event || is_print_event)
               ? V8EventHandlerNonNull::IgnorePause::kIgnore
               : V8EventHandlerNonNull::IgnorePause::kDontIgnore)) {
     return;
