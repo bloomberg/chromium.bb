@@ -103,14 +103,16 @@ public class ChildProcessConnection {
         private final Context mContext;
         private final Intent mBindIntent;
         private final int mBindFlags;
+        private final Handler mHandler;
         private final ChildServiceConnectionDelegate mDelegate;
         private boolean mBound;
 
         private ChildServiceConnectionImpl(Context context, Intent bindIntent, int bindFlags,
-                ChildServiceConnectionDelegate delegate) {
+                Handler handler, ChildServiceConnectionDelegate delegate) {
             mContext = context;
             mBindIntent = bindIntent;
             mBindFlags = bindFlags;
+            mHandler = handler;
             mDelegate = delegate;
         }
 
@@ -119,7 +121,8 @@ public class ChildProcessConnection {
             if (!mBound) {
                 try {
                     TraceEvent.begin("ChildProcessConnection.ChildServiceConnectionImpl.bind");
-                    mBound = mContext.bindService(mBindIntent, this, mBindFlags);
+                    mBound = BindService.doBindService(
+                            mContext, mBindIntent, this, mBindFlags, mHandler);
                 } finally {
                     TraceEvent.end("ChildProcessConnection.ChildServiceConnectionImpl.bind");
                 }
@@ -281,30 +284,31 @@ public class ChildProcessConnection {
                 @Override
                 public ChildServiceConnection createConnection(
                         Intent bindIntent, int bindFlags, ChildServiceConnectionDelegate delegate) {
-                    return new ChildServiceConnectionImpl(context, bindIntent, bindFlags, delegate);
+                    return new ChildServiceConnectionImpl(
+                            context, bindIntent, bindFlags, mLauncherHandler, delegate);
                 }
             };
         }
 
+        // Methods on the delegate are can be called on launcher thread or UI thread, so need to
+        // handle both cases. See BindService for details.
         ChildServiceConnectionDelegate delegate = new ChildServiceConnectionDelegate() {
             @Override
             public void onServiceConnected(final IBinder service) {
-                mLauncherHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onServiceConnectedOnLauncherThread(service);
-                    }
-                });
+                if (mLauncherHandler.getLooper() == Looper.myLooper()) {
+                    onServiceConnectedOnLauncherThread(service);
+                    return;
+                }
+                mLauncherHandler.post(() -> onServiceConnectedOnLauncherThread(service));
             }
 
             @Override
             public void onServiceDisconnected() {
-                mLauncherHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onServiceDisconnectedOnLauncherThread();
-                    }
-                });
+                if (mLauncherHandler.getLooper() == Looper.myLooper()) {
+                    onServiceDisconnectedOnLauncherThread();
+                    return;
+                }
+                mLauncherHandler.post(() -> onServiceDisconnectedOnLauncherThread());
             }
         };
 
