@@ -128,12 +128,14 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.switchRecordVideo_.addEventListener(
-      'click', this.onSwitchRecordVideoClicked_.bind(this));
-  this.switchTakePhoto_.addEventListener(
-      'click', this.onSwitchTakePhotoClicked_.bind(this));
   this.switchDevice_.addEventListener(
       'click', this.onSwitchDeviceClicked_.bind(this));
+  this.switchRecordVideo_.addEventListener(
+      'click', () => this.switchMode_(true));
+  this.switchTakePhoto_.addEventListener(
+      'click', () => this.switchMode_(false));
+  document.querySelector('#open-settings').addEventListener(
+      'click', () => cca.nav.open('settings'));
 
   // Add event listeners for toggles.
   var toggles = [
@@ -151,7 +153,7 @@ cca.views.camera.Options = function(onNewStreamNeeded) {
     });
     if (attr) {
       element.addEventListener('change',
-          (event) => document.body.classList.toggle(attr, element.checked));
+          () => document.body.classList.toggle(attr, element.checked));
     }
   });
 
@@ -211,30 +213,10 @@ cca.views.camera.Options.prototype.switchMode_ = function(record) {
 };
 
 /**
- * Handles clicking on the video-recording switch.
- * @param {Event} event Click event.
- * @private
- */
-cca.views.camera.Options.prototype.onSwitchRecordVideoClicked_ = function(
-    event) {
-  this.switchMode_(true);
-};
-
-/**
- * Handles clicking on the photo-taking switch.
- * @param {Event} event Click event.
- * @private
- */
-cca.views.camera.Options.prototype.onSwitchTakePhotoClicked_ = function(event) {
-  this.switchMode_(false);
-};
-
-/**
  * Handles clicking on the camera device switch.
- * @param {Event} event Click event.
  * @private
  */
-cca.views.camera.Options.prototype.onSwitchDeviceClicked_ = function(event) {
+cca.views.camera.Options.prototype.onSwitchDeviceClicked_ = function() {
   this.videoDevices_.then((devices) => {
     cca.util.animateOnce(this.switchDevice_);
     var index = devices.findIndex(
@@ -270,29 +252,26 @@ cca.views.camera.Options.prototype.changeToggle_ = function(toggle, value) {
 
 /**
  * Handles clicking on the microphone switch.
- * @param {Event} event Click event.
  * @private
  */
-cca.views.camera.Options.prototype.onToggleMicClicked_ = function(event) {
+cca.views.camera.Options.prototype.onToggleMicClicked_ = function() {
   chrome.storage.local.set({toggleMic: this.toggleMic_.checked});
   this.updateMicAudio();
 };
 
 /**
  * Handles clicking on the timer switch.
- * @param {Event} event Click event.
  * @private
  */
-cca.views.camera.Options.prototype.onToggleTimerClicked_ = function(event) {
+cca.views.camera.Options.prototype.onToggleTimerClicked_ = function() {
   chrome.storage.local.set({toggleTimer: this.toggleTimer_.checked});
 };
 
 /**
  * Handles clicking on the grid switch.
- * @param {Event} event Click event.
  * @private
  */
-cca.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
+cca.views.camera.Options.prototype.onToggleGridClicked_ = function() {
   Array.from(document.querySelector('#preview-grid').children).forEach(
       (grid) => cca.util.animateOnce(grid));
   chrome.storage.local.set({toggleGrid: this.toggleGrid_.checked});
@@ -300,10 +279,9 @@ cca.views.camera.Options.prototype.onToggleGridClicked_ = function(event) {
 
 /**
  * Handles clicking on the mirror switch.
- * @param {Event} event Click event.
  * @private
  */
-cca.views.camera.Options.prototype.onToggleMirrorClicked_ = function(event) {
+cca.views.camera.Options.prototype.onToggleMirrorClicked_ = function() {
   this.mirroringToggles_[this.videoDeviceId_] = this.toggleMirror_.checked;
   chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
 };
@@ -391,13 +369,7 @@ cca.views.camera.Options.prototype.timerTicks = function() {
  */
 cca.views.camera.Options.prototype.updateControls = function(
     capturing, taking) {
-  var disabled = !capturing;
-  this.toggleMirror_.disabled = disabled;
-  this.toggleGrid_.disabled = disabled;
-  this.toggleTimer_.disabled = disabled;
-  this.toggleMic_.disabled = disabled;
-
-  disabled = disabled || taking;
+  var disabled = !capturing || taking;
   this.switchDevice_.disabled = disabled;
   this.switchRecordVideo_.disabled = disabled;
   this.switchTakePhoto_.disabled = disabled;

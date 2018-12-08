@@ -83,6 +83,7 @@ RESOURCES = \
 	src/images/camera_button_mic_on.svg \
 	src/images/camera_button_mirror_off.svg \
 	src/images/camera_button_mirror_on.svg \
+	src/images/camera_button_settings.svg \
 	src/images/camera_button_switch_device.svg \
 	src/images/camera_button_switch_photo.svg \
 	src/images/camera_button_switch_video.svg \

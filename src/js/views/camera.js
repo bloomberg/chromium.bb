@@ -223,6 +223,7 @@ cca.views.Camera.prototype.updateControls_ = function() {
   // Update the shutter's label before enabling or disabling it.
   var [capturing, taking] = [this.capturing, this.taking];
   this.updateShutterLabel_();
+  // TODO(yuli): Use no-op instead of disabling buttions.
   this.shutterButton_.disabled = !capturing;
   this.options_.updateControls(capturing, taking);
   this.galleryButton_.disabled = !capturing || taking;
