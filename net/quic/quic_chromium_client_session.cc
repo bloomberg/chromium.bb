@@ -107,12 +107,9 @@ void RecordUnexpectedNotGoingAway(Location location) {
                             NUM_LOCATIONS);
 }
 
-std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
-    std::string trigger,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("trigger", trigger);
-  return std::move(dict);
+NetLogParametersCallback NetLogQuicConnectionMigrationTriggerCallback(
+    const char* trigger) {
+  return NetLog::StringCallback("trigger", trigger);
 }
 
 std::unique_ptr<base::Value> NetLogQuicConnectionMigrationFailureCallback(
@@ -1761,7 +1758,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(
       net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
   migration_net_log.BeginEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, "WriteError"));
+      NetLogQuicConnectionMigrationTriggerCallback("WriteError"));
   MigrationResult result =
       Migrate(new_network, connection()->peer_address().impl().socket_address(),
               /*close_session_on_error=*/false, migration_net_log);
@@ -2161,8 +2158,7 @@ void QuicChromiumClientSession::OnPathDegrading() {
       net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
   migration_net_log.BeginEvent(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
-                 "PathDegrading"));
+      NetLogQuicConnectionMigrationTriggerCallback("PathDegrading"));
   // Probe alternative network, session will migrate to the probed
   // network and decide whether it wants to migrate back to the default
   // network on success.
