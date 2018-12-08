@@ -428,4 +428,14 @@ public class WebApkInfoTest {
                         + "text: \"\", url: \"\", names: \"\", accepts: \"\"",
                 serializedShareTarget);
     }
+
+    // Test that getSerializedShareTarget() returns the same result for empty and null parameters.
+    @Test
+    public void testGetSerializedShareTargetNullValues() {
+        String serializedShareTarget1 = WebApkInfo.getSerializedShareTarget(
+                "action", "", "", "awesome title", "", "", "", "");
+        String serializedShareTarget2 = WebApkInfo.getSerializedShareTarget(
+                "action", null, null, "awesome title", "", "", "", "");
+        Assert.assertEquals(serializedShareTarget1, serializedShareTarget2);
+    }
 }
