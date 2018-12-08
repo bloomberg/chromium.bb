@@ -2980,6 +2980,14 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Net.LegacyTLSVersion">
+  <owner>davidben@chromium.org</owner>
+  <summary>
+    Recorded when a page is loaded whose main frame load used TLS 1.0 or TLS
+    1.1.
+  </summary>
+</event>
+
 <event name="Notification">
   <owner>peter@chromium.org</owner>
   <summary>
