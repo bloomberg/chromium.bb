@@ -1376,6 +1376,32 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
   EXPECT_TRUE(volume_slider->classList().contains("closed"));
 }
 
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       VolumeSliderBehaviorWhenFocused) {
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  platform()->RunForPeriodSeconds(1);
+  SetHasAudio(true);
+
+  WebTestSupport::SetIsRunningWebTest(false);
+
+  Element* volume_slider = GetElementByShadowPseudoId(
+      MediaControls(), "-webkit-media-controls-volume-slider");
+
+  ASSERT_NE(nullptr, volume_slider);
+
+  // Volume slider starts out hidden
+  EXPECT_TRUE(volume_slider->classList().contains("closed"));
+
+  // Tab focus should open volume slider immediately.
+  volume_slider->SetFocused(true, WebFocusType::kWebFocusTypeNone);
+  volume_slider->DispatchEvent(*Event::Create("focus"));
+  EXPECT_FALSE(volume_slider->classList().contains("closed"));
+
+  // Unhover slider while focused should not close slider.
+  volume_slider->DispatchEvent(*Event::Create("mouseout"));
+  EXPECT_FALSE(volume_slider->classList().contains("closed"));
+}
+
 TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
   MediaControls().MediaElement().SetBooleanAttribute(html_names::kControlsAttr,
                                                      false);
