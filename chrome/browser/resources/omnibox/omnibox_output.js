@@ -755,6 +755,17 @@ cr.define('omnibox_output', function() {
   }
 
   class OutputKeyValueTuplesProperty extends OutputJsonProperty {
+    /** @private @override */
+    render_() {
+      clearChildren(this.pre_);
+      this.value.forEach(({key, value}) => {
+        this.pre_.appendChild(
+            OutputJsonProperty.renderJsonWord(key + ': ', 'key'));
+        this.pre_.appendChild(
+            OutputJsonProperty.renderJsonWord(value + '\n', 'number'));
+      });
+    }
+
     /** @override @return {string} */
     get text() {
       return this.value_.reduce(
