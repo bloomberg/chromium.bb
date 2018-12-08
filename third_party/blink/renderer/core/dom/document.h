@@ -1682,9 +1682,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // Document URLs.
   KURL url_;  // Document.URL: The URL from which this document was retrieved.
   KURL base_url_;  // Node.baseURI: The URL to use when resolving relative URLs.
-  // An alternative base URL that takes precedence over base_url_ (but
-  // not base_element_url_).
-  KURL base_url_override_;
+  KURL base_url_override_;  // An alternative base URL that takes precedence
+                            // over base_url_ (but not base_element_url_).
   KURL base_element_url_;  // The URL set by the <base> element.
   KURL cookie_url_;        // The URL to use for cookie access.
   std::unique_ptr<OriginAccessEntry> access_entry_from_url_;
