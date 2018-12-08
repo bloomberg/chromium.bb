@@ -4,35 +4,24 @@
 
 #include "third_party/blink/renderer/platform/fonts/shaping/shaping_line_breaker.h"
 
-#include "third_party/blink/renderer/platform/fonts/font.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result.h"
-#include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
 
 namespace blink {
 
 ShapingLineBreaker::ShapingLineBreaker(
-    const HarfBuzzShaper* shaper,
-    const Font* font,
     scoped_refptr<const ShapeResult> result,
     const LazyLineBreakIterator* break_iterator,
-    const RunSegmenter::RunSegmenterRange* pre_segmented,
-    ShapeResultSpacing<String>* spacing,
-    const Hyphenation* hyphenation)
-    : shaper_(shaper),
-      font_(font),
+    const Hyphenation* hyphenation,
+    ShapeCallback shape_callback,
+    void* shape_callback_context)
+    : shape_callback_(shape_callback),
+      shape_callback_context_(shape_callback_context),
       result_(result),
-      pre_segmented_(pre_segmented),
       break_iterator_(break_iterator),
-      spacing_(spacing),
       hyphenation_(hyphenation),
       is_soft_hyphen_enabled_(true) {
-  // ShapeResultSpacing is stateful when it has expansions. We may use it in
-  // arbitrary order that it cannot have expansions.
-  DCHECK(!spacing_ || !spacing_->HasExpansion());
-
   // Line breaking performance relies on high-performance x-position to
   // character offset lookup. Ensure that the desired cache has been computed.
   DCHECK(result_);
@@ -175,18 +164,6 @@ ShapingLineBreaker::BreakOpportunity ShapingLineBreaker::NextBreakOpportunity(
   return {break_iterator_->NextBreakOpportunity(offset, len), false};
 }
 
-inline scoped_refptr<ShapeResult> ShapingLineBreaker::Shape(TextDirection direction,
-                                                     unsigned start,
-                                                     unsigned end) {
-  if (!spacing_ || !spacing_->HasSpacing())
-    return shaper_->Shape(font_, direction, start, end, pre_segmented_);
-
-  scoped_refptr<ShapeResult> result =
-      shaper_->Shape(font_, direction, start, end, pre_segmented_);
-  result->ApplySpacing(*spacing_);
-  return result;
-}
-
 // Shapes a line of text by finding a valid and appropriate break opportunity
 // based on the shaping results for the entire paragraph. Re-shapes the start
 // and end of the line as needed.
@@ -289,14 +266,14 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
       // There is no safe-to-break, reshape the whole range.
       result_out->break_offset = break_opportunity.offset;
       return ShapeResultView::Create(
-          Shape(direction, start, break_opportunity.offset).get());
+          Shape(start, break_opportunity.offset).get());
     }
     LayoutUnit original_width = FlipRtl(
         SnapEnd(result_->CachedPositionForOffset(first_safe - range_start),
                 direction) -
             start_position,
         direction);
-    line_start_result = Shape(direction, start, first_safe);
+    line_start_result = Shape(start, first_safe);
     available_space += line_start_result->SnappedWidth() - original_width;
   }
   DCHECK_GE(first_safe, start);
@@ -320,12 +297,12 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeLine(
         break;
       DCHECK_LE(break_opportunity.offset, range_end);
       if (is_overflow) {
-        line_end_result = Shape(direction, last_safe, break_opportunity.offset);
+        line_end_result = Shape(last_safe, break_opportunity.offset);
         break;
       }
       LayoutUnit safe_position = SnapStart(
           result_->CachedPositionForOffset(last_safe - range_start), direction);
-      line_end_result = Shape(direction, last_safe, break_opportunity.offset);
+      line_end_result = Shape(last_safe, break_opportunity.offset);
       if (line_end_result->SnappedWidth() <=
           FlipRtl(end_position - safe_position, direction))
         break;
@@ -402,14 +379,13 @@ scoped_refptr<const ShapeResultView> ShapingLineBreaker::ShapeToEnd(
     return ShapeResultView::Create(result_.get(), start, range_end);
 
   // If no safe-to-break offset is found in range, reshape the entire range.
-  TextDirection direction = result_->Direction();
   if (first_safe >= range_end) {
-    scoped_refptr<ShapeResult> line_result = Shape(direction, start, range_end);
+    scoped_refptr<ShapeResult> line_result = Shape(start, range_end);
     return ShapeResultView::Create(line_result.get());
   }
 
   // Otherwise reshape to |first_safe|, then copy the rest.
-  scoped_refptr<ShapeResult> line_start = Shape(direction, start, first_safe);
+  scoped_refptr<ShapeResult> line_start = Shape(start, first_safe);
   ShapeResultView::Segment segments[2] = {
       {line_start.get(), 0, std::numeric_limits<unsigned>::max()},
       {result_.get(), first_safe, range_end}};

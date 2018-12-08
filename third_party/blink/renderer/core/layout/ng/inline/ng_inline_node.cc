@@ -385,32 +385,48 @@ void NGInlineNode::SegmentText(NGInlineNodeData* data) {
   SegmentBidiRuns(data);
   SegmentScriptRuns(data);
   SegmentFontOrientation(data);
+  if (data->segments)
+    data->segments->ComputeItemIndex(data->items);
 }
 
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
 void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) {
-  if (data->text_content.Is8Bit() && !data->is_bidi_enabled_) {
+  String& text_content = data->text_content;
+  if (text_content.IsEmpty()) {
+    data->segments = nullptr;
+    return;
+  }
+
+  if (text_content.Is8Bit() && !data->is_bidi_enabled_) {
     if (data->items.size()) {
       RunSegmenter::RunSegmenterRange range = {
           0u, data->text_content.length(), USCRIPT_LATIN,
           OrientationIterator::kOrientationKeep, FontFallbackPriority::kText};
-      NGInlineItem::PopulateItemsFromRun(data->items, 0, range);
+      NGInlineItem::SetSegmentData(range, &data->items);
     }
+    data->segments = nullptr;
     return;
   }
 
   // Segment by script and Emoji.
   // Orientation is segmented separately, because it may vary by items.
-  Vector<NGInlineItem>& items = data->items;
-  String& text_content = data->text_content;
   text_content.Ensure16Bit();
   RunSegmenter segmenter(text_content.Characters16(), text_content.length(),
                          FontOrientation::kHorizontal);
   RunSegmenter::RunSegmenterRange range = RunSegmenter::NullRange();
-  for (unsigned item_index = 0; segmenter.Consume(&range);) {
-    DCHECK_EQ(items[item_index].start_offset_, range.start);
-    item_index = NGInlineItem::PopulateItemsFromRun(items, item_index, range);
+  bool consumed = segmenter.Consume(&range);
+  DCHECK(consumed);
+  if (range.end == text_content.length()) {
+    NGInlineItem::SetSegmentData(range, &data->items);
+    data->segments = nullptr;
+    return;
   }
+
+  // This node has multiple segments.
+  if (!data->segments)
+    data->segments = std::make_unique<NGInlineItemSegments>();
+  data->segments->ComputeSegments(&segmenter, &range);
+  DCHECK_EQ(range.end, text_content.length());
 }
 
 void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
@@ -420,26 +436,31 @@ void NGInlineNode::SegmentFontOrientation(NGInlineNodeData* data) {
     return;
 
   Vector<NGInlineItem>& items = data->items;
+  if (items.IsEmpty())
+    return;
   String& text_content = data->text_content;
   text_content.Ensure16Bit();
 
-  for (unsigned item_index = 0; item_index < items.size();) {
-    NGInlineItem& item = items[item_index];
-    if (item.Type() != NGInlineItem::kText ||
-        item.Style()->GetFont().GetFontDescription().Orientation() !=
+  // If we don't have |NGInlineItemSegments| yet, create a segment for the
+  // entire content.
+  const unsigned capacity = items.size() + text_content.length() / 10;
+  if (!data->segments) {
+    data->segments = std::make_unique<NGInlineItemSegments>();
+    data->segments->ReserveCapacity(capacity);
+    data->segments->Append(text_content.length(), items.front());
+  } else {
+    DCHECK(!data->segments->IsEmpty());
+    data->segments->ReserveCapacity(capacity);
+  }
+  DCHECK_EQ(text_content.length(), data->segments->EndOffset());
+  unsigned segment_index = 0;
+
+  for (const NGInlineItem& item : items) {
+    if (item.Type() == NGInlineItem::kText &&
+        item.Style()->GetFont().GetFontDescription().Orientation() ==
             FontOrientation::kVerticalMixed) {
-      item_index++;
-      continue;
-    }
-    unsigned start_offset = item.StartOffset();
-    OrientationIterator iterator(text_content.Characters16() + start_offset,
-                                 item.Length(),
-                                 FontOrientation::kVerticalMixed);
-    unsigned end_offset;
-    OrientationIterator::RenderOrientation orientation;
-    while (iterator.Consume(&end_offset, &orientation)) {
-      item_index = NGInlineItem::PopulateItemsFromFontOrientation(
-          items, item_index, end_offset + start_offset, orientation);
+      segment_index = data->segments->AppendMixedFontOrientation(
+          text_content, item.StartOffset(), item.EndOffset(), segment_index);
     }
   }
 }
@@ -491,16 +512,17 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) {
 
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
                              NGInlineItemsData* previous_data) {
-  ShapeText(data->text_content, &data->items,
-            previous_data ? &previous_data->text_content : nullptr);
-}
+  const String& text_content = data->text_content;
+  Vector<NGInlineItem>* items = &data->items;
+  const String* previous_text =
+      previous_data ? &previous_data->text_content : nullptr;
 
-void NGInlineNode::ShapeText(const String& text_content,
-                             Vector<NGInlineItem>* items,
-                             const String* previous_text) {
   // Provide full context of the entire node to the shaper.
   HarfBuzzShaper shaper(text_content);
   ShapeResultSpacing<String> spacing(text_content);
+
+  DCHECK(!data->segments ||
+         data->segments->EndOffset() == text_content.length());
 
   for (unsigned index = 0; index < items->size();) {
     NGInlineItem& start_item = (*items)[index];
@@ -580,11 +602,19 @@ void NGInlineNode::ShapeText(const String& text_content,
     }
 
     // Shape each item with the full context of the entire node.
-    RunSegmenter::RunSegmenterRange range =
-        start_item.CreateRunSegmenterRange();
-    range.end = end_offset;
-    scoped_refptr<ShapeResult> shape_result = shaper.Shape(
-        &font, direction, start_item.StartOffset(), end_offset, &range);
+    scoped_refptr<ShapeResult> shape_result;
+    if (!data->segments) {
+      RunSegmenter::RunSegmenterRange range =
+          start_item.CreateRunSegmenterRange();
+      range.end = end_offset;
+      shape_result = shaper.Shape(&font, direction, start_item.StartOffset(),
+                                  end_offset, &range);
+    } else {
+      shape_result = data->segments->ShapeText(
+          &shaper, &font, direction, start_item.StartOffset(), end_offset,
+          &start_item - items->begin());
+    }
+
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
       shape_result->ApplySpacing(spacing);
 

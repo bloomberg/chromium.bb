@@ -16,7 +16,6 @@ namespace blink {
 class NGConstraintSpace;
 class NGInlineBreakToken;
 class NGInlineChildLayoutContext;
-class NGInlineItem;
 class NGLayoutResult;
 class NGOffsetMapping;
 class NGInlineNodeLegacy;
@@ -112,9 +111,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void SegmentBidiRuns(NGInlineNodeData*);
   void ShapeText(NGInlineItemsData*,
                  NGInlineItemsData* previous_data = nullptr);
-  void ShapeText(const String& text,
-                 Vector<NGInlineItem>*,
-                 const String* previous_text);
   void ShapeTextForFirstLineIfNeeded(NGInlineNodeData*);
   void AssociateItemsWithInlines(NGInlineNodeData*);
 

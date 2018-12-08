@@ -424,11 +424,22 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   // expensive?
   DCHECK_EQ(item.TextShapeResult()->StartIndex(), item.StartOffset());
   DCHECK_EQ(item.TextShapeResult()->EndIndex(), item.EndOffset());
-  RunSegmenter::RunSegmenterRange segment_range =
-      item.CreateRunSegmenterRange();
-  ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
-                             item.TextShapeResult(), &break_iterator_,
-                             &segment_range, &spacing_, hyphenation_);
+  struct ShapeCallbackContext {
+    STACK_ALLOCATED();
+
+   public:
+    NGLineBreaker* line_breaker;
+    const NGInlineItem& item;
+  } shape_callback_context{this, item};
+  const ShapingLineBreaker::ShapeCallback shape_callback =
+      [](void* untyped_context, unsigned start, unsigned end) {
+        ShapeCallbackContext* context =
+            static_cast<ShapeCallbackContext*>(untyped_context);
+        return context->line_breaker->ShapeText(context->item, start, end);
+      };
+  ShapingLineBreaker breaker(item.TextShapeResult(), &break_iterator_,
+                             hyphenation_, shape_callback,
+                             &shape_callback_context);
   if (!enable_soft_hyphen_)
     breaker.DisableSoftHyphen();
   available_width = std::max(LayoutUnit(0), available_width);
@@ -492,14 +503,21 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
 scoped_refptr<ShapeResult> NGLineBreaker::ShapeText(const NGInlineItem& item,
                                                     unsigned start,
                                                     unsigned end) {
-  RunSegmenter::RunSegmenterRange segment_range =
-      item.CreateRunSegmenterRange();
-  scoped_refptr<ShapeResult> result = shaper_.Shape(
-      &item.Style()->GetFont(), item.TextShapeResult()->Direction(), start, end,
-      &segment_range);
+  scoped_refptr<ShapeResult> shape_result;
+  if (!items_data_.segments) {
+    RunSegmenter::RunSegmenterRange segment_range =
+        item.CreateRunSegmenterRange();
+    shape_result = shaper_.Shape(&item.Style()->GetFont(),
+                                 item.TextShapeResult()->Direction(), start,
+                                 end, &segment_range);
+  } else {
+    shape_result = items_data_.segments->ShapeText(
+        &shaper_, &item.Style()->GetFont(), item.TextShapeResult()->Direction(),
+        start, end, &item - items_data_.items.begin());
+  }
   if (UNLIKELY(spacing_.HasSpacing()))
-    result->ApplySpacing(spacing_);
-  return result;
+    shape_result->ApplySpacing(spacing_);
+  return shape_result;
 }
 
 // Compute a new ShapeResult for the specified end offset.
