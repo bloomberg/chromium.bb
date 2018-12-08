@@ -25,6 +25,20 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
+struct HarfBuzzShaperCallbackContext {
+  const HarfBuzzShaper* shaper;
+  const Font* font;
+  TextDirection direction;
+};
+
+scoped_refptr<ShapeResult> HarfBuzzShaperCallback(void* untyped_context,
+                                                  unsigned start,
+                                                  unsigned end) {
+  HarfBuzzShaperCallbackContext* context =
+      static_cast<HarfBuzzShaperCallbackContext*>(untyped_context);
+  return context->shaper->Shape(context->font, context->direction, start, end);
+}
+
 LayoutUnit ShapeText(ShapingLineBreaker* breaker,
                      LayoutUnit available_space,
                      unsigned string_length) {
@@ -127,8 +141,11 @@ TEST_F(ShapingLineBreakerPerfTest, ShapeLatinText) {
   HarfBuzzShaper shaper(string);
   scoped_refptr<const ShapeResult> reference_result =
       shaper.Shape(&font, direction);
-  ShapingLineBreaker reference_breaker(&shaper, &font, reference_result.get(),
-                                       &break_iterator);
+  HarfBuzzShaperCallbackContext context{&shaper, &font,
+                                        reference_result->Direction()};
+  ShapingLineBreaker reference_breaker(reference_result, &break_iterator,
+                                       nullptr, HarfBuzzShaperCallback,
+                                       &context);
 
   scoped_refptr<const ShapeResult> line;
   LayoutUnit available_width_px(500);
@@ -138,7 +155,8 @@ TEST_F(ShapingLineBreakerPerfTest, ShapeLatinText) {
   timer_.Reset();
   do {
     scoped_refptr<const ShapeResult> result = shaper.Shape(&font, direction);
-    ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
+    ShapingLineBreaker breaker(result, &break_iterator, nullptr,
+                               HarfBuzzShaperCallback, &context);
 
     LayoutUnit width = ShapeText(&breaker, available_width_px, len);
     EXPECT_EQ(expected_width, width);

@@ -6,6 +6,7 @@
 #define NGInlineItem_h
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_segment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -142,24 +143,14 @@ class CORE_EXPORT NGInlineItem {
 
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
 
-  // Get RunSegmenter properties.
-  UScriptCode Script() const;
-  FontFallbackPriority GetFontFallbackPriority() const;
-  OrientationIterator::RenderOrientation RenderOrientation() const;
+  // RunSegmenter properties.
+  unsigned SegmentData() const { return segment_data_; }
+  void SetSegmentData(unsigned segment_data);
+  static void SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
+                             Vector<NGInlineItem>* items);
   RunSegmenter::RunSegmenterRange CreateRunSegmenterRange() const;
   // Whether the other item has the same RunSegmenter properties or not.
   bool EqualsRunSegment(const NGInlineItem&) const;
-  // Set RunSegmenter properties.
-  static unsigned PopulateItemsFromRun(Vector<NGInlineItem>&,
-                                       unsigned index,
-                                       const RunSegmenter::RunSegmenterRange&);
-  void SetRunSegment(const RunSegmenter::RunSegmenterRange&);
-  static unsigned PopulateItemsFromFontOrientation(
-      Vector<NGInlineItem>&,
-      unsigned index,
-      unsigned end_offset,
-      OrientationIterator::RenderOrientation);
-  void SetFontOrientation(OrientationIterator::RenderOrientation);
 
   void SetBidiLevel(UBiDiLevel);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
@@ -184,15 +175,8 @@ class CORE_EXPORT NGInlineItem {
   scoped_refptr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
-  // UScriptCode is -1 (USCRIPT_INVALID_CODE) to 177 as of ICU 60.
-  // This can be packed to 8 bits, by handling -1 separately.
-  static constexpr unsigned kScriptBits = 8;
-  static constexpr unsigned kInvalidScript = (1 << kScriptBits) - 1;
-
   unsigned type_ : 4;
-  unsigned script_ : kScriptBits;
-  unsigned font_fallback_priority_ : 2;  // FontFallbackPriority.
-  unsigned render_orientation_ : 1;      // RenderOrientation (excl. kInvalid.)
+  unsigned segment_data_ : NGInlineItemSegment::kSegmentDataBits;
   unsigned bidi_level_ : 8;              // UBiDiLevel is defined as uint8_t.
   unsigned shape_options_ : 2;
   unsigned is_empty_item_ : 1;
@@ -224,6 +208,12 @@ struct CORE_EXPORT NGInlineItemsData {
   // Encoded either as UTF-16 or latin-1 depending on the content.
   String text_content;
   Vector<NGInlineItem> items;
+
+  // Cache RunSegmenter segments when at least one item has multiple runs.
+  // Set to nullptr when all items has only single run, which is common case for
+  // most writing systems. However, in multi-script writing systems such as
+  // Japanese, almost every item has multiple runs.
+  std::unique_ptr<NGInlineItemSegments> segments;
 
   // The DOM to text content offset mapping of this inline node.
   std::unique_ptr<NGOffsetMapping> offset_mapping;

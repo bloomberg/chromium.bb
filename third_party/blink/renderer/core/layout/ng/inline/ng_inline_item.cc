@@ -67,9 +67,7 @@ NGInlineItem::NGInlineItem(NGInlineItemType type,
       style_(style),
       layout_object_(layout_object),
       type_(type),
-      script_(0),
-      font_fallback_priority_(0),
-      render_orientation_(0),
+      segment_data_(0),
       bidi_level_(UBIDI_LTR),
       shape_options_(kPreContext | kPostContext),
       is_empty_item_(false),
@@ -92,9 +90,7 @@ NGInlineItem::NGInlineItem(const NGInlineItem& other,
       style_(other.style_),
       layout_object_(other.layout_object_),
       type_(other.type_),
-      script_(other.script_),
-      font_fallback_priority_(other.font_fallback_priority_),
-      render_orientation_(other.render_orientation_),
+      segment_data_(other.segment_data_),
       bidi_level_(other.bidi_level_),
       shape_options_(other.shape_options_),
       is_empty_item_(other.is_empty_item_),
@@ -151,94 +147,27 @@ const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
   return kNGInlineItemTypeStrings[val];
 }
 
-UScriptCode NGInlineItem::Script() const {
-  return script_ != kInvalidScript ? static_cast<UScriptCode>(script_)
-                                   : USCRIPT_INVALID_CODE;
-}
-
-FontFallbackPriority NGInlineItem::GetFontFallbackPriority() const {
-  return static_cast<enum FontFallbackPriority>(font_fallback_priority_);
-}
-
-OrientationIterator::RenderOrientation NGInlineItem::RenderOrientation() const {
-  return static_cast<OrientationIterator::RenderOrientation>(
-      render_orientation_);
-}
-
 RunSegmenter::RunSegmenterRange NGInlineItem::CreateRunSegmenterRange() const {
-  return {start_offset_, end_offset_, Script(), RenderOrientation(),
-          GetFontFallbackPriority()};
+  return NGInlineItemSegment::UnpackSegmentData(start_offset_, end_offset_,
+                                                segment_data_);
 }
 
 bool NGInlineItem::EqualsRunSegment(const NGInlineItem& other) const {
-  return script_ == other.script_ &&
-         font_fallback_priority_ == other.font_fallback_priority_ &&
-         render_orientation_ == other.render_orientation_;
+  return segment_data_ == other.segment_data_;
 }
 
-void NGInlineItem::SetRunSegment(const RunSegmenter::RunSegmenterRange& range) {
+void NGInlineItem::SetSegmentData(unsigned segment_data) {
   DCHECK_EQ(Type(), NGInlineItem::kText);
-
-  // Orientation should be set in a separate pass. See
-  // NGInlineNode::SegmentScriptRuns().
-  DCHECK_EQ(range.render_orientation, OrientationIterator::kOrientationKeep);
-
-  script_ = static_cast<unsigned>(range.script);
-  font_fallback_priority_ = static_cast<unsigned>(range.font_fallback_priority);
-
-  // Ensure our bit fields are large enough by reading them back.
-  DCHECK_EQ(range.script, Script());
-  DCHECK_EQ(range.font_fallback_priority, GetFontFallbackPriority());
+  segment_data_ = segment_data;
 }
 
-void NGInlineItem::SetFontOrientation(
-    OrientationIterator::RenderOrientation orientation) {
-  DCHECK_EQ(Type(), NGInlineItem::kText);
-
-  // Ensure the value can fit in the bit field.
-  DCHECK_LT(static_cast<unsigned>(orientation), 1u << 1);
-
-  render_orientation_ = orientation != 0;
-}
-
-unsigned NGInlineItem::PopulateItemsFromRun(
-    Vector<NGInlineItem>& items,
-    unsigned index,
-    const RunSegmenter::RunSegmenterRange& range) {
-  DCHECK_GE(range.end, items[index].start_offset_);
-
-  for (;; index++) {
-    NGInlineItem& item = items[index];
-    DCHECK_LE(item.start_offset_, range.end);
-
+void NGInlineItem::SetSegmentData(const RunSegmenter::RunSegmenterRange& range,
+                                  Vector<NGInlineItem>* items) {
+  unsigned segment_data = NGInlineItemSegment::PackSegmentData(range);
+  for (NGInlineItem& item : *items) {
     if (item.Type() == NGInlineItem::kText)
-      item.SetRunSegment(range);
-
-    if (range.end == item.end_offset_)
-      break;
-    if (range.end < item.end_offset_) {
-      Split(items, index, range.end);
-      break;
-    }
+      item.segment_data_ = segment_data;
   }
-  return index + 1;
-}
-
-unsigned NGInlineItem::PopulateItemsFromFontOrientation(
-    Vector<NGInlineItem>& items,
-    unsigned index,
-    unsigned end_offset,
-    OrientationIterator::RenderOrientation orientation) {
-  // FontOrientaiton is set per item, end_offset should be within this item.
-  NGInlineItem& item = items[index];
-  DCHECK_GE(end_offset, item.start_offset_);
-  DCHECK_LE(end_offset, item.end_offset_);
-
-  item.SetFontOrientation(orientation);
-
-  if (end_offset < item.end_offset_)
-    Split(items, index, end_offset);
-  return index + 1;
 }
 
 void NGInlineItem::SetBidiLevel(UBiDiLevel level) {

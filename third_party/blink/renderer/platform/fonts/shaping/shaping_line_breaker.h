@@ -13,15 +13,11 @@
 
 namespace blink {
 
-class Font;
 class ShapeResult;
 class ShapeResultView;
-class HarfBuzzShaper;
 class Hyphenation;
 class LazyLineBreakIterator;
 enum class LineBreakType;
-template <typename TextContainerType>
-class ShapeResultSpacing;
 
 // Shapes a line of text by finding the ideal break position as indicated by the
 // available space and the shape results for the entire paragraph. Once an ideal
@@ -37,18 +33,20 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   STACK_ALLOCATED();
 
  public:
-  // Construct a ShapingLineBreaker.
+  // Callback function to reshape line edges.
   //
-  // When the ShapeResult is from a RunSegmenterRange, giving it can skip
-  // running RunSegmenter for much better performance.
-  ShapingLineBreaker(const HarfBuzzShaper*,
-                     const Font*,
-                     scoped_refptr<const ShapeResult>,
-                     const LazyLineBreakIterator*,
-                     const RunSegmenter::RunSegmenterRange* = nullptr,
-                     ShapeResultSpacing<String>* = nullptr,
-                     const Hyphenation* = nullptr);
-  ~ShapingLineBreaker() = default;
+  // std::function is forbidden in Chromium and base::Callback is way too
+  // expensive so we resort to a good old function pointer instead.
+  using ShapeCallback = scoped_refptr<ShapeResult> (*)(void* context,
+                                                       unsigned start,
+                                                       unsigned end);
+
+  // Construct a ShapingLineBreaker.
+  ShapingLineBreaker(scoped_refptr<const ShapeResult> result,
+                     const LazyLineBreakIterator* break_iterator,
+                     const Hyphenation* hyphenation,
+                     ShapeCallback shape_callback,
+                     void* shape_callback_context);
 
   // Represents details of the result of |ShapeLine()|.
   struct Result {
@@ -116,20 +114,18 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                      unsigned word_end,
                      bool backwards) const;
 
-  scoped_refptr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);
+  scoped_refptr<ShapeResult> Shape(unsigned start, unsigned end) {
+    return (*shape_callback_)(shape_callback_context_, start, end);
+  }
   scoped_refptr<const ShapeResultView> ShapeToEnd(unsigned start,
                                                   unsigned first_safe,
                                                   unsigned range_start,
                                                   unsigned range_end);
 
-  const HarfBuzzShaper* shaper_;
-  const Font* font_;
+  const ShapeCallback shape_callback_;
+  void* shape_callback_context_;
   scoped_refptr<const ShapeResult> result_;
-  const RunSegmenter::RunSegmenterRange* pre_segmented_;
   const LazyLineBreakIterator* break_iterator_;
-  // TODO(kojii): ShapeResultSpacing is not const because it's stateful when it
-  // has expansions. Split spacing and expansions to make this const.
-  ShapeResultSpacing<String>* spacing_;
   const Hyphenation* hyphenation_;
   bool is_soft_hyphen_enabled_;
 
