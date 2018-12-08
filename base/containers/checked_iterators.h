@@ -42,20 +42,17 @@ class CheckedRandomAccessIterator {
       const CheckedRandomAccessIterator& other) = default;
 
   bool operator==(const CheckedRandomAccessIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ == other.current_;
   }
 
   bool operator!=(const CheckedRandomAccessIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ != other.current_;
   }
 
   bool operator<(const CheckedRandomAccessIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ < other.current_;
   }
 
@@ -133,6 +130,11 @@ class CheckedRandomAccessIterator {
   }
 
  private:
+  void CheckComparable(const CheckedRandomAccessIterator& other) const {
+    CHECK_EQ(start_, other.start_);
+    CHECK_EQ(end_, other.end_);
+  }
+
   const T* start_ = nullptr;
   T* current_ = nullptr;
   const T* end_ = nullptr;
@@ -174,20 +176,17 @@ class CheckedRandomAccessConstIterator {
       CheckedRandomAccessConstIterator& other) = default;
 
   bool operator==(const CheckedRandomAccessConstIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ == other.current_;
   }
 
   bool operator!=(const CheckedRandomAccessConstIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ != other.current_;
   }
 
   bool operator<(const CheckedRandomAccessConstIterator& other) const {
-    CHECK_EQ(start_, other.start_);
-    CHECK_EQ(end_, other.end_);
+    CheckComparable(other);
     return current_ < other.current_;
   }
 
@@ -266,6 +265,11 @@ class CheckedRandomAccessConstIterator {
   }
 
  private:
+  void CheckComparable(const CheckedRandomAccessConstIterator& other) const {
+    CHECK_EQ(start_, other.start_);
+    CHECK_EQ(end_, other.end_);
+  }
+
   const T* start_ = nullptr;
   const T* current_ = nullptr;
   const T* end_ = nullptr;
