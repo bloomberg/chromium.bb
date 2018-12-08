@@ -50,8 +50,15 @@ class AutofillSaveCardInfoBarDelegateMobileTest
   std::unique_ptr<TestPersonalDataManager> personal_data_;
 
  private:
-  void UploadSaveCardCallback(const AutofillClient::UserProvidedCardDetails&
-                                  user_provided_card_details) {
+  void LocalSaveCardPromptCallback(
+      AutofillClient::SaveCardOfferUserDecision user_decision) {
+    personal_data_.get()->SaveImportedCreditCard(credit_card_to_save_);
+  }
+
+  void UploadSaveCardPromptCallback(
+      AutofillClient::SaveCardOfferUserDecision user_decision,
+      const AutofillClient::UserProvidedCardDetails&
+          user_provided_card_details) {
     personal_data_.get()->SaveImportedCreditCard(credit_card_to_save_);
   }
 
@@ -120,27 +127,24 @@ AutofillSaveCardInfoBarDelegateMobileTest::CreateDelegateWithLegalMessage(
         new AutofillSaveCardInfoBarDelegateMobile(
             is_uploading, /*should_request_name_from_user=*/false, credit_card,
             std::move(legal_message),
-            /*strike_database=*/nullptr,
             /*upload_save_card_callback=*/
             base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
-                               UploadSaveCardCallback,
+                               UploadSaveCardPromptCallback,
                            base::Unretained(this)),
-            /*local_save_card_callback=*/base::Closure(),
-            profile()->GetPrefs()));
+            /*local_save_card_callback=*/{}, profile()->GetPrefs()));
     return delegate;
   }
   // Local save infobar delegate:
+  credit_card_to_save_ = credit_card;
   std::unique_ptr<ConfirmInfoBarDelegate> delegate(
       new AutofillSaveCardInfoBarDelegateMobile(
           is_uploading, /*should_request_name_from_user=*/false, credit_card,
           std::move(legal_message),
-          /*strike_database=*/nullptr,
-          /*upload_save_card_callback=*/
-          AutofillClient::UserAcceptedUploadCallback(),
+          /*upload_save_card_callback=*/{},
           /*local_save_card_callback=*/
-          base::Bind(base::IgnoreResult(
-                         &TestPersonalDataManager::SaveImportedCreditCard),
-                     base::Unretained(personal_data_.get()), credit_card),
+          base::BindOnce(&AutofillSaveCardInfoBarDelegateMobileTest::
+                             LocalSaveCardPromptCallback,
+                         base::Unretained(this)),
           profile()->GetPrefs()));
   return delegate;
 }

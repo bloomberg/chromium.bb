@@ -70,12 +70,11 @@ class SaveCardBubbleViewsBrowserTestBase
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
   void OnReceivedUploadCardResponse() override;
-  void OnCCSMStrikeChangeComplete() override;
+  void OnStrikeChangeComplete() override;
 
   // SaveCardBubbleControllerImpl::ObserverForTest:
   void OnBubbleShown() override;
   void OnBubbleClosed() override;
-  void OnSCBCStrikeChangeComplete() override;
 
   // BrowserTestBase:
   void SetUpInProcessBrowserTestFixture() override;

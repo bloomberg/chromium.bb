@@ -23,7 +23,6 @@ class PrefService;
 namespace autofill {
 
 enum class BubbleType;
-class LegacyStrikeDatabase;
 
 // Implementation of per-tab class to control the save credit card bubble and
 // Omnibox icon.
@@ -38,35 +37,35 @@ class SaveCardBubbleControllerImpl
    public:
     virtual void OnBubbleShown() = 0;
     virtual void OnBubbleClosed() = 0;
-    virtual void OnSCBCStrikeChangeComplete() = 0;
   };
 
   ~SaveCardBubbleControllerImpl() override;
 
   // Sets up the controller and offers to save the |card| locally.
-  // |save_card_callback| will be invoked if and when the Save button is
-  // pressed. If |show_bubble| is true, pops up the offer-to-save bubble;
-  // otherwise, only the omnibox icon is displayed.
-  void OfferLocalSave(const CreditCard& card,
-                      bool show_bubble,
-                      base::OnceClosure save_card_callback);
+  // |save_card_prompt_callback| will be invoked once the user makes a decision
+  // with respect to the offer-to-save prompt. If |show_bubble| is true, pops up
+  // the offer-to-save bubble; otherwise, only the omnibox icon is displayed.
+  void OfferLocalSave(
+      const CreditCard& card,
+      bool show_bubble,
+      AutofillClient::LocalSaveCardPromptCallback save_card_prompt_callback);
 
   // Sets up the controller and offers to upload the |card| to Google Payments.
-  // |save_card_callback| will be invoked if and when the Save button is
-  // pressed. The contents of |legal_message| will be displayed in the bubble.
-  // A textfield confirming the cardholder name will appear in the bubble if
-  // |should_request_name_from_user| is true. A pair of dropdowns for entering
-  // the expiration date will appear in the bubble if
-  // |should_request_expiration_date_from_user| is true. If |show_bubble| is
-  // true, pops up the offer-to-save bubble; otherwise, only the omnibox icon is
-  // displayed.
+  // |save_card_prompt_callback| will be invoked once the user makes a decision
+  // with respect to the offer-to-save prompt. The contents of |legal_message|
+  // will be displayed in the bubble. A textfield confirming the cardholder name
+  // will appear in the bubble if |should_request_name_from_user| is true. A
+  // pair of dropdowns for entering the expiration date will appear in the
+  // bubble if |should_request_expiration_date_from_user| is true. If
+  // |show_bubble| is true, pops up the offer-to-save bubble; otherwise, only
+  // the omnibox icon is displayed.
   void OfferUploadSave(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
       bool should_request_expiration_from_user,
       bool show_bubble,
-      AutofillClient::UserAcceptedUploadCallback save_card_callback);
+      AutofillClient::UploadSaveCardPromptCallback save_card_prompt_callback);
 
   // Sets up the controller for the sign in promo and shows the bubble.
   // This bubble is only shown after a local save is accepted and if
@@ -144,9 +143,6 @@ class SaveCardBubbleControllerImpl
 
   void FetchAccountInfo();
 
-  // Fetches the Autofill LegacyStrikeDatabase for the current profile.
-  LegacyStrikeDatabase* GetLegacyStrikeDatabase();
-
   // Displays both the offer-to-save bubble and is associated omnibox icon.
   void ShowBubble();
 
@@ -155,10 +151,6 @@ class SaveCardBubbleControllerImpl
 
   // Update the visibility and toggled state of the Omnibox save card icon.
   void UpdateIcon();
-
-  // Used for browsertests. Gives the |observer_for_testing_| a notification
-  // a strike change has been made.
-  void OnStrikeChangeComplete(const int num_strikes);
 
   void OpenUrl(const GURL& url);
 
@@ -186,17 +178,19 @@ class SaveCardBubbleControllerImpl
   // Weak reference to read & write |kAutofillAcceptSaveCreditCardPromptState|.
   PrefService* pref_service_;
 
-  // Callback to run if user presses Save button in the upload save bubble. Will
-  // return the cardholder name provided/confirmed by the user if it was
-  // requested. Will also return the expiration month and year provided by the
-  // user if the expiration date was requested. If both callbacks are null then
-  // no bubble is available to show and the icon is not visible.
-  AutofillClient::UserAcceptedUploadCallback upload_save_card_callback_;
+  // Callback to run once the user makes a decision with respect to the credit
+  // card upload offer-to-save prompt. Will return the cardholder name
+  // provided/confirmed by the user if it was requested. Will also return the
+  // expiration month and year provided by the user if the expiration date was
+  // requested. If both callbacks are null then no bubble is available to show
+  // and the icon is not visible.
+  AutofillClient::UploadSaveCardPromptCallback
+      upload_save_card_prompt_callback_;
 
-  // Callback to run if user presses Save button in the local save bubble. If
-  // both callbacks return true for .is_null() then no bubble is available to
-  // show and the icon is not visible.
-  base::OnceClosure local_save_card_callback_;
+  // Callback to run once the user makes a decision with respect to the local
+  // credit card offer-to-save prompt. If both callbacks return true for
+  // .is_null() then no bubble is available to show and the icon is not visible.
+  AutofillClient::LocalSaveCardPromptCallback local_save_card_prompt_callback_;
 
   // Governs whether the upload or local save version of the UI should be shown.
   bool is_upload_save_ = false;
@@ -235,8 +229,6 @@ class SaveCardBubbleControllerImpl
 
   // Observer for when a bubble is created. Initialized only during tests.
   ObserverForTest* observer_for_testing_ = nullptr;
-
-  base::WeakPtrFactory<SaveCardBubbleControllerImpl> weak_ptr_factory_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

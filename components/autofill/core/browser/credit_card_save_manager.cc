@@ -415,7 +415,7 @@ void CreditCardSaveManager::OfferCardLocalSave() {
       observer_for_testing_->OnOfferLocalSave();
     client_->ConfirmSaveCreditCardLocally(
         local_card_save_candidate_, show_save_prompt_.value(),
-        base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptLocalSave,
+        base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnLocalSave,
                        weak_ptr_factory_.GetWeakPtr()));
 
     // Log metrics.
@@ -446,7 +446,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
         upload_request_.card, std::move(legal_message_),
         should_request_name_from_user_,
         should_request_expiration_date_from_user_, show_save_prompt_.value(),
-        base::BindOnce(&CreditCardSaveManager::OnUserDidAcceptUpload,
+        base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnUploadSave,
                        weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(
         base::BindOnce(&CreditCardSaveManager::OnDidGetUploadRiskData,
@@ -475,30 +475,42 @@ void CreditCardSaveManager::OfferCardUploadSave() {
   }
 }
 
-void CreditCardSaveManager::OnUserDidAcceptLocalSave() {
-  if (local_card_save_candidate_.HasFirstAndLastName())
-    AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(/*is_local=*/true);
+void CreditCardSaveManager::OnUserDidDecideOnLocalSave(
+    AutofillClient::SaveCardOfferUserDecision user_decision) {
+  switch (user_decision) {
+    case AutofillClient::ACCEPTED:
+      if (local_card_save_candidate_.HasFirstAndLastName())
+        AutofillMetrics::LogSaveCardWithFirstAndLastNameComplete(
+            /*is_local=*/true);
 
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillSaveCreditCardUsesStrikeSystem)) {
-    LegacyStrikeDatabase* strike_database = client_->GetLegacyStrikeDatabase();
-    // Log how many strikes the card had when it was saved.
-    strike_database->GetStrikes(
-        strike_database->GetKeyForCreditCardSave(
-            base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
-        base::BindRepeating(
-            &CreditCardSaveManager::LogStrikesPresentWhenCardSaved,
-            weak_ptr_factory_.GetWeakPtr(),
-            /*is_local=*/true));
-    // Clear all strikes for this card, in case it is later removed.
-    strike_database->ClearAllStrikesForKey(
-        strike_database->GetKeyForCreditCardSave(
-            base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
-        base::DoNothing());
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillSaveCreditCardUsesStrikeSystem)) {
+        LegacyStrikeDatabase* strike_database =
+            client_->GetLegacyStrikeDatabase();
+        // Log how many strikes the card had when it was saved.
+        strike_database->GetStrikes(
+            strike_database->GetKeyForCreditCardSave(
+                base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
+            base::BindRepeating(
+                &CreditCardSaveManager::LogStrikesPresentWhenCardSaved,
+                weak_ptr_factory_.GetWeakPtr(),
+                /*is_local=*/true));
+        // Clear all strikes for this card, in case it is later removed.
+        strike_database->ClearAllStrikesForKey(
+            strike_database->GetKeyForCreditCardSave(
+                base::UTF16ToUTF8(local_card_save_candidate_.LastFourDigits())),
+            base::DoNothing());
+      }
+
+      personal_data_manager_->OnAcceptedLocalCreditCardSave(
+          local_card_save_candidate_);
+      break;
+
+    case AutofillClient::DECLINED:
+    case AutofillClient::IGNORED:
+      OnUserDidIgnoreOrDeclineSave(local_card_save_candidate_.LastFourDigits());
+      break;
   }
-
-  personal_data_manager_->OnAcceptedLocalCreditCardSave(
-      local_card_save_candidate_);
 }
 
 void CreditCardSaveManager::LogStrikesPresentWhenCardSaved(
@@ -739,21 +751,30 @@ int CreditCardSaveManager::GetDetectedValues() const {
   return detected_values;
 }
 
-void CreditCardSaveManager::OnUserDidAcceptUpload(
+void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
+    AutofillClient::SaveCardOfferUserDecision user_decision,
     const AutofillClient::UserProvidedCardDetails& user_provided_card_details) {
+  switch (user_decision) {
+    case AutofillClient::ACCEPTED:
 // On Android, requesting cardholder name is a two step flow.
 #if defined(OS_ANDROID)
-  if (should_request_name_from_user_) {
-    client_->ConfirmAccountNameFixFlow(
-        base::BindOnce(
+      if (should_request_name_from_user_) {
+        client_->ConfirmAccountNameFixFlow(base::BindOnce(
             &CreditCardSaveManager::OnUserDidAcceptAccountNameFixFlow,
             weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    OnUserDidAcceptUploadHelper(user_provided_card_details);
-  }
+      } else {
+        OnUserDidAcceptUploadHelper(user_provided_card_details);
+      }
 #else
-  OnUserDidAcceptUploadHelper(user_provided_card_details);
+      OnUserDidAcceptUploadHelper(user_provided_card_details);
 #endif
+      break;
+
+    case AutofillClient::DECLINED:
+    case AutofillClient::IGNORED:
+      OnUserDidIgnoreOrDeclineSave(upload_request_.card.LastFourDigits());
+      break;
+  }
 }
 
 #if defined(OS_ANDROID)
@@ -826,9 +847,26 @@ void CreditCardSaveManager::SendUploadCardRequest() {
                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
+void CreditCardSaveManager::OnUserDidIgnoreOrDeclineSave(
+    const base::string16& card_last_four_digits) {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSaveCreditCardUsesStrikeSystem) &&
+      show_save_prompt_.value()) {
+    // If the user rejected or ignored save and the offer-to-save bubble or
+    // infobar was actually shown (NOT just the icon if on desktop), count
+    // that as a strike against offering upload in the future.
+    LegacyStrikeDatabase* strike_database = client_->GetLegacyStrikeDatabase();
+    strike_database->AddStrike(
+        strike_database->GetKeyForCreditCardSave(
+            base::UTF16ToUTF8(card_last_four_digits)),
+        base::BindRepeating(&CreditCardSaveManager::OnStrikeChangeComplete,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
 void CreditCardSaveManager::OnStrikeChangeComplete(const int num_strikes) {
   if (observer_for_testing_)
-    observer_for_testing_->OnCCSMStrikeChangeComplete();
+    observer_for_testing_->OnStrikeChangeComplete();
 }
 
 AutofillMetrics::CardUploadDecisionMetric

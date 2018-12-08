@@ -154,8 +154,8 @@ class CreditCardSaveManagerTest : public testing::Test {
 
   void UserHasAcceptedUpload(
       AutofillClient::UserProvidedCardDetails user_provided_card_details) {
-    credit_card_save_manager_->OnUserDidAcceptUpload(
-        user_provided_card_details);
+    credit_card_save_manager_->OnUserDidDecideOnUploadSave(
+        AutofillClient::ACCEPTED, user_provided_card_details);
   }
 
   // Populates |form| with data corresponding to a simple credit card form.

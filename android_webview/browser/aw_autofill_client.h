@@ -91,9 +91,10 @@ class AwAutofillClient : public autofill::AutofillClient,
       MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const autofill::AutofillProfile& profile,
                                   base::OnceClosure callback) override;
-  void ConfirmSaveCreditCardLocally(const autofill::CreditCard& card,
-                                    bool show_prompt,
-                                    base::OnceClosure callback) override;
+  void ConfirmSaveCreditCardLocally(
+      const autofill::CreditCard& card,
+      bool show_prompt,
+      LocalSaveCardPromptCallback callback) override;
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
   void ConfirmSaveCreditCardToCloud(
@@ -102,7 +103,7 @@ class AwAutofillClient : public autofill::AutofillClient,
       bool should_request_name_from_user,
       bool should_request_expiration_date_from_user,
       bool show_prompt,
-      UserAcceptedUploadCallback callback) override;
+      UploadSaveCardPromptCallback callback) override;
   void ConfirmCreditCardFillAssist(const autofill::CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;

@@ -176,9 +176,11 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
   };
 
   static void UploadSaveCardCallback(
+      AutofillClient::SaveCardOfferUserDecision user_decision,
       const AutofillClient::UserProvidedCardDetails&
           user_provided_card_details) {}
-  static void LocalSaveCardCallback() {}
+  static void LocalSaveCardCallback(
+      AutofillClient::SaveCardOfferUserDecision user_decision) {}
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImplTest);
 };

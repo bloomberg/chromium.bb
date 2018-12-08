@@ -209,7 +209,7 @@ class SaveCardInfobarEGTestHelper {
   [self onEvent:InfobarEvent::RECEIVED_UPLOAD_CARD_RESPONSE];
 }
 
-- (void)ccsmStrikeChangeComplete {
+- (void)strikeChangeComplete {
   [self onEvent:InfobarEvent::STRIKE_CHANGE_COMPLETE];
 }
 

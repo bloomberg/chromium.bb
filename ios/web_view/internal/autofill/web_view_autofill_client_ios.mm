@@ -159,7 +159,7 @@ void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     bool show_prompt,
-    base::OnceClosure callback) {
+    LocalSaveCardPromptCallback callback) {
   DCHECK(show_prompt);
   [bridge_ confirmSaveCreditCardLocally:card callback:std::move(callback)];
 }
@@ -170,7 +170,7 @@ void WebViewAutofillClientIOS::ConfirmSaveCreditCardToCloud(
     bool should_request_name_from_user,
     bool should_request_expiration_date_from_user,
     bool show_prompt,
-    UserAcceptedUploadCallback callback) {
+    UploadSaveCardPromptCallback callback) {
   DCHECK(show_prompt);
 }
 

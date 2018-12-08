@@ -151,7 +151,7 @@ void SaveCardBubbleViewsBrowserTestBase::OnReceivedUploadCardResponse() {
     event_waiter_->OnEvent(DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE);
 }
 
-void SaveCardBubbleViewsBrowserTestBase::OnCCSMStrikeChangeComplete() {
+void SaveCardBubbleViewsBrowserTestBase::OnStrikeChangeComplete() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::STRIKE_CHANGE_COMPLETE);
 }
@@ -164,11 +164,6 @@ void SaveCardBubbleViewsBrowserTestBase::OnBubbleShown() {
 void SaveCardBubbleViewsBrowserTestBase::OnBubbleClosed() {
   if (event_waiter_)
     event_waiter_->OnEvent(DialogEvent::BUBBLE_CLOSED);
-}
-
-void SaveCardBubbleViewsBrowserTestBase::OnSCBCStrikeChangeComplete() {
-  if (event_waiter_)
-    event_waiter_->OnEvent(DialogEvent::STRIKE_CHANGE_COMPLETE);
 }
 
 void SaveCardBubbleViewsBrowserTestBase::SetUpInProcessBrowserTestFixture() {

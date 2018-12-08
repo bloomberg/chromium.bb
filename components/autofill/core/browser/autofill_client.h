@@ -95,6 +95,17 @@ class AutofillClient : public RiskDataLoader {
     NETWORK_ERROR,
   };
 
+  enum SaveCardOfferUserDecision {
+    // The user accepted credit card save.
+    ACCEPTED,
+
+    // The user explicitly declined credit card save.
+    DECLINED,
+
+    // The user ignored the credit card save prompt.
+    IGNORED,
+  };
+
   enum UnmaskCardReason {
     // The card is being unmasked for PaymentRequest.
     UNMASK_FOR_PAYMENT_REQUEST,
@@ -110,11 +121,22 @@ class AutofillClient : public RiskDataLoader {
     base::string16 expiration_date_month;
     base::string16 expiration_date_year;
   };
+
+  // Callback to run after local credit card save is offered. Sends whether the
+  // prompt was accepted, declined, or ignored in |user_decision|.
+  typedef base::OnceCallback<void(SaveCardOfferUserDecision user_decision)>
+      LocalSaveCardPromptCallback;
+
+  // Callback to run after upload credit card save is offered. Sends whether the
+  // prompt was accepted, declined, or ignored in |user_decision|, and
+  // additional |user_provided_card_details| if applicable.
   typedef base::OnceCallback<void(
+      SaveCardOfferUserDecision user_decision,
       const UserProvidedCardDetails& user_provided_card_details)>
-      UserAcceptedUploadCallback;
+      UploadSaveCardPromptCallback;
 
   typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
+
   // Callback to run if user presses the Save button in the migration dialog.
   // Will pass a vector of GUIDs of cards that the user selected to upload to
   // LocalCardMigrationManager.
@@ -216,13 +238,15 @@ class AutofillClient : public RiskDataLoader {
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                           base::OnceClosure callback) = 0;
 
-  // Runs |callback| if the |card| should be imported as personal data. On
-  // desktop, shows the offer-to-save bubble if |show_prompt| is true; otherwise
-  // only shows the omnibox icon. On mobile, shows the offer-to-save infobar if
-  // |show_prompt| is true; otherwise does not offer to save at all.
-  virtual void ConfirmSaveCreditCardLocally(const CreditCard& card,
-                                            bool show_prompt,
-                                            base::OnceClosure callback) = 0;
+  // Runs |callback| once the user makes a decision with respect to the
+  // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
+  // |show_prompt| is true; otherwise only shows the omnibox icon. On mobile,
+  // shows the offer-to-save infobar if |show_prompt| is true; otherwise does
+  // not offer to save at all.
+  virtual void ConfirmSaveCreditCardLocally(
+      const CreditCard& card,
+      bool show_prompt,
+      LocalSaveCardPromptCallback callback) = 0;
 
 #if defined(OS_ANDROID)
   // Run |callback| if the card should be uploaded to payments with updated
@@ -231,21 +255,21 @@ class AutofillClient : public RiskDataLoader {
       base::OnceCallback<void(const base::string16&)> callback) = 0;
 #endif  // defined(OS_ANDROID)
 
-  // Runs |callback| if the |card| should be uploaded to Payments. Displays the
-  // contents of |legal_message| to the user. Displays a cardholder name
-  // textfield in the bubble if |should_request_name_from_user| is true.
-  // Displays a pair of expiration date dropdowns in the bubble if
-  // |should_request_expiration_date_from_user| is true. On desktop,
-  // shows the offer-to-save bubble if |show_prompt| is true; otherwise only
-  // shows the omnibox icon. On mobile, shows the offer-to-save infobar if
-  // |show_prompt| is true; otherwise does not offer to save at all.
+  // Runs |callback| once the user makes a decision with respect to the
+  // offer-to-save prompt. Displays the contents of |legal_message| to the user.
+  // Displays a cardholder name textfield in the bubble if
+  // |should_request_name_from_user| is true. Displays a pair of expiration date
+  // dropdowns in the bubble if |should_request_expiration_date_from_user| is
+  // true. On desktop, shows the offer-to-save bubble if |show_prompt| is true;
+  // otherwise only shows the omnibox icon. On mobile, shows the offer-to-save
+  // infobar if |show_prompt| is true; otherwise does not offer to save at all.
   virtual void ConfirmSaveCreditCardToCloud(
       const CreditCard& card,
       std::unique_ptr<base::DictionaryValue> legal_message,
       bool should_request_name_from_user,
       bool should_request_expiration_date_from_user,
       bool show_prompt,
-      UserAcceptedUploadCallback callback) = 0;
+      UploadSaveCardPromptCallback callback) = 0;
 
   // Will show an infobar to get user consent for Credit Card assistive filling.
   // Will run |callback| on success.

@@ -82,9 +82,10 @@ class ChromeAutofillClient
       MigrationDeleteCardCallback delete_local_card_callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
-  void ConfirmSaveCreditCardLocally(const CreditCard& card,
-                                    bool show_prompt,
-                                    base::OnceClosure callback) override;
+  void ConfirmSaveCreditCardLocally(
+      const CreditCard& card,
+      bool show_prompt,
+      LocalSaveCardPromptCallback callback) override;
 #if defined(OS_ANDROID)
   void ConfirmAccountNameFixFlow(
       base::OnceCallback<void(const base::string16&)> callback) override;
@@ -95,7 +96,7 @@ class ChromeAutofillClient
       bool should_request_name_from_user,
       bool should_request_expiration_date_from_user,
       bool show_prompt,
-      UserAcceptedUploadCallback callback) override;
+      UploadSaveCardPromptCallback callback) override;
   void ConfirmCreditCardFillAssist(const CreditCard& card,
                                    base::OnceClosure callback) override;
   bool HasCreditCardScanFeature() override;
