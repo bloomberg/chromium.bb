@@ -1037,12 +1037,7 @@ bool BridgedNativeWidgetImpl::ShouldRunCustomAnimationFor(
 }
 
 bool BridgedNativeWidgetImpl::RedispatchKeyEvent(NSEvent* event) {
-  NSWindow* window = ns_window();
-  DCHECK([window.class conformsToProtocol:@protocol(CommandDispatchingWindow)]);
-  NSObject<CommandDispatchingWindow>* command_dispatching_window =
-      base::mac::ObjCCastStrict<NSObject<CommandDispatchingWindow>>(window);
-  return
-      [[command_dispatching_window commandDispatcher] redispatchKeyEvent:event];
+  return [[window_ commandDispatcher] redispatchKeyEvent:event];
 }
 
 NSWindow* BridgedNativeWidgetImpl::ns_window() {
