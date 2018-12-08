@@ -184,6 +184,16 @@ CacheStorageHandle CacheStorageManager::OpenCacheStorage(
     const url::Origin& origin,
     CacheStorageOwner owner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Wait to create the MemoryPressureListener until the first CacheStorage
+  // object is needed.  This ensures we create the listener on the correct
+  // thread.
+  if (!memory_pressure_listener_) {
+    memory_pressure_listener_ =
+        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
+            &CacheStorageManager::OnMemoryPressure, base::Unretained(this)));
+  }
+
   CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
   if (it == cache_storage_map_.end()) {
     CacheStorage* cache_storage = new CacheStorage(
@@ -449,6 +459,16 @@ base::FilePath CacheStorageManager::ConstructOriginPath(
   const std::string origin_hash_hex = base::ToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));
   return root_path.AppendASCII(origin_hash_hex);
+}
+
+void CacheStorageManager::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  if (level != base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL)
+    return;
+
+  for (auto& entry : cache_storage_map_) {
+    entry.second->ReleaseUnreferencedCaches();
+  }
 }
 
 }  // namespace content

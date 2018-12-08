@@ -42,14 +42,10 @@ namespace {
 using blink::mojom::CacheStorageError;
 using blink::mojom::CacheStorageVerboseError;
 
-const int32_t kCachePreservationSeconds = 5;
-
 // TODO(lucmult): Check this before binding.
 bool OriginCanAccessCacheStorage(const url::Origin& origin) {
   return !origin.opaque() && IsOriginSecure(origin.GetURL());
 }
-
-void StopPreservingCache(CacheStorageCacheHandle cache_handle) {}
 
 }  // namespace
 
@@ -313,14 +309,6 @@ class CacheStorageDispatcherHost::CacheStorageImpl final
                     blink::mojom::OpenResult::NewStatus(error));
                 return;
               }
-
-              // Hang on to the cache for a few seconds. This way if the user
-              // quickly closes and reopens it the cache backend won't have to
-              // be reinitialized.
-              base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-                  FROM_HERE,
-                  base::BindOnce(&StopPreservingCache, cache_handle.Clone()),
-                  base::TimeDelta::FromSeconds(kCachePreservationSeconds));
 
               blink::mojom::CacheStorageCacheAssociatedPtrInfo ptr_info;
               auto request = mojo::MakeRequest(&ptr_info);

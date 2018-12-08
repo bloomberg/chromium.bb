@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
@@ -159,6 +160,10 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The immutable origin of the CacheStorage.
   const url::Origin& Origin() const { return origin_; }
+
+  // Destroy any CacheStorageCache instances that are not currently referenced
+  // by a CacheStorageCacheHandle.
+  void ReleaseUnreferencedCaches();
 
  private:
   friend class CacheStorageCache;

@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "content/browser/cache_storage/cache_storage.h"
@@ -156,6 +157,10 @@ class CONTENT_EXPORT CacheStorageManager
 
   bool IsMemoryBacked() const { return root_path_.empty(); }
 
+  // MemoryPressureListener callback
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
   base::FilePath root_path_;
   scoped_refptr<base::SequencedTaskRunner> cache_task_runner_;
 
@@ -168,6 +173,8 @@ class CONTENT_EXPORT CacheStorageManager
   base::ObserverList<CacheStorageContextImpl::Observer>::Unchecked observers_;
 
   base::WeakPtr<storage::BlobStorageContext> blob_context_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   base::WeakPtrFactory<CacheStorageManager> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(CacheStorageManager);
