@@ -113,24 +113,19 @@ std::unique_ptr<base::Value> NetLogQuicStreamFactoryJobCallback(
   return std::move(dict);
 }
 
-std::unique_ptr<base::Value> NetLogQuicConnectionMigrationTriggerCallback(
-    std::string trigger,
-    NetLogCaptureMode capture_mode) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("trigger", trigger);
-  return std::move(dict);
+NetLogParametersCallback NetLogQuicConnectionMigrationTriggerCallback(
+    const char* trigger) {
+  return NetLog::StringCallback("trigger", trigger);
 }
-
 // Helper class that is used to log a connection migration event.
 class ScopedConnectionMigrationEventLog {
  public:
-  ScopedConnectionMigrationEventLog(NetLog* net_log, std::string trigger)
+  ScopedConnectionMigrationEventLog(NetLog* net_log, const char* trigger)
       : net_log_(NetLogWithSource::Make(
             net_log,
             NetLogSourceType::QUIC_CONNECTION_MIGRATION)) {
-    net_log_.BeginEvent(
-        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-        base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, trigger));
+    net_log_.BeginEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+                        NetLogQuicConnectionMigrationTriggerCallback(trigger));
   }
 
   ~ScopedConnectionMigrationEventLog() {
