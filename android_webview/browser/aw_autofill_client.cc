@@ -150,7 +150,7 @@ void AwAutofillClient::ConfirmSaveAutofillProfile(
 void AwAutofillClient::ConfirmSaveCreditCardLocally(
     const autofill::CreditCard& card,
     bool show_prompt,
-    base::OnceClosure callback) {
+    LocalSaveCardPromptCallback callback) {
   NOTIMPLEMENTED();
 }
 
@@ -165,7 +165,7 @@ void AwAutofillClient::ConfirmSaveCreditCardToCloud(
     bool should_request_name_from_user,
     bool should_request_expiration_date_from_user,
     bool show_prompt,
-    UserAcceptedUploadCallback callback) {
+    UploadSaveCardPromptCallback callback) {
   NOTIMPLEMENTED();
 }
 

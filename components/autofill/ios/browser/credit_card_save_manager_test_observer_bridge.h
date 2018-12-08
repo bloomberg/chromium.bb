@@ -24,7 +24,7 @@
 
 - (void)receivedUploadCardResponse;
 
-- (void)ccsmStrikeChangeComplete;
+- (void)strikeChangeComplete;
 
 @end
 
@@ -46,7 +46,7 @@ class CreditCardSaveManagerTestObserverBridge
   void OnReceivedGetUploadDetailsResponse() override;
   void OnSentUploadCardRequest() override;
   void OnReceivedUploadCardResponse() override;
-  void OnCCSMStrikeChangeComplete() override;
+  void OnStrikeChangeComplete() override;
 
  private:
   __weak id<CreditCardSaveManagerTestObserver> observer_ = nil;

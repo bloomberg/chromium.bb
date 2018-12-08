@@ -275,7 +275,7 @@ void ChromeAutofillClient::ConfirmSaveAutofillProfile(
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     const CreditCard& card,
     bool show_prompt,
-    base::OnceClosure callback) {
+    LocalSaveCardPromptCallback callback) {
 #if defined(OS_ANDROID)
   DCHECK(show_prompt);
   InfoBarService::FromWebContents(web_contents())
@@ -283,9 +283,8 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/false, /*should_request_name_from_user=*/false, card,
               std::make_unique<base::DictionaryValue>(),
-              GetLegacyStrikeDatabase(),
               /*upload_save_card_callback=*/
-              UserAcceptedUploadCallback(),
+              AutofillClient::UploadSaveCardPromptCallback(),
               /*local_save_card_callback=*/std::move(callback), GetPrefs())));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
@@ -319,16 +318,17 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
     bool should_request_name_from_user,
     bool should_request_expiration_date_from_user,
     bool show_prompt,
-    UserAcceptedUploadCallback callback) {
+    UploadSaveCardPromptCallback callback) {
 #if defined(OS_ANDROID)
   DCHECK(show_prompt);
   std::unique_ptr<AutofillSaveCardInfoBarDelegateMobile>
       save_card_info_bar_delegate_mobile =
           std::make_unique<AutofillSaveCardInfoBarDelegateMobile>(
               /*upload=*/true, should_request_name_from_user, card,
-              std::move(legal_message), GetLegacyStrikeDatabase(),
+              std::move(legal_message),
               /*upload_save_card_callback=*/std::move(callback),
-              /*local_save_card_callback=*/base::Closure(), GetPrefs());
+              /*local_save_card_callback=*/
+              AutofillClient::LocalSaveCardPromptCallback(), GetPrefs());
   if (save_card_info_bar_delegate_mobile->LegalMessagesParsedSuccessfully()) {
     InfoBarService::FromWebContents(web_contents())
         ->AddInfoBar(CreateSaveCardInfoBarMobile(

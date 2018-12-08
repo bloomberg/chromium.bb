@@ -81,7 +81,7 @@ class CreditCardSaveManager {
     virtual void OnReceivedGetUploadDetailsResponse() = 0;
     virtual void OnSentUploadCardRequest() = 0;
     virtual void OnReceivedUploadCardResponse() = 0;
-    virtual void OnCCSMStrikeChangeComplete() = 0;
+    virtual void OnStrikeChangeComplete() = 0;
   };
 
   // The parameters should outlive the CreditCardSaveManager.
@@ -169,18 +169,27 @@ class CreditCardSaveManager {
   // Autofill StrikeSystem has made its decision.
   void OfferCardUploadSave();
 
-  // Clears strikes for the to-be-saved card and has |personal_data_manager_|
-  // save the card.
-  void OnUserDidAcceptLocalSave();
+  // Called once the user makes a decision with respect to the local credit card
+  // offer-to-save prompt. If accepted, clears strikes for the to-be-saved card
+  // and has |personal_data_manager_| save the card.
+  void OnUserDidDecideOnLocalSave(
+      AutofillClient::SaveCardOfferUserDecision user_decision);
 
-  // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
-  // the risk data is available. Sets the cardholder name on the upload request
-  // if |user_provided_card_details.cardholder_name| is set. Sets the expiration
-  // date on the upload request if
-  // |user_provided_card_details.expiration_date_month| and
-  // |user_provided_card_details.expiration_date_year| are both set.
-  void OnUserDidAcceptUpload(const AutofillClient::UserProvidedCardDetails&
-                                 user_provided_card_details);
+  // Called once the user makes a decision with respect to the credit card
+  // upload offer-to-save prompt.
+  // If accepted:
+  //   Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
+  //   the risk data is available. Sets the cardholder name on the upload
+  //   request if |user_provided_card_details.cardholder_name| is set. Sets the
+  //   expiration date on the upload request if
+  //   |user_provided_card_details.expiration_date_month| and
+  //   |user_provided_card_details.expiration_date_year| are both set.
+  // If rejected or ignored:
+  //   Logs a strike against the current card to deter future offers to save.
+  void OnUserDidDecideOnUploadSave(
+      AutofillClient::SaveCardOfferUserDecision user_decision,
+      const AutofillClient::UserProvidedCardDetails&
+          user_provided_card_details);
 
 #if defined(OS_ANDROID)
   // Sets |user_did_accept_upload_prompt_| and calls SendUploadCardRequest if
@@ -203,6 +212,12 @@ class CreditCardSaveManager {
 
   // Finalizes the upload request and calls PaymentsClient::UploadCard().
   void SendUploadCardRequest();
+
+  // Called when the user ignored or declined the credit card save prompt. Logs
+  // a strike for the given card in order to help deter future offers to save,
+  // provided that save was actually offered to the user.
+  void OnUserDidIgnoreOrDeclineSave(
+      const base::string16& card_last_four_digits);
 
   // Used for browsertests. Gives the |observer_for_testing_| a notification
   // a strike change has been made.

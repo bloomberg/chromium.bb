@@ -414,18 +414,22 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 }
 
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-                            callback:(base::OnceClosure)callback {
+                            callback:(autofill::AutofillClient::
+                                          LocalSaveCardPromptCallback)callback {
   if ([_delegate respondsToSelector:@selector
                  (autofillController:decidePolicyForLocalStorageOfCreditCard
                                        :decisionHandler:)]) {
     CWVCreditCard* card = [[CWVCreditCard alloc] initWithCreditCard:creditCard];
-    __block base::OnceClosure scopedCallback = std::move(callback);
+    __block autofill::AutofillClient::LocalSaveCardPromptCallback
+        scopedCallback = std::move(callback);
     [_delegate autofillController:self
         decidePolicyForLocalStorageOfCreditCard:card
                                 decisionHandler:^(CWVStoragePolicy policy) {
                                   if (policy == CWVStoragePolicyAllow) {
                                     if (scopedCallback)
-                                      std::move(scopedCallback).Run();
+                                      std::move(scopedCallback)
+                                          .Run(autofill::AutofillClient::
+                                                   ACCEPTED);
                                   }
                                 }];
   }

@@ -22,7 +22,8 @@ class FormStructure;
 
 // Bridge for AutofillClient's method |ConfirmSaveCreditCardLocally|.
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard
-                            callback:(base::OnceClosure)callback;
+                            callback:(autofill::AutofillClient::
+                                          LocalSaveCardPromptCallback)callback;
 
 // Bridge for AutofillClient's method |ShowUnmaskPrompt|.
 - (void)
