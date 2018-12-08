@@ -27,9 +27,7 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
   result.key_modifiers = drag_data.ModifierKeyState();
   result.referrer_policy = network::mojom::ReferrerPolicy::kDefault;
 
-  const WebVector<WebDragData::Item>& item_list = drag_data.Items();
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    const WebDragData::Item& item = item_list[i];
+  for (const WebDragData::Item& item : drag_data.Items()) {
     switch (item.storage_type) {
       case WebDragData::Item::kStorageTypeString: {
         base::string16 str_type(item.string_type.Utf16());
