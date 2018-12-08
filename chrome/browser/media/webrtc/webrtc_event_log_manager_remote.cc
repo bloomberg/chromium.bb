@@ -28,6 +28,8 @@ namespace webrtc_event_logging {
 // issue where we read the entire file into memory.
 const size_t kMaxRemoteLogFileSizeBytes = 50000000u;
 
+const int kMaxOutputPeriodMs = 60000;
+
 namespace {
 const base::TimeDelta kDefaultProactivePruningDelta =
     base::TimeDelta::FromMinutes(5);
@@ -393,6 +395,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
+    int output_period_ms,
     size_t web_app_id,
     std::string* log_id,
     std::string* error_message) {
@@ -402,7 +405,8 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   DCHECK(error_message);
   DCHECK(error_message->empty());
 
-  if (!AreLogParametersValid(max_file_size_bytes, web_app_id, error_message)) {
+  if (!AreLogParametersValid(max_file_size_bytes, output_period_ms, web_app_id,
+                             error_message)) {
     // |error_message| will have been set by AreLogParametersValid().
     DCHECK(!error_message->empty()) << "AreLogParametersValid() reported an "
                                        "error without an error message.";
@@ -442,7 +446,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   }
 
   return StartWritingLog(key, browser_context_dir, max_file_size_bytes,
-                         web_app_id, log_id, error_message);
+                         output_period_ms, web_app_id, log_id, error_message);
 }
 
 bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
@@ -632,6 +636,7 @@ void WebRtcRemoteEventLogManager::ShutDownForTesting(base::OnceClosure reply) {
 
 bool WebRtcRemoteEventLogManager::AreLogParametersValid(
     size_t max_file_size_bytes,
+    int output_period_ms,
     size_t web_app_id,
     std::string* error_message) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -651,6 +656,18 @@ bool WebRtcRemoteEventLogManager::AreLogParametersValid(
   if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
     LOG(WARNING) << "File size exceeds maximum allowed.";
     *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
+    return false;
+  }
+
+  if (output_period_ms < 0) {
+    LOG(WARNING) << "Output period (ms) must be non-negative.";
+    *error_message = kStartRemoteLoggingFailureOutputPeriodMsIsNegative;
+    return false;
+  }
+
+  if (output_period_ms > kMaxOutputPeriodMs) {
+    LOG(WARNING) << "Output period (ms) exceeds maximum allowed.";
+    *error_message = kStartRemoteLoggingFailureOutputPeriodMsTooLarge;
     return false;
   }
 
@@ -922,6 +939,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
+    int output_period_ms,
     size_t web_app_id,
     std::string* log_id_out,
     std::string* error_message_out) {
@@ -968,7 +986,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   const auto it = active_logs_.emplace(key, std::move(log_file));
   DCHECK(it.second);
 
-  observer_->OnRemoteLogStarted(key, it.first->second->path());
+  observer_->OnRemoteLogStarted(key, it.first->second->path(),
+                                output_period_ms);
 
   *log_id_out = log_id;
   return true;
