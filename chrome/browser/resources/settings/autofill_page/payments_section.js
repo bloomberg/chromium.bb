@@ -122,9 +122,6 @@ Polymer({
     showCreditCardDialog_: Boolean,
 
     /** @private */
-    migrateCreditCardsLabel_: String,
-
-    /** @private */
     migratableCreditCardsInfo_: String,
 
     /**
@@ -472,11 +469,6 @@ Polymer({
     if (numberOfMigratableCreditCard == 0)
       return false;
 
-    // Update the display label depends on the number of migratable credit
-    // cards.
-    this.migrateCreditCardsLabel_ = numberOfMigratableCreditCard == 1 ?
-        this.i18n('migrateCreditCardsLabelSingle') :
-        this.i18n('migrateCreditCardsLabelMultiple');
     // Update the display text depends on the number of migratable credit cards.
     this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard == 1 ?
         this.i18n('migratableCardsInfoSingle') :

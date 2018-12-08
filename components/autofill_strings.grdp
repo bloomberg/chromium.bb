@@ -269,18 +269,18 @@
       Cards saving...
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_TITLE" desc="The title text for a bubble that offers users to start the process of migrating local cards to cloud.">
-      Save cards to your Google Account?
+      Use your cards on all your devices?
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BUTTON_LABEL" desc="The text in the OK button of a bubble that offers users to start the process of migration local cards to cloud.">
       Continue
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_BUBBLE_BODY_TEXT" desc="The body text for a bubble that offers users to start the process of migrating local cards to cloud.">
-      In the next step, you can choose which cards to save
+      Right now, you have cards that can only be used on this device. Click Continue to review cards.
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_OFFER" desc="The title text for a dialog that offers to migrate local cards into the cloud.">
-      Use your cards in more places
+      Save cards in your Google Account
     </message>
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated, or migration of all cards failed and the user deleted all invalid cards.">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_DONE" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated.">
       You're all set!
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_FIX" desc="The title text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
@@ -288,18 +288,18 @@
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_OFFER" desc="The body text for a dialog that offers to migrate local cards into the cloud. [ICU Syntax]">
       {NUM_CARDS, plural,
-      =1 {This card and its billing address will be saved to your Google Account so you can check out faster wherever you're signed in}
-      other {These cards and their billing addresses will be saved to your Google Account so you can check out faster wherever you're signed in}}
+      =1 {You'll be able to use it when you're signed in. This card and its billing address will be saved in your Google Account.}
+      other {You'll be able to use them when you're signed in. These cards and their billing addresses will be saved in your Google Account.}}
     </message>
-    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and some cards have been successfully migrated. [ICU Syntax]">
+    <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_DONE" desc="The body text for a dialog shown after the user accepts another dialog that offers to migrate local cards into the cloud and all cards are successfully migrated. [ICU Syntax]">
       {NUM_CARDS, plural,
-      =1 {This card has been added to your Google Account. You can now use it from any signed-in device.}
-      other {These cards have been added to your Google Account. You can now use them from any signed-in device.}}
+      =1 {This card has been saved in your Google Account}
+      other {These cards have been saved in your Google Account}}
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_ERROR" desc="The body text shown on a dialog when the user attempts to migrate their cards to Google Payments, but all migrations fail. [ICU Syntax]">
       {NUM_CARDS, plural,
-      =1 {This card can't be added right now}
-      other {These cards can't be added right now}}
+      =1 {This card can't be saved right now}
+      other {These cards can't be saved right now}}
     </message>
     <message name="IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_MESSAGE_FIX" desc="The body text shown on a dialog after the user accepts another dialog that offers to migrate local cards into the cloud but there are errors with the cards that they need to address.">
       Check the info below and delete any invalid cards
