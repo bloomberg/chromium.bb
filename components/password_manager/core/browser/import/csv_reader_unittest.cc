@@ -10,27 +10,17 @@
 namespace password_manager {
 
 TEST(CSVReaderTest, EmptyCSV) {
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  EXPECT_TRUE(ReadCSV(std::string(), &column_names, &records));
-  EXPECT_THAT(column_names, testing::ElementsAre(""));
-  EXPECT_EQ(0u, records.size());
-}
-
-TEST(CSVReaderTest, OutputArgumentsAreOverwritten) {
-  std::vector<std::string> column_names(3);
-  std::vector<std::map<std::string, std::string>> records(4);
-  EXPECT_TRUE(ReadCSV(std::string(), &column_names, &records));
-  EXPECT_THAT(column_names, testing::ElementsAre(""));
-  EXPECT_EQ(0u, records.size());
+  CSVTable table;
+  EXPECT_TRUE(table.ReadCSV(std::string()));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre(""));
+  EXPECT_EQ(0u, table.records().size());
 }
 
 TEST(CSVReaderTest, CSVConsistingOfSingleNewLine) {
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  EXPECT_TRUE(ReadCSV(std::string("\n"), &column_names, &records));
-  EXPECT_THAT(column_names, testing::ElementsAre(""));
-  EXPECT_EQ(0u, records.size());
+  CSVTable table;
+  EXPECT_TRUE(table.ReadCSV(std::string("\n")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre(""));
+  EXPECT_EQ(0u, table.records().size());
 }
 
 TEST(CSVReaderTest, SingleColumn) {
@@ -39,28 +29,26 @@ TEST(CSVReaderTest, SingleColumn) {
       "alpha\n"
       "beta\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  EXPECT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  EXPECT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("foo"));
-  ASSERT_EQ(2u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("foo", "alpha")));
-  EXPECT_THAT(records[1], testing::ElementsAre(
-      std::make_pair("foo", "beta")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("foo"));
+  ASSERT_EQ(2u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("foo", "alpha")));
+  EXPECT_THAT(table.records()[1],
+              testing::ElementsAre(std::make_pair("foo", "beta")));
 }
 
 TEST(CSVReaderTest, HeaderOnly) {
   const char kTestCSVInput[] =
       "foo,bar\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("foo", "bar"));
-  EXPECT_EQ(0u, records.size());
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("foo", "bar"));
+  EXPECT_EQ(0u, table.records().size());
 }
 
 TEST(CSVReaderTest, HeaderAndSimpleRecords) {
@@ -69,20 +57,19 @@ TEST(CSVReaderTest, HeaderAndSimpleRecords) {
       "alpha,beta,gamma\n"
       "delta,epsilon,zeta\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("foo", "bar", "baz"));
-  ASSERT_EQ(2u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("bar", "beta"),
-      std::make_pair("baz", "gamma"),
-      std::make_pair("foo", "alpha")));
-  EXPECT_THAT(records[1], testing::ElementsAre(
-      std::make_pair("bar", "epsilon"),
-      std::make_pair("baz", "zeta"),
-      std::make_pair("foo", "delta")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("foo", "bar", "baz"));
+  ASSERT_EQ(2u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("bar", "beta"),
+                                   std::make_pair("baz", "gamma"),
+                                   std::make_pair("foo", "alpha")));
+  EXPECT_THAT(table.records()[1],
+              testing::ElementsAre(std::make_pair("bar", "epsilon"),
+                                   std::make_pair("baz", "zeta"),
+                                   std::make_pair("foo", "delta")));
 }
 
 TEST(CSVReaderTest, EmptyStringColumnNamesAreSupported) {
@@ -90,16 +77,15 @@ TEST(CSVReaderTest, EmptyStringColumnNamesAreSupported) {
       "foo,,bar\n"
       "alpha,beta,gamma\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("foo", "", "bar"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("", "beta"),
-      std::make_pair("bar", "gamma"),
-      std::make_pair("foo", "alpha")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("foo", "", "bar"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("", "beta"),
+                                   std::make_pair("bar", "gamma"),
+                                   std::make_pair("foo", "alpha")));
 }
 
 TEST(CSVReaderTest, ExtraSpacesArePreserved) {
@@ -107,15 +93,14 @@ TEST(CSVReaderTest, ExtraSpacesArePreserved) {
       "left,right\n"
       " alpha  beta ,  \n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", " alpha  beta "),
-      std::make_pair("right", "  ")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", " alpha  beta "),
+                                   std::make_pair("right", "  ")));
 }
 
 TEST(CSVReaderTest, CharactersOutsideASCIIPrintableArePreservedVerbatim) {
@@ -123,18 +108,21 @@ TEST(CSVReaderTest, CharactersOutsideASCIIPrintableArePreservedVerbatim) {
       "left,right\n"
       "\x07\t\x0B\x1F,$\xc2\xa2\xe2\x98\x83\xf0\xa4\xad\xa2\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      // Characters below 0x20: bell, horizontal + vertical tab, unit separator.
-      std::make_pair("left", "\x07\t\x0B\x1F"),
-      // Unicode code points having 1..4 byte UTF-8 representation: dollar sign
-      // (U+0024), cent sign (U+00A2), snowman (U+2603), Han character U+24B62.
-      std::make_pair("right", "$\xc2\xa2\xe2\x98\x83\xf0\xa4\xad\xa2")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(
+      table.records()[0],
+      testing::ElementsAre(
+          // Characters below 0x20: bell, horizontal + vertical tab, unit
+          // separator.
+          std::make_pair("left", "\x07\t\x0B\x1F"),
+          // Unicode code points having 1..4 byte UTF-8 representation: dollar
+          // sign (U+0024), cent sign (U+00A2), snowman (U+2603), Han character
+          // U+24B62.
+          std::make_pair("right", "$\xc2\xa2\xe2\x98\x83\xf0\xa4\xad\xa2")));
 }
 
 TEST(CSVReaderTest, EnclosingDoubleQuotesAreTrimmed) {
@@ -142,15 +130,14 @@ TEST(CSVReaderTest, EnclosingDoubleQuotesAreTrimmed) {
       "\"left\",\"right\"\n"
       "\"alpha\",\"beta\"\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", "alpha"),
-      std::make_pair("right", "beta")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", "alpha"),
+                                   std::make_pair("right", "beta")));
 }
 
 TEST(CSVReaderTest, SeparatorsInsideDoubleQuotesAreTreatedVerbatim) {
@@ -160,21 +147,20 @@ TEST(CSVReaderTest, SeparatorsInsideDoubleQuotesAreTreatedVerbatim) {
       "\"C\r\nD\",\"D\n\"\n"
       "\",\",\",,\"\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(3u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", "A\rB"),
-      std::make_pair("right", "B\nC")));
-  EXPECT_THAT(records[1], testing::ElementsAre(
-      std::make_pair("left", "C\nD"),
-      std::make_pair("right", "D\n")));
-  EXPECT_THAT(records[2], testing::ElementsAre(
-      std::make_pair("left", ","),
-      std::make_pair("right", ",,")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(3u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", "A\rB"),
+                                   std::make_pair("right", "B\nC")));
+  EXPECT_THAT(table.records()[1],
+              testing::ElementsAre(std::make_pair("left", "C\nD"),
+                                   std::make_pair("right", "D\n")));
+  EXPECT_THAT(table.records()[2],
+              testing::ElementsAre(std::make_pair("left", ","),
+                                   std::make_pair("right", ",,")));
 }
 
 TEST(CSVReaderTest, EscapedDoubleQuotes) {
@@ -183,18 +169,17 @@ TEST(CSVReaderTest, EscapedDoubleQuotes) {
       "\"\",\"\"\"\"\"\"\n"
       "\"\"\"\",\"A\"\"B\"\"\"\"C\"\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(2u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", ""),
-      std::make_pair("right", "\"\"")));
-  EXPECT_THAT(records[1], testing::ElementsAre(
-      std::make_pair("left", "\""),
-      std::make_pair("right", "A\"B\"\"C")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(2u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", ""),
+                                   std::make_pair("right", "\"\"")));
+  EXPECT_THAT(table.records()[1],
+              testing::ElementsAre(std::make_pair("left", "\""),
+                                   std::make_pair("right", "A\"B\"\"C")));
 }
 
 TEST(CSVReaderTest, InconsistentFieldsCountIsTreatedGracefully) {
@@ -203,17 +188,16 @@ TEST(CSVReaderTest, InconsistentFieldsCountIsTreatedGracefully) {
       "A\n"
       "B,C,D\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(2u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", "A")));
-  EXPECT_THAT(records[1], testing::ElementsAre(
-      std::make_pair("left", "B"),
-      std::make_pair("right", "C")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(2u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", "A")));
+  EXPECT_THAT(table.records()[1],
+              testing::ElementsAre(std::make_pair("left", "B"),
+                                   std::make_pair("right", "C")));
 }
 
 TEST(CSVReaderTest, SupportMissingNewLineAtEOF) {
@@ -221,15 +205,14 @@ TEST(CSVReaderTest, SupportMissingNewLineAtEOF) {
       "left,right\n"
       "alpha,beta";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", "alpha"),
-      std::make_pair("right", "beta")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", "alpha"),
+                                   std::make_pair("right", "beta")));
 }
 
 TEST(CSVReaderTest, EmptyFields) {
@@ -238,20 +221,20 @@ TEST(CSVReaderTest, EmptyFields) {
       "alpha,beta,\n"
       ",,gamma\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "middle", "right"));
-  ASSERT_EQ(2u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", "alpha"),
-      std::make_pair("middle", "beta"),
-      std::make_pair("right", "")));
-  EXPECT_THAT(records[1], testing::ElementsAre(
-      std::make_pair("left", ""),
-      std::make_pair("middle", ""),
-      std::make_pair("right", "gamma")));
+  EXPECT_THAT(table.column_names(),
+              testing::ElementsAre("left", "middle", "right"));
+  ASSERT_EQ(2u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", "alpha"),
+                                   std::make_pair("middle", "beta"),
+                                   std::make_pair("right", "")));
+  EXPECT_THAT(table.records()[1],
+              testing::ElementsAre(std::make_pair("left", ""),
+                                   std::make_pair("middle", ""),
+                                   std::make_pair("right", "gamma")));
 }
 
 TEST(CSVReaderTest, CRLFTreatedAsAndConvertedToLF) {
@@ -259,15 +242,14 @@ TEST(CSVReaderTest, CRLFTreatedAsAndConvertedToLF) {
       "left,right\r\n"
       "\"\r\",\"\r\n\"\r\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("left", "right"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("left", "\r"),
-      std::make_pair("right", "\n")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("left", "right"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("left", "\r"),
+                                   std::make_pair("right", "\n")));
 }
 
 TEST(CSVReaderTest, LastValueForRepeatedColumnNamesIsPreserved) {
@@ -275,15 +257,14 @@ TEST(CSVReaderTest, LastValueForRepeatedColumnNamesIsPreserved) {
       "foo,bar,bar\n"
       "alpha,beta,gamma\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_TRUE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_TRUE(table.ReadCSV(kTestCSVInput));
 
-  EXPECT_THAT(column_names, testing::ElementsAre("foo", "bar", "bar"));
-  ASSERT_EQ(1u, records.size());
-  EXPECT_THAT(records[0], testing::ElementsAre(
-      std::make_pair("bar", "gamma"),
-      std::make_pair("foo", "alpha")));
+  EXPECT_THAT(table.column_names(), testing::ElementsAre("foo", "bar", "bar"));
+  ASSERT_EQ(1u, table.records().size());
+  EXPECT_THAT(table.records()[0],
+              testing::ElementsAre(std::make_pair("bar", "gamma"),
+                                   std::make_pair("foo", "alpha")));
 }
 
 TEST(CSVReaderTest, FailureWhenEOFInsideQuotes) {
@@ -291,9 +272,8 @@ TEST(CSVReaderTest, FailureWhenEOFInsideQuotes) {
       "left,right\n"
       "\"alpha\",\"unmatched\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_FALSE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_FALSE(table.ReadCSV(kTestCSVInput));
 }
 
 TEST(CSVReaderTest, FailureWhenSemiQuotedContentInHeader) {
@@ -301,9 +281,8 @@ TEST(CSVReaderTest, FailureWhenSemiQuotedContentInHeader) {
       "\"a\"b\"c\",right\n"
       "alpha,beta\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_FALSE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_FALSE(table.ReadCSV(kTestCSVInput));
 }
 
 TEST(CSVReaderTest, FailureWhenSemiQuotedContentOnSubsequentLine) {
@@ -311,9 +290,8 @@ TEST(CSVReaderTest, FailureWhenSemiQuotedContentOnSubsequentLine) {
       "alpha,beta\n"
       "left,\"a\"b\"c\"\n";
 
-  std::vector<std::string> column_names;
-  std::vector<std::map<std::string, std::string>> records;
-  ASSERT_FALSE(ReadCSV(kTestCSVInput, &column_names, &records));
+  CSVTable table;
+  ASSERT_FALSE(table.ReadCSV(kTestCSVInput));
 }
 
 }  // namespace password_manager

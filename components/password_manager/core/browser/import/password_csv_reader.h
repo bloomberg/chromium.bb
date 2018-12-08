@@ -40,8 +40,9 @@ class PasswordCSVReader {
  private:
   // Converts a parsed CSV line |record| to a |form| if possible, and returns
   // false otherwise.
-  bool RecordToPasswordForm(const std::map<std::string, std::string>& record,
-                            autofill::PasswordForm* form);
+  bool RecordToPasswordForm(
+      const std::map<base::StringPiece, std::string>& record,
+      autofill::PasswordForm* form);
 
   // Deduced values of the column names for the mandatory columns.
   std::string url_field_name_;

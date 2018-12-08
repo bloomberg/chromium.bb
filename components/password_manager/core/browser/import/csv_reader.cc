@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -97,22 +100,21 @@ bool CSVParser::ParseNextCSVRow(std::vector<std::string>* fields) {
 
 namespace password_manager {
 
-bool ReadCSV(base::StringPiece csv,
-             std::vector<std::string>* column_names,
-             std::vector<std::map<std::string, std::string>>* records) {
-  DCHECK(column_names);
-  DCHECK(records);
+CSVTable::CSVTable() = default;
 
-  column_names->clear();
-  records->clear();
+CSVTable::~CSVTable() = default;
+
+bool CSVTable::ReadCSV(base::StringPiece csv) {
+  records_.clear();
+  column_names_.clear();
 
   // Normalize EOL sequences so that we uniformly use a single LF character.
-  std::string normalized_csv(csv.as_string());
+  std::string normalized_csv(csv);
   base::ReplaceSubstringsAfterOffset(&normalized_csv, 0, "\r\n", "\n");
 
   // Read header row.
   CSVParser parser(normalized_csv);
-  if (!parser.ParseNextCSVRow(column_names))
+  if (!parser.ParseNextCSVRow(&column_names_))
     return false;
 
   // Reader data records rows.
@@ -121,10 +123,13 @@ bool ReadCSV(base::StringPiece csv,
     if (!parser.ParseNextCSVRow(&fields))
       return false;
 
-    records->resize(records->size() + 1);
-    for (size_t i = 0; i < column_names->size() && i < fields.size(); ++i) {
-      records->back()[(*column_names)[i]].swap(fields[i]);
+    std::map<base::StringPiece, std::string> row_map;
+    const size_t available_columns =
+        std::min(column_names_.size(), fields.size());
+    for (size_t i = 0; i < available_columns; ++i) {
+      row_map[column_names_[i]] = std::move(fields[i]);
     }
+    records_.push_back(std::move(row_map));
   }
 
   return true;
