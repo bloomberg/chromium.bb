@@ -2321,15 +2321,6 @@
     },
 
     'site_isolation_android_fyi_gtests': {
-      'site_per_process_browser_tests': {
-        'args': [
-          '--site-per-process'
-        ],
-        'swarming': {
-          'shards': 10,
-        },
-        'test': 'browser_tests',
-      },
       'site_per_process_components_browsertests': {
         'args': [
           '--site-per-process',
