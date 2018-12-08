@@ -256,6 +256,9 @@ cr.define('md_history', function() {
      * @private
      */
     cardTitle_: function(numberOfItems, historyDate, search) {
+      if (this.item === undefined)
+        return '';
+
       if (!search)
         return this.item.dateRelativeDay;
       return HistoryItem.searchResultsTitle(numberOfItems, search);
