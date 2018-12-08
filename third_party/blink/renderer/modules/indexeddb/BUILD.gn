@@ -89,8 +89,6 @@ blink_modules_sources("indexeddb") {
     "web_idb_factory_impl.cc",
     "web_idb_factory_impl.h",
     "web_idb_key_path.h",
-    "web_idb_key_range.cc",
-    "web_idb_key_range.h",
     "web_idb_name_and_version.h",
     "web_idb_observation.h",
     "web_idb_value.cc",

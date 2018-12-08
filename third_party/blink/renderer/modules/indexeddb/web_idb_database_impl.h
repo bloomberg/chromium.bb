@@ -56,13 +56,13 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   void Get(long long transaction_id,
            long long object_store_id,
            long long index_id,
-           const WebIDBKeyRange&,
+           const IDBKeyRange*,
            bool key_only,
            WebIDBCallbacks*) override;
   void GetAll(long long transaction_id,
               long long object_store_id,
               long long index_id,
-              const WebIDBKeyRange&,
+              const IDBKeyRange*,
               long long max_count,
               bool key_only,
               WebIDBCallbacks*) override;
@@ -84,7 +84,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   void OpenCursor(long long transaction_id,
                   long long object_store_id,
                   long long index_id,
-                  const WebIDBKeyRange&,
+                  const IDBKeyRange*,
                   mojom::IDBCursorDirection direction,
                   bool key_only,
                   mojom::IDBTaskType,
@@ -92,7 +92,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   void Count(long long transaction_id,
              long long object_store_id,
              long long index_id,
-             const WebIDBKeyRange&,
+             const IDBKeyRange*,
              WebIDBCallbacks*) override;
   void Delete(long long transaction_id,
               long long object_store_id,
@@ -100,7 +100,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
               WebIDBCallbacks*) override;
   void DeleteRange(long long transaction_id,
                    long long object_store_id,
-                   const WebIDBKeyRange&,
+                   const IDBKeyRange*,
                    WebIDBCallbacks*) override;
   void Clear(long long transaction_id,
              long long object_store_id,

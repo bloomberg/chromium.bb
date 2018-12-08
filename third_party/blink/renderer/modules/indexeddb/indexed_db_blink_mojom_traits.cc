@@ -256,19 +256,6 @@ bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::IDBKeyPath>::Read(
 }
 
 // static
-bool StructTraits<blink::mojom::IDBKeyRangeDataView, blink::WebIDBKeyRange>::
-    Read(blink::mojom::IDBKeyRangeDataView data, blink::WebIDBKeyRange* out) {
-  std::unique_ptr<blink::IDBKey> lower;
-  std::unique_ptr<blink::IDBKey> upper;
-  if (!data.ReadLower(&lower) || !data.ReadUpper(&upper))
-    return false;
-
-  *out = blink::WebIDBKeyRange(std::move(lower), std::move(upper),
-                               data.lower_open(), data.upper_open());
-  return true;
-}
-
-// static
 bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
                   scoped_refptr<blink::IDBObjectStoreMetadata>>::
     Read(blink::mojom::IDBObjectStoreMetadataDataView data,
@@ -297,6 +284,63 @@ bool StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
   }
   *out = std::move(value);
   return true;
+}
+
+// static
+blink::mojom::blink::IDBKeyRangePtr TypeConverter<
+    blink::mojom::blink::IDBKeyRangePtr,
+    const blink::IDBKeyRange*>::Convert(const blink::IDBKeyRange* input) {
+  if (!input) {
+    std::unique_ptr<blink::IDBKey> lower = blink::IDBKey::CreateNull();
+    std::unique_ptr<blink::IDBKey> upper = blink::IDBKey::CreateNull();
+    return blink::mojom::blink::IDBKeyRange::New(
+        std::move(lower), std::move(upper), false /* lower_open */,
+        false /* upper_open */);
+  }
+
+  return blink::mojom::blink::IDBKeyRange::New(
+      blink::IDBKey::Clone(input->Lower()),
+      blink::IDBKey::Clone(input->Upper()), input->lowerOpen(),
+      input->upperOpen());
+}
+
+// static
+blink::mojom::blink::IDBKeyRangePtr
+TypeConverter<blink::mojom::blink::IDBKeyRangePtr,
+              blink::IDBKeyRange*>::Convert(blink::IDBKeyRange* input) {
+  if (!input) {
+    std::unique_ptr<blink::IDBKey> lower = blink::IDBKey::CreateNull();
+    std::unique_ptr<blink::IDBKey> upper = blink::IDBKey::CreateNull();
+    return blink::mojom::blink::IDBKeyRange::New(
+        std::move(lower), std::move(upper), false /* lower_open */,
+        false /* upper_open */);
+  }
+
+  return blink::mojom::blink::IDBKeyRange::New(
+      blink::IDBKey::Clone(input->Lower()),
+      blink::IDBKey::Clone(input->Upper()), input->lowerOpen(),
+      input->upperOpen());
+}
+
+// static
+blink::IDBKeyRange*
+TypeConverter<blink::IDBKeyRange*, blink::mojom::blink::IDBKeyRangePtr>::
+    Convert(const blink::mojom::blink::IDBKeyRangePtr& input) {
+  if (!input)
+    return nullptr;
+
+  blink::IDBKeyRange::LowerBoundType lower_type =
+      blink::IDBKeyRange::kLowerBoundClosed;
+  if (input->lower_open)
+    lower_type = blink::IDBKeyRange::kLowerBoundOpen;
+
+  blink::IDBKeyRange::UpperBoundType upper_type =
+      blink::IDBKeyRange::kUpperBoundClosed;
+  if (input->upper_open)
+    upper_type = blink::IDBKeyRange::kUpperBoundOpen;
+
+  return blink::IDBKeyRange::Create(
+      std::move(input->lower), std::move(input->upper), lower_type, upper_type);
 }
 
 }  // namespace mojo

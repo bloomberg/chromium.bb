@@ -4,16 +4,17 @@
 
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
 
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 
 namespace blink {
 
 // static
-WebIDBKeyRange WebIDBKeyRangeBuilder::Build(const IDBKey* key) {
+IDBKeyRange* IDBKeyRangeBuilder::Build(const IDBKey* key) {
   std::unique_ptr<IDBKey> lower_key = IDBKey::Clone(key);
   std::unique_ptr<IDBKey> upper_key = IDBKey::Clone(key);
-  return WebIDBKeyRange(std::move(lower_key), std::move(upper_key),
-                        false /* lower_open */, false /* upper_open */);
+  return IDBKeyRange::Create(std::move(lower_key), std::move(upper_key),
+                             IDBKeyRange::kLowerBoundClosed,
+                             IDBKeyRange::kUpperBoundClosed);
 }
 
 }  // namespace blink

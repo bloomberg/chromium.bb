@@ -7,7 +7,7 @@
 
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 
 namespace blink {
@@ -15,12 +15,12 @@ namespace blink {
 struct WebIDBObservation {
   int64_t object_store_id;
   mojom::IDBOperationType type;
-  WebIDBKeyRange key_range;
+  Persistent<IDBKeyRange> key_range;
   WebIDBValue value;
 
   WebIDBObservation(int64_t object_store_id,
                     mojom::IDBOperationType type,
-                    WebIDBKeyRange key_range,
+                    IDBKeyRange* key_range,
                     WebIDBValue value)
       : object_store_id(object_store_id),
         type(type),

@@ -83,16 +83,21 @@ std::unique_ptr<IDBKey> IDBKey::Clone(const IDBKey* rkey) {
 IDBKey::IDBKey()
     : type_(mojom::IDBKeyType::Invalid), size_estimate_(kIDBKeyOverheadSize) {}
 
+// Must be Invalid or Null.
 IDBKey::IDBKey(mojom::IDBKeyType type)
     : type_(type), size_estimate_(kIDBKeyOverheadSize) {
   DCHECK(type_ == mojom::IDBKeyType::Invalid ||
          type_ == mojom::IDBKeyType::Null);
 }
 
+// Must be Number or Date.
 IDBKey::IDBKey(mojom::IDBKeyType type, double number)
     : type_(type),
       number_(number),
-      size_estimate_(kIDBKeyOverheadSize + sizeof(number_)) {}
+      size_estimate_(kIDBKeyOverheadSize + sizeof(number_)) {
+  DCHECK(type_ == mojom::IDBKeyType::Number ||
+         type_ == mojom::IDBKeyType::Date);
+}
 
 IDBKey::IDBKey(const String& value)
     : type_(mojom::IDBKeyType::String),
