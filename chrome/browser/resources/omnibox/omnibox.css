@@ -126,3 +126,39 @@ tbody:not(:first-of-type) td:first-of-type {
 .toggle span:hover {
   background-color: #f0f0f0;
 }
+
+tbody tr:hover pre {
+  white-space: pre-wrap;
+  overflow-y: auto;
+}
+
+tbody pre.json * {
+  white-space: inherit;
+}
+
+pre.json {
+  padding: 0 5px;
+}
+
+pre.json .key {
+  color: purple;
+  font-weight: bold;
+}
+
+pre.json .string {
+  color: green;
+}
+
+pre.json .number {
+  color: blue;
+}
+
+pre.json .boolean {
+  color: slateblue;
+  font-weight: bold;
+}
+
+pre.json .null {
+  color: magenta;
+  font-weight: bold;
+}
