@@ -16,6 +16,10 @@
 
 class SkBitmap;
 
+namespace gfx {
+class ColorSpace;
+}
+
 namespace viz {
 class CopyOutputRequest;
 class CopyOutputResult;
@@ -85,7 +89,8 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   SkBitmap CopyMailboxToBitmap(const gfx::Size& size,
                                const gpu::Mailbox& mailbox,
-                               const gpu::SyncToken& sync_token);
+                               const gpu::SyncToken& sync_token,
+                               const gfx::ColorSpace& color_space);
 
   void Finish();
 

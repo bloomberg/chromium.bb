@@ -260,7 +260,8 @@ void LayerTreePixelTest::SetupTree() {
 SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
     const gfx::Size& size,
     const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token) {
+    const gpu::SyncToken& sync_token,
+    const gfx::ColorSpace& color_space) {
   SkBitmap bitmap;
   std::unique_ptr<gpu::GLInProcessContext> context =
       CreateTestInProcessContext();
@@ -291,9 +292,9 @@ SkBitmap LayerTreePixelTest::CopyMailboxToBitmap(
   gl->DeleteFramebuffers(1, &fbo);
   gl->DeleteTextures(1, &texture_id);
 
-  bitmap.allocN32Pixels(size.width(), size.height());
-  // TODO(miu): Provide color space in this allocN32Pixels() call.
-  // http://crbug.com/758057
+  EXPECT_TRUE(color_space.IsValid());
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(size.width(), size.height(),
+                                                color_space.ToSkColorSpace()));
 
   uint8_t* out_pixels = static_cast<uint8_t*>(bitmap.getPixels());
 
