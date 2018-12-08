@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
+#include "content/browser/cache_storage/cache_storage_handle.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
@@ -238,7 +239,10 @@ class CONTENT_EXPORT CacheStorageCache {
   virtual CacheStorageCacheHandle CreateHandle();
   void AddHandleRef();
   void DropHandleRef();
-  void AssertUnreferenced() const;
+  void AssertUnreferenced() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(!handle_ref_count_);
+  }
 
  private:
   // QueryCache types:
@@ -484,8 +488,13 @@ class CONTENT_EXPORT CacheStorageCache {
   const std::string cache_name_;
   base::FilePath path_;
 
-  // Raw pointer is safe because CacheStorage owns this object.
+  // Raw pointer is safe because the CacheStorage instance owns this
+  // CacheStorageCache object.
   CacheStorage* cache_storage_;
+
+  // A handle that is used to keep the owning CacheStorage instance referenced
+  // as long this cache object is also referenced.
+  CacheStorageHandle cache_storage_handle_;
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;

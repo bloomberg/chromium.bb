@@ -80,6 +80,37 @@ void BackgroundFetchDataManager::Cleanup() {
   AddDatabaseTask(std::make_unique<background_fetch::CleanupTask>(this));
 }
 
+CacheStorageHandle BackgroundFetchDataManager::GetOrOpenCacheStorage(
+    const url::Origin& origin,
+    const std::string& unique_id) {
+  auto it = cache_storage_handle_map_.find(unique_id);
+  if (it != cache_storage_handle_map_.end()) {
+    if (it->second.value()) {
+      DCHECK_EQ(origin, it->second.value()->Origin());
+    } else {
+      // The backing CacheStorage has been forcibly closed due to an external
+      // event. Re-open the CacheStorage and update the handle.
+      it->second = cache_manager()->OpenCacheStorage(
+          origin, CacheStorageOwner::kBackgroundFetch);
+    }
+    return it->second.Clone();
+  }
+
+  // This origin and unique_id has never been opened before. Open
+  // the CacheStorage, remember the association in the map, and return the
+  // handle.
+  CacheStorageHandle handle = cache_manager()->OpenCacheStorage(
+      origin, CacheStorageOwner::kBackgroundFetch);
+  cache_storage_handle_map_.emplace(unique_id, handle.Clone());
+  return handle;
+}
+
+void BackgroundFetchDataManager::ReleaseCacheStorage(
+    const std::string& unique_id) {
+  bool erased = cache_storage_handle_map_.erase(unique_id);
+  DCHECK(erased);
+}
+
 BackgroundFetchDataManager::~BackgroundFetchDataManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }

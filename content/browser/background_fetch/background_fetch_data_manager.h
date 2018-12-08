@@ -204,6 +204,18 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   void Cleanup();
 
+  // Get a CacheStorageHandle for the given |origin| and |unique_id|.  This will
+  // either come from an existing CacheStorageHandle or will cause the
+  // CacheStorage to be opened.
+  CacheStorageHandle GetOrOpenCacheStorage(const url::Origin& origin,
+                                           const std::string& unique_id);
+
+  // Release the CacheStorageHandle for the given |unique_id|, if
+  // it's open.  DoomCache should be called prior to releasing the handle.
+  // There must be an entry in |cache_storage_handle_map_| for the given
+  // |unique_id|.
+  void ReleaseCacheStorage(const std::string& unique_id);
+
   // Whether Shutdown was called on BackgroundFetchContext.
   bool shutting_down_ = false;
 
@@ -213,8 +225,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
-  // The BackgroundFetch stores its own reference to CacheStorageManager
-  // in case StoragePartitionImpl is destoyed, which releases the reference.
+  // BackgroundFetch stores its own reference to CacheStorageManager
+  // in case StoragePartitionImpl is destroyed, which releases the reference.
   scoped_refptr<CacheStorageManager> cache_manager_;
 
   // The blob storage request with which response information will be stored.
@@ -231,6 +243,13 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   // refcount of JavaScript objects that refers to them goes to zero, unless
   // the browser is shutdown first.
   std::set<std::string> ref_counted_unique_ids_;
+
+  // A map of open CacheStorageHandle objects keyed by the registration
+  // |unique_id|. These handles are created opportunistically in
+  // GetOrOpenCacheStorage(). They are cleared after the Cache has been
+  // deleted and ReleaseCacheStorage() is called.
+  // TODO(crbug.com/711354): Possibly update key when CORS support is added.
+  std::map<std::string, CacheStorageHandle> cache_storage_handle_map_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 

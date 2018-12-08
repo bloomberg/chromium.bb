@@ -31,11 +31,11 @@ MatchRequestsTask::MatchRequestsTask(
 MatchRequestsTask::~MatchRequestsTask() = default;
 
 void MatchRequestsTask::Start() {
-  cache_manager()->OpenCache(registration_id_.origin(),
-                             CacheStorageOwner::kBackgroundFetch,
-                             registration_id_.unique_id() /* cache_name */,
-                             base::BindOnce(&MatchRequestsTask::DidOpenCache,
-                                            weak_factory_.GetWeakPtr()));
+  CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
+  cache_storage.value()->OpenCache(
+      registration_id_.unique_id() /* cache_name */,
+      base::BindOnce(&MatchRequestsTask::DidOpenCache,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void MatchRequestsTask::DidOpenCache(CacheStorageCacheHandle handle,

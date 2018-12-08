@@ -71,8 +71,9 @@ void DeleteRegistrationTask::Start() {
   DidGetRegistration(barrier_closure, {}, blink::ServiceWorkerStatusCode::kOk);
 #endif  // DCHECK_IS_ON()
 
-  cache_manager()->DeleteCache(
-      origin_, CacheStorageOwner::kBackgroundFetch, unique_id_ /* cache_name */,
+  CacheStorageHandle cache_storage = GetOrOpenCacheStorage(origin_, unique_id_);
+  cache_storage.value()->DoomCache(
+      unique_id_ /* cache_name */,
       base::BindOnce(&DeleteRegistrationTask::DidDeleteCache,
                      weak_factory_.GetWeakPtr(), barrier_closure));
 }
@@ -134,6 +135,8 @@ void DeleteRegistrationTask::DidDeleteCache(
   if (error != blink::mojom::CacheStorageError::kSuccess &&
       error != blink::mojom::CacheStorageError::kErrorNotFound) {
     SetStorageError(BackgroundFetchStorageError::kCacheStorageError);
+  } else {
+    ReleaseCacheStorage(unique_id_);
   }
   std::move(done_closure).Run();
 }

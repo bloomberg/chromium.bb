@@ -122,8 +122,8 @@ void MarkRequestCompleteTask::DidGetIsQuotaAvailable(
     return;
   }
 
-  cache_manager()->OpenCache(
-      registration_id_.origin(), CacheStorageOwner::kBackgroundFetch,
+  CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
+  cache_storage.value()->OpenCache(
       registration_id_.unique_id() /* cache_name */,
       base::BindOnce(&MarkRequestCompleteTask::DidOpenCache,
                      weak_factory_.GetWeakPtr(), std::move(response),

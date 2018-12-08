@@ -20,6 +20,7 @@
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
+#include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -58,11 +59,8 @@ void StopPreservingCache(CacheStorageCacheHandle cache_handle) {}
 class CacheStorageDispatcherHost::CacheImpl
     : public blink::mojom::CacheStorageCache {
  public:
-  CacheImpl(CacheStorageCacheHandle cache_handle,
-            CacheStorageDispatcherHost* dispatcher_host)
-      : cache_handle_(std::move(cache_handle)),
-        owner_(dispatcher_host),
-        weak_factory_(this) {}
+  explicit CacheImpl(CacheStorageCacheHandle cache_handle)
+      : cache_handle_(std::move(cache_handle)), weak_factory_(this) {}
 
   ~CacheImpl() override = default;
 
@@ -187,13 +185,176 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   CacheStorageCacheHandle cache_handle_;
+  base::WeakPtrFactory<CacheImpl> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(CacheImpl);
+};
+
+// Implements the mojom interface CacheStorage. It's owned by the
+// CacheStorageDispatcherHost.  The CacheStorageImpl is destroyed when the
+// client drops its mojo ptr which in turn removes from StrongBindingSet in
+// CacheStorageDispatcherHost.
+class CacheStorageDispatcherHost::CacheStorageImpl final
+    : public blink::mojom::CacheStorage {
+ public:
+  CacheStorageImpl(CacheStorageDispatcherHost* owner, const url::Origin& origin)
+      : owner_(owner), origin_(origin), weak_factory_(this) {
+    // The CacheStorageHandle is empty to start and lazy initialized on first
+    // use via GetOrCreateCacheStorage().  In the future we could eagerly create
+    // the backend when the mojo connection is created.
+  }
+
+  ~CacheStorageImpl() override = default;
+
+  // Mojo CacheStorage Interface implementation:
+  void Keys(blink::mojom::CacheStorage::KeysCallback callback) override {
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(callback).Run(std::vector<base::string16>());
+      return;
+    }
+    cache_storage->EnumerateCaches(base::BindOnce(
+        [](blink::mojom::CacheStorage::KeysCallback callback,
+           const CacheStorageIndex& cache_index) {
+          std::vector<base::string16> string16s;
+          for (const auto& metadata : cache_index.ordered_cache_metadata()) {
+            string16s.push_back(base::UTF8ToUTF16(metadata.name));
+          }
+          std::move(callback).Run(string16s);
+        },
+        std::move(callback)));
+  }
+
+  void Delete(const base::string16& cache_name,
+              blink::mojom::CacheStorage::DeleteCallback callback) override {
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(callback).Run(
+          MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
+      return;
+    }
+    cache_storage->DoomCache(base::UTF16ToUTF8(cache_name),
+                             std::move(callback));
+  }
+
+  void Has(const base::string16& cache_name,
+           blink::mojom::CacheStorage::HasCallback callback) override {
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(callback).Run(
+          MakeErrorStorage(ErrorStorageType::kStorageHandleNull));
+      return;
+    }
+    cache_storage->HasCache(
+        base::UTF16ToUTF8(cache_name),
+        base::BindOnce(
+            [](blink::mojom::CacheStorage::HasCallback callback, bool has_cache,
+               CacheStorageError error) {
+              if (!has_cache)
+                error = CacheStorageError::kErrorNotFound;
+              std::move(callback).Run(error);
+            },
+            std::move(callback)));
+  }
+
+  void Match(blink::mojom::FetchAPIRequestPtr request,
+             blink::mojom::QueryParamsPtr match_params,
+             blink::mojom::CacheStorage::MatchCallback callback) override {
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(callback).Run(blink::mojom::MatchResult::NewStatus(
+          CacheStorageError::kErrorNotFound));
+      return;
+    }
+
+    auto on_match = BindOnce(
+        [](blink::mojom::CacheStorage::MatchCallback callback,
+           CacheStorageError error,
+           blink::mojom::FetchAPIResponsePtr response) {
+          if (error != CacheStorageError::kSuccess) {
+            std::move(callback).Run(
+                blink::mojom::MatchResult::NewStatus(error));
+            return;
+          }
+
+          std::move(callback).Run(
+              blink::mojom::MatchResult::NewResponse(std::move(response)));
+        },
+        std::move(callback));
+
+    if (!match_params->cache_name) {
+      cache_storage->MatchAllCaches(std::move(request), std::move(match_params),
+                                    std::move(on_match));
+      return;
+    }
+    std::string cache_name = base::UTF16ToUTF8(*match_params->cache_name);
+    cache_storage->MatchCache(std::move(cache_name), std::move(request),
+                              std::move(match_params), std::move(on_match));
+  }
+
+  void Open(const base::string16& cache_name,
+            blink::mojom::CacheStorage::OpenCallback callback) override {
+    content::CacheStorage* cache_storage = GetOrCreateCacheStorage();
+    if (!cache_storage) {
+      std::move(callback).Run(blink::mojom::OpenResult::NewStatus(
+          MakeErrorStorage(ErrorStorageType::kStorageHandleNull)));
+      return;
+    }
+    cache_storage->OpenCache(
+        base::UTF16ToUTF8(cache_name),
+        base::BindOnce(
+            [](base::WeakPtr<CacheStorageImpl> self,
+               blink::mojom::CacheStorage::OpenCallback callback,
+               CacheStorageCacheHandle cache_handle, CacheStorageError error) {
+              if (!self)
+                return;
+
+              if (error != CacheStorageError::kSuccess) {
+                std::move(callback).Run(
+                    blink::mojom::OpenResult::NewStatus(error));
+                return;
+              }
+
+              // Hang on to the cache for a few seconds. This way if the user
+              // quickly closes and reopens it the cache backend won't have to
+              // be reinitialized.
+              base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+                  FROM_HERE,
+                  base::BindOnce(&StopPreservingCache, cache_handle.Clone()),
+                  base::TimeDelta::FromSeconds(kCachePreservationSeconds));
+
+              blink::mojom::CacheStorageCacheAssociatedPtrInfo ptr_info;
+              auto request = mojo::MakeRequest(&ptr_info);
+              auto cache_impl =
+                  std::make_unique<CacheImpl>(std::move(cache_handle));
+              self->owner_->AddCacheBinding(std::move(cache_impl),
+                                            std::move(request));
+
+              std::move(callback).Run(
+                  blink::mojom::OpenResult::NewCache(std::move(ptr_info)));
+            },
+            weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+ private:
+  // Helper method that returns the current CacheStorageHandle value.  If the
+  // handle is closed, then it attempts to open a new CacheStorageHandle
+  // automatically.  This automatic open is necessary to re-attach to the
+  // backend after the browser storage has been wiped.
+  content::CacheStorage* GetOrCreateCacheStorage() {
+    DCHECK(owner_);
+    if (!cache_storage_handle_.value())
+      cache_storage_handle_ = owner_->OpenCacheStorage(origin_);
+    return cache_storage_handle_.value();
+  }
 
   // Owns this.
   CacheStorageDispatcherHost* const owner_;
 
-  base::WeakPtrFactory<CacheImpl> weak_factory_;
+  const url::Origin origin_;
+  CacheStorageHandle cache_storage_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(CacheImpl);
+  base::WeakPtrFactory<CacheStorageImpl> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(CacheStorageImpl);
 };
 
 CacheStorageDispatcherHost::CacheStorageDispatcherHost() = default;
@@ -214,170 +375,29 @@ void CacheStorageDispatcherHost::CreateCacheListener(
   context_ = context;
 }
 
-void CacheStorageDispatcherHost::Has(
-    const base::string16& cache_name,
-    blink::mojom::CacheStorage::HasCallback callback) {
-  TRACE_EVENT0("CacheStorage", "CacheStorageDispatcherHost::OnCacheStorageHas");
-  url::Origin origin = bindings_.dispatch_context();
-  if (!OriginCanAccessCacheStorage(origin)) {
-    bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
-    return;
-  }
-  if (!ValidState())
-    return;
-  context_->cache_manager()->HasCache(
-      origin, CacheStorageOwner::kCacheAPI, base::UTF16ToUTF8(cache_name),
-      base::BindOnce(&CacheStorageDispatcherHost::OnHasCallback, this,
-                     std::move(callback)));
-}
-
-void CacheStorageDispatcherHost::Open(
-    const base::string16& cache_name,
-    blink::mojom::CacheStorage::OpenCallback callback) {
-  TRACE_EVENT0("CacheStorage",
-               "CacheStorageDispatcherHost::OnCacheStorageOpen");
-  url::Origin origin = bindings_.dispatch_context();
-  if (!OriginCanAccessCacheStorage(origin)) {
-    bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
-    return;
-  }
-  if (!ValidState())
-    return;
-  context_->cache_manager()->OpenCache(
-      origin, CacheStorageOwner::kCacheAPI, base::UTF16ToUTF8(cache_name),
-      base::BindOnce(&CacheStorageDispatcherHost::OnOpenCallback, this, origin,
-                     std::move(callback)));
-}
-
-void CacheStorageDispatcherHost::Delete(
-    const base::string16& cache_name,
-    blink::mojom::CacheStorage::DeleteCallback callback) {
-  TRACE_EVENT0("CacheStorage",
-               "CacheStorageDispatcherHost::OnCacheStorageDelete");
-  url::Origin origin = bindings_.dispatch_context();
-  if (!OriginCanAccessCacheStorage(origin)) {
-    bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
-    return;
-  }
-  if (!ValidState())
-    return;
-  context_->cache_manager()->DeleteCache(origin, CacheStorageOwner::kCacheAPI,
-                                         base::UTF16ToUTF8(cache_name),
-
-                                         std::move(callback));
-}
-
-void CacheStorageDispatcherHost::Keys(
-    blink::mojom::CacheStorage::KeysCallback callback) {
-  TRACE_EVENT0("CacheStorage",
-               "CacheStorageDispatcherHost::OnCacheStorageKeys");
-  url::Origin origin = bindings_.dispatch_context();
-
-  if (!OriginCanAccessCacheStorage(origin)) {
-    bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
-    return;
-  }
-  if (!ValidState())
-    return;
-  context_->cache_manager()->EnumerateCaches(
-      origin, CacheStorageOwner::kCacheAPI,
-      base::BindOnce(&CacheStorageDispatcherHost::OnKeysCallback, this,
-                     std::move(callback)));
-}
-
-void CacheStorageDispatcherHost::Match(
-    blink::mojom::FetchAPIRequestPtr request,
-    blink::mojom::QueryParamsPtr match_params,
-    blink::mojom::CacheStorage::MatchCallback callback) {
-  TRACE_EVENT0("CacheStorage",
-               "CacheStorageDispatcherHost::OnCacheStorageMatch");
-  url::Origin origin = bindings_.dispatch_context();
-  if (!OriginCanAccessCacheStorage(origin)) {
-    bindings_.ReportBadMessage("CSDH_INVALID_ORIGIN");
-    return;
-  }
-  if (!ValidState())
-    return;
-
-  if (!match_params->cache_name) {
-    context_->cache_manager()->MatchAllCaches(
-        origin, CacheStorageOwner::kCacheAPI, std::move(request),
-        std::move(match_params),
-        base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
-                       std::move(callback)));
-    return;
-  }
-  std::string cache_name = base::UTF16ToUTF8(*match_params->cache_name);
-  context_->cache_manager()->MatchCache(
-      origin, CacheStorageOwner::kCacheAPI, std::move(cache_name),
-      std::move(request), std::move(match_params),
-      base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
-                     std::move(callback)));
-}
-
-void CacheStorageDispatcherHost::OnHasCallback(
-    blink::mojom::CacheStorage::HasCallback callback,
-    bool has_cache,
-    CacheStorageError error) {
-  if (!has_cache)
-    error = CacheStorageError::kErrorNotFound;
-  std::move(callback).Run(error);
-}
-
-void CacheStorageDispatcherHost::OnOpenCallback(
-    url::Origin origin,
-    blink::mojom::CacheStorage::OpenCallback callback,
-    CacheStorageCacheHandle cache_handle,
-    CacheStorageError error) {
-  if (error != CacheStorageError::kSuccess) {
-    std::move(callback).Run(blink::mojom::OpenResult::NewStatus(error));
-    return;
-  }
-
-  // Hang on to the cache for a few seconds. This way if the user quickly closes
-  // and reopens it the cache backend won't have to be reinitialized.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&StopPreservingCache, cache_handle.Clone()),
-      base::TimeDelta::FromSeconds(kCachePreservationSeconds));
-
-  blink::mojom::CacheStorageCacheAssociatedPtrInfo ptr_info;
-  auto request = mojo::MakeRequest(&ptr_info);
-  auto cache_impl = std::make_unique<CacheImpl>(std::move(cache_handle), this);
-  cache_bindings_.AddBinding(std::move(cache_impl), std::move(request));
-
-  std::move(callback).Run(
-      blink::mojom::OpenResult::NewCache(std::move(ptr_info)));
-}
-
-void CacheStorageDispatcherHost::OnKeysCallback(
-    blink::mojom::CacheStorage::KeysCallback callback,
-    const CacheStorageIndex& cache_index) {
-  std::vector<base::string16> string16s;
-  for (const auto& metadata : cache_index.ordered_cache_metadata()) {
-    string16s.push_back(base::UTF8ToUTF16(metadata.name));
-  }
-
-  std::move(callback).Run(string16s);
-}
-
-void CacheStorageDispatcherHost::OnMatchCallback(
-    blink::mojom::CacheStorage::MatchCallback callback,
-    CacheStorageError error,
-    blink::mojom::FetchAPIResponsePtr response) {
-  if (error != CacheStorageError::kSuccess) {
-    std::move(callback).Run(blink::mojom::MatchResult::NewStatus(error));
-    return;
-  }
-
-  std::move(callback).Run(
-      blink::mojom::MatchResult::NewResponse(std::move(response)));
-}
-
 void CacheStorageDispatcherHost::AddBinding(
     blink::mojom::CacheStorageRequest request,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bindings_.AddBinding(this, std::move(request), origin);
+  auto impl = std::make_unique<CacheStorageImpl>(this, origin);
+  bindings_.AddBinding(std::move(impl), std::move(request));
+}
+
+void CacheStorageDispatcherHost::AddCacheBinding(
+    std::unique_ptr<CacheImpl> cache_impl,
+    blink::mojom::CacheStorageCacheAssociatedRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  cache_bindings_.AddBinding(std::move(cache_impl), std::move(request));
+}
+
+CacheStorageHandle CacheStorageDispatcherHost::OpenCacheStorage(
+    const url::Origin& origin) {
+  if (!context_ || !context_->cache_manager() ||
+      !OriginCanAccessCacheStorage(origin))
+    return CacheStorageHandle();
+
+  return context_->cache_manager()->OpenCacheStorage(
+      origin, CacheStorageOwner::kCacheAPI);
 }
 
 bool CacheStorageDispatcherHost::ValidState() {

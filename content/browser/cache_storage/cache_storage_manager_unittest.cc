@@ -283,9 +283,11 @@ class CacheStorageManagerTest : public testing::Test {
     callback_bool_ = false;
     base::RunLoop loop;
     bool write_was_scheduled =
-        CacheStorageForOrigin(origin)->InitiateScheduledIndexWriteForTest(
-            base::BindOnce(&CacheStorageManagerTest::BoolCallback,
-                           base::Unretained(this), &loop));
+        CacheStorageForOrigin(origin)
+            .value()
+            ->InitiateScheduledIndexWriteForTest(
+                base::BindOnce(&CacheStorageManagerTest::BoolCallback,
+                               base::Unretained(this), &loop));
     loop.Run();
     DCHECK(callback_bool_);
     return write_was_scheduled;
@@ -328,8 +330,10 @@ class CacheStorageManagerTest : public testing::Test {
             CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::HistogramTester histogram_tester;
     base::RunLoop loop;
-    cache_manager_->OpenCache(
-        origin, owner, cache_name,
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->OpenCache(
+        cache_name,
         base::BindOnce(&CacheStorageManagerTest::CacheAndErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -349,8 +353,10 @@ class CacheStorageManagerTest : public testing::Test {
            CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::HistogramTester histogram_tester;
     base::RunLoop loop;
-    cache_manager_->HasCache(
-        origin, owner, cache_name,
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->HasCache(
+        cache_name,
         base::BindOnce(&CacheStorageManagerTest::BoolAndErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -363,8 +369,10 @@ class CacheStorageManagerTest : public testing::Test {
               CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::HistogramTester histogram_tester;
     base::RunLoop loop;
-    cache_manager_->DeleteCache(
-        origin, owner, cache_name,
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->DoomCache(
+        cache_name,
         base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -376,8 +384,9 @@ class CacheStorageManagerTest : public testing::Test {
               CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::HistogramTester histogram_tester;
     base::RunLoop loop;
-    cache_manager_->EnumerateCaches(
-        origin, owner,
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->EnumerateCaches(
         base::BindOnce(&CacheStorageManagerTest::CacheMetadataCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -404,8 +413,10 @@ class CacheStorageManagerTest : public testing::Test {
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::HistogramTester histogram_tester;
     base::RunLoop loop;
-    cache_manager_->MatchCache(
-        origin, owner, cache_name, std::move(request), std::move(match_params),
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->MatchCache(
+        cache_name, std::move(request), std::move(match_params),
         base::BindOnce(&CacheStorageManagerTest::CacheMatchCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -430,8 +441,10 @@ class CacheStorageManagerTest : public testing::Test {
       CacheStorageOwner owner = CacheStorageOwner::kCacheAPI) {
     base::HistogramTester histogram_tester;
     base::RunLoop loop;
-    cache_manager_->MatchAllCaches(
-        origin, owner, std::move(request), std::move(match_params),
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->MatchAllCaches(
+        std::move(request), std::move(match_params),
         base::BindOnce(&CacheStorageManagerTest::CacheMatchCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -448,9 +461,10 @@ class CacheStorageManagerTest : public testing::Test {
     request->url = GURL(request_url);
 
     base::RunLoop loop;
-    cache_manager_->WriteToCache(
-        origin, owner, cache_name, std::move(request),
-        blink::mojom::FetchAPIResponse::New(),
+    CacheStorageHandle cache_storage =
+        cache_manager_->OpenCacheStorage(origin, owner);
+    cache_storage.value()->WriteToCache(
+        cache_name, std::move(request), blink::mojom::FetchAPIResponse::New(),
         base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
@@ -562,9 +576,9 @@ class CacheStorageManagerTest : public testing::Test {
     return callback_error_ == CacheStorageError::kSuccess;
   }
 
-  CacheStorage* CacheStorageForOrigin(const url::Origin& origin) {
-    return cache_manager_->FindOrCreateCacheStorage(
-        origin, CacheStorageOwner::kCacheAPI);
+  CacheStorageHandle CacheStorageForOrigin(const url::Origin& origin) {
+    return cache_manager_->OpenCacheStorage(origin,
+                                            CacheStorageOwner::kCacheAPI);
   }
 
   int64_t GetOriginUsage(
@@ -599,8 +613,8 @@ class CacheStorageManagerTest : public testing::Test {
 
   int64_t GetSizeThenCloseAllCaches(const url::Origin& origin) {
     base::RunLoop loop;
-    CacheStorage* cache_storage = CacheStorageForOrigin(origin);
-    cache_storage->GetSizeThenCloseAllCaches(
+    CacheStorageHandle cache_storage = CacheStorageForOrigin(origin);
+    cache_storage.value()->GetSizeThenCloseAllCaches(
         base::BindOnce(&CacheStorageManagerTest::UsageCallback,
                        base::Unretained(this), &loop));
     loop.Run();
@@ -609,9 +623,10 @@ class CacheStorageManagerTest : public testing::Test {
 
   int64_t Size(const url::Origin& origin) {
     base::RunLoop loop;
-    CacheStorage* cache_storage = CacheStorageForOrigin(origin);
-    cache_storage->Size(base::BindOnce(&CacheStorageManagerTest::UsageCallback,
-                                       base::Unretained(this), &loop));
+    CacheStorageHandle cache_storage = CacheStorageForOrigin(origin);
+    cache_storage.value()->Size(
+        base::BindOnce(&CacheStorageManagerTest::UsageCallback,
+                       base::Unretained(this), &loop));
     loop.Run();
     return callback_usage_;
   }
@@ -1119,8 +1134,8 @@ TEST_F(CacheStorageManagerTest, TestErrorInitializingCache) {
   auto size_before_close = Size(origin1_);
   EXPECT_GT(size_before_close, 0);
 
-  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
-  auto cache_handle = cache_storage->GetLoadedCache(kCacheName);
+  CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
+  auto cache_handle = cache_storage.value()->GetLoadedCache(kCacheName);
   CacheStorageCache* cache = cache_handle.value();
   base::FilePath index_path = cache->path().AppendASCII("index");
   cache_handle = CacheStorageCacheHandle();
@@ -1310,19 +1325,19 @@ TEST_P(CacheStorageManagerTestP, DeleteBeforeRelease) {
 
 TEST_P(CacheStorageManagerTestP, OpenRunsSerially) {
   EXPECT_FALSE(Delete(origin1_, "tmp"));  // Init storage.
-  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
-  cache_storage->StartAsyncOperationForTesting();
+  CacheStorageHandle cache_storage = CacheStorageForOrigin(origin1_);
+  cache_storage.value()->StartAsyncOperationForTesting();
 
   base::RunLoop open_loop;
-  cache_manager_->OpenCache(
-      origin1_, CacheStorageOwner::kCacheAPI, "foo",
+  cache_storage.value()->OpenCache(
+      "foo",
       base::BindOnce(&CacheStorageManagerTest::CacheAndErrorCallback,
                      base::Unretained(this), base::Unretained(&open_loop)));
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(callback_cache_handle_.value());
 
-  cache_storage->CompleteAsyncOperationForTesting();
+  cache_storage.value()->CompleteAsyncOperationForTesting();
   open_loop.Run();
   EXPECT_TRUE(callback_cache_handle_.value());
 }

@@ -180,89 +180,20 @@ scoped_refptr<CacheStorageManager> CacheStorageManager::Create(
 
 CacheStorageManager::~CacheStorageManager() = default;
 
-void CacheStorageManager::OpenCache(
+CacheStorageHandle CacheStorageManager::OpenCacheStorage(
     const url::Origin& origin,
-    CacheStorageOwner owner,
-    const std::string& cache_name,
-    CacheStorage::CacheAndErrorCallback callback) {
+    CacheStorageOwner owner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-
-  cache_storage->OpenCache(cache_name, std::move(callback));
-}
-
-void CacheStorageManager::HasCache(
-    const url::Origin& origin,
-    CacheStorageOwner owner,
-    const std::string& cache_name,
-    CacheStorage::BoolAndErrorCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-  cache_storage->HasCache(cache_name, std::move(callback));
-}
-
-void CacheStorageManager::DeleteCache(const url::Origin& origin,
-                                      CacheStorageOwner owner,
-                                      const std::string& cache_name,
-                                      CacheStorage::ErrorCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-  cache_storage->DoomCache(cache_name, std::move(callback));
-}
-
-void CacheStorageManager::EnumerateCaches(
-    const url::Origin& origin,
-    CacheStorageOwner owner,
-    CacheStorage::IndexCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-
-  cache_storage->EnumerateCaches(std::move(callback));
-}
-
-void CacheStorageManager::MatchCache(
-    const url::Origin& origin,
-    CacheStorageOwner owner,
-    const std::string& cache_name,
-    blink::mojom::FetchAPIRequestPtr request,
-    blink::mojom::QueryParamsPtr match_params,
-    CacheStorageCache::ResponseCallback callback) {
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-
-  cache_storage->MatchCache(cache_name, std::move(request),
-                            std::move(match_params), std::move(callback));
-}
-
-void CacheStorageManager::MatchAllCaches(
-    const url::Origin& origin,
-    CacheStorageOwner owner,
-    blink::mojom::FetchAPIRequestPtr request,
-    blink::mojom::QueryParamsPtr match_params,
-    CacheStorageCache::ResponseCallback callback) {
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-
-  cache_storage->MatchAllCaches(std::move(request), std::move(match_params),
-                                std::move(callback));
-}
-
-void CacheStorageManager::WriteToCache(
-    const url::Origin& origin,
-    CacheStorageOwner owner,
-    const std::string& cache_name,
-    blink::mojom::FetchAPIRequestPtr request,
-    blink::mojom::FetchAPIResponsePtr response,
-    CacheStorage::ErrorCallback callback) {
-  // Cache API should write through the dispatcher.
-  DCHECK_NE(owner, CacheStorageOwner::kCacheAPI);
-
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
-
-  cache_storage->WriteToCache(cache_name, std::move(request),
-                              std::move(response), std::move(callback));
+  CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
+  if (it == cache_storage_map_.end()) {
+    CacheStorage* cache_storage = new CacheStorage(
+        ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
+        cache_task_runner_.get(), quota_manager_proxy_, blob_context_, this,
+        origin, owner);
+    cache_storage_map_[{origin, owner}] = base::WrapUnique(cache_storage);
+    return cache_storage->CreateHandle();
+  }
+  return it->second.get()->CreateHandle();
 }
 
 void CacheStorageManager::SetBlobParametersForCache(
@@ -293,6 +224,20 @@ void CacheStorageManager::NotifyCacheContentChanged(const url::Origin& origin,
                                                     const std::string& name) {
   for (auto& observer : observers_)
     observer.OnCacheContentChanged(origin, name);
+}
+
+void CacheStorageManager::CacheStorageUnreferenced(CacheStorage* cache_storage,
+                                                   const url::Origin& origin,
+                                                   CacheStorageOwner owner) {
+  DCHECK(cache_storage);
+  cache_storage->AssertUnreferenced();
+  auto it = cache_storage_map_.find({origin, owner});
+  DCHECK(it != cache_storage_map_.end());
+  DCHECK(it->second.get() == cache_storage);
+
+  // Currently we don't do anything when a CacheStorage instance becomes
+  // unreferenced.  In the future we will deallocate some or all of the
+  // CacheStorage's state.
 }
 
 void CacheStorageManager::GetAllOriginsUsage(
@@ -350,9 +295,9 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
       continue;
     }
-    CacheStorage* cache_storage = FindOrCreateCacheStorage(
+    CacheStorageHandle cache_storage = OpenCacheStorage(
         url::Origin::Create(usage.origin), CacheStorageOwner::kCacheAPI);
-    cache_storage->Size(
+    cache_storage.value()->Size(
         base::BindOnce(&OneOriginSizeReported, barrier_closure, &usage));
   }
 }
@@ -363,9 +308,9 @@ void CacheStorageManager::GetOriginUsage(
     storage::QuotaClient::GetUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
+  CacheStorageHandle cache_storage = OpenCacheStorage(origin, owner);
 
-  cache_storage->Size(std::move(callback));
+  cache_storage.value()->Size(std::move(callback));
 }
 
 void CacheStorageManager::GetOrigins(
@@ -423,7 +368,7 @@ void CacheStorageManager::DeleteOriginData(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Create the CacheStorage for the origin if it hasn't been loaded yet.
-  FindOrCreateCacheStorage(origin, owner);
+  CacheStorageHandle handle = OpenCacheStorage(origin, owner);
 
   auto it = cache_storage_map_.find({origin, owner});
   DCHECK(it != cache_storage_map_.end());
@@ -489,22 +434,6 @@ CacheStorageManager::CacheStorageManager(
     quota_manager_proxy_->RegisterClient(new CacheStorageQuotaClient(
         weak_ptr_factory_.GetWeakPtr(), CacheStorageOwner::kBackgroundFetch));
   }
-}
-
-CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
-    const url::Origin& origin,
-    CacheStorageOwner owner) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
-  if (it == cache_storage_map_.end()) {
-    CacheStorage* cache_storage = new CacheStorage(
-        ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
-        cache_task_runner_.get(), quota_manager_proxy_, blob_context_, this,
-        origin, owner);
-    cache_storage_map_[{origin, owner}] = base::WrapUnique(cache_storage);
-    return cache_storage;
-  }
-  return it->second.get();
 }
 
 // static

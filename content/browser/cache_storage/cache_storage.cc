@@ -604,6 +604,23 @@ CacheStorage::CacheStorage(
 CacheStorage::~CacheStorage() {
 }
 
+CacheStorageHandle CacheStorage::CreateHandle() {
+  return CacheStorageHandle(weak_factory_.GetWeakPtr());
+}
+
+void CacheStorage::AddHandleRef() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  handle_ref_count_ += 1;
+}
+
+void CacheStorage::DropHandleRef() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(handle_ref_count_ > 0);
+  handle_ref_count_ -= 1;
+  if (!handle_ref_count_ && cache_storage_manager_)
+    cache_storage_manager_->CacheStorageUnreferenced(this, origin_, owner_);
+}
+
 void CacheStorage::OpenCache(const std::string& cache_name,
                              CacheAndErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -615,6 +632,10 @@ void CacheStorage::OpenCache(const std::string& cache_name,
       CacheStorageQuotaClient::GetIDFromOwner(owner_), origin_,
       StorageType::kTemporary);
 
+  // TODO: Hold a handle to this CacheStorage instance while executing
+  //       operations to better support use by internal code that may
+  //       start a single operation without explicitly maintaining a
+  //       handle.
   scheduler_->ScheduleOperation(
       CacheStorageSchedulerOp::kOpen,
       base::BindOnce(&CacheStorage::OpenCacheImpl, weak_factory_.GetWeakPtr(),

@@ -514,20 +514,24 @@ CacheStorageCacheHandle CacheStorageCache::CreateHandle() {
 void CacheStorageCache::AddHandleRef() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   handle_ref_count_ += 1;
+  // Reference the parent CacheStorage while the Cache is referenced.  Some
+  // code may only directly reference the Cache and we don't want to let the
+  // CacheStorage cleanup if it becomes unreferenced in these cases.
+  if (handle_ref_count_ == 1 && cache_storage_)
+    cache_storage_handle_ = cache_storage_->CreateHandle();
 }
 
 void CacheStorageCache::DropHandleRef() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(handle_ref_count_ > 0);
   handle_ref_count_ -= 1;
+  // Dropping the last reference may result in the parent CacheStorage
+  // deleting itself or this Cache object.  Be careful not to touch the
+  // `this` pointer in this method after the following code.
   if (handle_ref_count_ == 0 && cache_storage_) {
+    CacheStorageHandle handle = std::move(cache_storage_handle_);
     cache_storage_->CacheUnreferenced(this);
   }
-}
-
-void CacheStorageCache::AssertUnreferenced() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!handle_ref_count_);
 }
 
 void CacheStorageCache::Match(blink::mojom::FetchAPIRequestPtr request,
