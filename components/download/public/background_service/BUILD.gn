@@ -22,6 +22,8 @@ source_set("public") {
     "logger.h",
     "navigation_monitor.h",
     "service_config.h",
+    "task_manager.cc",
+    "task_manager.h",
     "task_scheduler.h",
   ]
 
@@ -59,4 +61,19 @@ if (is_android) {
       "download_task_types.h",
     ]
   }
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "task_manager_unittest.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//components/download/public/background_service:public",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
 }
