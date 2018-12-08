@@ -811,6 +811,20 @@ copy("ui_base_test_resources_pak") {
   ]
 }
 
+if (is_android) {
+  android_assets("ui_base_test_android_assets") {
+    testonly = true
+
+    # Use $target_gen_dir so the associated .pak.info file is available.
+    sources = [
+      "$target_gen_dir/ui_base_test_resources.pak",
+    ]
+    deps = [
+      ":ui_base_test_resources_grit",
+    ]
+  }
+}
+
 if (is_ios) {
   bundle_data("ui_base_test_bundle_data") {
     testonly = true
@@ -953,9 +967,13 @@ test("ui_base_unittests") {
     "//url",
   ]
 
-  if (is_ios) {
+  # Include the correct ui_base_test resources per platform.
+  if (is_android) {
+    deps += [ ":ui_base_test_android_assets" ]
+    data_deps += [ ":ui_base_test_resources_pak" ]
+  } else if (is_ios) {
     deps += [ ":ui_base_test_bundle_data" ]
-  } else if (!is_android) {
+  } else {
     data += [ "$root_out_dir/ui_base_test_resources.pak" ]
     data_deps += [ ":ui_base_test_resources_pak" ]
   }

@@ -51,13 +51,7 @@ class StringWrapper {
 class L10nUtilTest : public PlatformTest {
 };
 
-#if defined(OS_ANDROID)
-// TODO(http://crbug.com/911191): Android resources don't load properly.
-#define MAYBE_GetString DISABLED_GetString
-#else
-#define MAYBE_GetString GetString
-#endif
-TEST_F(L10nUtilTest, MAYBE_GetString) {
+TEST_F(L10nUtilTest, GetString) {
   std::string s = l10n_util::GetStringUTF8(IDS_SIMPLE);
   EXPECT_EQ(std::string("Hello World!"), s);
 
