@@ -14,27 +14,42 @@
 
 namespace password_manager {
 
-// Reads tabular data from CSV (Comma Separated Values) format as defined in RFC
-// 4180, with the following limitations/relaxations:
-//   * The input should be UTF-8 encoded. No code points should be escaped.
-//   * The first line must be a header that contains the column names.
-//   * Records may be separated by either LF or CRLF sequences. Each CRLF will
-//     be converted to LF characters inside quotes.
-//   * Inconsistent number of fields within records is handled gracefully. Extra
-//     fields are ignored. Missing fields will have no corresponding key-value
-//     pair in the record.
-//   * Repeated columns of the same name are not supported (the last value will
-//     be preserved).
-//
-// The CSV representation of the data will be read from |csv|. The first line of
-// the file should be a header to extract |column_names| from. From each
-// subsequent line, the extracted values are put into a map mapping column names
-// to the value of the corresponding field, and inserted into |records|. Both
-// |column_names| and |records| will be overwritten. Returns false if parsing
-// failed due to a syntax error.
-bool ReadCSV(base::StringPiece csv,
-             std::vector<std::string>* column_names,
-             std::vector<std::map<std::string, std::string>>* records);
+// Parsed representation of tabular CSV data.
+class CSVTable {
+ public:
+  CSVTable();
+  ~CSVTable();
+
+  // Reads tabular data |csv| in a CSV (Comma Separated Values) format and fills
+  // the column_names_ and records_ accordingly. The CSV format is understood as
+  // defined in RFC 4180, with the following limitations/relaxations:
+  //   * The input should be UTF-8 encoded. No code points should be escaped.
+  //   * The first line must be a header that contains the column names.
+  //   * Records may be separated by either LF or CRLF sequences. Each CRLF will
+  //     be converted to LF characters inside quotes.
+  //   * Inconsistent number of fields within records is handled gracefully.
+  //     Extra fields are ignored. Missing fields will have no corresponding
+  //     key-value pair in the record.
+  //   * Repeated columns of the same name are not supported (the last value
+  //     will be preserved).
+  // Returns false if parsing failed due to a syntax error.
+  bool ReadCSV(base::StringPiece csv);
+
+  const std::vector<std::string>& column_names() const { return column_names_; }
+
+  const std::vector<std::map<base::StringPiece, std::string>>& records() const {
+    return records_;
+  }
+
+ private:
+  // Values from the first row.
+  std::vector<std::string> column_names_;
+  // Values from the subsequent rows. Each map represents one row and maps the
+  // column names to the value stored at that column in that row.
+  std::vector<std::map<base::StringPiece, std::string>> records_;
+
+  DISALLOW_COPY_AND_ASSIGN(CSVTable);
+};
 
 }  // namespace password_manager
 
