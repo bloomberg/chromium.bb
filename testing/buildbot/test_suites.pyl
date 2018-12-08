@@ -332,6 +332,19 @@
       'wm_unittests': {},
     },
 
+    'autofill_captured_sites_gtests': {
+      'autofill_captured_sites_interactive_tests': {
+        'test': 'captured_sites_interactive_tests',
+        'args': [
+          '--gtest_filter="AutofillCapturedSitesInteractiveTest.Recipe/*"',
+          '--enable-pixel-output-in-tests',
+          '--ui-test-action-max-timeout=1000000',
+          '--test-launcher-timeout=1000000',
+          '--vmodule=captured_sites_test_utils=1,autofill_captured_sites_interactive_uitest=1'
+        ],
+      },
+    },
+
     'cast_audio_specific_chromium_gtests': {
       'cast_audio_backend_unittests': {},
       'cast_base_unittests': {},

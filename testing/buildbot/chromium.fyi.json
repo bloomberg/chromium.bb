@@ -4396,6 +4396,24 @@
       }
     ]
   },
+  "linux-autofill-captured-sites-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=\"AutofillCapturedSitesInteractiveTest.Recipe/*\"",
+          "--enable-pixel-output-in-tests",
+          "--ui-test-action-max-timeout=1000000",
+          "--test-launcher-timeout=1000000",
+          "--vmodule=captured_sites_test_utils=1,autofill_captured_sites_interactive_uitest=1"
+        ],
+        "name": "autofill_captured_sites_interactive_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "captured_sites_interactive_tests"
+      }
+    ]
+  },
   "linux-blink-animation-use-time-delta": {
     "additional_compile_targets": [
       "all"
@@ -7869,6 +7887,24 @@
       }
     ]
   },
+  "mac-autofill-captured-sites-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=\"AutofillCapturedSitesInteractiveTest.Recipe/*\"",
+          "--enable-pixel-output-in-tests",
+          "--ui-test-action-max-timeout=1000000",
+          "--test-launcher-timeout=1000000",
+          "--vmodule=captured_sites_test_utils=1,autofill_captured_sites_interactive_uitest=1"
+        ],
+        "name": "autofill_captured_sites_interactive_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "captured_sites_interactive_tests"
+      }
+    ]
+  },
   "mac-hermetic-upgrade-rel": {
     "additional_compile_targets": [
       "all"
@@ -10263,6 +10299,24 @@
       {
         "name": "test_traffic_annotation_auditor",
         "script": "test_traffic_annotation_auditor.py"
+      }
+    ]
+  },
+  "win-autofill-captured-sites-rel": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=\"AutofillCapturedSitesInteractiveTest.Recipe/*\"",
+          "--enable-pixel-output-in-tests",
+          "--ui-test-action-max-timeout=1000000",
+          "--test-launcher-timeout=1000000",
+          "--vmodule=captured_sites_test_utils=1,autofill_captured_sites_interactive_uitest=1"
+        ],
+        "name": "autofill_captured_sites_interactive_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "captured_sites_interactive_tests"
       }
     ]
   },
