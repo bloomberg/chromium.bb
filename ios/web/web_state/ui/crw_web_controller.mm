@@ -226,6 +226,9 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 @property(nonatomic, assign) BOOL cancelled;
 // Whether the navigation was initiated by a user gesture.
 @property(nonatomic, assign) BOOL hasUserGesture;
+// The back/forward navigation context for this pending navigation.
+@property(nonatomic, readonly)
+    web::NavigationContextImpl* pendingBackForwardContext;
 
 // Used by |webView:decidePolicyForNavigationAction| during a new back/forward
 // navigation to store the navigation context temporarily until it can be
@@ -263,6 +266,10 @@ const CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 - (std::unique_ptr<web::NavigationContextImpl>)
     releasePendingBackForwardContext {
   return std::move(_pendingBackForwardContext);
+}
+
+- (web::NavigationContextImpl*)pendingBackForwardContext {
+  return _pendingBackForwardContext.get();
 }
 @end
 
@@ -1377,6 +1384,19 @@ registerLoadRequestForURL:(const GURL&)URL
                              : WKNavigationTypeOther;
   ui::PageTransition transition =
       [self pageTransitionFromNavigationType:navigationType];
+
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      navigationType == WKNavigationTypeBackForward &&
+      _webView.backForwardList.currentItem) {
+    web::NavigationItem* currentItem = [[CRWNavigationItemHolder
+        holderForBackForwardListItem:_webView.backForwardList.currentItem]
+        navigationItem];
+    if (currentItem) {
+      transition = ui::PageTransitionFromInt(transition |
+                                             currentItem->GetTransitionType());
+    }
+  }
+
   // The referrer is not known yet, and will be updated later.
   const web::Referrer emptyReferrer;
   std::unique_ptr<web::NavigationContextImpl> context =
@@ -4395,7 +4415,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:requestURL];
     if (context) {
-      DCHECK(!context->IsRendererInitiated());
+      DCHECK(!context->IsRendererInitiated() ||
+             (context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK));
       transition = context->GetPageTransition();
       if (context->IsLoadingErrorPage()) {
         // loadHTMLString: navigation which loads error page into WKWebView.
@@ -5586,6 +5607,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (web::NavigationContextImpl*)contextForPendingMainFrameNavigationWithURL:
     (const GURL&)URL {
+  if (_pendingNavigationInfo.pendingBackForwardContext &&
+      _pendingNavigationInfo.pendingBackForwardContext->GetUrl() == URL) {
+    return _pendingNavigationInfo.pendingBackForwardContext;
+  }
+
   // Here the enumeration variable |navigation| is __strong to allow setting it
   // to nil.
   for (__strong id navigation in [_navigationStates pendingNavigations]) {
