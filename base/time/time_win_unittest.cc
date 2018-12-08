@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <windows.h>
+
 #include <mmsystem.h>
 #include <process.h>
 #include <stdint.h>
@@ -35,9 +36,7 @@ class MockTimeTicks : public TimeTicks {
     ticker_ = -5;
   }
 
-  static void UninstallTicker() {
-    SetMockTickFunction(old_tick_function_);
-  }
+  static void UninstallTicker() { SetMockTickFunction(old_tick_function_); }
 
  private:
   static volatile LONG ticker_;
@@ -101,9 +100,8 @@ TEST(TimeTicks, MAYBE_WinRollover) {
     for (int index = 0; index < kThreads; index++) {
       void* argument = reinterpret_cast<void*>(kChecks);
       unsigned thread_id;
-      threads[index] = reinterpret_cast<HANDLE>(
-        _beginthreadex(NULL, 0, RolloverTestThreadMain, argument, 0,
-          &thread_id));
+      threads[index] = reinterpret_cast<HANDLE>(_beginthreadex(
+          NULL, 0, RolloverTestThreadMain, argument, 0, &thread_id));
       EXPECT_NE((HANDLE)NULL, threads[index]);
     }
 
@@ -162,8 +160,7 @@ TEST(TimeTicks, TimeGetTimeCaps) {
   EXPECT_GT(static_cast<int>(caps.wPeriodMax), 1);
   EXPECT_GE(static_cast<int>(caps.wPeriodMin), 1);
   EXPECT_GT(static_cast<int>(caps.wPeriodMax), 1);
-  printf("timeGetTime range is %d to %dms\n", caps.wPeriodMin,
-    caps.wPeriodMax);
+  printf("timeGetTime range is %d to %dms\n", caps.wPeriodMin, caps.wPeriodMax);
 }
 
 TEST(TimeTicks, QueryPerformanceFrequency) {
@@ -174,7 +171,7 @@ TEST(TimeTicks, QueryPerformanceFrequency) {
   EXPECT_EQ(TRUE, rv);
   EXPECT_GT(frequency.QuadPart, 1000000);  // Expect at least 1MHz
   printf("QueryPerformanceFrequency is %5.2fMHz\n",
-    frequency.QuadPart / 1000000.0);
+         frequency.QuadPart / 1000000.0);
 }
 
 TEST(TimeTicks, TimerPerformance) {
@@ -185,7 +182,7 @@ TEST(TimeTicks, TimerPerformance) {
   typedef TimeTicks (*TestFunc)();
   struct TestCase {
     TestFunc func;
-    const char *description;
+    const char* description;
   };
   // Cheating a bit here:  assumes sizeof(TimeTicks) == sizeof(Time)
   // in order to create a single test case list.
@@ -212,8 +209,8 @@ TEST(TimeTicks, TimerPerformance) {
     // The reason to remove the check is because the tests run on many
     // buildbots, some of which are VMs.  These machines can run horribly
     // slow, and there is really no value for checking against a max timer.
-    //const int kMaxTime = 35;  // Maximum acceptible milliseconds for test.
-    //EXPECT_LT((stop - start).InMilliseconds(), kMaxTime);
+    // const int kMaxTime = 35;  // Maximum acceptible milliseconds for test.
+    // EXPECT_LT((stop - start).InMilliseconds(), kMaxTime);
     printf("%s: %1.2fus per call\n", test_case.description,
            (stop - start).InMillisecondsF() * 1000 / kLoops);
   }
@@ -283,7 +280,7 @@ TEST(TimeTicks, FromQPCValue) {
   for (int64_t ticks : test_cases) {
     const double expected_microseconds_since_origin =
         (static_cast<double>(ticks) * Time::kMicrosecondsPerSecond) /
-            ticks_per_second;
+        ticks_per_second;
     const TimeTicks converted_value = TimeTicks::FromQPCValue(ticks);
     const double converted_microseconds_since_origin =
         static_cast<double>((converted_value - TimeTicks()).InMicroseconds());
