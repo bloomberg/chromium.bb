@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -22,41 +23,41 @@ CURRENT_VERSION = 1
 APP_URL = 'https://cit-cli-metrics.appspot.com'
 
 EMPTY_LINE = (
-  '*                                                   *'
+  '┃                                                   ┃'
 )
 NOTICE_COUNTDOWN_HEADER = (
-  '*****************************************************\n'
-  '*  METRICS COLLECTION WILL START IN %2d EXECUTIONS   *'
+  '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n'
+  '┃  METRICS COLLECTION WILL START IN %2d EXECUTIONS  ┃'
 )
 NOTICE_COLLECTION_HEADER = (
-  '*****************************************************\n'
-  '*      METRICS COLLECTION IS TAKING PLACE           *'
+  '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n'
+  '┃      METRICS COLLECTION IS TAKING PLACE           ┃'
 )
 NOTICE_VERSION_CHANGE_HEADER = (
-  '*****************************************************\n'
-  '*       WE ARE COLLECTING ADDITIONAL METRICS        *\n'
-  '*                                                   *\n'
-  '* Please review the changes and opt-in again.       *'
+  '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n'
+  '┃       WE ARE COLLECTING ADDITIONAL METRICS        ┃\n'
+  '┃                                                   ┃\n'
+  '┃ Please review the changes and opt-in again.       ┃'
 )
 NOTICE_FOOTER = (
-  '* To suppress this message opt in or out using:     *\n'
-  '* $ gclient metrics [--opt-in] [--opt-out]          *\n'
-  '* For more information please see metrics.README.md *\n'
-  '* in your depot_tools checkout or visit             *\n'
-  '* https://bit.ly/2ufRS4p.                           *\n'
-  '*****************************************************\n'
+  '┃ To suppress this message opt in or out using:     ┃\n'
+  '┃ $ gclient metrics [--opt-in] [--opt-out]          ┃\n'
+  '┃ For more information please see metrics.README.md ┃\n'
+  '┃ in your depot_tools checkout or visit             ┃\n'
+  '┃ https://goo.gl/yNpRDV.                            ┃\n'
+  '┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n'
 )
 
 CHANGE_NOTICE = {
   # No changes for version 0
   0: '',
-  1: ('* We want to collect the Git version.               *\n'
-      '* We want to collect information about the HTTP     *\n'
-      '* requests that depot_tools makes, and the git and  *\n'
-      '* cipd commands it executes.                        *\n'
-      '*                                                   *\n'
-      '* We only collect known strings to make sure we     *\n'
-      '* don\'t record PII.                                 *')
+  1: ('┃ We want to collect the Git version.               ┃\n'
+      '┃ We want to collect information about the HTTP     ┃\n'
+      '┃ requests that depot_tools makes, and the git and  ┃\n'
+      '┃ cipd commands it executes.                        ┃\n'
+      '┃                                                   ┃\n'
+      '┃ We only collect known strings to make sure we     ┃\n'
+      '┃ don\'t record PII.                                 ┃')
 }
 
 
