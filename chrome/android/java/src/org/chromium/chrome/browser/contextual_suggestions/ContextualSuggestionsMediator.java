@@ -16,6 +16,7 @@ import android.view.View;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -312,6 +313,7 @@ class ContextualSuggestionsMediator
         if (mSuggestionsSetOnBottomSheet || !mModelPreparedForCurrentTab) return;
 
         maybeShowContentInSheet();
+        RecordUserAction.record("ContextualSuggestions.ToolbarButtonClicked");
         mCoordinator.showSuggestions(mSuggestionsSource);
         mCoordinator.expandBottomSheet();
     }
@@ -490,7 +492,7 @@ class ContextualSuggestionsMediator
             }
 
             @Override
-            public void onSheetClosed(int reason) {
+            public void onSheetClosed(@StateChangeReason int reason) {
                 removeSuggestionsFromSheet();
             }
         };

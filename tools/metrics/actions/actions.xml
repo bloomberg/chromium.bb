@@ -4420,6 +4420,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSuggestions">
+  <owner>huayinz@chromium.org</owner>
+  <owner>twellington@chromium.com</owner>
+  <owner>wylieb@chromium.com</owner>
+  <description>Android: User interacts with the feature directly.</description>
+</action>
+
 <action name="ContextualSuggestions.ContextMenu">
   <owner>huayinz@chromium.org</owner>
   <owner>twellington@chromium.com</owner>
@@ -21055,6 +21062,13 @@ should be able to be added at any place in this file.
   <suffix name="Search" label="User started searching from the top menu."/>
   <suffix name="Settings" label="User entered settings from the top menu."/>
   <affected-action name="Android.DownloadManager.Menu.Action"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="SuggestionClicked"
+      label="The suggestion was clicked directly."/>
+  <suffix name="ToolbarButtonClicked" label="The toolbar button was shown."/>
+  <affected-action name="ContextualSuggestions"/>
 </action-suffix>
 
 </actions>
