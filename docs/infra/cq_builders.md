@@ -140,16 +140,7 @@ builder.
   Path regular expressions:
     * [`//build/.*check_gn_headers.*`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:build/.*check_gn_headers.*)
 
-* [linux_layout_tests_layout_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_layout_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_layout_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_layout_ng))
-
-  Path regular expressions:
-    * [`//third_party/blink/renderer/core/(layout|paint)/ng/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(layout|paint)/ng/)
-    * [`//third_party/blink/renderer/core/editing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/editing/)
-    * [`//third_party/blink/renderer/platform/fonts/shaping/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/)
-    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG)
-    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/)
-
-* [linux_layout_tests_slimming_paint_v2](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_slimming_paint_v2) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_slimming_paint_v2)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_slimming_paint_v2))
+* [linux_layout_tests_composite_after_paint](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_composite_after_paint) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_composite_after_paint)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_composite_after_paint))
 
   Path regular expressions:
     * [`//third_party/blink/renderer/core/paint/compositing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/paint/compositing/)
@@ -159,6 +150,15 @@ builder.
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/flag-specific/enable-blink-features=BlinkGenPropertyTrees)
     * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=CompositeAfterPaint)
     * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=CompositeAfterPaint/)
+
+* [linux_layout_tests_layout_ng](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_layout_tests_layout_ng) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_layout_tests_layout_ng)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_layout_tests_layout_ng))
+
+  Path regular expressions:
+    * [`//third_party/blink/renderer/core/(layout|paint)/ng/.+`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/renderer/core/(layout|paint)/ng/)
+    * [`//third_party/blink/renderer/core/editing/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/editing/)
+    * [`//third_party/blink/renderer/platform/fonts/shaping/.+`](https://cs.chromium.org/chromium/src/third_party/blink/renderer/platform/fonts/shaping/)
+    * [`//third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG`](https://cs.chromium.org/search/?q=package:%5Echromium$+file:third_party/blink/web_tests/FlagExpectations/enable-blink-features=LayoutNG)
+    * [`//third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/.+`](https://cs.chromium.org/chromium/src/third_party/blink/web_tests/flag-specific/enable-blink-features=LayoutNG/)
 
 * [linux_mojo](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_mojo) ([`cq.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:cq.cfg+linux_mojo)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+linux_mojo))
 

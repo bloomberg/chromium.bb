@@ -1429,6 +1429,11 @@
           'shards': 12,
         },
       },
+      'WebKit Linux composite_after_paint Dummy Builder': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
+        ],
+      },
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',
@@ -1437,11 +1442,6 @@
       'WebKit Linux root_layer_scrolls Dummy Builder': {
         'args': [
           '--additional-driver-flag=--root-layer-scrolls',
-        ],
-      },
-      'WebKit Linux slimming_paint_v2 Dummy Builder': {
-        'args': [
-          '--additional-driver-flag=--enable-blink-features=CompositeAfterPaint',
         ],
       },
       # chromium.linux
