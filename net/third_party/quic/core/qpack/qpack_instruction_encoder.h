@@ -7,11 +7,11 @@
 
 #include <cstddef>
 
-#include "net/third_party/http2/hpack/varint/hpack_varint_encoder.h"
 #include "net/third_party/quic/core/qpack/qpack_constants.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
+#include "net/third_party/quiche/src/http2/hpack/varint/hpack_varint_encoder.h"
 
 namespace quic {
 

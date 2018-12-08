@@ -5,8 +5,8 @@
 #include "net/third_party/spdy/core/hpack/hpack_decoder_adapter.h"
 
 #include "base/logging.h"
-#include "net/third_party/http2/decoder/decode_buffer.h"
-#include "net/third_party/http2/decoder/decode_status.h"
+#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
+#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/spdy/platform/api/spdy_estimate_memory_usage.h"
 
 using ::http2::DecodeBuffer;
