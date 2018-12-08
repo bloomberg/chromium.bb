@@ -44,6 +44,7 @@ OnboardingWelcomeEmailChooserTest = class extends OnboardingWelcomeBrowserTest {
     return super.extraLibraries.concat([
       'email_chooser_test.js',
       'test_nux_email_proxy.js',
+      'test_metrics_proxy.js',
       'test_bookmark_proxy.js',
     ]);
   }
@@ -112,5 +113,25 @@ OnboardingWelcomeNavigationBehaviorTest =
 };
 
 TEST_F('OnboardingWelcomeNavigationBehaviorTest', 'All', function() {
+  mocha.run();
+});
+
+OnboardingWelcomeModuleMetricsTest =
+    class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/shared/module_metrics_proxy.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'module_metrics_test.js',
+      'test_metrics_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeModuleMetricsTest', 'All', function() {
   mocha.run();
 });

@@ -34,7 +34,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
     setup(function() {
       testEmailBrowserProxy = new TestNuxEmailProxy();
       nux.NuxEmailProxyImpl.instance_ = testEmailBrowserProxy;
-      testEmailMetricsProxy = new TestEmailMetricsProxy();
+      testEmailMetricsProxy = new TestMetricsProxy();
       nux.EmailMetricsProxyImpl.instance_ = testEmailMetricsProxy;
       testBookmarkBrowserProxy = new TestBookmarkProxy();
       nux.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;

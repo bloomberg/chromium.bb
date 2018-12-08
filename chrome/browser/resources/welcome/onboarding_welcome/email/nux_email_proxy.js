@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('nux', function() {
-
   // The metrics name corresponding to Nux EmailProvidersInteraction histogram.
-  const SELECTION_METRIC_NAME =
+  const EMAIL_SELECTION_METRIC_NAME =
       'FirstRun.NewUserExperience.EmailProvidersSelection';
 
   /** @interface */
@@ -60,7 +59,7 @@ cr.define('nux', function() {
     recordProviderSelected(providerId, length) {
       this.savedProvider_ = providerId;
       chrome.metricsPrivate.recordEnumerationValue(
-          SELECTION_METRIC_NAME, providerId,
+          EMAIL_SELECTION_METRIC_NAME, providerId,
           loadTimeData.getInteger('email_providers_enum_count'));
     }
   }
