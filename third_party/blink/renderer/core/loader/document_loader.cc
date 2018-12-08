@@ -31,6 +31,8 @@
 
 #include <memory>
 #include "base/auto_reset.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -1148,6 +1150,10 @@ void DocumentLoader::DidCommitNavigation(
                           ? WebFeature::kLegacyTLSVersionInSubframeMainResource
                           : WebFeature::kLegacyTLSVersionInMainFrameResource);
     GetLocalFrameClient().ReportLegacyTLSVersion(response_.CurrentRequestUrl());
+    if (!frame_->Tree().Parent()) {
+      ukm::builders::Net_LegacyTLSVersion(document->UkmSourceID())
+          .Record(document->UkmRecorder());
+    }
   }
 }
 
