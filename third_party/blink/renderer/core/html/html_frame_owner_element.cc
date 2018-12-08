@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
-#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
@@ -419,14 +418,6 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
       (EqualIgnoringASCIICase(FastGetAttribute(html_names::kLazyloadAttr),
                               "on") ||
        (should_lazy_load_children_ &&
-        // If lazy loading is restricted to only Data Saver users, then avoid
-        // lazy loading unless Data Saver is enabled, taking the Data Saver
-        // holdback into consideration.
-        (!RuntimeEnabledFeatures::
-             RestrictLazyFrameLoadingToDataSaverEnabled() ||
-         (!(GetDocument().GetSettings() &&
-            GetDocument().GetSettings()->GetDataSaverHoldbackWebApi()) &&
-          GetNetworkStateNotifier().SaveDataEnabled())) &&
         // Disallow lazy loading by default if javascript in the embedding
         // document would be able to access the contents of the frame, since in
         // those cases deferring the frame could break the page. Note that this
