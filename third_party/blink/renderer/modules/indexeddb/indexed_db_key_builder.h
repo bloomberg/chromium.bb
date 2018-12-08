@@ -11,15 +11,15 @@
 namespace blink {
 
 class IDBKey;
-class WebIDBKeyRange;
+class IDBKeyRange;
 
-class MODULES_EXPORT WebIDBKeyRangeBuilder {
+class MODULES_EXPORT IDBKeyRangeBuilder {
  public:
   // Builds a point range (containing a single key).
-  static WebIDBKeyRange Build(const IDBKey* key);
+  static IDBKeyRange* Build(const IDBKey* key);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebIDBKeyRangeBuilder);
+  DISALLOW_COPY_AND_ASSIGN(IDBKeyRangeBuilder);
 };
 
 }  // namespace blink

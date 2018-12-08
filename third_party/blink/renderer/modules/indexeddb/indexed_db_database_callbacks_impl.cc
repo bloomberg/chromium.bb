@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
+#include "third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_observation.h"
@@ -51,8 +51,9 @@ void IndexedDBDatabaseCallbacksImpl::Changes(
   WebVector<WebIDBObservation> web_observations;
   web_observations.reserve(changes->observations.size());
   for (const auto& observation : changes->observations) {
+    IDBKeyRange* key_range = observation->key_range.To<IDBKeyRange*>();
     web_observations.emplace_back(
-        observation->object_store_id, observation->type, observation->key_range,
+        observation->object_store_id, observation->type, key_range,
         IndexedDBCallbacksImpl::ConvertValue(observation->value));
   }
 

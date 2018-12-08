@@ -14,8 +14,6 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_metadata.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_key_builder.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_key_range.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -138,31 +136,6 @@ struct MODULES_EXPORT
 
 template <>
 struct MODULES_EXPORT
-    StructTraits<blink::mojom::IDBKeyRangeDataView, blink::WebIDBKeyRange> {
-  static std::unique_ptr<blink::IDBKey> lower(
-      const blink::WebIDBKeyRange& key_range) {
-    if (!key_range.Lower())
-      return blink::IDBKey::CreateNull();
-    return blink::IDBKey::Clone(key_range.Lower());
-  }
-  static std::unique_ptr<blink::IDBKey> upper(
-      const blink::WebIDBKeyRange& key_range) {
-    if (!key_range.Upper())
-      return blink::IDBKey::CreateNull();
-    return blink::IDBKey::Clone(key_range.Upper());
-  }
-  static bool lower_open(const blink::WebIDBKeyRange& key_range) {
-    return key_range.LowerOpen();
-  }
-  static bool upper_open(const blink::WebIDBKeyRange& key_range) {
-    return key_range.UpperOpen();
-  }
-  static bool Read(blink::mojom::IDBKeyRangeDataView data,
-                   blink::WebIDBKeyRange* out);
-};
-
-template <>
-struct MODULES_EXPORT
     StructTraits<blink::mojom::IDBObjectStoreMetadataDataView,
                  scoped_refptr<blink::IDBObjectStoreMetadata>> {
   static int64_t id(
@@ -193,6 +166,24 @@ struct MODULES_EXPORT
   }
   static bool Read(blink::mojom::IDBObjectStoreMetadataDataView data,
                    scoped_refptr<blink::IDBObjectStoreMetadata>* out);
+};
+
+template <>
+struct TypeConverter<blink::mojom::blink::IDBKeyRangePtr,
+                     const blink::IDBKeyRange*> {
+  static blink::mojom::blink::IDBKeyRangePtr Convert(
+      const blink::IDBKeyRange* input);
+};
+
+template <>
+struct TypeConverter<blink::mojom::blink::IDBKeyRangePtr, blink::IDBKeyRange*> {
+  static blink::mojom::blink::IDBKeyRangePtr Convert(blink::IDBKeyRange* input);
+};
+
+template <>
+struct TypeConverter<blink::IDBKeyRange*, blink::mojom::blink::IDBKeyRangePtr> {
+  static blink::IDBKeyRange* Convert(
+      const blink::mojom::blink::IDBKeyRangePtr& input);
 };
 
 }  // namespace mojo

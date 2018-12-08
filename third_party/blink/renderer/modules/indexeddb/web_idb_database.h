@@ -37,10 +37,10 @@
 
 namespace blink {
 
+class IDBKeyRange;
 class WebData;
 class WebIDBCallbacks;
 class WebIDBKeyPath;
-class WebIDBKeyRange;
 
 class MODULES_EXPORT WebIDBDatabase {
  public:
@@ -94,13 +94,13 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void Get(long long transaction_id,
                    long long object_store_id,
                    long long index_id,
-                   const WebIDBKeyRange&,
+                   const IDBKeyRange*,
                    bool key_only,
                    WebIDBCallbacks*) = 0;
   virtual void GetAll(long long transaction_id,
                       long long object_store_id,
                       long long index_id,
-                      const WebIDBKeyRange&,
+                      const IDBKeyRange*,
                       long long max_count,
                       bool key_only,
                       WebIDBCallbacks*) = 0;
@@ -122,7 +122,7 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void OpenCursor(long long transaction_id,
                           long long object_store_id,
                           long long index_id,
-                          const WebIDBKeyRange&,
+                          const IDBKeyRange*,
                           mojom::IDBCursorDirection,
                           bool key_only,
                           mojom::IDBTaskType,
@@ -130,7 +130,7 @@ class MODULES_EXPORT WebIDBDatabase {
   virtual void Count(long long transaction_id,
                      long long object_store_id,
                      long long index_id,
-                     const WebIDBKeyRange&,
+                     const IDBKeyRange*,
                      WebIDBCallbacks*) = 0;
   virtual void Delete(long long transaction_id,
                       long long object_store_id,
@@ -138,7 +138,7 @@ class MODULES_EXPORT WebIDBDatabase {
                       WebIDBCallbacks*) = 0;
   virtual void DeleteRange(long long transaction_id,
                            long long object_store_id,
-                           const WebIDBKeyRange&,
+                           const IDBKeyRange*,
                            WebIDBCallbacks*) = 0;
   virtual void Clear(long long transaction_id,
                      long long object_store_id,

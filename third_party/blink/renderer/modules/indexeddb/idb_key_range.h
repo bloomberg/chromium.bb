@@ -48,6 +48,9 @@ class MODULES_EXPORT IDBKeyRange final : public ScriptWrappable {
                              std::unique_ptr<IDBKey> upper,
                              LowerBoundType lower_type,
                              UpperBoundType upper_type) {
+    if ((!lower || !lower->IsValid()) && (!upper || !upper->IsValid()))
+      return nullptr;
+
     IDBKey* upper_compressed = upper.get();
     return MakeGarbageCollected<IDBKeyRange>(std::move(lower), upper_compressed,
                                              std::move(upper), lower_type,
