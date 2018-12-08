@@ -213,6 +213,7 @@ source_set("unit_tests") {
     "content_suggestions_service_unittest.cc",
     "contextual/contextual_content_suggestions_service_proxy_unittest.cc",
     "contextual/contextual_content_suggestions_service_unittest.cc",
+    "contextual/contextual_suggestions_features_unittest.cc",
     "contextual/contextual_suggestions_fetch_unittest.cc",
     "contextual/contextual_suggestions_fetcher_impl_unittest.cc",
     "contextual/reporting/contextual_suggestions_composite_reporter_unittest.cc",
