@@ -1409,4 +1409,31 @@ TEST_P(PaintPropertyTreeUpdateTest, ForwardReferencedSVGElementUpdate) {
                 svg2_properties->PaintOffsetTranslation()));
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, ChangingClipPath) {
+  GetDocument().GetSettings()->SetPreferCompositingToLCDTextEnabled(false);
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #content {
+        height: 500px;
+        width: 200px;
+        overflow: scroll;
+      }
+      .aclippath { clip-path: circle(115px at 20px 20px); }
+      .bclippath { clip-path: circle(135px at 22px 20px); }
+    </style>
+    <div id="content"></div>
+  )HTML");
+  auto* content = GetDocument().getElementById("content");
+  content->setAttribute(html_names::kClassAttr, "aclippath");
+  UpdateAllLifecyclePhasesForTest();
+
+  content->setAttribute(html_names::kClassAttr, "bclippath");
+  UpdateAllLifecyclePhasesForTest();
+  // Pass if no crash.
+
+  content->removeAttribute(html_names::kClassAttr);
+  UpdateAllLifecyclePhasesForTest();
+  // Pass if no crash.
+}
+
 }  // namespace blink
