@@ -302,6 +302,14 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
       return false;
   }
 
+  if (bidi_context_.size() && new_style.PreserveNewline()) {
+    // We exit and then re-enter all bidi contexts around a forced breaks. We
+    // must go through the full pipeline to ensure that we exit and enter the
+    // contexts in the same in the re-layout.
+    if (layout_text->GetText().Contains(kNewlineCharacter))
+      return false;
+  }
+
   for (const NGInlineItem* item : items) {
     // Collapsed space item at the start will not be restored, and that not
     // needed to add.
