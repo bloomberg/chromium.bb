@@ -45,14 +45,9 @@ PepperTrueTypeFontHost::PepperTrueTypeFontHost(
 }
 
 PepperTrueTypeFontHost::~PepperTrueTypeFontHost() {
-  if (font_.get()) {
-    // Release the font on the task runner in case the implementation requires
-    // long blocking operations.
-    font_->AddRef();
-    PepperTrueTypeFont* raw_font = font_.get();
-    font_ = nullptr;
-    task_runner_->ReleaseSoon(FROM_HERE, raw_font);
-  }
+  // Release the font on the task runner in case the implementation requires
+  // long blocking operations.
+  task_runner_->ReleaseSoon(FROM_HERE, std::move(font_));
 }
 
 int32_t PepperTrueTypeFontHost::OnResourceMessageReceived(

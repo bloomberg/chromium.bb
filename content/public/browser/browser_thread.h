@@ -86,10 +86,11 @@ class CONTENT_EXPORT BrowserThread {
   }
 
   template <class T>
-  static bool ReleaseSoon(ID identifier,
+  static void ReleaseSoon(ID identifier,
                           const base::Location& from_here,
-                          const T* object) {
-    return GetTaskRunnerForThread(identifier)->ReleaseSoon(from_here, object);
+                          scoped_refptr<T>&& object) {
+    GetTaskRunnerForThread(identifier)
+        ->ReleaseSoon(from_here, std::move(object));
   }
 
   // For use with scheduling non-critical tasks for execution after startup.

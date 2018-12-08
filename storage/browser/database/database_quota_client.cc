@@ -94,11 +94,7 @@ DatabaseQuotaClient::DatabaseQuotaClient(
 
 DatabaseQuotaClient::~DatabaseQuotaClient() {
   if (!db_tracker_->task_runner()->RunsTasksInCurrentSequence()) {
-    DatabaseTracker* tracker = db_tracker_.get();
-    tracker->AddRef();
-    db_tracker_ = nullptr;
-    if (!tracker->task_runner()->ReleaseSoon(FROM_HERE, tracker))
-      tracker->Release();
+    db_tracker_->task_runner()->ReleaseSoon(FROM_HERE, std::move(db_tracker_));
   }
 }
 

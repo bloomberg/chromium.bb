@@ -34,6 +34,8 @@ class BrowserThreadTest : public testing::Test {
     std::move(on_release_).Run();
   }
 
+  void AddRef() {}
+
   void StopUIThread() { ui_thread_->Stop(); }
 
  protected:
@@ -152,7 +154,8 @@ TEST_F(BrowserThreadTest, PostTaskWithTraits) {
 TEST_F(BrowserThreadTest, Release) {
   base::RunLoop run_loop;
   ExpectRelease(run_loop.QuitWhenIdleClosure());
-  BrowserThread::ReleaseSoon(BrowserThread::UI, FROM_HERE, this);
+  BrowserThread::ReleaseSoon(BrowserThread::UI, FROM_HERE,
+                             base::WrapRefCounted(this));
   run_loop.Run();
 }
 
@@ -212,7 +215,7 @@ TEST_F(BrowserThreadTest, ReleaseViaTaskRunnerWithTraits) {
       base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
   base::RunLoop run_loop;
   ExpectRelease(run_loop.QuitWhenIdleClosure());
-  task_runner->ReleaseSoon(FROM_HERE, this);
+  task_runner->ReleaseSoon(FROM_HERE, base::WrapRefCounted(this));
   run_loop.Run();
 }
 

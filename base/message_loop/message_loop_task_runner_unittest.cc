@@ -273,6 +273,8 @@ class MessageLoopTaskRunnerThreadingTest : public testing::Test {
     Quit();
   }
 
+  void AddRef() {}
+
   void Quit() const {
     loop_.task_runner()->PostTask(
         FROM_HERE, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
@@ -330,7 +332,7 @@ class MessageLoopTaskRunnerThreadingTest : public testing::Test {
 };
 
 TEST_F(MessageLoopTaskRunnerThreadingTest, Release) {
-  EXPECT_TRUE(io_thread_->task_runner()->ReleaseSoon(FROM_HERE, this));
+  io_thread_->task_runner()->ReleaseSoon(FROM_HERE, base::WrapRefCounted(this));
   RunLoop().Run();
 }
 

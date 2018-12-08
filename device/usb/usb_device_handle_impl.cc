@@ -520,10 +520,7 @@ void UsbDeviceHandleImpl::Close() {
   // This loop must ensure that what may be the final reference is released on
   // the right thread.
   for (auto& map_entry : claimed_interfaces_) {
-    InterfaceClaimer* interface_claimer = map_entry.second.get();
-    interface_claimer->AddRef();
-    map_entry.second = nullptr;
-    blocking_task_runner_->ReleaseSoon(FROM_HERE, interface_claimer);
+    blocking_task_runner_->ReleaseSoon(FROM_HERE, std::move(map_entry.second));
   }
 
   device_->HandleClosed(this);
@@ -588,9 +585,9 @@ void UsbDeviceHandleImpl::ReleaseInterface(int interface_number,
       transfer->Cancel();
     }
   }
-  interface_claimer->AddRef();
   interface_claimer->set_release_callback(std::move(callback));
-  blocking_task_runner_->ReleaseSoon(FROM_HERE, interface_claimer);
+  blocking_task_runner_->ReleaseSoon(
+      FROM_HERE, std::move(claimed_interfaces_[interface_number]));
   claimed_interfaces_.erase(interface_number);
 
   RefreshEndpointMap();
@@ -895,10 +892,8 @@ void UsbDeviceHandleImpl::ClaimInterfaceComplete(
   if (!device_) {
     if (interface_claimer) {
       // Ensure that the InterfaceClaimer is released on the blocking thread.
-      InterfaceClaimer* raw_interface_claimer = interface_claimer.get();
-      interface_claimer->AddRef();
-      interface_claimer = nullptr;
-      blocking_task_runner_->ReleaseSoon(FROM_HERE, raw_interface_claimer);
+      blocking_task_runner_->ReleaseSoon(FROM_HERE,
+                                         std::move(interface_claimer));
     }
 
     std::move(callback).Run(false);
