@@ -15,17 +15,9 @@
 
         function handleClick(event) {
             var newWin = window.open('resources/window-opened.html', 'badName', 'width=100, height=100');
-            if (!internals.runtimeFlags.userActivationV2Enabled) {
-                if (newWin) {
-                    parent.log("Window was opened! Test succeeded!");
-                    closeWin(newWin);
-                }
-            } else {
-                if (!newWin) {
-                    parent.log("Window was not opened! Test succeeded!");
-                    if (window.testRunner)
-                        testRunner.notifyDone();
-                }
+            if (newWin) {
+                parent.log("Window was opened! Test succeeded!");
+                closeWin(newWin);
             }
 
             event.preventDefault();
