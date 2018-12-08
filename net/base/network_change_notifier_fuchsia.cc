@@ -94,8 +94,8 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
   auto default_route_interface = std::find_if(
       route_table->begin(), route_table->end(),
       [](const fuchsia::netstack::RouteTableEntry& rt) {
-        return MaskPrefixLength(
-                   internal::FuchsiaIpAddressToIPAddress(rt.netmask)) == 0;
+        return MaskPrefixLength(internal::NetAddressToIPAddress(rt.netmask)) ==
+               0;
       });
 
   // Find the default interface in the NetInterface list.

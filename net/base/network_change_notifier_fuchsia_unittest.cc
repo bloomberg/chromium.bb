@@ -20,31 +20,35 @@ namespace {
 const int kDefaultNic = 1;
 const int kSecondaryNic = kDefaultNic + 1;
 
-fuchsia::net::IpAddress CreateIPv6Address(std::vector<uint8_t> addr) {
-  fuchsia::net::IpAddress output;
+fuchsia::netstack::NetAddress CreateIPv6Address(std::vector<uint8_t> addr) {
+  fuchsia::netstack::NetAddress output;
+  output.family = fuchsia::netstack::NetAddressFamily::IPV6;
+  output.ipv6 = fuchsia::netstack::Ipv6Address::New();
   for (size_t i = 0; i < addr.size(); ++i) {
-    output.ipv6().addr[i] = addr[i];
+    output.ipv6->addr[i] = addr[i];
   }
   return output;
 }
 
-fuchsia::net::Subnet CreateSubnet(const std::vector<uint8_t>& addr,
-                                  uint8_t prefix) {
-  fuchsia::net::Subnet output;
+fuchsia::netstack::Subnet CreateSubnet(const std::vector<uint8_t>& addr,
+                                       uint8_t prefix) {
+  fuchsia::netstack::Subnet output;
   output.addr = CreateIPv6Address(addr);
   output.prefix_len = prefix;
   return output;
 }
 
-fuchsia::net::IpAddress CreateIPv4Address(uint8_t a0,
-                                          uint8_t a1,
-                                          uint8_t a2,
-                                          uint8_t a3) {
-  fuchsia::net::IpAddress output;
-  output.ipv4().addr[0] = a0;
-  output.ipv4().addr[1] = a1;
-  output.ipv4().addr[2] = a2;
-  output.ipv4().addr[3] = a3;
+fuchsia::netstack::NetAddress CreateIPv4Address(uint8_t a0,
+                                                uint8_t a1,
+                                                uint8_t a2,
+                                                uint8_t a3) {
+  fuchsia::netstack::NetAddress output;
+  output.family = fuchsia::netstack::NetAddressFamily::IPV4;
+  output.ipv4 = std::make_unique<fuchsia::netstack::Ipv4Address>();
+  output.ipv4->addr[0] = a0;
+  output.ipv4->addr[1] = a1;
+  output.ipv4->addr[2] = a2;
+  output.ipv4->addr[3] = a3;
   return output;
 }
 
@@ -66,9 +70,9 @@ fuchsia::netstack::NetInterface CreateNetInterface(
     uint32_t id,
     uint32_t flags,
     uint32_t features,
-    fuchsia::net::IpAddress address,
-    fuchsia::net::IpAddress netmask,
-    std::vector<fuchsia::net::Subnet> ipv6) {
+    fuchsia::netstack::NetAddress address,
+    fuchsia::netstack::NetAddress netmask,
+    std::vector<fuchsia::netstack::Subnet> ipv6) {
   fuchsia::netstack::NetInterface output;
   output.name = "foo";
   output.id = id;
@@ -78,7 +82,8 @@ fuchsia::netstack::NetInterface CreateNetInterface(
   netmask.Clone(&output.netmask);
   output.hwaddr = fidl::VectorPtr<uint8_t>::New(0);
 
-  output.ipv6addrs = fidl::VectorPtr<fuchsia::net::Subnet>::New(ipv6.size());
+  output.ipv6addrs =
+      fidl::VectorPtr<fuchsia::netstack::Subnet>::New(ipv6.size());
   for (auto& x : ipv6) {
     output.ipv6addrs.push_back(std::move(x));
   }
@@ -142,12 +147,12 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
   void GetAggregateStats(GetAggregateStatsCallback callback) override {}
   void SetInterfaceStatus(uint32_t nicid, bool enabled) override {}
   void SetInterfaceAddress(uint32_t nicid,
-                           fuchsia::net::IpAddress addr,
+                           fuchsia::netstack::NetAddress addr,
                            uint8_t prefixLen,
                            SetInterfaceAddressCallback callback) override {}
   void RemoveInterfaceAddress(
       uint32_t nicid,
-      fuchsia::net::IpAddress addr,
+      fuchsia::netstack::NetAddress addr,
       uint8_t prefixLen,
       RemoveInterfaceAddressCallback callback) override {}
   void SetDhcpClientStatus(uint32_t nicid,
@@ -156,7 +161,7 @@ class FakeNetstack : public fuchsia::netstack::Netstack {
   void BridgeInterfaces(::fidl::VectorPtr<uint32_t> nicids,
                         BridgeInterfacesCallback callback) override {}
   void SetNameServers(
-      ::fidl::VectorPtr<::fuchsia::net::IpAddress> servers) override {}
+      ::fidl::VectorPtr<::fuchsia::netstack::NetAddress> servers) override {}
   void AddEthernetDevice(
       ::fidl::StringPtr topological_path,
       fuchsia::netstack::InterfaceConfig interfaceConfig,
@@ -279,7 +284,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, MultiInterfaceNoChange) {
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, MultiV6IPNoChange) {
-  std::vector<fuchsia::net::Subnet> addresses;
+  std::vector<fuchsia::netstack::Subnet> addresses;
   addresses.push_back(CreateSubnet({0xfe, 0x80, 0x01}, 2));
   netstack_.PushInterface(CreateNetInterface(
       kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
@@ -337,7 +342,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, IpChangeV6) {
 }
 
 TEST_F(NetworkChangeNotifierFuchsiaTest, MultiV6IPChanged) {
-  std::vector<fuchsia::net::Subnet> addresses;
+  std::vector<fuchsia::netstack::Subnet> addresses;
   addresses.push_back(CreateSubnet({0xfe, 0x80, 0x01}, 2));
   netstack_.PushInterface(CreateNetInterface(
       kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
@@ -371,7 +376,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, Ipv6AdditionalIpChange) {
               OnNetworkChanged(NetworkChangeNotifier::CONNECTION_NONE));
   EXPECT_CALL(observer_,
               OnNetworkChanged(NetworkChangeNotifier::CONNECTION_UNKNOWN));
-  std::vector<fuchsia::net::Subnet> addresses;
+  std::vector<fuchsia::netstack::Subnet> addresses;
   addresses.push_back(CreateSubnet({0xfe, 0x80, 0x01}, 2));
   netstack_.PushInterface(CreateNetInterface(
       kDefaultNic, fuchsia::netstack::NetInterfaceFlagUp, 0,
