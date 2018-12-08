@@ -122,6 +122,15 @@ class DatabaseTask : public DatabaseTaskHost {
                         int64_t size,
                         IsQuotaAvailableCallback callback);
 
+  CacheStorageHandle GetOrOpenCacheStorage(
+      const BackgroundFetchRegistrationId& registration_id);
+  CacheStorageHandle GetOrOpenCacheStorage(const url::Origin& origin,
+                                           const std::string& unique_id);
+
+  // Release the CacheStorageHandle for the given |unique_id|, if
+  // it's open.  DoomCache should be called prior to releasing the handle.
+  void ReleaseCacheStorage(const std::string& unique_id);
+
  private:
   // Each task must override this function and perform the following steps:
   // 1) Report storage error (UMA) if applicable.

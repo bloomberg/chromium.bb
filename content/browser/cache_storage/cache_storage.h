@@ -20,6 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/cache_storage/cache_storage_cache.h"
 #include "content/browser/cache_storage/cache_storage_cache_observer.h"
+#include "content/browser/cache_storage/cache_storage_handle.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
@@ -77,6 +78,23 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // Any unfinished asynchronous operations may not complete or call their
   // callbacks.
   virtual ~CacheStorage();
+
+  // Creates a new handle to this CacheStorage instance. Each handle represents
+  // a signal that the CacheStorage is in active use and should avoid cleaning
+  // up resources, if possible. However, there are some cases, such as a
+  // user-initiated storage wipe, that will forcibly delete the CacheStorage
+  // instance. Therefore the handle should be treated as a weak pointer that
+  // needs to be tested for existence before use.
+  CacheStorageHandle CreateHandle();
+
+  // These methods are called by the CacheStorageHandle to track the number
+  // of outstanding references.
+  void AddHandleRef();
+  void DropHandleRef();
+  void AssertUnreferenced() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    DCHECK(!handle_ref_count_);
+  }
 
   // Get the cache for the given key. If the cache is not found it is
   // created. The CacheStorgeCacheHandle in the callback prolongs the lifetime
@@ -138,6 +156,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // CacheStorageCacheObserver:
   void CacheSizeUpdated(const CacheStorageCache* cache) override;
+
+  // The immutable origin of the CacheStorage.
+  const url::Origin& Origin() const { return origin_; }
 
  private:
   friend class CacheStorageCache;
@@ -278,7 +299,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   // The origin that this CacheStorage is associated with.
-  url::Origin origin_;
+  const url::Origin origin_;
 
   // The owner that this CacheStorage is associated with.
   CacheStorageOwner owner_;
@@ -288,7 +309,9 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   CacheStorageManager* cache_storage_manager_;
 
   base::CancelableOnceClosure index_write_task_;
+  size_t handle_ref_count_ = 0;
 
+  SEQUENCE_CHECKER(sequence_checker_);
   base::WeakPtrFactory<CacheStorage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorage);

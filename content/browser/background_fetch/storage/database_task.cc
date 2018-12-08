@@ -156,6 +156,22 @@ storage::QuotaManagerProxy* DatabaseTask::quota_manager_proxy() {
   return data_manager()->quota_manager_proxy();
 }
 
+CacheStorageHandle DatabaseTask::GetOrOpenCacheStorage(
+    const BackgroundFetchRegistrationId& registration_id) {
+  return GetOrOpenCacheStorage(registration_id.origin(),
+                               registration_id.unique_id());
+}
+
+CacheStorageHandle DatabaseTask::GetOrOpenCacheStorage(
+    const url::Origin& origin,
+    const std::string& unique_id) {
+  return data_manager()->GetOrOpenCacheStorage(origin, unique_id);
+}
+
+void DatabaseTask::ReleaseCacheStorage(const std::string& unique_id) {
+  data_manager()->ReleaseCacheStorage(unique_id);
+}
+
 }  // namespace background_fetch
 
 }  // namespace content

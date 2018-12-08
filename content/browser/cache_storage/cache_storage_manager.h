@@ -73,44 +73,10 @@ class CONTENT_EXPORT CacheStorageManager
                                             const url::Origin& origin,
                                             CacheStorageOwner owner);
 
-  // Methods to support the CacheStorage spec. These methods call the
-  // corresponding CacheStorage method on the appropriate thread.
-  void OpenCache(const url::Origin& origin,
-                 CacheStorageOwner owner,
-                 const std::string& cache_name,
-                 CacheStorage::CacheAndErrorCallback callback);
-  void HasCache(const url::Origin& origin,
-                CacheStorageOwner owner,
-                const std::string& cache_name,
-                CacheStorage::BoolAndErrorCallback callback);
-  void DeleteCache(const url::Origin& origin,
-                   CacheStorageOwner owner,
-                   const std::string& cache_name,
-                   CacheStorage::ErrorCallback callback);
-  void EnumerateCaches(const url::Origin& origin,
-                       CacheStorageOwner owner,
-                       CacheStorage::IndexCallback callback);
-  void MatchCache(const url::Origin& origin,
-                  CacheStorageOwner owner,
-                  const std::string& cache_name,
-                  blink::mojom::FetchAPIRequestPtr request,
-                  blink::mojom::QueryParamsPtr match_params,
-                  CacheStorageCache::ResponseCallback callback);
-  void MatchAllCaches(const url::Origin& origin,
-                      CacheStorageOwner owner,
-                      blink::mojom::FetchAPIRequestPtr request,
-                      blink::mojom::QueryParamsPtr match_params,
-                      CacheStorageCache::ResponseCallback callback);
-
-  // Method to support writing to a cache directly from CacheStorageManager.
-  // This should be used by non-CacheAPI owners. The Cache API writes are
-  // handled via the dispatcher.
-  void WriteToCache(const url::Origin& origin,
-                    CacheStorageOwner owner,
-                    const std::string& cache_name,
-                    blink::mojom::FetchAPIRequestPtr request,
-                    blink::mojom::FetchAPIResponsePtr response,
-                    CacheStorage::ErrorCallback callback);
+  // Open the CacheStorage for the given origin and owner.  A reference counting
+  // handle is returned which can be stored and used similar to a weak pointer.
+  CacheStorageHandle OpenCacheStorage(const url::Origin& origin,
+                                      CacheStorageOwner owner);
 
   // This must be called before creating any of the public *Cache functions
   // above.
@@ -130,6 +96,12 @@ class CONTENT_EXPORT CacheStorageManager
 
   base::FilePath root_path() const { return root_path_; }
 
+  // This method is called when the last CacheStorageHandle for a particular
+  // instance is destroyed and its reference count drops to zero.
+  void CacheStorageUnreferenced(CacheStorage* cache_storage,
+                                const url::Origin& origin,
+                                CacheStorageOwner owner);
+
  private:
   friend class base::DeleteHelper<CacheStorageManager>;
   friend class base::RefCountedThreadSafe<CacheStorageManager>;
@@ -148,10 +120,6 @@ class CONTENT_EXPORT CacheStorageManager
       scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   virtual ~CacheStorageManager();
-
-  // The returned CacheStorage* is owned by this manager.
-  CacheStorage* FindOrCreateCacheStorage(const url::Origin& origin,
-                                         CacheStorageOwner owner);
 
   // QuotaClient and Browsing Data Deletion support
   void GetAllOriginsUsage(CacheStorageOwner owner,

@@ -430,8 +430,11 @@ class BackgroundFetchDataManagerTest
     bool result = false;
 
     base::RunLoop run_loop;
-    background_fetch_data_manager_->cache_manager()->HasCache(
-        origin(), CacheStorageOwner::kBackgroundFetch, cache_name,
+    CacheStorageHandle cache_storage =
+        background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
+            origin(), CacheStorageOwner::kBackgroundFetch);
+    cache_storage.value()->HasCache(
+        cache_name,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidFindCache,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -445,9 +448,11 @@ class BackgroundFetchDataManagerTest
     bool result = false;
 
     base::RunLoop run_loop;
-    background_fetch_data_manager_->cache_manager()->MatchCache(
-        origin(), CacheStorageOwner::kBackgroundFetch, kExampleUniqueId,
-        BackgroundFetchSettledFetch::CloneRequest(request),
+    CacheStorageHandle cache_storage =
+        background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
+            origin(), CacheStorageOwner::kBackgroundFetch);
+    cache_storage.value()->MatchCache(
+        kExampleUniqueId, BackgroundFetchSettledFetch::CloneRequest(request),
         nullptr /* match_params */,
         base::BindOnce(&BackgroundFetchDataManagerTest::DidMatchCache,
                        base::Unretained(this), run_loop.QuitClosure(),
@@ -461,8 +466,10 @@ class BackgroundFetchDataManagerTest
     CacheStorageCacheHandle handle;
     {
       base::RunLoop run_loop;
-      background_fetch_data_manager_->cache_manager()->OpenCache(
-          origin(), CacheStorageOwner::kBackgroundFetch,
+      CacheStorageHandle cache_storage =
+          background_fetch_data_manager_->cache_manager()->OpenCacheStorage(
+              origin(), CacheStorageOwner::kBackgroundFetch);
+      cache_storage.value()->OpenCache(
           kExampleUniqueId /* cache_name */,
           base::BindOnce(&BackgroundFetchDataManagerTest::DidOpenCache,
                          base::Unretained(this), run_loop.QuitClosure(),

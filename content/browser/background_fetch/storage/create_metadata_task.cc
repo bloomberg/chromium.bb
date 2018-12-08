@@ -357,11 +357,11 @@ void CreateMetadataTask::DidStoreMetadata(
   }
 
   // Create cache entries.
-  cache_manager()->OpenCache(registration_id_.origin(),
-                             CacheStorageOwner::kBackgroundFetch,
-                             registration_id_.unique_id() /* cache_name */,
-                             base::BindOnce(&CreateMetadataTask::DidOpenCache,
-                                            weak_factory_.GetWeakPtr()));
+  CacheStorageHandle cache_storage = GetOrOpenCacheStorage(registration_id_);
+  cache_storage.value()->OpenCache(
+      registration_id_.unique_id() /* cache_name */,
+      base::BindOnce(&CreateMetadataTask::DidOpenCache,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void CreateMetadataTask::DidOpenCache(CacheStorageCacheHandle handle,

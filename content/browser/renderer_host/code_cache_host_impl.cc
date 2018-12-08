@@ -207,8 +207,10 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadataInCacheStorage(
   if (!data.empty())
     memcpy(buf->data(), &data.front(), data.size());
 
-  cache_storage_context_->cache_manager()->OpenCache(
-      cache_storage_origin, CacheStorageOwner::kCacheAPI,
+  CacheStorageHandle cache_storage =
+      cache_storage_context_->cache_manager()->OpenCacheStorage(
+          cache_storage_origin, CacheStorageOwner::kCacheAPI);
+  cache_storage.value()->OpenCache(
       cache_storage_cache_name,
       base::BindOnce(&CodeCacheHostImpl::OnCacheStorageOpenCallback,
                      weak_ptr_factory_.GetWeakPtr(), url,
