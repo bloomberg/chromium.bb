@@ -49,6 +49,10 @@ const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[] =
 const char kStartRemoteLoggingFailureMaxSizeTooSmall[] = "Max size too small.";
 const char kStartRemoteLoggingFailureMaxSizeTooLarge[] =
     "Excessively large max log size.";
+const char kStartRemoteLoggingFailureOutputPeriodMsIsNegative[] =
+    "Negative output period (ms).";
+const char kStartRemoteLoggingFailureOutputPeriodMsTooLarge[] =
+    "Excessively large output period (ms).";
 const char kStartRemoteLoggingFailureIllegalWebAppId[] = "Illegal web-app ID.";
 const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[] =
     "Unknown or inactive peer connection.";

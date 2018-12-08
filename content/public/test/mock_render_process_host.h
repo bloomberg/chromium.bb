@@ -127,7 +127,8 @@ class MockRenderProcessHost : public RenderProcessHost {
       bool incoming,
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) override;
-  void SetWebRtcEventLogOutput(int lid, bool enabled) override;
+  void EnableWebRtcEventLogOutput(int lid, int output_period_ms) override;
+  void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() const override;

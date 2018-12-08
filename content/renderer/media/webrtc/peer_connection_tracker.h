@@ -230,7 +230,7 @@ class CONTENT_EXPORT PeerConnectionTracker
                            IPC::PlatformFileForTransit file);
 
   // IPC Message handler for starting event log (output).
-  void OnStartEventLogOutput(int peer_connection_id);
+  void OnStartEventLogOutput(int peer_connection_id, int output_period_ms);
 
   // IPC Message handler for stopping event log.
   void OnStopEventLog(int peer_connection_id);

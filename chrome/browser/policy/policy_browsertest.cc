@@ -6665,12 +6665,15 @@ IN_PROC_BROWSER_TEST_P(WebRtcEventLogCollectionAllowedPolicyTest, RunTest) {
 
   {
     constexpr size_t kMaxFileSizeBytes = 1000 * 1000;
+    constexpr int kOutputPeriodMs = 1000;
+
     base::RunLoop run_loop;
 
     // Test focus - remote-bound logging allowed if and only if the policy
     // is configured to allow it.
     webrtc_event_log_manager->StartRemoteLogging(
-        render_process_id, kPeerConnectionId, kMaxFileSizeBytes, kWebAppId,
+        render_process_id, kPeerConnectionId, kMaxFileSizeBytes,
+        kOutputPeriodMs, kWebAppId,
         BlockingBoolExpectingReplyWithExtras(&run_loop,
                                              remote_logging_allowed));
     run_loop.Run();

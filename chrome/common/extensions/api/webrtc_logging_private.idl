@@ -162,13 +162,18 @@ namespace webrtcLoggingPrivate {
     // Start remote-bound event logging for a specific peer connection,
     // indicated by its ID, for which remote-bound event logging was not active.
     // If successful, the callback will carry the ID of the log.
-    // |webAppId| must be a number between 1 and 99 (inclusive), which will be
-    // incorporated into the uploaded log, so as to help distinugish logs
-    // captured by different web-apps.
+    // * |webAppId| must be a number between 1 and 99 (inclusive), which will be
+    //   incorporated into the uploaded log, so as to help distinugish logs
+    //   captured by different web-apps.
+    // * |outputPeriodMs| refers to the time between emissions of logs.
+    //   Only non-negative values are allowed. If set to zero, logs will be
+    //   produced as soon as an event occurs. If positive, events will be
+    //   batched together and emitted approximately every |outputPeriodMs| ms.
     static void startEventLogging(RequestInfo request,
                                   DOMString securityOrigin,
                                   DOMString peerConnectionId,
                                   long maxLogSizeBytes,
+                                  long outputPeriodMs,
                                   long webAppId,
                                   StartEventLoggingCallback callback);
 
