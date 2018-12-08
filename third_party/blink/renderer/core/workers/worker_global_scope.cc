@@ -345,6 +345,16 @@ ExecutionContext* WorkerGlobalScope::GetExecutionContext() const {
 
 void WorkerGlobalScope::TasksWereUnpaused() {
   WorkerOrWorkletGlobalScope::TasksWereUnpaused();
+  // We cannot run the paused tasks right away, as there might be some other
+  // code that still needs to be run synchronously.
+  GetTaskRunner(TaskType::kInternalWorker)
+      ->PostTask(FROM_HERE, WTF::Bind(&WorkerGlobalScope::MaybeRunPausedTasks,
+                                      WrapWeakPersistent(this)));
+}
+
+void WorkerGlobalScope::MaybeRunPausedTasks() {
+  if (IsContextPaused())
+    return;
   Vector<base::OnceClosure> calls;
   paused_calls_.swap(calls);
   for (auto& call : calls)
