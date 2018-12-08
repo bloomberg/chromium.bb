@@ -39,6 +39,7 @@ namespace {
 std::unique_ptr<base::DictionaryValue>
 GetPrinterCapabilitiesOnBlockingPoolThread(
     const std::string& device_name,
+    const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     scoped_refptr<PrintBackend> print_backend) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(!device_name.empty());
@@ -63,6 +64,8 @@ GetPrinterCapabilitiesOnBlockingPoolThread(
     return empty_capabilities;
   }
 
+  info.papers.insert(info.papers.end(), additional_papers.begin(),
+                     additional_papers.end());
   return cloud_print::PrinterSemanticCapsAndDefaultsToCdd(info);
 }
 
@@ -112,6 +115,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
+    const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     scoped_refptr<PrintBackend> print_backend) {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
@@ -132,8 +136,8 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
   auto printer_info_capabilities = std::make_unique<base::DictionaryValue>();
   printer_info_capabilities->SetDictionary(kPrinter, std::move(printer_info));
   printer_info_capabilities->Set(
-      kSettingCapabilities,
-      GetPrinterCapabilitiesOnBlockingPoolThread(device_name, print_backend));
+      kSettingCapabilities, GetPrinterCapabilitiesOnBlockingPoolThread(
+                                device_name, additional_papers, print_backend));
   return printer_info_capabilities;
 }
 

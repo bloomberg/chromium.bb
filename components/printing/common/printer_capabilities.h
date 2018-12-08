@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
+#include "printing/backend/print_backend.h"
 
 namespace base {
 class DictionaryValue;
@@ -17,7 +18,6 @@ class DictionaryValue;
 
 namespace printing {
 
-class PrintBackend;
 struct PrinterBasicInfo;
 
 extern const char kPrinter[];
@@ -32,9 +32,12 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 // for passage to the WebUI. The settings are obtained using |print_backend| if
 // it is provided. If |print_backend| is null, uses a new PrintBackend instance
 // with default settings.
+// Data from |basic_info| and |additional_papers| are incorporated into the
+// returned dictionary.
 std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
+    const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     scoped_refptr<PrintBackend> print_backend);
 
 }  // namespace printing
