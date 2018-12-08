@@ -3,34 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('nux', function() {
-  /**
-   * NuxEmailProvidersInteractions enum.
-   * These values are persisted to logs and should not be renumbered or re-used.
-   * See tools/metrics/histograms/enums.xml.
-   * @enum {number}
-   */
-  const NuxEmailProvidersInteractions = {
-    PageShown: 0,
-    DidNothingAndNavigatedAway: 1,
-    DidNothingAndChoseSkip: 2,
-    ChoseAnOptionAndNavigatedAway: 3,
-    ChoseAnOptionAndChoseSkip: 4,
-    ChoseAnOptionAndChoseNext: 5,
-    ClickedDisabledNextButtonAndNavigatedAway: 6,
-    ClickedDisabledNextButtonAndChoseSkip: 7,
-    ClickedDisabledNextButtonAndChoseNext: 8,
-    DidNothingAndChoseNext: 9,
-    NavigatedAwayThroughBrowserHistory: 10,
-  };
-
-  /**
-   * The number of enum values in NuxEmailProvidersInteractions. This should
-   * be kept in sync with the enum count in tools/metrics/histograms/enums.xml.
-   * @type {number}
-   */
-  const INTERACTION_METRIC_COUNT =
-      Object.keys(NuxEmailProvidersInteractions).length;
-
   /** @interface */
   class ModuleMetricsProxy {
     recordPageShown() {}
@@ -62,97 +34,93 @@ cr.define('nux', function() {
      * @param {string} histogramName The histogram that will record the module
      *      navigation metrics.
      */
-    constructor(histogramName) {
+    constructor(histogramName, interactions) {
       /** @private {string} */
       this.interactionMetric_ = histogramName;
+      this.interactions_ = interactions;
     }
 
     /** @override */
     recordPageShown() {
       chrome.metricsPrivate.recordEnumerationValue(
-          this.interactionMetric_, NuxEmailProvidersInteractions.PageShown,
-          INTERACTION_METRIC_COUNT);
+          this.interactionMetric_, this.interactions_.PageShown,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordDidNothingAndNavigatedAway() {
       chrome.metricsPrivate.recordEnumerationValue(
           this.interactionMetric_,
-          NuxEmailProvidersInteractions.DidNothingAndNavigatedAway,
-          INTERACTION_METRIC_COUNT);
+          this.interactions_.DidNothingAndNavigatedAway,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordDidNothingAndChoseSkip() {
       chrome.metricsPrivate.recordEnumerationValue(
-          this.interactionMetric_,
-          NuxEmailProvidersInteractions.DidNothingAndChoseSkip,
-          INTERACTION_METRIC_COUNT);
+          this.interactionMetric_, this.interactions_.DidNothingAndChoseSkip,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordDidNothingAndChoseNext() {
       chrome.metricsPrivate.recordEnumerationValue(
-          this.interactionMetric_,
-          NuxEmailProvidersInteractions.DidNothingAndChoseNext,
-          INTERACTION_METRIC_COUNT);
+          this.interactionMetric_, this.interactions_.DidNothingAndChoseNext,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordChoseAnOptionAndNavigatedAway() {
       chrome.metricsPrivate.recordEnumerationValue(
           this.interactionMetric_,
-          NuxEmailProvidersInteractions.ChoseAnOptionAndNavigatedAway,
-          INTERACTION_METRIC_COUNT);
+          this.interactions_.ChoseAnOptionAndNavigatedAway,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordChoseAnOptionAndChoseSkip() {
       chrome.metricsPrivate.recordEnumerationValue(
-          this.interactionMetric_,
-          NuxEmailProvidersInteractions.ChoseAnOptionAndChoseSkip,
-          INTERACTION_METRIC_COUNT);
+          this.interactionMetric_, this.interactions_.ChoseAnOptionAndChoseSkip,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordChoseAnOptionAndChoseNext() {
       chrome.metricsPrivate.recordEnumerationValue(
-          this.interactionMetric_,
-          NuxEmailProvidersInteractions.ChoseAnOptionAndChoseNext,
-          INTERACTION_METRIC_COUNT);
+          this.interactionMetric_, this.interactions_.ChoseAnOptionAndChoseNext,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordClickedDisabledNextButtonAndNavigatedAway() {
       chrome.metricsPrivate.recordEnumerationValue(
           this.interactionMetric_,
-          NuxEmailProvidersInteractions
-              .ClickedDisabledNextButtonAndNavigatedAway,
-          INTERACTION_METRIC_COUNT);
+          this.interactions_.ClickedDisabledNextButtonAndNavigatedAway,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordClickedDisabledNextButtonAndChoseSkip() {
       chrome.metricsPrivate.recordEnumerationValue(
           this.interactionMetric_,
-          NuxEmailProvidersInteractions.ClickedDisabledNextButtonAndChoseSkip,
-          INTERACTION_METRIC_COUNT);
+          this.interactions_.ClickedDisabledNextButtonAndChoseSkip,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordClickedDisabledNextButtonAndChoseNext() {
       chrome.metricsPrivate.recordEnumerationValue(
           this.interactionMetric_,
-          NuxEmailProvidersInteractions.ClickedDisabledNextButtonAndChoseNext,
-          INTERACTION_METRIC_COUNT);
+          this.interactions_.ClickedDisabledNextButtonAndChoseNext,
+          Object.keys(this.interactions_).length);
     }
 
     /** @override */
     recordNavigatedAwayThroughBrowserHistory() {
       chrome.metricsPrivate.recordEnumerationValue(
           this.interactionMetric_,
-          NuxEmailProvidersInteractions.NavigatedAwayThroughBrowserHistory,
-          INTERACTION_METRIC_COUNT);
+          this.interactions_.NavigatedAwayThroughBrowserHistory,
+          Object.keys(this.interactions_).length);
     }
   }
 
@@ -230,8 +198,63 @@ cr.define('nux', function() {
 // qualified name for |nux.ModuleMetricsProxyImpl|.
 nux.EmailMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
   constructor() {
-    super('FirstRun.NewUserExperience.EmailProvidersInteraction');
+    /**
+     * NuxEmailProvidersInteractions enum.
+     * These values are persisted to logs and should not be renumbered or
+     * re-used.
+     * See tools/metrics/histograms/enums.xml.
+     * @enum {number}
+     */
+    const NuxEmailProvidersInteractions = {
+      PageShown: 0,
+      DidNothingAndNavigatedAway: 1,
+      DidNothingAndChoseSkip: 2,
+      ChoseAnOptionAndNavigatedAway: 3,
+      ChoseAnOptionAndChoseSkip: 4,
+      ChoseAnOptionAndChoseNext: 5,
+      ClickedDisabledNextButtonAndNavigatedAway: 6,
+      ClickedDisabledNextButtonAndChoseSkip: 7,
+      ClickedDisabledNextButtonAndChoseNext: 8,
+      DidNothingAndChoseNext: 9,
+      NavigatedAwayThroughBrowserHistory: 10,
+    };
+
+    super(
+        'FirstRun.NewUserExperience.EmailProvidersInteraction',
+        NuxEmailProvidersInteractions);
+  }
+};
+
+nux.GoogleAppsMetricsProxyImpl = class extends nux.ModuleMetricsProxyImpl {
+  constructor() {
+    /**
+     * NuxGoogleAppsInteractions enum.
+     * These values are persisted to logs and should not be renumbered or
+     * re-used.
+     * See tools/metrics/histograms/enums.xml.
+     * @enum {number}
+     */
+    const NuxGoogleAppsInteractions = {
+      PageShown: 0,
+      NotUsed_DEPRECATED: 1,
+      GetStarted_DEPRECATED: 2,
+      DidNothingAndNavigatedAway: 3,
+      DidNothingAndChoseSkip: 4,
+      ChoseAnOptionAndNavigatedAway: 5,
+      ChoseAnOptionAndChoseSkip: 6,
+      ChoseAnOptionAndChoseNext: 7,
+      ClickedDisabledNextButtonAndNavigatedAway: 8,
+      ClickedDisabledNextButtonAndChoseSkip: 9,
+      ClickedDisabledNextButtonAndChoseNext: 10,
+      DidNothingAndChoseNext: 11,
+      NavigatedAwayThroughBrowserHistory: 12,
+    };
+
+    super(
+        'FirstRun.NewUserExperience.GoogleAppsProvidersInteraction',
+        NuxGoogleAppsInteractions);
   }
 };
 
 cr.addSingletonGetter(nux.EmailMetricsProxyImpl);
+cr.addSingletonGetter(nux.GoogleAppsMetricsProxyImpl);

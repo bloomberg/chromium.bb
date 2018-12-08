@@ -37426,9 +37426,19 @@ Called by update_net_trust_anchors.py.-->
   <summary>
     The button that a user pressed when interacting with the Google Apps NUX.
   </summary>
-  <int value="0" label="Prompt Seen"/>
-  <int value="1" label="No Thanks"/>
-  <int value="2" label="Get Started"/>
+  <int value="0" label="Page Shown"/>
+  <int value="1" label="No Thanks (deprecated)"/>
+  <int value="2" label="Get Started (deprecated)"/>
+  <int value="3" label="Did nothing and navigated away"/>
+  <int value="4" label="Did nothing and clicked skip"/>
+  <int value="5" label="Chose an option then navigated away"/>
+  <int value="6" label="Chose an option then chose skip"/>
+  <int value="7" label="Chose an option then chose next"/>
+  <int value="8" label="Clicked disabled next button then navigated away"/>
+  <int value="9" label="Clicked disabled next button then chose skip"/>
+  <int value="10" label="Clicked disabled next button then chose next"/>
+  <int value="11" label="Did nothing and clicked next"/>
+  <int value="12" label="Navigated away through browser history"/>
 </enum>
 
 <enum name="NuxGoogleAppsSelections">

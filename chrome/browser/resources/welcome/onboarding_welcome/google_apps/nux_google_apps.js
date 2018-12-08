@@ -8,49 +8,15 @@ Polymer({
   behaviors: [welcome.NavigationBehavior],
 
   properties: {
-    /** @private */
-    hasAppsSelected_: Boolean,
-
     /** @type {nux.stepIndicatorModel} */
     indicatorModel: Object,
   },
 
-  /** @private */
-  finalized_: false,
-
-  /** @override */
-  ready: function() {
-    window.addEventListener('beforeunload', () => {
-      if (this.finalized_)
-        return;
-      // TODO(hcarmona): Add metrics.
-      this.$.appChooser.removeAllBookmarks();
-    });
-  },
-
   onRouteEnter: function() {
-    this.finalized_ = false;
-    this.$.appChooser.populateAllBookmarks();
+    this.$.appChooser.initializeSection();
   },
 
   onRouteExit: function() {
-    if (this.finalized_)
-      return;
-    // TODO(hcarmona): Add metrics?
-    this.$.appChooser.removeAllBookmarks();
-  },
-
-  /** @private */
-  onNoThanksClicked_: function() {
-    // TODO(hcarmona): Add metrics.
-    this.$.appChooser.removeAllBookmarks();
-    welcome.navigateToNextStep();
-  },
-
-  /** @private */
-  onGetStartedClicked_: function() {
-    // TODO(hcarmona): Add metrics.
-    this.finalized_ = true;
-    welcome.navigateToNextStep();
+    this.$.appChooser.finalizeSection();
   },
 });

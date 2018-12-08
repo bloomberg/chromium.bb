@@ -3,6 +3,26 @@
 // found in the LICENSE file.
 
 cr.define('nux', function() {
+  // The metrics name corresponding to Nux EmailProvidersInteraction histogram.
+  const GOOGLE_APPS_SELECTION_METRIC_NAME =
+      'FirstRun.NewUserExperience.GoogleAppsSelection';
+
+  /**
+   * NuxGoogleAppsSelections enum.
+   * These values are persisted to logs and should not be renumbered or
+   * re-used.
+   * See tools/metrics/histograms/enums.xml.
+   * @enum {number}
+   */
+  const NuxGoogleAppsSelections = {
+    Gmail_DEPRECATED: 0,
+    YouTube: 1,
+    Maps: 2,
+    Translate: 3,
+    News: 4,
+    ChromeWebStore: 5,
+  };
+
   /** @interface */
   class NuxGoogleAppsProxy {
     /**
@@ -17,6 +37,12 @@ cr.define('nux', function() {
      * @return {!Promise<!Array<!nux.BookmarkListItem>>}
      */
     getGoogleAppsList() {}
+
+    /**
+     * @param {number} providerId This should match one of the histogram enum
+     *     value for NuxGoogleAppsSelections.
+     */
+    recordProviderSelected(providerId) {}
   }
 
   /** @implements {nux.NuxGoogleAppsProxy} */
@@ -29,6 +55,13 @@ cr.define('nux', function() {
     /** @override */
     getGoogleAppsList() {
       return cr.sendWithPromise('getGoogleAppsList');
+    }
+
+    /** @override */
+    recordProviderSelected(providerId) {
+      chrome.metricsPrivate.recordEnumerationValue(
+          GOOGLE_APPS_SELECTION_METRIC_NAME, providerId,
+          Object.keys(NuxGoogleAppsSelections).length);
     }
   }
 

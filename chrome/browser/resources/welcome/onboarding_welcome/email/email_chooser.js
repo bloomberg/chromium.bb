@@ -79,10 +79,8 @@ Polymer({
     });
 
     window.addEventListener('beforeunload', () => {
-      // Only need to clean up if user didn't interact with the buttons.
       if (this.finalized_)
         return;
-
       this.cleanUp_();
       this.metricsManager_.recordNavigatedAway();
     });
@@ -117,7 +115,10 @@ Polymer({
     this.metricsManager_.recordBrowserBackOrForward();
   },
 
-  /** Removes any bookarks and hides the bookmark bar when finalizing. */
+  /**
+   * Removes any bookarks and hides the bookmark bar when finalizing.
+   * @private
+   */
   cleanUp_: function() {
     this.finalized_ = true;
     if (this.selectedEmailProvider_) {
