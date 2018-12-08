@@ -114,8 +114,11 @@ var I18nBehavior = {
   /**
    * Call this when UI strings may have changed. This will send an update to
    * any data bindings to i18nDynamic(locale, ...).
+   * @suppress {checkTypes}
    */
   i18nUpdateLocale: function() {
+    // Force reload.
+    this.locale = undefined;
     this.locale = loadTimeData.getString('language');
   },
 };
