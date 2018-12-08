@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.autofill;
 import android.content.Context;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -27,8 +29,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
 /**
  * Prompt that asks users to confirm user's name before saving card to Google.
  */
-public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
-
+public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogView.Controller {
     /**
      * An interface to handle the interaction with
      * an AutofillNameFixFlowPrompt object.
@@ -69,7 +70,6 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
 
         mUserNameInput = (EditText) mDialogView.findViewById(R.id.cc_name_edit);
         mUserNameInput.setText(inferredName, BufferType.EDITABLE);
-        mUserNameInput.setSelection(inferredName.length());
         mNameFixFlowTooltipIcon = (ImageView) mDialogView.findViewById(R.id.cc_name_tooltip_icon);
         mNameFixFlowTooltipIcon.setOnClickListener((view) -> onTooltipIconClicked());
 
@@ -103,11 +103,24 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
         mContext = activity;
         mModalDialogManager = activity.getModalDialogManager();
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
+        mUserNameInput.addTextChangedListener(this);
     }
 
     protected void dismiss(@DialogDismissalCause int dismissalCause) {
         mModalDialogManager.dismissDialog(mDialogModel, dismissalCause);
     }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        mDialogModel.set(ModalDialogProperties.POSITIVE_BUTTON_DISABLED,
+                mUserNameInput.getText().toString().trim().isEmpty());
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
     /**
      * Handle tooltip icon clicked. If tooltip is already opened, don't show another. Otherwise
