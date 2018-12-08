@@ -440,6 +440,13 @@ const base::Feature kTimerThrottlingForHiddenFrames{
 const base::Feature kTouchpadAsyncPinchEvents{"TouchpadAsyncPinchEvents",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Allows user activation propagation to all frames having the same origin as
+// the activation notifier frame.  This is an intermediate measure before we
+// have an iframe attribute to declaratively allow user activation propagation
+// to subframes.
+const base::Feature kUserActivationSameOriginVisibility{
+    "UserActivationSameOriginVisibility", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // An experimental simple user-activation model where the user gesture state is
 // tracked through a frame-based state instead of the gesture tokens we use
 // today.
