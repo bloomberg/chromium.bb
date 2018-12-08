@@ -349,12 +349,7 @@ void DataTransfer::setDragImage(Element* image, int x, int y) {
 }
 
 void DataTransfer::ClearDragImage() {
-  if (!CanSetDragImage())
-    return;
-
-  drag_image_ = nullptr;
-  drag_loc_ = IntPoint();
-  drag_image_element_ = nullptr;
+  setDragImage(nullptr, nullptr, IntPoint());
 }
 
 void DataTransfer::SetDragImageResource(ImageResourceContent* img,

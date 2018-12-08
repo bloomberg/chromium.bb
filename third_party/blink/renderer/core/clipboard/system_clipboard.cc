@@ -223,9 +223,7 @@ void SystemClipboard::WriteDataObject(DataObject* data_object) {
 
   HashMap<String, String> custom_data;
   WebDragData data = data_object->ToWebDragData();
-  const WebVector<WebDragData::Item>& item_list = data.Items();
-  for (size_t i = 0; i < item_list.size(); ++i) {
-    const WebDragData::Item& item = item_list[i];
+  for (const WebDragData::Item& item : data.Items()) {
     if (item.storage_type == WebDragData::Item::kStorageTypeString) {
       if (item.string_type == blink::kMimeTypeTextPlain) {
         clipboard_->WriteText(mojom::ClipboardBuffer::kStandard,
@@ -254,7 +252,7 @@ bool SystemClipboard::IsValidBufferType(mojom::ClipboardBuffer buffer) {
       return true;
 #else
       // Chrome OS and non-X11 unix builds do not support
-      // the X selection clipboad.
+      // the X selection clipboard.
       // TODO: remove the need for this case, see http://crbug.com/361753
       return false;
 #endif
