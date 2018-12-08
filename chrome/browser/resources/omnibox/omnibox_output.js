@@ -326,7 +326,7 @@ cr.define('omnibox_output', function() {
               .map(OutputResultsTable.create);
       if (this.hasAdditionalProperties)
         this.headers.push(OutputHeader.create(
-            'Additional Properties', 'column-additional-properties', '', ''));
+            'Additional Properties', 'additional-properties', '', ''));
       this.render_();
     }
 
@@ -591,8 +591,9 @@ cr.define('omnibox_output', function() {
     static create(text, propertyName, url, tooltip) {
       /** @suppress {checkTypes} */
       const header = new OutputHeader();
-      header.className = 'column-' +
-          propertyName.replace(/[A-Z]/g, c => '-' + c.toLowerCase());
+      header.classList.add(
+          'column-' +
+          propertyName.replace(/[A-Z]/g, c => '-' + c.toLowerCase()));
       header.setContents(text, url);
       header.tooltip = tooltip;
       return header;
@@ -688,7 +689,8 @@ cr.define('omnibox_output', function() {
 
     /** @private @override */
     render_() {
-      this.icon_.className = this.value_ ? 'check-mark' : 'x-mark';
+      this.icon_.classList.toggle('check-mark', !!this.value);
+      this.icon_.classList.toggle('x-mark', !this.value);
     }
   }
 
@@ -697,17 +699,53 @@ cr.define('omnibox_output', function() {
       super();
       /** @private {!Element} */
       this.pre_ = document.createElement('pre');
+      this.pre_.classList.add('json');
       this.appendChild(this.pre_);
     }
 
     /** @private @override */
     render_() {
-      this.pre_.textContent = this.text;
+      clearChildren(this.pre_);
+      this.text.split(/("(?:[^"\\]|\\.)*":?|\w+)/)
+          .map(
+              word => OutputJsonProperty.renderJsonWord(
+                  word, OutputJsonProperty.classifyJsonWord(word)))
+          .forEach(jsonSpan => this.pre_.appendChild(jsonSpan));
     }
 
     /** @override @return {string} */
     get text() {
       return JSON.stringify(this.value_, null, 2);
+    }
+
+    /**
+     * @param {string} word
+     * @param {string|undefined} cls
+     * @return {!Element}
+     */
+    static renderJsonWord(word, cls) {
+      const span = document.createElement('span');
+      if (cls)
+        span.classList.add(cls);
+      span.textContent = word;
+      return span;
+    }
+
+    /**
+     * @param {string} word
+     * @return {string|undefined}
+     */
+    static classifyJsonWord(word) {
+      if (/^\d+$/.test(word))
+        return 'number';
+      if (/^"[^]*":$/.test(word))
+        return 'key';
+      if (/^"[^]*"$/.test(word))
+        return 'string';
+      if (/true|false/.test(word))
+        return 'boolean';
+      if (/null/.test(word))
+        return 'null';
     }
   }
 
