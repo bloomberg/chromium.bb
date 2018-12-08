@@ -2269,10 +2269,15 @@ void MediaControlsImpl::VolumeSliderWantedTimerFired(TimerBase*) {
 
 void MediaControlsImpl::OpenVolumeSliderIfNecessary() {
   if (ShouldOpenVolumeSlider()) {
-    volume_slider_wanted_timer_.StartOneShot(WebTestSupport::IsRunningWebTest()
-                                                 ? kTimeToShowVolumeSliderTest
-                                                 : kTimeToShowVolumeSlider,
-                                             FROM_HERE);
+    if (volume_slider_->IsFocused() || mute_button_->IsFocused()) {
+      // When we're focusing with the keyboard, we don't need the delay.
+      volume_slider_->OpenSlider();
+    } else {
+      volume_slider_wanted_timer_.StartOneShot(
+          WebTestSupport::IsRunningWebTest() ? kTimeToShowVolumeSliderTest
+                                             : kTimeToShowVolumeSlider,
+          FROM_HERE);
+    }
   }
 }
 
@@ -2296,7 +2301,8 @@ bool MediaControlsImpl::ShouldCloseVolumeSlider() const {
   if (!volume_slider_ || !IsModern())
     return false;
 
-  return !(volume_slider_->IsHovered() || mute_button_->IsHovered());
+  return !(volume_slider_->IsHovered() || mute_button_->IsHovered() ||
+           volume_slider_->IsFocused() || mute_button_->IsFocused());
 }
 
 const MediaControlDownloadButtonElement& MediaControlsImpl::DownloadButton()
