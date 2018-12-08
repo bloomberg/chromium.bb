@@ -995,7 +995,7 @@ void PrepareFrameAndViewForPrint::BeginNavigation(
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 PrepareFrameAndViewForPrint::CreateURLLoaderFactory() {
-  return frame_.GetFrame()->Client()->CreateURLLoaderFactory();
+  return blink::Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {
