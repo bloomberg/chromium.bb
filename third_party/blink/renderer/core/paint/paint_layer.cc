@@ -652,30 +652,6 @@ void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
                    ->SquashingOffsetFromTransformedAncestor());
 }
 
-void PaintLayer::MapRectToPaintInvalidationBacking(
-    const LayoutObject& layout_object,
-    const LayoutBoxModelObject& paint_invalidation_container,
-    LayoutRect& rect) {
-  if (!paint_invalidation_container.Layer()->GroupedMapping()) {
-    layout_object.MapToVisualRectInAncestorSpace(&paint_invalidation_container,
-                                                 rect);
-    return;
-  }
-
-  // This code adjusts the visual rect to be in the space of the transformed
-  // ancestor of the grouped (i.e. squashed) layer. This is because all layers
-  // that squash together need to issue paint invalidations w.r.t. a single
-  // container that is an ancestor of all of them, in order to properly take
-  // into account any local transforms etc.
-  // FIXME: remove this special-case code that works around the paint
-  // invalidation code structure.
-  layout_object.MapToVisualRectInAncestorSpace(&paint_invalidation_container,
-                                               rect);
-
-  MapRectInPaintInvalidationContainerToBacking(paint_invalidation_container,
-                                               rect);
-}
-
 void PaintLayer::DirtyVisibleContentStatus() {
   MarkAncestorChainForDescendantDependentFlagsUpdate();
   // Non-self-painting layers paint into their ancestor layer, and count as part

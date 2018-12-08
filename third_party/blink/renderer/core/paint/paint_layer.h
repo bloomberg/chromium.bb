@@ -567,15 +567,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const LayoutBoxModelObject& paint_invalidation_container,
       LayoutRect&);
 
-  // Adjusts the given rect (in the coordinate space of the LayoutObject) to the
-  // coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-  // Should use PaintInvalidatorContext::MapRectToPaintInvalidationBacking()
-  // instead if PaintInvalidatorContext.
-  static void MapRectToPaintInvalidationBacking(
-      const LayoutObject&,
-      const LayoutBoxModelObject& paint_invalidation_container,
-      LayoutRect&);
-
   bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
     return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);
   }
