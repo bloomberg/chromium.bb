@@ -47,15 +47,6 @@ let SettingsSectionElement = Polymer({
     },
   },
 
-  show: function() {
-    this.setAttribute('tabindex', '-1');
-    this.focus();
-    this.scrollIntoView();
-    listenOnce(this, ['blur', 'pointerdown'], () => {
-      this.removeAttribute('tabindex');
-    });
-  },
-
   /**
    * Get the value to which to set the aria-hidden attribute of the section
    * heading.
