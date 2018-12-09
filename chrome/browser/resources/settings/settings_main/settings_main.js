@@ -295,10 +295,4 @@ Polymer({
       }, 0);
     });
   },
-
-  focusSection: function() {
-    this.$$(this.showPages_.settings ? 'settings-basic-page' :
-                                       'settings-about-page')
-        .focusSection();
-  },
 });

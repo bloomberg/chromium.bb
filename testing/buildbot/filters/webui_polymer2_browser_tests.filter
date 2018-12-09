@@ -279,7 +279,6 @@ SettingsA11yPasswords.*
 SettingsA11ySignOut.*
 SettingsAccessibilityTest.*
 SettingsAdvancedPageBrowserTest.*
-SettingsAnimationBrowserTest.*
 SettingsAutofillSectionBrowserTest.*
 SettingsBasicPageBrowserTest.*
 SettingsEasyUnlockBrowserTest.*

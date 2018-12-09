@@ -12,8 +12,6 @@ Polymer({
   is: 'settings-subpage',
 
   behaviors: [
-    // TODO(michaelpg): phase out NeonAnimatableBehavior.
-    Polymer.NeonAnimatableBehavior,
     Polymer.IronResizableBehavior,
     settings.FindShortcutBehavior,
     settings.RouteObserverBehavior,

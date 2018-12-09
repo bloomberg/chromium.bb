@@ -9,7 +9,11 @@
 Polymer({
   is: 'settings-basic-page',
 
-  behaviors: [MainPageBehavior, WebUIListenerBehavior],
+  behaviors: [
+    settings.MainPageBehavior,
+    settings.RouteObserverBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     /** Preferences state. */
@@ -132,7 +136,6 @@ Polymer({
   },
 
   /**
-   * Overrides MainPageBehaviorImpl from MainPageBehavior.
    * @param {!settings.Route} newRoute
    * @param {settings.Route} oldRoute
    */
@@ -151,7 +154,14 @@ Polymer({
       assert(!this.hasExpandedSection_);
     }
 
-    MainPageBehaviorImpl.currentRouteChanged.call(this, newRoute, oldRoute);
+    settings.MainPageBehavior.currentRouteChanged.call(
+        this, newRoute, oldRoute);
+  },
+
+  // Override settings.MainPageBehavior method.
+  containsRoute: function(route) {
+    return !route || settings.routes.BASIC.contains(route) ||
+        settings.routes.ADVANCED.contains(route);
   },
 
   /**
@@ -161,12 +171,6 @@ Polymer({
    */
   showPage_: function(visibility) {
     return visibility !== false;
-  },
-
-  focusSection: function() {
-    const section = this.getSection(settings.getCurrentRoute().section);
-    assert(section);
-    section.show();
   },
 
   /**

@@ -70,7 +70,6 @@ group("closure_compile") {
     "a11y_page:closure_compile",
     "about_page:closure_compile",
     "android_apps_page:closure_compile",
-    "animation:closure_compile",
     "appearance_page:closure_compile",
     "autofill_page:closure_compile",
     "basic_page:closure_compile",

@@ -18,10 +18,10 @@ js_library("main_page_behavior") {
   deps = [
     ":settings_section",
     "..:route",
-    "../animation:animation",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:util",
   ]
+  externs_list = [ "$externs_path/pending.js" ]
 }
 
 js_library("settings_animated_pages") {
@@ -37,10 +37,6 @@ js_library("settings_animated_pages") {
 }
 
 js_library("settings_section") {
-  deps = [
-    "../animation:animation",
-  ]
-  externs_list = [ "$externs_path/web_animations.js" ]
 }
 
 js_library("settings_subpage") {
@@ -49,7 +45,6 @@ js_library("settings_subpage") {
     "..:find_shortcut_behavior",
     "..:route",
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
-    "//third_party/polymer/v1_0/components-chromium/neon-animation:neon-animatable-behavior-extracted",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
