@@ -97,21 +97,24 @@ UiControllerAndroid::UiControllerAndroid(
   DCHECK(ui_delegate_);
 }
 
-UiControllerAndroid::~UiControllerAndroid() {}
+UiControllerAndroid::~UiControllerAndroid() {
+  Java_AutofillAssistantUiController_onNativeDestroy(
+      AttachCurrentThread(), java_autofill_assistant_ui_controller_);
+}
 
 void UiControllerAndroid::Start(JNIEnv* env,
                                 const JavaParamRef<jobject>& jcaller,
                                 const JavaParamRef<jstring>& initialUrlString) {
-  if (!ui_delegate_)
-    return;
-
   GURL initialUrl =
       GURL(base::android::ConvertJavaStringToUTF8(env, initialUrlString));
   ui_delegate_->Start(initialUrl);
 }
 
+// This interface must be called before everything else in this class except the
+// constructor.
 void UiControllerAndroid::SetUiDelegate(UiDelegate* ui_delegate) {
   ui_delegate_ = ui_delegate;
+  DCHECK(ui_delegate_);
 }
 
 void UiControllerAndroid::ShowStatusMessage(const std::string& message) {
@@ -182,18 +185,12 @@ void UiControllerAndroid::ScrollBy(
     const base::android::JavaParamRef<jobject>& obj,
     float distanceX,
     float distanceY) {
-  if (!ui_delegate_)
-    return;
-
   ui_delegate_->ScrollBy(distanceX, distanceY);
 }
 
 void UiControllerAndroid::UpdateTouchableArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  if (!ui_delegate_)
-    return;
-
   ui_delegate_->UpdateTouchableArea();
 }
 
@@ -201,9 +198,6 @@ void UiControllerAndroid::OnScriptSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jscript_path) {
-  if (!ui_delegate_)
-    return;
-
   std::string script_path;
   base::android::ConvertJavaStringToUTF8(env, jscript_path, &script_path);
   ui_delegate_->OnScriptSelected(script_path);
@@ -459,9 +453,6 @@ void UiControllerAndroid::UpdateTouchableArea(bool enabled,
 }
 
 std::string UiControllerAndroid::GetDebugContext() const {
-  if (!ui_delegate_)
-    return "";
-
   return ui_delegate_->GetDebugContext();
 }
 
@@ -518,9 +509,6 @@ void UiControllerAndroid::InvalidateAccessToken(
 
 void UiControllerAndroid::Destroy(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj) {
-  if (ui_delegate_ == nullptr)
-    return;
-
   if (!ui_delegate_->Terminate()) {
     // This is a safety net and should be removed once all uses of
     // base::Unretained in the execution and script tracking has been removed.
