@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
@@ -17,8 +16,16 @@
   <template>
     <style include="settings-shared">
       :host {
+        background-color: white;
+        bottom: 0;
         display: block;
+        left: 0;
+        min-height: fit-content;
         padding-bottom: 60px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        @apply --cr-card-elevation;
       }
 
       #headerLine {

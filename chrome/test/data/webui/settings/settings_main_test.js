@@ -229,6 +229,11 @@ cr.define('settings_main_page', function() {
     // "advanced" page, when the search has been initiated from a subpage
     // whose parent is the "advanced" page.
     test('exiting search mode, advanced expanded', function() {
+      // Trigger basic page to be rendered once.
+      settings.navigateTo(settings.routes.APPEARANCE);
+      Polymer.dom.flush();
+
+      // Navigate to an "advanced" subpage.
       settings.navigateTo(settings.routes.SITE_SETTINGS);
       Polymer.dom.flush();
       return assertAdvancedVisibilityAfterSearch('block');

@@ -280,16 +280,18 @@ Polymer({
    * @private
    */
   onMenuClose_: function() {
-    if (this.$.drawer.wasCanceled()) {
-      // Add tab index so that the container can be focused.
-      this.$.container.setAttribute('tabindex', '-1');
-      this.$.container.focus();
-
-      listenOnce(this.$.container, ['blur', 'pointerdown'], () => {
-        this.$.container.removeAttribute('tabindex');
-      });
-    } else {
-      this.$.main.focusSection();
+    if (!this.$.drawer.wasCanceled()) {
+      // If a navigation happened, MainPageBehavior#currentRouteChanged handles
+      // focusing the corresponding section.
+      return;
     }
+
+    // Add tab index so that the container can be focused.
+    this.$.container.setAttribute('tabindex', '-1');
+    this.$.container.focus();
+
+    listenOnce(this.$.container, ['blur', 'pointerdown'], () => {
+      this.$.container.removeAttribute('tabindex');
+    });
   },
 });

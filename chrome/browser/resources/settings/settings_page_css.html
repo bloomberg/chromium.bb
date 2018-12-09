@@ -23,6 +23,10 @@
         height: 100%;
       }
 
+      :host(.showing-subpage) settings-section:not(.expanded) {
+        display: none;
+      }
+
       :host > div > :not(.expanded) {
         /* The margin and padding here are doing two things: make the total
          * separation 24px; and make scrollIntoView align the section header
@@ -33,13 +37,6 @@
 
       .expanded {
         min-height: 100%;
-      }
-
-      .expanding,
-      .collapsing {
-        /* Must be lower than the cr-toolbar's z-index.
-         * See settings_ui.html. */
-        z-index: 1;
       }
     </style>
   </template>
