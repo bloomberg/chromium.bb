@@ -49,6 +49,19 @@ cr.define('settings', function() {
    * @polymerBehavior
    */
   const MainPageBehavior = {
+    properties: {
+      /**
+       * Whether a search operation is in progress or previous search results
+       * are being displayed.
+       * @private {boolean}
+       */
+      inSearchMode: {
+        type: Boolean,
+        value: false,
+        observer: 'inSearchModeChanged_',
+      },
+    },
+
     /** @type {?HTMLElement} */
     scroller: null,
 
@@ -91,6 +104,29 @@ cr.define('settings', function() {
      */
     containsRoute: function(route) {
       return false;
+    },
+
+    /**
+     * @param {boolean} current
+     * @param {boolean} previous
+     * @private
+     */
+    inSearchModeChanged_: function(current, previous) {
+      // Ignore 1st occurrence which happens while the element is being
+      // initialized.
+      if (previous === undefined)
+        return;
+
+      if (!this.inSearchMode) {
+        const route = settings.getCurrentRoute();
+        if (this.containsRoute(route) &&
+            classifyRoute(route) === RouteState.SECTION) {
+          // Re-fire the showing-section event to trigger settings-main
+          // recalculation of the overscroll, now that sections are not
+          // hidden-by-search.
+          this.fire('showing-section', this.getSection(route.section));
+        }
+      }
     },
 
     /**
@@ -166,7 +202,12 @@ cr.define('settings', function() {
       const oldSection = this.getSection(oldRoute.section);
       oldSection.classList.remove('expanded');
       this.classList.remove('showing-subpage');
-      this.scroller.scrollTop = this.lastScrollTop_;
+      requestAnimationFrame(() => {
+        if (settings.lastRouteChangeWasPopstate()) {
+          this.scroller.scrollTop = this.lastScrollTop_;
+        }
+        this.fire('showing-main-page');
+      });
     },
 
     /**
@@ -175,7 +216,9 @@ cr.define('settings', function() {
      */
     scrollToSection_: function(route) {
       this.ensureSectionForRoute_(route).then(section => {
-        section.scrollIntoView();
+        if (!this.inSearchMode) {
+          this.fire('showing-section', section);
+        }
         this.fire('show-container');
       });
     },

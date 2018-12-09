@@ -82,19 +82,15 @@ suite('Multidevice', function() {
   });
 
   setup(function() {
-    settings.navigateTo(settings.routes.MULTIDEVICE);
+    PolymerTest.clearBody();
     browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
-    const whenInitialized = browserProxy.whenCalled('getPageContentData');
 
-    PolymerTest.clearBody();
     multidevicePage = document.createElement('settings-multidevice-page');
     assertTrue(!!multidevicePage);
 
     document.body.appendChild(multidevicePage);
-    return whenInitialized.then(() => {
-      Polymer.dom.flush();
-    });
+    return browserProxy.whenCalled('getPageContentData');
   });
 
   teardown(function() {

@@ -266,8 +266,11 @@ cr.define('settings_main_page', function() {
 
       const basicPage = settingsMain.$$('settings-basic-page');
       let advancedPage = null;
-      return basicPage.$$('#advancedPageTemplate')
-          .get()
+
+      return test_util.eventToPromise('showing-section', settingsMain)
+          .then(() => {
+            return basicPage.$$('#advancedPageTemplate').get();
+          })
           .then(function(advanced) {
             advancedPage = advanced;
             return assertPageVisibility('block', 'block');
@@ -282,7 +285,6 @@ cr.define('settings_main_page', function() {
                 getToggleContainer().querySelector('#advancedToggle');
             assertTrue(!!advancedToggle);
             advancedToggle.click();
-
             return whenHidden;
           })
           .then(function() {
