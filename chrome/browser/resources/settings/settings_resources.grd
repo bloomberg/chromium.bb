@@ -1234,6 +1234,12 @@
         <structure name="IDR_SETTINGS_CROSTINI_SHARED_PATHS_JS"
                    file="crostini_page/crostini_shared_paths.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_CROSTINI_SHARED_USB_DEVICES_HTML"
+                   file="crostini_page/crostini_shared_usb_devices.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CROSTINI_SHARED_USB_DEVICES_JS"
+                   file="crostini_page/crostini_shared_usb_devices.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_CROSTINI_BROWSER_PROXY_JS"
                    file="crostini_page/crostini_browser_proxy.js"
                    type="chrome_html"

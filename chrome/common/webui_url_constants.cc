@@ -291,6 +291,7 @@ const char kTriggeredResetProfileSettingsSubPage[] =
 #if defined(OS_CHROMEOS)
 const char kAccessibilitySubPage[] = "accessibility";
 const char kBluetoothSubPage[] = "bluetoothDevices";
+const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
 const char kDateTimeSubPage[] = "dateTime";
 const char kDisplaySubPage[] = "display";
 const char kHelpSubPage[] = "help";

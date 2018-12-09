@@ -1,0 +1,27 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="../prefs/prefs_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-crostini-shared-usb-devices">
+  <template>
+    <style include="settings-shared"></style>
+    <style>
+      .toggle-container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+      }
+    </style>
+    <template is="dom-repeat"
+      items="{{prefs.crostini.shared_usb_devices.value}}" as="usb">
+      <div class="toggle-container settings-box">
+        <div class="label">[[usb.name]]</div>
+        <cr-toggle class="toggle" checked="{{usb.shared}}"></cr-toggle>
+      </div>
+    </template>
+  </template>
+  <script src="crostini_shared_usb_devices.js"></script>
+</dom-module>

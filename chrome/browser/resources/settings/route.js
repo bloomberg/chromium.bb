@@ -17,6 +17,7 @@
  *   CROSTINI: (undefined|!settings.Route),
  *   CROSTINI_DETAILS: (undefined|!settings.Route),
  *   CROSTINI_SHARED_PATHS: (undefined|!settings.Route),
+ *   CROSTINI_SHARED_USB_DEVICES: (undefined|!settings.Route),
  *   APPEARANCE: (undefined|!settings.Route),
  *   AUTOFILL: (undefined|!settings.Route),
  *   BASIC: (undefined|!settings.Route),
@@ -270,6 +271,8 @@ cr.define('settings', function() {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
       r.CROSTINI_SHARED_PATHS = r.CROSTINI.createChild('/crostini/sharedPaths');
+      r.CROSTINI_SHARED_USB_DEVICES =
+          r.CROSTINI.createChild('/crostini/sharedUsbDevices');
     }
     // </if>
 
