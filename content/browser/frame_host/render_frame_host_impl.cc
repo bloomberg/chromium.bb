@@ -92,6 +92,7 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/webauth/authenticator_impl.h"
 #include "content/browser/webauth/scoped_virtual_authenticator_environment.h"
 #include "content/browser/websockets/websocket_manager.h"
@@ -3989,6 +3990,9 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&FileChooserImpl::Create, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(&AudioContextManagerImpl::Create,
+                                              base::Unretained(this)));
+
+  registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
 }
 
