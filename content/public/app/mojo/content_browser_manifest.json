@@ -187,6 +187,7 @@
           "blink.mojom.SpeechRecognizer",
           "blink.mojom.TextSuggestionHost",
           "blink.mojom.UnhandledTapNotifier",
+          "blink.mojom.WakeLockService",
           "blink.mojom.WebBluetoothService",
           "blink.mojom.WebUsbService",
           "blink.test.mojom.VirtualAuthenticatorManager",

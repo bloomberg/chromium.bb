@@ -16,6 +16,7 @@
 
 namespace blink {
 
+class Document;
 class WakeLockRequest;
 
 class WakeLock final : public EventTargetWithInlineData,
@@ -72,6 +73,9 @@ class WakeLock final : public EventTargetWithInlineData,
 
   // Binds to the Wake Lock mojo service
   void BindToServiceIfNeeded();
+
+  // Returns the document associated with the object. nullptr if there is none.
+  Document* GetDocument();
 
   device::mojom::blink::WakeLockPtr wake_lock_service_;
 

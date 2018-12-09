@@ -1766,6 +1766,8 @@ jumbo_source_set("browser") {
     "utility_process_host.h",
     "wake_lock/wake_lock_context_host.cc",
     "wake_lock/wake_lock_context_host.h",
+    "wake_lock/wake_lock_service_impl.cc",
+    "wake_lock/wake_lock_service_impl.h",
     "web_contents/aura/gesture_nav_simple.cc",
     "web_contents/aura/gesture_nav_simple.h",
     "web_contents/aura/overscroll_navigation_overlay.cc",
