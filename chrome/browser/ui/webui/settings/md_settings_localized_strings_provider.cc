@@ -1718,16 +1718,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"sync", unified_consent::IsUnifiedConsentFeatureEnabled()
                  ? IDS_SETTINGS_SYNC_UNIFIED_CONSENT
                  : IDS_SETTINGS_SYNC},
-    {"syncDescription", unified_consent::IsUnifiedConsentFeatureEnabled()
-                            ? IDS_SETTINGS_SYNC_DESCRIPTION_UNIFIED_CONSENT
-                            : IDS_SETTINGS_SYNC_DESCRIPTION},
     {"nonPersonalizedServicesSectionLabel",
      IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
-    {"nonPersonalizedServicesSectionDesc",
-     IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_DESC},
-    {"nonPersonalizedServicesExpandA11yLabel",
-     IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_ACCESSIBILITY_LABEL},
-    {"syncExpandA11yLabel", IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL},
     {"syncAndNonPersonalizedServices",
      IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
     {"syncPageTitle", unified_consent::IsUnifiedConsentFeatureEnabled()
