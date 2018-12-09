@@ -31,7 +31,7 @@
 #include <time.h>
 
 #include "input-timestamps-helper.h"
-#include "protocol/input-timestamps-unstable-v1-client-protocol.h"
+#include "input-timestamps-unstable-v1-client-protocol.h"
 #include "shared/timespec-util.h"
 #include "shared/zalloc.h"
 #include "weston-test-client-helper.h"
