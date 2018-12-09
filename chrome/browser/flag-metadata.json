@@ -462,6 +462,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "crostini-files",
+    "owners": [ "joelhockey", "nverne", "benwells" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "crostini-usb-support",
     "owners": [ "jopra", "nverne", "benwells" ],
     "expiry_milestone": 76
@@ -529,11 +534,6 @@
   {
     "name": "disable-cros-component",
     // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "disable-crostini-files",
-    "owners": [ "joelhockey", "nverne", "benwells" ],
     "expiry_milestone": 76
   },
   {
