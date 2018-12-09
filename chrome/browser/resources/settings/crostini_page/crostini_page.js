@@ -36,6 +36,11 @@ Polymer({
               settings.routes.CROSTINI_SHARED_PATHS.path,
               '#crostini .subpage-arrow button');
         }
+        if (settings.routes.CROSTINI_SHARED_USB_DEVICES) {
+          map.set(
+              settings.routes.CROSTINI_SHARED_USB_DEVICES.path,
+              '#crostini .subpage-arrow button');
+        }
         return map;
       },
     },

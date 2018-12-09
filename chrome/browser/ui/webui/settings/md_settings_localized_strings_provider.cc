@@ -449,6 +449,10 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
       {"crostiniEnable", IDS_SETTINGS_TURN_ON},
       {"crostiniRemove", IDS_SETTINGS_CROSTINI_REMOVE},
       {"crostiniSharedPaths", IDS_SETTINGS_CROSTINI_SHARED_PATHS},
+      {"crostiniSharedUsbDevicesLabel",
+       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL},
+      {"crostiniSharedUsbDevicesDescription",
+       IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_DESCRIPTION},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -457,6 +461,10 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CROSTINI_SUBTEXT,
           GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)));
+
+  html_source->AddBoolean(
+      "enableCrostiniUsbDeviceSupport",
+      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
 void AddAndroidAppStrings(content::WebUIDataSource* html_source) {

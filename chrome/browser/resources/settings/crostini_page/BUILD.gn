@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
     ":crostini_browser_proxy",
     ":crostini_page",
     ":crostini_shared_paths",
+    ":crostini_shared_usb_devices",
     ":crostini_subpage",
   ]
 }
@@ -30,6 +31,14 @@ js_library("crostini_page") {
 }
 
 js_library("crostini_shared_paths") {
+  deps = [
+    ":crostini_browser_proxy",
+    "..:route",
+    "../prefs:prefs_behavior",
+  ]
+}
+
+js_library("crostini_shared_usb_devices") {
   deps = [
     ":crostini_browser_proxy",
     "..:route",

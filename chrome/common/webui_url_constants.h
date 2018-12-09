@@ -284,6 +284,7 @@ extern const char kTriggeredResetProfileSettingsSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kAccessibilitySubPage[];
 extern const char kBluetoothSubPage[];
+extern const char kCrostiniSharedUsbDevicesSubPage[];
 extern const char kDateTimeSubPage[];
 extern const char kDisplaySubPage[];
 extern const char kHelpSubPage[];

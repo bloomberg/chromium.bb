@@ -18,6 +18,18 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * Whether CrostiniUsbSupport flag is enabled.
+     * @private {boolean}
+     */
+    enableCrostiniUsbDeviceSupport_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableCrostiniUsbDeviceSupport');
+      },
+    },
+
   },
 
   observers: ['onCrostiniEnabledChanged_(prefs.crostini.enabled.value)'],
@@ -42,5 +54,10 @@ Polymer({
   /** @private */
   onSharedPathsTap_: function(event) {
     settings.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
+  },
+
+  /** @private */
+  onSharedUsbDevicesTap_: function(event) {
+    settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
   },
 });
