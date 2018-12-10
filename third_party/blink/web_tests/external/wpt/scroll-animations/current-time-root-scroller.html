@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
+<title>ScrollTimeline current time algorithm - root scroller</title>
+<link rel="help" href="https://wicg.github.io/scroll-animations/#current-time-algorithm">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
 <style>
 html {
   /* Ensure the document is scrollable. */
@@ -9,14 +15,11 @@ html {
 }
 </style>
 
-<script src='../../../resources/testharness.js'></script>
-<script src='../../../resources/testharnessreport.js'></script>
-
 <script>
 test(function() {
   const scroller = document.scrollingElement;
-  // For simplicity, we set the timeRange(s) such that currentTime maps directly to
-  // the value scrolled.
+  // Set the timeRange(s) such that currentTime maps directly to the value
+  // scrolled. This makes it easier to assert on the currentTime in the test.
   const scrollerHeight = scroller.scrollHeight - scroller.clientHeight;
   const scrollerWidth = scroller.scrollWidth - scroller.clientWidth;
 
@@ -33,8 +36,8 @@ test(function() {
   scroller.scrollTop = 50;
   scroller.scrollLeft = 75;
 
-  // As noted above, we have mapped timeRange such that currentTime should just
-  // be the scroll offset.
+  // As noted above, the timeRange(s) are mapped such that currentTime should be
+  // the scroll offset.
   assert_equals(blockScrollTimeline.currentTime, 50);
   assert_equals(inlineScrollTimeline.currentTime, 75);
 }, 'currentTime calculates the correct time for a document.scrollingElement scrollSource');
