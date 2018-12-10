@@ -55,7 +55,6 @@ namespace content {
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
-class RenderWidgetHostViewChildFrame;
 class RenderWidgetTargeter;
 class TouchEmulator;
 class TouchEventAckQueue;
@@ -101,10 +100,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
 
   // |event| is in root coordinates.
   void BubbleScrollEvent(RenderWidgetHostViewBase* target_view,
-                         RenderWidgetHostViewChildFrame* resending_view,
-                         const blink::WebGestureEvent& event);
-  void WillDetachChildView(
-      const RenderWidgetHostViewChildFrame* detaching_view);
+                         const blink::WebGestureEvent& event,
+                         const RenderWidgetHostViewBase* resending_view);
+  void CancelScrollBubbling(RenderWidgetHostViewBase* target_view);
 
   void AddFrameSinkIdOwner(const viz::FrameSinkId& id,
                            RenderWidgetHostViewBase* owner);
@@ -226,24 +224,13 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                    RenderWidgetHostViewBase* target,
                                    RenderWidgetHostViewBase* root_view);
 
-  void CancelScrollBubbling();
-
-  // Cancels scroll bubbling if it is unsafe to send a gesture event sequence
-  // to |target| considering the views involved in an ongoing scroll.
-  void CancelScrollBubblingIfConflicting(
-      const RenderWidgetHostViewBase* target);
-
-  // Wraps a touchscreen GesturePinchBegin in a GestureScrollBegin.
+  // The following methods take a GestureScrollUpdate event and send a
+  // GestureScrollBegin or GestureScrollEnd for wrapping it. This is needed
+  // when GestureScrollUpdates are being forwarded for scroll bubbling.
   void SendGestureScrollBegin(RenderWidgetHostViewBase* view,
                               const blink::WebGestureEvent& event);
-  // Used to end a scroll sequence during scroll bubbling or as part of a
-  // wrapped pinch gesture.
   void SendGestureScrollEnd(RenderWidgetHostViewBase* view,
                             const blink::WebGestureEvent& event);
-  // Used when scroll bubbling is canceled to indicate to |view| that it should
-  // consider the scroll sequence to have ended.
-  void SendGestureScrollEnd(RenderWidgetHostViewBase* view,
-                            blink::WebGestureDevice source_device);
 
   // Helper functions to implement RenderWidgetTargeter::Delegate functions.
   RenderWidgetTargetResult FindMouseEventTarget(
@@ -328,8 +315,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   // https://crbug.com/824774.
   bool touchscreen_gesture_target_in_map_;
   TargetData touchpad_gesture_target_;
-  RenderWidgetHostViewBase* bubbling_gesture_scroll_target_ = nullptr;
-  RenderWidgetHostViewChildFrame* bubbling_gesture_scroll_origin_ = nullptr;
+  TargetData bubbling_gesture_scroll_target_;
+  TargetData first_bubbling_scroll_target_;
   // Used to target wheel events for the duration of a scroll.
   TargetData wheel_target_;
   // Maintains the same target between mouse down and mouse up.

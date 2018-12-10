@@ -539,25 +539,28 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
   if (event.IsTouchpadZoomEvent())
     ProcessTouchpadZoomEventAckInRoot(event, ack_result);
 
-  // GestureScrollBegin is a blocking event; It is forwarded for bubbling if
-  // its ack is not consumed. For the rest of the scroll events
-  // (GestureScrollUpdate, GestureScrollEnd) are bubbled if the
-  // GestureScrollBegin was bubbled.
-  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+  const bool should_bubble =
+      ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
+      ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS ||
+      ack_result == INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE;
+
+  if ((event.GetType() == blink::WebInputEvent::kGestureScrollBegin) &&
+      should_bubble) {
     DCHECK(!is_scroll_sequence_bubbling_);
-    is_scroll_sequence_bubbling_ =
-        ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED ||
-        ack_result == INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS ||
-        ack_result == INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE;
+    is_scroll_sequence_bubbling_ = true;
+  } else if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
+    is_scroll_sequence_bubbling_ = false;
   }
 
-  if (is_scroll_sequence_bubbling_ &&
-      (event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
-       event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
-       event.GetType() == blink::WebInputEvent::kGestureScrollEnd)) {
+  // GestureScrollBegin is a blocking event; It is forwarded for bubbling if
+  // its ack is not consumed. For the rest of the scroll events
+  // (GestureScrollUpdate, GestureScrollEnd) the frame_connector_ decides to
+  // forward them for bubbling if the GestureScrollBegin event is forwarded.
+  if ((event.GetType() == blink::WebInputEvent::kGestureScrollBegin &&
+       should_bubble) ||
+      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
+      event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
     frame_connector_->BubbleScrollEvent(event);
-    if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
-      is_scroll_sequence_bubbling_ = false;
   }
 }
 
