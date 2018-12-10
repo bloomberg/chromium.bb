@@ -8072,6 +8072,27 @@ TEST_F(URLRequestTestHTTP, RedirectPreserveUnsetTopFrameOrigin) {
   EXPECT_FALSE(r->top_frame_origin());
 }
 
+TEST_F(URLRequestTestHTTP, RedirectPreserveTopFrameURL) {
+  ASSERT_TRUE(http_test_server()->Start());
+
+  GURL url(http_test_server()->GetURL("/redirect302-to-echo"));
+  url::Origin top_frame_origin =
+      url::Origin::Create(GURL("http://example.com"));
+  TestDelegate d;
+  {
+    std::unique_ptr<URLRequest> r(default_context().CreateRequest(
+        url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    r->set_top_frame_origin(top_frame_origin);
+
+    r->Start();
+    d.RunUntilComplete();
+
+    EXPECT_EQ(2U, r->url_chain().size());
+    EXPECT_EQ(OK, d.request_status());
+    EXPECT_EQ(top_frame_origin, *r->top_frame_origin());
+  }
+}
+
 TEST_F(URLRequestTestHTTP, RedirectUpdateFirstPartyURL) {
   ASSERT_TRUE(http_test_server()->Start());
 

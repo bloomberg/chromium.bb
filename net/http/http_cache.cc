@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -31,6 +32,7 @@
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "net/base/cache_type.h"
+#include "net/base/features.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -580,7 +582,21 @@ int HttpCache::GetBackendForTransaction(Transaction* trans) {
 // Generate a key that can be used inside the cache.
 std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
   // Strip out the reference, username, and password sections of the URL.
-  std::string url = HttpUtil::SpecForRequest(request->url);
+  std::string url;
+
+  // If we're splitting the cache by top frame origin, then prefix the key with
+  // the origin.
+  if (request->top_frame_origin &&
+      base::FeatureList::IsEnabled(features::kSplitCacheByTopFrameOrigin)) {
+    // Prepend the key with "_dk_" to mark it as double keyed (and makes it an
+    // invalid url so that it doesn't get confused with a single-keyed
+    // entry). Separate the origin and url with invalid whitespace and control
+    // characters.
+    url = base::StrCat({"_dk_", request->top_frame_origin->Serialize(), " \n",
+                        HttpUtil::SpecForRequest(request->url)});
+  } else {
+    url = HttpUtil::SpecForRequest(request->url);
+  }
 
   DCHECK_NE(DISABLE, mode_);
   // No valid URL can begin with numerals, so we should not have to worry
@@ -591,6 +607,7 @@ std::string HttpCache::GenerateCacheKey(const HttpRequestInfo* request) {
                base::StringPrintf("%" PRId64 "/",
                                   request->upload_data_stream->identifier()));
   }
+
   return url;
 }
 

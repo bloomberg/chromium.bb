@@ -24,6 +24,9 @@ NET_EXPORT extern const base::Feature kIsolatedCodeCache;
 // with some buggy non-compliant TLS-terminating proxies.
 NET_EXPORT extern const base::Feature kEnforceTLS13Downgrade;
 
+// Splits cache entries by the request's top frame's origin if one is available.
+NET_EXPORT extern const base::Feature kSplitCacheByTopFrameOrigin;
+
 }  // namespace features
 }  // namespace net
 

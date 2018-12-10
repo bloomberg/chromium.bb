@@ -22,5 +22,8 @@ const base::Feature kIsolatedCodeCache = {"IsolatedCodeCache",
 const base::Feature kEnforceTLS13Downgrade{"EnforceTLS13Downgrade",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSplitCacheByTopFrameOrigin{
+    "SplitCacheByTopFrameOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace net
