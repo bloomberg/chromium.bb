@@ -659,7 +659,6 @@ mojom("mojo_bindings") {
     "platform/ukm.mojom",
     "web/commit_result.mojom",
     "web/console_message.mojom",
-    "web/devtools_agent.mojom",
     "web/devtools_frontend.mojom",
     "web/selection_menu_behavior.mojom",
     "web/window_features.mojom",

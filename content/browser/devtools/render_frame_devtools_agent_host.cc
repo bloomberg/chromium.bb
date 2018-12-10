@@ -55,7 +55,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/compositor_impl_android.h"

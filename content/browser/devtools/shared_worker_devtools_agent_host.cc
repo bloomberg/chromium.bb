@@ -17,7 +17,7 @@
 #include "content/browser/worker_host/shared_worker_service_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace content {
 

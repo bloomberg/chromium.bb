@@ -12,7 +12,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "third_party/blink/public/web/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 namespace gfx {
 class Point;

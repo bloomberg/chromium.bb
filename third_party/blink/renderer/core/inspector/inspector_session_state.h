@@ -8,7 +8,7 @@
 #include <memory>
 #include <type_traits>
 #include <vector>
-#include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
+#include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
