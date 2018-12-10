@@ -41,3 +41,6 @@
 # Pinning by setting the window property doesn't work in Mash.
 # https://crbug.com/912191
 -ImmersiveModeBrowserViewTest.LockedFullscreenDisablesImmersive/*
+
+# Flaky https://crbug.com/912213
+-WebBluetoothTest.NavigateWithChooserCrossOrigin
