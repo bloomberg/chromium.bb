@@ -21,8 +21,16 @@
     return_cpp_type, return_native_value_traits_tag, arguments,
     is_treat_non_object_as_null, bypass_runnability_check,
     interface_name, operation_name) %}
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "{{interface_name}}",
+          "{{operation_name}}");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<{{return_cpp_type}}>();
+  }
+
   {% if not bypass_runnability_check %}
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -43,7 +51,7 @@
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -109,7 +117,7 @@
     // step 9.2.2. If getResult is an abrupt completion, set completion to
     //   getResult and jump to the step labeled return.
     v8::Local<v8::Value> value;
-    if (!CallbackObject()->Get(CallbackRelevantScriptState()->GetContext(),
+    if (!CallbackObject()->Get(callback_relevant_script_state->GetContext(),
                                V8String(GetIsolate(), "{{operation_name}}"))
         .ToLocal(&value)) {
       return v8::Nothing<{{return_cpp_type}}>();
@@ -135,7 +143,7 @@
   {% endif %}
   {# Fill |this_arg|. #}
   {% if invoke_or_construct == 'invoke' %}
-  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
   {% elif interface_or_function == 'callback interface' %}
   if (!IsCallbackObjectCallable()) {
     // step 11. If value's interface is not a single operation callback
@@ -146,7 +154,7 @@
     // step 2. If thisArg was not given, let thisArg be undefined.
     this_arg = v8::Undefined(GetIsolate());
   } else {
-    this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+    this_arg = ToV8(callback_this_value, callback_relevant_script_state);
   }
   {% endif %}
 
@@ -174,7 +182,7 @@
   //   labeled return.
   {% if arguments %}
   v8::Local<v8::Object> argument_creation_context =
-      CallbackRelevantScriptState()->GetContext()->Global();
+      callback_relevant_script_state->GetContext()->Global();
   ALLOW_UNUSED_LOCAL(argument_creation_context);
   {% set has_variadic_argument = arguments[-1].is_variadic %}
   {% set non_variadic_arguments = arguments | rejectattr('is_variadic') | list %}
@@ -209,7 +217,7 @@
   if (!V8ScriptRunner::CallAsConstructor(
           GetIsolate(),
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           argc,
           argv).ToLocal(&call_result)) {
     // step 11. If callResult is an abrupt completion, set completion to
@@ -220,7 +228,7 @@
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           this_arg,
           argc,
           argv,
