@@ -22,3 +22,6 @@
 # Fails because a MusClient is needed. Blocked on folding views_mus_test_suite
 # into views_test_suite.
 -OmniboxViewViewsSteadyStateElisionsTest.GestureTaps
+
+# Flaky https://crbug.com/913577
+-AdaptiveScreenBrightnessManagerTest.SingleBrowser
