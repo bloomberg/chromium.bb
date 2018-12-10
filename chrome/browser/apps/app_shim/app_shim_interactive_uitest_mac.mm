@@ -291,7 +291,7 @@ namespace apps {
 #define MAYBE_ShowWindow DISABLED_ShowWindow
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
-#define MAYBE_Launch Launch
+#define MAYBE_Launch DISABLED_Launch  // http://crbug.com/913490
 #define MAYBE_HostedAppLaunch DISABLED_HostedAppLaunch
 #define MAYBE_ShowWindow ShowWindow
 // http://crbug.com/517744 HostedAppLaunch fails with open as tab for apps
