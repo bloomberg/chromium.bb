@@ -611,26 +611,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
   EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
 }
 
-void DumpSessionsOnServer(fake_server::FakeServer* fake_server) {
-  auto entities = fake_server->GetSyncEntitiesByModelType(syncer::SESSIONS);
-  for (const auto& entity : entities) {
-    DVLOG(0) << "Session entity:\n" << *syncer::SyncEntityToValue(entity, true);
-  }
-}
-
-// TODO(pavely): This test is flaky. Report failures in
-// https://crbug.com/789129.
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
-                       DISABLED_CookieJarMismatch) {
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
 
-  sync_pb::ClientToServerMessage message;
-
   // Simulate empty list of accounts in the cookie jar. This will record cookie
   // jar mismatch.
-  UpdateCookieJarAccountsAndWait({}, true);
+  UpdateCookieJarAccountsAndWait({},
+                                 /*expected_cookie_jar_mismatch=*/true);
   // The HistogramTester objects are scoped to allow more precise verification.
   {
     HistogramTester histogram_tester;
@@ -640,6 +629,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
     ASSERT_TRUE(OpenTab(0, url));
     WaitForURLOnServer(url);
 
+    sync_pb::ClientToServerMessage message;
     ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
     ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
 
@@ -651,10 +641,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
                          true, 1);
   }
 
-  // Log sessions entities on fake server to verify that the last known tab's
-  // url is kURL1.
-  DumpSessionsOnServer(GetFakeServer());
-
   // Trigger a cookie jar change (user signing in to content area).
   // Updating the cookie jar has to travel to the sync engine. It is possible
   // something is already running or scheduled to run on the sync thread. We
@@ -662,7 +648,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   // the cookie jar stats have been updated.
   UpdateCookieJarAccountsAndWait(
       {GetClient(0)->service()->GetAuthenticatedAccountInfo().account_id},
-      false);
+      /*expected_cookie_jar_mismatch=*/false);
 
   {
     HistogramTester histogram_tester;
@@ -672,13 +658,15 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
     NavigateTab(0, url);
     WaitForURLOnServer(url);
 
+    ASSERT_NE(
+        0, histogram_tester.GetBucketCount("Sync.PostedClientToServerMessage",
+                                           /*COMMIT=*/1));
+
     // Verify the cookie jar mismatch bool is set to false.
+    sync_pb::ClientToServerMessage message;
     ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
-    ASSERT_FALSE(message.commit().config_params().cookie_jar_mismatch());
-    // Log last commit message to verify that commit message was triggered by
-    // navigation to kURL2.
-    DVLOG(0) << "Commit message:\n"
-             << *syncer::ClientToServerMessageToValue(message, true);
+    EXPECT_FALSE(message.commit().config_params().cookie_jar_mismatch())
+        << *syncer::ClientToServerMessageToValue(message, true);
 
     // Verify the histograms were recorded properly.
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
