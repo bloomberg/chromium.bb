@@ -383,6 +383,10 @@ class PersonalDataManager : public KeyedService,
   // account should be shown in the dropdown.
   bool ShouldShowCardsFromAccountOption() const;
 
+  // Logs the fact that the server card link was clicked including information
+  // about the current sync state.
+  void LogServerCardLinkClicked() const;
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.

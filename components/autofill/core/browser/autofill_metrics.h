@@ -1250,6 +1250,10 @@ class AutofillMetrics {
   // Converts form type to bit vector to store in UKM.
   static int64_t FormTypesToBitVector(const std::set<FormType>& form_types);
 
+  // Records the fact that the server card link was clicked with information
+  // about the current sync state.
+  static void LogServerCardLinkClicked(AutofillSyncSigninState sync_state);
+
   // Utility to log autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.
   class FormEventLogger {
