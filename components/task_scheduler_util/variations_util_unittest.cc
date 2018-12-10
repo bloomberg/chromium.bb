@@ -24,8 +24,10 @@ class TaskSchedulerUtilVariationsUtilTest : public testing::Test {
 
   void SetVariationParams(
       const std::map<std::string, std::string>& variation_params) {
-    variation_params_manager_.SetVariationParams("BrowserScheduler",
-                                                 variation_params);
+    std::set<std::string> features;
+    features.insert(kRendererSchedulerInitParams.name);
+    variation_params_manager_.SetVariationParamsWithFeatureAssociations(
+        "DummyTrial", variation_params, features);
   }
 
  private:
@@ -38,13 +40,13 @@ class TaskSchedulerUtilVariationsUtilTest : public testing::Test {
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "1;1;1;0;42";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
-  variation_params["RendererForeground"] = "4;4;1;0;62";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
+  variation_params["Background"] = "1;1;1;0;42";
+  variation_params["BackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["Foreground"] = "4;4;1;0;62";
+  variation_params["ForegroundBlocking"] = "8;8;1;0;72";
   SetVariationParams(variation_params);
 
-  auto init_params = GetTaskSchedulerInitParams("Renderer");
+  auto init_params = GetTaskSchedulerInitParams(kRendererSchedulerInitParams);
   ASSERT_TRUE(init_params);
 
   EXPECT_EQ(1, init_params->background_worker_pool_params.max_tasks());
@@ -81,63 +83,63 @@ TEST_F(TaskSchedulerUtilVariationsUtilTest, OrderingParams5) {
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, NoData) {
-  EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer"));
+  EXPECT_FALSE(GetTaskSchedulerInitParams(kRendererSchedulerInitParams));
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, IncompleteParameters) {
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "1;1;1;0";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0";
-  variation_params["RendererForeground"] = "4;4;1;0";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0";
+  variation_params["Background"] = "1;1;1;0";
+  variation_params["BackgroundBlocking"] = "2;2;1;0";
+  variation_params["Foreground"] = "4;4;1;0";
+  variation_params["ForegroundBlocking"] = "8;8;1;0";
   SetVariationParams(variation_params);
-  EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer"));
+  EXPECT_FALSE(GetTaskSchedulerInitParams(kRendererSchedulerInitParams));
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, InvalidParametersFormat) {
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "a;b;c;d;e";
-  variation_params["RendererBackgroundBlocking"] = "a;b;c;d;e";
-  variation_params["RendererForeground"] = "a;b;c;d;e";
-  variation_params["RendererForegroundBlocking"] = "a;b;c;d;e";
+  variation_params["Background"] = "a;b;c;d;e";
+  variation_params["BackgroundBlocking"] = "a;b;c;d;e";
+  variation_params["Foreground"] = "a;b;c;d;e";
+  variation_params["ForegroundBlocking"] = "a;b;c;d;e";
   SetVariationParams(variation_params);
-  EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer"));
+  EXPECT_FALSE(GetTaskSchedulerInitParams(kRendererSchedulerInitParams));
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, ZeroMaxThreads) {
   // The Background pool has a maximum number of threads equal to zero, which is
   // invalid.
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "0;0;0;0;0";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
-  variation_params["RendererForeground"] = "4;4;1;0;62";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
+  variation_params["Background"] = "0;0;0;0;0";
+  variation_params["BackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["Foreground"] = "4;4;1;0;62";
+  variation_params["ForegroundBlocking"] = "8;8;1;0;72";
   SetVariationParams(variation_params);
-  EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer"));
+  EXPECT_FALSE(GetTaskSchedulerInitParams(kRendererSchedulerInitParams));
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, NegativeMaxThreads) {
   // The Background pool has a negative maximum number of threads, which is
   // invalid.
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "-5;-5;0;0;0";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
-  variation_params["RendererForeground"] = "4;4;1;0;62";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
+  variation_params["Background"] = "-5;-5;0;0;0";
+  variation_params["BackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["Foreground"] = "4;4;1;0;62";
+  variation_params["ForegroundBlocking"] = "8;8;1;0;72";
   SetVariationParams(variation_params);
-  EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer"));
+  EXPECT_FALSE(GetTaskSchedulerInitParams(kRendererSchedulerInitParams));
 }
 
 TEST_F(TaskSchedulerUtilVariationsUtilTest, NegativeSuggestedReclaimTime) {
   // The Background pool has a negative suggested reclaim time, which is
   // invalid.
   std::map<std::string, std::string> variation_params;
-  variation_params["RendererBackground"] = "1;1;1;0;-5";
-  variation_params["RendererBackgroundBlocking"] = "2;2;1;0;52";
-  variation_params["RendererForeground"] = "4;4;1;0;62";
-  variation_params["RendererForegroundBlocking"] = "8;8;1;0;72";
+  variation_params["Background"] = "1;1;1;0;-5";
+  variation_params["BackgroundBlocking"] = "2;2;1;0;52";
+  variation_params["Foreground"] = "4;4;1;0;62";
+  variation_params["ForegroundBlocking"] = "8;8;1;0;72";
   SetVariationParams(variation_params);
-  EXPECT_FALSE(GetTaskSchedulerInitParams("Renderer"));
+  EXPECT_FALSE(GetTaskSchedulerInitParams(kRendererSchedulerInitParams));
 }
 
 }  // namespace task_scheduler_util

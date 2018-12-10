@@ -7,19 +7,22 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 
 namespace task_scheduler_util {
 
+extern const base::Feature kBrowserSchedulerInitParams;
+extern const base::Feature kRendererSchedulerInitParams;
+
 // Builds a TaskScheduler::InitParams from variations params that are prefixed
-// with |variation_param_prefix| in the BrowserScheduler field trial. Returns
-// nullptr on failure.
+// for |feature|. Returns nullptr on failure.
 //
 // TODO(fdoray): Move this to the anonymous namespace in the .cc file.
 // https://crbug.com/810049
 std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
-    base::StringPiece variation_param_prefix);
+    const base::Feature& feature);
 
 // Builds a TaskScheduler::InitParams to use in the browser process from
 // variation params in the BrowserScheduler field trial.
