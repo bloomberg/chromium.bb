@@ -5,7 +5,7 @@
       Something went wrong. You can finish your order on the website.
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_GIVE_UP" desc="Text label that is shown when autofill assistant cannot help anymore, because of a user action." formatter_data="android_java">
-      I cannot help anymore, please continue manually.
+      I cannot help anymore, please continue on your own.
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP" desc="Text label shown next to an UNDO button when user action indicate they want to continue on their own." formatter_data="android_java">
       Continue manually?
@@ -23,7 +23,7 @@
       Terms &amp; Conditions
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ." formatter_data="android_java">
-      The movie screening is different, do you want to continue?
+      The screening is different from what you selected. Continue?
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ." formatter_data="android_java">
       Go back
