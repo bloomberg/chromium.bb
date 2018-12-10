@@ -81,7 +81,7 @@ void JSBasedEventListener::handleEvent(
     // difference but the advantage that we can use listener's |ScriptState|
     // after it get compiled.
     // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-value
-    v8::Local<v8::Value> listener = GetListenerObject(*event->target());
+    v8::Local<v8::Value> listener = GetListenerObject(*event->currentTarget());
 
     if (listener.IsEmpty() || !listener->IsObject())
       return;

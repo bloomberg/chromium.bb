@@ -40,7 +40,8 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
   // Step 1. Let callback be the result of getting the current value of the
   //         event handler given eventTarget and name.
   // Step 2. If callback is null, then return.
-  v8::Local<v8::Value> listener_value = GetListenerObject(event_target);
+  v8::Local<v8::Value> listener_value =
+      GetListenerObject(*event.currentTarget());
   if (listener_value.IsEmpty() || listener_value->IsNull())
     return;
   DCHECK(HasCompiledHandler());
