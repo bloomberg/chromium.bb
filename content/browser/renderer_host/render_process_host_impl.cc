@@ -44,6 +44,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -3635,13 +3636,14 @@ RenderProcessHostImpl::StartRtpDump(
   return stop_rtp_dump_callback_;
 }
 
-void RenderProcessHostImpl::SetWebRtcEventLogOutput(int lid, bool enabled) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (enabled) {
-    Send(new PeerConnectionTracker_StartEventLogOutput(lid));
-  } else {
-    Send(new PeerConnectionTracker_StopEventLog(lid));
-  }
+void RenderProcessHostImpl::EnableWebRtcEventLogOutput(int lid,
+                                                       int output_period_ms) {
+  Send(new PeerConnectionTracker_StartEventLogOutput(
+      lid, base::saturated_cast<unsigned int>(output_period_ms)));
+}
+
+void RenderProcessHostImpl::DisableWebRtcEventLogOutput(int lid) {
+  Send(new PeerConnectionTracker_StopEventLog(lid));
 }
 
 IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {

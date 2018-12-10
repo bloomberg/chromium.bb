@@ -186,9 +186,11 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   virtual void CloseClientPeerConnection();
 
   // Start recording an event log.
+  // TODO(crbug.com/775415): Remove he version with IPC::PlatformFileForTransit,
+  // since it's no longer used.
   void StartEventLog(IPC::PlatformFileForTransit file,
                      int64_t max_file_size_bytes);
-  void StartEventLog();
+  void StartEventLog(int output_period_ms);
   // Stop recording an event log.
   void StopEventLog();
 

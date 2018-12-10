@@ -141,6 +141,7 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // This function must be called on the UI thread.
   void StartEventLogging(const std::string& peer_connection_id,
                          size_t max_log_size_bytes,
+                         int output_period_ms,
                          size_t web_app_id,
                          const StartEventLoggingCallback& callback);
 

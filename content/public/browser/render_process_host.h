@@ -318,7 +318,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Start/stop event log output from WebRTC on this RPH for the peer connection
   // identified locally within the RPH using the ID |lid|.
-  virtual void SetWebRtcEventLogOutput(int lid, bool enabled) = 0;
+  virtual void EnableWebRtcEventLogOutput(int lid, int output_period_ms) = 0;
+  virtual void DisableWebRtcEventLogOutput(int lid) = 0;
 
   // Binds interfaces exposed to the browser process from the renderer.
   virtual void BindInterface(const std::string& interface_name,

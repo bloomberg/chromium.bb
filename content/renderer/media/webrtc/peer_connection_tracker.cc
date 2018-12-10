@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -561,11 +562,12 @@ void PeerConnectionTracker::OnStartEventLogFile(
   }
 }
 
-void PeerConnectionTracker::OnStartEventLogOutput(int peer_connection_id) {
+void PeerConnectionTracker::OnStartEventLogOutput(int peer_connection_id,
+                                                  int output_period_ms) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto& it : peer_connection_id_map_) {
     if (it.second == peer_connection_id) {
-      it.first->StartEventLog();
+      it.first->StartEventLog(output_period_ms);
       return;
     }
   }
