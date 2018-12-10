@@ -75,9 +75,10 @@
       }
 
       .section.block {
+        box-sizing: border-box;
         display: block;
-        padding-bottom: 16px;
-        padding-top: 16px;
+        padding-bottom: var(--cr-section-vertical-padding);
+        padding-top: var(--cr-section-vertical-padding);
       }
 
       .section.continuation {
@@ -90,10 +91,6 @@
 
       .section:first-child {
         border: none;
-      }
-
-      .section-title {
-        margin-bottom: 12px;
       }
 
       .section-content {
@@ -143,13 +140,11 @@
 
       extensions-toggle-row {
         @apply --cr-section;
-        /* TODO(johntlee): remove min-height override once --cr-section's
-         * min-height is removed (crbug.com/686905). */
-        min-height: initial;
-        padding-bottom: 16px;
+        box-sizing: border-box;
+        padding-bottom: var(--cr-section-vertical-padding);
         padding-inline-end: 0;
         padding-inline-start: 0;
-        padding-top: 16px;
+        padding-top: var(--cr-section-vertical-padding);
         --toggle-row-label-padding: var(--cr-section-padding);
       }
 
