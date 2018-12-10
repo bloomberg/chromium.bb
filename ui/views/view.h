@@ -273,8 +273,37 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual Widget* GetWidget();
 
   // Adds |view| as a child of this view, optionally at |index|.
-  void AddChildView(View* view);
-  void AddChildViewAt(View* view, int index);
+  // Returns the raw pointer for callers which want to hold a pointer to the
+  // added view. This requires declaring the function as a template in order to
+  // return the actual passed-in type.
+  template <typename T>
+  T* AddChildView(std::unique_ptr<T> view) {
+    DCHECK(!view->owned_by_client())
+        << "This should only be called if the client is passing ownership of "
+           "|view| to the parent View.";
+    return AddChildView<T>(view.release());
+  }
+  template <typename T>
+  T* AddChildViewAt(std::unique_ptr<T> view, int index) {
+    DCHECK(!view->owned_by_client())
+        << "This should only be called if the client is passing ownership of "
+           "|view| to the parent View.";
+    return AddChildViewAt<T>(view.release(), index);
+  }
+
+  // Prefer using the AddChildView(std::unique_ptr) overloads over raw pointers
+  // for new code.
+  template <typename T>
+  T* AddChildView(T* view) {
+    if (static_cast<View*>(view)->parent_ != this)
+      AddChildViewAtImpl(view, child_count());
+    return view;
+  }
+  template <typename T>
+  T* AddChildViewAt(T* view, int index) {
+    AddChildViewAtImpl(view, index);
+    return view;
+  }
 
   // Moves |view| to the specified |index|. A negative value for |index| moves
   // the view at the end.
@@ -1460,6 +1489,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   void PaintDebugRects(const PaintInfo& paint_info);
 
   // Tree operations -----------------------------------------------------------
+
+  // Adds |view| as a child of this view at |index|.
+  void AddChildViewAtImpl(View* view, int index);
 
   // Removes |view| from the hierarchy tree.  If |update_focus_cycle| is true,
   // the next and previous focusable views of views pointing to this view are
