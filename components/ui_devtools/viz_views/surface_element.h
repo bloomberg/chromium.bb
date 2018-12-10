@@ -21,8 +21,7 @@ class SurfaceElement : public UIElement {
   SurfaceElement(const viz::SurfaceId& surface_id,
                  viz::FrameSinkManagerImpl* frame_sink_manager,
                  UIElementDelegate* ui_element_delegate,
-                 UIElement* parent,
-                 bool is_detached);
+                 UIElement* parent);
   ~SurfaceElement() override;
 
   // UIElement:
