@@ -144,8 +144,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ThumbnailModel) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ExifParser) {
-  RunTest(base::FilePath(FILE_PATH_LITERAL(
-      "foreground/js/metadata/exif_parser_unittest.html")));
+  RunGeneratedTest("/foreground/js/metadata/exif_parser_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ImageOrientation) {
