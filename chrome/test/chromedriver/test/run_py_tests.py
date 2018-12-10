@@ -1762,33 +1762,58 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
       self._driver.FindElement('id', 'top')
     thread.join()
 
+  @staticmethod
+  def MakeRedImageTestScript(png_data_in_base64):
+    """Used by the takeElementScreenshot* tests to load the PNG image via a data
+    URI, analyze it, and PASS/FAIL depending on whether all the pixels are all
+    rgb(255,0,0)."""
+    return (
+        """
+        const resolve = arguments[arguments.length - 1];
+        const image = new Image();
+        image.onload = () => {
+          var canvas = document.createElement('canvas');
+          canvas.width = image.width;
+          canvas.height = image.height;
+          var context = canvas.getContext('2d');
+          context.drawImage(image, 0, 0);
+          const pixels =
+              context.getImageData(0, 0, image.width, image.height).data;
+          for (let i = 0; i < pixels.length; i += 4) {
+            if (pixels[i + 0] != 255 ||  // Red
+                pixels[i + 1] != 0 ||    // Green
+                pixels[i + 2] != 0) {    // Blue
+              resolve('FAIL: Bad pixel at offset ' + i + ': rgb(' +
+                      pixels.slice(i, i + 3).join(',') + ')');
+              return;
+            }
+          }
+          resolve('PASS');
+        };
+        image.src = 'data:image/png;base64,%s';
+        """ % png_data_in_base64.replace("'", "\\'"))
+
   def testTakeElementScreenshot(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_redbox.html'))
-    elementScreenshot = self._driver.FindElement(
+    elementScreenshotPNGBase64 = self._driver.FindElement(
         'id', 'box').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshot)
-    dataActualScreenshot = base64.b64decode(elementScreenshot)
-    filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
-                                              'chromedriver/goldenScreenshots',
-                                              'redboxScreenshot.png')
-    imageGoldenScreenshot = open(filenameOfGoldenScreenshot, 'rb').read()
-    self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
+    self.assertIsNotNone(elementScreenshotPNGBase64)
+    analysisResult = self._driver.ExecuteAsyncScript(
+        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    self.assertEquals('PASS', analysisResult)
 
   def testTakeElementScreenshotInIframe(self):
     self._driver.Load(self.GetHttpUrlForFile(
                       '/chromedriver/page_with_iframe_redbox.html'))
     frame = self._driver.FindElement('id', 'frm')
     self._driver.SwitchToFrame(frame)
-    elementScreenshot = self._driver.FindElement(
+    elementScreenshotPNGBase64 = self._driver.FindElement(
         'id', 'box').TakeElementScreenshot()
-    self.assertIsNotNone(elementScreenshot)
-    dataActualScreenshot = base64.b64decode(elementScreenshot)
-    filenameOfGoldenScreenshot = os.path.join(chrome_paths.GetTestData(),
-                                            'chromedriver/goldenScreenshots',
-                                            'redboxScreenshot.png')
-    imageGoldenScreenshot= open(filenameOfGoldenScreenshot, 'rb').read()
-    self.assertEquals(imageGoldenScreenshot, dataActualScreenshot)
+    self.assertIsNotNone(elementScreenshotPNGBase64)
+    analysisResult = self._driver.ExecuteAsyncScript(
+        ChromeDriverTest.MakeRedImageTestScript(elementScreenshotPNGBase64))
+    self.assertEquals('PASS', analysisResult)
 
   def testGenerateTestReport(self):
     self._driver.Load(self.GetHttpUrlForFile(
