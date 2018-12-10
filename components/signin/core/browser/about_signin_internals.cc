@@ -25,7 +25,6 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_internals_util.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "google_apis/gaia/oauth2_token_service_delegate.h"
 #include "net/base/backoff_entry.h"
@@ -188,14 +187,12 @@ AboutSigninInternals::AboutSigninInternals(
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker,
     identity::IdentityManager* identity_manager,
-    SigninManagerBase* signin_manager,
     SigninErrorController* signin_error_controller,
     GaiaCookieManagerService* cookie_manager_service,
     signin::AccountConsistencyMethod account_consistency)
     : token_service_(token_service),
       account_tracker_(account_tracker),
       identity_manager_(identity_manager),
-      signin_manager_(signin_manager),
       client_(nullptr),
       signin_error_controller_(signin_error_controller),
       cookie_manager_service_(cookie_manager_service),
@@ -311,7 +308,6 @@ void AboutSigninInternals::Initialize(SigninClient* client) {
   signin_error_controller_->AddObserver(this);
   identity_manager_->AddObserver(this);
   identity_manager_->AddDiagnosticsObserver(this);
-  signin_manager_->AddSigninDiagnosticsObserver(this);
   token_service_->AddObserver(this);
   token_service_->AddDiagnosticsObserver(this);
   cookie_manager_service_->AddObserver(this);
@@ -321,7 +317,6 @@ void AboutSigninInternals::Shutdown() {
   signin_error_controller_->RemoveObserver(this);
   identity_manager_->RemoveObserver(this);
   identity_manager_->RemoveDiagnosticsObserver(this);
-  signin_manager_->RemoveSigninDiagnosticsObserver(this);
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
   cookie_manager_service_->RemoveObserver(this);

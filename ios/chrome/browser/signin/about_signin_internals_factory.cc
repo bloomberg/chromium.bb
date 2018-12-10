@@ -18,7 +18,6 @@
 #include "ios/chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/chrome/browser/signin/signin_manager_factory.h"
 
 namespace ios {
 
@@ -32,7 +31,6 @@ AboutSigninInternalsFactory::AboutSigninInternalsFactory()
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SigninClientFactory::GetInstance());
   DependsOn(SigninErrorControllerFactory::GetInstance());
-  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 AboutSigninInternalsFactory::~AboutSigninInternalsFactory() {}
@@ -59,7 +57,6 @@ AboutSigninInternalsFactory::BuildServiceInstanceFor(
           chrome_browser_state),
       AccountTrackerServiceFactory::GetForBrowserState(chrome_browser_state),
       IdentityManagerFactory::GetForBrowserState(chrome_browser_state),
-      SigninManagerFactory::GetForBrowserState(chrome_browser_state),
       SigninErrorControllerFactory::GetForBrowserState(chrome_browser_state),
       GaiaCookieManagerServiceFactory::GetForBrowserState(chrome_browser_state),
       signin::AccountConsistencyMethod::kMirror));
