@@ -5027,6 +5027,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (CGFloat)headerHeightForSideSwipe {
+  // If the toolbar is hidden, only inset the side swipe navigation view by
+  // |safeAreaInsets.top|.  Otherwise insetting by |self.headerHeight| would
+  // show a grey strip where the toolbar would normally be.
+  if (self.primaryToolbarCoordinator.viewController.view.hidden)
+    return self.view.safeAreaInsets.top;
   return self.headerHeight;
 }
 
