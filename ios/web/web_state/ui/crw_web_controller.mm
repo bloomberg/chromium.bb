@@ -3989,7 +3989,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
     [_webView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                   UIViewAutoresizingFlexibleHeight];
-    [_webView setBackgroundColor:[UIColor colorWithWhite:0.2 alpha:1.0]];
 
     // Create a dependency between the |webView| pan gesture and BVC side swipe
     // gestures. Note: This needs to be added before the longPress recognizers
