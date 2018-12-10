@@ -23,7 +23,7 @@ import java.util.ArrayList;
  */
 @JNINamespace("chromecast")
 public final class CastSysInfoAndroidThings {
-    private static final String TAG = "CastSysInfoAndroidThings";
+    private static final String TAG = CastSysInfoAndroidThings.class.getSimpleName();
     private static final String FACTORY_LOCALE_LIST_FILE = "locale_list.txt";
 
     @CalledByNative
@@ -62,6 +62,9 @@ public final class CastSysInfoAndroidThings {
         } catch (IllegalArgumentException | IOException e) {
             Log.w(TAG, "Factory file %s doesn't exist or can't be opened.",
                     FACTORY_LOCALE_LIST_FILE, e);
+        } catch (java.lang.SecurityException e) {
+            // Thrown when com.google.android.things.permission.READ_FACTORY_DATA is missing.
+            Log.e(TAG, "Failed to read factory data.", e);
         }
         return locale_list.toArray(new String[locale_list.size()]);
     }
