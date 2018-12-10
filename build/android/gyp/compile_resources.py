@@ -248,14 +248,13 @@ def _DuplicateZhResources(resource_dirs):
   return renamed_paths
 
 
-def _ToAaptLocales(locale_whitelist, support_zh_hk):
+def _ToAndroidLocales(locale_whitelist, support_zh_hk):
   """Converts the list of Chrome locales to aapt config locales."""
   ret = set()
   for locale in locale_whitelist:
-    locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(locale, locale)
+    locale = resource_utils.ToAndroidLocaleName(locale)
     if locale is None or ('-' in locale and '-r' not in locale):
-      raise Exception('CHROME_TO_ANDROID_LOCALE_MAP needs updating.'
-                      ' Found: %s' % locale)
+      raise Exception('Unsupported Chromium locale name: %s' % locale)
     ret.add(locale)
     # Always keep non-regional fall-backs.
     language = locale.split('-')[0]
@@ -336,11 +335,6 @@ def _CreateLinkApkArgs(options):
     link_command.append('--proto-format')
   elif options.shared_resources:
     link_command.append('--shared-lib')
-
-  if options.locale_whitelist:
-    aapt_locales = _ToAaptLocales(
-        options.locale_whitelist, options.support_zh_hk)
-    link_command += ['-c', ','.join(aapt_locales)]
 
   if options.no_xml_namespaces:
     link_command.append('--no-xml-namespaces')
@@ -431,28 +425,65 @@ def _ResourceNameFromPath(path):
 
 
 def _CreateKeepPredicate(resource_dirs, resource_blacklist_regex,
-                         resource_blacklist_exceptions):
-  """Return a predicate lambda to determine which resource files to keep."""
-  if resource_blacklist_regex == '':
+                         resource_blacklist_exceptions,
+                         android_locale_whitelist):
+  """Return a predicate lambda to determine which resource files to keep.
+
+  Args:
+    resource_dirs: list of top-level resource directories.
+    resource_blacklist_regex: A regular expression describing all resources
+      to exclude, except if they are mip-maps, or if they are listed
+      in |resource_blacklist_exceptions|.
+    resource_blacklist_exceptions: A list of glob patterns corresponding
+      to exceptions to the |resource_blacklist_regex|.
+    android_locale_whitelist: An optional whitelist of Android locale names.
+      If set, any localized string resources that is not in this whitelist
+      will be removed.
+  Returns:
+    A lambda that takes a path, and returns true if the corresponding file
+    must be kept.
+  """
+  if resource_blacklist_regex == '' and not android_locale_whitelist:
     # Do not extract dotfiles (e.g. ".gitkeep"). aapt ignores them anyways.
     return lambda path: os.path.basename(path)[0] != '.'
 
-  # Returns False only for non-filtered, non-mipmap, non-whitelisted drawables.
-  naive_predicate = lambda path: (
-      not re.search(resource_blacklist_regex, path) or
-      re.search(r'[/-]mipmap[/-]', path) or
-      build_utils.MatchesGlob(path, resource_blacklist_exceptions))
+  if resource_blacklist_regex != '':
+    # A simple predicate that only removes (returns False for) paths covered by
+    # the blacklist regex, except if they are mipmaps, or listed as exceptions.
+    naive_predicate = lambda path: (
+        not re.search(resource_blacklist_regex, path) or
+        re.search(r'[/-]mipmap[/-]', path) or
+        build_utils.MatchesGlob(path, resource_blacklist_exceptions))
 
-  # Build a set of all non-filtered drawables to ensure that we never exclude
-  # any drawable that does not exist in non-filtered densities.
+  # Build a set of all names from drawables kept by naive_predicate().
+  # Used later to ensure that we never exclude drawables from densities
+  # that are filtered-out by naive_predicate().
   non_filtered_drawables = set()
   for resource_dir in resource_dirs:
     for path in _IterFiles(resource_dir):
       if re.search(r'[/-]drawable[/-]', path) and naive_predicate(path):
         non_filtered_drawables.add(_ResourceNameFromPath(path))
 
-  return lambda path: (naive_predicate(path) or
-      _ResourceNameFromPath(path) not in non_filtered_drawables)
+  # NOTE: Defined as a function because when using a lambda definition,
+  # 'git cl format' will expand everything on a very long line that is
+  # much larger than the column limit.
+  def drawable_predicate(path):
+    return (naive_predicate(path)
+            or _ResourceNameFromPath(path) not in non_filtered_drawables)
+
+  if not android_locale_whitelist:
+    return drawable_predicate
+
+  # A simple predicate that removes localized strings .xml files that are
+  # not part of |android_locale_whitelist|.
+  android_locale_whitelist = set(android_locale_whitelist)
+
+  def is_bad_locale(path):
+    """Return true iff |path| is a resource for a non-whitelisted locale."""
+    locale = resource_utils.FindLocaleInStringResourceFilePath(path)
+    return locale and locale not in android_locale_whitelist
+
+  return lambda path: drawable_predicate(path) and not is_bad_locale(path)
 
 
 def _ConvertToWebP(webp_binary, png_files):
@@ -540,9 +571,13 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   renamed_paths = dict()
   renamed_paths.update(_DuplicateZhResources(dep_subdirs))
 
+  # Create a function that selects which resource files should be packaged
+  # into the final output. Any file that does not pass the predicate will
+  # be removed below.
   keep_predicate = _CreateKeepPredicate(
       dep_subdirs, options.resource_blacklist_regex,
-      options.resource_blacklist_exceptions)
+      options.resource_blacklist_exceptions,
+      _ToAndroidLocales(options.locale_whitelist, options.support_zh_hk))
   png_paths = []
   for directory in dep_subdirs:
     for f in _IterFiles(directory):
