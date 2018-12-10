@@ -5,8 +5,8 @@
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 
 #include <stdint.h>
-
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -17,8 +17,13 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/model/offline_page_model_utils.h"
+#include "components/offline_pages/core/offline_clock.h"
+#include "components/offline_pages/core/test_scoped_offline_clock.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,6 +42,11 @@ const std::string kTestDigest(
     "\x77\x1a\xfb\x32\x00\x51\x7e\x63\x7d\x3b\x2e\x46\x63\xf6",
     32);
 
+constexpr base::TimeDelta kTimeToSaveMhtml =
+    base::TimeDelta::FromMilliseconds(1000);
+constexpr base::TimeDelta kTimeToComputeDigest =
+    base::TimeDelta::FromMilliseconds(10);
+
 class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
  public:
   enum class TestScenario {
@@ -48,7 +58,9 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
     INTERSTITIAL_PAGE,
   };
 
-  TestMHTMLArchiver(const GURL& url, const TestScenario test_scenario);
+  TestMHTMLArchiver(const GURL& url,
+                    const TestScenario test_scenario,
+                    TestScopedOfflineClock* clock);
   ~TestMHTMLArchiver() override;
 
  private:
@@ -60,15 +72,16 @@ class TestMHTMLArchiver : public OfflinePageMHTMLArchiver {
 
   const GURL url_;
   const TestScenario test_scenario_;
+  // Not owned.
+  TestScopedOfflineClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMHTMLArchiver);
 };
 
 TestMHTMLArchiver::TestMHTMLArchiver(const GURL& url,
-                                     const TestScenario test_scenario)
-    : url_(url),
-      test_scenario_(test_scenario) {
-}
+                                     const TestScenario test_scenario,
+                                     TestScopedOfflineClock* clock)
+    : url_(url), test_scenario_(test_scenario), clock_(clock) {}
 
 TestMHTMLArchiver::~TestMHTMLArchiver() {
 }
@@ -87,12 +100,16 @@ void TestMHTMLArchiver::GenerateMHTML(
     return;
   }
 
+  EXPECT_EQ(kDownloadNamespace, create_archive_params.name_space);
   base::FilePath archive_file_path =
       archives_dir.AppendASCII(url_.ExtractFileName());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&TestMHTMLArchiver::OnGenerateMHTMLDone,
                                 base::Unretained(this), url_, archive_file_path,
-                                kTestTitle, kTestFileSize));
+                                kTestTitle, create_archive_params.name_space,
+                                OfflineClock()->Now(), kTestFileSize));
+
+  clock_->Advance(kTimeToSaveMhtml);
 }
 
 bool TestMHTMLArchiver::HasConnectionSecurityError(
@@ -113,6 +130,17 @@ content::PageType TestMHTMLArchiver::GetPageType(
 
 class OfflinePageMHTMLArchiverTest : public testing::Test {
  public:
+  // Histogram names checked for within this test, already appended with the
+  // offline pages namespace used in all |CreateArchive| calls.
+  const std::string kCreateArchiveTimeHistogram =
+      model_utils::AddHistogramSuffix(
+          kDownloadNamespace,
+          "OfflinePages.SavePage.CreateArchiveTime");
+  const std::string kComputeDigestTimeHistogram =
+      model_utils::AddHistogramSuffix(
+          kDownloadNamespace,
+          "OfflinePages.SavePage.ComputeDigestTime");
+
   OfflinePageMHTMLArchiverTest();
   ~OfflinePageMHTMLArchiverTest() override;
 
@@ -128,6 +156,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   base::FilePath GetTestFilePath(const GURL& url) const {
     return archive_dir_path_.AppendASCII(url.ExtractFileName());
   }
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
 
   OfflinePageArchiver::ArchiverResult last_result() const {
     return last_result_;
@@ -151,6 +180,8 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   base::FilePath archive_dir_path_;
+  base::HistogramTester histogram_tester_;
+
   OfflinePageArchiver::ArchiverResult last_result_;
   GURL last_url_;
   base::FilePath last_file_path_;
@@ -159,13 +190,14 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
   bool async_operation_completed_ = false;
   base::Closure async_operation_completed_callback_;
 
+  TestScopedOfflineClock clock_;
+
   DISALLOW_COPY_AND_ASSIGN(OfflinePageMHTMLArchiverTest);
 };
 
 OfflinePageMHTMLArchiverTest::OfflinePageMHTMLArchiverTest()
     : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-      last_result_(
-          OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED),
+      last_result_(OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL),
       last_file_size_(0L) {}
 
 OfflinePageMHTMLArchiverTest::~OfflinePageMHTMLArchiverTest() {
@@ -176,16 +208,19 @@ void OfflinePageMHTMLArchiverTest::SetUp() {
   ASSERT_TRUE(
       base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_path));
   archive_dir_path_ = test_data_dir_path.AppendASCII("offline_pages");
+  clock_.SetNow(base::Time::Now());
 }
 
 void OfflinePageMHTMLArchiverTest::CreateArchive(
     const GURL& url,
     TestMHTMLArchiver::TestScenario scenario) {
-  TestMHTMLArchiver archiver(url, scenario);
-  archiver.CreateArchive(archive_dir_path_,
-                         OfflinePageArchiver::CreateArchiveParams(), nullptr,
-                         callback());
+  TestMHTMLArchiver archiver(url, scenario, &clock_);
+  archiver.CreateArchive(
+      archive_dir_path_,
+      OfflinePageArchiver::CreateArchiveParams(kDownloadNamespace), nullptr,
+      callback());
   PumpLoop();
+  clock_.Advance(kTimeToComputeDigest);
   WaitForAsyncOperation();
 }
 
@@ -240,6 +275,8 @@ TEST_F(OfflinePageMHTMLArchiverTest, NotAbleToGenerateArchive) {
             last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());
+  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
+  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
 }
 
 // Tests for archiver handling of non-secure connection.
@@ -252,6 +289,8 @@ TEST_F(OfflinePageMHTMLArchiverTest, ConnectionNotSecure) {
             last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());
+  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
+  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
 }
 
 // Tests for archiver handling of an error page.
@@ -263,6 +302,8 @@ TEST_F(OfflinePageMHTMLArchiverTest, PageError) {
             last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());
+  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
+  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
 }
 
 // Tests for archiver handling of an interstitial page.
@@ -273,6 +314,8 @@ TEST_F(OfflinePageMHTMLArchiverTest, InterstitialPage) {
             last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());
+  histogram_tester()->ExpectTotalCount(kCreateArchiveTimeHistogram, 0);
+  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
 }
 
 // Tests for failing to compute digest for archive file.
@@ -285,6 +328,9 @@ TEST_F(OfflinePageMHTMLArchiverTest, DigestError) {
       last_result());
   EXPECT_EQ(base::FilePath(), last_file_path());
   EXPECT_EQ(0LL, last_file_size());
+  histogram_tester()->ExpectUniqueSample(kCreateArchiveTimeHistogram,
+                                         kTimeToSaveMhtml.InMilliseconds(), 1);
+  histogram_tester()->ExpectTotalCount(kComputeDigestTimeHistogram, 0);
 }
 
 // Tests for successful creation of the offline page archive.
@@ -297,6 +343,10 @@ TEST_F(OfflinePageMHTMLArchiverTest, SuccessfullyCreateOfflineArchive) {
   EXPECT_EQ(GetTestFilePath(page_url), last_file_path());
   EXPECT_EQ(kTestFileSize, last_file_size());
   EXPECT_EQ(kTestDigest, last_digest());
+  histogram_tester()->ExpectUniqueSample(kCreateArchiveTimeHistogram,
+                                         kTimeToSaveMhtml.InMilliseconds(), 1);
+  histogram_tester()->ExpectUniqueSample(
+      kComputeDigestTimeHistogram, kTimeToComputeDigest.InMilliseconds(), 1);
 }
 
 }  // namespace offline_pages

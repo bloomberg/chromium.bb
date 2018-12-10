@@ -19,7 +19,7 @@ class GURL;
 
 namespace base {
 class FilePath;
-}  // namespace
+}  // namespace base
 
 namespace offline_pages {
 

@@ -96,13 +96,11 @@ SavePageResult AddPageResultToSavePageResult(AddPageResult add_page_result) {
 
 void ReportPageHistogramAfterSuccessfulSaving(
     const OfflinePageItem& offline_page,
-    const base::Time& save_time) {
-  base::UmaHistogramCustomTimes(
+    base::Time save_time) {
+  base::UmaHistogramTimes(
       model_utils::AddHistogramSuffix(offline_page.client_id.name_space,
                                       "OfflinePages.SavePageTime"),
-      save_time - offline_page.creation_time,
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(10),
-      50);
+      save_time - offline_page.creation_time);
 
   base::UmaHistogramCustomCounts(
       model_utils::AddHistogramSuffix(offline_page.client_id.name_space,
@@ -241,7 +239,8 @@ void OfflinePageModelTaskified::SavePage(
   if (offline_id == kInvalidOfflineId)
     offline_id = store_utils::GenerateOfflineId();
 
-  OfflinePageArchiver::CreateArchiveParams create_archive_params;
+  OfflinePageArchiver::CreateArchiveParams create_archive_params(
+      save_page_params.client_id.name_space);
   // If the page is being saved in the background, we should try to remove the
   // popup overlay that obstructs viewing the normal content.
   create_archive_params.remove_popup_overlay = save_page_params.is_background;
@@ -487,7 +486,7 @@ void OfflinePageModelTaskified::InformSavePageDone(SavePageCallback callback,
 void OfflinePageModelTaskified::OnCreateArchiveDone(
     const SavePageParams& save_page_params,
     int64_t offline_id,
-    const base::Time& start_time,
+    base::Time start_time,
     std::unique_ptr<OfflinePageArchiver> archiver,
     SavePageCallback callback,
     ArchiverResult archiver_result,
@@ -536,7 +535,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
         download_manager_.get(),
         base::BindOnce(&OfflinePageModelTaskified::PublishArchiveDone,
                        weak_ptr_factory_.GetWeakPtr(), std::move(archiver),
-                       std::move(callback)));
+                       std::move(callback), GetCurrentTime()));
     return;
   }
 
@@ -546,7 +545,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
   AddPage(offline_page,
           base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         offline_page));
+                         offline_page, GetCurrentTime()));
   // Note: If the archiver instance ownership was not transferred, it will be
   // deleted here.
 }
@@ -554,6 +553,7 @@ void OfflinePageModelTaskified::OnCreateArchiveDone(
 void OfflinePageModelTaskified::PublishArchiveDone(
     std::unique_ptr<OfflinePageArchiver> archiver,
     SavePageCallback save_page_callback,
+    base::Time publish_start_time,
     const OfflinePageItem& offline_page,
     PublishArchiveResult publish_results) {
   if (publish_results.move_result != SavePageResult::SUCCESS) {
@@ -564,14 +564,21 @@ void OfflinePageModelTaskified::PublishArchiveDone(
     std::move(save_page_callback).Run(publish_results.move_result, 0LL);
     return;
   }
+
+  const base::Time add_page_start_time = GetCurrentTime();
+  base::UmaHistogramTimes(model_utils::AddHistogramSuffix(
+                              offline_page.client_id.name_space,
+                              "OfflinePages.SavePage.PublishArchiveTime"),
+                          add_page_start_time - publish_start_time);
+
   OfflinePageItem page = offline_page;
   page.file_path = publish_results.new_file_path;
   page.system_download_id = publish_results.download_id;
 
-  AddPage(page,
-          base::BindOnce(&OfflinePageModelTaskified::OnAddPageForSavePageDone,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         std::move(save_page_callback), page));
+  AddPage(page, base::BindOnce(
+                    &OfflinePageModelTaskified::OnAddPageForSavePageDone,
+                    weak_ptr_factory_.GetWeakPtr(),
+                    std::move(save_page_callback), page, add_page_start_time));
 }
 
 void OfflinePageModelTaskified::PublishInternalArchive(
@@ -615,6 +622,7 @@ void OfflinePageModelTaskified::PublishInternalArchiveDone(
 void OfflinePageModelTaskified::OnAddPageForSavePageDone(
     SavePageCallback callback,
     const OfflinePageItem& page_attempted,
+    base::Time add_page_start_time,
     AddPageResult add_page_result,
     int64_t offline_id) {
   SavePageResult save_page_result =
@@ -622,7 +630,14 @@ void OfflinePageModelTaskified::OnAddPageForSavePageDone(
   InformSavePageDone(std::move(callback), save_page_result,
                      page_attempted.client_id, offline_id);
   if (save_page_result == SavePageResult::SUCCESS) {
-    ReportPageHistogramAfterSuccessfulSaving(page_attempted, GetCurrentTime());
+    base::Time successful_finish_time = GetCurrentTime();
+    base::UmaHistogramTimes(
+        model_utils::AddHistogramSuffix(page_attempted.client_id.name_space,
+                                        "OfflinePages.SavePage.AddPageTime"),
+        successful_finish_time - add_page_start_time);
+
+    ReportPageHistogramAfterSuccessfulSaving(page_attempted,
+                                             successful_finish_time);
     // TODO(romax): Just keep the same with logic in OPMImpl (which was wrong).
     // This should be fixed once we have the new strategy for clearing pages.
     if (policy_controller_->GetPolicy(page_attempted.client_id.name_space)
@@ -710,7 +725,7 @@ void OfflinePageModelTaskified::ScheduleMaintenanceTasks() {
   last_maintenance_tasks_schedule_time_ = now;
 }
 
-void OfflinePageModelTaskified::RunMaintenanceTasks(const base::Time now,
+void OfflinePageModelTaskified::RunMaintenanceTasks(base::Time now,
                                                     bool first_run) {
   DCHECK(!skip_maintenance_tasks_for_testing_);
   // If this is the first run of this session, enqueue the startup maintenance

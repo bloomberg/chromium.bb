@@ -103,6 +103,10 @@ PublishArchiveResult MoveAndRegisterArchive(
 
 }  // namespace
 
+OfflinePageArchiver::CreateArchiveParams::CreateArchiveParams(
+    const std::string& name_space)
+    : name_space(name_space) {}
+
 void OfflinePageArchiver::PublishArchive(
     const OfflinePageItem& offline_page,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
