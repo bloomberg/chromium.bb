@@ -65,8 +65,9 @@ constexpr float PopoverMaxHeight = 360;
   self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
   self.tableView.allowsSelection = NO;
   self.definesPresentationContext = YES;
-
-  [self startLoadingIndicatorWithLoadingMessage:@""];
+  if (!self.tableViewModel) {
+    [self startLoadingIndicatorWithLoadingMessage:@""];
+  }
 }
 
 - (void)presentDataItems:(NSArray<TableViewItem*>*)items {
