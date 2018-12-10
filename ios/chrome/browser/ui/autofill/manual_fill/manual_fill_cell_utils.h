@@ -50,13 +50,22 @@ VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
     CGFloat BottomSystemSpacingMultiplier);
 
 // Sets constraints for the given |views|, so as to lay them out horizontally,
-// parallel to the given |guide| view, and applying the given constant |shift|
-// to the whole row. Returns the applied constraints to allow caller to
-// deactivate them later.
-NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithShift(
+// parallel to the given |guide| view, and applying the given constant |margin|
+// at both ends of the whole row. Returns the applied constraints to allow
+// caller to deactivate them later.
+NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
     NSArray<UIView*>* views,
     UIView* guide,
-    CGFloat shift);
+    CGFloat margin);
+
+// Set constraints like |HorizontalConstraintsForViewsOnGuideWithMargin| but
+// optionaly give remaining space on the line to leftmost item
+// (useExtraSpaceAtLeft = YES).
+NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
+    NSArray<UIView*>* views,
+    UIView* guide,
+    CGFloat margin,
+    BOOL useExtraSpaceAtLeft);
 
 // Sets all baseline anchors for the gievn |views| to match the one on |onView|.
 // Returns the applied constrainst to allow caller to deactivate them later.

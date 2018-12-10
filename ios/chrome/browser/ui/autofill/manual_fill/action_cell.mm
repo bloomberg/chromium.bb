@@ -140,8 +140,8 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
       @selector(userDidTapTitleButton:), self);
   self.titleButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   [self.contentView addSubview:self.titleButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.titleButton ], guide,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.titleButton ], guide,
+                                                 0);
 
   self.verticalConstraints = @[];
 }

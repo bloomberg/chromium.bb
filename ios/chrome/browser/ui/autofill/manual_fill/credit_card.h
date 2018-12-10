@@ -35,10 +35,14 @@
 // The credit card expiration month.
 @property(nonatomic, readonly) NSString* expirationMonth;
 
+// The credit card icon id.
+@property(nonatomic, readonly) int issuerNetworkIconID;
+
 // Default init. |GUID| and |number| are the only fields considered for
 // equality, so we can differentiate between an obfuscated and a comlete one.
 - (instancetype)initWithGUID:(NSString*)GUID
                      network:(NSString*)network
+         issuerNetworkIconID:(int)issuerNetworkIconID
                     bankName:(NSString*)bankName
                   cardHolder:(NSString*)cardHolder
                       number:(NSString*)number

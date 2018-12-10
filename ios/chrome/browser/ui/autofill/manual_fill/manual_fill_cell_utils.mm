@@ -74,20 +74,37 @@ VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
   return verticalConstraints;
 }
 
-NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithShift(
+NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
     NSArray<UIView*>* views,
     UIView* guide,
-    CGFloat shift) {
+    CGFloat margin) {
+  return HorizontalConstraintsForViewsOnGuideWithMargin(views, guide, margin,
+                                                        NO);
+}
+
+NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithMargin(
+    NSArray<UIView*>* views,
+    UIView* guide,
+    CGFloat margin,
+    BOOL useExtraSpaceAtLeft) {
   NSMutableArray* horizontalConstraints = [[NSMutableArray alloc] init];
   NSLayoutXAxisAnchor* previousAnchor = guide.leadingAnchor;
+  UILayoutPriority firstPriority = useExtraSpaceAtLeft
+                                       ? UILayoutPriorityDefaultHigh
+                                       : UILayoutPriorityDefaultLow;
+  UILayoutPriority lastPriority = useExtraSpaceAtLeft
+                                      ? UILayoutPriorityDefaultLow
+                                      : UILayoutPriorityDefaultHigh;
+
+  CGFloat shift = margin;
   for (UIView* view in views) {
     [horizontalConstraints
         addObject:[view.leadingAnchor constraintEqualToAnchor:previousAnchor
                                                      constant:shift]];
-    [view setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+    [view setContentCompressionResistancePriority:firstPriority
                                           forAxis:
                                               UILayoutConstraintAxisHorizontal];
-    [view setContentHuggingPriority:UILayoutPriorityDefaultHigh
+    [view setContentHuggingPriority:lastPriority
                             forAxis:UILayoutConstraintAxisHorizontal];
     previousAnchor = view.trailingAnchor;
     shift = 0;
@@ -96,14 +113,14 @@ NSArray<NSLayoutConstraint*>* HorizontalConstraintsForViewsOnGuideWithShift(
     [horizontalConstraints
         addObject:[views.lastObject.trailingAnchor
                       constraintEqualToAnchor:guide.trailingAnchor
-                                     constant:shift]];
-    // Give all remaining space to the last button, as per UX.
+                                     constant:-margin]];
+    // Give all remaining space to the last button, minus margin, as per UX.
     [views.lastObject
-        setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
+        setContentCompressionResistancePriority:lastPriority
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
     [views.lastObject
-        setContentHuggingPriority:UILayoutPriorityDefaultLow
+        setContentHuggingPriority:firstPriority
                           forAxis:UILayoutConstraintAxisHorizontal];
   }
   [NSLayoutConstraint activateConstraints:horizontalConstraints];

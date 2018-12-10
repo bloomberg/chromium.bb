@@ -233,7 +233,7 @@
   }
 
   self.nameLineConstraints =
-      HorizontalConstraintsForViewsOnGuideWithShift(nameLineViews, guide, 0);
+      HorizontalConstraintsForViewsOnGuideWithMargin(nameLineViews, guide, 0);
 
   if (nameLineViews.count) {
     [verticalLeadViews addObject:nameLineViews.firstObject];
@@ -292,8 +292,8 @@
     self.cityButton.hidden = YES;
   }
 
-  self.zipCityLineConstraints =
-      HorizontalConstraintsForViewsOnGuideWithShift(zipCityLineViews, guide, 0);
+  self.zipCityLineConstraints = HorizontalConstraintsForViewsOnGuideWithMargin(
+      zipCityLineViews, guide, 0);
   if (zipCityLineViews.count) {
     [verticalLeadViews addObject:zipCityLineViews.firstObject];
   }
@@ -326,8 +326,8 @@
   }
 
   self.stateCountryLineConstraints =
-      HorizontalConstraintsForViewsOnGuideWithShift(stateCountryLineViews,
-                                                    guide, 0);
+      HorizontalConstraintsForViewsOnGuideWithMargin(stateCountryLineViews,
+                                                     guide, 0);
   if (stateCountryLineViews.count) {
     [verticalLeadViews addObject:stateCountryLineViews.firstObject];
   }
@@ -365,8 +365,8 @@
 
   self.addressLabel = CreateLabel();
   [self.contentView addSubview:self.addressLabel];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.addressLabel ], guide,
-                                                ButtonHorizontalMargin);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.addressLabel ], guide,
+                                                 ButtonHorizontalMargin);
 
   self.firstNameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
@@ -398,20 +398,20 @@
   self.companyButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.companyButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.companyButton ], guide,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.companyButton ], guide,
+                                                 0);
 
   self.line1Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line1Button];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.line1Button ], guide,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.line1Button ], guide,
+                                                 0);
 
   self.line2Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line2Button];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.line2Button ], guide,
-                                                0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.line2Button ], guide,
+                                                 0);
 
   self.zipButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
@@ -446,14 +446,14 @@
   self.phoneNumberButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.phoneNumberButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.phoneNumberButton ],
-                                                guide, 0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.phoneNumberButton ],
+                                                 guide, 0);
 
   self.emailAddressButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.emailAddressButton];
-  HorizontalConstraintsForViewsOnGuideWithShift(@[ self.emailAddressButton ],
-                                                guide, 0);
+  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.emailAddressButton ],
+                                                 guide, 0);
 
   self.nameLineConstraints = @[];
   self.zipCityLineConstraints = @[];
