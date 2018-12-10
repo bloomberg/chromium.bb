@@ -1683,6 +1683,7 @@ AutofillMetrics::FormEventLogger::FormEventLogger(
       local_record_type_count_(0),
       is_context_secure_(false),
       has_logged_interacted_(false),
+      has_logged_popup_suppressed_(false),
       has_logged_suggestions_shown_(false),
       has_logged_masked_server_card_suggestion_selected_(false),
       has_logged_suggestion_filled_(false),
@@ -1724,6 +1725,16 @@ void AutofillMetrics::FormEventLogger::OnDidPollSuggestions(
     }
 
     last_polled_field_ = field;
+  }
+}
+
+void AutofillMetrics::FormEventLogger::OnPopupSuppressed(
+    const FormStructure& form,
+    const AutofillField& field) {
+  Log(AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED);
+  if (!has_logged_popup_suppressed_) {
+    has_logged_popup_suppressed_ = true;
+    Log(AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE);
   }
 }
 

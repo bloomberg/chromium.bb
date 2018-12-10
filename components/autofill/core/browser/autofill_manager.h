@@ -172,6 +172,10 @@ class AutofillManager : public AutofillHandler,
   // Upload the current pending form.
   void ProcessPendingFormForUpload();
 
+  // Invoked when the popup view can't be created. Main usage is to collect
+  // metrics.
+  void DidSuppressPopup(const FormData& form, const FormFieldData& field);
+
   // AutofillHandler:
   void OnFocusNoLongerOnForm() override;
   void OnFocusOnFormFieldImpl(const FormData& form,

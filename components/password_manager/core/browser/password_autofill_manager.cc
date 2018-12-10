@@ -185,6 +185,8 @@ void PasswordAutofillManager::OnPopupShown() {}
 
 void PasswordAutofillManager::OnPopupHidden() {}
 
+void PasswordAutofillManager::OnPopupSuppressed() {}
+
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
