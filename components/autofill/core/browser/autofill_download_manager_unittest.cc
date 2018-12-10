@@ -283,27 +283,38 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
+  // Make download manager.
+  AutofillDownloadManager download_manager(&driver_, this, "dummykey");
+
   // Request with id 0.
   base::HistogramTester histogram;
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 1);
   histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_GET, 1);
 
+  // Validate if the API key is in the request headers.
+  network::TestURLLoaderFactory::PendingRequest* request =
+      test_url_loader_factory_.GetPendingRequest(0);
+  std::string api_key_header_value;
+  EXPECT_TRUE(request->request.headers.GetHeader("X-Goog-Api-Key",
+                                                 &api_key_header_value));
+  EXPECT_EQ(api_key_header_value, "dummykey");
+
   // Request with id 1.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(
+  EXPECT_TRUE(download_manager.StartUploadRequest(
       *(form_structures[0]), true, ServerFieldTypeSet(), std::string(), true,
       pref_service_.get()));
   // Request with id 2.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(
+  EXPECT_TRUE(download_manager.StartUploadRequest(
       *(form_structures[1]), false, ServerFieldTypeSet(), std::string(), true,
       pref_service_.get()));
   // Request with id 3. Upload request with a non-empty additional password form
   // signature.
-  EXPECT_TRUE(download_manager_.StartUploadRequest(*(form_structures[2]), false,
-                                                   ServerFieldTypeSet(), "42",
-                                                   true, pref_service_.get()));
+  EXPECT_TRUE(download_manager.StartUploadRequest(*(form_structures[2]), false,
+                                                  ServerFieldTypeSet(), "42",
+                                                  true, pref_service_.get()));
 
   const char* responses[] = {
       "<autofillqueryresponse>"
@@ -322,7 +333,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   // Return them out of sequence.
 
   // Request 1: Successful upload.
-  auto* request = test_url_loader_factory_.GetPendingRequest(1);
+  request = test_url_loader_factory_.GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request, responses[1]);
   histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
@@ -381,7 +392,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   // Request with id 4, not successful.
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   request = test_url_loader_factory_.GetPendingRequest(4);
   histogram.ExpectUniqueSample("Autofill.ServerQueryResponse",
                                AutofillMetrics::QUERY_SENT, 2);
@@ -403,7 +414,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   // Request with id 5. Let's pretend we hit the cache.
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                               AutofillMetrics::QUERY_SENT, 3);
   histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 3);
@@ -434,7 +445,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
 
   // Request with id 6
   EXPECT_TRUE(
-      download_manager_.StartQueryRequest(ToRawPointerVector(form_structures)));
+      download_manager.StartQueryRequest(ToRawPointerVector(form_structures)));
   histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
                               AutofillMetrics::QUERY_SENT, 4);
   histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_POST, 1);
