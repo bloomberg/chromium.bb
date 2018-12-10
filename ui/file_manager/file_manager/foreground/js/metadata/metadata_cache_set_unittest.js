@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const entryA = {
+/** @const {!Entry} */
+const entryA = /** @type {!Entry} */ ({
   toURL: function() {
     return 'filesystem://A';
-  }
-};
+  },
+});
 
-const entryB = {
+/** @const {!Entry} */
+const entryB = /** @type {!Entry} */ ({
   toURL: function() {
     return 'filesystem://B';
-  }
-};
+  },
+});
 
 function testMetadataCacheSetBasic() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
@@ -27,7 +29,7 @@ function testMetadataCacheSetBasic() {
 
   set.startRequests(1, loadRequested);
   assertTrue(set.storeProperties(
-      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]));
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}], []));
 
   var results = set.get([entryA, entryB], ['property']);
   assertEquals(2, results.length);
@@ -39,15 +41,13 @@ function testMetadataCacheSetStorePartial() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
   set.startRequests(1, set.createRequests([entryA, entryB], ['property']));
 
-  assertTrue(set.storeProperties(
-      1, [entryA], [{property: 'valueA'}]));
+  assertTrue(set.storeProperties(1, [entryA], [{property: 'valueA'}], []));
   var results = set.get([entryA, entryB], ['property']);
   assertEquals(2, results.length);
   assertEquals('valueA', results[0].property);
   assertEquals(null, results[1].property);
 
-  assertTrue(set.storeProperties(
-      1, [entryB], [{property: 'valueB'}]));
+  assertTrue(set.storeProperties(1, [entryB], [{property: 'valueB'}], []));
   var results = set.get([entryA, entryB], ['property']);
   assertEquals(2, results.length);
   assertEquals('valueA', results[0].property);
@@ -57,7 +57,7 @@ function testMetadataCacheSetStorePartial() {
 function testMetadataCacheSetCachePartial() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
   set.startRequests(1, set.createRequests([entryA], ['property']));
-  set.storeProperties(1, [entryA], [{property: 'valueA'}]);
+  set.storeProperties(1, [entryA], [{property: 'valueA'}], []);
 
   // entryA has already been cached.
   var loadRequested = set.createRequests([entryA, entryB], ['property']);
@@ -73,7 +73,7 @@ function testMetadataCacheSetInvalidatePartial() {
   set.invalidate(2, [entryA]);
 
   assertTrue(set.storeProperties(
-      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]));
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}], []));
 
   var results = set.get([entryA, entryB], ['property']);
   assertEquals(2, results.length);
@@ -92,14 +92,14 @@ function testMetadataCacheSetCreateSnapshot() {
   setA.startRequests(1, setA.createRequests([entryA, entryB], ['property']));
   var setB = setA.createSnapshot([entryA]);
   setA.storeProperties(
-      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]);
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}], []);
   var results = setB.get([entryA, entryB], ['property']);
   assertEquals(2, results.length);
   assertEquals(null, results[0].property);
   assertEquals(undefined, results[1].property);
 
   setB.storeProperties(
-      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]);
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}], []);
   var results = setB.get([entryA, entryB], ['property']);
   assertEquals(2, results.length);
   assertEquals('valueA', results[0].property);
@@ -118,7 +118,7 @@ function testMetadataCacheSetHasFreshCache() {
 
   set.startRequests(1, set.createRequests([entryA, entryB], ['property']));
   set.storeProperties(
-      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}]);
+      1, [entryA, entryB], [{property: 'valueA'}, {property: 'valueB'}], []);
   assertTrue(set.hasFreshCache([entryA, entryB], ['property']));
 
   set.invalidate(2, [entryB]);
@@ -135,13 +135,13 @@ function testMetadataCacheSetHasFreshCacheWithEmptyNames() {
 function testMetadataCacheSetClear() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
   set.startRequests(1, set.createRequests([entryA], ['propertyA']));
-  set.storeProperties(1, [entryA], [{propertyA: 'value'}]);
+  set.storeProperties(1, [entryA], [{propertyA: 'value'}], []);
   assertTrue(set.hasFreshCache([entryA], ['propertyA']));
 
   set.startRequests(1, set.createRequests([entryA], ['propertyB']));
   set.clear([entryA.toURL()]);
   // PropertyB should not be stored because it is requsted before clear.
-  set.storeProperties(1, [entryA], [{propertyB: 'value'}]);
+  set.storeProperties(1, [entryA], [{propertyB: 'value'}], []);
 
   assertFalse(set.hasFreshCache([entryA], ['propertyA']));
   assertFalse(set.hasFreshCache([entryA], ['propertyB']));
@@ -154,7 +154,7 @@ function testMetadataCacheSetUpdateEvent() {
     event = inEvent;
   });
   set.startRequests(1, set.createRequests([entryA], ['propertyA']));
-  set.storeProperties(1, [entryA], [{propertyA: 'value'}]);
+  set.storeProperties(1, [entryA], [{propertyA: 'value'}], []);
   assertEquals(1, event.entries.length);
   assertEquals(entryA, event.entries[0]);
   assertTrue(event.entriesMap.has(entryA.toURL()));
@@ -166,7 +166,7 @@ function testMetadataCacheSetClearAll() {
   var set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
   set.startRequests(1, set.createRequests([entryA, entryB], ['propertyA']));
   set.storeProperties(
-      1, [entryA, entryB], [{propertyA: 'value'}, {propertyA: 'value'}]);
+      1, [entryA, entryB], [{propertyA: 'value'}, {propertyA: 'value'}], []);
 
   assertTrue(set.hasFreshCache([entryA, entryB], ['propertyA']));
   set.clearAll();
