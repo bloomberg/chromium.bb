@@ -17,6 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_monitor.h"
 #include "ui/base/clipboard/custom_data_helper.h"
@@ -92,9 +93,9 @@ class ClipboardData {
 
   const SkBitmap& bitmap() const { return bitmap_; }
   void SetBitmapData(const SkBitmap& bitmap) {
-    if (bitmap_.tryAllocPixels(bitmap.info())) {
-      bitmap.readPixels(bitmap_.info(), bitmap_.getPixels(), bitmap_.rowBytes(),
-                        0, 0);
+    if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &bitmap_)) {
+      NOTREACHED() << "Unable to convert bitmap for clipboard";
+      return;
     }
     format_ |= BITMAP;
   }

@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "skia/ext/skia_utils_base.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -451,8 +452,18 @@ void ClipboardMac::WriteBookmark(const char* title_data,
 }
 
 void ClipboardMac::WriteBitmap(const SkBitmap& bitmap) {
+  SkBitmap out_bitmap;
+  if (!skia::SkBitmapToN32OpaqueOrPremul(bitmap, &out_bitmap)) {
+    NOTREACHED() << "Unable to convert bitmap for clipboard";
+    return;
+  }
+
   NSImage* image = skia::SkBitmapToNSImageWithColorSpace(
-      bitmap, base::mac::GetSystemColorSpace());
+      out_bitmap, base::mac::GetSystemColorSpace());
+  if (!image) {
+    NOTREACHED() << "SkBitmapToNSImageWithColorSpace failed";
+    return;
+  }
   // An API to ask the NSImage to write itself to the clipboard comes in 10.6 :(
   // For now, spit out the image as a TIFF.
   NSPasteboard* pb = GetPasteboard();
