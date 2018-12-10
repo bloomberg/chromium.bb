@@ -98,7 +98,8 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
   std::vector<std::unique_ptr<DeferredMessage>> deferred_messages_;
   const int request_id_;
-  bool has_received_response_ = false;
+  bool has_received_response_head_ = false;
+  bool has_received_response_body_ = false;
   bool has_received_complete_ = false;
   bool is_deferred_ = false;
   bool pass_response_pipe_to_dispatcher_ = false;
