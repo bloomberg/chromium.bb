@@ -36,7 +36,7 @@ static_library("ble") {
   ]
 
   public_deps = [
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 }
 
@@ -55,7 +55,7 @@ static_library("test_support") {
   ]
 
   public_deps = [
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 }
 
@@ -85,6 +85,6 @@ source_set("unit_tests") {
   ]
 
   public_deps = [
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 }

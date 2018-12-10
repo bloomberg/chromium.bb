@@ -14,7 +14,7 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/proto/enum_util.h"
+#include "chromeos/services/device_sync/proto/enum_util.h"
 #include "components/cryptauth/secure_message_delegate.h"
 
 namespace cryptauth {

@@ -6,8 +6,8 @@
 #define COMPONENTS_CRYPTAUTH_FAKE_GCM_DEVICE_INFO_PROVIDER_H_
 
 #include "base/macros.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/gcm_device_info_provider.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 

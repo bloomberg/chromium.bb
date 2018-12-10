@@ -10,9 +10,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_enroller.h"
 #include "components/cryptauth/network_request_error.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 

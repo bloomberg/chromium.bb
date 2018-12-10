@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/cryptauth/proto/securemessage.pb.h"
+#include "chromeos/services/device_sync/proto/securemessage.pb.h"
 #include "components/cryptauth/session_keys.h"
 
 namespace cryptauth {

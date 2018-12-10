@@ -149,7 +149,7 @@ static_library("tether") {
   ]
 
   public_deps = [
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 }
 

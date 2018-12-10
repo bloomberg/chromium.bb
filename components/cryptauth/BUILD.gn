@@ -93,8 +93,8 @@ static_library("cryptauth") {
     "//chromeos",
     "//chromeos/components/multidevice",
     "//chromeos/components/proximity_auth/logging",
+    "//chromeos/services/device_sync/proto:util",
     "//components/cryptauth/ble",
-    "//components/cryptauth/proto:util",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
     "//components/prefs",
@@ -106,7 +106,7 @@ static_library("cryptauth") {
   ]
 
   public_deps = [
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 
   # TODO (hansberry): Resolve this.
@@ -156,7 +156,7 @@ static_library("test_support") {
   public_deps = [
     ":cryptauth",
     "//chromeos/components/multidevice",
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 
   deps = [
@@ -198,8 +198,8 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
+    "//chromeos/services/device_sync/proto:util",
     "//components/cryptauth/ble:unit_tests",
-    "//components/cryptauth/proto:util",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
     "//google_apis:test_support",

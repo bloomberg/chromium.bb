@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/screenlock_state.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 class CryptAuthClientFactory;

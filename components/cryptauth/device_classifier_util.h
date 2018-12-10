@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_CRYPTAUTH_DEVICE_CLASSIFIER_UTIL_H_
 #define COMPONENTS_CRYPTAUTH_DEVICE_CLASSIFIER_UTIL_H_
 
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 

@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/proto/enum_util.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/enum_util.h"
 
 namespace cryptauth {
 

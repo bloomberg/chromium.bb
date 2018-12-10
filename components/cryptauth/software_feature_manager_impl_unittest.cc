@@ -9,8 +9,8 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature.h"
+#include "chromeos/services/device_sync/proto/enum_util.h"
 #include "components/cryptauth/mock_cryptauth_client.h"
-#include "components/cryptauth/proto/enum_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

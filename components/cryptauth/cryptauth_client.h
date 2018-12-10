@@ -37,7 +37,7 @@ namespace cryptauth {
 // Implmentations shall only processes a single request, so create a new
 // instance for each request you make. DO NOT REUSE.
 // For documentation on each API call, see
-// components/cryptauth/proto/cryptauth_api.proto
+// chromeos/services/device_sync/proto/cryptauth_api.proto
 class CryptAuthClient {
  public:
   typedef base::Callback<void(NetworkRequestError)> ErrorCallback;

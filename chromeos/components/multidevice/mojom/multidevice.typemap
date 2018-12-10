@@ -20,7 +20,7 @@ sources = [
 
 public_deps = [
   "//chromeos/components/multidevice",
-  "//components/cryptauth/proto",
+  "//chromeos/services/device_sync/proto",
 ]
 
 type_mappings = [

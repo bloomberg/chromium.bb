@@ -7,8 +7,8 @@
 #include "base/containers/flat_set.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/device_sync/proto/enum_util.h"
 #include "components/cryptauth/gcm_device_info_provider.h"
-#include "components/cryptauth/proto/enum_util.h"
 
 namespace chromeos {
 

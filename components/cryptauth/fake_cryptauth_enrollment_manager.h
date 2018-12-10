@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 
