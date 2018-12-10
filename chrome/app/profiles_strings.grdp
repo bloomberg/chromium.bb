@@ -54,6 +54,9 @@
       Add Person...
     </message>
   </if>
+  <message name="IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE" desc="Accessible title of the avatar menu bubble.">
+    Accounts and sync
+  </message>
   <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON" desc="Button in the avatar menu bubble view to sign-out the current profile.">
     Exit and childlock
   </message>
