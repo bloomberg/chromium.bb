@@ -2501,10 +2501,22 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
   BOOL hideToolbar = NO;
   if (tab.webState) {
+    // There are times when the NTP can be hidden but before the visibleURL
+    // changes.  This can leave the BVC in a blank state where only the bottom
+    // toolbar is visible. Instead, if possible, use the NewTabPageTabHelper
+    // IsActive() value rather than checking -IsVisibleURLNewTabPage.
+    BOOL isNTP = false;
+    if (base::FeatureList::IsEnabled(kBrowserContainerContainsNTP)) {
+      NewTabPageTabHelper* NTPHelper =
+          NewTabPageTabHelper::FromWebState(tab.webState);
+      isNTP = NTPHelper && NTPHelper->IsActive();
+    } else {
+      isNTP = IsVisibleURLNewTabPage(tab.webState);
+    }
     // Hide the toolbar when displaying content suggestions without the tab
     // strip, without the focused omnibox, and for UI Refresh, only when in
     // split toolbar mode.
-    hideToolbar = IsVisibleURLNewTabPage(tab.webState) && !_isOffTheRecord &&
+    hideToolbar = isNTP && !_isOffTheRecord &&
                   ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                   ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
                   ![self canShowTabStrip] && IsSplitToolbarMode(self);
