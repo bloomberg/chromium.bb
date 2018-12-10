@@ -73,6 +73,16 @@ void MediaStreamDispatcherHost::OnDeviceStopped(
   GetMediaStreamDeviceObserver()->OnDeviceStopped(label, device);
 }
 
+void MediaStreamDispatcherHost::OnDeviceChanged(
+    const std::string& label,
+    const MediaStreamDevice& old_device,
+    const MediaStreamDevice& new_device) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  GetMediaStreamDeviceObserver()->OnDeviceChanged(label, old_device,
+                                                  new_device);
+}
+
 const mojom::MediaStreamDeviceObserverPtr&
 MediaStreamDispatcherHost::GetMediaStreamDeviceObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -142,6 +152,8 @@ void MediaStreamDispatcherHost::DoGenerateStream(
       render_process_id_, render_frame_id_, page_request_id, controls,
       std::move(salt_and_origin), user_gesture, std::move(callback),
       base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceStopped,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&MediaStreamDispatcherHost::OnDeviceChanged,
                           weak_factory_.GetWeakPtr()));
 }
 

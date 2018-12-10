@@ -10804,6 +10804,9 @@ Called by update_net_error_codes.py.-->
   <int value="12" label="Tab capturer created without audio capturer."/>
   <int value="13" label="Screen capturer permanent error."/>
   <int value="14" label="Window capturer permanent error."/>
+  <int value="15" label="Desktop capture stopped via screen lock."/>
+  <int value="16" label="Desktop capture stopped via notification bar."/>
+  <int value="17" label="Desktop capture changed source via notification bar."/>
 </enum>
 
 <enum name="DesktopIOSPromotionDismissalReason">

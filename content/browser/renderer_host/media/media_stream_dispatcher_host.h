@@ -81,6 +81,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
 
   void OnDeviceStopped(const std::string& label,
                        const MediaStreamDevice& device);
+  void OnDeviceChanged(const std::string& label,
+                       const MediaStreamDevice& old_device,
+                       const MediaStreamDevice& new_device);
 
   const int render_process_id_;
   const int render_frame_id_;
