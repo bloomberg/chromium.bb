@@ -1504,6 +1504,15 @@ gfx::NativeViewAccessible
   return nullptr;
 }
 
+gfx::NativeViewAccessible
+RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      render_view_host_->GetWidget()->GetView());
+  if (view)
+    return view->AccessibilityGetNativeViewAccessibleForWindow();
+  return nullptr;
+}
+
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 

@@ -26,6 +26,7 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/touch_bar_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/screen.h"
@@ -62,6 +63,7 @@ class DummyClientHelper : public RenderWidgetHostNSViewClientHelper {
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override { return nil; }
   id GetFocusedBrowserAccessibilityElement() override { return nil; }
+  void SetAccessibilityWindow(NSWindow* window) override {}
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,
                             const ui::LatencyInfo& latency_info) override {}
   void ForwardKeyboardEventWithCommands(
@@ -1200,6 +1202,7 @@ void ExtractUnderlines(NSAttributedString* string,
                              object:newWindow];
   }
 
+  clientHelper_->SetAccessibilityWindow(newWindow);
   [self sendWindowFrameInScreenToClient];
 }
 

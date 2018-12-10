@@ -509,8 +509,12 @@ BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
   };
 }
 
-NSView* BrowserAccessibilityManagerMac::GetParentView() {
+id BrowserAccessibilityManagerMac::GetParentView() {
   return delegate()->AccessibilityGetNativeViewAccessible();
+}
+
+id BrowserAccessibilityManagerMac::GetWindow() {
+  return delegate()->AccessibilityGetNativeViewAccessibleForWindow();
 }
 
 }  // namespace content

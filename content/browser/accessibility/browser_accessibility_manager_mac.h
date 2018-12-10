@@ -43,7 +43,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   void OnAccessibilityEvents(
       const AXEventNotificationDetails& details) override;
 
-  NSView* GetParentView();
+  id GetParentView();
+  id GetWindow();
 
  private:
   void FireNativeMacNotification(NSString* mac_notification,

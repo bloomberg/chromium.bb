@@ -47,17 +47,10 @@ class RenderWidgetHostNSViewBridgeOwner
 
   // RenderWidgetHostNSViewClientHelper implementation.
   id GetRootBrowserAccessibilityElement() override {
-    NSView* view = bridge_->GetRenderWidgetHostViewCocoa();
-    NSWindow* window = [view window];
-    // Send accessibility tokens only once the view has been attached to a
-    // window.
-    if (window && !remote_accessibility_element_) {
+    if (!remote_accessibility_element_) {
       int64_t browser_pid = 0;
       std::vector<uint8_t> element_token;
-      client_->SyncConnectAccessibilityElements(
-          ui::RemoteAccessibility::GetTokenForLocalElement(window),
-          ui::RemoteAccessibility::GetTokenForLocalElement(view), &browser_pid,
-          &element_token);
+      client_->SyncGetRootAccessibilityElement(&browser_pid, &element_token);
       [NSAccessibilityRemoteUIElement
           registerRemoteUIProcessIdentifier:browser_pid];
       remote_accessibility_element_ =
@@ -67,6 +60,10 @@ class RenderWidgetHostNSViewBridgeOwner
   }
   id GetFocusedBrowserAccessibilityElement() override {
     return GetRootBrowserAccessibilityElement();
+  }
+  void SetAccessibilityWindow(NSWindow* window) override {
+    client_->SetRemoteAccessibilityWindowToken(
+        ui::RemoteAccessibility::GetTokenForLocalElement(window));
   }
 
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event,

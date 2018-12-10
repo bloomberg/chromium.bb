@@ -69,6 +69,10 @@ class TestBrowserAccessibilityDelegate
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() override {
     return nullptr;
   }
+  gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
+      override {
+    return nullptr;
+  }
 
   bool got_fatal_error() const { return got_fatal_error_; }
   void reset_got_fatal_error() { got_fatal_error_ = false; }
