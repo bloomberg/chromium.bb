@@ -269,6 +269,18 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
           // collapsed.
           if (original_string[old_item0.StartOffset()] == kSpaceCharacter)
             return false;
+          // If the last item ended with a collapsible space run with segment
+          // breaks, we need to run the full algorithm to apply segment break
+          // rules. This may result in removal of the space in the last item.
+          if (last_item->IsEndCollapsibleNewline()) {
+            const StringView old_item0_view(
+                original_string, old_item0.StartOffset(), old_item0.Length());
+            if (ShouldRemoveNewline(text_, last_item->EndOffset() - 1,
+                                    last_item->Style(), old_item0_view,
+                                    &new_style)) {
+              return false;
+            }
+          }
           break;
         case NGInlineItem::kNotCollapsible: {
           // If the start of the original string was collapsed, it may be
