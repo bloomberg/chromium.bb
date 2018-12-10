@@ -33,12 +33,16 @@ cr.define('onboarding_welcome_email_chooser', function() {
       nux.NuxEmailProxyImpl.instance_ = testEmailBrowserProxy;
       testBookmarkBrowserProxy = new TestBookmarkProxy();
       nux.BookmarkProxyImpl.instance_ = testBookmarkBrowserProxy;
+      // Reset w/ new proxy for test.
+      nux.BookmarkBarManager.instance_ = new nux.BookmarkBarManager();
 
       testEmailBrowserProxy.setEmailList(emails);
 
       PolymerTest.clearBody();
       testElement = document.createElement('email-chooser');
       document.body.appendChild(testElement);
+      // Simulate nux-email's onRouteEnter call.
+      testElement.initializeSection();
       return Promise.all([
         testEmailBrowserProxy.whenCalled('recordPageInitialized'),
         testEmailBrowserProxy.whenCalled('getEmailList'),
@@ -101,7 +105,7 @@ cr.define('onboarding_welcome_email_chooser', function() {
 
     test('test email chooser skip button', function() {
       let options = testElement.shadowRoot.querySelectorAll('.option');
-      testElement.bookmarkBarWasShown_ = true;
+      testElement.wasBookmarkBarShownOnInit_ = true;
 
       // First option should be selected and action button should be enabled.
       testElement.$.noThanksButton.click();
@@ -122,7 +126,8 @@ cr.define('onboarding_welcome_email_chooser', function() {
 
     test('test email chooser next button', function() {
       let options = testElement.shadowRoot.querySelectorAll('.option');
-      testElement.bookmarkBarWasShown_ = true;
+      testElement.wasBookmarkBarShownOnInit_ = true;
+
 
       // First option should be selected and action button should be enabled.
       testElement.$$('.action-button').click();

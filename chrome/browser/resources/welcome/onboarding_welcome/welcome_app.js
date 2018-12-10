@@ -98,8 +98,8 @@ Polymer({
     };
 
     // If the route changed, initialize the steps of modules for that route.
-    if (this.currentRoute_ != route && route != welcome.Routes.LANDING) {
-      this.initializeModules(this.modules_[route]).then(setStep);
+    if (this.currentRoute_ != route) {
+      this.initializeModules(route).then(setStep);
     } else {
       setStep();
     }
@@ -107,45 +107,55 @@ Polymer({
     this.currentRoute_ = route;
   },
 
-  /** @param {!Array<string>} modules Array of valid DOM element names. */
-  initializeModules: function(modules) {
-    assert(modules);  // modules should be defined if on a valid route.
+  /** @param {welcome.Routes} route */
+  initializeModules: function(route) {
+    // Remove all views except landing.
+    this.$.viewManager
+        .querySelectorAll('[slot="view"]:not([id="step-landing"])')
+        .forEach(element => element.remove());
 
-    // Wait until the default-browser state is known before anything
-    // initializes.
-    return this.defaultCheckPromise_.promise.then(canSetDefault => {
-      if (!canSetDefault)
-        modules = modules.filter(module => module != 'nux-set-as-default');
+    // If it is on landing route, end here.
+    if (route == welcome.Routes.LANDING) {
+      return Promise.resolve();
+    }
 
-      // Remove all views except landing.
-      this.$.viewManager
-          .querySelectorAll('[slot="view"]:not([id="step-landing"])')
-          .forEach(element => {
-            element.remove();
+    let modules = this.modules_[route];
+    assert(modules);  // Modules should be defined if on a valid route.
+
+    // Wait until the default-browser state and bookmark visibility are known
+    // before anything initializes.
+    return Promise
+        .all([
+          this.defaultCheckPromise_.promise,
+          nux.BookmarkBarManager.getInstance().initialized,
+        ])
+        .then(args => {
+          const canSetDefault = args[0];
+          if (!canSetDefault)
+            modules = modules.filter(module => module != 'nux-set-as-default');
+
+          const indicatorElementCount = modules.reduce((count, module) => {
+            return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;
+          }, 0);
+
+          let indicatorActiveCount = 0;
+          modules.forEach((elementTagName, index) => {
+            // Makes sure the module specified by the feature configuration is
+            // whitelisted.
+            assert(MODULES_WHITELIST.has(elementTagName));
+
+            const element = document.createElement(elementTagName);
+            element.id = 'step-' + (index + 1);
+            element.setAttribute('slot', 'view');
+            this.$.viewManager.appendChild(element);
+
+            if (MODULES_NEEDING_INDICATOR.has(elementTagName)) {
+              element.indicatorModel = {
+                total: indicatorElementCount,
+                active: indicatorActiveCount++,
+              };
+            }
           });
-
-      const indicatorElementCount = modules.reduce((count, module) => {
-        return count += MODULES_NEEDING_INDICATOR.has(module) ? 1 : 0;
-      }, 0);
-
-      let indicatorActiveCount = 0;
-      modules.forEach((elementTagName, index) => {
-        // Makes sure the module specified by the feature configuration is
-        // whitelisted.
-        assert(MODULES_WHITELIST.has(elementTagName));
-
-        const element = document.createElement(elementTagName);
-        element.id = 'step-' + (index + 1);
-        element.setAttribute('slot', 'view');
-        this.$.viewManager.appendChild(element);
-
-        if (MODULES_NEEDING_INDICATOR.has(elementTagName)) {
-          element.indicatorModel = {
-            total: indicatorElementCount,
-            active: indicatorActiveCount++,
-          };
-        }
-      });
-    });
+        });
   },
 });
