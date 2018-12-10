@@ -12,6 +12,7 @@
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_manager.h"
 #include "ui/gfx/geometry/size.h"
@@ -26,14 +27,12 @@ class BackgroundFetchDelegateProxy::Core
     : public BackgroundFetchDelegate::Client {
  public:
   Core(const base::WeakPtr<BackgroundFetchDelegateProxy>& io_parent,
-       BackgroundFetchDelegate* delegate)
-      : io_parent_(io_parent), delegate_(delegate), weak_ptr_factory_(this) {
+       BrowserContext* browser_context)
+      : io_parent_(io_parent),
+        browser_context_(browser_context),
+        weak_ptr_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    // Some BrowserContext implementations return nullptr for their delegate
-    // implementation and the feature should be disabled in that case.
-    if (delegate_)
-      delegate_->SetDelegateClient(GetWeakPtrOnUI());
+    DCHECK(browser_context_);
   }
 
   ~Core() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
@@ -55,8 +54,10 @@ class BackgroundFetchDelegateProxy::Core
       const url::Origin& origin,
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
       BackgroundFetchDelegate::GetPermissionForOriginCallback callback) {
-    if (delegate_) {
-      delegate_->GetPermissionForOrigin(
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    if (auto* delegate = browser_context_->GetBackgroundFetchDelegate()) {
+      delegate->GetPermissionForOrigin(
           origin, wc_getter,
           base::BindOnce(&Core::ForwardGetPermissionForOriginCallbackToIO,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -77,8 +78,8 @@ class BackgroundFetchDelegateProxy::Core
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (delegate_) {
-      delegate_->GetIconDisplaySize(
+    if (auto* delegate = browser_context_->GetBackgroundFetchDelegate()) {
+      delegate->GetIconDisplaySize(
           base::BindOnce(&Core::ForwardGetIconDisplaySizeCallbackToIO,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     } else {
@@ -92,15 +93,10 @@ class BackgroundFetchDelegateProxy::Core
       std::unique_ptr<BackgroundFetchDescription> fetch_description) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    // If there are multiple clients created we might have registered the wrong
-    // one with the delegate by overwriting it. This check makes sure that we
-    // register the correct client until multiple clients are supported.
-    // TODO(crbug.com/907075): Support multiple clients.
-    if (delegate_ && delegate_->client().get() != this)
-      delegate_->SetDelegateClient(GetWeakPtrOnUI());
-
-    if (delegate_)
-      delegate_->CreateDownloadJob(std::move(fetch_description));
+    auto* delegate = browser_context_->GetBackgroundFetchDelegate();
+    if (delegate)
+      delegate->CreateDownloadJob(GetWeakPtrOnUI(),
+                                  std::move(fetch_description));
   }
 
   void StartRequest(const std::string& job_unique_id,
@@ -112,7 +108,8 @@ class BackgroundFetchDelegateProxy::Core
     // TODO(crbug/757760): This can be nullptr, if the delegate has shut down,
     // in which case we need to make sure this is retried when the browser
     // restarts.
-    if (!delegate_)
+    auto* delegate = browser_context_->GetBackgroundFetchDelegate();
+    if (!delegate)
       return;
 
     const blink::mojom::FetchAPIRequestPtr& fetch_request =
@@ -165,24 +162,24 @@ class BackgroundFetchDelegateProxy::Core
 
     // TODO(crbug.com/774054): Update |has_request_body| after the cache storage
     // supports request bodies.
-    delegate_->DownloadUrl(job_unique_id, request->download_guid(),
-                           fetch_request->method, fetch_request->url,
-                           traffic_annotation, headers,
-                           /* has_request_body= */ false);
+    delegate->DownloadUrl(job_unique_id, request->download_guid(),
+                          fetch_request->method, fetch_request->url,
+                          traffic_annotation, headers,
+                          /* has_request_body= */ false);
   }
 
   void Abort(const std::string& job_unique_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (delegate_)
-      delegate_->Abort(job_unique_id);
+    if (auto* delegate = browser_context_->GetBackgroundFetchDelegate())
+      delegate->Abort(job_unique_id);
   }
 
   void MarkJobComplete(const std::string& job_unique_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (delegate_)
-      delegate_->MarkJobComplete(job_unique_id);
+    if (auto* delegate = browser_context_->GetBackgroundFetchDelegate())
+      delegate->MarkJobComplete(job_unique_id);
   }
 
   void UpdateUI(const std::string& job_unique_id,
@@ -190,8 +187,8 @@ class BackgroundFetchDelegateProxy::Core
                 const base::Optional<SkBitmap>& icon) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (delegate_)
-      delegate_->UpdateUI(job_unique_id, title, icon);
+    if (auto* delegate = browser_context_->GetBackgroundFetchDelegate())
+      delegate->UpdateUI(job_unique_id, title, icon);
   }
 
   // BackgroundFetchDelegate::Client implementation:
@@ -210,7 +207,6 @@ class BackgroundFetchDelegateProxy::Core
       const std::string& guid,
       std::unique_ptr<content::BackgroundFetchResponse> response) override;
   void OnUIActivated(const std::string& unique_id) override;
-  void OnDelegateShutdown() override;
   void GetUploadData(
       const std::string& job_unique_id,
       const std::string& download_guid,
@@ -220,9 +216,7 @@ class BackgroundFetchDelegateProxy::Core
   // Weak reference to the IO thread outer class that owns us.
   base::WeakPtr<BackgroundFetchDelegateProxy> io_parent_;
 
-  // Delegate is owned elsewhere and is valid from construction until
-  // OnDelegateShutDown (if not initially nullptr).
-  BackgroundFetchDelegate* delegate_;
+  BrowserContext* browser_context_;
 
   base::WeakPtrFactory<Core> weak_ptr_factory_;
 
@@ -283,10 +277,6 @@ void BackgroundFetchDelegateProxy::Core::OnUIActivated(
                      job_unique_id));
 }
 
-void BackgroundFetchDelegateProxy::Core::OnDelegateShutdown() {
-  delegate_ = nullptr;
-}
-
 void BackgroundFetchDelegateProxy::Core::GetUploadData(
     const std::string& job_unique_id,
     const std::string& download_guid,
@@ -330,14 +320,14 @@ BackgroundFetchDelegateProxy::JobDetails::JobDetails(JobDetails&& details) =
 BackgroundFetchDelegateProxy::JobDetails::~JobDetails() = default;
 
 BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
-    BackgroundFetchDelegate* delegate)
+    BrowserContext* browser_context)
     : weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Normally it would be unsafe to obtain a weak pointer on the UI thread from
   // a factory that lives on the IO thread, but it's ok in the constructor as
   // |this| can't be destroyed before the constructor finishes.
-  ui_core_.reset(new Core(weak_ptr_factory_.GetWeakPtr(), delegate));
+  ui_core_.reset(new Core(weak_ptr_factory_.GetWeakPtr(), browser_context));
 
   // Since this constructor runs on the UI thread, a WeakPtr can be safely
   // obtained from the Core.

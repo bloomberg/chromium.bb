@@ -56,7 +56,8 @@ class BackgroundFetchDelegateImpl
       const url::Origin& origin,
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
       GetPermissionForOriginCallback callback) override;
-  void CreateDownloadJob(std::unique_ptr<content::BackgroundFetchDescription>
+  void CreateDownloadJob(base::WeakPtr<Client> client,
+                         std::unique_ptr<content::BackgroundFetchDescription>
                              fetch_description) override;
   void DownloadUrl(const std::string& job_unique_id,
                    const std::string& guid,
@@ -144,6 +145,7 @@ class BackgroundFetchDelegateImpl
 
     JobDetails(JobDetails&&);
     JobDetails(
+        base::WeakPtr<Client> client,
         std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
         const std::string& provider_namespace,
         bool is_off_the_record);
@@ -156,6 +158,9 @@ class BackgroundFetchDelegateImpl
       kAbsent,
       kIncluded,
     };
+
+    // The client to report the Background Fetch updates to.
+    base::WeakPtr<Client> client;
 
     // Set of DownloadService GUIDs that are currently processed. They are
     // added by DownloadUrl and are removed when the fetch completes, fails,
@@ -193,6 +198,9 @@ class BackgroundFetchDelegateImpl
   void DidGetPermissionFromDownloadRequestLimiter(
       GetPermissionForOriginCallback callback,
       bool has_permission);
+
+  // Returns the client for a given |job_unique_id|.
+  base::WeakPtr<Client> GetClient(const std::string& job_unique_id);
 
   // The profile this service is being created for.
   Profile* profile_;

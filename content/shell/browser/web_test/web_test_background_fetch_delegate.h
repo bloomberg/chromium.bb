@@ -32,6 +32,7 @@ class WebTestBackgroundFetchDelegate : public BackgroundFetchDelegate {
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
       GetPermissionForOriginCallback callback) override;
   void CreateDownloadJob(
+      base::WeakPtr<Client> client,
       std::unique_ptr<BackgroundFetchDescription> fetch_description) override;
   void DownloadUrl(const std::string& job_unique_id,
                    const std::string& download_guid,

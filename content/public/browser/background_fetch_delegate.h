@@ -100,10 +100,6 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
     // Called when the UI of a background fetch job is activated.
     virtual void OnUIActivated(const std::string& job_unique_id) = 0;
 
-    // Called by the delegate when it's shutting down to signal that the
-    // delegate is no longer valid.
-    virtual void OnDelegateShutdown() = 0;
-
     // Called by the Download Client when it needs the upload data for
     // the given |download_guid|.
     virtual void GetUploadData(const std::string& job_unique_id,
@@ -130,8 +126,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   // a notification can be updated with the current status. If the download was
   // already started in a previous browser session, then |current_guids| should
   // contain the GUIDs of in progress downloads, while completed downloads are
-  // recorded in |completed_parts|.
+  // recorded in |completed_parts|. Updates are communicated to |client|.
   virtual void CreateDownloadJob(
+      base::WeakPtr<Client> client,
       std::unique_ptr<BackgroundFetchDescription> fetch_description) = 0;
 
   // Creates a new download identified by |download_guid| in the download job
@@ -156,14 +153,6 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   virtual void UpdateUI(const std::string& job_unique_id,
                         const base::Optional<std::string>& title,
                         const base::Optional<SkBitmap>& icon) = 0;
-
-  // Set the client that the delegate should communicate changes to.
-  void SetDelegateClient(base::WeakPtr<Client> client) { client_ = client; }
-
-  base::WeakPtr<Client> client() { return client_; }
-
- private:
-  base::WeakPtr<Client> client_;
 };
 
 }  // namespace content

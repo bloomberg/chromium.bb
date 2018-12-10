@@ -35,10 +35,7 @@ class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
       base::WeakPtr<content::BackgroundFetchDelegate::Client> client)
       : client_(std::move(client)) {}
 
-  ~WebTestBackgroundFetchDownloadClient() override {
-    if (client_)
-      client_->OnDelegateShutdown();
-  }
+  ~WebTestBackgroundFetchDownloadClient() override = default;
 
   // Registers the |guid| as belonging to a Background Fetch job identified by
   // |job_unique_id|. Downloads may only be registered once.
@@ -190,16 +187,8 @@ void WebTestBackgroundFetchDelegate::GetPermissionForOrigin(
 }
 
 void WebTestBackgroundFetchDelegate::CreateDownloadJob(
-    std::unique_ptr<BackgroundFetchDescription> fetch_description) {}
-
-void WebTestBackgroundFetchDelegate::DownloadUrl(
-    const std::string& job_unique_id,
-    const std::string& download_guid,
-    const std::string& method,
-    const GURL& url,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation,
-    const net::HttpRequestHeaders& headers,
-    bool has_request_body) {
+    base::WeakPtr<Client> client,
+    std::unique_ptr<BackgroundFetchDescription> fetch_description) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Lazily create the |download_service_| because only very few web tests
@@ -207,7 +196,7 @@ void WebTestBackgroundFetchDelegate::DownloadUrl(
   if (!download_service_) {
     auto clients = std::make_unique<download::DownloadClientMap>();
     auto background_fetch_client =
-        std::make_unique<WebTestBackgroundFetchDownloadClient>(client());
+        std::make_unique<WebTestBackgroundFetchDownloadClient>(client);
 
     // Store a reference to the client for storing a GUID -> Unique ID mapping.
     background_fetch_client_ = background_fetch_client.get();
@@ -231,6 +220,17 @@ void WebTestBackgroundFetchDelegate::DownloadUrl(
                   {BrowserThread::IO})));
     }
   }
+}
+
+void WebTestBackgroundFetchDelegate::DownloadUrl(
+    const std::string& job_unique_id,
+    const std::string& download_guid,
+    const std::string& method,
+    const GURL& url,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation,
+    const net::HttpRequestHeaders& headers,
+    bool has_request_body) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   background_fetch_client_->RegisterDownload(download_guid, job_unique_id);
 

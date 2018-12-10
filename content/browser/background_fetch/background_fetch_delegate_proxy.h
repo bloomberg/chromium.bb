@@ -24,6 +24,8 @@
 
 namespace content {
 
+class BrowserContext;
+
 // Proxy class for passing messages between BackgroundFetchJobControllers on the
 // IO thread and BackgroundFetchDelegate on the UI thread.
 class CONTENT_EXPORT BackgroundFetchDelegateProxy {
@@ -61,7 +63,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
     virtual ~Controller() {}
   };
 
-  explicit BackgroundFetchDelegateProxy(BackgroundFetchDelegate* delegate);
+  explicit BackgroundFetchDelegateProxy(BrowserContext* browser_context);
 
   ~BackgroundFetchDelegateProxy();
 
