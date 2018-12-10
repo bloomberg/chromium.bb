@@ -13,9 +13,6 @@
 -ImmersiveModeControllerAshTest.RegularToLockedFullscreenDisablesImmersive
 -ImmersiveModeControllerAshTest.TabAndBrowserFullscreen
 
-# https://crbug.com/912700
--ChromeKeyboardUITest.ChromeKeyboardContentsDelegate
-
 # https://crbug.com/910240
 -ArcInputMethodManagerServiceTest.DisableFallbackVirtualKeyboard
 
