@@ -20,6 +20,7 @@ ClientSurfaceEmbedder::ClientSurfaceEmbedder(
           std::make_unique<ui::Layer>(ui::LAYER_TEXTURED))),
       inject_gutter_(inject_gutter),
       client_area_insets_(client_area_insets) {
+  surface_layer_owner_->layer()->set_name("ClientSurfaceEmbedder");
   surface_layer_owner_->layer()->SetMasksToBounds(true);
   // The frame provided by the parent window->layer() needs to show through
   // the surface layer.
