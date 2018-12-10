@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.sync.ui;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.widget.CheckedTextView;
+import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 
 import org.junit.Assert;
@@ -57,7 +58,7 @@ public class PassphraseTypeDialogFragmentTest {
     @Feature({"Sync"})
     public void testKeystoreEncryptionOptions() throws Exception {
         createFragment(PassphraseType.KEYSTORE_PASSPHRASE, true);
-        assertPassphraseTypeOptions(
+        assertPassphraseTypeOptions(false,
                 new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, ENABLED, UNCHECKED),
                 new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, ENABLED, CHECKED));
     }
@@ -67,7 +68,7 @@ public class PassphraseTypeDialogFragmentTest {
     @Feature({"Sync"})
     public void testCustomEncryptionOptions() throws Exception {
         createFragment(PassphraseType.CUSTOM_PASSPHRASE, true);
-        assertPassphraseTypeOptions(
+        assertPassphraseTypeOptions(true,
                 new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, DISABLED, CHECKED),
                 new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, DISABLED, UNCHECKED));
     }
@@ -80,7 +81,7 @@ public class PassphraseTypeDialogFragmentTest {
     @FlakyTest(message = "crbug.com/588050")
     public void testFrozenImplicitEncryptionOptions() throws Exception {
         createFragment(PassphraseType.FROZEN_IMPLICIT_PASSPHRASE, true);
-        assertPassphraseTypeOptions(
+        assertPassphraseTypeOptions(true,
                 new TypeOptions(PassphraseType.FROZEN_IMPLICIT_PASSPHRASE, DISABLED, CHECKED),
                 new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, DISABLED, UNCHECKED));
     }
@@ -90,7 +91,7 @@ public class PassphraseTypeDialogFragmentTest {
     @Feature({"Sync"})
     public void testImplicitEncryptionOptions() throws Exception {
         createFragment(PassphraseType.IMPLICIT_PASSPHRASE, true);
-        assertPassphraseTypeOptions(
+        assertPassphraseTypeOptions(false,
                 new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, ENABLED, UNCHECKED),
                 new TypeOptions(PassphraseType.IMPLICIT_PASSPHRASE, ENABLED, CHECKED));
     }
@@ -100,7 +101,7 @@ public class PassphraseTypeDialogFragmentTest {
     @Feature({"Sync"})
     public void testKeystoreEncryptionOptionsEncryptEverythingDisallowed() throws Exception {
         createFragment(PassphraseType.KEYSTORE_PASSPHRASE, false);
-        assertPassphraseTypeOptions(
+        assertPassphraseTypeOptions(false,
                 new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, DISABLED, UNCHECKED),
                 new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, ENABLED, CHECKED));
     }
@@ -110,7 +111,7 @@ public class PassphraseTypeDialogFragmentTest {
     @Feature({"Sync"})
     public void testImplicitEncryptionOptionsEncryptEverythingDisallowed() throws Exception {
         createFragment(PassphraseType.IMPLICIT_PASSPHRASE, false);
-        assertPassphraseTypeOptions(
+        assertPassphraseTypeOptions(false,
                 new TypeOptions(PassphraseType.CUSTOM_PASSPHRASE, DISABLED, UNCHECKED),
                 new TypeOptions(PassphraseType.IMPLICIT_PASSPHRASE, ENABLED, CHECKED));
     }
@@ -121,14 +122,19 @@ public class PassphraseTypeDialogFragmentTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    public void assertPassphraseTypeOptions(TypeOptions... optionsList) {
+    public void assertPassphraseTypeOptions(boolean hasFooter, TypeOptions... optionsList) {
         ListView listView =
                 (ListView) mTypeFragment.getDialog().findViewById(R.id.passphrase_type_list);
-        Assert.assertEquals(
-                "Number of options doesn't match.", optionsList.length, listView.getCount());
-        PassphraseTypeDialogFragment.Adapter adapter =
-                (PassphraseTypeDialogFragment.Adapter) listView.getAdapter();
+        PassphraseTypeDialogFragment.Adapter adapter;
+        if (hasFooter) {
+            HeaderViewListAdapter headerAdapter = (HeaderViewListAdapter) listView.getAdapter();
+            adapter = (PassphraseTypeDialogFragment.Adapter) headerAdapter.getWrappedAdapter();
+        } else {
+            adapter = (PassphraseTypeDialogFragment.Adapter) listView.getAdapter();
+        }
 
+        Assert.assertEquals(
+                "Number of options doesn't match.", optionsList.length, adapter.getCount());
         for (int i = 0; i < optionsList.length; i++) {
             TypeOptions options = optionsList[i];
             Assert.assertEquals(
