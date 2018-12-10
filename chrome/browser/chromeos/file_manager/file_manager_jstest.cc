@@ -55,8 +55,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, VolumeManagerTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
-  RunTest(base::FilePath(
-      FILE_PATH_LITERAL("foreground/js/ui/directory_tree_unittest.html")));
+  RunGeneratedTest("/foreground/js/ui/directory_tree_unittest.html");
 }
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileTableTest) {
