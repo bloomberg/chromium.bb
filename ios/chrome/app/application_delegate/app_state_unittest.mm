@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/main/browser_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -520,8 +521,10 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   IOSChromeScopedTestingChromeBrowserProvider provider_(
       std::make_unique<FakeChromeBrowserProvider>());
 
+  id browserCoordinator = OCMClassMock([BrowserCoordinator class]);
   id browserViewController = OCMClassMock([BrowserViewController class]);
-  OCMExpect([browserViewController setActive:NO]);
+  [[[browserCoordinator stub] andReturn:browserViewController] viewController];
+  OCMExpect([browserCoordinator setActive:NO]);
   id browserLauncher =
       [OCMockObject mockForProtocol:@protocol(BrowserLauncher)];
   id applicationDelegate =
@@ -533,6 +536,8 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
       browserInitializationStage];
   [[[browserLauncher stub] andReturn:browserViewInformation]
       browserViewInformation];
+  [[[browserViewInformation stub] andReturn:browserCoordinator]
+      currentBrowserCoordinator];
   [[[browserViewInformation stub] andReturn:browserViewController] currentBVC];
 
   id settingsNavigationController =
@@ -563,6 +568,7 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
                applicationNavigation:appNavigation];
 
   // Test.
+  EXPECT_OCMOCK_VERIFY(browserCoordinator);
   EXPECT_OCMOCK_VERIFY(browserViewController);
   EXPECT_OCMOCK_VERIFY(startupInformation);
   EXPECT_OCMOCK_VERIFY(appNavigation);
