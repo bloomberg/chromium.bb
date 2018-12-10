@@ -179,6 +179,13 @@ js_library("metadata_model") {
   ]
 }
 
+js_unittest("metadata_model_unittest") {
+  deps = [
+    ":metadata_model",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("metadata_parser") {
   deps = [
     ":byte_reader",
@@ -246,6 +253,7 @@ js_unit_tests("unit_tests") {
     ":metadata_cache_item_unittest",
     ":metadata_cache_set_unittest",
     ":multi_metadata_provider_unittest",
+    ":metadata_model_unittest",
     ":thumbnail_model_unittest",
   ]
 }
