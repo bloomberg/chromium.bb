@@ -23,6 +23,10 @@ namespace base {
 class Clock;
 }
 
+namespace sync_sessions {
+class OpenTabsUIDelegate;
+}  // namespace sync_sessions
+
 namespace app_list {
 
 class AppSearchResultRanker;
@@ -55,6 +59,14 @@ class AppSearchProvider : public SearchProvider {
   // detected.
   void RefreshAppsAndUpdateResultsDeferred();
 
+  void set_open_tabs_ui_delegate_for_testing(
+      sync_sessions::OpenTabsUIDelegate* delegate) {
+    open_tabs_ui_delegate_for_testing_ = delegate;
+  }
+  sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing() {
+    return open_tabs_ui_delegate_for_testing_;
+  }
+
  private:
   void UpdateResults();
   void UpdateRecommendedResults(
@@ -69,6 +81,8 @@ class AppSearchProvider : public SearchProvider {
   base::Clock* clock_;
   std::vector<std::unique_ptr<DataSource>> data_sources_;
   std::unique_ptr<AppSearchResultRanker> ranker_;
+  sync_sessions::OpenTabsUIDelegate* open_tabs_ui_delegate_for_testing_ =
+      nullptr;
   base::WeakPtrFactory<AppSearchProvider> refresh_apps_factory_;
   base::WeakPtrFactory<AppSearchProvider> update_results_factory_;
 

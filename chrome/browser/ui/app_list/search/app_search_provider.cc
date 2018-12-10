@@ -480,7 +480,8 @@ class InternalDataSource : public AppSearchProvider::DataSource {
 
         sync_sessions::SessionSyncService* service =
             SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
-        if (!service || !service->GetOpenTabsUIDelegate()) {
+        if (!service || (!service->GetOpenTabsUIDelegate() &&
+                         !owner()->open_tabs_ui_delegate_for_testing())) {
           continue;
         }
       } else if (just_continue_reading_) {
@@ -681,10 +682,12 @@ void AppSearchProvider::UpdateRecommendedResults(
 
     base::string16 title = app->name();
     if (app->id() == kInternalAppIdContinueReading) {
-      if (HasRecommendableForeignTab(profile_, &title, nullptr))
+      if (HasRecommendableForeignTab(profile_, &title, /*url=*/nullptr,
+                                     open_tabs_ui_delegate_for_testing())) {
         app->AddSearchableText(title);
-      else
+      } else {
         continue;
+      }
     }
 
     std::unique_ptr<AppResult> result =

@@ -17,8 +17,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -33,11 +35,20 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/crx_file/id_util.h"
+#include "components/sessions/core/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/core/session_id.h"
 #include "components/sync/model/string_ordinal.h"
+#include "components/sync/protocol/sync_enums.pb.h"
+#include "components/sync_sessions/mock_sync_sessions_client.h"
+#include "components/sync_sessions/open_tabs_ui_delegate_impl.h"
+#include "components/sync_sessions/session_sync_service.h"
+#include "components/sync_sessions/synced_session.h"
+#include "components/sync_sessions/synced_session_tracker.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace app_list {
@@ -101,6 +112,21 @@ class AppSearchProviderTest : public AppListTestBase {
     clock_.SetNow(kTestCurrentTime);
     app_search_ = std::make_unique<AppSearchProvider>(
         profile_.get(), nullptr, &clock_, model_updater_.get());
+  }
+
+  void CreateSearchWithContinueReading() {
+    clock_.SetNow(kTestCurrentTime);
+    app_search_ = std::make_unique<AppSearchProvider>(
+        profile_.get(), nullptr, &clock_, model_updater_.get());
+
+    session_tracker_ = std::make_unique<sync_sessions::SyncedSessionTracker>(
+        &mock_sync_sessions_client_);
+    open_tabs_ui_delegate_ =
+        std::make_unique<sync_sessions::OpenTabsUIDelegateImpl>(
+            &mock_sync_sessions_client_, session_tracker_.get(),
+            /*favicon_cache=*/nullptr, base::DoNothing());
+    app_search_->set_open_tabs_ui_delegate_for_testing(
+        open_tabs_ui_delegate_.get());
   }
 
   std::string RunQuery(const std::string& query) {
@@ -180,12 +206,22 @@ class AppSearchProviderTest : public AppListTestBase {
   // Train the |app_search| provider with id.
   void Train(const std::string& id) { app_search_->Train(id); }
 
+  sync_sessions::SyncedSessionTracker* session_tracker() {
+    return session_tracker_.get();
+  }
+
  private:
   base::SimpleTestClock clock_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
   ArcAppTest arc_test_;
+
+  // For continue reading.
+  testing::NiceMock<sync_sessions::MockSyncSessionsClient>
+      mock_sync_sessions_client_;
+  std::unique_ptr<sync_sessions::SyncedSessionTracker> session_tracker_;
+  std::unique_ptr<sync_sessions::OpenTabsUIDelegateImpl> open_tabs_ui_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderTest);
 };
@@ -317,6 +353,216 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
   prefs->SetLastLaunchTime(kPackagedApp2Id, base::Time::FromInternalValue(5));
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
             RunQuery(""));
+}
+
+TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(app_list_features::kEnableContinueReading);
+
+  constexpr char kLocalSessionTag[] = "local";
+  constexpr char kLocalSessionName[] = "LocalSessionName";
+  constexpr char kForeignSessionTag1[] = "foreign1";
+  constexpr char kForeignSessionTag2[] = "foreign2";
+  constexpr char kForeignSessionTag3[] = "foreign3";
+  constexpr SessionID kWindowId1 = SessionID::FromSerializedValue(1);
+  constexpr SessionID kWindowId2 = SessionID::FromSerializedValue(2);
+  constexpr SessionID kWindowId3 = SessionID::FromSerializedValue(3);
+  constexpr SessionID kTabId1 = SessionID::FromSerializedValue(111);
+  constexpr SessionID kTabId2 = SessionID::FromSerializedValue(222);
+  constexpr SessionID kTabId3 = SessionID::FromSerializedValue(333);
+
+  // Case 1: test that ContinueReading is recommended for the latest foreign
+  // tab.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(2);
+    const base::Time kTimestamp2 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+    const base::Time kTimestamp3 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(3);
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
+    session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kForeignSessionTag1, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url1", "title1"));
+    session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->device_type =
+        sync_pb::SyncEnums::TYPE_PHONE;
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag2, kWindowId2);
+    session_tracker()->PutTabInWindow(kForeignSessionTag2, kWindowId2, kTabId2);
+    session_tracker()
+        ->GetTab(kForeignSessionTag2, kTabId2)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url2", "title2"));
+    session_tracker()->GetTab(kForeignSessionTag2, kTabId2)->timestamp =
+        kTimestamp2;
+    session_tracker()->GetSession(kForeignSessionTag2)->modified_time =
+        kTimestamp2;
+    session_tracker()->GetSession(kForeignSessionTag2)->device_type =
+        sync_pb::SyncEnums::TYPE_PHONE;
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag3, kWindowId3);
+    session_tracker()->PutTabInWindow(kForeignSessionTag3, kWindowId3, kTabId3);
+    session_tracker()
+        ->GetTab(kForeignSessionTag3, kTabId3)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url3", "title3"));
+    session_tracker()->GetTab(kForeignSessionTag3, kTabId3)->timestamp =
+        kTimestamp3;
+    session_tracker()->GetSession(kForeignSessionTag3)->modified_time =
+        kTimestamp3;
+    session_tracker()->GetSession(kForeignSessionTag3)->device_type =
+        sync_pb::SyncEnums::TYPE_PHONE;
+
+    EXPECT_EQ("title2,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+              RunQuery(""));
+  }
+
+  // Case 2: test that ContinueReading is not recommended for local session.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+
+    session_tracker()->PutWindowInSession(kLocalSessionTag, kWindowId1);
+    session_tracker()->PutTabInWindow(kLocalSessionTag, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kLocalSessionTag, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url1", "title1"));
+    session_tracker()->GetTab(kLocalSessionTag, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kLocalSessionTag)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kLocalSessionTag)->device_type =
+        sync_pb::SyncEnums::TYPE_PHONE;
+
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+              RunQuery(""));
+  }
+
+  // Case 3: test that ContinueReading is not recommended for foreign tab more
+  // than 120 minutes ago.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(121);
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
+    session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kForeignSessionTag1, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url1", "title1"));
+    session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->device_type =
+        sync_pb::SyncEnums::TYPE_PHONE;
+
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+              RunQuery(""));
+  }
+
+  // Case 4: test that ContinueReading is recommended for foreign tab with
+  // TYPE_TABLET.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
+    session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kForeignSessionTag1, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url1", "title1"));
+    session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->device_type =
+        sync_pb::SyncEnums::TYPE_TABLET;
+
+    EXPECT_EQ("title1,Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+              RunQuery(""));
+  }
+
+  // Case 5: test that ContinueReading is not recommended for foreign tab with
+  // TYPE_CROS.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
+    session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kForeignSessionTag1, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url1", "title1"));
+    session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->device_type =
+        sync_pb::SyncEnums::TYPE_CROS;
+
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+              RunQuery(""));
+  }
+
+  // Case 6: test that ContinueReading is not recommended for foreign tab which
+  // is not SchemeIsHTTPOrHTTPS.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
+    session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kForeignSessionTag1, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "data://url1", "title1"));
+    session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->device_type =
+        sync_pb::SyncEnums::TYPE_CROS;
+
+    EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
+              RunQuery(""));
+  }
 }
 
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {

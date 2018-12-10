@@ -296,14 +296,16 @@ gfx::ImageSkia GetIconForResourceId(int resource_id, int resource_size_in_dip) {
       gfx::Size(resource_size_in_dip, resource_size_in_dip));
 }
 
-bool HasRecommendableForeignTab(Profile* profile,
-                                base::string16* title,
-                                GURL* url) {
+bool HasRecommendableForeignTab(
+    Profile* profile,
+    base::string16* title,
+    GURL* url,
+    sync_sessions::OpenTabsUIDelegate* test_delegate) {
   sync_sessions::SessionSyncService* service =
       SessionSyncServiceFactory::GetForProfile(profile);
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions;
   sync_sessions::OpenTabsUIDelegate* delegate =
-      service->GetOpenTabsUIDelegate();
+      test_delegate ? test_delegate : service->GetOpenTabsUIDelegate();
   if (delegate != nullptr)
     delegate->GetAllForeignSessions(&foreign_sessions);
 

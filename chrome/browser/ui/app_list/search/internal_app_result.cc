@@ -92,7 +92,8 @@ void InternalAppResult::UpdateContinueReadingFavicon(
     bool continue_to_google_server) {
   base::string16 title;
   GURL url;
-  if (HasRecommendableForeignTab(profile(), &title, &url)) {
+  if (HasRecommendableForeignTab(profile(), &title, &url,
+                                 /*test_delegate=*/nullptr)) {
     url_for_continuous_reading_ = url;
 
     // Foreign tab could be updated since the title was set the last time.
