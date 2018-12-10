@@ -13,7 +13,10 @@ js_type_check("closure_compile") {
 
 js_library("apps_chooser") {
   deps = [
+    ":nux_google_apps_proxy",
     "../shared:bookmark_proxy",
+    "../shared:module_metrics_proxy",
+    "../shared:step_indicator",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
@@ -23,10 +26,8 @@ js_library("apps_chooser") {
 js_library("nux_google_apps") {
   deps = [
     ":apps_chooser",
-    ":nux_google_apps_proxy",
     "../:navigation_behavior",
     "../shared:nux_types",
-    "../shared:step_indicator",
   ]
 }
 
