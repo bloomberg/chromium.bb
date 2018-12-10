@@ -294,8 +294,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.navigation_.disabled = false;
 
       this.offlineAdUi_.onBeforeShow();
-      if (!this.currentStep_)
-        this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
+      this.showStep(data.attestationBased ? STEP_WORKING : STEP_SIGNIN);
     },
 
     onBeforeHide: function() {
