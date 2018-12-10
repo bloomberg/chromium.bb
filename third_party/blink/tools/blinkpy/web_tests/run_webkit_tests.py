@@ -474,7 +474,7 @@ def parse_args(args):
                 dest='manifest_update',
                 action='store_false',
                 default=True,
-                help=('Do update the web-platform-tests MANIFEST.json.')),
+                help=('Do not update the web-platform-tests MANIFEST.json.')),
         ]))
 
     # FIXME: Move these into json_results_generator.py.
