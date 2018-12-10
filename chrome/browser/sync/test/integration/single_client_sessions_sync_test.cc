@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -40,6 +41,7 @@ using base::HistogramTester;
 using fake_server::SessionsHierarchy;
 using sessions_helper::CheckInitialState;
 using sessions_helper::CloseTab;
+using sessions_helper::ExecJs;
 using sessions_helper::GetLocalWindows;
 using sessions_helper::GetSessionData;
 using sessions_helper::MoveTab;
@@ -214,6 +216,45 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateInTab) {
 
   EXPECT_THAT(GetFakeServer()->GetCommittedHistoryURLs(),
               UnorderedElementsAre(kURL1, kURL2));
+}
+
+IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
+                       JavascriptHistoryReplaceState) {
+  // Executing Javascript requires HTTP pages with an origin.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const std::string url1 =
+      embedded_test_server()->GetURL("/sync/simple.html").spec();
+  const std::string url2 =
+      embedded_test_server()->GetURL("/replaced_history.html").spec();
+
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(CheckInitialState(0));
+
+  ASSERT_TRUE(OpenTab(0, GURL(url1)));
+  WaitForHierarchyOnServer(SessionsHierarchy({{url1}}));
+
+  ASSERT_TRUE(
+      ExecJs(/*browser_index=*/0, /*tab_index=*/0,
+             base::StringPrintf("history.replaceState({}, 'page 2', '%s')",
+                                url2.c_str())));
+
+  WaitForHierarchyOnServer(SessionsHierarchy({{url2}}));
+
+  // Fetch the tab from the server for further verification.
+  const std::vector<sync_pb::SyncEntity> entities =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::SESSIONS);
+  const sync_pb::TabNavigation* tab_navigation = nullptr;
+  for (const sync_pb::SyncEntity& entity : entities) {
+    if (entity.specifics().session().tab().navigation_size() == 1 &&
+        entity.specifics().session().tab().navigation(0).virtual_url() ==
+            url2) {
+      tab_navigation = &entity.specifics().session().tab().navigation(0);
+    }
+  }
+
+  ASSERT_NE(nullptr, tab_navigation);
+  EXPECT_TRUE(tab_navigation->has_replaced_navigation());
+  EXPECT_EQ(url1, tab_navigation->replaced_navigation().first_committed_url());
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
