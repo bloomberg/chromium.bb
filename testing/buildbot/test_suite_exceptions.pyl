@@ -233,7 +233,7 @@
       'android-marshmallow-arm64-rel': {
         # TODO(crbug.com/731759): Enable this once we're confident that it
         # passes.
-        'experiment_percentage': 50,
+        'experiment_percentage': 0,
       },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
