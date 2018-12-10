@@ -90,4 +90,8 @@ void TextInputClientImpl::DispatchKeyEventPostIME(
   key_event->WillHandleAsync().Run(handled);
 }
 
+void TextInputClientImpl::EnsureCaretNotInRect(const gfx::Rect& rect) {
+  text_input_client_->EnsureCaretNotInRect(rect);
+}
+
 }  // namespace aura

@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace content {
 class RenderWidgetHostView;
@@ -19,7 +19,7 @@ class RenderWidgetHostView;
 // Class responsible for updating insets for windows overlapping the virtual
 // keyboard.
 class ChromeKeyboardBoundsObserver
-    : public aura::WindowObserver,
+    : public views::WidgetObserver,
       public ChromeKeyboardControllerClient::Observer {
  public:
   explicit ChromeKeyboardBoundsObserver(aura::Window* keyboard_window);
@@ -37,12 +37,10 @@ class ChromeKeyboardBoundsObserver
   void AddObservedWindow(aura::Window* window);
   void RemoveAllObservedWindows();
 
-  // aura::WindowObserver
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
-  void OnWindowDestroyed(aura::Window* window) override;
+  // views::WidgetObserver:
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
+  void OnWidgetDestroying(views::Widget* widget) override;
 
   void UpdateInsetsForWindow(aura::Window* window);
   void UpdateInsetsForHostView(content::RenderWidgetHostView* view);
@@ -50,7 +48,7 @@ class ChromeKeyboardBoundsObserver
   bool ShouldEnableInsets(aura::Window* window);
 
   aura::Window* const keyboard_window_;
-  std::set<aura::Window*> observed_windows_;
+  std::set<views::Widget*> observed_widgets_;
   gfx::Rect occluded_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeKeyboardBoundsObserver);

@@ -15,6 +15,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 ChromeKeyboardBoundsObserver::ChromeKeyboardBoundsObserver(
     aura::Window* keyboard_window)
@@ -80,33 +81,33 @@ void ChromeKeyboardBoundsObserver::UpdateOccludedBounds(
 }
 
 void ChromeKeyboardBoundsObserver::AddObservedWindow(aura::Window* window) {
-  // Only observe top level windows.
-  window = window->GetToplevelWindow();
-  if (!window->HasObserver(this)) {
-    window->AddObserver(this);
-    observed_windows_.insert(window);
-  }
+  // Only observe top level widget.
+  views::Widget* widget =
+      views::Widget::GetWidgetForNativeView(window->GetToplevelWindow());
+  if (!widget || widget->HasObserver(this))
+    return;
+
+  widget->AddObserver(this);
+  observed_widgets_.insert(widget);
 }
 
 void ChromeKeyboardBoundsObserver::RemoveAllObservedWindows() {
-  for (aura::Window* window : observed_windows_)
-    window->RemoveObserver(this);
-  observed_windows_.clear();
+  for (views::Widget* widget : observed_widgets_)
+    widget->RemoveObserver(this);
+  observed_widgets_.clear();
 }
 
-void ChromeKeyboardBoundsObserver::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
-  DVLOG(1) << "OnWindowBoundsChanged: " << new_bounds.ToString();
-  UpdateInsetsForWindow(window);
+void ChromeKeyboardBoundsObserver::OnWidgetBoundsChanged(
+    views::Widget* widget,
+    const gfx::Rect& new_bounds) {
+  DVLOG(1) << "OnWidgetBoundsChanged: " << new_bounds.ToString();
+  UpdateInsetsForWindow(widget->GetNativeView());
 }
 
-void ChromeKeyboardBoundsObserver::OnWindowDestroyed(aura::Window* window) {
-  if (window->HasObserver(this))
-    window->RemoveObserver(this);
-  observed_windows_.erase(window);
+void ChromeKeyboardBoundsObserver::OnWidgetDestroying(views::Widget* widget) {
+  if (widget->HasObserver(this))
+    widget->RemoveObserver(this);
+  observed_widgets_.erase(widget);
 }
 
 void ChromeKeyboardBoundsObserver::UpdateInsetsForWindow(aura::Window* window) {
