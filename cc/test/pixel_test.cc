@@ -237,15 +237,6 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   renderer_->SetVisible(true);
 }
 
-void PixelTest::SetUpSkiaRenderer() {
-  SetUpGLWithoutRenderer(false);
-  renderer_ = std::make_unique<viz::SkiaRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
-      nullptr /* skia_output_surface */, viz::SkiaRenderer::DrawMode::GL);
-  renderer_->Initialize();
-  renderer_->SetVisible(true);
-}
-
 void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   ASSERT_TRUE(gpu_thread_->task_runner()->BelongsToCurrentThread());
   gpu::GpuFeatureInfo gpu_feature_info;
@@ -281,10 +272,9 @@ void PixelTest::SetUpGpuServiceOnGpuThread(base::WaitableEvent* event) {
   event->Signal();
 }
 
-void PixelTest::SetUpSkiaRendererDDL() {
+void PixelTest::SetUpSkiaRenderer() {
   // Set up the GPU service.
-  const char enable_features[] =
-      "VizDisplayCompositor,UseSkiaRenderer,UseSkiaDeferredDisplayList";
+  const char enable_features[] = "VizDisplayCompositor,UseSkiaRenderer";
   const char disable_features[] = "";
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);

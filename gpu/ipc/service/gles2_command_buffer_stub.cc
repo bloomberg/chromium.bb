@@ -130,12 +130,12 @@ gpu::ContextResult GLES2CommandBufferStub::Initialize(
       gpu_feature_info.status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
       gpu::kGpuFeatureStatusEnabled;
 
-  // With OOP-R, SkiaRenderer and Skia DDL, we will only have one GLContext
+  // With OOP-R and SkiaRenderer, we will only have one GLContext
   // and share it with RasterDecoders and DisplayCompositor. So it is not
   // necessary to use virtualized gl context anymore.
   // TODO(penghuang): Make virtualized gl context work with SkiaRenderer + DDL +
   // OOPR. https://crbug.com/838899
-  if (features::IsUsingSkiaDeferredDisplayList() && use_oop_rasterization)
+  if (features::IsUsingSkiaRenderer() && use_oop_rasterization)
     use_virtualized_gl_context_ = false;
 
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);

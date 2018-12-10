@@ -29,7 +29,6 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
       data.slow_down_compositing_scale_factor();
   out->use_skia_renderer = data.use_skia_renderer();
   out->record_sk_picture = data.record_sk_picture();
-  out->use_skia_deferred_display_list = data.use_skia_deferred_display_list();
   out->allow_overlays = data.allow_overlays();
   out->requires_alpha_channel = data.requires_alpha_channel();
 
