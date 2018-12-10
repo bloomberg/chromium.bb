@@ -955,6 +955,14 @@ void Browser::UpdateDownloadShelfVisibility(bool visible) {
     GetStatusBubble()->UpdateDownloadShelfVisibility(visible);
 }
 
+bool Browser::CanReloadContents(content::WebContents* web_contents) const {
+  return chrome::CanReload(this);
+}
+
+bool Browser::CanSaveContents(content::WebContents* web_contents) const {
+  return chrome::CanSavePage(this);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void Browser::UpdateUIForNavigationInTab(WebContents* contents,
@@ -1897,17 +1905,6 @@ void Browser::PrintCrossProcessSubframe(
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-// Browser, CoreTabHelperDelegate implementation:
-
-bool Browser::CanReloadContents(content::WebContents* web_contents) const {
-  return chrome::CanReload(this);
-}
-
-bool Browser::CanSaveContents(content::WebContents* web_contents) const {
-  return chrome::CanSavePage(this);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // Browser, web_modal::WebContentsModalDialogManagerDelegate implementation:
 
 void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
@@ -2497,7 +2494,6 @@ void Browser::SetAsDelegate(WebContents* web_contents, bool set_delegate) {
   // ...and all the helpers.
   WebContentsModalDialogManager::FromWebContents(web_contents)->
       SetDelegate(delegate);
-  CoreTabHelper::FromWebContents(web_contents)->set_delegate(delegate);
   translate::ContentTranslateDriver& content_translate_driver =
       ChromeTranslateClient::FromWebContents(web_contents)->translate_driver();
   if (delegate) {

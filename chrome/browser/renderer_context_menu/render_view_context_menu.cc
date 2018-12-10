@@ -56,6 +56,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -2155,9 +2156,8 @@ bool RenderViewContextMenu::IsReloadEnabled() const {
   if (!core_tab_helper)
     return false;
 
-  CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
-  return !core_delegate ||
-         core_delegate->CanReloadContents(embedder_web_contents_);
+  Browser* browser = GetBrowser();
+  return !browser || browser->CanReloadContents(embedder_web_contents_);
 }
 
 bool RenderViewContextMenu::IsViewSourceEnabled() const {
@@ -2260,9 +2260,8 @@ bool RenderViewContextMenu::IsSavePageEnabled() const {
   if (!core_tab_helper)
     return false;
 
-  CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
-  if (core_delegate &&
-      !core_delegate->CanSaveContents(embedder_web_contents_))
+  Browser* browser = GetBrowser();
+  if (browser && !browser->CanSaveContents(embedder_web_contents_))
     return false;
 
   PrefService* local_state = g_browser_process->local_state();

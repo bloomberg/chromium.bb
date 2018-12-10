@@ -21,8 +21,9 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_order_controller.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
@@ -919,9 +920,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       for (size_t i = 0; i < indices.size(); ++i) {
         WebContents* tab = GetWebContentsAt(indices[i]);
         if (tab) {
-          CoreTabHelperDelegate* core_delegate =
-              CoreTabHelper::FromWebContents(tab)->delegate();
-          if (!core_delegate || core_delegate->CanReloadContents(tab))
+          Browser* browser = chrome::FindBrowserWithWebContents(tab);
+          if (!browser || browser->CanReloadContents(tab))
             return true;
         }
       }
@@ -994,9 +994,8 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       for (size_t i = 0; i < indices.size(); ++i) {
         WebContents* tab = GetWebContentsAt(indices[i]);
         if (tab) {
-          CoreTabHelperDelegate* core_delegate =
-              CoreTabHelper::FromWebContents(tab)->delegate();
-          if (!core_delegate || core_delegate->CanReloadContents(tab))
+          Browser* browser = chrome::FindBrowserWithWebContents(tab);
+          if (!browser || browser->CanReloadContents(tab))
             tab->GetController().Reload(content::ReloadType::NORMAL, true);
         }
       }

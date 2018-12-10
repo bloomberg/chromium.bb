@@ -17,8 +17,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-class CoreTabHelperDelegate;
-
 // Per-tab class to handle functionality that is core to the operation of tabs.
 class CoreTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<CoreTabHelper> {
@@ -55,9 +53,6 @@ class CoreTabHelper : public content::WebContentsObserver,
   void SearchByImageInNewTab(content::RenderFrameHost* render_frame_host,
                              const GURL& src_url);
 
-  CoreTabHelperDelegate* delegate() const { return delegate_; }
-  void set_delegate(CoreTabHelperDelegate* d) { delegate_ = d; }
-
   void set_new_tab_start_time(const base::TimeTicks& time) {
     new_tab_start_time_ = time;
   }
@@ -86,9 +81,6 @@ class CoreTabHelper : public content::WebContentsObserver,
       const GURL& src_url,
       const std::vector<uint8_t>& thumbnail_data,
       const gfx::Size& original_size);
-
-  // Delegate for notifying our owner about stuff. Not owned by us.
-  CoreTabHelperDelegate* delegate_;
 
   // The time when we started to create the new tab page.  This time is from
   // before we created this WebContents.
