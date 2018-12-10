@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
@@ -500,10 +499,7 @@ bool PeerConnectionTracker::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PeerConnectionTracker, message)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_GetAllStats, OnGetAllStats)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_OnSuspend, OnSuspend)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLogFile,
-                        OnStartEventLogFile)
-    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLogOutput,
-                        OnStartEventLogOutput)
+    IPC_MESSAGE_HANDLER(PeerConnectionTracker_StartEventLog, OnStartEventLog)
     IPC_MESSAGE_HANDLER(PeerConnectionTracker_StopEventLog, OnStopEventLog)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -541,29 +537,8 @@ void PeerConnectionTracker::OnSuspend() {
   }
 }
 
-void PeerConnectionTracker::OnStartEventLogFile(
-    int peer_connection_id,
-    IPC::PlatformFileForTransit file) {
-  DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
-  for (auto& it : peer_connection_id_map_) {
-    if (it.second == peer_connection_id) {
-#if defined(OS_ANDROID)
-      // A lower maximum filesize is used on Android because storage space is
-      // more scarce on mobile. This upper limit applies to each peer connection
-      // individually, so the total amount of used storage can be a multiple of
-      // this.
-      const int64_t kMaxFilesizeBytes = 10000000;
-#else
-      const int64_t kMaxFilesizeBytes = 60000000;
-#endif
-      it.first->StartEventLog(file, kMaxFilesizeBytes);
-      return;
-    }
-  }
-}
-
-void PeerConnectionTracker::OnStartEventLogOutput(int peer_connection_id,
-                                                  int output_period_ms) {
+void PeerConnectionTracker::OnStartEventLog(int peer_connection_id,
+                                            int output_period_ms) {
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_);
   for (auto& it : peer_connection_id_map_) {
     if (it.second == peer_connection_id) {

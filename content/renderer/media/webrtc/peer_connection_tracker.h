@@ -222,15 +222,8 @@ class CONTENT_EXPORT PeerConnectionTracker
   // Called when the browser process reports a suspend event from the OS.
   void OnSuspend();
 
-  // TODO(eladalon): Remove OnStartEventLogFile() and then rename
-  // OnStartEventLogOutput() to OnStartEventLog(). https://crbug.com/775415
-
-  // IPC Message handler for starting event log (file).
-  void OnStartEventLogFile(int peer_connection_id,
-                           IPC::PlatformFileForTransit file);
-
-  // IPC Message handler for starting event log (output).
-  void OnStartEventLogOutput(int peer_connection_id, int output_period_ms);
+  // IPC Message handler for starting event log.
+  void OnStartEventLog(int peer_connection_id, int output_period_ms);
 
   // IPC Message handler for stopping event log.
   void OnStopEventLog(int peer_connection_id);

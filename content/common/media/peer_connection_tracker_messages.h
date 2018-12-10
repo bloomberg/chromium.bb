@@ -41,10 +41,7 @@ IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_AddStats,
 // Messages sent to PeerConnectionTracker.
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetAllStats)
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_OnSuspend)
-IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLogFile,
-                     int /* peer_connection_local_id */,
-                     IPC::PlatformFileForTransit /* file */)
-IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLogOutput,
+IPC_MESSAGE_CONTROL2(PeerConnectionTracker_StartEventLog,
                      int /* peer_connection_local_id */,
                      int /* output_period_ms */)
 IPC_MESSAGE_CONTROL1(PeerConnectionTracker_StopEventLog,
