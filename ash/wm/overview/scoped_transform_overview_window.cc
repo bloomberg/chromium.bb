@@ -500,12 +500,12 @@ void ScopedTransformOverviewWindow::ResizeMinimizedWidgetIfNeeded() {
   if (bounds.size() == window_->GetBoundsInScreen().size())
     return;
 
-  wm::WindowMirrorView* mirror_view =
-      static_cast<wm::WindowMirrorView*>(minimized_widget_->GetContentsView());
-  if (mirror_view) {
-    mirror_view->RecreateMirrorLayers();
+  wm::WindowPreviewView* preview_view =
+      static_cast<wm::WindowPreviewView*>(minimized_widget_->GetContentsView());
+  if (preview_view) {
+    preview_view->RecreatePreviews();
     bounds.Inset(0, 0, 0,
-                 bounds.height() - mirror_view->GetPreferredSize().height());
+                 bounds.height() - preview_view->GetPreferredSize().height());
     minimized_widget_->SetBounds(bounds);
   }
 }

@@ -34,6 +34,11 @@ WindowPreviewView::~WindowPreviewView() {
   aura::client::GetTransientWindowClient()->RemoveObserver(this);
 }
 
+void WindowPreviewView::RecreatePreviews() {
+  for (auto entry : mirror_views_)
+    entry.second->RecreateMirrorLayers();
+}
+
 gfx::Size WindowPreviewView::CalculatePreferredSize() const {
   // The preferred size of this view is the union of all the windows it is made
   // up of with, scaled to match the ratio of the main window to its mirror
@@ -115,6 +120,7 @@ void WindowPreviewView::RemoveWindow(aura::Window* window) {
   if (it == mirror_views_.end())
     return;
 
+  RemoveChildView(it->second);
   it->first->RemoveObserver(this);
   mirror_views_.erase(it);
 }
