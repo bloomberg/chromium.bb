@@ -24,9 +24,9 @@ class GURL;
 namespace content {
 class URLLoaderFactoryBundleInfo;
 
-class MockSharedWorker : public mojom::SharedWorker {
+class MockSharedWorker : public blink::mojom::SharedWorker {
  public:
-  explicit MockSharedWorker(mojom::SharedWorkerRequest request);
+  explicit MockSharedWorker(blink::mojom::SharedWorkerRequest request);
   ~MockSharedWorker() override;
 
   bool CheckReceivedConnect(int* connection_request_id,
@@ -35,7 +35,7 @@ class MockSharedWorker : public mojom::SharedWorker {
   bool CheckReceivedTerminate();
 
  private:
-  // mojom::SharedWorker methods:
+  // blink::mojom::SharedWorker methods:
   void Connect(int connection_request_id,
                mojo::ScopedMessagePipeHandle port) override;
   void Terminate() override;
@@ -43,7 +43,7 @@ class MockSharedWorker : public mojom::SharedWorker {
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
-  mojo::Binding<mojom::SharedWorker> binding_;
+  mojo::Binding<blink::mojom::SharedWorker> binding_;
   std::queue<std::pair<int, blink::MessagePortChannel>> connect_received_;
   bool terminate_received_ = false;
 
@@ -61,7 +61,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       blink::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
       blink::mojom::SharedWorkerHostPtr* host,
-      mojom::SharedWorkerRequest* request);
+      blink::mojom::SharedWorkerRequest* request);
 
  private:
   // mojom::SharedWorkerFactory methods:
@@ -81,7 +81,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
-      mojom::SharedWorkerRequest request,
+      blink::mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider) override;
 
   struct CreateParams {
@@ -91,7 +91,7 @@ class MockSharedWorkerFactory : public mojom::SharedWorkerFactory {
     bool pause_on_start;
     blink::mojom::WorkerContentSettingsProxyPtr content_settings;
     blink::mojom::SharedWorkerHostPtr host;
-    mojom::SharedWorkerRequest request;
+    blink::mojom::SharedWorkerRequest request;
     service_manager::mojom::InterfaceProviderPtr interface_provider;
   };
 

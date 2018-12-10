@@ -36,7 +36,7 @@ void SharedWorkerFactoryImpl::CreateSharedWorker(
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
-    mojom::SharedWorkerRequest request,
+    blink::mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
   // Bound to the lifetime of the underlying blink::WebSharedWorker instance.
   new EmbeddedSharedWorkerStub(

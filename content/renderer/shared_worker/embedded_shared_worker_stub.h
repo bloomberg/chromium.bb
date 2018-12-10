@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/public/common/renderer_preference_watcher.mojom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "ipc/ipc_listener.h"
@@ -19,6 +18,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
@@ -56,7 +56,7 @@ struct NavigationResponseOverrideParameters;
 //
 // This class owns blink::WebSharedWorker.
 class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
-                                 public mojom::SharedWorker {
+                                 public blink::mojom::SharedWorker {
  public:
   EmbeddedSharedWorkerStub(
       blink::mojom::SharedWorkerInfoPtr info,
@@ -74,7 +74,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       blink::mojom::SharedWorkerHostPtr host,
-      mojom::SharedWorkerRequest request,
+      blink::mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider);
   ~EmbeddedSharedWorkerStub() override;
 
@@ -109,7 +109,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
       blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
-  mojo::Binding<mojom::SharedWorker> binding_;
+  mojo::Binding<blink::mojom::SharedWorker> binding_;
   blink::mojom::SharedWorkerHostPtr host_;
   const std::string name_;
   bool running_ = false;

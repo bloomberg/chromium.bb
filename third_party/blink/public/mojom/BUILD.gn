@@ -72,6 +72,7 @@ mojom("mojom_platform") {
     "wake_lock/wake_lock.mojom",
     "webaudio/audio_context_manager.mojom",
     "worker/dedicated_worker_factory.mojom",
+    "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",
     "worker/shared_worker_creation_context_type.mojom",

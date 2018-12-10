@@ -17,13 +17,13 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/worker/shared_worker.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
@@ -181,8 +181,8 @@ class CONTENT_EXPORT SharedWorkerHost
   std::unique_ptr<SharedWorkerInstance> instance_;
   ClientList clients_;
 
-  mojom::SharedWorkerRequest worker_request_;
-  mojom::SharedWorkerPtr worker_;
+  blink::mojom::SharedWorkerRequest worker_request_;
+  blink::mojom::SharedWorkerPtr worker_;
 
   const int process_id_;
   int next_connection_request_id_;

@@ -21,7 +21,7 @@ bool CheckEquality(const T& expected, const T& actual) {
 
 }  // namespace
 
-MockSharedWorker::MockSharedWorker(mojom::SharedWorkerRequest request)
+MockSharedWorker::MockSharedWorker(blink::mojom::SharedWorkerRequest request)
     : binding_(this, std::move(request)) {}
 
 MockSharedWorker::~MockSharedWorker() = default;
@@ -78,7 +78,7 @@ bool MockSharedWorkerFactory::CheckReceivedCreateSharedWorker(
     blink::mojom::ContentSecurityPolicyType
         expected_content_security_policy_type,
     blink::mojom::SharedWorkerHostPtr* host,
-    mojom::SharedWorkerRequest* request) {
+    blink::mojom::SharedWorkerRequest* request) {
   std::unique_ptr<CreateParams> create_params = std::move(create_params_);
   if (!create_params)
     return false;
@@ -112,7 +112,7 @@ void MockSharedWorkerFactory::CreateSharedWorker(
     std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loader_factories,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
-    mojom::SharedWorkerRequest request,
+    blink::mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider) {
   DCHECK(!create_params_);
   create_params_ = std::make_unique<CreateParams>();
