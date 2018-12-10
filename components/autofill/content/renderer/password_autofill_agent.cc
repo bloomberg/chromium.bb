@@ -1772,8 +1772,13 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
     logger->LogMessage(Logger::STRING_FILL_USERNAME_AND_PASSWORD_METHOD);
 
   // Don't fill username if password can't be set.
-  if (!IsElementAutocompletable(*password_element))
+  if (!IsElementAutocompletable(*password_element)) {
+    if (logger) {
+      logger->LogMessage(
+          Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
+    }
     return false;
+  }
 
   // |current_username| is the username for credentials that are going to be
   // autofilled. It is selected according to the algorithm:
@@ -1819,6 +1824,13 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
         !prefilled_placeholder_username) {
       LogPrefilledUsernameFillOutcome(
           PrefilledUsernameFillOutcome::kPrefilledUsernameNotOverridden);
+      if (logger)
+        logger->LogMessage(Logger::STRING_FAILED_TO_FILL_PREFILLED_USERNAME);
+      return false;
+    }
+    if (logger) {
+      logger->LogMessage(
+          Logger::STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME);
     }
     return false;
   }
@@ -1902,13 +1914,21 @@ bool PasswordAutofillAgent::FillFormOnPasswordReceived(
     cur_frame = cur_frame->Parent();
     if (!IsPublicSuffixDomainMatch(
             bottom_frame_origin.Utf8(),
-            cur_frame->GetSecurityOrigin().ToString().Utf8()))
+            cur_frame->GetSecurityOrigin().ToString().Utf8())) {
+      if (logger)
+        logger->LogMessage(Logger::STRING_FAILED_TO_FILL_INTO_IFRAME);
       return false;
+    }
   }
 
   // If we can't modify the password, don't try to set the username
-  if (!IsElementAutocompletable(password_element))
+  if (!IsElementAutocompletable(password_element)) {
+    if (logger) {
+      logger->LogMessage(
+          Logger::STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT);
+    }
     return false;
+  }
 
   bool exact_username_match =
       username_element.IsNull() || IsElementEditable(username_element);
