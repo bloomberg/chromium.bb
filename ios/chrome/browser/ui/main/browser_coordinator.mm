@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/features.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
@@ -60,6 +59,9 @@
 // Coordinator for UI related to launching external apps.
 @property(nonatomic, strong) AppLauncherCoordinator* appLauncherCoordinator;
 
+// Presents a QLPreviewController in order to display USDZ format 3D models.
+@property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
+
 // Coordinator in charge of the presenting autofill options above the
 // keyboard.
 @property(nonatomic, strong)
@@ -67,9 +69,6 @@
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
-
-// Coordinator to present a QLPreviewController for AR models.
-@property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
 
 // Coordinator for the PassKit UI presentation.
 @property(nonatomic, strong) PassKitCoordinator* passKitCoordinator;
@@ -193,6 +192,14 @@
   self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
       initWithBaseViewController:self.viewController];
 
+  if (download::IsUsdzPreviewEnabled()) {
+    self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
+        initWithBaseViewController:self.viewController
+                      browserState:self.browserState
+                      webStateList:self.tabModel.webStateList];
+    [self.ARQuickLookCoordinator start];
+  }
+
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
@@ -207,11 +214,6 @@
   self.pageInfoCoordinator.loader = self.viewController;
   self.pageInfoCoordinator.presentationProvider = self.viewController;
   self.pageInfoCoordinator.tabModel = self.tabModel;
-
-  if (download::IsUsdzPreviewEnabled()) {
-    self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
-        initWithBaseViewController:self.viewController];
-  }
 
   self.passKitCoordinator = [[PassKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
@@ -241,6 +243,9 @@
   // TODO(crbug.com/906541) : AppLauncherCoordinator is not a subclass of
   // ChromeCoordinator, and does not have a |-stop| method.
   self.appLauncherCoordinator = nil;
+
+  [self.ARQuickLookCoordinator stop];
+  self.ARQuickLookCoordinator = nil;
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
@@ -419,11 +424,6 @@
   AppLauncherTabHelper::CreateForWebState(
       webState, [[AppLauncherAbuseDetector alloc] init],
       self.appLauncherCoordinator);
-
-  if (download::IsUsdzPreviewEnabled()) {
-    ARQuickLookTabHelper::CreateForWebState(webState,
-                                            self.ARQuickLookCoordinator);
-  }
 
   PassKitTabHelper::CreateForWebState(webState, self.passKitCoordinator);
 

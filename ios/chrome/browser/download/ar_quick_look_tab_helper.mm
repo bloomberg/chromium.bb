@@ -73,10 +73,8 @@ void LogHistogram(web::DownloadTask* download_task) {
 
 }  // namespace
 
-ARQuickLookTabHelper::ARQuickLookTabHelper(
-    web::WebState* web_state,
-    id<ARQuickLookTabHelperDelegate> delegate)
-    : web_state_(web_state), delegate_(delegate) {
+ARQuickLookTabHelper::ARQuickLookTabHelper(web::WebState* web_state)
+    : web_state_(web_state) {
   DCHECK(web_state_);
 }
 
@@ -86,14 +84,11 @@ ARQuickLookTabHelper::~ARQuickLookTabHelper() {
   }
 }
 
-void ARQuickLookTabHelper::CreateForWebState(
-    web::WebState* web_state,
-    id<ARQuickLookTabHelperDelegate> delegate) {
+void ARQuickLookTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(
-        UserDataKey(),
-        std::make_unique<ARQuickLookTabHelper>(web_state, delegate));
+    web_state->SetUserData(UserDataKey(),
+                           std::make_unique<ARQuickLookTabHelper>(web_state));
   }
 }
 

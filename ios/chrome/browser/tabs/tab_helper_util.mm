@@ -17,6 +17,8 @@
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
+#import "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -130,6 +132,10 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
   InsecureInputTabHelper::CreateForWebState(web_state);
 
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
+
+  if (download::IsUsdzPreviewEnabled()) {
+    ARQuickLookTabHelper::CreateForWebState(web_state);
+  }
 
   // TODO(crbug.com/794115): pre-rendered WebState have lots of unnecessary
   // tab helpers for historical reasons. For the moment, AttachTabHelpers

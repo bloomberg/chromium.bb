@@ -95,6 +95,7 @@ source_set("tabs_internal") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/download:features",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/find_in_page",
     "//ios/chrome/browser/geolocation:geolocation_internal",
