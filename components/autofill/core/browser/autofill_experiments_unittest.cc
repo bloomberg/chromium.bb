@@ -102,6 +102,20 @@ TEST_F(AutofillExperimentsTest, AllowUpload_TransportModeOnly) {
 }
 
 TEST_F(AutofillExperimentsTest,
+       DenyUpload_TransportSyncDoesNotHaveUploadEnabled) {
+  scoped_feature_list_.InitWithFeatures(
+      /*enable_features=*/{features::kAutofillUpstream,
+                           features::kAutofillEnableAccountWalletStorage},
+      /*disable_features=*/{
+          features::kAutofillEnableAccountWalletStorageUpload});
+  // When we have no primary account, Sync will start in Transport-only mode
+  // (if allowed).
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+
+  EXPECT_FALSE(IsCreditCardUploadEnabled());
+}
+
+TEST_F(AutofillExperimentsTest,
        AllowUpload_TransportSyncDoesNotHaveAutofillProfileActiveDataType) {
   scoped_feature_list_.InitWithFeatures(
       /*enable_features=*/{features::kAutofillUpstream,
