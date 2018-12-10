@@ -6256,6 +6256,26 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
                            /*use_sync_transport_mode=*/true);
   SetUpThreeCardTypes();
 
+  // Set an an active secondary account.
+  AccountInfo active_info;
+  active_info.email = "signed_in_account@email.com";
+  active_info.account_id = "account_id";
+  sync_service_.SetAuthenticatedAccountInfo(active_info);
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+
+  // The server cards should not be available at first. The user needs to
+  // accept the opt-in offer.
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      1U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
+  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+
+  // Opt-in to seeing server card in sync transport mode.
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), active_info.account_id, true);
+
   // Check that the server cards are available for suggestion.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
   EXPECT_EQ(
