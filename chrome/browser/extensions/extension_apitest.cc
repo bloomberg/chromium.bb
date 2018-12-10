@@ -200,6 +200,13 @@ bool ExtensionApiTest::RunExtensionTestWithArg(
                               kFlagEnableFileAccess);
 }
 
+bool ExtensionApiTest::RunExtensionTestWithFlagsAndArg(
+    const std::string& extension_name,
+    const char* custom_arg,
+    int flag) {
+  return RunExtensionTestImpl(extension_name, std::string(), custom_arg, flag);
+}
+
 bool ExtensionApiTest::RunExtensionTestIncognito(
     const std::string& extension_name) {
   return RunExtensionTestImpl(extension_name,
