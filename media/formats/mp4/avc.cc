@@ -134,10 +134,21 @@ bool AVC::InsertParamSetsAnnexB(const AVCDecoderConfigurationRecord& avc_config,
   RCHECK(AVC::ConvertConfigToAnnexB(avc_config, &param_sets));
 
   if (subsamples && !subsamples->empty()) {
-    int subsample_index = FindSubsampleIndex(*buffer, subsamples,
-                                             &(*config_insert_point));
-    // Update the size of the subsample where SPS/PPS is to be inserted.
-    (*subsamples)[subsample_index].clear_bytes += param_sets.size();
+    if (config_insert_point != buffer->end()) {
+      int subsample_index =
+          FindSubsampleIndex(*buffer, subsamples, &(*config_insert_point));
+      // Update the size of the subsample where SPS/PPS is to be inserted.
+      (*subsamples)[subsample_index].clear_bytes += param_sets.size();
+    } else {
+      int subsample_index = (*subsamples).size() - 1;
+      if ((*subsamples)[subsample_index].cypher_bytes == 0) {
+        // Extend the last clear range to include the inserted data.
+        (*subsamples)[subsample_index].clear_bytes += param_sets.size();
+      } else {
+        // Append a new subsample to cover the inserted data.
+        (*subsamples).emplace_back(param_sets.size(), 0);
+      }
+    }
   }
 
   buffer->insert(config_insert_point,
