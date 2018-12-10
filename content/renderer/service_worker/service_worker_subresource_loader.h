@@ -193,6 +193,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;
+  network::mojom::FetchResponseSource response_source_;
 
   base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_;
 

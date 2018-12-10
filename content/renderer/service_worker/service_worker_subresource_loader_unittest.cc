@@ -129,11 +129,13 @@ class FakeControllerServiceWorker
   ~FakeControllerServiceWorker() override = default;
 
   static blink::mojom::FetchAPIResponsePtr OkResponse(
-      blink::mojom::SerializedBlobPtr blob_body) {
+      blink::mojom::SerializedBlobPtr blob_body,
+      network::mojom::FetchResponseSource response_source) {
     auto response = blink::mojom::FetchAPIResponse::New();
     response->status_code = 200;
     response->status_text = "OK";
     response->response_type = network::mojom::FetchResponseType::kDefault;
+    response->response_source = response_source;
     response->blob = std::move(blob_body);
     if (response->blob) {
       response->headers.emplace("Content-Length",
@@ -240,6 +242,10 @@ class FakeControllerServiceWorker
     }
   }
 
+  void SetResponseSource(network::mojom::FetchResponseSource source) {
+    response_source_ = source;
+  }
+
   // blink::mojom::ControllerServiceWorker:
   void DispatchFetchEvent(
       blink::mojom::DispatchFetchEventParamsPtr params,
@@ -257,8 +263,9 @@ class FakeControllerServiceWorker
 
     switch (response_mode_) {
       case ResponseMode::kDefault:
-        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
-                                      std::move(timing));
+        response_callback->OnResponse(
+            OkResponse(nullptr /* blob_body */, response_source_),
+            std::move(timing));
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
@@ -267,15 +274,16 @@ class FakeControllerServiceWorker
             blink::mojom::ServiceWorkerEventStatus::ABORTED);
         break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
-                                            std::move(stream_handle_),
-                                            std::move(timing));
+        response_callback->OnResponseStream(
+            OkResponse(nullptr /* blob_body */, response_source_),
+            std::move(stream_handle_), std::move(timing));
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
-                                      std::move(timing));
+        response_callback->OnResponse(
+            OkResponse(std::move(blob_body_), response_source_),
+            std::move(timing));
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
@@ -303,7 +311,7 @@ class FakeControllerServiceWorker
                                 mojo::MakeRequest(&blob->blob));
 
         // Respond with a 206 response.
-        auto response = OkResponse(std::move(blob));
+        auto response = OkResponse(std::move(blob), response_source_);
         response->status_code = 206;
         response->headers.emplace(
             "Content-Range", base::StringPrintf("bytes %zu-%zu/%zu", start, end,
@@ -382,6 +390,9 @@ class FakeControllerServiceWorker
 
   // For ResponseMode::kRedirectResponse
   std::string redirect_location_header_;
+
+  network::mojom::FetchResponseSource response_source_ =
+      network::mojom::FetchResponseSource::kUnspecified;
 
   DISALLOW_COPY_AND_ASSIGN(FakeControllerServiceWorker);
 };
@@ -639,6 +650,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
       1);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2."
+      "Unspecified",
+      1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
@@ -876,6 +891,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   mojo::DataPipe data_pipe;
   fake_controller_.RespondWithStream(mojo::MakeRequest(&stream_callback),
                                      std::move(data_pipe.consumer_handle));
+  fake_controller_.SetResponseSource(
+      network::mojom::FetchResponseSource::kNetwork);
 
   network::mojom::URLLoaderFactoryPtr factory =
       CreateSubresourceLoaderFactory();
@@ -919,6 +936,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
       1);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2."
+      "Network",
+      1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
@@ -984,6 +1005,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
                                           0x8D, 0xE3, 0x81, 0xBF, 0xE3,
                                           0x81, 0x86, 0xE3, 0x82, 0x80};
   fake_controller_.RespondWithBlob(kMetadata, kResponseBody);
+  fake_controller_.SetResponseSource(
+      network::mojom::FetchResponseSource::kCacheStorage);
 
   network::mojom::URLLoaderFactoryPtr factory =
       CreateSubresourceLoaderFactory();
@@ -1024,6 +1047,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
       1);
   histogram_tester.ExpectTotalCount(
       "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2", 1);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.LoadTiming.Subresource.ResponseReceivedToCompleted2."
+      "CacheStorage",
+      1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
