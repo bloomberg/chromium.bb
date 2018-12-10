@@ -27,10 +27,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
 from core.css import css_properties
 from collections import defaultdict
 import json5_generator
