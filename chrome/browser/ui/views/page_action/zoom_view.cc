@@ -41,13 +41,25 @@ bool ZoomView::ShouldBeVisible(bool can_show_bubble) const {
   if (can_show_bubble)
     return true;
 
-  if (ZoomBubbleView::GetZoomBubble())
+  if (HasAssociatedBubble())
     return true;
 
   DCHECK(GetWebContents());
   zoom::ZoomController* zoom_controller =
       zoom::ZoomController::FromWebContents(GetWebContents());
   return zoom_controller && !zoom_controller->IsAtDefaultZoom();
+}
+
+bool ZoomView::HasAssociatedBubble() const {
+  if (!GetBubble())
+    return false;
+
+  // Bubbles may be hosted in their own widget so use their anchor view as a
+  // more reliable way of determining whether this icon belongs to the same
+  // browser window.
+  if (!GetBubble()->GetAnchorView())
+    return false;
+  return GetBubble()->GetAnchorView()->GetWidget() == GetWidget();
 }
 
 void ZoomView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -80,7 +92,8 @@ void ZoomView::ZoomChangedForActiveTab(bool can_show_bubble) {
     }
   } else {
     SetVisible(false);
-    ZoomBubbleView::CloseCurrentBubble();
+    if (HasAssociatedBubble())
+      ZoomBubbleView::CloseCurrentBubble();
   }
 }
 

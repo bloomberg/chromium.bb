@@ -34,6 +34,7 @@ class ZoomView : public PageActionIconView {
 
  private:
   bool ShouldBeVisible(bool can_show_bubble) const;
+  bool HasAssociatedBubble() const;
 
   // The delegate used to get whether omnibox input is in progress.
   LocationBarView::Delegate* location_bar_delegate_;
