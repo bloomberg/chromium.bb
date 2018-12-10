@@ -566,8 +566,7 @@ void BrowserContext::DeliverPushMessage(
 void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // Make sure NotifyWillBeDestroyed is idempotent.  This helps facilitate the
   // pattern where NotifyWillBeDestroyed is called from *both*
-  // ShellBrowserContext and its derived classes (e.g.
-  // LayoutTestBrowserContext).
+  // ShellBrowserContext and its derived classes (e.g. WebTestBrowserContext).
   if (browser_context->was_notify_will_be_destroyed_called_)
     return;
   browser_context->was_notify_will_be_destroyed_called_ = true;

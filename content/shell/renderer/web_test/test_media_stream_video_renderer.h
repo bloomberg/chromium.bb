@@ -18,7 +18,7 @@ namespace content {
 
 // A MediaStreamVideoRenderer that generates raw frames and
 // passes them to webmediaplayer.
-// Since non-black pixel values are required in the layout test, e.g.,
+// Since non-black pixel values are required in the web test, e.g.,
 // media/video-capture-canvas.html, this class should generate frame with
 // only non-black pixels.
 class TestMediaStreamVideoRenderer : public MediaStreamVideoRenderer {

@@ -692,7 +692,7 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
     // Crash if WriteRemoteDescriptor called. Not using GoogleMock's Expect
-    // because this is used in layout tests that may not report a mock
+    // because this is used in web tests that may not report a mock
     // expectation.
     ON_CALL(*client_config, WriteRemoteDescriptor(_, _, _))
         .WillByDefault(
@@ -708,9 +708,9 @@ WebTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer(
             device::BluetoothRemoteGattCharacteristic::PROPERTY_WRITE);
 
     // Crash if ReadRemoteDescriptor called. Not using GoogleMock's Expect
-    // because this is used in layout tests that may not report a mock
+    // because this is used in web tests that may not report a mock
     // expectation
-    // error correctly as a layout test failure.
+    // error correctly as a web test failure.
     ON_CALL(*no_read_descriptor, ReadRemoteDescriptor(_, _))
         .WillByDefault(
             Invoke([](const BluetoothRemoteGattDescriptor::ValueCallback&,
@@ -1390,8 +1390,8 @@ WebTestBluetoothAdapterProvider::GetBlocklistTestService(
               BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
   // Crash if ReadRemoteCharacteristic called. Not using GoogleMock's Expect
-  // because this is used in layout tests that may not report a mock expectation
-  // error correctly as a layout test failure.
+  // because this is used in web tests that may not report a mock expectation
+  // error correctly as a web test failure.
   ON_CALL(*blocklist_exclude_reads_characteristic,
           ReadRemoteCharacteristic(_, _))
       .WillByDefault(
@@ -1423,8 +1423,8 @@ WebTestBluetoothAdapterProvider::GetDeviceInformationService(
       BluetoothRemoteGattCharacteristic::PROPERTY_READ));
 
   // Crash if ReadRemoteCharacteristic called. Not using GoogleMock's Expect
-  // because this is used in layout tests that may not report a mock expectation
-  // error correctly as a layout test failure.
+  // because this is used in web tests that may not report a mock expectation
+  // error correctly as a web test failure.
   ON_CALL(*serial_number_string, ReadRemoteCharacteristic(_, _))
       .WillByDefault(
           Invoke([](const BluetoothRemoteGattCharacteristic::ValueCallback&,
@@ -1480,8 +1480,8 @@ WebTestBluetoothAdapterProvider::GetGenericAccessService(
         .WillByDefault(RunCallback<0>(value));
 
     // Crash if WriteRemoteCharacteristic called. Not using GoogleMock's Expect
-    // because this is used in layout tests that may not report a mock
-    // expectation error correctly as a layout test failure.
+    // because this is used in web tests that may not report a mock
+    // expectation error correctly as a web test failure.
     ON_CALL(*peripheral_privacy_flag, WriteRemoteCharacteristic(_, _, _))
         .WillByDefault(
             Invoke([](const std::vector<uint8_t>&, const base::Closure&,

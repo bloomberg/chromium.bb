@@ -525,7 +525,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void DidReceiveRendererFrame();
 
-  // Don't check whether we expected a resize ack during layout tests.
+  // Don't check whether we expected a resize ack during web tests.
   static void DisableResizeAckCheckForTesting();
 
   InputRouter* input_router() { return input_router_.get(); }

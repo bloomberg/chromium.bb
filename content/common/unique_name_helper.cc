@@ -200,7 +200,7 @@ std::string UniqueNameHelper::GenerateNameForNewChildFrame(
   // The deterministic part of unique name should be included if
   // 1. The new subframe is not created by script or
   // 2. The new subframe is created by script, but we are still asked for the
-  //    old, stable part for layout tests (via
+  //    old, stable part for web tests (via
   //    |g_preserve_stable_unique_name_for_testing|).
   if (!is_created_by_script || g_preserve_stable_unique_name_for_testing) {
     PendingChildFrameAdapter adapter(frame_);

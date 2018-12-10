@@ -881,7 +881,7 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
   //
   // TODO(alexmos): This should eventually also check the origin lock, but
   // currently this is not done due to certain corner cases involving HTML
-  // imports and layout tests that simulate requests from isolated worlds.  See
+  // imports and web tests that simulate requests from isolated worlds.  See
   // https://crbug.com/515309.
   if (CanCommitURL(child_id, url, false /* check_origin_lock */))
     return true;

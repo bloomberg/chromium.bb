@@ -99,7 +99,7 @@ std::string DumpFrameState(const ExplodedFrameState& frame_state,
     result.append(indent, ' ');
   }
 
-  std::string url = test_runner::NormalizeLayoutTestURL(
+  std::string url = test_runner::NormalizeWebTestURL(
       base::UTF16ToUTF8(frame_state.url_string.value_or(base::string16())));
   result.append(url);
   DCHECK(frame_state.target);
@@ -427,14 +427,14 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
           main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
           .FlushForTesting();
 
-      // Loading the URL will immediately start the layout test. Manually call
+      // Loading the URL will immediately start the web test. Manually call
       // LoadURLWithParams on the WebContents to avoid extraneous calls from
-      // content::Shell such as SetFocus(), which could race with the layout
+      // content::Shell such as SetFocus(), which could race with the web
       // test.
       NavigationController::LoadURLParams params(test_url_);
 
       // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
-      // between layout tests.
+      // between web tests.
       params.transition_type =
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
 
@@ -489,7 +489,7 @@ bool BlinkTestController::PrepareForWebTest(const TestInfo& test_info) {
     } else {
       NavigationController::LoadURLParams params(test_url_);
       // Using PAGE_TRANSITION_LINK avoids a BrowsingInstance/process swap
-      // between layout tests.
+      // between web tests.
       params.transition_type =
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
       params.should_clear_history_list = true;
@@ -562,7 +562,7 @@ void BlinkTestController::OverrideWebkitPrefs(WebPreferences* prefs) {
   if (should_override_prefs_) {
     *prefs = prefs_;
   } else {
-    ApplyLayoutTestDefaultPreferences(prefs);
+    ApplyWebTestDefaultPreferences(prefs);
     if (is_compositing_test_) {
       base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
       if (!command_line.HasSwitch(switches::kDisableGpu))
@@ -598,7 +598,7 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
     for (auto* window : Shell::windows()) {
       WebContents* web_contents = window->web_contents();
       // Only capture the history from windows in the same process_host as the
-      // main window. During layout tests, we only use two processes when a
+      // main window. During web tests, we only use two processes when a
       // devtools window is open.
       // TODO(https://crbug.com/771003): Dump history for all WebContentses, not
       // just ones that happen to be in the same process_host as the main test
@@ -630,7 +630,7 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
     // force each renderer to produce a frame.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableThreadedCompositing)) {
-      rwhv->EnsureSurfaceSynchronizedForLayoutTest();
+      rwhv->EnsureSurfaceSynchronizedForWebTest();
       EnqueueSurfaceCopyRequest();
     } else {
       CompositeAllFramesThen(
@@ -658,7 +658,7 @@ void BlinkTestController::EnqueueSurfaceCopyRequest() {
 void BlinkTestController::CompositeAllFramesThen(
     base::OnceCallback<void()> callback) {
   // Only allow a single call to CompositeAllFramesThen(), without a call to
-  // ResetAfterLayoutTest() in between. More than once risks overlapping calls,
+  // ResetAfterWebTest() in between. More than once risks overlapping calls,
   // due to the asynchronous nature of CompositeNodeQueueThen(), which can lead
   // to use-after-free, e.g.
   // https://clusterfuzz.com/v2/testcase-detail/4929420383748096

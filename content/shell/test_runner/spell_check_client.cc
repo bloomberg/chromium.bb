@@ -44,7 +44,7 @@ void SpellCheckClient::Reset() {
 
 // blink::WebSpellCheckClient
 bool SpellCheckClient::IsSpellCheckingEnabled() const {
-  // Ensure that the spellchecker code paths are always tested in layout tests.
+  // Ensure that the spellchecker code paths are always tested in web tests.
   return true;
 }
 

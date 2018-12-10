@@ -63,7 +63,7 @@ namespace content {
 
 WebTestContentRendererClient::WebTestContentRendererClient() {
   EnableWebTestProxyCreation();
-  SetWorkerRewriteURLFunction(RewriteLayoutTestsURL);
+  SetWorkerRewriteURLFunction(RewriteWebTestsURL);
 }
 
 WebTestContentRendererClient::~WebTestContentRendererClient() {}
@@ -130,7 +130,7 @@ void WebTestContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
 
 void WebTestContentRendererClient::
     SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
-  // We always expose GC to layout tests.
+  // We always expose GC to web tests.
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -144,7 +144,7 @@ void WebTestContentRendererClient::
 }
 
 bool WebTestContentRendererClient::IsIdleMediaSuspendEnabled() {
-  // Disable idle media suspend to avoid layout tests getting into accidentally
+  // Disable idle media suspend to avoid web tests getting into accidentally
   // bad states if they take too long to run.
   return false;
 }

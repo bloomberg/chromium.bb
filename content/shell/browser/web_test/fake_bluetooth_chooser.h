@@ -14,7 +14,7 @@
 namespace content {
 
 // Implementation of FakeBluetoothChooser in
-// src/content/shell/common/layout_test/fake_bluetooth_chooser.mojom
+// src/content/shell/common/web_test/fake_bluetooth_chooser.mojom
 // to provide a method of controlling the Bluetooth chooser during a test.
 // Serves as a Bluetooth chooser factory for choosers that can be manually
 // controlled through the Mojo API. Only one instance of this class will exist
@@ -31,7 +31,7 @@ class FakeBluetoothChooser : public mojom::FakeBluetoothChooser,
   // Resets the test scan duration to timeout immediately.
   ~FakeBluetoothChooser() override;
 
-  // LayoutTestContentBrowserClient will create an instance of this class when a
+  // WebTestContentBrowserClient will create an instance of this class when a
   // request is bound. It will maintain ownership of the instance temporarily
   // until the chooser is opened. When the chooser is opened, ownership of this
   // instance will shift to the caller of

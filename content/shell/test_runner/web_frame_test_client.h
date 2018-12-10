@@ -82,7 +82,7 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
   void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
                                    const char* event_name);
 
-  // Borrowed pointers to other parts of Layout Tests state.
+  // Borrowed pointers to other parts of web tests state.
   WebTestDelegate* delegate_;
   WebViewTestProxyBase* web_view_test_proxy_base_;
   WebFrameTestProxyBase* web_frame_test_proxy_base_;

@@ -350,9 +350,9 @@ IN_PROC_BROWSER_TEST_F(CrossSiteTransferTest, PostWithFileData) {
 // This is a regression test for https://crbug.com/726067.
 //
 // This test is somewhat similar to
-// http/tests/navigation/form-targets-cross-site-frame-post.html layout test
+// http/tests/navigation/form-targets-cross-site-frame-post.html web test
 // except that it 1) tests with files, 2) simulates a malicious scenario and 3)
-// verifies file access (all of these 3 things are not possible with layout
+// verifies file access (all of these 3 things are not possible with web
 // tests).
 //
 // This test is very similar to CrossSiteTransferTest.PostWithFileData above,

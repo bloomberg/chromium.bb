@@ -26,7 +26,7 @@ namespace {
 // This constant should be in sync with
 // the constant
 // kMaxMessageChunkSize in chrome/browser/devtools/devtools_ui_bindings.cc.
-constexpr size_t kLayoutTestMaxMessageChunkSize =
+constexpr size_t kWebTestMaxMessageChunkSize =
     IPC::Channel::kMaximumMessageSize / 4;
 }  // namespace
 
@@ -113,7 +113,7 @@ void DevToolsProtocolTestBindings::HandleMessageFromTest(
 void DevToolsProtocolTestBindings::DispatchProtocolMessage(
     DevToolsAgentHost* agent_host,
     const std::string& message) {
-  if (message.length() < kLayoutTestMaxMessageChunkSize) {
+  if (message.length() < kWebTestMaxMessageChunkSize) {
     std::string param;
     base::EscapeJSONString(message, true, &param);
     std::string code = "DevToolsAPI.dispatchMessage(" + param + ");";
@@ -124,9 +124,9 @@ void DevToolsProtocolTestBindings::DispatchProtocolMessage(
 
   size_t total_size = message.length();
   for (size_t pos = 0; pos < message.length();
-       pos += kLayoutTestMaxMessageChunkSize) {
+       pos += kWebTestMaxMessageChunkSize) {
     std::string param;
-    base::EscapeJSONString(message.substr(pos, kLayoutTestMaxMessageChunkSize),
+    base::EscapeJSONString(message.substr(pos, kWebTestMaxMessageChunkSize),
                            true, &param);
     std::string code = "DevToolsAPI.dispatchMessageChunk(" + param + "," +
                        std::to_string(pos ? 0 : total_size) + ");";

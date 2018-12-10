@@ -487,7 +487,7 @@ std::vector<std::string> MakeMenuItemStringsFor(
 }
 
 // How much we should scroll per event - the value here is chosen to match the
-// WebKit impl and layout test results.
+// WebKit impl and web test results.
 const float kScrollbarPixelsPerTick = 40.0f;
 
 // Get the edit command corresponding to a keyboard event.
@@ -1502,7 +1502,7 @@ void EventSender::KeyDown(const std::string& code_str,
 
   bool generate_char = false;
 
-  // Convert \n -> VK_RETURN. Some layout tests use \n to mean "Enter", when
+  // Convert \n -> VK_RETURN. Some web tests use \n to mean "Enter", when
   // Windows uses \r for "Enter".
   int code = 0;
   int text = 0;

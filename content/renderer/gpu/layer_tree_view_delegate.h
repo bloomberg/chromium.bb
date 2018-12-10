@@ -77,9 +77,9 @@ class LayerTreeViewDelegate {
   // perform actual painting work.
   virtual void WillBeginCompositorFrame() = 0;
 
-  // For use in layout test mode only, attempts to copy the full content of the
+  // For use in web test mode only, attempts to copy the full content of the
   // compositor.
-  virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+  virtual std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
 
  protected:

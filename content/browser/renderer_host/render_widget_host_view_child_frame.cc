@@ -234,7 +234,7 @@ bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
   return GetLocalSurfaceIdAllocation().IsValid();
 }
 
-void RenderWidgetHostViewChildFrame::EnsureSurfaceSynchronizedForLayoutTest() {
+void RenderWidgetHostViewChildFrame::EnsureSurfaceSynchronizedForWebTest() {
   // The capture sequence number which would normally be updated here is
   // actually retrieved from the frame connector.
 }

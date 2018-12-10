@@ -90,7 +90,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxyBase {
 //  * when a fooClient has a mock implementation, WebWidgetTestProxy can
 //    override the fooClient() call and have WebWidgetTestProxyBase return the
 //    mock implementation.
-//  * when a value needs to be overridden by LayoutTests, WebWidgetTestProxy can
+//  * when a value needs to be overridden by web tests, WebWidgetTestProxy can
 //    override RenderViewImpl's getter and call a getter from
 //    WebWidgetTestProxyBase instead. In addition, WebWidgetTestProxyBase will
 //    have a public setter that could be called from the TestRunner.

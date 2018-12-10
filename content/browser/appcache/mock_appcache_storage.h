@@ -49,7 +49,7 @@ class AppCacheUpdateJobTest;
 
 // For use in unit tests.
 // Note: This class is also being used to bootstrap our development efforts.
-// We can get layout tests up and running, and back fill with real storage
+// We can get web tests up and running, and back fill with real storage
 // somewhat in parallel.
 class MockAppCacheStorage : public AppCacheStorage {
  public:

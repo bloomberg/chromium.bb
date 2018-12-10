@@ -33,7 +33,7 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpCompleted,
 
 // Asks the browser process to perform a layout dump spanning all the
 // (potentially cross-process) frames.  This goes through multiple
-// LayoutTestControl.DumpFrameLayout calls and ends with sending of
+// WebTestControl.DumpFrameLayout calls and ends with sending of
 // ShellViewMsg_LayoutDumpCompleted.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_InitiateLayoutDump)
 

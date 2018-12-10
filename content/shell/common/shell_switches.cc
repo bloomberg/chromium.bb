@@ -17,7 +17,7 @@ const char kContentShellDataPath[] = "data-path";
 const char kCrashDumpsDir[] = "crash-dumps-dir";
 
 // Exposes the window.internals object to JavaScript for interactive development
-// and debugging of layout tests that rely on it.
+// and debugging of web tests that rely on it.
 const char kExposeInternalsForTesting[] = "expose-internals-for-testing";
 
 // Registers additional font files on Windows (for fonts outside the usual

@@ -1108,10 +1108,10 @@ void BrowserPluginGuest::OnSynchronizeVisualProperties(
   // We could add functionality to set a specific capture sequence number on the
   // |view|, but knowing that it's changed is sufficient for us simply request
   // that our RenderWidgetHostView synchronizes its surfaces. Note that this
-  // should only happen during layout tests, since that is the only call that
+  // should only happen during web tests, since that is the only call that
   // should trigger the capture sequence number to change.
   if (capture_sequence_number_changed)
-    view->EnsureSurfaceSynchronizedForLayoutTest();
+    view->EnsureSurfaceSynchronizedForWebTest();
 
   RenderWidgetHostImpl* render_widget_host =
       RenderWidgetHostImpl::From(view->GetRenderWidgetHost());

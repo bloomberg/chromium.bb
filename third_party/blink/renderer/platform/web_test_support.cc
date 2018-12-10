@@ -36,11 +36,11 @@
 namespace blink {
 
 // Wrapper functions defined in blink.h
-void SetLayoutTestMode(bool value) {
+void SetWebTestMode(bool value) {
   WebTestSupport::SetIsRunningWebTest(value);
 }
 
-bool LayoutTestMode() {
+bool WebTestMode() {
   return WebTestSupport::IsRunningWebTest();
 }
 

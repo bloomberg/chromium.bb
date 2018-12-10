@@ -1111,7 +1111,7 @@ void AuthenticatorImpl::OnTimeout() {
   request_delegate_->DidFailWithInterestingReason(
       AuthenticatorRequestClientDelegate::InterestingFailureReason::kTimeout);
 
-  // TODO(crbug.com/814418): Add layout tests to verify timeouts are
+  // TODO(crbug.com/814418): Add web tests to verify timeouts are
   // indistinguishable from NOT_ALLOWED_ERROR cases.
   FailWithNotAllowedErrorAndCleanup();
 }

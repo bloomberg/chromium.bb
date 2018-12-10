@@ -217,7 +217,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 
   if (rvh) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
-    // first to rebaseline some unreliable layout tests.
+    // first to rebaseline some unreliable web tests.
     ignore_result(rvh->GetWebkitPreferences());
     needs_begin_frames = !rvh->GetDelegate()->IsNeverVisible();
   }
@@ -853,7 +853,7 @@ void RenderWidgetHostViewMac::CopyFromSurface(
       std::move(callback));
 }
 
-void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForLayoutTest() {
+void RenderWidgetHostViewMac::EnsureSurfaceSynchronizedForWebTest() {
   ++latest_capture_sequence_number_;
   browser_compositor_->ForceNewSurfaceId();
 }

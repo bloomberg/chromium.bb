@@ -30,7 +30,7 @@ TestInterfaces::TestInterfaces()
       test_runner_(new TestRunner(this)),
       delegate_(nullptr),
       main_view_(nullptr) {
-  blink::SetLayoutTestMode(true);
+  blink::SetWebTestMode(true);
   // NOTE: please don't put feature specific enable flags here,
   // instead add them to runtime_enabled_features.json5
 
@@ -100,7 +100,7 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   // we don't dump non-human-readable binary data. In non-protocol mode, we
   // still generate pixel results (though don't dump them) to let the renderer
   // execute the same code regardless of the protocol mode, e.g. for ease of
-  // debugging a layout test issue.
+  // debugging a web test issue.
   if (!protocol_mode)
     test_runner_->setShouldDumpAsLayout(true);
 

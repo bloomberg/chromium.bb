@@ -29,7 +29,7 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void RequestScheduleAnimation() override {}
   void UpdateVisualState(bool record_main_frame_metrics) override {}
   void WillBeginCompositorFrame() override {}
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
 };
 

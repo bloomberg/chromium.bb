@@ -258,7 +258,7 @@ const char kDisableResourceScheduler[] = "disable-resource-scheduler";
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
 // Do not use runtime-detected high-end CPU optimizations in Skia.  This is
-// useful for forcing a baseline code path for e.g. layout tests.
+// useful for forcing a baseline code path for e.g. web tests.
 const char kDisableSkiaRuntimeOpts[]        = "disable-skia-runtime-opts";
 
 // Disable smooth scrolling for testing.
@@ -411,7 +411,7 @@ const char kEnableStrictMixedContentChecking[] =
 const char kEnableStrictPowerfulFeatureRestrictions[] =
     "enable-strict-powerful-feature-restrictions";
 
-// Enabled threaded compositing for layout tests.
+// Enabled threaded compositing for web tests.
 const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
 
 // Enable tracing during the execution of browser tests.

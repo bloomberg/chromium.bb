@@ -137,7 +137,7 @@ void PresentationServiceImpl::SetController(
 
 void PresentationServiceImpl::SetReceiver(
     blink::mojom::PresentationReceiverPtr receiver) {
-  // Presentation receiver virtual layout tests (which have the flag set) has no
+  // Presentation receiver virtual web tests (which have the flag set) has no
   // ReceiverPresentationServiceDelegate implementation.
   // TODO(imcheng): Refactor content_browser_client to return a no-op
   // PresentationService instead.
