@@ -5135,7 +5135,10 @@ static void select_inter_block_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     this_rd = RDCOST(x->rdmult, s0, 0);
     for (idy = 0; idy < mi_height; idy += bh) {
       for (idx = 0; idx < mi_width; idx += bw) {
-        int64_t best_rd_sofar = (ref_best_rd - (AOMMIN(skip_rd, this_rd)));
+        int64_t best_rd_sofar =
+            (ref_best_rd == INT64_MAX)
+                ? INT64_MAX
+                : (ref_best_rd - (AOMMIN(skip_rd, this_rd)));
         select_tx_block(cpi, x, idy, idx, block, max_tx_size, init_depth,
                         plane_bsize, ctxa, ctxl, tx_above, tx_left,
                         &pn_rd_stats, best_rd_sofar, &is_cost_valid, ftxs_mode,
@@ -5883,18 +5886,24 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
       return;
   }
 
-  const uint32_t hash = get_block_residue_hash(x, bsize);
-  MB_RD_RECORD *mb_rd_record = &x->mb_rd_record;
+  uint32_t hash = 0;
+  MB_RD_RECORD *mb_rd_record = NULL;
 
-  if (ref_best_rd != INT64_MAX && within_border && cpi->sf.use_mb_rd_hash) {
-    for (int i = 0; i < mb_rd_record->num; ++i) {
-      const int index = (mb_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
-      // If there is a match in the tx_rd_record, fetch the RD decision and
-      // terminate early.
-      if (mb_rd_record->tx_rd_info[index].hash_value == hash) {
-        MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[index];
-        fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
-        return;
+  int is_mb_rd_hash_enabled = (within_border && cpi->sf.use_mb_rd_hash);
+  if (is_mb_rd_hash_enabled) {
+    hash = get_block_residue_hash(x, bsize);
+    mb_rd_record = &x->mb_rd_record;
+    if (ref_best_rd != INT64_MAX) {
+      for (int i = 0; i < mb_rd_record->num; ++i) {
+        const int index =
+            (mb_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
+        // If there is a match in the tx_rd_record, fetch the RD decision and
+        // terminate early.
+        if (mb_rd_record->tx_rd_info[index].hash_value == hash) {
+          MB_RD_INFO *tx_rd_info = &mb_rd_record->tx_rd_info[index];
+          fetch_tx_rd_info(n4, tx_rd_info, rd_stats, x);
+          return;
+        }
       }
     }
   }
@@ -5912,7 +5921,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
     }
 #endif
     // Save the RD search results into tx_rd_record.
-    if (within_border) save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
+    if (is_mb_rd_hash_enabled)
+      save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
     return;
   }
 
@@ -5954,8 +5964,10 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   if (!found) return;
 
   // Save the RD search results into tx_rd_record.
-  if (within_border && cpi->sf.use_mb_rd_hash)
+  if (is_mb_rd_hash_enabled) {
+    assert(mb_rd_record != NULL);
     save_tx_rd_info(n4, hash, x, rd_stats, mb_rd_record);
+  }
 }
 
 #define FAVOR_CHROMA_SKIP 1
