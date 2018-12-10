@@ -147,8 +147,7 @@ void CommandBufferService::SetReleaseCount(uint64_t release_count) {
 
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
                                                                  int32_t* id) {
-  static int32_t next_id = 1;
-  *id = next_id++;
+  *id = GetNextBufferId();
   auto result = CreateTransferBufferWithId(size, *id);
   if (!result)
     *id = -1;
