@@ -60,6 +60,8 @@ class MockInputMethodEngine : public ui::IMEEngineHandlerInterface {
                           uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
   void HideInputView() override;
+  void SetMirroringEnabled(bool mirroring_enabled) override;
+  void SetCastingEnabled(bool casting_enabled) override;
 
   std::string last_activated_property() const {
     return last_activated_property_;

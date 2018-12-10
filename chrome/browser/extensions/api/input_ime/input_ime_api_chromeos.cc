@@ -44,6 +44,8 @@ namespace OnCompositionBoundsChanged =
     extensions::api::input_method_private::OnCompositionBoundsChanged;
 namespace NotifyImeMenuItemActivated =
     extensions::api::input_method_private::NotifyImeMenuItemActivated;
+namespace OnScreenProjectionChanged =
+    extensions::api::input_method_private::OnScreenProjectionChanged;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;
@@ -164,6 +166,20 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     DispatchEventToExtension(
         extensions::events::INPUT_IME_ON_MENU_ITEM_ACTIVATED,
         input_ime::OnMenuItemActivated::kEventName, std::move(args));
+  }
+
+  void OnScreenProjectionChanged(bool is_projected) override {
+    if (extension_id_.empty() ||
+        !HasListener(OnScreenProjectionChanged::kEventName)) {
+      return;
+    }
+    // Note: this is a private API event.
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
+    args->Append(std::make_unique<base::Value>(is_projected));
+
+    DispatchEventToExtension(
+        extensions::events::INPUT_METHOD_PRIVATE_ON_SCREEN_PROJECTION_CHANGED,
+        OnScreenProjectionChanged::kEventName, std::move(args));
   }
 
   void OnCompositionBoundsChanged(

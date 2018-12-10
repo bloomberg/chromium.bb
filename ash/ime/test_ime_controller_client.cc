@@ -50,4 +50,12 @@ void TestImeControllerClient::OverrideKeyboardKeyset(
   std::move(callback).Run();
 }
 
+void TestImeControllerClient::UpdateMirroringState(bool enabled) {
+  is_mirroring_ = enabled;
+}
+
+void TestImeControllerClient::UpdateCastingState(bool enabled) {
+  is_casting_ = enabled;
+}
+
 }  // namespace ash

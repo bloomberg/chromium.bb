@@ -97,6 +97,8 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void HideInputView() override;
+  void SetMirroringEnabled(bool mirroring_enabled) override;
+  void SetCastingEnabled(bool casting_enabled) override;
 
   // This function returns the current property of the candidate window.
   // The caller can use the returned value as the default property and
@@ -152,6 +154,12 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
 
   // Mapping of candidate id to index.
   std::map<int, int> candidate_indexes_;
+
+  // Whether the screen is in mirroring mode.
+  bool is_mirroring_;
+
+  // Whether the desktop is being casted.
+  bool is_casting_;
 };
 
 }  // namespace chromeos

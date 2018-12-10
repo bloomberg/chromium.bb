@@ -35,6 +35,8 @@ class UI_BASE_IME_EXPORT MockIMEEngineHandler
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
+  void SetMirroringEnabled(bool mirroring_enabled) override;
+  void SetCastingEnabled(bool casting_enabled) override;
 
   int focus_in_call_count() const { return focus_in_call_count_; }
   int focus_out_call_count() const { return focus_out_call_count_; }

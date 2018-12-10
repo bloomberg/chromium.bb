@@ -162,6 +162,10 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Hides the input view window (from API call).
   virtual void HideInputView() = 0;
 
+  // Sets the mirroring/casting enable states.
+  virtual void SetMirroringEnabled(bool mirroring_enabled) = 0;
+  virtual void SetCastingEnabled(bool casting_enabled) = 0;
+
 #elif defined(OS_LINUX) || defined(OS_WIN)
 
   // Get the id of the IME extension.

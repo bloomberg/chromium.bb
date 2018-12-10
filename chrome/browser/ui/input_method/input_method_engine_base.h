@@ -122,6 +122,8 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     // Called when a menu item for this IME is interacted with.
     virtual void OnMenuItemActivated(const std::string& component_id,
                                      const std::string& menu_id) = 0;
+
+    virtual void OnScreenProjectionChanged(bool is_projected) = 0;
 #endif  // defined(OS_CHROMEOS)
   };
 

@@ -52,6 +52,10 @@ bool MockInputMethodEngine::DeleteSurroundingText(int context_id,
 
 void MockInputMethodEngine::HideInputView() {}
 
+void MockInputMethodEngine::SetMirroringEnabled(bool mirroring_enabled) {}
+
+void MockInputMethodEngine::SetCastingEnabled(bool casting_enabled) {}
+
 void MockInputMethodEngine::FocusIn(
     const IMEEngineHandlerInterface::InputContext& input_context) {}
 

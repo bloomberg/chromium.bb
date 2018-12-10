@@ -77,6 +77,10 @@ void MockIMEEngineHandler::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {
 }
 
+void MockIMEEngineHandler::SetMirroringEnabled(bool mirroring_enabled) {}
+
+void MockIMEEngineHandler::SetCastingEnabled(bool casting_enabled) {}
+
 bool MockIMEEngineHandler::ClearComposition(int context_id,
                                             std::string* error) {
   return false;
