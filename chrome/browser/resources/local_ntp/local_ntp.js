@@ -137,6 +137,7 @@ var IDS = {
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
   NTP_CONTENTS: 'ntp-contents',
+  PROMO: 'promo',
   RESTORE_ALL_LINK: 'mv-restore',
   TILES: 'mv-tiles',
   TILES_IFRAME: 'mv-single',
@@ -672,6 +673,11 @@ function showErrorNotification(msg, linkName, linkOnClick) {
  * @param {!Element} notificationContainer The notification container element.
  */
 function floatUpNotification(notification, notificationContainer) {
+  // Show middle-slot promo if one is present.
+  if ($(IDS.PROMO) !== null) {
+    $(IDS.PROMO).classList.add(CLASSES.HIDE_NOTIFICATION);
+  }
+
   // Hide pre-existing notification if it was different type. Clear timeout and
   // replace it with the new timeout and new message if it was the same type.
   if (delayedHideNotification) {
@@ -705,6 +711,11 @@ function floatUpNotification(notification, notificationContainer) {
 function floatDownNotification(notification, notificationContainer) {
   if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP))
     return;
+
+  // Hide middle-slot promo if one is present.
+  if ($(IDS.PROMO) !== null) {
+    $(IDS.PROMO).classList.remove(CLASSES.HIDE_NOTIFICATION);
+  }
 
   // Clear the timeout to hide the notification.
   if (delayedHideNotification) {
@@ -863,6 +874,9 @@ function handlePostMessage(event) {
       promoScript.id = 'promo-loader';
       promoScript.src = 'chrome-search://local-ntp/promo.js';
       document.body.appendChild(promoScript);
+      promoScript.onload = function() {
+        injectPromo(promo);
+      };
     }
     if (configData.isCustomLinksEnabled) {
       $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
@@ -1231,6 +1245,21 @@ function createIframes() {
  */
 function listen() {
   document.addEventListener('DOMContentLoaded', init);
+}
+
+
+/**
+ * Injects a middle-slot promo into the page. Called asynchronously, so that it
+ * doesn't block the main page load.
+ */
+function injectPromo(promo) {
+  if (promo.promoHtml == '')
+    return;
+
+  let promoContainer = document.createElement('div');
+  promoContainer.id = IDS.PROMO;
+  promoContainer.innerHTML += promo.promoHtml;
+  $(IDS.NTP_CONTENTS).appendChild(promoContainer);
 }
 
 

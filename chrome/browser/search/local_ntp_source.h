@@ -26,6 +26,7 @@
 #endif
 
 struct OneGoogleBarData;
+struct PromoData;
 class NtpBackgroundService;
 class OneGoogleBarService;
 class PromoService;
@@ -119,6 +120,8 @@ class LocalNtpSource : public content::URLDataSource,
 
   void ServeOneGoogleBar(const base::Optional<OneGoogleBarData>& data);
 
+  void ServePromo(const base::Optional<PromoData>& data);
+
   Profile* const profile_;
 
   std::vector<NtpBackgroundRequest> ntp_background_collections_requests_;
@@ -137,6 +140,8 @@ class LocalNtpSource : public content::URLDataSource,
 
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_;
+
+  std::vector<PromoRequest> promo_requests_;
 
   PromoService* promo_service_;
 
