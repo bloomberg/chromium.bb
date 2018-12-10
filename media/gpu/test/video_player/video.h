@@ -33,10 +33,12 @@ class Video {
   bool IsLoaded() const;
 
   // Get the video data, will be empty if the video hasn't been loaded yet.
-  const std::vector<uint8_t>& GetData() const;
+  const std::vector<uint8_t>& Data() const;
 
   // Get the video's codec.
-  VideoCodecProfile GetProfile() const;
+  VideoCodecProfile Profile() const;
+  // Get the number of frames in the video.
+  uint32_t NumFrames() const;
 
   // Set the default path to the test video data.
   static void SetTestDataPath(const base::FilePath& test_data_path);
@@ -51,6 +53,7 @@ class Video {
   std::vector<uint8_t> data_;
 
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
+  uint32_t num_frames_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Video);
 };

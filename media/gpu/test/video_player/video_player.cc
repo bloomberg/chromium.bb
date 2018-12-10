@@ -14,11 +14,12 @@
 namespace media {
 namespace test {
 
-VideoPlayer::VideoPlayer(const Video* video)
-    : video_(video),
+VideoPlayer::VideoPlayer()
+    : video_(nullptr),
       video_player_state_(VideoPlayerState::kUninitialized),
       event_cv_(&event_lock_),
-      video_player_event_counts_{} {}
+      video_player_event_counts_{},
+      event_id_(0) {}
 
 VideoPlayer::~VideoPlayer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -29,10 +30,8 @@ VideoPlayer::~VideoPlayer() {
 
 // static
 std::unique_ptr<VideoPlayer> VideoPlayer::Create(
-    const Video* video,
     FrameRenderer* frame_renderer) {
-  DCHECK(video);
-  auto video_player = base::WrapUnique(new VideoPlayer(video));
+  auto video_player = base::WrapUnique(new VideoPlayer());
   if (!video_player->Initialize(frame_renderer)) {
     return nullptr;
   }
@@ -65,18 +64,32 @@ void VideoPlayer::Destroy() {
   video_player_state_ = VideoPlayerState::kDestroyed;
 }
 
+void VideoPlayer::SetStream(const Video* const video) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(video);
+  DVLOGF(4);
+
+  // Destroy the currently active decoder.
+  if (video_) {
+    decoder_client_->DestroyDecoder();
+  }
+
+  // Create a decoder for the specified video.
+  VideoDecodeAccelerator::Config decoder_config(video->Profile());
+  decoder_client_->CreateDecoder(decoder_config, video->Data());
+
+  video_ = video;
+}
+
 void VideoPlayer::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(video_player_state_, VideoPlayerState::kIdle);
+  DCHECK(video_);
   DVLOGF(4);
-
-  // Create a decoder for the specified video.
-  VideoDecodeAccelerator::Config decoder_config(video_->GetProfile());
-  decoder_client_->CreateDecoder(decoder_config, video_->GetData());
 
   // Start decoding the video.
   video_player_state_ = VideoPlayerState::kDecoding;
-  decoder_client_->DecodeNextFragment();
+  decoder_client_->Play();
 }
 
 void VideoPlayer::Stop() {
@@ -88,7 +101,10 @@ void VideoPlayer::Reset() {
 }
 
 void VideoPlayer::Flush() {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(4);
+
+  decoder_client_->Flush();
 }
 
 base::TimeDelta VideoPlayer::GetCurrentTime() const {
@@ -116,24 +132,28 @@ size_t VideoPlayer::GetEventCount(VideoPlayerEvent event) const {
 }
 
 bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
+                               size_t times,
                                base::TimeDelta max_wait) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_GE(times, 1u);
   DVLOGF(4) << "Event ID: " << static_cast<size_t>(event);
 
-  static size_t event_id = 0;
   base::TimeDelta time_waiting;
-
   base::AutoLock auto_lock(event_lock_);
   while (true) {
     const base::TimeTicks start_time = base::TimeTicks::Now();
     event_cv_.TimedWait(max_wait);
     time_waiting += base::TimeTicks::Now() - start_time;
 
+    // TODO(dstaessens@) Investigate whether we really need to keep the full
+    // list of events for more complex testcases.
     // Go through list of events since last wait, looking for the event we're
     // interested in.
-    for (; event_id < video_player_events_.size(); ++event_id) {
-      if (video_player_events_[event_id] == event) {
-        event_id++;
+    for (; event_id_ < video_player_events_.size(); ++event_id_) {
+      if (video_player_events_[event_id_] == event)
+        times--;
+      if (times == 0) {
+        event_id_++;
         return true;
       }
     }

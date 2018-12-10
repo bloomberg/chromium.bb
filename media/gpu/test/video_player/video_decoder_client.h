@@ -55,10 +55,20 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   // Destroy the currently active decoder.
   void DestroyDecoder();
 
-  // Queue the next video stream fragment to be decoded.
-  void DecodeNextFragment();
+  // Start decoding the video stream, decoder should be idle when this function
+  // is called. For each frame decoded a 'kFrameDecoded' event will be thrown.
+  void Play();
+  // Queue a decoder flush, when finished a 'kFlushDone' event will be thrown.
+  void Flush();
 
  private:
+  enum class VideoDecoderClientState : size_t {
+    kUninitialized = 0,
+    kIdle,
+    kDecoding,
+    kFlushing,
+  };
+
   VideoDecoderClient(const VideoPlayer::EventCallback& event_cb,
                      FrameRenderer* renderer);
 
@@ -83,7 +93,13 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
                          const std::vector<uint8_t>* stream,
                          base::WaitableEvent* done);
   void DestroyDecoderTask(base::WaitableEvent* done);
+
+  // Instruct the decoder to decode the next video stream fragment.
   void DecodeNextFragmentTask();
+  // Start decoding video stream fragments.
+  void PlayTask();
+  // Instruct the decoder to perform a flush.
+  void FlushTask();
 
   // Called by the renderer in response to a CreatePictureBuffers request.
   void OnPictureBuffersCreatedTask(std::vector<PictureBuffer> buffers);
@@ -99,6 +115,9 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> decoder_factory_;
   std::unique_ptr<VideoDecodeAccelerator> decoder_;
   base::Thread decoder_client_thread_;
+
+  // Decoder client state, should only be accessed on the decoder client thread.
+  VideoDecoderClientState decoder_client_state_;
 
   int32_t next_bitstream_buffer_id_ = 0;
   // TODO(dstaessens@) Replace with StreamParser.

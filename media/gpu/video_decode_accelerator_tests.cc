@@ -26,16 +26,17 @@ namespace {
 // Test environment for video decode tests.
 class VideoDecoderTestEnvironment : public ::testing::Environment {
  public:
-  VideoDecoderTestEnvironment() {}
+  explicit VideoDecoderTestEnvironment(const Video* video) : video_(video) {}
   virtual ~VideoDecoderTestEnvironment() {}
 
-  // Setup up the video decode test environment, only called once.
+  // Set up the video decode test environment, only called once.
   void SetUp() override;
   // Tear down the video decode test environment, only called once.
   void TearDown() override;
 
   std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
   std::unique_ptr<FrameRendererDummy> dummy_frame_renderer_;
+  const Video* const video_;
 
   // An exit manager is required to run callbacks on shutdown.
   base::AtExitManager at_exit_manager;
@@ -73,15 +74,33 @@ media::test::VideoDecoderTestEnvironment* g_env;
 // TODO(dstaessens@)
 // * Fetch the expected number of frames from the video file's metadata.
 TEST(VideoDecodeAcceleratorTest, BasicPlayTest) {
-  const Video* video = &kDefaultTestVideoCollection[0];
-  auto tvp = VideoPlayer::Create(video, g_env->dummy_frame_renderer_.get());
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
   ASSERT_NE(tvp, nullptr);
 
+  tvp->SetStream(g_env->video_);
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
 
   EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
-  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded), 250u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames());
+}
+
+// Flush the decoder immediately after initialization.
+TEST(VideoDecodeAcceleratorTest, FlushAfterInitialize) {
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
+  ASSERT_NE(tvp, nullptr);
+
+  tvp->SetStream(g_env->video_);
+  tvp->Flush();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 2u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames());
 }
 
 }  // namespace test
@@ -99,9 +118,12 @@ int main(int argc, char** argv) {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   LOG_ASSERT(logging::InitLogging(settings));
 
+  // Set up our test environment
+  const media::test::Video* video =
+      &media::test::kDefaultTestVideoCollection[0];
   media::test::g_env = static_cast<media::test::VideoDecoderTestEnvironment*>(
       testing::AddGlobalTestEnvironment(
-          new media::test::VideoDecoderTestEnvironment()));
+          new media::test::VideoDecoderTestEnvironment(video)));
 
   return RUN_ALL_TESTS();
 }

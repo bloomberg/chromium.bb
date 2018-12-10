@@ -26,6 +26,7 @@ VideoDecoderClient::VideoDecoderClient(
     : event_cb_(event_cb),
       frame_renderer_(renderer),
       decoder_client_thread_("VDAClientDecoderThread"),
+      decoder_client_state_(VideoDecoderClientState::kUninitialized),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(decoder_client_sequence_checker_);
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -97,12 +98,18 @@ void VideoDecoderClient::DestroyDecoder() {
   done.Wait();
 }
 
-void VideoDecoderClient::DecodeNextFragment() {
+void VideoDecoderClient::Play() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
   decoder_client_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VideoDecoderClient::DecodeNextFragmentTask, weak_this_));
+      FROM_HERE, base::BindOnce(&VideoDecoderClient::PlayTask, weak_this_));
+}
+
+void VideoDecoderClient::Flush() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
+
+  decoder_client_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VideoDecoderClient::FlushTask, weak_this_));
 }
 
 void VideoDecoderClient::ProvidePictureBuffers(
@@ -154,13 +161,16 @@ void VideoDecoderClient::NotifyEndOfBitstreamBuffer(
   if (encoded_data_helper_->ReachEndOfStream()) {
     decoder_->Flush();
   } else {
-    DecodeNextFragmentTask();
+    decoder_client_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&VideoDecoderClient::DecodeNextFragmentTask,
+                                  weak_this_));
   }
 }
 
 void VideoDecoderClient::NotifyFlushDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
 
+  decoder_client_state_ = VideoDecoderClientState::kIdle;
   event_cb_.Run(VideoPlayerEvent::kFlushDone);
 }
 
@@ -226,11 +236,12 @@ void VideoDecoderClient::CreateDecoderTask(
   gpu::GpuPreferences gpu_preferences;
   decoder_ = decoder_factory_->CreateVDA(
       this, config, gpu_driver_bug_workarounds, gpu_preferences);
-
   LOG_ASSERT(decoder_) << "Failed creating a VDA";
+
   decoder_->TryToSetupDecodeOnSeparateThread(
       weak_this_, base::ThreadTaskRunnerHandle::Get());
 
+  decoder_client_state_ = VideoDecoderClientState::kIdle;
   done->Signal();
 }
 
@@ -249,12 +260,17 @@ void VideoDecoderClient::DestroyDecoderTask(base::WaitableEvent* done) {
     frame_renderer_->ReleaseGLContext();
   }
 
+  decoder_client_state_ = VideoDecoderClientState::kUninitialized;
   done->Signal();
 }
 
 void VideoDecoderClient::DecodeNextFragmentTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
   DVLOGF(4);
+
+  // Stop decoding fragments if we're no longer in the decoding state.
+  if (decoder_client_state_ != VideoDecoderClientState::kDecoding)
+    return;
 
   if (encoded_data_helper_->ReachEndOfStream()) {
     LOG(ERROR) << "End of stream reached";
@@ -282,6 +298,30 @@ void VideoDecoderClient::DecodeNextFragmentTask() {
 
   DVLOGF(4) << "Bitstream buffer id: " << bitstream_buffer_id;
   decoder_->Decode(bitstream_buffer);
+}
+
+void VideoDecoderClient::PlayTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DVLOGF(4);
+
+  // This method should only be called when the decoder client is idle. If
+  // called e.g. while flushing, the behavior is undefined.
+  ASSERT_EQ(decoder_client_state_, VideoDecoderClientState::kIdle);
+
+  // Start decoding the first fragment. While in the decoding state new
+  // fragments will automatically be fed to the decoder, when the decoder
+  // notifies us it reached the end of the current bitstream.
+  decoder_client_state_ = VideoDecoderClientState::kDecoding;
+  DecodeNextFragmentTask();
+}
+
+void VideoDecoderClient::FlushTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DVLOGF(4);
+
+  // Changing the state to flushing will abort any pending decodes.
+  decoder_client_state_ = VideoDecoderClientState::kFlushing;
+  decoder_->Flush();
 }
 
 void VideoDecoderClient::OnPictureBuffersCreatedTask(

@@ -51,6 +51,7 @@ bool Video::Load() {
   data_ = std::move(data);
   // TODO(keiitchiw@) Get this from the metadata accompanying each video file.
   profile_ = H264PROFILE_BASELINE;
+  num_frames_ = 250u;
 
   return true;
 }
@@ -59,12 +60,16 @@ bool Video::IsLoaded() const {
   return data_.size() > 0;
 }
 
-const std::vector<uint8_t>& Video::GetData() const {
+const std::vector<uint8_t>& Video::Data() const {
   return data_;
 }
 
-VideoCodecProfile Video::GetProfile() const {
+VideoCodecProfile Video::Profile() const {
   return profile_;
+}
+
+uint32_t Video::NumFrames() const {
+  return num_frames_;
 }
 
 // static
