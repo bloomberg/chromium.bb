@@ -256,6 +256,8 @@ class WebURLResponse {
   // for details.
   BLINK_PLATFORM_EXPORT void SetURLListViaServiceWorker(
       const WebVector<WebURL>&);
+  // Returns true if the URL list is not empty.
+  BLINK_PLATFORM_EXPORT bool HasUrlListViaServiceWorker() const;
 
   // The boundary of the response. Set only when this is a multipart response.
   BLINK_PLATFORM_EXPORT void SetMultipartBoundary(const char* bytes,

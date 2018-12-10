@@ -357,8 +357,18 @@ void ResourceMultiBufferDataProvider::DidReceiveResponse(
     return;  // "this" may be deleted now.
   }
 
+  // Get the response URL since it can differ from the request URL when a
+  // service worker provided the response. Normally we would just use
+  // ResponseUrl(), but ResourceMultibufferDataProvider disallows mixing
+  // constructed responses (new Response()) and native server responses, even if
+  // they have the same response URL.
+  GURL response_url;
+  if (!response.WasFetchedViaServiceWorker() ||
+      response.HasUrlListViaServiceWorker()) {
+    response_url = response.ResponseUrl();
+  }
+
   // This test is vital for security!
-  const GURL& response_url = response.ResponseUrl();
   if (!url_data_->ValidateDataOrigin(response_url.GetOrigin())) {
     active_loader_.reset();
     url_data_->Fail();

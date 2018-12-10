@@ -360,6 +360,12 @@ void WebURLResponse::SetURLListViaServiceWorker(
   resource_response_->SetURLListViaServiceWorker(url_list);
 }
 
+bool WebURLResponse::HasUrlListViaServiceWorker() const {
+  DCHECK(resource_response_->UrlListViaServiceWorker().size() == 0 ||
+         WasFetchedViaServiceWorker());
+  return resource_response_->UrlListViaServiceWorker().size() > 0;
+}
+
 void WebURLResponse::SetMultipartBoundary(const char* bytes, size_t size) {
   resource_response_->SetMultipartBoundary(bytes, size);
 }
