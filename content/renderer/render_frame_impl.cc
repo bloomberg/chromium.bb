@@ -145,7 +145,6 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "content/renderer/service_worker/web_service_worker_provider_impl.h"
-#include "content/renderer/shared_worker/shared_worker_repository.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "content/renderer/stats_collection_controller.h"
 #include "content/renderer/v8_value_converter_impl.h"
@@ -1783,10 +1782,8 @@ void RenderFrameImpl::Initialize() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
-  shared_worker_repository_ =
-      std::make_unique<SharedWorkerRepository>(GetInterfaceProvider());
-  GetWebFrame()->SetSharedWorkerRepositoryClient(
-      shared_worker_repository_.get());
+
+  GetWebFrame()->InitializeSharedWorkerRepositoryClient(GetInterfaceProvider());
 
   RegisterMojoInterfaces();
 

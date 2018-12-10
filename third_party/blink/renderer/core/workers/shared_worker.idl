@@ -33,7 +33,8 @@
 
 [
     ActiveScriptWrappable,
-    // TODO(foolip): The name argument should not have a default null value.
+    // TODO(nhiroki): The second argument should be |optional (DOMString or
+    // WorkerOptions) options)|.
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
     // TODO(foolip): Exposed=(Window,Worker),

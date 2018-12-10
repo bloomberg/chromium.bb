@@ -28,6 +28,10 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "v8/include/v8.h"
 
+namespace service_manager {
+class InterfaceProvider;
+}  // namespace service_manager
+
 namespace blink {
 
 class FrameScheduler;
@@ -45,7 +49,6 @@ class WebPerformance;
 class WebRange;
 class WebSecurityOrigin;
 class WebScriptExecutionCallback;
-class WebSharedWorkerRepositoryClient;
 class WebSpellCheckPanelHostClient;
 class WebString;
 class WebTextCheckClient;
@@ -132,8 +135,8 @@ class WebLocalFrame : public WebFrame {
 
   virtual void SetAutofillClient(WebAutofillClient*) = 0;
   virtual WebAutofillClient* AutofillClient() = 0;
-  virtual void SetSharedWorkerRepositoryClient(
-      WebSharedWorkerRepositoryClient*) = 0;
+  virtual void InitializeSharedWorkerRepositoryClient(
+      service_manager::InterfaceProvider*) = 0;
 
   // Closing -------------------------------------------------------------
 

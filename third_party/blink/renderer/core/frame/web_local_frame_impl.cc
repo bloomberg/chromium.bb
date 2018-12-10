@@ -578,10 +578,10 @@ void WebLocalFrameImpl::SetContentSettingsClient(
   content_settings_client_ = client;
 }
 
-void WebLocalFrameImpl::SetSharedWorkerRepositoryClient(
-    WebSharedWorkerRepositoryClient* client) {
+void WebLocalFrameImpl::InitializeSharedWorkerRepositoryClient(
+    service_manager::InterfaceProvider* interface_provider) {
   shared_worker_repository_client_ =
-      SharedWorkerRepositoryClientImpl::Create(client);
+      SharedWorkerRepositoryClientImpl::Create(interface_provider);
 }
 
 ScrollableArea* WebLocalFrameImpl::LayoutViewport() const {

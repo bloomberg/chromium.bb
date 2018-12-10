@@ -88,9 +88,18 @@ SharedWorker* SharedWorker::Create(ExecutionContext* context,
   }
 
   if (document->GetFrame()->Client()->GetSharedWorkerRepositoryClient()) {
+    // |name| should not be null according to the HTML spec, but the current
+    // impl wrongly allows it when |name| is omitted. See TODO comment in
+    // shared_worker.idl.
+    // TODO(nhiroki): Stop assigning null to |name| as a default value, and
+    // remove this hack.
+    String worker_name = "";
+    if (!name.IsNull())
+      worker_name = name;
+
     document->GetFrame()->Client()->GetSharedWorkerRepositoryClient()->Connect(
         worker, std::move(remote_port), script_url, std::move(blob_url_token),
-        name);
+        worker_name);
   }
 
   return worker;
