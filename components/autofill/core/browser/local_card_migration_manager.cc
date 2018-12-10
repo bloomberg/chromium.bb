@@ -228,10 +228,8 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
   if (base::FeatureList::IsEnabled(
           features::kAutofillLocalCardMigrationShowFeedback)) {
     client_->ShowLocalCardMigrationResults(
-        base::UTF8ToUTF16(display_text),
-        result == AutofillClient::PaymentsRpcResult::SUCCESS
-            ? migratable_credit_cards_
-            : std::vector<MigratableCreditCard>(),
+        result != AutofillClient::PaymentsRpcResult::SUCCESS,
+        base::UTF8ToUTF16(display_text), migratable_credit_cards_,
         base::BindRepeating(&LocalCardMigrationManager::
                                 OnUserDeletedLocalCardViaMigrationDialog,
                             weak_ptr_factory_.GetWeakPtr()));

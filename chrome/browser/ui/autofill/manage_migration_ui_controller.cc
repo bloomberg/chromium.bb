@@ -46,6 +46,7 @@ void ManageMigrationUiController::ShowOfferDialog(
 }
 
 void ManageMigrationUiController::UpdateCreditCardIcon(
+    const bool has_server_error,
     const base::string16& tip_message,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::MigrationDeleteCardCallback delete_local_card_callback) {
@@ -54,9 +55,9 @@ void ManageMigrationUiController::UpdateCreditCardIcon(
 
   DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::MIGRATION_RESULT_PENDING);
   flow_step_ = LocalCardMigrationFlowStep::MIGRATION_FINISHED;
-  // Show error dialog when the vector is an empty vector, which indicates
+  // Show error dialog when |has_server_error| is true, which indicates
   // Payments Rpc failure.
-  show_error_dialog_ = migratable_credit_cards.empty();
+  show_error_dialog_ = has_server_error;
 
   dialog_controller_->UpdateCreditCardIcon(tip_message, migratable_credit_cards,
                                            delete_local_card_callback);
