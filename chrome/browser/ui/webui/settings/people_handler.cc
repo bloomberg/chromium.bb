@@ -8,19 +8,15 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -35,12 +31,9 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_prefs.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -50,6 +43,7 @@
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/passphrase_enums.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/unified_consent/feature.h"
@@ -58,8 +52,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
-#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -71,6 +63,7 @@
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif
+
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
@@ -80,7 +73,6 @@
 #include "ui/gfx/image/image.h"
 #endif
 
-using browser_sync::ProfileSyncService;
 using content::WebContents;
 using l10n_util::GetStringFUTF16;
 using l10n_util::GetStringUTF16;
@@ -310,8 +302,8 @@ void PeopleHandler::OnJavascriptAllowed() {
 
   // This is intentionally not using GetSyncService(), to go around the
   // Profile::IsSyncAllowed() check.
-  ProfileSyncService* sync_service(
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_));
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   if (sync_service)
     sync_service_observer_.Add(sync_service);
 
@@ -354,7 +346,7 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     force_new_tab = true;
   }
 
-  ProfileSyncService* service = GetSyncService();
+  syncer::SyncService* service = GetSyncService();
   if (service && service->HasUnrecoverableError()) {
     // When the user has an unrecoverable error, they first have to sign out and
     // then sign in again.
@@ -451,7 +443,7 @@ void PeopleHandler::SyncStartupFailed() {
 }
 
 void PeopleHandler::SyncStartupCompleted() {
-  ProfileSyncService* service = GetSyncService();
+  syncer::SyncService* service = GetSyncService();
   DCHECK(service->IsEngineInitialized());
 
   // Stop a timer to handle timeout in waiting for checking network connection.
@@ -462,9 +454,10 @@ void PeopleHandler::SyncStartupCompleted() {
   PushSyncPrefs();
 }
 
-ProfileSyncService* PeopleHandler::GetSyncService() const {
+syncer::SyncService* PeopleHandler::GetSyncService() const {
   return profile_->IsSyncAllowed()
-             ? ProfileSyncServiceFactory::GetForProfile(profile_)
+             ? ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+                   profile_)
              : nullptr;
 }
 
@@ -478,9 +471,9 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
   autofill::prefs::SetPaymentsIntegrationEnabled(
       profile_->GetPrefs(), configuration.payments_integration_enabled);
 
-  // Start configuring the ProfileSyncService using the configuration passed
-  // to us from the JS layer.
-  ProfileSyncService* service = GetSyncService();
+  // Start configuring the SyncService using the configuration passed to us from
+  // the JS layer.
+  syncer::SyncService* service = GetSyncService();
 
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
@@ -586,9 +579,9 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
   const base::Value* callback_id = nullptr;
   ParseConfigurationArguments(args, &configuration, &callback_id);
 
-  // Start configuring the ProfileSyncService using the configuration passed
-  // to us from the JS layer.
-  ProfileSyncService* service = GetSyncService();
+  // Start configuring the SyncService using the configuration passed to us from
+  // the JS layer.
+  syncer::SyncService* service = GetSyncService();
 
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
@@ -598,7 +591,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
     return;
   }
 
-  // Don't allow "encrypt all" if the ProfileSyncService doesn't allow it.
+  // Don't allow "encrypt all" if the SyncService doesn't allow it.
   // The UI is hidden, but the user may have enabled it e.g. by fiddling with
   // the web inspector.
   if (!service->GetUserSettings()->IsEncryptEverythingAllowed())
@@ -660,7 +653,7 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
 void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   AllowJavascript();
 
-  ProfileSyncService* service = GetSyncService();
+  syncer::SyncService* service = GetSyncService();
 
   if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
     if (service && !sync_blocker_)
@@ -764,7 +757,7 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
 
   // Should only be called if the user is not already signed in, has a auth
   // error, or a unrecoverable sync error requiring re-auth.
-  ProfileSyncService* service = GetSyncService();
+  syncer::SyncService* service = GetSyncService();
   DCHECK(IsProfileAuthNeededOrHasErrors() ||
          (service && service->HasUnrecoverableError()));
 
@@ -834,7 +827,7 @@ void PeopleHandler::CloseSyncSetup() {
   // Clear the sync startup tracker, since the setup wizard is being closed.
   sync_startup_tracker_.reset();
 
-  ProfileSyncService* sync_service = GetSyncService();
+  syncer::SyncService* sync_service = GetSyncService();
 
   // LoginUIService can be nullptr if page is brought up in incognito mode
   // (i.e. if the user is running in guest mode in cros and brings up settings).
@@ -888,7 +881,7 @@ void PeopleHandler::InitializeSyncBlocker() {
     return;
   WebContents* web_contents = web_ui()->GetWebContents();
   if (web_contents) {
-    ProfileSyncService* service = GetSyncService();
+    syncer::SyncService* service = GetSyncService();
     const GURL current_url = web_contents->GetVisibleURL();
     if (service &&
         current_url == chrome::GetSettingsUrl(chrome::kSyncSetupSubPage)) {
@@ -959,8 +952,8 @@ PeopleHandler::GetSyncStatusDictionary() {
   // This is intentionally not using GetSyncService(), in order to access more
   // nuanced information, since GetSyncService() returns nullptr if anything
   // makes Profile::IsSyncAllowed() false.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  syncer::SyncService* service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   bool disallowed_by_policy =
       service && service->HasDisableReason(
                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
@@ -1003,7 +996,7 @@ void PeopleHandler::PushSyncPrefs() {
     return;
 #endif
 
-  ProfileSyncService* service = GetSyncService();
+  syncer::SyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
   if (!service || !service->IsEngineInitialized()) {
     return;
@@ -1117,7 +1110,7 @@ void PeopleHandler::MarkFirstSetupComplete() {
   // doesn't see the sign in promo even if they sign out later on.
   signin::SetUserSkippedPromo(profile_);
 
-  ProfileSyncService* service = GetSyncService();
+  syncer::SyncService* service = GetSyncService();
   // The sync service may be nullptr if it has been just disabled by policy.
   if (!service || service->GetUserSettings()->IsFirstSetupComplete())
     return;
@@ -1126,8 +1119,8 @@ void PeopleHandler::MarkFirstSetupComplete() {
   base::FilePath profile_file_path = profile_->GetPath();
   ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
 
-  // We're done configuring, so notify ProfileSyncService that it is OK to
-  // start syncing.
+  // We're done configuring, so notify SyncService that it is OK to start
+  // syncing.
   sync_blocker_.reset();
   service->GetUserSettings()->SetFirstSetupComplete();
   FireWebUIListener("sync-settings-saved");
