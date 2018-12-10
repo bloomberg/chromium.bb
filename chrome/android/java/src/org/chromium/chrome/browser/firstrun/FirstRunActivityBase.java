@@ -21,20 +21,22 @@ import org.chromium.chrome.browser.util.IntentUtils;
 public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     private static final String TAG = "FirstRunActivity";
 
-    // Incoming parameters:
     public static final String EXTRA_COMING_FROM_CHROME_ICON = "Extra.ComingFromChromeIcon";
-    public static final String EXTRA_CHROME_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
     public static final String EXTRA_CHROME_LAUNCH_INTENT_IS_CCT =
             "Extra.FreChromeLaunchIntentIsCct";
+
+    // The intent to send once the FRE completes.
+    public static final String EXTRA_FRE_COMPLETE_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
+
+    // The extras on the intent which initiated first run. (e.g. the extras on the intent
+    // received by ChromeLauncherActivity.)
+    public static final String EXTRA_CHROME_LAUNCH_INTENT_EXTRAS =
+            "Extra.FreChromeLaunchIntentExtras";
 
     static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
     static final String SHOW_SEARCH_ENGINE_PAGE = "ShowSearchEnginePage";
     static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
-
-    // Outgoing results:
-    public static final String EXTRA_FIRST_RUN_ACTIVITY_RESULT = "Extra.FreActivityResult";
-    public static final String EXTRA_FIRST_RUN_COMPLETE = "Extra.FreComplete";
 
     public static final boolean DEFAULT_METRICS_AND_CRASH_REPORTING = true;
 
@@ -84,25 +86,15 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     }
 
     /**
-     * Sends the PendingIntent included with the CHROME_LAUNCH_INTENT extra if it exists.
-     * @param complete Whether first run completed successfully.
+     * Sends PendingIntent included with the EXTRA_FRE_COMPLETE_LAUNCH_INTENT extra.
      * @return Whether a pending intent was sent.
      */
-    protected final boolean sendPendingIntentIfNecessary(final boolean complete) {
+    protected final boolean sendFirstRunCompletePendingIntent() {
         PendingIntent pendingIntent =
-                IntentUtils.safeGetParcelableExtra(getIntent(), EXTRA_CHROME_LAUNCH_INTENT);
+                IntentUtils.safeGetParcelableExtra(getIntent(), EXTRA_FRE_COMPLETE_LAUNCH_INTENT);
         boolean pendingIntentIsCCT = IntentUtils.safeGetBooleanExtra(
                 getIntent(), EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false);
         if (pendingIntent == null) return false;
-
-        // Calling pending intent to report failure can result in UI flicker (crbug.com/788153).
-        // Avoid doing that unless the intent is for custom tabs, in which case we don't have a
-        // choice because we need to call "first run" CCT callback with the intent.
-        if (!complete && !pendingIntentIsCCT) return false;
-
-        Intent extraDataIntent = new Intent();
-        extraDataIntent.putExtra(EXTRA_FIRST_RUN_ACTIVITY_RESULT, true);
-        extraDataIntent.putExtra(EXTRA_FIRST_RUN_COMPLETE, complete);
 
         try {
             PendingIntent.OnFinished onFinished = null;
@@ -113,20 +105,39 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
                     @Override
                     public void onSendFinished(PendingIntent pendingIntent, Intent intent,
                             int resultCode, String resultData, Bundle resultExtras) {
-                        CustomTabsConnection.getInstance().sendFirstRunCallbackIfNecessary(
-                                intent, complete);
+                        // Use {@link FirstRunActivityBase#getIntent()} instead of {@link intent}
+                        // parameter in order to use a more similar code path for completing first
+                        // run and for aborting first run.
+                        notifyCustomTabCallbackFirstRunIfNecessary(getIntent(), true);
                     }
                 };
             }
 
             // Use the PendingIntent to send the intent that originally launched Chrome. The intent
             // will go back to the ChromeLauncherActivity, which will route it accordingly.
-            pendingIntent.send(this, complete ? Activity.RESULT_OK : Activity.RESULT_CANCELED,
-                    extraDataIntent, onFinished, null);
+            pendingIntent.send(Activity.RESULT_OK, onFinished, null);
             return true;
         } catch (CanceledException e) {
             Log.e(TAG, "Unable to send PendingIntent.", e);
         }
         return false;
+    }
+
+    /**
+     * If the first run activity was triggered by a custom tab, notify app associated with
+     * custom tab whether first run was completed.
+     * @param freIntent First run activity intent.
+     * @param complete  Whether first run completed successfully.
+     */
+    public static void notifyCustomTabCallbackFirstRunIfNecessary(
+            Intent freIntent, boolean complete) {
+        boolean launchedByCCT = IntentUtils.safeGetBooleanExtra(
+                freIntent, EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false);
+        if (!launchedByCCT) return;
+
+        Bundle launchIntentExtras =
+                IntentUtils.safeGetBundleExtra(freIntent, EXTRA_CHROME_LAUNCH_INTENT_EXTRAS);
+        CustomTabsConnection.getInstance().sendFirstRunCallbackIfNecessary(
+                launchIntentExtras, complete);
     }
 }

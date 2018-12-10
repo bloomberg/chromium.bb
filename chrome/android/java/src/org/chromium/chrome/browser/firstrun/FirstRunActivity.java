@@ -354,7 +354,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public void abortFirstRunExperience() {
         finish();
 
-        sendPendingIntentIfNecessary(false);
+        notifyCustomTabCallbackFirstRunIfNecessary(getIntent(), false);
         if (sObserver != null) sObserver.onAbortFirstRunExperience();
     }
 
@@ -398,7 +398,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
-        if (!sendPendingIntentIfNecessary(true)) {
+        if (!sendFirstRunCompletePendingIntent()) {
             finish();
         } else {
             ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {

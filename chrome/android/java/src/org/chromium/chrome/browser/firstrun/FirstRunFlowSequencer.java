@@ -267,52 +267,73 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * @return A generic intent to show the First Run Activity.
-     * @param context        The context.
-     * @param fromChromeIcon Whether Chrome is opened via the Chrome icon.
+     * @param context                        The context.
+     * @param fromIntent                     The intent that was used to launch Chrome.
+     * @param intentToLaunchAfterFreComplete The intent to relaunch Chrome when the user completes
+     *                                       the FRE.
+     * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
-    public static Intent createGenericFirstRunIntent(Context context, boolean fromChromeIcon) {
+    private static Intent createGenericFirstRunIntent(Context context, Intent fromIntent,
+            Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
         Intent intent = new Intent();
         intent.setClassName(context, FirstRunActivity.class.getName());
-        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON, fromChromeIcon);
+        intent.putExtra(FirstRunActivity.EXTRA_COMING_FROM_CHROME_ICON,
+                TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN));
+        intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT,
+                LaunchIntentDispatcher.isCustomTabIntent(fromIntent));
+        addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
+
+        // Copy extras bundle from intent which was used to launch Chrome. Copying the extras
+        // enables the FirstRunActivity to locate the associated CustomTabsSession (if there
+        // is one) and to notify the connection of whether the FirstRunActivity was completed.
+        Bundle fromIntentExtras = fromIntent.getExtras();
+        if (fromIntentExtras != null) {
+            Bundle copiedFromExtras = new Bundle(fromIntentExtras);
+            intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_EXTRAS, copiedFromExtras);
+        }
+
         return intent;
     }
 
     /**
      * Returns an intent to show the lightweight first run activity.
-     * @param context        The context.
-     * @param fromIntent     The intent that was used to launch Chrome.
+     * @param context                        The context.
+     * @param fromIntent                     The intent that was used to launch Chrome.
+     * @param intentToLaunchAfterFreComplete The intent to relaunch Chrome when the user completes
+     *                                       the FRE.
+     * @param requiresBroadcast              Whether the relaunch intent must be broadcasted.
      */
-    private static Intent createLightweightFirstRunIntent(Context context, Intent fromIntent) {
+    private static Intent createLightweightFirstRunIntent(Context context, Intent fromIntent,
+            Intent intentToLaunchAfterFreComplete, boolean requiresBroadcast) {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
         String appName = WebApkActivity.slowExtractNameFromIntentIfTargetIsWebApk(fromIntent);
         intent.putExtra(LightweightFirstRunActivity.EXTRA_ASSOCIATED_APP_NAME, appName);
+        addPendingIntent(context, intent, intentToLaunchAfterFreComplete, requiresBroadcast);
         return intent;
     }
 
     /**
      * Adds fromIntent as a PendingIntent to the firstRunIntent. This should be used to add a
-     * PendingIntent that will be sent when first run is either completed or canceled.
+     * PendingIntent that will be sent when first run is completed.
      *
-     * @param caller            The context that corresponds to the Intent.
+     * @param context           The context that corresponds to the Intent.
      * @param firstRunIntent    The intent that will be used to start first run.
      * @param fromIntent        The intent that was used to launch Chrome.
      * @param requiresBroadcast Whether or not the fromIntent must be broadcasted.
      */
     private static void addPendingIntent(
-            Context caller, Intent firstRunIntent, Intent fromIntent, boolean requiresBroadcast) {
+            Context context, Intent firstRunIntent, Intent fromIntent, boolean requiresBroadcast) {
         PendingIntent pendingIntent = null;
         int pendingIntentFlags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_ONE_SHOT;
         if (requiresBroadcast) {
             pendingIntent = PendingIntent.getBroadcast(
-                    caller, FIRST_RUN_EXPERIENCE_REQUEST_CODE, fromIntent, pendingIntentFlags);
+                    context, FIRST_RUN_EXPERIENCE_REQUEST_CODE, fromIntent, pendingIntentFlags);
         } else {
             pendingIntent = PendingIntent.getActivity(
-                    caller, FIRST_RUN_EXPERIENCE_REQUEST_CODE, fromIntent, pendingIntentFlags);
+                    context, FIRST_RUN_EXPERIENCE_REQUEST_CODE, fromIntent, pendingIntentFlags);
         }
-        firstRunIntent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT, pendingIntent);
-        firstRunIntent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT,
-                LaunchIntentDispatcher.isCustomTabIntent(fromIntent));
+        firstRunIntent.putExtra(FirstRunActivity.EXTRA_FRE_COMPLETE_LAUNCH_INTENT, pendingIntent);
     }
 
     /**
@@ -327,16 +348,6 @@ public abstract class FirstRunFlowSequencer  {
      */
     public static boolean launch(Context caller, Intent intent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
-        // Check if the user just came back from the FRE.
-        boolean firstRunActivityResult = IntentUtils.safeGetBooleanExtra(
-                intent, FirstRunActivity.EXTRA_FIRST_RUN_ACTIVITY_RESULT, false);
-        boolean firstRunComplete = IntentUtils.safeGetBooleanExtra(
-                intent, FirstRunActivity.EXTRA_FIRST_RUN_COMPLETE, false);
-        if (firstRunActivityResult && !firstRunComplete) {
-            Log.d(TAG, "User failed to complete the FRE.  Aborting");
-            return true;
-        }
-
         // Check if the user needs to go through First Run at all.
         if (!checkIfFirstRunIsNecessary(caller, intent, preferLightweightFre)) return false;
 
@@ -355,10 +366,10 @@ public abstract class FirstRunFlowSequencer  {
             // Launch the Generic First Run Experience if it was previously active.
             Intent freIntent = null;
             if (preferLightweightFre && !isGenericFreActive) {
-                freIntent = createLightweightFirstRunIntent(caller, intent);
+                freIntent =
+                        createLightweightFirstRunIntent(caller, intent, intent, requiresBroadcast);
             } else {
-                freIntent = createGenericFirstRunIntent(
-                        caller, TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN));
+                freIntent = createGenericFirstRunIntent(caller, intent, intent, requiresBroadcast);
 
                 if (shouldSwitchToTabbedMode(caller)) {
                     freIntent.setClass(caller, TabbedModeFirstRunActivity.class);
@@ -367,12 +378,9 @@ public abstract class FirstRunFlowSequencer  {
                     // intent, to make transition seamless.
                     intent = new Intent(intent);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    addPendingIntent(caller, freIntent, intent, requiresBroadcast);
                 }
             }
-
-            // Add a PendingIntent so that the intent used to launch Chrome will be resent when
-            // First Run is completed or canceled.
-            addPendingIntent(caller, freIntent, intent, requiresBroadcast);
 
             if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (isVrIntent) {

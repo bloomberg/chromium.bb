@@ -117,14 +117,14 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
 
     public void abortFirstRunExperience() {
         finish();
-        sendPendingIntentIfNecessary(false);
+        notifyCustomTabCallbackFirstRunIfNecessary(getIntent(), false);
     }
 
     public void completeFirstRunExperience() {
         FirstRunStatus.setLightweightFirstRunFlowComplete(true);
         finish();
 
-        sendPendingIntentIfNecessary(true);
+        sendFirstRunCompletePendingIntent();
     }
 
     private void acceptTermsOfService() {
