@@ -14,8 +14,8 @@ from google.protobuf import timestamp_pb2
 # This module is used as a symlink in buildbucket GAE app.
 # Do not add import packages not available on GAE.
 
-BATCH_DEFAULT = 500
-BATCH_LIMIT = 10000
+_BATCH_DEFAULT = 500
+_BATCH_LIMIT = 10000
 
 # OAuth 2.0 scope to insert rows.
 INSERT_ROWS_SCOPE = 'https://www.googleapis.com/auth/bigquery.insertdata'
@@ -76,7 +76,7 @@ def _to_bq_value(value, field_desc):
     return value
 
 
-def send_rows(bq_client, dataset_id, table_id, rows, batch_size=BATCH_DEFAULT):
+def send_rows(bq_client, dataset_id, table_id, rows, batch_size=_BATCH_DEFAULT):
   """Sends rows to BigQuery.
 
   Args:
@@ -90,15 +90,15 @@ def send_rows(bq_client, dataset_id, table_id, rows, batch_size=BATCH_DEFAULT):
       be inserted
     batch_size (int): the max number of rows to send to BigQuery in a single
       request. Values exceeding the limit will use the limit. Values less than 1
-      will use BATCH_DEFAULT.
+      will use _BATCH_DEFAULT.
 
   Please use google.protobuf.message.Message instances moving forward.
   Tuples are deprecated.
   """
-  if batch_size > BATCH_LIMIT:
-    batch_size = BATCH_LIMIT
+  if batch_size > _BATCH_LIMIT:
+    batch_size = _BATCH_LIMIT
   elif batch_size <= 0:
-    batch_size = BATCH_DEFAULT
+    batch_size = _BATCH_DEFAULT
   for i, row in enumerate(rows):
     if isinstance(row, tuple):
       continue
