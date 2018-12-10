@@ -49,4 +49,8 @@ void FakeNavigableContents::CreateView(bool in_service_process,
   std::move(callback).Run(token);
 }
 
+void FakeNavigableContents::Focus() {}
+
+void FakeNavigableContents::FocusThroughTabTraversal(bool reverse) {}
+
 }  // namespace content

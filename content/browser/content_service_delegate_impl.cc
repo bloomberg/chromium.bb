@@ -53,6 +53,14 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
   }
 
  private:
+  void NotifyAXTreeChange() {
+    auto* rfh = web_contents_->GetMainFrame();
+    if (rfh)
+      client_->UpdateContentAXTree(rfh->GetAXTreeID());
+    else
+      client_->UpdateContentAXTree(ui::AXTreeIDUnknown());
+  }
+
   // content::NavigableContentsDelegate:
   gfx::NativeView GetNativeView() override {
     return web_contents_->GetNativeView();
@@ -76,6 +84,12 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
     } else {
       std::move(callback).Run(/*success=*/false);
     }
+  }
+
+  void Focus() override { web_contents_->Focus(); }
+
+  void FocusThroughTabTraversal(bool reverse) override {
+    web_contents_->FocusThroughTabTraversal(reverse);
   }
 
   // WebContentsDelegate:
@@ -120,6 +134,8 @@ class NavigableContentsDelegateImpl : public content::NavigableContentsDelegate,
       web_contents_->GetRenderWidgetHostView()->EnableAutoResize(
           auto_resize_min_size_, auto_resize_max_size_);
     }
+
+    NotifyAXTreeChange();
   }
 
   void DidFinishNavigation(NavigationHandle* navigation_handle) override {
