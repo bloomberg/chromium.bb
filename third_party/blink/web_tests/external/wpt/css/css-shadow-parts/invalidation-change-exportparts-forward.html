@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>CSS Shadow Parts - Invalidation change part name forward</title>
+    <title>CSS Shadow Parts - Invalidation change exportparts forward</title>
     <meta href="mailto:fergal@chromium.org" rel="author" title="Fergal Daly">
     <link href="http://www.google.com/" rel="author" title="Google">
     <link href="https://drafts.csswg.org/css-shadow-parts/" rel="help">
-    <script src="../resources/testharness.js"></script>
-    <script src="../resources/testharnessreport.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
     <script src="support/shadow-helper.js"></script>
   </head>
   <body>
@@ -25,7 +25,7 @@
       test(function() {
         const part = getElementByShadowIds(document, ["c-e-outer", "c-e-inner", "part"]);
         const before = window.getComputedStyle(part).color;
-        part.setAttribute("part", "new-partp");
+        getElementByShadowIds(document, ["c-e-outer", "c-e-inner"]).setAttribute("exportparts", "new-exportparts");
         const after = window.getComputedStyle(part).color;
         assert_not_equals(before, after);
       }, "Part in selected host changed color");
