@@ -26,7 +26,6 @@ const char FontFaceSetWorker::kSupplementName[] = "FontFaceSetWorker";
 
 FontFaceSetWorker::FontFaceSetWorker(WorkerGlobalScope& worker)
     : FontFaceSet(worker), Supplement<WorkerGlobalScope>(worker) {
-  PauseIfNeeded();
 }
 
 FontFaceSetWorker::~FontFaceSetWorker() = default;
