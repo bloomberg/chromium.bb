@@ -386,6 +386,22 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyDeprioritizesBadProxies) {
   EXPECT_TRUE(result.proxy_list().Equals(expected_proxy_list));
 }
 
+TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyAllProxiesBad) {
+  auto config = mojom::CustomProxyConfig::New();
+  config->rules.ParseFromString("http=foo");
+  auto delegate = CreateDelegate(std::move(config));
+
+  net::ProxyInfo result;
+  result.UseDirect();
+  net::ProxyRetryInfoMap retry_map;
+  net::ProxyRetryInfo& info = retry_map["foo:80"];
+  info.try_while_bad = false;
+  info.bad_until = base::TimeTicks::Now() + base::TimeDelta::FromDays(2);
+  delegate->OnResolveProxy(GURL(kHttpUrl), "GET", retry_map, &result);
+
+  EXPECT_TRUE(result.is_direct());
+}
+
 TEST_F(NetworkServiceProxyDelegateTest, InitialConfigUsedForProxy) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=foo");

@@ -52,7 +52,7 @@ bool ApplyProxyConfigToProxyInfo(const net::ProxyConfig::ProxyRules& rules,
 
   rules.Apply(url, proxy_info);
   proxy_info->DeprioritizeBadProxies(proxy_retry_info);
-  return !proxy_info->proxy_server().is_direct();
+  return !proxy_info->is_empty() && !proxy_info->proxy_server().is_direct();
 }
 
 // Checks if |target_proxy| is in |proxy_list|.
