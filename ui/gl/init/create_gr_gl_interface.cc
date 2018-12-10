@@ -242,6 +242,8 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   functions->fTexBuffer = gl->glTexBufferFn;
   functions->fTexBufferRange = gl->glTexBufferRangeFn;
   functions->fTexImage2D = bind_slow(gl->glTexImage2DFn, progress_reporter);
+  functions->fTexParameterf = gl->glTexParameterfFn;
+  functions->fTexParameterfv = gl->glTexParameterfvFn;
   functions->fTexParameteri = gl->glTexParameteriFn;
   functions->fTexParameteriv = gl->glTexParameterivFn;
   functions->fTexStorage2D = gl->glTexStorage2DEXTFn;
