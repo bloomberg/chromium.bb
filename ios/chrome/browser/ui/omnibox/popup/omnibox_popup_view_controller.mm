@@ -19,7 +19,9 @@
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -48,8 +50,9 @@ UIColor* BackgroundColorIncognito() {
 }
 }  // namespace
 
-@interface OmniboxPopupViewController ()<UITableViewDelegate,
-                                         UITableViewDataSource> {
+@interface OmniboxPopupViewController () <OmniboxPopupRowAccessibilityDelegate,
+                                          UITableViewDelegate,
+                                          UITableViewDataSource> {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
@@ -159,6 +162,8 @@ UIColor* BackgroundColorIncognito() {
                            action:@selector(trailingButtonTapped:)
                  forControlEvents:UIControlEventTouchUpInside];
     [row.trailingButton setTag:i];
+    row.rowNumber = i;
+    row.delegate = self;
     row.rowHeight = kRowHeight;
   }
   _rows = [rowsBuilder copy];
@@ -453,6 +458,19 @@ UIColor* BackgroundColorIncognito() {
     frame.origin.x = kLTRTextInRTLLayoutLeftPadding;
     detailTextLabel.frame = frame;
   }
+
+  NSString* trailingButtonActionName =
+      row.tabMatch
+          ? l10n_util::GetNSString(IDS_IOS_OMNIBOX_POPUP_SWITCH_TO_OPEN_TAB)
+          : l10n_util::GetNSString(IDS_IOS_OMNIBOX_POPUP_APPEND);
+  UIAccessibilityCustomAction* trailingButtonAction =
+      [[UIAccessibilityCustomAction alloc]
+          initWithName:trailingButtonActionName
+                target:row
+              selector:@selector(accessibilityTrailingButtonTapped)];
+
+  row.accessibilityCustomActions =
+      hasVisibleTrailingButton ? @[ trailingButtonAction ] : nil;
 
   [textLabel setNeedsDisplay];
 }
@@ -757,6 +775,13 @@ UIColor* BackgroundColorIncognito() {
 
 - (BOOL)useRegularWidthOffset {
   return [self showsLeadingIcons] && !IsCompactWidth();
+}
+
+#pragma mark - OmniboxPopupRowAccessibilityDelegate
+
+- (void)accessibilityTrailingButtonTappedOmniboxPopupRow:(OmniboxPopupRow*)row {
+  [self.delegate autocompleteResultConsumer:self
+                 didTapTrailingButtonForRow:row.rowNumber];
 }
 
 @end
