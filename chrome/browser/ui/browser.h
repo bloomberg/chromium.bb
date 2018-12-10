@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_view_controller.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -107,7 +106,6 @@ class SurfaceId;
 
 class Browser : public TabStripModelObserver,
                 public content::WebContentsDelegate,
-                public CoreTabHelperDelegate,
                 public ChromeWebModalDialogManagerDelegate,
                 public BookmarkTabHelperObserver,
 #if !defined(OS_ANDROID)
@@ -431,6 +429,14 @@ class Browser : public TabStripModelObserver,
 
   void UpdateDownloadShelfVisibility(bool visible);
 
+  // Whether the specified WebContents can be reloaded.
+  // Reloading can be disabled e.g. for the DevTools window.
+  bool CanReloadContents(content::WebContents* web_contents) const;
+
+  // Whether the specified WebContents can be saved.
+  // Saving can be disabled e.g. for the DevTools window.
+  bool CanSaveContents(content::WebContents* web_contents) const;
+
   /////////////////////////////////////////////////////////////////////////////
 
   // Called by Navigate() when a navigation has occurred in a tab in
@@ -719,10 +725,6 @@ class Browser : public TabStripModelObserver,
       int document_cookie,
       content::RenderFrameHost* subframe_host) const override;
 #endif
-
-  // Overridden from CoreTabHelperDelegate:
-  bool CanReloadContents(content::WebContents* web_contents) const override;
-  bool CanSaveContents(content::WebContents* web_contents) const override;
 
   // Overridden from WebContentsModalDialogManagerDelegate:
   void SetWebContentsBlocked(content::WebContents* web_contents,

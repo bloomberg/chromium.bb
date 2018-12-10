@@ -58,7 +58,6 @@ const int kImageSearchThumbnailMaxHeight = 600;
 
 CoreTabHelper::CoreTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      delegate_(NULL),
       content_restrictions_(0),
       weak_factory_(this) {}
 

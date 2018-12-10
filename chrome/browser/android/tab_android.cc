@@ -68,6 +68,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_request_body_android.h"
 #include "jni/Tab_jni.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -100,6 +101,34 @@ using navigation_interception::InterceptNavigationDelegate;
 using navigation_interception::NavigationParams;
 
 namespace {
+
+class TabAndroidHelper : public content::WebContentsUserData<TabAndroidHelper> {
+ public:
+  explicit TabAndroidHelper(content::WebContents*) {}
+  static void SetTabForWebContents(WebContents* contents,
+                                   TabAndroid* tab_android) {
+    content::WebContentsUserData<TabAndroidHelper>::CreateForWebContents(
+        contents);
+    content::WebContentsUserData<TabAndroidHelper>::FromWebContents(contents)
+        ->tab_android_ = tab_android;
+  }
+  static TabAndroid* FromWebContents(const WebContents* contents) {
+    if (TabAndroidHelper* helper = static_cast<TabAndroidHelper*>(
+            contents->GetUserData(UserDataKey()))) {
+      return helper->tab_android_;
+    }
+    return nullptr;
+  }
+
+ private:
+  friend class content::WebContentsUserData<TabAndroidHelper>;
+
+  TabAndroid* tab_android_;
+
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
+};
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabAndroidHelper)
 
 GURL GetPublisherURLForTrustedCDN(
     content::NavigationHandle* navigation_handle) {
@@ -169,17 +198,8 @@ class TabAndroid::MediaDownloadInProductHelp
 };
 
 TabAndroid* TabAndroid::FromWebContents(
-  const content::WebContents* web_contents) {
-  const CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(
-      web_contents);
-  if (!core_tab_helper)
-    return NULL;
-
-  CoreTabHelperDelegate* core_delegate = core_tab_helper->delegate();
-  if (!core_delegate)
-    return NULL;
-
-  return static_cast<TabAndroid*>(core_delegate);
+    const content::WebContents* web_contents) {
+  return TabAndroidHelper::FromWebContents(web_contents);
 }
 
 TabAndroid* TabAndroid::GetNativeTab(JNIEnv* env, const JavaRef<jobject>& obj) {
@@ -377,7 +397,7 @@ void TabAndroid::InitWebContents(
       jcontext_menu_populator);
   ViewAndroidHelper::FromWebContents(web_contents())->
       SetViewAndroid(web_contents()->GetNativeView());
-  CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
+  TabAndroidHelper::SetTabForWebContents(web_contents(), this);
   web_contents_delegate_ =
       std::make_unique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);
@@ -455,7 +475,7 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
   } else {
     // Remove the link from the native WebContents to |this|, since the
     // lifetimes of the two objects are no longer intertwined.
-    CoreTabHelper::FromWebContents(web_contents())->set_delegate(nullptr);
+    TabAndroidHelper::SetTabForWebContents(web_contents(), nullptr);
     // Release the WebContents so it does not get deleted by the scoped_ptr.
     ignore_result(web_contents_.release());
   }

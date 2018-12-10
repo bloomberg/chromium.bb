@@ -111,7 +111,7 @@ class TabLoadTracker {
   void TransitionStateForTesting(content::WebContents* web_contents,
                                  LoadingState loading_state);
 
-  // Called from CoreTabHelperDelegates when |new_contents| is replacing
+  // Called from WebContentsDelegates when |new_contents| is replacing
   // |old_contents| in a tab.
   void SwapTabContents(content::WebContents* old_contents,
                        content::WebContents* new_contents);

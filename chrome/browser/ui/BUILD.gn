@@ -195,8 +195,6 @@ jumbo_split_static_library("ui") {
     "tab_contents/chrome_web_contents_view_delegate.h",
     "tab_contents/core_tab_helper.cc",
     "tab_contents/core_tab_helper.h",
-    "tab_contents/core_tab_helper_delegate.cc",
-    "tab_contents/core_tab_helper_delegate.h",
     "tab_dialogs.cc",
     "tab_dialogs.h",
     "tab_helpers.cc",

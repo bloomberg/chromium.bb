@@ -18,7 +18,6 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/android/tab_state.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
-#include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -51,8 +50,7 @@ namespace prerender {
 class PrerenderManager;
 }
 
-class TabAndroid : public CoreTabHelperDelegate,
-                   public favicon::FaviconDriverObserver,
+class TabAndroid : public favicon::FaviconDriverObserver,
                    public content::WebContentsObserver {
  public:
   // A Java counterpart will be generated for this enum.
