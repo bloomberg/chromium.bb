@@ -417,6 +417,14 @@ void VariationsService::EnsureLocaleEquals(const std::string& locale) {
   // Chrome OS may switch language on the fly.
   DCHECK_EQ(locale, field_trial_creator_.application_locale());
 #else
+
+#if defined(OS_ANDROID)
+  // TODO(asvitkine): Speculative early return to silence CHECK failures on
+  // Android, see crbug.com/912320.
+  if (locale.empty())
+    return;
+#endif
+
   // Uses a CHECK rather than a DCHECK to ensure that issues are caught since
   // problems in this area may only appear in the wild due to official builds
   // and end user machines.
