@@ -2,19 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var entryA = {
-  toURL: function() { return "filesystem://A"; },
-  isFile: true
-};
+/** @const {!Entry} */
+const entryA = /** @type {!Entry} */ ({
+  toURL: function() {
+    return 'filesystem://A';
+  },
+  isFile: true,
+});
 
-var entryB = {
-  toURL: function() { return "filesystem://B"; },
-  isFile: true
-};
+/** @const {!Entry} */
+const entryB = /** @type {!Entry} */ ({
+  toURL: function() {
+    return 'filesystem://B';
+  },
+  isFile: true,
+});
+
+/**
+ * Mock chrome APIs.
+ * @type {!Object}
+ */
+let mockChrome;
 
 function testExternalMetadataProviderBasic(callback) {
-  // Mocking chrome API.
-  window.chrome = {
+  // Setup mock chrome APIs.
+  mockChrome = {
     fileManagerPrivate: {
       getEntryProperties: function(entries, names, callback) {
         assertEquals(2, entries.length);
@@ -41,8 +53,13 @@ function testExternalMetadataProviderBasic(callback) {
         ]);
       }
     },
-    runtime: {lastError: null}
+    runtime: {
+      lastError: null,
+    },
   };
+
+  installMockChrome(mockChrome);
+
   var provider = new ExternalMetadataProvider();
   reportPromise(provider.get([
     new MetadataRequest(entryA, ['modificationTime', 'size']),

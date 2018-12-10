@@ -8,6 +8,14 @@ import("//third_party/closure_compiler/js_unit_tests.gni")
 # TODO(tapted): This entire folder should move to //ui/file_manager/base.
 visibility = [ "//ui/file_manager/*" ]
 
+group("closure_compile") {
+  testonly = true
+  deps = [
+    ":closure_compile_module",
+    ":unit_tests_type_check",
+  ]
+}
+
 js_type_check("closure_compile_module") {
   deps = [
     ":byte_reader",
@@ -84,6 +92,15 @@ js_unittest("exif_parser_unittest") {
 js_library("external_metadata_provider") {
   deps = [
     ":metadata_provider",
+    "//ui/file_manager/externs:file_manager_private",
+  ]
+}
+
+js_unittest("external_metadata_provider_unittest") {
+  deps = [
+    ":external_metadata_provider",
+    "//ui/file_manager/base/js:mock_chrome",
+    "//ui/file_manager/base/js:test_error_reporting",
   ]
 }
 
@@ -264,6 +281,7 @@ js_unit_tests("unit_tests") {
   deps = [
     ":content_metadata_provider_unittest",
     ":exif_parser_unittest",
+    ":external_metadata_provider_unittest",
     ":file_system_metadata_provider_unittest",
     ":image_orientation_unittest",
     ":metadata_cache_item_unittest",
@@ -271,13 +289,5 @@ js_unit_tests("unit_tests") {
     ":metadata_model_unittest",
     ":multi_metadata_provider_unittest",
     ":thumbnail_model_unittest",
-  ]
-}
-
-group("closure_compile") {
-  testonly = true
-  deps = [
-    ":closure_compile_module",
-    ":unit_tests_type_check",
   ]
 }
