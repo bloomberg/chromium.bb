@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<grit-part>
+  <message name="IDS_APP_MANAGEMENT_APP_LIST_TITLE" desc="Title of app list card on main app management page.">
+    Recently opened apps
+  </message>
+  <message name="IDS_APP_MANAGEMENT_MORE_APPS" desc="Label for more apps button at bottom of app list card.">
+    See more apps
+  </message>
+  <message name="IDS_APP_MANAGEMENT_SEARCH_PROMPT" desc="Prompt in search bar of main app management page.">
+    Search Settings
+  </message>
+  <message name="IDS_APP_MANAGEMENT_TITLE" desc="Title of the app management page.">
+    Apps
+  </message>
+</grit-part>
