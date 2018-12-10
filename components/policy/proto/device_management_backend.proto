@@ -951,6 +951,10 @@ message BrowserReport {
 
   // Profile specific reports, one per profile.
   repeated ChromeUserProfileReport chrome_user_profile_reports = 4;
+
+  // The device serial number (this might differ with the client ID, depending
+  // on the platform)
+  optional string serial_number = 5;
 }
 
 // Report the status of a Chrome installation on non-Chrome OS platform.

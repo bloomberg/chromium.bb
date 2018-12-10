@@ -11,8 +11,10 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/prefs.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/policy/policy_conversions.h"
@@ -79,6 +81,11 @@ int64_t GetMachineLevelUserCloudPolicyFetchTimestamp() {
 void AppendAdditionalBrowserInformation(em::ChromeDesktopReportRequest* request,
                                         Profile* profile) {
   const PrefService* prefs = profile->GetPrefs();
+
+#if defined(OS_WIN)
+  request->mutable_browser_report()->set_serial_number(
+      policy::BrowserDMTokenStorage::Get()->RetrieveSerialNumber());
+#endif
 
   // Set Chrome version number
   request->mutable_browser_report()->set_browser_version(

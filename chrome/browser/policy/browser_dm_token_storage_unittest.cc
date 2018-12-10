@@ -60,6 +60,7 @@ class MockBrowserDMTokenStorage : public BrowserDMTokenStorage {
 
  private:
   std::string test_client_id_;
+  std::string test_serial_number_;
   std::string test_enrollment_token_;
   std::string test_dm_token_;
   bool test_error_option_;

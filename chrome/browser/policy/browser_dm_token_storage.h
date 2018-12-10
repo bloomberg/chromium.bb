@@ -13,8 +13,11 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
+#include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/system/sys_info.h"
 
 namespace policy {
 
@@ -34,6 +37,8 @@ class BrowserDMTokenStorage {
   static BrowserDMTokenStorage* Get();
   // Returns a client ID unique to the machine. Virtual for tests.
   virtual std::string RetrieveClientId();
+  // Returns the serial number of the machine.
+  std::string RetrieveSerialNumber();
   // Returns the enrollment token, or an empty string if there is none. Virtual
   // for tests.
   virtual std::string RetrieveEnrollmentToken();
@@ -77,14 +82,17 @@ class BrowserDMTokenStorage {
   // is called the first time the BrowserDMTokenStorage is interacted with.
   void InitIfNeeded();
 
-  // Gets the client ID and stores it in |client_id_|. This implementation is
-  // platform dependant.
+  // Gets the client ID and returns it. This implementation is platform
+  // dependant.
   virtual std::string InitClientId() = 0;
-  // Gets the enrollment token and stores it in |enrollment_token_|. This
-  // implementation is platform dependant.
+  // Gets the client ID and returns it. This implementation is shared by all
+  // platforms.
+  std::string InitSerialNumber();
+  // Gets the enrollment token and returns it. This implementation is platform
+  // dependant.
   virtual std::string InitEnrollmentToken() = 0;
-  // Gets the DM token and stores it in |dm_token_|. This implementation is
-  // platform dependant.
+  // Gets the DM token and returns it. This implementation is platform
+  // dependant.
   virtual std::string InitDMToken() = 0;
   // Gets the boolean value that determines if error message will be displayed
   // when enrollment fails.
@@ -101,6 +109,7 @@ class BrowserDMTokenStorage {
   bool is_initialized_;
 
   std::string client_id_;
+  base::Optional<std::string> serial_number_;
   std::string enrollment_token_;
   std::string dm_token_;
   bool should_display_error_message_on_failure_;
