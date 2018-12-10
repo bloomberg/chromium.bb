@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Decodes a UTF16 string that is encoded as base64.
+function decodeUTF16Base64ToString(encoded_text) {
+  var data = atob(encoded_text);
+  var result = '';
+  for (var i = 0; i < data.length; i += 2) {
+    result +=
+        String.fromCharCode(data.charCodeAt(i) * 256 + data.charCodeAt(i + 1));
+  }
+  return result;
+}
+
 function toggleHelpBox() {
   var helpBoxOuter = document.getElementById('details');
   helpBoxOuter.classList.toggle(HIDDEN_CLASS);
@@ -286,9 +297,11 @@ function offlineContentAvailable(isShown, suggestions) {
   // plain text.
   for (var index = 0; index < suggestions.length; index++) {
     document.getElementById(`offline-content-suggestion-title-${index}`)
-        .textContent = atob(suggestions[index].title_base64);
+        .textContent =
+        decodeUTF16Base64ToString(suggestions[index].title_base64);
     document.getElementById(`offline-content-suggestion-attribution-${index}`)
-        .textContent = atob(suggestions[index].attribution_base64);
+        .textContent =
+        decodeUTF16Base64ToString(suggestions[index].attribution_base64);
   }
 
   var contentListElement = document.getElementById('offline-content-list');
@@ -324,8 +337,7 @@ function onDocumentLoad() {
   var showSavedCopyButtonVisible =
       loadTimeData.valueExists('showSavedCopyButton') &&
       loadTimeData.getValue('showSavedCopyButton').msg;
-  var downloadButtonVisible =
-      loadTimeData.valueExists('downloadButton') &&
+  var downloadButtonVisible = loadTimeData.valueExists('downloadButton') &&
       loadTimeData.getValue('downloadButton').msg;
 
   // If offline content suggestions will be visible, the usual buttons will not

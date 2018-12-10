@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "components/error_page/common/net_error_info.h"
@@ -22,6 +23,23 @@ namespace {
 using chrome::mojom::AvailableOfflineContentPtr;
 using chrome::mojom::AvailableContentType;
 
+// Converts a string to base-64 data. This is done for security purposes, to
+// avoid potential XSS. Note that when this value is decoded in javascript, we
+// want to use the atob() function, but that function only handles latin-1
+// characters. Additionally, javascript needs UTF16 strings. So we instead
+// encode to UTF16, and then store that data as base64.
+std::string ConvertToUTF16Base64(const std::string& text) {
+  base::string16 text_utf16 = base::UTF8ToUTF16(text);
+  std::string utf16_bytes;
+  for (base::char16 c : text_utf16) {
+    utf16_bytes.push_back(static_cast<char>(c >> 8));
+    utf16_bytes.push_back(static_cast<char>(c & 0xff));
+  }
+  std::string encoded;
+  base::Base64Encode(utf16_bytes, &encoded);
+  return encoded;
+}
+
 base::Value AvailableContentToValue(const AvailableOfflineContentPtr& content) {
   // All pieces of text content downloaded from the web will be base64 encoded
   // to lessen security risks when this dictionary is passed as a string to
@@ -30,13 +48,13 @@ base::Value AvailableContentToValue(const AvailableOfflineContentPtr& content) {
   base::Value value(base::Value::Type::DICTIONARY);
   value.SetKey("ID", base::Value(content->id));
   value.SetKey("name_space", base::Value(content->name_space));
-  base::Base64Encode(content->title, &base64_encoded);
-  value.SetKey("title_base64", base::Value(base64_encoded));
-  base::Base64Encode(content->snippet, &base64_encoded);
-  value.SetKey("snippet_base64", base::Value(base64_encoded));
+  value.SetKey("title_base64",
+               base::Value(ConvertToUTF16Base64(content->title)));
+  value.SetKey("snippet_base64",
+               base::Value(ConvertToUTF16Base64(content->snippet)));
   value.SetKey("date_modified", base::Value(content->date_modified));
-  base::Base64Encode(content->attribution, &base64_encoded);
-  value.SetKey("attribution_base64", base::Value(base64_encoded));
+  value.SetKey("attribution_base64",
+               base::Value(ConvertToUTF16Base64(content->attribution)));
   value.SetKey("thumbnail_data_uri",
                base::Value(content->thumbnail_data_uri.spec()));
   value.SetKey("content_type",
