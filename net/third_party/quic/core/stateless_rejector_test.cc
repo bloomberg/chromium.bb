@@ -27,8 +27,9 @@ namespace quic {
 namespace test {
 namespace {
 
-const QuicConnectionId kConnectionId = 42;
-const QuicConnectionId kServerDesignateConnectionId = 24;
+const QuicConnectionId kConnectionId = QuicConnectionIdFromUInt64(42);
+const QuicConnectionId kServerDesignateConnectionId =
+    QuicConnectionIdFromUInt64(24);
 
 // All four combinations of the two flags involved.
 enum FlagsMode { ENABLED, STATELESS_DISABLED, CHEAP_DISABLED, BOTH_DISABLED };

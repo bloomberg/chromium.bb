@@ -111,6 +111,27 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns true if |id| is considered as server initiated stream ID.
   static bool IsServerInitiatedStreamId(QuicTransportVersion version,
                                         QuicStreamId id);
+
+  // Returns true if |id| is considered as bidirectional stream ID. Only used in
+  // v99.
+  static bool IsBidirectionalStreamId(QuicStreamId id);
+
+  // Returns stream type according to |id| and |peer_initiated|. Only used in
+  // v99.
+  static StreamType GetStreamType(QuicStreamId id, bool peer_initiated);
+
+  // Returns the delta between consecutive stream IDs of the same type.
+  static QuicStreamId StreamIdDelta(QuicTransportVersion version);
+
+  // Returns the first initiated bidirectional stream ID of |perspective|.
+  static QuicStreamId GetFirstBidirectionalStreamId(
+      QuicTransportVersion version,
+      Perspective perspective);
+
+  // Returns the first initiated unidirectional stream ID of |perspective|.
+  static QuicStreamId GetFirstUnidirectionalStreamId(
+      QuicTransportVersion version,
+      Perspective perspective);
 };
 
 }  // namespace quic

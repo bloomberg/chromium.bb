@@ -33,7 +33,8 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
     : max_buffer_capacity_bytes_(max_capacity_bytes),
       blocks_count_(CalculateBlockCount(max_capacity_bytes)),
       total_bytes_read_(0),
-      blocks_(nullptr) {
+      blocks_(nullptr),
+      total_bytes_prefetched_(0) {
   Clear();
 }
 
@@ -272,6 +273,8 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
       }
     }
   }
+  total_bytes_prefetched_ =
+      std::max(total_bytes_prefetched_, total_bytes_read_);
 
   return QUIC_NO_ERROR;
 }
@@ -338,6 +341,31 @@ bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov) const {
   return GetReadableRegions(iov, 1) == 1;
 }
 
+bool QuicStreamSequencerBuffer::PrefetchNextRegion(iovec* iov) {
+  DCHECK(iov != nullptr);
+
+  if (total_bytes_prefetched_ == FirstMissingByte()) {
+    return false;
+  }
+
+  size_t start_block_idx = GetBlockIndex(total_bytes_prefetched_);
+  size_t start_block_offset = GetInBlockOffset(total_bytes_prefetched_);
+  QuicStreamOffset readable_offset_end = FirstMissingByte() - 1;
+  size_t end_block_offset = GetInBlockOffset(readable_offset_end);
+  size_t end_block_idx = GetBlockIndex(readable_offset_end);
+
+  if (start_block_idx != end_block_idx) {
+    iov->iov_base = blocks_[start_block_idx]->buffer + start_block_offset;
+    iov->iov_len = GetBlockCapacity(start_block_idx) - start_block_offset;
+    total_bytes_prefetched_ += iov->iov_len;
+    return true;
+  }
+  iov->iov_base = blocks_[end_block_idx]->buffer + start_block_offset;
+  iov->iov_len = end_block_offset - start_block_offset + 1;
+  total_bytes_prefetched_ += iov->iov_len;
+  return true;
+}
+
 bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
   if (bytes_used > ReadableBytes()) {
     return false;
@@ -358,6 +386,8 @@ bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
       RetireBlockIfEmpty(block_idx);
     }
   }
+  total_bytes_prefetched_ =
+      std::max(total_bytes_read_, total_bytes_prefetched_);
   return true;
 }
 

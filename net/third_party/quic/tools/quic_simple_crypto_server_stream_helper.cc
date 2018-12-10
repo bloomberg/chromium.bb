@@ -16,7 +16,7 @@ QuicSimpleCryptoServerStreamHelper::~QuicSimpleCryptoServerStreamHelper() =
 QuicConnectionId
 QuicSimpleCryptoServerStreamHelper::GenerateConnectionIdForReject(
     QuicConnectionId /*connection_id*/) const {
-  return random_->RandUint64();
+  return QuicConnectionIdFromUInt64(random_->RandUint64());
 }
 
 bool QuicSimpleCryptoServerStreamHelper::CanAcceptClientHello(

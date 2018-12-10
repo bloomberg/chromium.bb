@@ -303,7 +303,8 @@ class TestPacketWriter : public QuicPacketWriter {
         packets_write_attempts_(0),
         clock_(clock),
         write_pause_time_delta_(QuicTime::Delta::Zero()),
-        max_packet_size_(kMaxPacketSize) {}
+        max_packet_size_(kMaxPacketSize),
+        supports_release_time_(false) {}
   TestPacketWriter(const TestPacketWriter&) = delete;
   TestPacketWriter& operator=(const TestPacketWriter&) = delete;
 
@@ -375,7 +376,7 @@ class TestPacketWriter : public QuicPacketWriter {
     return max_packet_size_;
   }
 
-  bool SupportsReleaseTime() const { return false; }
+  bool SupportsReleaseTime() const { return supports_release_time_; }
 
   bool IsBatchMode() const override { return false; }
 
@@ -491,6 +492,10 @@ class TestPacketWriter : public QuicPacketWriter {
     max_packet_size_ = max_packet_size;
   }
 
+  void set_supports_release_time(bool supports_release_time) {
+    supports_release_time_ = supports_release_time;
+  }
+
  private:
   ParsedQuicVersion version_;
   SimpleQuicFramer framer_;
@@ -511,6 +516,7 @@ class TestPacketWriter : public QuicPacketWriter {
   // time.
   QuicTime::Delta write_pause_time_delta_;
   QuicByteCount max_packet_size_;
+  bool supports_release_time_;
 };
 
 class TestConnection : public QuicConnection {
@@ -790,7 +796,7 @@ std::vector<TestParams> GetTestParams() {
 class QuicConnectionTest : public QuicTestWithParam<TestParams> {
  protected:
   QuicConnectionTest()
-      : connection_id_(42),
+      : connection_id_(QuicConnectionIdFromUInt64(42)),
         framer_(SupportedVersions(version()),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
@@ -1903,7 +1909,7 @@ TEST_P(QuicConnectionTest, MaxPacketSize) {
 }
 
 TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
-  QuicConnectionId connection_id = 42;
+  QuicConnectionId connection_id = QuicConnectionIdFromUInt64(42);
   TestConnection connection(connection_id, kPeerAddress, helper_.get(),
                             alarm_factory_.get(), writer_.get(),
                             Perspective::IS_SERVER, version());
@@ -1988,7 +1994,7 @@ TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriter) {
 }
 
 TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriterForNewConnection) {
-  const QuicConnectionId connection_id = 17;
+  const QuicConnectionId connection_id = QuicConnectionIdFromUInt64(17);
   const QuicByteCount lower_max_packet_size = 1240;
   writer_->set_max_packet_size(lower_max_packet_size);
   TestConnection connection(connection_id, kPeerAddress, helper_.get(),
@@ -7525,6 +7531,23 @@ TEST_P(QuicConnectionTest, DoNotScheduleSpuriousAckAlarm) {
   ProcessPacket(2);
   // Verify ack alarm is not set.
   EXPECT_FALSE(ack_alarm->IsSet());
+}
+
+TEST_P(QuicConnectionTest, DisablePacingOffloadConnectionOptions) {
+  EXPECT_FALSE(QuicConnectionPeer::SupportsReleaseTime(&connection_));
+  writer_->set_supports_release_time(true);
+  QuicConfig config;
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(QuicConnectionPeer::SupportsReleaseTime(&connection_));
+
+  QuicTagVector connection_options;
+  connection_options.push_back(kNPCO);
+  config.SetConnectionOptionsToSend(connection_options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  connection_.SetFromConfig(config);
+  // Verify pacing offload is disabled.
+  EXPECT_FALSE(QuicConnectionPeer::SupportsReleaseTime(&connection_));
 }
 
 // Regression test for b/110259444

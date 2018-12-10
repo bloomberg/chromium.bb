@@ -4,12 +4,28 @@
 
 #include "net/third_party/quic/quartc/quartc_stream.h"
 
+#include <memory>
+#include <utility>
+
+#include "net/third_party/quic/core/quic_ack_listener_interface.h"
+#include "net/third_party/quic/core/quic_error_codes.h"
+#include "net/third_party/quic/core/quic_stream_send_buffer.h"
+#include "net/third_party/quic/core/quic_stream_sequencer.h"
+#include "net/third_party/quic/core/quic_stream_sequencer_buffer.h"
+#include "net/third_party/quic/core/quic_types.h"
+#include "net/third_party/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quic/platform/api/quic_reference_counted.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace quic {
 
 QuartcStream::QuartcStream(QuicStreamId id, QuicSession* session)
     : QuicStream(id, session, /*is_static=*/false, BIDIRECTIONAL) {
+  sequencer()->set_level_triggered(true);
+}
+
+QuartcStream::QuartcStream(PendingStream pending)
+    : QuicStream(std::move(pending), BIDIRECTIONAL) {
   sequencer()->set_level_triggered(true);
 }
 
@@ -57,6 +73,19 @@ void QuartcStream::OnDataBuffered(
   delegate_->OnBufferChanged(this);
 }
 
+bool QuartcStream::OnStreamFrameAcked(QuicStreamOffset offset,
+                                      QuicByteCount data_length,
+                                      bool fin_acked,
+                                      QuicTime::Delta ack_delay_time) {
+  // Previous losses of acked data are no longer relevant to the retransmission
+  // count.  Once data is acked, it will never be retransmitted.
+  lost_frame_counter_.RemoveInterval(
+      QuicInterval<QuicStreamOffset>(offset, offset + data_length));
+
+  return QuicStream::OnStreamFrameAcked(offset, data_length, fin_acked,
+                                        ack_delay_time);
+}
+
 void QuartcStream::OnStreamFrameRetransmitted(QuicStreamOffset offset,
                                               QuicByteCount data_length,
                                               bool fin_retransmitted) {
@@ -72,14 +101,16 @@ void QuartcStream::OnStreamFrameLost(QuicStreamOffset offset,
                                      bool fin_lost) {
   QuicStream::OnStreamFrameLost(offset, data_length, fin_lost);
 
-  ++total_frames_lost_;
+  lost_frame_counter_.AddInterval(
+      QuicInterval<QuicStreamOffset>(offset, offset + data_length));
 
   DCHECK(delegate_);
   delegate_->OnBufferChanged(this);
 }
 
 void QuartcStream::OnCanWrite() {
-  if (total_frames_lost_ > max_frame_retransmission_count_ &&
+  if (lost_frame_counter_.MaxCount() >
+          static_cast<size_t>(max_retransmission_count_) &&
       HasPendingRetransmission()) {
     Reset(QUIC_STREAM_CANCELLED);
     return;
@@ -88,28 +119,28 @@ void QuartcStream::OnCanWrite() {
 }
 
 bool QuartcStream::cancel_on_loss() {
-  return max_frame_retransmission_count_ == 0;
+  return max_retransmission_count_ == 0;
 }
 
 void QuartcStream::set_cancel_on_loss(bool cancel_on_loss) {
   if (cancel_on_loss) {
-    max_frame_retransmission_count_ = 0;
+    max_retransmission_count_ = 0;
   } else {
-    max_frame_retransmission_count_ = std::numeric_limits<int>::max();
+    max_retransmission_count_ = std::numeric_limits<int>::max();
   }
 }
 
-int QuartcStream::max_frame_retransmission_count() const {
-  return max_frame_retransmission_count_;
+int QuartcStream::max_retransmission_count() const {
+  return max_retransmission_count_;
 }
 
-void QuartcStream::set_max_frame_retransmission_count(
-    int max_frame_retransmission_count) {
-  max_frame_retransmission_count_ = max_frame_retransmission_count;
+void QuartcStream::set_max_retransmission_count(int max_retransmission_count) {
+  max_retransmission_count_ = max_retransmission_count;
 }
 
 QuicByteCount QuartcStream::BytesPendingRetransmission() {
-  if (total_frames_lost_ > max_frame_retransmission_count_) {
+  if (lost_frame_counter_.MaxCount() >
+      static_cast<size_t>(max_retransmission_count_)) {
     return 0;  // Lost bytes will never be retransmitted.
   }
   QuicByteCount bytes = 0;
@@ -117,6 +148,10 @@ QuicByteCount QuartcStream::BytesPendingRetransmission() {
     bytes += interval.Length();
   }
   return bytes;
+}
+
+QuicStreamOffset QuartcStream::ReadOffset() {
+  return sequencer()->NumBytesConsumed();
 }
 
 void QuartcStream::FinishWriting() {

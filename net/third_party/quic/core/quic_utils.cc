@@ -341,7 +341,7 @@ QuicStreamId QuicUtils::GetCryptoStreamId(QuicTransportVersion version) {
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  return version == QUIC_VERSION_99 ? 2 : 3;
+  return version == QUIC_VERSION_99 ? 4 : 3;
 }
 
 // static
@@ -360,6 +360,44 @@ bool QuicUtils::IsServerInitiatedStreamId(QuicTransportVersion version,
     return false;
   }
   return version == QUIC_VERSION_99 ? id % 2 != 0 : id % 2 == 0;
+}
+
+// static
+bool QuicUtils::IsBidirectionalStreamId(QuicStreamId id) {
+  return id % 4 < 2;
+}
+
+// static
+StreamType QuicUtils::GetStreamType(QuicStreamId id, bool peer_initiated) {
+  if (IsBidirectionalStreamId(id)) {
+    return BIDIRECTIONAL;
+  }
+  return peer_initiated ? READ_UNIDIRECTIONAL : WRITE_UNIDIRECTIONAL;
+}
+
+// static
+QuicStreamId QuicUtils::StreamIdDelta(QuicTransportVersion version) {
+  return version == QUIC_VERSION_99 ? 4 : 2;
+}
+
+// static
+QuicStreamId QuicUtils::GetFirstBidirectionalStreamId(
+    QuicTransportVersion version,
+    Perspective perspective) {
+  if (perspective == Perspective::IS_CLIENT) {
+    return version == QUIC_VERSION_99 ? 4 : 3;
+  }
+  return version == QUIC_VERSION_99 ? 1 : 2;
+}
+
+// static
+QuicStreamId QuicUtils::GetFirstUnidirectionalStreamId(
+    QuicTransportVersion version,
+    Perspective perspective) {
+  if (perspective == Perspective::IS_CLIENT) {
+    return version == QUIC_VERSION_99 ? 2 : 3;
+  }
+  return version == QUIC_VERSION_99 ? 3 : 2;
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds

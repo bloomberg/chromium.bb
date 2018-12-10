@@ -181,6 +181,9 @@ const QuicTag kMPTH = TAG('M', 'P', 'T', 'H');   // Enable multipath.
 const QuicTag kNCMR = TAG('N', 'C', 'M', 'R');   // Do not attempt connection
                                                  // migration.
 
+// Disable Pacing offload option.
+const QuicTag kNPCO = TAG('N', 'P', 'C', 'O');    // No pacing offload.
+
 // Enable bandwidth resumption experiment.
 const QuicTag kBWRE = TAG('B', 'W', 'R', 'E');  // Bandwidth resumption.
 const QuicTag kBWMX = TAG('B', 'W', 'M', 'X');  // Max bandwidth resumption.

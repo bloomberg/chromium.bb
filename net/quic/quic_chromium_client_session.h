@@ -646,10 +646,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
  protected:
   // quic::QuicSession methods:
   bool ShouldCreateIncomingStream(quic::QuicStreamId id) override;
-  bool ShouldCreateOutgoingStream() override;
+  bool ShouldCreateOutgoingBidirectionalStream() override;
+  bool ShouldCreateOutgoingUnidirectionalStream() override;
 
   QuicChromiumClientStream* CreateIncomingStream(
       quic::QuicStreamId id) override;
+  QuicChromiumClientStream* CreateIncomingStream(
+      quic::PendingStream pending) override;
 
  private:
   friend class test::QuicChromiumClientSessionPeer;
@@ -663,6 +666,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const NetworkTrafficAnnotationTag& traffic_annotation);
   QuicChromiumClientStream* CreateIncomingReliableStreamImpl(
       quic::QuicStreamId id,
+      const NetworkTrafficAnnotationTag& traffic_annotation);
+  QuicChromiumClientStream* CreateIncomingReliableStreamImpl(
+      quic::PendingStream pending,
       const NetworkTrafficAnnotationTag& traffic_annotation);
   // A completion callback invoked when a read completes.
   void OnReadComplete(int result);

@@ -156,7 +156,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_cert_chain, true)
 // If true, try to aggregate acked stream frames.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggregate_acked_stream_frames_2,
-          false)
+          true)
 
 // If true, only process stateless reset packets on the client side.
 QUIC_FLAG(
@@ -186,7 +186,7 @@ QUIC_FLAG(bool,
 
 // If true, use new, lower-overhead implementation of LRU cache for compressed
 // certificates.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_new_lru_cache, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_new_lru_cache, true)
 
 // When true and the BBR9 connection option is present, BBR only considers
 // bandwidth samples app-limited if they're not filling the pipe.
@@ -254,7 +254,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_46, false)
 // When true, cache that encryption has been established to save CPU.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_optimize_encryption_established,
-          false)
+          true)
 
 // When in STARTUP and recovery, do not add bytes_acked to QUIC BBR's CWND in
 // CalculateCongestionWindow()
@@ -312,4 +312,4 @@ QUIC_FLAG(bool,
           false)
 
 // If true, disables key share caching for QUIC key exchange
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, true)

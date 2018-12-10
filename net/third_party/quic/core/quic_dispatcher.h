@@ -179,11 +179,6 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
   // Return true if there is CHLO buffered.
   virtual bool HasChlosBuffered() const;
 
-  // Used by subclass of QuicDispatcher, to track its per packet context.
-  struct PerPacketContext {
-    virtual ~PerPacketContext() {}
-  };
-
  protected:
   virtual QuicSession* CreateQuicSession(QuicConnectionId connection_id,
                                          const QuicSocketAddress& peer_address,
@@ -340,9 +335,9 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
       QuicTimeWaitListManager::TimeWaitAction action);
 
   // Save/Restore per packet context. Used by async stateless rejector.
-  virtual std::unique_ptr<PerPacketContext> GetPerPacketContext() const;
+  virtual std::unique_ptr<QuicPerPacketContext> GetPerPacketContext() const;
   virtual void RestorePerPacketContext(
-      std::unique_ptr<PerPacketContext> /*context*/) {}
+      std::unique_ptr<QuicPerPacketContext> /*context*/) {}
 
   // Skip validating that the public flags are set to legal values.
   void DisableFlagValidation();

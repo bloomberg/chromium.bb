@@ -99,6 +99,7 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   // TODO(fayang): Remove this method and use WriteUInt64() once deprecating
   // quic_rw_cid_in_big_endian flag and QuicDataWriter has a mode indicating
   // writing in little/big endian.
+  // TODO(dschinazi) b/120240679 - change parameter type to QuicConnectionId
   bool WriteConnectionId(uint64_t connection_id);
 
   // Write tag as a 32-bit unsigned integer to the payload. As tags are already

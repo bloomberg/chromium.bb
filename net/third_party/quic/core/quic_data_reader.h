@@ -79,6 +79,8 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // TODO(fayang): Remove this method and use ReadUInt64() once deprecating
   // quic_rw_cid_in_big_endian flag and QuicDataReader has a mode indicating
   // reading in little/big endian.
+  // TODO(dschinazi) b/120240679 - make connection_id a QuicConnectionId*
+  // and add a length parameter
   bool ReadConnectionId(uint64_t* connection_id);
 
   // Reads tag represented as 32-bit unsigned integer into given output

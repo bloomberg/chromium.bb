@@ -341,7 +341,8 @@ void MockQuicConnectionHelper::AdvanceTime(QuicTime::Delta delta) {
 MockQuicConnection::MockQuicConnection(MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
-    : MockQuicConnection(QuicEndian::NetToHost64(kTestConnectionId),
+    : MockQuicConnection(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
+                             QuicConnectionIdToUInt64(kTestConnectionId))),
                          QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,
@@ -352,7 +353,8 @@ MockQuicConnection::MockQuicConnection(QuicSocketAddress address,
                                        MockQuicConnectionHelper* helper,
                                        MockAlarmFactory* alarm_factory,
                                        Perspective perspective)
-    : MockQuicConnection(QuicEndian::NetToHost64(kTestConnectionId),
+    : MockQuicConnection(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
+                             QuicConnectionIdToUInt64(kTestConnectionId))),
                          address,
                          helper,
                          alarm_factory,
@@ -375,7 +377,8 @@ MockQuicConnection::MockQuicConnection(
     MockAlarmFactory* alarm_factory,
     Perspective perspective,
     const ParsedQuicVersionVector& supported_versions)
-    : MockQuicConnection(QuicEndian::NetToHost64(kTestConnectionId),
+    : MockQuicConnection(QuicConnectionIdFromUInt64(QuicEndian::NetToHost64(
+                             QuicConnectionIdToUInt64(kTestConnectionId))),
                          QuicSocketAddress(TestPeerIPAddress(), kTestPort),
                          helper,
                          alarm_factory,
@@ -573,8 +576,8 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
                             compressed_certs_cache) {
   Initialize();
   ON_CALL(helper_, GenerateConnectionIdForReject(_))
-      .WillByDefault(
-          testing::Return(connection->random_generator()->RandUint64()));
+      .WillByDefault(testing::Return(QuicConnectionIdFromUInt64(
+          connection->random_generator()->RandUint64())));
   ON_CALL(helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillByDefault(testing::Return(true));
 }
@@ -1078,19 +1081,31 @@ void CreateServerSessionForTest(
 }
 
 QuicStreamId NextStreamId(QuicTransportVersion version) {
-  // TODO(ckrasic) - when version for http stream pairs re-lands, this
-  // will be conditional.
-  return 2;
+  return QuicUtils::StreamIdDelta(version);
 }
 
-QuicStreamId GetNthClientInitiatedStreamId(QuicTransportVersion version,
-                                           int n) {
-  return (version == QUIC_VERSION_99 ? 4 : 5) + NextStreamId(version) * n;
+QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
+    QuicTransportVersion version,
+    int n) {
+  return QuicUtils::GetFirstBidirectionalStreamId(version,
+                                                  Perspective::IS_CLIENT) +
+         NextStreamId(version) * (n + 1);
 }
 
-QuicStreamId GetNthServerInitiatedStreamId(QuicTransportVersion version,
-                                           int n) {
-  return (version == QUIC_VERSION_99 ? 1 : 2) + NextStreamId(version) * n;
+QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(
+    QuicTransportVersion version,
+    int n) {
+  return QuicUtils::GetFirstUnidirectionalStreamId(version,
+                                                   Perspective::IS_SERVER) +
+         NextStreamId(version) * n;
+}
+
+StreamType DetermineStreamType(QuicStreamId id,
+                               QuicTransportVersion version,
+                               bool is_incoming,
+                               StreamType default_type) {
+  return version == QUIC_VERSION_99 ? QuicUtils::GetStreamType(id, is_incoming)
+                                    : default_type;
 }
 
 }  // namespace test

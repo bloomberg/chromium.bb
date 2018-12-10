@@ -20,11 +20,8 @@ class QuicStreamIdManagerPeer;
 class QuicSession;
 
 // Amount to increment a stream ID value to get the next stream ID in
-// the stream ID space. Is 2 because even/odd stream ids are used to denote
-// client- and server- initiated streams, respectively.
-// TODO(fkastenholz): Need to update this for IETF stream id encoding when it is
-// finalized
-const QuicStreamId kV99StreamIdIncrement = 2;
+// the stream ID space.
+const QuicStreamId kV99StreamIdIncrement = 4;
 
 // This constant controls the size of the window when deciding whether
 // to generate a MAX STREAM ID frame or not. See the discussion of the
@@ -37,6 +34,9 @@ const int kMaxStreamIdWindowDivisor = 2;
 class QUIC_EXPORT_PRIVATE QuicStreamIdManager {
  public:
   QuicStreamIdManager(QuicSession* session,
+                      QuicStreamId next_outgoing_stream_id,
+                      QuicStreamId largest_peer_created_stream_id,
+                      QuicStreamId first_incoming_dynamic_stream_id,
                       size_t max_allowed_outgoing_streams,
                       size_t max_allowed_incoming_streams);
 

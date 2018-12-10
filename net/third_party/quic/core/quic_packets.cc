@@ -64,9 +64,9 @@ size_t GetStartOfEncryptedData(
 }
 
 QuicPacketHeader::QuicPacketHeader()
-    : destination_connection_id(0),
+    : destination_connection_id(EmptyQuicConnectionId()),
       destination_connection_id_length(PACKET_8BYTE_CONNECTION_ID),
-      source_connection_id(0),
+      source_connection_id(EmptyQuicConnectionId()),
       source_connection_id_length(PACKET_0BYTE_CONNECTION_ID),
       reset_flag(false),
       version_flag(false),
@@ -85,13 +85,13 @@ QuicPacketHeader::QuicPacketHeader(const QuicPacketHeader& other) = default;
 QuicPacketHeader::~QuicPacketHeader() {}
 
 QuicPublicResetPacket::QuicPublicResetPacket()
-    : connection_id(0), nonce_proof(0) {}
+    : connection_id(EmptyQuicConnectionId()), nonce_proof(0) {}
 
 QuicPublicResetPacket::QuicPublicResetPacket(QuicConnectionId connection_id)
     : connection_id(connection_id), nonce_proof(0) {}
 
 QuicVersionNegotiationPacket::QuicVersionNegotiationPacket()
-    : connection_id(0) {}
+    : connection_id(EmptyQuicConnectionId()) {}
 
 QuicVersionNegotiationPacket::QuicVersionNegotiationPacket(
     QuicConnectionId connection_id)

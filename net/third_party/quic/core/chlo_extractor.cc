@@ -96,7 +96,7 @@ ChloFramerVisitor::ChloFramerVisitor(
       delegate_(delegate),
       found_chlo_(false),
       chlo_contains_tags_(false),
-      connection_id_(0) {}
+      connection_id_(EmptyQuicConnectionId()) {}
 
 bool ChloFramerVisitor::OnProtocolVersionMismatch(ParsedQuicVersion version,
                                                   PacketHeaderFormat /*form*/) {

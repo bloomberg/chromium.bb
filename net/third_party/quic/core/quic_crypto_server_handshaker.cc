@@ -460,7 +460,7 @@ void QuicCryptoServerHandshaker::ValidateCallback::Run(
 QuicConnectionId QuicCryptoServerHandshaker::GenerateConnectionIdForReject(
     bool use_stateless_rejects) {
   if (!use_stateless_rejects) {
-    return 0;
+    return EmptyQuicConnectionId();
   }
   return helper_->GenerateConnectionIdForReject(
       session()->connection()->connection_id());

@@ -23,11 +23,12 @@ const QuicTime::Delta kDelay = QuicTime::Delta::FromMilliseconds(20);
 class QuicTraceVisitorTest : public QuicTest {
  public:
   QuicTraceVisitorTest() {
+    QuicConnectionId connection_id = QuicConnectionIdFromUInt64(42);
     simulator::Simulator simulator;
     simulator::QuicEndpoint client(&simulator, "Client", "Server",
-                                   Perspective::IS_CLIENT, 42);
+                                   Perspective::IS_CLIENT, connection_id);
     simulator::QuicEndpoint server(&simulator, "Server", "Client",
-                                   Perspective::IS_SERVER, 42);
+                                   Perspective::IS_SERVER, connection_id);
 
     const QuicBandwidth kBandwidth = QuicBandwidth::FromKBitsPerSecond(1000);
     const QuicByteCount kBdp = kBandwidth * (2 * kDelay);

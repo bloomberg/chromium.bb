@@ -35,17 +35,19 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
         connection_id, ietf_quic, action, termination_packets);
   }
 
-  MOCK_METHOD3(ProcessPacket,
+  MOCK_METHOD4(ProcessPacket,
                void(const QuicSocketAddress& server_address,
                     const QuicSocketAddress& client_address,
-                    QuicConnectionId connection_id));
+                    QuicConnectionId connection_id,
+                    std::unique_ptr<QuicPerPacketContext> packet_context));
 
-  MOCK_METHOD5(SendVersionNegotiationPacket,
+  MOCK_METHOD6(SendVersionNegotiationPacket,
                void(QuicConnectionId connection_id,
                     bool ietf_quic,
                     const ParsedQuicVersionVector& supported_versions,
                     const QuicSocketAddress& server_address,
-                    const QuicSocketAddress& client_address));
+                    const QuicSocketAddress& client_address,
+                    std::unique_ptr<QuicPerPacketContext> packet_context));
 };
 
 }  // namespace test

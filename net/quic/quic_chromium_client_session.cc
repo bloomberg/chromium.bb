@@ -1015,7 +1015,7 @@ int QuicChromiumClientSession::TryCreateStream(StreamRequest* request) {
     can_open_next = (GetNumOpenOutgoingStreams() <
                      stream_id_manager().max_open_outgoing_streams());
   } else {
-    can_open_next = CanOpenNextOutgoingStream();
+    can_open_next = CanOpenNextOutgoingBidirectionalStream();
   }
   if (can_open_next) {
     request->stream_ =
@@ -1041,7 +1041,7 @@ void QuicChromiumClientSession::CancelRequest(StreamRequest* request) {
   }
 }
 
-bool QuicChromiumClientSession::ShouldCreateOutgoingStream() {
+bool QuicChromiumClientSession::ShouldCreateOutgoingBidirectionalStream() {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return false;
@@ -1055,7 +1055,7 @@ bool QuicChromiumClientSession::ShouldCreateOutgoingStream() {
       return false;
     }
   } else {
-    if (!CanOpenNextOutgoingStream()) {
+    if (!CanOpenNextOutgoingBidirectionalStream()) {
       DVLOG(1) << "Failed to create a new outgoing stream. "
                << "Already " << GetNumOpenOutgoingStreams() << " open.";
       return false;
@@ -1071,6 +1071,11 @@ bool QuicChromiumClientSession::ShouldCreateOutgoingStream() {
     return false;
   }
   return true;
+}
+
+bool QuicChromiumClientSession::ShouldCreateOutgoingUnidirectionalStream() {
+  NOTREACHED() << "Try to create outgoing unidirectional streams";
+  return false;
 }
 
 bool QuicChromiumClientSession::WasConnectionEverUsed() {
@@ -1095,8 +1100,8 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl(
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(connection()->connected());
   QuicChromiumClientStream* stream = new QuicChromiumClientStream(
-      GetNextOutgoingStreamId(), this, quic::BIDIRECTIONAL, net_log_,
-      traffic_annotation);
+      GetNextOutgoingBidirectionalStreamId(), this, quic::BIDIRECTIONAL,
+      net_log_, traffic_annotation);
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   UMA_HISTOGRAM_COUNTS_1M("Net.QuicSession.NumOpenStreams",
@@ -1306,6 +1311,35 @@ QuicChromiumClientStream* QuicChromiumClientSession::CreateIncomingStream(
   return CreateIncomingReliableStreamImpl(id, traffic_annotation);
 }
 
+QuicChromiumClientStream* QuicChromiumClientSession::CreateIncomingStream(
+    quic::PendingStream pending) {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation(
+          "quic_chromium_incoming_pending_session", R"(
+      semantics {
+        sender: "Quic Chromium Client Session Pending Stream"
+        description:
+          "When a web server needs to push a response to a client, an incoming "
+          "stream is created to reply to the client with pushed message instead "
+          "of a message from the network."
+        trigger:
+          "A request by a server to push a response to the client."
+        data: "This stream is only used to receive data from the server."
+        destination: OTHER
+        destination_other:
+          "The web server pushing the response."
+      }
+      policy {
+        cookies_allowed: NO
+        setting: "This feature cannot be disabled in settings."
+        policy_exception_justification:
+          "Essential for network access."
+      }
+  )");
+  return CreateIncomingReliableStreamImpl(std::move(pending),
+                                          traffic_annotation);
+}
+
 QuicChromiumClientStream*
 QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
     quic::QuicStreamId id,
@@ -1314,6 +1348,20 @@ QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
 
   QuicChromiumClientStream* stream = new QuicChromiumClientStream(
       id, this, quic::READ_UNIDIRECTIONAL, net_log_, traffic_annotation);
+  ActivateStream(base::WrapUnique(stream));
+  ++num_total_streams_;
+  return stream;
+}
+
+QuicChromiumClientStream*
+QuicChromiumClientSession::CreateIncomingReliableStreamImpl(
+    quic::PendingStream pending,
+    const NetworkTrafficAnnotationTag& traffic_annotation) {
+  DCHECK(connection()->connected());
+
+  QuicChromiumClientStream* stream = new QuicChromiumClientStream(
+      std::move(pending), this, quic::READ_UNIDIRECTIONAL, net_log_,
+      traffic_annotation);
   ActivateStream(base::WrapUnique(stream));
   ++num_total_streams_;
   return stream;
@@ -1348,7 +1396,7 @@ void QuicChromiumClientSession::SendRstStream(
 }
 
 void QuicChromiumClientSession::OnCanCreateNewOutgoingStream() {
-  if (CanOpenNextOutgoingStream() && !stream_requests_.empty() &&
+  if (CanOpenNextOutgoingBidirectionalStream() && !stream_requests_.empty() &&
       crypto_stream_->encryption_established() && !goaway_received() &&
       !going_away_ && connection()->connected()) {
     StreamRequest* request = stream_requests_.front();

@@ -59,10 +59,12 @@ class ShloVerifier {
           ValidateClientHelloResultCallback::Result>& result) {
     result_ = result;
     crypto_config_->ProcessClientHello(
-        result_, /*reject_only=*/false, /*connection_id=*/1, server_addr_,
+        result_, /*reject_only=*/false,
+        /*connection_id=*/QuicConnectionIdFromUInt64(1), server_addr_,
         client_addr_, AllSupportedVersions().front(), AllSupportedVersions(),
-        /*use_stateless_rejects=*/true, /*server_designated_connection_id=*/0,
-        clock_, QuicRandom::GetInstance(), compressed_certs_cache_, params_,
+        /*use_stateless_rejects=*/true,
+        /*server_designated_connection_id=*/EmptyQuicConnectionId(), clock_,
+        QuicRandom::GetInstance(), compressed_certs_cache_, params_,
         signed_config_, /*total_framing_overhead=*/50, kDefaultMaxPacketSize,
         GetProcessClientHelloCallback());
   }

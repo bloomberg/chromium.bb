@@ -20,6 +20,7 @@
 #include "net/third_party/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
@@ -375,7 +376,7 @@ QuicCryptoClientConfig::CachedState::GetNextServerDesignatedConnectionId() {
   if (server_designated_connection_ids_.empty()) {
     QUIC_BUG
         << "Attempting to consume a connection id that was never designated.";
-    return 0;
+    return EmptyQuicConnectionId();
   }
   const QuicConnectionId next_id = server_designated_connection_ids_.front();
   server_designated_connection_ids_.pop();
@@ -515,7 +516,9 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     CryptoHandshakeMessage* out,
     QuicString* error_details) const {
   DCHECK(error_details != nullptr);
-  connection_id = QuicEndian::HostToNet64(connection_id);
+  // TODO(dschinazi) b/120240679 - remove this endianness swap
+  connection_id = QuicConnectionIdFromUInt64(
+      QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id)));
 
   FillInchoateClientHello(server_id, preferred_version, cached, rand,
                           /* demand_x509_proof= */ true, out_params, out);
@@ -640,6 +643,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const QuicData& client_hello_serialized = out->GetSerialized();
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
+    // TODO(dschinazi) b/120240679 - use connection_id.data() and .length()
     hkdf_input.append(reinterpret_cast<char*>(&connection_id),
                       sizeof(connection_id));
     hkdf_input.append(client_hello_serialized.data(),
@@ -692,6 +696,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   //   out_params->hkdf_input_suffix
   //   out_params->initial_crypters
   out_params->hkdf_input_suffix.clear();
+  // TODO(dschinazi) b/120240679 - use connection_id.data() and .length()
   out_params->hkdf_input_suffix.append(reinterpret_cast<char*>(&connection_id),
                                        sizeof(connection_id));
   const QuicData& client_hello_serialized = out->GetSerialized();
@@ -825,13 +830,14 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
   }
 
   if (rej.tag() == kSREJ) {
-    QuicConnectionId connection_id;
+    uint64_t connection_id;
     if (rej.GetUint64(kRCID, &connection_id) != QUIC_NO_ERROR) {
       *error_details = "Missing kRCID";
       return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
     }
     connection_id = QuicEndian::NetToHost64(connection_id);
-    cached->add_server_designated_connection_id(connection_id);
+    cached->add_server_designated_connection_id(
+        QuicConnectionIdFromUInt64(connection_id));
     if (!nonce.empty()) {
       cached->add_server_nonce(QuicString(nonce));
     }

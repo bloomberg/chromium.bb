@@ -105,7 +105,7 @@ class InsecureProofVerifier : public ProofVerifier {
 
 QuicConnectionId QuartcCryptoServerStreamHelper::GenerateConnectionIdForReject(
     QuicConnectionId connection_id) const {
-  return 0;
+  return EmptyQuicConnectionId();
 }
 
 bool QuartcCryptoServerStreamHelper::CanAcceptClientHello(
@@ -177,8 +177,8 @@ QuicCryptoStream* QuartcSession::GetMutableCryptoStream() {
 QuartcStream* QuartcSession::CreateOutgoingBidirectionalStream() {
   // Use default priority for incoming QUIC streams.
   // TODO(zhihuang): Determine if this value is correct.
-  return ActivateDataStream(CreateDataStream(GetNextOutgoingStreamId(),
-                                             QuicStream::kDefaultPriority));
+  return ActivateDataStream(CreateDataStream(
+      GetNextOutgoingBidirectionalStreamId(), QuicStream::kDefaultPriority));
 }
 
 bool QuartcSession::SendOrQueueMessage(QuicString message) {
@@ -390,6 +390,11 @@ QuicStream* QuartcSession::CreateIncomingStream(QuicStreamId id) {
   return ActivateDataStream(CreateDataStream(id, QuicStream::kDefaultPriority));
 }
 
+QuicStream* QuartcSession::CreateIncomingStream(PendingStream pending) {
+  return ActivateDataStream(
+      CreateDataStream(std::move(pending), QuicStream::kDefaultPriority));
+}
+
 std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
     QuicStreamId id,
     spdy::SpdyPriority priority) {
@@ -397,18 +402,28 @@ std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
     // Encryption not active so no stream created
     return nullptr;
   }
-  auto stream = QuicMakeUnique<QuartcStream>(id, this);
-  if (stream) {
-    // Register the stream to the QuicWriteBlockedList. |priority| is clamped
-    // between 0 and 7, with 0 being the highest priority and 7 the lowest
-    // priority.
-    write_blocked_streams()->UpdateStreamPriority(stream->id(), priority);
+  return InitializeDataStream(QuicMakeUnique<QuartcStream>(id, this), priority);
+}
 
-    if (IsIncomingStream(id)) {
-      DCHECK(session_delegate_);
-      // Incoming streams need to be registered with the session_delegate_.
-      session_delegate_->OnIncomingStream(stream.get());
-    }
+std::unique_ptr<QuartcStream> QuartcSession::CreateDataStream(
+    PendingStream pending,
+    spdy::SpdyPriority priority) {
+  return InitializeDataStream(QuicMakeUnique<QuartcStream>(std::move(pending)),
+                              priority);
+}
+
+std::unique_ptr<QuartcStream> QuartcSession::InitializeDataStream(
+    std::unique_ptr<QuartcStream> stream,
+    spdy::SpdyPriority priority) {
+  // Register the stream to the QuicWriteBlockedList. |priority| is clamped
+  // between 0 and 7, with 0 being the highest priority and 7 the lowest
+  // priority.
+  write_blocked_streams()->UpdateStreamPriority(stream->id(), priority);
+
+  if (IsIncomingStream(stream->id())) {
+    DCHECK(session_delegate_);
+    // Incoming streams need to be registered with the session_delegate_.
+    session_delegate_->OnIncomingStream(stream.get());
   }
   return stream;
 }

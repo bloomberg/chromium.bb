@@ -48,7 +48,7 @@ StatelessRejector::StatelessRejector(
       error_(QUIC_INTERNAL_ERROR),
       version_(version),
       versions_(versions),
-      connection_id_(0),
+      connection_id_(EmptyQuicConnectionId()),
       chlo_packet_size_(chlo_packet_size),
       client_address_(client_address),
       server_address_(server_address),

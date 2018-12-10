@@ -349,7 +349,7 @@ class HttpStreamFactoryJobControllerTest
   quic::test::MockRandom random_generator_{0};
   QuicTestPacketMaker client_maker_{
       HttpNetworkSession::Params().quic_supported_versions[0],
-      0,
+      quic::EmptyQuicConnectionId(),
       &clock_,
       kServerHostname,
       quic::Perspective::IS_CLIENT,

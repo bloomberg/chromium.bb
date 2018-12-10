@@ -342,7 +342,7 @@ void QuicSpdySession::Initialize() {
     set_largest_peer_created_stream_id(
         QuicUtils::GetHeadersStreamId(connection()->transport_version()));
   } else {
-    QuicStreamId headers_stream_id = GetNextOutgoingStreamId();
+    QuicStreamId headers_stream_id = GetNextOutgoingBidirectionalStreamId();
     DCHECK_EQ(headers_stream_id,
               QuicUtils::GetHeadersStreamId(connection()->transport_version()));
   }

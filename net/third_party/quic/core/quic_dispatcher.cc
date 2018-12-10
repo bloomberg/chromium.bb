@@ -374,9 +374,9 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
 
   if (time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id)) {
     // This connection ID is already in time-wait state.
-    time_wait_list_manager_->ProcessPacket(current_self_address_,
-                                           current_peer_address_,
-                                           header.destination_connection_id);
+    time_wait_list_manager_->ProcessPacket(
+        current_self_address_, current_peer_address_,
+        header.destination_connection_id, GetPerPacketContext());
     return false;
   }
 
@@ -402,7 +402,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
         time_wait_list_manager()->SendVersionNegotiationPacket(
             connection_id, header.form != GOOGLE_QUIC_PACKET,
             GetSupportedVersions(), current_self_address_,
-            current_peer_address_);
+            current_peer_address_, GetPerPacketContext());
       } else {
         QUIC_RELOADABLE_FLAG_COUNT(quic_limit_version_negotiation);
       }
@@ -460,7 +460,8 @@ void QuicDispatcher::ProcessUnauthenticatedHeaderFate(
       }
       DCHECK(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
       time_wait_list_manager_->ProcessPacket(
-          current_self_address_, current_peer_address_, connection_id);
+          current_self_address_, current_peer_address_, connection_id,
+          GetPerPacketContext());
 
       // Any packets which were buffered while the stateless rejector logic was
       // running should be discarded.  Do not inform the time wait list manager,
@@ -560,8 +561,8 @@ bool QuicDispatcher::ShouldAddToBlockedList() {
   return writer_->IsWriteBlocked();
 }
 
-std::unique_ptr<QuicDispatcher::PerPacketContext>
-QuicDispatcher::GetPerPacketContext() const {
+std::unique_ptr<QuicPerPacketContext> QuicDispatcher::GetPerPacketContext()
+    const {
   return nullptr;
 }
 
@@ -1016,9 +1017,9 @@ void QuicDispatcher::ProcessChlo(PacketHeaderFormat form,
         "Stop accepting new connections",
         quic::QuicTimeWaitListManager::SEND_STATELESS_RESET);
     // Time wait list will reject the packet correspondingly.
-    time_wait_list_manager()->ProcessPacket(current_self_address(),
-                                            current_peer_address(),
-                                            current_connection_id());
+    time_wait_list_manager()->ProcessPacket(
+        current_self_address(), current_peer_address(), current_connection_id(),
+        GetPerPacketContext());
     return;
   }
   if (!buffered_packets_.HasBufferedPackets(current_connection_id_) &&
@@ -1108,7 +1109,7 @@ class StatelessRejectorProcessDoneCallback
   QuicSocketAddress current_self_address_;
   // TODO(wub): Wrap all current_* variables into PerPacketContext. And rename
   // |additional_context_| to |context_|.
-  std::unique_ptr<QuicDispatcher::PerPacketContext> additional_context_;
+  std::unique_ptr<QuicPerPacketContext> additional_context_;
   std::unique_ptr<QuicReceivedPacket> current_packet_;
   ParsedQuicVersion first_version_;
   const PacketHeaderFormat current_packet_format_;
@@ -1231,7 +1232,8 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   if (time_wait_list_manager_->IsConnectionIdInTimeWait(
           rejector->connection_id())) {
     time_wait_list_manager_->ProcessPacket(
-        current_self_address, current_peer_address, rejector->connection_id());
+        current_self_address, current_peer_address, rejector->connection_id(),
+        GetPerPacketContext());
     return;
   }
 

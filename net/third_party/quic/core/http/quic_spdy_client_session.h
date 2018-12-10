@@ -67,8 +67,10 @@ class QuicSpdyClientSession : public QuicSpdyClientSessionBase {
  protected:
   // QuicSession methods:
   QuicSpdyStream* CreateIncomingStream(QuicStreamId id) override;
+  QuicSpdyStream* CreateIncomingStream(PendingStream pending) override;
   // If an outgoing stream can be created, return true.
-  bool ShouldCreateOutgoingStream() override;
+  bool ShouldCreateOutgoingBidirectionalStream() override;
+  bool ShouldCreateOutgoingUnidirectionalStream() override;
 
   // If an incoming stream can be created, return true.
   bool ShouldCreateIncomingStream(QuicStreamId id) override;

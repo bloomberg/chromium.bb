@@ -277,8 +277,8 @@ TEST_P(QuicCryptoServerStreamTest, StatelessRejectAfterCHLO) {
   ASSERT_TRUE(client_state->has_server_designated_connection_id());
   const QuicConnectionId server_designated_connection_id =
       client_state->GetNextServerDesignatedConnectionId();
-  const QuicConnectionId expected_id =
-      server_connection_->random_generator()->RandUint64();
+  const QuicConnectionId expected_id = QuicConnectionIdFromUInt64(
+      server_connection_->random_generator()->RandUint64());
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));
@@ -308,8 +308,8 @@ TEST_P(QuicCryptoServerStreamTest, ConnectedAfterStatelessHandshake) {
   ASSERT_TRUE(client_state->has_server_designated_connection_id());
   const QuicConnectionId server_designated_connection_id =
       client_state->GetNextServerDesignatedConnectionId();
-  const QuicConnectionId expected_id =
-      server_connection_->random_generator()->RandUint64();
+  const QuicConnectionId expected_id = QuicConnectionIdFromUInt64(
+      server_connection_->random_generator()->RandUint64());
   EXPECT_EQ(expected_id, server_designated_connection_id);
   EXPECT_FALSE(client_state->has_server_designated_connection_id());
   ASSERT_TRUE(client_state->IsComplete(QuicWallTime::FromUNIXSeconds(0)));

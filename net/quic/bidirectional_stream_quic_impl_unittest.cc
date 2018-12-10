@@ -413,8 +413,8 @@ class BidirectionalStreamQuicImplTest
         crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
                        quic::TlsClientHandshaker::CreateSslCtx()),
         read_buffer_(base::MakeRefCounted<IOBufferWithSize>(4096)),
-        connection_id_(2),
-        stream_id_(GetNthClientInitiatedStreamId(0)),
+        connection_id_(quic::QuicConnectionIdFromUInt64(2)),
+        stream_id_(GetNthClientInitiatedBidirectionalStreamId(0)),
         client_maker_(version_,
                       connection_id_,
                       &clock_,
@@ -787,8 +787,8 @@ class BidirectionalStreamQuicImplTest
 
   QuicChromiumClientSession* session() const { return session_.get(); }
 
-  quic::QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return quic::test::GetNthClientInitiatedStreamId(version_, n);
+  quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
+    return quic::test::GetNthClientInitiatedBidirectionalStreamId(version_, n);
   }
 
  protected:
@@ -836,7 +836,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
-      1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY,
+      1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(2, &header_stream_offset));
@@ -939,13 +939,13 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
-      1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY, nullptr,
-      &offset));
+      1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
+      nullptr, &offset));
   // SetRequest() again for second request as |request_headers_| was moved.
   SetRequest("GET", "/", DEFAULT_PRIORITY);
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(1), kFin, DEFAULT_PRIORITY,
-      GetNthClientInitiatedStreamId(0), nullptr, &offset));
+      2, GetNthClientInitiatedBidirectionalStreamId(1), kFin, DEFAULT_PRIORITY,
+      GetNthClientInitiatedBidirectionalStreamId(0), nullptr, &offset));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(3, &offset));
   AddWrite(ConstructClientAckPacket(4, 3, 1, 1));
@@ -983,11 +983,11 @@ TEST_P(BidirectionalStreamQuicImplTest, LoadTimingTwoRequests) {
   // Server sends the response headers.
   offset = 0;
   ProcessPacket(ConstructResponseHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), kFin,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), kFin,
       ConstructResponseHeaders("200"), nullptr, &offset));
 
   ProcessPacket(ConstructResponseHeadersPacketInner(
-      3, GetNthClientInitiatedStreamId(1), kFin,
+      3, GetNthClientInitiatedBidirectionalStreamId(1), kFin,
       ConstructResponseHeaders("200"), nullptr, &offset));
 
   delegate->WaitUntilNextCallback(kOnHeadersReceived);
@@ -1018,7 +1018,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CoalesceDataBuffersNotHeadersFrame) {
   const char kBody2[] = "data keep coming";
   std::vector<std::string> two_writes = {kBody1, kBody2};
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, !kFin, 0,
                                                    {kBody1, kBody2}));
@@ -1421,7 +1421,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, 0, kUploadData,
                                &client_maker_));
@@ -1506,7 +1506,7 @@ TEST_P(BidirectionalStreamQuicImplTest, EarlyDataOverrideRequest) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructDataPacket(3, kIncludeVersion, kFin, 0, kUploadData,
                                &client_maker_));
@@ -1592,7 +1592,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructAckAndDataPacket(3, !kIncludeVersion, 2, 1, 1, !kFin, 0,
                                      kUploadData, &client_maker_));
@@ -1684,7 +1684,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
-      1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY,
+      1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(2, &header_stream_offset));
@@ -1731,7 +1731,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_INITIAL);
   client_maker_.SetLongHeaderType(quic::ZERO_RTT_PROTECTED);
   AddWrite(ConstructRequestHeadersPacketInner(
-      1, GetNthClientInitiatedStreamId(0), kFin, DEFAULT_PRIORITY,
+      1, GetNthClientInitiatedBidirectionalStreamId(0), kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
   AddWrite(ConstructInitialSettingsPacket(2, &header_stream_offset));
@@ -1796,7 +1796,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   Initialize();
 
@@ -1934,7 +1934,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnStreamReady) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructClientEarlyRstStreamPacket(3));
 
@@ -1966,7 +1966,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamAfterReadData) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructClientAckAndRstStreamPacket(3, 2, 1, 1));
 
@@ -2022,7 +2022,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructClientAckAndRstStreamPacket(3, 2, 1, 1));
 
@@ -2070,7 +2070,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructClientAckPacket(3, 3, 1, 1));
   AddWrite(ConstructClientRstStreamPacket(4));
@@ -2129,7 +2129,7 @@ TEST_P(BidirectionalStreamQuicImplTest, AsyncFinRead) {
   quic::QuicStreamOffset header_stream_offset = 0;
   AddWrite(ConstructInitialSettingsPacket(1, &header_stream_offset));
   AddWrite(ConstructRequestHeadersPacketInner(
-      2, GetNthClientInitiatedStreamId(0), !kFin, DEFAULT_PRIORITY,
+      2, GetNthClientInitiatedBidirectionalStreamId(0), !kFin, DEFAULT_PRIORITY,
       &spdy_request_headers_frame_length, &header_stream_offset));
   AddWrite(ConstructClientMultipleDataFramesPacket(3, kIncludeVersion, kFin, 0,
                                                    {kBody}));

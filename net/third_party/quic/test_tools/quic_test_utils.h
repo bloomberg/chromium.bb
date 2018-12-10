@@ -36,7 +36,8 @@ namespace quic {
 
 namespace test {
 
-static const QuicConnectionId kTestConnectionId = 42;
+static const QuicConnectionId kTestConnectionId =
+    QuicConnectionIdFromUInt64(42);
 static const uint16_t kTestPort = 12345;
 static const uint32_t kInitialStreamFlowControlWindowForTest =
     1024 * 1024;  // 1 MB
@@ -580,8 +581,10 @@ class MockQuicSession : public QuicSession {
                     const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingStream, QuicStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(PendingStream stream));
   MOCK_METHOD1(ShouldCreateIncomingStream2, bool(QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingStream2, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingBidirectionalStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingUnidirectionalStream, bool());
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
@@ -657,10 +660,12 @@ class MockQuicSpdySession : public QuicSpdySession {
                     const QuicString& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(PendingStream stream));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingStream, bool(QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingBidirectionalStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingUnidirectionalStream, bool());
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStream* stream,
                                 QuicStreamId id,
@@ -741,6 +746,7 @@ class TestQuicSpdyServerSession : public QuicServerSessionBase {
   ~TestQuicSpdyServerSession() override;
 
   MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(PendingStream stream));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
@@ -805,10 +811,12 @@ class TestQuicSpdyClientSession : public QuicSpdyClientSessionBase {
 
   // TestQuicSpdyClientSession
   MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream, QuicSpdyStream*(PendingStream stream));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingStream, bool(QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingBidirectionalStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingUnidirectionalStream, bool());
 
   // Override to not send max header list size.
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
@@ -1156,8 +1164,17 @@ inline void MakeIOVector(QuicStringPiece str, struct iovec* iov) {
 // Utilities that will adapt stream ids when http stream pairs are
 // enabled.
 QuicStreamId NextStreamId(QuicTransportVersion version);
-QuicStreamId GetNthClientInitiatedStreamId(QuicTransportVersion version, int n);
-QuicStreamId GetNthServerInitiatedStreamId(QuicTransportVersion version, int n);
+QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
+    QuicTransportVersion version,
+    int n);
+QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(
+    QuicTransportVersion version,
+    int n);
+
+StreamType DetermineStreamType(QuicStreamId id,
+                               QuicTransportVersion version,
+                               bool is_incoming,
+                               StreamType default_type);
 
 }  // namespace test
 }  // namespace quic

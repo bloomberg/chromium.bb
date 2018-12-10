@@ -308,8 +308,9 @@ QuicErrorCode QuicClientBase::connection_error() const {
 
 QuicConnectionId QuicClientBase::GetNextConnectionId() {
   QuicConnectionId server_designated_id = GetNextServerDesignatedConnectionId();
-  return server_designated_id ? server_designated_id
-                              : GenerateNewConnectionId();
+  return !QuicConnectionIdIsEmpty(server_designated_id)
+             ? server_designated_id
+             : GenerateNewConnectionId();
 }
 
 QuicConnectionId QuicClientBase::GetNextServerDesignatedConnectionId() {
@@ -321,11 +322,11 @@ QuicConnectionId QuicClientBase::GetNextServerDesignatedConnectionId() {
                            << "unexpected nullptr.";
   return cached->has_server_designated_connection_id()
              ? cached->GetNextServerDesignatedConnectionId()
-             : 0;
+             : EmptyQuicConnectionId();
 }
 
 QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
-  return QuicRandom::GetInstance()->RandUint64();
+  return QuicConnectionIdFromUInt64(QuicRandom::GetInstance()->RandUint64());
 }
 
 bool QuicClientBase::CanReconnectWithDifferentVersion(

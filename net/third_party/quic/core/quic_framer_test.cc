@@ -15,6 +15,7 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_expect_bug.h"
@@ -42,7 +43,10 @@ const QuicUint128 kTestStatelessResetToken = 1010101;  // 0x0F69B5
 
 // Use fields in which each byte is distinct to ensure that every byte is
 // framed correctly. The values are otherwise arbitrary.
-const QuicConnectionId kConnectionId = UINT64_C(0xFEDCBA9876543210);
+const QuicConnectionId kConnectionId =
+    QuicConnectionIdFromUInt64(UINT64_C(0xFEDCBA9876543210));
+const QuicConnectionId kConnectionIdPlusOne =
+    QuicConnectionIdFromUInt64(UINT64_C(0xFEDCBA9876543210) + 1);
 const QuicPacketNumber kPacketNumber = UINT64_C(0x12345678);
 const QuicPacketNumber kSmallLargestObserved = UINT16_C(0x1234);
 const QuicPacketNumber kSmallMissingPacket = UINT16_C(0x1233);
@@ -8999,9 +9003,9 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
   ParsedQuicVersionVector versions;
   versions.push_back(framer_.version());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      42, 0, false, false, kTestQuicStreamId, kTestString,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER, &versions));
+      QuicConnectionIdFromUInt64(42), EmptyQuicConnectionId(), false, false,
+      kTestQuicStreamId, kTestString, PACKET_8BYTE_CONNECTION_ID,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions));
 
   MockFramerVisitor visitor;
   framer_.set_visitor(&visitor);
@@ -9035,9 +9039,10 @@ TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
   ParsedQuicVersionVector versions;
   versions.push_back(framer_.version());
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
-      42, 0, false, false, kTestQuicStreamId, kTestString,
-      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
-      PACKET_4BYTE_PACKET_NUMBER, &versions, Perspective::IS_CLIENT));
+      QuicConnectionIdFromUInt64(42), EmptyQuicConnectionId(), false, false,
+      kTestQuicStreamId, kTestString, PACKET_8BYTE_CONNECTION_ID,
+      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER, &versions,
+      Perspective::IS_CLIENT));
 
   MockFramerVisitor visitor;
   framer_.set_visitor(&visitor);
@@ -9552,7 +9557,7 @@ TEST_P(QuicFramerTest, NewConnectionIdFrame) {
       {"Unable to read new connection ID frame sequence number.",
        {kVarInt62OneByte + 0x11}},
       {"Unable to read new connection ID frame connection id length.",
-       {0x08}},
+       {0x08}},  // connection ID length
       {"Unable to read new connection ID frame connection id.",
        {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x11}},
       {"Can not read new connection ID frame reset token.",
@@ -9573,7 +9578,7 @@ TEST_P(QuicFramerTest, NewConnectionIdFrame) {
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
 
-  EXPECT_EQ(kConnectionId + 1, visitor_.new_connection_id_.connection_id);
+  EXPECT_EQ(kConnectionIdPlusOne, visitor_.new_connection_id_.connection_id);
   EXPECT_EQ(0x11u, visitor_.new_connection_id_.sequence_number);
   EXPECT_EQ(kTestStatelessResetToken,
             visitor_.new_connection_id_.stateless_reset_token);
@@ -9598,7 +9603,7 @@ TEST_P(QuicFramerTest, BuildNewConnectionIdFramePacket) {
   frame.sequence_number = 0x11;
   // Use this value to force a 4-byte encoded variable length connection ID
   // in the frame.
-  frame.connection_id = kConnectionId + 1;
+  frame.connection_id = kConnectionIdPlusOne;
   frame.stateless_reset_token = kTestStatelessResetToken;
 
   QuicFrames frames = {QuicFrame(&frame)};
@@ -10019,7 +10024,8 @@ TEST_P(QuicFramerTest, GetRetransmittableControlFrameSize) {
             QuicFramer::GetRetransmittableControlFrameSize(
                 framer_.transport_version(), QuicFrame(&application_close)));
 
-  QuicNewConnectionIdFrame new_connection_id(5, 42, 1, 101111);
+  QuicNewConnectionIdFrame new_connection_id(5, QuicConnectionIdFromUInt64(42),
+                                             1, 101111);
   EXPECT_EQ(QuicFramer::GetNewConnectionIdFrameSize(new_connection_id),
             QuicFramer::GetRetransmittableControlFrameSize(
                 framer_.transport_version(), QuicFrame(&new_connection_id)));

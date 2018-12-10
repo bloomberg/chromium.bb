@@ -108,6 +108,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // quic::QuicSession.
   P2PQuicStreamImpl* CreateIncomingStream(
       quic::QuicStreamId id) override;
+  P2PQuicStreamImpl* CreateIncomingStream(quic::PendingStream pending) override;
 
   // Creates a new outgoing stream. The caller does not own the
   // stream, so the stream is activated and ownership is moved to the
@@ -142,6 +143,7 @@ class MODULES_EXPORT P2PQuicTransportImpl final
   // Creates a new stream. This helper function is used when we need to create
   // a new incoming stream or outgoing stream.
   P2PQuicStreamImpl* CreateStreamInternal(quic::QuicStreamId id);
+  P2PQuicStreamImpl* CreateStreamInternal(quic::PendingStream pending);
 
   // The server_config and client_config are used for setting up the crypto
   // connection. The ownership of these objects or the objects they own

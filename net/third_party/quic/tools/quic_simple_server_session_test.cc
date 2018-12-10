@@ -242,12 +242,14 @@ class QuicSimpleServerSessionTest
     session_->OnConfigNegotiated();
   }
 
-  QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session_, n);
+  QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
+    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
+        *session_, n);
   }
 
-  QuicStreamId GetNthServerInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(*session_, n);
+  QuicStreamId GetNthServerInitiatedUnidirectionalId(int n) {
+    return QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
+        *session_, n);
   }
 
   StrictMock<MockQuicSessionVisitor> owner_;
@@ -271,18 +273,20 @@ INSTANTIATE_TEST_CASE_P(Tests,
 TEST_P(QuicSimpleServerSessionTest, CloseStreamDueToReset) {
   // Open a stream, then reset it.
   // Send two bytes of payload to open it.
-  QuicStreamFrame data1(GetNthClientInitiatedId(0), false, 0,
+  QuicStreamFrame data1(GetNthClientInitiatedBidirectionalId(0), false, 0,
                         QuicStringPiece("HT"));
   session_->OnStreamFrame(data1);
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
 
   // Receive a reset (and send a RST in response).
-  QuicRstStreamFrame rst1(kInvalidControlFrameId, GetNthClientInitiatedId(0),
+  QuicRstStreamFrame rst1(kInvalidControlFrameId,
+                          GetNthClientInitiatedBidirectionalId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   EXPECT_CALL(*connection_, SendControlFrame(_));
-  EXPECT_CALL(*connection_, OnStreamReset(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
+                            QUIC_RST_ACKNOWLEDGEMENT));
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
@@ -296,19 +300,21 @@ TEST_P(QuicSimpleServerSessionTest, CloseStreamDueToReset) {
 
 TEST_P(QuicSimpleServerSessionTest, NeverOpenStreamDueToReset) {
   // Send a reset (and expect the peer to send a RST in response).
-  QuicRstStreamFrame rst1(kInvalidControlFrameId, GetNthClientInitiatedId(0),
+  QuicRstStreamFrame rst1(kInvalidControlFrameId,
+                          GetNthClientInitiatedBidirectionalId(0),
                           QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   if (connection_->transport_version() != QUIC_VERSION_99) {
     EXPECT_CALL(*connection_, SendControlFrame(_));
   }
-  EXPECT_CALL(*connection_, OnStreamReset(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
+                            QUIC_RST_ACKNOWLEDGEMENT));
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenIncomingStreams());
 
   // Send two bytes of payload.
-  QuicStreamFrame data1(GetNthClientInitiatedId(0), false, 0,
+  QuicStreamFrame data1(GetNthClientInitiatedBidirectionalId(0), false, 0,
                         QuicStringPiece("HT"));
   visitor_->OnStreamFrame(data1);
 
@@ -319,31 +325,33 @@ TEST_P(QuicSimpleServerSessionTest, NeverOpenStreamDueToReset) {
 
 TEST_P(QuicSimpleServerSessionTest, AcceptClosedStream) {
   // Send (empty) compressed headers followed by two bytes of data.
-  QuicStreamFrame frame1(GetNthClientInitiatedId(0), false, 0,
+  QuicStreamFrame frame1(GetNthClientInitiatedBidirectionalId(0), false, 0,
                          QuicStringPiece("\1\0\0\0\0\0\0\0HT"));
-  QuicStreamFrame frame2(GetNthClientInitiatedId(1), false, 0,
+  QuicStreamFrame frame2(GetNthClientInitiatedBidirectionalId(1), false, 0,
                          QuicStringPiece("\2\0\0\0\0\0\0\0HT"));
   visitor_->OnStreamFrame(frame1);
   visitor_->OnStreamFrame(frame2);
   EXPECT_EQ(2u, session_->GetNumOpenIncomingStreams());
 
   // Send a reset (and expect the peer to send a RST in response).
-  QuicRstStreamFrame rst(kInvalidControlFrameId, GetNthClientInitiatedId(0),
+  QuicRstStreamFrame rst(kInvalidControlFrameId,
+                         GetNthClientInitiatedBidirectionalId(0),
                          QUIC_ERROR_PROCESSING_STREAM, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
   if (connection_->transport_version() != QUIC_VERSION_99) {
     EXPECT_CALL(*connection_, SendControlFrame(_));
   }
-  EXPECT_CALL(*connection_, OnStreamReset(GetNthClientInitiatedId(0),
-                                          QUIC_RST_ACKNOWLEDGEMENT));
+  EXPECT_CALL(*connection_,
+              OnStreamReset(GetNthClientInitiatedBidirectionalId(0),
+                            QUIC_RST_ACKNOWLEDGEMENT));
   visitor_->OnRstStream(rst);
 
   // If we were tracking, we'd probably want to reject this because it's data
   // past the reset point of stream 3.  As it's a closed stream we just drop the
   // data on the floor, but accept the packet because it has data for stream 5.
-  QuicStreamFrame frame3(GetNthClientInitiatedId(0), false, 2,
+  QuicStreamFrame frame3(GetNthClientInitiatedBidirectionalId(0), false, 2,
                          QuicStringPiece("TP"));
-  QuicStreamFrame frame4(GetNthClientInitiatedId(1), false, 2,
+  QuicStreamFrame frame4(GetNthClientInitiatedBidirectionalId(1), false, 2,
                          QuicStringPiece("TP"));
   visitor_->OnStreamFrame(frame3);
   visitor_->OnStreamFrame(frame4);
@@ -362,7 +370,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateIncomingStreamDisconnected) {
   size_t initial_num_open_stream = session_->GetNumOpenIncomingStreams();
   QuicConnectionPeer::TearDownLocalConnectionState(connection_);
   EXPECT_QUIC_BUG(QuicSimpleServerSessionPeer::CreateIncomingStream(
-                      session_.get(), GetNthClientInitiatedId(0)),
+                      session_.get(), GetNthClientInitiatedBidirectionalId(0)),
                   "ShouldCreateIncomingStream called when disconnected");
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenIncomingStreams());
 }
@@ -373,16 +381,16 @@ TEST_P(QuicSimpleServerSessionTest, CreateEvenIncomingDynamicStream) {
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID,
                               "Client created even numbered stream", _));
-  QuicSimpleServerSessionPeer::CreateIncomingStream(session_.get(),
-                                                    GetNthServerInitiatedId(0));
+  QuicSimpleServerSessionPeer::CreateIncomingStream(
+      session_.get(), GetNthServerInitiatedUnidirectionalId(0));
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenIncomingStreams());
 }
 
 TEST_P(QuicSimpleServerSessionTest, CreateIncomingStream) {
   QuicSpdyStream* stream = QuicSimpleServerSessionPeer::CreateIncomingStream(
-      session_.get(), GetNthClientInitiatedId(0));
+      session_.get(), GetNthClientInitiatedBidirectionalId(0));
   EXPECT_NE(nullptr, stream);
-  EXPECT_EQ(GetNthClientInitiatedId(0), stream->id());
+  EXPECT_EQ(GetNthClientInitiatedBidirectionalId(0), stream->id());
 }
 
 TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
@@ -397,7 +405,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamDisconnected) {
   EXPECT_QUIC_BUG(
       QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
           session_.get()),
-      "ShouldCreateOutgoingStream called when disconnected");
+      "ShouldCreateOutgoingUnidirectionalStream called when disconnected");
 
   EXPECT_EQ(initial_num_open_stream, session_->GetNumOpenOutgoingStreams());
 }
@@ -425,7 +433,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
 
   // Receive some data to initiate a incoming stream which should not effect
   // creating outgoing streams.
-  QuicStreamFrame data1(GetNthClientInitiatedId(0), false, 0,
+  QuicStreamFrame data1(GetNthClientInitiatedBidirectionalId(0), false, 0,
                         QuicStringPiece("HT"));
   session_->OnStreamFrame(data1);
   EXPECT_EQ(1u, session_->GetNumOpenIncomingStreams());
@@ -450,7 +458,7 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
     QuicSpdyStream* created_stream =
         QuicSimpleServerSessionPeer::CreateOutgoingUnidirectionalStream(
             session_.get());
-    EXPECT_EQ(GetNthServerInitiatedId(i), created_stream->id());
+    EXPECT_EQ(GetNthServerInitiatedUnidirectionalId(i), created_stream->id());
     EXPECT_EQ(i + 1, session_->GetNumOpenOutgoingStreams());
   }
 
@@ -461,14 +469,14 @@ TEST_P(QuicSimpleServerSessionTest, CreateOutgoingDynamicStreamUptoLimit) {
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());
 
   // Create peer initiated stream should have no problem.
-  QuicStreamFrame data2(GetNthClientInitiatedId(1), false, 0,
+  QuicStreamFrame data2(GetNthClientInitiatedBidirectionalId(1), false, 0,
                         QuicStringPiece("HT"));
   session_->OnStreamFrame(data2);
   EXPECT_EQ(2u, session_->GetNumOpenIncomingStreams());
 }
 
 TEST_P(QuicSimpleServerSessionTest, OnStreamFrameWithEvenStreamId) {
-  QuicStreamFrame frame(GetNthServerInitiatedId(0), false, 0,
+  QuicStreamFrame frame(GetNthServerInitiatedUnidirectionalId(0), false, 0,
                         QuicStringPiece());
   EXPECT_CALL(*connection_,
               CloseConnection(QUIC_INVALID_STREAM_ID,
@@ -481,8 +489,9 @@ TEST_P(QuicSimpleServerSessionTest, GetEvenIncomingError) {
   // promised yet should result close connection.
   EXPECT_CALL(*connection_, CloseConnection(QUIC_INVALID_STREAM_ID,
                                             "Data for nonexistent stream", _));
-  EXPECT_EQ(nullptr, QuicSessionPeer::GetOrCreateDynamicStream(
-                         session_.get(), GetNthServerInitiatedId(1)));
+  EXPECT_EQ(nullptr,
+            QuicSessionPeer::GetOrCreateDynamicStream(
+                session_.get(), GetNthServerInitiatedUnidirectionalId(1)));
 }
 
 // In order to test the case where server push stream creation goes beyond
@@ -564,7 +573,7 @@ class QuicSimpleServerSessionServerPushTest
     std::list<QuicBackendResponse::ServerPushInfo> push_resources;
     QuicString scheme = "http";
     for (unsigned int i = 1; i <= num_resources; ++i) {
-      QuicStreamId stream_id = GetNthServerInitiatedId(i - 1);
+      QuicStreamId stream_id = GetNthServerInitiatedUnidirectionalId(i - 1);
       QuicString path =
           partial_push_resource_path + QuicTextUtils::Uint64ToString(i);
       QuicString url = scheme + "://" + resource_host + path;
@@ -575,8 +584,9 @@ class QuicSimpleServerSessionServerPushTest
           resource_url, spdy::SpdyHeaderBlock(), QuicStream::kDefaultPriority,
           body));
       // PUSH_PROMISED are sent for all the resources.
-      EXPECT_CALL(*session_, WritePushPromiseMock(GetNthClientInitiatedId(0),
-                                                  stream_id, _));
+      EXPECT_CALL(*session_,
+                  WritePushPromiseMock(GetNthClientInitiatedBidirectionalId(0),
+                                       stream_id, _));
       if (i <= kMaxStreamsForTest) {
         // |kMaxStreamsForTest| promised responses should be sent.
         EXPECT_CALL(*session_,
@@ -591,7 +601,8 @@ class QuicSimpleServerSessionServerPushTest
       }
     }
     session_->PromisePushResources(request_url, push_resources,
-                                   GetNthClientInitiatedId(0), request_headers);
+                                   GetNthClientInitiatedBidirectionalId(0),
+                                   request_headers);
   }
 };
 
@@ -616,7 +627,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   size_t num_resources = kMaxStreamsForTest + 1;
   PromisePushResources(num_resources);
   QuicStreamId next_out_going_stream_id =
-      GetNthServerInitiatedId(kMaxStreamsForTest);
+      GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
 
   // After an open stream is marked draining, a new stream is expected to be
   // created and a response sent on the stream.
@@ -633,9 +644,10 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
     // a MAX_STREAM_ID frame is received. This emulates the reception of one.
     // For pre-v-99, the node monitors its own stream usage and makes streams
     // available as it closes/etc them.
-    session_->OnMaxStreamIdFrame(QuicMaxStreamIdFrame(0, 21));
+    session_->OnMaxStreamIdFrame(
+        QuicMaxStreamIdFrame(0, GetNthServerInitiatedUnidirectionalId(10)));
   }
-  session_->StreamDraining(GetNthServerInitiatedId(0));
+  session_->StreamDraining(GetNthServerInitiatedUnidirectionalId(0));
   // Number of open outgoing streams should still be the same, because a new
   // stream is opened. And the queue should be empty.
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());
@@ -661,7 +673,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
 
   // Reset the last stream in the queue. It should be marked cancelled.
   QuicStreamId stream_got_reset =
-      GetNthServerInitiatedId(kMaxStreamsForTest + 1);
+      GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest + 1);
   QuicRstStreamFrame rst(kInvalidControlFrameId, stream_got_reset,
                          QUIC_STREAM_CANCELLED, 0);
   EXPECT_CALL(owner_, OnRstStreamReceived(_)).Times(1);
@@ -675,7 +687,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   // When the first 2 streams becomes draining, the two queued up stream could
   // be created. But since one of them was marked cancelled due to RST frame,
   // only one queued resource will be sent out.
-  QuicStreamId stream_not_reset = GetNthServerInitiatedId(kMaxStreamsForTest);
+  QuicStreamId stream_not_reset =
+      GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
   InSequence s;
   EXPECT_CALL(*session_, WriteHeadersMock(stream_not_reset, _, false,
                                           QuicStream::kDefaultPriority, _));
@@ -692,10 +705,11 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
     // a MAX_STREAM_ID frame is received. This emulates the reception of one.
     // For pre-v-99, the node monitors its own stream usage and makes streams
     // available as it closes/etc them.
-    session_->OnMaxStreamIdFrame(QuicMaxStreamIdFrame(0, 23));
+    session_->OnMaxStreamIdFrame(
+        QuicMaxStreamIdFrame(0, GetNthServerInitiatedUnidirectionalId(11)));
   }
-  session_->StreamDraining(GetNthServerInitiatedId(0));
-  session_->StreamDraining(GetNthServerInitiatedId(1));
+  session_->StreamDraining(GetNthServerInitiatedUnidirectionalId(0));
+  session_->StreamDraining(GetNthServerInitiatedUnidirectionalId(1));
 }
 
 TEST_P(QuicSimpleServerSessionServerPushTest,
@@ -712,11 +726,12 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
             this, &QuicSimpleServerSessionServerPushTest::ClearControlFrame));
   }
   PromisePushResources(num_resources);
-  QuicStreamId stream_to_open = GetNthServerInitiatedId(kMaxStreamsForTest);
+  QuicStreamId stream_to_open =
+      GetNthServerInitiatedUnidirectionalId(kMaxStreamsForTest);
 
   // Resetting 1st open stream will close the stream and give space for extra
   // stream to be opened.
-  QuicStreamId stream_got_reset = GetNthServerInitiatedId(0);
+  QuicStreamId stream_got_reset = GetNthServerInitiatedUnidirectionalId(0);
   EXPECT_CALL(*connection_, SendControlFrame(_));
   EXPECT_CALL(*connection_,
               OnStreamReset(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT));
@@ -735,7 +750,8 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
     // a MAX_STREAM_ID frame is received. This emulates the reception of one.
     // For pre-v-99, the node monitors its own stream usage and makes streams
     // available as it closes/etc them.
-    session_->OnMaxStreamIdFrame(QuicMaxStreamIdFrame(0, 21));
+    session_->OnMaxStreamIdFrame(
+        QuicMaxStreamIdFrame(0, GetNthServerInitiatedUnidirectionalId(10)));
   }
   visitor_->OnRstStream(rst);
 }
