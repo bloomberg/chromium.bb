@@ -38,8 +38,6 @@ const char kMetadataTraceLabel[] = "metadata";
 
 const char kGetCategoriesClosureName[] = "GetCategoriesClosure";
 const char kRequestBufferUsageClosureName[] = "RequestBufferUsageClosure";
-const char kRequestClockSyncMarkerClosureName[] =
-    "RequestClockSyncMarkerClosure";
 const char kStartTracingClosureName[] = "StartTracingClosure";
 
 }  // namespace
@@ -271,8 +269,8 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
 Coordinator::Coordinator(AgentRegistry* agent_registry)
     : binding_(this),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      // USER_VISIBLE because the task posted from StopAndFlushAfterClockSync()
-      // is required to stop tracing from the UI.
+      // USER_VISIBLE because the task posted from StopAndFlushInternal() is
+      // required to stop tracing from the UI.
       // TODO(fdoray): Once we have support for dynamic priorities
       // (https://crbug.com/889029), use BEST_EFFORT initially and increase the
       // priority only when blocking the tracing UI.
@@ -406,52 +404,6 @@ void Coordinator::StopAndFlushInternal() {
     return;
   }
 
-  agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
-    if (!agent_entry->is_tracing() ||
-        !agent_entry->supports_explicit_clock_sync()) {
-      return;
-    }
-    const std::string sync_id = base::GenerateGUID();
-    agent_entry->AddDisconnectClosure(
-        &kRequestClockSyncMarkerClosureName,
-        base::BindOnce(&Coordinator::OnRequestClockSyncMarkerResponse,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Unretained(agent_entry), sync_id,
-                       base::TimeTicks(), base::TimeTicks()));
-    agent_entry->agent()->RequestClockSyncMarker(
-        sync_id,
-        base::BindRepeating(&Coordinator::OnRequestClockSyncMarkerResponse,
-                            weak_ptr_factory_.GetWeakPtr(),
-                            base::Unretained(agent_entry), sync_id));
-  });
-  if (!agent_registry_->HasDisconnectClosure(
-          &kRequestClockSyncMarkerClosureName)) {
-    StopAndFlushAfterClockSync();
-  }
-}
-
-void Coordinator::OnRequestClockSyncMarkerResponse(
-    AgentRegistry::AgentEntry* agent_entry,
-    const std::string& sync_id,
-    base::TimeTicks issue_ts,
-    base::TimeTicks issue_end_ts) {
-  bool removed =
-      agent_entry->RemoveDisconnectClosure(&kRequestClockSyncMarkerClosureName);
-  DCHECK(removed);
-
-  // TODO(charliea): Change this function so that it can accept a boolean
-  // success indicator instead of having to rely on sentinel issue_ts and
-  // issue_end_ts values to signal failure.
-  if (!(issue_ts == base::TimeTicks() || issue_end_ts == base::TimeTicks()))
-    TRACE_EVENT_CLOCK_SYNC_ISSUER(sync_id, issue_ts, issue_end_ts);
-
-  if (!agent_registry_->HasDisconnectClosure(
-          &kRequestClockSyncMarkerClosureName)) {
-    StopAndFlushAfterClockSync();
-  }
-}
-
-void Coordinator::StopAndFlushAfterClockSync() {
   bool has_tracing_agents = false;
   agent_registry_->ForAllAgents(
       [this, &has_tracing_agents](AgentRegistry::AgentEntry* agent_entry) {

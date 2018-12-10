@@ -278,7 +278,6 @@ CastTracingAgent::CastTracingAgent(service_manager::Connector* connector)
     : BaseAgent(connector,
                 "systemTraceEvents",
                 tracing::mojom::TraceDataType::STRING,
-                false /* supports_explicit_clock_sync */,
                 base::kNullProcessId),
       worker_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,

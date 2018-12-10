@@ -20,14 +20,12 @@ AgentRegistry::AgentEntry::AgentEntry(size_t id,
                                       mojom::AgentPtr agent,
                                       const std::string& label,
                                       mojom::TraceDataType type,
-                                      bool supports_explicit_clock_sync,
                                       base::ProcessId pid)
     : id_(id),
       agent_registry_(agent_registry),
       agent_(std::move(agent)),
       label_(label),
       type_(type),
-      supports_explicit_clock_sync_(supports_explicit_clock_sync),
       pid_(pid),
       is_tracing_(false) {
   DCHECK(!label.empty());
@@ -120,13 +118,11 @@ bool AgentRegistry::HasDisconnectClosure(const void* closure_name) {
 void AgentRegistry::RegisterAgent(mojom::AgentPtr agent,
                                   const std::string& label,
                                   mojom::TraceDataType type,
-                                  bool supports_explicit_clock_sync,
                                   base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto id = next_agent_id_++;
-  auto entry =
-      std::make_unique<AgentEntry>(id, this, std::move(agent), label, type,
-                                   supports_explicit_clock_sync, pid);
+  auto entry = std::make_unique<AgentEntry>(id, this, std::move(agent), label,
+                                            type, pid);
   if (!agent_initialization_callback_.is_null())
     agent_initialization_callback_.Run(entry.get());
   auto result = agents_.insert(std::make_pair(id, std::move(entry)));

@@ -221,7 +221,6 @@ CrOSTracingAgent::CrOSTracingAgent(service_manager::Connector* connector)
     : BaseAgent(connector,
                 tracing::mojom::kSystemTraceEventLabel,
                 tracing::mojom::TraceDataType::STRING,
-                false /* supports_explicit_clock_sync */,
                 base::kNullProcessId) {
   tracing::ProducerClient::Get()->AddDataSource(CrOSDataSource::GetInstance());
 }

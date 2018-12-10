@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
       bool request_clock_sync_marker_on_android);
 
   TraceEventAgent(service_manager::Connector* connector,
-                        bool request_clock_sync_marker_on_android);
+                  bool request_clock_sync_marker_on_android);
 
   void AddMetadataGeneratorFunction(MetadataGeneratorFunction generator);
 
@@ -58,10 +58,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
                     StartTracingCallback callback) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
 
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      Agent::RequestClockSyncMarkerCallback callback) override;
-
   void GetCategories(GetCategoriesCallback callback) override;
 
   void RequestBufferStatus(RequestBufferStatusCallback callback) override;
@@ -70,6 +66,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
                        bool has_more_events);
 
   uint8_t enabled_tracing_modes_;
+  bool request_clock_sync_marker_on_android_;
   mojom::RecorderPtr recorder_;
   std::vector<MetadataGeneratorFunction> metadata_generator_functions_;
   bool trace_log_needs_me_ = false;

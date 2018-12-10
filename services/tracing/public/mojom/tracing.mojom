@@ -30,7 +30,6 @@ enum TraceDataType {
 // to collect traces from other processes using the |Coordinator| interface.
 interface AgentRegistry {
   RegisterAgent(Agent agent, string label, TraceDataType type,
-                bool supports_explicit_clock_sync,
                 mojo_base.mojom.ProcessId pid);
 };
 
@@ -42,9 +41,6 @@ interface Agent {
   StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time)
       => (bool success);
   StopAndFlush(Recorder recorder);
-  RequestClockSyncMarker(string sync_id)
-      => (mojo_base.mojom.TimeTicks issue_ts,
-          mojo_base.mojom.TimeTicks issue_end_ts);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
   GetCategories() => (string categories);
 };
