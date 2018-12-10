@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
@@ -183,11 +182,12 @@ public class VrBrowserControllerInputTest {
     }
 
     /**
-     * Verifies that fling scrolling works on the Daydream controller's touchpad.
+     * Verifies that fling scrolling works on the Daydream controller's touchpad. This is done by
+     * performing a fast non-fling scroll, checking how far it scrolled, and asserting that a fling
+     * scroll of the same speed scrolls further.
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/910549")
     public void testControllerFlingScrolling() throws InterruptedException {
         mVrTestRule.loadUrl(
                 VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_controller_scrolling"),
@@ -197,41 +197,81 @@ public class VrBrowserControllerInputTest {
         waitForPageToBeScrollable(coord);
 
         // Test fling scrolling down.
+        // Perform a fast non-fling scroll and record how far it causes the page to scroll.
+        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.DOWN);
+        final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
+        // Reset the page to the top.
+        mVrBrowserTestFramework.runJavaScriptOrFail("window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> { return coord.getScrollYPixInt() == 0; });
+        // Perform the fling scroll.
         NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.DOWN);
         NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_FLING_SCROLL);
-        final AtomicInteger endScrollPoint = new AtomicInteger(coord.getScrollYPixInt());
-        // Check that we continue to scroll past wherever we were even though we aren't touching
-        // the touchpad anymore.
+        // Check that we scroll further than we did with the non-fling scroll.
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> { return coord.getScrollYPixInt() > endScrollPoint.get(); },
                 "Controller failed to fling scroll down", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_LONG_MS);
 
+        // Scroll the page all the way to the bottom so we can test the fling up.
+        mVrBrowserTestFramework.runJavaScriptOrFail(
+                "window.scrollTo(0, document.documentElement.scrollHeight)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            // We can't check equality because rounding can sometimes make the max and actual values
+            // differ by 1.
+            return coord.getMaxVerticalScrollPixInt() - coord.getScrollYPixInt() <= 1;
+        });
+
         // Test fling scrolling up.
+        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.UP);
+        endScrollPoint.set(coord.getScrollYPixInt());
+        mVrBrowserTestFramework.runJavaScriptOrFail(
+                "window.scrollTo(0, document.documentElement.scrollHeight)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return coord.getMaxVerticalScrollPixInt() - coord.getScrollYPixInt() <= 1;
+        });
         NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.UP);
         NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_FLING_SCROLL);
-        endScrollPoint.set(coord.getScrollYPixInt());
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> { return coord.getScrollYPixInt() < endScrollPoint.get(); },
                 "Controller failed  to fling scroll up", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_LONG_MS);
 
+        // Scroll the page to the top left.
+        mVrBrowserTestFramework.runJavaScriptOrFail("window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> { return coord.getScrollYPixInt() == 0; });
+
         // Test fling scrolling right.
+        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.RIGHT);
+        endScrollPoint.set(coord.getScrollXPixInt());
+        mVrBrowserTestFramework.runJavaScriptOrFail("window.scrollTo(0, 0)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> { return coord.getScrollXPixInt() == 0; });
         NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.RIGHT);
         NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_FLING_SCROLL);
-        endScrollPoint.set(coord.getScrollXPixInt());
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> { return coord.getScrollXPixInt() > endScrollPoint.get(); },
                 "Controller failed to fling scroll right", POLL_TIMEOUT_SHORT_MS,
                 POLL_CHECK_INTERVAL_LONG_MS);
 
+        // Scroll the page all the way to the right.
+        mVrBrowserTestFramework.runJavaScriptOrFail(
+                "window.scrollTo(document.documentElement.scrollWidth, 0)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return coord.getMaxHorizontalScrollPixInt() - coord.getScrollXPixInt() <= 1;
+        });
+
         // Test fling scrolling left.
+        NativeUiUtils.scrollNonFlingFast(NativeUiUtils.ScrollDirection.LEFT);
+        endScrollPoint.set(coord.getScrollXPixInt());
+        mVrBrowserTestFramework.runJavaScriptOrFail(
+                "window.scrollTo(document.documentElement.scrollWidth, 0)", POLL_TIMEOUT_SHORT_MS);
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            return coord.getMaxHorizontalScrollPixInt() - coord.getScrollXPixInt() <= 1;
+        });
         NativeUiUtils.scrollFling(NativeUiUtils.ScrollDirection.LEFT);
         NativeUiUtils.waitNumFrames(NativeUiUtils.NUM_FRAMES_FLING_SCROLL);
-        endScrollPoint.set(coord.getScrollXPixInt());
         CriteriaHelper.pollInstrumentationThread(
                 ()
                         -> { return coord.getScrollXPixInt() < endScrollPoint.get(); },
