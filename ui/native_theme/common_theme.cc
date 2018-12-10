@@ -126,7 +126,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_MenuBorderColor:
       return SkColorSetRGB(0xBA, 0xBA, 0xBA);
     case NativeTheme::kColorId_MenuSeparatorColor:
-      return SkColorSetRGB(0xE9, 0xE9, 0xE9);
+      return gfx::kGoogleGrey200;
     case NativeTheme::kColorId_MenuBackgroundColor:
       return SK_ColorWHITE;
     case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:

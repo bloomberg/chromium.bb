@@ -27,12 +27,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
                               public views::WidgetFocusChangeListener,
                               public views::WidgetObserver {
  public:
-  static const SkColor kBackgroundColor;
-  static const SkColor kSelectedBackgroundColor;
-  static const SkColor kFooterBackgroundColor;
-  static const SkColor kSeparatorColor;
-  static const SkColor kWarningColor;
-
   // Consider the input element is |kElementBorderPadding| pixels larger at the
   // top and at the bottom in order to reposition the dropdown, so that it
   // doesn't look too close to the element.
@@ -43,6 +37,14 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   static const int kValueLabelPadding = 24;
 
   static int GetCornerRadius();
+
+  // Get colors used throughout various popup UIs, based on the current native
+  // theme.
+  SkColor GetBackgroundColor();
+  SkColor GetSelectedBackgroundColor();
+  SkColor GetFooterBackgroundColor();
+  SkColor GetSeparatorColor();
+  SkColor GetWarningColor();
 
  protected:
   explicit AutofillPopupBaseView(AutofillPopupViewDelegate* delegate,

@@ -528,8 +528,8 @@ AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
 std::unique_ptr<views::Background>
 AutofillPopupSuggestionView::CreateBackground() {
   return views::CreateSolidBackground(
-      is_selected_ ? AutofillPopupBaseView::kSelectedBackgroundColor
-                   : AutofillPopupBaseView::kBackgroundColor);
+      is_selected_ ? popup_view_->GetSelectedBackgroundColor()
+                   : popup_view_->GetBackgroundColor());
 }
 
 // By default, this returns kLeadingIcon for passwords and kTrailingIcon for all
@@ -701,14 +701,14 @@ void AutofillPopupFooterView::CreateContent() {
       /*left=*/0,
       /*bottom=*/0,
       /*right=*/0,
-      /*color=*/AutofillPopupBaseView::kSeparatorColor));
+      /*color=*/popup_view_->GetSeparatorColor()));
   AutofillPopupItemView::CreateContent();
 }
 
 std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
   return views::CreateSolidBackground(
-      is_selected_ ? AutofillPopupBaseView::kSelectedBackgroundColor
-                   : AutofillPopupBaseView::kFooterBackgroundColor);
+      is_selected_ ? popup_view_->GetSelectedBackgroundColor()
+                   : popup_view_->GetFooterBackgroundColor());
 }
 
 int AutofillPopupFooterView::GetPrimaryTextStyle() {
@@ -753,7 +753,7 @@ void AutofillPopupSeparatorView::CreateContent() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(AutofillPopupBaseView::kSeparatorColor);
+  separator->SetColor(popup_view_->GetSeparatorColor());
   // Add some spacing between the the previous item and the separator.
   separator->SetPreferredHeight(
       views::MenuConfig::instance().separator_thickness);
@@ -773,7 +773,7 @@ void AutofillPopupSeparatorView::RefreshStyle() {
 
 std::unique_ptr<views::Background>
 AutofillPopupSeparatorView::CreateBackground() {
-  return views::CreateSolidBackground(SK_ColorWHITE);
+  return views::CreateSolidBackground(popup_view_->GetBackgroundColor());
 }
 
 AutofillPopupSeparatorView::AutofillPopupSeparatorView(
@@ -818,7 +818,7 @@ void AutofillPopupWarningView::CreateContent() {
   views::Label* text_label = CreateLabelWithColorReadabilityDisabled(
       controller->GetElidedValueAt(line_number_),
       ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_RED);
-  text_label->SetEnabledColor(AutofillPopupBaseView::kWarningColor);
+  text_label->SetEnabledColor(popup_view_->GetWarningColor());
   text_label->SetMultiLine(true);
   int max_width =
       std::min(kAutofillPopupMaxWidth,
@@ -834,7 +834,7 @@ void AutofillPopupWarningView::CreateContent() {
 
 std::unique_ptr<views::Background>
 AutofillPopupWarningView::CreateBackground() {
-  return views::CreateSolidBackground(SK_ColorWHITE);
+  return views::CreateSolidBackground(popup_view_->GetBackgroundColor());
 }
 
 }  // namespace
@@ -882,7 +882,7 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
   layout_->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
   CreateChildViews();
-  SetBackground(views::CreateSolidBackground(kBackgroundColor));
+  SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
@@ -1001,7 +1001,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   if (has_footer) {
     views::View* footer_container = new views::View();
     footer_container->SetBackground(
-        views::CreateSolidBackground(kFooterBackgroundColor));
+        views::CreateSolidBackground(GetFooterBackgroundColor()));
 
     views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));

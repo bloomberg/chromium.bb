@@ -136,8 +136,8 @@ void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
 
   password_view_->SetBackground(views::CreateSolidBackground(
-      controller_->password_selected() ? kSelectedBackgroundColor
-                                       : kBackgroundColor));
+      controller_->password_selected() ? GetSelectedBackgroundColor()
+                                       : GetBackgroundColor()));
   SchedulePaint();
 }
 
@@ -179,7 +179,7 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   help_label->SetTextContext(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE);
   help_label->SetDefaultTextStyle(STYLE_SECONDARY);
   help_label->SetBackground(
-      views::CreateSolidBackground(kFooterBackgroundColor));
+      views::CreateSolidBackground(GetFooterBackgroundColor()));
   help_label->SetBorder(
       views::CreateEmptyBorder(kVerticalPadding, kHorizontalMargin,
                                kVerticalPadding, kHorizontalMargin));
@@ -198,7 +198,7 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   if (password_view_) {
     gfx::Rect divider_bounds(0, password_view_->bounds().bottom(),
                              password_view_->width(), 1);
-    canvas->FillRect(divider_bounds, kSeparatorColor);
+    canvas->FillRect(divider_bounds, GetSeparatorColor());
   }
 }
 
