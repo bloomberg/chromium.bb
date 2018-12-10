@@ -316,12 +316,8 @@ let searchInProgress_ = false;
  * Node names that are not going to be processed.
  * @type {Object}
  */
-const IGNORE_NODE_NAMES = {
-  'SCRIPT': 1,
-  'STYLE': 1,
-  'EMBED': 1,
-  'OBJECT': 1
-};
+const IGNORE_NODE_NAMES =
+    new Set(['SCRIPT', 'STYLE', 'EMBED', 'OBJECT', 'SELECT', 'TEXTAREA']);
 
 /**
  * Class name of CSS element.
@@ -466,7 +462,7 @@ __gCrWeb.findInPage.pumpSearch = function(timeout) {
       for (let i = children.length - 1; i >= 0; --i) {
         let child = children[i];
         if ((child.nodeType == 1 || child.nodeType == 3) &&
-            !IGNORE_NODE_NAMES[child.nodeName]) {
+            !IGNORE_NODE_NAMES.has(child.nodeName)) {
           __gCrWeb.findInPage.stack.push(children[i]);
         }
       }
