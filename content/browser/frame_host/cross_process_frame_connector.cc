@@ -68,7 +68,8 @@ RenderFrameHostImpl* RootRenderFrameHost(RenderFrameHostImpl* frame) {
 CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : FrameConnectorDelegate(IsUseZoomForDSFEnabled()),
-      frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer) {
+      frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
+      is_scroll_bubbling_(false) {
   frame_proxy_in_parent_renderer->frame_tree_node()
       ->render_manager()
       ->current_frame_host()
@@ -118,13 +119,14 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     // The RenderWidgetHostDelegate needs to be checked because SetView() can
     // be called during nested WebContents destruction. See
     // https://crbug.com/644306.
-    if (GetParentRenderWidgetHostView() &&
+    if (is_scroll_bubbling_ && GetParentRenderWidgetHostView() &&
         GetParentRenderWidgetHostView()->host()->delegate()) {
       GetParentRenderWidgetHostView()
           ->host()
           ->delegate()
           ->GetInputEventRouter()
-          ->WillDetachChildView(view_);
+          ->CancelScrollBubbling(view_);
+      is_scroll_bubbling_ = false;
     }
     view_->SetFrameConnectorDelegate(nullptr);
   }
@@ -296,7 +298,14 @@ void CrossProcessFrameConnector::BubbleScrollEvent(
   // action of the parent frame to Auto so that this gesture event is allowed.
   parent_view->host()->input_router()->ForceSetTouchActionAuto();
 
-  event_router->BubbleScrollEvent(parent_view, view_, resent_gesture_event);
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin) {
+    event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
+    is_scroll_bubbling_ = true;
+  } else if (is_scroll_bubbling_) {
+    event_router->BubbleScrollEvent(parent_view, resent_gesture_event, view_);
+  }
+  if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd)
+    is_scroll_bubbling_ = false;
 }
 
 bool CrossProcessFrameConnector::HasFocus() {
