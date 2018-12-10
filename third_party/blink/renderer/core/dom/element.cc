@@ -3297,9 +3297,7 @@ bool Element::SupportsFocus() const {
          IsRootEditableElementWithCounting(*this) ||
          (IsShadowHost(this) && AuthorShadowRoot() &&
           AuthorShadowRoot()->delegatesFocus()) ||
-         SupportsSpatialNavigationFocus() ||
-         (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
-          IsScrollableNode(this));
+         SupportsSpatialNavigationFocus();
 }
 
 bool Element::SupportsSpatialNavigationFocus() const {
@@ -3326,19 +3324,26 @@ bool Element::SupportsSpatialNavigationFocus() const {
 }
 
 bool Element::IsFocusable() const {
-  // Style cannot be cleared out for non-active documents, so in that case the
-  // needsLayoutTreeUpdateForNode check is invalid.
-  DCHECK(!GetDocument().IsActive() ||
-         !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
-  return isConnected() && SupportsFocus() && !IsInert() && IsFocusableStyle();
+  return Element::IsMouseFocusable() || Element::IsKeyboardFocusable();
 }
 
 bool Element::IsKeyboardFocusable() const {
-  return IsFocusable() && tabIndex() >= 0;
+  // No point in checking NeedsLayoutTreeUpdateForNode when the document
+  // isn't active (style can't be invalidated in a non-active document).
+  DCHECK(!GetDocument().IsActive() ||
+         !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
+  return isConnected() && !IsInert() && IsFocusableStyle() &&
+         ((SupportsFocus() && tabIndex() >= 0) ||
+          (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+           IsScrollableNode(this)));
 }
 
 bool Element::IsMouseFocusable() const {
-  return IsFocusable();
+  // No point in checking NeedsLayoutTreeUpdateForNode when the document
+  // isn't active (style can't be invalidated in a non-active document).
+  DCHECK(!GetDocument().IsActive() ||
+         !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
+  return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus();
 }
 
 bool Element::IsFocusedElementInDocument() const {
