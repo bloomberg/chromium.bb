@@ -283,7 +283,9 @@ QuicDispatcher::QuicDispatcher(
               Perspective::IS_SERVER),
       last_error_(QUIC_NO_ERROR),
       new_sessions_allowed_per_event_loop_(0u),
-      accept_new_connections_(true) {
+      accept_new_connections_(true),
+      check_blocked_writer_for_blockage_(
+          GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
   framer_.set_visitor(this);
 }
 
@@ -574,6 +576,33 @@ void QuicDispatcher::OnCanWrite() {
   // The socket is now writable.
   writer_->SetWritable();
 
+  if (check_blocked_writer_for_blockage_) {
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 2, 4);
+    // Move every blocked writer in |write_blocked_list_| to a temporary list.
+    const size_t num_blocked_writers_before = write_blocked_list_.size();
+    WriteBlockedList temp_list;
+    temp_list.swap(write_blocked_list_);
+    DCHECK(write_blocked_list_.empty());
+
+    // Give each blocked writer a chance to write what they indended to write.
+    // If they are blocked again, they will call |OnWriteBlocked| to add
+    // themselves back into |write_blocked_list_|.
+    while (!temp_list.empty()) {
+      QuicBlockedWriterInterface* blocked_writer = temp_list.begin()->first;
+      temp_list.erase(temp_list.begin());
+      blocked_writer->OnBlockedWriterCanWrite();
+    }
+    const size_t num_blocked_writers_after = write_blocked_list_.size();
+    if (num_blocked_writers_after != 0) {
+      if (num_blocked_writers_before == num_blocked_writers_after) {
+        QUIC_CODE_COUNT(quic_zero_progress_on_can_write);
+      } else {
+        QUIC_CODE_COUNT(quic_blocked_again_on_can_write);
+      }
+    }
+    return;
+  }
+
   // Give all the blocked writers one chance to write, until we're blocked again
   // or there's no work left.
   while (!write_blocked_list_.empty() && !writer_->IsWriteBlocked()) {
@@ -635,12 +664,25 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
 
 void QuicDispatcher::OnWriteBlocked(
     QuicBlockedWriterInterface* blocked_writer) {
-  if (!ShouldAddToBlockedList()) {
-    QUIC_BUG
-        << "Tried to add writer into blocked list when it shouldn't be added";
-    // Return without adding the connection to the blocked list, to avoid
-    // infinite loops in OnCanWrite.
-    return;
+  if (check_blocked_writer_for_blockage_) {
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 1, 4);
+    if (!blocked_writer->IsWriterBlocked()) {
+      // It is a programming error if this ever happens. When we are sure it is
+      // not happening, replace it with a DCHECK.
+      QUIC_BUG
+          << "Tried to add writer into blocked list when it shouldn't be added";
+      // Return without adding the connection to the blocked list, to avoid
+      // infinite loops in OnCanWrite.
+      return;
+    }
+  } else {
+    if (!ShouldAddToBlockedList()) {
+      QUIC_BUG
+          << "Tried to add writer into blocked list when it shouldn't be added";
+      // Return without adding the connection to the blocked list, to avoid
+      // infinite loops in OnCanWrite.
+      return;
+    }
   }
   write_blocked_list_.insert(std::make_pair(blocked_writer, true));
 }

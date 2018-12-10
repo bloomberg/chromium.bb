@@ -1788,6 +1788,10 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
 }
 
 void QuicConnection::OnBlockedWriterCanWrite() {
+  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 3, 4);
+    writer_->SetWritable();
+  }
   OnCanWrite();
 }
 

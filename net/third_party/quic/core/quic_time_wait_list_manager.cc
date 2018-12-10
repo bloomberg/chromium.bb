@@ -16,6 +16,7 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
+#include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_map_util.h"
@@ -124,6 +125,10 @@ bool QuicTimeWaitListManager::IsConnectionIdInTimeWait(
 }
 
 void QuicTimeWaitListManager::OnBlockedWriterCanWrite() {
+  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    QUIC_RESTART_FLAG_COUNT_N(quic_check_blocked_writer_for_blockage, 4, 4);
+    writer_->SetWritable();
+  }
   while (!pending_packets_queue_.empty()) {
     QueuedPacket* queued_packet = pending_packets_queue_.front().get();
     if (!WriteToWire(queued_packet)) {

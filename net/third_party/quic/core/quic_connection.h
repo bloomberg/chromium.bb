@@ -418,6 +418,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // writes to happen.
   void OnBlockedWriterCanWrite() override;
 
+  bool IsWriterBlocked() const override {
+    return writer_ != nullptr && writer_->IsWriteBlocked();
+  }
+
   // Called when the caller thinks it's worth a try to write.
   virtual void OnCanWrite();
 
