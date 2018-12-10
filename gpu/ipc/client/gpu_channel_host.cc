@@ -24,12 +24,6 @@
 using base::AutoLock;
 
 namespace gpu {
-namespace {
-
-// Global atomic to generate unique transfer buffer IDs.
-base::AtomicSequenceNumber g_next_transfer_buffer_id;
-
-}  // namespace
 
 GpuChannelHost::GpuChannelHost(int channel_id,
                                const gpu::GPUInfo& gpu_info,
@@ -225,14 +219,6 @@ base::UnsafeSharedMemoryRegion GpuChannelHost::ShareToGpuProcess(
     return base::UnsafeSharedMemoryRegion();
 
   return source_region.Duplicate();
-}
-
-int32_t GpuChannelHost::ReserveTransferBufferId() {
-  // 0 is a reserved value.
-  int32_t id = g_next_transfer_buffer_id.GetNext();
-  if (id)
-    return id;
-  return g_next_transfer_buffer_id.GetNext();
 }
 
 int32_t GpuChannelHost::ReserveImageId() {

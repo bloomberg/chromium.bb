@@ -132,9 +132,6 @@ class GPU_EXPORT GpuChannelHost
   base::UnsafeSharedMemoryRegion ShareToGpuProcess(
       const base::UnsafeSharedMemoryRegion& source_region);
 
-  // Reserve one unused transfer buffer ID.
-  int32_t ReserveTransferBufferId();
-
   // Reserve one unused image ID.
   int32_t ReserveImageId();
 

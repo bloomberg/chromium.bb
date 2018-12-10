@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/atomic_sequence_num.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -14,6 +15,12 @@
 #include "base/strings/stringprintf.h"
 
 namespace gpu {
+namespace {
+
+// Global atomic to generate unique buffer IDs.
+base::AtomicSequenceNumber g_next_buffer_id;
+
+}  // namespace
 
 const base::UnsafeSharedMemoryRegion& BufferBacking::shared_memory_region()
     const {
@@ -95,6 +102,11 @@ uint32_t Buffer::GetRemainingSize(uint32_t data_offset) const {
   if (data_offset > static_cast<uint32_t>(size_))
     return 0;
   return static_cast<uint32_t>(size_) - data_offset;
+}
+
+int32_t GetNextBufferId() {
+  // 0 is a reserved value.
+  return g_next_buffer_id.GetNext() + 1;
 }
 
 base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(

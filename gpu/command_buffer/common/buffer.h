@@ -105,6 +105,10 @@ static inline scoped_refptr<Buffer> MakeMemoryBuffer(size_t size) {
       std::make_unique<MemoryBufferBacking>(size));
 }
 
+// Generates a process unique buffer ID which can be safely used with
+// GetBufferGUIDForTracing.
+GPU_EXPORT int32_t GetNextBufferId();
+
 // Generates GUID which can be used to trace buffer using an Id.
 GPU_EXPORT base::trace_event::MemoryAllocatorDumpGuid GetBufferGUIDForTracing(
     uint64_t tracing_process_id,
