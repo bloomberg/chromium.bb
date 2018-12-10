@@ -61,6 +61,7 @@ test("cast_media_unittests") {
     ":media",
     "//base",
     "//base/test:test_support",
+    "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
     "//chromecast/common/mojom",

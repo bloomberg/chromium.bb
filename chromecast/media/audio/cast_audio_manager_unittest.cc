@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/common/mojom/constants.mojom.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
 #include "chromecast/media/cma/backend/cma_backend.h"
@@ -198,7 +199,8 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
   stream->Close();
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_ANDROID_THINGS)
+// Android things emulators do not support AC3 codec
 TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
   const ::media::AudioParameters kAC3AudioParams(
       ::media::AudioParameters::AUDIO_BITSTREAM_AC3,
@@ -219,7 +221,7 @@ TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
 
   stream->Close();
 }
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) && !BUILDFLAG(IS_ANDROID_THINGS)
 
 TEST_F(CastAudioManagerTest, CanMakeStreamProxy) {
   SetUpBackendAndDecoder();
