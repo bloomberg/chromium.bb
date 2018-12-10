@@ -945,6 +945,13 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, TurnOffDice) {
   EXPECT_TRUE(GetSigninManager()->GetAccountIdForAuthInProgress().empty());
   EXPECT_FALSE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
   EXPECT_TRUE(GetAccountTrackerService()->GetAccounts().empty());
+
+  // Navigate to Gaia and sign in.
+  NavigateToURL(kSigninURL);
+  // Check that the Dice request header was not sent.
+  EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
+  EXPECT_EQ(0, reconcilor_blocked_count_);
+  WaitForReconcilorUnblockedCount(0);
 }
 
 // Checks that Dice is disabled in incognito mode.
