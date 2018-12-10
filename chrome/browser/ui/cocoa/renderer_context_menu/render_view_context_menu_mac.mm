@@ -97,12 +97,11 @@ void RenderViewContextMenuMac::AppendPlatformEditableItems() {
 }
 
 void RenderViewContextMenuMac::InitToolkitMenu() {
-  if (params_.selection_text.empty() ||
-      params_.input_field_type ==
-          blink::WebContextMenuData::kInputFieldTypePassword)
+  if (params_.input_field_type ==
+      blink::WebContextMenuData::kInputFieldTypePassword)
     return;
 
-  if (params_.link_url.is_empty()) {
+  if (!params_.selection_text.empty() && params_.link_url.is_empty()) {
     // In case the user has selected a word that triggers spelling suggestions,
     // show the dictionary lookup under the group that contains the command to
     // “Add to Dictionary.”
