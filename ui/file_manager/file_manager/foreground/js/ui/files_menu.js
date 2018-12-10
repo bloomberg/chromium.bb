@@ -79,6 +79,13 @@ cr.define('cr.ui', function() {
 
       // Perform fade out animation.
       var menu = assertInstanceof(this.parentNode, cr.ui.Menu);
+      // If activation was on a menu-item that hosts a sub-menu, don't animate
+      const subMenuId = event.target.getAttribute('sub-menu');
+      if (subMenuId !== null) {
+        if (document.querySelector(subMenuId) !== null) {
+          return;
+        }
+      }
       this.setMenuAsAnimating_(menu, true /* animating */);
 
       var player = menu.animate([{

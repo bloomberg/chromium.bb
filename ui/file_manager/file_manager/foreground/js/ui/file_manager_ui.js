@@ -306,11 +306,11 @@ function FileManagerUI(providersModel, element, launchParam) {
 
   /**
    * The menu button for share options
-   * @type {!cr.ui.MenuButton}
+   * @type {!cr.ui.MultiMenuButton}
    * @const
    */
   this.shareMenuButton =
-      util.queryDecoratedElement('#share-menu-button', cr.ui.MenuButton);
+      util.queryDecoratedElement('#share-menu-button', cr.ui.MultiMenuButton);
   var shareMenuButtonToggleRipple =
       /** @type {!FilesToggleRipple} */ (
           queryRequiredElement('files-toggle-ripple', this.shareMenuButton));
@@ -320,6 +320,13 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.shareMenuButton.addEventListener('menuhide', function() {
     shareMenuButtonToggleRipple.activated = false;
   });
+
+  /**
+   * @type {!cr.ui.Menu}
+   * @const
+   */
+  this.shareSubMenu = util.queryDecoratedElement('#share-sub-menu', cr.ui.Menu);
+  this.shareMenuButton.overflow = this.shareSubMenu;
 
   /**
    * Banners in the file list.

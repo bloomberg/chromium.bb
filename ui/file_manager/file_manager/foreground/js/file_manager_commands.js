@@ -1369,6 +1369,29 @@ CommandHandler.COMMANDS_['more-actions'] = /** @type {Command} */ ({
 });
 
 /**
+ * Displays any available (child) sub menu for current selection.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['show-submenu'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    fileManager.ui.shareMenuButton.showSubMenu();
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    var canExecute = fileManager.taskController.canExecuteShowOverflow();
+    event.canExecute = canExecute;
+    event.command.setHidden(!canExecute);
+  }
+});
+
+/**
  * Displays QuickView for current selection.
  * @type {Command}
  */

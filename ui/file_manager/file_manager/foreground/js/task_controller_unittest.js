@@ -56,6 +56,7 @@ function setUp() {
     '<command id="default-task">',
     '<command id="open-with">',
     '<command id="more-actions">',
+    '<command id="show-submenu">',
   ].join('');
 
   // Initialize cr.ui.Command with the <command>s.
@@ -91,6 +92,7 @@ function createTaskController(fileSelectionHandler) {
         fileContextMenu: {
           defaultActionMenuItem: document.createElement('div'),
         },
+        shareSubMenu: document.createElement('div'),
         speakA11yMessage: text => {},
       }),
       new MockMetadataModel({}),
@@ -99,8 +101,7 @@ function createTaskController(fileSelectionHandler) {
       }),
       fileSelectionHandler,
       /** @type {!MetadataUpdateController} */ ({}),
-      /** @type {!NamingController} */ ({}),
-      createCrostiniForTest());
+      /** @type {!NamingController} */ ({}), createCrostiniForTest());
 
   return taskController;
 }
