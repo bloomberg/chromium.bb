@@ -713,23 +713,15 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaColumnCount {
   if (!ui::IsTableLike(owner_->GetRole()))
     return nil;
-  int count = -1;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaColumnCount,
-                               &count)) {
-    return nil;
-  }
-  return [NSNumber numberWithInt:count];
+  DCHECK(owner_->node());
+  return [NSNumber numberWithInt:owner_->node()->GetTableAriaColCount()];
 }
 
 - (NSNumber*)ariaColumnIndex {
   if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
-  int index = -1;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
-                               &index)) {
-    return nil;
-  }
-  return [NSNumber numberWithInt:index];
+  DCHECK(owner_->node());
+  return [NSNumber numberWithInt:owner_->node()->GetTableCellAriaColIndex()];
 }
 
 - (NSString*)ariaLive {
@@ -756,23 +748,15 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaRowCount {
   if (!ui::IsTableLike(owner_->GetRole()))
     return nil;
-  int count = -1;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaRowCount,
-                               &count)) {
-    return nil;
-  }
-  return [NSNumber numberWithInt:count];
+  DCHECK(owner_->node());
+  return [NSNumber numberWithInt:owner_->node()->GetTableAriaRowCount()];
 }
 
 - (NSNumber*)ariaRowIndex {
   if (!ui::IsCellOrTableHeader(owner_->GetRole()))
     return nil;
-  int index = -1;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
-                               &index)) {
-    return nil;
-  }
-  return [NSNumber numberWithInt:index];
+  DCHECK(owner_->node());
+  return [NSNumber numberWithInt:owner_->node()->GetTableCellAriaRowIndex()];
 }
 
 - (NSNumber*)ariaSetSize {
