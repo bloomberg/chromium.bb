@@ -179,6 +179,9 @@ are declared in tools/grit/grit_rule.gni.
       <!-- Bookmarks specific strings -->
       <part file="bookmarks_strings.grdp" />
 
+      <!-- App Management specific strings -->
+      <part file="app_management_strings.grdp" />
+
       <!-- Media Router specific strings -->
       <part file="media_router_strings.grdp" />
 
@@ -3208,7 +3211,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <if expr="chromeos">
         <message name="IDS_UTILITY_PROCESS_CUPS_IPP_PARSER_SERVICE_NAME" desc="The name of the utility process used for parsing IPP requests out-of-process.">
-          CUPS IPP Parser 
+          CUPS IPP Parser
         </message>
         <message name="IDS_UTILITY_PROCESS_IME_SERVICE_NAME" desc="The name of the utility process providing the input methods.">
           Chrome OS Input Method

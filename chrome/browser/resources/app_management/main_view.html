@@ -65,10 +65,10 @@
         padding: 16px 24px;
       }
     </style>
-    <cr-toolbar page-name="Apps" search-prompt="Search Settings">
+    <cr-toolbar page-name="$i18n{title}" search-prompt="$i18n{searchPrompt}">
     </cr-toolbar>
     <div id="app-list">
-      <div id="app-list-title">Recently opened apps</div>
+      <div id="app-list-title">$i18n{appListTitle}</div>
       <template is="dom-repeat" items="[[apps_]]">
         <div class="app-list-item">
           <img id="app-icon" src="[[iconUrlFromId_(item)]]">
@@ -77,7 +77,7 @@
             src="chrome://resources/images/arrow_right.svg">
         </div>
       </template>
-      <div id="more-apps">See more apps</div>
+      <div id="more-apps">$i18n{moreApps}</div>
     </div>
   </template>
   <script src="chrome://apps/main_view.js"></script>

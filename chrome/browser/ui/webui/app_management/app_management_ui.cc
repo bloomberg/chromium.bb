@@ -25,6 +25,11 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIAppLauncherPageHost);
 
+  source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
+  source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
+  source->AddLocalizedString("searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT);
+  source->AddLocalizedString("title", IDS_APP_MANAGEMENT_TITLE);
+
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
