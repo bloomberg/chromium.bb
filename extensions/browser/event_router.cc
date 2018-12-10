@@ -728,6 +728,12 @@ void EventRouter::DoDispatchEventToSenderBookkeepingOnUI(
     NOTREACHED();
     return;
   }
+  // TODO(https://crbug.com/870838): Remove after investigating the bug.
+  if (ExtensionsBrowserClient::Get()->IsShuttingDown()) {
+    LOG(ERROR)
+        << "Event dispatched while shutting down extensions browser client.";
+    return;
+  }
   if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
   // TODO(https://crbug.com/870838): Remove after investigating the bug.
