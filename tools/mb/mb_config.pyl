@@ -772,7 +772,7 @@
   # bots all using the 'release_bot' config).
   'configs': {
     'afl_asan_release_bot': [
-      'afl', 'asan', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'afl', 'asan', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'android_binary_size': [
