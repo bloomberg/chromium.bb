@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.cached_image_fetcher;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,6 +38,7 @@ import org.chromium.chrome.browser.BitmapCache;
 /**
  * Unit tests for InMemoryCachedImageFetcher.
  */
+@SuppressWarnings("unchecked")
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class InMemoryCachedImageFetcherTest {
@@ -68,6 +71,8 @@ public class InMemoryCachedImageFetcherTest {
         MockitoAnnotations.initMocks(this);
         mReferencePool = new DiscardableReferencePool();
         mBitmapCache = new BitmapCache(mReferencePool, DEFAULT_CACHE_SIZE);
+        mInMemoryCachedImageFetcher =
+                spy(new InMemoryCachedImageFetcher(mBitmapCache, mCachedImageFetcherImpl));
     }
 
     @After
@@ -93,9 +98,12 @@ public class InMemoryCachedImageFetcherTest {
                 .fetchImage(eq(URL), mWidthCaptor.capture(), mHeightCaptor.capture(),
                         mCallbackCaptor.capture());
         // clang-format on
+
+        doReturn(bitmap)
+                .when(mInMemoryCachedImageFetcher)
+                .tryToResizeImage(eq(bitmap), eq(WIDTH_PX), eq(HEIGHT_PX));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     @SmallTest
     public void testFetchImageCachesFirstCall() throws Exception {
@@ -124,6 +132,27 @@ public class InMemoryCachedImageFetcherTest {
 
         verify(mCachedImageFetcherImpl, /* Shouldn't make the call at all. */ times(0))
                 .fetchImage(eq(URL), eq(WIDTH_PX), eq(HEIGHT_PX), any());
+    }
+
+    @Test
+    @SmallTest
+    public void testResize() throws Exception {
+        Bitmap result =
+                mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX / 2, HEIGHT_PX / 2);
+        assertNotEquals(result, mBitmap);
+    }
+
+    @Test
+    @SmallTest
+    public void testResizeBailsOutIfSizeIsZero() throws Exception {
+        Bitmap result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, HEIGHT_PX);
+        assertEquals(result, mBitmap);
+
+        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, WIDTH_PX, 0);
+        assertEquals(result, mBitmap);
+
+        result = mInMemoryCachedImageFetcher.tryToResizeImage(mBitmap, 0, 0);
+        assertEquals(result, mBitmap);
     }
 
     @Test

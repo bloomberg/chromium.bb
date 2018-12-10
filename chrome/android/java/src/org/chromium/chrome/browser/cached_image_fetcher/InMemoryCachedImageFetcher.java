@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.cached_image_fetcher;
 
 import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
@@ -63,6 +64,7 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
             }
 
             mCachedImageFetcher.fetchImage(url, width, height, (Bitmap bitmap) -> {
+                bitmap = tryToResizeImage(bitmap, width, height);
                 storeBitmap(bitmap, url, width, height);
                 callback.onResult(bitmap);
             });
@@ -138,6 +140,32 @@ public class InMemoryCachedImageFetcher implements CachedImageFetcher {
         // take a portion of available memory.
         final int maxCacheUsage = (int) (availableMemory * PORTION_OF_AVAILABLE_MEMORY);
         return Math.min(maxCacheUsage, preferredCacheSize);
+    }
+
+    /**
+     * Try to resize the given image if the conditions are met.
+     *
+     * @param bitmap The input bitmap, will be recycled if scaled.
+     * @param width The desired width of the output.
+     * @param height The desired height of the output.
+     *
+     * @return The resized image, or the original image if the  conditions aren't met.
+     */
+    @VisibleForTesting
+    Bitmap tryToResizeImage(Bitmap bitmap, int width, int height) {
+        if (width != 0 && height != 0 && bitmap.getWidth() != width
+                && bitmap.getHeight() != height) {
+            /* The resizing rules are the as follows:
+               (1) The image will be scaled up (if smaller) in a way that maximizes the area of the
+               source bitmap that's in the destination bitmap.
+               (2) A crop is made in the middle of the bitmap for the given size (width, height).
+               The x/y are placed appropriately (conceptually just think of it as a properly sized
+               chunk taken from the middle). */
+            return ThumbnailUtils.extractThumbnail(
+                    bitmap, width, height, ThumbnailUtils.OPTIONS_RECYCLE_INPUT);
+        } else {
+            return bitmap;
+        }
     }
 
     /** Test constructor. */
