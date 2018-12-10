@@ -19,7 +19,7 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_proxy.h"
-#include "remoting/host/file_proxy_wrapper.h"
+#include "remoting/host/file_transfer/file_operations.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -69,9 +69,9 @@ IpcDesktopEnvironment::CreateVideoCapturer() {
   return desktop_session_proxy_->CreateVideoCapturer();
 }
 
-std::unique_ptr<FileProxyWrapper>
-IpcDesktopEnvironment::CreateFileProxyWrapper() {
-  return FileProxyWrapper::Create();
+std::unique_ptr<FileOperations> IpcDesktopEnvironment::CreateFileOperations() {
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 std::string IpcDesktopEnvironment::GetCapabilities() const {
