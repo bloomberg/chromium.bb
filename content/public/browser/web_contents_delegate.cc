@@ -5,6 +5,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -22,8 +23,7 @@
 
 namespace content {
 
-WebContentsDelegate::WebContentsDelegate() {
-}
+WebContentsDelegate::WebContentsDelegate() = default;
 
 WebContents* WebContentsDelegate::OpenURLFromTab(WebContents* source,
                                                  const OpenURLParams& params) {
@@ -83,8 +83,7 @@ void WebContentsDelegate::CanDownload(
   callback.Run(true);
 }
 
-bool WebContentsDelegate::HandleContextMenu(
-    const content::ContextMenuParams& params) {
+bool WebContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {
   return false;
 }
 
@@ -158,7 +157,7 @@ blink::WebDisplayMode WebContentsDelegate::GetDisplayMode(
   return blink::kWebDisplayModeBrowser;
 }
 
-content::ColorChooser* WebContentsDelegate::OpenColorChooser(
+ColorChooser* WebContentsDelegate::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
@@ -208,8 +207,6 @@ std::string WebContentsDelegate::GetDefaultMediaDeviceID(
 bool WebContentsDelegate::ShouldBlockMediaRequest(const GURL& url) {
   return false;
 }
-
-void WebContentsDelegate::SetOverlayMode(bool use_overlay_mode) {}
 #endif
 
 bool WebContentsDelegate::RequestPpapiBrokerPermission(
@@ -257,10 +254,6 @@ blink::WebSecurityStyle WebContentsDelegate::GetSecurityStyle(
   return blink::kWebSecurityStyleUnknown;
 }
 
-void WebContentsDelegate::RequestAppBannerFromDevTools(
-    content::WebContents* web_contents) {
-}
-
 bool WebContentsDelegate::ShouldAllowRunningInsecureContent(
     WebContents* web_contents,
     bool allowed_per_prefs,
@@ -282,26 +275,21 @@ bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
-void WebContentsDelegate::SetTopControlsGestureScrollInProgress(
-    bool in_progress) {}
-
 gfx::Size WebContentsDelegate::EnterPictureInPicture(const viz::SurfaceId&,
                                                      const gfx::Size&) {
   return gfx::Size();
 }
 
-void WebContentsDelegate::ExitPictureInPicture() {}
+bool WebContentsDelegate::ShouldAllowLazyLoad() {
+  return true;
+}
 
-std::unique_ptr<content::WebContents> WebContentsDelegate::SwapWebContents(
-    content::WebContents* old_contents,
-    std::unique_ptr<content::WebContents> new_contents,
+std::unique_ptr<WebContents> WebContentsDelegate::SwapWebContents(
+    WebContents* old_contents,
+    std::unique_ptr<WebContents> new_contents,
     bool did_start_load,
     bool did_finish_load) {
   return new_contents;
-}
-
-bool WebContentsDelegate::ShouldAllowLazyLoad() {
-  return true;
 }
 
 }  // namespace content
