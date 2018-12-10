@@ -945,10 +945,6 @@ TEST_P(WebStateObserverTest, ReloadWithUserAgentType) {
 
 // Tests user-initiated hash change.
 TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
-  // TODO(crbug.com/851119): temporarily disable this failing test.
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    return;
-  }
   const GURL url = test_server_->GetURL("/echoall");
 
   // Perform new page navigation.
@@ -990,6 +986,9 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
       *decider_,
       ShouldAllowRequest(_, RequestInfoMatch(hash_url_expected_request_info)))
       .WillOnce(Return(true));
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
+  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
           web_state(), hash_url, /*has_user_gesture=*/true, &context, &nav_id,
@@ -1008,19 +1007,32 @@ TEST_P(WebStateObserverTest, UserInitiatedHashChangeNavigation) {
 
   // Perform same-document navigation by going back.
   // No ShouldAllowRequest callback for same-document back-forward navigations.
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
+  }
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
+
+  bool has_user_gesture = true;
+  ui::PageTransition expected_transition =
+      ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK;
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
+    // TODO(crbug.com/913052): propagate |has_user_gesture| on back/forward
+    // navigation in slim nav.
+    has_user_gesture = false;
+    // TODO(crbug.com/851119): back/forward navigation between hash-only changes
+    // should have the PAGE_TRANSITION_FORWARD_BACK qualifier.
+    expected_transition = ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT;
+  }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
-          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
-          /*renderer_initiated=*/false));
+          web_state(), url, has_user_gesture, &context, &nav_id,
+          expected_transition, /*renderer_initiated=*/false));
   // No ShouldAllowResponse callbacks for same-document back-forward
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
-          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
-          /*renderer_initiated=*/false));
+          web_state(), url, has_user_gesture, &context, &nav_id,
+          expected_transition, /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
