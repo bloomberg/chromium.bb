@@ -128,9 +128,8 @@ std::unique_ptr<views::Label> CreatePasswordLabel(
   base::string16 text =
       form.federation_origin.opaque()
           ? form.password_value
-          : l10n_util::GetStringFUTF16(
-                federation_message_id,
-                base::UTF8ToUTF16(form.federation_origin.host()));
+          : l10n_util::GetStringFUTF16(federation_message_id,
+                                       GetDisplayFederation(form));
   auto label = std::make_unique<views::Label>(text, CONTEXT_BODY_TEXT_LARGE,
                                               STYLE_SECONDARY);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
