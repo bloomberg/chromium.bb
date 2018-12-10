@@ -1142,26 +1142,29 @@ void LayerTreeHost::SetViewportSizeAndScale(
   SetLocalSurfaceIdAllocationFromParent(
       local_surface_id_allocation_from_parent);
 
-  bool changed = false;
+  bool device_viewport_size_changed = false;
   if (device_viewport_size_ != device_viewport_size) {
     device_viewport_size_ = device_viewport_size;
-    changed = true;
+    device_viewport_size_changed = true;
   }
+  bool painted_device_scale_factor_changed = false;
+  bool device_scale_factor_changed = false;
   if (settings_.use_painted_device_scale_factor) {
     DCHECK_EQ(device_scale_factor_, 1.f);
     if (painted_device_scale_factor_ != device_scale_factor) {
       painted_device_scale_factor_ = device_scale_factor;
-      changed = true;
+      painted_device_scale_factor_changed = true;
     }
   } else {
     DCHECK_EQ(painted_device_scale_factor_, 1.f);
     if (device_scale_factor_ != device_scale_factor) {
       device_scale_factor_ = device_scale_factor;
-      changed = true;
+      device_scale_factor_changed = true;
     }
   }
 
-  if (changed) {
+  if (device_viewport_size_changed || painted_device_scale_factor_changed ||
+      device_scale_factor_changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
 #if defined(OS_MACOSX)
@@ -1173,7 +1176,11 @@ void LayerTreeHost::SetViewportSizeAndScale(
         << "Invalid Surface Id State: !has_pushed "
         << !has_pushed_local_surface_id_from_parent_ << " new_id_request "
         << new_local_surface_id_request_ << " !valid_parent_id "
-        << !local_surface_id_allocation_from_parent_.IsValid();
+        << !local_surface_id_allocation_from_parent_.IsValid()
+        << ". Changed state: device_viewport_size "
+        << device_viewport_size_changed << " painted_device_scale_factor "
+        << painted_device_scale_factor_changed << " device_scale_factor "
+        << device_scale_factor_changed;
 #endif
   }
 }
