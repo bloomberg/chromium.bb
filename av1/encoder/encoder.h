@@ -583,11 +583,6 @@ typedef struct {
   YV12_BUFFER_CONFIG buf;
 } EncRefCntBuffer;
 
-typedef struct TileBufferEnc {
-  uint8_t *data;
-  size_t size;
-} TileBufferEnc;
-
 typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
@@ -794,8 +789,6 @@ typedef struct AV1_COMP {
   TOKENEXTRA *tile_tok[MAX_TILE_ROWS][MAX_TILE_COLS];
   TOKENLIST *tplist[MAX_TILE_ROWS][MAX_TILE_COLS];
   int largest_tile_id;
-
-  TileBufferEnc tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
 
   int resize_state;
   int resize_avg_qp;

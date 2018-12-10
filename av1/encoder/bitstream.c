@@ -2190,6 +2190,13 @@ static void write_ext_tile_info(const AV1_COMMON *const cm,
   }
 }
 
+// Stores the location and size of a tile's data in the bitstream.  Used for
+// later identifying identical tiles
+typedef struct TileBufferEnc {
+  uint8_t *data;
+  size_t size;
+} TileBufferEnc;
+
 static INLINE int find_identical_tile(
     const int tile_row, const int tile_col,
     TileBufferEnc (*const tile_buffers)[MAX_TILE_COLS]) {
@@ -2209,18 +2216,18 @@ static INLINE int find_identical_tile(
     int col_offset = candidate_offset[0].col;
     int row = tile_row - row_offset;
     int col = tile_col - col_offset;
-    uint8_t tile_hdr;
     const uint8_t *tile_data;
     TileBufferEnc *candidate;
 
     if (row < 0 || col < 0) continue;
 
-    tile_hdr = *(tile_buffers[row][col].data);
+    const uint32_t tile_hdr = mem_get_le32(tile_buffers[row][col].data);
 
-    // Read out tcm bit
-    if ((tile_hdr >> 7) == 1) {
-      // The candidate is a copy tile itself
-      row_offset += tile_hdr & 0x7f;
+    // Read out tile-copy-mode bit:
+    if ((tile_hdr >> 31) == 1) {
+      // The candidate is a copy tile itself: the offset is stored in bits
+      // 30 through 24 inclusive.
+      row_offset += (tile_hdr >> 24) & 0x7f;
       row = tile_row - row_offset;
     }
 
@@ -3438,7 +3445,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
   AV1_COMMON *const cm = &cpi->common;
   aom_writer mode_bc;
   int tile_row, tile_col;
-  TileBufferEnc(*const tile_buffers)[MAX_TILE_COLS] = cpi->tile_buffers;
+  // Store the location and size of each tile's data in the bitstream:
+  TileBufferEnc tile_buffers[MAX_TILE_ROWS][MAX_TILE_COLS];
   uint32_t total_size = 0;
   const int tile_cols = cm->tile_cols;
   const int tile_rows = cm->tile_rows;
@@ -3545,6 +3553,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
             const int identical_tile_offset =
                 find_identical_tile(tile_row, tile_col, tile_buffers);
 
+            // Indicate a copy-tile by setting the most significant bit.
+            // The row-offset to copy from is stored in the highest byte.
+            // remux_tiles will move these around later
             if (identical_tile_offset > 0) {
               tile_size = 0;
               tile_header = identical_tile_offset | 0x80;
