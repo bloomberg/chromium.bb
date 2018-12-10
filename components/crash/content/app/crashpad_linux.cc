@@ -96,7 +96,7 @@ class SandboxedHandler {
     server_fd_ = base::GlobalDescriptors::GetInstance()->Get(
         service_manager::kCrashDumpSignal);
 
-    return Signals::InstallCrashHandlers(HandleCrash, 0, nullptr);
+    return Signals::InstallCrashHandlers(HandleCrash, 0, &old_actions_);
   }
 
   void HandleCrashNonFatal(int signo, siginfo_t* siginfo, void* context) {
@@ -166,9 +166,11 @@ class SandboxedHandler {
   static void HandleCrash(int signo, siginfo_t* siginfo, void* context) {
     SandboxedHandler* state = Get();
     state->HandleCrashNonFatal(signo, siginfo, context);
-    Signals::RestoreHandlerAndReraiseSignalOnReturn(siginfo, nullptr);
+    Signals::RestoreHandlerAndReraiseSignalOnReturn(
+        siginfo, state->old_actions_.ActionForSignal(signo));
   }
 
+  Signals::OldActions old_actions_ = {};
   SanitizationInformation sanitization_;
   int server_fd_;
   unsigned char request_dump_;
