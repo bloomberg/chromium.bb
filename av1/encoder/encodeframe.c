@@ -5851,7 +5851,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cpi->global_motion_search_done = 1;
 #endif  // !CONFIG_GLOBAL_MOTION_SEARCH
   if (cpi->common.current_frame.frame_type == INTER_FRAME && cpi->source &&
-      !cpi->global_motion_search_done) {
+      cpi->oxcf.enable_global_motion && !cpi->global_motion_search_done) {
     YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
     int frame;
     double params_by_motion[RANSAC_NUM_MOTIONS * (MAX_PARAMDIM - 1)];

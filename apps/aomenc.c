@@ -437,6 +437,14 @@ static const arg_def_t enable_restoration =
     ARG_DEF(NULL, "enable-restoration", 1,
             "Enable the loop restoration filter (0: false, "
             "1: true (default))");
+static const arg_def_t enable_global_motion =
+    ARG_DEF(NULL, "enable-global-motion", 1,
+            "Enable global motion "
+            "(0: false, 1: true (default))");
+static const arg_def_t enable_warped_motion =
+    ARG_DEF(NULL, "enable-warped-motion", 1,
+            "Enable local warped motion "
+            "(0: false, 1: true (default))");
 static const arg_def_t disable_trellis_quant =
     ARG_DEF(NULL, "disable-trellis-quant", 1,
             "Disable trellis optimization of quantized coefficients (0: false ("
@@ -638,6 +646,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &lossless,
                                        &enable_cdef,
                                        &enable_restoration,
+                                       &enable_global_motion,
+                                       &enable_warped_motion,
                                        &disable_trellis_quant,
                                        &enable_qm,
                                        &qm_min,
@@ -696,6 +706,8 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_LOSSLESS,
                                         AV1E_SET_ENABLE_CDEF,
                                         AV1E_SET_ENABLE_RESTORATION,
+                                        AV1E_SET_ENABLE_GLOBAL_MOTION,
+                                        AV1E_SET_ENABLE_WARPED_MOTION,
                                         AV1E_SET_DISABLE_TRELLIS_QUANT,
                                         AV1E_SET_ENABLE_QM,
                                         AV1E_SET_QM_MIN,
