@@ -45,14 +45,16 @@ class AutofillAssistantPreferencesUtil {
      * @param accept Flag indicates whether this service is accepted.
      * @param dontShowAgain Flag indicates whether initial screen should be shown again next time.
      */
-    static void setInitialPreferences(boolean accept, boolean dontShowAgain) {
+    static void setInitialPreferences(boolean accept) {
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(AutofillAssistantPreferences.PREF_AUTOFILL_ASSISTANT_SWITCH, accept)
                 .apply();
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN, dontShowAgain)
-                .apply();
+        if (accept) {
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putBoolean(AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN, true)
+                    .apply();
+        }
     }
 }
