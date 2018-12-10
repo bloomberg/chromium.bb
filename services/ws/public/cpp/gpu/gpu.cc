@@ -24,17 +24,6 @@
 
 namespace ws {
 
-namespace {
-
-mojom::GpuPtr DefaultFactory(service_manager::Connector* connector,
-                             const std::string& service_name) {
-  mojom::GpuPtr gpu_ptr;
-  connector->BindInterface(service_name, &gpu_ptr);
-  return gpu_ptr;
-}
-
-}  // namespace
-
 // Encapsulates a mojom::GpuPtr object that will be used on the IO thread. This
 // is required because we can't install an error handler on a
 // mojom::GpuThreadSafePtr to detect if the message pipe was closed. Only the
@@ -44,12 +33,16 @@ class Gpu::GpuPtrIO {
   GpuPtrIO() { DETACH_FROM_THREAD(thread_checker_); }
   ~GpuPtrIO() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
 
-  void Initialize(mojom::GpuPtrInfo ptr_info) {
+  void Initialize(
+      mojom::GpuPtrInfo ptr_info,
+      mojom::GpuMemoryBufferFactoryRequest memory_buffer_factory_request) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     gpu_ptr_.Bind(std::move(ptr_info));
     gpu_ptr_.set_connection_error_handler(
         base::BindOnce(&GpuPtrIO::ConnectionError, base::Unretained(this)));
+    gpu_ptr_->CreateGpuMemoryBufferFactory(
+        std::move(memory_buffer_factory_request));
   }
 
   void EstablishGpuChannel(scoped_refptr<EstablishRequest> establish_request) {
@@ -238,7 +231,7 @@ void Gpu::GpuPtrIO::OnEstablishedGpuChannel(
   establish_request_.reset();
 }
 
-Gpu::Gpu(GpuPtrFactory factory,
+Gpu::Gpu(mojom::GpuPtr gpu_ptr,
          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(std::move(task_runner)),
@@ -247,17 +240,10 @@ Gpu::Gpu(GpuPtrFactory factory,
   DCHECK(io_task_runner_);
 
   mojom::GpuMemoryBufferFactoryPtr gpu_memory_buffer_factory;
-  auto gpu_for_buffer_factory = factory.Run();
-  gpu_for_buffer_factory->CreateGpuMemoryBufferFactory(
-      mojo::MakeRequest(&gpu_memory_buffer_factory));
+  auto gpu_memory_buffer_factory_request =
+      mojo::MakeRequest(&gpu_memory_buffer_factory);
   gpu_memory_buffer_manager_ = std::make_unique<ClientGpuMemoryBufferManager>(
       std::move(gpu_memory_buffer_factory));
-  // Attach ownership of |gpu_for_buffer_factory| to
-  // |gpu_memory_buffer_manager_| to ensure |gpu_memory_buffer_factory| stays
-  // alive.
-  gpu_memory_buffer_manager_->SetOptionalDestructionCallback(
-      base::BindOnce([](mojom::GpuPtr) {}, std::move(gpu_for_buffer_factory)));
-
   // Initialize mojom::GpuPtr on the IO thread. |gpu_| can only be used on
   // the IO thread after this point. It is safe to use base::Unretained with
   // |gpu_| for IO thread tasks as |gpu_| is destroyed by an IO thread task
@@ -265,7 +251,8 @@ Gpu::Gpu(GpuPtrFactory factory,
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&GpuPtrIO::Initialize, base::Unretained(gpu_.get()),
-                     base::Passed(factory.Run().PassInterface())));
+                     base::Passed(gpu_ptr.PassInterface()),
+                     std::move(gpu_memory_buffer_factory_request)));
 }
 
 Gpu::~Gpu() {
@@ -284,9 +271,9 @@ std::unique_ptr<Gpu> Gpu::Create(
     service_manager::Connector* connector,
     const std::string& service_name,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  GpuPtrFactory factory =
-      base::BindRepeating(&DefaultFactory, connector, service_name);
-  return base::WrapUnique(new Gpu(std::move(factory), std::move(task_runner)));
+  mojom::GpuPtr gpu_ptr;
+  connector->BindInterface(service_name, &gpu_ptr);
+  return base::WrapUnique(new Gpu(std::move(gpu_ptr), std::move(task_runner)));
 }
 
 scoped_refptr<viz::ContextProvider> Gpu::CreateContextProvider(

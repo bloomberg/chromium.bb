@@ -60,9 +60,7 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
   class GpuPtrIO;
   class EstablishRequest;
 
-  using GpuPtrFactory = base::RepeatingCallback<mojom::GpuPtr(void)>;
-
-  Gpu(GpuPtrFactory factory,
+  Gpu(mojom::GpuPtr gpu_ptr,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Sends a request to establish a gpu channel. If a request is currently
