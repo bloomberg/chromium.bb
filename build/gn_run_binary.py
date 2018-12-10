@@ -8,13 +8,16 @@ Run with:
   python gn_run_binary.py <binary_name> [args ...]
 """
 
+import os
 import subprocess
 import sys
 
 # This script is designed to run binaries produced by the current build. We
-# always prefix it with "./" to avoid picking up system versions that might
+# may prefix it with "./" to avoid picking up system versions that might
 # also be on the path.
-path = './' + sys.argv[1]
+path = sys.argv[1]
+if not os.path.isabs(path):
+  path = './' + path
 
 # The rest of the arguments are passed directly to the executable.
 args = [path] + sys.argv[2:]
