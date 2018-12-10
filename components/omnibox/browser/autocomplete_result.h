@@ -148,6 +148,16 @@ class AutocompleteResult {
   typedef ACMatches::iterator::difference_type matches_difference_type;
 #endif
 
+  // Returns true if |first| is preferred over |second| based on the type and
+  // relevance (as adjusted by the context of the match type and page type). If
+  // one candidate is preferred over another despite having lower type-adjusted
+  // relevance, copies the relevance from the higher relevance match into the
+  // lower.
+  static bool IsBetterMatch(
+      AutocompleteMatch& first,
+      AutocompleteMatch& second,
+      metrics::OmniboxEventProto::PageClassification page_classification);
+
   // Returns true if |matches| contains a match with the same destination as
   // |match|.
   static bool HasMatchByDestination(const AutocompleteMatch& match,
