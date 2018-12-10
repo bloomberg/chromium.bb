@@ -361,6 +361,7 @@
 
     'cast_video_specific_chromium_gtests': {
       'cast_graphics_unittests': {},
+      'exo_unittests': {},
     },
 
     'check_gn_headers_script': {
