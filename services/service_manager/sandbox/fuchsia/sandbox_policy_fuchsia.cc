@@ -70,7 +70,8 @@ constexpr SandboxConfig kSandboxConfigs[] = {
     {
         SANDBOX_TYPE_GPU,
         base::make_span(
-            (const char* const[]){fuchsia::ui::scenic::Scenic::Name_}),
+            (const char* const[]){fuchsia::ui::scenic::Scenic::Name_,
+                                  "fuchsia.vulkan.loader.Loader"}),
         kProvideVulkanResources,
     },
 };
@@ -176,7 +177,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
     options->paths_to_clone.push_back(base::FilePath("/config/ssl"));
 
   if (config.features & kProvideVulkanResources) {
-    // /system/lib is used to load Vilkan libraries. /dev/class/gpu and
+    // /system/lib is used to load Vulkan libraries. /dev/class/gpu and
     // /config/vulkan/icd.d are to used configure and access the GPU.
     options->paths_to_clone.push_back(base::FilePath("/system/lib"));
     options->paths_to_clone.push_back(base::FilePath("/dev/class/gpu"));
