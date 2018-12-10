@@ -23,12 +23,6 @@ class UiDelegate {
   // detached from the associated activity.
   virtual void OnDestroy() = 0;
 
-  // Scrolls the browser view.
-  //
-  // Distance is expressed as a float between -1.0 and 1.0, relative to the
-  // width or height of the visible viewport.
-  virtual void ScrollBy(float distanceXRatio, float distanceYRatio) = 0;
-
   // Asks for updated coordinates for the touchable area. This is called to
   // speed up update of the touchable areas when there are good reasons to think
   // that the current coordinates are out of date, such as while scrolling.

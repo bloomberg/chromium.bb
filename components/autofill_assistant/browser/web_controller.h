@@ -138,12 +138,6 @@ class WebController {
       const Selector& selector,
       base::OnceCallback<void(bool, const RectF&)> callback);
 
-  // Scroll the view by the given distance.
-  //
-  // Distances are floats between -1.0 and 1.0, with 1 corresponding to the size
-  // of the visible viewport.
-  virtual void ScrollBy(float distanceXRatio, float distanceYRatio);
-
   // Functions to set, get and expire the Autofill Assistant cookie used to
   // detect when Autofill Assistant has been used on a domain before.
   virtual void SetCookie(const std::string& domain,

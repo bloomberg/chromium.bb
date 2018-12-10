@@ -180,14 +180,6 @@ void UiControllerAndroid::UpdateScripts(
   delete[] script_highlights;
 }
 
-void UiControllerAndroid::ScrollBy(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    float distanceX,
-    float distanceY) {
-  ui_delegate_->ScrollBy(distanceX, distanceY);
-}
-
 void UiControllerAndroid::UpdateTouchableArea(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {

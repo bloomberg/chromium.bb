@@ -429,7 +429,8 @@ class AutofillAssistantUiDelegate {
     public void show() {
         if (mFullContainer.getVisibility() != View.VISIBLE) {
             mTouchEventFilter.init(mClient, mActivity.getFullscreenManager(),
-                    mActivity.getActivityTab().getWebContents());
+                    mActivity.getActivityTab().getWebContents(),
+                    mActivity.getCompositorViewHolder());
             mFullContainer.setVisibility(View.VISIBLE);
             mBottomBarBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
