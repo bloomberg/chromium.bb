@@ -69,25 +69,21 @@ def ParseArgs(argv):
   parser.add_argument('-e', '--execute', action='append', default=[],
                       help='GDB command to run after connect (can be supplied '
                            'multiple times)')
-  name_flags = ['-n', '--servod-name']
-  parser.add_argument(*name_flags, dest='name')
-  parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE)
+  parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE,
+                      dest='rcfile')
   parser.add_argument('--servod-server')
+  # Add --name for rc servod configuration.
+  servo_parsing.ServodRCParser.AddRCEnabledNameArg(parser)
+  # Add |port_flags| as the port arguments.
   port_flags = ['-p', '--servod-port']
-  parser.add_argument(*port_flags, type=int, dest='port')
+  servo_parsing.BaseServodParser.AddRCEnabledPortArg(parser,
+                                                     port_flags=port_flags)
   parser.add_argument('-t', '--tty',
                       help='TTY file to connect to (defaults to cpu_uart_pty)')
-
-  # Retrieve port from environment variable if not already in cmdline args.
-  servo_parsing.BaseServodParser.HandlePortEnvVar(cmdline=argv,
-                                                  pri_flags=port_flags)
-  # Retrieve name from environment variable if not already in cmdline args.
-  servo_parsing._ServodRCParser.HandleNameEnvVar(cmdline=argv,
-                                                 pri_flags=name_flags)
   opts = parser.parse_args(argv)
 
   # Set |.port| and |.board| in |opts| if there's a rc match for opts.name.
-  servo_parsing._ServodRCParser.PostProcessRCElements(opts, opts.servod_rcfile)
+  servo_parsing.ServodRCParser.PostProcessRCElements(opts)
 
   if not opts.servod_server:
     opts.servod_server = client.DEFAULT_HOST
