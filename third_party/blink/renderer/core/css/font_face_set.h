@@ -12,10 +12,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
+#include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/dom/pausable_object.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 
@@ -32,23 +31,17 @@ class FontFaceCache;
 using FontFaceSetIterable = SetlikeIterable<Member<FontFace>>;
 
 class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
-                                public PausableObject,
+                                public ContextClient,
                                 public FontFaceSetIterable,
                                 public FontFace::LoadFontCallback {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   FontFaceSet(ExecutionContext& context)
-      : PausableObject(&context),
-        is_loading_(false),
-        should_fire_loading_event_(false),
+      : ContextClient(&context),
         ready_(MakeGarbageCollected<ReadyProperty>(GetExecutionContext(),
                                                    this,
-                                                   ReadyProperty::kReady)),
-        async_runner_(AsyncMethodRunner<FontFaceSet>::Create(
-            this,
-            &FontFaceSet::HandlePendingEventsAndPromises,
-            context.GetTaskRunner(TaskType::kInternalDefault))) {}
+                                                   ReadyProperty::kReady)) {}
   ~FontFaceSet() override = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading);
@@ -60,7 +53,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual ScriptPromise ready(ScriptState*) = 0;
 
   ExecutionContext* GetExecutionContext() const override {
-    return PausableObject::GetExecutionContext();
+    return ContextClient::GetExecutionContext();
   }
 
   const AtomicString& InterfaceName() const override {
@@ -73,11 +66,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   bool hasForBinding(ScriptState*, FontFace*, ExceptionState&) const;
 
   void AddFontFacesToFontFaceCache(FontFaceCache*);
-
-  // PausableObject
-  void Pause() override;
-  void Unpause() override;
-  void ContextDestroyed(ExecutionContext*) override;
 
   wtf_size_t size() const;
   virtual AtomicString status() const = 0;
@@ -109,15 +97,14 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
                                               Member<FontFaceSet>,
                                               Member<DOMException>>;
 
-  bool is_loading_;
-  bool should_fire_loading_event_;
+  bool is_loading_ = false;
+  bool should_fire_loading_event_ = false;
+  bool pending_task_queued_ = false;
   HeapLinkedHashSet<Member<FontFace>> non_css_connected_faces_;
   HeapHashSet<Member<FontFace>> loading_fonts_;
   FontFaceArray loaded_fonts_;
   FontFaceArray failed_fonts_;
   Member<ReadyProperty> ready_;
-
-  Member<AsyncMethodRunner<FontFaceSet>> async_runner_;
 
   class IterationSource final : public FontFaceSetIterable::IterationSource {
    public:
