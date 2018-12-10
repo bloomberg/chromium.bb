@@ -135,7 +135,7 @@ struct DrPredFunc {
 template <typename Pixel, typename FuncType>
 class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
  protected:
-  static const int kMaxNumTests = 100000;
+  static const int kMaxNumTests = 10000;
   static const int kIterations = 10;
   static const int kDstStride = 64;
   static const int kDstSize = kDstStride * kDstStride;
@@ -171,7 +171,7 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
   void Predict(bool speedtest, int tx) {
     const int kNumTests = speedtest ? kMaxNumTests : 1;
     aom_usec_timer timer;
-
+    int tst_time = 0;
     aom_usec_timer_start(&timer);
     for (int k = 0; k < kNumTests; ++k) {
       params_.ref_fn(dst_ref_, dst_stride_, bw_, bh_, above_, left_,
@@ -180,20 +180,20 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
     aom_usec_timer_mark(&timer);
     const int ref_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
 
-    aom_usec_timer_start(&timer);
     if (params_.tst_fn) {
+      aom_usec_timer_start(&timer);
       for (int k = 0; k < kNumTests; ++k) {
         ASM_REGISTER_STATE_CHECK(params_.tst_fn(dst_tst_, dst_stride_, bw_, bh_,
                                                 above_, left_, upsample_above_,
                                                 upsample_left_, dx_, dy_, bd_));
       }
+      aom_usec_timer_mark(&timer);
+      tst_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
     } else {
       for (int i = 0; i < kDstSize; ++i) {
         dst_ref_[i] = dst_tst_[i];
       }
     }
-    aom_usec_timer_mark(&timer);
-    const int tst_time = static_cast<int>(aom_usec_timer_elapsed(&timer));
 
     OutputTimes(kNumTests, ref_time, tst_time, tx);
   }
@@ -290,26 +290,11 @@ class DrPredTest : public ::testing::TestWithParam<DrPredFunc<FuncType> > {
 class LowbdDrPredTest : public DrPredTest<uint8_t, DrPred> {};
 
 TEST_P(LowbdDrPredTest, SaturatedValues) {
-  for (int iter = 0; iter < kIterations && !HasFatalFailure(); ++iter) {
-    enable_upsample_ = iter & 1;
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
     for (int angle = start_angle_; angle < stop_angle_; ++angle) {
       dx_ = av1_get_dx(angle);
       dy_ = av1_get_dy(angle);
       if (dx_ && dy_) RunTest(false, true, angle);
-    }
-  }
-}
-
-TEST_P(LowbdDrPredTest, DISABLED_Speed) {
-  const int angles[] = { 3, 45, 87 };
-  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
-    for (int i = 0; i < 3; ++i) {
-      const int angle = angles[i] + start_angle_;
-      dx_ = av1_get_dx(angle);
-      dy_ = av1_get_dy(angle);
-      printf("enable_upsample: %d angle: %d ~~~~~~~~~~~~~~~\n",
-             enable_upsample_, angle);
-      if (dx_ && dy_) RunTest(true, false, angle);
     }
   }
 }
@@ -328,8 +313,7 @@ INSTANTIATE_TEST_CASE_P(
 class HighbdDrPredTest : public DrPredTest<uint16_t, DrPred_Hbd> {};
 
 TEST_P(HighbdDrPredTest, SaturatedValues) {
-  for (int iter = 0; iter < kIterations && !HasFatalFailure(); ++iter) {
-    enable_upsample_ = iter & 1;
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
     for (int angle = start_angle_; angle < stop_angle_; ++angle) {
       dx_ = av1_get_dx(angle);
       dy_ = av1_get_dy(angle);
@@ -362,6 +346,44 @@ INSTANTIATE_TEST_CASE_P(
 
 #if HAVE_AVX2
 INSTANTIATE_TEST_CASE_P(
+    AVX2, LowbdDrPredTest,
+    ::testing::Values(DrPredFunc<DrPred>(&z1_wrapper<av1_dr_prediction_z1_c>,
+                                         &z1_wrapper<av1_dr_prediction_z1_avx2>,
+                                         AOM_BITS_8, kZ1Start),
+                      DrPredFunc<DrPred>(&z2_wrapper<av1_dr_prediction_z2_c>,
+                                         &z2_wrapper<av1_dr_prediction_z2_avx2>,
+                                         AOM_BITS_8, kZ2Start),
+                      DrPredFunc<DrPred>(&z3_wrapper<av1_dr_prediction_z3_c>,
+                                         &z3_wrapper<av1_dr_prediction_z3_avx2>,
+                                         AOM_BITS_8, kZ3Start)));
+
+TEST_P(LowbdDrPredTest, DISABLED_Speed) {
+  const int angles[] = { 3, 45, 87 };
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
+    for (int i = 0; i < 3; ++i) {
+      const int angle = angles[i] + start_angle_;
+      dx_ = av1_get_dx(angle);
+      dy_ = av1_get_dy(angle);
+      printf("enable_upsample: %d angle: %d ~~~~~~~~~~~~~~~\n",
+             enable_upsample_, angle);
+      if (dx_ && dy_) RunTest(true, false, angle);
+    }
+  }
+}
+
+TEST_P(LowbdDrPredTest, OperationCheck) {
+  if (params_.tst_fn == NULL) return;
+  // const int angles[] = { 3, 45, 81, 87, 93, 100, 145, 187, 199, 260 };
+  for (enable_upsample_ = 0; enable_upsample_ < 2; ++enable_upsample_) {
+    for (int angle = start_angle_; angle < stop_angle_; ++angle) {
+      dx_ = av1_get_dx(angle);
+      dy_ = av1_get_dy(angle);
+      if (dx_ && dy_) RunTest(false, false, angle);
+    }
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(
     AVX2, HighbdDrPredTest,
     ::testing::Values(DrPredFunc<DrPred_Hbd>(
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
@@ -375,7 +397,7 @@ INSTANTIATE_TEST_CASE_P(
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_c>,
                           &z1_wrapper_hbd<av1_highbd_dr_prediction_z1_avx2>,
                           AOM_BITS_12, kZ1Start),
-                      /*DrPredFunc<DrPred_Hbd>(
+                      DrPredFunc<DrPred_Hbd>(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
                           AOM_BITS_8, kZ2Start),
@@ -386,7 +408,7 @@ INSTANTIATE_TEST_CASE_P(
                       DrPredFunc<DrPred_Hbd>(
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_c>,
                           &z2_wrapper_hbd<av1_highbd_dr_prediction_z2_avx2>,
-                          AOM_BITS_12, kZ2Start),*/
+                          AOM_BITS_12, kZ2Start),
                       DrPredFunc<DrPred_Hbd>(
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_c>,
                           &z3_wrapper_hbd<av1_highbd_dr_prediction_z3_avx2>,
