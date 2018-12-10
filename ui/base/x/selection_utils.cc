@@ -51,9 +51,9 @@ std::vector<::Atom> GetURIListAtomsFrom() {
 void GetAtomIntersection(const std::vector< ::Atom>& desired,
                          const std::vector< ::Atom>& offered,
                          std::vector< ::Atom>* output) {
-  for (auto it = desired.begin(); it != desired.end(); ++it) {
-    if (base::ContainsValue(offered, *it))
-      output->push_back(*it);
+  for (const auto& desired_atom : desired) {
+    if (base::ContainsValue(offered, desired_atom))
+      output->push_back(desired_atom);
   }
 }
 
@@ -120,8 +120,8 @@ void SelectionFormatMap::Insert(
 
 ui::SelectionData SelectionFormatMap::GetFirstOf(
     const std::vector< ::Atom>& requested_types) const {
-  for (auto it = requested_types.begin(); it != requested_types.end(); ++it) {
-    auto data_it = data_.find(*it);
+  for (const auto& requested_type : requested_types) {
+    auto data_it = data_.find(requested_type);
     if (data_it != data_.end()) {
       return SelectionData(data_it->first, data_it->second);
     }
@@ -132,8 +132,8 @@ ui::SelectionData SelectionFormatMap::GetFirstOf(
 
 std::vector< ::Atom> SelectionFormatMap::GetTypes() const {
   std::vector< ::Atom> atoms;
-  for (auto it = data_.begin(); it != data_.end(); ++it)
-    atoms.push_back(it->first);
+  for (const auto& datum : data_)
+    atoms.push_back(datum.first);
 
   return atoms;
 }
@@ -169,7 +169,7 @@ bool SelectionData::IsValid() const {
 }
 
 const unsigned char* SelectionData::GetData() const {
-  return memory_.get() ? memory_->front() : NULL;
+  return memory_.get() ? memory_->front() : nullptr;
 }
 
 size_t SelectionData::GetSize() const {
