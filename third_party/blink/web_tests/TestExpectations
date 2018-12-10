@@ -5719,7 +5719,6 @@ crbug.com/906952 virtual/mouseevent_fractional/fast/events/before-unload-return-
 # See also crbug.com/907150
 crbug.com/667560 http/tests/devtools/console-cross-origin-iframe-logging.js [ Pass Failure Timeout ]
 crbug.com/907412 [ Mac10.13 ] external/wpt/domxpath/xml_xpath_runner.html [ Pass Timeout ]
-crbug.com/907481 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-nomsid.html [ Pass Failure ]
 
 #Sheriff 2018-11-22
 crbug.com/907736 http/tests/devtools/elements/elements-save-to-temp-var.js [ Timeout Pass ]
