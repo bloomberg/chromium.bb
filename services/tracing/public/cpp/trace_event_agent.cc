@@ -84,7 +84,6 @@ void AddPerfettoMetadataGeneratorFunction(
 std::unique_ptr<TraceEventAgent> TraceEventAgent::Create(
     service_manager::Connector* connector,
     bool request_clock_sync_marker_on_android) {
-
 #if defined(PERFETTO_AVAILABLE)
   InitializeProducerClient(connector);
 #endif
@@ -98,13 +97,10 @@ TraceEventAgent::TraceEventAgent(service_manager::Connector* connector,
     : BaseAgent(connector,
                 kTraceEventLabel,
                 mojom::TraceDataType::ARRAY,
-#if defined(OS_ANDROID)
-                request_clock_sync_marker_on_android,
-#else
-                false,
-#endif
                 base::trace_event::TraceLog::GetInstance()->process_id()),
-      enabled_tracing_modes_(0) {
+      enabled_tracing_modes_(0),
+      request_clock_sync_marker_on_android_(
+          request_clock_sync_marker_on_android) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!g_trace_event_agent);
   g_trace_event_agent = this;
@@ -113,17 +109,6 @@ TraceEventAgent::TraceEventAgent(service_manager::Connector* connector,
 TraceEventAgent::~TraceEventAgent() {
   g_trace_event_agent = nullptr;
   DCHECK(!trace_log_needs_me_);
-}
-
-void TraceEventAgent::RequestClockSyncMarker(
-    const std::string& sync_id,
-    Agent::RequestClockSyncMarkerCallback callback) {
-#if defined(OS_ANDROID)
-  base::trace_event::TraceLog::GetInstance()->AddClockSyncMetadataEvent();
-  std::move(callback).Run(base::TimeTicks(), base::TimeTicks());
-#else
-  NOTREACHED();
-#endif
 }
 
 void TraceEventAgent::GetCategories(GetCategoriesCallback callback) {
@@ -164,6 +149,11 @@ void TraceEventAgent::StartTracing(const std::string& config,
 
 void TraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   DCHECK(!recorder_);
+
+#if defined(OS_ANDROID)
+  if (request_clock_sync_marker_on_android_)
+    base::trace_event::TraceLog::GetInstance()->AddClockSyncMetadataEvent();
+#endif
   recorder_ = std::move(recorder);
   base::trace_event::TraceLog::GetInstance()->SetDisabled(
       enabled_tracing_modes_);

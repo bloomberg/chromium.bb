@@ -21,10 +21,6 @@
 #include "services/tracing/public/mojom/tracing.mojom.h"
 #include "services/tracing/recorder.h"
 
-namespace base {
-class TimeTicks;
-}  // namespace base
-
 namespace service_manager {
 struct BindSourceInfo;
 }  // namespace service_manager
@@ -76,11 +72,6 @@ class Coordinator : public mojom::Coordinator {
   void SendStartTracingToAgent(AgentRegistry::AgentEntry* agent_entry);
   void OnTracingStarted(AgentRegistry::AgentEntry* agent_entry, bool success);
   void StopAndFlushInternal();
-  void OnRequestClockSyncMarkerResponse(AgentRegistry::AgentEntry* agent_entry,
-                                        const std::string& sync_id,
-                                        base::TimeTicks issue_ts,
-                                        base::TimeTicks issue_end_ts);
-  void StopAndFlushAfterClockSync();
   void SendRecorder(base::WeakPtr<AgentRegistry::AgentEntry> agent_entry,
                     mojom::RecorderPtr recorder);
   void OnFlushDone();

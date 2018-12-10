@@ -14,7 +14,6 @@ namespace tracing {
 BaseAgent::BaseAgent(service_manager::Connector* connector,
                      const std::string& label,
                      mojom::TraceDataType type,
-                     bool supports_explicit_clock_sync,
                      base::ProcessId pid)
     : binding_(this) {
   // |connector| can be null in tests.
@@ -25,8 +24,7 @@ BaseAgent::BaseAgent(service_manager::Connector* connector,
 
   tracing::mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
-  agent_registry->RegisterAgent(std::move(agent), label, type,
-                                supports_explicit_clock_sync, pid);
+  agent_registry->RegisterAgent(std::move(agent), label, type, pid);
 }
 
 BaseAgent::~BaseAgent() = default;
@@ -38,13 +36,6 @@ void BaseAgent::StartTracing(const std::string& config,
 }
 
 void BaseAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {}
-
-void BaseAgent::RequestClockSyncMarker(
-    const std::string& sync_id,
-    Agent::RequestClockSyncMarkerCallback callback) {
-  NOTREACHED() << "The agent claims to support explicit clock sync but does "
-               << "not override BaseAgent::RequestClockSyncMarker()";
-}
 
 void BaseAgent::GetCategories(Agent::GetCategoriesCallback callback) {
   std::move(callback).Run("" /* categories */);

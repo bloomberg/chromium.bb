@@ -36,12 +36,6 @@ void MockAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   }
 }
 
-void MockAgent::RequestClockSyncMarker(const std::string& sync_id,
-                                       RequestClockSyncMarkerCallback cb) {
-  call_stat_.push_back("RequestClockSyncMarker");
-  std::move(cb).Run(base::TimeTicks(), base::TimeTicks());
-}
-
 void MockAgent::GetCategories(GetCategoriesCallback cb) {
   call_stat_.push_back("GetCategories");
   std::move(cb).Run(categories_);

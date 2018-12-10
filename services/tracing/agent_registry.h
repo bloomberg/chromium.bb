@@ -32,7 +32,6 @@ class AgentRegistry : public mojom::AgentRegistry {
                mojom::AgentPtr agent,
                const std::string& label,
                mojom::TraceDataType type,
-               bool supports_explicit_clock_sync,
                base::ProcessId pid);
     ~AgentEntry();
 
@@ -47,9 +46,6 @@ class AgentRegistry : public mojom::AgentRegistry {
     mojom::Agent* agent() const { return agent_.get(); }
     const std::string& label() const { return label_; }
     mojom::TraceDataType type() const { return type_; }
-    bool supports_explicit_clock_sync() const {
-      return supports_explicit_clock_sync_;
-    }
     bool is_tracing() const { return is_tracing_; }
     void set_is_tracing(bool is_tracing) { is_tracing_ = is_tracing; }
     base::ProcessId pid() const { return pid_; }
@@ -62,7 +58,6 @@ class AgentRegistry : public mojom::AgentRegistry {
     mojom::AgentPtr agent_;
     const std::string label_;
     const mojom::TraceDataType type_;
-    const bool supports_explicit_clock_sync_;
     const base::ProcessId pid_;
     std::map<const void*, base::OnceClosure> closures_;
     bool is_tracing_;
@@ -106,7 +101,6 @@ class AgentRegistry : public mojom::AgentRegistry {
   void RegisterAgent(mojom::AgentPtr agent,
                      const std::string& label,
                      mojom::TraceDataType type,
-                     bool supports_explicit_clock_sync,
                      base::ProcessId pid) override;
 
   void UnregisterAgent(size_t agent_id);
