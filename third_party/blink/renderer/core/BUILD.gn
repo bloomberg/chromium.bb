@@ -383,7 +383,7 @@ group("generated_testing_idls") {
   ]
 }
 
-action("generated_settings_macros") {
+blink_python_runner("generated_settings_macros") {
   script = "../build/scripts/make_settings.py"
 
   inputs = scripts_for_json5_files + [
@@ -402,7 +402,7 @@ action("generated_settings_macros") {
   ]
 }
 
-action("generated_testing_idls_settings") {
+blink_python_runner("generated_testing_idls_settings") {
   script = "../build/scripts/make_internal_settings.py"
 
   inputs = scripts_for_json5_files + [
@@ -426,7 +426,7 @@ action("generated_testing_idls_settings") {
   ]
 }
 
-action("generated_testing_idls_internal_runtime_flags") {
+blink_python_runner("generated_testing_idls_internal_runtime_flags") {
   script = "../build/scripts/make_internal_runtime_flags.py"
 
   inputs = scripts_for_json5_files + [
@@ -1416,7 +1416,7 @@ action("make_core_generated_html_entity_table") {
   deps = make_core_generated_deps
 }
 
-action("make_core_generated_css_tokenizer_codepoints") {
+blink_python_runner("make_core_generated_css_tokenizer_codepoints") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
   script = "../build/scripts/core/css/make_css_tokenizer_codepoints.py"
@@ -1439,7 +1439,7 @@ action("make_core_generated_css_tokenizer_codepoints") {
   deps = make_core_generated_deps
 }
 
-action("make_core_generated_css_primitive_value_unit_trie") {
+blink_python_runner("make_core_generated_css_primitive_value_unit_trie") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
   script = "../build/scripts/core/css/make_css_primitive_value_unit_trie.py"
@@ -1468,7 +1468,7 @@ action("make_core_generated_css_primitive_value_unit_trie") {
   deps = make_core_generated_deps
 }
 
-action("make_core_generated_html_element_lookup_trie") {
+blink_python_runner("make_core_generated_html_element_lookup_trie") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ ":*" ]
   script = "../build/scripts/make_element_lookup_trie.py"
@@ -1499,7 +1499,7 @@ action("make_core_generated_html_element_lookup_trie") {
   deps = make_core_generated_deps
 }
 
-action("make_core_generated_origin_trials") {
+blink_python_runner("make_core_generated_origin_trials") {
   script = "../build/scripts/make_origin_trials.py"
 
   inputs = scripts_for_json5_files + [
@@ -1525,7 +1525,7 @@ action("make_core_generated_origin_trials") {
     ]
   }
 }
-action("make_core_generated_web_origin_trials") {
+blink_python_runner("make_core_generated_web_origin_trials") {
   script = "../build/scripts/make_web_origin_trials.py"
 
   inputs = scripts_for_json5_files + [

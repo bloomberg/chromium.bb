@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-
-import os.path
 import subprocess
 from name_utilities import enum_for_css_keyword
 import json5_generator

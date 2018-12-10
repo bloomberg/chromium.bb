@@ -29,10 +29,6 @@
 import os
 import sys
 
-_current_dir = os.path.dirname(os.path.realpath(__file__))
-# jinja2 is in chromium's third_party directory
-# Insert at front to override system libraries, and after path[0] == script dir
-sys.path.insert(1, os.path.join(_current_dir, *([os.pardir] * 4)))
 import jinja2
 
 
@@ -43,8 +39,9 @@ def apply_template(template_path, params, filters=None, tests=None, template_cac
         template = template_cache.get(template_path, None)
 
     if template is None:
+        current_dir = os.path.dirname(os.path.realpath(__file__))
         jinja_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(_current_dir),
+            loader=jinja2.FileSystemLoader(current_dir),
             keep_trailing_newline=True,  # newline-terminate generated files
             lstrip_blocks=True,  # so can indent control flow tags
             trim_blocks=True)  # so don't need {%- -%} everywhere

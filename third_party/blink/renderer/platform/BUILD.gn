@@ -27,7 +27,7 @@ make_names("font_family_names") {
   output_dir = blink_platform_output_dir
 }
 
-action("runtime_enabled_features") {
+blink_python_runner("runtime_enabled_features") {
   script = "../build/scripts/make_runtime_features.py"
 
   runtime_enabled_features_json5 = "runtime_enabled_features.json5"
@@ -51,7 +51,7 @@ action("runtime_enabled_features") {
   ]
 }
 
-action("color_data") {
+blink_python_runner("color_data") {
   script = "../build/scripts/gperf.py"
 
   color_data_gperf = "color_data.gperf"
