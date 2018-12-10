@@ -219,7 +219,7 @@ extern const char kLanguageXkbAutoRepeatInterval[];
 
 extern const char kLabsAdvancedFilesystemEnabled[];
 extern const char kLabsMediaplayerEnabled[];
-extern const char kShow3gPromoNotification[];
+extern const char kShowMobileDataNotification[];
 extern const char kDataSaverPromptsShown[];
 extern const char kChromeOSReleaseNotesVersion[];
 extern const char kNoteTakingAppId[];

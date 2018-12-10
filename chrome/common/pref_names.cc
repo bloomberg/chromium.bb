@@ -587,8 +587,10 @@ const char kLabsAdvancedFilesystemEnabled[] =
 // A boolean pref which turns on the mediaplayer.
 const char kLabsMediaplayerEnabled[] = "settings.labs.mediaplayer";
 
-// A boolean pref of whether to show 3G promo notification.
-const char kShow3gPromoNotification[] =
+// A boolean pref of whether to show mobile data first-use warning notification.
+// Note: 3g in the name is for legacy reasons. The pref was added while only 3G
+// mobile data was supported.
+const char kShowMobileDataNotification[] =
     "settings.internet.mobile.show_3g_promo_notification";
 
 // An integer pref counting times Data Saver prompt has been shown.

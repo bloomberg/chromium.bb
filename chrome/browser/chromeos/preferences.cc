@@ -175,6 +175,9 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kSystemTimezoneAutomaticDetectionPolicy,
       enterprise_management::SystemTimezoneProto::USERS_DECIDE);
   registry->RegisterStringPref(prefs::kMinimumAllowedChromeVersion, "");
+  // TODO(tonydeluna): Remove deprecated pref.
+  // Carrier deal notification shown count defaults to 0.
+  registry->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
 
   AshShellInit::RegisterDisplayPrefs(registry);
 }
@@ -425,8 +428,7 @@ void Preferences::RegisterProfilePrefs(
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
 
-  // 3G first-time usage promo will be shown at least once.
-  registry->RegisterBooleanPref(prefs::kShow3gPromoNotification, true);
+  registry->RegisterBooleanPref(prefs::kShowMobileDataNotification, true);
 
   // Number of times Data Saver prompt has been shown on 3G data network.
   registry->RegisterIntegerPref(
