@@ -526,20 +526,24 @@ void Controller::DidStartNavigation(
   // page is considered an end condition.
   if (navigation_handle->IsInMainFrame() &&
       web_contents()->GetLastCommittedURL().is_valid() &&
-      !script_tracker_->running() && !navigation_handle->WasServerRedirect() &&
-      !navigation_handle->IsSameDocument() &&
-      !navigation_handle->IsRendererInitiated()) {
-    GiveUp();
-    return;
-  }
+      !navigation_handle->WasServerRedirect() &&
+      !navigation_handle->IsSameDocument()) {
+    if (!script_tracker_->running() &&
+        !navigation_handle->IsRendererInitiated()) {
+      GiveUp();
+      return;
+    }
 
-  // Special case: during a prompt, forbid render-initiated navigation. This is
-  // necessary as there won't be any script lookup to tell us whether the
-  // destination page is acceptable.
-  if (script_tracker_->running() && touchable_element_area_.HasElements() &&
-      navigation_handle->IsRendererInitiated()) {
-    GiveUp();
-    return;
+    // Special case: during a prompt, only forbid non-render-initiated
+    // navigation for the main frame, such as going back to the previous page or
+    // refreshing the page using the UI. This allows clicking on links and
+    // Javascript-initiated navigation; it's up to the action to define a
+    // touchable element area that prevents these from happening.
+    if (script_tracker_->running() && touchable_element_area_.HasElements() &&
+        !navigation_handle->IsRendererInitiated()) {
+      GiveUp();
+      return;
+    }
   }
 }
 
