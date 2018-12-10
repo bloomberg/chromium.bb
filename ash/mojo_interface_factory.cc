@@ -10,6 +10,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_screen_context_controller.h"
 #include "ash/assistant/assistant_setup_controller.h"
@@ -83,6 +84,12 @@ void BindAppListControllerRequestOnMainThread(
 void BindAshDisplayControllerRequestOnMainThread(
     mojom::AshDisplayControllerRequest request) {
   Shell::Get()->ash_display_controller()->BindRequest(std::move(request));
+}
+
+void BindAssistantAlarmTimerControllerRequestOnMainThread(
+    mojom::AssistantAlarmTimerControllerRequest request) {
+  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+      std::move(request));
 }
 
 void BindAssistantControllerRequestOnMainThread(
@@ -261,6 +268,10 @@ void RegisterInterfaces(
       base::BindRepeating(&BindAppListControllerRequestOnMainThread),
       main_thread_task_runner);
   if (chromeos::switches::IsAssistantEnabled()) {
+    registry->AddInterface(
+        base::BindRepeating(
+            &BindAssistantAlarmTimerControllerRequestOnMainThread),
+        main_thread_task_runner);
     registry->AddInterface(
         base::BindRepeating(&BindAssistantControllerRequestOnMainThread),
         main_thread_task_runner);

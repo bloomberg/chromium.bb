@@ -36,6 +36,15 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+// A macro which ensures we are running on the main thread.
+#define ENSURE_MAIN_THREAD(method, ...)                                     \
+  if (!service_->main_task_runner()->BelongsToCurrentThread()) {            \
+    service_->main_task_runner()->PostTask(                                 \
+        FROM_HERE,                                                          \
+        base::BindOnce(method, weak_factory_.GetWeakPtr(), ##__VA_ARGS__)); \
+    return;                                                                 \
+  }
+
 using ActionModule = assistant_client::ActionModule;
 using Resolution = assistant_client::ConversationStateListener::Resolution;
 
@@ -51,12 +60,10 @@ constexpr char kVolumeLevelDeviceSettingId[] = "VOLUME_LEVEL";
 constexpr char kScreenBrightnessDeviceSettingId[] = "BRIGHTNESS_LEVEL";
 constexpr char kDoNotDisturbDeviceSettingId[] = "DO_NOT_DISTURB";
 constexpr char kNightLightDeviceSettingId[] = "NIGHT_LIGHT_SWITCH";
-constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
-constexpr char kQueryDeeplinkPrefix[] = "googleassistant://send-query?q=";
-constexpr base::Feature kAssistantTimerNotificationFeature{
-    "ChromeOSAssistantTimerNotification", base::FEATURE_ENABLED_BY_DEFAULT};
+
 constexpr base::Feature kChromeOSAssistantDogfood{
     "ChromeOSAssistantDogfood", base::FEATURE_DISABLED_BY_DEFAULT};
+
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
 
 constexpr float kDefaultSliderStep = 0.1f;
@@ -803,38 +810,15 @@ void AssistantManagerServiceImpl::OnStartFinished() {
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingStarted() {
-  // TODO(llin): Migrate to use the AlarmManager API to better support multiple
-  // timers when the API is available.
-  if (!base::FeatureList::IsEnabled(kAssistantTimerNotificationFeature))
-    return;
-
-  const std::string notification_title =
-      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
-  const std::string notification_content =
-      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_CONTENT);
-  const std::string stop_timer_query =
-      l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_TIMER_QUERY);
-
-  const std::string action_url = kQueryDeeplinkPrefix + stop_timer_query;
-  action::Notification notification(
-      /*title=*/notification_title,
-      /*text=*/notification_content,
-      /*action_url=*/action_url,
-      /*notification_id=*/{},
-      /*consistency_token=*/{},
-      /*opaque_token=*/{},
-      /*grouping_key=*/kTimerFireNotificationGroupId,
-      /*obfuscated_gaia_id=*/{},
-      /*buttons=*/
-      {{l10n_util::GetStringUTF8(IDS_ASSISTANT_STOP_BUTTON_TEXT), action_url}});
-  OnShowNotification(notification);
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingStarted);
+  if (service_->assistant_alarm_timer_controller())
+    service_->assistant_alarm_timer_controller()->OnTimerSoundingStarted();
 }
 
 void AssistantManagerServiceImpl::OnTimerSoundingFinished() {
-  if (!base::FeatureList::IsEnabled(kAssistantTimerNotificationFeature))
-    return;
-
-  OnNotificationRemoved(kTimerFireNotificationGroupId);
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnTimerSoundingFinished);
+  if (service_->assistant_alarm_timer_controller())
+    service_->assistant_alarm_timer_controller()->OnTimerSoundingFinished();
 }
 
 void AssistantManagerServiceImpl::UpdateInternalOptions(

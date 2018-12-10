@@ -18,6 +18,11 @@ namespace util {
 
 using DeepLinkUnitTest = AshTestBase;
 
+TEST_F(DeepLinkUnitTest, CreateAssistantQueryDeepLink) {
+  ASSERT_EQ(GURL("googleassistant://send-query?q=query"),
+            CreateAssistantQueryDeepLink("query"));
+}
+
 TEST_F(DeepLinkUnitTest, CreateAssistantSettingsDeepLink) {
   ASSERT_EQ(GURL("googleassistant://settings"),
             CreateAssistantSettingsDeepLink());

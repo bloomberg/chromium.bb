@@ -66,6 +66,11 @@ class Service : public service_manager::Service,
     return assistant_controller_.get();
   }
 
+  ash::mojom::AssistantAlarmTimerController*
+  assistant_alarm_timer_controller() {
+    return assistant_alarm_timer_controller_.get();
+  }
+
   ash::mojom::AssistantScreenContextController*
   assistant_screen_context_controller() {
     return assistant_screen_context_controller_.get();
@@ -170,6 +175,8 @@ class Service : public service_manager::Service,
   base::Optional<std::string> access_token_;
 
   ash::mojom::AssistantControllerPtr assistant_controller_;
+  ash::mojom::AssistantAlarmTimerControllerPtr
+      assistant_alarm_timer_controller_;
   ash::mojom::AssistantScreenContextControllerPtr
       assistant_screen_context_controller_;
   ash::AssistantStateProxy assistant_state_;

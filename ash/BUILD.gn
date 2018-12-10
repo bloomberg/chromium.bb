@@ -157,6 +157,8 @@ component("ash") {
     "app_list/home_launcher_gesture_handler.h",
     "ash_export.h",
     "ash_service.cc",
+    "assistant/assistant_alarm_timer_controller.cc",
+    "assistant/assistant_alarm_timer_controller.h",
     "assistant/assistant_cache_controller.cc",
     "assistant/assistant_cache_controller.h",
     "assistant/assistant_controller.cc",

@@ -17,6 +17,7 @@
           "ash.mojom.AccessibilityFocusRingController",
           "ash.mojom.AppListController",
           "ash.mojom.AshMessageCenterController",
+          "ash.mojom.AssistantAlarmTimerController",
           "ash.mojom.AssistantController",
           "ash.mojom.AssistantScreenContextController",
           "ash.mojom.AssistantSetupController",

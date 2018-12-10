@@ -32,6 +32,7 @@ class PrefRegistrySimple;
 
 namespace ash {
 
+class AssistantAlarmTimerController;
 class AssistantCacheController;
 class AssistantInteractionController;
 class AssistantNotificationController;
@@ -100,6 +101,11 @@ class ASH_EXPORT AssistantController
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request);
 
+  AssistantAlarmTimerController* alarm_timer_controller() {
+    DCHECK(assistant_alarm_timer_controller_);
+    return assistant_alarm_timer_controller_.get();
+  }
+
   AssistantCacheController* cache_controller() {
     DCHECK(assistant_cache_controller_);
     return assistant_cache_controller_.get();
@@ -155,6 +161,9 @@ class ASH_EXPORT AssistantController
   chromeos::assistant::mojom::AssistantPtr assistant_;
 
   mojom::AssistantImageDownloaderPtr assistant_image_downloader_;
+
+  std::unique_ptr<AssistantAlarmTimerController>
+      assistant_alarm_timer_controller_;
 
   std::unique_ptr<AssistantCacheController> assistant_cache_controller_;
 

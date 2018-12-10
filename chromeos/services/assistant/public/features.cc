@@ -25,12 +25,19 @@ const base::Feature kEnableDspHotword{"EnableDspHotword",
 const base::Feature kEnableStereoAudioInput{"AssistantEnableStereoAudioInput",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kTimerNotification{"ChromeOSAssistantTimerNotification",
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
 bool IsDspHotwordEnabled() {
   return base::FeatureList::IsEnabled(kEnableDspHotword);
 }
 
 bool IsStereoAudioInputEnabled() {
   return base::FeatureList::IsEnabled(kEnableStereoAudioInput);
+}
+
+bool IsTimerNotificationEnabled() {
+  return base::FeatureList::IsEnabled(kTimerNotification);
 }
 
 bool IsWarmerWelcomeEnabled() {

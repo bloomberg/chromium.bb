@@ -26,9 +26,14 @@ extern const base::Feature kEnableDspHotword;
 // Enables stereo audio input.
 extern const base::Feature kEnableStereoAudioInput;
 
+// Enables timer notifications.
+extern const base::Feature kTimerNotification;
+
 bool IsDspHotwordEnabled();
 
 bool IsStereoAudioInputEnabled();
+
+bool IsTimerNotificationEnabled();
 
 bool IsWarmerWelcomeEnabled();
 

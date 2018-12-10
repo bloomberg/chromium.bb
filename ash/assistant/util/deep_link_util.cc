@@ -55,6 +55,11 @@ GURL CreateLocalizedGURL(const std::string& url) {
 
 // Utilities -------------------------------------------------------------------
 
+GURL CreateAssistantQueryDeepLink(const std::string& query) {
+  return net::AppendOrReplaceQueryParameter(GURL(kAssistantQueryPrefix),
+                                            kQueryParamKey, query);
+}
+
 GURL CreateAssistantSettingsDeepLink() {
   return GURL(kAssistantSettingsPrefix);
 }

@@ -26,6 +26,17 @@ interface AssistantController {
   OpenAssistantSettings();
 };
 
+// Interface to the AssistantAlarmTimerController which is owned by the
+// AssistantController. Currently used by the Assistant service to notify Ash
+// of changes to the underlying alarm/timer state in LibAssistant.
+interface AssistantAlarmTimerController {
+  // Invoked when a timer has started sounding.
+  OnTimerSoundingStarted();
+
+  // Invoked when a timer has finished sounding.
+  OnTimerSoundingFinished();
+};
+
 // Interface to the AssistantScreenContextController which is owned by the
 // AssistantController. Currently used by the Assistant service to request
 // screenshots.
