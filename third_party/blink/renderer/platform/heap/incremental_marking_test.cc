@@ -239,6 +239,8 @@ class Object : public GarbageCollected<Object> {
 
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(next_); }
 
+  Member<Object>& next_ref() { return next_; }
+
  private:
   Member<Object> next_;
 };
@@ -1020,11 +1022,9 @@ TEST(IncrementalMarkingTest, HeapHashSetStrongWeakPair) {
   Object* obj2 = Object::Create();
   HeapHashSet<StrongWeakPair> set;
   {
-    // Only the strong field in the StrongWeakPair should be hit by the
-    // write barrier.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1});
+    // Both, the weak and the strong field, are hit by the write barrier.
+    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
     set.insert(StrongWeakPair(obj1, obj2));
-    EXPECT_FALSE(obj2->IsMarked());
   }
 }
 
@@ -1033,11 +1033,9 @@ TEST(IncrementalMarkingTest, HeapLinkedHashSetStrongWeakPair) {
   Object* obj2 = Object::Create();
   HeapLinkedHashSet<StrongWeakPair> set;
   {
-    // Only the strong field in the StrongWeakPair should be hit by the
-    // write barrier.
-    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1});
+    // Both, the weak and the strong field, are hit by the write barrier.
+    ExpectWriteBarrierFires scope(ThreadState::Current(), {obj1, obj2});
     set.insert(StrongWeakPair(obj1, obj2));
-    EXPECT_FALSE(obj2->IsMarked());
   }
 }
 
@@ -1734,6 +1732,55 @@ TEST(IncrementalMarkingTest, WeakHashMapHeapCompaction) {
 
   // Weak caallback should register the slot.
   EXPECT_EQ(driver.GetHeapCompactLastFixupCount(), 1u);
+}
+
+namespace {
+
+class ObjectWithWeakMember : public GarbageCollected<ObjectWithWeakMember> {
+ public:
+  ObjectWithWeakMember() = default;
+
+  void set_object(Object* object) { object_ = object; }
+
+  void Trace(Visitor* visitor) { visitor->Trace(object_); }
+
+ private:
+  WeakMember<Object> object_ = nullptr;
+};
+
+}  // namespace
+
+TEST(IncrementalMarkingTest, WeakMember) {
+  // Regression test: https://crbug.com/913431
+
+  Persistent<ObjectWithWeakMember> persistent(
+      MakeGarbageCollected<ObjectWithWeakMember>());
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  driver.FinishSteps();
+  persistent->set_object(Object::Create());
+  driver.FinishGC();
+  ConservativelyCollectGarbage();
+}
+
+TEST(IncrementalMarkingTest, MemberSwap) {
+  // Regression test: https://crbug.com/913431
+  //
+  // MemberBase::Swap may be used to swap in a not-yet-processed member into an
+  // already-processed member. This leads to a stale pointer that is not marked.
+
+  Persistent<Object> object1(MakeGarbageCollected<Object>());
+  IncrementalMarkingTestDriver driver(ThreadState::Current());
+  driver.Start();
+  // The repro leverages the fact that initializing stores do not emit a barrier
+  // (because they are still reachable from stack) to simulate the problematic
+  // interleaving.
+  driver.FinishSteps();
+  Object* object2 =
+      MakeGarbageCollected<Object>(MakeGarbageCollected<Object>());
+  object2->next_ref().Swap(object1->next_ref());
+  driver.FinishGC();
+  ConservativelyCollectGarbage();
 }
 
 }  // namespace incremental_marking_test
