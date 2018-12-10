@@ -222,7 +222,7 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     blink::mojom::SharedWorkerHostPtr host,
-    mojom::SharedWorkerRequest request,
+    blink::mojom::SharedWorkerRequest request,
     service_manager::mojom::InterfaceProviderPtr interface_provider)
     : binding_(this, std::move(request)),
       host_(std::move(host)),

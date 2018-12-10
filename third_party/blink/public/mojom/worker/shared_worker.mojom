@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module content.mojom;
+module blink.mojom;
 
 import "third_party/blink/public/mojom/devtools/devtools_agent.mojom";
 
@@ -19,6 +19,6 @@ interface SharedWorker {
 
   // Binds a DevToolsAgent interface for this shared worker, used for
   // remote debugging. See DevToolsAgent for details.
-  BindDevToolsAgent(associated blink.mojom.DevToolsAgentHost agent_host,
-                    associated blink.mojom.DevToolsAgent& agent);
+  BindDevToolsAgent(associated DevToolsAgentHost agent_host,
+                    associated DevToolsAgent& agent);
 };
