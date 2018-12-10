@@ -21,7 +21,7 @@ namespace task_scheduler_util {
 namespace {
 
 // Builds a SchedulerWorkerPoolParams from the pool descriptor in
-// |variation_params[variation_param_prefix + pool_name]|. Returns an invalid
+// |variation_params[pool_name]|. Returns an invalid
 // SchedulerWorkerPoolParams on failure.
 //
 // The pool descriptor is a semi-colon separated value string with the following
@@ -33,11 +33,9 @@ namespace {
 // 4. Detach Time in Milliseconds (int)
 // Additional values may appear as necessary and will be ignored.
 std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
-    base::StringPiece variation_param_prefix,
     base::StringPiece pool_name,
     const std::map<std::string, std::string>& variation_params) {
-  auto pool_descriptor_it =
-      variation_params.find(base::StrCat({variation_param_prefix, pool_name}));
+  auto pool_descriptor_it = variation_params.find(pool_name.as_string());
   if (pool_descriptor_it == variation_params.end())
     return nullptr;
   const auto& pool_descriptor = pool_descriptor_it->second;
@@ -86,20 +84,26 @@ std::unique_ptr<base::SchedulerWorkerPoolParams> GetWorkerPoolParams(
 
 }  // namespace
 
+const base::Feature kBrowserSchedulerInitParams = {
+    "BrowserSchedulerInitParams", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kRendererSchedulerInitParams = {
+    "RendererSchedulerInitParams", base::FEATURE_DISABLED_BY_DEFAULT};
+
 std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
-    base::StringPiece variation_param_prefix) {
+    const base::Feature& feature) {
   std::map<std::string, std::string> variation_params;
-  if (!base::GetFieldTrialParams("BrowserScheduler", &variation_params))
+  if (!base::GetFieldTrialParamsByFeature(feature, &variation_params))
     return nullptr;
 
-  const auto background_worker_pool_params = GetWorkerPoolParams(
-      variation_param_prefix, "Background", variation_params);
-  const auto background_blocking_worker_pool_params = GetWorkerPoolParams(
-      variation_param_prefix, "BackgroundBlocking", variation_params);
-  const auto foreground_worker_pool_params = GetWorkerPoolParams(
-      variation_param_prefix, "Foreground", variation_params);
-  const auto foreground_blocking_worker_pool_params = GetWorkerPoolParams(
-      variation_param_prefix, "ForegroundBlocking", variation_params);
+  const auto background_worker_pool_params =
+      GetWorkerPoolParams("Background", variation_params);
+  const auto background_blocking_worker_pool_params =
+      GetWorkerPoolParams("BackgroundBlocking", variation_params);
+  const auto foreground_worker_pool_params =
+      GetWorkerPoolParams("Foreground", variation_params);
+  const auto foreground_blocking_worker_pool_params =
+      GetWorkerPoolParams("ForegroundBlocking", variation_params);
 
   if (!background_worker_pool_params ||
       !background_blocking_worker_pool_params ||
@@ -115,16 +119,16 @@ std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams(
 
 std::unique_ptr<base::TaskScheduler::InitParams>
 GetTaskSchedulerInitParamsForBrowser() {
-  // Variations params for the browser processes have no prefix.
-  constexpr char kVariationParamPrefix[] = "";
-  return GetTaskSchedulerInitParams(kVariationParamPrefix);
+  // Variations params for the browser processes are associated with the feature
+  // |kBrowserSchedulerInitParams|.
+  return GetTaskSchedulerInitParams(kBrowserSchedulerInitParams);
 }
 
 std::unique_ptr<base::TaskScheduler::InitParams>
 GetTaskSchedulerInitParamsForRenderer() {
-  // Variations params for renderer processes are prefixed with "Renderer".
-  constexpr char kVariationParamPrefix[] = "Renderer";
-  return GetTaskSchedulerInitParams(kVariationParamPrefix);
+  // Variations params for the renderer processes are associated with the
+  // feature |kRendererSchedulerInitParams|.
+  return GetTaskSchedulerInitParams(kRendererSchedulerInitParams);
 }
 
 }  // namespace task_scheduler_util
