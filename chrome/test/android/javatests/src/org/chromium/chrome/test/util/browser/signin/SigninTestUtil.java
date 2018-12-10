@@ -86,8 +86,7 @@ public final class SigninTestUtil {
         AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
         sAccountManager.addAccountHolderBlocking(accountHolder);
         sAddedAccounts.add(accountHolder);
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> AccountTrackerService.get().invalidateAccountSeedStatus(true));
+        ThreadUtils.runOnUiThreadBlocking(SigninTestUtil::seedAccounts);
         return account;
     }
 
@@ -98,9 +97,21 @@ public final class SigninTestUtil {
         Account account = addTestAccount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeSigninController.get().setSignedInAccountName(DEFAULT_ACCOUNT);
-            AccountTrackerService.get().invalidateAccountSeedStatus(true);
+            seedAccounts();
         });
         return account;
+    }
+
+    private static void seedAccounts() {
+        AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
+        Account[] accounts = sAccountManager.getAccountsSyncNoThrow();
+        String[] accountNames = new String[accounts.length];
+        String[] accountIds = new String[accounts.length];
+        for (int i = 0; i < accounts.length; i++) {
+            accountNames[i] = accounts[i].name;
+            accountIds[i] = accountIdProvider.getAccountId(accounts[i].name);
+        }
+        AccountTrackerService.get().syncForceRefreshForTest(accountIds, accountNames);
     }
 
     private static void overrideAccountIdProvider() {
