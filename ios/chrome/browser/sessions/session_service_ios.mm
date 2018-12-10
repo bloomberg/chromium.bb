@@ -16,7 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
@@ -169,7 +169,8 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   NSString* sessionPath = [[self class] sessionPathForDirectory:directory];
   _taskRunner->PostTaskAndReply(
       FROM_HERE, base::BindOnce(^{
-        base::AssertBlockingAllowedDeprecated();
+        base::ScopedBlockingCall scoped_blocking_call(
+            base::BlockingType::MAY_BLOCK);
         NSFileManager* fileManager = [NSFileManager defaultManager];
         if (![fileManager fileExistsAtPath:sessionPath])
           return;
@@ -220,7 +221,8 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 
 - (void)performSaveSessionData:(NSData*)sessionData
                    sessionPath:(NSString*)sessionPath {
-  base::AssertBlockingAllowedDeprecated();
+  base::ScopedBlockingCall scoped_blocking_call(
+            base::BlockingType::MAY_BLOCK);
 
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSString* directory = [sessionPath stringByDeletingLastPathComponent];
