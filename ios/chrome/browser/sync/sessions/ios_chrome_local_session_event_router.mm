@@ -122,9 +122,9 @@ void IOSChromeLocalSessionEventRouter::NavigationItemChanged(
   OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::NavigationItemCommitted(
+void IOSChromeLocalSessionEventRouter::DidFinishNavigation(
     web::WebState* web_state,
-    const web::LoadCommittedDetails& load_details) {
+    web::NavigationContext* navigation_context) {
   OnWebStateChange(web_state);
 }
 
