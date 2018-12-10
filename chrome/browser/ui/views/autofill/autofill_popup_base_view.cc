@@ -26,20 +26,34 @@
 
 namespace autofill {
 
-// TODO(crbug.com/831603): Determine how colors should be shared with menus
-// and/or omnibox, and how these should interact (if at all) with native
-// theme colors.
-const SkColor AutofillPopupBaseView::kBackgroundColor = SK_ColorWHITE;
-const SkColor AutofillPopupBaseView::kSelectedBackgroundColor =
-    gfx::kGoogleGrey200;
-const SkColor AutofillPopupBaseView::kFooterBackgroundColor =
-    gfx::kGoogleGrey050;
-const SkColor AutofillPopupBaseView::kSeparatorColor = gfx::kGoogleGrey200;
-const SkColor AutofillPopupBaseView::kWarningColor = gfx::kGoogleRed600;
-
 int AutofillPopupBaseView::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MEDIUM);
+}
+
+SkColor AutofillPopupBaseView::GetBackgroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_FocusedHighlightedMenuItemBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetSeparatorColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuSeparatorColor);
+}
+
+SkColor AutofillPopupBaseView::GetWarningColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_AlertSeverityHigh);
 }
 
 AutofillPopupBaseView::AutofillPopupBaseView(
