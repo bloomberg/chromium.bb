@@ -193,7 +193,7 @@ ContentRendererClient::CreateMediaStreamRendererFactory() {
 }
 
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(
-    const base::string16& source) const {
+    const base::string16& source) {
   return false;
 }
 

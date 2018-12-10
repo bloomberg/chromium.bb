@@ -1410,7 +1410,7 @@ bool ChromeContentRendererClient::IsKeySystemsUpdateNeeded() {
 }
 
 bool ChromeContentRendererClient::ShouldReportDetailedMessageForSource(
-    const base::string16& source) const {
+    const base::string16& source) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return extensions::IsSourceFromAnExtension(source);
 #else
