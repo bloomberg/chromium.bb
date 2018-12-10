@@ -1,5 +1,5 @@
 AXWebArea
-++AXTable AXARIAColumnCount='4'
+++AXTable AXARIAColumnCount='4' AXARIARowCount='3'
 ++++AXRow
 ++++++AXCell AXARIAColumnIndex='1' AXARIARowIndex='1'
 ++++++++AXStaticText AXValue='Month'
@@ -15,11 +15,11 @@ AXWebArea
 ++++++AXCell AXARIAColumnIndex='4' AXARIARowIndex='2'
 ++++++++AXStaticText AXValue='Sunny'
 ++++AXRow
-++++++AXCell AXARIAColumnIndex='1' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='1' AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='January'
-++++++AXCell AXARIAColumnIndex='2' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='2' AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='02'
-++++++AXCell AXARIAColumnIndex='4' AXARIARowIndex='2'
+++++++AXCell AXARIAColumnIndex='4' AXARIARowIndex='3'
 ++++++++AXStaticText AXValue='Rainy'
 ++++AXColumn
 ++++AXColumn
