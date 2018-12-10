@@ -252,6 +252,10 @@ sk_sp<GrGLInterface> CreateGLES2InterfaceBindings(
       gles_bind(&GLES2Interface::StencilOpSeparate, impl, context_support);
   functions->fTexImage2D =
       gles_bind(&GLES2Interface::TexImage2D, impl, context_support);
+  functions->fTexParameterf =
+      gles_bind(&GLES2Interface::TexParameterf, impl, context_support);
+  functions->fTexParameterfv =
+      gles_bind(&GLES2Interface::TexParameterfv, impl, context_support);
   functions->fTexParameteri =
       gles_bind(&GLES2Interface::TexParameteri, impl, context_support);
   functions->fTexParameteriv =
