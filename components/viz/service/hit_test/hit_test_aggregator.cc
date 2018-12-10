@@ -100,12 +100,12 @@ void HitTestAggregator::InsertHitTestDebugQuads(RenderPassList* render_passes) {
 
     parents.push(i);
     // Concatenate transformation.
-    parent_transforms.push(child_to_parent * parent_transforms.top());
+    parent_transforms.push(parent_transforms.top() * child_to_parent);
 
     // We can only transform gfx::RectF.
     gfx::RectF rf(hit_test_data_[i].rect);
     parent_transforms.top().TransformRect(&rf);
-    const gfx::Rect debug_rect = gfx::ToNearestRect(rf);
+    const gfx::Rect debug_rect = gfx::ToEnclosedRect(rf);
 
     DebugBorderDrawQuad* debug_quad = static_cast<DebugBorderDrawQuad*>(
         ql.ElementAt(hit_test_debug_ask_regions_ + i));
