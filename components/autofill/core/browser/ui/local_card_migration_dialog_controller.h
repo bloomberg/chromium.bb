@@ -34,7 +34,9 @@ class LocalCardMigrationDialogController {
   virtual void OnCancelButtonClicked() = 0;
   virtual void OnViewCardsButtonClicked() = 0;
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
+  virtual void DeleteCard(const std::string& deleted_card_guid) = 0;
   virtual void OnDialogClosed() = 0;
+  virtual bool AllCardsInvalid() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogController);

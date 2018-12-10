@@ -116,10 +116,17 @@ class AutofillClient : public RiskDataLoader {
 
   typedef base::Callback<void(const CreditCard&)> CreditCardScanCallback;
   // Callback to run if user presses the Save button in the migration dialog.
-  // Will pass a vector of GUIDs of cards that the user selects to upload to
+  // Will pass a vector of GUIDs of cards that the user selected to upload to
   // LocalCardMigrationManager.
   typedef base::OnceCallback<void(const std::vector<std::string>&)>
       LocalCardMigrationCallback;
+
+  // Callback to run if the user presses the trash can button in the
+  // action-required dialog. Will pass to LocalCardMigrationManager a
+  // string of GUID of the card that the user selected to delete from local
+  // storage.
+  typedef base::RepeatingCallback<void(const std::string&)>
+      MigrationDeleteCardCallback;
 
   ~AutofillClient() override {}
 
@@ -195,10 +202,12 @@ class AutofillClient : public RiskDataLoader {
   // is an empty vector, or the migration results for cards in
   // |migratable_credit_cards| otherwise. If migration succeeds the dialog will
   // contain a |tip_message|. The dialog is invoked when the migration process
-  // is finished.
+  // is finished. Runs |delete_local_card_callback| if the user chose to delete
+  // one invalid card from local storage.
   virtual void ShowLocalCardMigrationResults(
       const base::string16& tip_message,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards) = 0;
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrationDeleteCardCallback delete_local_card_callback) = 0;
 
   // Runs |callback| if the |profile| should be imported as personal data.
   virtual void ConfirmSaveAutofillProfile(const AutofillProfile& profile,

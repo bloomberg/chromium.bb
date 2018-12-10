@@ -133,6 +133,11 @@ void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog(
     SendMigrateLocalCardsRequest();
 }
 
+void LocalCardMigrationManager::OnUserDeletedLocalCardViaMigrationDialog(
+    const std::string& deleted_card_guid) {
+  personal_data_manager_->RemoveByGUID(deleted_card_guid);
+}
+
 bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   // Confirm that the user is signed in, syncing, and the proper experiment
   // flags are enabled.
@@ -226,7 +231,10 @@ void LocalCardMigrationManager::OnDidMigrateLocalCards(
         base::UTF8ToUTF16(display_text),
         result == AutofillClient::PaymentsRpcResult::SUCCESS
             ? migratable_credit_cards_
-            : std::vector<MigratableCreditCard>());
+            : std::vector<MigratableCreditCard>(),
+        base::BindRepeating(&LocalCardMigrationManager::
+                                OnUserDeletedLocalCardViaMigrationDialog,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

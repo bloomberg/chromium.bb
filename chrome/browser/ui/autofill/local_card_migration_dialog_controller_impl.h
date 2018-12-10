@@ -39,7 +39,8 @@ class LocalCardMigrationDialogControllerImpl
   // passes |tip_message|, and |migratable_credit_cards| to controller.
   void ShowCreditCardIcon(
       const base::string16& tip_message,
-      const std::vector<MigratableCreditCard>& migratable_credit_cards);
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      AutofillClient::MigrationDeleteCardCallback delete_local_card_callback);
 
   // If the user clicks on the credit card icon in the omnibox, we show the
   // feedback dialog containing the uploading results of the cards that the
@@ -61,7 +62,9 @@ class LocalCardMigrationDialogControllerImpl
   void OnCancelButtonClicked() override;
   void OnViewCardsButtonClicked() override;
   void OnLegalMessageLinkClicked(const GURL& url) override;
+  void DeleteCard(const std::string& deleted_card_guid) override;
   void OnDialogClosed() override;
+  bool AllCardsInvalid() const override;
 
   // Returns nullptr if no dialog is currently shown.
   LocalCardMigrationDialog* local_card_migration_dialog_view() const;
@@ -78,6 +81,8 @@ class LocalCardMigrationDialogControllerImpl
 
   void UpdateIcon();
 
+  bool HasFailedCard() const;
+
   LocalCardMigrationDialog* local_card_migration_dialog_ = nullptr;
 
   PrefService* pref_service_;
@@ -89,6 +94,11 @@ class LocalCardMigrationDialogControllerImpl
   // Invoked when the save button is clicked. Will return a vector containing
   // GUIDs of cards that the user selected to upload.
   AutofillClient::LocalCardMigrationCallback start_migrating_cards_callback_;
+
+  // Invoked when the trash can button in the action-requied dialog is clicked.
+  // Will pass a string of GUID of the card the user selected to delete from
+  // local storage to LocalCardMigrationManager.
+  AutofillClient::MigrationDeleteCardCallback delete_local_card_callback_;
 
   // Local copy of the MigratableCreditCards vector passed from
   // LocalCardMigrationManager. Used in constructing the

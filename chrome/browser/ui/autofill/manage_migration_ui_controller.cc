@@ -45,7 +45,8 @@ void ManageMigrationUiController::ShowOfferDialog(
 
 void ManageMigrationUiController::ShowCreditCardIcon(
     const base::string16& tip_message,
-    const std::vector<MigratableCreditCard>& migratable_credit_cards) {
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    AutofillClient::MigrationDeleteCardCallback delete_local_card_callback) {
   if (!dialog_controller_)
     return;
 
@@ -54,7 +55,8 @@ void ManageMigrationUiController::ShowCreditCardIcon(
   // Show error dialog when the vector is an empty vector, which indicates
   // Payments Rpc failure.
   show_error_dialog_ = migratable_credit_cards.empty();
-  dialog_controller_->ShowCreditCardIcon(tip_message, migratable_credit_cards);
+  dialog_controller_->ShowCreditCardIcon(tip_message, migratable_credit_cards,
+                                         delete_local_card_callback);
 }
 
 void ManageMigrationUiController::OnUserClickedCreditCardIcon() {

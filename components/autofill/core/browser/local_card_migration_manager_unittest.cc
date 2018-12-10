@@ -139,13 +139,13 @@ class LocalCardMigrationManagerTest : public testing::Test {
     credit_card_form.fields[4].value = ASCIIToUTF16(cvc);
   }
 
-  void AddLocalCrediCard(TestPersonalDataManager& personal_data,
-                         const char* name_on_card,
-                         const char* card_number,
-                         const char* expiration_month,
-                         const char* expiration_year,
-                         const std::string& billing_address_id,
-                         const std::string& guid) {
+  void AddLocalCreditCard(TestPersonalDataManager& personal_data,
+                          const char* name_on_card,
+                          const char* card_number,
+                          const char* expiration_month,
+                          const char* expiration_year,
+                          const std::string& billing_address_id,
+                          const std::string& guid) {
     CreditCard local_card;
     test::SetCreditCardInfo(&local_card, name_on_card, card_number,
                             expiration_month, expiration_year,
@@ -193,8 +193,8 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -225,12 +225,12 @@ TEST_F(LocalCardMigrationManagerTest,
   autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
                                          12345);
   // Add a local credit card (but it will not match what we will enter below).
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card (but it will not match what we will enter
   // below).
-  AddLocalCrediCard(personal_data_, "Flo Master", "4444333322221111", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4444333322221111", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -256,11 +256,11 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card, so it will trigger migration.
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -302,14 +302,14 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add other invalid local credit cards(invalid card number or expired), so it
   // will not trigger migration.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111112", "11",
-                    test::NextYear().c_str(), "1", "guid2");
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::LastYear().c_str(), "1", "guid3");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111112", "11",
+                     test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::LastYear().c_str(), "1", "guid3");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -341,8 +341,8 @@ TEST_F(LocalCardMigrationManagerTest,
   credit_card.SetNetworkForMaskedCard(kVisaCard);
   personal_data_.AddServerCreditCard(credit_card);
   // Add one valid local credit card, so it will trigger migration
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid1");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -391,10 +391,10 @@ TEST_F(LocalCardMigrationManagerTest,
   personal_data_.AddServerCreditCard(credit_card);
   // Add other invalid local credit cards(invalid card number or expired), so it
   // will not trigger migration.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111112", "11",
-                    test::NextYear().c_str(), "1", "guid1");
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::LastYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111112", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::LastYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -426,11 +426,11 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_FeatureNotEnabled) {
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card.
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -451,11 +451,11 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_NoPaymentsAccount) {
 
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card.
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -488,11 +488,11 @@ TEST_F(LocalCardMigrationManagerTest,
   personal_data_.AddServerCreditCard(server_card);
   // Add a local card whose |TypeAndLastFourDigits| matches a masked server
   // card.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -522,11 +522,11 @@ TEST_F(LocalCardMigrationManagerTest,
                           test::NextYear().c_str(), "1");
   personal_data_.AddServerCreditCard(server_card);
   // Add a local credit card whose number matches a full server card.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -550,11 +550,11 @@ TEST_F(LocalCardMigrationManagerTest, GetDetectedValues_AllWithCardHolderName) {
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card with a different cardholder name.
-  AddLocalCrediCard(personal_data_, "John Smith", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "John Smith", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -582,11 +582,11 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card without card holder name.
-  AddLocalCrediCard(personal_data_, "", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
   // Set up our credit card form data.
   FormData credit_card_form;
   test::CreateTestCreditCardFormData(&credit_card_form, true, false);
@@ -613,11 +613,11 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -646,8 +646,8 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
 
   base::HistogramTester histogram_tester;
   // Do the same operation as we bridge back from the settings page.
@@ -685,11 +685,11 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card, so it will trigger migration.
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -721,11 +721,11 @@ TEST_F(LocalCardMigrationManagerTest,
 
   // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
   // enter below.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
   // Add another local credit card, so it will trigger migration.
-  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
 
   // Set up our credit card form data.
   FormData credit_card_form;
@@ -752,8 +752,8 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_MigrationSuccess) {
   autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
                                          12345);
   // Add a local credit card for migration.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
 
   // Verify that it exists in the local database.
   EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
@@ -794,8 +794,8 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
 
   // Verify that it exists in local database.
   EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
@@ -837,8 +837,8 @@ TEST_F(LocalCardMigrationManagerTest,
                                          12345);
   // Add a local credit card. One migratable credit card will still trigger
   // migration on settings page.
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
 
   // Verify that it exists in local database.
   EXPECT_TRUE(personal_data_.GetCreditCardByNumber("4111111111111111"));
@@ -871,10 +871,10 @@ TEST_F(LocalCardMigrationManagerTest,
 // Verify selected cards are correctly passed to manager.
 TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_ToggleIsChosen) {
   EnableAutofillCreditCardLocalCardMigrationExperiment();
-  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
-                    test::NextYear().c_str(), "1", "guid1");
-  AddLocalCrediCard(personal_data_, "Flo Master", "5454545454545454", "11",
-                    test::NextYear().c_str(), "1", "guid2");
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+  AddLocalCreditCard(personal_data_, "Flo Master", "5454545454545454", "11",
+                     test::NextYear().c_str(), "1", "guid2");
   autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
                                          12345);
   local_card_migration_manager_->GetMigratableCreditCards();
@@ -890,6 +890,20 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_ToggleIsChosen) {
                 .credit_card()
                 .guid(),
             "guid1");
+}
+
+TEST_F(LocalCardMigrationManagerTest, DeleteLocalCardViaMigrationDialog) {
+  EnableAutofillCreditCardLocalCardMigrationExperiment();
+
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+
+  EXPECT_TRUE(personal_data_.GetCreditCardWithGUID("guid1"));
+
+  local_card_migration_manager_->OnUserDeletedLocalCardViaMigrationDialog(
+      "guid1");
+
+  EXPECT_FALSE(personal_data_.GetCreditCardWithGUID("guid1"));
 }
 
 }  // namespace autofill
