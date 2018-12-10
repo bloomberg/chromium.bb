@@ -92,8 +92,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString AssignedName() const override;
   void SetName(const WebString&) override;
   WebVector<WebIconURL> IconURLs(int icon_types_mask) const override;
-  void SetSharedWorkerRepositoryClient(
-      WebSharedWorkerRepositoryClient*) override;
+  void InitializeSharedWorkerRepositoryClient(
+      service_manager::InterfaceProvider*) override;
   WebSize GetScrollOffset() const override;
   void SetScrollOffset(const WebSize&) override;
   WebSize DocumentSize() const override;

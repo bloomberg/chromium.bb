@@ -171,7 +171,6 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class SharedWorkerRepository;
 class UserMediaClientImpl;
 struct CSPViolationParams;
 struct CommonNavigationParams;
@@ -1476,7 +1475,6 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   std::unique_ptr<FrameBlameContext> blame_context_;
-  std::unique_ptr<SharedWorkerRepository> shared_worker_repository_;
 
   // Plugins -------------------------------------------------------------------
 #if BUILDFLAG(ENABLE_PLUGINS)
