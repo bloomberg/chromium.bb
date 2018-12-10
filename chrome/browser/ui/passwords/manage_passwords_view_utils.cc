@@ -73,7 +73,7 @@ std::pair<base::string16, base::string16> GetCredentialLabelsForAccountChooser(
     const autofill::PasswordForm& form) {
   base::string16 federation;
   if (!form.federation_origin.opaque())
-    federation = base::UTF8ToUTF16(form.federation_origin.host());
+    federation = GetDisplayFederation(form);
 
   if (form.display_name.empty())
     return std::make_pair(form.username_value, std::move(federation));
@@ -150,6 +150,11 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
   return form.username_value.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
              : form.username_value;
+}
+
+base::string16 GetDisplayFederation(const autofill::PasswordForm& form) {
+  return url_formatter::FormatOriginForSecurityDisplay(
+      form.federation_origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
 }
 
 bool IsSyncingAutosignSetting(Profile* profile) {
