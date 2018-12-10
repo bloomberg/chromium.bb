@@ -656,6 +656,10 @@ class AutofillMetrics {
     FORM_EVENT_DID_DYNAMIC_REFILL,
     // The form dynamically changed another time after the refill.
     FORM_EVENT_DYNAMIC_CHANGE_AFTER_REFILL,
+    // The popup was suppressed because the native view couldn't be created.
+    FORM_EVENT_POPUP_SUPPRESSED,
+    // Same as above, but recoreded only once per page load.
+    FORM_EVENT_POPUP_SUPPRESSED_ONCE,
 
     NUM_FORM_EVENTS,
   };
@@ -1272,6 +1276,9 @@ class AutofillMetrics {
     void OnDidPollSuggestions(const FormFieldData& field,
                               AutofillSyncSigninState sync_state);
 
+    void OnPopupSuppressed(const FormStructure& form,
+                           const AutofillField& field);
+
     void OnDidShowSuggestions(const FormStructure& form,
                               const AutofillField& field,
                               const base::TimeTicks& form_parsed_timestamp,
@@ -1317,6 +1324,7 @@ class AutofillMetrics {
     size_t local_record_type_count_;
     bool is_context_secure_;
     bool has_logged_interacted_;
+    bool has_logged_popup_suppressed_;
     bool has_logged_suggestions_shown_;
     bool has_logged_masked_server_card_suggestion_selected_;
     bool has_logged_suggestion_filled_;

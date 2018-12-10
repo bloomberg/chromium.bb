@@ -6522,6 +6522,43 @@ TEST_F(AutofillManagerTest,
                                     HasSubstr("Autofill.FormEvents.Address"))));
 }
 
+TEST_F(AutofillManagerTest,
+       DidSuppressPopup_LogAutofillAddressPopupSuppressed) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidSuppressPopup(form, form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.Address",
+      AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+
+  // No Autocomplete or credit cards logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms,
+              Not(AnyOf(HasSubstr("Autofill.UserHappiness"),
+                        HasSubstr("Autocomplete.Events"),
+                        HasSubstr("Autofill.FormEvents.CreditCard"))));
+}
+
+TEST_F(AutofillManagerTest,
+       DidSuppressPopup_LogAutofillCreditCardPopupSuppressed) {
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->DidSuppressPopup(form, form.fields[0]);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.FormEvents.CreditCard",
+      AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+
+  // No Autocomplete or address logs.
+  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
+  EXPECT_THAT(histograms, Not(AnyOf(HasSubstr("Autofill.UserHappiness"),
+                                    HasSubstr("Autocomplete.Events"),
+                                    HasSubstr("Autofill.FormEvents.Address"))));
+}
+
 // Test param indicates if there is an active screen reader.
 class OnFocusOnFormFieldTest : public AutofillManagerTest,
                                public testing::WithParamInterface<bool> {

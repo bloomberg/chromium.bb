@@ -3456,6 +3456,72 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardInteractedFormEvents) {
 }
 
 // Test that we log suggestion shown form events for credit cards.
+TEST_P(AutofillMetricsIFrameTest, CreditCardPopupSuppressedFormEvents) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Year", "card_year", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating popup being suppressed.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidSuppressPopup(form, field);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE, 1);
+  }
+
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating popup being suppressed.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidSuppressPopup(form, field);
+    autofill_manager_->DidSuppressPopup(form, field);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE, 1);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 2);
+    histogram_tester.ExpectBucketCount(
+        credit_card_form_events_frame_histogram_,
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE, 1);
+  }
+}
+
+// Test that we log suggestion shown form events for credit cards.
 TEST_P(AutofillMetricsIFrameTest, CreditCardShownFormEvents) {
   // Set up our form data.
   FormData form;
@@ -5331,6 +5397,63 @@ TEST_F(AutofillMetricsTest, AddressInteractedFormEvents) {
     histogram_tester.ExpectUniqueSample(
         "Autofill.FormEvents.Address",
         AutofillMetrics::FORM_EVENT_INTERACTED_ONCE, 1);
+  }
+}
+
+// Test that popup suppressed form events for address are logged.
+TEST_F(AutofillMetricsTest, AddressSuppressedFormEvents) {
+  // Create a profile.
+  RecreateProfile();
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Simulate having seen this form on page load.
+  // |form_structure| will be owned by |autofill_manager_|.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating new popup being shown.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidSuppressPopup(form, field);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE, 1);
+  }
+
+  // Reset the autofill manager state.
+  autofill_manager_->Reset();
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulating two popups in the same page load.
+    base::HistogramTester histogram_tester;
+    autofill_manager_->DidSuppressPopup(form, field);
+    autofill_manager_->DidSuppressPopup(form, field);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED, 2);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address",
+        AutofillMetrics::FORM_EVENT_POPUP_SUPPRESSED_ONCE, 1);
   }
 }
 

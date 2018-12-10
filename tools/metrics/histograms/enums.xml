@@ -2970,6 +2970,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="27" label="The form changed dynamically and was fillable"/>
   <int value="28" label="The form changed dynamically and was re-filled"/>
   <int value="29" label="The form changed dynamically again after the refill"/>
+  <int value="30" label="The popup was suppressed"/>
+  <int value="31" label="The popup was suppressed (once)"/>
 </enum>
 
 <enum name="AutofillFormSubmittedState">
