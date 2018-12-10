@@ -4076,11 +4076,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 }
 
 - (BOOL)canGoBack {
-  return self.tabModel.currentTab.canGoBack;
+  return self.currentWebState->GetNavigationManager()->CanGoBack();
 }
 
 - (BOOL)canGoForward {
-  return self.tabModel.currentTab.canGoForward;
+  return self.currentWebState->GetNavigationManager()->CanGoForward();
 }
 
 - (void)focusTabAtIndex:(NSUInteger)index {
@@ -4447,11 +4447,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 #pragma mark - BrowserCommands
 
 - (void)goBack {
-  [self.tabModel.currentTab goBack];
+  self.currentWebState->GetNavigationManager()->GoBack();
 }
 
 - (void)goForward {
-  [self.tabModel.currentTab goForward];
+  self.currentWebState->GetNavigationManager()->GoForward();
 }
 
 - (void)stopLoading {
@@ -5280,7 +5280,7 @@ nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
   // neeeded. The current solution is to go back in history. This has the
   // advantage of keeping the current browsing session and give a good user
   // experience when the user comes back from incognito.
-  [self.tabModel.currentTab goBack];
+  [self goBack];
 
   if (url.is_valid()) {
     OpenNewTabCommand* command = [[OpenNewTabCommand alloc]
