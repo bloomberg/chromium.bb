@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/action_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -60,6 +61,41 @@ NSString* const PasswordTableViewAccessibilityIdentifier =
   NSString* titleString =
       l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_USE_OTHER_PASSWORD);
   self.title = titleString;
+
+  // Center search bar vertically so it looks centered in the header when
+  // searching.  The cancel button is centered / decentered on
+  // viewWillAppear and viewDidDisappear.
+  UIOffset offset =
+      UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+  self.searchController.searchBar.searchFieldBackgroundPositionAdjustment =
+      offset;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  // Center search bar's cancel button vertically so it looks centered.
+  // We change the cancel button proxy styles, so we will return it to
+  // default in viewDidDisappear.
+  if (self.searchController) {
+    UIOffset offset =
+        UIOffsetMake(0.0f, kTableViewNavigationVerticalOffsetForSearchHeader);
+    UIBarButtonItem* cancelButton = [UIBarButtonItem
+        appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
+    [cancelButton setTitlePositionAdjustment:offset
+                               forBarMetrics:UIBarMetricsDefault];
+  }
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+
+  // Restore to default origin offset for cancel button proxy style.
+  if (self.searchController) {
+    UIBarButtonItem* cancelButton = [UIBarButtonItem
+        appearanceWhenContainedInInstancesOfClasses:@ [[UISearchBar class]]];
+    [cancelButton setTitlePositionAdjustment:UIOffsetZero
+                               forBarMetrics:UIBarMetricsDefault];
+  }
 }
 
 #pragma mark - ManualFillPasswordConsumer
