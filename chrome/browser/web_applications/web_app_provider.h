@@ -30,6 +30,7 @@ namespace web_app {
 // Forward declarations of generalized interfaces.
 class PendingAppManager;
 class InstallManager;
+class WebAppTabHelperBase;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabase;
@@ -59,6 +60,8 @@ class WebAppProvider : public KeyedService,
   ~WebAppProvider() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static WebAppTabHelperBase* CreateTabHelper(
+      content::WebContents* web_contents);
 
   // Returns true if a bookmark can be installed for a given |web_contents|.
   static bool CanInstallWebApp(content::WebContents* web_contents);
