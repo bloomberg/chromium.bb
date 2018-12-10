@@ -4,129 +4,87 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
-
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabViewBinder.ElementViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
 
 /**
  * This stateless class provides methods to bind the items in a {@link ListModel <Item>}
  * to the {@link RecyclerView} used as view of the Password accessory sheet component.
  */
 class PasswordAccessorySheetViewBinder {
-    /**
-     * Holds any View that represents a list entry.
-     */
-    static class ItemViewHolder extends RecyclerView.ViewHolder {
-        ItemViewHolder(View itemView) {
-            super(itemView);
+    static ElementViewHolder create(ViewGroup parent, @AccessorySheetDataPiece.Type int viewType) {
+        switch (viewType) {
+            case AccessorySheetDataPiece.Type.TITLE:
+                return new PasswordsTitleViewHolder(parent);
+            case AccessorySheetDataPiece.Type.PASSWORD_INFO:
+                return new PasswordsInfoViewHolder(parent);
+            case AccessorySheetDataPiece.Type.FOOTER_COMMAND:
+                return new FooterCommandViewHolder(parent);
         }
-
-        static ItemViewHolder create(ViewGroup parent, @ItemType int viewType) {
-            switch (viewType) {
-                case ItemType.LABEL:
-                    return new TextViewHolder(
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(R.layout.password_accessory_sheet_label, parent,
-                                            false));
-                case ItemType.SUGGESTION: // Intentional fallthrough.
-                case ItemType.NON_INTERACTIVE_SUGGESTION: {
-                    return new IconTextViewHolder(
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(R.layout.password_accessory_sheet_suggestion, parent,
-                                            false));
-                }
-                case ItemType.DIVIDER:
-                    return new ItemViewHolder(
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(R.layout.password_accessory_sheet_divider, parent,
-                                            false));
-                case ItemType.OPTION:
-                    return new TextViewHolder(
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(R.layout.password_accessory_sheet_option, parent,
-                                            false));
-                case ItemType.TOP_DIVIDER:
-                    return new ItemViewHolder(
-                            LayoutInflater.from(parent.getContext())
-                                    .inflate(R.layout.password_accessory_sheet_top_divider, parent,
-                                            false));
-            }
-            assert false : viewType;
-            return null;
-        }
-
-        /**
-         * Binds the item's state to the held {@link View}. Subclasses of this generic view holder
-         * might want to actually bind the item state to the view.
-         * @param item The item that determines the state of the held View.
-         */
-        protected void bind(Item item) {}
+        assert false : "Unhandled type of data piece: " + viewType;
+        return null;
     }
 
     /**
-     * Holds a TextView that represents a list entry.
+     * Holds a the TextView with the title of the sheet and a divider for the accessory bar.
      */
-    static class TextViewHolder extends ItemViewHolder {
-        TextViewHolder(View itemView) {
-            super(itemView);
-        }
-
-        /**
-         * Returns the text view of this item if there is one.
-         * @return Returns a {@link TextView}.
-         */
-        protected TextView getTextView() {
-            return (TextView) itemView;
+    static class PasswordsTitleViewHolder extends ElementViewHolder<String, LinearLayout> {
+        PasswordsTitleViewHolder(ViewGroup parent) {
+            super(parent, R.layout.password_accessory_sheet_label);
         }
 
         @Override
-        protected void bind(Item item) {
-            super.bind(item);
-            getTextView().setTransformationMethod(
-                    item.isObfuscated() ? new PasswordTransformationMethod() : null);
-            getTextView().setText(item.getCaption());
-            getTextView().setContentDescription(item.getContentDescription());
-            if (item.getItemSelectedCallback() != null) {
-                getTextView().setOnClickListener(
-                        src -> item.getItemSelectedCallback().onResult(item));
-            } else {
-                getTextView().setOnClickListener(null);
-            }
-            // |setOnClickListener| has set this to |true|, so update it afterwards.
-            getTextView().setClickable(item.getItemSelectedCallback() != null);
+        protected void bind(String displayText, LinearLayout view) {
+            TextView titleView = view.findViewById(R.id.tab_title);
+            titleView.setText(displayText);
+            titleView.setContentDescription(displayText);
         }
     }
 
     /**
-     * Holds a TextView that represents a list entry.
+     * Holds a TextView that represents a bottom command and is separated to the top by a divider.
      */
-    static class IconTextViewHolder extends TextViewHolder {
-        private final TextView mSuggestionText;
+    static class FooterCommandViewHolder extends ElementViewHolder<FooterCommand, LinearLayout> {
+        FooterCommandViewHolder(ViewGroup parent) {
+            super(parent, R.layout.password_accessory_sheet_legacy_option);
+        }
+
+        @Override
+        protected void bind(FooterCommand footerCommand, LinearLayout layout) {
+            TextView view = layout.findViewById(R.id.footer_text);
+            view.setText(footerCommand.getDisplayText());
+            view.setContentDescription(footerCommand.getDisplayText());
+            view.setOnClickListener(v -> footerCommand.execute());
+            view.setClickable(true);
+        }
+    }
+
+    /**
+     * Holds a layout for a username and a password with a small icon.
+     */
+    static class PasswordsInfoViewHolder
+            extends ElementViewHolder<KeyboardAccessoryData.UserInfo, LinearLayout> {
         private final int mPadding;
         private final int mIconSize;
 
-        IconTextViewHolder(View itemView) {
-            super(itemView);
-            mSuggestionText = itemView.findViewById(R.id.suggestion_text);
+        PasswordsInfoViewHolder(ViewGroup parent) {
+            super(parent, R.layout.keyboard_accessory_sheet_tab_legacy_password_info);
             mPadding = itemView.getContext().getResources().getDimensionPixelSize(
                     R.dimen.keyboard_accessory_suggestion_padding);
             mIconSize = itemView.getContext().getResources().getDimensionPixelSize(
@@ -134,42 +92,44 @@ class PasswordAccessorySheetViewBinder {
         }
 
         @Override
-        protected TextView getTextView() {
-            return mSuggestionText;
+        protected void bind(KeyboardAccessoryData.UserInfo info, LinearLayout layout) {
+            TextView username = layout.findViewById(R.id.suggestion_text);
+            TextView password = layout.findViewById(R.id.password_text);
+            bindTextView(username, info.getFields().get(0));
+            bindTextView(password, info.getFields().get(1));
+
+            // Set the default icon for username, then try to get a better one.
+            setIconForBitmap(username, null);
+            if (info.getFaviconProvider() != null) {
+                info.getFaviconProvider().fetchFavicon(
+                        mIconSize, icon -> setIconForBitmap(username, icon));
+            }
+            username.setPadding(mPadding, 0, mPadding, 0);
+            // Passwords have no icon, so increase the offset.
+            password.setPadding(2 * mPadding + mIconSize, 0, mPadding, 0);
         }
 
-        @Override
-        protected void bind(Item item) {
-            super.bind(item);
-            getTextView().setClickable(true); // Ensures that "disabled" is announced.
-            if (item.getItemSelectedCallback() == null) {
-                mSuggestionText.setEnabled(false);
-                mSuggestionText.setBackground(null);
-            } else {
-                mSuggestionText.setEnabled(true);
-                TypedArray a = mSuggestionText.getContext().obtainStyledAttributes(
-                        new int[] {R.attr.selectableItemBackground});
-                Drawable suggestionBackground = a.getDrawable(0);
-                a.recycle();
-                mSuggestionText.setBackground(suggestionBackground);
-            }
-
-            // Setting the background to selectableItemBackground resets the padding to 0 on
-            // Jelly Bean, so the padding should be set after the background.
-            if (!item.isObfuscated()) {
-                setIconForBitmap(null); // Set the default icon, then try to get a better one.
-                item.fetchFavicon(itemView.getContext().getResources().getDimensionPixelSize(
-                                          R.dimen.keyboard_accessory_suggestion_icon_size),
-                        this::setIconForBitmap);
-                mSuggestionText.setPadding(mPadding, 0, mPadding, 0);
-            } else {
-                ApiCompatibilityUtils.setCompoundDrawablesRelative(
-                        mSuggestionText, null, null, null, null);
-                mSuggestionText.setPadding(2 * mPadding + mIconSize, 0, mPadding, 0);
-            }
+        private void bindTextView(TextView text, KeyboardAccessoryData.UserInfo.Field field) {
+            text.setTransformationMethod(
+                    field.isObfuscated() ? new PasswordTransformationMethod() : null);
+            text.setText(field.getDisplayText());
+            text.setContentDescription(field.getA11yDescription());
+            text.setOnClickListener(!field.isSelectable() ? null : src -> field.triggerSelection());
+            text.setClickable(true); // Ensures that "disabled" is announced.
+            text.setEnabled(field.isSelectable());
+            text.setBackground(getBackgroundDrawable(field.isSelectable()));
         }
 
-        private void setIconForBitmap(@Nullable Bitmap favicon) {
+        private @Nullable Drawable getBackgroundDrawable(boolean selectable) {
+            if (!selectable) return null;
+            TypedArray a = itemView.getContext().obtainStyledAttributes(
+                    new int[] {R.attr.selectableItemBackground});
+            Drawable suggestionBackground = a.getDrawable(0);
+            a.recycle();
+            return suggestionBackground;
+        }
+
+        private void setIconForBitmap(TextView text, @Nullable Bitmap favicon) {
             Drawable icon;
             if (favicon == null) {
                 icon = AppCompatResources.getDrawable(
@@ -180,19 +140,12 @@ class PasswordAccessorySheetViewBinder {
             if (icon != null) { // AppCompatResources.getDrawable is @Nullable.
                 icon.setBounds(0, 0, mIconSize, mIconSize);
             }
-            mSuggestionText.setCompoundDrawablePadding(mPadding);
-            ApiCompatibilityUtils.setCompoundDrawablesRelative(
-                    mSuggestionText, icon, null, null, null);
+            text.setCompoundDrawablePadding(mPadding);
+            ApiCompatibilityUtils.setCompoundDrawablesRelative(text, icon, null, null, null);
         }
     }
 
-    public static void initializeView(RecyclerView view, PropertyModel model) {
-        view.setLayoutManager(
-                new LinearLayoutManager(view.getContext(), LinearLayoutManager.VERTICAL, false));
-        view.setItemAnimator(null);
-        view.setAdapter(PasswordAccessorySheetCoordinator.createAdapter(model.get(CREDENTIALS)));
-        if (model.get(SCROLL_LISTENER) != null) {
-            view.addOnScrollListener(model.get(SCROLL_LISTENER));
-        }
+    public static void initializeView(RecyclerView view, AccessorySheetTabModel model) {
+        view.setAdapter(PasswordAccessorySheetCoordinator.createAdapter(model));
     }
 }
