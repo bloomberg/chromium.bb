@@ -29,17 +29,18 @@ class SigninProfileAttributesUpdater : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
+  // Updates the profile attributes on signin and signout events.
+  void UpdateProfileAttributes();
+
   // SigninErrorController::Observer:
   void OnErrorChanged() override;
 
-// These observer methods are never called on ChromeOS.
-#if !defined(OS_CHROMEOS)
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const AccountInfo& account_info) override;
   void GoogleSignedOut(const AccountInfo& account_info) override;
-#endif
 
   SigninErrorController* signin_error_controller_;
+  SigninManagerBase* signin_manager_;
   const base::FilePath profile_path_;
   ScopedObserver<SigninErrorController, SigninProfileAttributesUpdater>
       signin_error_controller_observer_;
