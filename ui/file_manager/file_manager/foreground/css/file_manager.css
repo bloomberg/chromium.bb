@@ -1635,6 +1635,7 @@ body.check-select #list-container list li[selected] .detail-thumbnail
 }
 
 #share-menu cr-menu-item,
+#share-sub-menu cr-menu-item,
 #tasks-menu cr-menu-item:not(.change-default) {
   background-position: left 10px center;
   padding-left: 32px;

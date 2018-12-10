@@ -122,6 +122,14 @@ function TaskController(
       assertInstanceof(document.querySelector('#more-actions'), cr.ui.Command);
 
   /**
+   * Show sub menu command that uses #show-submenu as selector.
+   * @private {!cr.ui.Command}
+   * @const
+   */
+  this.showSubMenuCommand_ =
+      assertInstanceof(document.querySelector('#show-submenu'), cr.ui.Command);
+
+  /**
    * @private {Promise<!FileTasks>}
    */
   this.tasks_ = null;
@@ -141,6 +149,8 @@ function TaskController(
   ui.taskMenuButton.addEventListener(
       'select', this.onTaskItemClicked_.bind(this));
   ui.shareMenuButton.menu.addEventListener(
+      'activate', this.onTaskItemClicked_.bind(this));
+  ui.shareSubMenu.addEventListener(
       'activate', this.onTaskItemClicked_.bind(this));
   this.selectionHandler_.addEventListener(
       FileSelectionHandler.EventType.CHANGE,
@@ -397,6 +407,15 @@ TaskController.prototype.canExecuteOpenActions = function() {
  * @return {boolean} True if open with command is executable.
  */
 TaskController.prototype.canExecuteMoreActions = function() {
+  return this.canExecuteMoreActions_;
+};
+
+/**
+ * Returns whether open with command can be executed or not.
+ * @return {boolean} True if open with command is executable.
+ */
+TaskController.prototype.canExecuteShowOverflow = function() {
+  // TODO (adanilo@) same logic as more actions now, extend
   return this.canExecuteMoreActions_;
 };
 

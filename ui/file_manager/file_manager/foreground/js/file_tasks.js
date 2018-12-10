@@ -1048,7 +1048,7 @@ FileTasks.prototype.mountArchivesInternal_ = function() {
  * options menu.
  *
  * @param {!cr.ui.ComboButton} openCombobutton The open task picker combobutton.
- * @param {!cr.ui.MenuButton} shareMenuButton The menu button for share options.
+ * @param {!cr.ui.MultiMenuButton} shareMenuButton Button for share options.
  * @public
  */
 FileTasks.prototype.display = function(openCombobutton, shareMenuButton) {
@@ -1111,24 +1111,50 @@ FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
 };
 
 /**
+ * The number of menu-item entries in the top level menu
+ * before we split and show the 'More actions' option
+ * @const {number}
+ */
+const NUM_TOP_LEVEL_ENTRIES = 6;
+/**
+ * Don't split the menu if the number of entries is smaller
+ * than this. e.g. with 7 entries it'd be poor to show a
+ * sub-menu with a single entry.
+ * @const {number}
+ */
+const MAX_NON_SPLIT_ENTRIES = 10;
+
+/**
  * Setup a menu button for sharing options based on the given tasks.
- * @param {!cr.ui.MenuButton} shareMenuButton
+ * @param {!cr.ui.MultiMenuButton} shareMenuButton
  * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
  */
 FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
-  var driveShareCommand =
+  let driveShareCommand =
       shareMenuButton.menu.querySelector('cr-menu-item[command="#share"]');
-  var driveShareCommandSeparator =
+  let driveShareCommandSeparator =
       shareMenuButton.menu.querySelector('#drive-share-separator');
+  let moreActionsSeparator =
+      shareMenuButton.menu.querySelector('#more-actions-separator');
 
   // Hide share icon for New Folder creation.  See https://crbug.com/571355.
   shareMenuButton.hidden = (driveShareCommand.disabled && tasks.length == 0) ||
       this.namingController_.isRenamingInProgress();
+  moreActionsSeparator.hidden = true;
 
   // Show the separator if Drive share command is enabled and there is at least
   // one other share actions.
   driveShareCommandSeparator.hidden =
       driveShareCommand.disabled || tasks.length == 0;
+
+  // Temporarily remove the more actions item while the rest of the menu
+  // items are being cleared out so we don't lose it and make it hidden for now
+  let moreActions = shareMenuButton.menu.querySelector(
+      'cr-menu-item[command="#show-submenu"]');
+  moreActions.remove();
+  moreActions.setAttribute('hidden', '');
+  // Remove the separator as well
+  moreActionsSeparator.remove();
 
   // Clear menu items except for drive share menu and a separator for it.
   // As querySelectorAll() returns live NodeList, we need to copy elements to
@@ -1139,11 +1165,25 @@ FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
     var item = itemsToRemove[i];
     item.parentNode.removeChild(item);
   }
+  // Clear menu items in the overflow sub-menu since we'll repopulate it
+  // with any relevant items below.
+  if (shareMenuButton.overflow !== null) {
+    while (shareMenuButton.overflow.firstChild !== null) {
+      shareMenuButton.overflow.removeChild(shareMenuButton.overflow.firstChild);
+    }
+  }
 
   // Add menu items for the new tasks.
   var items = this.createItems_(tasks);
+  let menu = shareMenuButton.menu;
   for (var i = 0; i < items.length; i++) {
-    var menuitem = shareMenuButton.menu.addMenuItem(items[i]);
+    // If we have at least 10 entries, split off into a sub-menu
+    if (i == NUM_TOP_LEVEL_ENTRIES && MAX_NON_SPLIT_ENTRIES <= items.length) {
+      moreActions.removeAttribute('hidden');
+      moreActionsSeparator.hidden = false;
+      menu = shareMenuButton.overflow;
+    }
+    var menuitem = menu.addMenuItem(items[i]);
     cr.ui.decorate(menuitem, cr.ui.FilesMenuItem);
     menuitem.data = items[i];
     if (items[i].iconType) {
@@ -1151,6 +1191,9 @@ FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
       menuitem.setAttribute('file-type-icon', items[i].iconType);
     }
   }
+  // Replace the more actions menu item and separator
+  shareMenuButton.menu.appendChild(moreActionsSeparator);
+  shareMenuButton.menu.appendChild(moreActions);
 };
 
 /**
