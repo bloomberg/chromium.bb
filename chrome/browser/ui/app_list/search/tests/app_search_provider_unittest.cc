@@ -427,7 +427,7 @@ TEST_F(AppSearchProviderTest, FetchInternalApp) {
   EXPECT_EQ(kSettingsInternalName, RunQuery("Set"));
 }
 
-TEST_F(AppSearchProviderTest, Crostini) {
+TEST_F(AppSearchProviderTest, CrostiniTerminal) {
   CreateSearch();
 
   // Crostini UI is not allowed yet.
@@ -454,8 +454,28 @@ TEST_F(AppSearchProviderTest, Crostini) {
   EXPECT_EQ("", RunQuery("li"));
   EXPECT_EQ("Terminal", RunQuery("lin"));
   EXPECT_EQ("Terminal", RunQuery("linux"));
-  EXPECT_EQ("", RunQuery("cro"));
+  EXPECT_EQ("", RunQuery("cr"));
+  EXPECT_EQ("Terminal", RunQuery("cro"));
   EXPECT_EQ("Terminal", RunQuery("cros"));
+}
+
+TEST_F(AppSearchProviderTest, CrostiniApp) {
+  // This both allows Crostini UI and enables Crostini.
+  crostini::CrostiniTestHelper crostini_test_helper(profile());
+  CreateSearch();
+
+  // Search based on keywords and name
+  auto testApp = crostini_test_helper.BasicApp("goodApp");
+  std::map<std::string, std::set<std::string>> keywords;
+  keywords[""] = {"wow", "amazing", "excellent app"};
+  crostini_test_helper.UpdateAppKeywords(testApp, keywords);
+  crostini_test_helper.AddApp(testApp);
+  EXPECT_EQ("goodApp", RunQuery("wow"));
+  EXPECT_EQ("goodApp", RunQuery("amazing"));
+  EXPECT_EQ("goodApp", RunQuery("excellent app"));
+  EXPECT_EQ("goodApp", RunQuery("good"));
+  EXPECT_EQ("", RunQuery("wow amazing"));
+  EXPECT_EQ("", RunQuery("terrible"));
 }
 
 enum class TestExtensionInstallType {

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/test/base/testing_profile.h"
@@ -81,6 +82,8 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   std::string container_name = "awesomecontainer";
   std::map<std::string, std::string> name = {{"", "Vim"}};
   std::map<std::string, std::string> comment = {{"", "Edit text files"}};
+  std::map<std::string, std::set<std::string>> keywords = {
+      {"", {"very", "awesome"}}};
   std::set<std::string> mime_types = {"text/plain", "text/x-python"};
   bool no_display = true;
 
@@ -108,6 +111,14 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
     entry->set_value(localized_comment.second);
   }
 
+  for (const auto& localized_keywords : keywords) {
+    auto* keywords_with_locale = app->mutable_keywords()->add_values();
+    keywords_with_locale->set_locale(localized_keywords.first);
+    for (const auto& localized_keyword : localized_keywords.second) {
+      keywords_with_locale->add_value(localized_keyword);
+    }
+  }
+
   for (const std::string& mime_type : mime_types)
     app->add_mime_types(mime_type);
 
@@ -120,6 +131,7 @@ TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistration) {
   EXPECT_EQ(result->ContainerName(), container_name);
   EXPECT_EQ(result->Name(), name[""]);
   EXPECT_EQ(result->Comment(), comment[""]);
+  EXPECT_EQ(result->Keywords(), keywords[""]);
   EXPECT_EQ(result->MimeTypes(), mime_types);
   EXPECT_EQ(result->NoDisplay(), no_display);
 }
@@ -449,6 +461,39 @@ TEST_F(CrostiniRegistryServiceTest, SetScaledWorks) {
   registration = service()->GetRegistration(app_id);
   EXPECT_TRUE(registration.has_value());
   EXPECT_FALSE(registration.value().IsScaled());
+}
+
+TEST_F(CrostiniRegistryServiceTest, SetAndGetRegistrationKeywords) {
+  std::map<std::string, std::set<std::string>> keywords = {
+      {"", {"very", "awesome"}},
+      {"fr", {"sum", "ward"}},
+      {"ge", {"extra", "average"}},
+      {"te", {"not", "terrible"}}};
+  std::string app_id =
+      CrostiniTestHelper::GenerateAppId("app", "vm", "container");
+  ApplicationList app_list =
+      CrostiniTestHelper::BasicAppList("app", "vm", "container");
+
+  for (const auto& localized_keywords : keywords) {
+    auto* keywords_with_locale =
+        app_list.mutable_apps(0)->mutable_keywords()->add_values();
+    keywords_with_locale->set_locale(localized_keywords.first);
+    for (const auto& localized_keyword : localized_keywords.second) {
+      keywords_with_locale->add_value(localized_keyword);
+    }
+  }
+  service()->UpdateApplicationList(app_list);
+
+  base::Optional<CrostiniRegistryService::Registration> result =
+      service()->GetRegistration(app_id);
+  g_browser_process->SetApplicationLocale("");
+  EXPECT_EQ(result->Keywords(), keywords[""]);
+  g_browser_process->SetApplicationLocale("fr");
+  EXPECT_EQ(result->Keywords(), keywords["fr"]);
+  g_browser_process->SetApplicationLocale("ge");
+  EXPECT_EQ(result->Keywords(), keywords["ge"]);
+  g_browser_process->SetApplicationLocale("te");
+  EXPECT_EQ(result->Keywords(), keywords["te"]);
 }
 
 }  // namespace crostini

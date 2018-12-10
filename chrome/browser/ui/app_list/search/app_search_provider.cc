@@ -74,9 +74,6 @@ constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
 // Relevance threshold to use when Crostini has not yet been enabled. This value
 // is somewhat arbitrary, but is roughly equivalent to the 'ter' in 'terminal'.
 constexpr double kCrostiniTerminalRelevanceThreshold = 0.8;
-// These are added to the localized values for convenience. The leading space
-// is as we just append this to the localized version of 'Linux'.
-constexpr char kExtraCrostiniTerminalKeywords[] = " linux terminal crostini";
 
 // Adds |app_result| to |results| only in case no duplicate apps were already
 // added. Duplicate means the same app but for different domain, Chrome and
@@ -168,13 +165,18 @@ class AppSearchProvider::App {
   bool MatchSearchableText(const TokenizedString& query) {
     if (searchable_text_.empty())
       return false;
-    if (!tokenized_indexed_searchable_text_) {
-      tokenized_indexed_searchable_text_ =
-          std::make_unique<TokenizedString>(searchable_text_);
-    }
+    if (tokenized_indexed_searchable_text_.empty())
+      for (const base::string16& curr_text : searchable_text_) {
+        tokenized_indexed_searchable_text_.push_back(
+            std::make_unique<TokenizedString>(curr_text));
+      }
     TokenizedStringMatch match;
-    match.Calculate(query, *tokenized_indexed_searchable_text_);
-    return match.relevance() > relevance_threshold();
+    for (auto& curr_text : tokenized_indexed_searchable_text_) {
+      match.Calculate(query, *curr_text);
+      if (match.relevance() > relevance_threshold())
+        return true;
+    }
+    return false;
   }
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
@@ -189,9 +191,12 @@ class AppSearchProvider::App {
   bool searchable() const { return searchable_; }
   void set_searchable(bool searchable) { searchable_ = searchable; }
 
-  const base::string16& searchable_text() const { return searchable_text_; }
-  void set_searchable_text(const base::string16& searchable_text) {
-    searchable_text_ = searchable_text;
+  const std::vector<base::string16>& searchable_text() const {
+    return searchable_text_;
+  }
+  void AddSearchableText(const base::string16& searchable_text) {
+    DCHECK(tokenized_indexed_searchable_text_.empty());
+    searchable_text_.push_back(searchable_text);
   }
 
   // Relevance must exceed the threshold to appear as a search result. Exact
@@ -206,14 +211,15 @@ class AppSearchProvider::App {
  private:
   AppSearchProvider::DataSource* data_source_;
   std::unique_ptr<TokenizedString> tokenized_indexed_name_;
-  std::unique_ptr<TokenizedString> tokenized_indexed_searchable_text_;
+  std::vector<std::unique_ptr<TokenizedString>>
+      tokenized_indexed_searchable_text_;
   const std::string id_;
   const base::string16 name_;
   const base::Time last_launch_time_;
   const base::Time install_time_;
   bool recommendable_ = true;
   bool searchable_ = true;
-  base::string16 searchable_text_;
+  std::vector<base::string16> searchable_text_;
   float relevance_threshold_ = 0.f;
   // Set to true in case app was installed internally, by sync, policy or as a
   // default app.
@@ -489,7 +495,7 @@ class InternalDataSource : public AppSearchProvider::DataSource {
       apps->back()->set_recommendable(internal_app.recommendable);
       apps->back()->set_searchable(internal_app.searchable);
       if (internal_app.searchable_string_resource_id != 0) {
-        apps->back()->set_searchable_text(l10n_util::GetStringUTF16(
+        apps->back()->AddSearchableText(l10n_util::GetStringUTF16(
             internal_app.searchable_string_resource_id));
       }
     }
@@ -543,16 +549,14 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
       if (registration.NoDisplay())
         continue;
       // Eventually it would be nice to use additional data points, for example
-      // the 'Keywords' desktop entry field and the executable file name.
+      // the executable file name.
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, app_id, registration.Name(), registration.LastLaunchTime(),
           registration.InstallTime(), false /* installed_internally */));
+      for (const std::string& keyword : registration.Keywords())
+        apps->back()->AddSearchableText(base::UTF8ToUTF16(keyword));
 
       if (app_id == crostini::kCrostiniTerminalId) {
-        base::string16 searchable_text =
-            l10n_util::GetStringUTF16(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS);
-        searchable_text += base::UTF8ToUTF16(kExtraCrostiniTerminalKeywords);
-        apps->back()->set_searchable_text(searchable_text);
         // Until it's been installed, the Terminal is hidden and requires
         // a few characters before being shown in search results.
         if (!crostini::IsCrostiniEnabled(profile())) {
@@ -678,7 +682,7 @@ void AppSearchProvider::UpdateRecommendedResults(
     base::string16 title = app->name();
     if (app->id() == kInternalAppIdContinueReading) {
       if (HasRecommendableForeignTab(profile_, &title, nullptr))
-        app->set_searchable_text(title);
+        app->AddSearchableText(title);
       else
         continue;
     }

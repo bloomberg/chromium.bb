@@ -59,6 +59,18 @@ void CrostiniTestHelper::RemoveApp(int i) {
   UpdateRegistry();
 }
 
+void CrostiniTestHelper::UpdateAppKeywords(
+    vm_tools::apps::App& app,
+    const std::map<std::string, std::set<std::string>>& keywords) {
+  for (const auto& keywords_entry : keywords) {
+    auto* strings_with_locale = app.mutable_keywords()->add_values();
+    strings_with_locale->set_locale(keywords_entry.first);
+    for (const auto& curr_keyword : keywords_entry.second) {
+      strings_with_locale->add_value(curr_keyword);
+    }
+  }
+}
+
 // static
 void CrostiniTestHelper::EnableCrostini(Profile* profile) {
   profile->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);

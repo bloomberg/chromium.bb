@@ -83,6 +83,7 @@ class CrostiniRegistryService : public KeyedService {
     std::string Name() const;
     std::string Comment() const;
     std::set<std::string> MimeTypes() const;
+    std::set<std::string> Keywords() const;
     bool NoDisplay() const;
 
     base::Time InstallTime() const;
@@ -97,6 +98,7 @@ class CrostiniRegistryService : public KeyedService {
 
    private:
     std::string LocalizedString(base::StringPiece key) const;
+    std::set<std::string> LocalizedList(base::StringPiece key) const;
 
     // The pref can only be null when the registration is for the Terminal app.
     // If we do have a pref for the Terminal app, it contains only the last
