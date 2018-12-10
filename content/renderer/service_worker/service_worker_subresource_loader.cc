@@ -7,8 +7,10 @@
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/strings/strcat.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -51,6 +53,23 @@ network::ResourceResponseHead RewriteServiceWorkerTime(
   new_head.service_worker_start_time = service_worker_start_time;
   new_head.service_worker_ready_time = service_worker_ready_time;
   return new_head;
+}
+
+const char* FetchResponseSourceToSuffix(
+    network::mojom::FetchResponseSource source) {
+  // Don't change these returned strings. They are used for recording UMAs.
+  switch (source) {
+    case network::mojom::FetchResponseSource::kUnspecified:
+      return ".Unspecified";
+    case network::mojom::FetchResponseSource::kNetwork:
+      return ".Network";
+    case network::mojom::FetchResponseSource::kHttpCache:
+      return ".HttpCache";
+    case network::mojom::FetchResponseSource::kCacheStorage:
+      return ".CacheStorage";
+  }
+  NOTREACHED();
+  return ".Unknown";
 }
 
 // A wrapper URLLoaderClient that invokes the given RewriteHeaderCallback
@@ -175,6 +194,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       resource_request_(resource_request),
       fallback_factory_(std::move(fallback_factory)),
       task_runner_(std::move(task_runner)),
+      response_source_(network::mojom::FetchResponseSource::kUnspecified),
       weak_factory_(this) {
   DCHECK(controller_connector_);
   response_head_.request_start = base::TimeTicks::Now();
@@ -466,6 +486,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
       &response_head_);
   response_head_.response_start = base::TimeTicks::Now();
   response_head_.load_timing.receive_headers_end = base::TimeTicks::Now();
+  response_source_ = response->response_source;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
@@ -623,6 +644,12 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.LoadTiming.Subresource."
         "ResponseReceivedToCompleted2",
+        completion_time - response_head_.load_timing.receive_headers_end);
+    // Same as above, breakdown by response source.
+    base::UmaHistogramMediumTimes(
+        base::StrCat({"ServiceWorker.LoadTiming.Subresource."
+                      "ResponseReceivedToCompleted2",
+                      FetchResponseSourceToSuffix(response_source_)}),
         completion_time - response_head_.load_timing.receive_headers_end);
   } else {
     // Mojo message delay (network fallback case). See above for the detail.
