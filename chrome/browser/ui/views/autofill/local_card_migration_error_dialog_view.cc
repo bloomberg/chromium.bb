@@ -43,10 +43,13 @@ LocalCardMigrationErrorDialogView::~LocalCardMigrationErrorDialogView() {}
 
 void LocalCardMigrationErrorDialogView::ShowDialog() {
   Init();
-  constrained_window::ShowWebModalDialogViews(this, web_contents_);
+  constrained_window::CreateBrowserModalDialogViews(
+      this, web_contents_->GetTopLevelNativeWindow())
+      ->Show();
 }
 
 void LocalCardMigrationErrorDialogView::CloseDialog() {
+  controller_ = nullptr;
   GetWidget()->Close();
 }
 
@@ -58,9 +61,10 @@ gfx::Size LocalCardMigrationErrorDialogView::CalculatePreferredSize() const {
 }
 
 ui::ModalType LocalCardMigrationErrorDialogView::GetModalType() const {
-  // The error dialog should be a modal dialog which is consistent with other
-  // dialogs. It should make sure that the user can see the error message.
-  return ui::MODAL_TYPE_CHILD;
+  // The error dialog should be a modal dialog blocking the whole browser
+  // which is consistent with other dialogs. It should make sure that the
+  // user can see the error message.
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 bool LocalCardMigrationErrorDialogView::ShouldShowCloseButton() const {
@@ -76,6 +80,11 @@ void LocalCardMigrationErrorDialogView::WindowClosing() {
     controller_->OnDialogClosed();
     controller_ = nullptr;
   }
+}
+
+bool LocalCardMigrationErrorDialogView::Close() {
+  // Close the dialog if the user exits the browser when dialog is visible.
+  return true;
 }
 
 void LocalCardMigrationErrorDialogView::Init() {

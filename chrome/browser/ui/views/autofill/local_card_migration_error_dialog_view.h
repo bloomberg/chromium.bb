@@ -38,6 +38,7 @@ class LocalCardMigrationErrorDialogView
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   int GetDialogButtons() const override;
+  bool Close() override;
   void Init() override;
   void WindowClosing() override;
 

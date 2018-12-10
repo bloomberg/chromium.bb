@@ -42,6 +42,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool Accept() override;
   bool Cancel() override;
+  bool Close() override;
   void WindowClosing() override;
 
   // Called by MigratableCardView when the user clicks the trash can button.
