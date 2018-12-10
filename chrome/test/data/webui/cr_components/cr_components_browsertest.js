@@ -40,6 +40,29 @@ CrComponentsBrowserTest.prototype = {
   },
 };
 
+/**
+ * @constructor
+ * @extends {CrComponentsBrowserTest}
+ */
+function CrComponentsManagedFootnoteTest() {}
+
+CrComponentsManagedFootnoteTest.prototype = {
+  __proto__: CrComponentsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_components/managed_footnote/managed_footnote.html',
+
+  /** @override */
+  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
+    'managed_footnote_test.js',
+  ]),
+};
+
+TEST_F('CrComponentsManagedFootnoteTest', 'All', function() {
+  mocha.run();
+});
+
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
