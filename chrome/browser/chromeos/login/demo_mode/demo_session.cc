@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/settings/install_attributes.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -439,7 +440,8 @@ void DemoSession::OnSessionStateChanged() {
     return;
   }
   // SystemTrayClient may not exist in unit tests.
-  if (SystemTrayClient::Get()) {
+  if (SystemTrayClient::Get() &&
+      base::FeatureList::IsEnabled(switches::kShowLanguageToggleInDemoMode)) {
     const std::string current_locale_iso_code =
         ProfileManager::GetActiveUserProfile()->GetPrefs()->GetString(
             language::prefs::kApplicationLocale);
