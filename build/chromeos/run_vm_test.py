@@ -175,7 +175,6 @@ class TastTest(RemoteTest):
 
     self._vm_test_cmd += [
         '--deploy',
-        '--nostrip',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
         '--cmd',
         '--',
