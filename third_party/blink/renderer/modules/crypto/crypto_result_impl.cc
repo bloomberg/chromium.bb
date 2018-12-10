@@ -89,16 +89,6 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
   Member<CryptoResultImpl> result_;
 };
 
-CryptoResultImpl::ResultCancel::ResultCancel() : cancelled_(0) {}
-
-bool CryptoResultImpl::ResultCancel::Cancelled() const {
-  return AcquireLoad(&cancelled_);
-}
-
-void CryptoResultImpl::ResultCancel::Cancel() {
-  ReleaseStore(&cancelled_, 1);
-}
-
 ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType error_type) {
   switch (error_type) {
     case kWebCryptoErrorTypeNotSupported:
@@ -121,7 +111,7 @@ ExceptionCode WebCryptoErrorToExceptionCode(WebCryptoErrorType error_type) {
 
 CryptoResultImpl::CryptoResultImpl(ScriptState* script_state)
     : resolver_(Resolver::Create(script_state, this)),
-      cancel_(ResultCancel::Create()) {
+      cancel_(base::MakeRefCounted<CryptoResultCancel>()) {
   // Sync cancellation state.
   if (ExecutionContext::From(script_state)->IsContextDestroyed())
     cancel_->Cancel();

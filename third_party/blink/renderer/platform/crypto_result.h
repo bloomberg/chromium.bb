@@ -31,19 +31,21 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CRYPTO_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CRYPTO_RESULT_H_
 
+#include "base/synchronization/atomic_flag.h"
 #include "third_party/blink/public/platform/web_crypto.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 
 namespace blink {
 
-// Result cancellation status interface to allow non-Blink webcrypto threads
-// to query for status.
+// Allows non-Blink webcrypto threads to query for cancellation status.
 class CryptoResultCancel : public ThreadSafeRefCounted<CryptoResultCancel> {
  public:
-  virtual ~CryptoResultCancel() = default;
+  bool Cancelled() const { return cancelled_.IsSet(); }
+  void Cancel() { cancelled_.Set(); }
 
-  virtual bool Cancelled() const = 0;
+ private:
+  base::AtomicFlag cancelled_;
 };
 
 // Receives notification of completion of the crypto operation.
