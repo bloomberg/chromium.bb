@@ -47,18 +47,16 @@ IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)
 
-// Notifies the browser that one of renderers has changed layout test runtime
+// Notifies the browser that one of renderers has changed web test runtime
 // flags (i.e. has set dump_as_text).
-IPC_MESSAGE_CONTROL1(
-    WebTestHostMsg_WebTestRuntimeFlagsChanged,
-    base::DictionaryValue /* changed_layout_test_runtime_flags */)
+IPC_MESSAGE_CONTROL1(WebTestHostMsg_WebTestRuntimeFlagsChanged,
+                     base::DictionaryValue /* changed_web_test_runtime_flags */)
 
 // Used send flag changes to renderers - either when
 // 1) broadcasting change happening in one renderer to all other renderers, or
 // 2) sending accumulated changes to a single new renderer.
-IPC_MESSAGE_CONTROL1(
-    WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
-    base::DictionaryValue /* changed_layout_test_runtime_flags */)
+IPC_MESSAGE_CONTROL1(WebTestMsg_ReplicateWebTestRuntimeFlagsChanges,
+                     base::DictionaryValue /* changed_web_test_runtime_flags */)
 
 // Sent by secondary test window to notify the test has finished.
 IPC_MESSAGE_CONTROL0(WebTestHostMsg_TestFinishedInSecondaryRenderer)

@@ -221,7 +221,7 @@ v8::Local<v8::Object> AccessibilityController::FocusedElement() {
   if (!frame)
     return v8::Local<v8::Object>();
 
-  // TODO(lukasza): Finish adding OOPIF support to the layout tests harness.
+  // TODO(lukasza): Finish adding OOPIF support to the web tests harness.
   CHECK(frame->IsWebLocalFrame())
       << "This function cannot be called if the main frame is not a "
          "local frame.";
@@ -282,7 +282,7 @@ blink::WebAXObject
 AccessibilityController::GetAccessibilityObjectForMainFrame() {
   blink::WebFrame* frame = web_view()->MainFrame();
 
-  // TODO(lukasza): Finish adding OOPIF support to the layout tests harness.
+  // TODO(lukasza): Finish adding OOPIF support to the web tests harness.
   CHECK(frame && frame->IsWebLocalFrame())
       << "This function cannot be called if the main frame is not a "
          "local frame.";

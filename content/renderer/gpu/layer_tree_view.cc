@@ -202,7 +202,7 @@ void LayerTreeView::Initialize(
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   }
   if (!is_threaded) {
-    // Single-threaded layout tests, and unit tests.
+    // Single-threaded web tests, and unit tests.
     layer_tree_host_ =
         cc::LayerTreeHost::CreateSingleThreaded(this, std::move(params));
   } else {
@@ -468,7 +468,7 @@ void LayerTreeView::CompositeAndReadbackAsync(
               },
               std::move(callback), std::move(main_thread_task_runner)));
   auto swap_promise =
-      delegate_->RequestCopyOfOutputForLayoutTest(std::move(request));
+      delegate_->RequestCopyOfOutputForWebTest(std::move(request));
 
   // Force a commit to happen. The temporary copy output request will
   // be installed after layout which will happen as a part of the commit, for
@@ -504,7 +504,7 @@ void LayerTreeView::SynchronouslyComposite(
     return;
 
   if (in_synchronous_compositor_update_) {
-    // LayoutTests can use a nested message loop to pump frames while inside a
+    // Web tests can use a nested message loop to pump frames while inside a
     // frame, but the compositor does not support this. In this case, we only
     // run blink's lifecycle updates.
     delegate_->BeginMainFrame(base::TimeTicks::Now());
@@ -592,7 +592,7 @@ void LayerTreeView::RequestDecode(const cc::PaintImage& image,
 
   // If we're compositing synchronously, the SetNeedsCommit call which will be
   // issued by |layer_tree_host_| is not going to cause a commit, due to the
-  // fact that this would make layout tests slow and cause flakiness. However,
+  // fact that this would make web tests slow and cause flakiness. However,
   // in this case we actually need a commit to transfer the decode requests to
   // the impl side. So, force a commit to happen.
   if (CompositeIsSynchronous()) {

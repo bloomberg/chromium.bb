@@ -177,7 +177,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   service_manager::BinderRegistry empty_registry;
   blink::Initialize(this, &empty_registry, main_thread_scheduler_.get());
   g_test_platform = this;
-  blink::SetLayoutTestMode(true);
+  blink::SetWebTestMode(true);
   blink::WebRuntimeFeatures::EnableDatabase(true);
   blink::WebRuntimeFeatures::EnableNotifications(true);
   blink::WebRuntimeFeatures::EnableTouchEventFeatureDetection(true);

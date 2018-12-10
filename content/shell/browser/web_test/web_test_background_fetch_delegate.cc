@@ -27,7 +27,7 @@
 namespace content {
 
 // Implementation of a Download Service client that will be servicing
-// Background Fetch requests when running layout tests.
+// Background Fetch requests when running web tests.
 class WebTestBackgroundFetchDelegate::WebTestBackgroundFetchDownloadClient
     : public download::Client {
  public:
@@ -202,7 +202,7 @@ void WebTestBackgroundFetchDelegate::DownloadUrl(
     bool has_request_body) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Lazily create the |download_service_| because only very few layout tests
+  // Lazily create the |download_service_| because only very few web tests
   // actually require Background Fetch.
   if (!download_service_) {
     auto clients = std::make_unique<download::DownloadClientMap>();

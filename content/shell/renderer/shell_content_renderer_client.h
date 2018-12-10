@@ -40,7 +40,7 @@ class ShellContentRendererClient : public ContentRendererClient {
       std::string* error_html) override;
 
   // TODO(mkwst): These toggle based on the kEnablePepperTesting flag. Do we
-  // need that outside of layout tests?
+  // need that outside of web tests?
   bool IsPluginAllowedToUseCompositorAPI(const GURL& url) override;
   bool IsPluginAllowedToUseDevChannelAPIs() override;
 

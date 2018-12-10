@@ -397,7 +397,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
   RenderViewHost* rvh = RenderViewHost::From(host());
   if (rvh) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
-    // first to rebaseline some unreliable layout tests.
+    // first to rebaseline some unreliable web tests.
     ignore_result(rvh->GetWebkitPreferences());
   }
 }
@@ -655,7 +655,7 @@ bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
   return delegated_frame_host_->CanCopyFromCompositingSurface();
 }
 
-void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForLayoutTest() {
+void RenderWidgetHostViewAura::EnsureSurfaceSynchronizedForWebTest() {
   ++latest_capture_sequence_number_;
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
                               base::nullopt);

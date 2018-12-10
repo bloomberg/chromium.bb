@@ -2791,7 +2791,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
     // meant to test an internal quirk of MimeSniffingResourceHandler, which
     // might not make sense in the NetworkService implementation anyway. If we
     // want a behavior test for MIME sniffing for navigation preload, it can be
-    // an end-to-end layout test instead.
+    // an end-to-end web test instead.
 
     // This has to be called so the EmbeddedTestServer IO Thread is created,
     // otherwise we crash on destruction.

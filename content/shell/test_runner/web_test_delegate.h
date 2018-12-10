@@ -55,7 +55,7 @@ class WebTestDelegate {
   // only).
   virtual void PrintMessageToStderr(const std::string& message) = 0;
 
-  // Add a message to the text dump for the layout test.
+  // Add a message to the text dump for the web test.
   virtual void PrintMessage(const std::string& message) = 0;
 
   virtual void PostTask(base::OnceClosure task) = 0;
@@ -80,10 +80,10 @@ class WebTestDelegate {
   // Replaces file:///tmp/web_tests/ with the actual path to the
   // web_tests directory, or rewrite URLs generated from absolute
   // path links in web-platform-tests.
-  virtual blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
-                                              bool is_wpt_mode) = 0;
+  virtual blink::WebURL RewriteWebTestsURL(const std::string& utf8_url,
+                                           bool is_wpt_mode) = 0;
 
-  // Manages the settings to used for layout tests.
+  // Manages the settings to used for web tests.
   virtual TestPreferences* Preferences() = 0;
   virtual void ApplyPreferences() = 0;
   virtual void SetPopupBlockingEnabled(bool block_popups) = 0;
@@ -150,10 +150,10 @@ class WebTestDelegate {
   // Returns whether or not the use-zoom-for-dsf flag is enabled.
   virtual bool IsUseZoomForDSFEnabled() = 0;
 
-  // Change the device color space while running a layout test.
+  // Change the device color space while running a web test.
   virtual void SetDeviceColorSpace(const std::string& name) = 0;
 
-  // Set the bluetooth adapter while running a layout test, uses Mojo to
+  // Set the bluetooth adapter while running a web test, uses Mojo to
   // communicate with the browser.
   virtual void SetBluetoothFakeAdapter(const std::string& adapter_name,
                                        base::OnceClosure callback) = 0;
@@ -183,7 +183,7 @@ class WebTestDelegate {
   // third-party context is blocked.
   virtual void SetBlockThirdPartyCookies(bool block) = 0;
 
-  // The same as RewriteLayoutTestsURL unless the resource is a path starting
+  // The same as RewriteWebTestsURL unless the resource is a path starting
   // with /tmp/, then return a file URL to a temporary file.
   virtual std::string PathToLocalResource(const std::string& resource) = 0;
 
@@ -220,7 +220,7 @@ class WebTestDelegate {
       base::OnceCallback<void(const GURL&, const blink::Manifest&)>
           callback) = 0;
 
-  // Sends a message to the LayoutTestPermissionManager in order for it to
+  // Sends a message to the WebTestPermissionManager in order for it to
   // update its database.
   virtual void SetPermission(const std::string& permission_name,
                              const std::string& permission_value,

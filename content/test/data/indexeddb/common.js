@@ -75,7 +75,7 @@ function deleteAllObjectStores(db)
 
 // The following functions are based on
 // blink/web_tests/resources/js-test.js
-// so that the tests will look similar to the existing layout tests.
+// so that the tests will look similar to the existing web tests.
 function stringify(v)
 {
   if (v === 0 && 1/v < 0)

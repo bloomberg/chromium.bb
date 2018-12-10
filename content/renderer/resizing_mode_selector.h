@@ -17,7 +17,7 @@ struct VisualProperties;
 //    and receiving them from host; and
 // 2) The synchronous mode, which short-circuits the resizing logic to operate
 //    strictly inside renderer.
-// The latter is necessary to support a handful of layout tests that were
+// The latter is necessary to support a handful of web tests that were
 // written with the expectation of a synchronous resize, and we're going to
 // eventually rewrite or remove all of them. See http://crbug.com/309760 for
 // details.

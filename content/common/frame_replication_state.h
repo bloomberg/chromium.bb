@@ -68,7 +68,7 @@ struct CONTENT_EXPORT FrameReplicationState {
   // |unique_name| is used in heuristics that try to identify the same frame
   // across different, unrelated navigations (i.e. to refer to the frame
   // when going back/forward in session history OR when refering to the frame
-  // in layout tests results).
+  // in web tests results).
   //
   // |unique_name| needs to be replicated to ensure that unique name for a given
   // frame is the same across all renderers - without replication a renderer

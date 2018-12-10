@@ -53,7 +53,7 @@ bool RunOneTest(
   *ran_at_least_once = true;
 #if defined(OS_ANDROID)
   // The message loop on Android is provided by the system, and does not
-  // offer a blocking Run() method. For layout tests, use a nested loop
+  // offer a blocking Run() method. For web tests, use a nested loop
   // together with a base::RunLoop so it can block until a QuitClosure.
   base::RunLoop run_loop;
   content::Shell::SetMainMessageLoopQuitClosure(run_loop.QuitClosure());
@@ -119,16 +119,15 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
 int WebTestBrowserMain(
     const content::MainFunctionParams& parameters,
     const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
-  base::ScopedTempDir browser_context_path_for_layout_tests;
+  base::ScopedTempDir browser_context_path_for_web_tests;
 
-  CHECK(browser_context_path_for_layout_tests.CreateUniqueTempDir());
-  CHECK(
-      !browser_context_path_for_layout_tests.GetPath().MaybeAsASCII().empty());
+  CHECK(browser_context_path_for_web_tests.CreateUniqueTempDir());
+  CHECK(!browser_context_path_for_web_tests.GetPath().MaybeAsASCII().empty());
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kIgnoreCertificateErrors);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kContentShellDataPath,
-      browser_context_path_for_layout_tests.GetPath().MaybeAsASCII());
+      browser_context_path_for_web_tests.GetPath().MaybeAsASCII());
 
   // Always disable the unsandbox GPU process for DX12 and Vulkan Info
   // collection to avoid interference. This GPU process is launched 15

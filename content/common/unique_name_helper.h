@@ -17,7 +17,7 @@ namespace content {
 // Frame helper that manages the details of generating a quasi-stable unique
 // name for the frame. The name is unique within a page, and is used for:
 // - matching up session history items with recreated frames
-// - layout test results
+// - web test results
 //
 // Description of the current unique name format
 // ---------------------------------------------
@@ -181,7 +181,7 @@ class CONTENT_EXPORT UniqueNameHelper {
 
   // Enters a mode causing future uses of GenerateNameForNewChildFrame to
   // preserve the original, stable unique name, so that it can be recovered
-  // (e.g. for layout tests) by ExtractStableNameForTesting method below. This
+  // (e.g. for web tests) by ExtractStableNameForTesting method below. This
   // mode is not enabled by default, because it makes unique names longer, and
   // thus negatively affects memory usage.
   static void PreserveStableUniqueNameForTesting();

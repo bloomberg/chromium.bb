@@ -120,8 +120,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
       RenderWidget::ShowCallback show_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Used by content_layouttest_support to hook into the creation of
-  // RenderViewImpls.
+  // Used by web_test_support to hook into the creation of RenderViewImpls.
   static void InstallCreateHook(RenderViewImpl* (*create_render_view_impl)(
       CompositorDependencies* compositor_deps,
       const mojom::CreateViewParams&));
@@ -199,7 +198,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   unsigned GetLocalSessionHistoryLengthForTesting() const;
 
   // Invokes OnSetFocus and marks the widget as active depending on the value
-  // of |enable|. This is used for layout tests that need to control the focus
+  // of |enable|. This is used for web tests that need to control the focus
   // synchronously from the renderer.
   void SetFocusAndActivateForTesting(bool enable);
 

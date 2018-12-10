@@ -1127,9 +1127,9 @@ void RenderWidget::WillBeginCompositorFrame() {
     observer.WillBeginCompositorFrame();
 }
 
-std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForLayoutTest(
+std::unique_ptr<cc::SwapPromise> RenderWidget::RequestCopyOfOutputForWebTest(
     std::unique_ptr<viz::CopyOutputRequest> request) {
-  return RenderThreadImpl::current()->RequestCopyOfOutputForLayoutTest(
+  return RenderThreadImpl::current()->RequestCopyOfOutputForWebTest(
       routing_id_, std::move(request));
 }
 
@@ -1871,7 +1871,7 @@ void RenderWidget::SetWindowRect(const WebRect& rect_in_screen) {
   EmulatedToScreenRectIfNeeded(&window_rect);
 
   if (resizing_mode_selector_->is_synchronous_mode()) {
-    // This is a layout-test-only path. At one point, it was planned to be
+    // This is a web-test-only path. At one point, it was planned to be
     // removed. See https://crbug.com/309760.
     SetWindowRectSynchronously(window_rect);
     return;
@@ -2759,8 +2759,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   // The means the renderer compositor has 2 possible modes:
   // - Threaded compositing with a scheduler.
-  // - Single threaded compositing without a scheduler (for layout tests only).
-  // Using the scheduler in layout tests introduces additional composite steps
+  // - Single threaded compositing without a scheduler (for web tests only).
+  // Using the scheduler in web tests introduces additional composite steps
   // that create flakiness.
   settings.single_thread_proxy_scheduler = false;
 

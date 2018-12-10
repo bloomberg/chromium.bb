@@ -31,8 +31,8 @@ namespace {
 #if defined(OS_FUCHSIA)
 // Fuchsia doesn't support stdin stream for packaged apps. This means that when
 // running content_shell on Fuchsia it's not possible to use stdin to pass list
-// of tests. To workaround this issue for layout tests we redirect stdin stream
-// to a TCP socket connected to the layout test runner. The runner uses
+// of tests. To workaround this issue for web tests we redirect stdin stream
+// to a TCP socket connected to the web test runner. The runner uses
 // --stdin-redirect to specify address and port for stdin redirection.
 constexpr char kStdinRedirectSwitch[] = "stdin-redirect";
 
@@ -65,7 +65,7 @@ void ConnectStdinSocket(const std::string& host_and_port) {
 
 #endif  // defined(OS_FUCHSIA)
 
-std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
+std::unique_ptr<TestInfo> GetTestInfoFromWebTestName(
     const std::string& test_name,
     bool protocol_mode) {
   // A test name is formatted like file:///path/to/test'pixelhash
@@ -159,7 +159,7 @@ std::unique_ptr<TestInfo> TestInfoExtractor::GetNextTest() {
   DCHECK(!test_string.empty());
   if (test_string == "QUIT")
     return nullptr;
-  return GetTestInfoFromLayoutTestName(test_string, protocol_mode);
+  return GetTestInfoFromWebTestName(test_string, protocol_mode);
 }
 
 }  // namespace content

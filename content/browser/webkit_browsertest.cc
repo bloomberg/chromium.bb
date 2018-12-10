@@ -53,7 +53,7 @@ bool AbortOnEndInterceptor(URLLoaderInterceptor::RequestParams* params) {
 using WebKitBrowserTest = ContentBrowserTest;
 
 // This is a browser test because it is hard to reproduce reliably in a
-// layout test without races. http://crbug.com/75604 deals with a request
+// web test without races. http://crbug.com/75604 deals with a request
 // for an async script which gets data in the response and immediately
 // after aborts. This test creates that condition, and it is passed
 // if chrome does not crash.
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 // destroying the Document, so it is not a use after free unless
 // you don't have test_runner loaded.
 
-// TODO(gavinp): remove this browser_test if we can get good LayoutTest
+// TODO(gavinp): remove this browser_test if we can get good web test
 // coverage of the same issue.
 const char kXsltBadImportPage[] = "/webkit/xslt-bad-import.html";
 IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
 
 // TODO(gavinp,jochen): This browser_test depends on there not being a
 // prerendering client and prerendering platform provided by the test_shell.
-// But both will exist when we use content_shell to run layout tests. We must
+// But both will exist when we use content_shell to run web tests. We must
 // then add a mechanism to start content_shell without these, or else this
 // test is not very interesting.
 const char kPrerenderNoCrashPage[] = "/prerender/prerender-no-crash.html";

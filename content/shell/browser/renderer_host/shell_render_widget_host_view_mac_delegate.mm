@@ -16,7 +16,7 @@
 
 - (id)init {
   if ((self = [super init])) {
-    // Throw out all native input events if we are running with layout test
+    // Throw out all native input events if we are running with web test
     // enabled.
     drop_events_ = switches::IsRunWebTestsSwitchPresent();
   }

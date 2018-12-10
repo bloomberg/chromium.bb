@@ -1899,7 +1899,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   // Misconfigured bots (eg. crbug.com/780757) could run web tests on a
   // machine where gpu compositing doesn't work. Don't crash in that case.
   if (web_test_mode() && is_gpu_compositing_disabled_) {
-    LOG(FATAL) << "Layout tests require gpu compositing, but it is disabled.";
+    LOG(FATAL) << "Web tests require gpu compositing, but it is disabled.";
     return;
   }
 
@@ -2034,7 +2034,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       return;
     } else if (!params.compositor_task_runner) {
       // The frame sink provider expects a compositor task runner, but we might
-      // not have that if we're running layout tests in single threaded mode.
+      // not have that if we're running web tests in single threaded mode.
       // Set it to be our thread's task runner instead.
       params.compositor_task_runner = GetCompositorMainThreadTaskRunner();
     }
@@ -2079,7 +2079,7 @@ RenderThreadImpl::GetAssociatedInterfaceRegistry() {
 }
 
 std::unique_ptr<cc::SwapPromise>
-RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
+RenderThreadImpl::RequestCopyOfOutputForWebTest(
     int32_t widget_routing_id,
     std::unique_ptr<viz::CopyOutputRequest> request) {
   DCHECK(web_test_deps_ && !web_test_deps_->UseDisplayCompositorPixelDump());

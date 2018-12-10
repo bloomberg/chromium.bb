@@ -98,7 +98,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
     // TODO(https://crbug.com/872339): Implement PlatformScreen for all
     // platforms and remove this code.
     if (!screen_) {
-      // Some layout tests expect to be able to resize the window, so the screen
+      // Some web tests expect to be able to resize the window, so the screen
       // must be larger than the window.
       screen_.reset(
           aura::TestScreen::Create(gfx::ScaleToCeiledSize(initial_size, 2.0)));

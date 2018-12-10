@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
 
 // Check that using screen orientation after a frame is detached doesn't crash
 // the renderer process.
-// This could be a LayoutTest if they were not using a mock screen orientation
+// This could be a web test if they were not using a mock screen orientation
 // controller.
 IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
   GURL test_url = GetTestUrl("screen_orientation",

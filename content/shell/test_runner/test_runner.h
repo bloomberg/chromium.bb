@@ -62,7 +62,7 @@ class WebTestDelegate;
 // 2. It manages global test state.  Example:
 //    - Tracking topLoadingFrame that can finish the test when it loads.
 //    - WorkQueue holding load requests from the TestInterfaces
-//    - LayoutTestRuntimeFlags
+//    - WebTestRuntimeFlags
 class TestRunner : public WebTestRunner {
  public:
   explicit TestRunner(TestInterfaces*);
@@ -241,7 +241,7 @@ class TestRunner : public WebTestRunner {
   void SetCloseRemainingWindowsWhenComplete(bool close_remaining_windows);
   void ResetTestHelperControllers();
 
-  // Allows layout tests to manage origins' allow list.
+  // Allows web tests to manage origins' allow list.
   void AddOriginAccessAllowListEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
                                      const std::string& destination_host,
@@ -457,7 +457,7 @@ class TestRunner : public WebTestRunner {
   // Inspect chooser state
   bool IsChooserShown();
 
-  // Allows layout tests to exec scripts at WebInspector side.
+  // Allows web tests to exec scripts at WebInspector side.
   void EvaluateInWebInspector(int call_id, const std::string& script);
 
   // Clears all databases.
@@ -593,7 +593,7 @@ class TestRunner : public WebTestRunner {
   // This does not include most "ordinary" animations, such as CSS animations.
   bool animation_requires_raster_;
 
-  // An effective connection type settable by layout tests.
+  // An effective connection type settable by web tests.
   blink::WebEffectiveConnectionType effective_connection_type_;
 
   // Forces v8 compilation cache to be disabled (used for inspector tests).

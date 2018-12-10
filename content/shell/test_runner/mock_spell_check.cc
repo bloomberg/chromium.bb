@@ -143,9 +143,8 @@ bool MockSpellCheck::InitializeIfNeeded() {
   if (initialized_)
     return false;
 
-  // Create a table that consists of misspelled words used in WebKit layout
-  // tests.
-  // Since WebKit layout tests don't have so many misspelled words as
+  // Create a table that consists of misspelled words used in Blink web tests.
+  // Since Blink web tests don't have so many misspelled words as
   // well-spelled words, it is easier to compare the given word with misspelled
   // ones than to compare with well-spelled ones.
   static const char* misspelled_words[] = {

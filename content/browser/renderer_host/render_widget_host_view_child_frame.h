@@ -93,7 +93,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  void EnsureSurfaceSynchronizedForLayoutTest() override;
+  void EnsureSurfaceSynchronizedForWebTest() override;
   uint32_t GetCaptureSequenceNumber() const override;
   void Show() override;
   void Hide() override;

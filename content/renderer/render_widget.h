@@ -306,7 +306,7 @@ class CONTENT_EXPORT RenderWidget
   void RequestScheduleAnimation() override;
   void UpdateVisualState(bool record_main_frame_metrics) override;
   void WillBeginCompositorFrame() override;
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
 
   // RenderWidgetInputHandlerDelegate
@@ -732,7 +732,7 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Size& new_compositor_viewport_pixel_size,
       const ScreenInfo& new_screen_info);
 
-  // Used to force the size of a window when running layout tests.
+  // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
 
   void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);

@@ -13,7 +13,7 @@
 namespace content {
 
 // TestMediaStreamClient is a mock implementation of MediaStreamClient used when
-// running layout tests.
+// running web tests.
 class TestMediaStreamRendererFactory : public MediaStreamRendererFactory {
  public:
   TestMediaStreamRendererFactory();

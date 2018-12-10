@@ -215,7 +215,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
 #if !defined(OS_ANDROID)
     // TODO(crbug/567947) Enable display compositor pixel dumps for Android
     // once testing becomes possible on post-kitkat OSes, and once we've
-    // had a chance to debug the layout test failures that occur when this
+    // had a chance to debug the web test failures that occur when this
     // flag is present.
     command_line.AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
 #endif
@@ -254,7 +254,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // and display compositor pixel dumps.
     if (command_line.HasSwitch(switches::kEnableDisplayCompositorPixelDump)) {
       // TODO(crbug.com/894613) Add kRunAllCompositorStagesBeforeDraw back here
-      // once you figure out why it causes so much layout test flakiness.
+      // once you figure out why it causes so much web test flakiness.
       // command_line.AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
       command_line.AppendSwitch(cc::switches::kDisableCheckerImaging);
     }
@@ -282,7 +282,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
                                      "srgb");
     }
 
-    // We want stable/baseline results when running layout tests.
+    // We want stable/baseline results when running web tests.
     command_line.AppendSwitch(switches::kDisableSkiaRuntimeOpts);
 
     command_line.AppendSwitch(switches::kDisallowNonExactResourceReuse);

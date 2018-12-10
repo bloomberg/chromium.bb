@@ -1504,7 +1504,7 @@ void RenderFrameImpl::CreateFrame(
     // space/context.
     scoped_refptr<RenderWidget> render_widget;
     if (g_create_render_widget) {
-      // LayoutTest hooks inject a different type (subclass) for RenderWidget,
+      // Web test hooks inject a different type (subclass) for RenderWidget,
       // allowing it to override the behaviour of the WebWidgetClient which
       // RenderWidget provides.
       render_widget = g_create_render_widget(
@@ -1537,7 +1537,7 @@ void RenderFrameImpl::CreateFrame(
     // pulling the device scale factor off the WebView itself.
     render_widget->UpdateWebViewWithDeviceScaleFactor();
 
-    // LayoutTest hooks to set up the injected type for RenderWidget.
+    // Web test hooks to set up the injected type for RenderWidget.
     if (g_render_widget_initialized)
       g_render_widget_initialized(render_widget.get());
 

@@ -20,7 +20,7 @@ namespace content {
 
 namespace {
 
-// NIST P-256 public key made available to layout tests. Must be an uncompressed
+// NIST P-256 public key made available to web tests. Must be an uncompressed
 // point in accordance with SEC1 2.3.3.
 const uint8_t kTestP256Key[] = {
     0x04, 0x55, 0x52, 0x6A, 0xA5, 0x6E, 0x8E, 0xAA, 0x47, 0x97, 0x36,

@@ -144,7 +144,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const gfx::Rect& src_rect,
       const gfx::Size& output_size,
       base::OnceCallback<void(const SkBitmap&)> callback) override;
-  void EnsureSurfaceSynchronizedForLayoutTest() override;
+  void EnsureSurfaceSynchronizedForWebTest() override;
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
@@ -681,7 +681,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // Latest capture sequence number which is incremented when the caller
   // requests surfaces be synchronized via
-  // EnsureSurfaceSynchronizedForLayoutTest().
+  // EnsureSurfaceSynchronizedForWebTest().
   uint32_t latest_capture_sequence_number_ = 0u;
 
   // The pointer type of the most recent gesture/mouse/touch event.

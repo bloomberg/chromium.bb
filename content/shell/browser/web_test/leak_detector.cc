@@ -21,7 +21,7 @@ namespace content {
 // TODO(hajimehoshi): Now these are hard-corded. If we add a target to count
 // objects like RefCounted whose initial state is diffcult to estimate, we stop
 // using hard-coded values. Instead, we need to load about:blank ahead of the
-// layout tests actually and initialize LeakDetector by the got values.
+// web tests actually and initialize LeakDetector by the got values.
 const int kInitialNumberOfLiveAudioNodes = 0;
 const int kInitialNumberOfLiveDocuments = 1;
 const int kInitialNumberOfLiveNodes = 4;

@@ -22,7 +22,7 @@ namespace test_runner {
 class WebViewTestProxyBase;
 
 // TextInputController is bound to window.textInputController in Javascript
-// when content_shell is running. Layout tests use it to exercise various
+// when content_shell is running. Web tests use it to exercise various
 // corners of text input.
 class TextInputController {
  public:

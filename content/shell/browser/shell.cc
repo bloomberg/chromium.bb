@@ -405,11 +405,11 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     // Normally, the difference between NEW_POPUP and NEW_WINDOW is that a popup
     // should have no toolbar, no status bar, no menu bar, no scrollbars and be
     // not resizable.  For simplicity and to enable new testing scenarios in
-    // content shell and layout tests, popups don't get special treatment below
+    // content shell and web tests, popups don't get special treatment below
     // (i.e. they will have a toolbar and other things described here).
     case WindowOpenDisposition::NEW_POPUP:
     case WindowOpenDisposition::NEW_WINDOW:
-    // content_shell doesn't really support tabs, but some layout tests use
+    // content_shell doesn't really support tabs, but some web tests use
     // middle click (which translates into kNavigationPolicyNewBackgroundTab),
     // so we treat the cases below just like a NEW_WINDOW disposition.
     case WindowOpenDisposition::NEW_BACKGROUND_TAB:
@@ -429,7 +429,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
     case WindowOpenDisposition::SINGLETON_TAB:
     // No incognito mode in content_shell:
     case WindowOpenDisposition::OFF_THE_RECORD:
-    // TODO(lukasza): Investigate if some layout tests might need support for
+    // TODO(lukasza): Investigate if some web tests might need support for
     // SAVE_TO_DISK disposition.  This would probably require that
     // BlinkTestController always sets up and cleans up a temporary directory
     // as the default downloads destinations for the duration of a test.

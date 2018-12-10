@@ -22,7 +22,7 @@ static void SuspendAllMediaPlayersInRenderFrame(RenderFrameHost* rfh) {
 
 // This browser test ensures the force suspend IPC messages are working properly
 // and that players suspended in this way can be resumed. Note: This does not
-// test suspend in various ready states; those tests are handled by layout tests
+// test suspend in various ready states; those tests are handled by web tests
 // for ease of writing and ready state manipulation.
 class MediaSuspendTest : public MediaBrowserTest {
  public:

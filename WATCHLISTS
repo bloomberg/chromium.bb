@@ -1570,9 +1570,9 @@
     },
     'test_runner': {
       'filepath': 'components/test_runner/' \
-                  '|content/shell/(common|browser|renderer)/layout_test/' \
-                  '|content/test/layouttest_support.cc' \
-                  '|content/public/test/layouttest_support.h' \
+                  '|content/shell/(common|browser|renderer)/web_test/' \
+                  '|content/test/web_test_support.cc' \
+                  '|content/public/test/web_test_support.h' \
     },
     'tests': {
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',

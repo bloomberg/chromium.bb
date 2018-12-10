@@ -464,7 +464,7 @@ void RenderViewImpl::Initialize(
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
   // Pass WidgetClient(), not |this|, as the WebWidgetClient. The method may
-  // be overridden in layout tests to inject a test-only WebWidgetClient.
+  // be overridden in web tests to inject a test-only WebWidgetClient.
   webview_ = WebView::Create(this, WidgetClient(), params->hidden,
                              /*compositing_enabled=*/true,
                              opener_frame ? opener_frame->View() : nullptr);
@@ -1154,7 +1154,7 @@ void RenderViewImpl::ResizeWebWidgetForWidget(
 
 void RenderViewImpl::RequestScheduleAnimationForWidget() {
   // Schedule the animation on the WidgetClient() which may not be the
-  // RenderWidget directly in layout tests.
+  // RenderWidget directly in web tests.
   WidgetClient()->ScheduleAnimation();
 }
 
@@ -1357,7 +1357,7 @@ WebView* RenderViewImpl::CreateView(
   // multiple windows being opened, because, well, the app doesn't support
   // multiple windows.
   // TODO(dcheng): It's awkward that this is plumbed into Blink but not really
-  // used much in Blink, except to enable layout testing... perhaps this should
+  // used much in Blink, except to enable web testing... perhaps this should
   // be checked directly in the browser side.
   if (status == mojom::CreateNewWindowStatus::kReuse)
     return webview();

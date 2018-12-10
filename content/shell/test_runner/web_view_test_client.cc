@@ -39,8 +39,8 @@ WebViewTestClient::WebViewTestClient(
 
 WebViewTestClient::~WebViewTestClient() {}
 
-// The output from these methods in layout test mode should match that
-// expected by the layout tests. See EditingDelegate.m in DumpRenderTree.
+// The output from these methods in web test mode should match that
+// expected by the web tests. See EditingDelegate.m in DumpRenderTree.
 
 blink::WebView* WebViewTestClient::CreateView(
     blink::WebLocalFrame* frame,

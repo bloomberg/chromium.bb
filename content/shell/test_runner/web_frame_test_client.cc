@@ -159,7 +159,7 @@ WebFrameTestClient::~WebFrameTestClient() {}
 // static
 void WebFrameTestClient::PrintFrameDescription(WebTestDelegate* delegate,
                                                blink::WebLocalFrame* frame) {
-  std::string name = content::GetFrameNameForLayoutTests(frame);
+  std::string name = content::GetFrameNameForWebTests(frame);
   if (frame == frame->View()->MainFrame()) {
     DCHECK(name.empty());
     delegate->PrintMessage("main frame");
@@ -467,7 +467,7 @@ void WebFrameTestClient::WillSendRequest(blink::WebURLRequest& request) {
   }
 
   // Set the new substituted URL.
-  request.SetURL(delegate_->RewriteLayoutTestsURL(
+  request.SetURL(delegate_->RewriteWebTestsURL(
       request.Url().GetString().Utf8(),
       test_runner()->is_web_platform_tests_mode()));
 }

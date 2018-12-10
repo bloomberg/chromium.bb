@@ -27,11 +27,11 @@ namespace test_runner {
 
 class WebTestRunner {
  public:
-  // Returns a mock WebContentSettings that is used for layout tests. An
+  // Returns a mock WebContentSettings that is used for web tests. An
   // embedder should use this for all WebViews it creates.
   virtual blink::WebContentSettingsClient* GetWebContentSettings() const = 0;
 
-  // Returns a mock WebTextCheckClient that is used for layout tests. An
+  // Returns a mock WebTextCheckClient that is used for web tests. An
   // embedder should use this for all WebLocalFrames it creates.
   virtual blink::WebTextCheckClient* GetWebTextCheckClient() const = 0;
 

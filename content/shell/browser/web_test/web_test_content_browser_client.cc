@@ -45,7 +45,7 @@
 namespace content {
 namespace {
 
-WebTestContentBrowserClient* g_layout_test_browser_client;
+WebTestContentBrowserClient* g_web_test_browser_client;
 
 void BindWebTestHelper(mojom::MojoWebTestHelperRequest request,
                        RenderFrameHost* render_frame_host) {
@@ -89,17 +89,17 @@ class TestOverlayWindow : public OverlayWindow {
 WebTestContentBrowserClient::WebTestContentBrowserClient()
     : mock_platform_notification_service_(
           std::make_unique<MockPlatformNotificationService>()) {
-  DCHECK(!g_layout_test_browser_client);
+  DCHECK(!g_web_test_browser_client);
 
-  g_layout_test_browser_client = this;
+  g_web_test_browser_client = this;
 }
 
 WebTestContentBrowserClient::~WebTestContentBrowserClient() {
-  g_layout_test_browser_client = nullptr;
+  g_web_test_browser_client = nullptr;
 }
 
 WebTestContentBrowserClient* WebTestContentBrowserClient::Get() {
-  return g_layout_test_browser_client;
+  return g_web_test_browser_client;
 }
 
 WebTestBrowserContext* WebTestContentBrowserClient::GetWebTestBrowserContext() {
@@ -243,7 +243,7 @@ WebTestContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   //
   // Don't isolate WPT origins on
   // 1) platforms where strict Site Isolation is not the default.
-  // 2) in layout tests under virtual/not-site-per-process where
+  // 2) in web tests under virtual/not-site-per-process where
   //    --disable-site-isolation-trials switch is used.
   if (SiteIsolationPolicy::UseDedicatedProcessesForAllSites()) {
     // The list of hostnames below is based on

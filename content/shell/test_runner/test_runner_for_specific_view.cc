@@ -240,7 +240,7 @@ void TestRunnerForSpecificView::CapturePixelsAsyncThen(
       blink::MainThreadIsolate(), callback);
 
   CHECK(web_view()->MainFrame()->IsWebLocalFrame())
-      << "Layout tests harness doesn't currently support running "
+      << "Web tests harness doesn't currently support running "
       << "testRuner.capturePixelsAsyncThen from an OOPIF";
 
   web_view_test_proxy_->test_interfaces()->GetTestRunner()->DumpPixelsAsync(
@@ -273,7 +273,7 @@ void TestRunnerForSpecificView::CapturePixelsCallback(
   argv[1] = v8::Number::New(isolate, height);
 
   // Skia's internal byte order is platform-dependent. Always convert to RGBA
-  // in order to provide a consistent ordering to the layout tests.
+  // in order to provide a consistent ordering to the web tests.
   const SkImageInfo bufferInfo =
       snapshot.info().makeColorType(kRGBA_8888_SkColorType);
   const size_t bufferRowBytes = bufferInfo.minRowBytes();
@@ -678,7 +678,7 @@ void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,
 blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {
   if (!web_view()->MainFrame()->IsWebLocalFrame()) {
     // Hitting the check below uncovers a new scenario that requires OOPIF
-    // support in the layout tests harness.
+    // support in the web tests harness.
     CHECK(false) << "This function cannot be called if the main frame is not a "
                     "local frame.";
   }

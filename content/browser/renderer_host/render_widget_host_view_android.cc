@@ -908,7 +908,7 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
           std::move(callback), start_time));
 }
 
-void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForLayoutTest() {
+void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForWebTest() {
   ++latest_capture_sequence_number_;
   SynchronizeVisualProperties(cc::DeadlinePolicy::UseInfiniteDeadline(),
                               base::nullopt);

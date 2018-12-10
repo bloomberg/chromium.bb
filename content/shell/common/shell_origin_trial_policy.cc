@@ -13,7 +13,7 @@ namespace content {
 namespace {
 
 // This is the public key which the content shell will use to enable origin
-// trial features. Trial tokens for use in layout tests can be created with the
+// trial features. Trial tokens for use in web tests can be created with the
 // tool in /tools/origin_trials/generate_token.py, using the private key
 // contained in /tools/origin_trials/eftest.key.
 static const uint8_t kOriginTrialPublicKey[] = {

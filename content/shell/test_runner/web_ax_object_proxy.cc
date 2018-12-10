@@ -25,7 +25,7 @@ namespace test_runner {
 namespace {
 
 // Map role value to string, matching Safari/Mac platform implementation to
-// avoid rebaselining layout tests.
+// avoid rebaselining web tests.
 std::string RoleToString(ax::mojom::Role role) {
   std::string result = "AXRole: AX";
   switch (role) {

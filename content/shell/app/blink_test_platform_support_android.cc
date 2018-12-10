@@ -34,7 +34,7 @@ bool CheckLayoutSystemDeps() {
 }
 
 bool BlinkTestPlatformInitialize() {
-  // Initialize Skia with the font configuration files crafted for layout tests.
+  // Initialize Skia with the font configuration files crafted for web tests.
   SkFontMgr_Android_CustomFonts custom;
   custom.fSystemFontUse = SkFontMgr_Android_CustomFonts::kOnlyCustom;
   custom.fBasePath = kFontDirectory;

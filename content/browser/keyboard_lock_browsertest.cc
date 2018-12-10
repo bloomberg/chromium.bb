@@ -677,7 +677,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockDisabledBrowserTest,
 
   // KeyboardLockServiceImpl returns success from the RequestKeyboardLock()
   // call when the Chrome side of the feature is disabled.  This prevents
-  // problems running the WebKit layout tests.
+  // problems running the Blink web tests.
   bool result = false;
   ASSERT_TRUE(ExecuteScriptAndExtractBool(web_contents()->GetMainFrame(),
                                           kKeyboardLockMethodCallWithAllKeys,

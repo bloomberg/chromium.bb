@@ -279,7 +279,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   blink::AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
+  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
       int32_t widget_routing_id,
       std::unique_ptr<viz::CopyOutputRequest> request);
 
@@ -293,7 +293,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Returns whether we are running web tests with display compositor for
   // pixel dump enabled. It is meant to disable feature that require display
   // compositor while it is not enabled by default.
-  // This should only be called if currently running in layout tests.
+  // This should only be called if currently running in web tests.
   bool WebTestModeUsesDisplayCompositorPixelDump() const {
     DCHECK(web_test_deps_);
     return web_test_deps_->UseDisplayCompositorPixelDump();

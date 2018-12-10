@@ -30,7 +30,7 @@ void TestPreferences::Reset() {
   plugins_enabled = true;
   caret_browsing_enabled = false;
 
-  // Allow those layout tests running as local files, i.e. under
+  // Allow those web tests running as local files, i.e. under
   // web_tests/http/tests/local, to access http server.
   allow_universal_access_from_file_urls = true;
 

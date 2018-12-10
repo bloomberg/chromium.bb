@@ -37,7 +37,7 @@ class CONTENT_EXPORT WebTestDependencies {
  public:
   virtual ~WebTestDependencies();
 
-  // Returns true if the layout tests should use the display compositor pixel
+  // Returns true if the web tests should use the display compositor pixel
   // dumps.
   virtual bool UseDisplayCompositorPixelDump() const = 0;
 

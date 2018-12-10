@@ -41,8 +41,8 @@ class AppBannerService;
 namespace content {
 
 // This is the renderer side of the webkit test runner.
-// TODO(lukasza): Rename to LayoutTestRenderViewObserver for consistency with
-// LayoutTestRenderFrameObserver.
+// TODO(lukasza): Rename to WebTestRenderViewObserver for consistency with
+// WebTestRenderFrameObserver.
 class BlinkTestRunner : public RenderViewObserver,
                         public RenderViewObserverTracker<BlinkTestRunner>,
                         public test_runner::WebTestDelegate {
@@ -73,8 +73,8 @@ class BlinkTestRunner : public RenderViewObserver,
   blink::WebString GetAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path) override;
   blink::WebURL LocalFileToDataURL(const blink::WebURL& file_url) override;
-  blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
-                                      bool is_wpt_mode) override;
+  blink::WebURL RewriteWebTestsURL(const std::string& utf8_url,
+                                   bool is_wpt_mode) override;
   test_runner::TestPreferences* Preferences() override;
   void ApplyPreferences() override;
   void SetPopupBlockingEnabled(bool block_popups) override;
@@ -150,14 +150,14 @@ class BlinkTestRunner : public RenderViewObserver,
   bool IsNavigationInitiatedByRenderer(
       const blink::WebURLRequest& request) override;
 
-  // Resets a RenderView to a known state for layout tests. It is used both when
+  // Resets a RenderView to a known state for web tests. It is used both when
   // a RenderView is created and when reusing an existing RenderView for the
   // next test case.
   // When reusing an existing RenderView, |for_new_test| should be true, which
   // also resets additional state, like the main frame's name and opener.
   void Reset(bool for_new_test);
 
-  // Message handlers forwarded by LayoutTestRenderFrameObserver.
+  // Message handlers forwarded by WebTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnSetupSecondaryRenderer();

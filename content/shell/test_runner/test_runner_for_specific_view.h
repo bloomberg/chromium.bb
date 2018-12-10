@@ -110,7 +110,7 @@ class TestRunnerForSpecificView {
       v8::UniquePersistent<v8::Function> callback,
       const std::vector<std::string>& events);
 
-  // Change the bluetooth test data while running a layout test.
+  // Change the bluetooth test data while running a web test.
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
                                v8::Local<v8::Function> callback);
 
@@ -134,7 +134,7 @@ class TestRunnerForSpecificView {
   // TODO(oshima): Remove this once all platforms migrated.
   void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
 
-  // Change the device color profile while running a layout test.
+  // Change the device color profile while running a web test.
   void SetColorProfile(const std::string& name,
                        v8::Local<v8::Function> callback);
 
@@ -218,7 +218,7 @@ class TestRunnerForSpecificView {
   std::string SelectionAsMarkup();
   void SetViewSourceForFrame(const std::string& name, bool enabled);
 
-  // Many parts of the layout test harness assume that the main frame is local.
+  // Many parts of the web test harness assume that the main frame is local.
   // Having all of them go through the helper below makes it easier to catch
   // scenarios that require breaking this assumption.
   blink::WebLocalFrame* GetLocalMainFrame();

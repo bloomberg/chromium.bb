@@ -248,9 +248,9 @@ WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
   return WebURL(GURL(data_url_prefix + contents_base64));
 }
 
-WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url,
-                                              bool is_wpt_mode) {
-  return content::RewriteLayoutTestsURL(utf8_url, is_wpt_mode);
+WebURL BlinkTestRunner::RewriteWebTestsURL(const std::string& utf8_url,
+                                           bool is_wpt_mode) {
+  return content::RewriteWebTestsURL(utf8_url, is_wpt_mode);
 }
 
 test_runner::TestPreferences* BlinkTestRunner::Preferences() {
@@ -259,7 +259,7 @@ test_runner::TestPreferences* BlinkTestRunner::Preferences() {
 
 void BlinkTestRunner::ApplyPreferences() {
   WebPreferences prefs = render_view()->GetWebkitPreferences();
-  ExportLayoutTestSpecificPreferences(prefs_, &prefs);
+  ExportWebTestSpecificPreferences(prefs_, &prefs);
   render_view()->SetWebkitPreferences(prefs);
   Send(new ShellViewHostMsg_OverridePreferences(routing_id(), prefs));
 }
@@ -390,7 +390,7 @@ std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
   }
 #endif
 
-  // Some layout tests use file://// which we resolve as a UNC path. Normalize
+  // Some web tests use file://// which we resolve as a UNC path. Normalize
   // them to just file:///.
   std::string result = resource;
   static const size_t kFileLen = sizeof("file:///") - 1;
@@ -398,9 +398,7 @@ std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
                           base::CompareCase::SENSITIVE)) {
     result = result.substr(0, kFileLen) + result.substr(kFileLen + 1);
   }
-  return RewriteLayoutTestsURL(result, false /* is_wpt_mode */)
-      .GetString()
-      .Utf8();
+  return RewriteWebTestsURL(result, false /* is_wpt_mode */).GetString().Utf8();
 }
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {
@@ -410,7 +408,7 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 void BlinkTestRunner::OnWebTestRuntimeFlagsChanged(
     const base::DictionaryValue& changed_values) {
   // Ignore changes that happen before we got the initial, accumulated
-  // layout flag changes in either OnReplicateTestConfiguration or
+  // web flag changes in either OnReplicateTestConfiguration or
   // OnSetTestConfiguration.
   test_runner::WebTestInterfaces* interfaces =
       WebTestRenderThreadObserver::GetInstance()->test_interfaces();
@@ -439,7 +437,7 @@ void BlinkTestRunner::TestFinished() {
   }
 
   // Now we know that we're in the main frame, we should generate dump results.
-  // Clean out the lifecycle if needed before capturing the layout tree
+  // Clean out the lifecycle if needed before capturing the web tree
   // dump and pixels from the compositor.
   auto* web_frame = render_view()->GetWebView()->MainFrame()->ToWebLocalFrame();
   web_frame->FrameWidget()->UpdateAllLifecyclePhases(
@@ -450,10 +448,10 @@ void BlinkTestRunner::TestFinished() {
   dump_result_ = mojom::WebTestDump::New();
 
   CaptureLocalAudioDump();
-  // TODO(vmpstr): Sometimes the layout isn't stable, which means that if we
+  // TODO(vmpstr): Sometimes the web isn't stable, which means that if we
   // just ask the browser to ask us to do a dump, the layout would be different
   // compared to if we do it now. This probably needs to be rebaselined. But for
-  // now, just capture a local layout first.
+  // now, just capture a local web first.
   CaptureLocalLayoutDump();
   // TODO(vmpstr): This code should move to the browser, but since again some
   // tests seem to be timing dependent, capture a local pixels dump first. Note
