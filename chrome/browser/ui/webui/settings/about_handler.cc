@@ -47,7 +47,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8-version-string.h"
 
@@ -354,7 +353,6 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 
   html_source->AddString("aboutUserAgent", GetUserAgent());
   html_source->AddString("aboutJsEngineVersion", V8_VERSION_STRING);
-  html_source->AddString("aboutBlinkVersion", content::GetWebKitVersion());
   html_source->AddString("endOfLifeMessage",
                          l10n_util::GetStringUTF16(IDS_EOL_NOTIFICATION_EOL));
   html_source->AddString("endOfLifeLearnMoreURL",
