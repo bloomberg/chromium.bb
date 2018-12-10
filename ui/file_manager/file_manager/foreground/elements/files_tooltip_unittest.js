@@ -2,10 +2,97 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/** @const {Array<string>} */
+const testPage = [
+  '<style type="text/css">',
+  ' button {',
+  '   display: flex;',
+  '   height: 32px;',
+  '   margin: 30px;',
+  '   width: 32px;',
+  ' }',
+  '',
+  ' #container {',
+  '   display: flex;',
+  '   justify-content: space-between;',
+  ' }',
+  '',
+  ' files-tooltip {',
+  '   background: yellow;',
+  '   box-sizing: border-box;',
+  '   position: absolute;',
+  '   text-align: center;',
+  '   width: 100px;',
+  ' }',
+  '</style>',
+  '',
+  '<!-- Targets for tooltip testing. -->',
+  '<div id="container">',
+  '  <button id="chocolate" aria-label="Chocolate!"></button>',
+  '  <button id="cherries" aria-label="Cherries!"></button>',
+  '</div>',
+  '',
+  '<!-- Button without a tooltip. -->',
+  '<button id="other"></button>',
+  '',
+  '<!-- Polymer files tooltip element. -->',
+  '<files-tooltip></files-tooltip>',
+  '',
+];
+
+/** @type {Element} */
 var chocolateButton;
+
+/** @type {Element} */
 var cherriesButton;
+
+/** @type {Element} */
 var otherButton;
+
+/** @type {FilesTooltip|Element} */
 var tooltip;
+
+function setUpPage() {
+  console.log('setUpPage');
+
+  const importElements = (src) => {
+    var link = document.createElement('link');
+    link.rel = 'import';
+    link.onload = onLinkLoaded;
+    document.head.appendChild(link);
+    const sourceRoot = '../../../../../../../../';
+    link.href = sourceRoot + src;
+  };
+
+  let linksLoaded = 0;
+
+  const onLinkLoaded = () => {
+    if (++linksLoaded < 2)
+      return;
+    document.body.innerHTML += testPage.join('\n');
+    window.waitUser = false;
+  };
+
+  const polymer =
+      'third_party/polymer/v1_0/components-chromium/polymer/polymer.html';
+  importElements(polymer);
+
+  const filesTooltip =
+      'ui/file_manager/file_manager/foreground/elements/files_tooltip.html';
+  importElements(filesTooltip);
+
+  // Make the test harness pause until out test page is fully loaded.
+  window.waitUser = true;
+}
+
+function setUp() {
+  chocolateButton = document.querySelector('#chocolate');
+  cherriesButton = document.querySelector('#cherries');
+  otherButton = document.querySelector('#other');
+
+  tooltip = document.querySelector('files-tooltip');
+  tooltip.addTargets([chocolateButton, cherriesButton]);
+}
 
 function waitForMutation(target) {
   return new Promise(function(fulfill, reject) {
@@ -15,14 +102,6 @@ function waitForMutation(target) {
     });
     observer.observe(target, {attributes: true});
   });
-}
-
-function setUp() {
-  chocolateButton = document.querySelector('#chocolate');
-  cherriesButton = document.querySelector('#cherries');
-  otherButton = document.querySelector('#other');
-  tooltip = document.querySelector('files-tooltip');
-  tooltip.addTargets([chocolateButton, cherriesButton]);
 }
 
 function testFocus(callback) {
