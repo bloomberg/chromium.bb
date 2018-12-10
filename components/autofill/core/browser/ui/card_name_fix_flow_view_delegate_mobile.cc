@@ -21,9 +21,16 @@ CardNameFixFlowViewDelegateMobile::CardNameFixFlowViewDelegateMobile(
     : inferred_cardholder_name_(inferred_cardholder_name),
       upload_save_card_callback_(std::move(upload_save_card_callback)) {
   DCHECK(!upload_save_card_callback_.is_null());
+  AutofillMetrics::LogSaveCardCardholderNamePrefilled(
+      !inferred_cardholder_name_.empty());
 }
 
-CardNameFixFlowViewDelegateMobile::~CardNameFixFlowViewDelegateMobile() {}
+CardNameFixFlowViewDelegateMobile::~CardNameFixFlowViewDelegateMobile() {
+  if (!had_user_interaction_)
+    LogUserAction(
+        AutofillMetrics::
+            CARDHOLDER_NAME_FIX_FLOW_PROMPT_CLOSED_WITHOUT_INTERACTION);
+}
 
 int CardNameFixFlowViewDelegateMobile::GetIconId() const {
   return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
@@ -45,6 +52,24 @@ base::string16 CardNameFixFlowViewDelegateMobile::GetSaveButtonLabel() const {
 
 void CardNameFixFlowViewDelegateMobile::Accept(const base::string16& name) {
   std::move(upload_save_card_callback_).Run(name);
+  LogUserAction(AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_ACCEPTED);
+  AutofillMetrics::LogSaveCardCardholderNameWasEdited(
+      inferred_cardholder_name_ != name);
+}
+
+void CardNameFixFlowViewDelegateMobile::Dismissed() {
+  LogUserAction(AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_DISMISSED);
+}
+
+void CardNameFixFlowViewDelegateMobile::Shown() {
+  LogUserAction(AutofillMetrics::CARDHOLDER_NAME_FIX_FLOW_PROMPT_SHOWN);
+}
+
+void CardNameFixFlowViewDelegateMobile::LogUserAction(
+    AutofillMetrics::CardholderNameFixFlowPromptEvent user_action) {
+  DCHECK(!had_user_interaction_);
+  AutofillMetrics::LogCardholderNameFixFlowPromptEvent(user_action);
+  had_user_interaction_ = true;
 }
 
 }  // namespace autofill
