@@ -1,5 +1,15 @@
-# Metrics changes should always be reviewed by owners.
+# Core Metrics Owners
 per-file histograms.xml=file://base/metrics/OWNERS
+
+# Use the following owners only if:
+#  - You work in the same area as them.
+#  - They are already a good reviewer for the non-metrics part of the CL.
+
+per-file histograms.xml=alexilin@chromium.org
+per-file histograms.xml=csharrison@chromium.org
+per-file histograms.xml=cthomp@chromium.org
+per-file histograms.xml=schenney@chromium.org
+
 per-file histograms.xml=set noparent
 
 # Extending enums by adding new buckets is allowed without OWNERS review, but
