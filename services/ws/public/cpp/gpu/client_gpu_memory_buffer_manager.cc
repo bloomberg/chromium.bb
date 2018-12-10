@@ -56,14 +56,6 @@ ClientGpuMemoryBufferManager::~ClientGpuMemoryBufferManager() {
       FROM_HERE, base::Bind(&ClientGpuMemoryBufferManager::TearDownThread,
                             base::Unretained(this)));
   thread_.Stop();
-  if (optional_destruction_callback_)
-    std::move(optional_destruction_callback_).Run();
-}
-
-void ClientGpuMemoryBufferManager::SetOptionalDestructionCallback(
-    base::OnceClosure callback) {
-  DCHECK(!optional_destruction_callback_);
-  optional_destruction_callback_ = std::move(callback);
 }
 
 void ClientGpuMemoryBufferManager::InitThread(

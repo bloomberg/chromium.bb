@@ -121,10 +121,7 @@ class GpuTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     gpu_impl_ = std::make_unique<TestGpuImpl>();
-    auto factory =
-        base::BindRepeating(&GpuTest::GetPtr, base::Unretained(this));
-    gpu_ =
-        base::WrapUnique(new Gpu(std::move(factory), io_thread_.task_runner()));
+    gpu_ = base::WrapUnique(new Gpu(GetPtr(), io_thread_.task_runner()));
   }
 
   void TearDown() override {
