@@ -966,6 +966,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_RECENT_TABS_SYNC_IN_PROGRESS" desc="Section header subtitle label while loading tabs in other devices. [Length: 30em] [iOS only]">
         Syncing...
       </message>
+      <message name="IDS_IOS_OMNIBOX_POPUP_APPEND" desc="Label for the accessibility action for the address and search bar autocomplete suggestion. It replaces the text in the search bar by the suggestion. [Read by Text-to-Speech]">
+        Select text
+      </message>
+      <message name="IDS_IOS_OMNIBOX_POPUP_SWITCH_TO_OPEN_TAB" desc="Label for the accessibility action for the address and search bar autocomplete suggestion. Using this will switch to the already opened tab corresponding to the suggestion. [Read by Text-to-Speech]">
+        Switch to existing tab
+      </message>
       <message name="IDS_IOS_OPEN_TABS_LAST_USED" desc="Last used timestamp label [Length: 20em] [iOS only]">
         Last synced: <ph name="LAST_USED_TIME">$1<ex>3 mins ago</ex></ph>
       </message>

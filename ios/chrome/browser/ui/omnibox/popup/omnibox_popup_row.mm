@@ -240,4 +240,8 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   }
 }
 
+- (void)accessibilityTrailingButtonTapped {
+  [self.delegate accessibilityTrailingButtonTappedOmniboxPopupRow:self];
+}
+
 @end

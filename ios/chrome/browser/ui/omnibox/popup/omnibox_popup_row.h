@@ -12,6 +12,16 @@
 // Accessibility identifier for the Switch to Open Tab button.
 extern NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
 
+@class OmniboxPopupRow;
+
+// Accessibility delegate for handling the row actions.
+@protocol OmniboxPopupRowAccessibilityDelegate
+
+// Handles the action associated with the trailing button of the |row|.
+- (void)accessibilityTrailingButtonTappedOmniboxPopupRow:(OmniboxPopupRow*)row;
+
+@end
+
 // View used to display an omnibox autocomplete match in the omnibox popup.
 @interface OmniboxPopupRow : UITableViewCell
 
@@ -24,6 +34,12 @@ extern NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
 // A standard UILabel for answers, which truncates with ellipses to support
 // multi-line text.
 @property(nonatomic, readonly, strong) UILabel* detailAnswerLabel;
+
+// Row number.
+@property(nonatomic, assign) NSUInteger rowNumber;
+
+// Accessibility delegate for this row.
+@property(nonatomic, weak) id<OmniboxPopupRowAccessibilityDelegate> delegate;
 
 @property(nonatomic, readonly, strong) UIImageView* imageView;
 @property(nonatomic, readonly, strong) UIImageView* answerImageView;
@@ -40,6 +56,10 @@ extern NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
 // Update the match type icon with the supplied image ID and adjust its position
 // based on the current size of the row.
 - (void)updateLeadingImage:(UIImage*)image;
+
+// Callback for the accessibility action associated with the trailing button of
+// this row.
+- (void)accessibilityTrailingButtonTapped;
 
 @end
 
