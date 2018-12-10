@@ -5458,7 +5458,8 @@
                 "mac",
                 "chromeos",
                 "linux",
-                "ios"
+                "ios",
+                "android_webview"
             ],
             "experiments": [
                 {
