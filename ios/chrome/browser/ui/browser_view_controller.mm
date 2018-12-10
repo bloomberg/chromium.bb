@@ -1005,6 +1005,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   return _dialogPresenter;
 }
 
+- (void)showActivityOverlay {
+  if (!self.activityOverlayCoordinator) {
+    self.activityOverlayCoordinator =
+        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
+    [self.activityOverlayCoordinator start];
+  }
+}
+
+- (void)dismissActivityOverlay {
+  [self.activityOverlayCoordinator stop];
+  self.activityOverlayCoordinator = nil;
+}
+
 - (KeyCommandsProvider*)keyCommandsProvider {
   if (!_keyCommandsProvider) {
     _keyCommandsProvider = [_dependencyFactory newKeyCommandsProvider];
@@ -1437,6 +1450,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 - (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
   return [self.tabStripCoordinator placeholderView];
+}
+
+- (void)resetNTP {
+  for (const auto& element : _ntpCoordinatorsForWebStates)
+    [element.second stop];
+  [self loadViewIfNeeded];
+  if (self.tabModel.currentTab)
+    [self displayTab:self.tabModel.currentTab];
 }
 
 - (void)shutdown {
