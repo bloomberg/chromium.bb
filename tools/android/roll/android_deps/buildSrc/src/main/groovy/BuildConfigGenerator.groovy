@@ -166,6 +166,11 @@ class BuildConfigGenerator extends DefaultTask {
                 // Deprecated deps jar but still needed by play services basement.
                 sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
                 break
+            case 'com_google_ar_core':
+                // Target .aar file contains .so libraries that need to be extracted,
+                // and android_aar_prebuilt template will fail if it's not set explictly.
+                sb.append('  extract_native_libraries = true\n')
+                break
         }
     }
 

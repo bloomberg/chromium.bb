@@ -48,6 +48,10 @@ class ChromiumDepGraph {
             url: "https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md",
             licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",
             licenseName: "BSD"),
+        'com_google_ar_core' :new DependencyDescription(
+            url: "https://github.com/google-ar/arcore-android-sdk",
+            licenseUrl: "https://raw.githubusercontent.com/google-ar/arcore-android-sdk/master/LICENSE",
+            licenseName: "Apache 2.0"),
     ]
 
     Project project

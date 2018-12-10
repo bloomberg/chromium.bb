@@ -74,6 +74,10 @@ dependencies {
     compile "com.squareup:javapoet:1.11.0"
 
     compile "com.google.protobuf:protobuf-lite:3.0.1"
+
+    // ARCore - needed for WebXR implementation on Android
+    compile "com.google.ar:core:1.5.0"
+
 }
 
 task setUpRepository(type: BuildConfigGenerator) {
