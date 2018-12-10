@@ -65,19 +65,17 @@ download::DownloadService* BackgroundFetchDelegateImpl::GetDownloadService() {
 
 void BackgroundFetchDelegateImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (client()) {
-    client()->OnDelegateShutdown();
-  }
 }
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(JobDetails&&) = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(
+    base::WeakPtr<Client> client,
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
     const std::string& provider_namespace,
     bool is_off_the_record)
-    : offline_item(offline_items_collection::ContentId(
+    : client(std::move(client)),
+      offline_item(offline_items_collection::ContentId(
           provider_namespace,
           fetch_description->job_unique_id)),
       job_state(fetch_description->start_paused
@@ -234,6 +232,7 @@ void BackgroundFetchDelegateImpl::DidGetPermissionFromDownloadRequestLimiter(
 }
 
 void BackgroundFetchDelegateImpl::CreateDownloadJob(
+    base::WeakPtr<Client> client,
     std::unique_ptr<content::BackgroundFetchDescription> fetch_description) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -241,8 +240,8 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   DCHECK(!job_details_map_.count(job_unique_id));
   job_details_map_.emplace(
       job_unique_id,
-      JobDetails(std::move(fetch_description), provider_namespace_,
-                 profile_->IsOffTheRecord()));
+      JobDetails(std::move(client), std::move(fetch_description),
+                 provider_namespace_, profile_->IsOffTheRecord()));
 }
 
 void BackgroundFetchDelegateImpl::DownloadUrl(
@@ -364,10 +363,9 @@ void BackgroundFetchDelegateImpl::OnDownloadStarted(
     return;
 
   const std::string& job_unique_id = download_job_unique_id_iter->second;
-
-  if (client()) {
-    client()->OnDownloadStarted(job_unique_id, download_guid,
-                                std::move(response));
+  if (auto client = GetClient(job_unique_id)) {
+    client->OnDownloadStarted(job_unique_id, download_guid,
+                              std::move(response));
   }
 }
 
@@ -400,8 +398,9 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
   }
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
-  if (client())
-    client()->OnDownloadUpdated(job_unique_id, download_guid, bytes_downloaded);
+  if (job_details.client)
+    job_details.client->OnDownloadUpdated(job_unique_id, download_guid,
+                                          bytes_downloaded);
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadFailed(
@@ -428,9 +427,9 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
     return;
   }
 
-  if (client()) {
-    client()->OnDownloadComplete(job_unique_id, download_guid,
-                                 std::move(result));
+  if (job_details.client) {
+    job_details.client->OnDownloadComplete(job_unique_id, download_guid,
+                                           std::move(result));
   }
 
   job_details.current_fetch_guids.erase(download_guid);
@@ -458,9 +457,9 @@ void BackgroundFetchDelegateImpl::OnDownloadSucceeded(
                                  : result->file_size;
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
-  if (client()) {
-    client()->OnDownloadComplete(job_unique_id, download_guid,
-                                 std::move(result));
+  if (job_details.client) {
+    job_details.client->OnDownloadComplete(job_unique_id, download_guid,
+                                           std::move(result));
   }
 
   job_details.current_fetch_guids.erase(download_guid);
@@ -516,8 +515,8 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
 void BackgroundFetchDelegateImpl::OpenItem(
     offline_items_collection::LaunchLocation location,
     const offline_items_collection::ContentId& id) {
-  if (client())
-    client()->OnUIActivated(id.id);
+  if (auto client = GetClient(id.id))
+    client->OnUIActivated(id.id);
 }
 
 void BackgroundFetchDelegateImpl::RemoveItem(
@@ -531,10 +530,11 @@ void BackgroundFetchDelegateImpl::FailFetch(const std::string& job_unique_id) {
   // Save a copy before Abort() deletes the reference.
   const std::string unique_id = job_unique_id;
   Abort(job_unique_id);
-  if (client()) {
-    client()->OnJobCancelled(unique_id,
-                             blink::mojom::BackgroundFetchFailureReason::
-                                 TOTAL_DOWNLOAD_SIZE_EXCEEDED);
+
+  if (auto client = GetClient(unique_id)) {
+    client->OnJobCancelled(unique_id,
+                           blink::mojom::BackgroundFetchFailureReason::
+                               TOTAL_DOWNLOAD_SIZE_EXCEEDED);
   }
 }
 
@@ -544,8 +544,8 @@ void BackgroundFetchDelegateImpl::CancelDownload(
   const std::string unique_id = id.id;
   Abort(unique_id);
 
-  if (client()) {
-    client()->OnJobCancelled(
+  if (auto client = GetClient(unique_id)) {
+    client->OnJobCancelled(
         unique_id,
         blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI);
   }
@@ -702,6 +702,16 @@ void BackgroundFetchDelegateImpl::GetUploadData(
     return;
   }
 
-  if (client())
-    client()->GetUploadData(job_it->second, download_guid, std::move(callback));
+  if (job_details.client) {
+    job_details.client->GetUploadData(job_it->second, download_guid,
+                                      std::move(callback));
+  }
+}
+
+base::WeakPtr<content::BackgroundFetchDelegate::Client>
+BackgroundFetchDelegateImpl::GetClient(const std::string& job_unique_id) {
+  auto it = job_details_map_.find(job_unique_id);
+  if (it == job_details_map_.end())
+    return nullptr;
+  return it->second.client;
 }

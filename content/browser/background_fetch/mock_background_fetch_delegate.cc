@@ -77,7 +77,10 @@ void MockBackgroundFetchDelegate::GetIconDisplaySize(
     GetIconDisplaySizeCallback callback) {}
 
 void MockBackgroundFetchDelegate::CreateDownloadJob(
-    std::unique_ptr<BackgroundFetchDescription> fetch_description) {}
+    base::WeakPtr<Client> client,
+    std::unique_ptr<BackgroundFetchDescription> fetch_description) {
+  job_id_to_client_map_[fetch_description->job_unique_id] = std::move(client);
+}
 
 void MockBackgroundFetchDelegate::DownloadUrl(
     const std::string& job_unique_id,
@@ -109,7 +112,7 @@ void MockBackgroundFetchDelegate::DownloadUrl(
   PostAbortCheckingTask(
       job_unique_id,
       base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadStarted,
-                     client(), job_unique_id, guid,
+                     job_id_to_client_map_[job_unique_id], job_unique_id, guid,
                      std::make_unique<BackgroundFetchResponse>(
                          std::vector<GURL>({url}), test_response->headers)));
 
@@ -118,15 +121,15 @@ void MockBackgroundFetchDelegate::DownloadUrl(
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
-                       client(), job_unique_id, guid,
-                       test_response->data.size() / 2));
+                       job_id_to_client_map_[job_unique_id], job_unique_id,
+                       guid, test_response->data.size() / 2));
 
     // Report progress at 100% complete.
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadUpdated,
-                       client(), job_unique_id, guid,
-                       test_response->data.size()));
+                       job_id_to_client_map_[job_unique_id], job_unique_id,
+                       guid, test_response->data.size()));
   }
 
   if (test_response->succeeded) {
@@ -146,8 +149,8 @@ void MockBackgroundFetchDelegate::DownloadUrl(
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(
-            &BackgroundFetchDelegate::Client::OnDownloadComplete, client(),
-            job_unique_id, guid,
+            &BackgroundFetchDelegate::Client::OnDownloadComplete,
+            job_id_to_client_map_[job_unique_id], job_unique_id, guid,
             std::make_unique<BackgroundFetchResult>(
                 std::make_unique<BackgroundFetchResponse>(
                     std::vector<GURL>({url}), test_response->headers),
@@ -162,7 +165,8 @@ void MockBackgroundFetchDelegate::DownloadUrl(
     PostAbortCheckingTask(
         job_unique_id,
         base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadComplete,
-                       client(), job_unique_id, guid, std::move(result)));
+                       job_id_to_client_map_[job_unique_id], job_unique_id,
+                       guid, std::move(result)));
   }
 
   seen_guids_.insert(guid);

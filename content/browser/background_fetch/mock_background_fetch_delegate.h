@@ -75,6 +75,7 @@ class MockBackgroundFetchDelegate : public BackgroundFetchDelegate {
   void GetIconDisplaySize(
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override;
   void CreateDownloadJob(
+      base::WeakPtr<Client> client,
       std::unique_ptr<BackgroundFetchDescription> fetch_description) override;
   void DownloadUrl(const std::string& job_unique_id,
                    const std::string& guid,
@@ -124,6 +125,9 @@ class MockBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
   // Map from download GUIDs to unique job ids.
   std::map<std::string, std::string> download_guid_to_job_id_map_;
+
+  // Map from job GUIDs to Clients.
+  std::map<std::string, base::WeakPtr<Client>> job_id_to_client_map_;
 
   DISALLOW_COPY_AND_ASSIGN(MockBackgroundFetchDelegate);
 };
