@@ -12,15 +12,19 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/file_util_service.h"
 #include "chrome/services/file_util/public/mojom/constants.mojom.h"
+#include "components/safe_browsing/features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace safe_browsing {
 namespace {
 
 #define CDRDT(x) safe_browsing::ClientDownloadRequest_DownloadType_##x
@@ -31,6 +35,8 @@ class SandboxedRarAnalyzerTest : public testing::Test {
   struct BinaryData {
     const char* file_basename;
     safe_browsing::ClientDownloadRequest_DownloadType download_type;
+    bool has_signature;
+    bool has_image_headers;
     int64_t length;
   };
 
@@ -69,6 +75,7 @@ class SandboxedRarAnalyzerTest : public testing::Test {
     ASSERT_FALSE(binary.has_digests());
     ASSERT_TRUE(binary.has_length());
     EXPECT_EQ(data.length, binary.length());
+
     ASSERT_FALSE(binary.has_signature());
     ASSERT_FALSE(binary.has_image_headers());
   }
@@ -110,17 +117,23 @@ class SandboxedRarAnalyzerTest : public testing::Test {
 
 const SandboxedRarAnalyzerTest::BinaryData SandboxedRarAnalyzerTest::kEmptyZip =
     {
-        "empty.zip", CDRDT(ARCHIVE), 22,
+        "empty.zip", CDRDT(ARCHIVE), false, false, 22,
 };
 
 const SandboxedRarAnalyzerTest::BinaryData SandboxedRarAnalyzerTest::kNotARar =
     {
-        "not_a_rar.rar", CDRDT(ARCHIVE), 18,
+        "not_a_rar.rar", CDRDT(ARCHIVE), false, false, 18,
 };
 
 const SandboxedRarAnalyzerTest::BinaryData
     SandboxedRarAnalyzerTest::kSignedExe = {
-        "signed.exe", CDRDT(WIN_EXECUTABLE), 37768,
+        "signed.exe", CDRDT(WIN_EXECUTABLE),
+#if defined(OS_WIN)
+        true,         true,
+#else
+        false,        false,
+#endif
+        37768,
 };
 
 TEST_F(SandboxedRarAnalyzerTest, AnalyzeBenignRar) {
@@ -220,4 +233,44 @@ TEST_F(SandboxedRarAnalyzerTest, AnalyzeRarContainingAssortmentOfFiles) {
             results.archived_archive_filenames[1].value());
 }
 
+TEST_F(SandboxedRarAnalyzerTest,
+       AnalyzeRarContainingExecutableWithContentInspection) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kInspectRarContentFeature);
+
+  // Can detect when .rar contains executable files.
+  // has_exe.rar contains 1 file: signed.exe
+  base::FilePath path;
+  ASSERT_NO_FATAL_FAILURE(path = GetFilePath("has_exe.rar"));
+
+  safe_browsing::ArchiveAnalyzerResults results;
+  AnalyzeFile(path, &results);
+
+  ASSERT_TRUE(results.success);
+  EXPECT_TRUE(results.has_executable);
+  EXPECT_EQ(1, results.archived_binary.size());
+  EXPECT_TRUE(results.archived_archive_filenames.empty());
+
+  const safe_browsing::ClientDownloadRequest_ArchivedBinary& binary =
+      results.archived_binary.Get(0);
+  ASSERT_TRUE(binary.has_file_basename());
+  EXPECT_EQ(kSignedExe.file_basename, binary.file_basename());
+  ASSERT_TRUE(binary.has_download_type());
+  EXPECT_EQ(kSignedExe.download_type, binary.download_type());
+  // If we're doing content inspection, we expect to have digests.
+  ASSERT_TRUE(binary.has_digests());
+  ASSERT_TRUE(binary.has_length());
+  EXPECT_EQ(kSignedExe.length, binary.length());
+
+#if defined(OS_WIN)
+  // On windows, we should also have a signature and image header
+  ASSERT_TRUE(binary.has_signature());
+  ASSERT_TRUE(binary.has_image_headers());
+#else
+  ASSERT_FALSE(binary.has_signature());
+  ASSERT_FALSE(binary.has_image_headers());
+#endif
+}
+
 }  // namespace
+}  // namespace safe_browsing

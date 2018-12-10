@@ -28,3 +28,5 @@ Notable changes from upstream:
   inside the unrar library code. This is done because the unrar library code
   operates inside a sandbox, so it doesn't have the permissions to open files.
 - Remove some static initializers.
+- Pass a file handle to a temporary file with write permission, so the archive
+  can be extracted inside the sandbox for analysis.

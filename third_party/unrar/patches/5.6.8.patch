@@ -18,7 +18,7 @@ index ca98b10706f4..487e2fc5068a 100644
      if (Format!=RARFMT14 && (CommHead.UnpVer < 15 || CommHead.UnpVer > VER_UNPACK || CommHead.Method > 0x35))
        return false;
 diff --git a/third_party/unrar/src/archive.cpp b/third_party/unrar/src/archive.cpp
-index f07ed05c1666..5630ad063aac 100644
+index f07ed05c1666..bb71254d5ff3 100644
 --- a/third_party/unrar/src/archive.cpp
 +++ b/third_party/unrar/src/archive.cpp
 @@ -100,6 +100,7 @@ RARFORMAT Archive::IsSignature(const byte *D,size_t Size)
@@ -46,6 +46,49 @@ index f07ed05c1666..5630ad063aac 100644
      if (StartFound)
        break;
    }
+@@ -335,3 +337,12 @@ int64 Archive::Tell()
+ }
+ #endif
+ 
++#if defined(CHROMIUM_UNRAR)
++void Archive::SetTempFileHandle(FileHandle hF) {
++  hTempFile = hF;
++}
++
++FileHandle Archive::GetTempFileHandle() {
++  return hTempFile;
++}
++#endif
+diff --git a/third_party/unrar/src/archive.hpp b/third_party/unrar/src/archive.hpp
+index fd33ac359adb..a1f5e66569db 100644
+--- a/third_party/unrar/src/archive.hpp
++++ b/third_party/unrar/src/archive.hpp
+@@ -58,6 +58,14 @@ class Archive:public File
+     QuickOpen QOpen;
+     bool ProhibitQOpen;
+ #endif
++#ifdef USE_ARCMEM
++    ArcMemory ArcMem;
++#endif
++
++#if defined(CHROMIUM_UNRAR)
++    FileHandle hTempFile;
++#endif
++
+   public:
+     Archive(RAROptions *InitCmd=NULL);
+     ~Archive();
+@@ -99,6 +107,10 @@ class Archive:public File
+     void QOpenUnload() {QOpen.Unload();}
+     void SetProhibitQOpen(bool Mode) {ProhibitQOpen=Mode;}
+ #endif
++#if defined(CHROMIUM_UNRAR)
++    void SetTempFileHandle(FileHandle hF);
++    FileHandle GetTempFileHandle();
++#endif
+ 
+     BaseBlock ShortBlock;
+     MarkHeader MarkHead;
 diff --git a/third_party/unrar/src/arcread.cpp b/third_party/unrar/src/arcread.cpp
 index c8cb1ee53aba..7eec01d7eb0f 100644
 --- a/third_party/unrar/src/arcread.cpp
@@ -510,7 +553,7 @@ index eae591406ac2..24f7962159f9 100644
  
  
 diff --git a/third_party/unrar/src/extract.cpp b/third_party/unrar/src/extract.cpp
-index 4540bd398452..f4835067514c 100644
+index 4540bd398452..3f4a2d442a7d 100644
 --- a/third_party/unrar/src/extract.cpp
 +++ b/third_party/unrar/src/extract.cpp
 @@ -67,6 +67,7 @@ void CmdExtract::DoExtract()
@@ -577,7 +620,17 @@ index 4540bd398452..f4835067514c 100644
      Arc.SeekToNext();
      return true;
    }
-@@ -573,6 +581,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -510,6 +518,9 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+ #endif
+ 
+     File CurFile;
++#if defined(CHROMIUM_UNRAR)
++    CurFile.SetFileHandle(Arc.GetTempFileHandle());
++#endif
+ 
+     bool LinkEntry=Arc.FileHead.RedirType!=FSREDIR_NONE;
+     if (LinkEntry && Arc.FileHead.RedirType!=FSREDIR_FILECOPY)
+@@ -573,6 +584,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
        }
        FileCount++;
        if (Command!='I')
@@ -585,7 +638,7 @@ index 4540bd398452..f4835067514c 100644
          if (SkipSolid)
            mprintf(St(MExtrSkipFile),ArcFileName);
          else
-@@ -591,6 +600,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -591,6 +603,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
                mprintf(St(MExtrFile),DestFileName);
                break;
            }
@@ -593,7 +646,7 @@ index 4540bd398452..f4835067514c 100644
        if (!Cmd->DisablePercentage)
          mprintf(L"     ");
  
-@@ -634,10 +644,12 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -634,10 +647,12 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
            wchar NameExisting[NM];
            ExtrPrepareName(Arc,Arc.FileHead.RedirName,NameExisting,ASIZE(NameExisting));
            if (FileCreateMode && *NameExisting!=0) // *NameExisting can be 0 in case of excessive -ap switch.
@@ -606,7 +659,7 @@ index 4540bd398452..f4835067514c 100644
          }
          else
            if (Type==FSREDIR_UNIXSYMLINK || Type==FSREDIR_WINSYMLINK || Type==FSREDIR_JUNCTION)
-@@ -651,7 +663,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -651,7 +666,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
              LinkSuccess=false;
            }
            
@@ -615,7 +668,7 @@ index 4540bd398452..f4835067514c 100644
            {
              // RAR 5.x links have a valid data checksum even in case of
              // failure, because they do not store any data.
-@@ -664,6 +676,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -664,6 +679,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
        }
        else
          if (!Arc.FileHead.SplitBefore)
@@ -623,7 +676,7 @@ index 4540bd398452..f4835067514c 100644
            if (Arc.FileHead.Method==0)
              UnstoreFile(DataIO,Arc.FileHead.UnpSize);
            else
-@@ -677,6 +690,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -677,6 +693,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
  #endif
                Unp->DoUnpack(Arc.FileHead.UnpVer,Arc.FileHead.Solid);
            }
@@ -631,7 +684,7 @@ index 4540bd398452..f4835067514c 100644
  
        Arc.SeekToNext();
  
-@@ -731,7 +745,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -731,7 +748,7 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
          mprintf(L"\b\b\b\b\b     ");
  
        if (!TestMode && (Command=='X' || Command=='E') &&
@@ -640,7 +693,7 @@ index 4540bd398452..f4835067514c 100644
            (!BrokenFile || Cmd->KeepBroken))
        {
          // We could preallocate more space that really written to broken file.
-@@ -774,11 +788,13 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
+@@ -774,11 +791,13 @@ bool CmdExtract::ExtractCurrentFile(Archive &Arc,size_t HeaderSize,bool &Repeat)
    if (DataIO.NextVolumeMissing)
      return false;
    if (!ExtrFile)
@@ -655,7 +708,7 @@ index 4540bd398452..f4835067514c 100644
  }
  
 diff --git a/third_party/unrar/src/file.cpp b/third_party/unrar/src/file.cpp
-index e2bb42a616ad..5188dbff715c 100644
+index e2bb42a616ad..b69a3122427b 100644
 --- a/third_party/unrar/src/file.cpp
 +++ b/third_party/unrar/src/file.cpp
 @@ -23,10 +23,12 @@ File::File()
@@ -709,7 +762,27 @@ index e2bb42a616ad..5188dbff715c 100644
  #ifdef LOCK_EX
  
  #ifdef _OSF_SOURCE
-@@ -228,6 +244,8 @@ bool File::Close()
+@@ -157,6 +173,11 @@ bool File::WOpen(const wchar *Name)
+ 
+ bool File::Create(const wchar *Name,uint Mode)
+ {
++#if defined(CHROMIUM_UNRAR)
++  // Since the Chromium sandbox does not allow the creation of files, use the
++  // provided file.
++  hFile = hOpenFile;
++#else
+   // OpenIndiana based NAS and CIFS shares fail to set the file time if file
+   // was created in read+write mode and some data was written and not flushed
+   // before SetFileTime call. So we should use the write only mode if we plan
+@@ -193,6 +214,7 @@ bool File::Create(const wchar *Name,uint Mode)
+ #else
+   hFile=fopen(NameA,WriteMode ? WRITEBINARY:CREATEBINARY);
+ #endif
++#endif
+ #endif
+   NewFile=true;
+   HandleType=FILE_HANDLENORMAL;
+@@ -228,6 +250,8 @@ bool File::Close()
    {
      if (!SkipClose)
      {
@@ -718,7 +791,7 @@ index e2bb42a616ad..5188dbff715c 100644
  #ifdef _WIN_ALL
        // We use the standard system handle for stdout in Windows
        // and it must not  be closed here.
-@@ -240,6 +258,7 @@ bool File::Close()
+@@ -240,6 +264,7 @@ bool File::Close()
        Success=fclose(hFile)!=EOF;
  #endif
  #endif
@@ -726,7 +799,7 @@ index e2bb42a616ad..5188dbff715c 100644
      }
      hFile=FILE_BAD_HANDLE;
    }
-@@ -367,6 +386,7 @@ int File::Read(void *Data,size_t Size)
+@@ -367,6 +392,7 @@ int File::Read(void *Data,size_t Size)
      {
        ErrorType=FILE_READERROR;
        if (AllowExceptions)
@@ -734,7 +807,7 @@ index e2bb42a616ad..5188dbff715c 100644
          if (IgnoreReadErrors)
          {
            ReadSize=0;
-@@ -384,6 +404,7 @@ int File::Read(void *Data,size_t Size)
+@@ -384,6 +410,7 @@ int File::Read(void *Data,size_t Size)
              continue;
            ErrHandler.ReadError(FileName);
          }
@@ -742,7 +815,7 @@ index e2bb42a616ad..5188dbff715c 100644
      }
      break;
    }
-@@ -499,18 +520,22 @@ bool File::RawSeek(int64 Offset,int Method)
+@@ -499,18 +526,22 @@ bool File::RawSeek(int64 Offset,int Method)
  int64 File::Tell()
  {
    if (hFile==FILE_BAD_HANDLE)
@@ -765,7 +838,7 @@ index e2bb42a616ad..5188dbff715c 100644
    return INT32TO64(HighDist,LowDist);
  #else
  #ifdef FILE_USE_OPEN
-@@ -727,3 +752,9 @@ int64 File::Copy(File &Dest,int64 Length)
+@@ -727,3 +758,9 @@ int64 File::Copy(File &Dest,int64 Length)
    return CopySize;
  }
  #endif
@@ -1848,10 +1921,10 @@ index 59e111ba2ca7..e41da79b5ea1 100644
          break;
 diff --git a/third_party/unrar/src/unrar_wrapper.h b/third_party/unrar/src/unrar_wrapper.h
 new file mode 100644
-index 000000000000..b19759da6f6e
+index 000000000000..0b92964fa08e
 --- /dev/null
 +++ b/third_party/unrar/src/unrar_wrapper.h
-@@ -0,0 +1,15 @@
+@@ -0,0 +1,20 @@
 +// Copyright 2018 The Chromium Authors. All rights reserved.
 +// Use of this source code is governed by a BSD-style license that can be
 +// found in the LICENSE file.
@@ -1862,8 +1935,13 @@ index 000000000000..b19759da6f6e
 +#include "rar.hpp"
 +
 +namespace third_party_unrar {
++
 +using ::Archive;
-+static const int kUnrarEndarcHead = ::HEAD_ENDARC;
++using ::CmdExtract;
++using ::CommandData;
++
++static const int kUnrarEndarcHead = HEAD_ENDARC;
++static const int kUnrarFileHead = HEAD_FILE;
 +}  // namespace third_party_unrar
 +
 +#endif  // THIRD_PARTY_UNRAR_SRC_UNRAR_WRAPPER_H_
