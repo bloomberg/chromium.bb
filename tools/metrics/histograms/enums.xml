@@ -12510,6 +12510,28 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Virtual Contact File">text/vcard MIME type.</int>
   <int value="7" label="iCalendar">text/calendar MIME type.</int>
   <int value="8" label="Universal Scene Description">model/usd MIME type.</int>
+  <int value="9" label="Apple Disk Image">
+    application/x-apple-diskimage MIME type.
+  </int>
+  <int value="10" label="Apple Installer Package">
+    application/vnd.apple.installer+xml MIME type.
+  </int>
+  <int value="11" label="7 Zip Archive">
+    application/x-7z-compressed MIME type.
+  </int>
+  <int value="12" label="RAR Archive">
+    application/x-rar-compressed MIME type.
+  </int>
+  <int value="13" label="Tar Archive">application/x-tar MIME type.</int>
+  <int value="14" label="Adobe Flash">
+    application/x-shockwave-flash MIME type.
+  </int>
+  <int value="15" label="Amazon Kindle eBook">
+    application/vnd.amazon.ebook MIME type.
+  </int>
+  <int value="16" label="Binary Data">application/octet-stream MIME type.</int>
+  <int value="17" label="Bit Torrent">application/x-bittorrent MIME type.</int>
+  <int value="18" label="Java Archive">application/java-archive MIME type.</int>
 </enum>
 
 <enum name="DownloadNotificationForegroundLifecycle">
