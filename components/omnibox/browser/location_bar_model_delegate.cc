@@ -33,3 +33,11 @@ const gfx::VectorIcon* LocationBarModelDelegate::GetVectorIconOverride() const {
 bool LocationBarModelDelegate::IsOfflinePage() const {
   return false;
 }
+
+AutocompleteClassifier* LocationBarModelDelegate::GetAutocompleteClassifier() {
+  return nullptr;
+}
+
+TemplateURLService* LocationBarModelDelegate::GetTemplateURLService() {
+  return nullptr;
+}

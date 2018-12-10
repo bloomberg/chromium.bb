@@ -10,10 +10,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/buildflags.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/cert/cert_status_flags.h"
@@ -103,10 +106,28 @@ security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel(
   return info.security_level;
 }
 
-bool LocationBarModelImpl::IsSecurityInfoInitialized() const {
+bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
+  if (!base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox))
+    return false;
+
+  // Only show the search terms if the site is secure. However, make an
+  // exception before the security state is initialized to prevent a UI flicker.
   security_state::SecurityInfo info;
   delegate_->GetSecurityInfo(&info);
-  return info.connection_info_initialized;
+  if (info.connection_info_initialized &&
+      info.security_level != security_state::SecurityLevel::SECURE &&
+      info.security_level != security_state::SecurityLevel::EV_SECURE) {
+    return false;
+  }
+
+  base::string16 extracted_search_terms = ExtractSearchTermsInternal(GetURL());
+  if (extracted_search_terms.empty())
+    return false;
+
+  if (search_terms)
+    *search_terms = extracted_search_terms;
+
+  return true;
 }
 
 const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
@@ -227,4 +248,46 @@ bool LocationBarModelImpl::ShouldDisplayURL() const {
 
 bool LocationBarModelImpl::IsOfflinePage() const {
   return delegate_->IsOfflinePage();
+}
+
+base::string16 LocationBarModelImpl::ExtractSearchTermsInternal(
+    const GURL& url) {
+  AutocompleteClassifier* autocomplete_classifier =
+      delegate_->GetAutocompleteClassifier();
+  TemplateURLService* template_url_service = delegate_->GetTemplateURLService();
+  if (!autocomplete_classifier || !template_url_service)
+    return base::string16();
+
+  if (url.is_empty())
+    return base::string16();
+
+  // Because we cache keyed by URL, if the user changes the default search
+  // provider, we will continue to extract the search terms from the cached URL
+  // (even if it's no longer from the default search provider) until the user
+  // changes tabs or navigates the tab. That is intentional, as it would be
+  // weird otherwise if the omnibox text changed without any user gesture.
+  if (url != cached_url_) {
+    cached_url_ = url;
+    cached_search_terms_.clear();
+
+    const TemplateURL* default_provider =
+        template_url_service->GetDefaultSearchProvider();
+    if (default_provider) {
+      // If |url| doesn't match the default search provider,
+      // |cached_search_terms_| will remain empty.
+      default_provider->ExtractSearchTermsFromURL(
+          url, template_url_service->search_terms_data(),
+          &cached_search_terms_);
+
+      // Clear out the search terms if it looks like a URL.
+      AutocompleteMatch match;
+      autocomplete_classifier->Classify(
+          cached_search_terms_, false, false,
+          metrics::OmniboxEventProto::INVALID_SPEC, &match, nullptr);
+      if (!AutocompleteMatch::IsSearchType(match.type))
+        cached_search_terms_.clear();
+    }
+  }
+
+  return cached_search_terms_;
 }

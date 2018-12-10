@@ -15,7 +15,6 @@ import android.text.TextUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -26,7 +25,6 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
-import org.chromium.chrome.browser.omnibox.QueryInOmnibox;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -36,7 +34,6 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.URI;
@@ -447,26 +444,15 @@ public class LocationBarModel implements ToolbarDataProvider {
 
     /**
      * If the current tab state is eligible for displaying the search query terms instead of the
-     * URL, this extracts the query terms from the current URL. See {@link QueryInOmnibox}.
+     * URL, this extracts the query terms from the current URL.
      *
      * @return The search terms. Returns null if the tab is ineligible to display the search terms
      *         instead of the URL.
      */
-    private String getDisplaySearchTerms() {
+    public String getDisplaySearchTerms() {
+        if (mNativeLocationBarModelAndroid == 0) return null;
         if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
-
-        // We can't fetch the Profile while the browser is still starting.
-        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isStartupSuccessfullyCompleted()) {
-            return null;
-        }
-
-        boolean ignoreSecurityLevel = false;
-        if (mNativeLocationBarModelAndroid != 0) {
-            ignoreSecurityLevel = !nativeIsSecurityInfoInitialized(mNativeLocationBarModelAndroid);
-        }
-        return QueryInOmnibox.getDisplaySearchTerms(
-                getProfile(), getSecurityLevel(), ignoreSecurityLevel, getCurrentUrl());
+        return nativeGetDisplaySearchTerms(mNativeLocationBarModelAndroid);
     }
 
     /** @return The formatted URL suitable for editing. */
@@ -485,5 +471,5 @@ public class LocationBarModel implements ToolbarDataProvider {
     private native void nativeDestroy(long nativeLocationBarModelAndroid);
     private native String nativeGetFormattedFullURL(long nativeLocationBarModelAndroid);
     private native String nativeGetURLForDisplay(long nativeLocationBarModelAndroid);
-    private native boolean nativeIsSecurityInfoInitialized(long nativeLocationBarModelAndroid);
+    private native String nativeGetDisplaySearchTerms(long nativeLocationBarModelAndroid);
 }

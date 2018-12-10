@@ -22,7 +22,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
-#include "chrome/browser/ui/omnibox/query_in_omnibox_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
@@ -292,8 +291,6 @@ void OmniboxViewViewsTest::SetUp() {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_,
       base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
-  QueryInOmniboxFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, base::BindRepeating(&QueryInOmniboxFactory::BuildInstanceFor));
   omnibox_view_ = new TestingOmniboxView(
       &omnibox_edit_controller_, std::make_unique<ChromeOmniboxClient>(
                                      &omnibox_edit_controller_, &profile_));
@@ -967,6 +964,8 @@ class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
     location_bar_model()->set_url(kValidSearchResultsPage);
     location_bar_model()->set_security_level(
         security_state::SecurityLevel::SECURE);
+    location_bar_model()->set_display_search_terms(
+        base::ASCIIToUTF16("foo query"));
 
     omnibox_view()->model()->ResetDisplayTexts();
     omnibox_view()->RevertAll();

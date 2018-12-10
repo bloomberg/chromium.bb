@@ -727,7 +727,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
 
   // Don't unelide if we are currently displaying Query in Omnibox search terms,
   // as otherwise, it would be impossible to refine query terms.
-  if (model()->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */))
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  if (location_bar_model->GetDisplaySearchTerms(nullptr /* search_terms */))
     return false;
 
   // If everything is selected, the user likely does not intend to edit the URL.
@@ -736,8 +737,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (IsSelectAll() && gesture != UnelisionGesture::HOME_KEY_PRESSED)
     return false;
 
-  base::string16 full_url =
-      controller()->GetLocationBarModel()->GetFormattedFullURL();
+  base::string16 full_url = location_bar_model->GetFormattedFullURL();
   size_t start, end;
   GetSelectionBounds(&start, &end);
 
