@@ -239,7 +239,7 @@ void LocationBarView::Init() {
   page_action_icons_.push_back(translate_icon_view_);
   if (browser_) {
     local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
-        command_updater(), browser_, this);
+        command_updater(), browser_, this, font_list);
     page_action_icons_.push_back(local_card_migration_icon_view_);
   }
 

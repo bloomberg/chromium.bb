@@ -21,13 +21,17 @@ class LocalCardMigrationIconView : public PageActionIconView {
  public:
   LocalCardMigrationIconView(CommandUpdater* command_updater,
                              Browser* browser,
-                             PageActionIconView::Delegate* delegate);
+                             PageActionIconView::Delegate* delegate,
+                             const gfx::FontList& font_list);
   ~LocalCardMigrationIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Update() override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
+
+  // IconLabelBubbleView:
+  bool ShouldShowSeparator() const override;
 
  protected:
   // PageActionIconView:
@@ -36,6 +40,9 @@ class LocalCardMigrationIconView : public PageActionIconView {
 
  private:
   ManageMigrationUiController* GetController() const;
+
+  // IconLabelBubbleView:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Used to do nullptr check when getting the controller.
   Browser* const browser_;
