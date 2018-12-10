@@ -17,7 +17,6 @@
 #include "components/sessions/core/session_id.h"
 
 class AutocompleteSchemeClassifier;
-class FakeQueryInOmnibox;
 
 // Fake implementation of OmniboxClient for use in tests.
 class TestOmniboxClient : public OmniboxClient {
@@ -28,10 +27,6 @@ class TestOmniboxClient : public OmniboxClient {
   const AutocompleteMatch& alternate_nav_match() const {
     return alternate_nav_match_;
   }
-
-  // Sets fake search terms for Query in Omnibox feature to return. If |terms|
-  // is empty, the URL will be treated as a non search results page.
-  void SetFakeSearchTermsForQueryInOmnibox(const base::string16& terms);
 
   // OmniboxClient:
   std::unique_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
@@ -47,7 +42,6 @@ class TestOmniboxClient : public OmniboxClient {
   TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
   AutocompleteClassifier* GetAutocompleteClassifier() override;
-  QueryInOmnibox* GetQueryInOmnibox() override;
   gfx::Image GetSizedIcon(const gfx::VectorIcon& vector_icon_type,
                           SkColor vector_icon_color) const override;
   gfx::Image GetFaviconForPageUrl(
@@ -63,7 +57,6 @@ class TestOmniboxClient : public OmniboxClient {
   TemplateURLService* template_url_service_;
   TestSchemeClassifier scheme_classifier_;
   AutocompleteClassifier autocomplete_classifier_;
-  std::unique_ptr<FakeQueryInOmnibox> fake_query_in_omnibox_;
   GURL page_url_for_last_favicon_request_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOmniboxClient);

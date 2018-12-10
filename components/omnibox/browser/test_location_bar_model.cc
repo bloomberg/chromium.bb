@@ -43,7 +43,13 @@ security_state::SecurityLevel TestLocationBarModel::GetSecurityLevel(
   return security_level_;
 }
 
-bool TestLocationBarModel::IsSecurityInfoInitialized() const {
+bool TestLocationBarModel::GetDisplaySearchTerms(base::string16* search_terms) {
+  if (display_search_terms_.empty())
+    return false;
+
+  if (search_terms)
+    *search_terms = display_search_terms_;
+
   return true;
 }
 

@@ -44,10 +44,14 @@ ScopedJavaLocalRef<jstring> LocationBarModelAndroid::GetURLForDisplay(
       env, location_bar_model_->GetURLForDisplay());
 }
 
-jboolean LocationBarModelAndroid::IsSecurityInfoInitialized(
+ScopedJavaLocalRef<jstring> LocationBarModelAndroid::GetDisplaySearchTerms(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj) {
-  return location_bar_model_->IsSecurityInfoInitialized();
+    const JavaParamRef<jobject>& obj) {
+  base::string16 result;
+  if (!location_bar_model_->GetDisplaySearchTerms(&result))
+    return nullptr;
+
+  return base::android::ConvertUTF16ToJavaString(env, result);
 }
 
 content::WebContents* LocationBarModelAndroid::GetActiveWebContents() const {

@@ -44,6 +44,8 @@ class ChromeLocationBarModelDelegate : public LocationBarModelDelegate {
   bool FailsMalwareCheck() const override;
   const gfx::VectorIcon* GetVectorIconOverride() const override;
   bool IsOfflinePage() const override;
+  AutocompleteClassifier* GetAutocompleteClassifier() override;
+  TemplateURLService* GetTemplateURLService() override;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved. If this returns null, default values

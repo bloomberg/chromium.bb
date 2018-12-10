@@ -165,10 +165,7 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
 TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
-
-  TestOmniboxClient* client =
-      static_cast<TestOmniboxClient*>(model()->client());
-  client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
+  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
   model()->ResetDisplayTexts();
 
   // Verify that we copy the query verbatim when nothing has been modified.
@@ -273,9 +270,7 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
 
   // Tests that when there is a Query in Omnibox, generate matches from the
   // query, instead of the full formatted URL.
-  TestOmniboxClient* client =
-      static_cast<TestOmniboxClient*>(model()->client());
-  client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
+  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
   model()->ResetDisplayTexts();
 
   {
@@ -301,10 +296,6 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
             model()->GetPermanentDisplayText());
 #endif
 
-  base::string16 search_terms;
-  EXPECT_FALSE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
-  EXPECT_TRUE(search_terms.empty());
-
   EXPECT_TRUE(model()->CurrentTextIsURL());
 
   // Verify we can unelide and show the full URL properly.
@@ -323,20 +314,12 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
 TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
   location_bar_model()->set_url(GURL("https://www.example.com/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
-
-  // Verify the displayed text when there is a Query in Omnibox match.
-  TestOmniboxClient* client =
-      static_cast<TestOmniboxClient*>(model()->client());
-  client->SetFakeSearchTermsForQueryInOmnibox(base::ASCIIToUTF16("foobar"));
+  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
   EXPECT_TRUE(model()->ResetDisplayTexts());
+
   model()->Revert();
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), model()->GetPermanentDisplayText());
   EXPECT_EQ(base::ASCIIToUTF16("foobar"), view()->GetText());
-
-  base::string16 search_terms;
-  EXPECT_TRUE(model()->GetQueryInOmniboxSearchTerms(&search_terms));
-  EXPECT_FALSE(search_terms.empty());
-  EXPECT_EQ(base::ASCIIToUTF16("foobar"), search_terms);
   EXPECT_FALSE(model()->CurrentTextIsURL());
   EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
 

@@ -48,9 +48,13 @@ class LocationBarModel {
   virtual security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const = 0;
 
-  // Returns whether the connection security fields have been initialized.
-  // After a navigation, this is false until the TLS state is updated.
-  virtual bool IsSecurityInfoInitialized() const = 0;
+  // Returns true if the toolbar should display the search terms. When this
+  // method returns true, the extracted search terms will be filled into
+  // |search_terms| if it's not nullptr.
+  //
+  // This method can be called with nullptr |search_terms| if the caller wants
+  // to check the display status only. Virtual for testing purposes.
+  virtual bool GetDisplaySearchTerms(base::string16* search_terms) = 0;
 
   // Returns the id of the icon to show to the left of the address, based on the
   // current URL.  When search term replacement is active, this returns a search

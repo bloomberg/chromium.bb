@@ -20,7 +20,6 @@
 #include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/query_in_omnibox.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -128,15 +127,16 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
 
   if (model_->ShouldShowCurrentPageIcon()) {
     // Query in Omnibox.
-    if (model_->GetQueryInOmniboxSearchTerms(nullptr /* search_terms */)) {
+    LocationBarModel* location_bar_model = controller_->GetLocationBarModel();
+    if (location_bar_model->GetDisplaySearchTerms(nullptr /* search_terms */)) {
       gfx::Image icon = model_->client()->GetFaviconForDefaultSearchProvider(
           std::move(on_icon_fetched));
       if (!icon.IsEmpty())
         return model_->client()->GetSizedIcon(icon).AsImageSkia();
     }
 
-    return gfx::CreateVectorIcon(
-        controller_->GetLocationBarModel()->GetVectorIcon(), dip_size, color);
+    return gfx::CreateVectorIcon(location_bar_model->GetVectorIcon(), dip_size,
+                                 color);
   }
 
   gfx::Image favicon;

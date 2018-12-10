@@ -135,8 +135,6 @@ jumbo_split_static_library("ui") {
     "login/login_interstitial_delegate.h",
     "navigation_correction_tab_observer.cc",
     "navigation_correction_tab_observer.h",
-    "omnibox/query_in_omnibox_factory.cc",
-    "omnibox/query_in_omnibox_factory.h",
     "page_info/page_info.cc",
     "page_info/page_info.h",
     "page_info/page_info_ui.cc",

@@ -6,9 +6,11 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -180,4 +182,16 @@ Profile* ChromeLocationBarModelDelegate::GetProfile() const {
   return controller
              ? Profile::FromBrowserContext(controller->GetBrowserContext())
              : nullptr;
+}
+
+AutocompleteClassifier*
+ChromeLocationBarModelDelegate::GetAutocompleteClassifier() {
+  Profile* const profile = GetProfile();
+  return profile ? AutocompleteClassifierFactory::GetForProfile(profile)
+                 : nullptr;
+}
+
+TemplateURLService* ChromeLocationBarModelDelegate::GetTemplateURLService() {
+  Profile* const profile = GetProfile();
+  return profile ? TemplateURLServiceFactory::GetForProfile(profile) : nullptr;
 }

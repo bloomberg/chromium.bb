@@ -37,7 +37,6 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/omnibox/browser/query_in_omnibox.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -242,7 +241,7 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   url_for_editing_ = location_bar_model->GetFormattedFullURL();
 
-  if (GetQueryInOmniboxSearchTerms(&display_text_)) {
+  if (location_bar_model->GetDisplaySearchTerms(&display_text_)) {
     // The search query has been inserted into |display_text_|.
     DCHECK(!display_text_.empty());
   } else {
@@ -300,7 +299,9 @@ void OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
 
   // Early exit if we don't want to exit Query in Omnibox mode, and the omnibox
   // is displaying a query.
-  if (!exit_query_in_omnibox && GetQueryInOmniboxSearchTerms(nullptr))
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  if (!exit_query_in_omnibox &&
+      location_bar_model->GetDisplaySearchTerms(nullptr))
     return;
 
   SetUserText(url_for_editing_);
@@ -338,8 +339,11 @@ bool OmniboxEditModel::CurrentTextIsURL() const {
   // checking is needed.  By avoiding checking in this case, we avoid calling
   // into the autocomplete providers, and thus initializing the history system,
   // as long as possible, which speeds startup.
-  if (!user_input_in_progress_ && !GetQueryInOmniboxSearchTerms(nullptr))
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  if (!user_input_in_progress_ &&
+      !location_bar_model->GetDisplaySearchTerms(nullptr)) {
     return true;
+  }
 
   return !AutocompleteMatch::IsSearchType(CurrentMatch(nullptr).type);
 }
@@ -359,8 +363,9 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   //
   // This early exit is meant for cases where we elide portions of the URL, so
   // it's inappropriate for the Query in Omnibox case.
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   if (!user_input_in_progress_ && *text == GetPermanentDisplayText() &&
-      !GetQueryInOmniboxSearchTerms(nullptr)) {
+      !location_bar_model->GetDisplaySearchTerms(nullptr)) {
     // It's safe to copy the underlying URL.  These lines ensure that if the
     // scheme was stripped it's added back, and the URL is unescaped (we escape
     // parts of it for display).
@@ -1392,19 +1397,6 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   OnPopupDataChanged(inline_autocompletion, nullptr, keyword, is_keyword_hint);
 }
 
-bool OmniboxEditModel::GetQueryInOmniboxSearchTerms(
-    base::string16* search_terms) const {
-  QueryInOmnibox* query_in_omnibox = client()->GetQueryInOmnibox();
-  if (!query_in_omnibox)
-    return false;
-
-  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
-  bool ignore_security_level = !location_bar_model->IsSecurityInfoInitialized();
-  return query_in_omnibox->GetDisplaySearchTerms(
-      location_bar_model->GetSecurityLevel(false /* ignore_editing */),
-      ignore_security_level, location_bar_model->GetURL(), search_terms);
-}
-
 // static
 const char OmniboxEditModel::kCutOrCopyAllTextHistogram[] =
     "Omnibox.CutOrCopyAllText";
@@ -1460,8 +1452,10 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
         (!popup_model() || !popup_model()->has_selected_match()))
       *alternate_nav_url = result().alternate_nav_url();
   } else {
+    LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
     base::string16 text_for_match_generation =
-        (user_input_in_progress() || GetQueryInOmniboxSearchTerms(nullptr))
+        (user_input_in_progress() ||
+         location_bar_model->GetDisplaySearchTerms(nullptr))
             ? view_->GetText()
             : url_for_editing_;
 

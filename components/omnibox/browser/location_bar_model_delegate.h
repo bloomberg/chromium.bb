@@ -11,7 +11,9 @@
 #include "base/strings/string16.h"
 #include "components/security_state/core/security_state.h"
 
+class AutocompleteClassifier;
 class GURL;
+class TemplateURLService;
 
 namespace gfx {
 struct VectorIcon;
@@ -60,6 +62,12 @@ class LocationBarModelDelegate {
   // Returns whether the page is an offline page, sourced from a cache of
   // previously-downloaded content.
   virtual bool IsOfflinePage() const;
+
+  // Returns the AutocompleteClassifier instance for the current page.
+  virtual AutocompleteClassifier* GetAutocompleteClassifier();
+
+  // Returns the TemplateURLService instance for the current page.
+  virtual TemplateURLService* GetTemplateURLService();
 
  protected:
   virtual ~LocationBarModelDelegate() {}

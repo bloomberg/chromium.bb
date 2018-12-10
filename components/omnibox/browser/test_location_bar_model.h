@@ -29,7 +29,7 @@ class TestLocationBarModel : public LocationBarModel {
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel(
       bool ignore_editing) const override;
-  bool IsSecurityInfoInitialized() const override;
+  bool GetDisplaySearchTerms(base::string16* search_terms) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetSecureDisplayText() const override;
   base::string16 GetSecureAccessibilityText() const override;
@@ -46,6 +46,9 @@ class TestLocationBarModel : public LocationBarModel {
   void set_url(const GURL& url) { url_ = url; }
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
+  }
+  void set_display_search_terms(const base::string16& terms) {
+    display_search_terms_ = terms;
   }
   void set_icon(const gfx::VectorIcon& icon) { icon_ = &icon; }
   void set_ev_cert_name(const base::string16& ev_cert_name) {
@@ -67,6 +70,7 @@ class TestLocationBarModel : public LocationBarModel {
 
   GURL url_;
   security_state::SecurityLevel security_level_ = security_state::NONE;
+  base::string16 display_search_terms_;
   const gfx::VectorIcon* icon_ = nullptr;
   base::string16 ev_cert_name_;
   bool should_display_url_ = false;

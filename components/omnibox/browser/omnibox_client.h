@@ -14,7 +14,6 @@
 
 class AutocompleteResult;
 class GURL;
-class QueryInOmnibox;
 class SessionID;
 class TemplateURL;
 class TemplateURLService;
@@ -94,7 +93,6 @@ class OmniboxClient {
   virtual TemplateURLService* GetTemplateURLService();
   virtual const AutocompleteSchemeClassifier& GetSchemeClassifier() const = 0;
   virtual AutocompleteClassifier* GetAutocompleteClassifier();
-  virtual QueryInOmnibox* GetQueryInOmnibox();
 
   // Returns the icon corresponding to |match| if match is an extension match
   // and an empty icon otherwise.

@@ -23,7 +23,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.search_engines.TemplateUrlServiceTestUtils;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -34,7 +33,6 @@ import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Unit tests for {@link LocationBarLayout}.
@@ -64,6 +62,7 @@ public class LocationBarLayoutTest {
         private String mCurrentUrl;
         private String mEditingText;
         private String mDisplayText;
+        private String mDisplaySearchTerms;
         private Integer mSecurityLevel;
 
         public TestLocationBarModel() {
@@ -75,6 +74,10 @@ public class LocationBarLayoutTest {
             mCurrentUrl = url;
         }
 
+        void setDisplaySearchTerms(String terms) {
+            mDisplaySearchTerms = terms;
+        }
+
         void setSecurityLevel(@ConnectionSecurityLevel int securityLevel) {
             mSecurityLevel = securityLevel;
         }
@@ -83,6 +86,12 @@ public class LocationBarLayoutTest {
         public String getCurrentUrl() {
             if (mCurrentUrl == null) return super.getCurrentUrl();
             return mCurrentUrl;
+        }
+
+        @Override
+        public String getDisplaySearchTerms() {
+            if (mDisplaySearchTerms == null) return super.getDisplaySearchTerms();
+            return mDisplaySearchTerms;
         }
 
         @Override
@@ -211,121 +220,19 @@ public class LocationBarLayoutTest {
     @SmallTest
     @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
     @Feature({"QueryInOmnibox"})
-    public void testIsOnlyShowingSearchTermsIfSrpIsGoogle() {
+    public void testIsViewShowingModelSearchTerms() {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
         mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
         mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        mTestLocationBarModel.setDisplaySearchTerms(null);
         setUrlToPageUrl(locationBar);
-
-        Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testIsOnlyShowingSearchTermsIfSrpIsBing()
-            throws ExecutionException, InterruptedException, TimeoutException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        mTestLocationBarModel.setCurrentUrl(BING_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testIsNotShowingSearchTermsIfSrpIsBingAndSrpUrlIsGoogle()
-            throws ExecutionException, InterruptedException, TimeoutException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        TemplateUrlServiceTestUtils.setSearchEngine("bing.com");
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
         Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
-    }
 
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchIconOnMixedContent() {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.NONE);
+        mTestLocationBarModel.setDisplaySearchTerms(SEARCH_TERMS);
         setUrlToPageUrl(locationBar);
-
-        ImageButton securityButton = getSecurityButton();
-        Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotEquals(mTestLocationBarModel.getSecurityIconResource(
-                                           mActivityTestRule.getActivity().isTablet()),
-                    SEARCH_ICON_RESOURCE);
-        });
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testIsShowingSearchIconSecureContent() {
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        ImageButton securityButton = getSecurityButton();
-        Assert.assertEquals(securityButton.getVisibility(), View.VISIBLE);
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(mTestLocationBarModel.getSecurityIconResource(
-                                        mActivityTestRule.getActivity().isTablet()),
-                    SEARCH_ICON_RESOURCE);
-        });
-    }
-
-    @Test
-    @SmallTest
-    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchTermsIfLooksLikeUrl() throws ExecutionException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL_LIKE_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertNotEquals(SEARCH_TERMS_URL, getUrlText(urlBar));
-    }
-
-    @Test
-    @SmallTest
-    @DisableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
-    @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchTermsIfSrpIsGoogleAndFlagIsDisabled()
-            throws ExecutionException {
-        final UrlBar urlBar = getUrlBar();
-        final LocationBarLayout locationBar = getLocationBar();
-
-        mTestLocationBarModel.setCurrentUrl(GOOGLE_SRP_URL);
-        mTestLocationBarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
-        setUrlToPageUrl(locationBar);
-
-        Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
+        Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
     }
 
     @Test
