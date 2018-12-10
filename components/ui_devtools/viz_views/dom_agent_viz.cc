@@ -8,8 +8,14 @@
 #include "components/ui_devtools/root_element.h"
 #include "components/ui_devtools/ui_element.h"
 #include "components/ui_devtools/viz_views/frame_sink_element.h"
+#include "components/ui_devtools/viz_views/surface_element.h"
+#include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/surface_id.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/service/surfaces/surface_manager.h"
 
 namespace ui_devtools {
 
@@ -48,14 +54,110 @@ namespace ui_devtools {
 // are still present in a tree, so we do the same work as we did in registering
 // case. Only here we move a subtree of parent rooted from child to the
 // RootElement. Obviously, now the child will be in detached state.
+//
+// Updating logic for Surfaces:
+// 1. Creating. We create a surface and then add reference to it.
+// SurfaceManager::root_surface_id_ is treated like a regular surface id, so
+// every time we add a reference from SurfaceManager::root_surface_id_ we add
+// the child to the associated SurfaceElement.
+//
+// 2. Deleting. We remove the reference and destroy a Surface.
+//
+// Although this overview is relatively shorter than for FrameSinks and we have
+// a smaller set of actions handling updates in the Surface tree is actually
+// more difficult. Because of no particular order of the events we may face the
+// cases when more than one surface references some surface or a surface doesn't
+// remove its reference and just gets destroyed instead. The intermediate state
+// between state A when surface hierarchy is a tree and state B when surface
+// hierarchy is a tree again can be ambiguous and may not follow the tree
+// structure. Current approach of handling these states needs revisiting.
 
 using namespace ui_devtools::protocol;
 
 DOMAgentViz::DOMAgentViz(viz::FrameSinkManagerImpl* frame_sink_manager)
-    : frame_sink_manager_(frame_sink_manager) {}
+    : frame_sink_manager_(frame_sink_manager),
+      surface_manager_(frame_sink_manager->surface_manager()) {}
 
 DOMAgentViz::~DOMAgentViz() {
   Clear();
+}
+
+void DOMAgentViz::OnFirstSurfaceActivation(
+    const viz::SurfaceInfo& surface_info) {
+  // The surface was just created. No one embedded it yet, so just attach
+  // it to RootElement. Sometimes OnAddedSurfaceReference is called first, so
+  // don't create the element if it already exists.
+  const viz::SurfaceId& surface_id = surface_info.id();
+  if (!base::ContainsKey(surface_elements_, surface_id)) {
+    UIElement* surface_root = GetRootSurfaceElement();
+    surface_root->AddChild(CreateSurfaceElement(surface_id, surface_root));
+  }
+}
+
+bool DOMAgentViz::OnSurfaceDamaged(const viz::SurfaceId& surface_id,
+                                   const viz::BeginFrameAck& ack) {
+  return false;
+}
+
+void DOMAgentViz::OnSurfaceDiscarded(const viz::SurfaceId& surface_id) {
+  // We may come across the case where we delete element, but its children
+  // are still alive. Therefore we should attach children to the RootElement
+  // and then delete this element.
+  auto it = surface_elements_.find(surface_id);
+  DCHECK(it != surface_elements_.end());
+  DestroyElementAndRemoveSubtree(it->second.get());
+}
+
+// TODO(sgilhuly): Add support for elements to have multiple parents. Currently,
+// when a reference is added to a surface, the SurfaceElement is moved to be a
+// child of only its most recent referrer. When a reference is removed from a
+// surface, this is ignored unless the reference is to the SurfaceElement's
+// current parent.
+void DOMAgentViz::OnAddedSurfaceReference(const viz::SurfaceId& parent_id,
+                                          const viz::SurfaceId& child_id) {
+  // Detach child element from its current parent and attach to the new parent.
+  // OnAddedSurfaceReference is often called before OnFirstSurfaceActivation, so
+  // create the element if it does not exist.
+  auto it_parent = surface_elements_.find(parent_id);
+  if (it_parent == surface_elements_.end()) {
+    UIElement* surface_root = GetRootSurfaceElement();
+    surface_root->AddChild(CreateSurfaceElement(parent_id, surface_root));
+    // The subtree is populated in AddChild, so we don't need to do anything
+    // else here.
+    return;
+  }
+  UIElement* parent = it_parent->second.get();
+
+  // It's possible that OnFirstSurfaceActivation hasn't been called yet, so
+  // create a new element as a child of |parent| if it doesn't already exist.
+  auto it_child = surface_elements_.find(child_id);
+  if (it_child == surface_elements_.end()) {
+    parent->AddChild(CreateSurfaceElement(child_id, parent));
+  } else {
+    UIElement* child = it_child->second.get();
+    Reparent(parent, child);
+  }
+}
+
+void DOMAgentViz::OnRemovedSurfaceReference(const viz::SurfaceId& parent_id,
+                                            const viz::SurfaceId& child_id) {
+  // Detach child element from its current parent and attach to the root
+  // surface.
+  auto it_child = surface_elements_.find(child_id);
+  DCHECK(it_child != surface_elements_.end());
+  UIElement* child = it_child->second.get();
+
+  // Do nothing if parent is not a parent of this child anymore. This can
+  // happen when we have Surface A referencing Surface B, then we create
+  // Surface C and ask it to reference Surface B. When A asks to remove
+  // the reference to B, do nothing because B is already referenced by C.
+  // TODO(sgilhuly): Add support for elements to have multiple parents so this
+  // case can be correctly handled.
+  UIElement* old_parent = child->parent();
+  if (SurfaceElement::From(old_parent) != parent_id)
+    return;
+
+  Reparent(GetRootSurfaceElement(), child);
 }
 
 void DOMAgentViz::OnRegisteredFrameSinkId(
@@ -132,13 +234,19 @@ void DOMAgentViz::OnUnregisteredFrameSinkHierarchy(
   Reparent(element_root(), child);
 }
 
+SurfaceElement* DOMAgentViz::GetRootSurfaceElement() {
+  auto it = surface_elements_.find(surface_manager_->GetRootSurfaceId());
+  DCHECK(it != surface_elements_.end());
+  return it->second.get();
+}
+
 std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     UIElement* parent_element,
     const viz::FrameSinkId& parent_id) {
   std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
 
   // Once the FrameSinkElement is created it calls this function to build its
-  // subtree. So we iterate through |parent_element|'s children and
+  // subtree. We iterate through |parent_element|'s children and
   // recursively build the subtree for them.
   for (auto& child_id : frame_sink_manager_->GetChildrenByParent(parent_id)) {
     bool has_created_frame_sink =
@@ -151,19 +259,44 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     parent_element->AddChild(child_element);
   }
 
-  std::unique_ptr<DOM::Node> node =
-      BuildNode("FrameSink", parent_element->GetAttributes(),
-                std::move(children), parent_element->node_id());
-  return node;
+  return BuildNode("FrameSink", parent_element->GetAttributes(),
+                   std::move(children), parent_element->node_id());
+}
+
+std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForSurface(
+    UIElement* parent_element,
+    const viz::SurfaceId& parent_id) {
+  std::unique_ptr<Array<DOM::Node>> children = Array<DOM::Node>::create();
+
+  // Once the SurfaceElement is created it calls this function to build its
+  // subtree. We iterate through |parent_element|'s children and
+  // recursively build the subtree for them.
+  for (auto& child_id :
+       surface_manager_->GetSurfacesReferencedByParent(parent_id)) {
+    // If the child element exists already, destroy it and rebuild here.
+    auto it_child = surface_elements_.find(child_id);
+    if (it_child != surface_elements_.end())
+      DestroyElementAndRemoveSubtree(it_child->second.get());
+
+    SurfaceElement* child_element =
+        CreateSurfaceElement(child_id, parent_element);
+    children->addItem(BuildTreeForSurface(child_element, child_id));
+    parent_element->AddChild(child_element);
+  }
+
+  return BuildNode("Surface", parent_element->GetAttributes(),
+                   std::move(children), parent_element->node_id());
 }
 
 protocol::Response DOMAgentViz::enable() {
   frame_sink_manager_->AddObserver(this);
+  surface_manager_->AddObserver(this);
   return protocol::Response::OK();
 }
 
 protocol::Response DOMAgentViz::disable() {
   frame_sink_manager_->RemoveObserver(this);
+  surface_manager_->RemoveObserver(this);
   Clear();
   return DOMAgent::disable();
 }
@@ -198,6 +331,10 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
                                               is_root, has_created_frame_sink));
   }
 
+  // Add the root surface.
+  children.push_back(CreateSurfaceElement(surface_manager_->GetRootSurfaceId(),
+                                          element_root()));
+
   return children;
 }
 
@@ -206,21 +343,26 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForUIElement(
   if (ui_element->type() == UIElementType::FRAMESINK) {
     return BuildTreeForFrameSink(ui_element,
                                  FrameSinkElement::From(ui_element));
+  } else if (ui_element->type() == UIElementType::SURFACE) {
+    return BuildTreeForSurface(ui_element, SurfaceElement::From(ui_element));
   }
   return nullptr;
 }
 
 void DOMAgentViz::Clear() {
   frame_sink_elements_.clear();
+  surface_elements_.clear();
 }
 
 void DOMAgentViz::DestroyElementAndRemoveSubtree(UIElement* element) {
   // We may come across the case where we've got the event to delete the
-  // FrameSink, but we haven't got events to delete its children. We should
-  // detach all its children and attach them to RootElement and then delete the
-  // node we were asked for.
+  // FrameSink or Surface, but we haven't got events to delete its children. We
+  // should detach all its children and attach them to either RootElement or the
+  // root surface, and then delete the node we were asked for.
+  UIElement* new_parent =
+      (element->type() == SURFACE ? GetRootSurfaceElement() : element_root());
   for (auto* child : element->children())
-    Reparent(element_root(), child);
+    Reparent(new_parent, child);
 
   element->parent()->RemoveChild(element);
   DestroyElement(element);
@@ -240,6 +382,8 @@ void DOMAgentViz::Reparent(UIElement* new_parent, UIElement* child) {
 void DOMAgentViz::DestroyElement(UIElement* element) {
   if (element->type() == UIElementType::FRAMESINK) {
     frame_sink_elements_.erase(FrameSinkElement::From(element));
+  } else if (element->type() == UIElementType::SURFACE) {
+    surface_elements_.erase(SurfaceElement::From(element));
   } else {
     NOTREACHED();
   }
@@ -263,6 +407,15 @@ FrameSinkElement* DOMAgentViz::CreateFrameSinkElement(
       frame_sink_id, frame_sink_manager_, this, parent, is_root,
       is_client_connected);
   return frame_sink_elements_[frame_sink_id].get();
+}
+
+SurfaceElement* DOMAgentViz::CreateSurfaceElement(
+    const viz::SurfaceId& surface_id,
+    UIElement* parent) {
+  DCHECK(!base::ContainsKey(surface_elements_, surface_id));
+  surface_elements_[surface_id] = std::make_unique<SurfaceElement>(
+      surface_id, frame_sink_manager_, this, parent);
+  return surface_elements_[surface_id].get();
 }
 
 }  // namespace ui_devtools

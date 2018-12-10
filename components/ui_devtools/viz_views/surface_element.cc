@@ -15,15 +15,19 @@ namespace ui_devtools {
 SurfaceElement::SurfaceElement(const viz::SurfaceId& surface_id,
                                viz::FrameSinkManagerImpl* frame_sink_manager,
                                UIElementDelegate* ui_element_delegate,
-                               UIElement* parent,
-                               bool is_detached)
+                               UIElement* parent)
     : UIElement(UIElementType::SURFACE, ui_element_delegate, parent),
       surface_id_(surface_id),
       frame_sink_manager_(frame_sink_manager) {
   viz::Surface* surface =
       frame_sink_manager_->surface_manager()->GetSurfaceForId(surface_id_);
-  DCHECK(surface);
-  surface_bounds_ = gfx::Rect(surface->size_in_pixels());
+  if (surface) {
+    surface_bounds_ = gfx::Rect(surface->size_in_pixels());
+  } else {
+    // The root surface id doesn't have an associated surface.
+    DCHECK_EQ(surface_id_,
+              frame_sink_manager_->surface_manager()->GetRootSurfaceId());
+  }
   // DOMAgentViz handles all of the Surface events, so it owns all of the
   // SurfaceElements.
   set_owns_children(false);
@@ -61,7 +65,7 @@ std::unique_ptr<protocol::Array<std::string>> SurfaceElement::GetAttributes()
   attributes->addItem("FrameSink Debug Label");
   attributes->addItem(
       frame_sink_manager_->GetFrameSinkDebugLabel(surface_id_.frame_sink_id())
-          .data());
+          .as_string());
   return attributes;
 }
 

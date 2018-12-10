@@ -9,20 +9,44 @@
 #include "base/containers/flat_set.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/dom_agent.h"
-#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
+#include "components/viz/service/surfaces/surface_observer.h"
 
 namespace viz {
+struct BeginFrameAck;
+struct BeginFrameArgs;
+class FrameSinkId;
 class FrameSinkManagerImpl;
+class SurfaceId;
+class SurfaceInfo;
+class SurfaceManager;
 }
 
 namespace ui_devtools {
 class FrameSinkElement;
+class SurfaceElement;
 
-class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
+class DOMAgentViz : public viz::SurfaceObserver,
+                    public viz::FrameSinkObserver,
+                    public DOMAgent {
  public:
   explicit DOMAgentViz(viz::FrameSinkManagerImpl* frame_sink_manager);
   ~DOMAgentViz() override;
+
+  // viz::SurfaceObserver:
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
+  void OnSurfaceActivated(const viz::SurfaceId& surface_id,
+                          base::Optional<base::TimeDelta> duration) override{};
+  void OnSurfaceDestroyed(const viz::SurfaceId& surface_id) override{};
+  bool OnSurfaceDamaged(const viz::SurfaceId& surface_id,
+                        const viz::BeginFrameAck& ack) override;
+  void OnSurfaceDiscarded(const viz::SurfaceId& surface_id) override;
+  void OnSurfaceDamageExpected(const viz::SurfaceId& surface_id,
+                               const viz::BeginFrameArgs& args) override{};
+  void OnAddedSurfaceReference(const viz::SurfaceId& parent_id,
+                               const viz::SurfaceId& child_id) override;
+  void OnRemovedSurfaceReference(const viz::SurfaceId& parent_id,
+                                 const viz::SurfaceId& child_id) override;
 
   // viz::FrameSinkObserver:
   void OnRegisteredFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
@@ -38,10 +62,16 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
       const viz::FrameSinkId& parent_frame_sink_id,
       const viz::FrameSinkId& child_frame_sink_id) override;
 
+  SurfaceElement* GetRootSurfaceElement();
+
  private:
   std::unique_ptr<protocol::DOM::Node> BuildTreeForFrameSink(
       UIElement* parent_element,
       const viz::FrameSinkId& parent_id);
+
+  std::unique_ptr<protocol::DOM::Node> BuildTreeForSurface(
+      UIElement* parent_element,
+      const viz::SurfaceId& parent_id);
 
   // DOM::Backend:
   protocol::Response enable() override;
@@ -70,11 +100,12 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
   // element back to the tree. Then, the list of children is repopulated.
   void Reparent(UIElement* new_parent, UIElement* child);
 
-  // Removes an element from |frame_sink_elements_|.
+  // Removes an element from either |frame_sink_elements_| or
+  // |surface_elements_|.
   void DestroyElement(UIElement* element);
 
-  // Remove all subtree elements from |frame_sink_elements_|. |element| itself
-  // is preserved.
+  // Remove all subtree elements from either |frame_sink_elements_| or
+  // |surface_elements_|. |element| itself is preserved.
   void DestroySubtree(UIElement* element);
 
   // Constructs a new FrameSinkElement with some default arguments, adds it to
@@ -85,6 +116,11 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
       bool is_root,
       bool is_client_connected);
 
+  // Constructs a new SurfaceElement with some default arguments, adds it to
+  // |surface_elements_|, and returns its pointer.
+  SurfaceElement* CreateSurfaceElement(const viz::SurfaceId& surface_id,
+                                       UIElement* parent);
+
   // This is used to track created FrameSinkElements in a FrameSink tree. Every
   // time we register/invalidate a FrameSinkId, create/destroy a FrameSink,
   // register/unregister hierarchy we change this set, because these actions
@@ -92,7 +128,13 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
   base::flat_map<viz::FrameSinkId, std::unique_ptr<FrameSinkElement>>
       frame_sink_elements_;
 
+  // This is used to track created SurfaceElements and will be used for updates
+  // in a Surface tree.
+  base::flat_map<viz::SurfaceId, std::unique_ptr<SurfaceElement>>
+      surface_elements_;
+
   viz::FrameSinkManagerImpl* frame_sink_manager_;
+  viz::SurfaceManager* surface_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DOMAgentViz);
 };
