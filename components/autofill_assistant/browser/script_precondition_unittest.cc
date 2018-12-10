@@ -152,12 +152,14 @@ TEST_F(ScriptPreconditionTest, PathFullMatch) {
   EXPECT_TRUE(Check(proto));
 }
 
-TEST_F(ScriptPreconditionTest, PathPartialMatch) {
+TEST_F(ScriptPreconditionTest, PathPartialMatchFails) {
   ScriptPreconditionProto proto;
+  proto.add_path_pattern("/match.*");
+  proto.add_path_pattern(".*/match");
   proto.add_path_pattern("/match");
 
   SetUrl("http://www.example.com/prefix/match/suffix");
-  EXPECT_TRUE(Check(proto));
+  EXPECT_FALSE(Check(proto));
 }
 
 TEST_F(ScriptPreconditionTest, PathWithQueryAndRef) {
