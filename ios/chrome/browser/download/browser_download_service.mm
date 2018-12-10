@@ -45,6 +45,36 @@ DownloadMimeTypeResult GetUmaResult(const std::string& mime_type) {
   if (mime_type == kUsdzMimeType)
     return DownloadMimeTypeResult::UniversalSceneDescription;
 
+  if (mime_type == "application/x-apple-diskimage")
+    return DownloadMimeTypeResult::AppleDiskImage;
+
+  if (mime_type == "application/vnd.apple.installer+xml")
+    return DownloadMimeTypeResult::AppleInstallerPackage;
+
+  if (mime_type == "application/x-7z-compressed")
+    return DownloadMimeTypeResult::SevenZipArchive;
+
+  if (mime_type == "application/x-rar-compressed")
+    return DownloadMimeTypeResult::RARArchive;
+
+  if (mime_type == "application/x-tar")
+    return DownloadMimeTypeResult::TarArchive;
+
+  if (mime_type == "application/x-shockwave-flash")
+    return DownloadMimeTypeResult::AdobeFlash;
+
+  if (mime_type == "application/vnd.amazon.ebook")
+    return DownloadMimeTypeResult::AmazonKindleBook;
+
+  if (mime_type == "application/octet-stream")
+    return DownloadMimeTypeResult::BinaryData;
+
+  if (mime_type == "application/x-bittorrent")
+    return DownloadMimeTypeResult::BitTorrent;
+
+  if (mime_type == "application/java-archive")
+    return DownloadMimeTypeResult::JavaArchive;
+
   return DownloadMimeTypeResult::Other;
 }
 }  // namespace
