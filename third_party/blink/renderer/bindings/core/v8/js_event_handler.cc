@@ -96,8 +96,12 @@ void JSEventHandler::CallListenerFunction(EventTarget& event_target,
   const bool is_beforeunload_event =
       event.IsBeforeUnloadEvent() &&
       event.type() == EventTypeNames::beforeunload;
+  const bool is_print_event =
+      // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
+      event.type() == EventTypeNames::beforeprint ||
+      event.type() == EventTypeNames::afterprint;
   if (!event_handler_->IsRunnableOrThrowException(
-          is_beforeunload_event
+          (is_beforeunload_event || is_print_event)
               ? V8EventHandlerNonNull::IgnorePause::kIgnore
               : V8EventHandlerNonNull::IgnorePause::kDontIgnore)) {
     return;

@@ -50,9 +50,14 @@ void JSEventListener::CallListenerFunction(EventTarget&,
   const bool is_beforeunload_event =
       event.IsBeforeUnloadEvent() &&
       event.type() == EventTypeNames::beforeunload;
+  const bool is_print_event =
+      // TODO(yukishiino): Should check event.Is{Before,After}PrintEvent.
+      event.type() == EventTypeNames::beforeprint ||
+      event.type() == EventTypeNames::afterprint;
   if (!event_listener_->IsRunnableOrThrowException(
-          is_beforeunload_event ? V8EventListener::IgnorePause::kIgnore
-                                : V8EventListener::IgnorePause::kDontIgnore)) {
+          (is_beforeunload_event || is_print_event)
+              ? V8EventListener::IgnorePause::kIgnore
+              : V8EventListener::IgnorePause::kDontIgnore)) {
     return;
   }
   v8::Maybe<void> maybe_result = event_listener_->InvokeWithoutRunnabilityCheck(
