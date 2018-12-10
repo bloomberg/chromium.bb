@@ -58,25 +58,25 @@ var entryB = makeFileEntryFromDataURL(
 
 function testExternalMetadataProviderBasic(callback) {
   // Mocking SharedWorker's port.
-  var port = {
+  var port = /** @type {!MessagePort} */ ({
     postMessage: function(message) {
       if (message.verb === 'request') {
-        this.onmessage({
+        port.onmessage(/** @type {!MessageEvent} */ ({
           data: {
             verb: 'result',
             arguments: [
-              message.arguments[0],
-              {
+              message.arguments[0], {
                 thumbnailURL: message.arguments[0] + ',url',
                 thumbnailTransform: message.arguments[0] + ',transform'
               }
             ]
           }
-        });
+        }));
       }
     },
     start: function() {}
-  };
+  });
+
   // TODO(ryoh): chrome.mediaGalleries API is not available in unit tests.
   var provider = new ContentMetadataProvider(port);
   reportPromise(provider.get([
