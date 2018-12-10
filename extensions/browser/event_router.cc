@@ -1005,8 +1005,8 @@ Event::Event(events::HistogramValue histogram_value,
 
 Event::~Event() {}
 
-Event* Event::DeepCopy() const {
-  Event* copy = new Event(
+std::unique_ptr<Event> Event::DeepCopy() const {
+  auto copy = std::make_unique<Event>(
       histogram_value, event_name, event_args->CreateDeepCopy(),
       restrict_to_browser_context, event_url, user_gesture, filter_info);
   copy->will_dispatch_callback = will_dispatch_callback;

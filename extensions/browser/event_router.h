@@ -462,10 +462,8 @@ struct Event {
 
   ~Event();
 
-  // Makes a deep copy of this instance. Ownership is transferred to the
-  // caller.
-  // TODO(devlin): Have this return a unique_ptr.
-  Event* DeepCopy() const;
+  // Makes a deep copy of this instance.
+  std::unique_ptr<Event> DeepCopy() const;
 };
 
 struct EventListenerInfo {
