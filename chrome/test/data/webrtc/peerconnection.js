@@ -41,6 +41,12 @@ var gDefaultAudioCodec = null;
 var gDefaultVideoCodec = null;
 
 /**
+ * The default video codec profile that should be used when creating an offer.
+ * @private
+ */
+var gDefaultVideoCodecProfile = null;
+
+/**
  * Flag to indicate if HW or SW video codec is preferred.
  * @private
  */
@@ -138,14 +144,16 @@ function setDefaultAudioCodec(audioCodec) {
  *     video codec, e.g. the first one in the list on the 'm=video' SDP offer
  *     line. |videoCodec| is the case-sensitive codec name, e.g. 'VP8' or
  *     'H264'.
+ * @param {string} profile promotes the specified codec profile.
  * @param {bool} preferHwVideoCodec specifies what codec to use from the
  *     'm=video' line when there are multiple codecs with the name |videoCodec|.
  *     If true, it will return the last codec with that name, and if false, it
  *     will return the first codec with that name.
  */
-function setDefaultVideoCodec(videoCodec, preferHwVideoCodec) {
+function setDefaultVideoCodec(videoCodec, preferHwVideoCodec, profile) {
   gDefaultVideoCodec = videoCodec;
   gDefaultPreferHwVideoCodec = preferHwVideoCodec;
+  gDefaultVideoCodecProfile = profile;
   returnToTest('ok');
 }
 
@@ -176,9 +184,9 @@ function createLocalOffer(constraints) {
                                                    gDefaultAudioCodec);
         }
         if (gDefaultVideoCodec !== null) {
-          localOffer.sdp = setSdpDefaultVideoCodec(localOffer.sdp,
-                                                   gDefaultVideoCodec,
-                                                   gDefaultPreferHwVideoCodec);
+          localOffer.sdp = setSdpDefaultVideoCodec(
+              localOffer.sdp, gDefaultVideoCodec, gDefaultPreferHwVideoCodec,
+              gDefaultVideoCodecProfile);
         }
         if (gOpusDtx) {
           localOffer.sdp = setOpusDtxEnabled(localOffer.sdp);

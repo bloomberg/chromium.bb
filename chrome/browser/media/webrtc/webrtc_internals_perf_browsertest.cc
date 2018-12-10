@@ -115,7 +115,8 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
 
   void RunsAudioVideoCall60SecsAndLogsInternalMetrics(
       const std::string& video_codec,
-      bool prefer_hw_video_codec) {
+      bool prefer_hw_video_codec = false,
+      const std::string& video_codec_profile = std::string()) {
     ASSERT_TRUE(test::HasReferenceFilesInCheckout());
     ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -229,16 +230,14 @@ IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  RunsAudioVideoCall60SecsAndLogsInternalMetrics(
-      "VP8", false /* prefer_hw_video_codec */);
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP8");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  RunsAudioVideoCall60SecsAndLogsInternalMetrics(
-      "VP9", false /* prefer_hw_video_codec */);
+  RunsAudioVideoCall60SecsAndLogsInternalMetrics("VP9");
 }
 
 #if BUILDFLAG(RTC_USE_H264)
@@ -249,10 +248,11 @@ IN_PROC_BROWSER_TEST_F(
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
-    LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
-        "Skipping WebRtcInternalsPerfBrowserTest."
-        "MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264 (test "
-        "\"OK\")";
+    LOG(WARNING)
+        << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
+           "Skipping WebRtcInternalsPerfBrowserTest."
+           "MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264 (test "
+           "\"OK\")";
     return;
   }
   RunsAudioVideoCall60SecsAndLogsInternalMetrics(
