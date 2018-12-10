@@ -88,7 +88,7 @@ chrome.test.runTests([
     };
 
     chrome.inputMethodPrivate.onSettingsChanged.addListener(listener);
-    chrome.inputMethodPrivate.setSetting('ime', 'key', 'value', () => {});
+    chrome.inputMethodPrivate.setSetting('ime', 'key', 'value');
   },
   // Test OnSettingsChanged event gets raised when a key is changed.
   function eventRaisedWhenSettingChanged() {
@@ -103,7 +103,7 @@ chrome.test.runTests([
 
     chrome.inputMethodPrivate.setSetting('ime', 'key', 'value1', () => {
       chrome.inputMethodPrivate.onSettingsChanged.addListener(listener);
-      chrome.inputMethodPrivate.setSetting('ime', 'key', 'value2', () => {});
+      chrome.inputMethodPrivate.setSetting('ime', 'key', 'value2');
     });
   }
 ]);

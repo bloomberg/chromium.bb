@@ -388,6 +388,7 @@
           {
             "type": "function",
             "name": "callback",
+            "optional": true,
             "description": "Callback to notify that the new value has been set",
             "parameters": []
           }
