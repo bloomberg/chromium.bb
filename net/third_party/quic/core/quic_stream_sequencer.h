@@ -75,6 +75,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // is no readable region available.
   bool GetReadableRegion(iovec* iov) const;
 
+  // Fill in one iovec with the next unread region for the quic spdy stream.
+  // Returns false if no readable region is available.
+  bool PrefetchNextRegion(iovec* iov);
+
   // Copies the data into the iov_len buffers provided.  Returns the number of
   // bytes read.  Any buffered data no longer in use will be released.
   // TODO(rch): remove this method and instead implement it as a helper method
@@ -138,6 +142,8 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   }
 
   bool level_triggered() const { return level_triggered_; }
+
+  void set_stream(StreamInterface* stream) { stream_ = stream; }
 
   // Returns string describing internal state.
   const QuicString DebugString() const;

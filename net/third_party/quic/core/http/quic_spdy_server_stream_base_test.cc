@@ -32,7 +32,8 @@ class QuicSpdyServerStreamBaseTest : public QuicTest {
                                         &alarm_factory_,
                                         Perspective::IS_SERVER)) {
     stream_ = new TestQuicSpdyServerStream(
-        QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
+        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
+            session_, 0),
         &session_, BIDIRECTIONAL);
     session_.ActivateStream(QuicWrapUnique(stream_));
     helper_.AdvanceTime(QuicTime::Delta::FromSeconds(1));

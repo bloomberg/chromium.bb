@@ -181,9 +181,9 @@ class QuartcSessionTest : public QuicTest {
     QuicIpAddress ip;
     ip.FromString("0.0.0.0");
     return QuicMakeUnique<QuicConnection>(
-        0, QuicSocketAddress(ip, 0), &simulator_, simulator_.GetAlarmFactory(),
-        writer, /*owns_writer=*/false, perspective,
-        ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
+        EmptyQuicConnectionId(), QuicSocketAddress(ip, 0), &simulator_,
+        simulator_.GetAlarmFactory(), writer, /*owns_writer=*/false,
+        perspective, ParsedVersionOfIndex(CurrentSupportedVersions(), 0));
   }
 
   // Runs all tasks scheduled in the next 200 ms.

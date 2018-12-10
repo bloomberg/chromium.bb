@@ -5,7 +5,6 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_ENCODER_STREAM_RECEIVER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QPACK_QPACK_ENCODER_STREAM_RECEIVER_H_
 
-#include <cstddef>
 #include <cstdint>
 
 #include "net/third_party/quic/core/qpack/qpack_instruction_decoder.h"

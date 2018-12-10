@@ -84,24 +84,26 @@ void QuicDispatcherPeer::set_new_sessions_allowed_per_event_loop(
 // static
 void QuicDispatcherPeer::SendPublicReset(
     QuicDispatcher* dispatcher,
-    const QuicSocketAddress& server_address,
-    const QuicSocketAddress& client_address,
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address,
     QuicConnectionId connection_id,
-    bool ietf_quic) {
+    bool ietf_quic,
+    std::unique_ptr<QuicPerPacketContext> packet_context) {
   dispatcher->time_wait_list_manager()->SendPublicReset(
-      server_address, client_address, connection_id, ietf_quic);
+      self_address, peer_address, connection_id, ietf_quic,
+      std::move(packet_context));
 }
 
 // static
-std::unique_ptr<QuicDispatcher::PerPacketContext>
-QuicDispatcherPeer::GetPerPacketContext(QuicDispatcher* dispatcher) {
+std::unique_ptr<QuicPerPacketContext> QuicDispatcherPeer::GetPerPacketContext(
+    QuicDispatcher* dispatcher) {
   return dispatcher->GetPerPacketContext();
 }
 
 // static
 void QuicDispatcherPeer::RestorePerPacketContext(
     QuicDispatcher* dispatcher,
-    std::unique_ptr<QuicDispatcher::PerPacketContext> context) {
+    std::unique_ptr<QuicPerPacketContext> context) {
   dispatcher->RestorePerPacketContext(std::move(context));
 }
 

@@ -214,7 +214,8 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
     stream_ = new QuicSimpleServerStreamPeer(
-        QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
+        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
+            session_, 0),
         &session_, BIDIRECTIONAL, &memory_cache_backend_);
     // Register stream_ in dynamic_stream_map_ and pass ownership to session_.
     session_.ActivateStream(QuicWrapUnique(stream_));
@@ -375,7 +376,8 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
 TEST_P(QuicSimpleServerStreamTest, SendPushResponseWith404Response) {
   // Create a new promised stream with even id().
   QuicSimpleServerStreamPeer* promised_stream = new QuicSimpleServerStreamPeer(
-      QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, 0),
+      QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(session_,
+                                                                       0),
       &session_, WRITE_UNIDIRECTIONAL, &memory_cache_backend_);
   session_.ActivateStream(QuicWrapUnique(promised_stream));
 
@@ -456,7 +458,9 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
       session_,
       PromisePushResourcesMock(
           host + request_path, _,
-          QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0), _));
+          QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
+              session_, 0),
+          _));
   EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(1)
@@ -484,7 +488,8 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
 
   // Create a stream with even stream id and test against this stream.
   const QuicStreamId kServerInitiatedStreamId =
-      QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, 0);
+      QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(session_,
+                                                                       0);
   // Create a server initiated stream and pass it to session_.
   QuicSimpleServerStreamPeer* server_initiated_stream =
       new QuicSimpleServerStreamPeer(kServerInitiatedStreamId, &session_,

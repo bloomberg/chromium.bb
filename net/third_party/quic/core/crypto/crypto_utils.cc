@@ -95,10 +95,11 @@ void CryptoUtils::CreateTlsInitialCrypters(Perspective perspective,
                                            CrypterPair* crypters) {
   const EVP_MD* hash = EVP_sha256();
 
-  uint8_t connection_id_bytes[sizeof(connection_id)];
-  for (size_t i = 0; i < sizeof(connection_id); ++i) {
+  uint64_t connection_id64 = QuicConnectionIdToUInt64(connection_id);
+  uint8_t connection_id_bytes[sizeof(connection_id64)];
+  for (size_t i = 0; i < sizeof(connection_id64); ++i) {
     connection_id_bytes[i] =
-        (connection_id >> ((sizeof(connection_id) - i - 1) * 8)) & 0xff;
+        (connection_id64 >> ((sizeof(connection_id64) - i - 1) * 8)) & 0xff;
   }
 
   std::vector<uint8_t> handshake_secret;

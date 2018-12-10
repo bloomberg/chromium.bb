@@ -4,9 +4,8 @@
 
 #include "net/third_party/quic/core/crypto/quic_crypto_server_config.h"
 
-#include <stdlib.h>
-
 #include <algorithm>
+#include <cstdlib>
 #include <memory>
 
 #include "base/macros.h"
@@ -31,6 +30,7 @@
 #include "net/third_party/quic/core/proto/source_address_token.pb.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_socket_address_coder.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_clock.h"
@@ -866,8 +866,10 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     const QuicReferenceCountedPointer<Config>& requested_config,
     const QuicReferenceCountedPointer<Config>& primary_config,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const {
-  connection_id = QuicEndian::HostToNet64(connection_id);
-
+  // TODO(dschinazi) b/120240679 - move this endianness swap to
+  // ProcessClientHelloAfterCalculateSharedKeys()
+  connection_id = QuicConnectionIdFromUInt64(
+      QuicEndian::HostToNet64(QuicConnectionIdToUInt64(connection_id)));
   ProcessClientHelloHelper helper(&done_cb);
 
   if (found_error) {
@@ -1016,8 +1018,10 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
 
   QuicString hkdf_suffix;
   const QuicData& client_hello_serialized = client_hello.GetSerialized();
+  // TODO(dschinazi) b/120240679 - use connection_id.length()
   hkdf_suffix.reserve(sizeof(connection_id) + client_hello_serialized.length() +
                       requested_config->serialized.size());
+  // TODO(dschinazi) b/120240679 - use connection_id.length() and .data()
   hkdf_suffix.append(reinterpret_cast<char*>(&connection_id),
                      sizeof(connection_id));
   hkdf_suffix.append(client_hello_serialized.data(),
@@ -1042,6 +1046,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
     QuicString hkdf_input;
     hkdf_input.append(QuicCryptoConfig::kCETVLabel,
                       strlen(QuicCryptoConfig::kCETVLabel) + 1);
+    // TODO(dschinazi) b/120240679 - use connection_id.length() and .data()
     hkdf_input.append(reinterpret_cast<char*>(&connection_id),
                       sizeof(connection_id));
     hkdf_input.append(client_hello_copy_serialized.data(),
@@ -1640,8 +1645,8 @@ void QuicCryptoServerConfig::BuildRejection(
                   << "with server-designated connection ID "
                   << server_designated_connection_id;
     out->set_tag(kSREJ);
-    out->SetValue(kRCID,
-                  QuicEndian::HostToNet64(server_designated_connection_id));
+    out->SetValue(kRCID, QuicEndian::HostToNet64(QuicConnectionIdToUInt64(
+                             server_designated_connection_id)));
   } else {
     out->set_tag(kREJ);
   }

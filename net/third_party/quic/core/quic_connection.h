@@ -1349,7 +1349,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool processing_ack_frame_;
 
   // True if the writer supports release timestamp.
-  const bool supports_release_time_;
+  bool supports_release_time_;
 
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;

@@ -343,7 +343,7 @@ QuicConnection::QuicConnection(
       last_control_frame_id_(kInvalidControlFrameId),
       is_path_degrading_(false),
       processing_ack_frame_(false),
-      supports_release_time_(writer->SupportsReleaseTime()),
+      supports_release_time_(false),
       release_time_into_future_(QuicTime::Delta::Zero()),
       donot_retransmit_old_window_updates_(false),
       no_version_negotiation_(supported_versions.size() == 1),
@@ -365,9 +365,6 @@ QuicConnection::QuicConnection(
     sent_packet_manager_.SetPacingAlarmGranularity(QuicTime::Delta::Zero());
     release_time_into_future_ =
         QuicTime::Delta::FromMilliseconds(kMinReleaseTimeIntoFutureMs);
-  }
-  if (supports_release_time_) {
-    UpdateReleaseTimeIntoFuture();
   }
   // Allow the packet writer to potentially reduce the packet size to a value
   // even smaller than kDefaultMaxPacketSize.
@@ -471,6 +468,14 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
     QUIC_RELOADABLE_FLAG_COUNT(quic_send_timestamps);
     framer_.set_process_timestamps(true);
     received_packet_manager_.set_save_timestamps(true);
+  }
+
+  supports_release_time_ =
+      writer_ != nullptr && writer_->SupportsReleaseTime() &&
+      !config.HasClientSentConnectionOption(kNPCO, perspective_);
+
+  if (supports_release_time_) {
+    UpdateReleaseTimeIntoFuture();
   }
 }
 

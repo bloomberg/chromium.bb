@@ -5,6 +5,7 @@
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 
 #include "net/third_party/quic/core/http/quic_spdy_session.h"
+#include "net/third_party/quic/core/quic_utils.h"
 
 namespace quic {
 namespace test {
@@ -64,26 +65,40 @@ size_t QuicSpdySessionPeer::WriteHeadersImpl(
 }
 
 //  static
-QuicStreamId QuicSpdySessionPeer::NextStreamId(const QuicSpdySession& session) {
-  return 2;
+QuicStreamId QuicSpdySessionPeer::StreamIdDelta(
+    const QuicSpdySession& session) {
+  return QuicUtils::StreamIdDelta(session.connection()->transport_version());
 }
 
 //  static
-QuicStreamId QuicSpdySessionPeer::GetNthClientInitiatedStreamId(
+QuicStreamId QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
     const QuicSpdySession& session,
     int n) {
-  return (session.connection()->transport_version() == QUIC_VERSION_99 ? 4
-                                                                       : 5) +
-         QuicSpdySessionPeer::NextStreamId(session) * n;
+  return QuicUtils::GetFirstBidirectionalStreamId(
+             session.connection()->transport_version(),
+             Perspective::IS_CLIENT) +
+         // + 1 because spdy_session contains headers stream.
+         QuicSpdySessionPeer::StreamIdDelta(session) * (n + 1);
 }
 
 //  static
-QuicStreamId QuicSpdySessionPeer::GetNthServerInitiatedStreamId(
+QuicStreamId QuicSpdySessionPeer::GetNthServerInitiatedBidirectionalStreamId(
     const QuicSpdySession& session,
     int n) {
-  return (session.connection()->transport_version() == QUIC_VERSION_99 ? 1
-                                                                       : 2) +
-         QuicSpdySessionPeer::NextStreamId(session) * n;
+  return QuicUtils::GetFirstBidirectionalStreamId(
+             session.connection()->transport_version(),
+             Perspective::IS_SERVER) +
+         QuicSpdySessionPeer::StreamIdDelta(session) * n;
+}
+
+//  static
+QuicStreamId QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
+    const QuicSpdySession& session,
+    int n) {
+  return QuicUtils::GetFirstUnidirectionalStreamId(
+             session.connection()->transport_version(),
+             Perspective::IS_SERVER) +
+         QuicSpdySessionPeer::StreamIdDelta(session) * n;
 }
 
 }  // namespace test

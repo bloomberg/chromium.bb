@@ -44,31 +44,30 @@ class ConnectionIdCleanUpAlarm : public QuicAlarm::Delegate {
   QuicTimeWaitListManager* time_wait_list_manager_;
 };
 
-// This class stores pending public reset packets to be sent to clients.
-// server_address - server address on which a packet what was received for
+// This class stores pending termination packets to be sent to peers.
+// self_address   - server address on which a packet what was received for
 //                  a connection_id in time wait state.
-// client_address - address of the client that sent that packet. Needed to send
-//                  the public reset packet back to the client.
-// packet - the pending public reset packet that is to be sent to the client.
+// peer_address   - Address of the peer to send this packet to.
+// packet - the pending termination packet that is to be sent to the peer.
 //          created instance takes the ownership of this packet.
 class QuicTimeWaitListManager::QueuedPacket {
  public:
-  QueuedPacket(const QuicSocketAddress& server_address,
-               const QuicSocketAddress& client_address,
+  QueuedPacket(const QuicSocketAddress& self_address,
+               const QuicSocketAddress& peer_address,
                std::unique_ptr<QuicEncryptedPacket> packet)
-      : server_address_(server_address),
-        client_address_(client_address),
+      : self_address_(self_address),
+        peer_address_(peer_address),
         packet_(std::move(packet)) {}
   QueuedPacket(const QueuedPacket&) = delete;
   QueuedPacket& operator=(const QueuedPacket&) = delete;
 
-  const QuicSocketAddress& server_address() const { return server_address_; }
-  const QuicSocketAddress& client_address() const { return client_address_; }
+  const QuicSocketAddress& self_address() const { return self_address_; }
+  const QuicSocketAddress& peer_address() const { return peer_address_; }
   QuicEncryptedPacket* packet() { return packet_.get(); }
 
  private:
-  const QuicSocketAddress server_address_;
-  const QuicSocketAddress client_address_;
+  const QuicSocketAddress self_address_;
+  const QuicSocketAddress peer_address_;
   std::unique_ptr<QuicEncryptedPacket> packet_;
 };
 
@@ -135,12 +134,13 @@ void QuicTimeWaitListManager::OnBlockedWriterCanWrite() {
 }
 
 void QuicTimeWaitListManager::ProcessPacket(
-    const QuicSocketAddress& server_address,
-    const QuicSocketAddress& client_address,
-    QuicConnectionId connection_id) {
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address,
+    QuicConnectionId connection_id,
+    std::unique_ptr<QuicPerPacketContext> packet_context) {
   DCHECK(IsConnectionIdInTimeWait(connection_id));
   QUIC_DLOG(INFO) << "Processing " << connection_id << " in time wait state.";
-  // TODO(satyamshekhar): Think about handling packets from different client
+  // TODO(satyamshekhar): Think about handling packets from different peer
   // addresses.
   auto it = connection_id_map_.find(connection_id);
   DCHECK(it != connection_id_map_.end());
@@ -160,12 +160,13 @@ void QuicTimeWaitListManager::ProcessPacket(
       }
       for (const auto& packet : connection_data->termination_packets) {
         SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
-            server_address, client_address, packet->Clone()));
+                              self_address, peer_address, packet->Clone()),
+                          std::move(packet_context));
       }
       return;
     case SEND_STATELESS_RESET:
-      SendPublicReset(server_address, client_address, connection_id,
-                      connection_data->ietf_quic);
+      SendPublicReset(self_address, peer_address, connection_id,
+                      connection_data->ietf_quic, std::move(packet_context));
       return;
     case DO_NOTHING:
       DCHECK(connection_data->ietf_quic);
@@ -176,41 +177,46 @@ void QuicTimeWaitListManager::SendVersionNegotiationPacket(
     QuicConnectionId connection_id,
     bool ietf_quic,
     const ParsedQuicVersionVector& supported_versions,
-    const QuicSocketAddress& server_address,
-    const QuicSocketAddress& client_address) {
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address,
+    std::unique_ptr<QuicPerPacketContext> packet_context) {
   SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
-      server_address, client_address,
-      QuicFramer::BuildVersionNegotiationPacket(connection_id, ietf_quic,
-                                                supported_versions)));
+                        self_address, peer_address,
+                        QuicFramer::BuildVersionNegotiationPacket(
+                            connection_id, ietf_quic, supported_versions)),
+                    std::move(packet_context));
 }
 
 // Returns true if the number of packets received for this connection_id is a
-// power of 2 to throttle the number of public reset packets we send to a
-// client.
+// power of 2 to throttle the number of public reset packets we send to a peer.
 bool QuicTimeWaitListManager::ShouldSendResponse(int received_packet_count) {
   return (received_packet_count & (received_packet_count - 1)) == 0;
 }
 
 void QuicTimeWaitListManager::SendPublicReset(
-    const QuicSocketAddress& server_address,
-    const QuicSocketAddress& client_address,
+    const QuicSocketAddress& self_address,
+    const QuicSocketAddress& peer_address,
     QuicConnectionId connection_id,
-    bool ietf_quic) {
+    bool ietf_quic,
+    std::unique_ptr<QuicPerPacketContext> packet_context) {
   if (ietf_quic) {
     SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(
-        server_address, client_address,
-        BuildIetfStatelessResetPacket(connection_id)));
+                          self_address, peer_address,
+                          BuildIetfStatelessResetPacket(connection_id)),
+                      std::move(packet_context));
     return;
   }
   QuicPublicResetPacket packet;
   packet.connection_id = connection_id;
   // TODO(satyamshekhar): generate a valid nonce for this connection_id.
   packet.nonce_proof = 1010101;
-  packet.client_address = client_address;
+  // TODO(wub): This is wrong for proxied sessions. Fix it.
+  packet.client_address = peer_address;
   GetEndpointId(&packet.endpoint_id);
   // Takes ownership of the packet.
-  SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(server_address, client_address,
-                                                 BuildPublicReset(packet)));
+  SendOrQueuePacket(QuicMakeUnique<QueuedPacket>(self_address, peer_address,
+                                                 BuildPublicReset(packet)),
+                    std::move(packet_context));
 }
 
 std::unique_ptr<QuicEncryptedPacket> QuicTimeWaitListManager::BuildPublicReset(
@@ -228,7 +234,8 @@ QuicTimeWaitListManager::BuildIetfStatelessResetPacket(
 // Either sends the packet and deletes it or makes pending queue the
 // owner of the packet.
 void QuicTimeWaitListManager::SendOrQueuePacket(
-    std::unique_ptr<QueuedPacket> packet) {
+    std::unique_ptr<QueuedPacket> packet,
+    std::unique_ptr<QuicPerPacketContext> /*packet_context*/) {
   if (WriteToWire(packet.get())) {
     // Allow the packet to be deleted upon leaving this function.
     return;
@@ -243,7 +250,7 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
   }
   WriteResult result = writer_->WritePacket(
       queued_packet->packet()->data(), queued_packet->packet()->length(),
-      queued_packet->server_address().host(), queued_packet->client_address(),
+      queued_packet->self_address().host(), queued_packet->peer_address(),
       nullptr);
 
   // If using a batch writer and the packet is buffered, flush it.
@@ -259,8 +266,8 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
     return writer_->IsWriteBlockedDataBuffered();
   } else if (IsWriteError(result.status)) {
     QUIC_LOG_FIRST_N(WARNING, 1)
-        << "Received unknown error while sending reset packet to "
-        << queued_packet->client_address().ToString() << ": "
+        << "Received unknown error while sending termination packet to "
+        << queued_packet->peer_address().ToString() << ": "
         << strerror(result.error_code);
   }
   return true;
@@ -340,7 +347,8 @@ QuicTimeWaitListManager::ConnectionIdData::~ConnectionIdData() = default;
 
 QuicUint128 QuicTimeWaitListManager::GetStatelessResetToken(
     QuicConnectionId connection_id) const {
-  return connection_id;
+  // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
+  return QuicConnectionIdToUInt64(connection_id);
 }
 
 }  // namespace quic

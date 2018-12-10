@@ -56,7 +56,9 @@ class QuicClientPushPromiseIndexTest : public QuicTest {
         session_(connection_->supported_versions(), connection_, &index_),
         promised_(
             &session_,
-            QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, 0),
+            QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
+                session_,
+                0),
             url_) {
     request_[":path"] = "/bar";
     request_[":authority"] = "www.google.com";

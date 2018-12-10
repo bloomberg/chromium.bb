@@ -238,7 +238,7 @@ QuicFramer::QuicFramer(const ParsedQuicVersionVector& supported_versions,
     : visitor_(nullptr),
       error_(QUIC_NO_ERROR),
       largest_packet_number_(0),
-      last_serialized_connection_id_(0),
+      last_serialized_connection_id_(EmptyQuicConnectionId()),
       last_version_label_(0),
       last_header_form_(GOOGLE_QUIC_PACKET),
       version_(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
@@ -1253,9 +1253,9 @@ QuicFramer::BuildIetfVersionNegotiationPacket(
     return nullptr;
   }
 
-  if (!AppendIetfConnectionId(true, 0, PACKET_0BYTE_CONNECTION_ID,
-                              connection_id, PACKET_8BYTE_CONNECTION_ID,
-                              &writer)) {
+  if (!AppendIetfConnectionId(true, EmptyQuicConnectionId(),
+                              PACKET_0BYTE_CONNECTION_ID, connection_id,
+                              PACKET_8BYTE_CONNECTION_ID, &writer)) {
     return nullptr;
   }
 
@@ -1809,6 +1809,7 @@ bool QuicFramer::ProcessPublicHeader(QuicDataReader* reader,
 
   switch (public_flags & PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID) {
     case PACKET_PUBLIC_FLAGS_8BYTE_CONNECTION_ID:
+      // TODO(dschinazi) b/120240679 - add length
       if (!reader->ReadConnectionId(&header->destination_connection_id)) {
         set_detailed_error("Unable to read ConnectionId.");
         return false;
@@ -2064,12 +2065,14 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
   }
 
   // Read connection ID.
+  // TODO(dschinazi) b/120240679 - add length
   if (header->destination_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
       !reader->ReadConnectionId(&header->destination_connection_id)) {
     set_detailed_error("Unable to read Destination ConnectionId.");
     return false;
   }
 
+  // TODO(dschinazi) b/120240679 - add length
   if (header->source_connection_id_length == PACKET_8BYTE_CONNECTION_ID &&
       !reader->ReadConnectionId(&header->source_connection_id)) {
     set_detailed_error("Unable to read Source ConnectionId.");
@@ -2078,7 +2081,7 @@ bool QuicFramer::ProcessIetfPacketHeader(QuicDataReader* reader,
 
   if (header->source_connection_id_length == PACKET_8BYTE_CONNECTION_ID) {
     // Set destination connection ID to source connection ID.
-    DCHECK_EQ(0u, header->destination_connection_id);
+    DCHECK_EQ(EmptyQuicConnectionId(), header->destination_connection_id);
     header->destination_connection_id = header->source_connection_id;
   }
 
@@ -4926,11 +4929,13 @@ bool QuicFramer::ProcessNewConnectionIdFrame(QuicDataReader* reader,
     return false;
   }
 
+  // TODO(dschinazi) b/120240679 - remove this check
   if (connection_id_length != kQuicConnectionIdLength) {
     set_detailed_error("Invalid new connection ID length.");
     return false;
   }
 
+  // TODO(dschinazi) b/120240679 - add length
   if (!reader->ReadConnectionId(&frame->connection_id)) {
     set_detailed_error("Unable to read new connection ID frame connection id.");
     return false;

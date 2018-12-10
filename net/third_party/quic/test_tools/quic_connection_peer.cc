@@ -328,6 +328,11 @@ void QuicConnectionPeer::SetNoVersionNegotiation(QuicConnection* connection,
 }
 
 // static
+bool QuicConnectionPeer::SupportsReleaseTime(QuicConnection* connection) {
+  return connection->supports_release_time_;
+}
+
+// static
 QuicConnection::PacketContent QuicConnectionPeer::GetCurrentPacketContent(
     QuicConnection* connection) {
   return connection->current_packet_content_;

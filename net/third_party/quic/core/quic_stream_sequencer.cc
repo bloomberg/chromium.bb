@@ -145,6 +145,11 @@ bool QuicStreamSequencer::GetReadableRegion(iovec* iov) const {
   return buffered_frames_.GetReadableRegion(iov);
 }
 
+bool QuicStreamSequencer::PrefetchNextRegion(iovec* iov) {
+  DCHECK(!blocked_);
+  return buffered_frames_.PrefetchNextRegion(iov);
+}
+
 void QuicStreamSequencer::Read(QuicString* buffer) {
   DCHECK(!blocked_);
   buffer->resize(buffer->size() + ReadableBytes());

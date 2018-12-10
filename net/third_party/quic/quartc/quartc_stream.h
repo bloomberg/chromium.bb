@@ -5,10 +5,18 @@
 #ifndef NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_STREAM_H_
 #define NET_THIRD_PARTY_QUIC_QUARTC_QUARTC_STREAM_H_
 
+#include <stddef.h>
+#include <limits>
+
+#include "net/third_party/quic/core/quic_ack_listener_interface.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/core/quic_stream.h"
+#include "net/third_party/quic/core/quic_types.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_mem_slice_span.h"
+#include "net/third_party/quic/platform/api/quic_reference_counted.h"
+#include "net/third_party/quic/platform/impl/quic_export_impl.h"
+#include "net/third_party/quic/quartc/quartc_interval_counter.h"
 
 namespace quic {
 
@@ -19,6 +27,7 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
  public:
   QuartcStream(QuicStreamId id, QuicSession* session);
+  explicit QuartcStream(PendingStream pending);
 
   ~QuartcStream() override;
 
@@ -35,6 +44,11 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
       const QuicReferenceCountedPointer<QuicAckListenerInterface>& ack_listener)
       override;
 
+  bool OnStreamFrameAcked(QuicStreamOffset offset,
+                          QuicByteCount data_length,
+                          bool fin_acked,
+                          QuicTime::Delta ack_delay_time) override;
+
   void OnStreamFrameRetransmitted(QuicStreamOffset offset,
                                   QuicByteCount data_length,
                                   bool fin_retransmitted) override;
@@ -50,24 +64,27 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
   // Whether the stream should be cancelled instead of retransmitted on loss.
   // If set to true, the stream will reset itself instead of retransmitting lost
   // stream frames.  Defaults to false.  Setting it to true is equivalent to
-  // setting |max_frame_retransmission_count| to zero.
+  // setting |max_retransmission_count| to zero.
   bool cancel_on_loss();
   void set_cancel_on_loss(bool cancel_on_loss);
 
-  // Maximum number of stream frames which may be retransmitted.  Up to this
-  // number of stream frames may be retransmitted.  If any stream frames in
-  // excess of this amount would be retransmitted, the stream will reset itself.
-  // Setting it to zero disables retransmissions.
+  // Maximum number of times this stream's data may be retransmitted.  Each byte
+  // of stream data may be retransmitted this many times.  If any byte (or range
+  // of bytes) is lost and would be retransmitted more than this number of
+  // times, the stream resets itself instead of retransmitting the data again.
+  // Setting this value to zero disables retransmissions.
   //
-  // Ideally, the stream would support a maximum retransmission count per frame,
-  // allowing each frame to be retransmitted up to N times.  However, this
-  // requires complex bookkeeping (tracking retransmission count on a per-frame
-  // basis).  This feature provides a simple way to limit retransmissions on
-  // streams that are expected to fit within one frame (eg. small messages).
-  int max_frame_retransmission_count() const;
-  void set_max_frame_retransmission_count(int max_frame_retransmission_count);
+  // Note that this limit applies only to stream data, not to the FIN bit.  If
+  // only the FIN bit needs to be retransmitted, there is no benefit to
+  // cancelling the stream and sending a reset frame instead.
+  int max_retransmission_count() const;
+  void set_max_retransmission_count(int max_retransmission_count);
 
   QuicByteCount BytesPendingRetransmission();
+
+  // Returns the current read offset for this stream.  During a call to
+  // Delegate::OnReceived, this value is the offset of the first byte read.
+  QuicStreamOffset ReadOffset();
 
   // Marks this stream as finished writing.  Asynchronously sends a FIN and
   // closes the write-side.  It is not necessary to call FinishWriting() if the
@@ -108,11 +125,16 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream {
  private:
   Delegate* delegate_ = nullptr;
 
-  // Maximum number of frames which may be retransmitted on this stream.
-  int max_frame_retransmission_count_ = std::numeric_limits<int>::max();
+  // Maximum number of times this stream's data may be retransmitted.
+  int max_retransmission_count_ = std::numeric_limits<int>::max();
 
-  // Total number of stream frames detected as lost.
-  int total_frames_lost_ = 0;
+  // Counter which tracks the number of times each frame has been lost
+  // (accounting for the possibility of overlapping frames).
+  //
+  // If the maximum count of any lost frame exceeds |max_retransmission_count_|,
+  // the stream will cancel itself on the next attempt to retransmit data (the
+  // next call to |OnCanWrite|).
+  QuartcIntervalCounter<QuicStreamOffset> lost_frame_counter_;
 };
 
 }  // namespace quic

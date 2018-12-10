@@ -72,7 +72,8 @@ void QuicSimpleServerSession::PromisePushResources(
   for (QuicBackendResponse::ServerPushInfo resource : resources) {
     spdy::SpdyHeaderBlock headers = SynthesizePushRequestHeaders(
         request_url, resource, original_request_headers);
-    highest_promised_stream_id_ += 2;
+    highest_promised_stream_id_ +=
+        QuicUtils::StreamIdDelta(connection()->transport_version());
     SendPushPromise(original_stream_id, highest_promised_stream_id_,
                     headers.Clone());
     promised_streams_.push_back(PromisedStreamInfo(
@@ -94,6 +95,14 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(QuicStreamId id) {
   return stream;
 }
 
+QuicSpdyStream* QuicSimpleServerSession::CreateIncomingStream(
+    PendingStream pending) {
+  QuicSpdyStream* stream = new QuicSimpleServerStream(
+      std::move(pending), this, BIDIRECTIONAL, quic_simple_server_backend_);
+  ActivateStream(QuicWrapUnique(stream));
+  return stream;
+}
+
 QuicSimpleServerStream*
 QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
   DCHECK(false);
@@ -102,12 +111,12 @@ QuicSimpleServerSession::CreateOutgoingBidirectionalStream() {
 
 QuicSimpleServerStream*
 QuicSimpleServerSession::CreateOutgoingUnidirectionalStream() {
-  if (!ShouldCreateOutgoingStream()) {
+  if (!ShouldCreateOutgoingUnidirectionalStream()) {
     return nullptr;
   }
 
   QuicSimpleServerStream* stream = new QuicSimpleServerStream(
-      GetNextOutgoingStreamId(), this, WRITE_UNIDIRECTIONAL,
+      GetNextOutgoingUnidirectionalStreamId(), this, WRITE_UNIDIRECTIONAL,
       quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
@@ -135,9 +144,14 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
     // cancelling the promised server push.
     // Since PromisedStreamInfo are queued in sequence, the corresponding
     // index for it in promised_streams_ can be calculated.
-    DCHECK(frame.stream_id >= next_outgoing_stream_id());
-    size_t index = (frame.stream_id - next_outgoing_stream_id()) / 2;
-    DCHECK(index <= promised_streams_.size());
+    QuicStreamId next_stream_id = next_outgoing_unidirectional_stream_id();
+    if (connection()->transport_version() == QUIC_VERSION_99) {
+      DCHECK(!QuicUtils::IsBidirectionalStreamId(frame.stream_id));
+    }
+    DCHECK_GE(frame.stream_id, next_stream_id);
+    size_t index = (frame.stream_id - next_stream_id) /
+                   QuicUtils::StreamIdDelta(connection()->transport_version());
+    DCHECK_LE(index, promised_streams_.size());
     promised_streams_[index].is_cancelled = true;
     control_frame_manager().WriteOrBufferRstStream(frame.stream_id,
                                                    QUIC_RST_ACKNOWLEDGEMENT, 0);
@@ -178,14 +192,16 @@ void QuicSimpleServerSession::SendPushPromise(QuicStreamId original_stream_id,
 }
 
 void QuicSimpleServerSession::HandlePromisedPushRequests() {
-  while (!promised_streams_.empty() && ShouldCreateOutgoingStream()) {
+  while (!promised_streams_.empty() &&
+         ShouldCreateOutgoingUnidirectionalStream()) {
     PromisedStreamInfo& promised_info = promised_streams_.front();
-    DCHECK_EQ(next_outgoing_stream_id(), promised_info.stream_id);
+    DCHECK_EQ(next_outgoing_unidirectional_stream_id(),
+              promised_info.stream_id);
 
     if (promised_info.is_cancelled) {
       // This stream has been reset by client. Skip this stream id.
       promised_streams_.pop_front();
-      GetNextOutgoingStreamId();
+      GetNextOutgoingUnidirectionalStreamId();
       return;
     }
 

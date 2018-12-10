@@ -111,8 +111,9 @@ void QuicSession::RegisterStaticStream(QuicStreamId id, QuicStream* stream) {
   static_stream_map_[id] = stream;
 
   if (faster_get_stream_) {
-    // TODO(rch): Change + 2 when uni/bidi support is added.
-    QUIC_BUG_IF(id > largest_static_stream_id_ + 2)
+    QUIC_BUG_IF(id >
+                largest_static_stream_id_ +
+                    QuicUtils::StreamIdDelta(connection_->transport_version()))
         << ENDPOINT << "Static stream registered out of order: " << id
         << " vs: " << largest_static_stream_id_;
     largest_static_stream_id_ = std::max(id, largest_static_stream_id_);
@@ -941,16 +942,31 @@ void QuicSession::ActivateStream(std::unique_ptr<QuicStream> stream) {
   connection_->SetNumOpenStreams(dynamic_stream_map_.size());
 }
 
-QuicStreamId QuicSession::GetNextOutgoingStreamId() {
+QuicStreamId QuicSession::GetNextOutgoingBidirectionalStreamId() {
   if (connection_->transport_version() == QUIC_VERSION_99) {
-    return v99_streamid_manager_.GetNextOutgoingStreamId();
+    return v99_streamid_manager_.GetNextOutgoingBidirectionalStreamId();
   }
   return stream_id_manager_.GetNextOutgoingStreamId();
 }
 
-bool QuicSession::CanOpenNextOutgoingStream() {
+QuicStreamId QuicSession::GetNextOutgoingUnidirectionalStreamId() {
   if (connection_->transport_version() == QUIC_VERSION_99) {
-    return v99_streamid_manager_.CanOpenNextOutgoingStream();
+    return v99_streamid_manager_.GetNextOutgoingUnidirectionalStreamId();
+  }
+  return stream_id_manager_.GetNextOutgoingStreamId();
+}
+
+bool QuicSession::CanOpenNextOutgoingBidirectionalStream() {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.CanOpenNextOutgoingBidirectionalStream();
+  }
+  return stream_id_manager_.CanOpenNextOutgoingStream(
+      GetNumOpenOutgoingStreams());
+}
+
+bool QuicSession::CanOpenNextOutgoingUnidirectionalStream() {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.CanOpenNextOutgoingUnidirectionalStream();
   }
   return stream_id_manager_.CanOpenNextOutgoingStream(
       GetNumOpenOutgoingStreams());
@@ -1041,7 +1057,7 @@ QuicStream* QuicSession::GetOrCreateDynamicStream(
 void QuicSession::set_largest_peer_created_stream_id(
     QuicStreamId largest_peer_created_stream_id) {
   if (connection_->transport_version() == QUIC_VERSION_99) {
-    v99_streamid_manager_.set_largest_peer_created_stream_id(
+    v99_streamid_manager_.SetLargestPeerCreatedStreamId(
         largest_peer_created_stream_id);
     return;
   }
@@ -1157,9 +1173,16 @@ bool QuicSession::IsStreamFlowControlBlocked() {
   return false;
 }
 
-size_t QuicSession::MaxAvailableStreams() const {
+size_t QuicSession::MaxAvailableBidirectionalStreams() const {
   if (connection()->transport_version() == QUIC_VERSION_99) {
-    return v99_streamid_manager_.max_allowed_incoming_streams();
+    return v99_streamid_manager_.GetMaxAllowdIncomingBidirectionalStreams();
+  }
+  return stream_id_manager_.MaxAvailableStreams();
+}
+
+size_t QuicSession::MaxAvailableUnidirectionalStreams() const {
+  if (connection()->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.GetMaxAllowdIncomingUnidirectionalStreams();
   }
   return stream_id_manager_.MaxAvailableStreams();
 }
@@ -1343,7 +1366,8 @@ WriteStreamDataResult QuicSession::WriteStreamData(QuicStreamId id,
 }
 
 QuicUint128 QuicSession::GetStatelessResetToken() const {
-  return connection_->connection_id();
+  // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
+  return QuicConnectionIdToUInt64(connection_->connection_id());
 }
 
 bool QuicSession::RetransmitLostData() {
@@ -1461,9 +1485,16 @@ void QuicSession::SendStopSending(uint16_t code, QuicStreamId stream_id) {
 
 void QuicSession::OnCanCreateNewOutgoingStream() {}
 
-QuicStreamId QuicSession::next_outgoing_stream_id() const {
+QuicStreamId QuicSession::next_outgoing_bidirectional_stream_id() const {
   if (connection_->transport_version() == QUIC_VERSION_99) {
-    return v99_streamid_manager_.next_outgoing_stream_id();
+    return v99_streamid_manager_.next_outgoing_bidirectional_stream_id();
+  }
+  return stream_id_manager_.next_outgoing_stream_id();
+}
+
+QuicStreamId QuicSession::next_outgoing_unidirectional_stream_id() const {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.next_outgoing_unidirectional_stream_id();
   }
   return stream_id_manager_.next_outgoing_stream_id();
 }
@@ -1477,9 +1508,16 @@ bool QuicSession::OnStreamIdBlockedFrame(
   return v99_streamid_manager_.OnStreamIdBlockedFrame(frame);
 }
 
-size_t QuicSession::max_open_incoming_streams() const {
+size_t QuicSession::max_open_incoming_bidirectional_streams() const {
   if (connection_->transport_version() == QUIC_VERSION_99) {
-    return v99_streamid_manager_.max_allowed_incoming_streams();
+    return v99_streamid_manager_.GetMaxAllowdIncomingBidirectionalStreams();
+  }
+  return stream_id_manager_.max_open_incoming_streams();
+}
+
+size_t QuicSession::max_open_incoming_unidirectional_streams() const {
+  if (connection_->transport_version() == QUIC_VERSION_99) {
+    return v99_streamid_manager_.GetMaxAllowdIncomingUnidirectionalStreams();
   }
   return stream_id_manager_.max_open_incoming_streams();
 }

@@ -46,7 +46,7 @@ class TestDelegate : public ChloExtractor::Delegate {
 class ChloExtractorTest : public QuicTest {
  public:
   ChloExtractorTest() {
-    header_.destination_connection_id = 42;
+    header_.destination_connection_id = QuicConnectionIdFromUInt64(42);
     header_.destination_connection_id_length = PACKET_8BYTE_CONNECTION_ID;
     header_.version_flag = true;
     header_.version = AllSupportedVersions().front();

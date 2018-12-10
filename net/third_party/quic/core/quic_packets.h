@@ -317,6 +317,11 @@ struct QUIC_EXPORT_PRIVATE SerializedPacketDeleter {
 typedef std::unique_ptr<SerializedPacket, SerializedPacketDeleter>
     OwningSerializedPacketPointer;
 
+// Context for an incoming packet.
+struct QUIC_EXPORT_PRIVATE QuicPerPacketContext {
+  virtual ~QuicPerPacketContext() {}
+};
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKETS_H_

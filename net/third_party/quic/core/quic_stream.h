@@ -67,6 +67,10 @@ class QUIC_EXPORT_PRIVATE PendingStream
   // If the data violates flow control, the connection will be closed.
   void OnStreamFrame(const QuicStreamFrame& frame);
 
+  // Stores the final byte offset from |frame|.
+  // If the final offset violates flow control, the connection will be closed.
+  void OnRstStreamFrame(const QuicRstStreamFrame& frame);
+
  private:
   friend class QuicStream;
 
@@ -110,6 +114,7 @@ class QUIC_EXPORT_PRIVATE QuicStream
   // over other streams when determing what streams should write next.
   // |type| indicates whether the stream is bidirectional, read unidirectional
   // or write unidirectional.
+  // TODO(fayang): Remove |type| when IETF stream ID numbering fully kicks in.
   QuicStream(QuicStreamId id,
              QuicSession* session,
              bool is_static,

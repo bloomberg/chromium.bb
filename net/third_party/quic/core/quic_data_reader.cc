@@ -129,6 +129,7 @@ bool QuicDataReader::ReadStringPiece(QuicStringPiece* result, size_t size) {
 }
 
 bool QuicDataReader::ReadConnectionId(uint64_t* connection_id) {
+  // TODO(dschinazi) b/120240679 - read bytes directly into connection_id.data()
   if (!ReadBytes(connection_id, sizeof(*connection_id))) {
     return false;
   }

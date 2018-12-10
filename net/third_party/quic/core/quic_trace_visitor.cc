@@ -29,8 +29,9 @@ QuicTraceVisitor::QuicTraceVisitor(const QuicConnection* connection)
   // QUIC CIDs are currently represented in memory as a converted representation
   // of the on-wire ID.  Convert it back to wire format before recording, since
   // the standard treats it as an opaque blob.
-  QuicConnectionId connection_id =
-      QuicEndian::HostToNet64(connection->connection_id());
+  // TODO(dschinazi) b/120240679 - convert directly from CID to string
+  uint64_t connection_id = QuicEndian::HostToNet64(
+      QuicConnectionIdToUInt64(connection->connection_id()));
   QuicString binary_connection_id(reinterpret_cast<const char*>(&connection_id),
                                   sizeof(connection_id));
 

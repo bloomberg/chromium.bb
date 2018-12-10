@@ -11,10 +11,14 @@
 
 namespace blink {
 
-class MODULES_EXPORT P2PQuicStreamImpl final : public P2PQuicStream,
-                                               public quic::QuicStream {
+class MODULES_EXPORT P2PQuicStreamImpl final : public quic::QuicStream,
+                                               public P2PQuicStream {
  public:
   P2PQuicStreamImpl(quic::QuicStreamId id,
+                    quic::QuicSession* session,
+                    uint32_t delegate_read_buffer_size,
+                    uint32_t write_buffer_size);
+  P2PQuicStreamImpl(quic::PendingStream pending,
                     quic::QuicSession* session,
                     uint32_t delegate_read_buffer_size,
                     uint32_t write_buffer_size);

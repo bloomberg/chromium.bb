@@ -21,9 +21,9 @@
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_stream.h"
 #include "net/third_party/quic/core/quic_stream_frame_data_producer.h"
-#include "net/third_party/quic/core/quic_stream_id_manager.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
 #include "net/third_party/quic/core/session_notifier_interface.h"
+#include "net/third_party/quic/core/uber_quic_stream_id_manager.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
@@ -325,9 +325,11 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Returns true if any stream is flow controller blocked.
   bool IsStreamFlowControlBlocked();
 
-  size_t max_open_incoming_streams() const;
+  size_t max_open_incoming_bidirectional_streams() const;
+  size_t max_open_incoming_unidirectional_streams() const;
 
-  size_t MaxAvailableStreams() const;
+  size_t MaxAvailableBidirectionalStreams() const;
+  size_t MaxAvailableUnidirectionalStreams() const;
 
   // Returns existing static or dynamic stream with id = |stream_id|. If no
   // such stream exists, and |stream_id| is a peer-created dynamic stream id,
@@ -358,7 +360,8 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // implementation does nothing.
   virtual void OnCanCreateNewOutgoingStream();
 
-  QuicStreamId next_outgoing_stream_id() const;
+  QuicStreamId next_outgoing_bidirectional_stream_id() const;
+  QuicStreamId next_outgoing_unidirectional_stream_id() const;
 
   // Return true if given stream is peer initiated.
   bool IsIncomingStream(QuicStreamId id) const;
@@ -384,6 +387,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Caller does not own the returned stream.
   // Returns nullptr and does error handling if the stream can not be created.
   virtual QuicStream* CreateIncomingStream(QuicStreamId id) = 0;
+  virtual QuicStream* CreateIncomingStream(PendingStream pending) = 0;
 
   // Return the reserved crypto stream.
   virtual QuicCryptoStream* GetMutableCryptoStream() = 0;
@@ -394,16 +398,18 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Adds |stream| to the dynamic stream map.
   virtual void ActivateStream(std::unique_ptr<QuicStream> stream);
 
-  // Returns the stream ID for a new outgoing stream, and increments the
-  // underlying counter.
-  QuicStreamId GetNextOutgoingStreamId();
+  // Returns the stream ID for a new outgoing bidirectional/unidirectional
+  // stream, and increments the underlying counter.
+  QuicStreamId GetNextOutgoingBidirectionalStreamId();
+  QuicStreamId GetNextOutgoingUnidirectionalStreamId();
 
-  // Indicates whether the next outgoing stream ID can be allocated or not. The
-  // test for version-99/IETF QUIC is whether it will exceed the
-  // maximum-stream-id or not. For non-version-99 (Google) QUIC it checks
-  // whether the next stream would exceed the limit on the number of open
-  // streams.
-  bool CanOpenNextOutgoingStream();
+  // Indicates whether the next outgoing bidirectional/unidirectional stream ID
+  // can be allocated or not. The test for version-99/IETF QUIC is whether it
+  // will exceed the maximum-stream-id or not. For non-version-99 (Google) QUIC
+  // it checks whether the next stream would exceed the limit on the number of
+  // open streams.
+  bool CanOpenNextOutgoingBidirectionalStream();
+  bool CanOpenNextOutgoingUnidirectionalStream();
 
   // Returns existing stream with id = |stream_id|. If no such stream exists,
   // and |stream_id| is a peer-created id, then a new stream is created and
@@ -550,14 +556,13 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // been consumed.
   QuicUnorderedSet<QuicStreamId> draining_streams_;
 
-  // TODO(fayang): Add a UberStreamIdManager which contains a
-  // LegacyQuicStreamIdManager and two QuicStreamIdManager (for unidirectional
-  // and bidirectional streams, respectively).
+  // TODO(fayang): Consider moving LegacyQuicStreamIdManager into
+  // UberQuicStreamIdManager.
   // Manages stream IDs for Google QUIC.
   LegacyQuicStreamIdManager stream_id_manager_;
 
   // Manages stream IDs for version99/IETF QUIC
-  QuicStreamIdManager v99_streamid_manager_;
+  UberQuicStreamIdManager v99_streamid_manager_;
 
   // A counter for peer initiated streams which are in the dynamic_stream_map_.
   size_t num_dynamic_incoming_streams_;

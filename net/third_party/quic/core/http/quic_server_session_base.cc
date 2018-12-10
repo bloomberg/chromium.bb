@@ -211,9 +211,10 @@ bool QuicServerSessionBase::ShouldCreateIncomingStream(QuicStreamId id) {
   return true;
 }
 
-bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
+bool QuicServerSessionBase::ShouldCreateOutgoingBidirectionalStream() {
   if (!connection()->connected()) {
-    QUIC_BUG << "ShouldCreateOutgoingStream called when disconnected";
+    QUIC_BUG
+        << "ShouldCreateOutgoingBidirectionalStream called when disconnected";
     return false;
   }
   if (!crypto_stream_->encryption_established()) {
@@ -231,7 +232,31 @@ bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
     }
   }
   QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_common_stream_check, 2, 2);
-  return CanOpenNextOutgoingStream();
+  return CanOpenNextOutgoingBidirectionalStream();
+}
+
+bool QuicServerSessionBase::ShouldCreateOutgoingUnidirectionalStream() {
+  if (!connection()->connected()) {
+    QUIC_BUG
+        << "ShouldCreateOutgoingUnidirectionalStream called when disconnected";
+    return false;
+  }
+  if (!crypto_stream_->encryption_established()) {
+    QUIC_BUG << "Encryption not established so no outgoing stream created.";
+    return false;
+  }
+
+  if (!GetQuicReloadableFlag(quic_use_common_stream_check) &&
+      connection()->transport_version() != QUIC_VERSION_99) {
+    if (GetNumOpenOutgoingStreams() >=
+        stream_id_manager().max_open_outgoing_streams()) {
+      VLOG(1) << "No more streams should be created. "
+              << "Already " << GetNumOpenOutgoingStreams() << " open.";
+      return false;
+    }
+  }
+
+  return CanOpenNextOutgoingUnidirectionalStream();
 }
 
 QuicCryptoServerStreamBase* QuicServerSessionBase::GetMutableCryptoStream() {

@@ -416,6 +416,24 @@ QuicChromiumClientStream::QuicChromiumClientStream(
       trailing_headers_frame_len_(0),
       weak_factory_(this) {}
 
+QuicChromiumClientStream::QuicChromiumClientStream(
+    quic::PendingStream pending,
+    quic::QuicSpdyClientSessionBase* session,
+    quic::StreamType type,
+    const NetLogWithSource& net_log,
+    const NetworkTrafficAnnotationTag& traffic_annotation)
+    : quic::QuicSpdyStream(std::move(pending), session, type),
+      net_log_(net_log),
+      handle_(nullptr),
+      headers_delivered_(false),
+      initial_headers_sent_(false),
+      session_(session),
+      quic_version_(session->connection()->transport_version()),
+      can_migrate_to_cellular_network_(true),
+      initial_headers_frame_len_(0),
+      trailing_headers_frame_len_(0),
+      weak_factory_(this) {}
+
 QuicChromiumClientStream::~QuicChromiumClientStream() {
   if (handle_)
     handle_->OnClose();
@@ -684,7 +702,8 @@ void QuicChromiumClientStream::DisableConnectionMigrationToCellularNetwork() {
 }
 
 bool QuicChromiumClientStream::IsFirstStream() {
-  return id() == quic::QuicUtils::GetHeadersStreamId(quic_version_) + 2;
+  return id() == quic::QuicUtils::GetHeadersStreamId(quic_version_) +
+                     quic::QuicUtils::StreamIdDelta(quic_version_);
 }
 
 }  // namespace net

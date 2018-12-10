@@ -149,7 +149,11 @@ class QuicPacketGeneratorTest : public QuicTest {
       : framer_(AllSupportedVersions(),
                 QuicTime::Zero(),
                 Perspective::IS_CLIENT),
-        generator_(42, &framer_, &random_generator_, &delegate_, &producer_),
+        generator_(QuicConnectionIdFromUInt64(42),
+                   &framer_,
+                   &random_generator_,
+                   &delegate_,
+                   &producer_),
         creator_(QuicPacketGeneratorPeer::GetPacketCreator(&generator_)) {
     EXPECT_CALL(delegate_, GetPacketBuffer()).WillRepeatedly(Return(nullptr));
     creator_->SetEncrypter(

@@ -247,6 +247,7 @@ TEST_P(QuicDataWriterTest, RoundTripUFloat16) {
 }
 
 TEST_P(QuicDataWriterTest, WriteConnectionId) {
+  // TODO(dschinazi) b/120240679 - change to QuicConnectionId
   uint64_t connection_id = 0x0011223344556677;
   char big_endian[] = {
       0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,

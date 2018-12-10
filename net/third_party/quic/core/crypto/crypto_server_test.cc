@@ -314,10 +314,11 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
       const char* error_substr) {
     QuicSocketAddress server_address;
     QuicConnectionId server_designated_connection_id =
-        rand_for_id_generation_.RandUint64();
+        QuicConnectionIdFromUInt64(rand_for_id_generation_.RandUint64());
     bool called;
     config_.ProcessClientHello(
-        result, /*reject_only=*/false, /*connection_id=*/1, server_address,
+        result, /*reject_only=*/false,
+        /*connection_id=*/QuicConnectionIdFromUInt64(1), server_address,
         client_address_, supported_versions_.front(), supported_versions_,
         use_stateless_rejects_, server_designated_connection_id, &clock_, rand_,
         &compressed_certs_cache_, params_, signed_config_,
@@ -355,7 +356,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
   // server-designated connection id.  Once the check is complete,
   // allow the random id-generator to move to the next value.
   void CheckForServerDesignatedConnectionId() {
-    QuicConnectionId server_designated_connection_id;
+    uint64_t server_designated_connection_id;
     if (!RejectsAreStateless()) {
       EXPECT_EQ(QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND,
                 out_.GetUint64(kRCID, &server_designated_connection_id));

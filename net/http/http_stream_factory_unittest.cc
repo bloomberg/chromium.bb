@@ -2331,13 +2331,13 @@ class HttpStreamFactoryBidirectionalQuicTest
         version_(std::get<0>(GetParam())),
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
         client_packet_maker_(version_,
-                             0,
+                             quic::EmptyQuicConnectionId(),
                              &clock_,
                              "www.example.org",
                              quic::Perspective::IS_CLIENT,
                              client_headers_include_h2_stream_dependency_),
         server_packet_maker_(version_,
-                             0,
+                             quic::EmptyQuicConnectionId(),
                              &clock_,
                              "www.example.org",
                              quic::Perspective::IS_SERVER,
@@ -2413,8 +2413,8 @@ class HttpStreamFactoryBidirectionalQuicTest
 
   const GURL default_url_;
 
-  quic::QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return quic::test::GetNthClientInitiatedStreamId(version_, n);
+  quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
+    return quic::test::GetNthClientInitiatedBidirectionalStreamId(version_, n);
   }
 
  private:
@@ -2456,14 +2456,16 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
+      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
       /*parent_stream_id=*/0, &spdy_headers_frame_length,
       &header_stream_offset));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
-      1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
+      1, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/false,
       /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
       &spdy_response_headers_frame_length));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
@@ -2587,14 +2589,16 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
+      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
       /*parent_stream_id=*/0, &spdy_headers_frame_length,
       &header_stream_offset));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
-      1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
+      1, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/false,
       /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
       &spdy_response_headers_frame_length));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
@@ -2867,14 +2871,16 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset));
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
+      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
       /*parent_stream_id=*/0, &spdy_headers_frame_length,
       &header_stream_offset));
   size_t spdy_response_headers_frame_length;
   mock_quic_data.AddRead(server_packet_maker().MakeResponseHeadersPacket(
-      1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
+      1, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/false,
       /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
       &spdy_response_headers_frame_length));
   mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.
@@ -2886,13 +2892,15 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(
       1, &header_stream_offset2));
   mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedStreamId(0), /*should_include_version=*/true,
+      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
       /*parent_stream_id=*/0, &spdy_headers_frame_length,
       &header_stream_offset));
   mock_quic_data2.AddRead(server_packet_maker().MakeResponseHeadersPacket(
-      1, GetNthClientInitiatedStreamId(0), /*should_include_version=*/false,
+      1, GetNthClientInitiatedBidirectionalStreamId(0),
+      /*should_include_version=*/false,
       /*fin=*/true, server_packet_maker().GetResponseHeaders("200"),
       &spdy_response_headers_frame_length));
   mock_quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more read data.

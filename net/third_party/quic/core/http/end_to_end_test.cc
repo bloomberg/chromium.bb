@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <memory>
@@ -601,13 +600,13 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
     stream_factory_ = factory;
   }
 
-  QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthClientInitiatedStreamId(
+  QuicStreamId GetNthClientInitiatedBidirectionalId(int n) {
+    return QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
         *client_->client()->client_session(), n);
   }
 
-  QuicStreamId GetNthServerInitiatedId(int n) {
-    return QuicSpdySessionPeer::GetNthServerInitiatedStreamId(
+  QuicStreamId GetNthServerInitiatedBidirectionalId(int n) {
+    return QuicSpdySessionPeer::GetNthServerInitiatedBidirectionalStreamId(
         *client_->client()->client_session(), n);
   }
 
@@ -1330,7 +1329,8 @@ TEST_P(EndToEndTest, InvalidStream) {
   // Force the client to write with a stream ID belonging to a nonexistent
   // server-side stream.
   QuicSpdySession* session = client_->client()->client_session();
-  QuicSessionPeer::SetNextOutgoingStreamId(session, GetNthServerInitiatedId(0));
+  QuicSessionPeer::SetNextOutgoingBidirectionalStreamId(
+      session, GetNthServerInitiatedBidirectionalId(0));
 
   client_->SendCustomSynchronousRequest(headers, body);
   EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
@@ -1467,22 +1467,40 @@ TEST_P(EndToEndTest, SetIndependentMaxIncomingDynamicStreamsLimits) {
 
   // The client has received the server's limit and vice versa.
   QuicSpdyClientSession* client_session = client_->client()->client_session();
-  size_t client_max_open_outgoing_streams =
+  size_t client_max_open_outgoing_bidirectional_streams =
       client_session->connection()->transport_version() == QUIC_VERSION_99
           ? QuicSessionPeer::v99_streamid_manager(client_session)
-                ->max_allowed_outgoing_streams()
+                ->max_allowed_outgoing_bidirectional_streams()
           : QuicSessionPeer::GetStreamIdManager(client_session)
                 ->max_open_outgoing_streams();
-  EXPECT_EQ(kServerMaxIncomingDynamicStreams, client_max_open_outgoing_streams);
+  size_t client_max_open_outgoing_unidirectional_streams =
+      client_session->connection()->transport_version() == QUIC_VERSION_99
+          ? QuicSessionPeer::v99_streamid_manager(client_session)
+                ->max_allowed_outgoing_unidirectional_streams()
+          : QuicSessionPeer::GetStreamIdManager(client_session)
+                ->max_open_outgoing_streams();
+  EXPECT_EQ(kServerMaxIncomingDynamicStreams,
+            client_max_open_outgoing_bidirectional_streams);
+  EXPECT_EQ(kServerMaxIncomingDynamicStreams,
+            client_max_open_outgoing_unidirectional_streams);
   server_thread_->Pause();
   QuicSession* server_session = GetServerSession();
-  size_t server_max_open_outgoing_streams =
+  size_t server_max_open_outgoing_bidirectional_streams =
       server_session->connection()->transport_version() == QUIC_VERSION_99
           ? QuicSessionPeer::v99_streamid_manager(server_session)
-                ->max_allowed_outgoing_streams()
+                ->max_allowed_outgoing_bidirectional_streams()
           : QuicSessionPeer::GetStreamIdManager(server_session)
                 ->max_open_outgoing_streams();
-  EXPECT_EQ(kClientMaxIncomingDynamicStreams, server_max_open_outgoing_streams);
+  size_t server_max_open_outgoing_unidirectional_streams =
+      server_session->connection()->transport_version() == QUIC_VERSION_99
+          ? QuicSessionPeer::v99_streamid_manager(server_session)
+                ->max_allowed_outgoing_unidirectional_streams()
+          : QuicSessionPeer::GetStreamIdManager(server_session)
+                ->max_open_outgoing_streams();
+  EXPECT_EQ(kClientMaxIncomingDynamicStreams,
+            server_max_open_outgoing_bidirectional_streams);
+  EXPECT_EQ(kClientMaxIncomingDynamicStreams,
+            server_max_open_outgoing_unidirectional_streams);
   server_thread_->Resume();
 }
 
@@ -1739,7 +1757,7 @@ TEST_P(EndToEndTestWithTls, StreamCancelErrorTest) {
   client_->client()->WaitForEvents();
   // Transmit the cancel, and ensure the connection is torn down properly.
   SetPacketLossPercentage(0);
-  QuicStreamId stream_id = GetNthClientInitiatedId(0);
+  QuicStreamId stream_id = GetNthClientInitiatedBidirectionalId(0);
   session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
 
   // WaitForEvents waits 50ms and returns true if there are outstanding
@@ -2224,8 +2242,8 @@ TEST_P(EndToEndTestWithTls, ServerSendPublicResetWithDifferentConnectionId) {
     stateless_reset_token = config->ReceivedStatelessResetToken();
   }
   // Send the public reset.
-  QuicConnectionId incorrect_connection_id =
-      client_connection->connection_id() + 1;
+  QuicConnectionId incorrect_connection_id = QuicConnectionIdFromUInt64(
+      QuicConnectionIdToUInt64(client_connection->connection_id()) + 1);
   QuicPublicResetPacket header;
   header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
@@ -2273,8 +2291,10 @@ TEST_P(EndToEndTestWithTls, ClientSendPublicResetWithDifferentConnectionId) {
   ASSERT_TRUE(Initialize());
 
   // Send the public reset.
-  QuicConnectionId incorrect_connection_id =
-      client_->client()->client_session()->connection()->connection_id() + 1;
+  QuicConnectionId incorrect_connection_id = QuicConnectionIdFromUInt64(
+      QuicConnectionIdToUInt64(
+          client_->client()->client_session()->connection()->connection_id()) +
+      1);
   QuicPublicResetPacket header;
   header.connection_id = incorrect_connection_id;
   QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
@@ -2302,8 +2322,8 @@ TEST_P(EndToEndTestWithTls,
   // Send the version negotiation packet.
   QuicConnection* client_connection =
       client_->client()->client_session()->connection();
-  QuicConnectionId incorrect_connection_id =
-      client_connection->connection_id() + 1;
+  QuicConnectionId incorrect_connection_id = QuicConnectionIdFromUInt64(
+      QuicConnectionIdToUInt64(client_connection->connection_id()) + 1);
   std::unique_ptr<QuicEncryptedPacket> packet(
       QuicFramer::BuildVersionNegotiationPacket(
           incorrect_connection_id,
@@ -2410,9 +2430,10 @@ TEST_P(EndToEndTestWithTls, BadEncryptedData) {
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
 
   std::unique_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
-      client_->client()->client_session()->connection()->connection_id(), 0,
-      false, false, 1, "At least 20 characters.", PACKET_8BYTE_CONNECTION_ID,
-      PACKET_0BYTE_CONNECTION_ID, PACKET_4BYTE_PACKET_NUMBER));
+      client_->client()->client_session()->connection()->connection_id(),
+      EmptyQuicConnectionId(), false, false, 1, "At least 20 characters.",
+      PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID,
+      PACKET_4BYTE_PACKET_NUMBER));
   // Damage the encrypted data.
   QuicString damaged_packet(packet->data(), packet->length());
   damaged_packet[30] ^= 0x01;
@@ -3181,7 +3202,9 @@ TEST_P(EndToEndTest, SendStatelessResetTokenInShlo) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   QuicConfig* config = client_->client()->session()->config();
   EXPECT_TRUE(config->HasReceivedStatelessResetToken());
-  EXPECT_EQ(client_->client()->session()->connection()->connection_id(),
+  // TODO(dschinazi) b/120240679 - convert connection ID to UInt128
+  EXPECT_EQ(QuicConnectionIdToUInt64(
+                client_->client()->session()->connection()->connection_id()),
             config->ReceivedStatelessResetToken());
   client_->Disconnect();
 }
@@ -3525,7 +3548,7 @@ TEST_P(EndToEndTest, SimpleStopSendingTest) {
   const QuicPacketCount packets_sent_before =
       session->connection()->GetStats().packets_sent;
 
-  QuicStreamId stream_id = session->next_outgoing_stream_id();
+  QuicStreamId stream_id = session->next_outgoing_bidirectional_stream_id();
   client_->SendRequest("/test_url");
 
   // Expect exactly one packet is sent from the block above.

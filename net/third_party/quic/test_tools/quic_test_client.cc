@@ -33,7 +33,7 @@ namespace test {
 namespace {
 
 // RecordingProofVerifier accepts any certificate chain and records the common
-// name of the leaf and then delegates the actual verfication to an actual
+// name of the leaf and then delegates the actual verification to an actual
 // verifier. If no optional verifier is provided, then VerifyProof will return
 // success.
 class RecordingProofVerifier : public ProofVerifier {
@@ -204,7 +204,7 @@ MockableQuicClient::MockableQuicClient(
                                                                this),
           QuicWrapUnique(
               new RecordingProofVerifier(std::move(proof_verifier)))),
-      override_connection_id_(0) {}
+      override_connection_id_(EmptyQuicConnectionId()) {}
 
 MockableQuicClient::~MockableQuicClient() {
   if (connected()) {
@@ -225,8 +225,9 @@ MockableQuicClient::mockable_network_helper() const {
 }
 
 QuicConnectionId MockableQuicClient::GenerateNewConnectionId() {
-  return override_connection_id_ ? override_connection_id_
-                                 : QuicClient::GenerateNewConnectionId();
+  return !QuicConnectionIdIsEmpty(override_connection_id_)
+             ? override_connection_id_
+             : QuicClient::GenerateNewConnectionId();
 }
 
 void MockableQuicClient::UseConnectionId(QuicConnectionId connection_id) {
@@ -335,7 +336,8 @@ ssize_t QuicTestClient::SendRequestAndRstTogether(const QuicString& uri) {
   ssize_t ret = SendMessage(headers, "", /*fin=*/true, /*flush=*/false);
 
   QuicStreamId stream_id =
-      QuicSpdySessionPeer::GetNthClientInitiatedStreamId(*session, 0);
+      QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(*session,
+                                                                      0);
   session->SendRstStream(stream_id, QUIC_STREAM_CANCELLED, 0);
   return ret;
 }

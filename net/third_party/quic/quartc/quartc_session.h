@@ -178,8 +178,11 @@ class QUIC_EXPORT_PRIVATE QuartcSession
  protected:
   // QuicSession override.
   QuicStream* CreateIncomingStream(QuicStreamId id) override;
+  QuicStream* CreateIncomingStream(PendingStream pending) override;
 
   std::unique_ptr<QuartcStream> CreateDataStream(QuicStreamId id,
+                                                 spdy::SpdyPriority priority);
+  std::unique_ptr<QuartcStream> CreateDataStream(PendingStream pending,
                                                  spdy::SpdyPriority priority);
   // Activates a QuartcStream.  The session takes ownership of the stream, but
   // returns an unowned pointer to the stream for convenience.
@@ -188,6 +191,10 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   void ResetStream(QuicStreamId stream_id, QuicRstStreamErrorCode error);
 
  private:
+  std::unique_ptr<QuartcStream> InitializeDataStream(
+      std::unique_ptr<QuartcStream> stream,
+      spdy::SpdyPriority priority);
+
   void ProcessSendMessageQueue();
 
   // For crypto handshake.

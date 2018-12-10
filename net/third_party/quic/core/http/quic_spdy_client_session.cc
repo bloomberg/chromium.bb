@@ -46,7 +46,7 @@ void QuicSpdyClientSession::OnProofValid(
 void QuicSpdyClientSession::OnProofVerifyDetailsAvailable(
     const ProofVerifyDetails& /*verify_details*/) {}
 
-bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
+bool QuicSpdyClientSession::ShouldCreateOutgoingBidirectionalStream() {
   if (!crypto_stream_->encryption_established()) {
     QUIC_DLOG(INFO) << "Encryption not active so no outgoing stream created.";
     return false;
@@ -72,12 +72,17 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
     return false;
   }
   QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_common_stream_check, 1, 2);
-  return CanOpenNextOutgoingStream();
+  return CanOpenNextOutgoingBidirectionalStream();
+}
+
+bool QuicSpdyClientSession::ShouldCreateOutgoingUnidirectionalStream() {
+  QUIC_BUG << "Try to create outgoing unidirectional client data streams";
+  return false;
 }
 
 QuicSpdyClientStream*
 QuicSpdyClientSession::CreateOutgoingBidirectionalStream() {
-  if (!ShouldCreateOutgoingStream()) {
+  if (!ShouldCreateOutgoingBidirectionalStream()) {
     return nullptr;
   }
   std::unique_ptr<QuicSpdyClientStream> stream = CreateClientStream();
@@ -94,8 +99,8 @@ QuicSpdyClientSession::CreateOutgoingUnidirectionalStream() {
 
 std::unique_ptr<QuicSpdyClientStream>
 QuicSpdyClientSession::CreateClientStream() {
-  return QuicMakeUnique<QuicSpdyClientStream>(GetNextOutgoingStreamId(), this,
-                                              BIDIRECTIONAL);
+  return QuicMakeUnique<QuicSpdyClientStream>(
+      GetNextOutgoingBidirectionalStreamId(), this, BIDIRECTIONAL);
 }
 
 QuicCryptoClientStreamBase* QuicSpdyClientSession::GetMutableCryptoStream() {
@@ -139,6 +144,14 @@ bool QuicSpdyClientSession::ShouldCreateIncomingStream(QuicStreamId id) {
     return false;
   }
   return true;
+}
+
+QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(
+    PendingStream pending) {
+  QuicSpdyStream* stream =
+      new QuicSpdyClientStream(std::move(pending), this, READ_UNIDIRECTIONAL);
+  ActivateStream(QuicWrapUnique(stream));
+  return stream;
 }
 
 QuicSpdyStream* QuicSpdyClientSession::CreateIncomingStream(QuicStreamId id) {

@@ -27,7 +27,7 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
   // Setters for values to be encoded.
   // |name| and |value| must remain valid until the instruction is encoded.
   void set_is_static(bool is_static) { is_static_ = is_static; }
-  void set_varint(size_t varint) { varint_ = varint; }
+  void set_varint(uint64_t varint) { varint_ = varint; }
   void set_name(QuicStringPiece name) { name_ = name; }
   void set_value(QuicStringPiece value) { value_ = value; }
 
@@ -78,7 +78,7 @@ class QUIC_EXPORT_PRIVATE QpackInstructionEncoder {
 
   // Storage for field values to be encoded.
   bool is_static_;
-  size_t varint_;
+  uint64_t varint_;
   // The caller must keep the string that |name_| and |value_| point to
   // valid until they are encoded.
   QuicStringPiece name_;

@@ -6,6 +6,7 @@
 
 #include "net/third_party/quic/core/quic_flow_controller.h"
 #include "net/third_party/quic/core/quic_session.h"
+#include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -136,6 +137,25 @@ void PendingStream::OnStreamFrame(const QuicStreamFrame& frame) {
   sequencer_.OnStreamFrame(frame);
 }
 
+void PendingStream::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
+  DCHECK_EQ(frame.stream_id, id_);
+
+  if (frame.byte_offset > kMaxStreamLength) {
+    // Peer are not suppose to write bytes more than maxium allowed.
+    CloseConnectionWithDetails(QUIC_STREAM_LENGTH_OVERFLOW,
+                               "Reset frame stream offset overflow.");
+    return;
+  }
+  MaybeIncreaseHighestReceivedOffset(frame.byte_offset);
+  if (flow_controller_.FlowControlViolation() ||
+      connection_flow_controller_->FlowControlViolation()) {
+    CloseConnectionWithDetails(
+        QUIC_FLOW_CONTROL_RECEIVED_TOO_MUCH_DATA,
+        "Flow control violation after increasing offset");
+    return;
+  }
+}
+
 bool PendingStream::MaybeIncreaseHighestReceivedOffset(
     QuicStreamOffset new_offset) {
   uint64_t increment =
@@ -161,7 +181,9 @@ QuicStream::QuicStream(PendingStream pending, StreamType type)
                  pending.stream_bytes_read_,
                  pending.fin_received_,
                  std::move(pending.flow_controller_),
-                 pending.connection_flow_controller_) {}
+                 pending.connection_flow_controller_) {
+  sequencer_.set_stream(this);
+}
 
 QuicStream::QuicStream(QuicStreamId id,
                        QuicSession* session,
@@ -220,7 +242,14 @@ QuicStream::QuicStream(QuicStreamId id,
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
       is_static_(is_static),
       deadline_(QuicTime::Zero()),
-      type_(type) {
+      type_(session->connection()->transport_version() == QUIC_VERSION_99
+                ? QuicUtils::GetStreamType(id_, session->IsIncomingStream(id_))
+                : type) {
+  if (session->connection()->transport_version() == QUIC_VERSION_99) {
+    DCHECK_EQ(type,
+              QuicUtils::GetStreamType(id_, session->IsIncomingStream(id_)))
+        << id_;
+  }
   if (type_ == WRITE_UNIDIRECTIONAL) {
     set_fin_received(true);
     CloseReadSide();

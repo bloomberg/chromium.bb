@@ -11,6 +11,7 @@
 #include <ostream>
 #include <vector>
 
+#include "net/third_party/quic/core/quic_connection_id.h"
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 
@@ -25,7 +26,6 @@ typedef uint32_t QuicMessageId;
 typedef uint32_t QuicStreamId;
 
 typedef uint64_t QuicByteCount;
-typedef uint64_t QuicConnectionId;
 typedef uint64_t QuicPacketCount;
 typedef uint64_t QuicPacketNumber;
 typedef uint64_t QuicPublicResetNonceProof;
@@ -253,9 +253,9 @@ enum QuicIetfFrameType : uint8_t {
 #define IETF_STREAM_FRAME_LEN_BIT 0x02
 #define IETF_STREAM_FRAME_OFF_BIT 0x04
 
-enum QuicConnectionIdLength {
+enum QuicConnectionIdKnownLength {
   PACKET_0BYTE_CONNECTION_ID = 0,
-  PACKET_8BYTE_CONNECTION_ID = 8
+  PACKET_8BYTE_CONNECTION_ID = 8,
 };
 
 enum QuicPacketNumberLength : uint8_t {

@@ -28,6 +28,10 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
                          QuicSpdySession* session,
                          StreamType type,
                          QuicSimpleServerBackend* quic_simple_server_backend);
+  QuicSimpleServerStream(PendingStream pending,
+                         QuicSpdySession* session,
+                         StreamType type,
+                         QuicSimpleServerBackend* quic_simple_server_backend);
   QuicSimpleServerStream(const QuicSimpleServerStream&) = delete;
   QuicSimpleServerStream& operator=(const QuicSimpleServerStream&) = delete;
   ~QuicSimpleServerStream() override;

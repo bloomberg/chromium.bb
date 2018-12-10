@@ -1094,7 +1094,8 @@ TEST_F(QuicIetfFramerTest, NewConnectionIdFrame) {
   char packet_buffer[kNormalPacketBufferSize];
 
   QuicNewConnectionIdFrame transmit_frame;
-  transmit_frame.connection_id = 0x0edcba9876543201;
+  transmit_frame.connection_id =
+      QuicConnectionIdFromUInt64(UINT64_C(0x0edcba9876543201));
   transmit_frame.sequence_number = 0x01020304;
   // The token is defined as a uint128 -- a 16-byte integer.
   // The value is set in this manner because we want each

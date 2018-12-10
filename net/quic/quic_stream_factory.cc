@@ -1744,7 +1744,8 @@ int QuicStreamFactory::CreateSession(
         base::ThreadTaskRunnerHandle::Get().get(), clock_));
   }
 
-  quic::QuicConnectionId connection_id = random_generator_->RandUint64();
+  quic::QuicConnectionId connection_id =
+      quic::QuicConnectionIdFromUInt64(random_generator_->RandUint64());
   std::unique_ptr<QuicServerInfo> server_info;
   if (store_server_configs_in_properties_) {
     server_info = std::make_unique<PropertiesBasedQuicServerInfo>(

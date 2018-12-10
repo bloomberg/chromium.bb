@@ -84,7 +84,8 @@ class QuicClientPromisedInfoTest : public QuicTest {
     headers_["content-length"] = "11";
 
     stream_ = QuicMakeUnique<QuicSpdyClientStream>(
-        QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0),
+        QuicSpdySessionPeer::GetNthClientInitiatedBidirectionalStreamId(
+            session_, 0),
         &session_, BIDIRECTIONAL);
     stream_visitor_ = QuicMakeUnique<StreamVisitor>();
     stream_->set_visitor(stream_visitor_.get());
@@ -99,7 +100,8 @@ class QuicClientPromisedInfoTest : public QuicTest {
 
     client_request_ = push_promise_.Clone();
     promise_id_ =
-        QuicSpdySessionPeer::GetNthServerInitiatedStreamId(session_, 0);
+        QuicSpdySessionPeer::GetNthServerInitiatedUnidirectionalStreamId(
+            session_, 0);
   }
 
   class StreamVisitor : public QuicSpdyClientStream::Visitor {

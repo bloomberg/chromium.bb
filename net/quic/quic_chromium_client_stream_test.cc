@@ -60,6 +60,8 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                     quic::ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingStream,
                quic::QuicSpdyStream*(quic::QuicStreamId id));
+  MOCK_METHOD1(CreateIncomingStream,
+               quic::QuicSpdyStream*(quic::PendingStream pending));
   MOCK_METHOD0(CreateOutgoingBidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD0(CreateOutgoingUnidirectionalStream, QuicChromiumClientStream*());
   MOCK_METHOD5(WritevData,
@@ -128,7 +130,8 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
 
  protected:
   MOCK_METHOD1(ShouldCreateIncomingStream, bool(quic::QuicStreamId id));
-  MOCK_METHOD0(ShouldCreateOutgoingStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingBidirectionalStream, bool());
+  MOCK_METHOD0(ShouldCreateOutgoingUnidirectionalStream, bool());
 
  private:
   std::unique_ptr<quic::QuicCryptoStream> crypto_stream_;
@@ -167,8 +170,9 @@ class QuicChromiumClientStreamTest
                                                  GetParam()))),
                  &push_promise_index_) {
     stream_ = new QuicChromiumClientStream(
-        quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), &session_,
-        quic::BIDIRECTIONAL, NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS);
+        quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+        &session_, quic::BIDIRECTIONAL, NetLogWithSource(),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     session_.ActivateStream(base::WrapUnique(stream_));
     handle_ = stream_->CreateHandle();
     helper_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
@@ -236,14 +240,14 @@ class QuicChromiumClientStreamTest
     return h;
   }
 
-  quic::QuicStreamId GetNthClientInitiatedStreamId(int n) {
-    return quic::test::QuicSpdySessionPeer::GetNthClientInitiatedStreamId(
-        session_, n);
+  quic::QuicStreamId GetNthClientInitiatedBidirectionalStreamId(int n) {
+    return quic::test::QuicSpdySessionPeer::
+        GetNthClientInitiatedBidirectionalStreamId(session_, n);
   }
 
-  quic::QuicStreamId GetNthServerInitiatedStreamId(int n) {
-    return quic::test::QuicSpdySessionPeer::GetNthServerInitiatedStreamId(
-        session_, n);
+  quic::QuicStreamId GetNthServerInitiatedUnidirectionalStreamId(int n) {
+    return quic::test::QuicSpdySessionPeer::
+        GetNthServerInitiatedUnidirectionalStreamId(session_, n);
   }
 
   void ResetStreamCallback(QuicChromiumClientStream* stream, int /*rv*/) {
@@ -269,8 +273,9 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_P(QuicChromiumClientStreamTest, Handle) {
   EXPECT_TRUE(handle_->IsOpen());
-  EXPECT_EQ(quic::test::GetNthClientInitiatedStreamId(GetParam(), 0),
-            handle_->id());
+  EXPECT_EQ(
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      handle_->id());
   EXPECT_EQ(quic::QUIC_NO_ERROR, handle_->connection_error());
   EXPECT_EQ(quic::QUIC_STREAM_NO_ERROR, handle_->stream_error());
   EXPECT_TRUE(handle_->IsFirstStream());
@@ -285,8 +290,8 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
   quic::QuicStreamOffset offset = 0;
   ProcessHeadersFull(headers_);
   quic::QuicStreamFrame frame2(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), true, offset,
-      quic::QuicStringPiece());
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      true, offset, quic::QuicStringPiece());
   stream_->OnStreamFrame(frame2);
   EXPECT_TRUE(handle_->fin_received());
   handle_->OnFinRead();
@@ -303,8 +308,9 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
                                      true, callback.callback()));
 
   EXPECT_FALSE(handle_->IsOpen());
-  EXPECT_EQ(quic::test::GetNthClientInitiatedStreamId(GetParam(), 0),
-            handle_->id());
+  EXPECT_EQ(
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      handle_->id());
   EXPECT_EQ(quic::QUIC_NO_ERROR, handle_->connection_error());
   EXPECT_EQ(quic::QUIC_STREAM_NO_ERROR, handle_->stream_error());
   EXPECT_TRUE(handle_->IsFirstStream());
@@ -331,9 +337,11 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, HandleAfterConnectionClose) {
-  EXPECT_CALL(session_, SendRstStream(quic::test::GetNthClientInitiatedStreamId(
-                                          GetParam(), 0),
-                                      quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
+  EXPECT_CALL(
+      session_,
+      SendRstStream(
+          quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+          quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
   stream_->OnConnectionClosed(quic::QUIC_INVALID_FRAME_DATA,
                               quic::ConnectionCloseSource::FROM_PEER);
 
@@ -345,11 +353,13 @@ TEST_P(QuicChromiumClientStreamTest, HandleAfterStreamReset) {
   // Verify that the Handle still behaves correctly after the stream is reset.
   quic::QuicRstStreamFrame rst(
       quic::kInvalidControlFrameId,
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0),
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
       quic::QUIC_STREAM_CANCELLED, 0);
-  EXPECT_CALL(session_, SendRstStream(quic::test::GetNthClientInitiatedStreamId(
-                                          GetParam(), 0),
-                                      quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
+  EXPECT_CALL(
+      session_,
+      SendRstStream(
+          quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+          quic::QUIC_RST_ACKNOWLEDGEMENT, 0));
   stream_->OnStreamReset(rst);
 
   EXPECT_FALSE(handle_->IsOpen());
@@ -361,8 +371,8 @@ TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
   quic::QuicStreamOffset offset = 0;
   ProcessHeadersFull(headers_);
   quic::QuicStreamFrame frame2(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), true, offset,
-      quic::QuicStringPiece());
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      true, offset, quic::QuicStringPiece());
   stream_->OnStreamFrame(frame2);
 }
 
@@ -373,7 +383,8 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
   const char data[] = "hello world!";
   int data_len = strlen(data);
   stream_->OnStreamFrame(quic::QuicStreamFrame(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), /*fin=*/false,
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      /*fin=*/false,
       /*offset=*/0, data));
 
   // Read the body and verify that it arrives correctly.
@@ -399,7 +410,8 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableAfterReadBody) {
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
 
   stream_->OnStreamFrame(quic::QuicStreamFrame(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), /*fin=*/false,
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      /*fin=*/false,
       /*offset=*/0, data));
 
   EXPECT_EQ(data_len, callback.WaitForResult());
@@ -411,9 +423,11 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableAfterReadBody) {
 TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
   spdy::SpdyHeaderBlock bad_headers;
   bad_headers["NAME"] = "...";
-  EXPECT_CALL(session_, SendRstStream(quic::test::GetNthClientInitiatedStreamId(
-                                          GetParam(), 0),
-                                      quic::QUIC_BAD_APPLICATION_PAYLOAD, 0));
+  EXPECT_CALL(
+      session_,
+      SendRstStream(
+          quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+          quic::QUIC_BAD_APPLICATION_PAYLOAD, 0));
 
   auto headers = quic::test::AsHeaderList(bad_headers);
   stream_->OnStreamHeaderList(false, headers.uncompressed_header_bytes(),
@@ -426,9 +440,11 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
   InitializeHeaders();
   auto headers = quic::test::AsHeaderList(headers_);
   ProcessHeadersFull(headers_);
-  EXPECT_CALL(session_, SendRstStream(quic::test::GetNthClientInitiatedStreamId(
-                                          GetParam(), 0),
-                                      quic::QUIC_STREAM_CANCELLED, 0));
+  EXPECT_CALL(
+      session_,
+      SendRstStream(
+          quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+          quic::QUIC_STREAM_CANCELLED, 0));
 
   const char data[] = "hello world!";
   int data_len = strlen(data);
@@ -444,7 +460,8 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
 
   // Receive the data and close the stream during the callback.
   stream_->OnStreamFrame(quic::QuicStreamFrame(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), /*fin=*/false,
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      /*fin=*/false,
       /*offset=*/0, data));
 
   base::RunLoop().RunUntilIdle();
@@ -464,7 +481,8 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
   const char data[] = "hello world!";
   int data_len = strlen(data);
   stream_->OnStreamFrame(quic::QuicStreamFrame(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), /*fin=*/false,
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      /*fin=*/false,
       /*offset=*/0, data));
 
   // Read the body and verify that it arrives correctly.
@@ -506,7 +524,8 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
   const char data[] = "hello world!";
   int data_len = strlen(data);
   stream_->OnStreamFrame(quic::QuicStreamFrame(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), /*fin=*/false,
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      /*fin=*/false,
       /*offset=*/0, data));
 
   // Read the body and verify that it arrives correctly.
@@ -555,7 +574,8 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
   const char data[] = "hello world!";
   int data_len = strlen(data);
   stream_->OnStreamFrame(quic::QuicStreamFrame(
-      quic::test::GetNthClientInitiatedStreamId(GetParam(), 0), /*fin=*/false,
+      quic::test::GetNthClientInitiatedBidirectionalStreamId(GetParam(), 0),
+      /*fin=*/false,
       /*offset=*/0, data));
 
   // Read the body and verify that it arrives correctly.
@@ -682,7 +702,7 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
 TEST_P(QuicChromiumClientStreamTest, HeadersBeforeHandle) {
   // We don't use stream_ because we want an incoming server push
   // stream.
-  quic::QuicStreamId stream_id = GetNthServerInitiatedStreamId(0);
+  quic::QuicStreamId stream_id = GetNthServerInitiatedUnidirectionalStreamId(0);
   QuicChromiumClientStream* stream2 = new QuicChromiumClientStream(
       stream_id, &session_, quic::READ_UNIDIRECTIONAL, NetLogWithSource(),
       TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -706,7 +726,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersBeforeHandle) {
 TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
   // We don't use stream_ because we want an incoming server push
   // stream.
-  quic::QuicStreamId stream_id = GetNthServerInitiatedStreamId(0);
+  quic::QuicStreamId stream_id = GetNthServerInitiatedUnidirectionalStreamId(0);
   QuicChromiumClientStream* stream2 = new QuicChromiumClientStream(
       stream_id, &session_, quic::READ_UNIDIRECTIONAL, NetLogWithSource(),
       TRAFFIC_ANNOTATION_FOR_TESTS);

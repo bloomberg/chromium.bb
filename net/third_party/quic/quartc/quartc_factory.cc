@@ -41,6 +41,11 @@ std::unique_ptr<QuartcSession> QuartcFactory::CreateQuartcSession(
   // Fix for inconsistent reporting of crypto handshake.
   SetQuicReloadableFlag(quic_fix_has_pending_crypto_data, true);
 
+  // Ensure that we don't drop data because QUIC streams refuse to buffer it.
+  // TODO(b/120099046):  Replace this with correct handling of WriteMemSlices().
+  SetQuicFlag(&FLAGS_quic_buffered_data_threshold,
+              std::numeric_limits<int>::max());
+
   std::unique_ptr<QuicConnection> quic_connection =
       CreateQuicConnection(perspective, writer.get());
 
@@ -183,7 +188,7 @@ std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
     QuartcPacketWriter* packet_writer) {
   // dummy_id and dummy_address are used because Quartc network layer will not
   // use these two.
-  QuicConnectionId dummy_id = 0;
+  QuicConnectionId dummy_id = QuicConnectionIdFromUInt64(0);
   QuicSocketAddress dummy_address(QuicIpAddress::Any4(), 0 /*Port*/);
   return QuicMakeUnique<QuicConnection>(
       dummy_id, dummy_address, this, /*QuicConnectionHelperInterface*/

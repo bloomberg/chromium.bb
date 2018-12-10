@@ -27,10 +27,7 @@ class LegacyQuicStreamIdManagerTest : public QuicTest {
     session_->Initialize();
   }
 
-  QuicStreamId GetNthClientInitiatedId(int n) {
-    return QuicUtils::GetHeadersStreamId(connection_->transport_version()) +
-           2 * n;
-  }
+  QuicStreamId GetNthClientInitiatedId(int n) { return 3 + 2 * n; }
 
   QuicStreamId GetNthServerInitiatedId(int n) { return 2 + 2 * n; }
 

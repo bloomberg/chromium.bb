@@ -117,7 +117,7 @@ class DummyCryptoServerStreamHelper
 
   quic::QuicConnectionId GenerateConnectionIdForReject(
       quic::QuicConnectionId connection_id) const override {
-    return random_->RandUint64();
+    return quic::QuicConnectionIdFromUInt64(random_->RandUint64());
   }
 
   bool CanAcceptClientHello(const quic::CryptoHandshakeMessage& message,
@@ -235,7 +235,8 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStream() {
 
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateOutgoingBidirectionalStream() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  P2PQuicStreamImpl* stream = CreateStreamInternal(GetNextOutgoingStreamId());
+  P2PQuicStreamImpl* stream =
+      CreateStreamInternal(GetNextOutgoingBidirectionalStreamId());
   ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
   return stream;
 }
@@ -249,6 +250,15 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
   return stream;
 }
 
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateIncomingStream(
+    quic::PendingStream pending) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  P2PQuicStreamImpl* stream = CreateStreamInternal(std::move(pending));
+  ActivateStream(std::unique_ptr<P2PQuicStreamImpl>(stream));
+  delegate_->OnStream(stream);
+  return stream;
+}
+
 P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
     quic::QuicStreamId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -256,6 +266,17 @@ P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
   DCHECK(IsEncryptionEstablished());
   DCHECK(!IsClosed());
   return new P2PQuicStreamImpl(id, this, stream_delegate_read_buffer_size_,
+                               stream_write_buffer_size_);
+}
+
+P2PQuicStreamImpl* P2PQuicTransportImpl::CreateStreamInternal(
+    quic::PendingStream pending) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(crypto_stream_);
+  DCHECK(IsEncryptionEstablished());
+  DCHECK(!IsClosed());
+  return new P2PQuicStreamImpl(std::move(pending), this,
+                               stream_delegate_read_buffer_size_,
                                stream_write_buffer_size_);
 }
 
