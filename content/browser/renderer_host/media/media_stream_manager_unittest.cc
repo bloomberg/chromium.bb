@@ -420,6 +420,7 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
           },
           &run_loop_, &video_device);
   MediaStreamManager::DeviceStoppedCallback stopped_callback;
+  MediaStreamManager::DeviceChangedCallback changed_callback;
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(
                                     _, _, _, _, MEDIA_DISPLAY_VIDEO_CAPTURE,
                                     MEDIA_REQUEST_STATE_PENDING_APPROVAL));
@@ -432,7 +433,8 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequest) {
   media_stream_manager_->GenerateStream(
       render_process_id, render_frame_id, page_request_id, controls,
       MediaDeviceSaltAndOrigin(), false /* user_gesture */,
-      std::move(generate_stream_callback), std::move(stopped_callback));
+      std::move(generate_stream_callback), std::move(stopped_callback),
+      std::move(changed_callback));
   run_loop_.Run();
 
   EXPECT_EQ(MEDIA_DISPLAY_VIDEO_CAPTURE, video_device.type);
@@ -473,12 +475,132 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequestCallsUIProxy) {
   media_stream_manager_->GenerateStream(
       0, 0, 0, controls, MediaDeviceSaltAndOrigin(), false /* user_gesture */,
       std::move(generate_stream_callback),
-      MediaStreamManager::DeviceStoppedCallback());
+      MediaStreamManager::DeviceStoppedCallback(),
+      MediaStreamManager::DeviceChangedCallback());
   run_loop_.Run();
 
   EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(_, _, _, _, _, _))
       .Times(testing::AtLeast(1));
   media_stream_manager_->CancelAllRequests(0, 0);
+}
+
+TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceStopped) {
+  media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating([]() {
+    return std::make_unique<FakeMediaStreamUIProxy>(
+        /*tests_use_fake_render_frame_hosts=*/true);
+  }));
+
+  StreamControls controls(false /* request_audio */, true /* request_video */);
+  controls.video.stream_type = MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+  const int render_process_id = 1;
+  const int render_frame_id = 1;
+  const int page_request_id = 1;
+
+  MediaStreamDevice video_device;
+  MediaStreamManager::GenerateStreamCallback generate_stream_callback =
+      base::BindOnce(
+          [](base::RunLoop* wait_loop, MediaStreamDevice* video_device,
+             MediaStreamRequestResult result, const std::string& label,
+             const MediaStreamDevices& audio_devices,
+             const MediaStreamDevices& video_devices) {
+            EXPECT_EQ(0u, audio_devices.size());
+            ASSERT_EQ(1u, video_devices.size());
+            *video_device = video_devices[0];
+            wait_loop->Quit();
+          },
+          &run_loop_, &video_device);
+  MediaStreamManager::DeviceStoppedCallback stopped_callback =
+      base::BindRepeating(
+          [](const std::string& label, const MediaStreamDevice& device) {
+            EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, device.type);
+            EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+                      DesktopMediaID::Parse(device.id).type);
+          });
+  MediaStreamManager::DeviceChangedCallback changed_callback;
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(_, _, _, _, _, _))
+      .Times(testing::AtLeast(1));
+
+  media_stream_manager_->GenerateStream(
+      render_process_id, render_frame_id, page_request_id, controls,
+      MediaDeviceSaltAndOrigin(), false /* user_gesture */,
+      std::move(generate_stream_callback), std::move(stopped_callback),
+      std::move(changed_callback));
+  run_loop_.Run();
+  EXPECT_EQ(controls.video.stream_type, video_device.type);
+  EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+            DesktopMediaID::Parse(video_device.id).type);
+
+  // |request_label| is cached in the |device.name| for testing purpose.
+  std::string request_label = video_device.name;
+  media_stream_manager_->StopMediaStreamFromBrowser(request_label);
+
+  media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
+                                          video_device.id,
+                                          video_device.session_id);
+}
+
+TEST_F(MediaStreamManagerTest, DesktopCaptureDeviceChanged) {
+  media_stream_manager_->UseFakeUIFactoryForTests(base::BindRepeating([]() {
+    return std::make_unique<FakeMediaStreamUIProxy>(
+        /*tests_use_fake_render_frame_hosts=*/true);
+  }));
+
+  StreamControls controls(false /* request_audio */, true /* request_video */);
+  controls.video.stream_type = MEDIA_GUM_DESKTOP_VIDEO_CAPTURE;
+  const int render_process_id = 1;
+  const int render_frame_id = 1;
+  const int page_request_id = 1;
+
+  MediaStreamDevice video_device;
+  MediaStreamManager::GenerateStreamCallback generate_stream_callback =
+      base::BindOnce(
+          [](base::RunLoop* wait_loop, MediaStreamDevice* video_device,
+             MediaStreamRequestResult result, const std::string& label,
+             const MediaStreamDevices& audio_devices,
+             const MediaStreamDevices& video_devices) {
+            EXPECT_EQ(0u, audio_devices.size());
+            ASSERT_EQ(1u, video_devices.size());
+            *video_device = video_devices[0];
+            wait_loop->Quit();
+          },
+          &run_loop_, &video_device);
+  MediaStreamManager::DeviceStoppedCallback stopped_callback;
+  MediaStreamManager::DeviceChangedCallback changed_callback =
+      base::BindRepeating(
+          [](MediaStreamDevice* video_device, const std::string& label,
+             const MediaStreamDevice& old_device,
+             const MediaStreamDevice& new_device) {
+            EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, old_device.type);
+            EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+                      DesktopMediaID::Parse(old_device.id).type);
+            EXPECT_EQ(MEDIA_GUM_DESKTOP_VIDEO_CAPTURE, new_device.type);
+            EXPECT_EQ(DesktopMediaID::TYPE_WINDOW,
+                      DesktopMediaID::Parse(new_device.id).type);
+            *video_device = new_device;
+          },
+          &video_device);
+  EXPECT_CALL(*media_observer_, OnMediaRequestStateChanged(_, _, _, _, _, _))
+      .Times(testing::AtLeast(1));
+
+  media_stream_manager_->GenerateStream(
+      render_process_id, render_frame_id, page_request_id, controls,
+      MediaDeviceSaltAndOrigin(), false /* user_gesture */,
+      std::move(generate_stream_callback), std::move(stopped_callback),
+      std::move(changed_callback));
+  run_loop_.Run();
+  EXPECT_EQ(controls.video.stream_type, video_device.type);
+  EXPECT_EQ(DesktopMediaID::TYPE_SCREEN,
+            DesktopMediaID::Parse(video_device.id).type);
+
+  // |request_label| is cached in the |device.name| for testing purpose.
+  std::string request_label = video_device.name;
+  media_stream_manager_->ChangeMediaStreamSourceFromBrowser(request_label);
+
+  // Wait to check callbacks before stopping the device.
+  base::RunLoop().RunUntilIdle();
+  media_stream_manager_->StopStreamDevice(render_process_id, render_frame_id,
+                                          video_device.id,
+                                          video_device.session_id);
 }
 
 }  // namespace content

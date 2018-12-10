@@ -52,6 +52,7 @@ enum MediaStreamType {
 // Types of media stream requests that can be made to the media controller.
 enum MediaStreamRequestType {
   MEDIA_DEVICE_ACCESS = 0,
+  MEDIA_DEVICE_UPDATE,
   MEDIA_GENERATE_STREAM,
   MEDIA_OPEN_DEVICE_PEPPER_ONLY  // Only used in requests made by Pepper.
 };

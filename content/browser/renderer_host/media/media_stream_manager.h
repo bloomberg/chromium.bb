@@ -99,6 +99,11 @@ class CONTENT_EXPORT MediaStreamManager
       base::RepeatingCallback<void(const std::string& label,
                                    const MediaStreamDevice& device)>;
 
+  using DeviceChangedCallback =
+      base::RepeatingCallback<void(const std::string& label,
+                                   const MediaStreamDevice& old_device,
+                                   const MediaStreamDevice& new_device)>;
+
   // Callback for testing.
   using GenerateStreamTestCallback =
       base::OnceCallback<bool(const StreamControls&)>;
@@ -166,7 +171,8 @@ class CONTENT_EXPORT MediaStreamManager
   // creates a new request which is identified by a unique string that's
   // returned to the caller.  |render_process_id| and |render_frame_id| are used
   // to determine where the infobar will appear to the user. |device_stopped_cb|
-  // is set to receive device stopped notifications.
+  // is set to receive device stopped notifications. |device_change_cb| is set
+  // to receive device changed notifications.
   void GenerateStream(int render_process_id,
                       int render_frame_id,
                       int page_request_id,
@@ -174,7 +180,8 @@ class CONTENT_EXPORT MediaStreamManager
                       MediaDeviceSaltAndOrigin salt_and_origin,
                       bool user_gesture,
                       GenerateStreamCallback generate_stream_cb,
-                      DeviceStoppedCallback device_stopped_cb);
+                      DeviceStoppedCallback device_stopped_cb,
+                      DeviceChangedCallback device_changed_cb);
 
   // Cancel an open request identified by |page_request_id| for the given frame.
   // Must be called on the IO thread.
@@ -311,6 +318,9 @@ class CONTENT_EXPORT MediaStreamManager
   void OnStreamStarted(const std::string& label);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamManagerTest, DesktopCaptureDeviceStopped);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamManagerTest, DesktopCaptureDeviceChanged);
+
   // Contains all data needed to keep track of requests.
   class DeviceRequest;
 
@@ -329,7 +339,11 @@ class CONTENT_EXPORT MediaStreamManager
       const media::AudioParameters& output_parameters,
       const MediaStreamDevices& devices,
       content::MediaStreamRequestResult result);
+  void HandleChangeSourceRequestResponse(const std::string& label,
+                                         DeviceRequest* request,
+                                         const MediaStreamDevices& devices);
   void StopMediaStreamFromBrowser(const std::string& label);
+  void ChangeMediaStreamSourceFromBrowser(const std::string& label);
 
   // Helpers.
   // Checks if all devices that was requested in the request identififed by
@@ -367,6 +381,11 @@ class CONTENT_EXPORT MediaStreamManager
   // Resolve the random device ID of tab capture on UI thread before proceeding
   // with the tab capture UI request.
   bool SetUpTabCaptureRequest(DeviceRequest* request, const std::string& label);
+  // Prepare |request| for being posted to the UI to bring up the picker again
+  // to change the desktop capture source.
+  void SetUpDesktopCaptureChangeSourceRequest(DeviceRequest* request,
+                                              const std::string& label);
+
   DesktopMediaID ResolveTabCaptureDeviceIdOnUIThread(
       const std::string& capture_device_id,
       int requesting_process_id,

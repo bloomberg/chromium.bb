@@ -416,6 +416,10 @@ content::MediaStreamDevices MediaStreamDevicesController::GetDevices(
           profile_, audio_allowed, video_allowed, &devices);
       break;
     }
+    case content::MEDIA_DEVICE_UPDATE: {
+      NOTREACHED();
+      break;
+    }
   }  // switch
 
   return devices;
