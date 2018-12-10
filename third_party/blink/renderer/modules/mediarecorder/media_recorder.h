@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/modules/mediarecorder/media_recorder_options.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/platform/async_method_runner.h"
 
 namespace blink {
 
@@ -27,7 +26,7 @@ class MODULES_EXPORT MediaRecorder final
     : public EventTargetWithInlineData,
       public WebMediaRecorderHandlerClient,
       public ActiveScriptWrappable<MediaRecorder>,
-      public PausableObject {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -74,9 +73,7 @@ class MODULES_EXPORT MediaRecorder final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // PausableObject
-  void Pause() override;
-  void Unpause() override;
+  // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext* context) override;
 
   // ScriptWrappable
@@ -110,7 +107,6 @@ class MODULES_EXPORT MediaRecorder final
 
   std::unique_ptr<WebMediaRecorderHandler> recorder_handler_;
 
-  Member<AsyncMethodRunner<MediaRecorder>> dispatch_scheduled_event_runner_;
   HeapVector<Member<Event>> scheduled_events_;
 };
 
