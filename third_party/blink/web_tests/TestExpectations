@@ -4218,6 +4218,9 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-03.html [ Failu
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-horiz-04.html [ Failure ]
 
+# [css-logical]
+crbug.com/913458 external/wpt/css/css-logical/animation-001.html [ Failure Pass ]
+
 # [selectors-4]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-ltr-001.html [ Failure ]
 crbug.com/576815 external/wpt/css/selectors/selectors-dir-selector-rtl-001.html [ Failure ]
