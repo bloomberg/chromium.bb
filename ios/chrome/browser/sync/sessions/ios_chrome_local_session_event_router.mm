@@ -134,6 +134,11 @@ void IOSChromeLocalSessionEventRouter::PageLoaded(
   OnWebStateChange(web_state);
 }
 
+void IOSChromeLocalSessionEventRouter::DidChangeBackForwardState(
+    web::WebState* web_state) {
+  OnWebStateChange(web_state);
+}
+
 void IOSChromeLocalSessionEventRouter::WebStateDestroyed(
     web::WebState* web_state) {
   OnWebStateChange(web_state);
