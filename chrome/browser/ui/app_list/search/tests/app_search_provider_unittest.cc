@@ -563,6 +563,30 @@ TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
     EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2,Settings,Camera",
               RunQuery(""));
   }
+
+  // Case 7: test that ContinueReading is not recommended when searching.
+  {
+    CreateSearchWithContinueReading();
+    session_tracker()->InitLocalSession(kLocalSessionTag, kLocalSessionName,
+                                        sync_pb::SyncEnums::TYPE_CROS);
+    const base::Time kTimestamp1 =
+        base::Time::Now() - base::TimeDelta::FromMinutes(1);
+
+    session_tracker()->PutWindowInSession(kForeignSessionTag1, kWindowId1);
+    session_tracker()->PutTabInWindow(kForeignSessionTag1, kWindowId1, kTabId1);
+    session_tracker()
+        ->GetTab(kForeignSessionTag1, kTabId1)
+        ->navigations.push_back(
+            sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
+                "http://url1", "title1"));
+    session_tracker()->GetTab(kForeignSessionTag1, kTabId1)->timestamp =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->modified_time =
+        kTimestamp1;
+    session_tracker()->GetSession(kForeignSessionTag1)->device_type =
+        sync_pb::SyncEnums::TYPE_PHONE;
+    EXPECT_EQ("Settings", RunQuery("ti"));
+  }
 }
 
 TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
