@@ -91,7 +91,7 @@ class LoginBubbleTest : public LoginTestBase {
   }
 
   void TearDown() override {
-    bubble_.reset();
+    bubble_->Close();
     LoginTestBase::TearDown();
   }
 
