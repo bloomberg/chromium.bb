@@ -143,7 +143,6 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mHomeButton.setThemeColorProvider(themeColorProvider);
         mShareButton.setThemeColorProvider(themeColorProvider);
-        mShareButton.setTabModelSelector(tabModelSelector);
         mSearchAccelerator.setThemeColorProvider(themeColorProvider);
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
