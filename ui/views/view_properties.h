@@ -25,7 +25,19 @@ VIEWS_EXPORT extern const ui::ClassProperty<int>* const kHitTestComponentKey;
 // A property to store margins around the outer perimeter of the view. Margins
 // are outside the bounds of the view. This is used by various layout managers
 // to position views with the proper spacing between them.
+//
+// Used by multiple layout managers.
 VIEWS_EXPORT extern const ui::ClassProperty<gfx::Insets*>* const kMarginsKey;
+
+// A property to store the internal padding contained in a view. When doing
+// layout, this padding is counted against the required margin around the view,
+// effectively reducing the size of the margin (to a minimum of zero). Examples
+// include expansion of buttons in touch mode and empty areas that serve as
+// resize handles.
+//
+// Used by FlexLayout.
+VIEWS_EXPORT extern const ui::ClassProperty<gfx::Insets*>* const
+    kInternalPaddingKey;
 
 // A property to store the bubble dialog anchored to this view, to
 // enable the bubble's contents to be included in the focus order.

@@ -26,6 +26,7 @@ namespace views {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kHitTestComponentKey, HTNOWHERE);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Insets, kMarginsKey, nullptr);
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Insets, kInternalPaddingKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(views::BubbleDialogDelegateView*,
                              kAnchoredDialogKey,
                              nullptr);
