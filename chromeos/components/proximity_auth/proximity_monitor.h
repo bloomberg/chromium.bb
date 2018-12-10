@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_COMPONENTS_PROXIMITY_AUTH_PROXIMITY_MONITOR_H_
 #define CHROMEOS_COMPONENTS_PROXIMITY_AUTH_PROXIMITY_MONITOR_H_
 
+#include "base/observer_list.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
 
 namespace proximity_auth {
@@ -13,7 +14,11 @@ namespace proximity_auth {
 // sufficiently close to the local device to permit unlocking.
 class ProximityMonitor {
  public:
-  virtual ~ProximityMonitor() {}
+  ProximityMonitor();
+  virtual ~ProximityMonitor();
+
+  void AddObserver(ProximityMonitorObserver* observer);
+  void RemoveObserver(ProximityMonitorObserver* observer);
 
   // Activates the proximity monitor. No-op if the proximity monitor is already
   // active.
@@ -31,11 +36,12 @@ class ProximityMonitor {
   // when the user successfully authenticates using proximity auth.
   virtual void RecordProximityMetricsOnAuthSuccess() = 0;
 
-  // Adds an observer.
-  virtual void AddObserver(ProximityMonitorObserver* observer) = 0;
+ protected:
+  void NotifyProximityStateChanged();
 
-  // Removes an observer.
-  virtual void RemoveObserver(ProximityMonitorObserver* observer) = 0;
+ private:
+  // The observers attached to the ProximityMonitor.
+  base::ObserverList<ProximityMonitorObserver>::Unchecked observers_;
 };
 
 }  // namespace proximity_auth

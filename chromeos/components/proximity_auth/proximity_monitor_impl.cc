@@ -13,7 +13,6 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/metrics.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
-#include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -81,14 +80,6 @@ void ProximityMonitorImpl::RecordProximityMetricsOnAuthSuccess() {
 
   metrics::RecordAuthProximityRollingRssi(round(rssi_rolling_average));
   metrics::RecordAuthProximityRemoteDeviceModelHash(remote_device_model);
-}
-
-void ProximityMonitorImpl::AddObserver(ProximityMonitorObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ProximityMonitorImpl::RemoveObserver(ProximityMonitorObserver* observer) {
-  observers_.RemoveObserver(observer);
 }
 
 void ProximityMonitorImpl::OnAdapterInitialized(
@@ -166,10 +157,8 @@ void ProximityMonitorImpl::OnGetRssi(const base::Optional<int32_t>& rssi) {
 }
 
 void ProximityMonitorImpl::ClearProximityState() {
-  if (is_active_ && remote_device_is_in_proximity_) {
-    for (auto& observer : observers_)
-      observer.OnProximityStateChanged();
-  }
+  if (is_active_ && remote_device_is_in_proximity_)
+    NotifyProximityStateChanged();
 
   remote_device_is_in_proximity_ = false;
   rssi_rolling_average_.reset();
@@ -200,8 +189,7 @@ void ProximityMonitorImpl::CheckForProximityStateChange() {
     PA_LOG(VERBOSE) << "[Proximity] Updated proximity state: "
                     << (is_now_in_proximity ? "proximate" : "distant");
     remote_device_is_in_proximity_ = is_now_in_proximity;
-    for (auto& observer : observers_)
-      observer.OnProximityStateChanged();
+    NotifyProximityStateChanged();
   }
 }
 

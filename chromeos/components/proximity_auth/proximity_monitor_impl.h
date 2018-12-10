@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "base/optional.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/proximity_auth/proximity_monitor.h"
@@ -29,7 +28,6 @@ class BluetoothAdapter;
 namespace proximity_auth {
 
 class ProximityAuthPrefManager;
-class ProximityMonitorObserver;
 
 // The concrete implemenation of the proximity monitor interface.
 class ProximityMonitorImpl : public ProximityMonitor {
@@ -45,8 +43,6 @@ class ProximityMonitorImpl : public ProximityMonitor {
   void Stop() override;
   bool IsUnlockAllowed() const override;
   void RecordProximityMetricsOnAuthSuccess() override;
-  void AddObserver(ProximityMonitorObserver* observer) override;
-  void RemoveObserver(ProximityMonitorObserver* observer) override;
 
  private:
   // Callback for asynchronous initialization of the Bluetooth adpater.
@@ -82,7 +78,7 @@ class ProximityMonitorImpl : public ProximityMonitor {
   void AddSample(int32_t rssi);
 
   // Checks whether the proximity state has changed based on the current
-  // samples. Notifies |observers_| on a change.
+  // samples. Notifies observers on a change.
   void CheckForProximityStateChange();
 
   // Gets the user-selected proximity threshold and converts it to a
@@ -100,9 +96,6 @@ class ProximityMonitorImpl : public ProximityMonitor {
   // Used to get determine the user pref for how far away the phone is allowed
   // to be.
   ProximityAuthPrefManager* pref_manager_;
-
-  // The observers attached to the ProximityMonitor.
-  base::ObserverList<ProximityMonitorObserver>::Unchecked observers_;
 
   // The Bluetooth adapter that will be polled for connection info.
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
