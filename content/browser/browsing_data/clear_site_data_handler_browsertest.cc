@@ -98,7 +98,6 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
     if (cookies) {
       int data_type_mask =
           BrowsingDataRemover::DATA_TYPE_COOKIES |
-          BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
           BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS;
 
       BrowsingDataFilterBuilderImpl filter_builder(

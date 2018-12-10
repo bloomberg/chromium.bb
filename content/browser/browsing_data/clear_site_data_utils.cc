@@ -77,7 +77,6 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
       remover_->RemoveWithFilterAndReply(
           base::Time(), base::Time::Max(),
           BrowsingDataRemover::DATA_TYPE_COOKIES |
-              BrowsingDataRemover::DATA_TYPE_CHANNEL_IDS |
               BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS,
           BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
               BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB,
