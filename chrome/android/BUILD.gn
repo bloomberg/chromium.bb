@@ -251,6 +251,7 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/common:splash_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//components/autofill/android:autofill_java",
+    "//components/autofill_assistant/browser:proto_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/bookmarks/common/android:bookmarks_java",
