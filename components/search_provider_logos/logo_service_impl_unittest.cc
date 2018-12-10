@@ -64,8 +64,8 @@ using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::NotNull;
 using ::testing::Pointee;
-using ::testing::StrictMock;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 using sync_preferences::TestingPrefServiceSyncable;
 
@@ -285,7 +285,9 @@ class SigninHelper {
       : task_environment_(task_environment),
         signin_client_(&pref_service_),
         token_service_(&pref_service_),
-        cookie_service_(&token_service_, &signin_client_) {
+        cookie_service_(&token_service_,
+                        &signin_client_,
+                        &test_url_loader_factory_) {
     // GaiaCookieManagerService calls static methods of AccountTrackerService
     // which access prefs.
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
@@ -312,6 +314,7 @@ class SigninHelper {
   TestingPrefServiceSyncable pref_service_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService cookie_service_;
 };
 

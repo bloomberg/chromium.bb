@@ -44,7 +44,9 @@ class AccountInvestigatorTest : public testing::Test {
                         &token_service_,
                         &account_tracker_service_,
                         nullptr),
-        gaia_cookie_manager_service_(&token_service_, &signin_client_),
+        gaia_cookie_manager_service_(&token_service_,
+                                     &signin_client_,
+                                     &test_url_loader_factory_),
         identity_test_env_(&account_tracker_service_,
                            &token_service_,
                            &signin_manager_,
@@ -85,8 +87,7 @@ class AccountInvestigatorTest : public testing::Test {
       const AccountInfo& info,
       const std::vector<ListedAccount>& signed_in_accounts,
       const std::vector<ListedAccount>& signed_out_accounts) {
-    return AccountInvestigator::DiscernRelation(info,
-                                                signed_in_accounts,
+    return AccountInvestigator::DiscernRelation(info, signed_in_accounts,
                                                 signed_out_accounts);
   }
   void SharedReport(const std::vector<gaia::ListedAccount>& signed_in_accounts,
@@ -110,8 +111,7 @@ class AccountInvestigatorTest : public testing::Test {
       const AccountRelation expected) {
     HistogramTester histogram_tester;
     investigator_.SignedInAccountRelationReport(signed_in_accounts,
-                                                signed_out_accounts,
-                                                type);
+                                                signed_out_accounts, type);
     ExpectRelationReport(type, histogram_tester, expected);
   }
 
@@ -168,6 +168,7 @@ class AccountInvestigatorTest : public testing::Test {
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   FakeSigninManager signin_manager_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService gaia_cookie_manager_service_;
   identity::IdentityTestEnvironment identity_test_env_;
   AccountInvestigator investigator_;
@@ -330,7 +331,7 @@ TEST_F(AccountInvestigatorTest,
   // Simulate a sign out of the content area.
   const HistogramTester histogram_tester2;
   investigator()->OnGaiaAccountsInCookieUpdated(
-        no_accounts, just_one, GoogleServiceAuthError::AuthErrorNone());
+      no_accounts, just_one, GoogleServiceAuthError::AuthErrorNone());
   const AccountRelation expected_relation =
       AccountRelation::NO_SIGNED_IN_SINGLE_SIGNED_OUT_MATCH;
   ExpectSharedReportHistograms(ReportingType::ON_CHANGE, histogram_tester2,

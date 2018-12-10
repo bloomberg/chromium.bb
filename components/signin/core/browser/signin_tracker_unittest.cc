@@ -53,7 +53,8 @@ class SigninTrackerTest : public testing::Test {
       : signin_client_(&pref_service_),
         fake_oauth2_token_service_(&pref_service_),
         fake_gaia_cookie_manager_service_(&fake_oauth2_token_service_,
-                                          &signin_client_),
+                                          &signin_client_,
+                                          &test_url_loader_factory_),
 #if defined(OS_CHROMEOS)
         fake_signin_manager_(&signin_client_, &account_tracker_) {
 #else
@@ -82,6 +83,7 @@ class SigninTrackerTest : public testing::Test {
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService fake_oauth2_token_service_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService fake_gaia_cookie_manager_service_;
   FakeSigninManagerForTesting fake_signin_manager_;
   MockObserver observer_;

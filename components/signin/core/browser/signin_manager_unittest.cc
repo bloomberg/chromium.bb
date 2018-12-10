@@ -78,7 +78,8 @@ class SigninManagerTest : public testing::Test {
       : test_signin_client_(&user_prefs_),
         token_service_(&user_prefs_),
         cookie_manager_service_(&token_service_,
-                                &test_signin_client_),
+                                &test_signin_client_,
+                                &test_url_loader_factory_),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
@@ -162,6 +163,7 @@ class SigninManagerTest : public testing::Test {
   TestSigninClient test_signin_client_;
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   FakeGaiaCookieManagerService cookie_manager_service_;
   FakeAccountFetcherService account_fetcher_;
   std::unique_ptr<SigninManager> manager_;
