@@ -14,10 +14,10 @@
 #include "third_party/webrtc/api/video_codecs/video_decoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder_software_fallback_wrapper.h"
 #include "third_party/webrtc/media/base/codec.h"
+#include "third_party/webrtc/media/engine/encoder_simulcast_proxy.h"
 #include "third_party/webrtc/media/engine/internaldecoderfactory.h"
 #include "third_party/webrtc/media/engine/internalencoderfactory.h"
 #include "third_party/webrtc/media/engine/simulcast_encoder_adapter.h"
-#include "third_party/webrtc/media/engine/vp8_encoder_simulcast_proxy.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -112,7 +112,7 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
       software_encoder =
           base::EqualsCaseInsensitiveASCII(format.name.c_str(),
                                            cricket::kVp8CodecName)
-              ? std::make_unique<webrtc::VP8EncoderSimulcastProxy>(
+              ? std::make_unique<webrtc::EncoderSimulcastProxy>(
                     &software_encoder_factory_)
               : software_encoder_factory_.CreateVideoEncoder(format);
     }
