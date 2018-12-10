@@ -101,11 +101,28 @@ void ResourceResponse::SetCurrentRequestUrl(const KURL& url) {
 }
 
 KURL ResourceResponse::ResponseUrl() const {
-  if (WasFetchedViaServiceWorker()) {
-    if (url_list_via_service_worker_.IsEmpty())
-      return KURL();
+  // Ideally ResourceResponse would have a |url_list_| to match Fetch
+  // specification's URL list concept
+  // (https://fetch.spec.whatwg.org/#concept-response-url-list), and its
+  // last element would be returned here.
+  //
+  // Instead it has |url_list_via_service_worker_| which is only populated when
+  // the response came from a service worker, and that response was not created
+  // through `new Response()`. Use it when available.
+  if (!url_list_via_service_worker_.IsEmpty()) {
+    DCHECK(WasFetchedViaServiceWorker());
     return url_list_via_service_worker_.back();
   }
+
+  // Otherwise, use the current request URL. This is OK because the Fetch
+  // specification's "main fetch" algorithm[1] sets the response URL list to the
+  // request's URL list when the list isn't present. That step can't be
+  // implemented now because there is no |url_list_| memeber, but effectively
+  // the same thing happens by returning CurrentRequestUrl() here.
+  //
+  // [1] "If internalResponse’s URL list is empty, then set it to a clone of
+  // request’s URL list." at
+  // https://fetch.spec.whatwg.org/#ref-for-concept-response-url-list%E2%91%A4
   return CurrentRequestUrl();
 }
 

@@ -857,29 +857,41 @@ void ResourceLoader::DidReceiveResponse(
       return;
     }
 
-    // If the response is fetched via ServiceWorker, the URL of the response
-    // could be different from the URL of the request. We check the URL not to
-    // load the resources which are forbidden by the page CSP.
+    // Run post-request CSP checks. This is the "Should response to request be
+    // blocked by Content Security Policy?" algorithm in the CSP specification:
     // https://w3c.github.io/webappsec-csp/#should-block-response
+    //
+    // In particular, the connect-src directive's post-request check:
+    // https://w3c.github.io/webappsec-csp/#connect-src-post-request)
+    //
+    // We only run post-request checks when the response was fetched via service
+    // worker, because that is the only case where the response URL can differ
+    // from the current request URL, allowing the result of the check to differ
+    // from the pre-request check. The pre-request check is implemented in
+    // ResourceFetcher::PrepareRequest() and
+    // ResourceFetcher::WillFollowRedirect().
+    //
+    // TODO(falken): To align with the CSP specification, implement post-request
+    // checks as a first-class concept instead of just reusing the functions for
+    // pre-request checks, and consider running the checks regardless of service
+    // worker interception.
     const KURL& response_url = response.ResponseUrl();
-    if (!response_url.IsEmpty()) {
-      // CanRequest() below only checks enforced policies: check report-only
-      // here to ensure violations are sent.
-      Context().CheckCSPForRequest(
-          request_context, response_url, options,
-          SecurityViolationReportingPolicy::kReport,
-          ResourceRequest::RedirectStatus::kFollowedRedirect);
+    // CanRequest() below only checks enforced policies: check report-only
+    // here to ensure violations are sent.
+    Context().CheckCSPForRequest(
+        request_context, response_url, options,
+        SecurityViolationReportingPolicy::kReport,
+        ResourceRequest::RedirectStatus::kFollowedRedirect);
 
-      base::Optional<ResourceRequestBlockedReason> blocked_reason =
-          Context().CanRequest(
-              resource_type, initial_request, response_url, options,
-              SecurityViolationReportingPolicy::kReport,
-              ResourceRequest::RedirectStatus::kFollowedRedirect);
-      if (blocked_reason) {
-        HandleError(ResourceError::CancelledDueToAccessCheckError(
-            response_url, blocked_reason.value()));
-        return;
-      }
+    base::Optional<ResourceRequestBlockedReason> blocked_reason =
+        Context().CanRequest(
+            resource_type, initial_request, response_url, options,
+            SecurityViolationReportingPolicy::kReport,
+            ResourceRequest::RedirectStatus::kFollowedRedirect);
+    if (blocked_reason) {
+      HandleError(ResourceError::CancelledDueToAccessCheckError(
+          response_url, blocked_reason.value()));
+      return;
     }
   }
 

@@ -179,20 +179,6 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The response URL of this resource. Corresponds to:
   // https://fetch.spec.whatwg.org/#concept-response-url
-  //
-  // Beware that this can be the empty URL. Specifically, if a service worker
-  // responded to a request using a response created with the Response
-  // constructor, the response URL is empty. Example service worker code:
-  //
-  // onfetch = (event => {
-  //   if (event.request.url == 'https://abc.com')
-  //     event.respondWith(new Response('hi'));
-  // });
-  //
-  // If this service worker responds to an "https://abc.com" request, then
-  // for the resulting ResourceResponse, CurrentRequestUrl() is
-  // "https://abc.com", WasFetchedViaServiceWorker() is true, and
-  // ResponseUrl() is the empty URL.
   KURL ResponseUrl() const;
 
   const AtomicString& MimeType() const;

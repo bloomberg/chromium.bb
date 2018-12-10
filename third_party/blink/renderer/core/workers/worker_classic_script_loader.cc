@@ -156,13 +156,6 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
 
   identifier_ = identifier;
   response_url_ = response.ResponseUrl();
-  // The response URL may be empty if a service worker did respondWith(new
-  // Response()) to generate a response.
-  // TODO(falken): Change this to an empty URL if that is indeed spec
-  // conformant.
-  if (response_url_.IsEmpty())
-    response_url_ = response.CurrentRequestUrl();
-
   response_encoding_ = response.TextEncodingName();
   app_cache_id_ = response.AppCacheID();
 
