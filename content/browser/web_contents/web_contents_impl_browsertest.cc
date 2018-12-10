@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -54,6 +55,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/base/features.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -734,10 +736,33 @@ class ResourceLoadObserver : public WebContentsObserver {
     EXPECT_TRUE(resource_load_info_found);
   }
 
+  // Returns the resource with the given url if found, otherwise nullptr.
+  mojom::ResourceLoadInfoPtr* FindResource(const GURL& url) {
+    for (auto& resource : resource_load_infos_) {
+      if (resource->url == url)
+        return &resource;
+    }
+    return nullptr;
+  }
+
   void Reset() {
     resource_load_infos_.clear();
     memory_cached_loaded_urls_.clear();
     resource_is_associated_with_main_frame_.clear();
+  }
+
+  void WaitForResourceCompletion(const GURL& url) {
+    // If we've already seen the resource, return immediately.
+    for (const auto& load_info : resource_load_infos_) {
+      if (load_info->url == url)
+        return;
+    }
+
+    // Otherwise wait for it.
+    base::RunLoop loop;
+    waiting_url_ = url;
+    waiting_callback_ = loop.QuitClosure();
+    loop.Run();
   }
 
  private:
@@ -750,6 +775,12 @@ class ResourceLoadObserver : public WebContentsObserver {
     resource_load_infos_.push_back(resource_load_info.Clone());
     resource_is_associated_with_main_frame_.push_back(
         render_frame_host->GetParent() == nullptr);
+
+    // Have we been waiting for this resource? If so, run the callback.
+    if (waiting_url_.is_valid() && resource_load_info.url == waiting_url_) {
+      waiting_url_ = GURL();
+      std::move(waiting_callback_).Run();
+    }
   }
 
   void DidLoadResourceFromMemoryCache(const GURL& url,
@@ -761,6 +792,8 @@ class ResourceLoadObserver : public WebContentsObserver {
   std::vector<GURL> memory_cached_loaded_urls_;
   std::vector<mojom::ResourceLoadInfoPtr> resource_load_infos_;
   std::vector<bool> resource_is_associated_with_main_frame_;
+  GURL waiting_url_;
+  base::OnceClosure waiting_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadObserver);
 };
@@ -852,6 +885,198 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   EXPECT_FALSE(
       observer.resource_load_infos()[1]->network_info->network_accessed);
+}
+
+class WebContentsSplitCacheBrowserTest : public WebContentsImplBrowserTest {
+ public:
+  enum class Context { kMainFrame, kSameOriginFrame, kCrossOriginFrame };
+  WebContentsSplitCacheBrowserTest() {}
+
+  // WebContentsImplBrowserTest:
+  void SetUpOnMainThread() override {
+    WebContentsImplBrowserTest::SetUpOnMainThread();
+
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &WebContentsSplitCacheBrowserTest::CachedScriptHandler,
+        base::Unretained(this)));
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  std::unique_ptr<net::test_server::HttpResponse> CachedScriptHandler(
+      const net::test_server::HttpRequest& request) {
+    GURL absolute_url = embedded_test_server()->GetURL(request.relative_url);
+
+    // Return a page that redirects to d.com/title1.html.
+    if (absolute_url.path() == "/redirect_to_d") {
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_SEE_OTHER);
+      http_response->AddCustomHeader(
+          "Location",
+          embedded_test_server()->GetURL("d.com", "/title1.html").spec());
+      return http_response;
+    }
+
+    // Return valid cacheable script.
+    if (absolute_url.path() == "/script") {
+      auto http_response =
+          std::make_unique<net::test_server::BasicHttpResponse>();
+      http_response->set_code(net::HTTP_OK);
+      http_response->set_content("console.log(\"Hello World\");");
+      http_response->set_content_type("application/javascript");
+      http_response->AddCustomHeader("Cache-Control", "max-age=1000");
+      return http_response;
+    }
+
+    return std::unique_ptr<net::test_server::HttpResponse>();
+  }
+
+ protected:
+  // Loads 3p.com/script on page |url|, optionally from |sub_frame| if it's
+  // valid and return if the script was cached or not.
+  bool TestResourceLoad(const GURL& url, const GURL& sub_frame) {
+    // Kill the renderer to clear the in-memory cache.
+    NavigateToURL(shell(), GURL("chrome:crash"));
+
+    // Observe network requests.
+    ResourceLoadObserver observer(shell());
+
+    NavigateToURL(shell(), url);
+
+    RenderFrameHost* host_to_load_resource =
+        shell()->web_contents()->GetMainFrame();
+
+    // If there is supposed to be a sub-frame, create it.
+    if (sub_frame.is_valid()) {
+      const char kLoadIframeScript[] =
+          "var iframe = document.createElement('iframe');"
+          "iframe.src='%s';"
+          "document.body.appendChild(iframe);";
+      std::string create_iframe_script =
+          base::StringPrintf(kLoadIframeScript, sub_frame.spec().c_str());
+      EXPECT_TRUE(ExecuteScript(shell(), create_iframe_script));
+      EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+      host_to_load_resource =
+          static_cast<WebContentsImpl*>(shell()->web_contents())
+              ->GetFrameTree()
+              ->root()
+              ->child_at(0)
+              ->current_frame_host();
+    }
+
+    const char kLoadResourceScript[] = R"(
+    var script = document.createElement("script");
+    script.src = '%s';
+    document.body.appendChild(script);
+  )";
+    GURL resource = GenURL("3p.com", "/script");
+    std::string loader_script =
+        base::StringPrintf(kLoadResourceScript, resource.spec().c_str());
+
+    EXPECT_TRUE(ExecuteScript(host_to_load_resource, loader_script));
+    observer.WaitForResourceCompletion(resource);
+    return (*observer.FindResource(resource))->was_cached;
+  }
+
+  GURL GenURL(const std::string& host, const std::string& path) {
+    return embedded_test_server()->GetURL(host, path);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebContentsSplitCacheBrowserTest);
+};
+
+class WebContentsSplitCacheBrowserTestEnabled
+    : public WebContentsSplitCacheBrowserTest {
+ public:
+  WebContentsSplitCacheBrowserTestEnabled() {
+    feature_list.InitAndEnableFeature(
+        net::features::kSplitCacheByTopFrameOrigin);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+class WebContentsSplitCacheBrowserTestDisabled
+    : public WebContentsSplitCacheBrowserTest {
+ public:
+  WebContentsSplitCacheBrowserTestDisabled() {
+    feature_list.InitAndDisableFeature(
+        net::features::kSplitCacheByTopFrameOrigin);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestEnabled, SplitCache) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
+
+  // The second time, it's cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
+
+  // Now load it from a different site, and the resource isn't cached because
+  // the top frame origin is different.
+  EXPECT_FALSE(TestResourceLoad(GenURL("b.com", "/title1.html"), GURL()));
+
+  // Now load it from 3p.com, which is same-site to the cacheable
+  // resource. Still not supposed to be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("3p.com", "/title1.html"), GURL()));
+
+  // Load it from a a.com/redirect_to_d which redirects to d.com/title1.html and
+  // the resource shouldn't be cached because now we're on d.com.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/redirect_to_d"), GURL()));
+
+  // Load the resource from a same-origin iframe on a page where it's already
+  // cached. It should still be cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                               GenURL("a.com", "/title1.html")));
+
+  // Load the resource from a cross-origin iframe on a page where it's already
+  // cached. It should still be cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"),
+                               GenURL("d.com", "/title1.html")));
+
+  // Load the resource from a same-origin iframe on a page where it's not
+  // cached. It should not be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("e.com", "/title1.html"),
+                                GenURL("e.com", "/title1.html")));
+
+  // Load the resource from a cross-origin iframe where the iframe's origin has
+  // seen the object before but the top frame hasn't. It should not be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("f.com", "/title1.html"),
+                                GenURL("a.com", "/title1.html")));
+
+  // Load the resource from a data url which has an opaque origin. It shouldn't
+  // be cached.
+  GURL data_url("data:text/html,<body>Hello World</body>");
+  EXPECT_FALSE(TestResourceLoad(data_url, GURL()));
+
+  // Load the same resource from the same data url, it shouldn't be cached
+  // because the origin should be unique.
+  // TODO(crbug.com/910711): This test should return false! Opaque origins
+  // shouldn't share cache space. The issue is that opaque origins stringify as
+  // "null".
+  EXPECT_TRUE(TestResourceLoad(data_url, GURL()));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,
+                       NonSplitCache) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
+
+  // The second time, it's cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.com", "/title1.html"), GURL()));
+
+  // Now load it from a different site, and the resource is cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("b.com", "/title1.html"), GURL()));
+
+  // Load it from a cross-origin iframe, and it's still cached.
+  EXPECT_TRUE(TestResourceLoad(GenURL("b.com", "/title1.html"),
+                               GenURL("c.com", "/title1.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,

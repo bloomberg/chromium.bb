@@ -9405,6 +9405,100 @@ TEST_F(HttpCacheTest, UpdatesRequestResponseTimeOn304) {
   RemoveMockTransaction(&mock_network_response);
 }
 
+TEST_F(HttpCacheTest, SplitCache) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
+
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.com"));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.com"));
+
+  // A request without a top frame origin is cached normally.
+  MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Now request with a.com as the top frame origin. It shouldn't be cached
+  // since the cached resource has a different top frame origin.
+  trans_info.top_frame_origin = origin_a;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // The second request should be cached.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Now request with b.com as the top frame origin. It shouldn't be cached.
+  trans_info.top_frame_origin = origin_b;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // The second request should be cached.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // a.com should still be cached.
+  trans_info.top_frame_origin = origin_a;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Verify that a post transaction with a data stream uses a separate key.
+  const int64_t kUploadId = 1;  // Just a dummy value.
+
+  std::vector<std::unique_ptr<UploadElementReader>> element_readers;
+  element_readers.push_back(
+      std::make_unique<UploadBytesElementReader>("hello", 5));
+  ElementsUploadDataStream upload_data_stream(std::move(element_readers),
+                                              kUploadId);
+
+  MockHttpRequest post_info = MockHttpRequest(kSimplePOST_Transaction);
+  post_info.top_frame_origin = origin_a;
+  post_info.upload_data_stream = &upload_data_stream;
+
+  RunTransactionTestWithRequest(cache.http_cache(), kSimplePOST_Transaction,
+                                post_info, &response);
+  EXPECT_FALSE(response.was_cached);
+}
+
+TEST_F(HttpCacheTest, NonSplitCache) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      net::features::kSplitCacheByTopFrameOrigin);
+
+  MockHttpCache cache;
+  HttpResponseInfo response;
+
+  // A request without a top frame is cached normally.
+  MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+
+  // The second request comes from cache.
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Now request with a.com as the top frame origin. It should use the same
+  // cached object.
+  trans_info.top_frame_origin = url::Origin::Create(GURL("http://a.com/"));
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+}
+
 // Tests that we can write metadata to an entry.
 TEST_F(HttpCacheTest, WriteMetadata_OK) {
   base::test::ScopedFeatureList feature_list;
