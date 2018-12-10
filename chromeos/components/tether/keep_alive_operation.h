@@ -76,6 +76,10 @@ class KeepAliveOperation : public MessageTransferOperation {
 
  private:
   friend class KeepAliveOperationTest;
+  FRIEND_TEST_ALL_PREFIXES(KeepAliveOperationTest,
+                           SendsKeepAliveTickleAndReceivesResponse);
+  FRIEND_TEST_ALL_PREFIXES(KeepAliveOperationTest, NotifiesObserversOnResponse);
+  FRIEND_TEST_ALL_PREFIXES(KeepAliveOperationTest, RecordsResponseDuration);
 
   void SetClockForTest(base::Clock* clock_for_test);
 

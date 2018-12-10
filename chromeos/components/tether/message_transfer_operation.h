@@ -97,6 +97,7 @@ class MessageTransferOperation {
   friend class ConnectTetheringOperationTest;
   friend class DisconnectTetheringOperationTest;
   friend class HostScannerOperationTest;
+  friend class KeepAliveOperationTest;
   friend class MessageTransferOperationTest;
 
   class ConnectionAttemptDelegate
