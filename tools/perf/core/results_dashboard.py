@@ -24,11 +24,7 @@ import zlib
 
 import httplib2
 
-from telemetry.internal.util import external_modules
-
 from core import path_util
-
-psutil = external_modules.ImportOptionalModule('psutil')
 
 
 # The paths in the results dashboard URLs for sending results.
