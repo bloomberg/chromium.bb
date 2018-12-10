@@ -28,12 +28,18 @@ LogoMetadata GetExampleMetadata() {
                                      &metadata.expiration_time));
   metadata.can_show_after_expiration = true;
   metadata.type = LogoType::ANIMATED;
+  metadata.short_link = GURL("https://g.co/");
   metadata.on_click_url = GURL("https://www.google.com/search?q=chicken");
   metadata.animated_url = GURL("http://www.google.com/logos/doodle.png");
   metadata.alt_text = "A logo about chickens";
   metadata.mime_type = "image/jpeg";
   metadata.log_url = GURL("https://www.google.com/ddllog?a=b");
   metadata.cta_log_url = GURL("https://www.google.com/ddllog?c=d");
+  metadata.share_button_x = 200;
+  metadata.share_button_y = 100;
+  metadata.share_button_opacity = 0.5;
+  metadata.share_button_icon = "test_img";
+  metadata.share_button_bg = "#ff22ff";
   return metadata;
 }
 
@@ -91,6 +97,14 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
   EXPECT_EQ(expected_metadata.mime_type, actual_metadata.mime_type);
   EXPECT_EQ(expected_metadata.log_url, actual_metadata.log_url);
   EXPECT_EQ(expected_metadata.cta_log_url, actual_metadata.cta_log_url);
+  EXPECT_EQ(expected_metadata.short_link, actual_metadata.short_link);
+  EXPECT_EQ(expected_metadata.share_button_x, actual_metadata.share_button_x);
+  EXPECT_EQ(expected_metadata.share_button_y, actual_metadata.share_button_y);
+  EXPECT_EQ(expected_metadata.share_button_opacity,
+            actual_metadata.share_button_opacity);
+  EXPECT_EQ(expected_metadata.share_button_icon,
+            actual_metadata.share_button_icon);
+  EXPECT_EQ(expected_metadata.share_button_bg, actual_metadata.share_button_bg);
 }
 
 void ExpectLogosEqual(const EncodedLogo& expected_logo,
