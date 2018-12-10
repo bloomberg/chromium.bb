@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBDATABASE_DATABASE_H_
 
+#include <atomic>
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_database_callback.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_basic_types.h"
@@ -94,7 +95,7 @@ class Database final : public ScriptWrappable {
                           SQLTransaction::OnErrorCallback*,
                           SQLTransaction::OnSuccessCallback*);
 
-  bool Opened();
+  bool Opened() { return opened_.load(std::memory_order_acquire); }
   bool IsNew() const { return new_; }
 
   const SecurityOrigin* GetSecurityOrigin() const;
@@ -181,7 +182,11 @@ class Database final : public ScriptWrappable {
   String filename_;
 
   DatabaseGuid guid_;
-  int opened_;
+
+  // Atomically written from the database thread only, but read from multiple
+  // threads.
+  std::atomic_bool opened_;
+
   bool new_;
 
   SQLiteDatabase sqlite_database_;

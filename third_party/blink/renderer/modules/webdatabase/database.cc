@@ -225,7 +225,7 @@ Database::Database(DatabaseContext* database_context,
       display_name_(display_name.IsolatedCopy()),
       estimated_size_(estimated_size),
       guid_(0),
-      opened_(0),
+      opened_(false),
       new_(false),
       transaction_in_progress_(false),
       is_transaction_queue_enabled_(true) {
@@ -266,7 +266,7 @@ Database::~Database() {
   // DatabaseContext::stopDatabases()). By the time we get here, the SQLite
   // database should have already been closed.
 
-  DCHECK(!opened_);
+  DCHECK(!Opened());
 }
 
 void Database::Trace(blink::Visitor* visitor) {
@@ -411,10 +411,10 @@ const char* Database::DatabaseInfoTableName() {
 }
 
 void Database::CloseDatabase() {
-  if (!opened_)
+  if (!opened_.load(std::memory_order_relaxed))
     return;
 
-  ReleaseStore(&opened_, 0);
+  opened_.store(false, std::memory_order_release);
   sqlite_database_.Close();
   // See comment at the top this file regarding calling removeOpenDatabase().
   DatabaseTracker::Tracker().RemoveOpenDatabase(this);
@@ -590,7 +590,7 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
 
   // See comment at the top this file regarding calling addOpenDatabase().
   DatabaseTracker::Tracker().AddOpenDatabase(this);
-  opened_ = 1;
+  opened_.store(true, std::memory_order_release);
 
   // Declare success:
   error = DatabaseError::kNone;  // Clear the presumed error from above.
@@ -922,10 +922,6 @@ const SecurityOrigin* Database::GetSecurityOrigin() const {
   if (GetDatabaseContext()->GetDatabaseThread()->IsDatabaseThread())
     return database_thread_security_origin_.get();
   return nullptr;
-}
-
-bool Database::Opened() {
-  return static_cast<bool>(AcquireLoad(&opened_));
 }
 
 base::SingleThreadTaskRunner* Database::GetDatabaseTaskRunner() const {
