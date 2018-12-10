@@ -18,11 +18,13 @@ ManageMigrationUiController::ManageMigrationUiController(
       autofill::LocalCardMigrationBubbleControllerImpl::FromWebContents(
           web_contents);
   bubble_controller_->AddObserver(this);
+
   autofill::LocalCardMigrationDialogControllerImpl::CreateForWebContents(
       web_contents);
   dialog_controller_ =
       autofill::LocalCardMigrationDialogControllerImpl::FromWebContents(
           web_contents);
+  dialog_controller_->AddObserver(this);
 }
 
 ManageMigrationUiController::~ManageMigrationUiController() {}
@@ -43,20 +45,21 @@ void ManageMigrationUiController::ShowOfferDialog(
       std::move(start_migrating_cards_callback));
 }
 
-void ManageMigrationUiController::ShowCreditCardIcon(
+void ManageMigrationUiController::UpdateCreditCardIcon(
     const base::string16& tip_message,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::MigrationDeleteCardCallback delete_local_card_callback) {
   if (!dialog_controller_)
     return;
 
-  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::OFFER_DIALOG);
-  flow_step_ = LocalCardMigrationFlowStep::CREDIT_CARD_ICON;
+  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::MIGRATION_RESULT_PENDING);
+  flow_step_ = LocalCardMigrationFlowStep::MIGRATION_FINISHED;
   // Show error dialog when the vector is an empty vector, which indicates
   // Payments Rpc failure.
   show_error_dialog_ = migratable_credit_cards.empty();
-  dialog_controller_->ShowCreditCardIcon(tip_message, migratable_credit_cards,
-                                         delete_local_card_callback);
+
+  dialog_controller_->UpdateCreditCardIcon(tip_message, migratable_credit_cards,
+                                           delete_local_card_callback);
 }
 
 void ManageMigrationUiController::OnUserClickedCreditCardIcon() {
@@ -65,12 +68,11 @@ void ManageMigrationUiController::OnUserClickedCreditCardIcon() {
       ReshowBubble();
       break;
     }
-    case LocalCardMigrationFlowStep::CREDIT_CARD_ICON: {
+    case LocalCardMigrationFlowStep::MIGRATION_FINISHED: {
       show_error_dialog_ ? ShowErrorDialog() : ShowFeedbackDialog();
       break;
     }
     default: {
-      NOTREACHED();
       break;
     }
   }
@@ -81,8 +83,8 @@ LocalCardMigrationFlowStep ManageMigrationUiController::GetFlowStep() const {
 }
 
 bool ManageMigrationUiController::IsIconVisible() const {
-  return flow_step_ == LocalCardMigrationFlowStep::PROMO_BUBBLE ||
-         flow_step_ == LocalCardMigrationFlowStep::CREDIT_CARD_ICON;
+  DCHECK_NE(flow_step_, LocalCardMigrationFlowStep::UNKNOWN);
+  return flow_step_ != LocalCardMigrationFlowStep::NOT_SHOWN;
 }
 
 LocalCardMigrationBubble* ManageMigrationUiController::GetBubbleView() const {
@@ -103,6 +105,10 @@ void ManageMigrationUiController::OnMigrationNoLongerAvailable() {
   flow_step_ = LocalCardMigrationFlowStep::NOT_SHOWN;
 }
 
+void ManageMigrationUiController::OnMigrationStarted() {
+  flow_step_ = LocalCardMigrationFlowStep::MIGRATION_RESULT_PENDING;
+}
+
 void ManageMigrationUiController::ReshowBubble() {
   if (!bubble_controller_)
     return;
@@ -115,7 +121,7 @@ void ManageMigrationUiController::ShowErrorDialog() {
   if (!dialog_controller_)
     return;
 
-  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::CREDIT_CARD_ICON);
+  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::MIGRATION_FINISHED);
   flow_step_ = LocalCardMigrationFlowStep::ERROR_DIALOG;
   dialog_controller_->ShowErrorDialog();
 }
@@ -124,7 +130,7 @@ void ManageMigrationUiController::ShowFeedbackDialog() {
   if (!dialog_controller_)
     return;
 
-  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::CREDIT_CARD_ICON);
+  DCHECK_EQ(flow_step_, LocalCardMigrationFlowStep::MIGRATION_FINISHED);
   flow_step_ = LocalCardMigrationFlowStep::FEEDBACK_DIALOG;
   dialog_controller_->ShowFeedbackDialog();
 }

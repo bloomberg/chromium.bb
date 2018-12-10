@@ -280,8 +280,8 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
   autofill::ManageMigrationUiController::CreateForWebContents(web_contents());
   autofill::ManageMigrationUiController* controller =
       autofill::ManageMigrationUiController::FromWebContents(web_contents());
-  controller->ShowCreditCardIcon(tip_message, migratable_credit_cards,
-                                 delete_local_card_callback);
+  controller->UpdateCreditCardIcon(tip_message, migratable_credit_cards,
+                                   delete_local_card_callback);
 #endif
 }
 

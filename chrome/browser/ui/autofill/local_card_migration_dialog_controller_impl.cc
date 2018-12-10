@@ -59,21 +59,22 @@ void LocalCardMigrationDialogControllerImpl::ShowOfferDialog(
     return;
   }
 
+  view_state_ = LocalCardMigrationDialogState::kOffered;
+  // Need to create the icon first otherwise the dialog will not be shown.
+  UpdateIcon();
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
   start_migrating_cards_callback_ = std::move(start_migrating_cards_callback);
   migratable_credit_cards_ = migratable_credit_cards;
-  view_state_ = LocalCardMigrationDialogState::kOffered;
-  // If the credit card icon is being shown, remove the icon.
-  UpdateIcon();
   local_card_migration_dialog_->ShowDialog();
+  UpdateIcon();
   dialog_is_visible_duration_timer_ = base::ElapsedTimer();
 
   AutofillMetrics::LogLocalCardMigrationDialogOfferMetric(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_SHOWN);
 }
 
-void LocalCardMigrationDialogControllerImpl::ShowCreditCardIcon(
+void LocalCardMigrationDialogControllerImpl::UpdateCreditCardIcon(
     const base::string16& tip_message,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     AutofillClient::MigrationDeleteCardCallback delete_local_card_callback) {
@@ -98,8 +99,8 @@ void LocalCardMigrationDialogControllerImpl::ShowCreditCardIcon(
 void LocalCardMigrationDialogControllerImpl::ShowFeedbackDialog() {
   local_card_migration_dialog_ =
       CreateLocalCardMigrationDialogView(this, web_contents());
-  UpdateIcon();
   local_card_migration_dialog_->ShowDialog();
+  UpdateIcon();
 }
 
 void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
@@ -107,6 +108,11 @@ void LocalCardMigrationDialogControllerImpl::ShowErrorDialog() {
       CreateLocalCardMigrationErrorDialogView(this, web_contents());
   UpdateIcon();
   local_card_migration_dialog_->ShowDialog();
+}
+
+void LocalCardMigrationDialogControllerImpl::AddObserver(
+    LocalCardMigrationControllerObserver* observer) {
+  observer_list_.AddObserver(observer);
 }
 
 LocalCardMigrationDialogState
@@ -137,6 +143,7 @@ void LocalCardMigrationDialogControllerImpl::OnSaveButtonClicked(
       AutofillMetrics::LOCAL_CARD_MIGRATION_DIALOG_CLOSED_SAVE_BUTTON_CLICKED);
 
   std::move(start_migrating_cards_callback_).Run(selected_cards_guids);
+  NotifyMigrationStarted();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
@@ -149,12 +156,18 @@ void LocalCardMigrationDialogControllerImpl::OnCancelButtonClicked() {
   prefs::SetLocalCardMigrationPromptPreviouslyCancelled(pref_service_, true);
 
   start_migrating_cards_callback_.Reset();
+  NotifyMigrationNoLongerAvailable();
+}
+
+void LocalCardMigrationDialogControllerImpl::OnDoneButtonClicked() {
+  NotifyMigrationNoLongerAvailable();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnViewCardsButtonClicked() {
   // TODO(crbug.com/867194): Add metrics.
   constexpr int kPaymentsProfileUserIndex = 0;
   OpenUrl(payments::GetManageInstrumentsUrl(kPaymentsProfileUserIndex));
+  NotifyMigrationNoLongerAvailable();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnLegalMessageLinkClicked(
@@ -188,6 +201,8 @@ void LocalCardMigrationDialogControllerImpl::DeleteCard(
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {
   if (local_card_migration_dialog_)
     local_card_migration_dialog_ = nullptr;
+
+  UpdateIcon();
 }
 
 bool LocalCardMigrationDialogControllerImpl::AllCardsInvalid() const {
@@ -213,7 +228,7 @@ LocalCardMigrationDialogControllerImpl::local_card_migration_dialog_view()
 
 void LocalCardMigrationDialogControllerImpl::OpenUrl(const GURL& url) {
   web_contents()->OpenURL(content::OpenURLParams(
-      url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      url, content::Referrer(), WindowOpenDisposition::NEW_POPUP,
       ui::PAGE_TRANSITION_LINK, false));
 }
 
@@ -232,6 +247,19 @@ bool LocalCardMigrationDialogControllerImpl::HasFailedCard() const {
                return card.migration_status() ==
                       MigratableCreditCard::MigrationStatus::FAILURE_ON_UPLOAD;
              }) != migratable_credit_cards_.end();
+}
+
+void LocalCardMigrationDialogControllerImpl::
+    NotifyMigrationNoLongerAvailable() {
+  for (LocalCardMigrationControllerObserver& observer : observer_list_) {
+    observer.OnMigrationNoLongerAvailable();
+  }
+}
+
+void LocalCardMigrationDialogControllerImpl::NotifyMigrationStarted() {
+  for (LocalCardMigrationControllerObserver& observer : observer_list_) {
+    observer.OnMigrationStarted();
+  }
 }
 
 }  // namespace autofill

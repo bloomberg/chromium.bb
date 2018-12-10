@@ -8,7 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/ui/autofill/local_card_migration_controller_observer.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/local_card_migration_dialog_controller.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -35,9 +37,9 @@ class LocalCardMigrationDialogControllerImpl
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);
 
-  // When migration is finished, show a credit card icon in the omnibox. Also
-  // passes |tip_message|, and |migratable_credit_cards| to controller.
-  void ShowCreditCardIcon(
+  // When migration is finished, update the credit card icon. Also passes
+  // |tip_message|, and |migratable_credit_cards| to controller.
+  void UpdateCreditCardIcon(
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::MigrationDeleteCardCallback delete_local_card_callback);
@@ -52,6 +54,8 @@ class LocalCardMigrationDialogControllerImpl
   // error dialog containing an error message.
   void ShowErrorDialog();
 
+  void AddObserver(LocalCardMigrationControllerObserver* observer);
+
   // LocalCardMigrationDialogController:
   LocalCardMigrationDialogState GetViewState() const override;
   const std::vector<MigratableCreditCard>& GetCardList() const override;
@@ -60,6 +64,7 @@ class LocalCardMigrationDialogControllerImpl
   void OnSaveButtonClicked(
       const std::vector<std::string>& selected_cards_guids) override;
   void OnCancelButtonClicked() override;
+  void OnDoneButtonClicked() override;
   void OnViewCardsButtonClicked() override;
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void DeleteCard(const std::string& deleted_card_guid) override;
@@ -81,7 +86,12 @@ class LocalCardMigrationDialogControllerImpl
 
   void UpdateIcon();
 
+  // The dialog is showing cards of which the migration failed. We will show
+  // the "Almost done" dialog in this case.
   bool HasFailedCard() const;
+
+  void NotifyMigrationNoLongerAvailable();
+  void NotifyMigrationStarted();
 
   LocalCardMigrationDialog* local_card_migration_dialog_ = nullptr;
 
@@ -112,6 +122,11 @@ class LocalCardMigrationDialogControllerImpl
   // The message containing information from Google Payments. Shown in the
   // feedback dialogs after migration process is finished.
   base::string16 tip_message_;
+
+  // Contains observer listening to user's interactions with the dialog. The
+  // observer is responsible for setting flow step upon these interactions.
+  base::ObserverList<LocalCardMigrationControllerObserver>::Unchecked
+      observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogControllerImpl);
 };

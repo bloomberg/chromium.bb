@@ -36,19 +36,18 @@ views::BubbleDialogDelegateView* LocalCardMigrationIconView::GetBubble() const {
   if (!controller)
     return nullptr;
 
-  switch (controller->GetFlowStep()) {
-    case LocalCardMigrationFlowStep::PROMO_BUBBLE: {
+  LocalCardMigrationFlowStep step = controller->GetFlowStep();
+  DCHECK_NE(step, LocalCardMigrationFlowStep::UNKNOWN);
+  switch (step) {
+    case LocalCardMigrationFlowStep::PROMO_BUBBLE:
       return static_cast<LocalCardMigrationBubbleViews*>(
           controller->GetBubbleView());
-    }
-    case LocalCardMigrationFlowStep::CREDIT_CARD_ICON: {
+    case LocalCardMigrationFlowStep::NOT_SHOWN:
+    case LocalCardMigrationFlowStep::MIGRATION_RESULT_PENDING:
+      return nullptr;
+    default:
       return static_cast<LocalCardMigrationDialogView*>(
           controller->GetDialogView());
-    }
-    default: {
-      NOTREACHED();
-      return nullptr;
-    }
   }
 }
 
@@ -63,6 +62,16 @@ bool LocalCardMigrationIconView::Update() {
   bool enabled = controller && controller->IsIconVisible();
   enabled &= SetCommandEnabled(enabled);
   SetVisible(enabled);
+
+  // When the dialog is about to show, trigger the ink drop animation
+  // so that the credit card icon in "selected" state by default. This needs
+  // to be manually set since the migration dialog is not anchored at the
+  // credit card icon.
+  if (visible() &&
+      controller->GetFlowStep() == LocalCardMigrationFlowStep::OFFER_DIALOG) {
+    AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  }
+
   return was_visible != visible();
 }
 

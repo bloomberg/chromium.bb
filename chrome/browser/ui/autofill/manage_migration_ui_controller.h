@@ -25,9 +25,13 @@ enum class LocalCardMigrationFlowStep {
   // Should show the dialog that offers users to migrate credit cards to
   // Payments server.
   OFFER_DIALOG,
-  // Should show the credit card icon when migration is finished and the
-  // feedback dialog is ready.
-  CREDIT_CARD_ICON,
+  // Migration is in process and result is pending after users click the save
+  // button.
+  // Should show credit card icon and the animation.
+  MIGRATION_RESULT_PENDING,
+  // Migration is finished. Should show the credit card icon when migration
+  // is finished and the feedback dialog is ready.
+  MIGRATION_FINISHED,
   // Should show the feedback dialog containing the migration results of cards
   // that the user selected to upload after the user clicking the credit card
   // icon.
@@ -53,7 +57,7 @@ class ManageMigrationUiController
       AutofillClient::LocalCardMigrationCallback
           start_migrating_cards_callback);
 
-  void ShowCreditCardIcon(
+  void UpdateCreditCardIcon(
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       AutofillClient::MigrationDeleteCardCallback delete_local_card_callback);
@@ -70,6 +74,7 @@ class ManageMigrationUiController
 
   // LocalCardMigrationControllerObserver:
   void OnMigrationNoLongerAvailable() override;
+  void OnMigrationStarted() override;
 
  protected:
   explicit ManageMigrationUiController(content::WebContents* web_contents);
