@@ -28,23 +28,17 @@ views::View* AssistantContainerViewFocusSearch::FindNextFocusableView(
     AnchoredDialogPolicy can_go_into_anchored_dialog,
     views::FocusTraversable** focus_traversable,
     views::View** focus_traversable_view) {
-  views::FocusManager* focus_manager =
-      assistant_container_view_->GetFocusManager();
+  // NOTE: This FocusTraversable should only be used whenever the container does
+  // not have anything currently focused *and* it has a reasonable default focus
+  // override via |FindFirstFocusableView()|. This is ensured by
+  // |AssistantContainerView::GetFocusTraversable()|.
+  DCHECK(!assistant_container_view_->GetFocusManager() ||
+         !assistant_container_view_->GetFocusManager()->GetFocusedView());
 
-  // If there is no currently focused view we'll give AssistantContainerView
-  // an opportunity to explicitly specified which view to focus first.
-  views::View* next_focusable_view = nullptr;
-  if (focus_manager && !focus_manager->GetFocusedView())
-    next_focusable_view = assistant_container_view_->FindFirstFocusableView();
-
-  // When we are not explicitly overriding the next focusable view we defer
-  // back to views::FocusSearch's default behaviour.
-  return next_focusable_view
-             ? next_focusable_view
-             : views::FocusSearch::FindNextFocusableView(
-                   starting_from, search_direction, traversal_direction,
-                   check_starting_view, can_go_into_anchored_dialog,
-                   focus_traversable, focus_traversable_view);
+  auto* next_focusable_view =
+      assistant_container_view_->FindFirstFocusableView();
+  DCHECK(next_focusable_view);
+  return next_focusable_view;
 }
 
 // AssistantContainerViewFocusTraversable --------------------------------------

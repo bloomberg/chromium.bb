@@ -6,6 +6,7 @@ module content.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "ui/accessibility/mojom/ax_tree_id.mojom";
 import "ui/base/mojo/window_open_disposition.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
@@ -45,6 +46,14 @@ interface NavigableContents {
   // we have more widely available UI Service support.
   CreateView(bool in_service_process)
       => (mojo_base.mojom.UnguessableToken embed_token);
+
+  // Attempts to transfer global input focus to the navigated contents if they
+  // have an active visual representation.
+  Focus();
+
+  // Similar to above but for use specifically when UI traversal is being done
+  // via Tab-key cycling.
+  FocusThroughTabTraversal(bool reverse);
 };
 
 // A client interface used by the Content Service to push contents-scoped events
@@ -75,4 +84,8 @@ interface NavigableContentsClient {
   DidSuppressNavigation(url.mojom.Url url,
                         ui.mojom.WindowOpenDisposition disposition,
                         bool from_user_gesture);
+
+  // Informs the client of the ID of the content area's accessibility tree
+  // whenever it changes.
+  UpdateContentAXTree(ax.mojom.AXTreeID id);
 };

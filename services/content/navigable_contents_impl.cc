@@ -88,6 +88,14 @@ void NavigableContentsImpl::CreateView(bool in_service_process,
   std::move(callback).Run(token);
 }
 
+void NavigableContentsImpl::Focus() {
+  delegate_->Focus();
+}
+
+void NavigableContentsImpl::FocusThroughTabTraversal(bool reverse) {
+  delegate_->FocusThroughTabTraversal(reverse);
+}
+
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
 void NavigableContentsImpl::OnEmbedTokenReceived(
     CreateViewCallback callback,

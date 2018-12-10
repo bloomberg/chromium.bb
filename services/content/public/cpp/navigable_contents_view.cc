@@ -11,6 +11,9 @@
 #include "base/synchronization/atomic_flag.h"
 #include "base/unguessable_token.h"
 #include "services/content/public/cpp/buildflags.h"
+#include "services/content/public/cpp/navigable_contents.h"
+#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/layout/fill_layout.h"  // nogncheck
@@ -92,7 +95,8 @@ class LocalWindowLayoutManager : public aura::LayoutManager {
 // corresponding to a web contents view hosted in the process.
 class LocalViewHost : public views::NativeViewHost {
  public:
-  explicit LocalViewHost(aura::Window* window) : window_(window) {
+  LocalViewHost(aura::Window* window, NavigableContents* contents)
+      : window_(window), contents_(contents) {
     window_->SetLayoutManager(new LocalWindowLayoutManager(window_));
   }
 
@@ -104,8 +108,22 @@ class LocalViewHost : public views::NativeViewHost {
       Attach(window_);
   }
 
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->role = ax::mojom::Role::kWebView;
+
+    // The document title is provided to the accessibility system by other
+    // means, so setting it here would be redundant.
+    node_data->SetNameExplicitlyEmpty();
+
+    if (contents_->content_ax_tree_id() != ui::AXTreeIDUnknown()) {
+      node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                    contents_->content_ax_tree_id().ToString());
+    }
+  }
+
  private:
   aura::Window* const window_;
+  NavigableContents* const contents_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalViewHost);
 };
@@ -126,7 +144,14 @@ bool NavigableContentsView::IsClientRunningInServiceProcess() {
   return GetInServiceProcessFlag().IsSet();
 }
 
-NavigableContentsView::NavigableContentsView() {
+void NavigableContentsView::NotifyAccessibilityTreeChange() {
+#if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
+  view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
+#endif
+}
+
+NavigableContentsView::NavigableContentsView(NavigableContents* contents)
+    : contents_(contents) {
 #if defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   if (!IsClientRunningInServiceProcess()) {
@@ -147,7 +172,7 @@ NavigableContentsView::NavigableContentsView() {
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->Show();
 
-  view_ = std::make_unique<LocalViewHost>(window_.get());
+  view_ = std::make_unique<LocalViewHost>(window_.get(), contents_);
   view_->set_owned_by_client();
 #endif  // defined(TOOLKIT_VIEWS) && defined(USE_AURA)
 }

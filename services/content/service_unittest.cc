@@ -40,6 +40,7 @@ class TestNavigableContentsClient : public mojom::NavigableContentsClient {
   void DidSuppressNavigation(const GURL& url,
                              WindowOpenDisposition disposition,
                              bool from_user_gesture) override {}
+  void UpdateContentAXTree(const ui::AXTreeID& id) override {}
 
   DISALLOW_COPY_AND_ASSIGN(TestNavigableContentsClient);
 };
@@ -66,6 +67,9 @@ class TestNavigableContentsDelegate : public NavigableContentsDelegate {
       content::mojom::NavigableContents::GoBackCallback callback) override {
     std::move(callback).Run(false /* success */);
   }
+
+  void Focus() override {}
+  void FocusThroughTabTraversal(bool reverse) override {}
 
   gfx::NativeView GetNativeView() override { return nullptr; }
 
