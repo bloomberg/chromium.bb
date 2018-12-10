@@ -447,6 +447,7 @@ enum HistogramValue {
   FILE_MANAGER_PRIVATE_ON_CROSTINI_SHARED_PATHS_CHANGED = 426,
   AUTOMATION_INTERNAL_ON_GET_TEXT_LOCATION_RESULT = 427,
   INPUT_METHOD_PRIVATE_ON_SETTINGS_CHANGED = 428,
+  INPUT_METHOD_PRIVATE_ON_SCREEN_PROJECTION_CHANGED = 429,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

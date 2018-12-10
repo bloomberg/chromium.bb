@@ -26,6 +26,8 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
   void SetCapsLockEnabled(bool enabled) override;
   void OverrideKeyboardKeyset(chromeos::input_method::mojom::ImeKeyset keyset,
                               OverrideKeyboardKeysetCallback callback) override;
+  void UpdateMirroringState(bool enabled) override;
+  void UpdateCastingState(bool enabled) override;
 
   int next_ime_count_ = 0;
   int last_used_ime_count_ = 0;
@@ -35,6 +37,8 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
   bool last_show_message_ = false;
   chromeos::input_method::mojom::ImeKeyset last_keyset_ =
       chromeos::input_method::mojom::ImeKeyset::kNone;
+  bool is_mirroring_ = false;
+  bool is_casting_ = false;
 
  private:
   mojo::Binding<mojom::ImeControllerClient> binding_;

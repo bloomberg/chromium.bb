@@ -113,6 +113,20 @@ void ImeControllerClient::SetCapsLockEnabled(bool caps_enabled) {
     keyboard->SetCapsLockEnabled(caps_enabled);
 }
 
+void ImeControllerClient::UpdateMirroringState(bool mirroring_enabled) {
+  ui::IMEEngineHandlerInterface* ime_engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  if (ime_engine)
+    ime_engine->SetMirroringEnabled(mirroring_enabled);
+}
+
+void ImeControllerClient::UpdateCastingState(bool casting_enabled) {
+  ui::IMEEngineHandlerInterface* ime_engine =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  if (ime_engine)
+    ime_engine->SetCastingEnabled(casting_enabled);
+}
+
 void ImeControllerClient::OverrideKeyboardKeyset(
     chromeos::input_method::mojom::ImeKeyset keyset,
     OverrideKeyboardKeysetCallback callback) {

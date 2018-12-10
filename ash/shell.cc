@@ -871,6 +871,7 @@ Shell::~Shell() {
   accessibility_delegate_.reset();
   accessibility_focus_ring_controller_.reset();
   policy_recommendation_restorer_.reset();
+  ime_controller_.reset();
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);

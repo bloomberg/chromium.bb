@@ -528,6 +528,17 @@
             "name": "value",
             "type": "any",
             "description": "The new value of the setting"
+	  }
+	]
+      }, {
+        "name": "onScreenProjectionChanged",
+        "type": "function",
+        "description": "This event is sent when the screen is being mirrored or the desktop is being cast.",
+        "parameters": [
+          {
+            "name": "isProjected",
+	    "type": "boolean",
+            "description": "Whether the screen is projected."
           }
         ]
       }
