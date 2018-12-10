@@ -23,7 +23,7 @@ public class BottomBarAnimations {
     private static final int DETAILS_SLIDE_ANIMATION_SPEED_MS = 200;
     private static final int CAROUSEL_FADE_ANIMATION_SPEED_MS = 100;
 
-    private static final int BOTTOM_BAR_WITH_DETAILS_HEIGHT_DP = 234;
+    private static final int BOTTOM_BAR_WITH_DETAILS_HEIGHT_DP = 242;
     private static final int DETAILS_HORIZONTAL_MARGIN_DP = 24;
     private static final int DETAILS_VERTICAL_MARGIN_WITH_CAROUSEL_DP = 20;
     private static final int DETAILS_VERTICAL_MARGIN_WITHOUT_CAROUSEL_DP = 46;
@@ -137,7 +137,10 @@ public class BottomBarAnimations {
         }
     }
 
-    /** Update the bottom bar height to fixed when the details are shown. */
+    /**
+     * Update the bottom bar height to fixed when the details are shown, to avoid bottom bar
+     * moving up and down due to child views changing themselves in the checkout process.
+     */
     public void setBottomBarHeightToFixed() {
         if (mDetailsView.getVisibility() == View.VISIBLE) {
             setBottomBarHeight(mBottomBarWithDetailsHeight);
