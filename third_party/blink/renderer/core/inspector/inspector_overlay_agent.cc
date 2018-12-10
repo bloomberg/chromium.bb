@@ -1039,7 +1039,7 @@ bool InspectorOverlayAgent::HandleMouseDown(const WebMouseEvent& event) {
     return false;
 
   if ((event.GetModifiers() & kCtrlOrMeta) &&
-      (event.GetModifiers() & WebInputEvent::kLeftButtonDown)) {
+      event.button == WebPointerProperties::Button::kLeft) {
     InnerHideHighlight();
     hovered_node_for_inspect_mode_.Clear();
     screenshot_mode_ = true;
@@ -1073,6 +1073,8 @@ bool InspectorOverlayAgent::HandleMouseUp(const WebMouseEvent& event) {
     int max_x = std::max(p1.X(), p2.X());
     int min_y = std::min(p1.Y(), p2.Y());
     int max_y = std::max(p1.Y(), p2.Y());
+    if (max_x - min_x < 5 || max_y - min_y < 5)
+      return true;
     GetFrontend()->screenshotRequested(protocol::Page::Viewport::create()
                                            .setX(min_x)
                                            .setY(min_y)
