@@ -10889,7 +10889,7 @@ bool GLES2DecoderImpl::AttribsTypeMatch() {
   return true;
 }
 
-bool GLES2DecoderImpl::CheckMultiDrawArraysVertices(
+ALWAYS_INLINE bool GLES2DecoderImpl::CheckMultiDrawArraysVertices(
     const char* function_name,
     bool instanced,
     const GLint* firsts,
@@ -10943,13 +10943,14 @@ bool GLES2DecoderImpl::CheckMultiDrawArraysVertices(
   return true;
 }
 
-bool GLES2DecoderImpl::CheckTransformFeedback(const char* function_name,
-                                              bool instanced,
-                                              GLenum mode,
-                                              const GLsizei* counts,
-                                              const GLsizei* primcounts,
-                                              GLsizei drawcount,
-                                              GLsizei* vertices_drawn) {
+ALWAYS_INLINE bool GLES2DecoderImpl::CheckTransformFeedback(
+    const char* function_name,
+    bool instanced,
+    GLenum mode,
+    const GLsizei* counts,
+    const GLsizei* primcounts,
+    GLsizei drawcount,
+    GLsizei* vertices_drawn) {
   DCHECK(state_.bound_transform_feedback.get());
   if (state_.bound_transform_feedback->active() &&
       !state_.bound_transform_feedback->paused()) {
@@ -10983,13 +10984,14 @@ bool GLES2DecoderImpl::CheckTransformFeedback(const char* function_name,
   return true;
 }
 
-error::Error GLES2DecoderImpl::DoMultiDrawArrays(const char* function_name,
-                                                 bool instanced,
-                                                 GLenum mode,
-                                                 const GLint* firsts,
-                                                 const GLsizei* counts,
-                                                 const GLsizei* primcounts,
-                                                 GLsizei drawcount) {
+ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawArrays(
+    const char* function_name,
+    bool instanced,
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* primcounts,
+    GLsizei drawcount) {
   error::Error error = WillAccessBoundFramebufferForDraw();
   if (error != error::kNoError)
     return error;
@@ -11125,7 +11127,7 @@ error::Error GLES2DecoderImpl::HandleDrawArraysInstancedANGLE(
                            &primcount, 1);
 }
 
-bool GLES2DecoderImpl::CheckMultiDrawElementsVertices(
+ALWAYS_INLINE bool GLES2DecoderImpl::CheckMultiDrawElementsVertices(
     const char* function_name,
     bool instanced,
     const GLsizei* counts,
@@ -11180,14 +11182,15 @@ bool GLES2DecoderImpl::CheckMultiDrawElementsVertices(
   return true;
 }
 
-error::Error GLES2DecoderImpl::DoMultiDrawElements(const char* function_name,
-                                                   bool instanced,
-                                                   GLenum mode,
-                                                   const GLsizei* counts,
-                                                   GLenum type,
-                                                   const int32_t* offsets,
-                                                   const GLsizei* primcounts,
-                                                   GLsizei drawcount) {
+ALWAYS_INLINE error::Error GLES2DecoderImpl::DoMultiDrawElements(
+    const char* function_name,
+    bool instanced,
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const int32_t* offsets,
+    const GLsizei* primcounts,
+    GLsizei drawcount) {
   error::Error error = WillAccessBoundFramebufferForDraw();
   if (error != error::kNoError)
     return error;
