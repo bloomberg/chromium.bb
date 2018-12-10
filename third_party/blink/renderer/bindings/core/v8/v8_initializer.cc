@@ -552,8 +552,8 @@ static bool WasmInstanceOverride(
   if (!source->IsWebAssemblyCompiledModule())
     return false;
 
-  v8::Local<v8::WasmCompiledModule> module =
-      v8::Local<v8::WasmCompiledModule>::Cast(source);
+  v8::Local<v8::WasmModuleObject> module =
+      v8::Local<v8::WasmModuleObject>::Cast(source);
   if (module->GetWasmWireBytesRef().size > kWasmWireBytesLimit) {
     ThrowRangeException(
         args.GetIsolate(),

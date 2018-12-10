@@ -678,15 +678,15 @@ v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(
   return wrapper.As<v8::Object>();
 }
 
-v8::MaybeLocal<v8::WasmCompiledModule>
+v8::MaybeLocal<v8::WasmModuleObject>
 V8ScriptValueDeserializer::GetWasmModuleFromId(v8::Isolate* isolate,
                                                uint32_t id) {
   if (id < serialized_script_value_->WasmModules().size()) {
-    return v8::WasmCompiledModule::FromTransferrableModule(
+    return v8::WasmModuleObject::FromTransferrableModule(
         isolate, serialized_script_value_->WasmModules()[id]);
   }
   CHECK(serialized_script_value_->WasmModules().IsEmpty());
-  return v8::MaybeLocal<v8::WasmCompiledModule>();
+  return v8::MaybeLocal<v8::WasmModuleObject>();
 }
 
 v8::MaybeLocal<v8::SharedArrayBuffer>
