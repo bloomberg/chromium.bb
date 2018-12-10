@@ -30,7 +30,11 @@ def main():
        "en_AU.zip"),
       ("https://github.com/b00f/lilak/releases/latest/download/"
        "fa-IR.zip",
-       "fa_IR.zip")
+       "fa_IR.zip"),
+      # NOTE: need to remove IGNORE from uk_UA.aff
+      ("https://github.com/brown-uk/dict_uk/releases/latest/download/"
+       "hunspell-uk_UA.zip",
+       "uk_UA.zip"),
   )
   for pair in dictionaries:
     url = pair[0]
