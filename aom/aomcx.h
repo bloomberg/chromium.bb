@@ -864,6 +864,9 @@ enum aome_enc_control_id {
 
   /*!\brief Sets the chroma subsampling y value */
   AV1E_SET_CHROMA_SUBSAMPLING_Y,
+
+  /*!\brief Control to use a reduced tx type set */
+  AV1E_SET_REDUCED_TX_TYPE_SET,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1192,6 +1195,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SUBSAMPLING_X, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SUBSAMPLING_Y, unsigned int)
 #define AOM_CTRL_AV1E_SET_CHROMA_SUBSAMPLING_Y
+
+AOM_CTRL_USE_TYPE(AV1E_SET_REDUCED_TX_TYPE_SET, unsigned int)
+#define AOM_CTRL_AV1E_SET_REDUCED_TX_TYPE_SET
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

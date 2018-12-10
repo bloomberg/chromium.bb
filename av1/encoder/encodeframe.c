@@ -6022,7 +6022,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   const int num_planes = av1_num_planes(cm);
   // Indicates whether or not to use a default reduced set for ext-tx
   // rather than the potential full set of 16 transforms
-  cm->reduced_tx_set_used = 0;
+  cm->reduced_tx_set_used = cpi->oxcf.reduced_tx_type_set;
 
   if (cm->show_frame == 0) {
     int arf_offset = AOMMIN(

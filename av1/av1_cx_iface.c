@@ -111,6 +111,7 @@ struct av1_extracfg {
 
   unsigned int chroma_subsampling_x;
   unsigned int chroma_subsampling_y;
+  int reduced_tx_type_set;
 };
 
 static struct av1_extracfg default_extra_cfg = {
@@ -188,6 +189,7 @@ static struct av1_extracfg default_extra_cfg = {
 #endif
   0,  // chroma_subsampling_x
   0,  // chroma_subsampling_y
+  0,  // reduced_tx_type_set
 };
 
 struct aom_codec_alg_priv {
@@ -538,6 +540,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->qm_v = extra_cfg->qm_v;
   oxcf->qm_minlevel = extra_cfg->qm_min;
   oxcf->qm_maxlevel = extra_cfg->qm_max;
+  oxcf->reduced_tx_type_set = extra_cfg->reduced_tx_type_set;
 #if CONFIG_DIST_8X8
   oxcf->using_dist_8x8 = extra_cfg->enable_dist_8x8;
   if (extra_cfg->tuning == AOM_TUNE_CDEF_DIST ||
@@ -1137,6 +1140,13 @@ static aom_codec_err_t ctrl_set_aq_mode(aom_codec_alg_priv_t *ctx,
                                         va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.aq_mode = CAST(AV1E_SET_AQ_MODE, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_reduced_tx_type_set(aom_codec_alg_priv_t *ctx,
+                                                    va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.reduced_tx_type_set = CAST(AV1E_SET_REDUCED_TX_TYPE_SET, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1837,6 +1847,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ALLOW_WARPED_MOTION, ctrl_set_allow_warped_motion },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
+  { AV1E_SET_REDUCED_TX_TYPE_SET, ctrl_set_reduced_tx_type_set },
   { AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode },
   { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
   { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },
