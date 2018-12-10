@@ -74,7 +74,7 @@ class CORE_EXPORT SerializedScriptValue
   using SharedArrayBufferContentsArray = Vector<WTF::ArrayBufferContents, 1>;
   using ImageBitmapContentsArray = Vector<scoped_refptr<StaticBitmapImage>, 1>;
   using TransferredWasmModulesArray =
-      WTF::Vector<v8::WasmCompiledModule::TransferrableModule>;
+      WTF::Vector<v8::WasmModuleObject::TransferrableModule>;
   using MessagePortChannelArray = Vector<MessagePortChannel>;
 
   // Increment this for each incompatible change to the wire format.
