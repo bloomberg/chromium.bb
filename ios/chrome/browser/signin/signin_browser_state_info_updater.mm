@@ -22,10 +22,18 @@ SigninBrowserStateInfoUpdater::SigninBrowserStateInfoUpdater(
     SigninErrorController* signin_error_controller,
     const base::FilePath& browser_state_path)
     : signin_error_controller_(signin_error_controller),
+      signin_manager_(signin_manager),
       browser_state_path_(browser_state_path),
       signin_error_controller_observer_(this),
       signin_manager_observer_(this) {
+  // Some tests don't have a ChromeBrowserStateManager, disable this service.
+  if (!GetApplicationContext()->GetChromeBrowserStateManager())
+    return;
+
+  signin_manager_observer_.Add(signin_manager_);
   signin_error_controller_observer_.Add(signin_error_controller);
+
+  UpdateBrowserStateInfo();
   // TODO(crbug.com/908457): Call OnErrorChanged() here, to catch any change
   // that happened since the construction of SigninErrorController. BrowserState
   // metrics depend on this bug and must be fixed first.
@@ -36,6 +44,26 @@ SigninBrowserStateInfoUpdater::~SigninBrowserStateInfoUpdater() = default;
 void SigninBrowserStateInfoUpdater::Shutdown() {
   signin_error_controller_observer_.RemoveAll();
   signin_manager_observer_.RemoveAll();
+}
+
+void SigninBrowserStateInfoUpdater::UpdateBrowserStateInfo() {
+  ios::ChromeBrowserStateManager* browser_state_manager =
+      GetApplicationContext()->GetChromeBrowserStateManager();
+  BrowserStateInfoCache* cache =
+      browser_state_manager->GetBrowserStateInfoCache();
+  size_t index = cache->GetIndexOfBrowserStateWithPath(browser_state_path_);
+
+  if (index == std::string::npos)
+    return;
+
+  if (signin_manager_->IsAuthenticated()) {
+    AccountInfo account_info = signin_manager_->GetAuthenticatedAccountInfo();
+    cache->SetAuthInfoOfBrowserStateAtIndex(
+        index, account_info.gaia, base::UTF8ToUTF16(account_info.email));
+  } else {
+    cache->SetAuthInfoOfBrowserStateAtIndex(index, /*gaia_id=*/std::string(),
+                                            /*user_name=*/base::string16());
+  }
 }
 
 void SigninBrowserStateInfoUpdater::OnErrorChanged() {
@@ -52,31 +80,10 @@ void SigninBrowserStateInfoUpdater::OnErrorChanged() {
 
 void SigninBrowserStateInfoUpdater::GoogleSigninSucceeded(
     const AccountInfo& account_info) {
-  ios::ChromeBrowserStateManager* browser_state_manager =
-      GetApplicationContext()->GetChromeBrowserStateManager();
-  BrowserStateInfoCache* cache =
-      browser_state_manager->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(browser_state_path_);
-
-  if (index == std::string::npos)
-    return;
-
-  cache->SetAuthInfoOfBrowserStateAtIndex(
-      index, account_info.gaia, base::UTF8ToUTF16(account_info.email));
+  UpdateBrowserStateInfo();
 }
 
 void SigninBrowserStateInfoUpdater::GoogleSignedOut(
     const AccountInfo& account_info) {
-  BrowserStateInfoCache* cache = GetApplicationContext()
-                                     ->GetChromeBrowserStateManager()
-                                     ->GetBrowserStateInfoCache();
-  size_t index = cache->GetIndexOfBrowserStateWithPath(browser_state_path_);
-
-  // If sign out occurs because Sync setup was in progress and the browser state
-  // got deleted, then it is no longer in the cache.
-  if (index == std::string::npos)
-    return;
-
-  cache->SetAuthInfoOfBrowserStateAtIndex(index, /*gaia_id=*/std::string(),
-                                          /*user_name=*/base::string16());
+  UpdateBrowserStateInfo();
 }
