@@ -56,6 +56,7 @@ struct av1_extracfg {
   unsigned int lossless;
   unsigned int enable_cdef;
   unsigned int enable_restoration;
+  unsigned int enable_obmc;
   unsigned int disable_trellis_quant;
   unsigned int enable_qm;
   unsigned int qm_y;
@@ -135,6 +136,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                       // lossless
   !CONFIG_SHARP_SETTINGS,  // enable_cdef
   1,                       // enable_restoration
+  1,                       // enable_obmc
   0,                       // disable_trellis_quant
   0,                       // enable_qm
   DEFAULT_QM_Y,            // qm_y
@@ -528,6 +530,7 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->enable_cdef = extra_cfg->enable_cdef;
   oxcf->enable_restoration = extra_cfg->enable_restoration;
+  oxcf->enable_obmc = extra_cfg->enable_obmc;
   oxcf->disable_trellis_quant = extra_cfg->disable_trellis_quant;
   oxcf->using_qm = extra_cfg->enable_qm;
   oxcf->qm_y = extra_cfg->qm_y;
@@ -945,6 +948,13 @@ static aom_codec_err_t ctrl_set_enable_restoration(aom_codec_alg_priv_t *ctx,
                                                    va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_restoration = CAST(AV1E_SET_ENABLE_RESTORATION, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_obmc(aom_codec_alg_priv_t *ctx,
+                                            va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_obmc = CAST(AV1E_SET_ENABLE_OBMC, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1798,6 +1808,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_LOSSLESS, ctrl_set_lossless },
   { AV1E_SET_ENABLE_CDEF, ctrl_set_enable_cdef },
   { AV1E_SET_ENABLE_RESTORATION, ctrl_set_enable_restoration },
+  { AV1E_SET_ENABLE_OBMC, ctrl_set_enable_obmc },
   { AV1E_SET_DISABLE_TRELLIS_QUANT, ctrl_set_disable_trellis_quant },
   { AV1E_SET_ENABLE_QM, ctrl_set_enable_qm },
   { AV1E_SET_QM_Y, ctrl_set_qm_y },

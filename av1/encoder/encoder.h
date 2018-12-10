@@ -215,6 +215,7 @@ typedef struct AV1EncoderConfig {
   DELTAQ_MODE deltaq_mode;
   int enable_cdef;
   int enable_restoration;
+  int enable_obmc;
   int disable_trellis_quant;
   int using_qm;
   int qm_y;

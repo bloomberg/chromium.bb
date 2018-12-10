@@ -9005,6 +9005,9 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       assert(mbmi->ref_frame[1] != INTRA_FRAME);
     }
 
+    if (cpi->oxcf.enable_obmc == 0 && mbmi->motion_mode == OBMC_CAUSAL)
+      continue;
+
     if (identical_obmc_mv_field_detected) {
       if (cpi->sf.skip_obmc_in_uniform_mv_field &&
           mbmi->motion_mode == OBMC_CAUSAL)
