@@ -1935,7 +1935,7 @@ crbug.com/870173 virtual/outofblink-cors-ns/http/tests/security/script-crossorig
 crbug.com/497522 css3/filters/backdrop-filter-boundary.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-bleeding.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-svg.html [ Failure ]
-crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
+#crbug.com/497522 css3/filters/backdrop-filter-plus-filter.html [ Failure ]
 crbug.com/497522 css3/filters/backdrop-filter-rendering.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-isolate.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-border-radius.html [ Failure ]
@@ -1944,8 +1944,9 @@ crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-paint-order.htm
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation-fixed.html [ Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-edge-pixels.html [ Pass Failure ]
 crbug.com/497522 external/wpt/css/filter-effects/backdrop-filter-isolation.html [ Failure ]
-# Flaky timeout: https://crbug.com/912748
+# Flaky (timeout) tests:
 crbug.com/912748 external/wpt/css/filter-effects/backdrop-filter-plus-filter.html [ Skip ]
+crbug.com/913114 css3/filters/backdrop-filter-plus-filter.html [ Skip ]
 # ====== Backdrop-filter related tests END ======
 
 
