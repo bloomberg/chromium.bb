@@ -94,10 +94,6 @@ th {
   padding-top: 20px;
 }
 
-tbody:not(:first-of-type) td:first-of-type {
-  font-size: 0;
-}
-
 .filtered-highlighted {
   background-color: lightskyblue;
   /* TODO(manukh) This is a placholder color until other ui changes occur. */
@@ -161,4 +157,29 @@ pre.json .boolean {
 pre.json .null {
   color: magenta;
   font-weight: bold;
+}
+
+/* column specific styling */
+
+.cell-provider-and-type .pair-item:first-child {
+  color: green;
+  font-weight: bold;
+}
+
+tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
+  font-size: 0;
+}
+
+.cell-contents-and-description .pair-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+}
+
+.cell-contents-and-description .pair-item {
+  margin-right: 15px;
+}
+
+.cell-contents-and-description .pair-item:first-child {
+  color: blue;
 }
