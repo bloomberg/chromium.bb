@@ -88,9 +88,9 @@
       </div>
     </div>
     <cr-action-menu id="addressSharedMenu">
-      <button id="menuEditAddress" slot="item" class="dropdown-item"
+      <button id="menuEditAddress" class="dropdown-item"
           on-click="onMenuEditAddressTap_">$i18n{edit}</button>
-      <button id="menuRemoveAddress" slot="item" class="dropdown-item"
+      <button id="menuRemoveAddress" class="dropdown-item"
           on-click="onMenuRemoveAddressTap_">$i18n{removeAddress}</button>
     </cr-action-menu>
     <template is="dom-if" if="[[showAddressDialog_]]" restamp>
