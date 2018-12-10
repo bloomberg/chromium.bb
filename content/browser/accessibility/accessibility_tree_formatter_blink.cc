@@ -4,11 +4,12 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 
-#include <math.h>
-#include <stddef.h>
+#include <cmath>
+#include <cstddef>
 
 #include <utility>
 
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -23,75 +24,73 @@
 namespace content {
 namespace {
 
-// Compute the attribute value instead of returning the "raw" attribute value
-// for those attributes that have computation methods.
-int32_t GetIntAttribute(const BrowserAccessibility& node,
-                        ax::mojom::IntAttribute attr) {
-  ui::AXNode* ax_node = node.node();
-  if (ax_node == nullptr) {
-    return node.GetIntAttribute(attr);
-  }
-
-  // If the current node is not a cell, then trying to compute cell-related
-  // attributes will return incorrect results. We should fall back to the raw
-  // attribute value when that happens.
-  bool is_cell = ax_node->IsTableCellOrHeader();
-
+base::Optional<int32_t> GetCellAttribute(const ui::AXNode* ax_node,
+                                         ax::mojom::IntAttribute attr) {
   switch (attr) {
     case ax::mojom::IntAttribute::kAriaCellColumnIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellAriaColIndex();
-      }
-      break;
-
+      return ax_node->GetTableCellAriaColIndex();
     case ax::mojom::IntAttribute::kAriaCellRowIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellAriaRowIndex();
-      }
-      break;
-
-    case ax::mojom::IntAttribute::kAriaColumnCount:
-      return ax_node->GetTableAriaColCount();
-    case ax::mojom::IntAttribute::kAriaRowCount:
-      return ax_node->GetTableAriaRowCount();
-
+      return ax_node->GetTableCellAriaRowIndex();
     case ax::mojom::IntAttribute::kTableCellColumnIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellColIndex();
-      }
-      break;
-
+      return ax_node->GetTableCellColIndex();
     case ax::mojom::IntAttribute::kTableCellRowIndex:
-      if (is_cell) {
-        return ax_node->GetTableCellRowIndex();
-      }
-      break;
-
+      return ax_node->GetTableCellRowIndex();
     case ax::mojom::IntAttribute::kTableCellColumnSpan:
-      if (is_cell) {
-        return ax_node->GetTableCellColSpan();
-      }
-      break;
-
+      return ax_node->GetTableCellColSpan();
     case ax::mojom::IntAttribute::kTableCellRowSpan:
-      if (is_cell) {
-        return ax_node->GetTableCellRowSpan();
-      }
-      break;
+      return ax_node->GetTableCellRowSpan();
+    default:
+      return base::nullopt;
+  }
+}
 
+base::Optional<int32_t> GetRowAttribute(const ui::AXNode* ax_node,
+                                        ax::mojom::IntAttribute attr) {
+  if (attr == ax::mojom::IntAttribute::kTableRowIndex) {
+    return ax_node->GetTableRowRowIndex();
+  }
+  return base::nullopt;
+}
+
+base::Optional<int32_t> GetTableAttribute(const ui::AXNode* ax_node,
+                                          ax::mojom::IntAttribute attr) {
+  switch (attr) {
     case ax::mojom::IntAttribute::kTableColumnCount:
       return ax_node->GetTableColCount();
     case ax::mojom::IntAttribute::kTableRowCount:
       return ax_node->GetTableRowCount();
-
-    case ax::mojom::IntAttribute::kTableRowIndex:
-      return ax_node->GetTableRowRowIndex();
-
+    case ax::mojom::IntAttribute::kAriaColumnCount:
+      return ax_node->GetTableAriaColCount();
+    case ax::mojom::IntAttribute::kAriaRowCount:
+      return ax_node->GetTableAriaRowCount();
     default:
-      break;
+      return base::nullopt;
   }
+}
 
-  return node.GetIntAttribute(attr);
+// Compute the attribute value instead of returning the "raw" attribute value
+// for those attributes that have computation methods.
+base::Optional<int32_t> GetIntAttribute(const BrowserAccessibility& node,
+                                        ax::mojom::IntAttribute attr) {
+  ui::AXNode* ax_node = node.node();
+  if (ax_node == nullptr)
+    return node.GetIntAttribute(attr);
+
+  base::Optional<int32_t> maybe_value = base::nullopt;
+  if (ax_node->IsTableCellOrHeader())
+    maybe_value = GetCellAttribute(ax_node, attr);
+  else if (ax_node->IsTableRow())
+    maybe_value = GetRowAttribute(ax_node, attr);
+  else if (ax_node->IsTable())
+    maybe_value = GetTableAttribute(ax_node, attr);
+
+  if (!maybe_value.has_value()) {
+    int32_t value;
+    if (node.GetIntAttribute(attr, &value)) {
+      maybe_value = value;
+    }
+  }
+  return maybe_value;
 }
 
 std::string IntAttrToString(const BrowserAccessibility& node,
@@ -276,9 +275,10 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        attr_index <= static_cast<int32_t>(ax::mojom::IntAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::IntAttribute>(attr_index);
-    if (node.HasIntAttribute(attr)) {
-      int32_t value = GetIntAttribute(node, attr);
-      dict->SetString(ui::ToString(attr), IntAttrToString(node, attr, value));
+    auto maybe_value = GetIntAttribute(node, attr);
+    if (maybe_value.has_value()) {
+      dict->SetString(ui::ToString(attr),
+                      IntAttrToString(node, attr, maybe_value.value()));
     }
   }
 
