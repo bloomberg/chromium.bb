@@ -1,21 +1,20 @@
-# Copyright (c) 2017 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Presubmit script for Android xml code.
+"""Script that is used by PRESUBMIT.py to check Android XML files.
 
-See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details about the presubmit API built into depot_tools.
-
-This presubmit checks for the following:
+This file checks for the following:
   - Colors are defined as RRGGBB or AARRGGBB
   - No (A)RGB values are referenced outside colors.xml
   - No duplicate (A)RGB values are referenced in colors.xml
   - XML namspace "app" is used for "http://schemas.android.com/apk/res-auto"
   - Android text attributes are only defined in text appearance styles
+  - Warning on adding new text appearance styles
 """
 
 from collections import defaultdict
+import os
 import re
 import xml.etree.ElementTree as ET
 
@@ -25,16 +24,27 @@ VALID_COLOR_PATTERN = re.compile(
 XML_APP_NAMESPACE_PATTERN = re.compile(
     r'xmlns:(\w+)="http://schemas.android.com/apk/res-auto"')
 TEXT_APPEARANCE_STYLE_PATTERN = re.compile(r'^TextAppearance\.')
+INCLUDED_PATHS = [
+    r'^(chrome|ui|components|content)[\\/](.*[\\/])?java[\\/]res.+\.xml$'
+]
 
 
-def CheckChangeOnUpload(input_api, output_api):
+def CheckStyleOnUpload(input_api, output_api):
+  """Returns result for all the presubmit upload checks for XML files."""
   result = _CommonChecks(input_api, output_api)
   result.extend(_CheckNewTextAppearance(input_api, output_api))
   return result
 
 
-def CheckChangeOnCommit(input_api, output_api):
+def CheckStyleOnCommit(input_api, output_api):
+  """Returns result for all the presubmit commit checks for XML files."""
   return _CommonChecks(input_api, output_api)
+
+
+def IncludedFiles(input_api):
+  # Filter out XML files outside included paths and files that were deleted.
+  files = lambda f: input_api.FilterSourceFile(f, white_list=INCLUDED_PATHS)
+  return input_api.AffectedFiles(include_deletes=False, file_filter=files)
 
 
 def _CommonChecks(input_api, output_api):
@@ -52,9 +62,7 @@ def _CommonChecks(input_api, output_api):
 def _CheckColorFormat(input_api, output_api):
   """Checks color (A)RGB values are of format either RRGGBB or AARRGGBB."""
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
-    if not f.LocalPath().endswith('.xml'):
-      continue
+  for f in IncludedFiles(input_api):
     # Ingnore vector drawable xmls
     contents = input_api.ReadFile(f)
     if '<vector' in contents:
@@ -84,9 +92,8 @@ def _CheckColorFormat(input_api, output_api):
 def _CheckColorReferences(input_api, output_api):
   """Checks no (A)RGB values are defined outside colors.xml."""
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
-    if (not f.LocalPath().endswith('.xml') or
-        f.LocalPath().endswith('/colors.xml')):
+  for f in IncludedFiles(input_api):
+    if f.LocalPath().endswith('/colors.xml'):
       continue
     # Ingnore vector drawable xmls
     contents = input_api.ReadFile(f)
@@ -115,7 +122,7 @@ def _CheckColorReferences(input_api, output_api):
 def _CheckDuplicateColors(input_api, output_api):
   """Checks colors defined by (A)RGB values in colors.xml are unique."""
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
+  for f in IncludedFiles(input_api):
     if not f.LocalPath().endswith('/colors.xml'):
       continue
     colors = defaultdict(int)
@@ -152,9 +159,7 @@ def _CheckDuplicateColors(input_api, output_api):
 def _CheckXmlNamespacePrefixes(input_api, output_api):
   """Checks consistency of prefixes used for XML namespace names."""
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
-    if not f.LocalPath().endswith('.xml'):
-      continue
+  for f in IncludedFiles(input_api):
     for line_number, line in f.ChangedContents():
       xml_app_namespace = XML_APP_NAMESPACE_PATTERN.search(line)
       if xml_app_namespace and not xml_app_namespace.group(1) == 'app':
@@ -183,9 +188,7 @@ def _CheckTextAppearance(input_api, output_api):
       'android:fontFamily', 'android:textAllCaps']
   namespace = {'android': 'http://schemas.android.com/apk/res/android'}
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
-    if not f.LocalPath().endswith('.xml'):
-      continue
+  for f in IncludedFiles(input_api):
     root = ET.fromstring(input_api.ReadFile(f))
     # Check if there are text attributes defined outside text appearances.
     for attribute in text_attributes:
@@ -256,9 +259,7 @@ def _CheckTextAppearance(input_api, output_api):
 def _CheckNewTextAppearance(input_api, output_api):
   """Checks whether a new text appearance style is defined."""
   errors = []
-  for f in input_api.AffectedFiles(include_deletes=False):
-    if not f.LocalPath().endswith('.xml'):
-      continue
+  for f in IncludedFiles(input_api):
     for line_number, line in f.ChangedContents():
       if '<style name="TextAppearance.' in line:
         errors.append(

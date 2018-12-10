@@ -7,11 +7,38 @@ import os
 import sys
 import unittest
 
-import PRESUBMIT
+import checkxmlstyle
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
-    os.path.dirname(os.path.abspath(__file__)))))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))))
 from PRESUBMIT_test_mocks import MockFile, MockInputApi, MockOutputApi
+
+
+class IncludedFilesTest(unittest.TestCase):
+
+  def testFileIncluded(self):
+    lines = []
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('chrome/java/res_test/test.xml', lines),
+        MockFile('ui/test/java/res/test.xml', lines),
+        MockFile('content/java/res_test/test.xml', lines),
+        MockFile('components/test/java/res_test/test.xml', lines)
+    ]
+    self.assertEqual(4, len(list(checkxmlstyle.IncludedFiles(mock_input_api))))
+
+  def testFileExcluded(self):
+    lines = []
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+        MockFile('chrome/res_test/test.xml', lines),
+        MockFile('ui/test/test.xml', lines),
+        MockFile('ui/java/res/test.java', lines),
+        MockFile('content/java/res.xml', lines),
+        MockFile('components/java/test.xml', lines),
+        MockFile('test/java/res/test.xml', lines)
+    ]
+    self.assertEqual(0, len(list(checkxmlstyle.IncludedFiles(mock_input_api))))
 
 
 class ColorFormatTest(unittest.TestCase):
@@ -21,8 +48,8 @@ class ColorFormatTest(unittest.TestCase):
              '<color name="color2">#FFFFFF</color>',
              '<color name="color3">#CCC</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.java', lines)]
-    errors = PRESUBMIT._CheckColorFormat(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.java', lines)]
+    errors = checkxmlstyle._CheckColorFormat(mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
   def testColorFormatTooShort(self):
@@ -30,11 +57,11 @@ class ColorFormatTest(unittest.TestCase):
              '<color name="color2">#FFFFFF</color>',
              '<color name="color3">#CCC</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckColorFormat(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckColorFormat(mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(1, len(errors[0].items))
-    self.assertEqual('  chrome/path/test.xml:3',
+    self.assertEqual('  chrome/java/res_test/test.xml:3',
                      errors[0].items[0].splitlines()[0])
 
   def testColorInvalidAlphaValue(self):
@@ -42,11 +69,11 @@ class ColorFormatTest(unittest.TestCase):
              '<color name="color2">#FEFFFFFF</color>',
              '<color name="color3">#FFCCCCCC</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckColorFormat(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckColorFormat(mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(1, len(errors[0].items))
-    self.assertEqual('  chrome/path/test.xml:3',
+    self.assertEqual('  chrome/java/res_test/test.xml:3',
                      errors[0].items[0].splitlines()[0])
 
   def testColorFormatLowerCase(self):
@@ -54,11 +81,11 @@ class ColorFormatTest(unittest.TestCase):
              '<color name="color2">#EFFFFFFF</color>',
              '<color name="color3">#CcCcCC</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckColorFormat(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckColorFormat(mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(1, len(errors[0].items))
-    self.assertEqual('  chrome/path/test.xml:3',
+    self.assertEqual('  chrome/java/res_test/test.xml:3',
                      errors[0].items[0].splitlines()[0])
 
 
@@ -70,34 +97,38 @@ class ColorReferencesTest(unittest.TestCase):
              'android:fillColor="#CCCCCC">',
              '</vector>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckColorReferences(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckColorReferences(
+        mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
   def testInvalidReference(self):
     lines = ['<TextView',
              'android:textColor="#FFFFFF" />']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckColorReferences(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckColorReferences(
+        mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(1, len(errors[0].items))
-    self.assertEqual('  chrome/path/test.xml:2',
+    self.assertEqual('  chrome/java/res_test/test.xml:2',
                      errors[0].items[0].splitlines()[0])
 
   def testValidReference(self):
     lines = ['<TextView',
              'android:textColor="@color/color1" />']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckColorReferences(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckColorReferences(
+        mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
   def testValidReferenceInColorResources(self):
     lines = ['<color name="color1">#61000000</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/colors.xml', lines)]
-    errors = PRESUBMIT._CheckColorReferences(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/colors.xml', lines)]
+    errors = checkxmlstyle._CheckColorReferences(
+        mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
 
@@ -107,21 +138,23 @@ class DuplicateColorsTest(unittest.TestCase):
     lines = ['<color name="color1">#61000000</color>',
              '<color name="color2">#61000000</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/colors.xml', lines)]
-    errors = PRESUBMIT._CheckDuplicateColors(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/colors.xml', lines)]
+    errors = checkxmlstyle._CheckDuplicateColors(
+        mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(2, len(errors[0].items))
-    self.assertEqual('  chrome/path/colors.xml:1',
+    self.assertEqual('  chrome/java/res_test/colors.xml:1',
                      errors[0].items[0].splitlines()[0])
-    self.assertEqual('  chrome/path/colors.xml:2',
+    self.assertEqual('  chrome/java/res_test/colors.xml:2',
                      errors[0].items[1].splitlines()[0])
 
   def testSucess(self):
     lines = ['<color name="color1">#61000000</color>',
              '<color name="color1">#FFFFFF</color>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/colors.xml', lines)]
-    errors = PRESUBMIT._CheckDuplicateColors(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/colors.xml', lines)]
+    errors = checkxmlstyle._CheckDuplicateColors(
+        mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
 
@@ -130,19 +163,19 @@ class XmlNamespacePrefixesTest(unittest.TestCase):
   def testFailure(self):
     lines = ['xmlns:chrome="http://schemas.android.com/apk/res-auto"']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/file.xml', lines)]
-    errors = PRESUBMIT._CheckXmlNamespacePrefixes(
+    mock_input_api.files = [MockFile('chrome/java/res_test/file.xml', lines)]
+    errors = checkxmlstyle._CheckXmlNamespacePrefixes(
         mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(1, len(errors[0].items))
-    self.assertEqual('  chrome/path/file.xml:1',
+    self.assertEqual('  chrome/java/res_test/file.xml:1',
                      errors[0].items[0].splitlines()[0])
 
   def testSucess(self):
     lines = ['xmlns:app="http://schemas.android.com/apk/res-auto"']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/file.xml', lines)]
-    errors = PRESUBMIT._CheckXmlNamespacePrefixes(
+    mock_input_api.files = [MockFile('chrome/java/res_test/file.xml', lines)]
+    errors = checkxmlstyle._CheckXmlNamespacePrefixes(
         mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
@@ -161,24 +194,28 @@ class TextAppearanceTest(unittest.TestCase):
         '</style>',
         '</resource>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckTextAppearance(mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(5, len(errors[0].items))
     self.assertEqual(
-        '  chrome/path/test.xml:2 contains attribute android:textColor',
+        ('  chrome/java/res_test/test.xml:2 contains attribute '
+         'android:textColor'),
         errors[0].items[0].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test.xml:2 contains attribute android:textSize',
+        '  chrome/java/res_test/test.xml:2 contains attribute android:textSize',
         errors[0].items[1].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test.xml:2 contains attribute android:textStyle',
+        ('  chrome/java/res_test/test.xml:2 contains attribute '
+         'android:textStyle'),
         errors[0].items[2].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test.xml:2 contains attribute android:fontFamily',
+        ('  chrome/java/res_test/test.xml:2 contains attribute '
+         'android:fontFamily'),
         errors[0].items[3].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test.xml:2 contains attribute android:textAllCaps',
+        ('  chrome/java/res_test/test.xml:2 contains attribute '
+         'android:textAllCaps'),
         errors[0].items[4].splitlines()[0])
 
   def testSuccess_Style(self):
@@ -196,8 +233,8 @@ class TextAppearanceTest(unittest.TestCase):
         '</style>',
         '</resource>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckTextAppearance(mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
 
   def testFailure_Widget(self):
@@ -222,25 +259,30 @@ class TextAppearanceTest(unittest.TestCase):
         '</RelativeLayout>']
     mock_input_api = MockInputApi()
     mock_input_api.files = [
-        MockFile('chrome/path/test1.xml', lines_top_level),
-        MockFile('chrome/path/test2.xml', lines_subcomponent_widget)]
-    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+        MockFile('chrome/java/res_test/test1.xml', lines_top_level),
+        MockFile('chrome/java/res_test/test2.xml', lines_subcomponent_widget)]
+    errors = checkxmlstyle._CheckTextAppearance(mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(5, len(errors[0].items))
     self.assertEqual(
-        '  chrome/path/test1.xml:5 contains attribute android:textColor',
+        ('  chrome/java/res_test/test1.xml:5 contains attribute '
+         'android:textColor'),
         errors[0].items[0].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test1.xml:6 contains attribute android:textSize',
+        ('  chrome/java/res_test/test1.xml:6 contains attribute '
+         'android:textSize'),
         errors[0].items[1].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test2.xml:6 contains attribute android:textColor',
+        ('  chrome/java/res_test/test2.xml:6 contains attribute '
+         'android:textColor'),
         errors[0].items[2].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test2.xml:7 contains attribute android:textSize',
+        ('  chrome/java/res_test/test2.xml:7 contains attribute '
+         'android:textSize'),
         errors[0].items[3].splitlines()[0])
     self.assertEqual(
-        '  chrome/path/test2.xml:8 contains attribute android:textAllCaps',
+        ('  chrome/java/res_test/test2.xml:8 contains attribute '
+         'android:textAllCaps'),
         errors[0].items[4].splitlines()[0])
 
   def testSuccess_Widget(self):
@@ -254,9 +296,11 @@ class TextAppearanceTest(unittest.TestCase):
         'android:visibility="gone" />',
         '</RelativeLayout>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckTextAppearance(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckTextAppearance(
+        mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
+
 
 class NewTextAppearanceTest(unittest.TestCase):
 
@@ -269,12 +313,13 @@ class NewTextAppearanceTest(unittest.TestCase):
         '</style>',
         '</resource>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckNewTextAppearance(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckNewTextAppearance(
+        mock_input_api, MockOutputApi())
     self.assertEqual(1, len(errors))
     self.assertEqual(1, len(errors[0].items))
     self.assertEqual(
-        '  chrome/path/test.xml:2',
+        '  chrome/java/res_test/test.xml:2',
         errors[0].items[0].splitlines()[0])
 
   def testSuccess(self):
@@ -286,9 +331,11 @@ class NewTextAppearanceTest(unittest.TestCase):
         '</style>',
         '</resource>']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('chrome/path/test.xml', lines)]
-    errors = PRESUBMIT._CheckNewTextAppearance(mock_input_api, MockOutputApi())
+    mock_input_api.files = [MockFile('chrome/java/res_test/test.xml', lines)]
+    errors = checkxmlstyle._CheckNewTextAppearance(
+        mock_input_api, MockOutputApi())
     self.assertEqual(0, len(errors))
+
 
 if __name__ == '__main__':
   unittest.main()

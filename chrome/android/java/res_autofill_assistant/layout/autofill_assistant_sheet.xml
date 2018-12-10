@@ -125,8 +125,7 @@
                         android:layout_marginBottom="2dp"
                         android:layout_marginTop="7dp"
                         android:gravity="bottom"
-                        android:textAppearance="@style/BlackCaptionDefault"
-                        android:textStyle="bold"
+                        android:textAppearance="@style/TextAppearance.DetailsTitle"
                         android:maxLines="1"
                         android:ellipsize="end"/>
                     <TextView
