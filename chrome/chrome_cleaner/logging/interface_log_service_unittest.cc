@@ -16,16 +16,22 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/chrome_cleaner/constants/version.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
 
+namespace {
+
+constexpr char kDummyBuildVersion[] = "DUMMY_BUILD_VERSION";
+
+}  // namespace
+
 class InterfaceLogServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    log_service_ = InterfaceLogService::Create(kLogFileName);
+    log_service_ = InterfaceLogService::Create(
+        kLogFileName, base::UTF8ToUTF16(kDummyBuildVersion));
     expected_file_size_ = 0LL;
   }
 
@@ -78,7 +84,6 @@ class InterfaceLogServiceTest : public testing::Test {
   std::unique_ptr<InterfaceLogService> log_service_;
   const base::string16 kLogFileName = L"interface_log_service_test";
   const std::string kFileName = __FILE__;
-  base::string16 build_version_ = LASTCHANGE_STRING;
 };
 
 class TestClass1 {
@@ -210,11 +215,8 @@ TEST_F(InterfaceLogServiceTest, LogAndRecoverTest) {
   EXPECT_EQ(state, kReadingCalls);
 
   // Make sure the file contents and the data held in log_service_ are equal.
-  std::string build_version_utf8;
-  ASSERT_TRUE(base::UTF16ToUTF8(build_version_.c_str(), build_version_.size(),
-                                &build_version_utf8));
-  EXPECT_EQ(log_service_->GetBuildVersion(), build_version_utf8);
-  EXPECT_EQ(call_history_from_file.build_version(), build_version_utf8);
+  EXPECT_EQ(log_service_->GetBuildVersion(), kDummyBuildVersion);
+  EXPECT_EQ(call_history_from_file.build_version(), kDummyBuildVersion);
 
   std::vector<APICall> call_record = log_service_->GetCallHistory();
   EXPECT_EQ(call_record.size(), 5UL);
@@ -282,7 +284,8 @@ TEST_F(InterfaceLogServiceTest, LogAndRecoverTest) {
 }
 
 TEST_F(InterfaceLogServiceTest, EmptyLogFileTest) {
-  EXPECT_FALSE(InterfaceLogService::Create(L""));
+  EXPECT_FALSE(
+      InterfaceLogService::Create(L"", base::UTF8ToUTF16(kDummyBuildVersion)));
 }
 
 }  // namespace chrome_cleaner

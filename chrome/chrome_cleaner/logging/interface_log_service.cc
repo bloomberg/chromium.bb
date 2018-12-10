@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/chrome_cleaner/constants/version.h"
 #include "chrome/chrome_cleaner/logging/proto/interface_logger.pb.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
 
@@ -27,7 +26,7 @@ namespace chrome_cleaner {
 
 namespace {
 
-base::FilePath GetPathForLogFile(const base::string16& log_file_name) {
+base::FilePath GetPathForLogFile(const base::StringPiece16 log_file_name) {
   base::FilePath app_data_path;
   GetAppDataProductDirectory(&app_data_path);
   base::FilePath log_file_path = app_data_path.Append(log_file_name);
@@ -45,7 +44,8 @@ LogInformation::LogInformation(std::string function_name, std::string file_name)
 
 // static
 std::unique_ptr<InterfaceLogService> InterfaceLogService::Create(
-    const base::string16& file_name) {
+    const base::StringPiece16 file_name,
+    const base::StringPiece16 build_version) {
   if (file_name.empty())
     return nullptr;
 
@@ -66,7 +66,7 @@ std::unique_ptr<InterfaceLogService> InterfaceLogService::Create(
   }
 
   return base::WrapUnique<InterfaceLogService>(
-      new InterfaceLogService(file_name, std::move(stream)));
+      new InterfaceLogService(file_name, build_version, std::move(stream)));
 }
 
 InterfaceLogService::~InterfaceLogService() = default;
@@ -117,17 +117,13 @@ base::FilePath InterfaceLogService::GetLogFilePath() const {
   return GetPathForLogFile(log_file_name_);
 }
 
-InterfaceLogService::InterfaceLogService(const base::string16& file_name,
-                                         std::ofstream csv_stream)
+InterfaceLogService::InterfaceLogService(
+    const base::StringPiece16 file_name,
+    const base::StringPiece16 build_version,
+    std::ofstream csv_stream)
     : log_file_name_(file_name), csv_stream_(std::move(csv_stream)) {
   DETACH_FROM_SEQUENCE(sequence_check_);
-  base::string16 build_version_utf16 = LASTCHANGE_STRING;
-  std::string build_version_utf8;
-  if (!base::UTF16ToUTF8(build_version_utf16.c_str(),
-                         build_version_utf16.size(), &build_version_utf8)) {
-    LOG(ERROR) << "Cannot convert build version to utf8";
-    build_version_utf8 = "UNKNOWN";
-  }
+  std::string build_version_utf8 = base::UTF16ToUTF8(build_version);
   call_record_.set_build_version(build_version_utf8);
 
   // Write build version and column headers.

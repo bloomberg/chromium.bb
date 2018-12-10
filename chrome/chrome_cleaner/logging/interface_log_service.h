@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "chrome/chrome_cleaner/logging/proto/interface_logger.pb.h"
 
 namespace chrome_cleaner {
@@ -27,7 +28,8 @@ struct LogInformation {
 class InterfaceLogService {
  public:
   static std::unique_ptr<InterfaceLogService> Create(
-      const base::string16& file_name);
+      const base::StringPiece16 file_name,
+      const base::StringPiece16 build_version);
 
   ~InterfaceLogService();
 
@@ -49,14 +51,15 @@ class InterfaceLogService {
   base::FilePath GetLogFilePath() const;
 
  private:
-  InterfaceLogService(const base::string16& file_name,
+  InterfaceLogService(const base::StringPiece16 file_name,
+                      const base::StringPiece16 build_version,
                       std::ofstream csv_stream);
 
   // TODO(joenotcharles): Currently the CallHistory is only used in the unit
   // test. Decide whether it's worth keeping.
   CallHistory call_record_;
 
-  base::string16 log_file_name_;
+  const base::string16 log_file_name_;
   SEQUENCE_CHECKER(sequence_check_);
 
   // Stream to output CSV records to.

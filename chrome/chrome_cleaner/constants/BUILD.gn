@@ -9,7 +9,6 @@ import("//chrome/chrome_cleaner/constants/args.gni")
 process_version("version_header") {
   sources = [
     cleaner_branding_path,
-    lastchange_path,
     version_path,
   ]
 
