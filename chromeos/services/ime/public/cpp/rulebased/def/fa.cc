@@ -258,8 +258,7 @@ const char* kShiftCapslock[] = {
     u8"\u061f",                    // Slash
     u8"\u200c",                    // Space
 };
-const char** kKeyMap[8] = {kNormal,   kShift,        kAltGr,
-                           kShift,    kCapslock,     kShiftCapslock,
-                           kCapslock, kShiftCapslock};
+const char** kKeyMap[8] = {kNormal,   kShift,         kAltGr, kAltGr,
+                           kCapslock, kShiftCapslock, kAltGr, kShiftCapslock};
 
 }  // namespace fa

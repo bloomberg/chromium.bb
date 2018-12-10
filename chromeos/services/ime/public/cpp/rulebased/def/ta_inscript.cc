@@ -258,8 +258,7 @@ const char* kShiftCapslock[] = {
     u8"?",                         // Slash
     u8"\u0020",                    // Space
 };
-const char** kKeyMap[8] = {kNormal,   kShift,        kAltGr,
-                           kShift,    kCapslock,     kShiftCapslock,
-                           kCapslock, kShiftCapslock};
+const char** kKeyMap[8] = {kNormal,   kShift,         kAltGr, kAltGr,
+                           kCapslock, kShiftCapslock, kAltGr, kShiftCapslock};
 
 }  // namespace ta_inscript
