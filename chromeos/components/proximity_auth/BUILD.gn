@@ -25,6 +25,7 @@ static_library("proximity_auth") {
     "proximity_auth_profile_pref_manager.h",
     "proximity_auth_system.cc",
     "proximity_auth_system.h",
+    "proximity_monitor.cc",
     "proximity_monitor.h",
     "proximity_monitor_impl.cc",
     "proximity_monitor_impl.h",

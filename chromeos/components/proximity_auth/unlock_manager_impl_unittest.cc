@@ -89,8 +89,6 @@ class MockProximityMonitor : public ProximityMonitor {
   void Stop() override { stopped_ = true; }
   MOCK_CONST_METHOD0(IsUnlockAllowed, bool());
   MOCK_METHOD0(RecordProximityMetricsOnAuthSuccess, void());
-  MOCK_METHOD1(AddObserver, void(ProximityMonitorObserver*));
-  MOCK_METHOD1(RemoveObserver, void(ProximityMonitorObserver*));
 
   bool started() { return started_; }
   bool stopped() { return stopped_; }
