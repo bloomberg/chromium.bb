@@ -331,7 +331,7 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
     base::test::ScopedFeatureList features;
     features.InitAndEnableFeature(chromeos::features::kDriveFs);
 
-    // Register crostini, downloads, drive.
+    // Register crostini, downloads, drive, android.
     mount_points->RegisterFileSystem(GetCrostiniMountPointName(&profile),
                                      storage::kFileSystemTypeNativeLocal,
                                      storage::FileSystemMountOption(),
@@ -340,6 +340,9 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
                                      storage::kFileSystemTypeNativeLocal,
                                      storage::FileSystemMountOption(),
                                      GetDownloadsFolderForProfile(&profile));
+    mount_points->RegisterFileSystem(
+        GetAndroidFilesMountPointName(), storage::kFileSystemTypeNativeLocal,
+        storage::FileSystemMountOption(), base::FilePath(kAndroidFilesPath));
     drive::DriveIntegrationService* integration_service =
         drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
     base::FilePath mount_point_drive = integration_service->GetMountPointPath();
@@ -392,6 +395,13 @@ TEST(FileManagerPathUtilTest, ConvertFileSystemURLToPathInsideCrostini) {
         mount_points->CreateExternalFileSystemURL(
             GURL(), "unknown", base::FilePath("path/in/unknown")),
         &inside));
+
+    EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
+        &profile,
+        mount_points->CreateExternalFileSystemURL(
+            GURL(), "android_files", base::FilePath("path/in/android")),
+        &inside));
+    EXPECT_EQ("/mnt/chromeos/PlayFiles/path/in/android", inside.value());
 
     EXPECT_TRUE(ConvertFileSystemURLToPathInsideCrostini(
         &profile,

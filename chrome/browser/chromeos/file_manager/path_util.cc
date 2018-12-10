@@ -43,6 +43,7 @@ namespace {
 constexpr char kAndroidFilesMountPointName[] = "android_files";
 constexpr char kCrostiniMapGoogleDrive[] = "GoogleDrive";
 constexpr char kCrostiniMapMyDrive[] = "MyDrive";
+constexpr char kCrostiniMapPlayFiles[] = "PlayFiles";
 constexpr char kCrostiniMapTeamDrives[] = "TeamDrives";
 constexpr char kFolderNameDownloads[] = "Downloads";
 constexpr char kFolderNameMyFiles[] = "MyFiles";
@@ -251,8 +252,6 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   // File system root requires strip trailing separator.
   base::FilePath path =
       base::FilePath(file_system_url.virtual_path()).StripTrailingSeparators();
-  std::string mount_point_name_crostini = GetCrostiniMountPointName(profile);
-  std::string mount_point_name_downloads = GetDownloadsMountPointName(profile);
   // Include drive if using DriveFS.
   std::string mount_point_name_drive;
   auto* integration_service =
@@ -269,10 +268,10 @@ bool ConvertFileSystemURLToPathInsideCrostini(
   //   /<home-directory>/path/to/file   (path is already in crostini volume)
   //   /ChromeOS/<mapping>/path/to/file (path is shared with crostini)
   base::FilePath base_to_exclude(id);
-  if (id == mount_point_name_crostini) {
+  if (id == GetCrostiniMountPointName(profile)) {
     // Crostini.
     *inside = crostini::ContainerHomeDirectoryForProfile(profile);
-  } else if (id == mount_point_name_downloads) {
+  } else if (id == GetDownloadsMountPointName(profile)) {
     // MyFiles or Downloads.
     if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
       // MyFiles.
@@ -306,6 +305,9 @@ bool ConvertFileSystemURLToPathInsideCrostini(
     // Removable.
     *inside = crostini::ContainerChromeOSBaseDirectory().Append(
         chromeos::kSystemMountNameRemovable);
+  } else if (id == GetAndroidFilesMountPointName()) {
+    *inside = crostini::ContainerChromeOSBaseDirectory().Append(
+        kCrostiniMapPlayFiles);
   } else {
     return false;
   }
