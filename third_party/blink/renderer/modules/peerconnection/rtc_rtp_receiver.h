@@ -18,10 +18,7 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
 namespace blink {
-class RTCDtlsTransport;
-class RTCPeerConnection;
 class RTCRtpCapabilities;
-class RTCRtpTransceiver;
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
 class RTCRtpReceiver final : public ScriptWrappable {
@@ -29,29 +26,24 @@ class RTCRtpReceiver final : public ScriptWrappable {
 
  public:
   // Takes ownership of the receiver.
-  RTCRtpReceiver(RTCPeerConnection*,
-                 std::unique_ptr<WebRTCRtpReceiver>,
+  RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver>,
                  MediaStreamTrack*,
                  MediaStreamVector);
 
   static RTCRtpCapabilities* getCapabilities(const String& kind);
 
   MediaStreamTrack* track() const;
-  RTCDtlsTransport* transport();
-  RTCDtlsTransport* rtcp_transport();
   const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();
   ScriptPromise getStats(ScriptState*);
 
   const WebRTCRtpReceiver& web_receiver() const;
   MediaStreamVector streams() const;
   void set_streams(MediaStreamVector streams);
-  void set_transceiver(RTCRtpTransceiver*);
   void UpdateSourcesIfNeeded();
 
   void Trace(blink::Visitor*) override;
 
  private:
-  Member<RTCPeerConnection> pc_;
   void SetContributingSourcesNeedsUpdating();
 
   std::unique_ptr<WebRTCRtpReceiver> receiver_;
@@ -61,7 +53,6 @@ class RTCRtpReceiver final : public ScriptWrappable {
   // The current contributing sources (|getContributingSources|).
   HeapVector<Member<RTCRtpContributingSource>> contributing_sources_;
   bool contributing_sources_needs_updating_ = true;
-  Member<RTCRtpTransceiver> transceiver_;
 };
 
 }  // namespace blink

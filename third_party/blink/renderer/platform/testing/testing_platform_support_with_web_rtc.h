@@ -64,7 +64,6 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const WebRTCDataChannelInit&) override;
   void Stop() override;
   WebString Id() const override;
-  webrtc::PeerConnectionInterface* NativePeerConnection() override;
 };
 
 class TestingPlatformSupportWithWebRTC : public TestingPlatformSupport {

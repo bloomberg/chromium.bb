@@ -5674,9 +5674,7 @@ interface RTCRtpContributingSource
 interface RTCRtpReceiver
     static method getCapabilities
     attribute @@toStringTag
-    getter rtcp_transport
     getter track
-    getter transport
     method constructor
     method getContributingSources
     method getStats
@@ -5684,9 +5682,7 @@ interface RTCRtpSender
     static method getCapabilities
     attribute @@toStringTag
     getter dtmf
-    getter rtcp_transport
     getter track
-    getter transport
     method constructor
     method getParameters
     method getStats
