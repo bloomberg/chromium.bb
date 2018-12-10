@@ -50,6 +50,7 @@ function ListPicker(element, config) {
   this._selectElement.addEventListener('change', this._handleChange.bind(this), false);
   window.addEventListener('message', this._handleWindowMessage.bind(this), false);
   window.addEventListener('mousemove', this._handleWindowMouseMove.bind(this), false);
+  window.addEventListener('mouseover', this._handleWindowMouseOver.bind(this), false);
   this._handleWindowTouchMoveBound = this._handleWindowTouchMove.bind(this);
   this._handleWindowTouchEndBound = this._handleWindowTouchEnd.bind(this);
   this._handleTouchSelectModeScrollBound = this._handleTouchSelectModeScroll.bind(this);
@@ -115,10 +116,13 @@ ListPicker.prototype._handleWindowMouseMove = function(event) {
   }
   this.lastMousePositionX = event.clientX;
   this.lastMousePositionY = event.clientY;
-  this._highlightOption(event.target);
   this._selectionSetByMouseHover = true;
   // Prevent the select element from firing change events for mouse input.
   event.preventDefault();
+};
+
+ListPicker.prototype._handleWindowMouseOver = function(event) {
+  this._highlightOption(event.target);
 };
 
 ListPicker.prototype._handleMouseUp = function(event) {
