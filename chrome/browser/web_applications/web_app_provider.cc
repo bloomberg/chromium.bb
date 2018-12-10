@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/bookmark_apps/bookmark_app_install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_ids_map.h"
 #include "chrome/browser/web_applications/external_web_apps.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/notification_source.h"
@@ -102,6 +104,17 @@ void WebAppProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ExtensionIdsMap::RegisterProfilePrefs(registry);
   WebAppPolicyManager::RegisterProfilePrefs(registry);
+}
+
+// static
+WebAppTabHelperBase* WebAppProvider::CreateTabHelper(
+    content::WebContents* web_contents) {
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+    WebAppTabHelper::CreateForWebContents(web_contents);
+  else
+    extensions::BookmarkAppTabHelper::CreateForWebContents(web_contents);
+
+  return WebAppTabHelperBase::FromWebContents(web_contents);
 }
 
 // static

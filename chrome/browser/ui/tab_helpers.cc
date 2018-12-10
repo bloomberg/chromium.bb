@@ -135,6 +135,7 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
 
@@ -334,6 +335,7 @@ offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::TabHelper::CreateForWebContents(web_contents);
+  web_app::WebAppProvider::CreateTabHelper(web_contents);
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)

@@ -4,7 +4,11 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 
+#include "base/strings/string_piece.h"
 #include "base/values.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_prefs.h"
@@ -68,6 +72,36 @@ bool BookmarkOrHostedAppInstalled(content::BrowserContext* browser_context,
     }
   }
   return false;
+}
+
+bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url) {
+  // Drop any "suffix" components after the path (Resolve "."):
+  const GURL nav_scope = launch_url.GetWithoutFilename();
+
+  const int scope_str_length = nav_scope.spec().size();
+  return base::StringPiece(nav_scope.spec()) ==
+         base::StringPiece(url.spec()).substr(0, scope_str_length);
+}
+
+const Extension* GetInstalledShortcutForUrl(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
+  for (scoped_refptr<const Extension> app :
+       ExtensionRegistry::Get(browser_context)->enabled_extensions()) {
+    if (!app->from_bookmark())
+      continue;
+    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
+      continue;
+    // Skip PWAs.
+    if (UrlHandlers::CanBookmarkAppHandleUrl(app.get(), url))
+      continue;
+
+    const GURL launch_url = AppLaunchInfo::GetLaunchWebURL(app.get());
+    if (IsInNavigationScopeForLaunchUrl(launch_url, url))
+      return app.get();
+  }
+  return nullptr;
 }
 
 }  // namespace extensions

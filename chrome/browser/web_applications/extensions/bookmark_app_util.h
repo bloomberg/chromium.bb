@@ -39,6 +39,16 @@ bool BookmarkAppIsLocallyInstalled(const ExtensionPrefs* prefs,
 bool BookmarkOrHostedAppInstalled(content::BrowserContext* browser_context,
                                   const GURL& url);
 
+// Generates a scope based on |launch_url| and checks if the |url| falls under
+// it. https://www.w3.org/TR/appmanifest/#navigation-scope
+bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url);
+
+// Finds the first Shortcut App (a non-PWA Bookmark App) with |url| in its
+// scope, returns nullptr if there are none.
+const Extension* GetInstalledShortcutForUrl(
+    content::BrowserContext* browser_context,
+    const GURL& url);
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_UTIL_H_
