@@ -92,4 +92,24 @@ TEST(SpdyLogUtilTest, SpdyHeaderBlockNetLogCallback) {
   EXPECT_EQ("cookie: name=value", header_list->GetList()[1].GetString());
 }
 
+// Regression test for https://crbug.com/800282.
+TEST(SpdyLogUtilTest, ElideSpdyHeaderBlockForNetLogWithNonUTF8Characters) {
+  spdy::SpdyHeaderBlock headers;
+  headers["foo"] = "bar\x81";
+  headers["O\xe2"] = "bar";
+  headers["\xde\xad"] = "\xbe\xef";
+
+  std::unique_ptr<base::ListValue> list =
+      ElideSpdyHeaderBlockForNetLog(headers, NetLogCaptureMode::Default());
+
+  ASSERT_EQ(3u, list->GetSize());
+  std::string field;
+  EXPECT_TRUE(list->GetString(0, &field));
+  EXPECT_EQ("%ESCAPED:\xE2\x80\x8B foo: bar%81", field);
+  EXPECT_TRUE(list->GetString(1, &field));
+  EXPECT_EQ("%ESCAPED:\xE2\x80\x8B O%E2: bar", field);
+  EXPECT_TRUE(list->GetString(2, &field));
+  EXPECT_EQ("%ESCAPED:\xE2\x80\x8B %DE%AD: %BE%EF", field);
+}
+
 }  // namespace net

@@ -30,10 +30,10 @@ std::unique_ptr<base::ListValue> ElideSpdyHeaderBlockForNetLog(
   for (const auto& header : headers) {
     base::StringPiece key = header.first;
     base::StringPiece value = header.second;
-    headers_list->AppendString(
+    headers_list->GetList().push_back(NetLogStringValue(
         base::StrCat({key, ": ",
                       ElideHeaderValueForNetLog(capture_mode, key.as_string(),
-                                                value.as_string())}));
+                                                value.as_string())})));
   }
   return headers_list;
 }
