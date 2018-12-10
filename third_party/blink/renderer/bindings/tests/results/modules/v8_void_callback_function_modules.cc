@@ -27,7 +27,15 @@ const char* V8VoidCallbackFunctionModules::NameInHeapSnapshot() const {
 }
 
 v8::Maybe<void> V8VoidCallbackFunctionModules::Invoke(ScriptWrappable* callback_this_value) {
-  if (!IsCallbackFunctionRunnable(CallbackRelevantScriptState(),
+  ScriptState* callback_relevant_script_state =
+      CallbackRelevantScriptStateOrThrowException(
+          "VoidCallbackFunctionModules",
+          "invoke");
+  if (!callback_relevant_script_state) {
+    return v8::Nothing<void>();
+  }
+
+  if (!IsCallbackFunctionRunnable(callback_relevant_script_state,
                                   IncumbentScriptState())) {
     // Wrapper-tracing for the callback function makes the function object and
     // its creation context alive. Thus it's safe to use the creation context
@@ -47,7 +55,7 @@ v8::Maybe<void> V8VoidCallbackFunctionModules::Invoke(ScriptWrappable* callback_
 
   // step: Prepare to run script with relevant settings.
   ScriptState::Scope callback_relevant_context_scope(
-      CallbackRelevantScriptState());
+      callback_relevant_script_state);
   // step: Prepare to run a callback with stored settings.
   v8::Context::BackupIncumbentScope backup_incumbent_scope(
       IncumbentScriptState()->GetContext());
@@ -61,7 +69,7 @@ v8::Maybe<void> V8VoidCallbackFunctionModules::Invoke(ScriptWrappable* callback_
   function = CallbackFunction();
 
   v8::Local<v8::Value> this_arg;
-  this_arg = ToV8(callback_this_value, CallbackRelevantScriptState());
+  this_arg = ToV8(callback_this_value, callback_relevant_script_state);
 
   // step: Let esArgs be the result of converting args to an ECMAScript
   //   arguments list. If this throws an exception, set completion to the
@@ -74,7 +82,7 @@ v8::Maybe<void> V8VoidCallbackFunctionModules::Invoke(ScriptWrappable* callback_
   // step: Let callResult be Call(X, thisArg, esArgs).
   if (!V8ScriptRunner::CallFunction(
           function,
-          ExecutionContext::From(CallbackRelevantScriptState()),
+          ExecutionContext::From(callback_relevant_script_state),
           this_arg,
           argc,
           argv,
