@@ -6,6 +6,7 @@
 #define REMOTING_PROTOCOL_FILE_TRANSFER_HELPERS_H_
 
 #include <cstdint>
+#include <ostream>
 
 #include "base/location.h"
 #include "base/optional.h"
@@ -18,6 +19,8 @@ FileTransfer_Error MakeFileTransferError(
     base::Location location,
     FileTransfer_Error_Type type,
     base::Optional<std::int32_t> api_error_code = base::nullopt);
+
+std::ostream& operator<<(std::ostream& stream, const FileTransfer_Error& error);
 
 }  // namespace protocol
 }  // namespace remoting

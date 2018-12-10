@@ -20,7 +20,7 @@
 #include "remoting/host/action_message_handler.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/desktop_environment.h"
-#include "remoting/host/file_transfer_message_handler.h"
+#include "remoting/host/file_transfer/file_transfer_message_handler.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/mouse_shape_pump.h"
@@ -558,9 +558,8 @@ void ClientSession::CreateFileTransferMessageHandler(
   // FileTransferMessageHandler manages its own lifetime and is tied to the
   // lifetime of |pipe|. Once |pipe| is closed, this instance will be cleaned
   // up.
-  new FileTransferMessageHandler(
-      channel_name, std::move(pipe),
-      desktop_environment_->CreateFileProxyWrapper());
+  new FileTransferMessageHandler(channel_name, std::move(pipe),
+                                 desktop_environment_->CreateFileOperations());
 }
 
 void ClientSession::CreateActionMessageHandler(

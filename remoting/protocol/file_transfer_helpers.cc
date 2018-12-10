@@ -22,5 +22,16 @@ FileTransfer_Error MakeFileTransferError(
   return error;
 }
 
+std::ostream& operator<<(std::ostream& stream,
+                         const FileTransfer_Error& error) {
+  stream << "[" << error.source_file() << ":" << error.line_number() << " ("
+         << error.function() << ")";
+  if (error.has_api_error_code()) {
+    stream << ": " << error.api_error_code();
+  }
+  stream << "]";
+  return stream;
+}
+
 }  // namespace protocol
 }  // namespace remoting

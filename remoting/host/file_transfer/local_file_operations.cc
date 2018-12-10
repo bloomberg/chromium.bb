@@ -24,7 +24,7 @@ namespace remoting {
 
 namespace {
 
-constexpr char kTempFileExtension[] = ".crdownload";
+constexpr char kTempFileExtension[] = ".part";
 
 remoting::protocol::FileTransfer_Error_Type FileErrorToResponseErrorType(
     base::File::Error file_error) {

@@ -24,7 +24,8 @@ class BufferedFileWriter {
   // Constructor.
   // |on_error| may be called an any time if any operation fails. If no error
   // occurs, |on_complete| will be called after Close() has been called and all
-  // chunks have been successfully written.
+  // chunks have been successfully written. Callbacks will never be called after
+  // Cancel is called or BufferedFileWriter is destroyed.
   BufferedFileWriter(
       base::OnceClosure on_complete,
       base::OnceCallback<void(protocol::FileTransfer_Error)> on_error);
