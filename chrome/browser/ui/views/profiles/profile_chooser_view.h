@@ -92,6 +92,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   views::View* GetInitiallyFocusedView() override;
   int GetDialogButtons() const override;
+  base::string16 GetAccessibleWindowTitle() const override;
 
   // content::WebContentsDelegate:
   bool HandleContextMenu(const content::ContextMenuParams& params) override;

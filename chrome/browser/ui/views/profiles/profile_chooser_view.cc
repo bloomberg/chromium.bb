@@ -613,6 +613,11 @@ int ProfileChooserView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+base::string16 ProfileChooserView::GetAccessibleWindowTitle() const {
+  return l10n_util::GetStringUTF16(
+      IDS_PROFILES_PROFILE_BUBBLE_ACCESSIBLE_TITLE);
+}
+
 bool ProfileChooserView::HandleContextMenu(
     const content::ContextMenuParams& params) {
   // Suppresses the context menu because some features, such as inspecting
