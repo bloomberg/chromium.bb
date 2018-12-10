@@ -22,6 +22,9 @@ class FrameRenderer;
 class VideoDecoderClient;
 class Video;
 
+// Default timeout used when waiting for events.
+constexpr base::TimeDelta kDefaultTimeout = base::TimeDelta::FromSeconds(10);
+
 enum class VideoPlayerState : size_t {
   kUninitialized = 0,
   kIdle,
@@ -44,11 +47,14 @@ class VideoPlayer {
 
   ~VideoPlayer();
 
-  // Return an instance of the video player. The |video| and |frame_renderer|
-  // will not be owned by the video player. The caller should guarantee they
-  // exist for the entire lifetime of the video player.
-  static std::unique_ptr<VideoPlayer> Create(const Video* video,
-                                             FrameRenderer* frame_renderer);
+  // Create an instance of the video player. The |frame_renderer| will not be
+  // owned by the video player. The caller should guarantee it exists for the
+  // entire lifetime of the video player.
+  static std::unique_ptr<VideoPlayer> Create(FrameRenderer* frame_renderer);
+
+  // Set the video stream to be played. The |video| will not be owned by the
+  // video player. A decoder will be set up for the specified video stream.
+  void SetStream(const Video* video);
 
   void Play();
   void Stop();
@@ -62,19 +68,19 @@ class VideoPlayer {
   // Get the current state of the video player.
   VideoPlayerState GetState() const;
 
-  // Wait for the specified event to occur, will return immediately if the event
-  // already occurred. All events with different types that precede the
-  // specified event will be consumed. Will return false if the specified
-  // timeout is exceeded while waiting for the event.
-  bool WaitForEvent(
-      VideoPlayerEvent event,
-      base::TimeDelta max_wait = base::TimeDelta::FromSeconds(10));
+  // Wait for an event to occur the specified number of times. All events that
+  // occurred since last calling this function will be taken into account. All
+  // events with different types will be consumed. Will return false if the
+  // specified timeout is exceeded while waiting for the events.
+  bool WaitForEvent(VideoPlayerEvent event,
+                    size_t times = 1,
+                    base::TimeDelta max_wait = kDefaultTimeout);
 
   // Get the number of times the specified event occurred.
   size_t GetEventCount(VideoPlayerEvent event) const;
 
  private:
-  explicit VideoPlayer(const Video* video);
+  VideoPlayer();
 
   bool Initialize(FrameRenderer* frame_renderer);
   void Destroy();
@@ -88,9 +94,12 @@ class VideoPlayer {
 
   mutable base::Lock event_lock_;
   base::ConditionVariable event_cv_;
+
   std::vector<VideoPlayerEvent> video_player_events_ GUARDED_BY(event_lock_);
   size_t video_player_event_counts_[static_cast<size_t>(
       VideoPlayerEvent::kNumEvents)] GUARDED_BY(event_lock_);
+  // The next event ID to start at, when waiting for events.
+  size_t event_id_ GUARDED_BY(event_lock_);
 
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(VideoPlayer);
