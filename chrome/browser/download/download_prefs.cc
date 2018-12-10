@@ -136,6 +136,13 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
         file_manager::util::MigratePathFromOldFormat(
             profile_, current, &migrated)) {
       prefs->SetFilePath(path_pref[i], migrated);
+
+      // In M73 migrate /home/chronos/u-<hash>/Downloads to
+      // /home/chronos/u-<hash>/MyFiles/Downloads.  This code can be removed
+      // when M72 and earlier is no longer supported.
+    } else if (file_manager::util::MigrateFromDownloadsToMyFiles(
+                   profile_, current, &migrated)) {
+      prefs->SetFilePath(path_pref[i], migrated);
     }
   }
 
