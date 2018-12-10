@@ -2253,7 +2253,7 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_SweepCanceledDelayedTasks) {
   EXPECT_CALL(observer,
               OnQueueNextWakeUpChanged(queues_[0].get(), start_time + delay2))
       .Times(1);
-  manager_->SweepCanceledDelayedTasks();
+  manager_->ReclaimMemory();
 }
 
 namespace {
@@ -2842,13 +2842,13 @@ TEST_P(SequenceManagerTest, SweepCanceledDelayedTasks) {
   task3.weak_factory_.InvalidateWeakPtrs();
   EXPECT_EQ(4u, queues_[0]->GetNumberOfPendingTasks());
 
-  manager_->SweepCanceledDelayedTasks();
+  manager_->ReclaimMemory();
   EXPECT_EQ(2u, queues_[0]->GetNumberOfPendingTasks());
 
   task1.weak_factory_.InvalidateWeakPtrs();
   task4.weak_factory_.InvalidateWeakPtrs();
 
-  manager_->SweepCanceledDelayedTasks();
+  manager_->ReclaimMemory();
   EXPECT_EQ(0u, queues_[0]->GetNumberOfPendingTasks());
 }
 

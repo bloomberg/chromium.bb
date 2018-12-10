@@ -119,7 +119,7 @@ class BASE_EXPORT SequenceManagerImpl
   TimeTicks NowTicks() const override;
   void SetDefaultTaskRunner(
       scoped_refptr<SingleThreadTaskRunner> task_runner) override;
-  void SweepCanceledDelayedTasks() override;
+  void ReclaimMemory() override;
   bool GetAndClearSystemIsQuiescentBit() override;
   void SetWorkBatchSize(int work_batch_size) override;
   void SetTimerSlack(TimerSlack timer_slack) override;

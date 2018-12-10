@@ -132,8 +132,9 @@ class SequenceManager {
   virtual void SetDefaultTaskRunner(
       scoped_refptr<SingleThreadTaskRunner> task_runner) = 0;
 
-  // Removes all canceled delayed tasks.
-  virtual void SweepCanceledDelayedTasks() = 0;
+  // Removes all canceled delayed tasks, and considers resizing to fit all
+  // internal queues.
+  virtual void ReclaimMemory() = 0;
 
   // Returns true if no tasks were executed in TaskQueues that monitor
   // quiescence since the last call to this method.

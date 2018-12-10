@@ -87,8 +87,9 @@ class PLATFORM_EXPORT SchedulerHelper
   // Note |observer| is expected to outlive the SchedulerHelper.
   void SetObserver(Observer* observer);
 
-  // Remove all canceled delayed tasks.
-  void SweepCanceledDelayedTasks();
+  // Remove all canceled delayed tasks and consider shrinking to fit all
+  // internal queues.
+  void ReclaimMemory();
 
   // Accessor methods.
   base::sequence_manager::TimeDomain* real_time_domain() const;

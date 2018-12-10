@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/common/idle_canceled_delayed_task_sweeper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/idle_memory_reclaimer.h"
 
 #include "base/bind.h"
 
@@ -10,10 +10,10 @@ namespace blink {
 namespace scheduler {
 
 namespace {
-const int kDelayedTaskSweepIntervalSeconds = 30;
+constexpr const int kReclaimMemoryIntervalSeconds = 30;
 }
 
-IdleCanceledDelayedTaskSweeper::IdleCanceledDelayedTaskSweeper(
+IdleMemoryReclaimer::IdleMemoryReclaimer(
     SchedulerHelper* scheduler_helper,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner)
     : scheduler_helper_(scheduler_helper),
@@ -22,17 +22,16 @@ IdleCanceledDelayedTaskSweeper::IdleCanceledDelayedTaskSweeper(
   PostIdleTask();
 }
 
-void IdleCanceledDelayedTaskSweeper::PostIdleTask() {
+void IdleMemoryReclaimer::PostIdleTask() {
   idle_task_runner_->PostDelayedIdleTask(
-      FROM_HERE, base::TimeDelta::FromSeconds(kDelayedTaskSweepIntervalSeconds),
-      base::BindOnce(&IdleCanceledDelayedTaskSweeper::SweepIdleTask,
+      FROM_HERE, base::TimeDelta::FromSeconds(kReclaimMemoryIntervalSeconds),
+      base::BindOnce(&IdleMemoryReclaimer::IdleTask,
                      weak_factory_.GetWeakPtr()));
 }
 
-void IdleCanceledDelayedTaskSweeper::SweepIdleTask(base::TimeTicks deadline) {
-  TRACE_EVENT0("renderer.scheduler",
-               "IdleCanceledDelayedTaskSweeper::SweepIdleTask");
-  scheduler_helper_->SweepCanceledDelayedTasks();
+void IdleMemoryReclaimer::IdleTask(base::TimeTicks deadline) {
+  TRACE_EVENT0("renderer.scheduler", "IdleMemoryReclaimer::IdleTask");
+  scheduler_helper_->ReclaimMemory();
   PostIdleTask();
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_CANCELED_DELAYED_TASK_SWEEPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_CANCELED_DELAYED_TASK_SWEEPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_MEMORY_RECLAIMER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_MEMORY_RECLAIMER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -13,26 +13,26 @@
 namespace blink {
 namespace scheduler {
 
-// This class periodically sweeps away canceled delayed tasks, which helps
-// reduce memory consumption.
-class PLATFORM_EXPORT IdleCanceledDelayedTaskSweeper {
+// This class periodically sweeps away canceled delayed tasks and considers
+// resizing to fit all internal queues, which helps reduce memory consumption.
+class PLATFORM_EXPORT IdleMemoryReclaimer {
  public:
-  IdleCanceledDelayedTaskSweeper(
+  IdleMemoryReclaimer(
       SchedulerHelper* scheduler_helper,
       scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner);
 
  private:
   void PostIdleTask();
-  void SweepIdleTask(base::TimeTicks deadline);
+  void IdleTask(base::TimeTicks deadline);
 
   SchedulerHelper* scheduler_helper_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  base::WeakPtrFactory<IdleCanceledDelayedTaskSweeper> weak_factory_;
+  base::WeakPtrFactory<IdleMemoryReclaimer> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(IdleCanceledDelayedTaskSweeper);
+  DISALLOW_COPY_AND_ASSIGN(IdleMemoryReclaimer);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_CANCELED_DELAYED_TASK_SWEEPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_IDLE_MEMORY_RECLAIMER_H_
