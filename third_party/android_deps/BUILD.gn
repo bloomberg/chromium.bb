@@ -535,6 +535,12 @@ android_aar_prebuilt(
   ]
 }
 
+android_aar_prebuilt("com_google_ar_core_java") {
+  aar_path = "libs/com_google_ar_core/core-1.5.0.aar"
+  info_path = "libs/com_google_ar_core/com_google_ar_core.info"
+  extract_native_libraries = true
+}
+
 java_prebuilt("com_google_dagger_dagger_java") {
   jar_path = "libs/com_google_dagger_dagger/dagger-2.17.jar"
   output_name = "com_google_dagger_dagger"
