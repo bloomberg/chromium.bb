@@ -68,7 +68,7 @@ cr.define('onboarding_signin_view_test', function() {
       noThanksButton.click();
       return Promise.all([
         testEmailBrowserProxy.whenCalled('getSavedProvider'),
-        testWelcomeBrowserProxy.whenCalled('goToNewTabPage'),
+        testWelcomeBrowserProxy.whenCalled('handleUserDecline'),
       ]);
     });
 
@@ -81,7 +81,7 @@ cr.define('onboarding_signin_view_test', function() {
       noThanksButton.click();
       return testEmailBrowserProxy.whenCalled('getSavedProvider')
           .then(() => {
-            return testWelcomeBrowserProxy.whenCalled('goToURL');
+            return testWelcomeBrowserProxy.whenCalled('handleUserDecline');
           })
           .then(url => {
             assertEquals(url, 'chrome://welcome/email-interstitial?provider=4');

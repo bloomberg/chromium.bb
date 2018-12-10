@@ -7,6 +7,7 @@ class TestWelcomeBrowserProxy extends TestBrowserProxy {
   constructor() {
     super([
       'handleActivateSignIn',
+      'handleUserDecline',
       'goToNewTabPage',
       'goToURL',
     ]);
@@ -15,6 +16,11 @@ class TestWelcomeBrowserProxy extends TestBrowserProxy {
   /** @override */
   handleActivateSignIn(providerId) {
     this.methodCalled('handleActivateSignIn', providerId);
+  }
+
+  /** @override */
+  handleUserDecline(url) {
+    this.methodCalled('handleUserDecline', url);
   }
 
   /** @override */
