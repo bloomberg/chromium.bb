@@ -51,19 +51,9 @@
 // The label with the line1 -- line2.
 @property(nonatomic, strong) UILabel* addressLabel;
 
-// The vertical constraints for all the lines.
-@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* verticalConstraints;
-
-// The constraints for the first/middle/last name line.
-@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* nameLineConstraints;
-
-// The constraints for the zip/city line.
+// The dynamic constraints for all the lines (i.e. not set in createView).
 @property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* zipCityLineConstraints;
-
-// The constraints for the state/country line.
-@property(nonatomic, strong)
-    NSArray<NSLayoutConstraint*>* stateCountryLineConstraints;
+    NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
 
 // A button showing the address associated first name.
 @property(nonatomic, strong) UIButton* firstNameButton;
@@ -124,14 +114,8 @@
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  [NSLayoutConstraint deactivateConstraints:self.verticalConstraints];
-  self.verticalConstraints = @[];
-  [NSLayoutConstraint deactivateConstraints:self.nameLineConstraints];
-  self.nameLineConstraints = @[];
-  [NSLayoutConstraint deactivateConstraints:self.zipCityLineConstraints];
-  self.zipCityLineConstraints = @[];
-  [NSLayoutConstraint deactivateConstraints:self.stateCountryLineConstraints];
-  self.stateCountryLineConstraints = @[];
+  [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
+  [self.dynamicConstraints removeAllObjects];
 
   self.addressLabel.text = @"";
   [self.firstNameButton setTitle:@"" forState:UIControlStateNormal];
@@ -184,6 +168,11 @@
   self.addressLabel.attributedText = attributedString;
   [verticalLeadViews addObject:self.addressLabel];
 
+  self.dynamicConstraints = [[NSMutableArray alloc] init];
+
+  BOOL largeTypes = UIContentSizeCategoryIsAccessibilityCategory(
+      UIScreen.mainScreen.traitCollection.preferredContentSizeCategory);
+
   // Name line, first middle and last.
   NSMutableArray<UIView*>* nameLineViews = [[NSMutableArray alloc] init];
 
@@ -200,7 +189,7 @@
     self.firstNameButton.hidden = YES;
   }
 
-  if (showFirstName && showMiddleName) {
+  if (showFirstName && showMiddleName && !largeTypes) {
     [nameLineViews addObject:self.middleNameSeparatorLabel];
     self.middleNameSeparatorLabel.hidden = NO;
   } else {
@@ -216,7 +205,7 @@
     self.middleNameButton.hidden = YES;
   }
 
-  if ((showFirstName || showMiddleName) && showLastName) {
+  if ((showFirstName || showMiddleName) && showLastName && !largeTypes) {
     [nameLineViews addObject:self.lastNameSeparatorLabel];
     self.lastNameSeparatorLabel.hidden = NO;
   } else {
@@ -232,12 +221,10 @@
     self.lastNameButton.hidden = YES;
   }
 
-  self.nameLineConstraints =
-      HorizontalConstraintsForViewsOnGuideWithMargin(nameLineViews, guide, 0);
-
-  if (nameLineViews.count) {
-    [verticalLeadViews addObject:nameLineViews.firstObject];
-  }
+  [self layMultipleViews:nameLineViews
+          withLargeTypes:largeTypes
+                 onGuide:guide
+      addFirstLineViewTo:verticalLeadViews];
 
   // Company line.
   if (address.company.length) {
@@ -277,7 +264,7 @@
     self.zipButton.hidden = YES;
   }
 
-  if (address.zip.length && address.city.length) {
+  if (address.zip.length && address.city.length && !largeTypes) {
     [zipCityLineViews addObject:self.citySeparatorLabel];
     self.citySeparatorLabel.hidden = NO;
   } else {
@@ -292,11 +279,10 @@
     self.cityButton.hidden = YES;
   }
 
-  self.zipCityLineConstraints = HorizontalConstraintsForViewsOnGuideWithMargin(
-      zipCityLineViews, guide, 0);
-  if (zipCityLineViews.count) {
-    [verticalLeadViews addObject:zipCityLineViews.firstObject];
-  }
+  [self layMultipleViews:zipCityLineViews
+          withLargeTypes:largeTypes
+                 onGuide:guide
+      addFirstLineViewTo:verticalLeadViews];
 
   // State and country line.
   NSMutableArray<UIView*>* stateCountryLineViews =
@@ -310,7 +296,7 @@
     self.stateButton.hidden = YES;
   }
 
-  if (address.state.length && address.country.length) {
+  if (address.state.length && address.country.length && !largeTypes) {
     [stateCountryLineViews addObject:self.countrySeparatorLabel];
     self.countrySeparatorLabel.hidden = NO;
   } else {
@@ -325,12 +311,10 @@
     self.countryButton.hidden = YES;
   }
 
-  self.stateCountryLineConstraints =
-      HorizontalConstraintsForViewsOnGuideWithMargin(stateCountryLineViews,
-                                                     guide, 0);
-  if (stateCountryLineViews.count) {
-    [verticalLeadViews addObject:stateCountryLineViews.firstObject];
-  }
+  [self layMultipleViews:stateCountryLineViews
+          withLargeTypes:largeTypes
+                 onGuide:guide
+      addFirstLineViewTo:verticalLeadViews];
 
   if (address.phoneNumber.length) {
     [self.phoneNumberButton setTitle:address.phoneNumber
@@ -350,11 +334,36 @@
     self.emailAddressButton.hidden = YES;
   }
 
-  self.verticalConstraints = VerticalConstraintsSpacingForViewsInContainer(
-      verticalLeadViews, self.contentView);
+  AppendVerticalConstraintsSpacingForViews(self.dynamicConstraints,
+                                           verticalLeadViews, self.contentView);
+  [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
 #pragma mark - Private
+
+// Dynamically lay givens |views| on |guide|, adding first view of every
+// generated line to |addFirstLineViewTo|. If |largeTypes| is true, fields are
+// laid out vertically one per line, otherwise horizontally on one line.
+// Constraints are added to |self.dynamicConstraints| property.
+- (void)layMultipleViews:(NSArray<UIView*>*)views
+          withLargeTypes:(BOOL)largeTypes
+                 onGuide:(UIView*)guide
+      addFirstLineViewTo:(NSMutableArray<UIView*>*)verticalLeadViews {
+  if (views.count == 0)
+    return;
+  if (largeTypes) {
+    for (UIView* view in views) {
+      AppendHorizontalConstraintsForViews(self.dynamicConstraints, @[ view ],
+                                          guide);
+      [verticalLeadViews addObject:view];
+    }
+  } else {
+    AppendHorizontalConstraintsForViews(
+        self.dynamicConstraints, views, guide, 0,
+        AppendConstraintsHorizontalSyncBaselines);
+    [verticalLeadViews addObject:views.firstObject];
+  }
+}
 
 // Creates and sets up the view hierarchy.
 - (void)createViewHierarchy {
@@ -363,10 +372,13 @@
   UIView* guide = self.contentView;
   CreateGraySeparatorForContainer(guide);
 
+  NSMutableArray<NSLayoutConstraint*>* staticConstraints =
+      [[NSMutableArray alloc] init];
+
   self.addressLabel = CreateLabel();
   [self.contentView addSubview:self.addressLabel];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.addressLabel ], guide,
-                                                 ButtonHorizontalMargin);
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.addressLabel ],
+                                      guide, ButtonHorizontalMargin);
 
   self.firstNameButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
@@ -388,30 +400,23 @@
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.lastNameButton];
 
-  SyncBaselinesForViewsOnView(
-      @[
-        self.middleNameSeparatorLabel, self.middleNameButton,
-        self.lastNameSeparatorLabel, self.lastNameButton
-      ],
-      self.firstNameButton);
-
   self.companyButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.companyButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.companyButton ], guide,
-                                                 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.companyButton ], guide);
 
   self.line1Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line1Button];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.line1Button ], guide,
-                                                 0);
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.line1Button ],
+                                      guide);
 
   self.line2Button = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.line2Button];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.line2Button ], guide,
-                                                 0);
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.line2Button ],
+                                      guide);
 
   self.zipButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
@@ -425,9 +430,6 @@
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.cityButton];
 
-  SyncBaselinesForViewsOnView(@[ self.citySeparatorLabel, self.cityButton ],
-                              self.zipButton);
-
   self.stateButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.stateButton];
@@ -440,25 +442,19 @@
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.countryButton];
 
-  SyncBaselinesForViewsOnView(
-      @[ self.countrySeparatorLabel, self.countryButton ], self.stateButton);
-
   self.phoneNumberButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.phoneNumberButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.phoneNumberButton ],
-                                                 guide, 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.phoneNumberButton ], guide);
 
   self.emailAddressButton = CreateButtonWithSelectorAndTarget(
       @selector(userDidTapAddressInfo:), self);
   [self.contentView addSubview:self.emailAddressButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.emailAddressButton ],
-                                                 guide, 0);
+  AppendHorizontalConstraintsForViews(staticConstraints,
+                                      @[ self.emailAddressButton ], guide);
 
-  self.nameLineConstraints = @[];
-  self.zipCityLineConstraints = @[];
-  self.stateCountryLineConstraints = @[];
-  self.verticalConstraints = @[];
+  [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
 - (void)userDidTapAddressInfo:(UIButton*)sender {

@@ -64,8 +64,9 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
 // The action block to be called when the user taps the title button.
 @property(nonatomic, copy) void (^action)(void);
 
-// The vertical constraints for all the lines.
-@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* verticalConstraints;
+// The dynamic constraints for all the lines (i.e. not set in createView).
+@property(nonatomic, strong)
+    NSMutableArray<NSLayoutConstraint*>* dynamicConstraints;
 
 // The title button of this cell.
 @property(nonatomic, strong) UIButton* titleButton;
@@ -81,8 +82,9 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  [NSLayoutConstraint deactivateConstraints:self.verticalConstraints];
-  self.verticalConstraints = @[];
+  [NSLayoutConstraint deactivateConstraints:self.dynamicConstraints];
+  [self.dynamicConstraints removeAllObjects];
+
   self.action = nil;
   [self.titleButton setTitle:nil forState:UIControlStateNormal];
   self.titleButton.accessibilityIdentifier = nil;
@@ -122,10 +124,11 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
   CGFloat bottomMultiplier = enabled ? BottomBaseSystemSpacingMultiplier
                                      : MiddleSystemSpacingMultiplier;
 
-  self.verticalConstraints =
-      VerticalConstraintsSpacingForViewsInContainerWithMultipliers(
-          verticalLeadViews, self.contentView, topMultiplier,
-          MiddleSystemSpacingMultiplier, bottomMultiplier);
+  self.dynamicConstraints = [[NSMutableArray alloc] init];
+  AppendVerticalConstraintsSpacingForViews(
+      self.dynamicConstraints, verticalLeadViews, self.contentView,
+      topMultiplier, MiddleSystemSpacingMultiplier, bottomMultiplier);
+  [NSLayoutConstraint activateConstraints:self.dynamicConstraints];
 }
 
 #pragma mark - Private
@@ -140,10 +143,12 @@ static const CGFloat BottomBaseSystemSpacingMultiplier = 1.8;
       @selector(userDidTapTitleButton:), self);
   self.titleButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
   [self.contentView addSubview:self.titleButton];
-  HorizontalConstraintsForViewsOnGuideWithMargin(@[ self.titleButton ], guide,
-                                                 0);
 
-  self.verticalConstraints = @[];
+  NSMutableArray<NSLayoutConstraint*>* staticConstraints =
+      [[NSMutableArray alloc] init];
+  AppendHorizontalConstraintsForViews(staticConstraints, @[ self.titleButton ],
+                                      guide);
+  [NSLayoutConstraint activateConstraints:staticConstraints];
 }
 
 - (void)userDidTapTitleButton:(UIButton*)sender {
