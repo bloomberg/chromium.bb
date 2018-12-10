@@ -1085,11 +1085,6 @@
     'mash_buildbot_filters': {
       'filepath': 'testing/buildbot/filters/mash.*filter',
     },
-    'md_settings': {
-      'filepath': 'chrome/browser/resources/settings/'\
-                  '|chrome/browser/ui/webui/settings/'\
-                  '|chrome/test/data/webui/settings/',
-    },
     'media': {
       'filepath': 'media|third_party/(ffmpeg|opus|libvpx)'
     },
@@ -1460,6 +1455,11 @@
     'services_public': {
       'filepath': 'services/([^/]*/)*public/',
     },
+    'settings': {
+      'filepath': 'chrome/browser/resources/settings/'\
+                  '|chrome/browser/ui/webui/settings/'\
+                  '|chrome/test/data/webui/settings/',
+    },
     'settings_reset_prompt': {
       'filepath': 'chrome/browser/safe_browsing/settings_reset_prompt/'\
                   '|chrome/browser/ui/views/settings_reset_prompt',
@@ -1692,6 +1692,10 @@
     'wake_lock': {
       'filepath': 'wake_lock',
     },
+    'web_dev_style': {
+      'filepath': 'tools/web_dev_style/'\
+                  '|styleguide/web/',
+    },
     'web_package': {
       'filepath': 'content/browser/loader/prefetch_url_loader'\
                   '|content/browser/web_package/'\
@@ -1730,6 +1734,11 @@
                   '|chrome/browser/ui/website_settings/'\
                   '|chrome/common/content_settings'\
                   '|components/content_settings/',
+    },
+    'webui_backend': {
+      'filepath': 'content/browser/webui/'\
+                  '|content/public/browser/web_ui*'\
+                  '|content/public/test/*web_ui*',
     },
     'windows_sandboxing': {
       'filepath': 'sandbox/win/',
@@ -2127,7 +2136,8 @@
            'tikuta+cc@chromium.org',
            'ukai+cc@chromium.org',
            'yyanagisawa+cc@chromium.org'],
-    'cr_elements': ['michaelpg+watch-elements@chromium.org',
+    'cr_elements': ['dbeam+watch-cr-elements@chromium.org',
+                    'michaelpg+watch-elements@chromium.org',
                     'stevenjb+watch-md-settings@chromium.org'],
     'cros_benchmarks': ['cros-perf-detectives@google.com',
                         'cywang@chromium.org',
@@ -2151,7 +2161,8 @@
              'zhaobin+watch@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'download': ['dtrainor+watch@chromium.org'],
-    'downloads_ui': ['dtrainor+watch@chromium.org'],
+    'downloads_ui': ['dbeam+watch-downloads-ui@chromium.org',
+                     'dtrainor+watch@chromium.org'],
     'drive': ['tfarina@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
@@ -2195,7 +2206,7 @@
                    'mcnee@chromium.org',
                    'wjmaclean@chromium.org'],
     'headless': ['headless-reviews@chromium.org'],
-    'history_ui': [],
+    'history_ui': ['dbeam+watch-history-ui@chromium.org'],
     'i18n': ['jshin+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
     'incident_reporting': ['grt+watch@chromium.org'],
@@ -2246,8 +2257,6 @@
     'manifest': ['mlamouri+watch-manifest@chromium.org'],
     'mash_buildbot_filters': ['dxie+watch@chromium.org',
                               'jamescook+watch@chromium.org'],
-    'md_settings': ['michaelpg+watch-md-settings@chromium.org',
-                    'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
     'media_capture_from_element': ['emircan+watch+capturefromdom@chromium.org'],
     'media_controls': ['steimel+watch-mediacontrols@chromium.org'],
@@ -2356,7 +2365,8 @@
                     'timloh+watch@chromium.org'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
     'policy_templates': ['ljusten+watch@chromium.org'],
-    'polymer': ['michaelpg+watch-polymer@chromium.org'],
+    'polymer': ['dbeam+watch-polymer@chromium.org',
+                'michaelpg+watch-polymer@chromium.org'],
     'popup_blocker': ['csharrison+watch-popups@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
@@ -2382,6 +2392,9 @@
                        'serviceworker-reviews@chromium.org',
                        'shimazu+serviceworker@chromium.org'],
     'services_public': ['blundell+services-watchlist@chromium.org'],
+    'settings': ['dbeam+watch-settings@chromium.org',
+                 'michaelpg+watch-md-settings@chromium.org',
+                 'stevenjb+watch-md-settings@chromium.org'],
     'settings_reset_prompt': ['alito+watch@chromium.org'],
     'site_engagement': ['dominickn+watch-engagement@chromium.org'],
     'site_instance': ['ajwong+watch@chromium.org',
@@ -2469,6 +2482,7 @@
                          'yhanada+watchvk@chromium.org'],
     'virtual_reality': ['feature-vr-reviews@chromium.org'],
     'wake_lock': ['mattreynolds+watch@chromium.org'],
+    'web_dev_style': ['dbeam+watch-web-dev-style@chromium.org'],
     'web_package': ['twifkak+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
     'webauthn': ['webauthn-reviews@chromium.org'],
@@ -2479,6 +2493,7 @@
                          'markusheintz@chromium.org',
                          'msramek+watch@chromium.org',
                          'raymes+watch@chromium.org'],
+    'webui_backend': ['dbeam+watch-webui-backend@chromium.org'],
     'windows_sandboxing': ['wfh+watch@chromium.org'],
     'x11': ['derat+watch@chromium.org',
             'sadrul@chromium.org',
