@@ -292,11 +292,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
     std::move(done_callback).Run();
   }
 
-  bool SendKeyboardInput(const Selector& selector, const std::string& text) {
+  bool SendKeyboardInput(const Selector& selector,
+                         const std::vector<std::string>& text_parts) {
     base::RunLoop run_loop;
     bool result;
     web_controller_->SendKeyboardInput(
-        selector, text,
+        selector, text_parts,
         base::BindOnce(&WebControllerBrowserTest::OnSendKeyboardInput,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -658,10 +659,10 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
   a_selector.selectors.clear();
   a_selector.selectors.emplace_back("#uppercase_input");
   selectors.emplace_back(a_selector);
-  EXPECT_TRUE(
-      SetFieldValue(a_selector, "baz", /* simulate_key_presses= */ true));
+  EXPECT_TRUE(SetFieldValue(a_selector, /* Zürich */ "Z\xc3\xbcrich",
+                            /* simulate_key_presses= */ true));
   expected_values.clear();
-  expected_values.emplace_back("BAZ");
+  expected_values.emplace_back(/* ZÜRICH */ "Z\xc3\x9cRICH");
   GetFieldsValue(selectors, expected_values);
 
   selectors.clear();
@@ -677,17 +678,15 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, GetAndSetFieldValue) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SendKeyboardInput) {
-  std::vector<std::string> input = {
-      "Z", /* letter u with diaeresis */ "\xc3\xbc", "r", "i", "c", "h", "\r"};
+  std::vector<std::string> text_parts = {
+      "Z", /* ü */ "\xc3\xbc", "r", "i", "c", "h", "\r"};
   std::vector<std::string> expected_values = {"Z\xc3\xbcrich"};
 
   std::vector<Selector> selectors;
   Selector a_selector;
   a_selector.selectors.emplace_back("#input6");
   selectors.emplace_back(a_selector);
-  for (const auto& text : input) {
-    EXPECT_TRUE(SendKeyboardInput(a_selector, text));
-  }
+  EXPECT_TRUE(SendKeyboardInput(a_selector, text_parts));
   GetFieldsValue(selectors, expected_values);
 }
 

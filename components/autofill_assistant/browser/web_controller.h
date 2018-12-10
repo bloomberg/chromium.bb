@@ -112,10 +112,11 @@ class WebController {
                             const std::string& value,
                             base::OnceCallback<void(bool)> callback);
 
-  // Sets the keyboard focus to |selector| and inputs the specified text.
+  // Sets the keyboard focus to |selector| and inputs the specified UTF-8
+  // characters in the specified order.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(const Selector& selector,
-                                 const std::string& text,
+                                 const std::vector<std::string>& utf8_chars,
                                  base::OnceCallback<void(bool)> callback);
 
   // Return the outerHTML of |selector|.
@@ -381,31 +382,20 @@ class WebController {
   void InternalSetFieldValue(const Selector& selector,
                              const std::string& value,
                              base::OnceCallback<void(bool)> callback);
-  void OnClearFieldForDispatchKeyEvent(const Selector& selector,
-                                       const std::string& value,
-                                       base::OnceCallback<void(bool)> callback,
-                                       bool clear_status);
-  void OnClickElementForDispatchKeyEvent(
-      const std::string& value,
+  void OnClearFieldForSendKeyboardInput(
+      const Selector& selector,
+      const std::vector<std::string>& utf8_chars,
       base::OnceCallback<void(bool)> callback,
-      bool click_status);
+      bool clear_status);
   void OnClickElementForSendKeyboardInput(
-      const std::string& text,
+      const std::vector<std::string>& utf8_chars,
       base::OnceCallback<void(bool)> callback,
       bool click_status);
-  void DispatchKeyDownEvent(const std::string& value,
-                            size_t index,
-                            base::OnceCallback<void(bool)> callback);
-  void DispatchKeyUpEvent(const std::string& value,
-                          size_t index,
-                          base::OnceCallback<void(bool)> callback);
-  void OnDispatchKeyUpEvent(const std::string& value,
-                            size_t index,
-                            base::OnceCallback<void(bool)> callback);
-  void OnDispatchKeyboardTextUpEvent(base::OnceCallback<void(bool)> callback);
-  void DispatchKeyboardTextDownEvent(const std::string& text,
+  void DispatchKeyboardTextDownEvent(const std::vector<std::string>& utf8_chars,
+                                     size_t index,
                                      base::OnceCallback<void(bool)> callback);
-  void DispatchKeyboardTextUpEvent(const std::string& text,
+  void DispatchKeyboardTextUpEvent(const std::vector<std::string>& utf8_chars,
+                                   size_t index,
                                    base::OnceCallback<void(bool)> callback);
   void OnFindElementForSetAttribute(
       const std::vector<std::string>& attribute,
@@ -416,7 +406,7 @@ class WebController {
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSendKeyboardInput(
       const Selector& selector,
-      const std::string& text,
+      const std::vector<std::string>& utf8_chars,
       base::OnceCallback<void(bool)> callback,
       std::unique_ptr<FindElementResult> element_result);
   void OnPressKeyboard(int key_code,

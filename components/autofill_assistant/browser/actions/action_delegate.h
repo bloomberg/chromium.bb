@@ -156,10 +156,10 @@ class ActionDelegate {
                             const std::string& value,
                             base::OnceCallback<void(bool)> callback) = 0;
 
-  // Sets the keyboard focus to |selector| and inputs the specified text.
+  // Sets the keyboard focus to |selector| and inputs the specified text parts.
   // Returns the result through |callback|.
   virtual void SendKeyboardInput(const Selector& selector,
-                                 const std::string& text,
+                                 const std::vector<std::string>& text_parts,
                                  base::OnceCallback<void(bool)> callback) = 0;
 
   // Return the outerHTML of an element given by |selector|.

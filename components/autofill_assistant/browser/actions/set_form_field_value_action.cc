@@ -78,7 +78,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       // You should use the `keyboard_input' field instead.
       if (key_field.keycode() < 128) {  // US-ASCII
         delegate->SendKeyboardInput(
-            selector, std::string(1, char(key_field.keycode())),
+            selector, {std::string(1, char(key_field.keycode()))},
             base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                            weak_ptr_factory_.GetWeakPtr(), delegate,
                            std::move(callback), /* next = */ next + 1));
@@ -93,7 +93,7 @@ void SetFormFieldValueAction::OnSetFieldValue(ActionDelegate* delegate,
       break;
     case SetFormFieldValueProto_KeyPress::kKeyboardInput:
       delegate->SendKeyboardInput(
-          selector, key_field.keyboard_input(),
+          selector, {key_field.keyboard_input()},
           base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
                          weak_ptr_factory_.GetWeakPtr(), delegate,
                          std::move(callback), /* next = */ next + 1));
