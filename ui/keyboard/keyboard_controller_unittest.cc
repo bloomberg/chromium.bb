@@ -35,6 +35,7 @@
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/test/keyboard_test_util.h"
+#include "ui/keyboard/test/test_keyboard_ui.h"
 #include "ui/wm/core/default_activation_client.h"
 
 #if defined(USE_OZONE)
