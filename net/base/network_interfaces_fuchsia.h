@@ -8,8 +8,10 @@
 #include <vector>
 
 namespace fuchsia {
+namespace net {
+class IpAddress;
+}
 namespace netstack {
-class NetAddress;
 class NetInterface;
 }  // namespace netstack
 }  // namespace fuchsia
@@ -29,7 +31,7 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
     const fuchsia::netstack::NetInterface& iface_in);
 
 // Converts a Fuchsia IPv4/IPv6 address to a Chromium IPAddress.
-IPAddress NetAddressToIPAddress(const fuchsia::netstack::NetAddress& addr);
+IPAddress FuchsiaIpAddressToIPAddress(const fuchsia::net::IpAddress& addr);
 
 }  // namespace internal
 }  // namespace net
