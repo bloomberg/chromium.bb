@@ -77,8 +77,7 @@ def main():
       _AddLocaleResourceFileToZip(out_zip, '', _DEFAULT_CHROME_LOCALE)
 
       for locale in locale_list:
-        android_locale = \
-            resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(locale, locale)
+        android_locale = resource_utils.ToAndroidLocaleName(locale)
         _AddLocaleResourceFileToZip(out_zip, android_locale, locale)
 
   if args.depfile:

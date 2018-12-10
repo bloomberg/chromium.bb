@@ -178,8 +178,7 @@ def _RewriteLanguageAssetPath(src_path):
     return [src_path]
 
   locale = src_path[len(_LOCALES_SUBDIR):-4]
-  android_locale = resource_utils.CHROME_TO_ANDROID_LOCALE_MAP.get(
-      locale, locale)
+  android_locale = resource_utils.ToAndroidLocaleName(locale)
 
   # The locale format is <lang>-<region> or <lang>. Extract the language.
   pos = android_locale.find('-')
