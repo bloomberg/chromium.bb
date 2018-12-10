@@ -25,6 +25,7 @@
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_driver.h"
 #include "components/autofill/core/browser/test_autofill_manager.h"
@@ -52,6 +53,7 @@
 using autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForQuery;
 using autofill::features::kAutofillEnforceMinRequiredFieldsForUpload;
+using SyncSigninState = autofill::AutofillSyncSigninState;
 using base::ASCIIToUTF16;
 using base::Bucket;
 using base::TimeTicks;
@@ -8089,7 +8091,7 @@ TEST_F(AutofillMetricsTest,
         /*is_requesting_cardholder_name=*/false,
         /*is_requesting_expiration_date=*/false,
         /*previous_save_credit_card_prompt_user_decision=*/1,
-        security_state::SecurityLevel::EV_SECURE);
+        security_state::SecurityLevel::EV_SECURE, SyncSigninState::kSignedOut);
     histogram_tester.ExpectBucketCount(
         "Autofill.SaveCreditCardPrompt.Upload.EV_SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
@@ -8102,7 +8104,7 @@ TEST_F(AutofillMetricsTest,
         /*is_reshow=*/true, /*is_requesting_cardholder_name=*/false,
         /*is_requesting_expiration_date=*/false,
         /*previous_save_credit_card_prompt_user_decision=*/0,
-        security_state::SecurityLevel::SECURE);
+        security_state::SecurityLevel::SECURE, SyncSigninState::kSignedOut);
     histogram_tester.ExpectBucketCount(
         "Autofill.SaveCreditCardPrompt.Local.SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
@@ -8139,6 +8141,85 @@ TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {
   histogram_tester.ExpectBucketCount(
       "Autocomplete.Events", AutofillMetrics::AUTOCOMPLETE_SUGGESTIONS_SHOWN,
       /*expected_count=*/1);
+}
+
+// Verify that we correctly log FormEvent metrics with the appropriate sync
+// state.
+TEST_F(AutofillMetricsTest, FormEventMetrics_BySyncState) {
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::FormEventLogger logger(
+        /*is_for_credit_card=*/true, /*is_in_main_frame=*/false,
+        /*form_interactions_ukm_logger=*/nullptr);
+    logger.OnDidSeeFillableDynamicForm(AutofillSyncSigninState::kSignedOut);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.CreditCard.WithNoData.SignedOut",
+        AutofillMetrics::FORM_EVENT_DID_SEE_FILLABLE_DYNAMIC_FORM, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::FormEventLogger logger(
+        /*is_for_credit_card=*/false, /*is_in_main_frame=*/true,
+        /*form_interactions_ukm_logger=*/nullptr);
+    logger.OnDidRefill(AutofillSyncSigninState::kSignedIn);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.FormEvents.Address.WithNoData.SignedIn",
+        AutofillMetrics::FORM_EVENT_DID_DYNAMIC_REFILL, 1);
+  }
+}
+
+// Verify that we correctly log the IsEnabled metrics with the appropriate sync
+// state.
+TEST_F(AutofillMetricsTest, LogIsAutofillEnabledAtPageLoad_BySyncState) {
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(/*enabled=*/true,
+                                                    SyncSigninState::kSignedIn);
+    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad.SignedIn",
+                                       true, 1);
+    // Make sure the metric without the sync state is still recorded.
+    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad", true, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
+        /*enabled=*/false, SyncSigninState::kSignedOut);
+    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad.SignedOut",
+                                       false, 1);
+    // Make sure the metric without the sync state is still recorded.
+    histogram_tester.ExpectBucketCount("Autofill.IsEnabled.PageLoad", false, 1);
+  }
+}
+
+// Verify that we correctly log FormEvent metrics with the appropriate sync
+// state.
+TEST_F(AutofillMetricsTest, LogSaveCardPromptMetric_BySyncState) {
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogSaveCardPromptMetric(
+        AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
+        /*is_uploading=*/true, /*is_reshow=*/false,
+        /*is_requesting_cardholder_name=*/false,
+        /*is_requesting_expiration_date_from_user=*/false,
+        /*previous_save_credit_card_prompt_user_decision=*/1,
+        security_state::SecurityLevel::EV_SECURE, SyncSigninState::kSignedIn);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.SaveCreditCardPrompt.Upload.FirstShow.SignedIn",
+        AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
+  }
+  {
+    base::HistogramTester histogram_tester;
+    AutofillMetrics::LogSaveCardPromptMetric(
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/false,
+        /*is_reshow=*/true, /*is_requesting_cardholder_name=*/false,
+        /*is_requesting_expiration_date_from_user=*/false,
+        /*previous_save_credit_card_prompt_user_decision=*/0,
+        security_state::SecurityLevel::SECURE,
+        SyncSigninState::kSignedInAndSyncFeature);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.SaveCreditCardPrompt.Local.Reshows.SignedInAndSyncFeature",
+        AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
+  }
 }
 
 }  // namespace autofill

@@ -3972,8 +3972,8 @@ TEST_F(AutofillManagerTest, FormSubmittedSaveData) {
 // submissions are still received by AutocompleteHistoryManager.
 TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
 
   // Set up our form data.
@@ -3989,8 +3989,8 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
 // queried.
 TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4013,8 +4013,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_AutofillDisabledAndFieldShouldNotAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4085,8 +4085,8 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNameFieldShouldAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4111,8 +4111,8 @@ TEST_F(AutofillManagerTest,
 TEST_F(AutofillManagerTest,
        AutocompleteSuggestions_CreditCardNumberShouldNotAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 
@@ -4157,8 +4157,8 @@ TEST_F(
 
 TEST_F(AutofillManagerTest, AutocompleteOffRespectedForAutocomplete) {
   TestAutofillClient client;
-  autofill_manager_.reset(
-      new TestAutofillManager(autofill_driver_.get(), &client, nullptr));
+  autofill_manager_.reset(new TestAutofillManager(autofill_driver_.get(),
+                                                  &client, &personal_data_));
   autofill_manager_->SetAutofillEnabled(false);
   autofill_manager_->SetExternalDelegate(external_delegate_.get());
 

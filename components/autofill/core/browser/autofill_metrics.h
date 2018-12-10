@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/security_state/core/security_state.h"
@@ -953,7 +954,8 @@ class AutofillMetrics {
       bool is_requesting_cardholder_name,
       bool is_requesting_expiration_date_from_user,
       int previous_save_credit_card_prompt_user_decision,
-      security_state::SecurityLevel security_level);
+      security_state::SecurityLevel security_level,
+      AutofillSyncSigninState sync_state);
   static void LogSaveCardPromptMetricBySecurityLevel(
       SaveCardPromptMetric metric,
       bool is_uploading,
@@ -1071,7 +1073,9 @@ class AutofillMetrics {
                                   const base::TimeDelta& duration);
 
   // This should be called each time a page containing forms is loaded.
-  static void LogIsAutofillEnabledAtPageLoad(bool enabled);
+  static void LogIsAutofillEnabledAtPageLoad(
+      bool enabled,
+      AutofillSyncSigninState sync_state);
 
   // This should be called each time a new chrome profile is launched.
   static void LogIsAutofillEnabledAtStartup(bool enabled);
@@ -1262,39 +1266,46 @@ class AutofillMetrics {
       is_context_secure_ = is_context_secure;
     }
 
-    void OnDidInteractWithAutofillableForm(FormSignature form_signature);
+    void OnDidInteractWithAutofillableForm(FormSignature form_signature,
+                                           AutofillSyncSigninState sync_state);
 
-    void OnDidPollSuggestions(const FormFieldData& field);
+    void OnDidPollSuggestions(const FormFieldData& field,
+                              AutofillSyncSigninState sync_state);
 
     void OnDidShowSuggestions(const FormStructure& form,
                               const AutofillField& field,
-                              const base::TimeTicks& form_parsed_timestamp);
+                              const base::TimeTicks& form_parsed_timestamp,
+                              AutofillSyncSigninState sync_state);
 
     void OnDidSelectMaskedServerCardSuggestion(
-        const base::TimeTicks& form_parsed_timestamp);
+        const base::TimeTicks& form_parsed_timestamp,
+        AutofillSyncSigninState sync_state);
 
     // In case of masked cards, caller must make sure this gets called before
     // the card is upgraded to a full card.
     void OnDidFillSuggestion(const CreditCard& credit_card,
                              const FormStructure& form,
-                             const AutofillField& field);
+                             const AutofillField& field,
+                             AutofillSyncSigninState sync_state);
 
     void OnDidFillSuggestion(const AutofillProfile& profile,
                              const FormStructure& form,
-                             const AutofillField& field);
+                             const AutofillField& field,
+                             AutofillSyncSigninState sync_state);
 
-    void OnWillSubmitForm();
+    void OnWillSubmitForm(AutofillSyncSigninState sync_state);
 
     void OnFormSubmitted(bool force_logging,
-                         const CardNumberStatus card_number_status);
+                         const CardNumberStatus card_number_status,
+                         AutofillSyncSigninState sync_state);
 
     void SetBankNameAvailable();
 
-    void OnDidSeeFillableDynamicForm();
+    void OnDidSeeFillableDynamicForm(AutofillSyncSigninState sync_state);
 
-    void OnDidRefill();
+    void OnDidRefill(AutofillSyncSigninState sync_state);
 
-    void OnSubsequentRefillAttempt();
+    void OnSubsequentRefillAttempt(AutofillSyncSigninState sync_state);
 
    private:
     void Log(FormEvent event) const;
@@ -1320,6 +1331,9 @@ class AutofillMetrics {
 
     FormInteractionsUkmLogger*
         form_interactions_ukm_logger_;  // Weak reference.
+
+    AutofillSyncSigninState sync_state_ =
+        AutofillSyncSigninState::kNumSyncStates;
   };
 
  private:

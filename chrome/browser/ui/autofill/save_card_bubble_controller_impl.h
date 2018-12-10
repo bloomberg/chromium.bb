@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/autofill/save_card_ui.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/save_card_bubble_controller.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/core/browser/account_info.h"
@@ -134,6 +135,9 @@ class SaveCardBubbleControllerImpl
   // Gets the security level of the page.
   virtual security_state::SecurityLevel GetSecurityLevel() const;
 
+  // Gets the current sync state.
+  virtual AutofillSyncSigninState GetSyncState() const;
+
  private:
   friend class content::WebContentsUserData<SaveCardBubbleControllerImpl>;
   friend class SaveCardBubbleViewsBrowserTestBase;
@@ -165,6 +169,9 @@ class SaveCardBubbleControllerImpl
 
   // The web_contents associated with this controller.
   content::WebContents* web_contents_;
+
+  // Should outlive this object.
+  PersonalDataManager* personal_data_manager_;
 
   // Is true only if the card saved animation can be shown.
   bool can_animate_ = false;

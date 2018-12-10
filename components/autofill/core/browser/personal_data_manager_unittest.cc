@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/suggestion_selection.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/test_autofill_profile_validator.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -7145,6 +7146,91 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set a null sync service. Check that the function now returns false.
   personal_data_->SetSyncServiceForTest(nullptr);
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
+}
+
+TEST_F(PersonalDataManagerTest, GetSyncSigninState) {
+  // Make a non-primary account available with both a refresh token and cookie
+  // for the first few tests.
+  identity_test_env_.SetPrimaryAccount("test@gmail.com");
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+  sync_service_.SetActiveDataTypes(
+      syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+
+  // Check that the sync state is |SignedInAndWalletSyncTransportEnabled| if the
+  // account info is not empty, the kAutofillEnableAccountWalletStorage feature
+  // is enabled and the Wallet data type is active for the sync service.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
+        /*disabled_features=*/{});
+
+    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
+              personal_data_->GetSyncSigninState());
+  }
+
+  // Check that the sync state is |SignedIn| if the
+  // kAutofillEnableAccountWalletStorage feature is disabled.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage});
+
+    EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
+              personal_data_->GetSyncSigninState());
+  }
+
+  // Check that the sync state is |SignedIn| if the sync service does not have
+  // wallet data active.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
+        /*disabled_features=*/{});
+    sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+
+    EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
+              personal_data_->GetSyncSigninState());
+  }
+
+// ClearPrimaryAccount is not supported on CrOS.
+#if !defined(OS_CHROMEOS)
+  // Check that the sync state is |SignedOut| when the account info is empty.
+  {
+    identity_test_env_.ClearPrimaryAccount();
+    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
+              personal_data_->GetSyncSigninState());
+  }
+#endif
+
+  // Simulate that the user has enabled the sync feature.
+  AccountInfo primary_account_info;
+  primary_account_info.email = "active_sync_account@email.com";
+  sync_service_.SetAuthenticatedAccountInfo(primary_account_info);
+  sync_service_.SetIsAuthenticatedAccountPrimary(true);
+// MakePrimaryAccountAvailable is not supported on CrOS.
+#if !defined(OS_CHROMEOS)
+  identity_test_env_.MakePrimaryAccountAvailable(primary_account_info.email);
+#endif
+
+  // Check that the sync state is |SignedInAndSyncFeature| if the sync feature
+  // is enabled.
+  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeature,
+            personal_data_->GetSyncSigninState());
+
+  // Check that the sync state is |SignedInAndSyncFeature| if the the sync
+  // feature is enabled even if the kAutofillEnableAccountWalletStorage and
+  // kAutofillGetPaymentsIdentityFromSync features are enabled.
+  {
+    base::test::ScopedFeatureList scoped_features;
+    scoped_features.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage,
+                              features::kAutofillGetPaymentsIdentityFromSync},
+        /*disabled_features=*/{});
+    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeature,
+              personal_data_->GetSyncSigninState());
+  }
 }
 
 }  // namespace autofill

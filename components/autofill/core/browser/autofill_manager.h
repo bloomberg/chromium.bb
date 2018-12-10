@@ -32,6 +32,7 @@
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/popup_types.h"
+#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/signatures_util.h"
 
@@ -588,6 +589,10 @@ class AutofillManager : public AutofillHandler,
 
   // Tracks whether or not rich query encoding is enabled for this client.
   const bool is_rich_query_enabled_ = false;
+
+  // Used to record metrics. This shoulb be set at the beginning of the
+  // interaction and re-used throughout the context of this manager.
+  AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
 
   base::WeakPtrFactory<AutofillManager> weak_ptr_factory_;
 

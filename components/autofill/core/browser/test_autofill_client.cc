@@ -18,7 +18,7 @@ TestAutofillClient::~TestAutofillClient() {
 }
 
 PersonalDataManager* TestAutofillClient::GetPersonalDataManager() {
-  return nullptr;
+  return &test_personal_data_manager_;
 }
 
 scoped_refptr<AutofillWebDataService> TestAutofillClient::GetDatabase() {
