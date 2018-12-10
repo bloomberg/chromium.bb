@@ -12,6 +12,10 @@
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
+namespace base {
+class DeferredSequencedTaskRunner;
+}
+
 namespace net {
 class NetworkChangeNotifier;
 }  // namespace net
@@ -88,6 +92,12 @@ CreateNetworkConnectionTrackerAsyncGetter();
 // GetNetworkConnectionTracker.
 CONTENT_EXPORT void SetNetworkConnectionTrackerForTesting(
     network::NetworkConnectionTracker* network_connection_tracker);
+
+// Gets the task runner for the thread the network service will be running on
+// when running in-process. Can only be called when network service is in
+// process.
+CONTENT_EXPORT scoped_refptr<base::DeferredSequencedTaskRunner>
+GetNetworkTaskRunner();
 
 }  // namespace content
 
