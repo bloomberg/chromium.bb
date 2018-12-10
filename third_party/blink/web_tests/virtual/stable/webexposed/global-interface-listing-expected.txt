@@ -1776,6 +1776,7 @@ interface Gamepad
 interface GamepadButton
     attribute @@toStringTag
     getter pressed
+    getter touched
     getter value
     method constructor
 interface GamepadEvent : Event
