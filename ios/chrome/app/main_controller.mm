@@ -886,8 +886,8 @@ enum class ShowTabSwitcherSnapshotResult {
   if (browsingDataRemover && browsingDataRemover->IsRemoving())
     return;
 
-  [self.mainBVC setActive:YES];
-  [self.otrBVC setActive:YES];
+  [self.mainBrowserCoordinator setActive:YES];
+  [self.incognitoBrowserCoordinator setActive:YES];
   [self.currentBVC setPrimary:YES];
 }
 
@@ -2164,8 +2164,8 @@ enum class ShowTabSwitcherSnapshotResult {
       // Disables browsing and purges web views.
       // Must be called only on the main thread.
       DCHECK([NSThread isMainThread]);
-      [self.mainBVC setActive:NO];
-      [self.otrBVC setActive:NO];
+      [self.mainBrowserCoordinator setActive:NO];
+      [self.incognitoBrowserCoordinator setActive:NO];
     }
 
     BrowsingDataRemoverFactory::GetForBrowserState(browserState)
@@ -2173,8 +2173,8 @@ enum class ShowTabSwitcherSnapshotResult {
                    // Activates browsing and enables web views.
                    // Must be called only on the main thread.
                    DCHECK([NSThread isMainThread]);
-                   [self.mainBVC setActive:YES];
-                   [self.otrBVC setActive:YES];
+                   [self.mainBrowserCoordinator setActive:YES];
+                   [self.incognitoBrowserCoordinator setActive:YES];
                    [self.currentBVC setPrimary:YES];
 
                    if (completionBlock)
