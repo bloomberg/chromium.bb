@@ -18,10 +18,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.Type.PASSWORD_INFO;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.ACTIVE_TAB;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryProperties.TABS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.Type.PASSWORD_INFO;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.AccessorySheetDataPiece.getType;
 import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType.FROM_BROWSER_ACTIONS;
 import static org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType.FROM_CLOSE;
@@ -455,7 +455,7 @@ public class ManualFillingControllerTest {
 
         if (oldState.mPasswordAccessorySheet == null)
             return; // Having no password sheet is fine - it would be completely destroyed then.
-        assertThat(oldState.mPasswordAccessorySheet.getItemsForTesting().size(), is(0));
+        assertThat(oldState.mPasswordAccessorySheet.getSheetDataPiecesForTesting().size(), is(0));
     }
 
     @Test

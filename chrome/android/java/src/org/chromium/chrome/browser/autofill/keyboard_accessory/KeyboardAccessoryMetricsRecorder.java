@@ -4,13 +4,16 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.Type.PASSWORD_INFO;
+import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 import static org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTrigger.MANUAL_OPEN;
 
 import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.browser.modelutil.ListModel;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
@@ -23,7 +26,7 @@ import java.util.Set;
 /**
  * This class provides helpers to record metrics related to the keyboard accessory and its sheets.
  * It can set up observers to observe {@link KeyboardAccessoryProperties}-based models, {@link
- * AccessorySheetProperties}-based models or {@link ListObservable<Item>}s, and records metrics
+ * AccessorySheetProperties}-based models or {@link ListObservable<>}s, and records metrics
  * accordingly.
  */
 public class KeyboardAccessoryMetricsRecorder {
@@ -305,10 +308,15 @@ public class KeyboardAccessoryMetricsRecorder {
      * @param suggestionList The list containing all suggestions.
      */
     static void recordSheetSuggestions(
-            @AccessoryTabType int tabType, ListModel<Item> suggestionList) {
+            @AccessoryTabType int tabType, ListModel<AccessorySheetDataPiece> suggestionList) {
         int interactiveSuggestions = 0;
         for (int i = 0; i < suggestionList.size(); ++i) {
-            if (suggestionList.get(i).getType() == ItemType.SUGGESTION) ++interactiveSuggestions;
+            if (getType(suggestionList.get(i)) == PASSWORD_INFO) {
+                UserInfo info = (UserInfo) suggestionList.get(i).getDataPiece();
+                for (UserInfo.Field field : info.getFields()) {
+                    if (field.isSelectable()) ++interactiveSuggestions;
+                }
+            }
         }
         RecordHistogram.recordCount100Histogram(
                 getHistogramForType(UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS, tabType),

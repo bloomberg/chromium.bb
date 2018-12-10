@@ -176,27 +176,13 @@ public class KeyboardAccessoryData {
     }
 
     /**
-     * This describes an item in a accessory sheet. They are usually list items that were created
-     * natively.
-     *
-     * TODO(crbug.com/902425): Remove this class once all code in the frontend uses
-     *                         AccessorySheetData.
+     * Represents a Profile, or a Credit Card, or the credentials for a website
+     * (username + password), to be shown on the manual fallback UI.
      */
-    public final static class Item {
-        private final int mType;
-        private final String mCaption;
-        private final String mContentDescription;
-        private final boolean mIsObfuscated;
-        private final @Nullable Callback<Item> mItemSelectedCallback;
+    public final static class UserInfo {
+        private final List<Field> mFields = new ArrayList<>();
         private final @Nullable FaviconProvider mFaviconProvider;
 
-        /**
-         * Items will call a class that implements this interface to request a favicon.
-         *
-         * TODO(crbug.com/902425): Move this to UserInfo.Field once Item is deprecated and
-         *                         generalize it so it can handle static assets for credit card
-         *                         items.
-         */
         interface FaviconProvider {
             /**
              * Starts a request for a favicon. The callback can be called either asynchronously or
@@ -205,141 +191,6 @@ public class KeyboardAccessoryData {
              */
             void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
         }
-
-        /**
-         * Creates a new Item of type {@link ItemType#LABEL}. It is not interactive.
-         * @param caption The text of the displayed item.
-         * @param contentDescription The description of this item (i.e. used for accessibility).
-         */
-        public static Item createLabel(String caption, String contentDescription) {
-            return new Item(ItemType.LABEL, caption, contentDescription, false, null, null);
-        }
-
-        /**
-         * Creates a new Item of type {@link ItemType#SUGGESTION} if has a callback, otherwise, it
-         * will be {@link ItemType#NON_INTERACTIVE_SUGGESTION}. It usually is part of a list of
-         * suggestions and can have a callback that is triggered on selection.
-         * @param caption The text of the displayed item. Only plain text if |isObfuscated| is
-         * false.
-         * @param contentDescription The description of this item (i.e. used for accessibility).
-         * @param isObfuscated If true, the displayed caption is transformed into stars.
-         * @param itemSelectedCallback A click on this item will invoke this callback. Optional.
-         */
-        public static Item createSuggestion(String caption, String contentDescription,
-                boolean isObfuscated, @Nullable Callback<Item> itemSelectedCallback,
-                @Nullable FaviconProvider faviconProvider) {
-            if (itemSelectedCallback == null) {
-                return new Item(ItemType.NON_INTERACTIVE_SUGGESTION, caption, contentDescription,
-                        isObfuscated, null, faviconProvider);
-            }
-            return new Item(ItemType.SUGGESTION, caption, contentDescription, isObfuscated,
-                    itemSelectedCallback, faviconProvider);
-        }
-
-        /**
-         * Creates an Item of type {@link ItemType#DIVIDER}. Basically, it's a horizontal line.
-         */
-        public static Item createDivider() {
-            return new Item(ItemType.DIVIDER, null, null, false, null, null);
-        }
-
-        /**
-         * Creates a new Item of type {@link ItemType#OPTION}. They are normally independent items
-         * that trigger a unique action (e.g. generate a password or navigate to an overview).
-         * @param caption The text of the displayed option.
-         * @param contentDescription The description of this option (i.e. used for accessibility).
-         * @param callback A click on this item will invoke this callback.
-         */
-        public static Item createOption(
-                String caption, String contentDescription, Callback<Item> callback) {
-            return new Item(ItemType.OPTION, caption, contentDescription, false, callback, null);
-        }
-
-        /**
-         * Creates an Item of type {@link ItemType#TOP_DIVIDER}. A horizontal line meant to be
-         * displayed at the top of the accessory sheet.
-         */
-        public static Item createTopDivider() {
-            return new Item(ItemType.TOP_DIVIDER, null, null, false, null, null);
-        }
-
-        /**
-         * Creates a new item.
-         * @param type Type of the item (e.g. non-clickable LABEL or clickable SUGGESTION).
-         * @param caption The text of the displayed item. Only plain text if |isObfuscated| is
-         * false.
-         * @param contentDescription The description of this item (i.e. used for accessibility).
-         * @param isObfuscated If true, the displayed caption is transformed into stars.
-         * @param itemSelectedCallback If the Item is interactive, a click on it will trigger this.
-         * @param faviconProvider
-         */
-        private Item(@ItemType int type, String caption, String contentDescription,
-                boolean isObfuscated, @Nullable Callback<Item> itemSelectedCallback,
-                @Nullable FaviconProvider faviconProvider) {
-            mType = type;
-            mCaption = caption;
-            mContentDescription = contentDescription;
-            mIsObfuscated = isObfuscated;
-            mItemSelectedCallback = itemSelectedCallback;
-            mFaviconProvider = faviconProvider;
-        }
-
-        /**
-         * Returns the type of the item.
-         * @return Returns a {@link ItemType}.
-         */
-        public @ItemType int getType() {
-            return mType;
-        }
-
-        /**
-         * Returns a human-readable, translated string that will appear as text of the item.
-         * @return A short descriptive string of the item.
-         */
-        public String getCaption() {
-            return mCaption;
-        }
-
-        /**
-         * Returns a translated description that can be used for accessibility.
-         * @return A short description of the displayed item.
-         */
-        public String getContentDescription() {
-            return mContentDescription;
-        }
-
-        /**
-         * Returns whether obfuscation should be applied to the item's caption, for example to hide
-         * passwords.
-         * @return Returns true if obfuscation should be applied to the caption.
-         */
-        public boolean isObfuscated() {
-            return mIsObfuscated;
-        }
-
-        /**
-         * The delegate is called when the Item is selected by a user.
-         */
-        public Callback<Item> getItemSelectedCallback() {
-            return mItemSelectedCallback;
-        }
-
-        public void fetchFavicon(@Px int desiredSize, Callback<Bitmap> faviconCallback) {
-            if (mFaviconProvider == null) {
-                faviconCallback.onResult(null); // Use default icon without provider.
-                return;
-            }
-            mFaviconProvider.fetchFavicon(desiredSize, faviconCallback);
-        }
-    }
-
-    /**
-     * Represents a Profile, or a Credit Card, or the credentials for a website
-     * (username + password), to be shown on the manual fallback UI.
-     */
-    public final static class UserInfo {
-        private final List<Field> mFields = new ArrayList<>();
-        private final @Nullable Item.FaviconProvider mFaviconProvider;
 
         /**
          * Represents an item (either selectable or not) presented on the UI, such as the username
@@ -404,7 +255,7 @@ public class KeyboardAccessoryData {
             }
         }
 
-        public UserInfo(@Nullable Item.FaviconProvider faviconProvider) {
+        public UserInfo(@Nullable FaviconProvider faviconProvider) {
             mFaviconProvider = faviconProvider;
         }
 
@@ -425,9 +276,9 @@ public class KeyboardAccessoryData {
 
         /**
          * Possibly holds a favicon provider.
-         * @return A {@link Item.FaviconProvider}. Optional.
+         * @return A {@link FaviconProvider}. Optional.
          */
-        public @Nullable Item.FaviconProvider getFaviconProvider() {
+        public @Nullable FaviconProvider getFaviconProvider() {
             return mFaviconProvider;
         }
     }

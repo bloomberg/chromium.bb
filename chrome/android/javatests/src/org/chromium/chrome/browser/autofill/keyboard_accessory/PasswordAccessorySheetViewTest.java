@@ -6,16 +6,17 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.CREDENTIALS;
-import static org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetProperties.SCROLL_LISTENER;
 
 import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.junit.After;
@@ -29,9 +30,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Item;
-import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetTabModel.AccessorySheetDataPiece;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.UserInfo;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -47,10 +47,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PasswordAccessorySheetViewTest {
-    private final PropertyModel mModel = new PropertyModel.Builder(CREDENTIALS, SCROLL_LISTENER)
-                                                 .with(CREDENTIALS, new ListModel<>())
-                                                 .with(SCROLL_LISTENER, null)
-                                                 .build();
+    private final AccessorySheetTabModel mModel = new AccessorySheetTabModel();
     private AtomicReference<RecyclerView> mView = new AtomicReference<>();
 
     @Rule
@@ -90,6 +87,7 @@ public class PasswordAccessorySheetViewTest {
                         mView.set((RecyclerView) view);
                         // Reuse coordinator code to create and wire the adapter. No mediator
                         // involved.
+                        AccessorySheetTabViewBinder.initializeView(mView.get(), null);
                         PasswordAccessorySheetViewBinder.initializeView(mView.get(), mModel);
                     }
 
@@ -109,58 +107,63 @@ public class PasswordAccessorySheetViewTest {
     public void testAddingCaptionsToTheModelRendersThem() {
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mModel.get(CREDENTIALS).add(Item.createLabel("Passwords", null)));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.add(
+                    new AccessorySheetDataPiece("Passwords", AccessorySheetDataPiece.Type.TITLE));
+        });
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
-        assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
-        assertThat(((TextView) mView.get().getChildAt(0)).getText(), is("Passwords"));
+        View title = mView.get().findViewById(R.id.tab_title);
+        assertThat(title, is(not(nullValue())));
+        assertThat(title, instanceOf(TextView.class));
+        assertThat(((TextView) title).getText(), is("Passwords"));
     }
 
     @Test
     @MediumTest
-    public void testAddingSuggestionsToTheModelRendersClickableActions() throws ExecutionException {
+    public void testAddingUserInfoToTheModelRendersClickableActions() throws ExecutionException {
         final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
         assertThat(mView.get().getChildCount(), is(0));
 
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mModel.get(CREDENTIALS)
-                                   .add(Item.createSuggestion("Name Suggestion", null, false,
-                                           item -> clicked.set(true), null)));
+        UserInfo testInfo = new UserInfo(null);
+        testInfo.addField(new UserInfo.Field(
+                "Name Suggestion", "Name Suggestion", false, item -> clicked.set(true)));
+        testInfo.addField(new UserInfo.Field(
+                "Password Suggestion", "Password Suggestion", true, item -> clicked.set(true)));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.add(new AccessorySheetDataPiece(
+                    testInfo, AccessorySheetDataPiece.Type.PASSWORD_INFO));
+        });
 
         CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
 
-        assertThat(getFirstSuggestion().getText(), is("Name Suggestion"));
-
-        ThreadUtils.runOnUiThreadBlocking(getFirstSuggestion()::performClick);
-        assertThat(clicked.get(), is(true));
-    }
-
-    @Test
-    @MediumTest
-    public void testAddingPasswordsToTheModelRendersThemHidden() throws ExecutionException {
-        final AtomicReference<Boolean> clicked = new AtomicReference<>(false);
-        assertThat(mView.get().getChildCount(), is(0));
-
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mModel.get(CREDENTIALS)
-                                   .add(Item.createSuggestion("Password Suggestion", null, true,
-                                           item -> clicked.set(true), null)));
-
-        CriteriaHelper.pollUiThread(Criteria.equals(1, () -> mView.get().getChildCount()));
-
-        assertThat(getFirstSuggestion().getText(), is("Password Suggestion"));
-        assertThat(getFirstSuggestion().getTransformationMethod(),
+        assertThat(getNameSuggestion().getText(), is("Name Suggestion"));
+        assertThat(getPasswordSuggestion().getText(), is("Password Suggestion"));
+        assertThat(getPasswordSuggestion().getTransformationMethod(),
                 instanceOf(PasswordTransformationMethod.class));
 
-        ThreadUtils.runOnUiThreadBlocking(getFirstSuggestion()::performClick);
+        ThreadUtils.runOnUiThreadBlocking(getNameSuggestion()::performClick);
+        assertThat(clicked.get(), is(true));
+        clicked.set(false);
+        ThreadUtils.runOnUiThreadBlocking(getPasswordSuggestion()::performClick);
         assertThat(clicked.get(), is(true));
     }
 
-    private TextView getFirstSuggestion() {
-        assertThat(mView.get().getChildAt(0), instanceOf(TextView.class));
-        return (TextView) mView.get().getChildAt(0);
+    private TextView getNameSuggestion() {
+        assertThat(mView.get().getChildAt(0), instanceOf(LinearLayout.class));
+        LinearLayout layout = (LinearLayout) mView.get().getChildAt(0);
+        View view = layout.findViewById(R.id.suggestion_text);
+        assertThat(view, is(not(nullValue())));
+        assertThat(view, instanceOf(TextView.class));
+        return (TextView) view;
+    }
+
+    private TextView getPasswordSuggestion() {
+        assertThat(mView.get().getChildAt(0), instanceOf(LinearLayout.class));
+        LinearLayout layout = (LinearLayout) mView.get().getChildAt(0);
+        View view = layout.findViewById(R.id.password_text);
+        assertThat(view, is(not(nullValue())));
+        assertThat(view, instanceOf(TextView.class));
+        return (TextView) view;
     }
 }

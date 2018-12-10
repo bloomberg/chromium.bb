@@ -4,40 +4,24 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import static android.support.v7.widget.RecyclerView.OnScrollListener;
-
 import android.support.annotation.IntDef;
 import android.support.v7.widget.RecyclerView;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.AccessorySheetData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.PasswordAccessorySheetViewBinder.ItemViewHolder;
 import org.chromium.chrome.browser.modelutil.ListModel;
-import org.chromium.chrome.browser.modelutil.PropertyModel.ReadableObjectPropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-// TODO(crbug.com/902425): Drop the "Password-" as soon as its used for other sheets.
 /**
- * This class holds properties that are used to build a model for the password accessory sheet
- * component. These properties store the state of the {@link PasswordAccessorySheetView} which is
- * bound to model using the {@link PasswordAccessorySheetViewBinder}.
- * It is built in the {@link PasswordAccessorySheetCoordinator} and modified by the
- * {@link PasswordAccessorySheetMediator}.
+ * This class describes the {@link ListModel} used for keyboard accessory sheets like the
+ * {@link PasswordAccessorySheetCoordinator}.
  */
-class PasswordAccessorySheetProperties {
-    static final ReadableObjectPropertyKey<ListModel<KeyboardAccessoryData.Item>> CREDENTIALS =
-            new ReadableObjectPropertyKey<>();
-    static final ReadableObjectPropertyKey<ListModel<AccessorySheetDataPiece>> PASSWORD_SHEET_DATA =
-            new ReadableObjectPropertyKey<>();
-    static final WritableObjectPropertyKey<OnScrollListener> SCROLL_LISTENER =
-            new WritableObjectPropertyKey<>();
-
+class AccessorySheetTabModel extends ListModel<AccessorySheetTabModel.AccessorySheetDataPiece> {
     /**
      * The {@link AccessorySheetData} has to be mapped to single items in a {@link RecyclerView}.
-     * This class allows to wrap the {@link AccessorySheetData} into small chunks that are organized
-     * in a {@link ListModel}. A specific {@link ItemViewHolder}s is defined for each piece.
+     * This class allows wrapping the {@link AccessorySheetData} into small chunks that are
+     * organized in a {@link ListModel}. A specific ViewHolder is defined for each piece.
      */
     static class AccessorySheetDataPiece {
         @IntDef({Type.TITLE, Type.PASSWORD_INFO, Type.FOOTER_COMMAND})
@@ -73,6 +57,4 @@ class PasswordAccessorySheetProperties {
             return mDataPiece;
         }
     }
-
-    private PasswordAccessorySheetProperties() {}
 }
