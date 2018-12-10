@@ -21,6 +21,7 @@
 #include "net/third_party/quic/core/stateless_rejector.h"
 #include "net/third_party/quic/core/tls_server_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
+#include "net/third_party/quic/platform/api/quic_expect_bug.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
@@ -157,6 +158,7 @@ class TestDispatcher : public QuicDispatcher {
   using QuicDispatcher::current_peer_address;
   using QuicDispatcher::current_self_address;
   using QuicDispatcher::GetLastPacketFormat;
+  using QuicDispatcher::writer;
 };
 
 // A Connection class which unregisters the session from the dispatcher when
@@ -304,7 +306,7 @@ class QuicDispatcherTest : public QuicTest {
   }
 
   QuicServerSessionBase* CreateSession(
-      QuicDispatcher* dispatcher,
+      TestDispatcher* dispatcher,
       const QuicConfig& config,
       QuicConnectionId connection_id,
       const QuicSocketAddress& peer_address,
@@ -315,6 +317,8 @@ class QuicDispatcherTest : public QuicTest {
       TestQuicSpdyServerSession** session) {
     MockServerConnection* connection = new MockServerConnection(
         connection_id, helper, alarm_factory, dispatcher);
+    connection->SetQuicPacketWriter(dispatcher->writer(),
+                                    /*owns_writer=*/false);
     *session = new TestQuicSpdyServerSession(config, connection, crypto_config,
                                              compressed_certs_cache);
     connection->set_visitor(*session);
@@ -1281,11 +1285,31 @@ class QuicDispatcherWriteBlockedListTest : public QuicDispatcherTest {
     dispatcher_->Shutdown();
   }
 
-  void SetBlocked() { writer_->write_blocked_ = true; }
-
-  void BlockConnection2() {
+  // Set the dispatcher's writer to be blocked. By default, all connections use
+  // the same writer as the dispatcher in this test.
+  void SetBlocked() {
+    QUIC_LOG(INFO) << "set writer " << writer_ << " to blocked";
     writer_->write_blocked_ = true;
+  }
+
+  // Simulate what happens when connection1 gets blocked when writing.
+  void BlockConnection1() {
+    Connection1Writer()->write_blocked_ = true;
+    dispatcher_->OnWriteBlocked(connection1());
+  }
+
+  BlockingWriter* Connection1Writer() {
+    return static_cast<BlockingWriter*>(connection1()->writer());
+  }
+
+  // Simulate what happens when connection2 gets blocked when writing.
+  void BlockConnection2() {
+    Connection2Writer()->write_blocked_ = true;
     dispatcher_->OnWriteBlocked(connection2());
+  }
+
+  BlockingWriter* Connection2Writer() {
+    return static_cast<BlockingWriter*>(connection2()->writer());
   }
 
  protected:
@@ -1373,6 +1397,9 @@ TEST_F(QuicDispatcherWriteBlockedListTest, DoubleAdd) {
 }
 
 TEST_F(QuicDispatcherWriteBlockedListTest, OnCanWriteHandleBlock) {
+  if (GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    return;
+  }
   // Finally make sure if we write block on a write call, we stop calling.
   InSequence s;
   SetBlocked();
@@ -1382,17 +1409,38 @@ TEST_F(QuicDispatcherWriteBlockedListTest, OnCanWriteHandleBlock) {
       .WillOnce(Invoke(this, &QuicDispatcherWriteBlockedListTest::SetBlocked));
   EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
   dispatcher_->OnCanWrite();
-  EXPECT_TRUE(dispatcher_->HasPendingWrites());
 
   // And we'll resume where we left off when we get another call.
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_->OnCanWrite();
+}
+
+TEST_F(QuicDispatcherWriteBlockedListTest, OnCanWriteHandleBlockConnection1) {
+  // If the 1st blocked writer gets blocked in OnCanWrite, it will be added back
+  // into the write blocked list.
+  InSequence s;
+  SetBlocked();
+  dispatcher_->OnWriteBlocked(connection1());
+  dispatcher_->OnWriteBlocked(connection2());
+  EXPECT_CALL(*connection1(), OnCanWrite())
+      .WillOnce(
+          Invoke(this, &QuicDispatcherWriteBlockedListTest::BlockConnection1));
+  EXPECT_CALL(*connection2(), OnCanWrite());
+  dispatcher_->OnCanWrite();
+
+  // connection1 should be still in the write blocked list.
+  EXPECT_TRUE(dispatcher_->HasPendingWrites());
+
+  // Now call OnCanWrite again, connection1 should get its second chance.
+  EXPECT_CALL(*connection1(), OnCanWrite());
+  EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
+  dispatcher_->OnCanWrite();
   EXPECT_FALSE(dispatcher_->HasPendingWrites());
 }
 
-TEST_F(QuicDispatcherWriteBlockedListTest, LimitedWrites) {
-  // Make sure we call both writers.  The first will register for more writing
-  // but should not be immediately called due to limits.
+TEST_F(QuicDispatcherWriteBlockedListTest, OnCanWriteHandleBlockConnection2) {
+  // If the 2nd blocked writer gets blocked in OnCanWrite, it will be added back
+  // into the write blocked list.
   InSequence s;
   SetBlocked();
   dispatcher_->OnWriteBlocked(connection1());
@@ -1402,9 +1450,68 @@ TEST_F(QuicDispatcherWriteBlockedListTest, LimitedWrites) {
       .WillOnce(
           Invoke(this, &QuicDispatcherWriteBlockedListTest::BlockConnection2));
   dispatcher_->OnCanWrite();
+
+  // connection2 should be still in the write blocked list.
   EXPECT_TRUE(dispatcher_->HasPendingWrites());
 
-  // Now call OnCanWrite again, and connection1 should get its second chance
+  // Now call OnCanWrite again, connection2 should get its second chance.
+  EXPECT_CALL(*connection1(), OnCanWrite()).Times(0);
+  EXPECT_CALL(*connection2(), OnCanWrite());
+  dispatcher_->OnCanWrite();
+  EXPECT_FALSE(dispatcher_->HasPendingWrites());
+}
+
+TEST_F(QuicDispatcherWriteBlockedListTest,
+       OnCanWriteHandleBlockBothConnections) {
+  if (!GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    return;
+  }
+  // Both connections get blocked in OnCanWrite, and added back into the write
+  // blocked list.
+  InSequence s;
+  SetBlocked();
+  dispatcher_->OnWriteBlocked(connection1());
+  dispatcher_->OnWriteBlocked(connection2());
+  EXPECT_CALL(*connection1(), OnCanWrite())
+      .WillOnce(
+          Invoke(this, &QuicDispatcherWriteBlockedListTest::BlockConnection1));
+  EXPECT_CALL(*connection2(), OnCanWrite())
+      .WillOnce(
+          Invoke(this, &QuicDispatcherWriteBlockedListTest::BlockConnection2));
+  dispatcher_->OnCanWrite();
+
+  // Both connections should be still in the write blocked list.
+  EXPECT_TRUE(dispatcher_->HasPendingWrites());
+
+  // Now call OnCanWrite again, both connections should get its second chance.
+  EXPECT_CALL(*connection1(), OnCanWrite());
+  EXPECT_CALL(*connection2(), OnCanWrite());
+  dispatcher_->OnCanWrite();
+  EXPECT_FALSE(dispatcher_->HasPendingWrites());
+}
+
+TEST_F(QuicDispatcherWriteBlockedListTest, PerConnectionWriterBlocked) {
+  // By default, all connections share the same packet writer with the
+  // dispatcher.
+  EXPECT_EQ(dispatcher_->writer(), connection1()->writer());
+  EXPECT_EQ(dispatcher_->writer(), connection2()->writer());
+
+  // Test the case where connection1 shares the same packet writer as the
+  // dispatcher, whereas connection2 owns it's packet writer.
+  // Change connection2's writer.
+  connection2()->SetQuicPacketWriter(new BlockingWriter, /*owns_writer=*/true);
+  EXPECT_NE(dispatcher_->writer(), connection2()->writer());
+
+  if (!GetQuicRestartFlag(quic_check_blocked_writer_for_blockage)) {
+    EXPECT_QUIC_BUG(
+        BlockConnection2(),
+        "Tried to add writer into blocked list when it shouldn't be added");
+    return;
+  }
+
+  BlockConnection2();
+  EXPECT_TRUE(dispatcher_->HasPendingWrites());
+
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_->OnCanWrite();
   EXPECT_FALSE(dispatcher_->HasPendingWrites());

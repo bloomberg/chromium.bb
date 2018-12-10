@@ -102,6 +102,10 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // send because the underlying socket was write blocked.
   void OnBlockedWriterCanWrite() override;
 
+  bool IsWriterBlocked() const override {
+    return writer_ != nullptr && writer_->IsWriteBlocked();
+  }
+
   // Used to delete connection_id entries that have outlived their time wait
   // period.
   void CleanUpOldConnectionIds();

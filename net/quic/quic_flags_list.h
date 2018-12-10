@@ -313,3 +313,9 @@ QUIC_FLAG(bool,
 
 // If true, disables key share caching for QUIC key exchange
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_no_ephemeral_key_source, true)
+
+// If true, QuicDispatcher will not assume all blocked writers share the same
+// opinion about whether their packet writers are blocked.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_check_blocked_writer_for_blockage,
+          false)
