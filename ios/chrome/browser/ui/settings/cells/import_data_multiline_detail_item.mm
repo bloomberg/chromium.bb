@@ -13,6 +13,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kAccessoryWidth = 40;
+}  // namespace
+
 @implementation ImportDataMultilineDetailItem
 
 @synthesize accessoryType = _accessoryType;
@@ -53,6 +57,7 @@
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.numberOfLines = 0;
     _textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _textLabel.adjustsFontForContentSizeCategory = YES;
     _textLabel.textColor = UIColor.blackColor;
@@ -69,23 +74,40 @@
 
     // Set up the constraints.
     [NSLayoutConstraint activateConstraints:@[
+      [_textLabel.topAnchor
+          constraintEqualToAnchor:contentView.topAnchor
+                         constant:kTableViewLargeVerticalSpacing],
       [_textLabel.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor
                          constant:kTableViewHorizontalSpacing],
       [_textLabel.trailingAnchor
-          constraintEqualToAnchor:contentView.trailingAnchor
-                         constant:-kTableViewHorizontalSpacing],
+          constraintLessThanOrEqualToAnchor:contentView.trailingAnchor
+                                   constant:-kTableViewHorizontalSpacing],
+      [_textLabel.bottomAnchor
+          constraintEqualToAnchor:_detailTextLabel.topAnchor],
       [_detailTextLabel.leadingAnchor
           constraintEqualToAnchor:_textLabel.leadingAnchor],
       [_detailTextLabel.trailingAnchor
-          constraintEqualToAnchor:_textLabel.trailingAnchor],
-      [_textLabel.bottomAnchor
-          constraintEqualToAnchor:_detailTextLabel.topAnchor],
+          constraintLessThanOrEqualToAnchor:contentView.trailingAnchor
+                                   constant:-kTableViewHorizontalSpacing],
+      [_detailTextLabel.bottomAnchor
+          constraintEqualToAnchor:contentView.bottomAnchor
+                         constant:-kTableViewLargeVerticalSpacing],
     ]];
-    AddOptionalVerticalPadding(contentView, _textLabel, _detailTextLabel,
-                               kTableViewLargeVerticalSpacing);
   }
   return self;
+}
+
+- (void)layoutSubviews {
+  // Make sure that the multiline labels' width isn't changed when the accessory
+  // is set.
+  self.detailTextLabel.preferredMaxLayoutWidth =
+      self.bounds.size.width -
+      (kAccessoryWidth + 2 * kTableViewHorizontalSpacing);
+  self.textLabel.preferredMaxLayoutWidth =
+      self.bounds.size.width -
+      (kAccessoryWidth + 2 * kTableViewHorizontalSpacing);
+  [super layoutSubviews];
 }
 
 #pragma mark Accessibility
