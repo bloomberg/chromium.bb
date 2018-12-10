@@ -422,6 +422,15 @@ class PersonalDataManagerTestBase {
         prefs::kAutofillLastVersionValidated);
   }
 
+  AccountInfo SetActiveSecondaryAccount() {
+    AccountInfo account_info;
+    account_info.email = "signed_in_account@email.com";
+    account_info.account_id = "account_id";
+    sync_service_.SetAuthenticatedAccountInfo(account_info);
+    sync_service_.SetIsAuthenticatedAccountPrimary(false);
+    return account_info;
+  }
+
   // The temporary directory should be deleted at the end to ensure that
   // files are not used anymore and deletion succeeds.
   base::ScopedTempDir temp_dir_;
@@ -6249,19 +6258,52 @@ TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
 }
 #endif  // !defined(OS_ANDROID)
 
+// Sync Transport mode is only for Win, Mac, and Linux.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
   // Set up PersonalDataManager in transport mode.
   ResetPersonalDataManager(USER_MODE_NORMAL,
                            /*use_sync_transport_mode=*/true);
   SetUpThreeCardTypes();
+  AccountInfo active_info = SetActiveSecondaryAccount();
 
-  // Set an an active secondary account.
-  AccountInfo active_info;
-  active_info.email = "signed_in_account@email.com";
-  active_info.account_id = "account_id";
-  sync_service_.SetAuthenticatedAccountInfo(active_info);
-  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+  // Opt-in to seeing server card in sync transport mode.
+  ::autofill::prefs::SetUserOptedInWalletSyncTransport(
+      prefs_.get(), active_info.account_id, true);
+
+  // Check that the server cards are available for suggestion.
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      3U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
+  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+
+  // Stop Wallet sync.
+  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+
+  // Check that server cards are unavailable.
+  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
+  EXPECT_EQ(
+      1U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+              .size());
+  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
+  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+}
+
+// Make sure that the opt in is necessary to show server cards if the
+// appropriate feature is disabled.
+TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
+  // Disable the feature that always shows server cards in sync transport.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndDisableFeature(
+      features::kAutofillAlwaysShowServerCardsInSyncTransport);
+
+  // Set up PersonalDataManager in transport mode.
+  ResetPersonalDataManager(USER_MODE_NORMAL,
+                           /*use_sync_transport_mode=*/true);
+  SetUpThreeCardTypes();
+  AccountInfo active_info = SetActiveSecondaryAccount();
 
   // The server cards should not be available at first. The user needs to
   // accept the opt-in offer.
@@ -6283,14 +6325,26 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
               .size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
+}
 
-  // Stop Wallet sync.
-  sync_service_.SetActiveDataTypes(syncer::ModelTypeSet());
+// Make sure that the opt in is not necessary to show server cards if the
+// appropriate feature is enabled.
+TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NoOptInNeeded) {
+  // Enable the feature that always shows server cards in sync transport.
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitAndEnableFeature(
+      features::kAutofillAlwaysShowServerCardsInSyncTransport);
 
-  // Check that server cards are unavailable.
+  // Set up PersonalDataManager in transport mode.
+  ResetPersonalDataManager(USER_MODE_NORMAL,
+                           /*use_sync_transport_mode=*/true);
+  SetUpThreeCardTypes();
+  AccountInfo active_info = SetActiveSecondaryAccount();
+
+  // Check that the server cards are available for suggestion.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
   EXPECT_EQ(
-      1U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
+      3U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
               .size());
   EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());

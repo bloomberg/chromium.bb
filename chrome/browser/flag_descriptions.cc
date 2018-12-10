@@ -82,6 +82,11 @@ const char kAsyncImageDecodingName[] = "AsyncImageDecoding";
 const char kAsyncImageDecodingDescription[] =
     "Enables asynchronous decoding of images from raster for web content";
 
+extern const char kAutofillAlwaysShowServerCardsInSyncTransportName[] =
+    "AlwaysShowServerCardsInSyncTransport";
+extern const char kAutofillAlwaysShowServerCardsInSyncTransportDescription[] =
+    "Always show server cards when in sync transport mode for wallet data";
+
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =
