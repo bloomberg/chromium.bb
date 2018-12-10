@@ -135,8 +135,8 @@ std::unique_ptr<base::Value> NetLogHttpStreamJobCallback(
     source.AddToEventParameters(dict.get());
   dict->SetString("original_url", original_url->GetOrigin().spec());
   dict->SetString("url", url->GetOrigin().spec());
-  dict->SetString("expect_spdy", expect_spdy ? "true" : "false");
-  dict->SetString("using_quic", using_quic ? "true" : "false");
+  dict->SetBoolean("expect_spdy", expect_spdy);
+  dict->SetBoolean("using_quic", using_quic);
   dict->SetString("priority", RequestPriorityToString(priority));
   return std::move(dict);
 }
