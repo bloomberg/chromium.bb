@@ -163,7 +163,6 @@ static_library("interface_log_service") {
 
   deps = [
     "//base:base",
-    "//chrome/chrome_cleaner/constants:version_header",
     "//chrome/chrome_cleaner/os:common_os",
   ]
 
