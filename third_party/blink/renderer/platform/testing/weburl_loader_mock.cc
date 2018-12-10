@@ -56,6 +56,11 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
     delegate = default_delegate.get();
   }
 
+  if (error) {
+    delegate->DidFail(client_, *error, data.size(), 0, 0);
+    return;
+  }
+
   // didReceiveResponse() and didReceiveData() might end up getting ::cancel()
   // to be called which will make the ResourceLoader to delete |this|.
   base::WeakPtr<WebURLLoaderMock> self = weak_factory_.GetWeakPtr();
@@ -63,11 +68,6 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   delegate->DidReceiveResponse(client_, response);
   if (!self)
     return;
-
-  if (error) {
-    delegate->DidFail(client_, *error, data.size(), 0, 0);
-    return;
-  }
 
   data.ForEachSegment([this, &delegate, &self](const char* segment,
                                                size_t segment_size,
