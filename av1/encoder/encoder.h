@@ -637,6 +637,12 @@ typedef struct AV1_COMP {
   int refresh_alt2_ref_frame;
   int refresh_alt_ref_frame;
 
+  // For each type of reference frame, this contains the index of a reference
+  // frame buffer for a reference frame of the same type.  We use this to
+  // choose our primary reference frame (which is the most recent reference
+  // frame of the same type as the current frame).
+  int fb_of_context_type[REF_FRAMES];
+
 #if USE_SYMM_MULTI_LAYER
   // When true, a new rule for backward (future) reference frames is in effect:
   // - BWDREF_FRAME is always the closest future frame available

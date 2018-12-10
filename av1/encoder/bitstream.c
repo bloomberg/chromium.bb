@@ -2832,15 +2832,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
   if (!seq_params->reduced_still_picture_hdr) {
     if (encode_show_existing_frame(cm)) {
-      RefCntBuffer *const frame_to_show =
-          cm->ref_frame_map[cpi->existing_fb_idx_to_show];
-
-      if (frame_to_show == NULL || frame_to_show->ref_count < 1) {
-        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Buffer does not contain a reconstructed frame");
-      }
-      assign_frame_buffer_p(&cm->cur_frame, frame_to_show);
-
       aom_wb_write_bit(wb, 1);  // show_existing_frame
       aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
 
@@ -2853,13 +2844,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
         aom_wb_write_literal(wb, display_frame_id, frame_id_len);
       }
-
-      if (cm->reset_decoder_state && frame_to_show->frame_type != KEY_FRAME) {
-        aom_internal_error(
-            &cm->error, AOM_CODEC_UNSUP_BITSTREAM,
-            "show_existing_frame to reset state on KEY_FRAME only");
-      }
-
       return;
     } else {
       aom_wb_write_bit(wb, 0);  // show_existing_frame
@@ -2967,18 +2951,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       current_frame->frame_type == INTRA_ONLY_FRAME)
     aom_wb_write_literal(wb, current_frame->refresh_frame_flags, REF_FRAMES);
 
-  // For non-keyframes, we need to update the buffer of reference frame ids.
-  // If more than one frame is refreshed, it doesn't matter which one we pick,
-  // so pick the first.  LST sometimes doesn't refresh any: this is ok
-  if (current_frame->frame_type != KEY_FRAME) {
-    for (int i = 0; i < REF_FRAMES; i++) {
-      if (current_frame->refresh_frame_flags & (1 << i)) {
-        cm->fb_of_context_type[cm->frame_context_idx] = i;
-        break;
-      }
-    }
-  }
-
   if (!frame_is_intra_only(cm) || current_frame->refresh_frame_flags != 0xff) {
     // Write all ref frame order hints if error_resilient_mode == 1
     if (cm->error_resilient_mode &&
@@ -2996,8 +2968,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     assert(!av1_superres_scaled(cm) || !cm->allow_intrabc);
     if (cm->allow_screen_content_tools && !av1_superres_scaled(cm))
       aom_wb_write_bit(wb, cm->allow_intrabc);
-    // all eight fbs are refreshed, pick one that will live long enough
-    cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
     if (current_frame->frame_type == INTRA_ONLY_FRAME) {
       write_frame_size(cm, frame_size_override_flag, wb);

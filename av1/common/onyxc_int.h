@@ -500,8 +500,6 @@ typedef struct AV1Common {
 
   FRAME_CONTEXT *fc;              /* this frame entropy */
   FRAME_CONTEXT *default_frame_context;
-  unsigned int frame_context_idx; /* Context to use/update */
-  int fb_of_context_type[REF_FRAMES];
   int primary_ref_frame;
 
   int error_resilient_mode;
