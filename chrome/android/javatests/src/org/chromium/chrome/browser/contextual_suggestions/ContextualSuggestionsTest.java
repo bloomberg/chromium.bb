@@ -368,6 +368,7 @@ public class ContextualSuggestionsTest {
     @Feature({"ContextualSuggestions"})
     @EnableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON,
             ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_IPH_REVERSE_SCROLL})
+    @DisabledTest(message = "https://crbug.com/890947")
     public void testInProductHelp_RequireReverseScroll() throws Exception {
         // IPH can only be shown after the animation to show the toolbar button completes.
         ThreadUtils.runOnUiThreadBlocking(
