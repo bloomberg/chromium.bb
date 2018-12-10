@@ -201,6 +201,8 @@ class CORE_EXPORT WorkerGlobalScope
 
   void AddPausedCall(base::OnceClosure closure);
 
+  void MaybeRunPausedTasks();
+
   mojom::ScriptType GetScriptType() const { return script_type_; }
 
  private:
