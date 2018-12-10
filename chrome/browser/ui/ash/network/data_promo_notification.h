@@ -9,32 +9,30 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
-class PrefRegistrySimple;
-
 // This class is responsible for triggering cellular network related
 // notifications, specifically:
-// * "Chrome will use mobile data..." when Cellular is the Default network
-//   for the first time.
-// * Data Promotion notifications when available / appropriate.
+// * "Chrome will use mobile data..." when cellular is the default network
+//   for the first time in a session.
+// * Prompt users to install data saver extension.
 class DataPromoNotification : public chromeos::NetworkStateHandlerObserver {
  public:
   DataPromoNotification();
   ~DataPromoNotification() override;
-
-  static void RegisterPrefs(PrefRegistrySimple* registry);
 
  private:
   // NetworkStateHandlerObserver
   void NetworkPropertiesUpdated(const chromeos::NetworkState* network) override;
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
-  // Shows 3G promo notification if needed.
-  void ShowOptionalMobileDataPromoNotification();
+  // Shows mobile data usage warning or prompts to install data saver extension.
+  void ShowOptionalMobileDataNotification();
 
-  // Show notification prompting user to install Data Saver extension.
-  bool ShowDataSaverNotification();
+  // True if we should show notification prompting user to install data saver
+  // extension.
+  bool ShouldShowDataSaverNotification();
 
-  // True if we've shown notifications during this session, or won't need to.
+  // True if we've shown notifications during this session. We only want to show
+  // mobile notifications once per session.
   bool notifications_shown_;
 
   // Factory for delaying showing promo notification.

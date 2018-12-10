@@ -274,7 +274,6 @@
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/ash/network/data_promo_notification.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -496,7 +495,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_CHROMEOS)
   ChromeOSMetricsProvider::RegisterPrefs(registry);
-  DataPromoNotification::RegisterPrefs(registry);
   chromeos::ArcKioskAppManager::RegisterPrefs(registry);
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
@@ -853,6 +851,10 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 
   // Added 9/2018
   local_state->ClearPref(kLastWelcomedOSVersion);
+#endif
+#if defined(OS_CHROMEOS)
+  // Added 12/2018
+  local_state->ClearPref(prefs::kCarrierDealPromoShown);
 #endif
 }
 

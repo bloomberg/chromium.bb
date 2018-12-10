@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/ash/network/data_promo_notification.h"
 
+#include <memory>
+#include <string>
+
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/command_line.h"
@@ -11,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -41,48 +43,35 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-using chromeos::MobileConfig;
 using chromeos::NetworkHandler;
 using chromeos::NetworkState;
 
 namespace {
 
-const char kDataPromoNotificationId[] = "chrome://settings/internet/data_promo";
-const char kNotifierDataPromo[] = "ash.data-promo";
+const char kMobileDataNotificationId[] =
+    "chrome://settings/internet/mobile_data";
+const char kNotifierMobileData[] = "ash.mobile-data";
 const char kDataSaverNotificationId[] = "chrome://settings/internet/data_saver";
 const char kNotifierDataSaver[] = "ash.data-saver";
 const char kDataSaverExtensionUrl[] =
     "https://chrome.google.com/webstore/detail/"
     "pfmgfdlgomnbgkofeojodiodmgpgmkac?utm_source=chromeos-datasaver-prompt";
 
-const int kNotificationCountPrefDefault = -1;
 const int kTimesToShowDataSaverPrompt = 2;
 
 Profile* GetProfileForNotifications() {
   return ProfileManager::GetActiveUserProfile();
 }
 
-// Returns prefs::kShow3gPromoNotification or false if no active browser.
-bool ShouldShow3gPromoNotification() {
+// Returns prefs::kShowMobileDataNotification
+bool ShouldShowMobileDataNotification() {
   return GetProfileForNotifications()->GetPrefs()->GetBoolean(
-      prefs::kShow3gPromoNotification);
+      prefs::kShowMobileDataNotification);
 }
 
-void SetShow3gPromoNotification(bool value) {
+void SetShowMobileDataNotification(bool value) {
   GetProfileForNotifications()->GetPrefs()->SetBoolean(
-      prefs::kShow3gPromoNotification, value);
-}
-
-// Returns prefs::kCarrierDealPromoShown which is number of times
-// carrier deal notification has been shown to users on this machine.
-int GetCarrierDealPromoShown() {
-  return g_browser_process->local_state()->GetInteger(
-      prefs::kCarrierDealPromoShown);
-}
-
-void SetCarrierDealPromoShown(int value) {
-  g_browser_process->local_state()->SetInteger(prefs::kCarrierDealPromoShown,
-                                               value);
+      prefs::kShowMobileDataNotification, value);
 }
 
 // Returns number of times the Data Saver prompt has been displayed.
@@ -117,53 +106,34 @@ bool DataSaverSwitchDemoMode() {
   return value == chromeos::switches::kDataSaverPromptDemoMode;
 }
 
-const MobileConfig::Carrier* GetCarrier(const NetworkState* cellular) {
-  const chromeos::DeviceState* device =
-      NetworkHandler::Get()->network_state_handler()->GetDeviceState(
-          cellular->device_path());
-  std::string carrier_id = device ? device->operator_name() : "";
-  if (carrier_id.empty()) {
-    NET_LOG_ERROR("Empty carrier ID for cellular network",
-                  device ? device->path() : "No device");
-    return nullptr;
-  }
-
-  MobileConfig* config = MobileConfig::GetInstance();
-  if (!config->IsReady())
-    return nullptr;
-
-  return config->GetCarrier(carrier_id);
+void DataSaverNotificationClicked() {
+  chrome::ScopedTabbedBrowserDisplayer displayer(GetProfileForNotifications());
+  ShowSingletonTab(displayer.browser(), GURL(kDataSaverExtensionUrl));
+  base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));
 }
 
-const MobileConfig::CarrierDeal* GetCarrierDeal(
-    const MobileConfig::Carrier* carrier) {
-  const MobileConfig::CarrierDeal* deal = carrier->GetDefaultDeal();
-  if (deal) {
-    // Check deal for validity.
-    int carrier_deal_promo_pref = GetCarrierDealPromoShown();
-    if (carrier_deal_promo_pref >= deal->notification_count())
-      return NULL;
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    std::string deal_text =
-        deal->GetLocalizedString(locale, "notification_text");
-    NET_LOG_DEBUG("Carrier Deal Found", deal_text);
-    if (deal_text.empty())
-      return NULL;
-  }
-  return deal;
+void MobileDataNotificationClicked(const std::string& network_id) {
+  SystemTrayClient::Get()->ShowNetworkSettings(network_id);
 }
 
-void NotificationClicked(const std::string& network_id,
-                         const std::string& info_url) {
-  if (!info_url.empty()) {
-    chrome::ScopedTabbedBrowserDisplayer displayer(
-        GetProfileForNotifications());
-    ShowSingletonTab(displayer.browser(), GURL(info_url));
-    if (info_url == kDataSaverExtensionUrl)
-      base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Clicked"));
-  } else {
-    SystemTrayClient::Get()->ShowNetworkSettings(network_id);
-  }
+void DisplayNotification(const std::string& notification_id,
+                         const std::string& notifier_id,
+                         const base::string16& message,
+                         const base::string16& title,
+                         const base::RepeatingClosure& callback) {
+  std::unique_ptr<message_center::Notification> notification =
+      ash::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
+          message, base::string16() /* display_source */, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierType::SYSTEM_COMPONENT, notifier_id),
+          message_center::RichNotificationData(),
+          base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+              callback),
+          ash::kNotificationMobileDataIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  NotificationDisplayService::GetForProfile(GetProfileForNotifications())
+      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 }  // namespace
@@ -183,17 +153,12 @@ DataPromoNotification::~DataPromoNotification() {
   }
 }
 
-void DataPromoNotification::RegisterPrefs(PrefRegistrySimple* registry) {
-  // Carrier deal notification shown count defaults to 0.
-  registry->RegisterIntegerPref(prefs::kCarrierDealPromoShown, 0);
-}
-
 void DataPromoNotification::NetworkPropertiesUpdated(
     const NetworkState* network) {
   if (!network ||
       (network->type() != shill::kTypeCellular && !DataSaverSwitchDemoMode()))
     return;
-  ShowOptionalMobileDataPromoNotification();
+  ShowOptionalMobileDataNotification();
 }
 
 void DataPromoNotification::DefaultNetworkChanged(const NetworkState* network) {
@@ -202,7 +167,7 @@ void DataPromoNotification::DefaultNetworkChanged(const NetworkState* network) {
   NetworkPropertiesUpdated(network);
 }
 
-void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
+void DataPromoNotification::ShowOptionalMobileDataNotification() {
   if (notifications_shown_)
     return;
 
@@ -224,55 +189,34 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
     return;
 
   notifications_shown_ = true;
-  bool data_saver_prompt_shown = ShowDataSaverNotification();
+  if (ShouldShowDataSaverNotification()) {
+    DisplayNotification(kDataSaverNotificationId, kNotifierDataSaver,
+                        l10n_util::GetStringUTF16(IDS_3G_DATASAVER_TITLE),
+                        l10n_util::GetStringUTF16(IDS_3G_DATASAVER_MESSAGE),
+                        base::BindRepeating(&DataSaverNotificationClicked));
 
-  // Display a one-time notification on first use of Mobile Data connection, or
-  // if there is a carrier deal defined show that even if user has already seen
-  // generic promo.  Show deal regardless of |data_saver_prompt_shown|.
-  int carrier_deal_promo_pref = kNotificationCountPrefDefault;
-  const MobileConfig::CarrierDeal* deal = NULL;
-  const MobileConfig::Carrier* carrier = GetCarrier(default_network);
-  if (carrier)
-    deal = GetCarrierDeal(carrier);
+    base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));
+    if (DataSaverSwitchDemoMode()) {
+      SetShowMobileDataNotification(true);
+      SetDataSaverPromptsShown(0);  // demo mode resets times shown counts.
+    } else {
+      SetDataSaverPromptsShown(GetDataSaverPromptsShown() + 1);
+    }
+  } else if (ShouldShowMobileDataNotification()) {
+    // Display a one-time notification on first use of Mobile Data connection
+    DisplayNotification(
+        kMobileDataNotificationId, kNotifierMobileData,
+        l10n_util::GetStringUTF16(IDS_MOBILE_DATA_NOTIFICATION_TITLE),
+        l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE),
+        base::BindRepeating(&MobileDataNotificationClicked,
+                            default_network->guid()));
 
-  base::string16 message =
-      l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
-  std::string info_url;
-  if (deal) {
-    carrier_deal_promo_pref = GetCarrierDealPromoShown();
-    const std::string locale = g_browser_process->GetApplicationLocale();
-    std::string deal_text =
-        deal->GetLocalizedString(locale, "notification_text");
-    message = base::UTF8ToUTF16(deal_text + "\n\n") + message;
-    info_url = deal->info_url();
-    if (info_url.empty() && carrier)
-      info_url = carrier->top_up_url();
-  } else if (data_saver_prompt_shown || !ShouldShow3gPromoNotification()) {
-    return;
+    // Update local state to disable mobile usage warning notification.
+    SetShowMobileDataNotification(false);
   }
-
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kDataPromoNotificationId,
-          l10n_util::GetStringUTF16(IDS_MOBILE_DATA_NOTIFICATION_TITLE),
-          message, base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kNotifierDataPromo),
-          message_center::RichNotificationData(),
-          new message_center::HandleNotificationClickDelegate(base::Bind(
-              &NotificationClicked, default_network->guid(), info_url)),
-          ash::kNotificationMobileDataIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  NotificationDisplayService::GetForProfile(GetProfileForNotifications())
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
-
-  SetShow3gPromoNotification(false);
-  if (carrier_deal_promo_pref != kNotificationCountPrefDefault)
-    SetCarrierDealPromoShown(carrier_deal_promo_pref + 1);
 }
 
-bool DataPromoNotification::ShowDataSaverNotification() {
+bool DataPromoNotification::ShouldShowDataSaverNotification() {
   if (!DataSaverSwitchEnabled())
     return false;
 
@@ -287,32 +231,5 @@ bool DataPromoNotification::ShowDataSaverNotification() {
     SetDataSaverPromptsShown(kTimesToShowDataSaverPrompt);
     return false;
   }
-
-  base::string16 title = l10n_util::GetStringUTF16(IDS_3G_DATASAVER_TITLE);
-  base::string16 message = l10n_util::GetStringUTF16(IDS_3G_DATASAVER_MESSAGE);
-
-  std::unique_ptr<message_center::Notification> notification =
-      ash::CreateSystemNotification(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kDataSaverNotificationId,
-          title, message, base::string16() /* display_source */, GURL(),
-          message_center::NotifierId(
-              message_center::NotifierType::SYSTEM_COMPONENT,
-              kNotifierDataSaver),
-          message_center::RichNotificationData(),
-          new message_center::HandleNotificationClickDelegate(
-              base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),
-          ash::kNotificationMobileDataIcon,
-          message_center::SystemNotificationWarningLevel::NORMAL);
-  NotificationDisplayService::GetForProfile(GetProfileForNotifications())
-      ->Display(NotificationHandler::Type::TRANSIENT, *notification);
-  base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));
-
-  if (DataSaverSwitchDemoMode()) {
-    SetDataSaverPromptsShown(0);  // demo mode resets times shown counts.
-    SetShow3gPromoNotification(true);
-  } else {
-    SetDataSaverPromptsShown(times_shown + 1);
-  }
-
   return true;
 }
