@@ -5,6 +5,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -50,7 +51,8 @@
 
 namespace {
 
-void SimulateNetworkQualityChangeOnIO(net::EffectiveConnectionType type) {
+void SimulateNetworkQualityChangeOnNetworkThread(
+    net::EffectiveConnectionType type) {
   network::NetworkService::GetNetworkServiceForTesting()
       ->network_quality_estimator()
       ->SimulateNetworkQualityChangeForTesting(type);
@@ -150,9 +152,9 @@ class NetworkQualityEstimatorPrefsBrowserTest : public InProcessBrowserTest {
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
     DCHECK(network_service_enabled_);
     if (!content::IsOutOfProcessNetworkService()) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SimulateNetworkQualityChangeOnIO, type));
+      content::GetNetworkTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SimulateNetworkQualityChangeOnNetworkThread, type));
       return;
     }
 

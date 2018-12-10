@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/deferred_sequenced_task_runner.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -37,8 +38,10 @@ namespace {
 
 // Simulates a network quality change. This is only called when network service
 // is running in the browser process, in which case, the network quality
-// estimator lives on the browser IO thread.
-void SimulateNetworkQualityChangeOnIO(net::EffectiveConnectionType type) {
+// estimator lives on the network thread (which will be the IO thread if network
+// service is disabled).
+void SimulateNetworkQualityChangeOnNetworkThread(
+    net::EffectiveConnectionType type) {
   if (content::IsInProcessNetworkService()) {
     network::NetworkService::GetNetworkServiceForTesting()
         ->network_quality_estimator()
@@ -129,9 +132,14 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
   // Simulates a network quality change.
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
     if (!content::IsOutOfProcessNetworkService()) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::IO},
-          base::BindOnce(&SimulateNetworkQualityChangeOnIO, type));
+      scoped_refptr<base::SequencedTaskRunner> task_runner =
+          base::CreateSequencedTaskRunnerWithTraits(
+              {content::BrowserThread::IO});
+      if (content::IsInProcessNetworkService())
+        task_runner = content::GetNetworkTaskRunner();
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SimulateNetworkQualityChangeOnNetworkThread, type));
       return;
     }
 
