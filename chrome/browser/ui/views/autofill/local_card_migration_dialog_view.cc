@@ -65,14 +65,19 @@ std::unique_ptr<views::Label> CreateTitle(
       message_id = IDS_AUTOFILL_LOCAL_CARD_MIGRATION_DIALOG_TITLE_FIX;
       break;
   }
+
   auto title =
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(message_id));
   constexpr int kMigrationDialogTitleFontSize = 8;
+  title->SetBorder(views::CreateEmptyBorder(
+      /*top=*/0, /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
+      /*right=*/kMigrationDialogInsets.right()));
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
                                             gfx::Font::Weight::MEDIUM));
   title->SetEnabledColor(gfx::kGoogleGrey900);
   constexpr int kMigrationDialogTitleLineHeight = 20;
+  title->SetMultiLine(true);
   title->SetLineHeight(kMigrationDialogTitleLineHeight);
   return title;
 }
