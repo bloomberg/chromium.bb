@@ -134,6 +134,7 @@ _CONFIG = [
             'base::debug::.+',
 
             # Base atomic utilities
+            'base::AtomicFlag',
             'base::AtomicSequenceNumber',
 
             # Task traits

@@ -24,6 +24,7 @@ include_rules = [
     "+base/sequenced_task_runner.h",
     "+base/single_thread_task_runner.h",
     "+base/stl_util.h",
+    "+base/synchronization",
     "+base/sys_byteorder.h",
     "+base/system/sys_info.h",
     "+base/task/post_task.h",
