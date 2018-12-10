@@ -775,6 +775,8 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
       OnUserDidIgnoreOrDeclineSave(upload_request_.card.LastFourDigits());
       break;
   }
+
+  personal_data_manager_->OnUserAcceptedUpstreamOffer();
 }
 
 #if defined(OS_ANDROID)
