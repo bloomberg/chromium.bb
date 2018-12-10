@@ -39,11 +39,11 @@
           </button>
         </paper-icon-button-light>
         <cr-action-menu id="dotsMenu">
-          <button slot="item" class="dropdown-item"
+          <button class="dropdown-item"
               on-click="onConnectActionTap_">
             [[getConnectActionText_(device.connected)]]
           </button>
-          <button slot="item" class="dropdown-item" on-click="onRemoveTap_">
+          <button class="dropdown-item" on-click="onRemoveTap_">
             $i18n{bluetoothRemove}
           </button>
         </cr-action-menu>

@@ -28,10 +28,10 @@ suite('CrActionMenu', function() {
     document.body.innerHTML = `
       <button id="dots">...</button>
       <cr-action-menu>
-        <button slot="item" class="dropdown-item">Un</button>
-        <hr slot="item">
-        <button slot="item" class="dropdown-item">Dos</button>
-        <button slot="item" class="dropdown-item">Tres</button>
+        <button class="dropdown-item">Un</button>
+        <hr>
+        <button class="dropdown-item">Dos</button>
+        <button class="dropdown-item">Tres</button>
       </cr-action-menu>
     `;
 
@@ -143,13 +143,13 @@ suite('CrActionMenu', function() {
     assertEquals(items[0], getDeepActiveElement());
   });
 
-  test('can navigate to dynamically added items', function() {
+  test('can navigate to dynamically added items', async function() {
     // Can modify children after attached() and before showAt().
     const item = document.createElement('button');
     item.classList.add('dropdown-item');
-    item.setAttribute('slot', 'item');
     menu.insertBefore(item, items[0]);
     menu.showAt(dots);
+    await PolymerTest.flushTasks();
 
     down();
     assertEquals(item, getDeepActiveElement());
@@ -232,25 +232,20 @@ suite('CrActionMenu', function() {
     assertEquals(items[0], getDeepActiveElement());
   });
 
-  test('items automatically given accessibility role', function() {
+  test('items automatically given accessibility role', async function() {
     const newItem = document.createElement('button');
-    newItem.setAttribute('slot', 'item');
     newItem.classList.add('dropdown-item');
 
     items[1].setAttribute('role', 'checkbox');
     menu.showAt(dots);
 
-    return PolymerTest.flushTasks()
-        .then(() => {
-          assertEquals('menuitem', items[0].getAttribute('role'));
-          assertEquals('checkbox', items[1].getAttribute('role'));
+    await PolymerTest.flushTasks();
+    assertEquals('menuitem', items[0].getAttribute('role'));
+    assertEquals('checkbox', items[1].getAttribute('role'));
 
-          menu.insertBefore(newItem, items[0]);
-          return PolymerTest.flushTasks();
-        })
-        .then(() => {
-          assertEquals('menuitem', newItem.getAttribute('role'));
-        });
+    menu.insertBefore(newItem, items[0]);
+    await PolymerTest.flushTasks();
+    assertEquals('menuitem', newItem.getAttribute('role'));
   });
 
   test('positioning', function() {
@@ -426,10 +421,10 @@ suite('CrActionMenu', function() {
               <div id="inner-container">
                 <button id="dots">...</button>
                 <cr-action-menu>
-                  <button slot="item" class="dropdown-item">Un</button>
+                  <button class="dropdown-item">Un</button>
                   <hr>
-                  <button slot="item" class="dropdown-item">Dos</button>
-                  <button slot="item" class="dropdown-item">Tres</button>
+                  <button class="dropdown-item">Dos</button>
+                  <button class="dropdown-item">Tres</button>
                 </cr-action-menu>
               </div>
             </div>

@@ -133,12 +133,12 @@
       </div>
     </div>
     <cr-action-menu id="creditCardSharedMenu">
-      <button id="menuEditCreditCard" slot="item" class="dropdown-item"
+      <button id="menuEditCreditCard" class="dropdown-item"
           on-click="onMenuEditCreditCardTap_">$i18n{edit}</button>
-      <button id="menuRemoveCreditCard" slot="item" class="dropdown-item"
+      <button id="menuRemoveCreditCard" class="dropdown-item"
           hidden$="[[!activeCreditCard.metadata.isLocal]]"
           on-click="onMenuRemoveCreditCardTap_">$i18n{removeCreditCard}</button>
-      <button id="menuClearCreditCard" slot="item" class="dropdown-item"
+      <button id="menuClearCreditCard" class="dropdown-item"
           on-click="onMenuClearCreditCardTap_"
           hidden$="[[!activeCreditCard.metadata.isCached]]">
         $i18n{clearCreditCard}

@@ -40,24 +40,24 @@
       </div>
 
       <cr-action-menu>
-        <button slot="item" class="dropdown-item" id="allow"
+        <button class="dropdown-item" id="allow"
             on-click="onAllowTap_" hidden$="[[!showAllowAction_]]">
           $i18n{siteSettingsActionAllow}
         </button>
-        <button slot="item" class="dropdown-item" id="block"
+        <button class="dropdown-item" id="block"
             on-click="onBlockTap_" hidden$="[[!showBlockAction_]]">
           $i18n{siteSettingsActionBlock}
         </button>
-        <button slot="item" class="dropdown-item" id="sessionOnly"
+        <button class="dropdown-item" id="sessionOnly"
             on-click="onSessionOnlyTap_"
             hidden$="[[!showSessionOnlyActionForSite_(actionMenuSite_)]]">
           $i18n{siteSettingsActionSessionOnly}
         </button>
-        <button slot="item" class="dropdown-item" id="edit"
+        <button class="dropdown-item" id="edit"
             on-click="onEditTap_">
           $i18n{edit}
         </button>
-        <button slot="item" class="dropdown-item" id="reset"
+        <button class="dropdown-item" id="reset"
             on-click="onResetTap_">
           $i18n{siteSettingsActionReset}
         </button>

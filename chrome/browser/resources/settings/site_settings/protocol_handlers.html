@@ -61,11 +61,11 @@
     </template>
 
     <cr-action-menu>
-      <button slot="item" class="dropdown-item" on-click="onDefaultClick_"
+      <button class="dropdown-item" on-click="onDefaultClick_"
           id="defaultButton" hidden$="[[actionMenuModel_.is_default]]">
         $i18n{handlerSetDefault}
       </button>
-      <button slot="item" class="dropdown-item" on-click="onRemoveClick_"
+      <button class="dropdown-item" on-click="onRemoveClick_"
           id="removeButton">
         $i18n{handlerRemove}
       </button>

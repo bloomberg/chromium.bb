@@ -85,15 +85,15 @@
     </div>
 
     <cr-action-menu id="dotsMenu">
-      <button slot="item" class="dropdown-item" hidden="[[!showAddPreferred_]]"
+      <button class="dropdown-item" hidden="[[!showAddPreferred_]]"
           on-click="onAddPreferredTap_">
         $i18n{knownNetworksMenuAddPreferred}
       </button>
-      <button slot="item" class="dropdown-item"
+      <button class="dropdown-item"
           hidden="[[!showRemovePreferred_]]" on-click="onRemovePreferredTap_">
         $i18n{knownNetworksMenuRemovePreferred}
       </button>
-      <button slot="item" class="dropdown-item" disabled="[[!enableForget_]]"
+      <button class="dropdown-item" disabled="[[!enableForget_]]"
           on-click="onForgetTap_">
         $i18n{knownNetworksMenuForget}
       </button>

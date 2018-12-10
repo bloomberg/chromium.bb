@@ -33,7 +33,7 @@
       <template>
         <cr-action-menu on-mousedown="onMenuMousedown_">
           <template is="dom-repeat" items="[[menuCommands_]]" as="command">
-            <button slot="item" class="dropdown-item"
+            <button class="dropdown-item"
                 command$="[[command]]"
                 hidden$="[[!isCommandVisible_(command, menuIds_)]]"
                 disabled$="[[!isCommandEnabled_(command, menuIds_)]]"

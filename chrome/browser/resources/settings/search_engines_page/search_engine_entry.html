@@ -52,15 +52,15 @@
         </button>
       </paper-icon-button-light>
       <cr-action-menu>
-        <button slot="item" class="dropdown-item" on-click="onMakeDefaultTap_"
+        <button class="dropdown-item" on-click="onMakeDefaultTap_"
             hidden$="[[!engine.canBeDefault]]" id="makeDefault">
           $i18n{searchEnginesMakeDefault}
         </button>
-        <button slot="item" class="dropdown-item" on-click="onEditTap_"
+        <button class="dropdown-item" on-click="onEditTap_"
             hidden$="[[!engine.canBeEdited]]" id="edit">
           $i18n{edit}
         </button>
-        <button slot="item" class="dropdown-item" on-click="onDeleteTap_"
+        <button class="dropdown-item" on-click="onDeleteTap_"
             hidden$="[[!engine.canBeRemoved]]" id="delete">
           $i18n{searchEnginesRemoveFromList}
         </button>
