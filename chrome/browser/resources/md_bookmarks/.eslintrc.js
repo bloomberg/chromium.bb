@@ -7,9 +7,6 @@ module.exports = {
     'browser': true,
     'es6': true,
   },
-  'parserOptions': {
-    'ecmaVersion': 2017,
-  },
   'rules': {
     'no-var': 'error',
   },
