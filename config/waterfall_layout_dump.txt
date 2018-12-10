@@ -435,6 +435,7 @@
     fizz-accelerator-release
     fizz-moblab-release
     fizz-release
+    flapjack-release
     gale-release
     gandof-release
     glimmer-release
@@ -1655,6 +1656,17 @@
   fizz-tot-chrome-pfq-informational-tryjob
   fizz-tot-chromium-pfq-informational-tryjob
   fizz-unittest-stress
+  flapjack-chromium-pfq-tryjob
+  flapjack-compile-only-pre-cq
+  flapjack-full-tryjob
+  flapjack-llvm-next-toolchain-tryjob
+  flapjack-llvm-toolchain-tryjob
+  flapjack-no-vmtest-pre-cq
+  flapjack-paladin-tryjob
+  flapjack-pre-cq
+  flapjack-release-tryjob
+  flapjack-tot-chromium-pfq-informational-tryjob
+  flapjack-unittest-stress
   gale-compile-only-pre-cq
   gale-factory-tryjob
   gale-firmware-tryjob
@@ -2588,6 +2600,7 @@
     fizz-accelerator-release
     fizz-moblab-release
     fizz-release
+    flapjack-release
     gale-release
     gandof-release
     glimmer-release
