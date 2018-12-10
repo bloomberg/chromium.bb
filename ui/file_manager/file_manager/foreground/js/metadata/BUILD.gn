@@ -86,6 +86,13 @@ js_library("file_system_metadata_provider") {
   ]
 }
 
+js_unittest("file_system_metadata_provider_unittest") {
+  deps = [
+    ":file_system_metadata_provider",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("function_parallel") {
   deps = [
     ":metadata_parser",
@@ -249,11 +256,12 @@ js_unittest("thumbnail_model_unittest") {
 js_unit_tests("unit_tests") {
   deps = [
     ":content_metadata_provider_unittest",
+    ":file_system_metadata_provider_unittest",
     ":image_orientation_unittest",
     ":metadata_cache_item_unittest",
     ":metadata_cache_set_unittest",
-    ":multi_metadata_provider_unittest",
     ":metadata_model_unittest",
+    ":multi_metadata_provider_unittest",
     ":thumbnail_model_unittest",
   ]
 }
