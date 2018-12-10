@@ -6276,6 +6276,13 @@ the Bookmarks menu.">
         Your account <ph name="EMAIL">$1<ex>john.doe@example.com</ex></ph> is no longer allowed as the primary account. Because this account is managed by <ph name="DOMAIN">$2<ex>example.com</ex></ph>, your bookmarks, history, passwords, and other settings will be cleared from this device.
       </message>
 
+      <!-- Managed UI on pages like chrome://settings and chrome://downloads -->
+      <if expr="not is_android">
+        <message name="IDS_MANAGED_BY_ORG_WITH_HYPERLINK">
+          Your <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>browser is managed<ph name="END_LINK">&lt;/a&gt;</ph> by your organization
+        </message>
+      </if>
+
       <!-- Cookies Window -->
       <message name="IDS_COOKIES_REMOVE_LABEL" desc="The label of the 'Remove' button in the Cookies Window">
         Remove
