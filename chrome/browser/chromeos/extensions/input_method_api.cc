@@ -65,6 +65,8 @@ namespace GetSurroundingText =
     extensions::api::input_method_private::GetSurroundingText;
 namespace GetSetting = extensions::api::input_method_private::GetSetting;
 namespace SetSetting = extensions::api::input_method_private::SetSetting;
+namespace OnSettingsChanged =
+    extensions::api::input_method_private::OnSettingsChanged;
 
 namespace {
 
@@ -378,6 +380,20 @@ ExtensionFunction::ResponseAction InputMethodPrivateSetSettingFunction::Run() {
       Profile::FromBrowserContext(browser_context())->GetPrefs(),
       prefs::kLanguageInputMethodSpecificSettings);
   update->SetPath({params->engine_id, params->key}, params->value->Clone());
+
+  // The router will only send the event to extensions that are listening.
+  extensions::EventRouter* router =
+      extensions::EventRouter::Get(browser_context());
+  if (router->HasEventListener(OnSettingsChanged::kEventName)) {
+    auto event = std::make_unique<extensions::Event>(
+        extensions::events::INPUT_METHOD_PRIVATE_ON_SETTINGS_CHANGED,
+        OnSettingsChanged::kEventName,
+        OnSettingsChanged::Create(params->engine_id, params->key,
+                                  params->value->Clone()),
+        context_);
+    router->BroadcastEvent(std::move(event));
+  }
+
   return RespondNow(NoArguments());
 #endif
 }

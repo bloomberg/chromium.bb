@@ -508,6 +508,27 @@
             "description": "Describes the text field that has acquired focus."
           }
         ]
+      }, {
+        "name": "onSettingsChanged",
+        "type": "function",
+        "description": "This event is sent when the settings for any input method changed. It is sent to all extensions that are listening to this event, and enabled by the user.",
+        "parameters": [
+          {
+            "name": "engineID",
+            "type": "string",
+            "description": "ID of the engine that changed"
+          },
+          {
+            "name": "key",
+            "type": "string",
+            "description": "The setting that changed"
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "description": "The new value of the setting"
+          }
+        ]
       }
     ]
   }
