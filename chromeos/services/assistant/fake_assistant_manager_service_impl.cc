@@ -38,23 +38,8 @@ AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
 
 AssistantSettingsManager*
 FakeAssistantManagerServiceImpl::GetAssistantSettingsManager() {
-  return nullptr;
+  return &assistant_settings_manager_;
 }
-
-void FakeAssistantManagerServiceImpl::SendGetSettingsUiRequest(
-    const std::string& selector,
-    GetSettingsUiResponseCallback callback) {}
-
-void FakeAssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
-    const std::string& update,
-    UpdateSettingsUiResponseCallback callback) {}
-
-void FakeAssistantManagerServiceImpl::StartSpeakerIdEnrollment(
-    bool skip_cloud_enrollment,
-    mojom::SpeakerIdEnrollmentClientPtr client) {}
-
-void FakeAssistantManagerServiceImpl::StopSpeakerIdEnrollment(
-    AssistantSettingsManager::StopSpeakerIdEnrollmentCallback on_stopped) {}
 
 void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
 
@@ -88,7 +73,9 @@ void FakeAssistantManagerServiceImpl::DismissNotification(
     mojom::AssistantNotificationPtr notification) {}
 
 void FakeAssistantManagerServiceImpl::CacheScreenContext(
-    CacheScreenContextCallback callback) {}
+    CacheScreenContextCallback callback) {
+  std::move(callback).Run();
+}
 
 void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     bool spoken_feedback_enabled) {}

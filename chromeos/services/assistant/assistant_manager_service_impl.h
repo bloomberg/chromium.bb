@@ -25,8 +25,6 @@
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
 #include "libassistant/shared/public/device_state_listener.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
@@ -34,7 +32,6 @@
 namespace assistant_client {
 class AssistantManager;
 class AssistantManagerInternal;
-struct SpeakerIdEnrollmentUpdate;
 }  // namespace assistant_client
 
 namespace service_manager {
@@ -100,18 +97,6 @@ class AssistantManagerServiceImpl
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
-  void SendGetSettingsUiRequest(
-      const std::string& selector,
-      GetSettingsUiResponseCallback callback) override;
-  void SendUpdateSettingsUiRequest(
-      const std::string& update,
-      UpdateSettingsUiResponseCallback callback) override;
-  void StartSpeakerIdEnrollment(
-      bool skip_cloud_enrollment,
-      mojom::SpeakerIdEnrollmentClientPtr client) override;
-  void StopSpeakerIdEnrollment(
-      AssistantSettingsManager::StopSpeakerIdEnrollmentCallback callback)
-      override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
@@ -175,13 +160,20 @@ class AssistantManagerServiceImpl
   void OnTimerSoundingStarted() override;
   void OnTimerSoundingFinished() override;
 
+  void UpdateInternalOptions(
+      assistant_client::AssistantManagerInternal* assistant_manager_internal);
+
+  assistant_client::AssistantManager* assistant_manager() {
+    return assistant_manager_.get();
+  }
+  assistant_client::AssistantManagerInternal* assistant_manager_internal() {
+    return assistant_manager_internal_;
+  }
+
  private:
   std::unique_ptr<assistant_client::AssistantManager> StartAssistantInternal(
       const std::string& access_token,
-      bool enable_hotword,
-      const std::string& arc_version,
-      const std::string& locale,
-      bool spoken_feedback_enabled);
+      bool enable_hotword);
   void PostInitAssistant(
       base::OnceClosure post_init_callback,
       std::unique_ptr<assistant_client::AssistantManager>* assistant_manager);
@@ -191,18 +183,6 @@ class AssistantManagerServiceImpl
 
   // Sync speaker id enrollment status.
   void SyncSpeakerIdEnrollmentStatus();
-
-  void HandleGetSettingsResponse(
-      base::RepeatingCallback<void(const std::string&)> callback,
-      const std::string& settings);
-  void HandleUpdateSettingsResponse(
-      base::RepeatingCallback<void(const std::string&)> callback,
-      const std::string& result);
-  void HandleSpeakerIdEnrollmentUpdate(
-      const assistant_client::SpeakerIdEnrollmentUpdate& update);
-  void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
-  void HandleSpeakerIdEnrollmentStatusSync(
-      const assistant_client::SpeakerIdEnrollmentUpdate& update);
 
   void HandleOpenAndroidAppResponse(const action::InteractionInfo& interaction,
                                     bool app_opened);
@@ -261,7 +241,6 @@ class AssistantManagerServiceImpl
   State state_ = State::STOPPED;
   std::unique_ptr<PlatformApiImpl> platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   ChromiumApiDelegate chromium_api_delegate_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
@@ -274,14 +253,10 @@ class AssistantManagerServiceImpl
   mojo::InterfacePtrSet<mojom::AssistantNotificationSubscriber>
       notification_subscribers_;
   ash::mojom::AshMessageCenterControllerPtr ash_message_center_controller_;
-  mojom::SpeakerIdEnrollmentClientPtr speaker_id_enrollment_client_;
 
   Service* service_;  // unowned.
 
   bool spoken_feedback_enabled_ = false;
-
-  // Whether the speaker id enrollment has complete for the user.
-  bool speaker_id_enrollment_done_ = false;
 
   ax::mojom::AssistantExtraPtr assistant_extra_;
   std::unique_ptr<ui::AssistantTree> assistant_tree_;

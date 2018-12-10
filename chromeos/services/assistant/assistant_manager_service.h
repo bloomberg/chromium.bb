@@ -52,29 +52,6 @@ class AssistantManagerService : public mojom::Assistant {
 
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
-
-  using GetSettingsUiResponseCallback =
-      base::OnceCallback<void(const std::string&)>;
-  // Send request for getting settings ui.
-  virtual void SendGetSettingsUiRequest(
-      const std::string& selector,
-      GetSettingsUiResponseCallback callback) = 0;
-
-  using UpdateSettingsUiResponseCallback =
-      base::OnceCallback<void(const std::string&)>;
-  // Send request for updating settings ui.
-  virtual void SendUpdateSettingsUiRequest(
-      const std::string& update,
-      UpdateSettingsUiResponseCallback callback) = 0;
-
-  // Starts speaker id enrollment.
-  virtual void StartSpeakerIdEnrollment(
-      bool skip_cloud_enrollment,
-      mojom::SpeakerIdEnrollmentClientPtr client) = 0;
-
-  // Stops speaker id enrollment (if one is active).
-  virtual void StopSpeakerIdEnrollment(
-      AssistantSettingsManager::StopSpeakerIdEnrollmentCallback callback) = 0;
 };
 
 }  // namespace assistant

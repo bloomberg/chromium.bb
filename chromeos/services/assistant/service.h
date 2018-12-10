@@ -46,7 +46,6 @@ namespace chromeos {
 namespace assistant {
 
 class AssistantManagerService;
-class AssistantSettingsManager;
 
 class Service : public service_manager::Service,
                 public chromeos::PowerManagerClient::Observer,
@@ -75,6 +74,10 @@ class Service : public service_manager::Service,
   ash::AssistantStateBase* assistant_state() { return &assistant_state_; }
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
     return io_task_runner_;
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner() {
+    return main_thread_task_runner_;
   }
 
   void RequestAccessToken();
@@ -152,7 +155,6 @@ class Service : public service_manager::Service,
 
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
-  AssistantSettingsManager* assistant_settings_manager_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
