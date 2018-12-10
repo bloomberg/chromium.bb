@@ -122,7 +122,15 @@ class AdmWriter(template_writer.TemplateWriter):
       builder.AddLine('VALUENAME "%s"' % policy['name'])
     if policy['type'] == 'int':
       # The default max for NUMERIC values is 9999 which is too small for us.
-      builder.AddLine('MIN 0 MAX 2000000000')
+      max = '2000000000'
+      min = '0'
+      if self.PolicyHasRestrictions(policy):
+        schema = policy['schema']
+        if 'minimum' in schema:
+          min = schema['minimum']
+        if 'maximum' in schema:
+          max = schema['maximum']
+      builder.AddLine('MIN ' + str(min) + ' MAX ' + max)
     if policy['type'] in ('string', 'dict', 'external'):
       # The default max for EDITTEXT values is 1023, which is too small for
       # big JSON blobs and other string policies.
@@ -139,6 +147,12 @@ class AdmWriter(template_writer.TemplateWriter):
         self._AddGuiString(string_id, item['caption'])
       builder.AddLine('END ITEMLIST', -1)
     builder.AddLine('END PART', -1)
+
+  def PolicyHasRestrictions(self, policy):
+    if 'schema' in policy:
+      return any(keyword in policy['schema'] \
+        for keyword in ['minimum', 'maximum'])
+    return False
 
   def _WritePolicy(self, policy, key_name, builder):
     policy_name = self._Escape(policy['name'] + '_Policy')

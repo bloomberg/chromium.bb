@@ -373,7 +373,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         '  <parentCategory ref="PolicyGroup"/>\n'
         '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
         '  <elements>\n'
-        '    <decimal id="SampleIntPolicy" maxValue="2000000000" '
+        '    <decimal id="SampleIntPolicy" maxValue="2000000000" minValue="0" '
         'valueName="SampleIntPolicy"/>\n'
         '  </elements>\n'
         '</policy>')

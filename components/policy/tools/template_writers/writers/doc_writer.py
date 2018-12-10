@@ -499,6 +499,22 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
       # Add the list element:
       self.AddElement(ul, 'li', {}, ' '.join(text))
 
+  def _AddRangeRestrictionsList(self, parent, schema):
+    '''Creates a HTML list containing range restrictions for an integer type
+    policy.
+
+    Args:
+      parent: The DOM node for which the list will be added.
+      schema: The schema of the policy.
+    '''
+    ul = self._AddStyledElement(parent, 'ul', ['ul'])
+    if 'minimum' in schema:
+      text_min = self._GetLocalizedMessage('range_minimum')
+      self.AddElement(ul, 'li', {}, text_min + str(schema['minimum']))
+    if 'maximum' in schema:
+      text_max = self._GetLocalizedMessage('range_maximum')
+      self.AddElement(ul, 'li', {}, text_max + str(schema['maximum']))
+
   def _AddPolicyDetails(self, parent, policy):
     '''Adds the list of attributes of a policy to the HTML DOM node parent.
     It will have the form:
@@ -562,6 +578,10 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
     self._AddFeatures(dd, policy)
     dd = self._AddPolicyAttribute(dl, 'description')
     self._AddDescription(dd, policy)
+    if 'schema' in policy:
+      if self.SchemaHasRangeRestriction(policy['schema']):
+        dd = self._AddPolicyAttribute(dl, 'policy_restriction')
+        self._AddRangeRestrictionsList(dd, policy['schema'])
     if 'arc_support' in policy:
       dd = self._AddPolicyAttribute(dl, 'arc_support')
       self._AddParagraphs(dd, policy['arc_support'])
@@ -649,6 +669,13 @@ class DocWriter(xml_formatted_writer.XMLFormattedWriter):
                              policy['desc'])
     self.AddElement(parent2, 'a', {'href': '#top'},
                     self._GetLocalizedMessage('back_to_top'))
+
+  def SchemaHasRangeRestriction(self, schema):
+    if 'maximum' in schema:
+      return True
+    if 'minimum' in schema:
+      return schema['minimum'] != 0
+    return False
 
   #
   # Implementation of abstract methods of TemplateWriter:
