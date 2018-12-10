@@ -47,6 +47,7 @@ void CardNameFixFlowViewAndroid::Show() {
 
   Java_AutofillNameFixFlowBridge_show(
       env, java_object_, view_android->GetWindowAndroid()->GetJavaObject());
+  delegate_->Shown();
 }
 
 void CardNameFixFlowViewAndroid::OnUserAccept(
@@ -60,6 +61,7 @@ void CardNameFixFlowViewAndroid::OnUserAccept(
 void CardNameFixFlowViewAndroid::PromptDismissed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
+  delegate_->Dismissed();
   delete this;
 }
 
