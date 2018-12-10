@@ -69,28 +69,25 @@ def ParseArgs(argv):
   parser.add_argument('-e', '--execute', action='append', default=[],
                       help='GDB command to run after connect (can be supplied '
                            'multiple times)')
-
-  parser.add_argument('-n', '--servod-name', dest='name')
+  name_flags = ['-n', '--servod-name']
+  parser.add_argument(*name_flags, dest='name')
   parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE)
   parser.add_argument('--servod-server')
-  parser.add_argument('-p', '--servod-port', type=int, dest='port')
+  port_flags = ['-p', '--servod-port']
+  parser.add_argument(*port_flags, type=int, dest='port')
   parser.add_argument('-t', '--tty',
                       help='TTY file to connect to (defaults to cpu_uart_pty)')
 
+  # Retrieve port from environment variable if not already in cmdline args.
+  servo_parsing.BaseServodParser.HandlePortEnvVar(cmdline=argv,
+                                                  pri_flags=port_flags)
+  # Retrieve name from environment variable if not already in cmdline args.
+  servo_parsing._ServodRCParser.HandleNameEnvVar(cmdline=argv,
+                                                 pri_flags=name_flags)
   opts = parser.parse_args(argv)
-  servo_parsing.get_env_options(logging, opts)
-  if opts.name:
-    rc = servo_parsing.parse_rc(logging, opts.servod_rcfile)
-    if opts.name not in rc:
-      raise parser.error('%s not in %s' % (opts.name, opts.servod_rcfile))
-    if not opts.servod_server:
-      opts.servod_server = rc[opts.name]['sn']
-    if not opts.port:
-      opts.port = rc[opts.name].get('port', client.DEFAULT_PORT)
-    if not opts.board and 'board' in rc[opts.name]:
-      opts.board = rc[opts.name]['board']
-      logging.warning('Inferring board %s from %s; make sure this is correct!',
-                      opts.board, opts.servod_rcfile)
+
+  # Set |.port| and |.board| in |opts| if there's a rc match for opts.name.
+  servo_parsing._ServodRCParser.PostProcessRCElements(opts, opts.servod_rcfile)
 
   if not opts.servod_server:
     opts.servod_server = client.DEFAULT_HOST
