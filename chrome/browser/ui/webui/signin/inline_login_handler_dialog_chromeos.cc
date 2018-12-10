@@ -29,7 +29,7 @@ void InlineLoginHandlerDialogChromeOS::Show() {
 
   // Will be deleted by |SystemWebDialogDelegate::OnDialogClosed|.
   dialog = new InlineLoginHandlerDialogChromeOS();
-  dialog->ShowSystemDialog(false /* is_minimal_style */);
+  dialog->ShowSystemDialog();
 }
 
 InlineLoginHandlerDialogChromeOS::InlineLoginHandlerDialogChromeOS()

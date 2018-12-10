@@ -42,10 +42,11 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
                        bool* out_close_dialog) override;
   bool ShouldShowDialogTitle() const override;
 
-  // Show the dialog using the current ative profile and the proper ash
-  // shell container.
-  // |is_minimal_style| means whether title area of the dialog should be hide.
-  void ShowSystemDialog(bool is_minimal_style = false);
+  // Shows a system dialog using the current ative profile.
+  // If |parent| is not null, the dialog will be parented to |parent|.
+  // Otherwise it will be attached to either the AlwaysOnTop container or the
+  // LockSystemModal container, depending on the session state at creation.
+  void ShowSystemDialog(gfx::NativeWindow parent = nullptr);
 
   content::WebUI* GetWebUIForTest() { return webui_; }
 

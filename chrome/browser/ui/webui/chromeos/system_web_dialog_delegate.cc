@@ -64,14 +64,18 @@ bool SystemWebDialogDelegate::ShouldShowDialogTitle() const {
   return !title_.empty();
 }
 
-void SystemWebDialogDelegate::ShowSystemDialog(bool is_minimal_style) {
+void SystemWebDialogDelegate::ShowSystemDialog(gfx::NativeWindow parent) {
   content::BrowserContext* browser_context =
       ProfileManager::GetActiveUserProfile();
-  int container_id = GetDialogModalType() == ui::MODAL_TYPE_NONE
-                         ? ash::kShellWindowId_AlwaysOnTopContainer
-                         : ash::kShellWindowId_LockSystemModalContainer;
-  dialog_window_ = chrome::ShowWebDialogInContainer(
-      container_id, browser_context, this, is_minimal_style);
+  if (parent) {
+    dialog_window_ = chrome::ShowWebDialog(parent, browser_context, this);
+  } else {
+    int container_id = GetDialogModalType() == ui::MODAL_TYPE_NONE
+                           ? ash::kShellWindowId_AlwaysOnTopContainer
+                           : ash::kShellWindowId_LockSystemModalContainer;
+    dialog_window_ =
+        chrome::ShowWebDialogInContainer(container_id, browser_context, this);
+  }
 }
 
 }  // namespace chromeos

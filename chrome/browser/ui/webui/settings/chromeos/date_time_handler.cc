@@ -154,7 +154,7 @@ void DateTimeHandler::HandleShowSetDateTimeUI(const base::ListValue* args) {
   // Make sure the clock status hasn't changed since the button was clicked.
   if (!DBusThreadManager::Get()->GetSystemClockClient()->CanSetTime())
     return;
-  SetTimeDialog::ShowDialogInParent(
+  SetTimeDialog::ShowDialog(
       web_ui()->GetWebContents()->GetTopLevelNativeWindow());
 }
 

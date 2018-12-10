@@ -259,7 +259,7 @@ void SystemTrayClient::ShowDateSettings() {
 }
 
 void SystemTrayClient::ShowSetTimeDialog() {
-  chromeos::SetTimeDialog::ShowDialogInContainer(GetDialogParentContainerId());
+  chromeos::SetTimeDialog::ShowDialog();
 }
 
 void SystemTrayClient::ShowDisplaySettings() {
