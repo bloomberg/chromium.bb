@@ -350,7 +350,7 @@ QuicConnection::QuicConnection(
       decrypt_packets_on_key_change_(
           GetQuicReloadableFlag(quic_decrypt_packets_on_key_change)) {
   if (ack_mode_ == ACK_DECIMATION) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_enable_ack_decimation);
   }
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
@@ -468,7 +468,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
   if (GetQuicReloadableFlag(quic_send_timestamps) &&
       config.HasClientSentConnectionOption(kSTMP, perspective_)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_send_timestamps);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_send_timestamps);
     framer_.set_process_timestamps(true);
     received_packet_manager_.set_save_timestamps(true);
   }
@@ -1858,7 +1858,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
   }
 
   if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    QUIC_FLAG_COUNT_N(quic_restart_flag_quic_enable_accept_random_ipn, 2, 2);
+    QUIC_RESTART_FLAG_COUNT_N(quic_enable_accept_random_ipn, 2, 2);
     // Configured to accept any packet number in range 1...0x7fffffff
     // as initial packet number.
     if (last_header_.packet_number != 0) {
@@ -1887,7 +1887,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
         return false;
       }
     }
-  } else {  //  if (FLAGS_quic_reloadable_flag_quic_accept_random_ipn) {
+  } else {  //  if (GetQuicRestartFlag(quic_enable_accept_random_ipn))
     // Count those that would have been accepted if FLAGS..random_ipn
     // were true -- to detect/diagnose potential issues prior to
     // enabling the flag.
@@ -2237,8 +2237,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
       // never timeout.
       if (time_of_first_packet_sent_after_receiving_ <
           time_of_last_received_packet_) {
-        QUIC_FLAG_COUNT(
-            quic_reloadable_flag_quic_fix_time_of_first_packet_sent_after_receiving);  // NOLINT
+        QUIC_RELOADABLE_FLAG_COUNT(
+            quic_fix_time_of_first_packet_sent_after_receiving);
         time_of_first_packet_sent_after_receiving_ = packet_send_time;
       }
     } else {
@@ -2532,8 +2532,7 @@ void QuicConnection::SetDecrypter(EncryptionLevel level,
     return;
   }
 
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_decrypt_packets_on_key_change, 1,
-                    3);
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_decrypt_packets_on_key_change, 1, 3);
   if (!undecryptable_packets_.empty() &&
       !process_undecryptable_packets_alarm_->IsSet()) {
     process_undecryptable_packets_alarm_->Set(clock_->ApproximateNow());
@@ -2549,8 +2548,7 @@ void QuicConnection::SetAlternativeDecrypter(
     return;
   }
 
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_decrypt_packets_on_key_change, 2,
-                    3);
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_decrypt_packets_on_key_change, 2, 3);
   if (!undecryptable_packets_.empty() &&
       !process_undecryptable_packets_alarm_->IsSet()) {
     process_undecryptable_packets_alarm_->Set(clock_->ApproximateNow());
@@ -2573,8 +2571,7 @@ void QuicConnection::QueueUndecryptablePacket(
 
 void QuicConnection::MaybeProcessUndecryptablePackets() {
   if (decrypt_packets_on_key_change_) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_decrypt_packets_on_key_change,
-                      3, 3);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_decrypt_packets_on_key_change, 3, 3);
     process_undecryptable_packets_alarm_->Cancel();
   }
 
@@ -3464,7 +3461,7 @@ bool QuicConnection::ShouldSetAckAlarm() const {
     // If the generator is already configured to send an ACK, then there is no
     // need to schedule the ACK alarm. The updated ACK information will be sent
     // when the generator flushes.
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_spurious_ack_alarm);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_spurious_ack_alarm);
     return false;
   }
   return true;

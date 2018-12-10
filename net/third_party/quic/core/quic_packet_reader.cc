@@ -143,7 +143,7 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
     char* headers = nullptr;
     size_t headers_length = 0;
     if (GetQuicReloadableFlag(quic_get_recv_headers)) {
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_get_recv_headers, 1, 3);
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_get_recv_headers, 1, 3);
       QuicSocketUtils::GetPacketHeadersFromMsghdr(&mmsg_hdr_[i].msg_hdr,
                                                   &headers, &headers_length);
     }

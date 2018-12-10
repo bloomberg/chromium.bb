@@ -230,7 +230,7 @@ bool QuicServerSessionBase::ShouldCreateOutgoingStream() {
       return false;
     }
   }
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_common_stream_check, 2, 2);
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_common_stream_check, 2, 2);
   return CanOpenNextOutgoingStream();
 }
 

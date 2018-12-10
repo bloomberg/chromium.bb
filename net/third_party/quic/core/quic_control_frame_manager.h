@@ -96,7 +96,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   bool WillingToWrite() const;
 
   // TODO(wub): Remove this function once
-  // quic_reloadable_flag_quic_donot_retransmit_old_window_update is deprecated.
+  // quic_donot_retransmit_old_window_update flag is deprecated.
   bool donot_retransmit_old_window_updates() const {
     return donot_retransmit_old_window_updates_;
   }
@@ -152,8 +152,7 @@ class QUIC_EXPORT_PRIVATE QuicControlFrameManager {
   // Last sent window update frame for each stream.
   QuicSmallMap<QuicStreamId, QuicControlFrameId, 10> window_update_frames_;
 
-  // Latched value of
-  // FLAGS_quic_reloadable_flag_quic_donot_retransmit_old_window_update2.
+  // Latched value of quic_donot_retransmit_old_window_update2 flag.
   const bool donot_retransmit_old_window_updates_;
 };
 

@@ -45,7 +45,7 @@ class QuicLRUCacheNew {
   // value is guaranteed to be valid until Insert or Clear.
   // Else return nullptr.
   V* Lookup(const K& key) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_new_lru_cache);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_new_lru_cache);
     auto it = cache_.find(key);
     if (it == cache_.end()) {
       return nullptr;

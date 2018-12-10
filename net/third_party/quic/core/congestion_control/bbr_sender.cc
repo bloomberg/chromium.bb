@@ -289,49 +289,49 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   }
   if (GetQuicReloadableFlag(quic_bbr_less_probe_rtt) &&
       config.HasClientRequestedIndependentOption(kBBR6, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 1, 3);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_less_probe_rtt, 1, 3);
     probe_rtt_based_on_bdp_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_less_probe_rtt) &&
       config.HasClientRequestedIndependentOption(kBBR7, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 2, 3);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_less_probe_rtt, 2, 3);
     probe_rtt_skipped_if_similar_rtt_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_less_probe_rtt) &&
       config.HasClientRequestedIndependentOption(kBBR8, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_less_probe_rtt, 3, 3);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_less_probe_rtt, 3, 3);
     probe_rtt_disabled_if_app_limited_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_flexible_app_limited) &&
       config.HasClientRequestedIndependentOption(kBBR9, perspective)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_flexible_app_limited);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr_flexible_app_limited);
     flexible_app_limited_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
       config.HasClientRequestedIndependentOption(kBBQ1, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_slower_startup3, 1, 4);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 1, 4);
     set_high_gain(kDerivedHighGain);
     set_high_cwnd_gain(kDerivedHighGain);
     set_drain_gain(1.f / kDerivedHighGain);
   }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
       config.HasClientRequestedIndependentOption(kBBQ2, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_slower_startup3, 2, 4);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 2, 4);
     set_high_cwnd_gain(kDerivedHighCWNDGain);
   }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
       config.HasClientRequestedIndependentOption(kBBQ3, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_slower_startup3, 3, 4);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 3, 4);
     enable_ack_aggregation_during_startup_ = true;
   }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup3) &&
       config.HasClientRequestedIndependentOption(kBBQ4, perspective)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_bbr_slower_startup3, 4, 4);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_bbr_slower_startup3, 4, 4);
     set_drain_gain(kModerateProbeRttMultiplier);
   }
   if (GetQuicReloadableFlag(quic_bbr_slower_startup4) &&
       config.HasClientRequestedIndependentOption(kBBQ5, perspective)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_slower_startup4);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_bbr_slower_startup4);
     expire_ack_aggregation_in_startup_ = true;
   }
   if (config.HasClientRequestedIndependentOption(kMIN1, perspective)) {
@@ -688,7 +688,7 @@ void BbrSender::UpdateRecoveryState(QuicPacketNumber last_acked_packet,
         current_round_trip_end_ = last_sent_packet_;
         if (GetQuicReloadableFlag(quic_bbr_app_limited_recovery) &&
             last_sample_is_app_limited_) {
-          QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_app_limited_recovery);
+          QUIC_RELOADABLE_FLAG_COUNT(quic_bbr_app_limited_recovery);
           is_app_limited_recovery_ = true;
         }
       }

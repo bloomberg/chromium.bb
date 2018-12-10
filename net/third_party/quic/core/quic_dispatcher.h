@@ -349,7 +349,7 @@ class QuicDispatcher : public QuicTimeWaitListManager::Visitor,
 
   // Please do not use this method.
   // TODO(fayang): Remove this method when deprecating
-  // quic_reloadable_flag_quic_proxy_use_real_packet_format_when_reject.
+  // quic_proxy_use_real_packet_format_when_reject flag.
   PacketHeaderFormat GetLastPacketFormat() const;
 
  private:

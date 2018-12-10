@@ -571,11 +571,10 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   // OnAckRangeStart, and gradually moves in OnAckRange..
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
 
-  // Latched value of quic_reloadable_flag_quic_aggregate_acked_stream_frames_2.
+  // Latched value of quic_aggregate_acked_stream_frames_2 flag.
   const bool aggregate_acked_stream_frames_;
 
-  // Latched value of
-  // quic_reloadable_flag_quic_fix_mark_for_loss_retransmission.
+  // Latched value of quic_fix_mark_for_loss_retransmission flag.
   const bool fix_mark_for_loss_retransmission_;
 };
 

@@ -266,8 +266,7 @@ void QuicSentPacketManager::PostProcessAfterMarkingPacketHandled(
     bool rtt_updated,
     QuicByteCount prior_bytes_in_flight) {
   if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_aggregate_acked_stream_frames_2,
-                      1, 2);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_aggregate_acked_stream_frames_2, 1, 2);
     unacked_packets_.NotifyAggregatedStreamFrameAcked(
         last_ack_frame_.ack_delay_time);
   }
@@ -556,8 +555,8 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
       unacked_packets_.MaybeAggregateAckedStreamFrame(*info, ack_delay_time);
     } else {
       if (aggregate_acked_stream_frames_ && session_decides_what_to_write()) {
-        QUIC_FLAG_COUNT_N(
-            quic_reloadable_flag_quic_aggregate_acked_stream_frames_2, 2, 2);
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_aggregate_acked_stream_frames_2, 2,
+                                     2);
         unacked_packets_.NotifyAggregatedStreamFrameAcked(ack_delay_time);
       }
       const bool new_data_acked =
@@ -712,7 +711,7 @@ bool QuicSentPacketManager::MaybeRetransmitTailLossProbe() {
     // If no tail loss probe can be sent, because there are no retransmittable
     // packets, execute a conventional RTO to abandon old packets.
     if (GetQuicReloadableFlag(quic_optimize_inflight_check)) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_optimize_inflight_check);
+      QUIC_RELOADABLE_FLAG_COUNT(quic_optimize_inflight_check);
       pending_timer_transmission_count_ = 0;
       RetransmitRtoPackets();
     }
@@ -825,8 +824,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
     if (fix_mark_for_loss_retransmission_ ||
         unacked_packets_.HasRetransmittableFrames(packet.packet_number)) {
       if (fix_mark_for_loss_retransmission_) {
-        QUIC_FLAG_COUNT(
-            quic_reloadable_flag_quic_fix_mark_for_loss_retransmission);
+        QUIC_RELOADABLE_FLAG_COUNT(quic_fix_mark_for_loss_retransmission);
       }
       MarkForRetransmission(packet.packet_number, LOSS_RETRANSMISSION);
     } else {

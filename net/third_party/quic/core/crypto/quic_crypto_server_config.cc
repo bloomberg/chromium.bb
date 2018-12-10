@@ -958,7 +958,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   // std::move(helper) instead of done_cb?
   helper.DetachCallback();
   if (GetQuicRestartFlag(quic_use_async_key_exchange)) {
-    QUIC_FLAG_COUNT(quic_restart_flag_quic_use_async_key_exchange);
+    QUIC_RESTART_FLAG_COUNT(quic_use_async_key_exchange);
     auto cb = QuicMakeUnique<ProcessClientHelloAfterGetProofCallback>(
         this, std::move(proof_source_details), key_exchange->GetFactory(),
         std::move(out), public_value, validate_chlo_result, connection_id,
@@ -1116,7 +1116,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterCalculateSharedKeys(
       QUIC_BUG << "quic_no_ephemeral_key_source flag is on, but "
                   "ephemeral_key_source is present";
     } else {
-      QUIC_FLAG_COUNT(quic_restart_flag_quic_no_ephemeral_key_source);
+      QUIC_RESTART_FLAG_COUNT(quic_no_ephemeral_key_source);
     }
   }
   if (ephemeral_key_source_) {
@@ -1424,7 +1424,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   const bool use_get_cert_chain =
       GetQuicReloadableFlag(quic_use_get_cert_chain);
   if (!use_get_cert_chain) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_get_cert_chain, 1, 2);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_get_cert_chain, 1, 2);
     QuicString serialized_config = primary_config->serialized;
     QuicString chlo_hash;
     CryptoUtils::HashHandshakeMessage(client_hello, &chlo_hash,
@@ -1442,7 +1442,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     return;
   }
 
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_get_cert_chain, 2, 2);
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_get_cert_chain, 2, 2);
   QuicReferenceCountedPointer<ProofSource::Chain> chain =
       proof_source_->GetCertChain(server_address, QuicString(info->sni));
   if (!chain) {

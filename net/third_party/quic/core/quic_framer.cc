@@ -1113,8 +1113,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildPublicResetPacket(
   }
   if (GetQuicReloadableFlag(quic_enable_server_epid_in_public_reset) &&
       !packet.endpoint_id.empty()) {
-    QUIC_FLAG_COUNT(
-        quic_reloadable_flag_quic_enable_server_epid_in_public_reset);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_enable_server_epid_in_public_reset);
     reset.SetStringPiece(kEPID, packet.endpoint_id);
   }
   const QuicData& reset_serialized = reset.GetSerialized();
@@ -1387,8 +1386,7 @@ bool QuicFramer::ProcessIetfDataPacket(QuicDataReader* encrypted_reader,
                 sizeof(header->possible_stateless_reset_token));
       }
     } else {
-      QUIC_FLAG_COUNT(
-          quic_reloadable_flag_quic_process_stateless_reset_at_client_only);
+      QUIC_RELOADABLE_FLAG_COUNT(quic_process_stateless_reset_at_client_only);
       if (perspective_ == Perspective::IS_CLIENT) {
         // Peek possible stateless reset token. Will only be used on decryption
         // failure.

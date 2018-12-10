@@ -109,7 +109,7 @@ QuicConsumedData QuicSpdyStream::WritevBody(const struct iovec* iov,
   if (!GetQuicReloadableFlag(quic_call_write_mem_slices)) {
     return WritevData(iov, count, fin);
   }
-  QUIC_FLAG_COUNT(quic_reloadable_flag_quic_call_write_mem_slices);
+  QUIC_RELOADABLE_FLAG_COUNT(quic_call_write_mem_slices);
   QuicMemSliceStorage storage(
       iov, count,
       session()->connection()->helper()->GetStreamSendBufferAllocator(),

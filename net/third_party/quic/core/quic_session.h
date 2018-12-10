@@ -591,7 +591,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   // Whether a GoAway has been received.
   bool goaway_received_;
 
-  // Latched value of quic_reloadable_flag_quic_session_faster_get_stream.
+  // Latched value of quic_session_faster_get_stream flag.
   const bool faster_get_stream_;
 
   QuicControlFrameManager control_frame_manager_;
