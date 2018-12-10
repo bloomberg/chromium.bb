@@ -149,6 +149,13 @@ js_library("metadata_cache_set") {
   ]
 }
 
+js_unittest("metadata_cache_set_unittest") {
+  deps = [
+    ":metadata_cache_set",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("metadata_dispatcher") {
   deps = [
     ":metadata_parser",
@@ -237,6 +244,7 @@ js_unit_tests("unit_tests") {
     ":content_metadata_provider_unittest",
     ":image_orientation_unittest",
     ":metadata_cache_item_unittest",
+    ":metadata_cache_set_unittest",
     ":multi_metadata_provider_unittest",
     ":thumbnail_model_unittest",
   ]
