@@ -4,8 +4,11 @@
 
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 
+#include "base/feature_list.h"
 #include "base/logging.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -76,7 +79,11 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
     _detailAnswerLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     [self.contentView addSubview:_detailAnswerLabel];
 
-    _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
+      _trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    } else {
+      _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    }
     [_trailingButton setContentMode:UIViewContentModeRight];
     [self updateTrailingButtonImages];
     // TODO(justincohen): Consider using the UITableViewCell's accessory view.
@@ -186,28 +193,30 @@ NSString* const kOmniboxPopupRowSwitchTabAccessibilityIdentifier =
   _trailingButton.accessibilityIdentifier = nil;
   if (self.tabMatch) {
     appendImage = [UIImage imageNamed:@"omnibox_popup_tab_match"];
+    appendImage = appendImage.imageFlippedForRightToLeftLayoutDirection;
     _trailingButton.accessibilityIdentifier =
         kOmniboxPopupRowSwitchTabAccessibilityIdentifier;
   } else {
-    int appendResourceID = _incognito
-                               ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
-                               : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
+    int appendResourceID = 0;
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
+      appendResourceID = IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
+    } else {
+      appendResourceID = _incognito
+                             ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
+                             : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
+    }
     appendImage = NativeReversableImage(appendResourceID, YES);
   }
-  if (IsUIRefreshPhase1Enabled()) {
-    appendImage =
-        [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  appendImage =
+      [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxTabSwitchSuggestions)) {
+    _trailingButton.tintColor = _incognito
+                                    ? [UIColor whiteColor]
+                                    : UIColorFromRGB(kLocationBarTintBlue);
+  } else {
     _trailingButton.tintColor = _incognito
                                     ? [UIColor colorWithWhite:1 alpha:0.5]
                                     : [UIColor colorWithWhite:0 alpha:0.3];
-  } else {
-    int appendSelectedResourceID =
-        _incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED
-                   : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED;
-    UIImage* appendImageSelected =
-        NativeReversableImage(appendSelectedResourceID, YES);
-    [_trailingButton setImage:appendImageSelected
-                     forState:UIControlStateHighlighted];
   }
 
   [_trailingButton setImage:appendImage forState:UIControlStateNormal];
