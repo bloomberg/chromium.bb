@@ -27,6 +27,7 @@
 #include "ui/views/examples/checkbox_example.h"
 #include "ui/views/examples/combobox_example.h"
 #include "ui/views/examples/dialog_example.h"
+#include "ui/views/examples/flex_layout_example.h"
 #include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
 #include "ui/views/examples/menu_example.h"
@@ -68,6 +69,7 @@ ExampleVector CreateExamples() {
   examples.push_back(std::make_unique<CheckboxExample>());
   examples.push_back(std::make_unique<ComboboxExample>());
   examples.push_back(std::make_unique<DialogExample>());
+  examples.push_back(std::make_unique<FlexLayoutExample>());
   examples.push_back(std::make_unique<LabelExample>());
   examples.push_back(std::make_unique<LinkExample>());
   examples.push_back(std::make_unique<MenuExample>());
