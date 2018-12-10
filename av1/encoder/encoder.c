@@ -5423,7 +5423,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #endif  // CONFIG_ENTROPY_STATS
 
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-    *cm->fc = cpi->tile_data[cm->largest_tile_id].tctx;
+    *cm->fc = cpi->tile_data[cpi->largest_tile_id].tctx;
     av1_reset_cdf_symbol_counters(cm->fc);
   }
 

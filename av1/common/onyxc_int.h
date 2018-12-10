@@ -333,7 +333,6 @@ typedef struct AV1Common {
   aom_op_timing_info_t op_frame_timing[MAX_NUM_OPERATING_POINTS + 1];
   uint32_t frame_presentation_time;
 
-  int largest_tile_id;
   int context_update_tile_id;
 
   // Scale of the current frame with respect to itself.
