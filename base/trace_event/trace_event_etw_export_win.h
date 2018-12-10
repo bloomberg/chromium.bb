@@ -47,16 +47,11 @@ class BASE_EXPORT TraceEventETWExport {
 
   // Exports an event to ETW. This is mainly used in
   // TraceLog::AddTraceEventWithThreadIdAndTimestamp to export internal events.
-  static void AddEvent(
-      char phase,
-      const unsigned char* category_group_enabled,
-      const char* name,
-      unsigned long long id,
-      int num_args,
-      const char* const* arg_names,
-      const unsigned char* arg_types,
-      const unsigned long long* arg_values,
-      const std::unique_ptr<ConvertableToTraceFormat>* convertable_values);
+  static void AddEvent(char phase,
+                       const unsigned char* category_group_enabled,
+                       const char* name,
+                       unsigned long long id,
+                       const TraceArguments* args);
 
   // Exports an ETW event that marks the end of a complete event.
   static void AddCompleteEndEvent(const char* name);

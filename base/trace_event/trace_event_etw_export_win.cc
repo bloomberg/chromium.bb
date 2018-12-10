@@ -168,16 +168,11 @@ bool TraceEventETWExport::IsETWExportEnabled() {
 }
 
 // static
-void TraceEventETWExport::AddEvent(
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char* const* arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    const std::unique_ptr<ConvertableToTraceFormat>* convertable_values) {
+void TraceEventETWExport::AddEvent(char phase,
+                                   const unsigned char* category_group_enabled,
+                                   const char* name,
+                                   unsigned long long id,
+                                   const TraceArguments* args) {
   // We bail early in case exporting is disabled or no consumer is listening.
   auto* instance = GetInstance();
   if (!instance || !instance->etw_export_enabled_ || !EventEnabledChromeEvent())
@@ -255,26 +250,22 @@ void TraceEventETWExport::AddEvent(
   }
 
   std::string arg_values_string[3];
-  for (int i = 0; i < num_args; i++) {
-    if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
+  size_t num_args = args ? args->size() : 0;
+  for (size_t i = 0; i < num_args; i++) {
+    if (args->types()[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
       // Temporarily do nothing here. This function consumes 1/3 to 1/2 of
       // *total* process CPU time when ETW tracing, and many of the strings
       // created exceed WPA's 4094 byte limit and are shown as:
       // "Unable to parse data". See crbug.com/488257
-      // convertable_values[i]->AppendAsTraceFormat(arg_values_string + i);
     } else {
-      TraceEvent::TraceValue trace_event;
-      trace_event.as_uint = arg_values[i];
-      TraceEvent::AppendValueAsJSON(arg_types[i], trace_event,
-                                    arg_values_string + i);
+      args->values()[i].AppendAsJSON(args->types()[i], arg_values_string + i);
     }
   }
 
   EventWriteChromeEvent(
-      name, phase_string, num_args > 0 ? arg_names[0] : "",
-      arg_values_string[0].c_str(), num_args > 1 ? arg_names[1] : "",
-      arg_values_string[1].c_str(), num_args > 2 ? arg_names[2] : "",
-      arg_values_string[2].c_str());
+      name, phase_string, num_args > 0 ? args->names()[0] : "",
+      arg_values_string[0].c_str(), num_args > 1 ? args->names()[1] : "",
+      arg_values_string[1].c_str(), "", "");
 }
 
 // static
