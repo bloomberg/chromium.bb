@@ -66,11 +66,11 @@ class SelectionRequestorTest : public testing::Test {
                               InputOnly,
                               CopyFromParent,  // visual
                               0,
-                              NULL);
+                              nullptr);
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
-    requestor_.reset(new SelectionRequestor(x_display_, x_window_, NULL));
+    requestor_.reset(new SelectionRequestor(x_display_, x_window_, nullptr));
   }
 
   void TearDown() override {
