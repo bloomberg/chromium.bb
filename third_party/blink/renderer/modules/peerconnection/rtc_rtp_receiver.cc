@@ -7,6 +7,7 @@
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
@@ -17,10 +18,12 @@
 
 namespace blink {
 
-RTCRtpReceiver::RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver> receiver,
+RTCRtpReceiver::RTCRtpReceiver(RTCPeerConnection* pc,
+                               std::unique_ptr<WebRTCRtpReceiver> receiver,
                                MediaStreamTrack* track,
                                MediaStreamVector streams)
-    : receiver_(std::move(receiver)),
+    : pc_(pc),
+      receiver_(std::move(receiver)),
       track_(track),
       streams_(std::move(streams)) {
   DCHECK(receiver_);
@@ -29,6 +32,17 @@ RTCRtpReceiver::RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver> receiver,
 
 MediaStreamTrack* RTCRtpReceiver::track() const {
   return track_;
+}
+
+RTCDtlsTransport* RTCRtpReceiver::transport() {
+  if (!transceiver_)
+    return nullptr;
+  return pc_->LookupDtlsTransportByMid(transceiver_->mid());
+}
+
+RTCDtlsTransport* RTCRtpReceiver::rtcp_transport() {
+  // Chrome does not support turning off RTCP-mux.
+  return nullptr;
 }
 
 const HeapVector<Member<RTCRtpContributingSource>>&
@@ -55,6 +69,10 @@ MediaStreamVector RTCRtpReceiver::streams() const {
 
 void RTCRtpReceiver::set_streams(MediaStreamVector streams) {
   streams_ = std::move(streams);
+}
+
+void RTCRtpReceiver::set_transceiver(RTCRtpTransceiver* transceiver) {
+  transceiver_ = transceiver;
 }
 
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
@@ -92,9 +110,11 @@ void RTCRtpReceiver::SetContributingSourcesNeedsUpdating() {
 }
 
 void RTCRtpReceiver::Trace(blink::Visitor* visitor) {
+  visitor->Trace(pc_);
   visitor->Trace(track_);
   visitor->Trace(streams_);
   visitor->Trace(contributing_sources_);
+  visitor->Trace(transceiver_);
   ScriptWrappable::Trace(visitor);
 }
 

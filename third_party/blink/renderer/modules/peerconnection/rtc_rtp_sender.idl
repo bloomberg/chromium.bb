@@ -6,6 +6,8 @@
 [Exposed=Window]
 interface RTCRtpSender {
     readonly attribute MediaStreamTrack? track;
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? transport;
+    [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcp_transport;
     static RTCRtpCapabilities? getCapabilities(DOMString kind);
     [RuntimeEnabled=RTCRtpSenderParameters, CallWith=ScriptState] Promise<void> setParameters(optional RTCRtpSendParameters parameters);
     [RuntimeEnabled=RTCRtpSenderParameters] RTCRtpSendParameters getParameters();

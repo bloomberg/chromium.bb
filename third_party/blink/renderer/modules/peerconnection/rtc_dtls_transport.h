@@ -8,6 +8,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/webrtc/api/scoped_refptr.h"
+
+namespace webrtc {
+class DtlsTransportInterface;
+}
 
 namespace blink {
 
@@ -32,9 +37,9 @@ class MODULES_EXPORT RTCDtlsTransport final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(RTCDtlsTransport);
 
  public:
-  static RTCDtlsTransport* Create(ExecutionContext* context);
-
-  explicit RTCDtlsTransport(ExecutionContext* context);
+  RTCDtlsTransport(
+      ExecutionContext* context,
+      rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_context);
   ~RTCDtlsTransport() override;
 
   // rtc_dtls_transport.idl
@@ -50,9 +55,11 @@ class MODULES_EXPORT RTCDtlsTransport final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   // For garbage collection.
   void Trace(blink::Visitor* visitor) override;
+  webrtc::DtlsTransportInterface* native_transport();
 
  private:
   HeapVector<Member<DOMArrayBuffer>> remote_certificates_;
+  rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport_;
 };
 
 }  // namespace blink
