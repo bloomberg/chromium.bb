@@ -85,6 +85,7 @@ class AwAutofillClient : public autofill::AutofillClient,
           migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) override;
   void ShowLocalCardMigrationResults(
+      const bool has_server_error,
       const base::string16& tip_message,
       const std::vector<autofill::MigratableCreditCard>&
           migratable_credit_cards,
