@@ -25,6 +25,7 @@
 #include "base/win/message_window.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
+#include "skia/ext/skia_utils_base.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard_util_win.h"
@@ -805,8 +806,15 @@ void ClipboardWin::WriteWebSmartPaste() {
                      NULL);
 }
 
-void ClipboardWin::WriteBitmap(const SkBitmap& bitmap) {
+void ClipboardWin::WriteBitmap(const SkBitmap& in_bitmap) {
   HDC dc = ::GetDC(NULL);
+
+  SkBitmap bitmap;
+  // Either points bitmap at in_bitmap, or allocates and converts pixels.
+  if (!skia::SkBitmapToN32OpaqueOrPremul(in_bitmap, &bitmap)) {
+    NOTREACHED() << "Unable to convert bitmap for clipboard";
+    return;
+  }
 
   // This doesn't actually cost us a memcpy when the bitmap comes from the
   // renderer as we load it into the bitmap using setPixels which just sets a
