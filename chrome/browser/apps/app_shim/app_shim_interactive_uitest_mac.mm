@@ -86,7 +86,12 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   WindowedAppShimLaunchObserver(const std::string& app_id)
       : app_mode_id_(app_id),
         observed_(false) {
-    apps::AppShimHandler::RegisterHandler(app_id, this);
+    StartObserving();
+  }
+
+  void StartObserving() {
+    observed_ = false;
+    apps::AppShimHandler::RegisterHandler(app_mode_id_, this);
   }
 
   void Wait() {
@@ -112,7 +117,14 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
   void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
-  void OnShimQuit(AppShimHost* host) override {}
+  void OnShimQuit(AppShimHost* host) override {
+    // Remove self and pass through to the default handler.
+    apps::AppShimHandler::RemoveHandler(app_mode_id_);
+    apps::AppShimHandler::GetForAppMode(app_mode_id_)->OnShimQuit(host);
+    observed_ = true;
+    if (run_loop_.get())
+      run_loop_->Quit();
+  }
 
  private:
   std::string app_mode_id_;
@@ -387,10 +399,9 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
 
     // Quitting the shim will eventually cause it to quit. It actually
-    // intercepts the -terminate, sends an AppShimHostMsg_QuitApp to Chrome,
-    // and returns NSTerminateLater. Chrome responds by closing all windows of
-    // the app. Once all windows are closed, Chrome closes the IPC channel,
-    // which causes the shim to actually terminate.
+    // intercepts the -terminate, sends an QuitApp message to Chrome, and then
+    // immediately quits. Chrome closes all windows of the app when QuitApp is
+    // received.
     NSArray* running_shim = [NSRunningApplication
         runningApplicationsWithBundleIdentifier:bundle_id];
     ASSERT_EQ(1u, [running_shim count]);
@@ -399,8 +410,10 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
         initForWorkspaceNotification:
             NSWorkspaceDidTerminateApplicationNotification
                             bundleId:bundle_id]);
+    observer.StartObserving();
     [base::mac::ObjCCastStrict<NSRunningApplication>(
         [running_shim objectAtIndex:0]) terminate];
+    observer.Wait();
     EXPECT_TRUE([ns_observer wait]);
 
     EXPECT_FALSE(GetFirstAppWindow());
