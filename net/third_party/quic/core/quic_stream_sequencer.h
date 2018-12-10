@@ -183,8 +183,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // Otherwise, call OnDataAvailable() when number of readable bytes changes.
   bool level_triggered_;
 
-  // Latched value of
-  // quic_reloadable_flag_quic_stop_reading_when_level_triggered.  When true,
+  // Latched value of quic_stop_reading_when_level_triggered flag.  When true,
   // the sequencer will discard incoming data (but not FIN bits) after
   // StopReading is called, even in level_triggered_ mode.
   const bool stop_reading_when_level_triggered_;

@@ -501,7 +501,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // Returns header wire format of last received packet.
   // Please do not use this method.
   // TODO(fayang): Remove last_header_form_ when deprecating
-  // quic_reloadable_flag_quic_proxy_use_real_packet_format_when_reject.
+  // quic_proxy_use_real_packet_format_when_reject flag.
   PacketHeaderFormat GetLastPacketFormat() const;
 
   void set_validate_flags(bool value) { validate_flags_ = value; }
@@ -865,8 +865,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
 
-  // Latched value of
-  // quic_reloadable_flag_quic_process_stateless_reset_at_client_only.
+  // Latched value of quic_process_stateless_reset_at_client_only flag.
   const bool process_stateless_reset_at_client_only_;
 };
 

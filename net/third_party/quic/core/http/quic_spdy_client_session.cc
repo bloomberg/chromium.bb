@@ -71,7 +71,7 @@ bool QuicSpdyClientSession::ShouldCreateOutgoingStream() {
                     << "Already received goaway.";
     return false;
   }
-  QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_use_common_stream_check, 1, 2);
+  QUIC_RELOADABLE_FLAG_COUNT_N(quic_use_common_stream_check, 1, 2);
   return CanOpenNextOutgoingStream();
 }
 

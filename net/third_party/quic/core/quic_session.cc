@@ -79,7 +79,7 @@ QuicSession::QuicSession(QuicConnection* connection,
       closed_streams_clean_up_alarm_(nullptr),
       supported_versions_(supported_versions) {
   if (faster_get_stream_) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_session_faster_get_stream);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_session_faster_get_stream);
   }
   closed_streams_clean_up_alarm_ =
       QuicWrapUnique<QuicAlarm>(connection_->alarm_factory()->CreateAlarm(
@@ -891,8 +891,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       // the peer.
       NeuterUnencryptedData();
       if (GetQuicReloadableFlag(quic_optimize_encryption_established)) {
-        QUIC_FLAG_COUNT(
-            quic_reloadable_flag_quic_optimize_encryption_established);
+        QUIC_RELOADABLE_FLAG_COUNT(quic_optimize_encryption_established);
         is_handshake_confirmed_ = true;
       }
       break;
@@ -1320,7 +1319,7 @@ bool QuicSession::HasUnackedCryptoData() const {
   }
   if (GetQuicReloadableFlag(quic_fix_has_pending_crypto_data) &&
       crypto_stream->HasBufferedData()) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_has_pending_crypto_data);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_has_pending_crypto_data);
     return true;
   }
   return false;

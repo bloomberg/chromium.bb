@@ -116,8 +116,7 @@ void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
     if (QuicContainsKey(window_update_frames_, stream_id) &&
         id > window_update_frames_[stream_id]) {
       // Consider the older window update of the same stream as acked.
-      QUIC_FLAG_COUNT(
-          quic_reloadable_flag_quic_donot_retransmit_old_window_update2);
+      QUIC_RELOADABLE_FLAG_COUNT(quic_donot_retransmit_old_window_update2);
       OnControlFrameIdAcked(window_update_frames_[stream_id]);
     }
     window_update_frames_[stream_id] = id;

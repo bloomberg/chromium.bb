@@ -809,7 +809,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool IsPathDegrading() const { return is_path_degrading_; }
 
   // TODO(wub): Remove this function once
-  // quic_reloadable_flag_quic_donot_retransmit_old_window_update is deprecated.
+  // quic_donot_retransmit_old_window_update flag is deprecated.
   void set_donot_retransmit_old_window_updates(bool value) {
     donot_retransmit_old_window_updates_ = value;
   }
@@ -1354,8 +1354,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;
 
-  // Latched value of
-  // quic_reloadable_flag_quic_donot_retransmit_old_window_update.
+  // Latched value of quic_donot_retransmit_old_window_update flag.
   bool donot_retransmit_old_window_updates_;
 
   // Indicates whether server connection does version negotiation. Server
@@ -1363,7 +1362,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // provided in constructor.
   const bool no_version_negotiation_;
 
-  // Latched value of quic_reloadable_flag_quic_decrypt_packets_on_key_change.
+  // Latched value of quic_decrypt_packets_on_key_change flag.
   const bool decrypt_packets_on_key_change_;
 
   // Payload of most recently transmitted QUIC_VERSION_99 connectivity

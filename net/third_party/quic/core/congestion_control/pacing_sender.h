@@ -95,7 +95,7 @@ class QUIC_EXPORT_PRIVATE PacingSender {
 
   // If the next send time is within alarm_granularity_, send immediately.
   // TODO(fayang): Remove alarm_granularity_ when deprecating
-  // FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2.
+  // quic_offload_pacing_to_usps2 flag.
   QuicTime::Delta alarm_granularity_;
 
   // Indicates whether pacing throttles the sending. If true, make up for lost

@@ -404,7 +404,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
             GetSupportedVersions(), current_self_address_,
             current_peer_address_);
       } else {
-        QUIC_FLAG_COUNT(quic_reloadable_flag_quic_limit_version_negotiation);
+        QUIC_RELOADABLE_FLAG_COUNT(quic_limit_version_negotiation);
       }
       return false;
     }
@@ -507,7 +507,7 @@ QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
     return kFateTimeWait;
   }
   if (GetQuicRestartFlag(quic_enable_accept_random_ipn)) {
-    QUIC_FLAG_COUNT_N(quic_restart_flag_quic_enable_accept_random_ipn, 1, 2);
+    QUIC_RESTART_FLAG_COUNT_N(quic_enable_accept_random_ipn, 1, 2);
     // Accepting Initial Packet Numbers in 1...((2^31)-1) range... check
     // maximum accordingly.
     if (header.packet_number > kMaxRandomInitialPacketNumber) {
@@ -1214,7 +1214,7 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
   framer_.set_version(first_version);
   if (GetQuicReloadableFlag(quic_fix_last_packet_is_ietf_quic)) {
     if (GetLastPacketFormat() != current_packet_format) {
-      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_last_packet_is_ietf_quic);
+      QUIC_RELOADABLE_FLAG_COUNT(quic_fix_last_packet_is_ietf_quic);
     }
     framer_.set_last_packet_form(current_packet_format);
   }

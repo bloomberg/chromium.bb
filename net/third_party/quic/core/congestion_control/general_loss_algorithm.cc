@@ -46,7 +46,7 @@ void GeneralLossAlgorithm::SetLossDetectionType(LossDetectionType loss_type) {
                           : kDefaultLossDelayShift;
   if (GetQuicReloadableFlag(quic_eighth_rtt_loss_detection) &&
       loss_type == kTime) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_eighth_rtt_loss_detection);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_eighth_rtt_loss_detection);
     reordering_shift_ = 3;
   }
   largest_previously_acked_ = 0;
@@ -69,12 +69,12 @@ void GeneralLossAlgorithm::DetectLosses(
       packets_acked.front().packet_number == least_in_flight_) {
     if (least_in_flight_ + packets_acked.size() - 1 == largest_newly_acked) {
       // Optimization for the case when no packet is missing.
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_faster_detect_loss, 1, 3);
+      QUIC_RELOADABLE_FLAG_COUNT_N(quic_faster_detect_loss, 1, 3);
       least_in_flight_ = largest_newly_acked + 1;
       largest_previously_acked_ = largest_newly_acked;
       return;
     }
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_faster_detect_loss, 2, 3);
+    QUIC_RELOADABLE_FLAG_COUNT_N(quic_faster_detect_loss, 2, 3);
     // There is hole in acked_packets, increment least_in_flight_ if possible.
     for (const auto& acked : packets_acked) {
       if (acked.packet_number != least_in_flight_) {
@@ -97,7 +97,7 @@ void GeneralLossAlgorithm::DetectLosses(
                  << " is greater than largest_sent_packet + 1: "
                  << unacked_packets.largest_sent_packet() + 1;
       } else {
-        QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_faster_detect_loss, 3, 3);
+        QUIC_RELOADABLE_FLAG_COUNT_N(quic_faster_detect_loss, 3, 3);
         it += (least_in_flight_ - packet_number);
         packet_number = least_in_flight_;
       }
@@ -204,7 +204,7 @@ void GeneralLossAlgorithm::SpuriousRetransmitDetected(
   QuicTime::Delta max_rtt =
       std::max(rtt_stats.previous_srtt(), rtt_stats.latest_rtt());
   if (GetQuicReloadableFlag(quic_fix_adaptive_time_loss)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_fix_adaptive_time_loss);
+    QUIC_RELOADABLE_FLAG_COUNT(quic_fix_adaptive_time_loss);
     while ((max_rtt >> reordering_shift_) <= extra_time_needed &&
            reordering_shift_ > 0) {
       --reordering_shift_;

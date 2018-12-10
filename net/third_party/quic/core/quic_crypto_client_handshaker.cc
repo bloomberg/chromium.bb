@@ -340,8 +340,7 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
                                           "CHLO too large");
       return;
     }
-    // TODO(rch): Remove this when we remove:
-    // FLAGS_quic_reloadable_flag_quic_use_chlo_packet_size
+    // TODO(rch): Remove this when we remove quic_use_chlo_packet_size flag.
     out.set_minimum_size(
         static_cast<size_t>(max_packet_size - kFramingOverhead));
     next_state_ = STATE_RECV_REJ;
