@@ -151,8 +151,8 @@ std::string BrowserDMTokenStorage::InitSerialNumber() {
   // will only happens once, as we cache the value. This will eventually be
   // moved earlier in Chrome's startup as it will be needed by the registration
   // as well.
-  // TODO(907518): Move this earlier and make it async.
-  base::RunLoop run_loop;
+  // TODO(crbug.com/907518): Move this earlier and make it async.
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   std::string serial_number;
   base::SysInfo::GetHardwareInfo(base::BindOnce(
       &OnHardwarePlatformInfo, run_loop.QuitClosure(), &serial_number));
