@@ -173,6 +173,11 @@ bool File::WOpen(const wchar *Name)
 
 bool File::Create(const wchar *Name,uint Mode)
 {
+#if defined(CHROMIUM_UNRAR)
+  // Since the Chromium sandbox does not allow the creation of files, use the
+  // provided file.
+  hFile = hOpenFile;
+#else
   // OpenIndiana based NAS and CIFS shares fail to set the file time if file
   // was created in read+write mode and some data was written and not flushed
   // before SetFileTime call. So we should use the write only mode if we plan
@@ -210,6 +215,7 @@ bool File::Create(const wchar *Name,uint Mode)
   hFile=fopen(NameA,WriteMode ? WRITEBINARY:CREATEBINARY);
 #endif
 #endif
+#endif  // defined(CHROMIUM_UNRAR)
   NewFile=true;
   HandleType=FILE_HANDLENORMAL;
   SkipClose=false;

@@ -76,6 +76,7 @@ if (safe_browsing_mode == 1) {
       ":file_type_policies",
       "//base",
       "//base:i18n",
+      "//components/safe_browsing:features",
       "//third_party/unrar:unrar",
     ]
 

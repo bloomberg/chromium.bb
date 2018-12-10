@@ -8,8 +8,13 @@
 #include "rar.hpp"
 
 namespace third_party_unrar {
+
 using ::Archive;
-static const int kUnrarEndarcHead = ::HEAD_ENDARC;
+using ::CmdExtract;
+using ::CommandData;
+
+static const int kUnrarEndarcHead = HEAD_ENDARC;
+static const int kUnrarFileHead = HEAD_FILE;
 }  // namespace third_party_unrar
 
 #endif  // THIRD_PARTY_UNRAR_SRC_UNRAR_WRAPPER_H_

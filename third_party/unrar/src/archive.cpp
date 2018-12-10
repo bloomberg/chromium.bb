@@ -337,3 +337,12 @@ int64 Archive::Tell()
 }
 #endif
 
+#if defined(CHROMIUM_UNRAR)
+void Archive::SetTempFileHandle(FileHandle hF) {
+  hTempFile = hF;
+}
+
+FileHandle Archive::GetTempFileHandle() {
+  return hTempFile;
+}
+#endif

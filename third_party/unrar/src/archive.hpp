@@ -58,6 +58,13 @@ class Archive:public File
     QuickOpen QOpen;
     bool ProhibitQOpen;
 #endif
+
+#if defined(CHROMIUM_UNRAR)
+    // A handle for a temporary file that should be used when extracting the
+    // archive. This is used to extract the contents while in a sandbox.
+    FileHandle hTempFile;
+#endif
+
   public:
     Archive(RAROptions *InitCmd=NULL);
     ~Archive();
@@ -98,6 +105,10 @@ class Archive:public File
     int64 Tell();
     void QOpenUnload() {QOpen.Unload();}
     void SetProhibitQOpen(bool Mode) {ProhibitQOpen=Mode;}
+#endif
+#if defined(CHROMIUM_UNRAR)
+    void SetTempFileHandle(FileHandle hF);
+    FileHandle GetTempFileHandle();
 #endif
 
     BaseBlock ShortBlock;
