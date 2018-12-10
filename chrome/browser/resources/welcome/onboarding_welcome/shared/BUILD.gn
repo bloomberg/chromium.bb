@@ -22,6 +22,13 @@ js_library("bookmark_proxy") {
   ]
 }
 
+js_library("module_metrics_proxy") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
+}
+
 js_library("nux_types") {
   deps = [
     "//ui/webui/resources/js:cr",

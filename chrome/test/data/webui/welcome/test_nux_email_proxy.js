@@ -2,6 +2,81 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+/** @implements {nux.ModuleMetricsProxy} */
+class TestEmailMetricsProxy extends TestBrowserProxy {
+  constructor() {
+    super([
+      'recordChoseAnOptionAndChoseNext',
+      'recordChoseAnOptionAndChoseSkip',
+      'recordChoseAnOptionAndNavigatedAway',
+      'recordClickedDisabledNextButtonAndChoseNext',
+      'recordClickedDisabledNextButtonAndChoseSkip',
+      'recordClickedDisabledNextButtonAndNavigatedAway',
+      'recordDidNothingAndChoseNext',
+      'recordDidNothingAndChoseSkip',
+      'recordDidNothingAndNavigatedAway',
+      'recordNavigatedAwayThroughBrowserHistory',
+      'recordPageShown',
+    ]);
+  }
+
+  /** @override */
+  recordChoseAnOptionAndChoseNext() {
+    this.methodCalled('recordChoseAnOptionAndChoseNext');
+  }
+
+  /** @override */
+  recordChoseAnOptionAndChoseSkip() {
+    this.methodCalled('recordChoseAnOptionAndChoseSkip');
+  }
+
+  /** @override */
+  recordChoseAnOptionAndNavigatedAway() {
+    this.methodCalled('recordChoseAnOptionAndNavigatedAway');
+  }
+
+  /** @override */
+  recordClickedDisabledNextButtonAndChoseNext() {
+    this.methodCalled('recordClickedDisabledNextButtonAndChoseNext');
+  }
+
+  /** @override */
+  recordClickedDisabledNextButtonAndChoseSkip() {
+    this.methodCalled('recordClickedDisabledNextButtonAndChoseSkip');
+  }
+
+  /** @override */
+  recordClickedDisabledNextButtonAndNavigatedAway() {
+    this.methodCalled('recordClickedDisabledNextButtonAndNavigatedAway');
+  }
+
+  /** @override */
+  recordDidNothingAndChoseNext() {
+    this.methodCalled('recordDidNothingAndChoseNext');
+  }
+
+  /** @override */
+  recordDidNothingAndChoseSkip() {
+    this.methodCalled('recordDidNothingAndChoseSkip');
+  }
+
+  /** @override */
+  recordDidNothingAndNavigatedAway() {
+    this.methodCalled('recordDidNothingAndNavigatedAway');
+  }
+
+  /** @override */
+  recordNavigatedAwayThroughBrowserHistory() {
+    this.methodCalled('recordNavigatedAwayThroughBrowserHistory');
+  }
+
+  /** @override */
+  recordPageShown() {
+    this.methodCalled('recordPageShown');
+  }
+}
+
 /** @implements {nux.NuxEmailProxy} */
 class TestNuxEmailProxy extends TestBrowserProxy {
   constructor() {
@@ -9,13 +84,7 @@ class TestNuxEmailProxy extends TestBrowserProxy {
       'cacheBookmarkIcon',
       'getEmailList',
       'getSavedProvider',
-      'recordPageInitialized',
-      'recordClickedOption',
-      'recordClickedDisabledButton',
       'recordProviderSelected',
-      'recordNoThanks',
-      'recordGetStarted',
-      'recordFinalize',
     ]);
 
     /** @private {!Array<!nux.BookmarkListItem>} */
@@ -31,11 +100,6 @@ class TestNuxEmailProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  recordPageInitialized() {
-    this.methodCalled('recordPageInitialized');
-  }
-
-  /** @override */
   getEmailList() {
     this.methodCalled('getEmailList');
     return Promise.resolve(this.emailList_);
@@ -45,34 +109,16 @@ class TestNuxEmailProxy extends TestBrowserProxy {
   cacheBookmarkIcon() {
     this.methodCalled('cacheBookmarkIcon');
   }
+
   /** @override */
   getSavedProvider() {
     this.methodCalled('getSavedProvider');
     return this.stubSavedProvider_;
   }
-  /** @override */
-  recordClickedOption() {
-    this.methodCalled('recordClickedOption');
-  }
-  /** @override */
-  recordClickedDisabledButton() {
-    this.methodCalled('recordClickedDisabledButton');
-  }
+
   /** @override */
   recordProviderSelected() {
     this.methodCalled('recordProviderSelected', arguments);
-  }
-  /** @override */
-  recordNoThanks() {
-    this.methodCalled('recordNoThanks');
-  }
-  /** @override */
-  recordGetStarted() {
-    this.methodCalled('recordGetStarted');
-  }
-  /** @override */
-  recordFinalize() {
-    this.methodCalled('recordFinalize');
   }
 
   /** @param {!Array<!nux.BookmarkListItem>} emailList */

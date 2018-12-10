@@ -55,6 +55,9 @@ Polymer({
   /** @private {Promise} */
   listInitialized_: null,
 
+  /** @private {?nux.ModuleMetricsManager} */
+  metricsManager_: null,
+
   /** @override */
   attached: function() {
     Polymer.RenderStatus.afterNextRender(this, function() {
@@ -67,8 +70,9 @@ Polymer({
     this.emailProxy_ = nux.NuxEmailProxyImpl.getInstance();
     this.bookmarkProxy_ = nux.BookmarkProxyImpl.getInstance();
     this.bookmarkBarManager_ = nux.BookmarkBarManager.getInstance();
+    this.metricsManager_ =
+        new nux.ModuleMetricsManager(nux.EmailMetricsProxyImpl.getInstance());
 
-    this.emailProxy_.recordPageInitialized();
 
     this.listInitialized_ = this.emailProxy_.getEmailList().then(list => {
       this.emailList_ = list;
@@ -79,19 +83,15 @@ Polymer({
       if (this.finalized_)
         return;
 
-      if (this.selectedEmailProvider_) {
-        // TODO(hcarmona): metrics.
-        this.revertBookmark_();
-        this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
-      }
-
-      this.emailProxy_.recordFinalize();
+      this.cleanUp_();
+      this.metricsManager_.recordNavigatedAway();
     });
   },
 
   /** Initializes the section when navigated to. */
   initializeSection: function() {
     this.wasBookmarkBarShownOnInit_ = this.bookmarkBarManager_.getShown();
+    this.metricsManager_.recordPageInitialized();
     this.finalized_ = false;
 
     assert(this.listInitialized_);
@@ -113,9 +113,14 @@ Polymer({
   finalizeSection: function() {
     if (this.finalized_)
       return;
+    this.cleanUp_();
+    this.metricsManager_.recordBrowserBackOrForward();
+  },
 
+  /** Removes any bookarks and hides the bookmark bar when finalizing. */
+  cleanUp_: function() {
+    this.finalized_ = true;
     if (this.selectedEmailProvider_) {
-      // TODO(hcarmona): metrics?
       this.revertBookmark_();
       this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
     }
@@ -132,7 +137,7 @@ Polymer({
     else
       this.selectedEmailProvider_ = e.model.item;
 
-    this.emailProxy_.recordClickedOption();
+    this.metricsManager_.recordClickedOption();
   },
 
   /**
@@ -231,10 +236,8 @@ Polymer({
 
   /** @private */
   onNoThanksClicked_: function() {
-    this.finalized_ = true;
-    this.revertBookmark_();
-    this.bookmarkBarManager_.setShown(this.wasBookmarkBarShownOnInit_);
-    this.emailProxy_.recordNoThanks();
+    this.cleanUp_();
+    this.metricsManager_.recordNoThanks();
     welcome.navigateToNextStep();
   },
 
@@ -243,15 +246,13 @@ Polymer({
     this.finalized_ = true;
     this.emailProxy_.recordProviderSelected(
         this.selectedEmailProvider_.id, this.emailList_.length);
-    this.emailProxy_.recordGetStarted();
-    // TODO(scottchen): store the selected email provider URL somewhere to
-    //     redirect to at the end.
+    this.metricsManager_.recordGetStarted();
     welcome.navigateToNextStep();
   },
 
   /** @private */
   onActionButtonClicked_: function() {
     if (this.$$('.action-button').disabled)
-      this.emailProxy_.recordClickedDisabledButton();
+      this.metricsManager_.recordClickedDisabledButton();
   },
 });
