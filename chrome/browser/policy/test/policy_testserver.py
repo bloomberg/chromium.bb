@@ -420,26 +420,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     Returns:
       A tuple of HTTP status code and response data to send to the client.
     """
-    enrollment_token = self.CheckEnrollmentToken()
     policy = self.server.GetPolicies()
-    if enrollment_token:
-      if ((not policy['token_enrollment']) or
-          (not policy['token_enrollment']['token']) or
-          (not policy['token_enrollment']['username'])):
-        return (500, 'Error in config - no token-based enrollment')
-      if policy['token_enrollment']['token'] != enrollment_token:
-        return (403, 'Invalid enrollment token')
-      username = policy['token_enrollment']['username']
-    else:
-      # Check the auth token and device ID.
-      auth = self.CheckGoogleLogin()
-      if not auth:
-        return (403, 'No authorization')
+    # Check the auth token and device ID.
+    auth = self.CheckGoogleLogin()
+    if not auth:
+      return (403, 'No authorization')
 
-      if ('managed_users' not in policy):
-        return (500, 'Error in config - no managed users')
-      username = self.server.ResolveUser(auth)
-
+    if ('managed_users' not in policy):
+      return (500, 'Error in config - no managed users')
+    username = self.server.ResolveUser(auth)
     if ('*' not in policy['managed_users'] and
         username not in policy['managed_users']):
       return (403, 'Unmanaged')
@@ -470,7 +459,25 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         ENTERPRISE_ENROLLMENT_CERTIFICATE:
       return(403, 'Invalid certificate type for registration')
 
-    return self.RegisterDeviceAndSendResponse(req.device_register_request, None)
+    register_req = req.device_register_request
+    username = None
+
+    if (register_req.flavor == dm.DeviceRegisterRequest.
+        FLAVOR_ENROLLMENT_ATTESTATION_USB_ENROLLMENT):
+      enrollment_token = self.CheckEnrollmentToken()
+      policy = self.server.GetPolicies()
+      if not enrollment_token:
+        return (401, 'Missing enrollment token.')
+
+      if ((not policy['token_enrollment']) or
+              (not policy['token_enrollment']['token']) or
+              (not policy['token_enrollment']['username'])):
+        return (500, 'Error in config - no token-based enrollment')
+      if policy['token_enrollment']['token'] != enrollment_token:
+        return (403, 'Invalid enrollment token')
+      username = policy['token_enrollment']['username']
+
+    return self.RegisterDeviceAndSendResponse(register_req, username)
 
   def RegisterDeviceAndSendResponse(self, msg, username):
     """Registers a device and send a response to the client.
