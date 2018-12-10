@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller.h"
+#include "ash/assistant/assistant_alarm_timer_controller.h"
 #include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
@@ -32,6 +33,8 @@ namespace ash {
 
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
+      assistant_alarm_timer_controller_(
+          std::make_unique<AssistantAlarmTimerController>(this)),
       assistant_cache_controller_(
           std::make_unique<AssistantCacheController>(this)),
       assistant_interaction_controller_(

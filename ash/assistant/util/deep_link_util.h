@@ -39,6 +39,9 @@ enum class DeepLinkParam {
   kRelaunch,
 };
 
+// Returns a deep link to send an Assistant query.
+ASH_EXPORT GURL CreateAssistantQueryDeepLink(const std::string& query);
+
 // Returns a deep link to top level Assistant Settings.
 ASH_EXPORT GURL CreateAssistantSettingsDeepLink();
 

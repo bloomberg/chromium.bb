@@ -18,6 +18,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/mojom/constants.mojom.h"
@@ -301,6 +302,12 @@ void Service::FinalizeAssistantManagerService() {
     mojom::AssistantPtr ptr;
     BindAssistantConnection(mojo::MakeRequest(&ptr));
     assistant_controller_->SetAssistant(std::move(ptr));
+
+    if (features::IsTimerNotificationEnabled()) {
+      // Bind to the AssistantAlarmTimerController in ash.
+      service_binding_.GetConnector()->BindInterface(
+          ash::mojom::kServiceName, &assistant_alarm_timer_controller_);
+    }
 
     // Bind to the AssistantScreenContextController in ash.
     service_binding_.GetConnector()->BindInterface(
