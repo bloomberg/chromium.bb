@@ -86,6 +86,12 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
     // Wallet feature must be on.
     DCHECK(base::FeatureList::IsEnabled(
         features::kAutofillEnableAccountWalletStorage));
+    if (!base::FeatureList::IsEnabled(
+            features::kAutofillEnableAccountWalletStorageUpload)) {
+      // We're not enabling uploads in the account wallet mode, so suppress
+      // the upload prompt.
+      return false;
+    }
   }
 
   // Also don't offer upload for users that have a secondary sync passphrase.
