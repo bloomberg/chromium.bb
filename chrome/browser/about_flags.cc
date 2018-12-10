@@ -4456,6 +4456,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableImplicitRootScrollerName,
      flag_descriptions::kEnableImplicitRootScrollerDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kImplicitRootScroller)},
+
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+    {"force-enable-system-aec", flag_descriptions::kForceEnableSystemAecName,
+     flag_descriptions::kForceEnableSystemAecDescription, kOsMac | kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kForceEnableSystemAec)},
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 };
 
 class FlagsStateSingleton {
