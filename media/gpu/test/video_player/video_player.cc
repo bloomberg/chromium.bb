@@ -97,7 +97,10 @@ void VideoPlayer::Stop() {
 }
 
 void VideoPlayer::Reset() {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(4);
+
+  decoder_client_->Reset();
 }
 
 void VideoPlayer::Flush() {
@@ -166,8 +169,10 @@ bool VideoPlayer::WaitForEvent(VideoPlayerEvent event,
 
 void VideoPlayer::NotifyEvent(VideoPlayerEvent event) {
   base::AutoLock auto_lock(event_lock_);
-  if (event == VideoPlayerEvent::kFlushDone)
+  if (event == VideoPlayerEvent::kFlushDone ||
+      event == VideoPlayerEvent::kResetDone) {
     video_player_state_ = VideoPlayerState::kIdle;
+  }
   video_player_events_.push_back(event);
   video_player_event_counts_[static_cast<size_t>(event)]++;
   event_cv_.Signal();
