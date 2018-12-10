@@ -71,13 +71,13 @@ media::test::VideoDecoderTestEnvironment* g_env;
 
 }  // namespace
 
-// TODO(dstaessens@)
-// * Fetch the expected number of frames from the video file's metadata.
-TEST(VideoDecodeAcceleratorTest, BasicPlayTest) {
+// Play video from start to end. Wait for the kFlushDone event at the end of the
+// stream, that notifies us all frames have been decoded.
+TEST(VideoDecodeAcceleratorTest, FlushAtEndOfStream) {
   auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
   ASSERT_NE(tvp, nullptr);
-
   tvp->SetStream(g_env->video_);
+
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
 
@@ -90,16 +90,123 @@ TEST(VideoDecodeAcceleratorTest, BasicPlayTest) {
 TEST(VideoDecodeAcceleratorTest, FlushAfterInitialize) {
   auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
   ASSERT_NE(tvp, nullptr);
-
   tvp->SetStream(g_env->video_);
+
   tvp->Flush();
   EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
-
   tvp->Play();
   EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
 
   EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 2u);
   EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames());
+}
+
+// Flush the decoder immediately after doing a mid-stream reset, without waiting
+// for a kResetDone event.
+TEST(VideoDecodeAcceleratorTest, FlushBeforeResetDone) {
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
+  ASSERT_NE(tvp, nullptr);
+  tvp->SetStream(g_env->video_);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFrameDecoded,
+                                g_env->video_->NumFrames() / 2));
+  tvp->Reset();
+  tvp->Flush();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+
+  // As flush doesn't cancel reset, we should have received a single kResetDone
+  // and kFlushDone event. We didn't decode the entire video, but more frames
+  // might be decoded by the time we called reset, so we can only check whether
+  // the decoded frame count is <= the total number of frames.
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
+  EXPECT_LE(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames());
+}
+
+// Reset the decoder immediately after initialization.
+TEST(VideoDecodeAcceleratorTest, ResetAfterInitialize) {
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
+  ASSERT_NE(tvp, nullptr);
+
+  tvp->SetStream(g_env->video_);
+  tvp->Reset();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames());
+}
+
+// Reset the decoder when the middle of the stream is reached.
+TEST(VideoDecodeAcceleratorTest, ResetMidStream) {
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
+  ASSERT_NE(tvp, nullptr);
+  tvp->SetStream(g_env->video_);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFrameDecoded,
+                                g_env->video_->NumFrames() / 2));
+  tvp->Reset();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  size_t numFramesDecoded = tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded);
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            numFramesDecoded + g_env->video_->NumFrames());
+}
+
+// Reset the decoder when the end of the stream is reached.
+TEST(VideoDecodeAcceleratorTest, ResetEndOfStream) {
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
+  ASSERT_NE(tvp, nullptr);
+  tvp->SetStream(g_env->video_);
+
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames());
+  tvp->Reset();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushDone));
+
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 2u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
+            g_env->video_->NumFrames() * 2);
+}
+
+// Reset the decoder immediately when the end-of-stream flush starts, without
+// waiting for a kFlushDone event.
+TEST(VideoDecodeAcceleratorTest, ResetBeforeFlushDone) {
+  auto tvp = VideoPlayer::Create(g_env->dummy_frame_renderer_.get());
+  ASSERT_NE(tvp, nullptr);
+  tvp->SetStream(g_env->video_);
+
+  // Reset when a kFlushing event is received.
+  tvp->Play();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kFlushing));
+  tvp->Reset();
+  EXPECT_TRUE(tvp->WaitForEvent(VideoPlayerEvent::kResetDone));
+
+  // Reset will cause the decoder to drop everything it's doing, including the
+  // ongoing flush operation. However the flush might have been completed
+  // already by the time reset is called. So depending on the timing of the
+  // calls we should see 0 or 1 flushes, and the last few video frames might
+  // have been dropped.
+  EXPECT_LE(tvp->GetEventCount(VideoPlayerEvent::kFlushDone), 1u);
+  EXPECT_EQ(tvp->GetEventCount(VideoPlayerEvent::kResetDone), 1u);
+  EXPECT_LE(tvp->GetEventCount(VideoPlayerEvent::kFrameDecoded),
             g_env->video_->NumFrames());
 }
 

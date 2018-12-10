@@ -56,10 +56,15 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   void DestroyDecoder();
 
   // Start decoding the video stream, decoder should be idle when this function
-  // is called. For each frame decoded a 'kFrameDecoded' event will be thrown.
+  // is called. This function is non-blocking, for each frame decoded a
+  // 'kFrameDecoded' event will be thrown.
   void Play();
-  // Queue a decoder flush, when finished a 'kFlushDone' event will be thrown.
+  // Queue decoder flush. This function is non-blocking, a kFlushing/kFlushDone
+  // event is thrown upon start/finish.
   void Flush();
+  // Queue decoder reset. This function is non-blocking, a kResetting/kResetDone
+  // event is thrown upon start/finish.
+  void Reset();
 
  private:
   enum class VideoDecoderClientState : size_t {
@@ -67,6 +72,7 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
     kIdle,
     kDecoding,
     kFlushing,
+    kResetting,
   };
 
   VideoDecoderClient(const VideoPlayer::EventCallback& event_cb,
@@ -100,6 +106,8 @@ class VideoDecoderClient : public VideoDecodeAccelerator::Client {
   void PlayTask();
   // Instruct the decoder to perform a flush.
   void FlushTask();
+  // Instruct the decoder to perform a Reset.
+  void ResetTask();
 
   // Called by the renderer in response to a CreatePictureBuffers request.
   void OnPictureBuffersCreatedTask(std::vector<PictureBuffer> buffers);

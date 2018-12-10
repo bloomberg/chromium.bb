@@ -33,8 +33,11 @@ enum class VideoPlayerState : size_t {
 };
 
 enum class VideoPlayerEvent : size_t {
-  kFlushDone,
   kFrameDecoded,
+  kFlushing,
+  kFlushDone,
+  kResetting,
+  kResetDone,
   kNumEvents,
 };
 

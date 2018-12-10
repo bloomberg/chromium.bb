@@ -112,6 +112,13 @@ void VideoDecoderClient::Flush() {
       FROM_HERE, base::BindOnce(&VideoDecoderClient::FlushTask, weak_this_));
 }
 
+void VideoDecoderClient::Reset() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
+
+  decoder_client_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&VideoDecoderClient::ResetTask, weak_this_));
+}
+
 void VideoDecoderClient::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
     VideoPixelFormat pixel_format,
@@ -159,7 +166,8 @@ void VideoDecoderClient::NotifyEndOfBitstreamBuffer(
   // Queue the next fragment to be decoded. Flush when we reached the end of the
   // stream.
   if (encoded_data_helper_->ReachEndOfStream()) {
-    decoder_->Flush();
+    decoder_client_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&VideoDecoderClient::FlushTask, weak_this_));
   } else {
     decoder_client_thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VideoDecoderClient::DecodeNextFragmentTask,
@@ -175,7 +183,10 @@ void VideoDecoderClient::NotifyFlushDone() {
 }
 
 void VideoDecoderClient::NotifyResetDone() {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+
+  decoder_client_state_ = VideoDecoderClientState::kIdle;
+  event_cb_.Run(VideoPlayerEvent::kResetDone);
 }
 
 void VideoDecoderClient::NotifyError(VideoDecodeAccelerator::Error error) {
@@ -322,6 +333,19 @@ void VideoDecoderClient::FlushTask() {
   // Changing the state to flushing will abort any pending decodes.
   decoder_client_state_ = VideoDecoderClientState::kFlushing;
   decoder_->Flush();
+  event_cb_.Run(VideoPlayerEvent::kFlushing);
+}
+
+void VideoDecoderClient::ResetTask() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
+  DVLOGF(4);
+
+  // Changing the state to resetting will abort any pending decodes.
+  decoder_client_state_ = VideoDecoderClientState::kResetting;
+  // TODO(dstaessens@) Allow resetting to any point in the stream.
+  encoded_data_helper_->Rewind();
+  decoder_->Reset();
+  event_cb_.Run(VideoPlayerEvent::kResetting);
 }
 
 void VideoDecoderClient::OnPictureBuffersCreatedTask(
