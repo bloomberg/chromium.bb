@@ -1924,6 +1924,11 @@ blink::WebString RTCPeerConnectionHandler::Id() const {
   return blink::WebString::FromASCII(id_);
 }
 
+webrtc::PeerConnectionInterface*
+RTCPeerConnectionHandler::NativePeerConnection() {
+  return native_peer_connection();
+}
+
 void RTCPeerConnectionHandler::OnSignalingChange(
     webrtc::PeerConnectionInterface::SignalingState new_state) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
