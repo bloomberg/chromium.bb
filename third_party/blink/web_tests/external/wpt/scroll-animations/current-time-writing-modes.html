@@ -1,60 +1,23 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
+<title>ScrollTimeline current time algorithm - interaction with writing modes</title>
+<link rel="help" href="https://wicg.github.io/scroll-animations/#current-time-algorithm">
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 
-<script src='resources/scroll-timeline-util.js'></script>
-<script src='../../../resources/testharness.js'></script>
-<script src='../../../resources/testharnessreport.js'></script>
+<script src="./resources/scrolltimeline-utils.js"></script>
 
 <body></body>
 
 <script>
-// Builds a generic structure that looks like:
-//
-// <div class="scroller">  // 100x100 viewport
-//   <div class="contents"></div>  // 500x500
-// </div>
-//
-// The |scrollerOverrides| and |contentOverrides| parameters are maps which
-// are applied to the scroller and contents style after basic setup.
-//
-// Returns the outer 'scroller' element.
-function setupScrollTimelineTest(
-    scrollerOverrides = new Map(), contentOverrides = new Map()) {
-  let scroller = document.createElement('div');
-  scroller.style.width = '100px';
-  scroller.style.height = '100px';
-  scroller.style.overflow = 'scroll';
-  for (const [key, value] of scrollerOverrides) {
-    scroller.style[key] = value;
-  }
-
-  let contents = document.createElement('div');
-  contents.style.width = '500px';
-  contents.style.height = '500px';
-  for (const [key, value] of contentOverrides) {
-    contents.style[key] = value;
-  }
-
-  scroller.appendChild(contents);
-  document.body.appendChild(scroller);
-  return scroller;
-}
-
-// Helper method to calculate the current time, implementing only step 5 of
-// https://wicg.github.io/scroll-animations/#current-time-algorithm
-function calculateCurrentTime(
-    currentScrollOffset, startScrollOffset, endScrollOffset,
-    effectiveTimeRange) {
-  return ((currentScrollOffset - startScrollOffset) /
-          (endScrollOffset - startScrollOffset)) *
-      effectiveTimeRange;
-}
+'use strict';
 
 test(function() {
   const scrollerOverrides = new Map([['direction', 'rtl']]);
   const scroller = setupScrollTimelineTest(scrollerOverrides);
 
-  // For simplicity, we set the timeRange such that currentTime maps directly to
-  // the value scrolled. We have a square scroller/contents, so can just compute
+  // Set the timeRange such that currentTime maps directly to the value
+  // scrolled. The contents and scroller are square, so it suffices to compute
   // one edge and use it for all the timelines.
   const scrollerSize = scroller.scrollHeight - scroller.clientHeight;
 
@@ -75,28 +38,38 @@ test(function() {
 
   // Unscrolled, all timelines should read a current time of 0 even though the
   // X-axis will have started at the right hand side for rtl.
-  assert_equals(blockScrollTimeline.currentTime, 0);
-  assert_equals(inlineScrollTimeline.currentTime, 0);
-  assert_equals(horizontalScrollTimeline.currentTime, 0);
-  assert_equals(verticalScrollTimeline.currentTime, 0);
+  assert_equals(
+      blockScrollTimeline.currentTime, 0, 'Unscrolled block timeline');
+  assert_equals(
+      inlineScrollTimeline.currentTime, 0, 'Unscrolled inline timeline');
+  assert_equals(
+      horizontalScrollTimeline.currentTime, 0,
+      'Unscrolled horizontal timeline');
+  assert_equals(
+      verticalScrollTimeline.currentTime, 0, 'Unscrolled vertical timeline');
 
   // The offset in the inline/horizontal direction should be inverted. The
   // block/vertical direction should be unaffected.
   scroller.scrollTop = 50;
   scroller.scrollLeft = 75;
 
-  assert_equals(blockScrollTimeline.currentTime, 50);
-  assert_equals(inlineScrollTimeline.currentTime, scrollerSize - 75);
-  assert_equals(horizontalScrollTimeline.currentTime, scrollerSize - 75);
-  assert_equals(verticalScrollTimeline.currentTime, 50);
+  assert_equals(blockScrollTimeline.currentTime, 50, 'Scrolled block timeline');
+  assert_equals(
+      inlineScrollTimeline.currentTime, scrollerSize - 75,
+      'Scrolled inline timeline');
+  assert_equals(
+      horizontalScrollTimeline.currentTime, scrollerSize - 75,
+      'Scrolled horizontal timeline');
+  assert_equals(
+      verticalScrollTimeline.currentTime, 50, 'Scrolled vertical timeline');
 }, 'currentTime handles direction: rtl correctly');
 
 test(function() {
   const scrollerOverrides = new Map([['writing-mode', 'vertical-rl']]);
   const scroller = setupScrollTimelineTest(scrollerOverrides);
 
-  // For simplicity, we set the timeRange such that currentTime maps directly to
-  // the value scrolled. We have a square scroller/contents, so can just compute
+  // Set the timeRange such that currentTime maps directly to the value
+  // scrolled. The contents and scroller are square, so it suffices to compute
   // one edge and use it for all the timelines.
   const scrollerSize = scroller.scrollHeight - scroller.clientHeight;
 
@@ -117,10 +90,15 @@ test(function() {
 
   // Unscrolled, all timelines should read a current time of 0 even though the
   // X-axis will have started at the right hand side for vertical-rl.
-  assert_equals(blockScrollTimeline.currentTime, 0);
-  assert_equals(inlineScrollTimeline.currentTime, 0);
-  assert_equals(horizontalScrollTimeline.currentTime, 0);
-  assert_equals(verticalScrollTimeline.currentTime, 0);
+  assert_equals(
+      blockScrollTimeline.currentTime, 0, 'Unscrolled block timeline');
+  assert_equals(
+      inlineScrollTimeline.currentTime, 0, 'Unscrolled inline timeline');
+  assert_equals(
+      horizontalScrollTimeline.currentTime, 0,
+      'Unscrolled horizontal timeline');
+  assert_equals(
+      verticalScrollTimeline.currentTime, 0, 'Unscrolled vertical timeline');
 
   // For vertical-rl, the X-axis starts on the right-hand-side and is the block
   // axis. The Y-axis is normal but is the inline axis. For the
@@ -129,18 +107,24 @@ test(function() {
   scroller.scrollTop = 50;
   scroller.scrollLeft = 75;
 
-  assert_equals(blockScrollTimeline.currentTime, scrollerSize - 75);
-  assert_equals(inlineScrollTimeline.currentTime, 50);
-  assert_equals(horizontalScrollTimeline.currentTime, scrollerSize - 75);
-  assert_equals(verticalScrollTimeline.currentTime, 50);
+  assert_equals(
+      blockScrollTimeline.currentTime, scrollerSize - 75,
+      'Scrolled block timeline');
+  assert_equals(
+      inlineScrollTimeline.currentTime, 50, 'SCrolled inline timeline');
+  assert_equals(
+      horizontalScrollTimeline.currentTime, scrollerSize - 75,
+      'Scrolled horizontal timeline');
+  assert_equals(
+      verticalScrollTimeline.currentTime, 50, 'Scrolled vertical timeline');
 }, 'currentTime handles writing-mode: vertical-rl correctly');
 
 test(function() {
   const scrollerOverrides = new Map([['writing-mode', 'vertical-lr']]);
   const scroller = setupScrollTimelineTest(scrollerOverrides);
 
-  // For simplicity, we set the timeRange such that currentTime maps directly to
-  // the value scrolled. We have a square scroller/contents, so can just compute
+  // Set the timeRange such that currentTime maps directly to the value
+  // scrolled. The contents and scroller are square, so it suffices to compute
   // one edge and use it for all the timelines.
   const scrollerSize = scroller.scrollHeight - scroller.clientHeight;
 
@@ -160,10 +144,15 @@ test(function() {
   });
 
   // Unscrolled, all timelines should read a current time of 0.
-  assert_equals(blockScrollTimeline.currentTime, 0);
-  assert_equals(inlineScrollTimeline.currentTime, 0);
-  assert_equals(horizontalScrollTimeline.currentTime, 0);
-  assert_equals(verticalScrollTimeline.currentTime, 0);
+  assert_equals(
+      blockScrollTimeline.currentTime, 0, 'Unscrolled block timeline');
+  assert_equals(
+      inlineScrollTimeline.currentTime, 0, 'Unscrolled inline timeline');
+  assert_equals(
+      horizontalScrollTimeline.currentTime, 0,
+      'Unscrolled horizontal timeline');
+  assert_equals(
+      verticalScrollTimeline.currentTime, 0, 'Unscrolled vertical timeline');
 
   // For vertical-lr, both axes start at their 'normal' positions but the X-axis
   // is the block direction and the Y-axis is the inline direction. This does
@@ -171,18 +160,21 @@ test(function() {
   scroller.scrollTop = 50;
   scroller.scrollLeft = 75;
 
-  assert_equals(blockScrollTimeline.currentTime, 75);
-  assert_equals(inlineScrollTimeline.currentTime, 50);
-  assert_equals(horizontalScrollTimeline.currentTime, 75);
-  assert_equals(verticalScrollTimeline.currentTime, 50);
+  assert_equals(blockScrollTimeline.currentTime, 75, 'Scrolled block timeline');
+  assert_equals(
+      inlineScrollTimeline.currentTime, 50, 'Scrolled inline timeline');
+  assert_equals(
+      horizontalScrollTimeline.currentTime, 75, 'Scrolled horizontal timeline');
+  assert_equals(
+      verticalScrollTimeline.currentTime, 50, 'Scrolled vertical timeline');
 }, 'currentTime handles writing-mode: vertical-lr correctly');
 
 test(function() {
   const scrollerOverrides = new Map([['direction', 'rtl']]);
   const scroller = setupScrollTimelineTest(scrollerOverrides);
-  // For simplicity, we set the timeRange such that currentTime maps directly to
-  // the value scrolled. We have a square scroller/contents, so can just compute
-  // one edge and use it for all the timelines;
+  // Set the timeRange such that currentTime maps directly to the value
+  // scrolled. The contents and scroller are square, so it suffices to compute
+  // one edge and use it for all the timelines.
   const scrollerSize = scroller.scrollHeight - scroller.clientHeight;
 
   const lengthScrollTimeline = new ScrollTimeline({
@@ -206,9 +198,14 @@ test(function() {
 
   // Unscrolled, all timelines should read a current time of unresolved, since
   // the current offset (0) will be less than the startScrollOffset.
-  assert_equals(lengthScrollTimeline.currentTime, null);
-  assert_equals(percentageScrollTimeline.currentTime, null);
-  assert_equals(calcScrollTimeline.currentTime, null);
+  assert_equals(
+      lengthScrollTimeline.currentTime, null,
+      'Unscrolled length-based timeline');
+  assert_equals(
+      percentageScrollTimeline.currentTime, null,
+      'Unscrolled percentage-based timeline');
+  assert_equals(
+      calcScrollTimeline.currentTime, null, 'Unscrolled calc-based timeline');
 
   // With direction rtl offsets are inverted, such that scrollLeft ==
   // scrollerSize is the 'zero' point for currentTime. However the
@@ -217,54 +214,59 @@ test(function() {
 
   // Check the length-based ScrollTimeline.
   scroller.scrollLeft = scrollerSize;
-  assert_equals(lengthScrollTimeline.currentTime, null);
+  assert_equals(
+      lengthScrollTimeline.currentTime, null,
+      'Length-based timeline before the startScrollOffset point');
   scroller.scrollLeft = scrollerSize - 20;
-  assert_equals(lengthScrollTimeline.currentTime, 0);
+  assert_equals(
+      lengthScrollTimeline.currentTime, 0,
+      'Length-based timeline at the startScrollOffset point');
   scroller.scrollLeft = scrollerSize - 50;
   assert_equals(
       lengthScrollTimeline.currentTime,
-      calculateCurrentTime(50, 20, scrollerSize, scrollerSize));
-  scroller.scrollLeft = scrollerSize - 200;
-  assert_equals(
-      lengthScrollTimeline.currentTime,
-      calculateCurrentTime(200, 20, scrollerSize, scrollerSize));
+      calculateCurrentTime(50, 20, scrollerSize, scrollerSize),
+      'Length-based timeline after the startScrollOffset point');
 
   // Check the percentage-based ScrollTimeline.
   scroller.scrollLeft = scrollerSize - (0.19 * scrollerSize);
-  assert_equals(percentageScrollTimeline.currentTime, null);
+  assert_equals(
+      percentageScrollTimeline.currentTime, null,
+      'Percentage-based timeline before the startScrollOffset point');
   scroller.scrollLeft = scrollerSize - (0.20 * scrollerSize);
-  assert_equals(percentageScrollTimeline.currentTime, 0);
+  assert_equals(
+      percentageScrollTimeline.currentTime, 0,
+      'Percentage-based timeline at the startScrollOffset point');
   scroller.scrollLeft = scrollerSize - (0.4 * scrollerSize);
   assert_equals(
       percentageScrollTimeline.currentTime,
       calculateCurrentTime(
-          0.4 * scrollerSize, 0.2 * scrollerSize, scrollerSize, scrollerSize));
+          0.4 * scrollerSize, 0.2 * scrollerSize, scrollerSize, scrollerSize),
+      'Percentage-based timeline after the startScrollOffset point');
 
   // Check the calc-based ScrollTimeline.
   scroller.scrollLeft = scrollerSize - (0.2 * scrollerSize - 10);
-  assert_equals(calcScrollTimeline.currentTime, null);
+  assert_equals(
+      calcScrollTimeline.currentTime, null,
+      'Calc-based timeline before the startScrollOffset point');
   scroller.scrollLeft = scrollerSize - (0.2 * scrollerSize - 5);
-  assert_equals(calcScrollTimeline.currentTime, 0);
+  assert_equals(
+      calcScrollTimeline.currentTime, 0,
+      'Calc-based timeline at the startScrollOffset point');
   scroller.scrollLeft = scrollerSize - (0.2 * scrollerSize);
   assert_equals(
       calcScrollTimeline.currentTime,
       calculateCurrentTime(
           0.2 * scrollerSize, 0.2 * scrollerSize - 5, scrollerSize,
-          scrollerSize));
-  scroller.scrollLeft = scrollerSize - (0.4 * scrollerSize);
-  assert_equals(
-      calcScrollTimeline.currentTime,
-      calculateCurrentTime(
-          0.4 * scrollerSize, 0.2 * scrollerSize - 5, scrollerSize,
-          scrollerSize));
+          scrollerSize),
+      'Calc-based timeline after the startScrollOffset point');
 }, 'currentTime handles startScrollOffset with direction: rtl correctly');
 
 test(function() {
   const scrollerOverrides = new Map([['direction', 'rtl']]);
   const scroller = setupScrollTimelineTest(scrollerOverrides);
-  // For simplicity, we set the timeRange such that currentTime maps directly to
-  // the value scrolled. We have a square scroller/contents, so can just compute
-  // one edge and use it for all the timelines;
+  // Set the timeRange such that currentTime maps directly to the value
+  // scrolled. The contents and scroller are square, so it suffices to compute
+  // one edge and use it for all the timelines.
   const scrollerSize = scroller.scrollHeight - scroller.clientHeight;
 
   const lengthScrollTimeline = new ScrollTimeline({
@@ -293,54 +295,56 @@ test(function() {
 
   // Check the length-based ScrollTimeline.
   scroller.scrollLeft = 0;
-  assert_equals(lengthScrollTimeline.currentTime, null);
+  assert_equals(
+      lengthScrollTimeline.currentTime, null,
+      'Length-based timeline after the endScrollOffset point');
   scroller.scrollLeft = 20;
   assert_equals(
-       lengthScrollTimeline.currentTime,
-       calculateCurrentTime(
-         scrollerSize - 20, 0, scrollerSize - 20, scrollerSize));
+      lengthScrollTimeline.currentTime,
+      calculateCurrentTime(
+          scrollerSize - 20, 0, scrollerSize - 20, scrollerSize),
+      'Length-based timeline at the endScrollOffset point');
   scroller.scrollLeft = 50;
   assert_equals(
       lengthScrollTimeline.currentTime,
       calculateCurrentTime(
-          scrollerSize - 50, 0, scrollerSize - 20, scrollerSize));
-  scroller.scrollLeft = 200;
-  assert_equals(
-      lengthScrollTimeline.currentTime,
-      calculateCurrentTime(
-          scrollerSize - 200, 0, scrollerSize - 20, scrollerSize));
+          scrollerSize - 50, 0, scrollerSize - 20, scrollerSize),
+      'Length-based timeline before the endScrollOffset point');
 
   // Check the percentage-based ScrollTimeline.
   scroller.scrollLeft = 0.19 * scrollerSize;
-  assert_equals(percentageScrollTimeline.currentTime, null);
+  assert_equals(
+      percentageScrollTimeline.currentTime, null,
+      'Percentage-based timeline after the endScrollOffset point');
   scroller.scrollLeft = 0.20 * scrollerSize;
   assert_equals(
       percentageScrollTimeline.currentTime,
       calculateCurrentTime(
-          0.8 * scrollerSize, 0, 0.8 * scrollerSize, scrollerSize));
+          0.8 * scrollerSize, 0, 0.8 * scrollerSize, scrollerSize),
+      'Percentage-based timeline at the endScrollOffset point');
   scroller.scrollLeft = 0.4 * scrollerSize;
   assert_equals(
       percentageScrollTimeline.currentTime,
       calculateCurrentTime(
-          0.6 * scrollerSize, 0, 0.8 * scrollerSize, scrollerSize));
+          0.6 * scrollerSize, 0, 0.8 * scrollerSize, scrollerSize),
+      'Percentage-based timeline before the endScrollOffset point');
 
   // Check the calc-based ScrollTimeline. 80% + 5px
   scroller.scrollLeft = 0.2 * scrollerSize - 10;
-  assert_equals(calcScrollTimeline.currentTime, null);
+  assert_equals(
+      calcScrollTimeline.currentTime, null,
+      'Calc-based timeline after the endScrollOffset point');
   scroller.scrollLeft = 0.2 * scrollerSize - 5;
   assert_equals(
       calcScrollTimeline.currentTime,
       calculateCurrentTime(
-          0.8 * scrollerSize + 5, 0, 0.8 * scrollerSize + 5, scrollerSize));
+          0.8 * scrollerSize + 5, 0, 0.8 * scrollerSize + 5, scrollerSize),
+      'Calc-based timeline at the endScrollOffset point');
   scroller.scrollLeft = 0.2 * scrollerSize;
   assert_equals(
       calcScrollTimeline.currentTime,
       calculateCurrentTime(
-          0.8 * scrollerSize, 0, 0.8 * scrollerSize + 5, scrollerSize));
-  scroller.scrollLeft = 0.6 * scrollerSize;
-  assert_equals(
-      calcScrollTimeline.currentTime,
-      calculateCurrentTime(
-          0.4 * scrollerSize, 0, 0.8 * scrollerSize + 5, scrollerSize));
+          0.8 * scrollerSize, 0, 0.8 * scrollerSize + 5, scrollerSize),
+      'Calc-based timeline before the endScrollOffset point');
 }, 'currentTime handles endScrollOffset with direction: rtl correctly');
 </script>
