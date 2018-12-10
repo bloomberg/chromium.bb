@@ -68,6 +68,8 @@ const char WebRtcTestBase::kAudioVideoCallConstraints720p[] =
 const char WebRtcTestBase::kUseDefaultCertKeygen[] = "null";
 const char WebRtcTestBase::kUseDefaultAudioCodec[] = "";
 const char WebRtcTestBase::kUseDefaultVideoCodec[] = "";
+const char WebRtcTestBase::kVP9Profile0Specifier[] = "profile-id=0";
+const char WebRtcTestBase::kVP9Profile2Specifier[] = "profile-id=2";
 const char WebRtcTestBase::kUndefined[] = "undefined";
 
 namespace {
@@ -590,11 +592,20 @@ void WebRtcTestBase::SetDefaultAudioCodec(
 
 void WebRtcTestBase::SetDefaultVideoCodec(content::WebContents* tab,
                                           const std::string& video_codec,
-                                          bool prefer_hw_codec) const {
-  EXPECT_EQ("ok",
-            ExecuteJavascript("setDefaultVideoCodec('" + video_codec + "'," +
-                                  (prefer_hw_codec ? "true" : "false") + ")",
-                              tab));
+                                          bool prefer_hw_codec,
+                                          const std::string& profile) const {
+  std::string codec_profile = profile;
+  // When no |profile| is given, we default VP9 to Profile 0.
+  if (video_codec.compare("VP9") == 0 && codec_profile.empty())
+    codec_profile = kVP9Profile0Specifier;
+
+  EXPECT_EQ("ok", ExecuteJavascript(
+                      "setDefaultVideoCodec('" + video_codec + "'," +
+                          (prefer_hw_codec ? "true" : "false") + "," +
+                          (codec_profile.empty() ? "null"
+                                                 : "'" + codec_profile + "'") +
+                          ")",
+                      tab));
 }
 
 void WebRtcTestBase::EnableOpusDtx(content::WebContents* tab) const {
