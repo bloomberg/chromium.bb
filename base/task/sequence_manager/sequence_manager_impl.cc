@@ -76,13 +76,12 @@ const double kThreadSamplingRateForRecordingCPUTime = 0.0001;
 // early when detected.
 constexpr int kMemoryCorruptionSentinelValue = 0xdeadbeef;
 
-void SweepCanceledDelayedTasksInQueue(
-    internal::TaskQueueImpl* queue,
-    std::map<TimeDomain*, TimeTicks>* time_domain_now) {
+void ReclaimMemoryFromQueue(internal::TaskQueueImpl* queue,
+                            std::map<TimeDomain*, TimeTicks>* time_domain_now) {
   TimeDomain* time_domain = queue->GetTimeDomain();
   if (time_domain_now->find(time_domain) == time_domain_now->end())
     time_domain_now->insert(std::make_pair(time_domain, time_domain->Now()));
-  queue->SweepCanceledDelayedTasks(time_domain_now->at(time_domain));
+  queue->ReclaimMemory(time_domain_now->at(time_domain));
 }
 
 SequenceManager::MetricRecordingSettings InitializeMetricRecordingSettings(
@@ -801,12 +800,12 @@ void SequenceManagerImpl::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
     MaybeScheduleImmediateWork(FROM_HERE);
 }
 
-void SequenceManagerImpl::SweepCanceledDelayedTasks() {
+void SequenceManagerImpl::ReclaimMemory() {
   std::map<TimeDomain*, TimeTicks> time_domain_now;
   for (auto* const queue : main_thread_only().active_queues)
-    SweepCanceledDelayedTasksInQueue(queue, &time_domain_now);
+    ReclaimMemoryFromQueue(queue, &time_domain_now);
   for (const auto& pair : main_thread_only().queues_to_gracefully_shutdown)
-    SweepCanceledDelayedTasksInQueue(pair.first, &time_domain_now);
+    ReclaimMemoryFromQueue(pair.first, &time_domain_now);
 }
 
 void SequenceManagerImpl::CleanUpQueues() {

@@ -219,8 +219,9 @@ class BASE_EXPORT TaskQueueImpl {
     bool enabled_;
   };
 
-  // Iterates over |delayed_incoming_queue| removing canceled tasks.
-  void SweepCanceledDelayedTasks(TimeTicks now);
+  // Iterates over |delayed_incoming_queue| removing canceled tasks. In
+  // addition MaybeShrinkQueue is called on all internal queues.
+  void ReclaimMemory(TimeTicks now);
 
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about started and completed tasks.

@@ -863,13 +863,19 @@ TaskQueueImpl::CreateQueueEnabledVoter(scoped_refptr<TaskQueue> task_queue) {
   return std::make_unique<QueueEnabledVoterImpl>(task_queue);
 }
 
-void TaskQueueImpl::SweepCanceledDelayedTasks(TimeTicks now) {
+void TaskQueueImpl::ReclaimMemory(TimeTicks now) {
   if (main_thread_only().delayed_incoming_queue.empty())
     return;
   main_thread_only().delayed_incoming_queue.SweepCancelledTasks();
 
   // Also consider shrinking the work queue if it's wasting memory.
   main_thread_only().delayed_work_queue->MaybeShrinkQueue();
+  main_thread_only().immediate_work_queue->MaybeShrinkQueue();
+
+  {
+    AutoLock lock(immediate_incoming_queue_lock_);
+    immediate_incoming_queue().MaybeShrinkQueue();
+  }
 
   LazyNow lazy_now(now);
   UpdateDelayedWakeUp(&lazy_now);

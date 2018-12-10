@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import("//build/config/jumbo.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//third_party/blink/renderer/platform/platform.gni")
 import("//third_party/protobuf/proto_library.gni")
-import("//testing/libfuzzer/fuzzer_test.gni")
 
 blink_platform_sources("scheduler") {
   sources = [
@@ -15,10 +15,10 @@ blink_platform_sources("scheduler") {
     "common/features.cc",
     "common/features.h",
     "common/frame_or_worker_scheduler.cc",
-    "common/idle_canceled_delayed_task_sweeper.cc",
-    "common/idle_canceled_delayed_task_sweeper.h",
     "common/idle_helper.cc",
     "common/idle_helper.h",
+    "common/idle_memory_reclaimer.cc",
+    "common/idle_memory_reclaimer.h",
     "common/metrics_helper.cc",
     "common/metrics_helper.h",
     "common/pollable_thread_safe_flag.cc",
@@ -179,8 +179,8 @@ jumbo_source_set("unit_tests") {
 
   sources = [
     "common/background_scheduler_unittest.cc",
-    "common/idle_canceled_delayed_task_sweeper_unittest.cc",
     "common/idle_helper_unittest.cc",
+    "common/idle_memory_reclaimer_unittest.cc",
     "common/metrics_helper_unittest.cc",
     "common/post_cancellable_task_unittest.cc",
     "common/scheduler_helper_unittest.cc",

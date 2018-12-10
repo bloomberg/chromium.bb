@@ -107,10 +107,10 @@ void SchedulerHelper::SetObserver(Observer* observer) {
   sequence_manager_->SetObserver(this);
 }
 
-void SchedulerHelper::SweepCanceledDelayedTasks() {
+void SchedulerHelper::ReclaimMemory() {
   CheckOnValidThread();
   DCHECK(sequence_manager_);
-  sequence_manager_->SweepCanceledDelayedTasks();
+  sequence_manager_->ReclaimMemory();
 }
 
 TimeDomain* SchedulerHelper::real_time_domain() const {

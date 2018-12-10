@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/common/idle_canceled_delayed_task_sweeper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/idle_memory_reclaimer.h"
 
 #include "base/task/sequence_manager/lazy_now.h"
 #include "base/task/sequence_manager/task_queue.h"
@@ -25,10 +25,10 @@ class TestClass {
   base::WeakPtrFactory<TestClass> weak_factory_;
 };
 
-class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
-                                           public IdleHelper::Delegate {
+class IdleMemoryReclaimerTest : public testing::Test,
+                                public IdleHelper::Delegate {
  public:
-  IdleCanceledDelayedTaskSweeperTest()
+  IdleMemoryReclaimerTest()
       : task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
@@ -47,14 +47,14 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
                                MainThreadTaskQueue::QueueCreationParams(
                                    MainThreadTaskQueue::QueueType::kTest)))),
         idle_canceled_delayed_taks_sweeper_(
-            new IdleCanceledDelayedTaskSweeper(scheduler_helper_.get(),
-                                               idle_helper_->IdleTaskRunner())),
+            new IdleMemoryReclaimer(scheduler_helper_.get(),
+                                    idle_helper_->IdleTaskRunner())),
         default_task_queue_(scheduler_helper_->DefaultMainThreadTaskQueue()) {
     // Null clock might trigger some assertions.
     task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(5));
   }
 
-  ~IdleCanceledDelayedTaskSweeperTest() override = default;
+  ~IdleMemoryReclaimerTest() override = default;
 
   void TearDown() override {
     // Check that all tests stop posting tasks.
@@ -77,14 +77,13 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
 
   std::unique_ptr<MainThreadSchedulerHelper> scheduler_helper_;
   std::unique_ptr<IdleHelper> idle_helper_;
-  std::unique_ptr<IdleCanceledDelayedTaskSweeper>
-      idle_canceled_delayed_taks_sweeper_;
+  std::unique_ptr<IdleMemoryReclaimer> idle_canceled_delayed_taks_sweeper_;
   scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(IdleCanceledDelayedTaskSweeperTest);
+  DISALLOW_COPY_AND_ASSIGN(IdleMemoryReclaimerTest);
 };
 
-TEST_F(IdleCanceledDelayedTaskSweeperTest, TestSweep) {
+TEST_F(IdleMemoryReclaimerTest, TestSweep) {
   TestClass class1;
   TestClass class2;
 
@@ -118,7 +117,7 @@ TEST_F(IdleCanceledDelayedTaskSweeperTest, TestSweep) {
   // Cancel the last four tasks.
   class2.weak_factory_.InvalidateWeakPtrs();
 
-  // Give the IdleCanceledDelayedTaskSweeper a chance to run but don't let
+  // Give the IdleMemoryReclaimer a chance to run but don't let
   // the first non canceled delayed task run.  This is important because the
   // canceled tasks would get removed by TaskQueueImpl::WakeUpForDelayedWork.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(40));
