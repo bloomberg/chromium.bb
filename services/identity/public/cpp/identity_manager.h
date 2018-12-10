@@ -10,6 +10,7 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_internals_util.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "services/identity/public/cpp/access_token_fetcher.h"
@@ -54,6 +55,7 @@ enum class ClearPrimaryAccountPolicy;
 class IdentityManager : public SigninManagerBase::Observer,
                         public OAuth2TokenService::DiagnosticsObserver,
                         public OAuth2TokenService::Observer,
+                        public signin_internals_util::SigninDiagnosticsObserver,
                         public GaiaCookieManagerService::Observer {
  public:
   class Observer {
@@ -141,6 +143,11 @@ class IdentityManager : public SigninManagerBase::Observer,
     virtual void OnAccessTokenRequested(const std::string& account_id,
                                         const std::string& consumer_id,
                                         const identity::ScopeSet& scopes) {}
+
+    // Called on credentials and signin related changes.
+    virtual void NotifySigninValueChanged(
+        const signin_internals_util::TimedSigninStatusField& field,
+        const std::string& value) {}
   };
 
   IdentityManager(
@@ -349,10 +356,14 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& consumer_id,
       const OAuth2TokenService::ScopeSet& scopes) override;
 
+  void NotifySigninValueChanged(
+      const signin_internals_util::TimedSigninStatusField& field,
+      const std::string& value) override;
+
   // Backing signin classes. NOTE: We strive to limit synchronous access to
   // these classes in the IdentityManager implementation, as all such
-  // synchronous access will become impossible when IdentityManager is backed by
-  // the Identity Service.
+  // synchronous access will become impossible when IdentityManager is
+  // backed by the Identity Service.
   SigninManagerBase* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
   AccountTrackerService* account_tracker_service_;

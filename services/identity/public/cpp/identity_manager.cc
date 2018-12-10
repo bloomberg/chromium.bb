@@ -326,4 +326,13 @@ void IdentityManager::OnAccessTokenRequested(
   }
 }
 
+void IdentityManager::NotifySigninValueChanged(
+    const signin_internals_util::TimedSigninStatusField& field,
+    const std::string& value) {
+  // TODO(843510): Consider notifying observers asynchronously once there
+  // are no direct clients of ProfileOAuth2TokenService.
+  for (auto& observer : diagnostics_observer_list_)
+    observer.NotifySigninValueChanged(field, value);
+}
+
 }  // namespace identity
