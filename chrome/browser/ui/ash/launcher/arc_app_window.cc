@@ -23,6 +23,8 @@
 namespace {
 constexpr base::TimeDelta kSetDefaultIconDelayMs =
     base::TimeDelta::FromMilliseconds(1000);
+
+constexpr int kArcAppWindowIconSize = extension_misc::EXTENSION_ICON_MEDIUM;
 }  // namespace
 
 ArcAppWindow::ArcAppWindow(int task_id,
@@ -97,7 +99,7 @@ void ArcAppWindow::OnAppImageUpdated(const std::string& app_id,
 void ArcAppWindow::SetDefaultAppIcon() {
   if (!app_icon_loader_) {
     app_icon_loader_ = std::make_unique<ArcAppIconLoader>(
-        profile_, extension_misc::EXTENSION_ICON_SMALL, this);
+        profile_, kArcAppWindowIconSize, this);
   }
   DCHECK(!image_fetching_);
   base::AutoReset<bool> auto_image_fetching(&image_fetching_, true);
@@ -122,12 +124,17 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
   shell_surface->SetIcon(icon);
 }
 
-void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_image) {
+void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_bitmap) {
   // Use the custom icon and stop observing updates.
   app_icon_loader_.reset();
+  const gfx::ImageSkia decoded_image(gfx::ImageSkiaRep(decoded_bitmap, 1.0f));
+  if (kArcAppWindowIconSize > decoded_image.width() ||
+      kArcAppWindowIconSize > decoded_image.height()) {
+    LOG(WARNING) << "An icon of size " << decoded_image.width() << "x"
+                 << decoded_image.height()
+                 << " is being scaled up and will look blurry.";
+  }
   SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
-      gfx::ImageSkia(gfx::ImageSkiaRep(decoded_image, 1.0f)),
-      skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
-                extension_misc::EXTENSION_ICON_SMALL)));
+      decoded_image, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kArcAppWindowIconSize, kArcAppWindowIconSize)));
 }
