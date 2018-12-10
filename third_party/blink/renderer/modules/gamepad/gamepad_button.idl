@@ -4,7 +4,6 @@
 
 interface GamepadButton {
     readonly attribute boolean pressed;
-    // TODO(bajones): Enable this by default as it is part of the core spec.
-    [OriginTrialEnabled=WebXRGamepadSupport, MeasureAs=GamepadButtonTouched] readonly attribute boolean touched;
+    [MeasureAs=GamepadButtonTouched] readonly attribute boolean touched;
     readonly attribute double value;
 };
