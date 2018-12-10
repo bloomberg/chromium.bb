@@ -135,11 +135,11 @@ void BaseFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
           referrer_policy_to_use, request.Url(), referrer_to_use));
       request.SetHTTPOriginIfNeeded(GetSecurityOrigin());
     } else {
-      DCHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
-                                                 request.Url(),
-                                                 request.HttpReferrer())
-                    .referrer,
-                request.HttpReferrer());
+      CHECK_EQ(SecurityPolicy::GenerateReferrer(request.GetReferrerPolicy(),
+                                                request.Url(),
+                                                request.HttpReferrer())
+                   .referrer,
+               request.HttpReferrer());
       request.SetHTTPOriginToMatchReferrerIfNeeded();
     }
   }
