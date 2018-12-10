@@ -81,11 +81,13 @@ component("embedder") {
 
 component("embedder_switches") {
   sources = [
-    "service_manager_embedder_switches_export.h",
     "switches.cc",
     "switches.h",
   ]
-  defines = [ "SERVICE_MANAGER_EMBEDDER_SWITCHES_IMPL" ]
+  deps = [
+    "//base",
+  ]
+  defines = [ "IS_SERVICE_MANAGER_EMBEDDER_SWITCHES_IMPL" ]
 }
 
 source_set("embedder_result_codes") {
