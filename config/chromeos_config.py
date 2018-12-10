@@ -2979,6 +2979,7 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
       (None, 'factory-nami-10715.B', ['nami', 'kalista']),
       (None, 'factory-nocturne-11066.B', ['nocturne']),
       (None, 'factory-grunt-11164.B', ['grunt']),
+      (None, 'factory-rammus-11289.B', ['rammus']),
   ]
 
   # Requires that you set boards, and workspace_branch.

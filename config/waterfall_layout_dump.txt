@@ -1480,6 +1480,7 @@
   factory-poppy-10504.B-factorybranch-tryjob
   factory-rambi-5517.B-factorybranch-tryjob
   factory-rambi-6420.B-factorybranch-tryjob
+  factory-rammus-11289.B-factorybranch-tryjob
   factory-reef-8811.B-factorybranch-tryjob
   factory-samus-6658.B-factorybranch-tryjob
   factory-scarlet-10211.B-factorybranch-tryjob
