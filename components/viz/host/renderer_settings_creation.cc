@@ -61,8 +61,6 @@ RendererSettings CreateRendererSettings() {
   renderer_settings.allow_antialiasing =
       !command_line->HasSwitch(switches::kDisableCompositedAntialiasing);
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-  renderer_settings.use_skia_deferred_display_list =
-      features::IsUsingSkiaDeferredDisplayList();
 #if defined(OS_MACOSX)
   renderer_settings.allow_overlays =
       ui::RemoteLayerAPISupported() &&

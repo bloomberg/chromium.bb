@@ -29,8 +29,7 @@ cr.define('gpu', function() {
           'clientInfoChange', this.refresh.bind(this));
 
       // Add handler to 'copy to clipboard' button
-      document.getElementById('copy-to-clipboard').onclick =
-          function() {
+      $('copy-to-clipboard').onclick = function() {
         // Make sure nothing is selected
         window.getSelection().removeAllRanges();
 
@@ -39,9 +38,9 @@ cr.define('gpu', function() {
 
         // And deselect everything at the end.
         window.getSelection().removeAllRanges();
-      }
+      };
 
-          this.refresh();
+      this.refresh();
     },
 
     /**
@@ -229,7 +228,6 @@ cr.define('gpu', function() {
         'webgl2': 'WebGL2',
         'viz_display_compositor': 'Viz Service Display Compositor',
         'skia_renderer': 'Skia Renderer',
-        'skia_deferred_display_list': 'Skia Deferred Display List',
       };
 
       var statusMap = {
@@ -382,7 +380,7 @@ cr.define('gpu', function() {
     },
 
     setText_: function(outputElementId, text) {
-      var peg = document.getElementById(outputElementId);
+      var peg = $(outputElementId);
       peg.textContent = text;
     },
 
@@ -390,7 +388,7 @@ cr.define('gpu', function() {
       var template = jstGetTemplate('info-view-table-template');
       jstProcess(new JsEvalContext({value: inputData}), template);
 
-      var peg = document.getElementById(outputElementId);
+      var peg = $(outputElementId);
       if (!peg)
         throw new Error('Node ' + outputElementId + ' not found');
 

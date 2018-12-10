@@ -209,9 +209,6 @@ const GpuFeatureData GetGpuFeatureData(
       {"skia_renderer", gpu::kGpuFeatureStatusEnabled,
        !features::IsUsingSkiaRenderer(),
        "Skia renderer is not used by default.", false, false},
-      {"skia_deferred_display_list", gpu::kGpuFeatureStatusEnabled,
-       !features::IsUsingSkiaDeferredDisplayList(),
-       "Skia deferred display list is not used by default.", false, false},
   };
   DCHECK(index < arraysize(kGpuFeatureData));
   *eof = (index == arraysize(kGpuFeatureData) - 1);
@@ -271,10 +268,6 @@ std::unique_ptr<base::DictionaryValue> GetFeatureStatusImpl(
       }
       if (gpu_feature_data.name == "skia_renderer") {
         if (features::IsUsingSkiaRenderer())
-          status += "_on";
-      }
-      if (gpu_feature_data.name == "skia_deferred_display_list") {
-        if (features::IsUsingSkiaDeferredDisplayList())
           status += "_on";
       }
     }

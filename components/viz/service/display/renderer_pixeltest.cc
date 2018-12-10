@@ -847,7 +847,6 @@ using RendererTypes =
     ::testing::Types<GLRenderer,
                      SoftwareRenderer,
                      SkiaRenderer,
-                     cc::SkiaRendererDDL,
                      cc::GLRendererWithExpandedViewport,
                      cc::SoftwareRendererWithExpandedViewport>;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
@@ -895,13 +894,6 @@ bool FuzzyForSoftwareOnlyPixelComparator<SoftwareRenderer>::Compare(
 
 template <>
 bool FuzzyForSoftwareOnlyPixelComparator<SkiaRenderer>::Compare(
-    const SkBitmap& actual_bmp,
-    const SkBitmap& expected_bmp) const {
-  return fuzzy_.Compare(actual_bmp, expected_bmp);
-}
-
-template <>
-bool FuzzyForSoftwareOnlyPixelComparator<cc::SkiaRendererDDL>::Compare(
     const SkBitmap& actual_bmp,
     const SkBitmap& expected_bmp) const {
   return fuzzy_.Compare(actual_bmp, expected_bmp);
@@ -1309,11 +1301,6 @@ uint32_t GetColor<GLRenderer>(const SkColor& color) {
 
 template <>
 uint32_t GetColor<SkiaRenderer>(const SkColor& color) {
-  return GetSkiaOrGLColor(color);
-}
-
-template <>
-uint32_t GetColor<cc::SkiaRendererDDL>(const SkColor& color) {
   return GetSkiaOrGLColor(color);
 }
 
@@ -2647,7 +2634,7 @@ class RendererPixelTestWithBackgroundFilter
 
 // The software renderer does not support background filters yet.
 using BackgroundFilterRendererTypes =
-    ::testing::Types<GLRenderer, SkiaRenderer, cc::SkiaRendererDDL>;
+    ::testing::Types<GLRenderer, SkiaRenderer>;
 
 TYPED_TEST_CASE(RendererPixelTestWithBackgroundFilter,
                 BackgroundFilterRendererTypes);
@@ -4038,32 +4025,21 @@ TEST_F(GLRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
       cc::ExactPixelComparator(true)));
 }
 
-using SkiaRendererTypes = ::testing::Types<SkiaRenderer, cc::SkiaRendererDDL>;
+using SkiaRendererTypes = ::testing::Types<SkiaRenderer>;
 TYPED_TEST_CASE(SkiaRendererPixelTestWithOverdrawFeedback, SkiaRendererTypes);
 
-template <typename RendererType>
 class SkiaRendererPixelTestWithOverdrawFeedback
-    : public cc::RendererPixelTest<RendererType> {
+    : public cc::RendererPixelTest<SkiaRenderer> {
  protected:
   void SetUp() override;
-  bool is_ddl_ = false;
 };
 
-template <>
-inline void SkiaRendererPixelTestWithOverdrawFeedback<SkiaRenderer>::SetUp() {
+void SkiaRendererPixelTestWithOverdrawFeedback::SetUp() {
   renderer_settings_.show_overdraw_feedback = true;
   SkiaRendererPixelTest::SetUp();
 }
 
-template <>
-inline void
-SkiaRendererPixelTestWithOverdrawFeedback<cc::SkiaRendererDDL>::SetUp() {
-  renderer_settings_.show_overdraw_feedback = true;
-  is_ddl_ = true;
-  cc::SkiaRendererDDLPixelTest::SetUp();
-}
-
-TYPED_TEST(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
+TEST_F(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
   gfx::Rect rect(this->device_viewport_size_);
 
   int id = 1;
@@ -4102,16 +4078,11 @@ TYPED_TEST(SkiaRendererPixelTestWithOverdrawFeedback, TranslucentRectangles) {
   pass_list.push_back(std::move(pass));
   const auto reference_file =
       base::FilePath(FILE_PATH_LITERAL("skia_translucent_rectangles.png"));
-  if (this->is_ddl_) {
-    // TODO(xing.xu): investigate why overdraw feedback has small difference
-    // between Skia DDL and Skia. (http://crbug.com/909971)
-    EXPECT_TRUE(this->RunPixelTest(
-        &pass_list, reference_file,
-        cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f)));
-  } else {
-    EXPECT_TRUE(this->RunPixelTest(&pass_list, reference_file,
-                                   cc::ExactPixelComparator(true)));
-  }
+  // TODO(xing.xu): investigate why overdraw feedback has small difference
+  // (http://crbug.com/909971)
+  EXPECT_TRUE(this->RunPixelTest(
+      &pass_list, reference_file,
+      cc::FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f)));
 }
 
 using ColorSpacePair = std::tuple<gfx::ColorSpace, gfx::ColorSpace, bool>;

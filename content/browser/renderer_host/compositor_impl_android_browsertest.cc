@@ -53,8 +53,7 @@ class CompositorImplBrowserTest
         break;
       case CompositorImplMode::kVizSkDDL:
         scoped_feature_list_.InitWithFeatures(
-            {features::kVizDisplayCompositor,
-             features::kUseSkiaDeferredDisplayList, features::kUseSkiaRenderer,
+            {features::kVizDisplayCompositor, features::kUseSkiaRenderer,
              features::kDefaultEnableOopRasterization},
             {});
         break;

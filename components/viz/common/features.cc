@@ -41,10 +41,6 @@ const base::Feature kEnableVizHitTestDrawQuad{"VizHitTestDrawQuad",
 const base::Feature kEnableVizHitTestSurfaceLayer{
     "VizHitTestSurfaceLayer", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the Skia deferred display list.
-const base::Feature kUseSkiaDeferredDisplayList{
-    "UseSkiaDeferredDisplayList", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use the SkiaRenderer.
 const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -96,12 +92,6 @@ bool IsUsingSkiaRenderer() {
 bool IsRecordingSkPicture() {
   return IsUsingSkiaRenderer() &&
          base::FeatureList::IsEnabled(kRecordSkPicture);
-}
-
-bool IsUsingSkiaDeferredDisplayList() {
-  return IsUsingSkiaRenderer() &&
-         base::FeatureList::IsEnabled(kUseSkiaDeferredDisplayList) &&
-         base::FeatureList::IsEnabled(kVizDisplayCompositor);
 }
 
 }  // namespace features
