@@ -307,6 +307,25 @@ def SetupBoard(buildroot, board, usepkg,
                  chroot_args=chroot_args)
 
 
+def BuildSDKBoard(buildroot, board, force=False, extra_env=None,
+                  chroot_args=None):
+  """Wrapper around setup_host_board.
+
+  Args:
+    board (str): The name of the board.
+    buildroot (str): The buildroot of the current build.
+    force (bool): Whether to remove existing sysroot if it exists.
+    extra_env (dict): A dictionary of environment variables to set.
+    chroot_args (dict): The args to the chroot.
+  """
+  cmd = ['./build_sdk_board', '--board', board]
+  if force:
+    cmd.append('--force')
+
+  RunBuildScript(buildroot, cmd, extra_env=extra_env, enter_chroot=True,
+                 chroot_args=chroot_args)
+
+
 def SetupToolchains(buildroot, usepkg=True, create_packages=False, targets=None,
                     sysroot=None, boards=None, output_dir=None, **kwargs):
   """Install or update toolchains.

@@ -501,6 +501,20 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
         profile=self._run.options.profile or self._run.config.profile)
 
 
+class BuildSDKBoardStage(generic_stages.BoardSpecificBuilderStage,
+                         InitSDKStage):
+  """Stage responsible for building packages and the SDK board."""
+
+  option_name = 'build'
+  category = constants.CI_INFRA_STAGE
+
+  def PerformStage(self):
+    # Build the SDK board.
+    commands.BuildSDKBoard(
+        self._build_root, self._current_board,
+        force=self._run.config.board_replace, extra_env=self._portage_extra_env)
+
+
 class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                          generic_stages.ArchivingStageMixin):
   """Build Chromium OS packages."""
