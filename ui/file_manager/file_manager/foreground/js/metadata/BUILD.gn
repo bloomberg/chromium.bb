@@ -204,6 +204,13 @@ js_library("multi_metadata_provider") {
   ]
 }
 
+js_unittest("multi_metadata_provider_unittest") {
+  deps = [
+    ":multi_metadata_provider",
+    "//ui/file_manager/base/js:test_error_reporting",
+  ]
+}
+
 js_library("thumbnail_model") {
   deps = [
     ":metadata_model",
@@ -222,6 +229,7 @@ js_unit_tests("unit_tests") {
   deps = [
     ":image_orientation_unittest",
     ":metadata_cache_item_unittest",
+    ":multi_metadata_provider_unittest",
     ":thumbnail_model_unittest",
   ]
 }
