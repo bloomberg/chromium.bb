@@ -10,6 +10,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
+import android.view.accessibility.AccessibilityManager;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
@@ -29,6 +30,7 @@ public class TracingNotificationManager {
 
     private static NotificationManagerProxy sNotificationManagerOverride;
     private static ChromeNotificationBuilder sTracingActiveNotificationBuilder;
+    private static int sTracingActiveNotificationBufferPercentage;
 
     // TODO(eseckler): Consider recording UMAs, see e.g. IncognitoNotificationManager.
 
@@ -86,9 +88,10 @@ public class TracingNotificationManager {
     public static void showTracingActiveNotification() {
         Context context = ContextUtils.getApplicationContext();
         String title = context.getResources().getString(R.string.tracing_active_notification_title);
-        int bufferUsagePercentage = 0;
-        String message = context.getResources().getString(
-                R.string.tracing_active_notification_message, bufferUsagePercentage);
+        sTracingActiveNotificationBufferPercentage = 0;
+        String message =
+                context.getResources().getString(R.string.tracing_active_notification_message,
+                        sTracingActiveNotificationBufferPercentage);
 
         sTracingActiveNotificationBuilder =
                 createNotificationBuilder()
@@ -112,9 +115,20 @@ public class TracingNotificationManager {
     public static void updateTracingActiveNotification(float bufferUsagePercentage) {
         assert (sTracingActiveNotificationBuilder != null);
         Context context = ContextUtils.getApplicationContext();
+
+        // Don't update the notification if accessibility is enabled as this may interfere with
+        // selecting the stop button.
+        AccessibilityManager am =
+                (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        if (am.isEnabled() && am.isTouchExplorationEnabled()) return;
+
+        int newPercentage = Math.round(bufferUsagePercentage * 100);
+        if (sTracingActiveNotificationBufferPercentage == newPercentage) return;
+        sTracingActiveNotificationBufferPercentage = newPercentage;
+
         String message =
                 context.getResources().getString(R.string.tracing_active_notification_message,
-                        Math.round(bufferUsagePercentage * 100));
+                        sTracingActiveNotificationBufferPercentage);
 
         sTracingActiveNotificationBuilder.setContentText(message);
         showNotification(sTracingActiveNotificationBuilder.build());
