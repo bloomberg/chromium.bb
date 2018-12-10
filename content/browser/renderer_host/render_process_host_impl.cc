@@ -3624,8 +3624,7 @@ RenderProcessHostImpl::StartRtpDump(
 
 void RenderProcessHostImpl::EnableWebRtcEventLogOutput(int lid,
                                                        int output_period_ms) {
-  Send(new PeerConnectionTracker_StartEventLogOutput(
-      lid, base::saturated_cast<unsigned int>(output_period_ms)));
+  Send(new PeerConnectionTracker_StartEventLog(lid, output_period_ms));
 }
 
 void RenderProcessHostImpl::DisableWebRtcEventLogOutput(int lid) {

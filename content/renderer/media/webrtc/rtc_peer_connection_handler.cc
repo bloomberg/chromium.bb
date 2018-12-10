@@ -1835,17 +1835,6 @@ void RTCPeerConnectionHandler::CloseClientPeerConnection() {
     client_->ClosePeerConnection();
 }
 
-void RTCPeerConnectionHandler::StartEventLog(IPC::PlatformFileForTransit file,
-                                             int64_t max_file_size_bytes) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(file != IPC::InvalidPlatformFileForTransit());
-  // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
-  // or find a way to be able to use it.
-  // https://crbug.com/775415
-  native_peer_connection_->StartRtcEventLog(
-      IPC::PlatformFileForTransitToPlatformFile(file), max_file_size_bytes);
-}
-
 void RTCPeerConnectionHandler::StartEventLog(int output_period_ms) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it
