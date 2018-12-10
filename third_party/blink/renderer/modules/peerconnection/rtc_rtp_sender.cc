@@ -274,17 +274,6 @@ MediaStreamTrack* RTCRtpSender::track() {
   return track_;
 }
 
-RTCDtlsTransport* RTCRtpSender::transport() {
-  if (!transceiver_)
-    return nullptr;
-  return pc_->LookupDtlsTransportByMid(transceiver_->mid());
-}
-
-RTCDtlsTransport* RTCRtpSender::rtcp_transport() {
-  // Chrome does not support turning off RTCP-mux.
-  return nullptr;
-}
-
 ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
                                          MediaStreamTrack* with_track) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
@@ -452,10 +441,6 @@ void RTCRtpSender::set_streams(MediaStreamVector streams) {
   streams_ = std::move(streams);
 }
 
-void RTCRtpSender::set_transceiver(RTCRtpTransceiver* transceiver) {
-  transceiver_ = transceiver;
-}
-
 RTCDTMFSender* RTCRtpSender::dtmf() {
   // Lazy initialization of dtmf_ to avoid overhead when not used.
   if (!dtmf_ && kind_ == "audio") {
@@ -476,7 +461,6 @@ void RTCRtpSender::Trace(blink::Visitor* visitor) {
   visitor->Trace(dtmf_);
   visitor->Trace(streams_);
   visitor->Trace(last_returned_parameters_);
-  visitor->Trace(transceiver_);
   ScriptWrappable::Trace(visitor);
 }
 

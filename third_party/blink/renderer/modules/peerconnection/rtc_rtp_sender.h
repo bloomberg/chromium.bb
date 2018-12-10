@@ -20,11 +20,9 @@
 namespace blink {
 
 class MediaStreamTrack;
-class RTCDtlsTransport;
 class RTCDTMFSender;
 class RTCPeerConnection;
 class RTCRtpCapabilities;
-class RTCRtpTransceiver;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters*);
@@ -43,8 +41,6 @@ class RTCRtpSender final : public ScriptWrappable {
                MediaStreamVector streams);
 
   MediaStreamTrack* track();
-  RTCDtlsTransport* transport();
-  RTCDtlsTransport* rtcp_transport();
   ScriptPromise replaceTrack(ScriptState*, MediaStreamTrack*);
   RTCDTMFSender* dtmf();
   static RTCRtpCapabilities* getCapabilities(const String& kind);
@@ -59,7 +55,6 @@ class RTCRtpSender final : public ScriptWrappable {
   void ClearLastReturnedParameters();
   MediaStreamVector streams() const;
   void set_streams(MediaStreamVector streams);
-  void set_transceiver(RTCRtpTransceiver*);
 
   void Trace(blink::Visitor*) override;
 
@@ -73,7 +68,6 @@ class RTCRtpSender final : public ScriptWrappable {
   Member<RTCDTMFSender> dtmf_;
   MediaStreamVector streams_;
   Member<RTCRtpSendParameters> last_returned_parameters_;
-  Member<RTCRtpTransceiver> transceiver_;
 };
 
 }  // namespace blink

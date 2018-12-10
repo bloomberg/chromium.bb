@@ -62,7 +62,6 @@ class MediaStreamTrack;
 class MediaStreamTrackOrString;
 class RTCAnswerOptions;
 class RTCConfiguration;
-class RTCDtlsTransport;
 class RTCDTMFSender;
 class RTCDataChannel;
 class RTCDataChannelInit;
@@ -335,8 +334,6 @@ class MODULES_EXPORT RTCPeerConnection final
   // getUserMedia().
   bool HasDocumentMedia() const;
 
-  // Look up, and potentially create, a DTLSTransport object.
-  RTCDtlsTransport* LookupDtlsTransportByMid(String mid);
   void Trace(blink::Visitor*) override;
 
  private:
@@ -496,11 +493,6 @@ class MODULES_EXPORT RTCPeerConnection final
   HeapVector<Member<RTCRtpSender>> rtp_senders_;
   HeapVector<Member<RTCRtpReceiver>> rtp_receivers_;
   HeapVector<Member<RTCRtpTransceiver>> transceivers_;
-
-  // A map of all transports that have been looked up by MID.
-  // A transport may be referenced by more than one mid, so may
-  // be present multiple times in the table.
-  HeapHashMap<String, Member<RTCDtlsTransport>> dtls_transports_by_mid_;
 
   std::unique_ptr<WebRTCPeerConnectionHandler> peer_handler_;
 

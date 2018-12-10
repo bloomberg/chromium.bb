@@ -100,8 +100,6 @@ RTCRtpTransceiver::RTCRtpTransceiver(
   DCHECK(sender_);
   DCHECK(receiver_);
   UpdateMembers();
-  sender_->set_transceiver(this);
-  receiver_->set_transceiver(this);
 }
 
 String RTCRtpTransceiver::mid() const {
