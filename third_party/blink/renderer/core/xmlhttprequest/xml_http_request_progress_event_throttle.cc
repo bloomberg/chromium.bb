@@ -172,20 +172,6 @@ void XMLHttpRequestProgressEventThrottle::Fired() {
   StartOneShot(kMinimumProgressEventDispatchingInterval, FROM_HERE);
 }
 
-void XMLHttpRequestProgressEventThrottle::Pause() {
-  Stop();
-}
-
-void XMLHttpRequestProgressEventThrottle::Unpause() {
-  if (!deferred_.IsSet())
-    return;
-
-  // Do not dispatch events inline here, since ExecutionContext is iterating
-  // over the list of PausableObjects to resume them, and any activated JS
-  // event-handler could insert new PausableObjects to the list.
-  StartOneShot(TimeDelta(), FROM_HERE);
-}
-
 void XMLHttpRequestProgressEventThrottle::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
 }
