@@ -312,7 +312,6 @@ crbug.com/591099 virtual/composite-after-paint/paint/background/scrolling-backgr
 crbug.com/591099 virtual/composite-after-paint/paint/invalidation/box/margin.html [ Failure Pass ]
 crbug.com/591099 virtual/display-lock/display-lock/lock-before-append/measure-and-remove.html [ Failure ]
 crbug.com/591099 virtual/exotic-color-space/ [ Skip ]
-crbug.com/591099 virtual/feature-policy-vibrate/ [ Skip ]
 crbug.com/591099 virtual/intersection-observer-v2/intersection-observer/v2/text-shadow.html [ Failure ]
 crbug.com/591099 virtual/layout_ng/ [ Skip ]
 crbug.com/824918 virtual/layout_ng_experimental/ [ Skip ]
