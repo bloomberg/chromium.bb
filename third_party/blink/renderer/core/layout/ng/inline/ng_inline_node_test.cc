@@ -921,6 +921,40 @@ TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
   EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\nbaz"), GetText());
 }
 
+// https://crbug.com/879088
+TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout) {
+  SetupHtml("container",
+            u"<div id=container>"
+            u"<span>\u30ED\u30B0\u30A4\u30F3</span>"
+            u"\n"
+            u"<span>\u767B\u9332</span>"
+            u"<br></div>");
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\n"), GetText());
+
+  Node* new_text = Text::Create(GetDocument(), "foo");
+  GetElementById("container")->appendChild(new_text);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\nfoo"), GetText());
+}
+
+// https://crbug.com/879088
+TEST_F(NGInlineNodeTest, RemoveSegmentBreakFromJapaneseInRelayout2) {
+  SetupHtml("container",
+            u"<div id=container>"
+            u"<span>\u30ED\u30B0\u30A4\u30F3</span>"
+            u"\n"
+            u"<span> \u767B\u9332</span>"
+            u"<br></div>");
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\n"), GetText());
+
+  Node* new_text = Text::Create(GetDocument(), "foo");
+  GetElementById("container")->appendChild(new_text);
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(String(u"\u30ED\u30B0\u30A4\u30F3\u767B\u9332\nfoo"), GetText());
+}
+
 TEST_F(NGInlineNodeTest, SegmentRanges) {
   SetupHtml("container",
             "<div id=container>"
