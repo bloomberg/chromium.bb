@@ -879,7 +879,6 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow) {
     ClearInlineFragment(layout_object);
     layout_object = next;
   }
-  block_flow->ClearNeedsLayout();
   return true;
 }
 
