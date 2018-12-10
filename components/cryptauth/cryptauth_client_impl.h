@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_api_call_flow.h"
 #include "components/cryptauth/cryptauth_client.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/identity/public/cpp/access_token_info.h"
 

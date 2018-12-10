@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CRYPTAUTH_PROTO_ENUM_UTIL_H_
-#define COMPONENTS_CRYPTAUTH_PROTO_ENUM_UTIL_H_
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_PROTO_ENUM_UTIL_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_PROTO_ENUM_UTIL_H_
 
 #include <ostream>
 
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 
@@ -38,4 +38,4 @@ std::string SoftwareFeatureEnumToStringAllCaps(
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_CRYPTAUTH_PROTO_ENUM_UTIL_H_
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_PROTO_ENUM_UTIL_H_

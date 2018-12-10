@@ -9,8 +9,8 @@
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_client.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/software_feature_manager.h"
 
 namespace cryptauth {

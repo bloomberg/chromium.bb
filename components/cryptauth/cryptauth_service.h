@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace cryptauth {

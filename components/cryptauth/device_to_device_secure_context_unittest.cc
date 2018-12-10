@@ -8,9 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/securemessage.pb.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/proto/securemessage.pb.h"
 #include "components/cryptauth/session_keys.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_client.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cryptauth {

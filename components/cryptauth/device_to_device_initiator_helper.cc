@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/secure_message_delegate.h"
 
 namespace cryptauth {

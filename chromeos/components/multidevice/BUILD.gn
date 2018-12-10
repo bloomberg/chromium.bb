@@ -26,8 +26,8 @@ static_library("multidevice") {
     "//base",
     "//base:i18n",
     "//chromeos",
-    "//components/cryptauth/proto",
-    "//components/cryptauth/proto:util",
+    "//chromeos/services/device_sync/proto",
+    "//chromeos/services/device_sync/proto:util",
     "//components/prefs",
   ]
 }
@@ -46,7 +46,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
   ]
 }
 
@@ -64,7 +64,7 @@ source_set("unit_tests") {
     ":test_support",
     "//base/test:test_support",
     "//chromeos/components/multidevice/mojom:unit_tests",
-    "//components/cryptauth/proto",
+    "//chromeos/services/device_sync/proto",
     "//testing/gtest",
   ]
 }

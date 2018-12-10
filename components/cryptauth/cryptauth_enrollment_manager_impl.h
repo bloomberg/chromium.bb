@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_gcm_manager.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/sync_scheduler.h"
 
 class PrefService;

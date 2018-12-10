@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "components/cryptauth/proto/securemessage.pb.h"
+#include "chromeos/services/device_sync/proto/securemessage.pb.h"
 
 namespace cryptauth {
 

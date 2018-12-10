@@ -2,8 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Definitions for CryptAuth API calls. Do not edit unless transcribing
-// from server definitions.
+// Definitions for calls to the CryptAuth back-end. The DeviceSync service
+// performs two main functions:
+//   (1) Enroll (i.e., register) the Chromebook with the CryptAuth server by
+//       providing information about the device.
+//   (2) Download metadata about other devices associated with the user's
+//       account.
+//
+// This file defines the protocol messages and enums used to perform these RPCs.
 syntax = "proto2";
 
 package cryptauth;
@@ -79,20 +85,20 @@ message ExternalDeviceInfo {
   optional string bluetooth_address = 3;
 
   // Whether or not this device can be used as an unlock key
-  optional bool unlock_key = 4 [ default = false ];
+  optional bool unlock_key = 4 [default = false];
 
   // Whether or not this device can be unlocked
-  optional bool unlockable = 5 [ default = false ];
+  optional bool unlockable = 5 [default = false];
 
   // The last time this device updated its info with the server.
   optional int64 last_update_time_millis = 6;
 
   // Whether or not this device hardware supports providing a mobile hotspot.
-  optional bool mobile_hotspot_supported = 7 [ default = false ];
+  optional bool mobile_hotspot_supported = 7 [default = false];
 
   // The type of the device (e.g. Android vs iOS).
   // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
-  optional DeviceType device_type = 8 [ default = UNKNOWN ];
+  optional DeviceType device_type = 8 [default = UNKNOWN];
 
   // A list of seeds for EID BLE advertisements targeting this device.
   repeated BeaconSeed beacon_seeds = 9;

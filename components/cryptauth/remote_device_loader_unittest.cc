@@ -11,8 +11,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "chromeos/services/device_sync/proto/enum_util.h"
 #include "components/cryptauth/fake_secure_message_delegate.h"
-#include "components/cryptauth/proto/enum_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

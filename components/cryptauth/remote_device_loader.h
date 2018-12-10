@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/multidevice/remote_device.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 

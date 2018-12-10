@@ -11,7 +11,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

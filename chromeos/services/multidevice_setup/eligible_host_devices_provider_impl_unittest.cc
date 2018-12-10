@@ -12,6 +12,7 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

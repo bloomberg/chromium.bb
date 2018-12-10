@@ -6,7 +6,7 @@
 #define COMPONENTS_CRYPTAUTH_GCM_DEVICE_INFO_PROVIDER_H_
 
 #include "base/macros.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
 namespace cryptauth {
 

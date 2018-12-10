@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/gcm_device_info_provider.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
 
 namespace chromeos {
 
