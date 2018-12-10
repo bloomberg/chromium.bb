@@ -143,7 +143,12 @@ void LayoutImageResource::UseBrokenImage() {
 }
 
 scoped_refptr<Image> LayoutImageResource::GetImage(
-    const LayoutSize& container_size) const {
+    const IntSize& container_size) const {
+  return GetImage(FloatSize(container_size));
+}
+
+scoped_refptr<Image> LayoutImageResource::GetImage(
+    const FloatSize& container_size) const {
   if (!cached_image_)
     return Image::NullImage();
 
@@ -164,7 +169,7 @@ scoped_refptr<Image> LayoutImageResource::GetImage(
     url = node->GetDocument().CompleteURL(url_string);
   }
   return SVGImageForContainer::Create(
-      ToSVGImage(image), FloatSize(container_size),
+      ToSVGImage(image), container_size,
       layout_object_->StyleRef().EffectiveZoom(), url);
 }
 

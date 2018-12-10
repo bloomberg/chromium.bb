@@ -56,7 +56,8 @@ class CORE_EXPORT LayoutImageResource
   void ResetAnimation();
   bool MaybeAnimated() const;
 
-  virtual scoped_refptr<Image> GetImage(const LayoutSize&) const;
+  virtual scoped_refptr<Image> GetImage(const FloatSize&) const;
+  scoped_refptr<Image> GetImage(const IntSize&) const;
   virtual bool ErrorOccurred() const {
     return cached_image_ && cached_image_->ErrorOccurred();
   }

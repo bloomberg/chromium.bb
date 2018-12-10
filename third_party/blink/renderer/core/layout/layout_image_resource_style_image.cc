@@ -59,13 +59,13 @@ void LayoutImageResourceStyleImage::Shutdown() {
 }
 
 scoped_refptr<Image> LayoutImageResourceStyleImage::GetImage(
-    const LayoutSize& size) const {
+    const FloatSize& size) const {
   // Generated content may trigger calls to image() while we're still pending,
   // don't assert but gracefully exit.
   if (style_image_->IsPendingImage())
     return nullptr;
   return style_image_->GetImage(*layout_object_, layout_object_->GetDocument(),
-                                layout_object_->StyleRef(), FloatSize(size));
+                                layout_object_->StyleRef(), size);
 }
 
 FloatSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {

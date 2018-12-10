@@ -56,16 +56,12 @@ void SVGImagePainter::Paint(const PaintInfo& paint_info) {
 
 void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   const LayoutImageResource* image_resource = layout_svg_image_.ImageResource();
-  // TODO(fs): Reduce the number of conversions.
-  // (FloatSize -> IntSize -> LayoutSize currently.)
-  FloatSize float_image_viewport_size = ComputeImageViewportSize();
-  float_image_viewport_size.Scale(layout_svg_image_.StyleRef().EffectiveZoom());
-  IntSize image_viewport_size = ExpandedIntSize(float_image_viewport_size);
+  FloatSize image_viewport_size = ComputeImageViewportSize();
+  image_viewport_size.Scale(layout_svg_image_.StyleRef().EffectiveZoom());
   if (image_viewport_size.IsEmpty())
     return;
 
-  scoped_refptr<Image> image =
-      image_resource->GetImage(LayoutSize(image_viewport_size));
+  scoped_refptr<Image> image = image_resource->GetImage(image_viewport_size);
   FloatRect dest_rect = layout_svg_image_.ObjectBoundingBox();
   FloatRect src_rect(0, 0, image->width(), image->height());
 

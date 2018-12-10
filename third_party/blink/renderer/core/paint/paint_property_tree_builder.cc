@@ -1547,8 +1547,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
       LayoutRect layout_replaced_rect = layout_image.ReplacedContentRect();
       layout_replaced_rect.MoveBy(context_.current.paint_offset);
       IntRect replaced_rect = PixelSnappedIntRect(layout_replaced_rect);
-      scoped_refptr<Image> image = layout_image.ImageResource()->GetImage(
-          LayoutSize(replaced_rect.Size()));
+      scoped_refptr<Image> image =
+          layout_image.ImageResource()->GetImage(replaced_rect.Size());
       if (image && !image->IsNull()) {
         IntRect src_rect = image->Rect();
         if (ImageWasTransposed(layout_image, *image))
