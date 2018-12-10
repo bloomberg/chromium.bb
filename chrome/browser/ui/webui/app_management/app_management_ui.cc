@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -15,6 +16,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,6 +69,12 @@ AppManagementUI::AppManagementUI(content::WebUI* web_ui)
 
   AddHandlerToRegistry(base::BindRepeating(
       &AppManagementUI::BindPageHandlerFactory, base::Unretained(this)));
+
+  // Make the chrome://app-icon/ resource available.
+  if (profile) {
+    content::URLDataSource::Add(profile,
+                                std::make_unique<apps::AppIconSource>(profile));
+  }
 }
 
 AppManagementUI::~AppManagementUI() = default;

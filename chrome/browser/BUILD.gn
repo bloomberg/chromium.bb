@@ -2589,6 +2589,8 @@ jumbo_split_static_library("browser") {
       "accessibility/invert_bubble_prefs.h",
       "apps/app_service/app_icon_factory.cc",
       "apps/app_service/app_icon_factory.h",
+      "apps/app_service/app_icon_source.cc",
+      "apps/app_service/app_icon_source.h",
       "apps/app_service/app_service_proxy.cc",
       "apps/app_service/app_service_proxy.h",
       "apps/app_service/app_service_proxy_factory.cc",
