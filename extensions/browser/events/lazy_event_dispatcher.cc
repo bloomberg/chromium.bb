@@ -107,7 +107,7 @@ bool LazyEventDispatcher::QueueEventDispatch(
   // to avoid lifetime issues. Use a separate copy of the event args, so they
   // last until the event is dispatched.
   if (!event_->will_dispatch_callback.is_null()) {
-    dispatched_event.reset(event_->DeepCopy());
+    dispatched_event.reset(event_->DeepCopy().release());
     if (!dispatched_event->will_dispatch_callback.Run(
             dispatch_context->browser_context(), extension,
             dispatched_event.get(), listener_filter)) {
