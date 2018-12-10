@@ -155,6 +155,15 @@ bool MatchesInteractability(const ProcessedField& processed_field,
            FieldPropertiesFlags::AUTOFILLED));
 }
 
+bool DoesStringContainOnlyDigits(const base::string16& s) {
+  return std::all_of(s.begin(), s.end(), &base::IsAsciiDigit<base::char16>);
+}
+
+// Heuristics to determine that a string is very unlikely to be a username.
+bool IsProbablyNotUsername(const base::string16& s) {
+  return s.empty() || (s.size() < 3 && DoesStringContainOnlyDigits(s));
+}
+
 // A helper struct that is used to capture significant fields to be used for
 // the construction of a PasswordForm.
 struct SignificantFields {
@@ -536,8 +545,9 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
     Interactability best_interactability) {
   DCHECK(first_relevant_password != processed_fields.end());
 
-  // For saving filter out empty fields.
-  const bool consider_only_non_empty = mode == FormDataParser::Mode::kSaving;
+  // For saving filter out empty fields and fields with values which are not
+  // username.
+  const bool is_saving = mode == FormDataParser::Mode::kSaving;
 
   // Search through the text input fields preceding |first_relevant_password|
   // and find the closest one focusable and the closest one in general.
@@ -551,7 +561,7 @@ const FormFieldData* FindUsernameFieldBaseHeuristics(
       continue;
     if (!MatchesInteractability(*it, best_interactability))
       continue;
-    if (consider_only_non_empty && it->field->value.empty())
+    if (is_saving && IsProbablyNotUsername(it->field->value))
       continue;
     if (IsFieldCVC(*it))
       continue;
