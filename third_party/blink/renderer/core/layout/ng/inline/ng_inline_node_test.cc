@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_child_layout_context.h"
@@ -20,6 +21,8 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
+
+using ::testing::ElementsAre;
 
 class NGInlineNodeForTest : public NGInlineNode {
  public:
@@ -157,6 +160,14 @@ class NGInlineNodeTest : public NGLayoutTest {
   }
 
   void ForceLayout() { GetDocument().body()->OffsetTop(); }
+
+  Vector<unsigned> ToEndOffsetList(
+      NGInlineItemSegments::const_iterator segments) {
+    Vector<unsigned> end_offsets;
+    for (const NGInlineItemSegment& segment : segments)
+      end_offsets.push_back(segment.EndOffset());
+    return end_offsets;
+  }
 
   scoped_refptr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
@@ -908,6 +919,50 @@ TEST_F(NGInlineNodeTest, PreservedNewlineWithBidiAndRelayout) {
 
   // The bidi context popping and re-entering should be preserved around '\n'.
   EXPECT_EQ(String(u"foo\u2066\u2069\n\u2066\u2069bar\nbaz"), GetText());
+}
+
+TEST_F(NGInlineNodeTest, SegmentRanges) {
+  SetupHtml("container",
+            "<div id=container>"
+            u"\u306Forange\u304C"
+            "<span>text</span>"
+            "</div>");
+
+  NGInlineItemsData* items_data = layout_block_flow_->GetNGInlineNodeData();
+  ASSERT_TRUE(items_data);
+  NGInlineItemSegments* segments = items_data->segments.get();
+  ASSERT_TRUE(segments);
+
+  // Test EndOffset for the full text. All segment boundaries including the end
+  // of the text content should be returned.
+  Vector<unsigned> expect_0_12 = {1u, 7u, 8u, 12u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(0, 12, 0)), expect_0_12);
+
+  // Test ranges for each segment that start with 1st item.
+  Vector<unsigned> expect_0_1 = {1u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(0, 1, 0)), expect_0_1);
+  Vector<unsigned> expect_2_3 = {3u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(2, 3, 0)), expect_2_3);
+  Vector<unsigned> expect_7_8 = {8u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(7, 8, 0)), expect_7_8);
+
+  // Test ranges that acrosses multiple segments.
+  Vector<unsigned> expect_0_8 = {1u, 7u, 8u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(0, 8, 0)), expect_0_8);
+  Vector<unsigned> expect_2_8 = {7u, 8u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(2, 8, 0)), expect_2_8);
+  Vector<unsigned> expect_2_10 = {7u, 8u, 10u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(2, 10, 0)), expect_2_10);
+  Vector<unsigned> expect_7_10 = {8u, 10u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(7, 10, 0)), expect_7_10);
+
+  // Test ranges that starts with 2nd item.
+  Vector<unsigned> expect_8_9 = {9u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(8, 9, 1)), expect_8_9);
+  Vector<unsigned> expect_8_10 = {10u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(8, 10, 1)), expect_8_10);
+  Vector<unsigned> expect_9_12 = {12u};
+  EXPECT_EQ(ToEndOffsetList(segments->Ranges(9, 12, 1)), expect_9_12);
 }
 
 }  // namespace blink

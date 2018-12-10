@@ -128,14 +128,16 @@ NGInlineItemSegments::Iterator NGInlineItemSegments::Ranges(
     return Iterator(start_offset, end_offset, segment);
 
   // The item has multiple segments. Find the segments for |start_offset|.
-  const NGInlineItemSegment* end_segment =
-      item_index + 1 < items_to_segments_.size() ? &segments_[segment_index + 1]
-                                                 : segments_.end();
-  segment =
-      std::upper_bound(segment, end_segment, start_offset,
-                       [](unsigned offset, const NGInlineItemSegment& segment) {
-                         return offset < segment.EndOffset();
-                       });
+  unsigned end_segment_index = item_index + 1 < items_to_segments_.size()
+                                   ? items_to_segments_[item_index + 1]
+                                   : segments_.size();
+  CHECK_GT(end_segment_index, segment_index);
+  CHECK_LE(end_segment_index, segments_.size());
+  segment = std::upper_bound(
+      segment, segment + (end_segment_index - segment_index), start_offset,
+      [](unsigned offset, const NGInlineItemSegment& segment) {
+        return offset < segment.EndOffset();
+      });
   CheckOffset(start_offset, segment);
   return Iterator(start_offset, end_offset, segment);
 }
@@ -219,12 +221,10 @@ void NGInlineItemSegments::ComputeItemIndex(const Vector<NGInlineItem>& items) {
   unsigned item_index = 0;
   items_to_segments_.resize(items.size());
   for (const NGInlineItem& item : items) {
-    if (item.Length()) {
-      while (item.StartOffset() >= segment->EndOffset()) {
-        ++segment_index;
-        DCHECK_LT(segment_index, segments_.size());
-        ++segment;
-      }
+    while (segment_index < segments_.size() &&
+           item.StartOffset() >= segment->EndOffset()) {
+      ++segment_index;
+      ++segment;
     }
     items_to_segments_[item_index++] = segment_index;
   }

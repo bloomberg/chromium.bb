@@ -127,6 +127,9 @@ class CORE_EXPORT NGInlineItemSegments {
   };
   using const_iterator = Iterator;
 
+  // Returns an iterator for the given offsets.
+  //
+  // |item_index| is the index of |NGInlineItem| for the |start_offset|.
   const_iterator Ranges(unsigned start_offset,
                         unsigned end_offset,
                         unsigned item_index) const;
