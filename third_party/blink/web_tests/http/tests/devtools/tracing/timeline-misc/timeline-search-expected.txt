@@ -1,5 +1,7 @@
 Test search in Timeline FlameChart View.
 
+Count: 7
+2010: B TimeStamp CrRendererMain
 2010: B TimeStamp CrRendererMain
 2011: X RasterTask CompositorTileWorker
 2100: S Painting CrRendererMain
