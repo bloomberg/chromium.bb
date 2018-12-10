@@ -269,14 +269,24 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     }
     self.AddElement(parent, 'multiText', attributes)
 
-  def _AddIntPolicy(self, parent, name):
+  def _AddIntPolicy(self, parent, policy):
     '''Generates ADMX elements for an Int-Policy and adds them to the passed
     parent node.
     '''
+    #default max value for an integer
+    max = '2000000000'
+    min = '0'
+    if self.PolicyHasRestrictions(policy):
+      schema = policy['schema']
+      if 'minimum' in schema:
+        min = schema['minimum']
+      if 'maximum' in schema:
+        max = schema['maximum']
     attributes = {
-        'id': name,
-        'valueName': name,
-        'maxValue': '2000000000',
+        'id': policy['name'],
+        'valueName': policy['name'],
+        'maxValue': str(max),
+        'minValue': str(min),
     }
     self.AddElement(parent, 'decimal', attributes)
 
@@ -322,6 +332,12 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     self.AddElement(enabled_value_elem, 'decimal', {'value': '1'})
     disabled_value_elem = self.AddElement(parent, 'disabledValue')
     self.AddElement(disabled_value_elem, 'decimal', {'value': '0'})
+
+  def PolicyHasRestrictions(self, policy):
+    if 'schema' in policy:
+      return any(keyword in policy['schema'] \
+        for keyword in ['minimum', 'maximum'])
+    return False
 
   def _GetElements(self, policy_group_elem):
     '''Returns the ADMX "elements" child from an ADMX "policy" element. If the
@@ -382,7 +398,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       self._AddMultiStringPolicy(parent, policy_name)
     elif element_type == AdmxElementType.INT:
       parent = self._GetElements(policy_elem)
-      self._AddIntPolicy(parent, policy_name)
+      self._AddIntPolicy(parent, policy)
     elif element_type == AdmxElementType.ENUM:
       parent = self._GetElements(policy_elem)
       self._AddEnumPolicy(parent, policy)
