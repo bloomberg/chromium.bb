@@ -446,6 +446,16 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Form parsing input";
     case STRING_FORM_PARSING_OUTPUT:
       return "Form parsing output";
+    case STRING_FAILED_TO_FILL_INTO_IFRAME:
+      return "Failed to fill: Form is in iframe on a non-PSL-matching security "
+             "origin";
+    case STRING_FAILED_TO_FILL_NO_AUTOCOMPLETEABLE_ELEMENT:
+      return "Failed to fill: No autocompleteable element found";
+    case STRING_FAILED_TO_FILL_PREFILLED_USERNAME:
+      return "Failed to fill: Username field was prefilled, but no credential "
+             "exists whose username matches the prefilled value";
+    case STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME:
+      return "Failed to fill: No credential matching found";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
