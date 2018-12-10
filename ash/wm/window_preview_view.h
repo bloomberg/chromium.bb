@@ -27,6 +27,10 @@ class ASH_EXPORT WindowPreviewView
   WindowPreviewView(aura::Window* window, bool trilinear_filtering_on_init);
   ~WindowPreviewView() override;
 
+  // Recreate the preview views for the window and all its transient
+  // descendants.
+  void RecreatePreviews();
+
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
