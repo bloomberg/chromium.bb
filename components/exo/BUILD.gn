@@ -131,11 +131,14 @@ source_set("test_support") {
   sources = [
     "test/exo_test_base_aura.cc",
     "test/exo_test_base_aura.h",
+    "test/exo_test_suite_aura.cc",
+    "test/exo_test_suite_aura.h",
   ]
 
   deps = [
     ":exo",
     "//base",
+    "//base/test:test_support",
     "//gpu",
     "//skia",
     "//testing/gtest",
@@ -145,6 +148,7 @@ source_set("test_support") {
     "//ui/compositor:test_support",
     "//ui/display/manager",
     "//ui/gfx/geometry",
+    "//ui/gl:test_support",
     "//ui/views",
     "//ui/wm",
   ]
@@ -242,6 +246,7 @@ test("exo_unittests") {
   ]
 
   deps = [
+    ":test_support",
     ":unit_tests",
     "//base",
     "//base/test:test_support",

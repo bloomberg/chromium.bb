@@ -90,6 +90,7 @@ ExoTestBaseAura::ExoTestBaseAura() {}
 ExoTestBaseAura::~ExoTestBaseAura() {}
 
 void ExoTestBaseAura::SetUp() {
+  ui::SetUpInputMethodFactoryForTesting();
   aura::test::AuraTestBase::SetUp();
   // Takes care of its own lifetime.
   new wm::DefaultActivationClient(root_window());
