@@ -4,14 +4,22 @@
 
 #include "ui/wm/core/ime_util_chromeos.h"
 
-#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace wm {
 namespace {
+
+void SetWindowBoundsInScreen(aura::Window* window,
+                             const gfx::Rect& bounds_in_screen) {
+  window->SetBoundsInScreen(
+      bounds_in_screen,
+      display::Screen::GetScreen()->GetDisplayNearestView(window));
+}
 
 // Moves the window to ensure caret not in rect.
 // Returns whether the window was moved or not.
@@ -24,24 +32,20 @@ void MoveWindowToEnsureCaretNotInRect(aura::Window* window,
   }
 
   // Calculate vertical window shift.
-  gfx::Rect rect_in_root_window = rect_in_screen;
-  ::wm::ConvertRectFromScreen(window->GetRootWindow(), &rect_in_root_window);
-  gfx::Rect bounds_in_root_window = original_window_bounds;
-  ::wm::ConvertRectFromScreen(window->GetRootWindow(), &bounds_in_root_window);
   const int top_y =
-      std::max(rect_in_root_window.y() - bounds_in_root_window.height(), 0);
+      std::max(rect_in_screen.y() - original_window_bounds.height(), 0);
 
   // No need to move the window up.
-  if (top_y >= bounds_in_root_window.y())
+  if (top_y >= original_window_bounds.y())
     return;
 
   // Set restore bounds and move the window.
   window->SetProperty(kVirtualKeyboardRestoreBoundsKey,
                       new gfx::Rect(original_window_bounds));
 
-  gfx::Rect new_bounds_in_root_window = bounds_in_root_window;
-  new_bounds_in_root_window.set_y(top_y);
-  window->SetBounds(new_bounds_in_root_window);
+  gfx::Rect new_bounds_in_screen = original_window_bounds;
+  new_bounds_in_screen.set_y(top_y);
+  SetWindowBoundsInScreen(window, new_bounds_in_screen);
 }
 
 }  // namespace
@@ -62,9 +66,7 @@ void RestoreWindowBoundsOnClientFocusLost(aura::Window* window) {
   // TODO(yhanada): Don't move the window if a user has moved it while the
   // keyboard is shown.
   if (window->GetBoundsInScreen() != *vk_restore_bounds) {
-    gfx::Rect original_bounds = *vk_restore_bounds;
-    ::wm::ConvertRectFromScreen(window->GetRootWindow(), &original_bounds);
-    window->SetBounds(original_bounds);
+    SetWindowBoundsInScreen(window, *vk_restore_bounds);
   }
   window->ClearProperty(wm::kVirtualKeyboardRestoreBoundsKey);
 }

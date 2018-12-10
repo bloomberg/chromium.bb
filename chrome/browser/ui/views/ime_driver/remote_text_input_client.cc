@@ -164,8 +164,7 @@ void RemoteTextInputClient::ExtendSelectionAndDelete(size_t before,
 }
 
 void RemoteTextInputClient::EnsureCaretNotInRect(const gfx::Rect& rect) {
-  // TODO(moshayedi): crbug.com/631527.
-  NOTIMPLEMENTED_LOG_ONCE();
+  remote_client_->EnsureCaretNotInRect(rect);
 }
 
 bool RemoteTextInputClient::IsTextEditCommandEnabled(

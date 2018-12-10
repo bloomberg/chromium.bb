@@ -50,6 +50,7 @@ class TestTextInputClient : public ws::mojom::TextInputClient {
       DispatchKeyEventPostIMECallback callback) override {
     std::move(callback).Run(false);
   }
+  void EnsureCaretNotInRect(const gfx::Rect& rect) override {}
 
   mojo::Binding<ws::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
