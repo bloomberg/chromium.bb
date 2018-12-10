@@ -4,9 +4,7 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/shell.h"  // mash-ok
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
@@ -55,18 +53,13 @@
 #include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ws/public/cpp/property_type_converters.h"
-#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_delegate.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
 using session_manager::SessionManager;
 using session_manager::SessionState;
-using views::Widget;
 
 namespace {
 
@@ -163,35 +156,6 @@ SystemTrayClient::~SystemTrayClient() {
 // static
 SystemTrayClient* SystemTrayClient::Get() {
   return g_system_tray_client_instance;
-}
-
-// static
-int SystemTrayClient::GetDialogParentContainerId() {
-  return SessionManager::Get()->session_state() == SessionState::ACTIVE
-             ? ash::kShellWindowId_SystemModalContainer
-             : ash::kShellWindowId_LockSystemModalContainer;
-}
-
-// static
-Widget* SystemTrayClient::CreateUnownedDialogWidget(
-    views::WidgetDelegate* widget_delegate) {
-  DCHECK(widget_delegate);
-  Widget::InitParams params = views::DialogDelegate::GetDialogWidgetInitParams(
-      widget_delegate, nullptr, nullptr, gfx::Rect());
-  // Place the dialog in the appropriate modal dialog container, either above
-  // or below the lock screen, based on the login state.
-  int container_id = GetDialogParentContainerId();
-  if (features::IsUsingWindowService()) {
-    using ws::mojom::WindowManager;
-    params.mus_properties[WindowManager::kContainerId_InitProperty] =
-        mojo::ConvertTo<std::vector<uint8_t>>(container_id);
-  } else {
-    params.parent = ash::Shell::GetContainer(
-        ash::Shell::GetRootWindowForNewWindows(), container_id);
-  }
-  Widget* widget = new Widget;  // Owned by native widget.
-  widget->Init(params);
-  return widget;
 }
 
 void SystemTrayClient::SetFlashUpdateAvailable() {
