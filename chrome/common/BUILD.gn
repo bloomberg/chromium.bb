@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
-import("//build/util/lastchange.gni")
 import("//build/util/process_version.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
@@ -518,7 +517,6 @@ process_version("version_header") {
   sources = [
     "//chrome/VERSION",
     branding_file_path,
-    lastchange_file,
   ]
 
   template_file = "chrome_version.h.in"
