@@ -2490,6 +2490,24 @@ def _CheckAndroidWebkitImports(input_api, output_api):
   return results
 
 
+def _CheckAndroidXmlStyle(input_api, output_api, is_check_on_upload):
+  """Checks Android XML styles """
+  import sys
+  original_sys_path = sys.path
+  try:
+    sys.path = sys.path + [input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'tools', 'android', 'checkxmlstyle')]
+    import checkxmlstyle
+  finally:
+    # Restore sys.path to what it was before.
+    sys.path = original_sys_path
+
+  if is_check_on_upload:
+    return checkxmlstyle.CheckStyleOnUpload(input_api, output_api)
+  else:
+    return checkxmlstyle.CheckStyleOnCommit(input_api, output_api)
+
+
 class PydepsChecker(object):
   def __init__(self, input_api, pydeps_files):
     self._file_cache = {}
@@ -2985,7 +3003,7 @@ def _CheckCorrectProductNameInMessages(input_api, output_api):
 
 
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
-  """Groups checks that target android code."""
+  """Groups upload checks that target android code."""
   results = []
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
@@ -2994,6 +3012,13 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidTestJUnitFrameworkImport(input_api, output_api))
   results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
   results.extend(_CheckAndroidWebkitImports(input_api, output_api))
+  results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
+  return results
+
+def _AndroidSpecificOnCommitChecks(input_api, output_api):
+  """Groups commit checks that target android code."""
+  results = []
+  results.extend(_CheckAndroidXmlStyle(input_api, output_api, False))
   return results
 
 
@@ -3472,6 +3497,7 @@ def GetTryServerMasterForBot(bot):
 def CheckChangeOnCommit(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
+  results.extend(_AndroidSpecificOnCommitChecks(input_api, output_api))
   # Make sure the tree is 'open'.
   results.extend(input_api.canned_checks.CheckTreeIsOpen(
       input_api,
