@@ -11,7 +11,7 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace chromeos {
 namespace assistant {

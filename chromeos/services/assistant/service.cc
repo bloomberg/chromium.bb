@@ -206,8 +206,9 @@ void Service::UpdateAssistantManagerState() {
 
 void Service::BindAssistantSettingsManager(
     mojom::AssistantSettingsManagerRequest request) {
-  DCHECK(assistant_settings_manager_);
-  assistant_settings_manager_->BindRequest(std::move(request));
+  DCHECK(assistant_manager_service_);
+  assistant_manager_service_->GetAssistantSettingsManager()->BindRequest(
+      std::move(request));
 }
 
 void Service::Init(mojom::ClientPtr client,
@@ -281,9 +282,6 @@ void Service::CreateAssistantManagerService() {
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
       service_binding_.GetConnector(), std::move(battery_monitor), this,
       network_connection_tracker_);
-
-  assistant_settings_manager_ =
-      assistant_manager_service_.get()->GetAssistantSettingsManager();
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();

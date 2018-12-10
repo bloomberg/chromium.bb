@@ -11,6 +11,7 @@
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
+#include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace chromeos {
@@ -32,18 +33,6 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void EnableListening(bool enable) override;
   State GetState() const override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
-  void SendGetSettingsUiRequest(
-      const std::string& selector,
-      GetSettingsUiResponseCallback callback) override;
-  void SendUpdateSettingsUiRequest(
-      const std::string& update,
-      UpdateSettingsUiResponseCallback callback) override;
-  void StartSpeakerIdEnrollment(
-      bool skip_cloud_enrollment,
-      mojom::SpeakerIdEnrollmentClientPtr client) override;
-  void StopSpeakerIdEnrollment(
-      AssistantSettingsManager::StopSpeakerIdEnrollmentCallback on_stopped)
-      override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
@@ -66,6 +55,8 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
 
  private:
   State state_ = State::STOPPED;
+  FakeAssistantSettingsManagerImpl assistant_settings_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantManagerServiceImpl);
 };
 

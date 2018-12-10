@@ -8,20 +8,29 @@
 #include <memory>
 #include <string>
 
-#include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
+namespace assistant_client {
+struct SpeakerIdEnrollmentUpdate;
+}  // namespace assistant_client
+
 namespace chromeos {
 namespace assistant {
+
+class AssistantManagerServiceImpl;
+class Service;
 
 class AssistantSettingsManagerImpl : public AssistantSettingsManager {
  public:
   AssistantSettingsManagerImpl(
-      AssistantManagerService* assistant_manager_service);
+      Service* service,
+      AssistantManagerServiceImpl* assistant_manager_service);
   ~AssistantSettingsManagerImpl() override;
+
+  bool speaker_id_enrollment_done() { return speaker_id_enrollment_done_; }
 
   // mojom::AssistantSettingsManager overrides:
   void GetSettings(const std::string& selector,
@@ -37,10 +46,26 @@ class AssistantSettingsManagerImpl : public AssistantSettingsManager {
   // AssistantSettingsManager overrides:
   void BindRequest(mojom::AssistantSettingsManagerRequest request) override;
 
+  void SyncSpeakerIdEnrollmentStatus();
+  void UpdateServerDeviceSettings();
+
  private:
-  AssistantManagerService* const assistant_manager_service_;
+  void HandleSpeakerIdEnrollmentUpdate(
+      const assistant_client::SpeakerIdEnrollmentUpdate& update);
+  void HandleStopSpeakerIdEnrollment(base::RepeatingCallback<void()> callback);
+  void HandleSpeakerIdEnrollmentStatusSync(
+      const assistant_client::SpeakerIdEnrollmentUpdate& update);
+
+  Service* const service_;
+  AssistantManagerServiceImpl* const assistant_manager_service_;
+  mojom::SpeakerIdEnrollmentClientPtr speaker_id_enrollment_client_;
+
+  // Whether the speaker id enrollment has complete for the user.
+  bool speaker_id_enrollment_done_ = false;
 
   mojo::BindingSet<mojom::AssistantSettingsManager> bindings_;
+
+  base::WeakPtrFactory<AssistantSettingsManagerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSettingsManagerImpl);
 };

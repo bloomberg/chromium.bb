@@ -10,6 +10,7 @@
 
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace chromeos {
 namespace assistant {
@@ -22,11 +23,20 @@ class FakeAssistantSettingsManagerImpl : public AssistantSettingsManager {
   // mojom::AssistantSettingsManager overrides:
   void GetSettings(const std::string& selector,
                    GetSettingsCallback callback) override;
+  void UpdateSettings(const std::string& update,
+                      UpdateSettingsCallback callback) override;
+  void StartSpeakerIdEnrollment(
+      bool skip_cloud_enrollment,
+      mojom::SpeakerIdEnrollmentClientPtr client) override;
+  void StopSpeakerIdEnrollment(
+      StopSpeakerIdEnrollmentCallback callback) override;
 
   // AssistantSettingsManager overrides:
   void BindRequest(mojom::AssistantSettingsManagerRequest request) override;
 
  private:
+  mojo::BindingSet<mojom::AssistantSettingsManager> bindings_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeAssistantSettingsManagerImpl);
 };
 
