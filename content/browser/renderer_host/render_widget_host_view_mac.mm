@@ -260,9 +260,8 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 void RenderWidgetHostViewMac::MigrateNSViewBridge(
     NSViewBridgeFactoryHost* bridge_factory_host,
     uint64_t parent_ns_view_id) {
-  // Destroy previous remote accessibility elements.
+  // Destroy the previous remote accessibility element.
   remote_window_accessible_.reset();
-  remote_view_accessible_.reset();
 
   // Disconnect from the previous bridge (this will have the effect of
   // destroying the associated bridge), and close the binding (to allow it
@@ -504,8 +503,6 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
-  if (remote_view_accessible_)
-    return remote_view_accessible_.get();
   return cocoa_view();
 }
 
@@ -1402,9 +1399,14 @@ BrowserAccessibilityManager*
 
 gfx::NativeViewAccessible
 RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessible() {
-  if (remote_view_accessible_)
-    return remote_view_accessible_.get();
   return cocoa_view();
+}
+
+gfx::NativeViewAccessible
+RenderWidgetHostViewMac::AccessibilityGetNativeViewAccessibleForWindow() {
+  if (remote_window_accessible_)
+    return remote_window_accessible_.get();
+  return [cocoa_view() window];
 }
 
 void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
@@ -1444,6 +1446,12 @@ id RenderWidgetHostViewMac::GetFocusedBrowserAccessibilityElement() {
   DLOG(ERROR) << "GetFocusedBrowserAccessibilityElement should not be reached "
                  "in-process.";
   return nil;
+}
+
+void RenderWidgetHostViewMac::SetAccessibilityWindow(NSWindow* window) {
+  // When running in-process, just use the NSView's NSWindow as its own
+  // accessibility element.
+  remote_window_accessible_.reset();
 }
 
 bool RenderWidgetHostViewMac::SyncIsRenderViewHost(bool* is_render_view) {
@@ -1920,21 +1928,21 @@ void RenderWidgetHostViewMac::StopSpeaking() {
   ui::TextServicesContextMenu::StopSpeaking();
 }
 
-void RenderWidgetHostViewMac::SyncConnectAccessibilityElements(
-    const std::vector<uint8_t>& window_token,
-    const std::vector<uint8_t>& view_token,
-    SyncConnectAccessibilityElementsCallback callback) {
-  remote_window_accessible_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
-  remote_view_accessible_ =
-      ui::RemoteAccessibility::GetRemoteElementFromToken(view_token);
-  [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
-  [remote_view_accessible_
-      setTopLevelUIElement:remote_window_accessible_.get()];
-
+void RenderWidgetHostViewMac::SyncGetRootAccessibilityElement(
+    SyncGetRootAccessibilityElementCallback callback) {
   id element_id = GetRootBrowserAccessibilityElement();
   std::move(callback).Run(
       getpid(), ui::RemoteAccessibility::GetTokenForLocalElement(element_id));
+}
+
+void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(
+    const std::vector<uint8_t>& window_token) {
+  if (window_token.empty()) {
+    remote_window_accessible_.reset();
+  } else {
+    remote_window_accessible_ =
+        ui::RemoteAccessibility::GetRemoteElementFromToken(window_token);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

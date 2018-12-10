@@ -274,6 +274,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void AccessibilityShowMenu(const gfx::Point& point);
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget();
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
+  virtual gfx::NativeViewAccessible
+  AccessibilityGetNativeViewAccessibleForWindow();
   virtual void SetMainFrameAXTreeID(ui::AXTreeID id) {}
   // Informs that the focused DOM node has changed.
   virtual void FocusedNodeChanged(bool is_editable_node,

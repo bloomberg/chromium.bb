@@ -77,6 +77,8 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
+  virtual gfx::NativeViewAccessible
+  AccessibilityGetNativeViewAccessibleForWindow() = 0;
 };
 
 class CONTENT_EXPORT BrowserAccessibilityFactory {

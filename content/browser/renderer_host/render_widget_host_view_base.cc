@@ -475,6 +475,11 @@ gfx::NativeViewAccessible
   return nullptr;
 }
 
+gfx::NativeViewAccessible
+RenderWidgetHostViewBase::AccessibilityGetNativeViewAccessibleForWindow() {
+  return nullptr;
+}
+
 bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
   return false;
 }
