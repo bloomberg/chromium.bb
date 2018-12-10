@@ -26,21 +26,26 @@ public class ServiceManagerStartupUtils {
             ChromeFeatureList.ALLOW_STARTING_SERVICE_MANAGER_ONLY;
 
     // List of features that supports starting ServiceManager on startup.
-    private static final String[] SERVICE_MANAGER_FEATURES = {
-            EARLY_START_FLAG, ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD};
+    private static final String[] SERVICE_MANAGER_FEATURES = {EARLY_START_FLAG,
+            ChromeFeatureList.NETWORK_SERVICE, ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD};
     // Key in the SharedPreferences for storing all features that will start ServiceManager.
     private static final String SERVICE_MANAGER_FEATURES_KEY = "ServiceManagerFeatures";
 
     /**
-     *  Check whether ServiceManager can be started for |featureName|.
-     *  @param featureName Feature to query.
-     *  @return Whether the feature can start service manager.
+     *  Check whether ServiceManager can be started for a set of |featureNames|.
+     *  @param |featureNames| Feature names to query.
+     *  @return Whether the features can start service manager.
      */
-    public static boolean canStartServiceManager(String featureName) {
+    public static boolean canStartServiceManager(Set<String> featureNames) {
         Set<String> features = ContextUtils.getAppSharedPreferences().getStringSet(
                 SERVICE_MANAGER_FEATURES_KEY, null);
-        return features != null && features.contains(EARLY_START_FLAG)
-                && features.contains(featureName);
+        if (features == null) return false;
+        for (String featureName : featureNames) {
+            if (!features.contains(featureName)) {
+                return false;
+            }
+        }
+        return features.contains(EARLY_START_FLAG);
     }
 
     /**

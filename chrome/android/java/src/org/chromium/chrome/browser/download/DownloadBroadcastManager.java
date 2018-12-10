@@ -47,6 +47,9 @@ import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content_public.browser.BrowserStartupController;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Class that spins up native when an interaction with a notification happens and passes the
  * relevant information on to native.
@@ -192,8 +195,10 @@ public class DownloadBroadcastManager extends Service {
 
             @Override
             public boolean startServiceManagerOnly() {
-                return ServiceManagerStartupUtils.canStartServiceManager(
-                               ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD)
+                Set<String> features = new HashSet<String>();
+                features.add(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
+                features.add(ChromeFeatureList.NETWORK_SERVICE);
+                return ServiceManagerStartupUtils.canStartServiceManager(features)
                         && !ACTION_DOWNLOAD_OPEN.equals(intent.getAction());
             }
         };
