@@ -437,6 +437,18 @@ static const arg_def_t enable_restoration =
     ARG_DEF(NULL, "enable-restoration", 1,
             "Enable the loop restoration filter (0: false, "
             "1: true (default))");
+static const arg_def_t enable_jnt_comp =
+    ARG_DEF(NULL, "enable-dist-wtd-comp", 1,
+            "Enable distance-weighted compound "
+            "(0: false, 1: true (default))");
+static const arg_def_t enable_masked_comp =
+    ARG_DEF(NULL, "enable-masked-comp", 1,
+            "Enable masked (wedge/diff-wtd) compound "
+            "(0: false, 1: true (default))");
+static const arg_def_t enable_interintra_comp =
+    ARG_DEF(NULL, "enable-interintra-comp", 1,
+            "Enable interintra compound "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_global_motion =
     ARG_DEF(NULL, "enable-global-motion", 1,
             "Enable global motion "
@@ -646,6 +658,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &lossless,
                                        &enable_cdef,
                                        &enable_restoration,
+                                       &enable_jnt_comp,
+                                       &enable_masked_comp,
+                                       &enable_interintra_comp,
                                        &enable_global_motion,
                                        &enable_warped_motion,
                                        &disable_trellis_quant,
@@ -706,6 +721,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_LOSSLESS,
                                         AV1E_SET_ENABLE_CDEF,
                                         AV1E_SET_ENABLE_RESTORATION,
+                                        AV1E_SET_ENABLE_JNT_COMP,
+                                        AV1E_SET_ENABLE_MASKED_COMP,
+                                        AV1E_SET_ENABLE_INTERINTRA_COMP,
                                         AV1E_SET_ENABLE_GLOBAL_MOTION,
                                         AV1E_SET_ENABLE_WARPED_MOTION,
                                         AV1E_SET_DISABLE_TRELLIS_QUANT,
@@ -742,7 +760,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_REF_FRAME_MVS,
                                         AV1E_SET_ENABLE_DF,
                                         AV1E_SET_ENABLE_ORDER_HINT,
-                                        AV1E_SET_ENABLE_JNT_COMP,
                                         AV1E_SET_ENABLE_SUPERRES,
                                         0 };
 #endif  // CONFIG_AV1_ENCODER

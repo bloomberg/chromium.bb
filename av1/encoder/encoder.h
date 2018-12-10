@@ -325,6 +325,8 @@ typedef struct AV1EncoderConfig {
   int enable_jnt_comp;
   int enable_ref_frame_mvs;
   unsigned int allow_ref_frame_mvs;
+  int enable_masked_comp;
+  int enable_interintra_comp;
   int enable_global_motion;
   int enable_warped_motion;
   int allow_warped_motion;

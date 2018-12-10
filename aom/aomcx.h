@@ -747,6 +747,24 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ALLOW_REF_FRAME_MVS,
 
+  /*!\brief Codec control function to turn on / off masked compound usage
+   * for a sequence.
+   *
+   * This will enable or disable usage of wedge and diff-wtd compound
+   * modes. The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_MASKED_COMP,
+
+  /*!\brief Codec control function to turn on / off interintra compound
+   * for a sequence.
+   *
+   * This will enable or disable usage of inter-intra compound modes.
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_INTERINTRA_COMP,
+
   /*!\brief Codec control function to turn on / off global motion usage
    * for a sequence.
    *
@@ -1051,6 +1069,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_REF_FRAME_MVS, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_REF_FRAME_MVS, unsigned int)
 #define AOM_CTRL_AV1E_SET_ALLOW_REF_FRAME_MVS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_MASKED_COMP, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_MASKED_COMP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTERINTRA_COMP, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_INTERINTRA_COMP
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_GLOBAL_MOTION, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_GLOBAL_MOTION
