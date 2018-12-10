@@ -69,6 +69,9 @@ public class NativeUiUtils {
     // arbitrary, but 1/6 of a second is a reasonable amount of time to wait and still expect to be
     // flinging, and is stable.
     public static final int NUM_FRAMES_FLING_SCROLL = NUM_STEPS_FLING_SCROLL + 2 + 10;
+    // Arbitrary number of frames to wait before sending a touch up event in order to ensure that a
+    // fast scroll does not become a fling scroll.
+    public static final int NUM_FRAMES_DELAY_TO_PREVENT_FLING = 60;
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_OVERLAY = "_WebXrOverlay";
     public static final String FRAME_BUFFER_SUFFIX_WEB_XR_CONTENT = "_WebXrContent";
     public static final String FRAME_BUFFER_SUFFIX_BROWSER_UI = "_BrowserUi";
@@ -193,7 +196,7 @@ public class NativeUiUtils {
      */
     public static void scrollNonFling(@ScrollDirection int direction) throws InterruptedException {
         scroll(directionToStartPoint(direction), directionToEndPoint(direction),
-                NUM_STEPS_NON_FLING_SCROLL);
+                NUM_STEPS_NON_FLING_SCROLL, false /* delayTouchUp */);
     }
 
     /**
@@ -203,7 +206,20 @@ public class NativeUiUtils {
      */
     public static void scrollFling(@ScrollDirection int direction) throws InterruptedException {
         scroll(directionToStartPoint(direction), directionToEndPoint(direction),
-                NUM_STEPS_FLING_SCROLL);
+                NUM_STEPS_FLING_SCROLL, false /* delayTouchUp */);
+    }
+
+    /**
+     * Helper function to perform the same action as a fling scroll, but delay the touch up event.
+     * This results in a fast, non-fling scroll that's useful for ensuring that an actual fling
+     * scroll works by asserting the actual fling scroll goes further.
+     *
+     * @param direction the ScrollDirection to scroll in.
+     */
+    public static void scrollNonFlingFast(@ScrollDirection int direction)
+            throws InterruptedException {
+        scroll(directionToStartPoint(direction), directionToEndPoint(direction),
+                NUM_STEPS_FLING_SCROLL, true /* delayTouchUp */);
     }
 
     /**
@@ -213,8 +229,11 @@ public class NativeUiUtils {
      * @param end the position on the touchpad to end the drag.
      * @param numSteps the number of steps to interpolate between the two points, one step per
      *        frame.
+     * @param delayTouchUp whether to significantly delay the final touch up event, which should
+     *        prevent fling scrolls regardless of scroll speed.
      */
-    public static void scroll(PointF start, PointF end, int numSteps) throws InterruptedException {
+    public static void scroll(PointF start, PointF end, int numSteps, boolean delayTouchUp)
+            throws InterruptedException {
         PointF stepIncrement =
                 new PointF((end.x - start.x) / numSteps, (end.y - start.y) / numSteps);
         PointF currentPosition = new PointF(start.x, start.y);
@@ -226,6 +245,9 @@ public class NativeUiUtils {
             TestVrShellDelegate.getInstance().performControllerActionForTesting(
                     UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_DOWN,
                     currentPosition);
+        }
+        if (delayTouchUp) {
+            waitNumFrames(NUM_FRAMES_DELAY_TO_PREVENT_FLING);
         }
         TestVrShellDelegate.getInstance().performControllerActionForTesting(
                 UserFriendlyElementName.NONE /* unused */, VrControllerTestAction.TOUCH_UP, end);
