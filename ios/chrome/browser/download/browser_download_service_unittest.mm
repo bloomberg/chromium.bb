@@ -58,6 +58,33 @@ class StubTabHelper : public TabHelper {
   DISALLOW_COPY_AND_ASSIGN(StubTabHelper);
 };
 
+// Substitutes ARQuickLookTabHelper for testing.
+class TestARQuickLookTabHelper : public ARQuickLookTabHelper {
+ public:
+  static void CreateForWebState(web::WebState* web_state) {
+    web_state->SetUserData(
+        ARQuickLookTabHelper::UserDataKey(),
+        base::WrapUnique(new TestARQuickLookTabHelper(web_state)));
+  }
+
+  // Adds the given task to tasks() lists.
+  void Download(std::unique_ptr<web::DownloadTask> task) override {
+    tasks_.push_back(std::move(task));
+  }
+
+  // Tasks added via Download() call.
+  using DownloadTasks = std::vector<std::unique_ptr<web::DownloadTask>>;
+  const DownloadTasks& tasks() const { return tasks_; }
+
+ private:
+  TestARQuickLookTabHelper(web::WebState* web_state)
+      : ARQuickLookTabHelper(web_state) {}
+
+  DownloadTasks tasks_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestARQuickLookTabHelper);
+};
+
 }  // namespace
 
 // Test fixture for testing BrowserDownloadService class.
@@ -68,7 +95,7 @@ class BrowserDownloadServiceTest : public PlatformTest {
     scoped_feature_list_.InitAndEnableFeature(download::kUsdzPreview);
 
     StubTabHelper<PassKitTabHelper>::CreateForWebState(&web_state_);
-    StubTabHelper<ARQuickLookTabHelper>::CreateForWebState(&web_state_);
+    TestARQuickLookTabHelper::CreateForWebState(&web_state_);
     StubTabHelper<DownloadManagerTabHelper>::CreateForWebState(&web_state_);
 
     // BrowserDownloadServiceFactory sets its service as
@@ -96,8 +123,8 @@ class BrowserDownloadServiceTest : public PlatformTest {
         PassKitTabHelper::FromWebState(&web_state_));
   }
 
-  StubTabHelper<ARQuickLookTabHelper>* ar_quick_look_tab_helper() {
-    return static_cast<StubTabHelper<ARQuickLookTabHelper>*>(
+  TestARQuickLookTabHelper* ar_quick_look_tab_helper() {
+    return static_cast<TestARQuickLookTabHelper*>(
         ARQuickLookTabHelper::FromWebState(&web_state_));
   }
 

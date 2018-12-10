@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_DOWNLOAD_AR_QUICK_LOOK_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_DOWNLOAD_AR_QUICK_LOOK_COORDINATOR_H_
 
-#import "ios/chrome/browser/download/ar_quick_look_tab_helper_delegate.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 // The UMA IOSPresentQLPreviewController histogram name.
@@ -28,9 +27,23 @@ enum class PresentQLPreviewController {
   kMaxValue = kAnotherViewControllerIsPresented,
 };
 
+class WebStateList;
+
 // Presents QLPreviewController in order to display USDZ format 3D models.
-@interface ARQuickLookCoordinator
-    : ChromeCoordinator <ARQuickLookTabHelperDelegate>
+@interface ARQuickLookCoordinator : ChromeCoordinator
+
+// Creates a coordinator that uses a |viewController| a |browserState| and
+// a |webStateList|.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                              webStateList:(WebStateList*)webStateList;
+
+// Unavailable, use -initWithBaseViewController:browserState:webStateList:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 
