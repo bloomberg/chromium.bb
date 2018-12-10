@@ -46,6 +46,7 @@ constexpr char kAppVmNameKey[] = "vm_name";
 constexpr char kAppContainerNameKey[] = "container_name";
 constexpr char kAppCommentKey[] = "comment";
 constexpr char kAppMimeTypesKey[] = "mime_types";
+constexpr char kAppKeywordsKey[] = "keywords";
 constexpr char kAppNameKey[] = "name";
 constexpr char kAppNoDisplayKey[] = "no_display";
 constexpr char kAppScaledKey[] = "scaled";
@@ -113,6 +114,22 @@ base::Value ProtoToList(
   base::Value result(base::Value::Type::LIST);
   for (const std::string& string : strings)
     result.GetList().emplace_back(string);
+  return result;
+}
+
+base::Value LocaleStringsProtoToDictionary(
+    const App::LocaleStrings& repeated_locale_string) {
+  base::Value result(base::Value::Type::DICTIONARY);
+  for (const auto& strings_with_locale : repeated_locale_string.values()) {
+    const std::string& locale = strings_with_locale.locale();
+
+    std::string locale_with_dashes(locale);
+    std::replace(locale_with_dashes.begin(), locale_with_dashes.end(), '_',
+                 '-');
+    if (!locale.empty() && !l10n_util::IsValidLocaleSyntax(locale_with_dashes))
+      continue;
+    result.SetKey(locale, ProtoToList(strings_with_locale.value()));
+  }
   return result;
 }
 
@@ -300,6 +317,16 @@ std::set<std::string> CrostiniRegistryService::Registration::MimeTypes() const {
       pref_.FindKeyOfType(kAppMimeTypesKey, base::Value::Type::LIST));
 }
 
+std::set<std::string> CrostiniRegistryService::Registration::Keywords() const {
+  if (is_terminal_app_) {
+    std::set<std::string> result = {"linux", "terminal", "crostini"};
+    result.insert(
+        l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_APP_SEARCH_TERMS));
+    return result;
+  }
+  return LocalizedList(kAppKeywordsKey);
+}
+
 bool CrostiniRegistryService::Registration::NoDisplay() const {
   if (pref_.is_none())
     return false;
@@ -374,6 +401,31 @@ std::string CrostiniRegistryService::Registration::LocalizedString(
       return value->GetString();
   }
   return std::string();
+}
+
+std::set<std::string> CrostiniRegistryService::Registration::LocalizedList(
+    base::StringPiece key) const {
+  if (pref_.is_none())
+    return {};
+  const base::Value* dict =
+      pref_.FindKeyOfType(key, base::Value::Type::DICTIONARY);
+  if (!dict)
+    return {};
+
+  std::string current_locale =
+      l10n_util::NormalizeLocale(g_browser_process->GetApplicationLocale());
+  std::vector<std::string> locales;
+  l10n_util::GetParentLocales(current_locale, &locales);
+  // We use an empty locale as fallback.
+  locales.push_back(std::string());
+
+  for (const std::string& locale : locales) {
+    const base::Value* value =
+        dict->FindKeyOfType(locale, base::Value::Type::LIST);
+    if (value)
+      return ListToStringSet(value);
+  }
+  return {};
 }
 
 CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
@@ -677,6 +729,8 @@ void CrostiniRegistryService::UpdateApplicationList(
       pref_registration.SetKey(kAppCommentKey,
                                ProtoToDictionary(app.comment()));
       pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
+      pref_registration.SetKey(kAppKeywordsKey,
+                               LocaleStringsProtoToDictionary(app.keywords()));
       pref_registration.SetKey(kAppNoDisplayKey, base::Value(app.no_display()));
       pref_registration.SetKey(kAppStartupWMClassKey,
                                base::Value(app.startup_wm_class()));

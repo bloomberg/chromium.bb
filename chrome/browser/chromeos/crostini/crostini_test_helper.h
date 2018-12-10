@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_TEST_HELPER_H_
 
+#include <map>
 #include <string>
 
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -34,6 +35,10 @@ class CrostiniTestHelper {
   void AddApp(const vm_tools::apps::App& app);
   // Removes the |i|th app from the current list of apps.
   void RemoveApp(int i);
+  // Updates the Keywords field in an app
+  void UpdateAppKeywords(
+      vm_tools::apps::App& app,
+      const std::map<std::string, std::set<std::string>>& keywords);
 
   // Set/unset the the CrostiniEnabled pref
   static void EnableCrostini(Profile* profile);
