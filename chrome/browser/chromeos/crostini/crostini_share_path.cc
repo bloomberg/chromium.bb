@@ -146,6 +146,8 @@ void CrostiniSharePath::CallSeneschalSharePath(
   bool allowed_path = false;
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
+  base::FilePath android_files(file_manager::util::kAndroidFilesPath);
+  base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
   if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
     allowed_path = true;
     request.set_storage_location(
@@ -191,8 +193,13 @@ void CrostiniSharePath::CallSeneschalSharePath(
       // but is included to make it explicit that .Trash should not be shared.
       allowed_path = false;
     }
-  } else if (base::FilePath("/media/removable")
-                 .AppendRelativePath(path, &relative_path)) {
+  } else if (path == android_files ||
+             android_files.AppendRelativePath(path, &relative_path)) {
+    // Allow Android files and subdirs.
+    allowed_path = true;
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::PLAY_FILES);
+  } else if (removable_media.AppendRelativePath(path, &relative_path)) {
     // Allow subdirs of /media/removable.
     allowed_path = true;
     request.set_storage_location(

@@ -33,6 +33,7 @@ function CrostiniImpl() {
 CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE = new Map([
   [VolumeManagerCommon.RootType.DOWNLOADS, 'Downloads'],
   [VolumeManagerCommon.RootType.REMOVABLE, 'Removable'],
+  [VolumeManagerCommon.RootType.ANDROID_FILES, 'AndroidFiles'],
 ]);
 
 /**
