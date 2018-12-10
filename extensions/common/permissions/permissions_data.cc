@@ -355,11 +355,14 @@ PermissionsData::PageAccess PermissionsData::GetContentScriptAccess(
       tab_permissions ? &tab_permissions->scriptable_hosts() : nullptr, error);
 }
 
-bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
-                                            int tab_id,
-                                            std::string* error) const {
+bool PermissionsData::CanCaptureVisiblePage(
+    const GURL& document_url,
+    int tab_id,
+    std::string* error,
+    CaptureRequirement capture_requirement) const {
   bool has_active_tab = false;
   bool has_all_urls = false;
+  bool has_page_capture = false;
   // Check the real origin, in order to account for filesystem:, blob:, etc.
   // (url::Origin grabs the inner origin of these, whereas GURL::GetOrigin()
   // does not.)
@@ -387,39 +390,54 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
                               URLPattern::kAllUrlsPattern);
     has_all_urls =
         active_permissions_unsafe_->explicit_hosts().ContainsPattern(all_urls);
+    has_page_capture = active_permissions_unsafe_->HasAPIPermission(
+        APIPermission::kPageCapture);
   }
-
-  // At least one of activeTab or <all_urls> is always required; no exceptions.
-  if (!has_active_tab && !has_all_urls) {
-    if (error)
-      *error = manifest_errors::kAllURLOrActiveTabNeeded;
-    return false;
-  }
-
-  // We check GetPageAccess() (in addition to the <all_urls> and activeTab
-  // checks below) for the case of URLs that can be conditionally granted (such
-  // as file:// URLs or chrome:// URLs for component extensions).
-  // If an extension has <all_urls>, GetPageAccess() will still (correctly)
-  // return false if, for instance, the URL is a file:// URL and the extension
-  // does not have file access.
-  // See https://crbug.com/810220.
-  // If the extension has page access (and has activeTab or <all_urls>, as
-  // checked above), allow the capture.
   std::string access_error;
-  if (GetPageAccess(origin_url, tab_id, &access_error) == PageAccess::kAllowed)
-    return true;
+  if (capture_requirement == CaptureRequirement::kActiveTabOrAllUrls) {
+    if (!has_active_tab && !has_all_urls) {
+      if (error)
+        *error = manifest_errors::kAllURLOrActiveTabNeeded;
+      return false;
+    }
+
+    // We check GetPageAccess() (in addition to the <all_urls> and activeTab
+    // checks below) for the case of URLs that can be conditionally granted
+    // (such as file:// URLs or chrome:// URLs for component extensions). If an
+    // extension has <all_urls>, GetPageAccess() will still (correctly) return
+    // false if, for instance, the URL is a file:// URL and the extension does
+    // not have file access. See https://crbug.com/810220. If the extension has
+    // page access (and has activeTab or <all_urls>), allow the capture.
+    if (GetPageAccess(origin_url, tab_id, &access_error) ==
+        PageAccess::kAllowed)
+      return true;
+  } else {
+    DCHECK_EQ(CaptureRequirement::kPageCapture, capture_requirement);
+    if (!has_page_capture) {
+      if (error)
+        *error = manifest_errors::kPageCaptureNeeded;
+    }
+
+    // If the URL is a typical web URL, the pageCapture permission is
+    // sufficient.
+    if ((origin_url.SchemeIs(url::kHttpScheme) ||
+         origin_url.SchemeIs(url::kHttpsScheme)) &&
+        !origin.IsSameOriginWith(url::Origin::Create(
+            ExtensionsClient::Get()->GetWebstoreBaseURL()))) {
+      return true;
+    }
+  }
 
   // The extension doesn't have explicit page access. However, there are a
   // number of cases where tab capture may still be allowed.
 
   // First special case: an extension's own pages.
   // These aren't restricted URLs, but won't be matched by <all_urls> or
-  // activeTab (since the extension scheme is not included in the list of valid
-  // schemes for extension permissions).
-  // To capture an extension's own page, either activeTab or <all_urls> is
-  // needed (it's no higher privilege than a normal web page). At least one
-  // of these is still needed because the extension page may have embedded
-  // web content.
+  // activeTab (since the extension scheme is not included in the list of
+  // valid schemes for extension permissions). To capture an extension's own
+  // page, either activeTab or <all_urls> is needed (it's no higher privilege
+  // than a normal web page). At least one of these is still needed because
+  // the extension page may have embedded web content.
   // TODO(devlin): Should activeTab/<all_urls> account for the extension's own
   // domain?
   if (origin_url.host() == extension_id_)
@@ -449,7 +467,6 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
       *error = access_error;
     return false;
   }
-
   // If the extension has activeTab, these origins are allowed.
   if (has_active_tab)
     return true;

@@ -24,6 +24,16 @@ class GURL;
 namespace extensions {
 class URLPatternSet;
 
+// The possible type of requirements needed in order to capture the current
+// page.
+enum class CaptureRequirement {
+  kActiveTabOrAllUrls,  // The extension needs to have the <all_urls> or
+                        // activeTab permission in order to capture the current
+                        // page.
+  kPageCapture,         // <all_urls> is not a requirement to be able to capture
+                        // the current page.
+};
+
 // A container for the permissions state of an extension, including active,
 // withheld, and tab-specific permissions.
 // Thread-Safety: Since this is an object on the Extension object, *some* thread
@@ -214,11 +224,11 @@ class PermissionsData {
   // is insufficient.
   // Instead:
   // - If the page is a chrome:// page, require activeTab.
-  // - For all other pages, require host permissions to the document
-  //   (GetPageAccess()) and one of either <all_urls> or granted activeTab.
+  // - For all other pages, ensure |capture_requirement| is satisfied.
   bool CanCaptureVisiblePage(const GURL& document_url,
                              int tab_id,
-                             std::string* error) const;
+                             std::string* error,
+                             CaptureRequirement capture_requirement) const;
 
   const TabPermissionsMap& tab_specific_permissions() const {
     DCHECK(!thread_checker_ || thread_checker_->CalledOnValidThread());

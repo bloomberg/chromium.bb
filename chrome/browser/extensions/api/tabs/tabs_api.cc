@@ -1712,7 +1712,8 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
           contents->GetLastCommittedURL(),
-          SessionTabHelper::IdForTab(contents).id(), error)) {
+          SessionTabHelper::IdForTab(contents).id(), error,
+          extensions::CaptureRequirement::kActiveTabOrAllUrls)) {
     return nullptr;
   }
   return contents;

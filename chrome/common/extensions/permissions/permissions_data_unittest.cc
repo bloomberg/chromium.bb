@@ -391,7 +391,8 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
                                 int tab_id) {
     bool allowed_script = IsAllowedScript(extension, url, tab_id);
     bool allowed_capture = extension->permissions_data()->CanCaptureVisiblePage(
-        url, tab_id, nullptr);
+        url, tab_id, nullptr,
+        extensions::CaptureRequirement::kActiveTabOrAllUrls);
 
     if (allowed_script && allowed_capture)
       return ALLOWED_SCRIPT_AND_CAPTURE;
@@ -1067,12 +1068,14 @@ class CaptureVisiblePageTest : public testing::Test {
   CaptureVisiblePageTest() = default;
   ~CaptureVisiblePageTest() override = default;
 
-  bool CanCapture(const Extension& extension, const GURL& url) {
+  bool CanCapture(const Extension& extension,
+                  const GURL& url,
+                  extensions::CaptureRequirement capture_requirement) {
     return extension.permissions_data()->CanCaptureVisiblePage(
-        url, kTabId, nullptr /*error*/);
+        url, kTabId, nullptr /*error*/, capture_requirement);
   }
 
-  void GrantActiveTab(const GURL& url) {
+  void GrantActiveTab(const Extension& extension, const GURL& url) {
     APIPermissionSet tab_api_permissions;
     tab_api_permissions.insert(APIPermission::kTab);
     URLPatternSet tab_hosts;
@@ -1081,17 +1084,19 @@ class CaptureVisiblePageTest : public testing::Test {
     PermissionSet tab_permissions(std::move(tab_api_permissions),
                                   ManifestPermissionSet(), tab_hosts,
                                   tab_hosts);
-    active_tab_->permissions_data()->UpdateTabSpecificPermissions(
-        kTabId, tab_permissions);
+    extension.permissions_data()->UpdateTabSpecificPermissions(kTabId,
+                                                               tab_permissions);
   }
 
-  void ClearActiveTab() {
-    active_tab_->permissions_data()->ClearTabSpecificPermissions(kTabId);
+  void ClearActiveTab(const Extension& extension) {
+    extension.permissions_data()->ClearTabSpecificPermissions(kTabId);
   }
 
   const Extension& all_urls() { return *all_urls_; }
 
   const Extension& active_tab() { return *active_tab_; }
+
+  const Extension& page_capture() { return *page_capture_; }
 
   static constexpr int kTabId = 42;
 
@@ -1105,15 +1110,22 @@ class CaptureVisiblePageTest : public testing::Test {
                       .AddPermission("activeTab")
                       .SetID(std::string(32, 'b'))
                       .Build();
+    page_capture_ = ExtensionBuilder("page capture")
+                        .AddPermission("pageCapture")
+                        .AddPermission("activeTab")
+                        .SetID(std::string(32, 'd'))
+                        .Build();
   }
 
   void TearDown() override {
     all_urls_ = nullptr;
     active_tab_ = nullptr;
+    page_capture_ = nullptr;
   }
 
   scoped_refptr<const Extension> all_urls_;
   scoped_refptr<const Extension> active_tab_;
+  scoped_refptr<const Extension> page_capture_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureVisiblePageTest);
 };
@@ -1138,13 +1150,26 @@ TEST_F(CaptureVisiblePageTest, URLsCapturableWithEitherActiveTabOrAllURLs) {
 
   for (const GURL& url : test_urls) {
     SCOPED_TRACE(url.spec());
-    EXPECT_TRUE(CanCapture(all_urls(), url));
+    EXPECT_TRUE(CanCapture(
+        all_urls(), url, extensions::CaptureRequirement::kActiveTabOrAllUrls));
 
-    EXPECT_FALSE(CanCapture(active_tab(), url));
-    GrantActiveTab(url);
-    EXPECT_TRUE(CanCapture(active_tab(), url));
-    ClearActiveTab();
-    EXPECT_FALSE(CanCapture(active_tab(), url));
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    GrantActiveTab(active_tab(), url);
+    EXPECT_TRUE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    ClearActiveTab(active_tab());
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+
+    EXPECT_TRUE(CanCapture(page_capture(), url,
+                           extensions::CaptureRequirement::kPageCapture));
+    GrantActiveTab(page_capture(), url);
+    EXPECT_TRUE(CanCapture(page_capture(), url,
+                           extensions::CaptureRequirement::kPageCapture));
   }
 }
 
@@ -1180,13 +1205,29 @@ TEST_F(CaptureVisiblePageTest, URLsCapturableOnlyWithActiveTab) {
 
   for (const GURL& url : test_urls) {
     SCOPED_TRACE(url.spec());
-    EXPECT_FALSE(CanCapture(all_urls(), url));
+    EXPECT_FALSE(CanCapture(
+        all_urls(), url, extensions::CaptureRequirement::kActiveTabOrAllUrls));
 
-    EXPECT_FALSE(CanCapture(active_tab(), url));
-    GrantActiveTab(url);
-    EXPECT_TRUE(CanCapture(active_tab(), url));
-    ClearActiveTab();
-    EXPECT_FALSE(CanCapture(active_tab(), url));
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    GrantActiveTab(active_tab(), url);
+    EXPECT_TRUE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    ClearActiveTab(active_tab());
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+
+    EXPECT_FALSE(CanCapture(page_capture(), url,
+                            extensions::CaptureRequirement::kPageCapture));
+    GrantActiveTab(page_capture(), url);
+    EXPECT_TRUE(CanCapture(page_capture(), url,
+                           extensions::CaptureRequirement::kPageCapture));
+    ClearActiveTab(page_capture());
+    EXPECT_FALSE(CanCapture(page_capture(), url,
+                            extensions::CaptureRequirement::kPageCapture));
   }
 }
 
@@ -1206,10 +1247,24 @@ TEST_F(CaptureVisiblePageTest, SelfExtensionURLs) {
   // access.
 
   {
-    EXPECT_TRUE(CanCapture(all_urls(), all_urls().GetResourceURL("foo.html")));
     EXPECT_TRUE(
-        CanCapture(all_urls(), get_filesystem_url_for_extension(all_urls())));
-    EXPECT_TRUE(CanCapture(all_urls(), get_blob_url_for_extension(all_urls())));
+        CanCapture(all_urls(), all_urls().GetResourceURL("foo.html"),
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    EXPECT_TRUE(
+        CanCapture(all_urls(), get_filesystem_url_for_extension(all_urls()),
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    EXPECT_TRUE(
+        CanCapture(all_urls(), get_blob_url_for_extension(all_urls()),
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    EXPECT_TRUE(CanCapture(page_capture(),
+                           page_capture().GetResourceURL("foo.html"),
+                           extensions::CaptureRequirement::kPageCapture));
+    EXPECT_TRUE(CanCapture(page_capture(),
+                           get_filesystem_url_for_extension(page_capture()),
+                           extensions::CaptureRequirement::kPageCapture));
+    EXPECT_TRUE(CanCapture(page_capture(),
+                           get_blob_url_for_extension(page_capture()),
+                           extensions::CaptureRequirement::kPageCapture));
   }
 
   const GURL active_tab_extension_urls[] = {
@@ -1223,11 +1278,27 @@ TEST_F(CaptureVisiblePageTest, SelfExtensionURLs) {
   for (const GURL& url : active_tab_extension_urls) {
     SCOPED_TRACE(url);
 
-    EXPECT_FALSE(CanCapture(active_tab(), url));
-    GrantActiveTab(url);
-    EXPECT_TRUE(CanCapture(active_tab(), url));
-    ClearActiveTab();
-    EXPECT_FALSE(CanCapture(active_tab(), url));
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    GrantActiveTab(active_tab(), url);
+    EXPECT_TRUE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    ClearActiveTab(active_tab());
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+  }
+  const GURL page_capture_extension_urls[] = {
+      page_capture().GetResourceURL("foo.html"),
+  };
+
+  for (const GURL& url : page_capture_extension_urls) {
+    SCOPED_TRACE(url);
+
+    EXPECT_TRUE(CanCapture(page_capture(), url,
+                           extensions::CaptureRequirement::kPageCapture));
   }
 }
 
@@ -1246,13 +1317,29 @@ TEST_F(CaptureVisiblePageTest, PolicyBlockedURLs) {
 
   for (const GURL& url : test_urls) {
     SCOPED_TRACE(url);
-    EXPECT_FALSE(CanCapture(all_urls(), url));
+    EXPECT_FALSE(CanCapture(
+        all_urls(), url, extensions::CaptureRequirement::kActiveTabOrAllUrls));
 
-    EXPECT_FALSE(CanCapture(active_tab(), url));
-    GrantActiveTab(url);
-    EXPECT_FALSE(CanCapture(active_tab(), url));
-    ClearActiveTab();
-    EXPECT_FALSE(CanCapture(active_tab(), url));
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    GrantActiveTab(active_tab(), url);
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+    ClearActiveTab(active_tab());
+    EXPECT_FALSE(
+        CanCapture(active_tab(), url,
+                   extensions::CaptureRequirement::kActiveTabOrAllUrls));
+
+    EXPECT_FALSE(CanCapture(page_capture(), url,
+                            extensions::CaptureRequirement::kPageCapture));
+    GrantActiveTab(page_capture(), url);
+    EXPECT_FALSE(CanCapture(page_capture(), url,
+                            extensions::CaptureRequirement::kPageCapture));
+    ClearActiveTab(page_capture());
+    EXPECT_FALSE(CanCapture(page_capture(), url,
+                            extensions::CaptureRequirement::kPageCapture));
   }
 }
 
