@@ -117,6 +117,8 @@ ui::mojom::EventType TypeConverter<ui::mojom::EventType,
       return ui::mojom::EventType::KEY_RELEASED;
     case ui::ET_GESTURE_TAP:
       return ui::mojom::EventType::GESTURE_TAP;
+    case ui::ET_GESTURE_SWIPE:
+      return ui::mojom::EventType::GESTURE_SWIPE;
     case ui::ET_SCROLL:
       return ui::mojom::EventType::SCROLL;
     case ui::ET_SCROLL_FLING_START:
@@ -169,6 +171,8 @@ ui::EventType TypeConverter<ui::EventType, ui::mojom::EventType>::Convert(
       return ui::ET_KEY_RELEASED;
     case ui::mojom::EventType::GESTURE_TAP:
       return ui::ET_GESTURE_TAP;
+    case ui::mojom::EventType::GESTURE_SWIPE:
+      return ui::ET_GESTURE_SWIPE;
     case ui::mojom::EventType::SCROLL:
       return ui::ET_SCROLL;
     case ui::mojom::EventType::SCROLL_FLING_START:
@@ -357,6 +361,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       break;
     }
     case ui::mojom::EventType::GESTURE_TAP:
+    case ui::mojom::EventType::GESTURE_SWIPE:
       if (!ReadGestureData(&event, time_stamp, out))
         return false;
       break;
