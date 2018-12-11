@@ -933,8 +933,10 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   // Do not do anything with the events if none of the window grids have windows
   // in them.
-  if (IsEmpty())
+  if (IsEmpty() && key_event.key_code() != ui::VKEY_BROWSER_BACK &&
+      key_event.key_code() != ui::VKEY_ESCAPE) {
     return true;
+  }
 
   if (key_event.type() != ui::ET_KEY_PRESSED)
     return false;
