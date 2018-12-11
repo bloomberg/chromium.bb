@@ -65,6 +65,11 @@ PACKAGE_INFO.update({
         'org.chromium.chromedriver_webview_shell.Main',
         None,
         None),
+    'android_webview_cts': chrome.PackageInfo(
+        'com.android.webview',
+        'com.android.cts.webkit.WebViewStartupCtsActivity',
+        'webview-command-line',
+        None),
 })
 
 
