@@ -8,6 +8,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 
 namespace aura {
 class WindowTreeHost;
@@ -15,6 +16,7 @@ class WindowTreeHost;
 
 namespace ui {
 class Event;
+struct EventDispatchDetails;
 }
 
 namespace ws {
@@ -37,8 +39,12 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) HostEventQueue {
   ~HostEventQueue();
 
   // If necessary, queues the event. If the event need not be queued,
-  // HostEventDispatcher::DispatchEventFromQueue() is called synchronously.
-  void DispatchOrQueueEvent(ui::Event* event, bool honor_rewriters = true);
+  // HostEventDispatcher::DispatchEventFromQueue() is called synchronously. If
+  // the event was not queued, the return value contains the result of the
+  // event processing.
+  base::Optional<ui::EventDispatchDetails> DispatchOrQueueEvent(
+      ui::Event* event,
+      bool honor_rewriters = true);
 
   aura::WindowTreeHost* window_tree_host() { return window_tree_host_; }
 
@@ -51,7 +57,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) HostEventQueue {
 
   // Dispatches an event directly, circumventing any queuing. This is private as
   // it's only useful internally.
-  void DispatchEventDontQueue(ui::Event* event, bool honor_rewriters);
+  ui::EventDispatchDetails DispatchEventDontQueue(ui::Event* event,
+                                                  bool honor_rewriters);
 
   // Because of shutdown ordering, HostEventQueue may be deleted *after*
   // EventQueue.

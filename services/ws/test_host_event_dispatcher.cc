@@ -18,9 +18,9 @@ TestHostEventDispatcher::TestHostEventDispatcher(
 
 TestHostEventDispatcher::~TestHostEventDispatcher() = default;
 
-void TestHostEventDispatcher::DispatchEventFromQueue(ui::Event* event) {
-  ignore_result(
-      ui::EventSourceTestApi(window_tree_host_).SendEventToSink(event));
+ui::EventDispatchDetails TestHostEventDispatcher::DispatchEventFromQueue(
+    ui::Event* event) {
+  return ui::EventSourceTestApi(window_tree_host_).SendEventToSink(event);
 }
 
 }  // namespace ws

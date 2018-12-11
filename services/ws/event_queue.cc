@@ -55,16 +55,17 @@ std::unique_ptr<HostEventQueue> EventQueue::RegisterHostEventDispatcher(
 }
 
 // static
-void EventQueue::DispatchOrQueueEvent(WindowService* service,
-                                      aura::WindowTreeHost* window_tree_host,
-                                      ui::Event* event,
-                                      bool honor_rewriters) {
+base::Optional<ui::EventDispatchDetails> EventQueue::DispatchOrQueueEvent(
+    WindowService* service,
+    aura::WindowTreeHost* window_tree_host,
+    ui::Event* event,
+    bool honor_rewriters) {
   DCHECK(window_tree_host);
   HostEventQueue* host_event_queue =
       service->event_queue()->GetHostEventQueueForDisplay(
           window_tree_host->GetDisplayId());
   DCHECK(host_event_queue);
-  host_event_queue->DispatchOrQueueEvent(event, honor_rewriters);
+  return host_event_queue->DispatchOrQueueEvent(event, honor_rewriters);
 }
 
 bool EventQueue::ShouldQueueEvent(HostEventQueue* host_queue,

@@ -201,11 +201,12 @@ void AshWindowTreeHostPlatform::CommonInit() {
   SetSharedInputMethod(input_method_.get());
 }
 
-void AshWindowTreeHostPlatform::DispatchEventFromQueue(ui::Event* event) {
+ui::EventDispatchDetails AshWindowTreeHostPlatform::DispatchEventFromQueue(
+    ui::Event* event) {
   TRACE_EVENT0("input", "AshWindowTreeHostPlatform::DispatchEvent");
   if (event->IsLocatedEvent())
     TranslateLocatedEvent(static_cast<ui::LocatedEvent*>(event));
-  SendEventToSink(event);
+  return SendEventToSink(event);
 }
 
 void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {

@@ -82,7 +82,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
                         ui::mojom::TextInputStatePtr state) override;
 
   // ws::HostEventDispatcher:
-  void DispatchEventFromQueue(ui::Event* event) override;
+  ui::EventDispatchDetails DispatchEventFromQueue(ui::Event* event) override;
 
  private:
   // All constructors call into this.

@@ -21,11 +21,6 @@
 -SelectToSpeakTest.SmoothlyReadsAcrossMultipleLines
 -SelectToSpeakTest.SpeakStatusTray
 -SelectToSpeakTest.WorksWithStickyKeys
--StickyKeysBrowserTest.CtrlClickHomeButton
--StickyKeysBrowserTest.OpenNewTabs
--StickyKeysBrowserTest.OpenTrayMenu
--StickyKeysBrowserTest.OverlayShown
--StickyKeysBrowserTest.SearchLeftOmnibox
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxNextTabRecovery/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxNextTabRecovery/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.ChromeVoxShiftSearch/0
@@ -36,6 +31,10 @@
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OpenStatusTray/1
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/0
 -TestAsNormalAndGuestUser/SpokenFeedbackTest.OverviewMode/1
+
+# crbug.com/913549
+-StickyKeysBrowserTest.OpenTrayMenu
+-StickyKeysBrowserTest.SearchLeftOmnibox
 
 # This test is flaky. https://crbug.com/897879
 -ExtensionApiTest.DisplayModeWindowIsInFullscreen

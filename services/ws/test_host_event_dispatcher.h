@@ -21,7 +21,7 @@ class TestHostEventDispatcher : public HostEventDispatcher {
   ~TestHostEventDispatcher() override;
 
   // HostEventDispatcher:
-  void DispatchEventFromQueue(ui::Event* event) override;
+  ui::EventDispatchDetails DispatchEventFromQueue(ui::Event* event) override;
 
  private:
   aura::WindowTreeHost* window_tree_host_;

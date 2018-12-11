@@ -57,13 +57,19 @@ void InjectedEventHandler::Inject(std::unique_ptr<ui::Event> event,
   auto this_ref = weak_factory_.GetWeakPtr();
   pre_target_register_ = std::make_unique<ScopedPreTargetRegister>(
       window_service_->delegate()->GetGlobalEventTarget(), this);
-  EventQueue::DispatchOrQueueEvent(window_service_, window_tree_host_,
-                                   event.get(), /* honors_rewriters */ true);
+  auto result = EventQueue::DispatchOrQueueEvent(window_service_,
+                                                 window_tree_host_, event.get(),
+                                                 /* honors_rewriters */ true);
   if (!this_ref)
     return;
   // |pre_target_register_| needs to be a member to ensure it's destroyed
   // if |this| is destroyed.
   pre_target_register_.reset();
+
+  if (result && result->event_discarded) {
+    DCHECK(!event_id_);
+    NotifyCallback();
+  }
 }
 
 void InjectedEventHandler::NotifyCallback() {
