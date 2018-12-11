@@ -4061,29 +4061,6 @@
             ]
         }
     ],
-    "ResourceLoadScheduler": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_v3_bg_limit_3_2",
-                    "params": {
-                        "bg_limit": "3",
-                        "bg_sub_limit": "2"
-                    },
-                    "enable_features": [
-                        "ResourceLoadScheduler"
-                    ]
-                }
-            ]
-        }
-    ],
     "ResourceLoadingHints": [
         {
             "platforms": [
