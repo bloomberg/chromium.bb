@@ -170,11 +170,7 @@ class BuildBot(object):
         if results_file is None:
             _log.debug('Got 404 response from:\n%s/%s', results_url, base_filename)
             return None
-        revision = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self.fetch_file('%s/LAST_CHANGE' % results_url))
-        if revision is None:
-            _log.debug('Got 404 response from:\n%s/LAST_CHANGE', results_url)
-        return WebTestResults.results_from_string(results_file, revision)
+        return WebTestResults.results_from_string(results_file)
 
     def fetch_file(self, url):
         # It seems this can return None if the url redirects and then returns 404.
