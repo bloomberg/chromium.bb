@@ -214,7 +214,6 @@ h2 {
 
 .experiment-name {
   color: black;
-  cursor: pointer;
   display: inline-block;
   font-size: 13px;
   font-weight: 500;
@@ -450,6 +449,10 @@ h2 {
 
   .experiment {
     border-bottom: 1px solid #f7f7f7;
+  }
+
+  .experiment-name {
+    cursor: pointer;
   }
 
   .experiment .flex-container {
