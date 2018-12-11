@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/power_monitor/power_observer.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -34,7 +33,7 @@ namespace media {
 // posting a task to the audio thread every minute and checking that it was
 // executed. If three consecutive such pings are missed, the thread is
 // considered hung.
-class MEDIA_EXPORT AudioThreadHangMonitor final : public base::PowerObserver {
+class MEDIA_EXPORT AudioThreadHangMonitor final {
  public:
   using Ptr =
       std::unique_ptr<AudioThreadHangMonitor, base::OnTaskRunnerDeleter>;
@@ -57,7 +56,7 @@ class MEDIA_EXPORT AudioThreadHangMonitor final : public base::PowerObserver {
       scoped_refptr<base::SingleThreadTaskRunner> audio_thread_task_runner,
       scoped_refptr<base::SequencedTaskRunner> monitor_task_runner = nullptr);
 
-  ~AudioThreadHangMonitor() final;
+  ~AudioThreadHangMonitor();
 
   // Thread-safe.
   bool IsAudioThreadHung() const;
@@ -84,10 +83,6 @@ class MEDIA_EXPORT AudioThreadHangMonitor final : public base::PowerObserver {
 
   bool NeverLoggedThreadHung() const;
   bool NeverLoggedThreadRecoveredAfterHung() const;
-
-  // base::PowerObserver overrides.
-  // Reset hang detection state when the system comes out of the suspend state.
-  void OnResume() final;
 
   // This function is run by the |timer_|. It checks if the audio thread has
   // shown signs of life since the last time it was called (by checking the
@@ -125,9 +120,6 @@ class MEDIA_EXPORT AudioThreadHangMonitor final : public base::PowerObserver {
   // to the machine being suspended. In such a case, we want to avoid falsely
   // detecting the audio thread as hung.
   base::TimeTicks last_check_time_ = base::TimeTicks();
-
-  // Used to investigate hangs.
-  base::TimeTicks last_resume_time_ = base::TimeTicks();
 
   // |recent_ping_state_| tracks the recent life signs from the audio thread. If
   // the most recent ping was successful, the number indicates the number of
