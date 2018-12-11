@@ -338,8 +338,9 @@ bool MdnsResponderService::HandlePtrEvent(const mdns::PtrEvent& ptr_event) {
   bool events_possible = false;
   auto entry = services_.find(ptr_event.service_instance);
   switch (ptr_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAdded:
-    case mdns::QueryEventHeader::Type::kAddedNoCache: {
+    case mdns::QueryEventHeader::Type::kAddedNoCache:
+      break;
+    case mdns::QueryEventHeader::Type::kAdded: {
       auto socket = ptr_event.header.socket;
       auto it = std::find_if(
           bound_interfaces_.begin(), bound_interfaces_.end(),
@@ -386,33 +387,41 @@ bool MdnsResponderService::HandleSrvEvent(const mdns::SrvEvent& srv_event) {
   bool events_possible = false;
   auto entry = services_.find(srv_event.service_instance);
   switch (srv_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAdded:
-    case mdns::QueryEventHeader::Type::kAddedNoCache: {
-      mdns_responder_->StartAQuery(srv_event.domain_name);
-      mdns_responder_->StartAaaaQuery(srv_event.domain_name);
-      auto result =
-          hostname_watchers_.emplace(srv_event.domain_name, HostnameWatchers{});
-      auto hostname_entry = result.first;
-      hostname_entry->second.services.push_back(entry->second.get());
-      events_possible = true;
-      if (entry == services_.end()) {
-        auto result = services_.emplace(std::move(srv_event.service_instance),
-                                        MakeUnique<ServiceInstance>());
-        entry = result.first;
+    case mdns::QueryEventHeader::Type::kAddedNoCache:
+      break;
+    case mdns::QueryEventHeader::Type::kAdded: {
+      auto hostname_entry = hostname_watchers_.find(srv_event.domain_name);
+      if (hostname_entry == hostname_watchers_.end()) {
+        mdns_responder_->StartAQuery(srv_event.domain_name);
+        mdns_responder_->StartAaaaQuery(srv_event.domain_name);
+        events_possible = true;
+        auto result = hostname_watchers_.emplace(srv_event.domain_name,
+                                                 HostnameWatchers{});
+        hostname_entry = result.first;
+      }
+      auto& dependent_services = hostname_entry->second.services;
+      if (std::find_if(dependent_services.begin(), dependent_services.end(),
+                       [entry](ServiceInstance* instance) {
+                         return instance == entry->second.get();
+                       }) == dependent_services.end()) {
+        dependent_services.push_back(entry->second.get());
       }
       entry->second->domain_name = std::move(srv_event.domain_name);
       entry->second->port = srv_event.port;
       MaybePushScreenInfo(srv_event.service_instance, *entry->second);
     } break;
     case mdns::QueryEventHeader::Type::kRemoved: {
-      auto hostname_entry = hostname_watchers_.find(entry->second->domain_name);
-      hostname_entry->second.services.erase(
-          std::remove_if(hostname_entry->second.services.begin(),
-                         hostname_entry->second.services.end(),
+      auto hostname_entry = hostname_watchers_.find(srv_event.domain_name);
+      if (hostname_entry == hostname_watchers_.end())
+        break;
+      auto& dependent_services = hostname_entry->second.services;
+      dependent_services.erase(
+          std::remove_if(dependent_services.begin(), dependent_services.end(),
                          [entry](ServiceInstance* instance) {
                            return instance == entry->second.get();
-                         }));
-      if (hostname_entry->second.services.empty()) {
+                         }),
+          dependent_services.end());
+      if (dependent_services.empty()) {
         mdns_responder_->StopAQuery(hostname_entry->first);
         mdns_responder_->StopAaaaQuery(hostname_entry->first);
         hostname_watchers_.erase(hostname_entry);
@@ -438,8 +447,9 @@ bool MdnsResponderService::HandleTxtEvent(const mdns::TxtEvent& txt_event) {
   bool events_possible = false;
   auto entry = services_.find(txt_event.service_instance);
   switch (txt_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAdded:
     case mdns::QueryEventHeader::Type::kAddedNoCache:
+      break;
+    case mdns::QueryEventHeader::Type::kAdded:
       if (entry == services_.end()) {
         auto result = services_.emplace(std::move(txt_event.service_instance),
                                         MakeUnique<ServiceInstance>());
@@ -459,8 +469,9 @@ bool MdnsResponderService::HandleTxtEvent(const mdns::TxtEvent& txt_event) {
 bool MdnsResponderService::HandleAEvent(const mdns::AEvent& a_event) {
   bool events_possible = false;
   switch (a_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAdded:
-    case mdns::QueryEventHeader::Type::kAddedNoCache: {
+    case mdns::QueryEventHeader::Type::kAddedNoCache:
+      break;
+    case mdns::QueryEventHeader::Type::kAdded: {
       auto& watchers = hostname_watchers_[a_event.domain_name];
       watchers.address = a_event.address;
       MaybePushScreenInfo(a_event.domain_name, watchers.address);
@@ -476,8 +487,9 @@ bool MdnsResponderService::HandleAEvent(const mdns::AEvent& a_event) {
 bool MdnsResponderService::HandleAaaaEvent(const mdns::AaaaEvent& aaaa_event) {
   bool events_possible = false;
   switch (aaaa_event.header.response_type) {
-    case mdns::QueryEventHeader::Type::kAdded:
-    case mdns::QueryEventHeader::Type::kAddedNoCache: {
+    case mdns::QueryEventHeader::Type::kAddedNoCache:
+      break;
+    case mdns::QueryEventHeader::Type::kAdded: {
       auto& watchers = hostname_watchers_[aaaa_event.domain_name];
       watchers.address = aaaa_event.address;
       MaybePushScreenInfo(aaaa_event.domain_name, watchers.address);
