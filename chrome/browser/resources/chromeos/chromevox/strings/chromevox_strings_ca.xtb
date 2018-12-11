@@ -51,6 +51,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1334095593597963605">retorn de caràcters i de paraules</translation>
 <translation id="1339428534620983148">Columna anterior de la taula</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">Consell</translation>
 <translation id="1346748346194534595">A la dreta</translation>
 <translation id="135978014023467274">ChromeVox s'ha actualitzat a la versió 63</translation>
 <translation id="136718599399906424">Fila següent de la taula</translation>
@@ -103,6 +104,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1828385960365606039">Maig</translation>
 <translation id="1834891354138622109">Columna</translation>
 <translation id="1845944666972354496">Fes doble toc per activar</translation>
+<translation id="1846771122725914429">Pantalla braille amb connexió Bluetooth</translation>
 <translation id="1865601187525349519">Fi del text</translation>
 <translation id="1876229593313240038">document</translation>
 <translation id="188130072164734898">Diu en veu alta la data i l'hora actuals.</translation>
@@ -159,6 +161,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2422937916923936891">Casella de selecció de l'element de menú</translation>
 <translation id="2428534162001909979">Menús d'ordres</translation>
 <translation id="2429669115401274487">p. m.</translation>
+<translation id="242998846562331953">Subtítol</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> és ara la nova tecla modificadora de ChromeVox.</translation>
 <translation id="2450814015951372393">Casella de selecció</translation>
 <translation id="2462626033734746142">Grup de botons d'opció</translation>
@@ -645,6 +648,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5887397643266327462">Subtítols en braille activats.</translation>
 <translation id="5891934789323004067">Taula</translation>
 <translation id="5899860758576822363">Reprodueix a un volum més baix quan ChromeVox parli</translation>
+<translation id="5906974869830879618">Introdueix un PIN</translation>
 <translation id="5921587111466148855">Capítol</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{signe igual}other{# signes igual}}</translation>
 <translation id="5939518447894949180">Restableix</translation>
@@ -701,6 +705,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="641759969622533235">{COUNT,plural, =1{dos punts}other{# dos punts}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menú</translation>
 <translation id="6444046323172968959">Diàleg d'alerta</translation>
+<translation id="6452403590345320472">Taula de continguts</translation>
 <translation id="6459511626086141404">Mapa de teclat pla</translation>
 <translation id="6468049171101508116">Botó següent</translation>
 <translation id="646954774886932461">Índex</translation>
@@ -995,6 +1000,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="948171205378458592">Disminueix la velocitat de la veu.</translation>
 <translation id="958854023026327378">Fes lliscar un dit cap avall</translation>
 <translation id="962913030769097253">Capçalera del nivell 1 següent</translation>
+<translation id="966588271015727539">Selecciona una pantalla braille amb connexió Bluetooth</translation>
 <translation id="973955474346881951">Activa o desactiva el mode persistent</translation>
 <translation id="976849232629612000">No hi ha elements.</translation>
 <translation id="995852680044449248">Inici del ratllat</translation>

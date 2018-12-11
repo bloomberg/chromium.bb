@@ -119,6 +119,13 @@
 
           Pagal numatytuosius nustatymus tvarkomuose įrenginiuose nepasiekiami jokie sparčiojo atrakinimo režimai.</translation>
 <translation id="123081309365616809">Įgalinamas turinio perdavimas į įrenginį</translation>
+<translation id="1231349879329465225">Leidžiama įjungti ir išjungti spartųjį perėjimą.
+      Tai taikoma visiems naudotojams ir visoms sąsajoms įrenginyje.
+      Kad būtų galima naudoti spartųjį perėjimą, turi būti įgalintas ir šis nustatymas, ir tinklo ONC nuosavybė.
+      Nustatytas spartusis perėjimas lieka įjungtas, kol politika pakeičiama, kad jis būtų išjungtas.
+
+      Jei ši politika nustatyta kaip „false“, spartusis perėjimas nenaudojamas.
+      Jei politika nustatyta kaip „true“, spartusis perėjimas naudojamas, kai jį palaiko belaidis prieigos taškas.</translation>
 <translation id="1243570869342663665">Valdomas „SafeSites“ turinio suaugusiesiems filtravimas.</translation>
 <translation id="1257550411839719984">Numatytojo atsisiuntimų katalogo nustatymas</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
@@ -136,6 +143,7 @@
       Taisyklės taikomos abiem kryptimis, priešingai nei „<ph name="URL_LIST_POLICY_NAME" />“. T. y., kai pateikiamas ir įgalinamas „Internet Explorer“ priedas, jis taip pat valdo, ar „<ph name="IE_PRODUCT_NAME" />“ turėtų atidaryti šiuos URL sistemoje „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
 <translation id="1304973015437969093">Automatiškai diegiami plėtinių / programų ID ir atnaujinimo URL</translation>
+<translation id="1307415922184340052">Siųsti naudotojo vardą ir failo pavadinimą į savuosius spausdintuvus kiekvieną kartą spausdinant. Pagal numatytuosius nustatymus nustatyta nesiųsti.</translation>
 <translation id="1307454923744766368">Šaltiniai arba prieglobos serverio pavadinimo šablonai, kuriems netaikomi
       nesaugių šaltinių apribojimai</translation>
 <translation id="1313457536529613143">Nurodomas ekrano užtemdymo delsos mastelio keitimo procentas, kai aptinkama naudotojo veikla ekranui esant užtemdytam ar iškart po to, kai ekranas išjungiamas.
@@ -3435,4 +3443,5 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
       įrenginiai negalės automatiškai tikrinti, ar yra naujinių, nurodytais laikotarpiais. Įrenginiams, kuriuose reikia grąžinti ankstesnę „<ph name="PRODUCT_OS_NAME" />“ versiją ar kurių versija yra senesnė nei minimali reikalaujama, ši politika neturės jokios įtakos dėl potencialių saugos problemų. Be to, ši politika neblokuos naujinių patikrinimų, kurių užklausas bus pateikę naudotojai ar administratoriai.
       Kai ši politika nenustatyta ar joje nėra jokių laikotarpių:
       jokie automatiniai naujinių patikrinimai pagal šią politiką nebus blokuojami, tačiau jie gali būti blokuojami pagal kitą politiką.</translation>
+<translation id="991560005425213776">Siųsti naudotojo vardą ir failo pavadinimą į savuosius spausdintuvus</translation>
 </translationbundle>

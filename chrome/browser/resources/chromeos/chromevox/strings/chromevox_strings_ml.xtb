@@ -51,6 +51,7 @@
 <translation id="1334095593597963605">പ്രതീക, പദ എക്കോ</translation>
 <translation id="1339428534620983148">മുൻ പട്ടിക നിര</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
+<translation id="1346059596910821859">നുറുങ്ങ്</translation>
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="135978014023467274">നിങ്ങൾ ChromeVox 63-ലേക്ക് അപ്‌ഡേറ്റ് ചെയ്‌തിരിക്കുന്നു!</translation>
 <translation id="136718599399906424">അടുത്ത പട്ടിക നിര</translation>
@@ -103,6 +104,7 @@
 <translation id="1828385960365606039">മേയ്</translation>
 <translation id="1834891354138622109">നിര</translation>
 <translation id="1845944666972354496">സജ്ജീവമാക്കാൻ രണ്ട് തവണ ടാപ്പ് ചെയ്യുക</translation>
+<translation id="1846771122725914429">Bluetooth ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ</translation>
 <translation id="1865601187525349519">വാചകത്തിന്റെ അവസാനം</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">നിലവിലെ സമയവും തീയതിയും പറയുക.</translation>
@@ -159,6 +161,7 @@
 <translation id="2422937916923936891">മെനു ഇനം ചെക്ക് ബോക്‌സ്</translation>
 <translation id="2428534162001909979">കമാൻഡ് മെനുകൾ</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">സബ്‌ടൈറ്റിൽ</translation>
 <translation id="2435413342408885429">ഇപ്പോൾ പുതിയ ChromeVox മോഡിഫയർ <ph name="KEY" /> ആണ്.</translation>
 <translation id="2450814015951372393">ചെക്ക് ബോക്‌സ്</translation>
 <translation id="2462626033734746142">റേഡിയോ ബട്ടൺ ഗ്രൂപ്പ്</translation>
@@ -645,6 +648,7 @@
 <translation id="5887397643266327462">ബ്രെയ്‌ലി അടിക്കുറിപ്പുകൾ പ്രവർത്തനക്ഷമമാക്കി.</translation>
 <translation id="5891934789323004067">പട്ടിക</translation>
 <translation id="5899860758576822363">ChromeVox സംസാരിക്കുമ്പോൾ കുറഞ്ഞ ശബ്‌ദത്തിൽ പ്ലേ ചെയ്യുക</translation>
+<translation id="5906974869830879618">ഒരു പിൻ നൽകുക</translation>
 <translation id="5921587111466148855">അധ്യായം</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{സമചിഹ്നം}other{# സമചിഹ്നങ്ങൾ}}</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
@@ -701,6 +705,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{കോളൻ}other{# കോളനുകൾ}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, മെനു</translation>
 <translation id="6444046323172968959">അലേർട്ട് ഡയലോഗ്</translation>
+<translation id="6452403590345320472">ഉള്ളടക്ക പട്ടിക</translation>
 <translation id="6459511626086141404">ഫ്ലാറ്റ് കീമാപ്പ്</translation>
 <translation id="6468049171101508116">അടുത്ത ബട്ടൺ</translation>
 <translation id="646954774886932461">സൂചിക</translation>
@@ -995,6 +1000,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="948171205378458592">സംഭാഷണ റേറ്റ് കുറയ്ക്കുക</translation>
 <translation id="958854023026327378">ഒരു വിരൽ ഉപയോഗിച്ച് താഴോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="962913030769097253">അടുത്ത നില 1 ശീർഷകം</translation>
+<translation id="966588271015727539">ഒരു Bluetooth ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="973955474346881951">സ്റ്റിക്കി മോഡ് പ്രവർത്തനക്ഷമമാക്കുക/പ്രവർത്തനരഹിതമാക്കുക</translation>
 <translation id="976849232629612000">ഇനങ്ങളൊന്നുമില്ല.</translation>
 <translation id="995852680044449248">കുറുകെവെട്ടൽ തുടങ്ങുന്നു</translation>

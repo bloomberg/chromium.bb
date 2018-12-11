@@ -51,6 +51,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1334095593597963605">tegn- og ordekko</translation>
 <translation id="1339428534620983148">Forrige tabelkolonne</translation>
 <translation id="1342835525016946179">artikel</translation>
+<translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="135978014023467274">Du har opdateret til ChromeVox 63</translation>
 <translation id="136718599399906424">Næste tabelrække</translation>
@@ -103,6 +104,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1828385960365606039">Maj</translation>
 <translation id="1834891354138622109">Kolonne</translation>
 <translation id="1845944666972354496">Tryk to gange for at aktivere</translation>
+<translation id="1846771122725914429">Brailleskærm via Bluetooth</translation>
 <translation id="1865601187525349519">Slutning af ​​tekst</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="188130072164734898">Sig det aktuelle klokkeslæt og den aktuelle dato.</translation>
@@ -160,6 +162,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2422937916923936891">Afkrydsningsfelt til menupunkt</translation>
 <translation id="2428534162001909979">Kommandomenuer</translation>
 <translation id="2429669115401274487">e.m.</translation>
+<translation id="242998846562331953">Undertitel</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> er nu den nye ChromeVox-ændringstast.</translation>
 <translation id="2450814015951372393">Afkrydsningsfelt</translation>
 <translation id="2462626033734746142">Gruppe af alternativknapper</translation>
@@ -646,6 +649,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5887397643266327462">Brailletekst er aktiveret.</translation>
 <translation id="5891934789323004067">Tabel</translation>
 <translation id="5899860758576822363">Afspil ved en lavere lydstyrke, når ChromeVox taler</translation>
+<translation id="5906974869830879618">Angiv en pinkode</translation>
 <translation id="5921587111466148855">Kapitel</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{lig med}one{# lig med-tegn}other{# lig med-tegn}}</translation>
 <translation id="5939518447894949180">Nulstil</translation>
@@ -702,6 +706,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="641759969622533235">{COUNT,plural, =1{kolon}one{# koloner}other{# koloner}}</translation>
 <translation id="6438968337250688271">Menuen <ph name="NAME" /></translation>
 <translation id="6444046323172968959">Underretningsdialogboks</translation>
+<translation id="6452403590345320472">Indholdsfortegnelse</translation>
 <translation id="6459511626086141404">Flad tasteoversigt</translation>
 <translation id="6468049171101508116">Knappen Næste</translation>
 <translation id="646954774886932461">Indeks</translation>
@@ -996,6 +1001,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="948171205378458592">Skru ned for talehastighed</translation>
 <translation id="958854023026327378">Stryg nedad med én finger</translation>
 <translation id="962913030769097253">Næste niveau 1-overskrift</translation>
+<translation id="966588271015727539">Vælg en brailleskærm via Bluetooth</translation>
 <translation id="973955474346881951">Aktivér/deaktiver sticky-tilstand</translation>
 <translation id="976849232629612000">Ingen elementer.</translation>
 <translation id="995852680044449248">Start på gennemstregning</translation>

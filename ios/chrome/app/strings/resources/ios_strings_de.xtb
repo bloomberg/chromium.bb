@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Für den letzten Tag</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3112556859945124369">Markieren…</translation>
-<translation id="3126574100374611517">Kreditkarten verwalten…</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3175081911749765310">Webdienste</translation>
 <translation id="3207960819495026254">Mit einem Lesezeichen versehen</translation>
@@ -347,6 +346,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6464071786529933911">In neuem Inkognito-Tab öffnen</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
 <translation id="6541915733953096570">Für die letzte Stunde</translation>
+<translation id="6548479190262846511">Keine Passwörter für diese Website gefunden</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="6656103420185847513">Ordner bearbeiten</translation>
 <translation id="6657585470893396449">Passwort</translation>

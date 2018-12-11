@@ -40,6 +40,7 @@
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक पर्यायांसाठी क्लिक करा</translation>
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करा. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">या सेशनमध्ये तुमची सर्व अ‍ॅक्टिव्हिटी अ‍ॅक्सेस करा</translation>
 <translation id="1608626060424371292">हा वापरकर्ता काढून टाका</translation>
 <translation id="1621499497873603021">बॅटरी रिक्त होईपर्यंत शिल्लक वेळ, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">कनेक्शन जोडा</translation>
 <translation id="2961963223658824723">काहीतरी चूक झाली. काही सेकंदांनी पुन्हा प्रयत्न करा.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">अॅप्स, एक्स्टेंशन आणि थीम इंस्टॉल करा</translation>
 <translation id="2995447421581609334">कास्‍ट डिव्‍हाइस दाखवा.</translation>
 <translation id="2996462380875591307">डॉक केलेले मॅग्निफायर सुरू केले. ते टॉगल करून बंद करण्यासाठी पुन्हा Ctrl+Search+D दाबा.</translation>
 <translation id="3000461861112256445">मोनो ऑडिओ</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">रीस्टार्ट करा आणि रीसेट करा</translation>
 <translation id="4961318399572185831">स्क्रीन कास्ट करा</translation>
 <translation id="5030687792513154421">वेळ संपली</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> नवीन फोनशी कनेक्ट केले</translation>
 <translation id="5083553833479578423">असिस्टंटची आणखी वैशिष्ट्ये अनलॉक करा.</translation>
 <translation id="5136175204352732067">वेगळा कीबोर्ड कनेक्ट केला आहे</translation>
 <translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" ब्लूटूथ डिव्हाइस पेअरिंगसाठी परवानगी घेऊ इच्छिते. कृपया त्या डिव्हाइसवर ही पासकी एंटर करा: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
+<translation id="6665545700722362599">वेबसाइट, अ‍ॅप्स आणि एक्स्टेंशनना स्थान सेवा, डिव्हाइसचा मायक्रोफोन, कॅमेरा किंवा इतर वैशिष्ट्ये वापरण्याची परवानगी द्या</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">तुमच्या वेगळ्या करण्यायोग्य कीबोर्डला महत्त्वाच्या अपडेटची आवश्यकता आहे</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> वाजता परत या.</translation>
+<translation id="7025533177575372252">तुमचे <ph name="DEVICE_NAME" /> तुमच्या फोनशी कनेक्ट करा</translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
 <translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
 <translation id="7067196344162293536">स्वयं फिरवा</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">कनेक्ट करीत आहे</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> मध्ये जुन्या रिजोल्यूशनवर परत करत आहे</translation>
+<translation id="7222902781030499995">टायमर थांबवा</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
 <translation id="726276584504105859">विभाजित स्क्रीन वापरण्यासाठी येथे ड्रॅग करा</translation>
 <translation id="7303365578352795231">दुसऱ्या डिव्हाइसवर उत्तर देत आहे.</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">रद्द करण्यासाठी Search किंवा Shift दाबा.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> आणि <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">मजबूत सिग्नल</translation>
+<translation id="7837740436429729974">वेळ संपली</translation>
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> शी कनेक्ट करत आहे</translation>
 <translation id="7842569679327885685">चेतावणी: प्रयोगात्मक वैशिष्ट्य</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">मागील मेनू</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">टीप तयार करा</translation>
+<translation id="8375916635258623388">हे <ph name="DEVICE_NAME" />आणि तुमचा फोन आपोआप कनेक्ट होतील</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> साठी पर्याय मेनू</translation>
 <translation id="8394567579869570560">तुमच्या पालकाने हे डिव्हाइस लॉक केले</translation>
 <translation id="8406981827175133772">फुलस्क्रीन मॅग्निफायर</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">कनेक्ट केलेले नाही</translation>
 <translation id="8877788021141246043">रिमाइंडर सेट करा</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
+<translation id="8898978413391960553">००:०० सेकंद</translation>
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>

@@ -40,6 +40,7 @@
 <translation id="15373452373711364">വലിയ മൗസ് കഴ്‌സർ</translation>
 <translation id="1550523713251050646">കൂടുതൽ ഓപ്‌ഷനുകൾക്ക് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="1570871743947603115">Bluetooth മാറ്റുക. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">ഈ സെഷനിൽ നിങ്ങളുടെ എല്ലാ ആക്‌റ്റിവിറ്റികളും ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="1608626060424371292">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുക</translation>
 <translation id="1621499497873603021">ബാറ്ററി ശൂന്യമാകുന്നതിന് ശേഷിക്കുന്ന സമയം, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">ഒരു ശബ്‌ദ ചോദ്യം ആരംഭിക്കുക</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">ലംബമായി ലോക്ക് ചെയ്‌തു</translation>
 <translation id="2352467521400612932">സ്റ്റൈലസ് ക്രമീകരണം</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> സജീവമാക്കുന്നു</translation>
-<translation id="2359808026110333948">തുടരൂ</translation>
+<translation id="2359808026110333948">തുടരുക</translation>
 <translation id="2365393535144473978">മൊബൈൽ ഡാറ്റ പ്രവർത്തനക്ഷമമാക്കുമ്പോൾ Bluetooth-ഉം പ്രവർത്തനക്ഷമമാകും.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">'ശല്യപ്പെടുത്തരുത്' മാറ്റുക</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">കണക്ഷൻ ചേർക്കുക</translation>
 <translation id="2961963223658824723">എന്തോ കുഴപ്പം സംഭവിച്ചു. അൽപ്പസമയത്തിനുള്ളിൽ വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">ആപ്പുകൾ, വിപുലീകരണങ്ങൾ, തീമുകൾ എന്നിവ ഇന്‍സ്‌റ്റാള്‍ ചെയ്യുക</translation>
 <translation id="2995447421581609334">കാസ്‌റ്റ് ഉപകരണങ്ങൾ കാണിക്കുക.</translation>
 <translation id="2996462380875591307">ഡോക്ക് ചെയ്‌ത മാഗ്നിഫയർ പ്രവർത്തനക്ഷമമാക്കി. ഇത് മാറ്റാൻ, കൺട്രോൾ+തിരയൽ+D വീണ്ടും അമർത്തുക.</translation>
 <translation id="3000461861112256445">മോണോ ഓഡിയോ</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">പുനഃരാരംഭിച്ച് പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="4961318399572185831">സ്‌ക്രീൻ കാസ്റ്റുചെയ്യുക</translation>
 <translation id="5030687792513154421">സമയം കഴിഞ്ഞു</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> പുതിയ ഫോണിലേക്ക് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="5083553833479578423">കൂടുതൽ അസിസ്റ്റന്റ് ഫീച്ചറുകൾ അൺലോക്ക് ചെയ്യുക.</translation>
 <translation id="5136175204352732067">വ്യത്യസ്ത കീബോർഡ് കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="5168181903108465623">Cast ഉപകരണങ്ങൾ ലഭ്യമാണ്.</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">തിരയല്‍+Shift+K</translation>
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" എന്ന Bluetooth ഉപകരണം ജോടിയാക്കുന്നതിനുള്ള അനുമതി ആവശ്യപ്പെടുന്നു. ആ ഉപകരണത്തിൽ ഈ പാസ്‌കീ നൽകുക: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">പാസ്‌വേഡ്</translation>
+<translation id="6665545700722362599">ലൊക്കേഷൻ സേവനങ്ങൾ, ഉപകരണത്തിന്‍റെ മൈക്രോഫോൺ, ക്യാമറ അല്ലെങ്കിൽ മറ്റ് ഫീച്ചറുകൾ  ഉപയോഗിക്കാൻ, വെബ്സൈറ്റുകൾക്കും ആപ്പുകൾക്കും വിപുലീകരണങ്ങൾക്കും അനുമതി അനുവദിക്കുക</translation>
 <translation id="6691659475504239918">തിരയൽ+Shift+H</translation>
 <translation id="6696025732084565524">നിങ്ങളുടെ വേർപെടുത്താനാകുന്ന കീബോഡിന് നിർണ്ണായക അപ്‌ഡേറ്റ് ആവശ്യമാണ്</translation>
 <translation id="6700713906295497288">IME മെനു ബട്ടൺ</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">ഉപയോഗസഹായി</translation>
 <translation id="698231206551913481">ഈ ഉപയോക്താവിനെ നീക്കംചെയ്യുമ്പോൾ അതോടൊപ്പം അയാളുമായി ബന്ധപ്പെട്ട എല്ലാ ഫയലുകളും പ്രാദേശിക വിവരങ്ങളും ശാശ്വതമായി ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-ന് തിരികെ വരിക.</translation>
+<translation id="7025533177575372252">നിങ്ങളുടെ ഫോണുമായി <ph name="DEVICE_NAME" /> കണക്‌റ്റ് ചെയ്യുക</translation>
 <translation id="7029814467594812963">സെഷനിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
 <translation id="7066646422045619941">നിങ്ങളുടെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ നെറ്റ്‌വർക്ക് പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="7067196344162293536">സ്വയമേവ തിരിക്കുക</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
+<translation id="7222902781030499995">ടൈമര്‍ നിര്‍ത്തുക</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="726276584504105859">സ്പ്ലിറ്റ് സ്ക്രീൻ ഉപയോഗിക്കുന്നതിന് ഇവിടെ വലിച്ചിടുക</translation>
 <translation id="7303365578352795231">മറ്റൊരു ഉപകരണത്തിൽ മറുപടി നൽകുന്നു.</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">റദ്ദാക്കാൻ 'തിരയൽ' അല്ലെങ്കിൽ Shift അമർത്തുക.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" />, <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">ശക്തിയുള്ള സിഗ്നൽ</translation>
+<translation id="7837740436429729974">സമയം കഴിഞ്ഞു</translation>
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> നെറ്റ്‌വർക്കിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നു</translation>
 <translation id="7842569679327885685">മുന്നറിയിപ്പ്: പരീക്ഷണാത്മക ഫീച്ചർ</translation>
 <translation id="7846634333498149051">കീബോർഡ്</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">മുൻ മെനു</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">കുറിപ്പ് സൃഷ്‌ടിക്കുക</translation>
+<translation id="8375916635258623388">ഈ <ph name="DEVICE_NAME" /> ഉം നിങ്ങളുടെ ഫോണും സ്വമേധയാ കണക്റ്റ് ചെയ്യും</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> എന്നതിനുള്ള ഓപ്‌ഷനുകൾ മെനു</translation>
 <translation id="8394567579869570560">നിങ്ങളുടെ രക്ഷിതാവ് ഈ ഉപകരണം ലോക്ക് ചെയ്‌തു</translation>
 <translation id="8406981827175133772">പൂർണ്ണസ്‌ക്രീൻ മാഗ്‌നിഫയർ</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">കണക്റ്റുചെയ്‌തിട്ടില്ല</translation>
 <translation id="8877788021141246043">ഒരു റിമൈൻഡർ സജ്ജീകരിക്കുക</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
+<translation id="8898978413391960553">00:00സെക്കൻഡ്</translation>
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>
 <translation id="8938800817013097409">USB-C ഉപകരണം (വലതുവശത്തെ പോർട്ട് പുറകിൽ)</translation>
 <translation id="8940956008527784070">ബാറ്ററി കുറവാണ് (<ph name="PERCENTAGE" />%)</translation>

@@ -119,6 +119,13 @@
 
           Bilang default, walang available na mabilisang unlock mode para sa mga pinapamahalaang device.</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
+<translation id="1231349879329465225">Nagbibigay-daan sa pag-enable o pag-disable ng Mabilis ng Transition.
+      Nalalapat ito sa lahat ng user at sa lahat ng interface sa device.
+      Para magamit ang Mabilis na Transition, kailangang naka-enable ang setting na ito at ang ONC property sa bawat network.
+      Kapag naitakda na, magpapatuloy ang Mabilis na Transition hanggang baguhin ang patakaran para ma-disable ito.
+
+      Kung hindi itatakda ang patakaran, hindi gagamitin ang Mabilis na Transition.
+      Kung itatakda sa true, gagamitin ang Mabilis na Transition kapag sinusuportahan ito ng wireless na access point.</translation>
 <translation id="1243570869342663665">Kontrolin ang pag-filter ng pang-adult na content ng SafeSites.</translation>
 <translation id="1257550411839719984">Itakda ang default na directory sa pag-download</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
@@ -136,6 +143,7 @@
       Hindi kagaya ng <ph name="URL_LIST_POLICY_NAME" />, nalalapat ang mga panuntunan sa magkabilang direksyon. Ibig sabihin, kapag may add-in ng Internet Explorer at naka-enable ito, kokontrolin din nito kung bubuksan ng <ph name="IE_PRODUCT_NAME" /> ang mga URL na ito sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
 <translation id="1304973015437969093">Ang mga extension/app ID at URL sa pag-update na tahimik na ii-install</translation>
+<translation id="1307415922184340052">Ipadala ang username at filename sa server ng mga native na printer kasama ang bawat pag-print. Ang default ay hindi ipadala.</translation>
 <translation id="1307454923744766368">Mga pinagmulan o pattern ng hostname kung saan hindi dapat ilapat ang mga paghihigpit sa
       mga hindi secure na pinagmulan</translation>
 <translation id="1313457536529613143">Tinutukoy ang porsyento ng pag-scale sa pag-aantala ng pagdilim ng screen kapag napansin ang pagkilos ng user habang madilim ang screen o kaagad pagkatapos i-off ang screen.
@@ -3431,4 +3439,5 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Hindi awtomatikong makakatingin ng mga update ang mga device sa mga nasabing interval ng oras. Ang mga device na nangangailangan ng rollback o mababa sa minimum na bersyon ng <ph name="PRODUCT_OS_NAME" /> ay hindi maaapektuhan ng patakarang ito dahil sa mga posibleng isyu. Bukod pa rito, hindi magba-block ang patakarang ito ng mga pagtingin ng update na hiniling ng mga user o administrator.
       Kapag hindi nakatakda ang patakarang ito o wala itong interval ng oras:
       Walang awtomatikong pagtingin ng update ang maba-block ng patakarang ito, ngunit maaaring ma-block ng iba pang patakaran ang mga ito.</translation>
+<translation id="991560005425213776">Ipadala ang username at filename sa mga native na printer</translation>
 </translationbundle>

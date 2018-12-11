@@ -16,7 +16,6 @@
 <translation id="152892567002884378">เพิ่มระดับเสียง</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="ESC" /></translation>
 <translation id="1652741121070700329">ย้ายไปยังจุดเริ่มต้นของคำก่อนหน้า</translation>
-<translation id="1671169355475348905">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาก่อนหน้า</translation>
 <translation id="1679841710523778799">เพิ่มความสว่าง</translation>
 <translation id="168356808214100546">กด <ph name="ALT" /> ค้างไว้แล้วแตะ <ph name="TAB" /> จนกว่าคุณจะไปถึงหน้าต่างที่ต้องการเปิดแล้วจึงปล่อย</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -44,7 +43,6 @@
 <translation id="2574014812750545982">รีเซ็ตระดับการซูมในหน้าเว็บ</translation>
 <translation id="2596078834055697711">ถ่ายภาพหน้าจอของหน้าต่าง</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> แล้วกด <ph name="TAB" /> หรือ <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">เปลี่ยนไปใช้วิธีการป้อนข้อมูลของภาษาถัดไป</translation>
 <translation id="2699509451653686398">บันทึกหน้าเว็บปัจจุบันเป็นบุ๊กมาร์ก</translation>
 <translation id="2750942583782703988">โหลดหน้าเว็บปัจจุบันซ้ำ</translation>
 <translation id="2764005613199379871">วางโฟกัสบนแถบที่อยู่การค้นหา</translation>

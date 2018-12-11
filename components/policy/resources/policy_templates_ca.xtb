@@ -108,6 +108,13 @@
 
           De manera predeterminada, no es pot utilitzar cap mode de desbloqueig ràpid als dispositius gestionats.</translation>
 <translation id="123081309365616809">Activa l'emissió de contingut al dispositiu</translation>
+<translation id="1231349879329465225">Permet activar o desactivar la transició ràpida.
+      S'aplica a tots els usuaris i a totes les interfícies del dispositiu.
+      Per poder utilitzar la transició ràpida, s'ha d'activar tant aquesta opció com la propietat ONC de cada xarxa.
+      Un cop establerta la transició ràpida, es manté activada fins que no es canvia la política per desactivar-la.
+
+      Si no s'estableix la política o s'estableix en "false", no s'utilitza la transició ràpida.
+      Si s'estableix en "true", la transició ràpida s'utilitza quan el punt d'accés sense fil ho admet.</translation>
 <translation id="1243570869342663665">Controla el filtre SafeSites de contingut per a adults.</translation>
 <translation id="1257550411839719984">Estableix el directori de baixada predeterminat</translation>
 <translation id="1265053460044691532">Limiteu el temps durant el qual un usuari autenticat mitjançant SAML pot iniciar la sessió fora de línia.</translation>
@@ -125,6 +132,7 @@
       A diferència de la política <ph name="URL_LIST_POLICY_NAME" />, les regles són bidireccionals. És a dir, si hi ha el complement d'Internet Explorer i està activat, també controlarà si <ph name="IE_PRODUCT_NAME" /> ha d'obrir aquests URL a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
 <translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
+<translation id="1307415922184340052">Envia el nom d'usuari i el del fitxer al servidor de les impressores natives amb cada tasca d'impressió. Amb la configuració predeterminada, no s'envia.</translation>
 <translation id="1307454923744766368">Orígens o patrons de nom d'amfitrió en què no s'han d'aplicar les restriccions sobre orígens no segurs</translation>
 <translation id="1313457536529613143">Especifica el percentatge d'ajust del temps d'espera d'inactivitat de la pantalla quan s'observa l'activitat de l'usuari amb la pantalla atenuada o poc després de desactivar-la.
 
@@ -441,7 +449,7 @@ Deixar aquesta política sense establir és igual que activar l'opció, amb el f
 <translation id="2163878108829382394">
         Si aquesta política s'estableix en "true", la inscripció a la gestió al núvol és obligatòria i bloqueja el procés per obrir Chrome si falla.
 
-        Si aquesta política es deixa sense establir, la inscripció a la gestió al núvol és opcional i bloqueja el procés per obrir Chrome si falla.</translation>
+        Si aquesta política s'estableix en "false" o es deixa sense establir, la inscripció a la gestió al núvol és opcional i no bloqueja el procés per obrir Chrome si falla.</translation>
 <translation id="2166472654199325139">No filtris llocs web amb contingut per a adults</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>
@@ -922,7 +930,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
         El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
 
-        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting, si està establerta, o de la configuració personal de l'usuari, si no ho està.
+        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
 
         Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.
@@ -3242,4 +3250,5 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
       Els dispositius no poden cercar actualitzacions automàticament durant els intervals de temps especificats. Aquesta política no afecta els dispositius d'una versió anterior a la mínima (<ph name="PRODUCT_OS_NAME" />) o que s'hi han de revertir a una versió anterior, ja que podria provocar problemes de seguretat. A més, aquesta política no bloqueja les cerques d'actualitzacions sol·licitades per usuaris o administradors.
       Quan aquesta política no s'estableix o no conté cap interval de temps:
       La política no bloqueja les cerques automàtiques d'actualitzacions, però pot ser que hi hagi altres polítiques que sí que les bloquegin.</translation>
+<translation id="991560005425213776">Envia el nom d'usuari i el del fitxer a les impressores natives</translation>
 </translationbundle>

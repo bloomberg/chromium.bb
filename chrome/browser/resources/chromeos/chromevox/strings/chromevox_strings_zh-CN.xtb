@@ -32,7 +32,7 @@
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1188858454923323853">补充内容</translation>
 <translation id="1195238899008218998">后记</translation>
-<translation id="1201402288615127009">下一步</translation>
+<translation id="1201402288615127009">下一页</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - 为Chrome提供语音功能</translation>
 <translation id="1225437811932752266">恭喜！您已顺利学完使用 ChromeVox 所需掌握的基本知识。请记住，您随时可通过按搜索键+句点键打开 ChromeVox 命令菜单。要详细了解 ChromeVox 和 Chrome 操作系统，请阅读以下文章。
@@ -51,6 +51,7 @@
 <translation id="1334095593597963605">字符和字词回显</translation>
 <translation id="1339428534620983148">表格上一列</translation>
 <translation id="1342835525016946179">文章标记</translation>
+<translation id="1346059596910821859">提示</translation>
 <translation id="1346748346194534595">向右</translation>
 <translation id="135978014023467274">您已更新至 ChromeVox 63！</translation>
 <translation id="136718599399906424">表格下一行</translation>
@@ -103,6 +104,7 @@
 <translation id="1828385960365606039">5月</translation>
 <translation id="1834891354138622109">列</translation>
 <translation id="1845944666972354496">连续点按两次即可激活</translation>
+<translation id="1846771122725914429">蓝牙盲文显示屏</translation>
 <translation id="1865601187525349519">文本末尾</translation>
 <translation id="1876229593313240038">文档</translation>
 <translation id="188130072164734898">说出当前的日期和时间。</translation>
@@ -159,6 +161,7 @@
 <translation id="2422937916923936891">菜单项复选框</translation>
 <translation id="2428534162001909979">命令菜单</translation>
 <translation id="2429669115401274487">下午</translation>
+<translation id="242998846562331953">副标题</translation>
 <translation id="2435413342408885429">“<ph name="KEY" />”现已设为新的ChromeVox辅助键。</translation>
 <translation id="2450814015951372393">复选框</translation>
 <translation id="2462626033734746142">单选按钮组</translation>
@@ -645,6 +648,7 @@
 <translation id="5887397643266327462">已启用盲文字幕功能。</translation>
 <translation id="5891934789323004067">表格</translation>
 <translation id="5899860758576822363">在 ChromeVox 朗读时以较低音量播放音频</translation>
+<translation id="5906974869830879618">请输入 PIN 码</translation>
 <translation id="5921587111466148855">章节</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{1个等号}other{#个等号}}</translation>
 <translation id="5939518447894949180">重置</translation>
@@ -701,6 +705,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{1个冒号}other{#个冒号}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />，菜单</translation>
 <translation id="6444046323172968959">提醒对话框</translation>
+<translation id="6452403590345320472">目录</translation>
 <translation id="6459511626086141404">降调按键映射</translation>
 <translation id="6468049171101508116">下一个按钮</translation>
 <translation id="646954774886932461">索引</translation>
@@ -995,6 +1000,7 @@
 <translation id="948171205378458592">减慢语速</translation>
 <translation id="958854023026327378">向下滑动一根手指</translation>
 <translation id="962913030769097253">下一个1级标题</translation>
+<translation id="966588271015727539">选择蓝牙盲文显示屏</translation>
 <translation id="973955474346881951">启用/停用粘滞模式</translation>
 <translation id="976849232629612000">无菜单项。</translation>
 <translation id="995852680044449248">划删除线的文字的开头</translation>

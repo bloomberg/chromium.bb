@@ -87,7 +87,7 @@
 <translation id="1426410128494586442">ಹೌದು</translation>
 <translation id="1430915738399379752">ಮುದ್ರಿಸು</translation>
 <translation id="1484290072879560759">ಶಿಪ್ಪಿಂಗ್ ವಿಳಾಸವನ್ನು ಆರಿಸಿ</translation>
-<translation id="1501859676467574491">ನಿಮ್ಮ Google ಖಾತೆಯ ಮೂಲಕ ಕಾರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
+<translation id="1501859676467574491">ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿರುವ ಕಾರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1506687042165942984">ಈ ಪುಟದ ಉಳಿಸಲಾದ (ಉದಾ. ಹಳೆಯದು ಎಂದು ಕರೆಯಲಾಗುವ) ನಕಲನ್ನು ತೋರಿಸಿ.</translation>
 <translation id="1507202001669085618">&lt;p&gt;ನೀವು ಆನ್‌ಲೈನ್ ಪ್ರವೇಶಿಸುವ ಮೊದಲು ಸೈನ್‌ ಇನ್‌ ಮಾಡಬೇಕಾದ ವೈ-ಫೈ ಪೋರ್ಟಲ್ ಅನ್ನು ಬಳಸುತ್ತಿದ್ದರೆ ಈ ದೋಷವನ್ನು ಕಾಣುತ್ತೀರಿ.&lt;/p&gt; &lt;p&gt;ನೀವು ತೆರೆಯಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಪುಟದಲ್ಲಿ ದೋಷವನ್ನು ಸರಿಪಡಿಸಲು &lt;strong&gt;ಸಂಪರ್ಕಿಸಿ&lt;/strong&gt; ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">ಫೋನ್ ಸಂಖ್ಯೆ ಅಗತ್ಯವಿದೆ</translation>
@@ -140,13 +140,11 @@
 <translation id="1787142507584202372">ನಿಮ್ಮ ತೆರೆಯಲಾದ ಟ್ಯಾಬ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತದೆ</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">ಕಾರ್ಡ್‌ಹೋಲ್ಡರ್ ಹೆಸರು</translation>
-<translation id="1809549658008855907">ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಕಾರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಬೇಕೆ?</translation>
 <translation id="1821930232296380041">ಅಮಾನ್ಯವಾದ ವಿನಂತಿ ಅಥವಾ ವಿನಂತಿ ಪ್ಯಾರಾಮೀಟರ್‌ಗಳು</translation>
 <translation id="1826516787628120939">ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1834321415901700177">ಈ ಸೈಟ್ ಹಾನಿಕಾರಕ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಹೊಂದಿದೆ</translation>
 <translation id="1839551713262164453">ದೋಷಗಳಿರುವ ಕಾರಣ ಕಾರ್ಯನೀತಿಯ ಮೌಲ್ಯಗಳ ಮೌಲ್ಯೀಕರಣವು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="1842969606798536927">ಪಾವತಿಸಿ</translation>
-<translation id="1866450167992311397">ಹೆಚ್ಚಿನ ಸ್ಥಳಗಳಲ್ಲಿ ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="1871284979644508959">ಅಗತ್ಯವಿರುವ ಕ್ಷೇತ್ರ</translation>
 <translation id="1874765382782611674">ಸ್ವೀಕೃತ ಡೆಬಿಟ್ ಕಾರ್ಡ್‌ಗಳು</translation>
@@ -219,7 +217,7 @@
 <translation id="2355395290879513365">ಈ ಸೈಟ್‌ನಲ್ಲಿ ನೀವು ನೋಡುತ್ತಿರುವ ಚಿತ್ರಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಮತ್ತು ಅವುಗಳನ್ನು ಮಾರ್ಪಡಿಸುವ ಮೂಲಕ ನಿಮ್ಮನ್ನು ವಂಚಿಸಲು ದಾಳಿಕೋರರಿಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿರಬಹುದು.</translation>
 <translation id="2356070529366658676">ಕೇಳಿ</translation>
 <translation id="2359629602545592467">ಬಹು</translation>
-<translation id="2359808026110333948">ಮುಂದುವರಿಸು</translation>
+<translation id="2359808026110333948">ಮುಂದುವರೆಸಿ</translation>
 <translation id="2360873523816792727">ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಬಳಸಲು, ಸಿಂಕ್ ಆನ್ ಮಾಡಿ.</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> ನಲ್ಲಿ ಸೆರೆಹಿಡಿಯಲಾದ ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿಲ್ಲ</translation>
 <translation id="2367567093518048410">ಹಂತ</translation>
@@ -382,7 +380,6 @@
 <translation id="3427092606871434483">ಅನುಮತಿಸಿ (ಡಿಫಾಲ್ಟ್)</translation>
 <translation id="3427342743765426898">&amp;ಸಂಪಾದಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
 <translation id="342781501876943858">ನೀವು ಇತರ ಸೈಟ್‌ಗಳಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಮರುಬಳಕೆ ಮಾಡಿದ್ದಲ್ಲಿ Chromium ನಿಮ್ಮ ಪಾಸವರ್ಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಲು ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
-<translation id="3430691998045392297">ಚಲನಚಿತ್ರದ ಸ್ಕ್ರೀನಿಂಗ್ ವಿಭಿನ್ನವಾಗಿದೆ, ನೀವು ಮುಂದುವರಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="3431636764301398940">ಈ ಸಾಧನಕ್ಕೆ ಈ ಕಾರ್ಡ್ ಉಳಿಸಿ</translation>
 <translation id="3447661539832366887">ಈ ಸಾಧನದ ಮಾಲೀಕರು ಡೈನೊಸಾರ್ ಆಟವನ್ನು ಆಫ್ ಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="3447884698081792621">ಪ್ರಮಾಣಪತ್ರವನ್ನು ತೋರಿಸಿ (<ph name="ISSUER" /> ಇವರಿಂದ ನೀಡಲಾಗಿದೆ)</translation>
@@ -709,7 +706,6 @@
 <translation id="5720705177508910913">ಪ್ರಸ್ತುತ ಬಳಕೆದಾರ</translation>
 <translation id="5730040223043577876">ನೀವು ಇತರ ಸೈಟ್‌ಗಳಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಮರುಬಳಕೆ ಮಾಡಿದ್ದಲ್ಲಿ Chrome ನಿಮ್ಮ ಪಾಸವರ್ಡ್ ಅನ್ನು ಮರುಹೊಂದಿಸಲು ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="5732392974455271431">ನಿಮ್ಮ ಪೋಷಕರು ನಿಮಗಾಗಿ ಅದನ್ನು ಅನಿರ್ಬಂಧಿಸಬಹುದಾಗಿದೆ</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{ಈ ಕಾರ್ಡ್ ಮತ್ತು ಅದರ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ ಆದ್ದರಿಂದ, ನೀವು ಸೈನ್‌ ಇನ್ ಆಗಿರುವಾಗ ವೇಗವಾಗಿ ಚೆಕ್‌ಔಟ್ ಮಾಡಬಹುದು}one{ಈ ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ಅದರ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ ಆದ್ದರಿಂದ, ನೀವು ಸೈನ್‌ ಇನ್ ಆಗಿರುವಾಗ ವೇಗವಾಗಿ ಚೆಕ್‌ಔಟ್ ಮಾಡಬಹುದು}other{ಈ ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ಅದರ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗುತ್ತದೆ ಆದ್ದರಿಂದ, ನೀವು ಸೈನ್‌ ಇನ್ ಆಗಿರುವಾಗ ವೇಗವಾಗಿ ಚೆಕ್‌ಔಟ್ ಮಾಡಬಹುದು}}</translation>
 <translation id="5763042198335101085">ಮಾನ್ಯವಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="5765072501007116331">ವಿತರಣೆಯ ವಿಧಾನಗಳು ಹಾಗೂ ಆವಶ್ಯಕತೆಗಳನ್ನು ನೋಡಲು, ಒಂದು ವಿಳಾಸವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="5770114862687765385">ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ ಎಂದು ತೋರುತ್ತದೆ. ಸೆಶನ್ ಅನ್ನು ಮರುಹೊಂದಿಸಲು 'ಮರುಹೊಂದಿಸು' ಬಟನ್ ಅನ್ನು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
@@ -792,7 +788,6 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> ಕ್ಕಿಂತ ಕಡಿಮೆ ಇರುವುದನ್ನು ತೆಗೆದುಹಾಕಿ. ನಿಮ್ಮ ನಂತರದ ಭೇಟಿಯ ಸಮಯದಲ್ಲಿ ಕೆಲವು ಸೈಟ್‌ಗಳು ನಿಧಾನವಾಗಿ ಲೋಡ್ ಆಗಬಹುದು.</translation>
 <translation id="6337534724793800597">ಹೆಸರಿನ ಪ್ರಕಾರವಾಗಿ ನೀತಿಗಳನ್ನು ಫಿಲ್ಟರ್ ಮಾಡಿ</translation>
 <translation id="6358450015545214790">ಇವುಗಳ ಅರ್ಥವೇನು?</translation>
-<translation id="635989537247018238">ಮುಂದಿನ ಹಂತದಲ್ಲಿ, ಯಾವ ಕಾರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಬೇಕು ಎಂಬುದನ್ನು ನೀವು ಆಯ್ಕೆ ಮಾಡಬಹುದು</translation>
 <translation id="6383221683286411806">ಮುಂದಕ್ಕೆ ಶುಲ್ಕವಿರುವ ಸಾಧ್ಯತೆಗಳಿವೆ</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ಇತರ ಸಲಹೆ}one{# ಇತರ ಸಲಹೆಗಳು}other{# ಇತರ ಸಲಹೆಗಳು}}</translation>
 <translation id="6387754724289022810">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌ ಮತ್ತು ನಿಮ್ಮ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಿ.</translation>
@@ -818,7 +813,6 @@
 <translation id="6569060085658103619">ನೀವು ವಿಸ್ತರಣೆ ಪುಟವನ್ನು ವೀಕ್ಷಿಸುತ್ತಿರುವಿರಿ</translation>
 <translation id="6596325263575161958">ಎನ್‌ಕ್ರಿಫ್ಶನ್ ಆಯ್ಕೆಗಳು</translation>
 <translation id="6604181099783169992">ಚಲನೆ ಅಥವಾ ಬೆಳಕಿನ ಸೆನ್ಸರ್‌ಗಳು</translation>
-<translation id="6607617806003952240">ನಾನು ಇನ್ನು ಮುಂದೆ ಸಹಾಯ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ. ಹಸ್ತಚಾಲಿತವಾಗಿ ಮುಂದುವರಿಸಿ.</translation>
 <translation id="6624427990725312378">ಸಂಪರ್ಕ ಮಾಹಿತಿ</translation>
 <translation id="6626291197371920147">ಮಾನ್ಯವಾದ ಕಾರ್ಡ್ ಸಂಖ್ಯೆಯನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ಹುಡುಕಾಟ</translation>
@@ -849,6 +843,7 @@
 <translation id="6865412394715372076">ಈ ಕಾರ್ಡ್ ಅನ್ನು ಈಗಲೇ ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="6868206169573555318">ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲು, ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="6874604403660855544">&amp;ಸೇರಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
+<translation id="6885646002011712606">ಸ್ಕ್ರೀನ್‌ನ ಕೆಳಭಾಗದ ಸಮೀಪದಲ್ಲಿ ಸ್ವಯಂ ಭರ್ತಿ ಅಸಿಸ್ಟೆಂಟ್ ಲಭ್ಯವಿರುತ್ತದೆ</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">ನೀತಿಯ ಮಟ್ಟವು ಬೆಂಬಲಿತವಾಗಿಲ್ಲ.</translation>
 <translation id="6895330447102777224">ನಿಮ್ಮ ಕಾರ್ಡ್ ಅನ್ನು ದೃಢೀಕರಿಸಲಾಗಿದೆ</translation>
@@ -888,6 +883,7 @@
 <translation id="7138472120740807366">ವಿತರಣೆ ವಿಧಾನ</translation>
 <translation id="7139724024395191329">ಎಮಿರೇಟ್</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ಇನ್ನಷ್ಟು}one{<ph name="PAYMENT_METHOD_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ಇನ್ನಷ್ಟು}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ಇನ್ನಷ್ಟು}}</translation>
+<translation id="7158980942472052083">ಅಮಾನ್ಯ URL. ಪ್ರಮಾಣಿತ ವ್ಯವಸ್ಥೆಯೊಂದಿಗಿನ URL ಆಗಿರಬೇಕು.</translation>
 <translation id="717330890047184534">Gaia ಐಡಿ:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ಇನ್ನಷ್ಟು}one{<ph name="SHIPPING_OPTION_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ಇನ್ನಷ್ಟು}other{<ph name="SHIPPING_OPTION_PREVIEW" /> ಮತ್ತು <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ಇನ್ನಷ್ಟು}}</translation>
 <translation id="7179323680825933600">ಪಾವತಿ ವಿಧಾನಗಳನ್ನು ಉಳಿಸಿ ಮತ್ತು ಭರ್ತಿ ಮಾಡಿ</translation>
@@ -990,6 +986,7 @@
 <translation id="7716424297397655342">ಸಂಗ್ರಹದಿಂದ ಈ ಸೈಟ್ ಲೋಡ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="7723047071702270851">ಕಾರ್ಡ್ ಅನ್ನು ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="774634243536837715">ಅಪಾಯಕಾರಿ ವಿಷಯವನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
+<translation id="7747182086178764941">ಸ್ವಯಂ ಭರ್ತಿ ಅಸಿಸ್ಟೆಂಟ್‌ನ ಮೊದಲ ಬಾರಿ ರನ್ ಮಾಡಿದ ಸ್ಕ್ರೀನ್ ಅನ್ನು ತೋರಿಸಲಾಗಿದೆ</translation>
 <translation id="7752995774971033316">ನಿರ್ವಹಣೆಯಲ್ಲಿಲ್ಲ</translation>
 <translation id="7755287808199759310">ನಿಮ್ಮ ಪೋಷಕರು ನಿಮಗಾಗಿ ಅದನ್ನು ಅನಿರ್ಬಂಧಿಸಬಹುದಾಗಿದೆ</translation>
 <translation id="7758069387465995638">ಸಂಪರ್ಕವನ್ನು ಫೈರ್‌ವಾಲ್ ಅಥವಾ ಆಂಟಿವೈರಸ್ ಸಾಫ್ಟ್‌ವೇರ್ ನಿರ್ಬಂಧಿಸಿರಬಹುದು.</translation>
@@ -997,7 +994,7 @@
 <translation id="7761701407923456692">ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರವು URL ಗೆ ಸರಿ ಹೊಂದುವುದಿಲ್ಲ.</translation>
 <translation id="7763386264682878361">ಪಾವತಿ ಮ್ಯಾನಿಫೆಸ್ಟ್ ವಿಶ್ಲೇಷಕರು</translation>
 <translation id="7764225426217299476">ವಿಳಾಸ ಸೇರಿಸಿ</translation>
-<translation id="777702478322588152">Prefecture</translation>
+<translation id="777702478322588152">ಪ್ರಿಫೆಕ್ಚರ್‌‌</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
 <translation id="7793809570500803535"><ph name="SITE" /> ನಲ್ಲಿರುವ ವೆಬ್‌ಪುಟವು ತಾತ್ಕಾಲಿಕವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದಿರಬಹುದು ಅಥವಾ ಅದನ್ನು ಶಾಶ್ವತವಾಗಿ ಹೊಸ ವೆಬ್ ವಿಳಾಸಕ್ಕೆ ಸರಿಸಿರಬಹುದು.</translation>
 <translation id="7800304661137206267">ಸಂದೇಶದ ದೃಢೀಕರಣಕ್ಕಾಗಿ <ph name="MAC" /> ಮತ್ತು <ph name="KX" /> ನಂತೆ ಕೀಲಿ ವಿನಿಮಯದ ಯಾಂತ್ರಿಕತೆ ಜೊತೆಗೆ <ph name="CIPHER" /> ಅನ್ನು ಬಳಸಿ ಸಂಪರ್ಕವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ.</translation>
@@ -1136,7 +1133,6 @@
 <translation id="8763927697961133303">USB ಸಾಧನ</translation>
 <translation id="8768895707659403558">ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ಬಳಸಲು, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;ಅಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{ಈ ಕಾರ್ಡ್ ಅನ್ನು ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸೇರಿಸಲಾಗಿದೆ. ಈಗ, ನೀವು ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಸಾಧನದಿಂದಲೂ ಅದನ್ನು ಬಳಸಬಹುದು.}one{ಈ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸೇರಿಸಲಾಗಿದೆ. ಈಗ, ನೀವು ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಸಾಧನದಿಂದಲೂ ಅವುಗಳನ್ನು ಬಳಸಬಹುದು.}other{ಈ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಗೆ ಸೇರಿಸಲಾಗಿದೆ. ಈಗ, ನೀವು ಸೈನ್-ಇನ್ ಮಾಡಿರುವ ಯಾವುದೇ ಸಾಧನದಿಂದಲೂ ಅವುಗಳನ್ನು ಬಳಸಬಹುದು.}}</translation>
 <translation id="8792621596287649091">ನಿಮ್ಮ <ph name="ORG_NAME" /> ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chromium ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="8800988563907321413">ನಿಮ್ಮ ಸಮೀಪದ ವೆಬ್ ಪುಟದ ಸಲಹೆಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುತ್ತವೆ</translation>
 <translation id="8820817407110198400">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>

@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Your open tabs appear here</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Cardholder Name</translation>
-<translation id="1809549658008855907">Save cards to your Google account?</translation>
 <translation id="1821930232296380041">Invalid request or request parameters</translation>
 <translation id="1826516787628120939">Checking</translation>
 <translation id="1834321415901700177">This site contains harmful programs</translation>
 <translation id="1839551713262164453">Validation of policy values has failed with errors</translation>
 <translation id="1842969606798536927">Pay</translation>
-<translation id="1866450167992311397">Use your cards in more places</translation>
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
 <translation id="1871284979644508959">Required field</translation>
 <translation id="1874765382782611674">Accepted Debit Cards</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">Allow (default)</translation>
 <translation id="3427342743765426898">&amp;Redo Edit</translation>
 <translation id="342781501876943858">Chromium recommends resetting your password if you reused it on other sites.</translation>
-<translation id="3430691998045392297">The film screening is different. Do you want to continue?</translation>
 <translation id="3431636764301398940">Save this card to this device</translation>
 <translation id="3447661539832366887">The owner of this device turned off the dinosaur game.</translation>
 <translation id="3447884698081792621">Show certificate (issued by <ph name="ISSUER" />)</translation>
@@ -618,7 +615,7 @@
 <translation id="5086888986931078152">You may lose access to protected content from some sites.</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5087580092889165836">Add card</translation>
-<translation id="5089810972385038852">County</translation>
+<translation id="5089810972385038852">State</translation>
 <translation id="5094747076828555589">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5098332213681597508">This name is from your Google account.</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">Current user</translation>
 <translation id="5730040223043577876">Chrome recommends resetting your password if you reused it on other sites.</translation>
 <translation id="5732392974455271431">Your parents can unblock it for you</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{This card and its billing address will be saved to your Google account so that you can check out faster wherever you're signed in}other{These cards and their billing addresses will be saved to your Google account so that you can check out faster wherever you're signed in}}</translation>
 <translation id="5763042198335101085">Enter a valid email address</translation>
 <translation id="5765072501007116331">To see delivery methods and requirements, select an address</translation>
 <translation id="5770114862687765385">The file seems to be corrupted. Click the 'Reset' button to reset the session.</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026">Frees up less than <ph name="SIZE" />. Some sites may load more slowly on your next visit.</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
 <translation id="6358450015545214790">What do these mean?</translation>
-<translation id="635989537247018238">In the next step, you can choose which cards to save</translation>
 <translation id="6383221683286411806">Potential charges ahead.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>
 <translation id="6387754724289022810">To pay faster next time, save your card and billing address to your Google Account and to this device.</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">You're viewing an extension page</translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="6604181099783169992">Motion or light sensors</translation>
-<translation id="6607617806003952240">I cannot help anymore, please continue manually.</translation>
 <translation id="6624427990725312378">Contact Info</translation>
 <translation id="6626291197371920147">Add valid card number</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
@@ -854,6 +848,7 @@
 <translation id="6865412394715372076">This card can't be verified at the moment</translation>
 <translation id="6868206169573555318">Relaunch to update</translation>
 <translation id="6874604403660855544">&amp;Redo add</translation>
+<translation id="6885646002011712606">Auto-fill assistant is available near bottom of the screen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
 <translation id="6895330447102777224">Your card is confirmed</translation>
@@ -893,6 +888,7 @@
 <translation id="7138472120740807366">Delivery method</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}other{<ph name="PAYMENT_METHOD_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> more}}</translation>
+<translation id="7158980942472052083">Invalid URL. Must be a URL with a standard scheme.</translation>
 <translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" /> and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
 <translation id="7179323680825933600">Save and fill payment methods</translation>
@@ -996,6 +992,7 @@ Additional details:
 <translation id="7716424297397655342">This site can’t be loaded from the cache</translation>
 <translation id="7723047071702270851">Edit Card</translation>
 <translation id="774634243536837715">Dangerous content blocked.</translation>
+<translation id="7747182086178764941">Auto-fill assistant first run screen is shown</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="7755287808199759310">Your parent can unblock it for you</translation>
 <translation id="7758069387465995638">Firewall or antivirus software may have blocked the connection.</translation>
@@ -1141,7 +1138,6 @@ Additional details:
 <translation id="8763927697961133303">USB device</translation>
 <translation id="8768895707659403558">To use your cards on all your devices, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{This card has been added to your Google account. You can now use it from any signed-in device.}other{These cards have been added to your Google account. You can now use them from any signed-in device.}}</translation>
 <translation id="8792621596287649091">You could lose access to your <ph name="ORG_NAME" /> account or experience identity theft. Chromium recommends changing your password now.</translation>
 <translation id="8800988563907321413">Your nearby suggestions appear here</translation>
 <translation id="8820817407110198400">Bookmarks</translation>

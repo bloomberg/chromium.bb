@@ -118,6 +118,13 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
           Ningún modo de desbloqueo rápido está disponible para los dispositivos administrados de forma predeterminada.</translation>
 <translation id="123081309365616809">Habilita el envío de contenido al dispositivo</translation>
+<translation id="1231349879329465225">Permite habilitar o inhabilitar la transición rápida.
+      Se aplica a todos los usuarios y todas las interfaces del dispositivo.
+      Para poder usar la transición rápida, es necesario habilitar este ajuste y la propiedad ONC en cada red.
+      Una vez configurada la transición rápida, se mantendrá hasta que se cambie la política para inhabilitarla.
+
+      Si no se define la política, la transición rápida no se usará.
+      Si se le asigna el valor "True", la transición rápida se usa si el punto de acceso inalámbrico lo admite.</translation>
 <translation id="1243570869342663665">Controlar el filtrado de contenido para adultos de SafeSites.</translation>
 <translation id="1257550411839719984">Establecer directorio de descargas predeterminado</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
@@ -135,6 +142,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
       A diferencia de <ph name="URL_LIST_POLICY_NAME" />, las reglas se aplican en ambas direcciones. De esta forma, si el complemento de Internet Explorer está presente y habilitado, también controla si <ph name="IE_PRODUCT_NAME" /> debe abrir las URL en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utilizar una secuencia de comandos .pac de proxy</translation>
 <translation id="1304973015437969093">IDs de extensiones/aplicaciones y URLs de actualización que se instalan automáticamente</translation>
+<translation id="1307415922184340052">Enviar los nombres de usuario y de archivo al servidor de impresoras nativas con cada trabajo de impresión. Los nombres no se envían de forma predeterminada.</translation>
 <translation id="1307454923744766368">Orígenes o patrones de nombres de host en los que no se deben
       aplicar restricciones de orígenes inseguros</translation>
 <translation id="1313457536529613143">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observa la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado.
@@ -3408,4 +3416,5 @@ Los controladores de protocolos registrados por la política se combinan con los
       Los dispositivos no podrán comprobar si hay actualizaciones de forma automática durante los periodos de tiempo especificados. Por motivos de seguridad, esta política no se aplica a los dispositivos que requieran restauración o tengan una versión anterior a <ph name="PRODUCT_OS_NAME" />. Además, esta política no bloqueará las comprobaciones de actualizaciones que solicitan los usuarios o administradores.
       Cuando no se le asigna ningún valor a esta política o no contiene intervalos de tiempo:
       Esta política no bloqueará las comprobaciones de actualizaciones automáticas, pero es posible que otras políticas las bloqueen.</translation>
+<translation id="991560005425213776">Enviar los nombres de usuario y de archivo a impresoras nativas</translation>
 </translationbundle>

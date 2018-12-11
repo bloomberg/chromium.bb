@@ -40,6 +40,7 @@
 <translation id="15373452373711364">મોટું માઉસ કર્સર</translation>
 <translation id="1550523713251050646">વધુ વિકલ્પો માટે ક્લિક કરો</translation>
 <translation id="1570871743947603115">બ્લૂટૂથ ટૉગલ કરો. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">આ સત્રમાં તમારી બધી પ્રવૃત્તિને ઍક્સેસ કરો</translation>
 <translation id="1608626060424371292">આ વપરાશકર્તાને દૂર કરો</translation>
 <translation id="1621499497873603021">બેટરી ખાલી થવામાં બાકી સમય, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">વૉઇસ ક્વેરી શરૂ કરો</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">ઊભી સ્થિતિ પર લૉક કરેલું છે</translation>
 <translation id="2352467521400612932">સ્ટાઇલસની સેટિંગ</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ને સક્રિય કરી રહ્યું છે</translation>
-<translation id="2359808026110333948">ચાલુ રાખો</translation>
+<translation id="2359808026110333948">આગળ વધો</translation>
 <translation id="2365393535144473978">મોબાઇલ ડેટા ચાલુ કરવાથી બ્લૂટૂથ ચાલુ થશે.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">'ખલેલ પાડશો નહીં'ને ટૉગલ કરો</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">કનેક્શન ઉમેરો</translation>
 <translation id="2961963223658824723">કંઈક ખોટું થયું. થોડીવારમાં ફરીથી પ્રયાસ કરો.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">ઍપ, એક્સ્ટેન્શન અને થીમ ઇન્સ્ટૉલ કરો</translation>
 <translation id="2995447421581609334">કાસ્ટ ઉપકરણો બતાવો.</translation>
 <translation id="2996462380875591307">ડૉક કરેલ મૅગ્નિફાયર ચાલુ કર્યું. ટૉગલ કરવાનું બંધ કરવા માટે ફરીથી Ctrl+Search+D દબાવો.</translation>
 <translation id="3000461861112256445">મૉનો ઑડિઓ</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">ફરી શરૂ કરો અને રીસેટ કરો</translation>
 <translation id="4961318399572185831">સ્ક્રીનને કાસ્ટ કરો</translation>
 <translation id="5030687792513154421">સમય પૂરો થયો</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" />, નવા ફોન સાથે કનેક્ટ થયું</translation>
 <translation id="5083553833479578423">આસિસ્ટંટની વધુ સુવિધાઓને અનલૉક કરો.</translation>
 <translation id="5136175204352732067">અલગ કીબોર્ડ કનેક્ટ કર્યું</translation>
 <translation id="5168181903108465623">Cast ઉપકરણો ઉપલબ્ધ</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">શોધ+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
+<translation id="6665545700722362599">સ્થાન સેવાઓ, ડિવાઇસના માઇક્રોફોન, કૅમેરા અથવા અન્ય સુવિધાઓનો ઉપયોગ કરવા માટે વેબસાઇટ, ઍપ અને એક્સ્ટેન્શનને પરવાનગી આપો</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">અલગ પાડી શકાય તેવા તમારા કીબોર્ડ માટે મહત્ત્વપૂર્ણ અપડેટ જરૂરી છે</translation>
 <translation id="6700713906295497288">IME મેનૂ બટન</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">ઍક્સેસિબિલિટી</translation>
 <translation id="698231206551913481">આ વપરાશકર્તા દૂર કરી દેવામાં આવે તે પછી આ વપરાશકર્તા સાથે સંકળાયેલ તમામ ફાઇલો અને સ્થાનિક ડેટા કાયમીરૂપે કાઢી નાખવામાં આવશે.</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> વાગ્યે પાછા આવો.</translation>
+<translation id="7025533177575372252">તમારા <ph name="DEVICE_NAME" />ને તમારા ફોન સાથે કનેક્ટ કરો</translation>
 <translation id="7029814467594812963">સત્રમાંથી બહાર નીકળો</translation>
 <translation id="7066646422045619941">આ નેટવર્ક તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરેલ છે.</translation>
 <translation id="7067196344162293536">સ્વતઃ ફેરવો</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">ટાઇમર રોકો</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
 <translation id="726276584504105859">વિભાજિત સ્ક્રીનનો ઉપયોગ કરવા માટે અહીં ખેંચો</translation>
 <translation id="7303365578352795231">અન્ય ઉપકરણ પર જવાબ આપી રહ્યાં છે.</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">રદ કરવા માટે શોધો અથવા Shift દબાવો.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> અને <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">પ્રબળ સિગ્નલ</translation>
+<translation id="7837740436429729974">સમય સમાપ્ત</translation>
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> સાથે કનેક્ટ થઈ રહ્યું છે</translation>
 <translation id="7842569679327885685">ચેતવણી: પ્રાયોગિક સુવિધા</translation>
 <translation id="7846634333498149051">કીબોર્ડ</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">પાછલું મેનૂ</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">નોંધ બનાવો</translation>
+<translation id="8375916635258623388">આ <ph name="DEVICE_NAME" /> અને તમારો ફોન ઑટોમૅટિક રીતે કનેક્ટ થશે</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> માટે વિકલ્પો મેનૂ</translation>
 <translation id="8394567579869570560">તમારા માતાપિતાએ આ ડિવાઇસને લૉક કર્યું છે</translation>
 <translation id="8406981827175133772">પૂર્ણસ્ક્રીન મૅગ્નિફાયર</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">કનેક્ટેડ નથી</translation>
 <translation id="8877788021141246043">રિમાઇન્ડર સેટ કરો</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
+<translation id="8898978413391960553">00:00 સેકન્ડ</translation>
 <translation id="8921624153894383499">Google સહાયક આ ભાષા બોલતું નથી.</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
 <translation id="8940956008527784070">બૅટરી ઓછી (<ph name="PERCENTAGE" />%)</translation>

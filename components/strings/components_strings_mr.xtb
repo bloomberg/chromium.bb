@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">तुमचे खुले टॅब येथे दिसतात</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">कार्डधारकाचे नाव</translation>
-<translation id="1809549658008855907">तुमच्या Google खात्यात कार्डे सेव्ह करायची आहेत का?</translation>
 <translation id="1821930232296380041">चुकीची विनंती किंवा विनंती मापदंड</translation>
 <translation id="1826516787628120939">तपासत आहे</translation>
 <translation id="1834321415901700177">या साइटमध्ये धोकादायक प्रोग्राम आहेत</translation>
 <translation id="1839551713262164453">धोरण मूल्यांची वैधता एररसह अयशस्वी झाली आहे</translation>
 <translation id="1842969606798536927">पेमेंट करा</translation>
-<translation id="1866450167992311397">अधिक ठिकाणी तुमची कार्डे वापरा</translation>
 <translation id="1871208020102129563">प्रॉक्सी निश्चित प्रॉक्सी सर्व्हर वापरण्‍यास सेट करण्‍यात आले आहे, .pac स्क्रिप्ट URL नव्हे.</translation>
 <translation id="1871284979644508959">आवश्यक भाग</translation>
 <translation id="1874765382782611674">स्वीकारली जाणारी डेबिट कार्डे</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">अनुमती द्या (डीफॉल्ट)</translation>
 <translation id="3427342743765426898">&amp;संपादित करा पुन्हा करा</translation>
 <translation id="342781501876943858">जर तुम्ही तुमच्या पासवर्डचा इतर साइटवर पुन्हा वापर केला असेल तर Chromium तुम्हाला तो रीसेट करण्याची शिफारस करतो.</translation>
-<translation id="3430691998045392297">मूव्ही स्क्रीनिंग भिन्न आहे, तुम्हाला पुढे सुरू ठेवायचे आहे?</translation>
 <translation id="3431636764301398940">या डिव्हाइसवर हे कार्ड सेव्ह करा</translation>
 <translation id="3447661539832366887">या डिव्हाइसच्या मालकाने डायनासोर गेम बंद केला आहे.</translation>
 <translation id="3447884698081792621">सर्टिफिकेट दाखवा (<ph name="ISSUER" /> ने जारी केलेले)</translation>
@@ -450,7 +447,7 @@
 <translation id="385051799172605136">मागील</translation>
 <translation id="3858027520442213535">तारीख आणि वेळ अपडेट करा</translation>
 <translation id="3884278016824448484">संघर्ष करणारा डिव्हाइस अभिज्ञापक</translation>
-<translation id="3885155851504623709">पॅरिश</translation>
+<translation id="3885155851504623709">परगणा</translation>
 <translation id="3886446263141354045">या साइटवर प्रवेश करण्याची तुमची विनंती <ph name="NAME" /> कडे पाठविली गेली आहे</translation>
 <translation id="3890664840433101773">ईमेल जोडा</translation>
 <translation id="3901925938762663762">कार्ड कालबाह्य झाले आहे</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">वर्तमान वापरकर्ता</translation>
 <translation id="5730040223043577876">जर तुम्ही तुमच्या पासवर्डचा इतर साइटवर पुन्हा वापर केला असेल तर Chrome तुम्हाला तो रीसेट करण्याची शिफारस करतो.</translation>
 <translation id="5732392974455271431">तुमचे पालक तुमच्यासाठी ती अनावरोधित करू शकतात</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{हे कार्ड आणि त्याचा बिलिंग पत्ता तुमच्या Google खात्यामध्ये सेव्ह केला जाईल जेणेकरून तुम्ही कुठेही साइन इन कराल तेथून जलद तपासू शकता}one{हे कार्ड आणि त्याचा बिलिंग पत्ता तुमच्या Google खात्यामध्ये सेव्ह केला जाईल जेणेकरून तुम्ही कुठेही साइन इन कराल तेथून जलद तपासू शकता}other{ही कार्डे आणि त्यांचे बिलिंग पत्ते तुमच्या Google खात्यामध्ये सेव्ह केले जातील जेणेकरून तुम्ही कुठेही साइन इन कराल तेथून जलद तपासू शकता}}</translation>
 <translation id="5763042198335101085">वैध ईमेल अॅड्रेस एंटर करा</translation>
 <translation id="5765072501007116331">वितरण पद्धती आणि आवश्यकता पाहण्यासाठी, एक पत्ता निवडा</translation>
 <translation id="5770114862687765385">फाइल करप्ट आहे असे दिसते. सेशन रीसेट करण्यासाठी 'रीसेट करा' बटणावर क्लिक करा.</translation>
@@ -798,7 +794,6 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> पेक्षा कमी जागा मोकळी करते. काही साइट तुमच्या पुढील भेटीच्या वेळी आणखी धीम्या गतीने लोड होऊ शकतात.</translation>
 <translation id="6337534724793800597">धोरणे नावानुसार फिल्टर करा</translation>
 <translation id="6358450015545214790">याचा अर्थ काय आहे?</translation>
-<translation id="635989537247018238">पुढील पायरीमध्ये, कोणती कार्डे सेव्ह करायची ते तुम्ही निवडू शकता</translation>
 <translation id="6383221683286411806">पुढे संभाव्य शुल्क आहे.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 अन्य सूचना}one{# अन्य सूचना}other{# अन्य सूचना}}</translation>
 <translation id="6387754724289022810">पुढील वेळी जलद पेमेंट देण्यासाठी, तुमच्या Google खात्यावर आणि या डिव्हाइसवर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
@@ -824,7 +819,6 @@
 <translation id="6569060085658103619">तुम्ही एक विस्तार पृष्ठ पाहत आहात</translation>
 <translation id="6596325263575161958">एंक्रिप्शन पर्याय</translation>
 <translation id="6604181099783169992">गती किंवा प्रकाश सेन्सर</translation>
-<translation id="6607617806003952240">मी आता मदत करू शकत नाही. कृपया मॅन्‍युअली सुरू ठेवा.</translation>
 <translation id="6624427990725312378">संपर्क माहिती</translation>
 <translation id="6626291197371920147">वैध कार्ड नंबर जोडा</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> शोध</translation>
@@ -855,6 +849,7 @@
 <translation id="6865412394715372076">या कार्डची पडताळणी आता करू शकत नाही</translation>
 <translation id="6868206169573555318">अपडेट करण्यासाठी पुन्हा लाँच करा</translation>
 <translation id="6874604403660855544">&amp;जोडा पुन्हा करा</translation>
+<translation id="6885646002011712606">अॉटोफिल असिस्टंट स्क्रीनच्या तळाजवळ उपलब्ध आहे</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">धोरण स्तर समर्थित नाही.</translation>
 <translation id="6895330447102777224">आपल्या कार्डची पुष्टी केली</translation>
@@ -871,7 +866,7 @@
 <translation id="6964255747740675745">नेटवर्क कॉन्फिगरेशन पार्स करता आले नाही (चुकीची JSON).</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="6965978654500191972">डिव्हाइस</translation>
-<translation id="6970216967273061347">‍जिल्‍हा</translation>
+<translation id="6970216967273061347">जिल्हा</translation>
 <translation id="6973656660372572881">निश्चित प्रॉक्सी सर्व्हर आणि .pac स्क्रिप्ट URL निर्दिष्‍ट करण्‍यात आले आहेत.</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="6979440798594660689">निःशब्द करा (डीफॉल्ट)</translation>
@@ -894,6 +889,7 @@
 <translation id="7138472120740807366">वितरण पद्धत</translation>
 <translation id="7139724024395191329">अमिरात</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}one{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}other{<ph name="PAYMENT_METHOD_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> आणखी}}</translation>
+<translation id="7158980942472052083">चुकीची URL. साधारण स्कीम असलेली URL असणे आवश्यक आहे.</translation>
 <translation id="717330890047184534">Gaia आयडी:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}one{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}other{<ph name="SHIPPING_OPTION_PREVIEW" /> आणि <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> आणखी}}</translation>
 <translation id="7179323680825933600">पेमेंट पद्धती सेव्ह करा आणि भरा</translation>
@@ -997,6 +993,7 @@
 <translation id="7716424297397655342">ही साइट कॅशे मधून लोड करणे शक्य नाही</translation>
 <translation id="7723047071702270851">कार्ड संपादित करा</translation>
 <translation id="774634243536837715">धोकादायक आशय ब्लॉक केला.</translation>
+<translation id="7747182086178764941">ऑटोफिल असिस्टंट पहिला रन स्क्रीन दाखवलेला आहे</translation>
 <translation id="7752995774971033316">व्यवस्थापित न केलेले</translation>
 <translation id="7755287808199759310">तुमचे पालक तुमच्यासाठी ती अनावरोधित करू शकतात</translation>
 <translation id="7758069387465995638">फायरवॉल किंवा अँटीव्हायरस सॉफ्टवेअरने कदाचित कनेक्शन अवरोधित केले असावे.</translation>
@@ -1142,7 +1139,6 @@
 <translation id="8763927697961133303">USB डिव्हाइस</translation>
 <translation id="8768895707659403558">तुमच्या सर्व डिव्हाइसवर तुमची कार्डे वापरण्यासाठी, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{हे कार्ड तुमच्या Google खात्यात जोडले गेले. तुम्ही ते आता साइन इन केलेल्या कोणत्याही डिव्हाइसवरून वापरू शकता.}one{हे कार्ड तुमच्या Google खात्यात जोडले गेले. तुम्ही ते आता साइन इन केलेल्या कोणत्याही डिव्हाइसवरून वापरू शकता.}other{ही कार्डे तुमच्या Google खात्यात जोडली गेली. तुम्ही ती आता साइन इन केलेल्या कोणत्याही डिव्हाइसवरून वापरू शकता.}}</translation>
 <translation id="8792621596287649091">तुम्ही तुमच्या Google <ph name="ORG_NAME" /> चा अॅक्सेस गमावू शकता किंवा तुमची संवेदनशील माहिती चोरीला जाऊ शकते. Chromium लगेच तुमचा पासवर्ड बदलण्याची शिफारस करत आहे.</translation>
 <translation id="8800988563907321413">आपल्या जवळपासच्या सूचना येथे दिसतात</translation>
 <translation id="8820817407110198400">Bookmarks</translation>

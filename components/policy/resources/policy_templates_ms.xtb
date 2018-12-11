@@ -121,6 +121,13 @@
 
           Secara lalai, tiada mod buka kunci pantas tersedia untuk peranti yang diurus.</translation>
 <translation id="123081309365616809">Dayakan penghantaran kandungan ke peranti</translation>
+<translation id="1231349879329465225">Membenarkan Peralihan Pantas didayakan atau dilumpuhkan.
+      Dasar ini digunakan pada semua pengguna dan semua antara muka pada peranti.
+      Untuk membolehkan penggunaan Peralihan Pantas, tetapan ini dan juga sifat ONC setiap rangkaian perlu didayakan.
+      Setelah ditetapkan, Peralihan Pantas akan terus digunakan sehingga dasar tersebut ditukar untuk melumpuhkannya.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, Peralihan Pantas tidak akan digunakan.
+      Jika ditetapkan kepada benar, Peralihan Pantas akan digunakan apabila titik akses wayarles menyokong ciri ini.</translation>
 <translation id="1243570869342663665">Kawal penapisan kandungan dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Tetapkan direktori muat turun lalai</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
@@ -138,6 +145,7 @@
       Tidak seperti <ph name="URL_LIST_POLICY_NAME" />, peraturan dikenakan pada kedua-dua hala. Maknanya, apabila terdapat alat tambah Internet Explorer dan alat itu didayakan, peraturan tersebut juga mengawal sama ada <ph name="IE_PRODUCT_NAME" /> harus membuka URL ini dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Gunakan skrip proksi .pac</translation>
 <translation id="1304973015437969093">ID Sambungan/Apl dan URL kemas kini untuk dipasang secara senyap</translation>
+<translation id="1307415922184340052">Hantar nama pengguna dan nama fail kepada pelayan pencetak asli untuk setiap tugas cetakan. Tindakan lalai ialah tidak menghantar.</translation>
 <translation id="1307454923744766368">Asalan atau corak nama hos yang baginya sekatan
       terhadap asalan yang tidak selamat tidak dikenakan</translation>
 <translation id="1313457536529613143">Menentukan peratusan yang akan digunakan untuk menskala kelewatan pemalapan skrin apabila aktiviti pengguna diperhatikan semasa skrin dimalapkan atau tidak lama selepas skrin telah dimatikan. 
@@ -3440,4 +3448,5 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
       Peranti tidak dapat menyemak kemas kini secara automatik sepanjang selang masa yang dinyatakan. Peranti yang memerlukan pengunduran atau tidak mencapai versi <ph name="PRODUCT_OS_NAME" /> minimum tidak akan terjejas oleh dasar ini disebabkan oleh isu keselamatan yang berkemungkinan. Di samping itu, dasar ini tidak akan menyekat semakan kemas kini yang diminta oleh pengguna atau pentadbir.
       Apabilla dasar ini tidak ditetapkan atau tidak mengandungi selang masa:
       Semakan kemas kini automatik tidak akan disekat oleh dasar ini, tetapi semakan mungkin disekat oleh dasar lain.</translation>
+<translation id="991560005425213776">Hantar nama pengguna dan nama fail kepada pencetak asli</translation>
 </translationbundle>

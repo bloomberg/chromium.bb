@@ -107,6 +107,13 @@
 
           Varsayılan olarak, yönetilen cihazlarda hiçbir hızlı kilit açma moduna izin verilmez.</translation>
 <translation id="123081309365616809">Cihaza içerik yayınlamayı etkinleştirme</translation>
+<translation id="1231349879329465225">Fast Transition'ın etkinleştirilmesini veya devre dışı bırakılmasını sağlar.
+      Bu, tüm kullanıcılar ve cihazdaki tüm arayüzler için geçerlidir.
+      Fast Transition'ın kullanılabilmesi için hem bu ayarın hem de ağ başına ONC özelliğinin etkinleştirilmesi gerekir.
+      Ayarlandığında, politika bu özelliği devre dışı bırakacak şekilde değiştirilmedikçe Fast Transition devam eder.
+
+      Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa, Fast Transition kullanılmaz.
+      Doğru (true) değerine ayarlanırsa Fast Transition, kablosuz erişim noktası tarafından desteklendiğinde kullanılır.</translation>
 <translation id="1243570869342663665">SafeSites yetişkinlere uygun içerik filtrelemeyi kontrol et.</translation>
 <translation id="1257550411839719984">Varsayılan indirme dizinini ayarlama</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
@@ -124,6 +131,7 @@
       <ph name="URL_LIST_POLICY_NAME" /> politikasının aksine, kurallar iki yönlü olarak uygulanır. Yani, Internet Explorer eklentisi mevcutsa ve etkinse, aynı zamanda <ph name="IE_PRODUCT_NAME" /> tarayıcısının bu URL'leri <ph name="PRODUCT_NAME" /> tarayıcısında açıp açmayacağını da kontrol eder.</translation>
 <translation id="1297182715641689552">.pac proxy komut dosyası kullan</translation>
 <translation id="1304973015437969093">Uzantı/Uygulama kimlikleri ve güncelleme URL'leri sessizce yüklenir</translation>
+<translation id="1307415922184340052">Her yazdırma işinde kullanıcı adını ve dosya adını yerel yazıcı sunucusuna gönderir. Varsayılan ayar göndermemektir.</translation>
 <translation id="1307454923744766368">Güvenli olmayan başlangıç noktalarında kısıtlamaların uygulanmayacağı başlangıç noktaları ve ana makine adı kalıpları</translation>
 <translation id="1313457536529613143">Ekran kararmış durumdayken veya kapandıktan hemen sonra bir kullanıcı etkinliği algılandığında, ekranın kararmasındaki gecikmenin ölçekleneceği yüzdeyi belirtir.
 
@@ -279,7 +287,7 @@
 <translation id="1803646570632580723">Başlatıcıda gösterilecek sabitlenmiş uygulamalar listesi</translation>
 <translation id="1808715480127969042">Bu sitelerdeki çerezleri engelle</translation>
 <translation id="1810261428246410396">Anında Tethering'in kullanılmasına izin ver.</translation>
-<translation id="1817685358399181673">Bu politika bir kullanıcı için <ph name="PLUGIN_VM_NAME" /> resmi belirtiyor. Bu politika, cihazın resmi indirebileceği URL'nin yanı sıra indirme işleminin bütünlüğünü doğrulamak için bir SHA-256 karması belirlenerek ayarlanır.
+<translation id="1817685358399181673">Bu politika bir kullanıcı için <ph name="PLUGIN_VM_NAME" /> görüntüsünü belirtir. Bu politika, cihazın görüntüyü indirebileceği URL'nin yanı sıra indirme işleminin bütünlüğünü doğrulamak için bir SHA-256 karması belirlenerek ayarlanır.
 
       Bu politika, URL'yi ve karmayı JSON biçiminde gösteren bir dize olarak belirtilmelidir.</translation>
 <translation id="1827523283178827583">Sabit proxy sunucuları kullan</translation>
@@ -2695,7 +2703,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Güvenli Tarama hakkında daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="7642803091923523695">Bu cihazın PluginVm çalıştırmasını etkinleştirir.
 
-      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması ve <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verecek şekilde ayarlanması gerekiyor.</translation>
+      Politika false (yanlış) olarak ayarlanır veya ayarlanmadan bırakılırsa <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilmez. True (doğru) olarak ayarlanırsa diğer ayarlar izin verdiği sürece <ph name="PLUGIN_VM_NAME" /> cihaz için etkinleştirilir. <ph name="PLUGIN_VM_NAME" /> adlı sanal makinenin çalışmasına izin verilebilmesi için <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> politikasının true (doğru) olarak ayarlanması ve <ph name="PLUGIN_VM_IMAGE_POLICY_NAME" /> politikasının da ayarlanması gerekir.</translation>
 <translation id="7643883929273267746"><ph name="PRODUCT_NAME" /> içinde görülebilen hesapları kısıtlama</translation>
 <translation id="7651739109954974365">Veri dolaşımının etkin olup olmayacağını belirler. True olarak ayarlanırsa, veri dolaşımına izin verilir. Hiç ayarlanmazsa veya false değerine ayarlanırsa, veri dolaşımına izin verilmez.</translation>
 <translation id="7673194325208122247">Dönem (milisaniye)</translation>
@@ -3368,4 +3376,5 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       Cihazlar, belirtilen zaman aralıkları sırasında güncellemeleri otomatik olarak kontrol edemez. Geri alma işleminin yapılmasını gerektiren ve minimum <ph name="PRODUCT_OS_NAME" /> sürümünün altındaki cihazlar, olası güvenlik sorunlarından dolayı bu politikadan etkilenmez. Bununla birlikte, bu politika kullanıcılar veya yöneticiler tarafından istenen güncelleme kontrollerini engellemez.
       Bu politika ayarlanmazsa veya herhangi bir zaman aralığı içermiyorsa:
       Hiçbir otomatik güncelleme kontrolü bu politika tarafından engellenmez, ancak kontroller diğer politikalar tarafından engellenebilir.</translation>
+<translation id="991560005425213776">Kullanıcı adını ve dosya adını yerel yazıcılara gönderme</translation>
 </translationbundle>

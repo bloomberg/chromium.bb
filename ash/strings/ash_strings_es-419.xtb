@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Cursor del mouse grande</translation>
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
 <translation id="1570871743947603115">Activar o desactivar Bluetooth: <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Accede a toda tu actividad en esta sesión</translation>
 <translation id="1608626060424371292">Eliminar este usuario</translation>
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar una búsqueda por voz</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Agregar conexión</translation>
 <translation id="2961963223658824723">Se produjo un error. Vuelve a intentarlo en unos segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Instalar apps, extensiones y temas</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmisión</translation>
 <translation id="2996462380875591307">Se habilitó la lupa con vista acoplada. Presiona Ctrl+Buscar+D de nuevo para desactivarla.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
@@ -239,6 +241,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4924411785043111640">Reiniciar y restablecer</translation>
 <translation id="4961318399572185831">Transmitir pantalla</translation>
 <translation id="5030687792513154421">Se acabó el tiempo</translation>
+<translation id="5035236842988137213">Se conectó el dispositivo <ph name="DEVICE_NAME" /> a un teléfono nuevo</translation>
 <translation id="5083553833479578423">Desbloquea más funciones del Asistente.</translation>
 <translation id="5136175204352732067">Se conectó otro teclado</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
@@ -326,6 +329,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6627638273713273709">Búsqueda+mayúscula+K</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contraseña</translation>
+<translation id="6665545700722362599">Otorga permiso a sitios web, apps y extensiones para usar los servicios de ubicación, el micrófono y la cámara del dispositivo, y otras funciones</translation>
 <translation id="6691659475504239918">Buscar+mayúscula+H</translation>
 <translation id="6696025732084565524">Tu teclado desmontable necesita una actualización muy importante</translation>
 <translation id="6700713906295497288">Botón de menú IME</translation>
@@ -345,6 +349,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
 <translation id="7015766095477679451">Regresa a las <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Conectar tu dispositivo <ph name="DEVICE_NAME" /> a tu teléfono</translation>
 <translation id="7029814467594812963">Salir de la sesión</translation>
 <translation id="7066646422045619941">El administrador inhabilitó esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
@@ -356,6 +361,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7165278925115064263">Alt+mayúscula+K</translation>
 <translation id="7168224885072002358">Se revertirá a la resolución anterior en <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="7222902781030499995">Detener temporizador</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para usar la pantalla dividida</translation>
 <translation id="7303365578352795231">Se responderá en otro dispositivo.</translation>
@@ -388,6 +394,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7798302898096527229">Presiona mayúscula o la tecla de búsqueda para cancelarlo.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Señal fuerte</translation>
+<translation id="7837740436429729974">Tiempo agotado</translation>
 <translation id="7842211907556571265">Conectando a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
@@ -421,6 +428,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Crear nota</translation>
+<translation id="8375916635258623388">Este dispositivo <ph name="DEVICE_NAME" /> y el teléfono se conectarán automáticamente</translation>
 <translation id="8392451568018454956">Menú de opciones para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tus padres bloquearon este dispositivo</translation>
 <translation id="8406981827175133772">Lupa de pantalla completa</translation>
@@ -458,6 +466,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8877788021141246043">Establecer un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
+<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>

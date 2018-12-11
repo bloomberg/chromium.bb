@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Liels peles kursors</translation>
 <translation id="1550523713251050646">Noklikšķiniet, lai skatītu citas iespējas.</translation>
 <translation id="1570871743947603115">Pārslēgt Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Piekļūt visām jūsu darbībām šīs sesijas laikā</translation>
 <translation id="1608626060424371292">Noņemt šo lietotāju</translation>
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
 <translation id="1654477262762802994">Sākt balss vaicājumu</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">Bloķēts vertikāli</translation>
 <translation id="2352467521400612932">Skārienekrāna pildspalvas iestatījumi</translation>
 <translation id="2354174487190027830">Notiek <ph name="NAME" /> aktivizēšana.</translation>
-<translation id="2359808026110333948">Turpināt</translation>
+<translation id="2359808026110333948">Turpiniet</translation>
 <translation id="2365393535144473978">Iespējojot mobilos datus, tiks iespējots Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="239188844683466770">Pārslēgt režīmu “Netraucēt”</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Pievienot savienojumu</translation>
 <translation id="2961963223658824723">Radās problēma. Pēc dažām sekundēm mēģiniet vēlreiz.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Instalēt lietotnes, paplašinājumus un motīvus</translation>
 <translation id="2995447421581609334">Rādīt apraides ierīces</translation>
 <translation id="2996462380875591307">Dokotās lupas režīms ir iespējots. Lai to izslēgtu, nospiediet taustiņu kombināciju Ctrl+Search+D.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">Restartēt un atiestatīt</translation>
 <translation id="4961318399572185831">Ekrāna apraide</translation>
 <translation id="5030687792513154421">Izmantošanas laiks beidzies</translation>
+<translation id="5035236842988137213">Ierīce <ph name="DEVICE_NAME" /> ir savienota ar jaunu tālruni</translation>
 <translation id="5083553833479578423">Piekļūstiet citām Asistenta funkcijām</translation>
 <translation id="5136175204352732067">Ir pievienota cita tastatūra</translation>
 <translation id="5168181903108465623">Pieejamas apraides ierīces</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Meklēšana+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Lūdzu, ievadiet ierīcē šo ieejas atslēgu: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Parole</translation>
+<translation id="6665545700722362599">Piešķirt tīmekļa vietnēm, lietotnēm un paplašinājumiem atļauju izmantot atrašanās vietu pakalpojumus, ierīces mikrofonu, kameru un citas funkcijas</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Noņemamajai tastatūrai nepieciešams svarīgs atjauninājums</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Pieejamība</translation>
 <translation id="698231206551913481">Visi faili un lokālie dati, kas ir saistīti ar šo lietotāju, tiks neatgriezeniski dzēsti, tiklīdz šis lietotājs tiks noņemts.</translation>
 <translation id="7015766095477679451">Atgriezieties plkst. <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Savienojiet ierīci <ph name="DEVICE_NAME" /> ar tālruni</translation>
 <translation id="7029814467594812963">Iziet no sesijas</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">Notiek savienojuma izveide</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Iepriekšējā izšķirtspēja tiks atgriezta pēc <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Apturēt taimera darbību</translation>
 <translation id="7256634071279256947">Aizmugurējais mikrofons</translation>
 <translation id="726276584504105859">Velciet šeit, lai izmantotu ekrāna sadalīšanu.</translation>
 <translation id="7303365578352795231">Tiek atbildēts citā ierīcē.</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">Lai atceltu, nospiediet meklēšanas vai pārslēgšanas taustiņu.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> un <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Spēcīgs signāls</translation>
+<translation id="7837740436429729974">Laiks ir beidzies!</translation>
 <translation id="7842211907556571265">Notiek savienojuma izveide ar tīklu <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Brīdinājums: šī ir eksperimentāla funkcija!</translation>
 <translation id="7846634333498149051">Tastatūra</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">Iepriekšējā izvēlne</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Izveidot piezīmi</translation>
+<translation id="8375916635258623388">Tiks automātiski izveidots šīs ierīces <ph name="DEVICE_NAME" /> un jūsu tālruņa savienojums</translation>
 <translation id="8392451568018454956">Opciju izvēlne kontam <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Jūsu vecāki bloķēja šo ierīci</translation>
 <translation id="8406981827175133772">Pilnekrāna lupa</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">Savienojums nav izveidots</translation>
 <translation id="8877788021141246043">Iestatīt atgādinājumu</translation>
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>
+<translation id="8898978413391960553">00.00 s</translation>
 <translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>
 <translation id="8938800817013097409">USB-C ierīce (pieslēgvieta aizmugurē pa labi)</translation>
 <translation id="8940956008527784070">Akumulators gandrīz tukšs (<ph name="PERCENTAGE" />%)</translation>

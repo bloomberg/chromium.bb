@@ -119,6 +119,13 @@
 
           Theo mặc định, các thiết bị được quản lý sẽ không sử dụng được bất kỳ chế độ mở khóa nhanh nào.</translation>
 <translation id="123081309365616809">Bật tính năng truyền nội dung đến thiết bị</translation>
+<translation id="1231349879329465225">Cho phép bật hoặc tắt tính năng Chuyển đổi nhanh.
+      Tính năng này áp dụng cho tất cả người dùng và tất cả giao diện trên thiết bị.
+      Để sử dụng tính năng Chuyển đổi nhanh, bạn cần phải bật cả tùy chọn cài đặt này và thuộc tính ONC trên mỗi mạng.
+      Sau khi bạn đặt, tính năng Chuyển đổi nhanh sẽ tiếp tục cho đến khi bạn thay đổi chính sách này thành tắt tính năng Chuyển đổi nhanh.
+
+      Nếu không đặt hoặc đặt chính sách này thành false, bạn không thể sử dụng tính năng Chuyển đổi nhanh.
+      Nếu đặt chính sách này thành true, bạn có thể sử dụng tính năng Chuyển đổi nhanh khi điểm truy cập không dây hỗ trợ tính năng này.</translation>
 <translation id="1243570869342663665">Kiểm soát tùy chọn lọc nội dung người lớn của SafeSites.</translation>
 <translation id="1257550411839719984">Đặt thư mục tải xuống mặc định</translation>
 <translation id="1265053460044691532">Hạn chế thời gian người dùng được xác thực qua SAML có thể đăng nhập ngoại tuyến</translation>
@@ -136,6 +143,7 @@
       Không giống như <ph name="URL_LIST_POLICY_NAME" />, các quy tắc áp dụng cho cả hai chiều. Tức là, khi có tiện ích bổ trợ Internet Explorer và tiện ích này được bật, thì tiện ích này cũng sẽ kiểm soát việc <ph name="IE_PRODUCT_NAME" /> có mở những URL này trong <ph name="PRODUCT_NAME" /> hay không.</translation>
 <translation id="1297182715641689552">Sử dụng tập lệnh proxy .pac</translation>
 <translation id="1304973015437969093">Cần ID tiện ích/ứng dụng và URL cập nhật để tự động cài đặt</translation>
+<translation id="1307415922184340052">Gửi tên người dùng và tên tệp tới máy chủ máy in gốc cùng với mỗi lệnh in. Tùy chọn mặc định là không gửi.</translation>
 <translation id="1307454923744766368">Nguồn gốc hoặc mẫu tên máy chủ mà các hạn chế đối với
       nguồn gốc không an toàn không được áp dụng</translation>
 <translation id="1313457536529613143">Chỉ định tỷ lệ phần trăm theo đó độ trễ mờ màn hình được xác định khi hoạt động của người dùng được quan sát thấy lúc màn hình bị làm mờ hoặc ngay sau khi màn hình tắt.
@@ -290,9 +298,9 @@
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
 <translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ kết nối tức thì.</translation>
-<translation id="1817685358399181673">Chính sách này nêu rõ hình ảnh <ph name="PLUGIN_VM_NAME" /> cho người dùng. Bạn có thể đặt chính sách này bằng cách nêu rõ URL mà từ đó thiết bị có thể tải xuống hình ảnh và một hàm băm SHA-256 dùng để xác minh tính toàn vẹn của nội dung tải xuống.
+<translation id="1817685358399181673">Chính sách này chỉ định hình ảnh <ph name="PLUGIN_VM_NAME" /> cho người dùng. Bạn có thể đặt chính sách này bằng cách chỉ định URL mà từ đó thiết bị có thể tải hình ảnh xuống và một hàm băm SHA-256 dùng để xác minh tính toàn vẹn của nội dung tải xuống.
 
-      Chính sách này phải được xác định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON.</translation>
+      Chính sách này phải được chỉ định dưới dạng một chuỗi biểu thị URL và hàm băm ở định dạng JSON.</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
@@ -3184,7 +3192,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu cài đặt này được bật hoặc không được đặt, lịch sử duyệt web và lịch sử tải xuống có thể bị xóa.
 
       Nếu cài đặt này bị tắt, không thể xóa lịch sử duyệt web và lịch sử tải xuống.</translation>
-<translation id="8758831693895931466">Cho phép chính sách đăng ký tính năng quản lý đám mây bắt buộc</translation>
+<translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
 <translation id="8764119899999036911">Chỉ định Kerberos SPN được tạo sẽ dựa trên tên DNS chuẩn hay tên gốc đã nhập.
 
@@ -3422,4 +3430,5 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Thiết bị sẽ không thể tự động kiểm tra bản cập nhật trong khoảng thời gian chỉ định. Chính sách này sẽ không ảnh hưởng đến các thiết bị yêu cầu hạ cấp hệ điều hành hoặc thiết bị chạy phiên bản <ph name="PRODUCT_OS_NAME" /> tối thiểu trở xuống do các vấn đề bảo mật tiềm ẩn. Ngoài ra, chính sách này sẽ không chặn hoạt động kiểm tra bản cập nhật do người dùng hoặc quản trị viên yêu cầu.
       Khi chính sách này không được đặt hoặc không chứa khoảng thời gian nào, thì:
       Chính sách này sẽ không chặn hoạt động kiểm tra bản cập nhật tự động, nhưng các chính sách khác vẫn có thể chặn hoạt động này.</translation>
+<translation id="991560005425213776">Gửi tên người dùng và tên tệp tới máy in gốc</translation>
 </translationbundle>

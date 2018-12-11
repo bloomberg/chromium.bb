@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Din ultima zi</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3112556859945124369">Marchează…</translation>
-<translation id="3126574100374611517">Gestionează cardurile de credit…</translation>
 <translation id="3157684681743766797">Marchează-le pe toate…</translation>
 <translation id="3175081911749765310">Servicii web</translation>
 <translation id="3207960819495026254">Marcată</translation>
@@ -347,6 +346,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6464071786529933911">Deschide în Filă incognito nouă</translation>
 <translation id="6482629121755362506">Elemente șterse: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Din ultima oră</translation>
+<translation id="6548479190262846511">Nu s-au găsit parole pentru acest site</translation>
 <translation id="6643016212128521049">Ștergeți</translation>
 <translation id="6656103420185847513">Modificați dosarul</translation>
 <translation id="6657585470893396449">Parolă</translation>

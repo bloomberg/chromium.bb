@@ -108,6 +108,13 @@
 
           Pēc noklusējuma pārvaldītās ierīcēs nav pieejami ātrās atbloķēšanas režīmi.</translation>
 <translation id="123081309365616809">Iespējot satura apraidi ierīcē</translation>
+<translation id="1231349879329465225">Ļauj iespējot vai atspējot ātro pāreju.
+      Tā attiecas uz visiem ierīces lietotājiem un saskarnēm.
+      Lai varētu izmantot ātro pāreju, ir jāiespējo gan šis iestatījums, gan tīkla ONC īpašums.
+      Ja šī politika ir iestatīta, ātrā pāreja darbojas, līdz politika tiek atspējota.
+
+      Ja politika nav iestatīta vai ir iestatīts vērtība "False", ātrā pāreja netiek lietota.
+      Ja ir iestatīta vērtība “True”, ātrā pāreja tiek lietota, kad bezvadu piekļuves punkts to atbalsta.</translation>
 <translation id="1243570869342663665">Pārvaldīt SafeSites pieaugušajiem paredzētā satura filtrēšanu</translation>
 <translation id="1257550411839719984">Noklusējuma lejupielāžu direktorija iestatīšana</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
@@ -125,6 +132,7 @@
       Pretēji politikai “<ph name="URL_LIST_POLICY_NAME" />” kārtulas tiek lietotas abos virzienos: ja pārlūkprogrammas Internet Explorer papildinājums ir iespējots, tas pārvalda arī to, vai pārlūkprogrammai <ph name="IE_PRODUCT_NAME" /> attiecīgie vietrāži URL ir jāatver arī pārlūkprogrammā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Izmantot .pac starpniekservera skriptu</translation>
 <translation id="1304973015437969093">Paplašinājumu/lietotņu ID un atjauninājumu vietrāži URL instalēšanai klusajā režīmā</translation>
+<translation id="1307415922184340052">Lietotājvārda un faila nosaukuma sūtīšana uz vietējo printeru serveri, drukājot katru reizi. Pēc noklusējuma dati netiek sūtīti.</translation>
 <translation id="1307454923744766368">Avoti vai saimniekdatoru nosaukumu modeļi, kuriem nelieto nedrošu avotu ierobežojumus</translation>
 <translation id="1313457536529613143">Norāda aizkavi (procentos) līdz ekrāna aptumšošanai, kad tiek novērota lietotāja darbība, kamēr ekrāns ir aptumšots vai drīz pēc ekrāna izslēgšanas.
 
@@ -3387,4 +3395,5 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       ierīces nevarēs automātiski pārbaudīt atjauninājumu pieejamību noteiktos laika intervālos. Iespējamo drošības problēmu dēļ šī politika neietekmēs ierīces, kas pieprasa atriti vai kurās darbojas versija, kas ir vecāka par minimālo <ph name="PRODUCT_OS_NAME" /> versiju. Turklāt šī politika nebloķēs lietotāju vai administratoru pieprasītas atjauninājumu pieejamības pārbaudes.
       Ja šī politika nav iestatīta vai tajā nav laika intervālu:
       šī politika nebloķēs automātiskas atjauninājumu pieejamības pārbaudes, taču tās var bloķēt citas politikas.</translation>
+<translation id="991560005425213776">Lietotājvārda un faila nosaukuma sūtīšana uz vietējiem printeriem</translation>
 </translationbundle>

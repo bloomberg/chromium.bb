@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1570871743947603115">Włącz lub wyłącz Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">uzyskiwać dostęp do całej Twojej aktywności w tej sesji;</translation>
 <translation id="1608626060424371292">Usuń tego użytkownika</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Rozpocznij zapytanie głosowe</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Dodaj połączenie</translation>
 <translation id="2961963223658824723">Coś poszło nie tak. Spróbuj ponownie za kilka sekund.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">instalować aplikacje, rozszerzenia i motywy;</translation>
 <translation id="2995447421581609334">Pokaż urządzenia przesyłające.</translation>
 <translation id="2996462380875591307">Lupa zadokowana została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+D.</translation>
 <translation id="3000461861112256445">Dźwięk mono</translation>
@@ -239,6 +241,7 @@
 <translation id="4924411785043111640">Uruchom ponownie i zresetuj</translation>
 <translation id="4961318399572185831">Przesyłanie ekranu</translation>
 <translation id="5030687792513154421">Czas minął</translation>
+<translation id="5035236842988137213">Urządzenie <ph name="DEVICE_NAME" /> zostało połączone z nowym telefonem</translation>
 <translation id="5083553833479578423">Odblokuj więcej funkcji Asystenta.</translation>
 <translation id="5136175204352732067">Podłączono inną klawiaturę</translation>
 <translation id="5168181903108465623">Dostępne są urządzenia przesyłające</translation>
@@ -326,6 +329,7 @@
 <translation id="6627638273713273709">Szukaj + Shift + K</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
+<translation id="6665545700722362599">przyznawać stronom internetowym, aplikacjom i rozszerzeniom dostępu do usług lokalizacyjnych, mikrofonu bądź aparatu na urządzeniu lub do innych funkcji;</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Odłączana klawiatura wymaga krytycznej aktualizacji</translation>
 <translation id="6700713906295497288">Przycisk menu IME</translation>
@@ -345,6 +349,7 @@
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="698231206551913481">Usunięcie tego użytkownika spowoduje trwałe usunięcie wszystkich związanych z nim plików i danych lokalnych.</translation>
 <translation id="7015766095477679451">Możesz wrócić o <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Połącz urządzenie <ph name="DEVICE_NAME" /> z telefonem</translation>
 <translation id="7029814467594812963">Zakończ sesję</translation>
 <translation id="7066646422045619941">Ta sieć została wyłączona przez administratora.</translation>
 <translation id="7067196344162293536">Obracanie automatyczne</translation>
@@ -356,6 +361,7 @@
 <translation id="7143207342074048698">Łączenie</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Powrót do wcześniejszej rozdzielczości za <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Zatrzymaj licznik</translation>
 <translation id="7256634071279256947">Tylny mikrofon</translation>
 <translation id="726276584504105859">Przeciągnij tutaj, by podzielić ekran</translation>
 <translation id="7303365578352795231">Odpowiem na innym urządzeniu.</translation>
@@ -388,6 +394,7 @@
 <translation id="7798302898096527229">Aby anulować, naciśnij Szukaj lub Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> i <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">silny sygnał</translation>
+<translation id="7837740436429729974">Czas minął</translation>
 <translation id="7842211907556571265">Łączę z siecią <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Ostrzeżenie: funkcja eksperymentalna</translation>
 <translation id="7846634333498149051">Klawiatura</translation>
@@ -421,6 +428,7 @@
 <translation id="8308637677604853869">Poprzednie menu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Utwórz notatkę</translation>
+<translation id="8375916635258623388">To urządzenie <ph name="DEVICE_NAME" /> i Twój telefon będą się łączyć automatycznie</translation>
 <translation id="8392451568018454956">Menu opcji dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Twój rodzic zablokował urządzenie</translation>
 <translation id="8406981827175133772">Lupa pełnego ekranu</translation>
@@ -458,6 +466,7 @@
 <translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
+<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Asystent Google nie mówi w tym języku.</translation>
 <translation id="8938800817013097409">Urządzenie USB-C (prawy port z tyłu)</translation>
 <translation id="8940956008527784070">Niski stan baterii (<ph name="PERCENTAGE" />%)</translation>

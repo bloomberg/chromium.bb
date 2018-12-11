@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">আপনার খোলা ট্যাবগুলি এখানে দেখা যাবে</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">কার্ড হোল্ডারের নাম</translation>
-<translation id="1809549658008855907">আপনার Google অ্যাকাউন্টে কার্ড সেভ করবেন?</translation>
 <translation id="1821930232296380041">অবৈধ অনুরোধ বা অনুরোধ মাপকাঠিগুলি</translation>
 <translation id="1826516787628120939">চেক করা হচ্ছে</translation>
 <translation id="1834321415901700177">এই সাইটটিতে ক্ষতিকর প্রোগ্রাম রয়েছে</translation>
 <translation id="1839551713262164453">নীতির মূল্য যাচাইকরণে সমস্যা হওয়ার জন্য যাচাই করা যায়নি</translation>
 <translation id="1842969606798536927">পেমেন্ট করুন</translation>
-<translation id="1866450167992311397">আরও বেশি জায়গায় আপনার কার্ড ব্যবহার করুন</translation>
 <translation id="1871208020102129563">
 প্রক্সি স্থির প্রক্সি সার্ভারগুলি ব্যবহার করতে সেট করা আছে কোনো .pac স্ক্রিপ্ট URL নয়৷</translation>
 <translation id="1871284979644508959">আবশ্যক ক্ষেত্র</translation>
@@ -221,7 +219,7 @@
 <translation id="2355395290879513365">আপনি এই সাইটে যেসব ছবি দেখছেন, আক্রমণকারীরা সেগুলি দেখতে পেতে পারে এবং সেগুলি পরিবর্তন করে আপনাকে বোকা বানাতে পারে।</translation>
 <translation id="2356070529366658676">জিজ্ঞাসা করুন</translation>
 <translation id="2359629602545592467">একাধিক</translation>
-<translation id="2359808026110333948">অবিরত</translation>
+<translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2360873523816792727">সমস্ত ডিভাইসে আপনার কার্ড ব্যবহার করতে, সিঙ্ক চালু করুন।</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> এ ক্যাপচার করা ক্র্যাশ প্রতিবেদন আপলোড করা হয়নি</translation>
 <translation id="2367567093518048410">স্তর</translation>
@@ -339,7 +337,7 @@
 <translation id="3162559335345991374">আপনি যে Wi-Fiটি ব্যবহার করছেন সেটির জন্য অপনাকে এটির লগ ইন পৃষ্ঠাতে যেতে হতে পরে৷</translation>
 <translation id="3167968892399408617">ছদ্মবেশি ট্যাবগুলিতে আপনি যে পৃষ্ঠাগুলি দেখেন সেগুলি আপনার সব ছদ্মবেশি ট্যাব বন্ধ করে দেওয়ার পর ব্রাউজারের ইতিহাস, কুকি স্টোর বা সার্চ ইতিহাসে থাকবে না। আপনি ডাউনলোড করেছেন এমন ফাইল বা বুকমার্ক তৈরি করছেন এমন সবগুলি রেখে দেওয়া হবে।</translation>
 <translation id="3169472444629675720">আবিষ্কার করুন</translation>
-<translation id="3174168572213147020">দ্বীপ</translation>
+<translation id="3174168572213147020">আইল্যাণ্ড</translation>
 <translation id="3176929007561373547">প্রক্সী সার্ভার কাজ করছে কি না, তা নিশ্চিত করতে আপনার প্রক্সী সেটিংস পরীক্ষা করুন
     বা আপনার নেটওয়ার্ক প্রশাসকের সাথে যোগাযোগ করুন৷ আপনি কোনো প্রক্সী সার্ভার
     ব্যবহার করবেন না বলে মনে করলে:
@@ -386,7 +384,6 @@
 <translation id="3427092606871434483">মঞ্জুরি দিন (ডিফল্ট)</translation>
 <translation id="3427342743765426898">&amp;সম্পাদনাকে আবার করুন</translation>
 <translation id="342781501876943858">Chromium-এর নীতি অনুযায়ী আপনার পাসওয়ার্ড বদলে ফেলা উচিত যদি আপনি সেটি অন্য কোনও সাইটে ব্যবহার করে থাকেন।</translation>
-<translation id="3430691998045392297">মুভি স্ক্রিনিং ভিন্ন, আপনি কি চালিয়ে যেতে চান?</translation>
 <translation id="3431636764301398940">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
 <translation id="3447661539832366887">এই ডিভাইসের মালিক ডাইনোসর গেমটি বন্ধ করেছেন৷</translation>
 <translation id="3447884698081792621">সার্টিফিকেট দেখান (<ph name="ISSUER" /> এর দ্বারা জারি করা)</translation>
@@ -451,7 +448,7 @@
 <translation id="385051799172605136">ফিরুন</translation>
 <translation id="3858027520442213535">তারিখ এবং সময় আপডেট করুন</translation>
 <translation id="3884278016824448484">পরস্পর বিরোধী ডিভাইস সনাক্তকারী</translation>
-<translation id="3885155851504623709">পারিশ</translation>
+<translation id="3885155851504623709">প্যারিশ</translation>
 <translation id="3886446263141354045">এই সাইটটি অ্যাক্সেস করার জন্য আপনার অনুরোধ <ph name="NAME" />কে পাঠানো হয়েছে</translation>
 <translation id="3890664840433101773">ইমেল আইডি যোগ করুন</translation>
 <translation id="3901925938762663762">কার্ডটির মেয়াদ শেষ হয়েছে</translation>
@@ -566,7 +563,7 @@
 <translation id="4726672564094551039">নীতিগুলি পুনঃলোড করুন</translation>
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
 <translation id="4736825316280949806">Chromium পুনরায় চালু করুন</translation>
-<translation id="473775607612524610">আপডেট</translation>
+<translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4742407542027196863">পাসওয়ার্ডগুলি পরিচালনা করুন…</translation>
 <translation id="4744603770635761495">সম্পাদনযোগ্য পথ</translation>
 <translation id="4750917950439032686">আপনার তথ্য (উদাহরণস্বরূপ, পাসওয়ার্ড বা ক্রেডিট কার্ড নম্বর) যখন এই সাইটে পাঠানো হয় তখন সেটি ব্যক্তিগত থাকে।</translation>
@@ -714,7 +711,6 @@
 <translation id="5720705177508910913">বর্তমান ব্যবহারকারী</translation>
 <translation id="5730040223043577876">Chrome-এর নীতি অনুযায়ী আপনার পাসওয়ার্ড বদলে ফেলা উচিত যদি আপনি সেটি অন্য কোনও সাইটে ব্যবহার করে থাকেন।</translation>
 <translation id="5732392974455271431">আপনার পিতামাতা এটি আপনার জন্য অবরোধ মুক্ত করতে পারবেন</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{সাইন-ইন করে থাকা যেকোনও ডিভাইস থেকে দ্রুত চেক-আউট করার সুবিধা দিতে, এই কার্ড এবং এটির বিলিং ঠিকানা আপনার Google অ্যাকাউন্টে সেভ করা হবে}one{সাইন-ইন করে থাকা যেকোনও ডিভাইস থেকে দ্রুত চেক-আউট করার সুবিধা দিতে, এই কার্ড এবং এগুলির বিলিং ঠিকানা আপনার Google অ্যাকাউন্টে সেভ করা হবে}other{সাইন-ইন করে থাকা যেকোনও ডিভাইস থেকে দ্রুত চেক-আউট করার সুবিধা দিতে, এই কার্ড এবং এগুলির বিলিং ঠিকানা আপনার Google অ্যাকাউন্টে সেভ করা হবে}}</translation>
 <translation id="5763042198335101085">একটি সঠিক ইমেল আইডি লিখুন</translation>
 <translation id="5765072501007116331">ডেলিভারির পদ্ধতি এবং প্রয়োজনীয়তাগুলি দেখতে একটি ঠিকানা বেছে নিন</translation>
 <translation id="5770114862687765385">ফাইলটি ত্রুটিপূর্ণ বলে মনে হচ্ছে। সেশনটি রিসেট করার জন্য 'রিসেট' বোতামে ক্লিক করুন।</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> জায়গা খালি করে। পরের বার যখন দেখবেন তখন কিছু সাইট লোড হতে দেরি হতে পারে।</translation>
 <translation id="6337534724793800597">নাম অনুসারে ফিল্টারগুলি বাছাই করুন</translation>
 <translation id="6358450015545214790">এর অর্থ কী?</translation>
-<translation id="635989537247018238">এর পরের ধাপে, কোন কার্ড সেভ করবেন তা বেছে নিতে পারবেন</translation>
 <translation id="6383221683286411806">চালিয়ে গেলে চার্জ দিতে হতে পারে।</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{আরও ১টি প্রস্তাব}one{অন্যান্য #টি প্রস্তাব}other{অন্যান্য #টি প্রস্তাব}}</translation>
 <translation id="6387754724289022810">পরের বার আরও দ্রুত পেমেন্ট করা জন্য আপনার এই কার্ড এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে এবং এই ডিভাইসে সেভ করে রাখুন।</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">আপনি একটি এক্সটেনশন পৃষ্ঠা দেখছেন</translation>
 <translation id="6596325263575161958">এনক্রিপশন বিকল্পগুলি</translation>
 <translation id="6604181099783169992">মোশন বা হাল্কা সেন্সর</translation>
-<translation id="6607617806003952240">আমি আর সাহায্য করতে পারব না, ম্যানুয়ালি চালিয়ে যান।</translation>
 <translation id="6624427990725312378">পরিচিতির তথ্য</translation>
 <translation id="6626291197371920147">বৈধ কার্ড নম্বর যোগ করুন</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> সার্চ</translation>
@@ -854,6 +848,7 @@
 <translation id="6865412394715372076">এই কার্ডটি এখনই যাচাই করা যাবে না</translation>
 <translation id="6868206169573555318">আপডেট করার জন্য আবার লঞ্চ করুন</translation>
 <translation id="6874604403660855544">&amp;যোগ করাকে পুনরায় করুন</translation>
+<translation id="6885646002011712606">স্ক্রিনের একটু নিচে অটোফিল অ্যাসিস্ট্যান্ট পাওয়া যাবে</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">নীতি স্তর সমর্থিত নয়।</translation>
 <translation id="6895330447102777224">আপনার কার্ডটি নিশ্চিত করা হয়েছে</translation>
@@ -891,8 +886,9 @@
 <translation id="7119414471315195487">অন্যান্য ট্যাব বা প্রোগ্রাম বন্ধ করুন</translation>
 <translation id="7129409597930077180">এই ঠিকানায় শিপিং করা যাবে না। অন্য ঠিকানা বেছে নিন।</translation>
 <translation id="7138472120740807366">ডেলিভারির পদ্ধতি</translation>
-<translation id="7139724024395191329">এমিরেট</translation>
+<translation id="7139724024395191329">Emirate</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}one{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}other{<ph name="PAYMENT_METHOD_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />টি}}</translation>
+<translation id="7158980942472052083">ইউআরএলটি সঠিক নয়। ইউআরএলে স্ট্যান্ডার্ড স্কিম থাকতে হবে।</translation>
 <translation id="717330890047184534">Gaia আইডি:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}one{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}other{<ph name="SHIPPING_OPTION_PREVIEW" /> এবং আরও <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />টি}}</translation>
 <translation id="7179323680825933600">পেমেন্টের পদ্ধতিগুলি সেভ করুন এবং আপনা-আপনি পূরণ করুন</translation>
@@ -996,6 +992,7 @@
 <translation id="7716424297397655342">এই সাইটটি ক্যাশে থেকে লোড করা যাবে না</translation>
 <translation id="7723047071702270851">কার্ড সম্পাদনা করুন</translation>
 <translation id="774634243536837715">বিপজ্জনক কন্টেন্ট ব্লক করা হয়েছে।</translation>
+<translation id="7747182086178764941">অটোফিল অ্যাসিস্ট্যান্টের প্রথম চালানো স্ক্রিন দেখানো হচ্ছে</translation>
 <translation id="7752995774971033316">অপরিচালিত</translation>
 <translation id="7755287808199759310">আপনার পিতামাতা এটি আপনার জন্য অবরোধ মুক্ত করতে পারবেন</translation>
 <translation id="7758069387465995638">ফায়ারওয়াল বা অ্যান্টিভাইরাস সফটওয়্যার সংযোগকে অবরুদ্ধ করে থাকতে পারে।</translation>
@@ -1141,7 +1138,6 @@
 <translation id="8763927697961133303">USB ডিভাইস</translation>
 <translation id="8768895707659403558">আপনার সমস্ত ডিভাইসে কার্ড ব্যবহার করতে, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে আবার করুন</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{এই কার্ডটি আপনার Google অ্যাকাউন্টে যোগ করা হয়েছে। আপনি এখন এটি যেকোনও সাইন-ইন থাকা ডিভাইস থেকে ব্যবহার করতে পারেন।}one{এই কার্ড আপনার Google অ্যাকাউন্টে যোগ করা হয়েছে। আপনি এখন এটি যেকোনও সাইন-ইন থাকা ডিভাইস থেকে ব্যবহার করতে পারেন।}other{এই কার্ডগুলি আপনার Google অ্যাকাউন্টে যোগ করা হয়েছে। আপনি এখন এটি যেকোনও সাইন-ইন থাকা ডিভাইস থেকে ব্যবহার করতে পারেন।}}</translation>
 <translation id="8792621596287649091">আপনি নিজের <ph name="ORG_NAME" /> অ্যাকাউন্টের অ্যাক্সেস হারাতে পারেন অথবা আপনার পরিচয় চুরি হয়ে যেতে পারে। Chromium এখনই আপনার পাসওয়ার্ড পরিবর্তন করার আর্জি জানাচ্ছে।</translation>
 <translation id="8800988563907321413">আপনার জন্য আশেপাশের প্রস্তাবনাগুলি এখানে দেখা যাবে</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>

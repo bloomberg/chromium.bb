@@ -87,7 +87,7 @@
 <translation id="2320166752086256636">Slėpti klaviatūrą</translation>
 <translation id="2339560363438331454">Sinchron. ir „Google“ paslaugos</translation>
 <translation id="2351097562818989364">Vertimo nustatymai buvo nustatyti iš naujo.</translation>
-<translation id="2359808026110333948">Tęsti</translation>
+<translation id="2359808026110333948">Tęskite</translation>
 <translation id="2360196772093551345">Pateikti užklausą dėl svetainės mobiliesiems</translation>
 <translation id="2381405137052800939">Pagrindiniai</translation>
 <translation id="2386793615875593361">Pasirinkta: 1</translation>
@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Pastaroji diena</translation>
 <translation id="3037605927509011580">Oi!</translation>
 <translation id="3112556859945124369">Pažymėti…</translation>
-<translation id="3126574100374611517">Tvarkyti kredito korteles...</translation>
 <translation id="3157684681743766797">Pažymėti visus...</translation>
 <translation id="3175081911749765310">Žin. pasl.</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
@@ -347,6 +346,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6464071786529933911">Atid. nauj. ink. skirtuk.</translation>
 <translation id="6482629121755362506">Ištrinta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Pastaroji valanda</translation>
+<translation id="6548479190262846511">Nerasta jokių šios svetainės slaptažodžių</translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6656103420185847513">Redaguoti aplanką</translation>
 <translation id="6657585470893396449">Slaptažodis</translation>

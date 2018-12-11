@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Seneste døgn</translation>
 <translation id="3037605927509011580">Øv, surt!</translation>
 <translation id="3112556859945124369">Markér…</translation>
-<translation id="3126574100374611517">Administrer kreditkort</translation>
 <translation id="3157684681743766797">Markér alle…</translation>
 <translation id="3175081911749765310">Webtjenester</translation>
 <translation id="3207960819495026254">Bogmærket</translation>
@@ -347,6 +346,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6464071786529933911">Åbn i ny inkognitofane</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="6541915733953096570">Seneste time</translation>
+<translation id="6548479190262846511">Der blev ikke fundet nogen adgangskoder til dette website</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
 <translation id="6657585470893396449">Adgangskode</translation>

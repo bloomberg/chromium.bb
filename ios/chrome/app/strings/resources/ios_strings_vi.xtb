@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Ngày trước</translation>
 <translation id="3037605927509011580">Ôi, hỏng! </translation>
 <translation id="3112556859945124369">Đánh dấu...</translation>
-<translation id="3126574100374611517">Quản lý thẻ tín dụng...</translation>
 <translation id="3157684681743766797">Đánh dấu tất cả...</translation>
 <translation id="3175081911749765310">Dịch vụ web</translation>
 <translation id="3207960819495026254">Đã được đánh dấu trang</translation>
@@ -347,6 +346,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6464071786529933911">Mở trong tab ẩn danh mới</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> dấu trang đã bị xóa</translation>
 <translation id="6541915733953096570">Giờ trước</translation>
+<translation id="6548479190262846511">Không tìm thấy mật khẩu nào cho trang web này</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="6656103420185847513">Chỉnh sửa thư mục</translation>
 <translation id="6657585470893396449">Mật khẩu</translation>

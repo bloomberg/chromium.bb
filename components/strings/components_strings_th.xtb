@@ -84,7 +84,7 @@
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
 <translation id="1413809658975081374">ข้อผิดพลาดเกี่ยวกับความเป็นส่วนตัว</translation>
 <translation id="14171126816530869">ข้อมูลประจำตัวของ <ph name="ORGANIZATION" /> ใน <ph name="LOCALITY" /> ได้รับการยืนยันโดย <ph name="ISSUER" /></translation>
-<translation id="1426410128494586442">ใช่</translation>
+<translation id="1426410128494586442">ยอมรับ</translation>
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1484290072879560759">เลือกที่อยู่สำหรับจัดส่ง</translation>
 <translation id="1501859676467574491">แสดงบัตรจากบัญชี Google ของคุณ</translation>
@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">แท็บที่คุณเปิดไว้จะปรากฏที่นี่</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">ชื่อผู้ถือบัตร</translation>
-<translation id="1809549658008855907">บันทึกการ์ดไปยังบัญชี Google ไหม</translation>
 <translation id="1821930232296380041">คำขอหรือพารามิเตอร์คำขอไม่ถูกต้อง</translation>
 <translation id="1826516787628120939">กำลังตรวจสอบ</translation>
 <translation id="1834321415901700177">เว็บไซต์นี้มีโปรแกรมอันตราย</translation>
 <translation id="1839551713262164453">การตรวจสอบความถูกต้องของค่านโยบายมีข้อผิดพลาดและล้มเหลว</translation>
 <translation id="1842969606798536927">จ่าย</translation>
-<translation id="1866450167992311397">ใช้บัตรของคุณในสถานที่อื่นๆ</translation>
 <translation id="1871208020102129563">พร็อกซีถูกตั้งค่าให้ใช้พร็อกซีเซิร์ฟเวอร์แบบคงที่ ไม่ใช่ URL สคริปต์ .pac</translation>
 <translation id="1871284979644508959">ช่องที่ต้องกรอก</translation>
 <translation id="1874765382782611674">บัตรเดบิตที่ยอมรับ</translation>
@@ -179,7 +177,7 @@
 <translation id="20817612488360358">มีการกำหนดให้ใช้การตั้งค่าพร็อกซีระบบ แต่ก็มีการระบุการกำหนดค่าพร็อกซีอย่างชัดเจนไว้ด้วยเช่นกัน</translation>
 <translation id="2091887806945687916">เสียง</translation>
 <translation id="2094505752054353250">โดเมนไม่ตรง</translation>
-<translation id="2096368010154057602">จังหวัด</translation>
+<translation id="2096368010154057602">แผนก</translation>
 <translation id="2102134110707549001">แนะนำรหัสผ่านที่รัดกุม…</translation>
 <translation id="2108755909498034140">รีสตาร์ทคอมพิวเตอร์</translation>
 <translation id="2113977810652731515">บัตร</translation>
@@ -220,7 +218,7 @@
 <translation id="2355395290879513365">ผู้โจมตีอาจเห็นรูปภาพที่คุณกำลังดูอยู่บนเว็บไซต์นี้และหลอกลวงคุณโดยการแก้ไขรูปภาพ</translation>
 <translation id="2356070529366658676">ถาม</translation>
 <translation id="2359629602545592467">หลายรายการ</translation>
-<translation id="2359808026110333948">ดำเนินการต่อ</translation>
+<translation id="2359808026110333948">ต่อไป</translation>
 <translation id="2360873523816792727">เปิดการซิงค์เพื่อใช้บัตรในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="2365563543831475020">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> ยังไม่ได้อัปโหลด</translation>
 <translation id="2367567093518048410">ระดับ</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">อนุญาต (ค่าเริ่มต้น)</translation>
 <translation id="3427342743765426898">&amp;ทำซ้ำการแก้ไข</translation>
 <translation id="342781501876943858">Chromium ขอแนะนำให้รีเซ็ตรหัสผ่านหากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
-<translation id="3430691998045392297">การฉายภาพยนตร์จะต่างออกไป ต้องการดำเนินการต่อไหม</translation>
 <translation id="3431636764301398940">บันทึกบัตรนี้ลงในอุปกรณ์นี้</translation>
 <translation id="3447661539832366887">เจ้าของอุปกรณ์นี้ปิดเกมไดโนเสาร์</translation>
 <translation id="3447884698081792621">แสดงใบรับรอง (ออกโดย <ph name="ISSUER" />)</translation>
@@ -450,7 +447,7 @@
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3858027520442213535">อัปเดตวันที่และเวลา</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
-<translation id="3885155851504623709">เมือง</translation>
+<translation id="3885155851504623709">Parish</translation>
 <translation id="3886446263141354045">ระบบส่งคำขอเข้าถึงเว็บไซต์นี้ของคุณให้ <ph name="NAME" /> แล้ว</translation>
 <translation id="3890664840433101773">เพิ่มอีเมล</translation>
 <translation id="3901925938762663762">บัตรหมดอายุ</translation>
@@ -565,7 +562,7 @@
 <translation id="4726672564094551039">โหลดนโยบายซ้ำ</translation>
 <translation id="4728558894243024398">แพลตฟอร์ม</translation>
 <translation id="4736825316280949806">รีสตาร์ท Chromium</translation>
-<translation id="473775607612524610">การอัปเดต</translation>
+<translation id="473775607612524610">อัปเดต</translation>
 <translation id="4742407542027196863">จัดการรหัสผ่าน…</translation>
 <translation id="4744603770635761495">เส้นทางปฏิบัติการ</translation>
 <translation id="4750917950439032686">ข้อมูลของคุณ (ตัวอย่างเช่น รหัสผ่านหรือหมายเลขบัตรเครดิต) จะเป็นส่วนตัวเมื่อส่งมายังเว็บไซต์นี้</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">ผู้ใช้ปัจจุบัน</translation>
 <translation id="5730040223043577876">Chrome ขอแนะนำให้รีเซ็ตรหัสผ่านหากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
 <translation id="5732392974455271431">ผู้ปกครองสามารถเลิกบล็อกเว็บไซต์ให้คุณ</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{ระบบจะบันทึกบัตรใบนี้และที่อยู่สำหรับการเรียกเก็บเงินของบัตรลงในบัญชี Google เพื่อการชำระเงินที่เร็วขึ้นเมื่อคุณลงชื่อเข้าใช้ไว้}other{ระบบจะบันทึกบัตรเหล่านี้และที่อยู่สำหรับการเรียกเก็บเงินของบัตรลงในบัญชี Google เพื่อการชำระเงินที่เร็วขึ้นเมื่อคุณลงชื่อเข้าใช้ไว้}}</translation>
 <translation id="5763042198335101085">ป้อนที่อยู่อีเมลที่ถูกต้อง</translation>
 <translation id="5765072501007116331">หากต้องการดูวิธีการนำส่งสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
 <translation id="5770114862687765385">ดูเหมือนไฟล์จะเสียหาย คลิกปุ่ม "รีเซ็ต" เพื่อรีเซ็ตเซสชัน</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026">หากเพิ่มพื้นที่ว่างไม่ถึง <ph name="SIZE" /> ไซต์บางแห่งอาจโหลดช้าลงเมื่อคุณเข้าชมครั้งถัดไป</translation>
 <translation id="6337534724793800597">กรองนโยบายตามชื่อ</translation>
 <translation id="6358450015545214790">นี่หมายถึงอะไร</translation>
-<translation id="635989537247018238">ในขั้นตอนถัดไป คุณจะเลือกบัตรที่จะบันทึกได้</translation>
 <translation id="6383221683286411806">อาจมีการเรียกเก็บเงิน</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{อีก 1 คำแนะนำ}other{อีก # คำแนะนำ}}</translation>
 <translation id="6387754724289022810">เพื่อความสะดวกในการชำระเงินในครั้งถัดไป โปรดบันทึกบัตรและที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google สำหรับอุปกรณฺ์นี้</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">คุณกำลังดูหน้าส่วนขยาย</translation>
 <translation id="6596325263575161958">ตัวเลือกการเข้ารหัส</translation>
 <translation id="6604181099783169992">เซ็นเซอร์จับความเคลื่อนไหวหรือเซ็นเซอร์แสง</translation>
-<translation id="6607617806003952240">ช่วยต่อไม่ได้แล้ว รบกวนดำเนินการต่อเองนะ</translation>
 <translation id="6624427990725312378">ข้อมูลติดต่อ</translation>
 <translation id="6626291197371920147">เพิ่มหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ค้นหา</translation>
@@ -854,6 +848,7 @@
 <translation id="6865412394715372076">ยืนยันบัตรนี้ไม่ได้ในขณะนี้</translation>
 <translation id="6868206169573555318">เปิดอีกครั้งเพื่ออัปเดต</translation>
 <translation id="6874604403660855544">&amp;ทำซ้ำการเพิ่ม</translation>
+<translation id="6885646002011712606">Assistant ป้อนข้อความอัตโนมัติพร้อมใช้งานที่บริเวณด้านล่างของหน้าจอ</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">ระดับนโยบายไม่ได้รับการสนับสนุน</translation>
 <translation id="6895330447102777224">บัตรของคุณได้รับการยืนยันแล้ว</translation>
@@ -870,7 +865,7 @@
 <translation id="6964255747740675745">แยกวิเคราะห์การกำหนดค่าเครือข่ายไม่ได้ (JSON ไม่ถูกต้อง)</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="6965978654500191972">อุปกรณ์</translation>
-<translation id="6970216967273061347">เขต</translation>
+<translation id="6970216967273061347">อำเภอ</translation>
 <translation id="6973656660372572881">มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่และ URL สคริปต์ .pac ไว้</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="6979440798594660689">ปิดเสียง (ค่าเริ่มต้น)</translation>
@@ -883,7 +878,7 @@
 <translation id="7053983685419859001">บล็อก</translation>
 <translation id="7064851114919012435">ข้อมูลติดต่อ</translation>
 <translation id="7079718277001814089">เว็บไซต์นี้มีมัลแวร์</translation>
-<translation id="7087282848513945231">อำเภอ</translation>
+<translation id="7087282848513945231">ประเทศ</translation>
 <translation id="7090678807593890770">ค้นหา <ph name="LINK" /> จาก Google</translation>
 <translation id="7108338896283013870">ซ่อน</translation>
 <translation id="7108819624672055576">อนุญาตโดยส่วนขยาย</translation>
@@ -893,6 +888,7 @@
 <translation id="7138472120740807366">วิธีการนำส่งสินค้า</translation>
 <translation id="7139724024395191329">เอมิเรต</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> รายการ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> รายการ}}</translation>
+<translation id="7158980942472052083">URL ไม่ถูกต้อง ต้องเป็น URL ที่มีรูปแบบมาตรฐาน</translation>
 <translation id="717330890047184534">รหัส GAIA:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> วิธี}other{<ph name="SHIPPING_OPTION_PREVIEW" /> และอีก <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> วิธี}}</translation>
 <translation id="7179323680825933600">บันทึกและกรอกวิธีการชำระเงิน</translation>
@@ -996,6 +992,7 @@
 <translation id="7716424297397655342">ไม่สามารถโหลดเว็บไซต์นี้จากแคช</translation>
 <translation id="7723047071702270851">แก้ไขบัตร</translation>
 <translation id="774634243536837715">บล็อกเนื้อหาอันตรายแล้ว</translation>
+<translation id="7747182086178764941">กำลังแสดงหน้าจอเรียกใช้ Assistant ป้อนข้อความอัตโนมัติครั้งแรก</translation>
 <translation id="7752995774971033316">ไม่ได้จัดการ</translation>
 <translation id="7755287808199759310">ผู้ปกครองสามารถเลิกบล็อกเว็บไซต์ให้คุณ</translation>
 <translation id="7758069387465995638">ไฟร์วอลล์หรือซอฟต์แวร์ป้องกันไวรัสอาจบล็อกการเชื่อมต่อนี้</translation>
@@ -1142,7 +1139,6 @@
 <translation id="8763927697961133303">อุปกรณ์ USB</translation>
 <translation id="8768895707659403558"><ph name="SIGN_IN_LINK" />เพื่อใช้บัตรในอุปกรณ์ทุกเครื่อง</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{เพิ่มบัตรใบนี้ลงในบัญชี Google แล้ว คุณสามารถใช้บัตรใบนี้ในอุปกรณ์ที่ลงชื่อเข้าใช้อยู่ได้ทุกเครื่อง}other{เพิ่มบัตรเหล่านี้ลงในบัญชี Google แล้ว คุณสามารถใช้บัตรเหล่านี้ในอุปกรณ์ที่ลงชื่อเข้าใช้อยู่ได้ทุกเครื่อง}}</translation>
 <translation id="8792621596287649091">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chromium ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
 <translation id="8800988563907321413">คำแนะนำในบริเวณใกล้เคียงจะปรากฏที่นี่</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>

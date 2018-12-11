@@ -51,6 +51,7 @@
 <translation id="1334095593597963605">Озвучивание символов и слов.</translation>
 <translation id="1339428534620983148">Перейти к предыдущему столбцу таблицы</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">Совет</translation>
 <translation id="1346748346194534595">Справа</translation>
 <translation id="135978014023467274">Теперь вы используете ChromeVox 63</translation>
 <translation id="136718599399906424">Перейти к следующей строке таблицы</translation>
@@ -103,6 +104,7 @@
 <translation id="1828385960365606039">май</translation>
 <translation id="1834891354138622109">Столбец.</translation>
 <translation id="1845944666972354496">Нажмите дважды, чтобы активировать.</translation>
+<translation id="1846771122725914429">Дисплей Брайля с технологией Bluetooth</translation>
 <translation id="1865601187525349519">Конец текста.</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Озвучить текущее время и дату</translation>
@@ -160,6 +162,7 @@
 <translation id="2422937916923936891">Элемент меню: флажок</translation>
 <translation id="2428534162001909979">Меню</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">Подзаголовок</translation>
 <translation id="2435413342408885429">Клавиша <ph name="KEY" /> выбрана в качестве модификатора.</translation>
 <translation id="2450814015951372393">Флажок</translation>
 <translation id="2462626033734746142">Группа переключателей</translation>
@@ -646,6 +649,7 @@
 <translation id="5887397643266327462">Титры шрифтом Брайля включены.</translation>
 <translation id="5891934789323004067">Таблица.</translation>
 <translation id="5899860758576822363">Уменьшать его громкость во время чтения ChromeVox</translation>
+<translation id="5906974869830879618">Введите PIN-код</translation>
 <translation id="5921587111466148855">Глава</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак равенства}one{# знак равенства}few{# знака равенства}many{# знаков равенства}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
@@ -702,6 +706,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{двоеточие}one{# двоеточие}few{# двоеточия}many{# двоеточий}other{# colons}}</translation>
 <translation id="6438968337250688271">Меню "<ph name="NAME" />"</translation>
 <translation id="6444046323172968959">Диалоговое окно оповещения</translation>
+<translation id="6452403590345320472">Содержание</translation>
 <translation id="6459511626086141404">Обычная раскладка</translation>
 <translation id="6468049171101508116">Перейти к следующей кнопке</translation>
 <translation id="646954774886932461">Указатель</translation>
@@ -996,6 +1001,7 @@
 <translation id="948171205378458592">Замедлить речь</translation>
 <translation id="958854023026327378">Проведите одним пальцем вниз</translation>
 <translation id="962913030769097253">Перейти к следующему заголовку первого уровня</translation>
+<translation id="966588271015727539">Выберите дисплей Брайля с технологией Bluetooth</translation>
 <translation id="973955474346881951">Включить или выключить режим залипания</translation>
 <translation id="976849232629612000">Пунктов меню нет.</translation>
 <translation id="995852680044449248">Начало зачеркнутого теста</translation>
