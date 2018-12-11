@@ -303,7 +303,8 @@ void Location::SetLocation(const String& url,
   Document* current_document = current_window->document();
   if (current_document && completed_url.ProtocolIsJavaScript() &&
       !ContentSecurityPolicy::ShouldBypassMainWorld(current_document)) {
-    String script_source = DecodeURLEscapeSequences(completed_url.GetString());
+    String script_source = DecodeURLEscapeSequences(
+        completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
     if (!current_document->GetContentSecurityPolicy()->AllowJavaScriptURLs(
             nullptr, script_source, current_document->Url(), OrdinalNumber())) {
       return;

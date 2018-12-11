@@ -108,8 +108,8 @@ SVGResource* ElementStyleResources::GetSVGResourceFromValue(
   if (value.IsLocal(element_->GetDocument())) {
     SVGTreeScopeResources& tree_scope_resources =
         tree_scope.EnsureSVGTreeScopedResources();
-    AtomicString decoded_fragment(
-        DecodeURLEscapeSequences(value.FragmentIdentifier()));
+    AtomicString decoded_fragment(DecodeURLEscapeSequences(
+        value.FragmentIdentifier(), DecodeURLMode::kUTF8OrIsomorphic));
     return tree_scope_resources.ResourceForId(decoded_fragment);
   }
   if (allow_external == kAllowExternalResource)

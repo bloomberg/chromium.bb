@@ -537,7 +537,8 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromString(
 scoped_refptr<SecurityOrigin> SecurityOrigin::Create(const String& protocol,
                                                      const String& host,
                                                      uint16_t port) {
-  DCHECK_EQ(host, DecodeURLEscapeSequences(host));
+  DCHECK_EQ(host,
+            DecodeURLEscapeSequences(host, DecodeURLMode::kUTF8OrIsomorphic));
 
   String port_part = port ? ":" + String::Number(port) : String();
   return Create(KURL(NullURL(), protocol + "://" + host + port_part + "/"));

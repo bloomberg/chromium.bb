@@ -276,23 +276,20 @@ bool ReplaceComponents(const char* spec,
 
 // String helper functions -----------------------------------------------------
 
-enum class DecodeURLResult {
-  // Did not contain code points greater than 0x7F.
-  kAsciiOnly,
-  // Did UTF-8 decode only.
+enum class DecodeURLMode {
+  // UTF-8 decode only. Invalid byte sequences are replaced with U+FFFD.
   kUTF8,
-  // Did byte to Unicode mapping only.
-  // https://infra.spec.whatwg.org/#isomorphic-decode
-  kIsomorphic,
+  // Try UTF-8 decoding. If the input contains byte sequences invalid
+  // for UTF-8, apply byte to Unicode mapping.
+  kUTF8OrIsomorphic,
 };
 
 // Unescapes the given string using URL escaping rules.
-// This function tries to decode non-ASCII characters in UTF-8 first,
-// then in isomorphic encoding if UTF-8 decoding failed.
 COMPONENT_EXPORT(URL)
-DecodeURLResult DecodeURLEscapeSequences(const char* input,
-                                         int length,
-                                         CanonOutputW* output);
+void DecodeURLEscapeSequences(const char* input,
+                              int length,
+                              DecodeURLMode mode,
+                              CanonOutputW* output);
 
 // Escapes the given string as defined by the JS method encodeURIComponent. See
 // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/encodeURIComponent

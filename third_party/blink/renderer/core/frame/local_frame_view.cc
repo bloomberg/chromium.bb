@@ -1367,55 +1367,22 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
       !frame_->GetDocument()->IsSVGDocument())
     return;
 
-  UseCounter::Count(&GetFrame(), WebFeature::kScrollToFragmentRequested);
   // Try the raw fragment for HTML documents, but skip it for `svgView()`:
   String fragment_identifier = url.FragmentIdentifier();
   if (!frame_->GetDocument()->IsSVGDocument() &&
       ProcessUrlFragmentHelper(fragment_identifier, behavior)) {
-    UseCounter::Count(&GetFrame(), WebFeature::kScrollToFragmentSucceedWithRaw);
     return;
   }
 
-  // Try again after decoding the fragment.
-  if (frame_->GetDocument()->Encoding().IsValid()) {
-    DecodeURLResult decode_result;
-    if (ProcessUrlFragmentHelper(
-            DecodeURLEscapeSequences(fragment_identifier, &decode_result),
-            behavior)) {
-      switch (decode_result) {
-        case DecodeURLResult::kAsciiOnly:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentSucceedWithASCII);
-          break;
-        case DecodeURLResult::kUTF8:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentSucceedWithUTF8);
-          break;
-        case DecodeURLResult::kIsomorphic:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentSucceedWithIsomorphic);
-          break;
-      }
-    } else {
-      switch (decode_result) {
-        case DecodeURLResult::kAsciiOnly:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentFailWithASCII);
-          break;
-        case DecodeURLResult::kUTF8:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentFailWithUTF8);
-          break;
-        case DecodeURLResult::kIsomorphic:
-          UseCounter::Count(&GetFrame(),
-                            WebFeature::kScrollToFragmentFailWithIsomorphic);
-          break;
-      }
-    }
-  } else {
-    UseCounter::Count(&GetFrame(),
-                      WebFeature::kScrollToFragmentFailWithInvalidEncoding);
-  }
+  // https://html.spec.whatwg.org/multipage/browsing-the-web.html#the-indicated-part-of-the-document
+  // 5. Let decodedFragment be the result of running UTF-8 decode without BOM on
+  // fragmentBytes.
+  String decoded_fragment =
+      DecodeURLEscapeSequences(fragment_identifier, DecodeURLMode::kUTF8);
+  // 6. If find a potential indicated element with decodedFragment
+  // returns non-null, then the return value is the indicated part of
+  // the document; return.
+  ProcessUrlFragmentHelper(decoded_fragment, behavior);
 }
 
 bool LocalFrameView::ProcessUrlFragmentHelper(const String& name,

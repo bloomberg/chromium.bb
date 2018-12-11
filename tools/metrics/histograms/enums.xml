@@ -20666,17 +20666,17 @@ Called by update_net_error_codes.py.-->
   <int value="2332" label="ColorInputTypeChooserByTrustedClick"/>
   <int value="2333" label="ColorInputTypeChooserByUntrustedClick"/>
   <int value="2334" label="CSSTypedOMStylePropertyMap"/>
-  <int value="2335" label="ScrollToFragmentRequested"/>
-  <int value="2336" label="ScrollToFragmentSucceedWithRaw"/>
-  <int value="2337" label="ScrollToFragmentSucceedWithASCII"/>
-  <int value="2338" label="ScrollToFragmentSucceedWithUTF8"/>
-  <int value="2339" label="ScrollToFragmentSucceedWithIsomorphic"/>
+  <int value="2335" label="OBSOLETE_ScrollToFragmentRequested"/>
+  <int value="2336" label="OBSOLETE_ScrollToFragmentSucceedWithRaw"/>
+  <int value="2337" label="OBSOLETE_ScrollToFragmentSucceedWithASCII"/>
+  <int value="2338" label="OBSOLETE_ScrollToFragmentSucceedWithUTF8"/>
+  <int value="2339" label="OBSOLETE_ScrollToFragmentSucceedWithIsomorphic"/>
   <int value="2340" label="OBSOLETE_ScrollToFragmentSucceedWithMixed"/>
-  <int value="2341" label="ScrollToFragmentFailWithASCII"/>
-  <int value="2342" label="ScrollToFragmentFailWithUTF8"/>
-  <int value="2343" label="ScrollToFragmentFailWithIsomorphic"/>
+  <int value="2341" label="OBSOLETE_ScrollToFragmentFailWithASCII"/>
+  <int value="2342" label="OBSOLETE_ScrollToFragmentFailWithUTF8"/>
+  <int value="2343" label="OBSOLETE_ScrollToFragmentFailWithIsomorphic"/>
   <int value="2344" label="OBSOLETE_ScrollToFragmentFailWithMixed"/>
-  <int value="2345" label="ScrollToFragmentFailWithInvalidEncoding"/>
+  <int value="2345" label="OBSOLETE_ScrollToFragmentFailWithInvalidEncoding"/>
   <int value="2346" label="RTCPeerConnectionWithActiveCsp"/>
   <int value="2347" label="ImageDecodingAttribute"/>
   <int value="2348" label="ImageDecodeAPI"/>

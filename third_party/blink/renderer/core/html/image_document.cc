@@ -167,7 +167,8 @@ void ImageDocumentParser::Finish() {
       // Compute the title, we use the decoded filename of the resource, falling
       // back on the (decoded) hostname if there is no path.
       String file_name =
-          DecodeURLEscapeSequences(GetDocument()->Url().LastPathComponent());
+          DecodeURLEscapeSequences(GetDocument()->Url().LastPathComponent(),
+                                   DecodeURLMode::kUTF8OrIsomorphic);
       if (file_name.IsEmpty())
         file_name = GetDocument()->Url().Host();
       GetDocument()->setTitle(ImageTitle(file_name, size));

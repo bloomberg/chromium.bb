@@ -1128,7 +1128,8 @@ bool MatchesCommand(const std::string& method,
       CHECK(name.length());
       url::RawCanonOutputT<base::char16> output;
       url::DecodeURLEscapeSequences(
-          path_parts[i].data(), path_parts[i].length(), &output);
+          path_parts[i].data(), path_parts[i].length(),
+          url::DecodeURLMode::kUTF8OrIsomorphic, &output);
       std::string decoded = base::UTF16ToASCII(
           base::string16(output.data(), output.length()));
       // Due to crbug.com/533361, the url decoding libraries decodes all of the

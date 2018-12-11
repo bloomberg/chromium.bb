@@ -547,7 +547,8 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
   const KURL& kurl = url;
   DCHECK(kurl.ProtocolIs("javascript"));
 
-  String script = DecodeURLEscapeSequences(kurl.GetString());
+  String script = DecodeURLEscapeSequences(kurl.GetString(),
+                                           DecodeURLMode::kUTF8OrIsomorphic);
 
   if (!element_->GetDocument().GetContentSecurityPolicy()->AllowJavaScriptURLs(
           element_, script, element_->GetDocument().Url(), OrdinalNumber())) {

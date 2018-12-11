@@ -133,7 +133,8 @@ void URLSearchParams::RunUpdateSteps() {
 }
 
 static String DecodeString(String input) {
-  return DecodeURLEscapeSequences(input.Replace('+', ' '));
+  return DecodeURLEscapeSequences(input.Replace('+', ' '),
+                                  DecodeURLMode::kUTF8OrIsomorphic);
 }
 
 void URLSearchParams::SetInputWithoutUpdate(const String& query_string) {
