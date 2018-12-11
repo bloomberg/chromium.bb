@@ -593,6 +593,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('nvidia', 0x1cb3)], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=913969)
+    self.Flaky('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['linux', ('nvidia', 0x1cb3)], bug=913969)
 
     # AMD
     self.Fail('conformance/glsl/misc/fragcolor-fragdata-invariant.html',
