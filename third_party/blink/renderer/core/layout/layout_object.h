@@ -1707,9 +1707,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // -webkit-flex).
   virtual bool IsFlexibleBox() const { return false; }
 
-  bool IsFlexibleBoxIncludingDeprecated() const {
-    return IsFlexibleBox() || IsDeprecatedFlexibleBox();
-  }
+  virtual bool IsFlexibleBoxIncludingDeprecatedAndNG() const { return false; }
+
+  virtual bool IsFlexibleBoxIncludingNG() const { return false; }
 
   bool IsListItemIncludingNG() const {
     return IsListItem() || IsLayoutNGListItem();

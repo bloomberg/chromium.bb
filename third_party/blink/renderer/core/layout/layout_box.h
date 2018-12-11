@@ -1204,16 +1204,24 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool IsCustomItemShrinkToFit() const;
 
   bool IsDeprecatedFlexItem() const {
-    return !IsInline() && !IsFloatingOrOutOfFlowPositioned() && Parent() &&
-           Parent()->IsDeprecatedFlexibleBox();
+    return IsFlexItemCommon() && Parent()->IsDeprecatedFlexibleBox();
   }
-  bool IsFlexItemIncludingDeprecated() const {
-    return !IsInline() && !IsFloatingOrOutOfFlowPositioned() && Parent() &&
-           Parent()->IsFlexibleBoxIncludingDeprecated();
+  bool IsFlexItemIncludingDeprecatedAndNG() const {
+    return IsFlexItemCommon() &&
+           Parent()->IsFlexibleBoxIncludingDeprecatedAndNG();
   }
+
+  // TODO(dgrogan): Replace the rest of the calls to IsFlexItem with
+  // IsFlexItemIncludingNG when all the callsites can handle an item with an NG
+  // parent.
   bool IsFlexItem() const {
-    return !IsInline() && !IsFloatingOrOutOfFlowPositioned() && Parent() &&
-           Parent()->IsFlexibleBox();
+    return IsFlexItemCommon() && Parent()->IsFlexibleBox();
+  }
+  bool IsFlexItemIncludingNG() const {
+    return IsFlexItemCommon() && Parent()->IsFlexibleBoxIncludingNG();
+  }
+  bool IsFlexItemCommon() const {
+    return !IsInline() && !IsFloatingOrOutOfFlowPositioned() && Parent();
   }
 
   bool IsGridItem() const { return Parent() && Parent()->IsLayoutGrid(); }

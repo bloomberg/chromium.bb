@@ -325,8 +325,8 @@ void LayoutBlock::AddChildBeforeDescendant(LayoutObject* new_child,
   if (before_descendant_container->IsAnonymousBlock()) {
     // Insert the child into the anonymous block box instead of here.
     if (new_child->IsInline() ||
-        (new_child->IsFloatingOrOutOfFlowPositioned() && !IsFlexibleBox() &&
-         !IsLayoutGrid()) ||
+        (new_child->IsFloatingOrOutOfFlowPositioned() &&
+         !IsFlexibleBoxIncludingNG() && !IsLayoutGrid()) ||
         before_descendant->Parent()->SlowFirstChild() != before_descendant) {
       before_descendant_container->AddChild(new_child, before_descendant);
     } else {
@@ -366,8 +366,9 @@ void LayoutBlock::AddChild(LayoutObject* new_child,
   // here.
   DCHECK(!ChildrenInline());
 
-  if (new_child->IsInline() || (new_child->IsFloatingOrOutOfFlowPositioned() &&
-                                !IsFlexibleBox() && !IsLayoutGrid())) {
+  if (new_child->IsInline() ||
+      (new_child->IsFloatingOrOutOfFlowPositioned() &&
+       !IsFlexibleBoxIncludingNG() && !IsLayoutGrid())) {
     // If we're inserting an inline child but all of our children are blocks,
     // then we have to make sure it is put into an anomyous block box. We try to
     // use an existing anonymous box if possible, otherwise a new one is created
@@ -928,6 +929,9 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
 
   LayoutObject* parent = positioned_object->Parent();
   bool layout_changed = false;
+  // TODO(dgrogan): The NG flexbox implementation doesn't have an analogous
+  // method yet, so abspos children of NG flexboxes that have a legacy
+  // containing block will not be positioned correctly.
   if (parent->IsFlexibleBox() &&
       ToLayoutFlexibleBox(parent)->SetStaticPositionForPositionedLayout(
           *positioned_object)) {
@@ -2191,7 +2195,7 @@ bool LayoutBlock::TryLayoutDoingPositionedMovementOnly() {
   ComputeLogicalHeight(old_height, LogicalTop(), computed_values);
 
   if (old_height != computed_values.extent_ &&
-      (HasPercentHeightDescendants() || IsFlexibleBox())) {
+      (HasPercentHeightDescendants() || IsFlexibleBoxIncludingNG())) {
     SetIntrinsicContentLogicalHeight(old_intrinsic_content_logical_height);
     return false;
   }

@@ -502,7 +502,7 @@ CSSValue* ComputedStyleUtils::MinWidthOrMinHeightAuto(
   LayoutObject* layout_object =
       styled_node ? styled_node->GetLayoutObject() : nullptr;
   if (layout_object && layout_object->IsBox() &&
-      (ToLayoutBox(layout_object)->IsFlexItem() ||
+      (ToLayoutBox(layout_object)->IsFlexItemIncludingNG() ||
        ToLayoutBox(layout_object)->IsGridItem())) {
     return CSSIdentifierValue::Create(CSSValueAuto);
   }

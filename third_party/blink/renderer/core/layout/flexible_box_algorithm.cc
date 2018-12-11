@@ -146,7 +146,6 @@ void FlexItem::ComputeStretchedSize() {
   // constructor. Then use cross_axis_min_max.ClampSizeToMinAndMax instead of
   // relying on legacy in this method.
   DCHECK_EQ(Alignment(), ItemPosition::kStretch);
-  LayoutFlexibleBox* flexbox = ToLayoutFlexibleBox(box->Parent());
   if (MainAxisIsInlineAxis() && box->StyleRef().LogicalHeight().IsAuto()) {
     LayoutUnit stretched_logical_height =
         std::max(box->BorderAndPaddingLogicalHeight(),
@@ -155,11 +154,14 @@ void FlexItem::ComputeStretchedSize() {
         stretched_logical_height, box->IntrinsicContentLogicalHeight());
   } else if (!MainAxisIsInlineAxis() &&
              box->StyleRef().LogicalWidth().IsAuto()) {
+    // This doesn't work in NG because CrossAxisContentExtent() isn't yet
+    // implemented there.
+    if (box->Parent()->IsLayoutNGFlexibleBox())
+      return;
     LayoutUnit child_width =
         (Line()->cross_axis_extent - CrossAxisMarginExtent())
             .ClampNegativeToZero();
-    // This probably doesn't work in NG because flexbox might not yet know its
-    // CrossAxisContentExtent()
+    LayoutFlexibleBox* flexbox = ToLayoutFlexibleBox(box->Parent());
     cross_axis_size = box->ConstrainLogicalWidthByMinMax(
         child_width, flexbox->CrossAxisContentExtent(), flexbox);
   }

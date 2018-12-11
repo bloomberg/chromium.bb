@@ -164,7 +164,7 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
                first_letter_text_layout_object->IsMenuList()) {
       return nullptr;
     } else if (first_letter_text_layout_object
-                   ->IsFlexibleBoxIncludingDeprecated() ||
+                   ->IsFlexibleBoxIncludingDeprecatedAndNG() ||
                first_letter_text_layout_object->IsLayoutGrid()) {
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();

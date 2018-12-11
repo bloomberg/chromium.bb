@@ -117,7 +117,7 @@ static bool IsIndependentDescendant(const LayoutBlock* layout_object) {
   return layout_object->IsLayoutView() || layout_object->IsFloating() ||
          layout_object->IsOutOfFlowPositioned() ||
          layout_object->IsTableCell() || layout_object->IsTableCaption() ||
-         layout_object->IsFlexibleBoxIncludingDeprecated() ||
+         layout_object->IsFlexibleBoxIncludingDeprecatedAndNG() ||
          (containing_block && containing_block->IsHorizontalWritingMode() !=
                                   layout_object->IsHorizontalWritingMode()) ||
          layout_object->StyleRef().IsDisplayReplacedType() ||

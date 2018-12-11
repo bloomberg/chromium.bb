@@ -44,6 +44,7 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   void LayoutVerticalBox(bool relayout_children);
 
   bool IsDeprecatedFlexibleBox() const override { return true; }
+  bool IsFlexibleBoxIncludingDeprecatedAndNG() const override { return true; }
   bool IsStretchingChildren() const { return stretching_children_; }
 
   void PlaceChild(LayoutBox* child, const LayoutPoint& location);

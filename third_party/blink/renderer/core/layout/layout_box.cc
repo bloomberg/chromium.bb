@@ -2791,8 +2791,8 @@ void LayoutBox::ComputeLogicalWidth(
       container_logical_width !=
           (computed_values.extent_ + computed_values.margins_.start_ +
            computed_values.margins_.end_) &&
-      !IsFloating() && !IsInline() && !cb->IsFlexibleBoxIncludingDeprecated() &&
-      !cb->IsLayoutGrid()) {
+      !IsFloating() && !IsInline() &&
+      !cb->IsFlexibleBoxIncludingDeprecatedAndNG() && !cb->IsLayoutGrid()) {
     LayoutUnit new_margin_total =
         container_logical_width - computed_values.extent_;
     bool has_inverted_direction = cb->StyleRef().IsLeftToRightDirection() !=
@@ -2958,7 +2958,7 @@ bool LayoutBox::IsStretchingColumnFlexItem() const {
 
   // We don't stretch multiline flexboxes because they need to apply line
   // spacing (align-content) first.
-  if (parent->IsFlexibleBox() &&
+  if (parent->IsFlexibleBoxIncludingNG() &&
       parent->StyleRef().FlexWrap() == EFlexWrap::kNowrap &&
       parent->StyleRef().IsColumnFlexDirection() &&
       ColumnFlexItemHasStretchAlignment())
@@ -3005,7 +3005,7 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   // intrinsic widths. In the case of columns that have a stretch alignment, we
   // go ahead and layout at the stretched size to avoid an extra layout when
   // applying alignment.
-  if (Parent()->IsFlexibleBox()) {
+  if (Parent()->IsFlexibleBoxIncludingNG()) {
     // For multiline columns, we need to apply align-content first, so we can't
     // stretch now.
     if (!Parent()->StyleRef().IsColumnFlexDirection() ||
@@ -3072,7 +3072,7 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
     return;
   }
 
-  if (containing_block->IsFlexibleBox()) {
+  if (containing_block->IsFlexibleBoxIncludingNG()) {
     // We need to let flexbox handle the margin adjustment - otherwise, flexbox
     // will think we're wider than we actually are and calculate line sizes
     // wrong. See also https://drafts.csswg.org/css-flexbox/#auto-margins

@@ -258,8 +258,9 @@ static inline bool CanHaveWhitespaceChildren(
 
   if (parent.IsTable() || parent.IsTableRow() || parent.IsTableSection() ||
       parent.IsLayoutTableCol() || parent.IsFrameSet() ||
-      parent.IsFlexibleBox() || parent.IsLayoutGrid() || parent.IsSVGRoot() ||
-      parent.IsSVGContainer() || parent.IsSVGImage() || parent.IsSVGShape()) {
+      parent.IsFlexibleBoxIncludingNG() || parent.IsLayoutGrid() ||
+      parent.IsSVGRoot() || parent.IsSVGContainer() || parent.IsSVGImage() ||
+      parent.IsSVGShape()) {
     if (!context.use_previous_in_flow || !context.previous_in_flow ||
         !context.previous_in_flow->IsText())
       return false;

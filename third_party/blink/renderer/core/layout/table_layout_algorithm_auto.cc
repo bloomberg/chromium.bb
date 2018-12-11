@@ -225,7 +225,7 @@ static bool ShouldScaleColumnsForParent(LayoutTable* table) {
     // use ~infinity to make sure we use all available size in the containing
     // block. However, this just doesn't work if this is a flex or grid item, so
     // disallow scaling in that case.
-    if (cb->IsFlexibleBox() || cb->IsLayoutGrid())
+    if (cb->IsFlexibleBoxIncludingNG() || cb->IsLayoutGrid())
       return false;
     cb = cb->ContainingBlock();
   }
