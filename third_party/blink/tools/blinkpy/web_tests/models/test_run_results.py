@@ -365,7 +365,7 @@ def summarize_results(port_obj, expectations, initial_results,
     # Does results.html have enough information to compute this itself? (by
     # checking total number of results vs. total number of tests?)
     results['interrupted'] = initial_results.interrupted
-    results['layout_tests_dir'] = port_obj.layout_tests_dir()
+    results['layout_tests_dir'] = port_obj.web_tests_dir()
     results['seconds_since_epoch'] = int(time.time())
     results['build_number'] = port_obj.get_option('build_number')
     results['builder_name'] = port_obj.get_option('builder_name')

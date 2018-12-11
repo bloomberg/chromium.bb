@@ -45,7 +45,7 @@ class WebTestFinder(object):
         self._port = port
         self._options = options
         self._filesystem = self._port.host.filesystem
-        self.LAYOUT_TESTS_DIRECTORIES = ('src', 'third_party', 'blink', 'web_tests')
+        self.WEB_TESTS_DIRECTORIES = ('src', 'third_party', 'blink', 'web_tests')
 
     def find_tests(self, args, test_list=None, fastest_percentile=None):
         paths = self._strip_test_dir_prefixes(args)
@@ -118,11 +118,11 @@ class WebTestFinder(object):
     def _strip_test_dir_prefix(self, path):
         # Remove src/third_party/blink/web_tests/ from the front of the test path,
         # or any subset of these.
-        for i in range(len(self.LAYOUT_TESTS_DIRECTORIES)):
+        for i in range(len(self.WEB_TESTS_DIRECTORIES)):
             # Handle both "web_tests/foo/bar.html" and "web_tests\foo\bar.html" if
             # the filesystem uses '\\' as a directory separator
             for separator in (self._port.TEST_PATH_SEPARATOR, self._filesystem.sep):
-                directory_prefix = separator.join(self.LAYOUT_TESTS_DIRECTORIES[i:]) + separator
+                directory_prefix = separator.join(self.WEB_TESTS_DIRECTORIES[i:]) + separator
                 if path.startswith(directory_prefix):
                     return path[len(directory_prefix):]
         return path

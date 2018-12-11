@@ -42,7 +42,7 @@ from blinkpy.common.system.system_host import SystemHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests.models.test_input import TestInput
 from blinkpy.web_tests.port.base import Port, VirtualTestSuite
-from blinkpy.web_tests.port.test import add_unit_tests_to_mock_filesystem, LAYOUT_TEST_DIR, TestPort
+from blinkpy.web_tests.port.test import add_unit_tests_to_mock_filesystem, WEB_TEST_DIR, TestPort
 
 
 MOCK_WEB_TESTS = '/mock-checkout/' + RELATIVE_WEB_TESTS
@@ -65,8 +65,8 @@ class PortTest(LoggingTestCase):
 
     def test_test_dirs(self):
         port = self.make_port()
-        port.host.filesystem.write_text_file(port.layout_tests_dir() + '/canvas/test', '')
-        port.host.filesystem.write_text_file(port.layout_tests_dir() + '/css2.1/test', '')
+        port.host.filesystem.write_text_file(port.web_tests_dir() + '/canvas/test', '')
+        port.host.filesystem.write_text_file(port.web_tests_dir() + '/css2.1/test', '')
         dirs = port.test_dirs()
         self.assertIn('canvas', dirs)
         self.assertIn('css2.1', dirs)
@@ -465,7 +465,7 @@ class PortTest(LoggingTestCase):
 
     @staticmethod
     def _add_manifest_to_mock_file_system(filesystem):
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/MANIFEST.json', json.dumps({
+        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/MANIFEST.json', json.dumps({
             'items': {
                 'testharness': {
                     'dom/ranges/Range-attributes.html': [
@@ -499,9 +499,9 @@ class PortTest(LoggingTestCase):
                     ],
                 },
             }}))
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes.html', '')
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/external/wpt/common/blank.html', 'foo')
+        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/dom/ranges/Range-attributes.html', '')
+        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/console/console-is-a-namespace.any.js', '')
+        filesystem.write_text_file(WEB_TEST_DIR + '/external/wpt/common/blank.html', 'foo')
 
     def test_find_none_if_not_in_manifest(self):
         port = self.make_port(with_tests=True)
@@ -610,16 +610,16 @@ class PortTest(LoggingTestCase):
         PortTest._add_manifest_to_mock_file_system(filesystem)
 
         # A file not in MANIFEST.json is not a test even if it has .html suffix.
-        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt/common', 'blank.html'))
+        self.assertFalse(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt/common', 'blank.html'))
 
         # .js is not a test in general, but it is if MANIFEST.json contains an
         # entry for it.
-        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt/console', 'console-is-a-namespace.any.js'))
+        self.assertTrue(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt/console', 'console-is-a-namespace.any.js'))
 
         # A file in external/wpt, not a sub directory.
-        self.assertFalse(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
+        self.assertFalse(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt', 'testharness_runner.html'))
         # A file in external/wpt_automation.
-        self.assertTrue(port.is_test_file(filesystem, LAYOUT_TEST_DIR + '/external/wpt_automation', 'foo.html'))
+        self.assertTrue(port.is_test_file(filesystem, WEB_TEST_DIR + '/external/wpt_automation', 'foo.html'))
 
     def test_is_wpt_test(self):
         self.assertTrue(Port.is_wpt_test('external/wpt/dom/ranges/Range-attributes.html'))
@@ -673,22 +673,22 @@ class PortTest(LoggingTestCase):
     def test_reference_files(self):
         port = self.make_port(with_tests=True)
         self.assertEqual(port.reference_files('passes/svgreftest.svg'),
-                         [('==', port.layout_tests_dir() + '/passes/svgreftest-expected.svg')])
+                         [('==', port.web_tests_dir() + '/passes/svgreftest-expected.svg')])
         self.assertEqual(port.reference_files('passes/xhtreftest.svg'),
-                         [('==', port.layout_tests_dir() + '/passes/xhtreftest-expected.html')])
+                         [('==', port.web_tests_dir() + '/passes/xhtreftest-expected.html')])
         self.assertEqual(port.reference_files('passes/phpreftest.php'),
-                         [('!=', port.layout_tests_dir() + '/passes/phpreftest-expected-mismatch.svg')])
+                         [('!=', port.web_tests_dir() + '/passes/phpreftest-expected-mismatch.svg')])
 
     def test_reference_files_from_manifest(self):
         port = self.make_port(with_tests=True)
         PortTest._add_manifest_to_mock_file_system(port.host.filesystem)
 
         self.assertEqual(port.reference_files('external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'),
-                         [('==', port.layout_tests_dir() +
+                         [('==', port.web_tests_dir() +
                            '/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html')])
         self.assertEqual(port.reference_files('virtual/layout_ng/' +
                                               'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'),
-                         [('==', port.layout_tests_dir() +
+                         [('==', port.web_tests_dir() +
                            '/external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L-ref.html')])
 
     def test_operating_system(self):
@@ -813,7 +813,7 @@ class PortTest(LoggingTestCase):
     def test_good_virtual_test_suite_file(self):
         port = self.make_port()
         port.host.filesystem.write_text_file(
-            port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+            port.host.filesystem.join(port.web_tests_dir(), 'VirtualTestSuites'),
             '[{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}]')
 
         # If this call returns successfully, we found and loaded the web_tests/VirtualTestSuites.
@@ -822,7 +822,7 @@ class PortTest(LoggingTestCase):
     def test_duplicate_virtual_test_suite_in_file(self):
         port = self.make_port()
         port.host.filesystem.write_text_file(
-            port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+            port.host.filesystem.join(port.web_tests_dir(), 'VirtualTestSuites'),
             '['
             '{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]},'
             '{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}'
@@ -833,7 +833,7 @@ class PortTest(LoggingTestCase):
     def test_virtual_test_suite_file_is_not_json(self):
         port = self.make_port()
         port.host.filesystem.write_text_file(
-            port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+            port.host.filesystem.join(port.web_tests_dir(), 'VirtualTestSuites'),
             '{[{[')
         self.assertRaises(ValueError, port.virtual_test_suites)
 

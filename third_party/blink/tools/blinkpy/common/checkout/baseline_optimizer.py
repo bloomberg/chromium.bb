@@ -44,10 +44,10 @@ class BaselineOptimizer(object):
         for port_name in port_names:
             self._ports[port_name] = host.port_factory.get(port_name)
 
-        self._layout_tests_dir = default_port.layout_tests_dir()
-        self._parent_of_tests = self._filesystem.dirname(self._layout_tests_dir)
-        self._layout_tests_dir_name = self._filesystem.relpath(
-            self._layout_tests_dir, self._parent_of_tests)
+        self._web_tests_dir = default_port.web_tests_dir()
+        self._parent_of_tests = self._filesystem.dirname(self._web_tests_dir)
+        self._web_tests_dir_name = self._filesystem.relpath(
+            self._web_tests_dir, self._parent_of_tests)
 
         # Only used by unit tests.
         self.new_results_by_directory = []
@@ -56,7 +56,7 @@ class BaselineOptimizer(object):
         # A visualization of baseline fallback:
         # https://docs.google.com/drawings/d/13l3IUlSE99RoKjDwEWuY1O77simAhhF6Wi0fZdkSaMA/
         # The full document with more details:
-        # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_test_baseline_fallback.md
+        # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_baseline_fallback.md
         # The virtual and non-virtual subtrees are identical, with the virtual
         # root being the special node having multiple parents and connecting the
         # two trees. We patch the virtual subtree to cut its dependencies on the
@@ -195,7 +195,7 @@ class BaselineOptimizer(object):
         Returns:
             The platform name, or '(generic)' if unable to make a guess.
         """
-        platform_dir = self._layout_tests_dir_name + self._filesystem.sep + 'platform' + self._filesystem.sep
+        platform_dir = self._web_tests_dir_name + self._filesystem.sep + 'platform' + self._filesystem.sep
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
         platform_dir = self._filesystem.join(self._parent_of_tests, platform_dir)
@@ -239,7 +239,7 @@ class BaselineOptimizer(object):
         # independently. If an immediate predecessor is missing a baseline, find
         # its non-virtual fallback and copy over.
         _log.debug('Copying non-virtual baselines to the virtual subtree to make it independent.')
-        virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
+        virtual_root_baseline_path = self._filesystem.join(self._web_tests_dir, baseline_name)
         if self._filesystem.exists(virtual_root_baseline_path):
             return
 
@@ -252,7 +252,7 @@ class BaselineOptimizer(object):
         self._walk_immediate_predecessors_of_virtual_root(test_name, extension, baseline_name, patcher)
 
     def _optimize_virtual_root(self, test_name, extension, baseline_name):
-        virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
+        virtual_root_baseline_path = self._filesystem.join(self._web_tests_dir, baseline_name)
         if self._filesystem.exists(virtual_root_baseline_path):
             _log.debug('Virtual root baseline found. Checking if we can remove it.')
             self._try_to_remove_virtual_root(test_name, baseline_name, virtual_root_baseline_path)
@@ -294,7 +294,7 @@ class BaselineOptimizer(object):
 
     def _baseline_root(self):
         """Returns the name of the root (generic) baseline directory."""
-        return self._layout_tests_dir_name
+        return self._web_tests_dir_name
 
     def _baseline_search_path(self, port):
         """Returns the baseline search path (a list of absolute paths) of the
@@ -476,7 +476,7 @@ class BaselineOptimizer(object):
 class ResultDigest(object):
     """Digest of a result file for fast comparison.
 
-    A result file can be any actual or expected output from a layout test,
+    A result file can be any actual or expected output from a web test,
     including text and image. SHA1 is used internally to digest the file.
     """
 

@@ -181,8 +181,8 @@ class WPTManifest(object):
     def ensure_manifest(host):
         """Updates the MANIFEST.json file, or generates if it does not exist."""
         finder = PathFinder(host.filesystem)
-        manifest_path = finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
-        base_manifest_path = finder.path_from_layout_tests('external', BASE_MANIFEST_NAME)
+        manifest_path = finder.path_from_web_tests('external', 'wpt', 'MANIFEST.json')
+        base_manifest_path = finder.path_from_web_tests('external', BASE_MANIFEST_NAME)
 
         if not host.filesystem.exists(base_manifest_path):
             _log.error('Manifest base not found at "%s".', base_manifest_path)
@@ -196,7 +196,7 @@ class WPTManifest(object):
             host.filesystem.remove(manifest_path)
         host.filesystem.copyfile(base_manifest_path, manifest_path)
 
-        wpt_path = finder.path_from_layout_tests('external', 'wpt')
+        wpt_path = finder.path_from_web_tests('external', 'wpt')
         WPTManifest.generate_manifest(host, wpt_path)
 
         _log.debug('Manifest generation completed.')

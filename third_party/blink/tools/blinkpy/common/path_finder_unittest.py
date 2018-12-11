@@ -21,20 +21,20 @@ class TestPathFinder(unittest.TestCase):
             finder.path_from_chromium_base('foo', 'bar.baz'),
             '/mock-checkout/foo/bar.baz')
 
-    def test_layout_tests_dir(self):
+    def test_web_tests_dir(self):
         finder = PathFinder(MockFileSystem())
         self.assertEqual(
-            finder.layout_tests_dir(),
+            finder.web_tests_dir(),
             '/mock-checkout/' + RELATIVE_WEB_TESTS[:-1])
 
-    def test_layout_tests_dir_with_backslash_sep(self):
+    def test_web_tests_dir_with_backslash_sep(self):
         filesystem = MockFileSystem()
         filesystem.sep = '\\'
         filesystem.path_to_module = lambda _: (
             'C:\\mock-checkout\\third_party\\blink\\tools\\blinkpy\\foo.py')
         finder = PathFinder(filesystem)
         self.assertEqual(
-            finder.layout_tests_dir(),
+            finder.web_tests_dir(),
             'C:\\mock-checkout\\third_party\\blink\\web_tests')
 
     def test_perf_tests_dir(self):
@@ -43,10 +43,10 @@ class TestPathFinder(unittest.TestCase):
             finder.perf_tests_dir(),
             '/mock-checkout/third_party/blink/perf_tests')
 
-    def test_path_from_layout_tests(self):
+    def test_path_from_web_tests(self):
         finder = PathFinder(MockFileSystem())
         self.assertEqual(
-            finder.path_from_layout_tests('external', 'wpt'),
+            finder.path_from_web_tests('external', 'wpt'),
             '/mock-checkout/' + RELATIVE_WEB_TESTS + 'external/wpt')
 
     def test_depot_tools_base_not_found(self):

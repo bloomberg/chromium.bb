@@ -29,7 +29,7 @@
 """Abstract base class for Port classes.
 
 The Port classes encapsulate Port-specific (platform-specific) behavior
-in the layout test infrastructure.
+in the web test infrastructure.
 """
 
 import collections
@@ -106,7 +106,7 @@ SXG_FINGERPRINT = '55qC1nKu2A88ESbFmk5sTPQS/ScG+8DD7P+2bgFA9iM='
 SXG_WPT_FINGERPRINT = '0Rt4mT6SJXojEMHTnKnlJ/hBKMBcI4kteBlhR1eTTdk='
 
 class Port(object):
-    """Abstract class for Port-specific hooks for the layout_test package."""
+    """Abstract class for Port-specific hooks for the web_test package."""
 
     # Subclasses override this. This should indicate the basic implementation
     # part of the port name, e.g., 'mac', 'win', 'gtk'; there is one unique
@@ -234,7 +234,7 @@ class Port(object):
            is the flag in web_tests/additional-driver-flag.setting, if present, otherwise the
            first flag passed by --additional-driver-flag.
         """
-        flag_file = self._filesystem.join(self.layout_tests_dir(), 'additional-driver-flag.setting')
+        flag_file = self._filesystem.join(self.web_tests_dir(), 'additional-driver-flag.setting')
         if self._filesystem.exists(flag_file):
             flag = self._filesystem.read_text_file(flag_file).strip()
             if flag:
@@ -560,7 +560,7 @@ class Port(object):
 
         # If it wasn't found in a platform directory, return the expected
         # result in the test directory, even if no such file actually exists.
-        platform_dir = self.layout_tests_dir()
+        platform_dir = self.web_tests_dir()
         if self._filesystem.exists(self._filesystem.join(platform_dir, baseline_filename)):
             baselines.append((platform_dir, baseline_filename))
 
@@ -609,7 +609,7 @@ class Port(object):
                 return self.expected_filename(actual_test_name, extension, return_default, match=match)
 
         if return_default:
-            return self._filesystem.join(self.layout_tests_dir(), baseline_filename)
+            return self._filesystem.join(self.web_tests_dir(), baseline_filename)
         return None
 
     def fallback_expected_filename(self, test_name, extension):
@@ -698,7 +698,7 @@ class Port(object):
             return []
         path_in_wpt = match.group(1)
         for expectation, ref_path_in_wpt in self._wpt_manifest().extract_reference_list(path_in_wpt):
-            ref_absolute_path = self._filesystem.join(self.layout_tests_dir(), 'external/wpt' + ref_path_in_wpt)
+            ref_absolute_path = self._filesystem.join(self.web_tests_dir(), 'external/wpt' + ref_path_in_wpt)
             reftest_list.append((expectation, ref_absolute_path))
         return reftest_list
 
@@ -738,7 +738,7 @@ class Port(object):
             self.is_test_file(fs, dirname, filename)
             and not re.search(r'[/\\]external[/\\]wpt([/\\].*)?$', dirname)
         )
-        files = find_files.find(self._filesystem, self.layout_tests_dir(), paths, skipped_directories,
+        files = find_files.find(self._filesystem, self.web_tests_dir(), paths, skipped_directories,
                                 is_non_wpt_real_test_file, self.test_key)
         return [self.relative_test_filename(f) for f in files]
 
@@ -796,7 +796,7 @@ class Port(object):
 
     @memoized
     def _wpt_manifest(self):
-        manifest_path = self._filesystem.join(self.layout_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
+        manifest_path = self._filesystem.join(self.web_tests_dir(), 'external', 'wpt', 'MANIFEST.json')
         if not self._filesystem.exists(manifest_path):
             _log.error('Manifest not found at %s. Remove the --no-manifest-update argument to generate it.', manifest_path)
             return WPTManifest('{}')
@@ -844,9 +844,9 @@ class Port(object):
 
     def test_dirs(self):
         """Returns the list of top-level test directories."""
-        layout_tests_dir = self.layout_tests_dir()
+        web_tests_dir = self.web_tests_dir()
         fs = self._filesystem
-        return [d for d in fs.listdir(layout_tests_dir) if fs.isdir(fs.join(layout_tests_dir, d))]
+        return [d for d in fs.listdir(web_tests_dir) if fs.isdir(fs.join(web_tests_dir, d))]
 
     @memoized
     def test_isfile(self, test_name):
@@ -909,11 +909,11 @@ class Port(object):
     def _perf_tests_dir(self):
         return self._path_finder.perf_tests_dir()
 
-    def layout_tests_dir(self):
-        custom_layout_tests_dir = self.get_option('layout_tests_directory')
-        if custom_layout_tests_dir:
-            return custom_layout_tests_dir
-        return self._path_finder.layout_tests_dir()
+    def web_tests_dir(self):
+        custom_web_tests_dir = self.get_option('layout_tests_directory')
+        if custom_web_tests_dir:
+            return custom_web_tests_dir
+        return self._path_finder.web_tests_dir()
 
     def skips_test(self, test):
         """Checks whether the given test is skipped for this port.
@@ -950,7 +950,7 @@ class Port(object):
         return test not in smoke_tests
 
     def path_to_smoke_tests_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'SmokeTests')
+        return self._filesystem.join(self.web_tests_dir(), 'SmokeTests')
 
     def skipped_in_never_fix_tests(self, test):
         """Checks if the test is marked as WontFix for this port.
@@ -974,7 +974,7 @@ class Port(object):
         return False
 
     def path_to_never_fix_tests_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests')
+        return self._filesystem.join(self.web_tests_dir(), 'NeverFixTests')
 
     def name(self):
         """Returns a name that uniquely identifies this particular type of port.
@@ -1014,8 +1014,8 @@ class Port(object):
         """
         # Ports that run on windows need to override this method to deal with
         # filenames with backslashes in them.
-        if filename.startswith(self.layout_tests_dir()):
-            return self.host.filesystem.relpath(filename, self.layout_tests_dir())
+        if filename.startswith(self.web_tests_dir()):
+            return self.host.filesystem.relpath(filename, self.web_tests_dir())
         else:
             return self.host.filesystem.abspath(filename)
 
@@ -1025,7 +1025,7 @@ class Port(object):
 
         This is the inverse of relative_test_filename().
         """
-        return self._filesystem.join(self.layout_tests_dir(), test_name)
+        return self._filesystem.join(self.web_tests_dir(), test_name)
 
     @memoized
     def args_for_test(self, test_name):
@@ -1286,14 +1286,14 @@ class Port(object):
         flag = self.primary_driver_flag()
         if flag:
             return self._filesystem.join(
-                self.layout_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX, flag.lstrip('-'))
+                self.web_tests_dir(), self.FLAG_EXPECTATIONS_PREFIX, flag.lstrip('-'))
 
     def _flag_specific_baseline_search_path(self):
         flag = self.primary_driver_flag()
         if not flag:
             return []
         flag_dir = self._filesystem.join(
-            self.layout_tests_dir(), 'flag-specific', flag.lstrip('-'))
+            self.web_tests_dir(), 'flag-specific', flag.lstrip('-'))
         platform_dirs = [
             self._filesystem.join(flag_dir, 'platform', platform_dir)
             for platform_dir in self.FALLBACK_PATHS[self.version()]]
@@ -1333,7 +1333,7 @@ class Port(object):
         """Returns an OrderedDict of name -> expectations strings."""
         expectations = self.expectations_dict()
 
-        flag_path = self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations')
+        flag_path = self._filesystem.join(self.web_tests_dir(), 'FlagExpectations')
         if not self._filesystem.exists(flag_path):
             return expectations
 
@@ -1383,9 +1383,9 @@ class Port(object):
         """
         return filter(None, [
             self.path_to_generic_test_expectations_file(),
-            self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'),
-            self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'),
-            self._filesystem.join(self.layout_tests_dir(), 'SlowTests'),
+            self._filesystem.join(self.web_tests_dir(), 'NeverFixTests'),
+            self._filesystem.join(self.web_tests_dir(), 'StaleTestExpectations'),
+            self._filesystem.join(self.web_tests_dir(), 'SlowTests'),
             self._flag_specific_expectations_path()
         ])
 
@@ -1395,14 +1395,14 @@ class Port(object):
         These paths are passed via --additional-expectations on some builders.
         """
         return [
-            self._filesystem.join(self.layout_tests_dir(), 'ASANExpectations'),
-            self._filesystem.join(self.layout_tests_dir(), 'LeakExpectations'),
-            self._filesystem.join(self.layout_tests_dir(), 'MSANExpectations'),
+            self._filesystem.join(self.web_tests_dir(), 'ASANExpectations'),
+            self._filesystem.join(self.web_tests_dir(), 'LeakExpectations'),
+            self._filesystem.join(self.web_tests_dir(), 'MSANExpectations'),
         ]
 
     @memoized
     def path_to_generic_test_expectations_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'TestExpectations')
+        return self._filesystem.join(self.web_tests_dir(), 'TestExpectations')
 
     def repository_path(self):
         """Returns the repository path for the chromium code base."""
@@ -1475,7 +1475,7 @@ class Port(object):
         """Return the absolute path to the top of the baseline tree for a
         given platform directory.
         """
-        return self._filesystem.join(self.layout_tests_dir(), 'platform', platform_dir)
+        return self._filesystem.join(self.web_tests_dir(), 'platform', platform_dir)
 
     def _driver_class(self):
         """Returns the port's driver implementation."""
@@ -1564,7 +1564,7 @@ class Port(object):
 
     def virtual_test_suites(self):
         if self._virtual_test_suites is None:
-            path_to_virtual_test_suites = self._filesystem.join(self.layout_tests_dir(), 'VirtualTestSuites')
+            path_to_virtual_test_suites = self._filesystem.join(self.web_tests_dir(), 'VirtualTestSuites')
             assert self._filesystem.exists(path_to_virtual_test_suites), path_to_virtual_test_suites + ' not found'
             try:
                 test_suite_json = json.loads(self._filesystem.read_text_file(path_to_virtual_test_suites))

@@ -43,10 +43,10 @@ class DirectoryOwnersExtractor(object):
 
         Returns:
             A dict mapping tuples of owner email addresses to lists of
-            owned directories (paths relative to the root of layout tests).
+            owned directories (paths relative to the root of web tests).
         """
         email_map = collections.defaultdict(set)
-        external_root_owners = self.finder.path_from_layout_tests('external', 'OWNERS')
+        external_root_owners = self.finder.path_from_web_tests('external', 'OWNERS')
         for relpath in changed_files:
             # Try to find the first *non-empty* OWNERS file.
             absolute_path = self.finder.path_from_chromium_base(relpath)
@@ -64,7 +64,7 @@ class DirectoryOwnersExtractor(object):
                 continue
 
             owned_directory = self.filesystem.dirname(owners_file)
-            owned_directory_relpath = self.filesystem.relpath(owned_directory, self.finder.layout_tests_dir())
+            owned_directory_relpath = self.filesystem.relpath(owned_directory, self.finder.web_tests_dir())
             email_map[tuple(owners)].add(owned_directory_relpath)
         return {owners: sorted(owned_directories) for owners, owned_directories in email_map.iteritems()}
 
@@ -86,11 +86,11 @@ class DirectoryOwnersExtractor(object):
                           else self.finder.path_from_chromium_base(start_path))
         directory = (abs_start_path if self.filesystem.isdir(abs_start_path)
                      else self.filesystem.dirname(abs_start_path))
-        external_root = self.finder.path_from_layout_tests('external')
+        external_root = self.finder.path_from_web_tests('external')
         if not directory.startswith(external_root):
             return None
         # Stop at web_tests, which is the parent of external_root.
-        while directory != self.finder.layout_tests_dir():
+        while directory != self.finder.web_tests_dir():
             owners_file = self.filesystem.join(directory, 'OWNERS')
             if self.filesystem.isfile(self.finder.path_from_chromium_base(owners_file)):
                 return owners_file

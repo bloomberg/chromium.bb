@@ -71,7 +71,7 @@ class FakePort(object):
     def extra_expectations_files(self):
         return ['/fake-port-base-directory/web_tests/ExtraExpectations']
 
-    def layout_tests_dir(self):
+    def web_tests_dir(self):
         return '/fake-port-base-directory/web_tests'
 
 

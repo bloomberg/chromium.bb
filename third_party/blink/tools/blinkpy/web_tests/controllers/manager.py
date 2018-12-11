@@ -27,7 +27,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""The Manager orchestrates the overall process of running layout tests.
+"""The Manager orchestrates the overall process of running web tests.
 
 This includes finding tests to run, reading the test expectations,
 starting the required helper servers, deciding the order and way to
@@ -63,7 +63,7 @@ TestExpectations = test_expectations.TestExpectations
 
 
 class Manager(object):
-    """A class for managing running a series of layout tests."""
+    """A class for managing running a series of web tests."""
 
     HTTP_SUBDIR = 'http'
     PERF_SUBDIR = 'perf'
@@ -565,7 +565,7 @@ class Manager(object):
 
     def _copy_results_html_file(self, destination_dir, filename):
         """Copies a file from the template directory to the results directory."""
-        template_dir = self._path_finder.path_from_layout_tests('fast', 'harness')
+        template_dir = self._path_finder.path_from_web_tests('fast', 'harness')
         source_path = self._filesystem.join(template_dir, filename)
         destination_path = self._filesystem.join(destination_dir, filename)
         # Note that the results.html template file won't exist when

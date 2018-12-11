@@ -59,7 +59,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'is_try_builder': True,
             },
         })
-        layout_test_results = WebTestResults({
+        web_test_results = WebTestResults({
             'tests': {
                 'one': {
                     'crash.html': {'expected': 'PASS', 'actual': 'CRASH', 'is_unexpected': True},
@@ -75,7 +75,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         })
 
         for build in builds:
-            self.tool.buildbot.set_results(build, layout_test_results)
+            self.tool.buildbot.set_results(build, web_test_results)
             self.tool.buildbot.set_retry_sumary_json(build, json.dumps({
                 'failures': [
                     'one/flaky-fail.html',
@@ -97,7 +97,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ]
         for test in tests:
             path = self.mac_port.host.filesystem.join(
-                self.mac_port.layout_tests_dir(), test)
+                self.mac_port.web_tests_dir(), test)
             self._write(path, 'contents')
 
         self.mac_port.host.filesystem.write_text_file(
@@ -358,7 +358,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # one/flaky-fail.html is considered a real test to rebaseline.
         port = self.tool.port_factory.get('test-win-win7')
         path = port.host.filesystem.join(
-            port.layout_tests_dir(), 'one/flaky-fail.html')
+            port.web_tests_dir(), 'one/flaky-fail.html')
         self._write(path, 'contents')
         test_baseline_set = TestBaselineSet(self.tool)
         test_baseline_set.add(

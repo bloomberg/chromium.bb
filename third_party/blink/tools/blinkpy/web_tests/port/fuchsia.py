@@ -249,7 +249,7 @@ class FuchsiaPort(base.Port):
 
     def start_http_server(self, additional_dirs, number_of_drivers):
         additional_dirs[PERF_TEST_PATH_PREFIX] = self._perf_tests_dir()
-        additional_dirs[WEB_TESTS_PATH_PREFIX] = self.layout_tests_dir()
+        additional_dirs[WEB_TESTS_PATH_PREFIX] = self.web_tests_dir()
         super(FuchsiaPort, self).start_http_server(
             additional_dirs, number_of_drivers)
 
@@ -279,7 +279,7 @@ class ChromiumFuchsiaDriver(driver.Driver):
             driver_input)
         if command.startswith('/'):
             relative_test_filename = \
-                os.path.relpath(command, self._port.layout_tests_dir())
+                os.path.relpath(command, self._port.web_tests_dir())
             command = 'http://127.0.0.1:8000' + WEB_TESTS_PATH_PREFIX + \
                 '/' + relative_test_filename
         return command

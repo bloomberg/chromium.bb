@@ -61,7 +61,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
         # Write a dummy manifest file, describing what tests exist.
         host.filesystem.write_text_file(
-            host.port_factory.get().layout_tests_dir() + '/external/wpt/MANIFEST.json',
+            host.port_factory.get().web_tests_dir() + '/external/wpt/MANIFEST.json',
             json.dumps({
                 'items': {
                     'reftest': {
@@ -469,7 +469,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_generate_results_dict(self):
         updater = WPTExpectationsUpdater(self.mock_host())
-        layout_test_list = [
+        web_test_list = [
             WebTestResult(
                 'external/wpt/test/name.html', {
                     'expected': 'bar',
@@ -478,7 +478,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                     'has_stderr': True,
                 })
         ]
-        self.assertEqual(updater.generate_results_dict('test-mac-mac10.10', layout_test_list), {
+        self.assertEqual(updater.generate_results_dict('test-mac-mac10.10', web_test_list), {
             'external/wpt/test/name.html': {
                 'test-mac-mac10.10': SimpleTestResult(
                     expected='bar',

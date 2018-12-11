@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Start and stop the Apache HTTP server as it is used by the layout tests."""
+"""Start and stop the Apache HTTP server as it is used by the web tests."""
 
 import logging
 import socket
@@ -55,7 +55,7 @@ class ApacheHTTP(server_base.ServerBase):
         executable = self._port_obj.path_to_apache()
         server_root = self._filesystem.dirname(self._filesystem.dirname(executable))
 
-        test_dir = self._port_obj.layout_tests_dir()
+        test_dir = self._port_obj.web_tests_dir()
         document_root = self._filesystem.join(test_dir, 'http', 'tests')
         forms_test_resources_dir = self._filesystem.join(test_dir, 'fast', 'forms', 'resources')
         media_resources_dir = self._filesystem.join(test_dir, 'media')

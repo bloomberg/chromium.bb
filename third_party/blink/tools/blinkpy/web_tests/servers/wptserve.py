@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Start and stop the WPTserve servers as they're used by the layout tests."""
+"""Start and stop the WPTserve servers as they're used by the web tests."""
 
 import datetime
 import json
@@ -38,7 +38,7 @@ class WPTServe(server_base.ServerBase):
         path_to_pywebsocket = finder.path_from_chromium_base('third_party', 'pywebsocket', 'src')
         path_to_wpt_support = finder.path_from_blink_tools('blinkpy', 'third_party', 'wpt')
         path_to_wpt_root = fs.join(path_to_wpt_support, 'wpt')
-        path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.layout_tests_dir(), 'external', 'wpt'))
+        path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.web_tests_dir(), 'external', 'wpt'))
         path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets', 'handlers')
         self._config_file = self._prepare_wptserve_config(path_to_wpt_support)
         wpt_script = fs.join(path_to_wpt_root, 'wpt')

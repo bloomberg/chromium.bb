@@ -329,15 +329,15 @@ class Driver(object):
                 'https://%s:%d/' % (hostname, secure_port)]
 
     def uri_to_test(self, uri):
-        """Return the base layout test name for a given URI.
+        """Return the base web test name for a given URI.
 
         This returns the test name for a given URI, e.g., if you passed in
-        "file:///src/LayoutTests/fast/html/keygen.html" it would return
+        "file:///src/web_tests/fast/html/keygen.html" it would return
         "fast/html/keygen.html".
         """
 
         if uri.startswith('file:///'):
-            prefix = path.abspath_to_uri(self._port.host.platform, self._port.layout_tests_dir())
+            prefix = path.abspath_to_uri(self._port.host.platform, self._port.web_tests_dir())
             if not prefix.endswith('/'):
                 prefix += '/'
             return uri[len(prefix):]

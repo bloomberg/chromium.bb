@@ -168,8 +168,8 @@ class MiscTests(Base):
     def test_parse_warning(self):
         try:
             filesystem = self._port.host.filesystem
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'disabled-test.html-disabled'), 'content')
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'test-to-rebaseline.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.web_tests_dir(), 'disabled-test.html-disabled'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.web_tests_dir(), 'test-to-rebaseline.html'), 'content')
             self.parse_exp('Bug(user) [ FOO ] failures/expected/text.html [ Failure ]\n'
                            'Bug(user) non-existent-test.html [ Failure ]\n'
                            'Bug(user) disabled-test.html-disabled [ Failure ]\n',
@@ -242,7 +242,7 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self.assert_exp('failures/expected/text.html', FAIL)
         self.assertNotIn(
             self._port.host.filesystem.join(
-                self._port.layout_tests_dir(),
+                self._port.web_tests_dir(),
                 'failures/expected/text.html'),
             self._exp.get_tests_with_result_type(SKIP))
 
@@ -284,7 +284,7 @@ class SkippedTests(Base):
             options=optparse.Values({'ignore_tests': ignore_tests}))
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(
-                port.layout_tests_dir(), 'failures/expected/text.html'),
+                port.web_tests_dir(), 'failures/expected/text.html'),
             'foo')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = expectations

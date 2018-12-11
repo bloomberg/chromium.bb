@@ -101,7 +101,7 @@ def _does_blink_web_tests_exist():
 
 
 TESTS_IN_BLINK = _does_blink_web_tests_exist()
-# LayoutTests / web_tests path relative to the repository root.
+# web_tests path relative to the repository root.
 # Path separators are always '/', and this contains the trailing '/'.
 RELATIVE_WEB_TESTS = 'third_party/blink/web_tests/'
 WEB_TESTS_LAST_COMPONENT = 'web_tests'
@@ -118,8 +118,7 @@ class PathFinder(object):
     def chromium_base(self):
         return self._filesystem.dirname(self._filesystem.dirname(self._blink_base()))
 
-    # TODO(tkent): Rename this to web_tests_dir().
-    def layout_tests_dir(self):
+    def web_tests_dir(self):
         return self.path_from_chromium_base('third_party', 'blink', 'web_tests')
 
     def perf_tests_dir(self):
@@ -146,8 +145,8 @@ class PathFinder(object):
     def path_from_blink_tools(self, *comps):
         return self._filesystem.join(self._filesystem.join(self.chromium_base(), 'third_party', 'blink', 'tools'), *comps)
 
-    def path_from_layout_tests(self, *comps):
-        return self._filesystem.join(self.layout_tests_dir(), *comps)
+    def path_from_web_tests(self, *comps):
+        return self._filesystem.join(self.web_tests_dir(), *comps)
 
     @memoized
     def depot_tools_base(self):
