@@ -193,6 +193,8 @@ float AdjustEndAngle(float start_angle, float end_angle, bool anticlockwise) {
   }
 
   DCHECK(EllipseIsRenderable(start_angle, new_end_angle));
+  DCHECK((anticlockwise && (start_angle >= new_end_angle)) ||
+         (!anticlockwise && (new_end_angle >= start_angle)));
   return new_end_angle;
 }
 
@@ -339,10 +341,8 @@ void CanvasPath::arc(float x,
   }
 
   CanonicalizeAngle(&start_angle, &end_angle);
-  float adjusted_end_angle =
-      AdjustEndAngle(start_angle, end_angle, anticlockwise);
-  path_.AddArc(FloatPoint(x, y), radius, start_angle, adjusted_end_angle,
-               anticlockwise);
+  path_.AddArc(FloatPoint(x, y), radius, start_angle,
+               AdjustEndAngle(start_angle, end_angle, anticlockwise));
 }
 
 void CanvasPath::ellipse(float x,
@@ -389,7 +389,7 @@ void CanvasPath::ellipse(float x,
   }
 
   path_.AddEllipse(FloatPoint(x, y), radius_x, radius_y, rotation, start_angle,
-                   adjusted_end_angle, anticlockwise);
+                   adjusted_end_angle);
 }
 
 void CanvasPath::rect(float x, float y, float width, float height) {
