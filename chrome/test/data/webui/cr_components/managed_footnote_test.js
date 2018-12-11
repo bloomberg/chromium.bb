@@ -14,6 +14,10 @@ suite('managed-footnote', function() {
     PolymerTest.clearBody();
   });
 
+  teardown(function() {
+    PolymerTest.clearBody();
+  });
+
   /**
    * Resets loadTimeData to the parameters, inserts a <managed-footnote> element
    * in the DOM, and returns it.
