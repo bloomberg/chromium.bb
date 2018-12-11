@@ -51,6 +51,18 @@ namespace {
 // A simple web page.
 const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
 
+// Web page used for testing onbeforeprint/onafterprint.
+const char kBeforeAfterPrintHtml[] =
+    "<body>"
+    "<script>"
+    "var beforePrintCount = 0;"
+    "var afterPrintCount = 0;"
+    "window.onbeforeprint = () => { ++beforePrintCount; };"
+    "window.onafterprint = () => { ++afterPrintCount; };"
+    "</script>"
+    "<button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
+    "</body>";
+
 #if !defined(OS_CHROMEOS)
 // A simple webpage with a button to print itself with.
 const char kPrintOnUserAction[] =
@@ -256,6 +268,10 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }
+
+  void OnClosePrintPreviewDialog() {
+    GetPrintRenderFrameHelper()->OnClosePrintPreviewDialog();
+  }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   PrintRenderFrameHelper* GetPrintRenderFrameHelper() {
@@ -286,6 +302,36 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
     SendWebMouseEvent(mouse_event);
     mouse_event.SetType(blink::WebInputEvent::kMouseUp);
     SendWebMouseEvent(mouse_event);
+  }
+
+  void ExpectNoBeforeNoAfterPrintEvent() {
+    int result;
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("beforePrintCount"), &result));
+    EXPECT_EQ(0, result) << "beforeprint event should not be dispatched.";
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("afterPrintCount"), &result));
+    EXPECT_EQ(0, result) << "afterprint event should not be dispatched.";
+  }
+
+  void ExpectOneBeforeNoAfterPrintEvent() {
+    int result;
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("beforePrintCount"), &result));
+    EXPECT_EQ(1, result) << "beforeprint event should be dispatched once.";
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("afterPrintCount"), &result));
+    EXPECT_EQ(0, result) << "afterprint event should not be dispatched.";
+  }
+
+  void ExpectOneBeforeOneAfterPrintEvent() {
+    int result;
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("beforePrintCount"), &result));
+    EXPECT_EQ(1, result) << "beforeprint event should be dispatched once.";
+    ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
+        base::ASCIIToUTF16("afterPrintCount"), &result));
+    EXPECT_EQ(1, result) << "afterprint event should be dispatched once.";
   }
 
   PrintMockRenderThread* print_render_thread() { return print_render_thread_; }
@@ -378,6 +424,18 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, PrintWithJavascript) {
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
+
+// Regression test for https://crbug.com/912966
+TEST_F(MAYBE_PrintRenderFrameHelperTest, WindowPrintBeforePrintAfterPrint) {
+  LoadHTML(kBeforeAfterPrintHtml);
+  ExpectNoBeforeNoAfterPrintEvent();
+
+  PrintWithJavaScript();
+
+  VerifyPageCount(1);
+  VerifyPagesPrinted(true);
+  ExpectOneBeforeOneAfterPrintEvent();
+}
 #endif  // !BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 // Tests that printing pages work and sending and receiving messages through
@@ -391,27 +449,14 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, OnPrintPages) {
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrint) {
-  static const char kHtml[] =
-      "<body>Hello"
-      "<script>"
-      "var beforePrintCount = 0;"
-      "var afterPrintCount = 0;"
-      "window.onbeforeprint = () => { ++beforePrintCount; };"
-      "window.onafterprint = () => { ++afterPrintCount; };"
-      "</script>"
-      "</body>";
+  LoadHTML(kBeforeAfterPrintHtml);
+  ExpectNoBeforeNoAfterPrintEvent();
 
-  LoadHTML(kHtml);
   OnPrintPages();
 
+  VerifyPageCount(1);
   VerifyPagesPrinted(true);
-  int result;
-  ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
-      base::ASCIIToUTF16("beforePrintCount"), &result));
-  EXPECT_EQ(1, result) << "beforeprint event should be dispatched once.";
-  ASSERT_TRUE(ExecuteJavaScriptAndReturnIntValue(
-      base::ASCIIToUTF16("afterPrintCount"), &result));
-  EXPECT_EQ(1, result) << "afterprint event should be dispatched once.";
+  ExpectOneBeforeOneAfterPrintEvent();
 }
 
 TEST_F(MAYBE_PrintRenderFrameHelperTest, BasicBeforePrintAfterPrintSubFrame) {
@@ -1273,6 +1318,46 @@ TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
   // It should receive the invalid printer settings message only.
   VerifyPrintPreviewFailed(false);
   VerifyPrintPreviewGenerated(false);
+}
+
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest, BasicBeforePrintAfterPrint) {
+  LoadHTML(kBeforeAfterPrintHtml);
+  ExpectNoBeforeNoAfterPrintEvent();
+
+  base::DictionaryValue dict;
+  CreatePrintSettingsDictionary(&dict);
+  OnPrintPreview(dict);
+
+  EXPECT_EQ(0, print_render_thread()->print_preview_pages_remaining());
+  VerifyDidPreviewPage(true, 0);
+  VerifyPreviewPageCount(1);
+  VerifyDefaultPageLayout(540, 720, 36, 36, 36, 36, false);
+  VerifyPrintPreviewCancelled(false);
+  VerifyPrintPreviewFailed(false);
+  VerifyPrintPreviewGenerated(true);
+  VerifyPagesPrinted(false);
+  ExpectOneBeforeNoAfterPrintEvent();
+
+  OnClosePrintPreviewDialog();
+  ExpectOneBeforeOneAfterPrintEvent();
+}
+
+// Regression test for https://crbug.com/912966
+TEST_F(MAYBE_PrintRenderFrameHelperPreviewTest,
+       WindowPrintBeforePrintAfterPrint) {
+  LoadHTML(kBeforeAfterPrintHtml);
+  gfx::Size new_size(200, 100);
+  Resize(new_size, false);
+  ExpectNoBeforeNoAfterPrintEvent();
+
+  gfx::Rect bounds = GetElementBounds("print");
+  ClickMouseButton(bounds);
+
+  VerifyPreviewRequest(true);
+  ExpectOneBeforeNoAfterPrintEvent();
+
+  OnClosePrintPreviewDialog();
+  ExpectOneBeforeOneAfterPrintEvent();
 }
 
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
