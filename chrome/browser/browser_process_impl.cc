@@ -599,8 +599,10 @@ void BrowserProcessImpl::EndSession() {
 #endif
   }
 
+  // This wait is legitimate and necessary on Windows, since the process will
+  // be terminated soon.
   // http://crbug.com/125207
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
   // We must write that the profile and metrics service shutdown cleanly,
   // otherwise on startup we'll think we crashed. So we block until done and

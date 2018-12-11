@@ -340,7 +340,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
                            ScopedAllowBaseSyncPrimitivesWithBlockingDisallowed);
 
   // Allowed usage:
-  friend class ::BrowserProcessImpl;
   friend class SimpleThread;
   friend class android_webview::AwFormDatabaseService;
   friend class android_webview::CookieManager;
@@ -390,6 +389,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
       ScopedAllowBaseSyncPrimitivesOutsideBlockingScopeResetsState);
 
   // Allowed usage:
+  friend class ::BrowserProcessImpl;  // http://crbug.com/125207
   friend class ::KeyStorageLinux;
   friend class Thread;
   friend class android::JavaHandlerThread;
