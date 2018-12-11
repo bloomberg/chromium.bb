@@ -270,12 +270,18 @@ TEST(MessagePumpMacTest, DontInvalidateTimerInNativeRunLoop) {
 
   // Post another task to close the menu. The 100ms delay was determined
   // experimentally on a 2013 Mac Pro.
+  RunLoop run_loop;
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](NSMenu* menu) { [menu cancelTracking]; }, menu),
+      base::BindOnce(
+          [](RunLoop* run_loop, NSMenu* menu) {
+            [menu cancelTracking];
+            run_loop->Quit();
+          },
+          &run_loop, menu),
       base::TimeDelta::FromMilliseconds(100));
 
-  EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run());
 }
 
 }  // namespace base
