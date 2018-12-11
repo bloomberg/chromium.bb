@@ -22,6 +22,12 @@ constexpr size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
 // Media Source API.
 class MockMediaSource {
  public:
+  enum class ExpectedAppendResult {
+    kSuccess,
+    kFailure,
+    kSuccessOrFailure,  // e.g., for fuzzing when parse may pass or fail
+  };
+
   MockMediaSource(const std::string& filename,
                   const std::string& mimetype,
                   size_t initial_append_size,
@@ -87,8 +93,8 @@ class MockMediaSource {
     return last_timestamp_offset_;
   }
 
-  void set_expect_append_success(bool expectation) {
-    expect_append_success_ = expectation;
+  void set_expected_append_result(ExpectedAppendResult expectation) {
+    expected_append_result_ = expectation;
   }
 
   void InitSegmentReceived(std::unique_ptr<MediaTracks> tracks);
@@ -97,6 +103,8 @@ class MockMediaSource {
   MOCK_METHOD1(OnParseWarningMock, void(const SourceBufferParseWarning));
 
  private:
+  void VerifyExpectedAppendResult(bool append_result);
+
   MediaLog media_log_;
   scoped_refptr<DecoderBuffer> file_data_;
   size_t current_position_;
@@ -111,7 +119,7 @@ class MockMediaSource {
   base::TimeDelta append_window_start_;
   base::TimeDelta append_window_end_ = kInfiniteDuration;
   bool do_eos_after_next_append_ = false;
-  bool expect_append_success_ = true;
+  ExpectedAppendResult expected_append_result_ = ExpectedAppendResult::kSuccess;
 
   DISALLOW_COPY_AND_ASSIGN(MockMediaSource);
 };

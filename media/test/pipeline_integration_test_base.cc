@@ -585,7 +585,9 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
     FakeEncryptedMedia* encrypted_media) {
   ParseTestTypeFlags(test_type);
 
-  if (!(test_type & kExpectDemuxerFailure))
+  if (test_type & kDemuxerMayPassOrFail)
+    EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AnyNumber());
+  else if (!(test_type & kExpectDemuxerFailure))
     EXPECT_CALL(*source, InitSegmentReceivedMock(_)).Times(AtLeast(1));
 
   EXPECT_CALL(*this, OnMetadata(_))

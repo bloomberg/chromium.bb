@@ -201,11 +201,19 @@ class MediaSourcePipelineIntegrationFuzzerTest
     source.set_encrypted_media_init_data_cb(
         base::Bind(&OnEncryptedMediaInitData, this));
 
+    // Allow parsing to either pass or fail without emitting a gtest failure
+    // from MockMediaSource.
+    source.set_expected_append_result(
+        MockMediaSource::ExpectedAppendResult::kSuccessOrFailure);
+
     // TODO(wolenetz): Vary the behavior (abort/remove/seek/endOfStream/Append
     // in pieces/append near play-head/vary append mode/etc), perhaps using
     // CustomMutator and Seed to insert/update the variation information into/in
     // the |data| we process here.  See https://crbug.com/750818.
-    if (PIPELINE_OK != StartPipelineWithMediaSource(&source))
+    // Use |kDemuxerMayPassOrFail| test type to allow pipeline start to either
+    // pass or fail without emitting a gtest failure.
+    if (PIPELINE_OK !=
+        StartPipelineWithMediaSource(&source, kDemuxerMayPassOrFail, nullptr))
       return;
 
     Play();

@@ -1457,7 +1457,8 @@ TEST_P(MSEPipelineIntegrationTest, Corrupted_First_Media_Segment) {
   // pipeline is still completing renderer setup.
   MockMediaSource source("bear-320x240_corrupted_after_init_segment.webm",
                          4380);
-  source.set_expect_append_success(false);
+  source.set_expected_append_result(
+      MockMediaSource::ExpectedAppendResult::kFailure);
   EXPECT_EQ(CHUNK_DEMUXER_ERROR_APPEND_FAILED,
             StartPipelineWithMediaSource(&source));
 }
@@ -2277,7 +2278,8 @@ TEST_P(MSEPipelineIntegrationTest,
   EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
-  source.set_expect_append_success(false);
+  source.set_expected_append_result(
+      MockMediaSource::ExpectedAppendResult::kFailure);
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -2309,7 +2311,8 @@ MAYBE_EME_TEST_P(MSEPipelineIntegrationTest,
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
 
-  source.set_expect_append_success(false);
+  source.set_expected_append_result(
+      MockMediaSource::ExpectedAppendResult::kFailure);
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
