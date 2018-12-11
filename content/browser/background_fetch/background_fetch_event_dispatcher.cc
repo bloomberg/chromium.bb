@@ -99,8 +99,7 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchCompletionEvent(
     case blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR:
     case blink::mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE:
     case blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED:
-    case blink::mojom::BackgroundFetchFailureReason::
-        TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+    case blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED:
       DCHECK_EQ(registration->result,
                 blink::mojom::BackgroundFetchResult::FAILURE);
       DispatchBackgroundFetchFailEvent(registration_id, std::move(registration),

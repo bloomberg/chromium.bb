@@ -55,8 +55,8 @@ enum BackgroundFetchFailureReason {
   // "quota-exceeded":
   QUOTA_EXCEEDED = 6,
 
-  // "total-download-exceeded":
-  TOTAL_DOWNLOAD_SIZE_EXCEEDED = 7,
+  // "download-total-exceeded":
+  DOWNLOAD_TOTAL_EXCEEDED = 7,
 };
 
 // Represents the optional options a developer can provide when starting a new
