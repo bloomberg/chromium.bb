@@ -2077,6 +2077,26 @@ TYPED_TEST(OfflinePageRequestHandlerTest, LoadOtherPageOnDigestMismatch) {
   this->ExpectOfflinePageAccessCount(offline_id2, 0);
 }
 
+TYPED_TEST(OfflinePageRequestHandlerTest, EmptyFile) {
+  this->SimulateHasNetworkConnectivity(false);
+
+  const std::string expected_data("");
+  base::FilePath temp_file_path = this->CreateFileWithContent(expected_data);
+  ArchiveValidator archive_validator;
+  const std::string expected_digest = archive_validator.Finish();
+
+  int64_t offline_id =
+      this->SavePublicPage(kUrl, GURL(), temp_file_path, 0, expected_digest);
+
+  this->LoadPage(kUrl);
+
+  this->ExpectOfflinePageServed(
+      offline_id, 0,
+      OfflinePageRequestHandler::AggregatedRequestResult::
+          SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
+  EXPECT_EQ(expected_data, this->data_received());
+}
+
 TYPED_TEST(OfflinePageRequestHandlerTest, TinyFile) {
   this->SimulateHasNetworkConnectivity(false);
 

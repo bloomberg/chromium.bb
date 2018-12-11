@@ -797,7 +797,8 @@ void OfflinePageRequestHandler::UpdateDigestOnBackground(
 
 void OfflinePageRequestHandler::FinalizeDigestOnBackground(
     base::OnceCallback<void(const std::string&)> digest_finalized_callback) {
-  DCHECK(archive_validator_.get());
+  if (!archive_validator_)
+    archive_validator_ = new ThreadSafeArchiveValidator();
 
   // Delegate to background task runner to finalize the hash to get the digest
   // since it is time consuming. Once it is done, |digest_finalized_callback|
