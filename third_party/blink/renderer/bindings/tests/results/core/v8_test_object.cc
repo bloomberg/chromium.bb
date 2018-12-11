@@ -5607,8 +5607,6 @@ static void VoidMethodTestInterfaceEmptyOrNullArgMethod(const v8::FunctionCallba
 }
 
 static void VoidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodTestCallbackInterfaceArg");
-
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -5618,11 +5616,7 @@ static void VoidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
 
   V8TestCallbackInterface* test_callback_interface_arg;
   if (info[0]->IsObject()) {
-    test_callback_interface_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!test_callback_interface_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    test_callback_interface_arg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodTestCallbackInterfaceArg", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
@@ -5632,17 +5626,11 @@ static void VoidMethodTestCallbackInterfaceArgMethod(const v8::FunctionCallbackI
 }
 
 static void VoidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodOptionalTestCallbackInterfaceArg");
-
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   V8TestCallbackInterface* optional_test_callback_interface_arg;
   if (info[0]->IsObject()) {
-    optional_test_callback_interface_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!optional_test_callback_interface_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    optional_test_callback_interface_arg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else if (info[0]->IsUndefined()) {
     optional_test_callback_interface_arg = nullptr;
   } else {
@@ -5654,8 +5642,6 @@ static void VoidMethodOptionalTestCallbackInterfaceArgMethod(const v8::FunctionC
 }
 
 static void VoidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodTestCallbackInterfaceOrNullArg");
-
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -5665,11 +5651,7 @@ static void VoidMethodTestCallbackInterfaceOrNullArgMethod(const v8::FunctionCal
 
   V8TestCallbackInterface* test_callback_interface_arg;
   if (info[0]->IsObject()) {
-    test_callback_interface_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!test_callback_interface_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    test_callback_interface_arg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else if (info[0]->IsNullOrUndefined()) {
     test_callback_interface_arg = nullptr;
   } else {
@@ -5911,8 +5893,6 @@ static void VoidMethodDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Val
 }
 
 static void VoidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "voidMethodNodeFilterArg");
-
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   if (UNLIKELY(info.Length() < 1)) {
@@ -5922,11 +5902,7 @@ static void VoidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
 
   V8NodeFilter* node_filter_arg;
   if (info[0]->IsObject()) {
-    node_filter_arg = V8NodeFilter::CreateOrNull(info[0].As<v8::Object>());
-    if (!node_filter_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    node_filter_arg = V8NodeFilter::Create(info[0].As<v8::Object>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNodeFilterArg", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
@@ -7451,17 +7427,11 @@ static void OverloadedMethodN1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }
 
 static void OverloadedMethodN2Method(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "overloadedMethodN");
-
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   V8TestCallbackInterface* test_callback_interface_arg;
   if (info[0]->IsObject()) {
-    test_callback_interface_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!test_callback_interface_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    test_callback_interface_arg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("overloadedMethodN", "TestObject", "The callback provided as parameter 1 is not an object."));
     return;
@@ -8659,11 +8629,7 @@ static void RaisesExceptionVoidMethodTestCallbackInterfaceArgMethod(const v8::Fu
 
   V8TestCallbackInterface* test_callback_interface_arg;
   if (info[0]->IsObject()) {
-    test_callback_interface_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!test_callback_interface_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    test_callback_interface_arg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else {
     exception_state.ThrowTypeError("The callback provided as parameter 1 is not an object.");
     return;
@@ -8682,11 +8648,7 @@ static void RaisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethod(cons
 
   V8TestCallbackInterface* optional_test_callback_interface_arg;
   if (info[0]->IsObject()) {
-    optional_test_callback_interface_arg = V8TestCallbackInterface::CreateOrNull(info[0].As<v8::Object>());
-    if (!optional_test_callback_interface_arg) {
-      exception_state.ThrowSecurityError("The callback provided as parameter 1 is a cross origin object.");
-      return;
-    }
+    optional_test_callback_interface_arg = V8TestCallbackInterface::Create(info[0].As<v8::Object>());
   } else if (info[0]->IsUndefined()) {
     optional_test_callback_interface_arg = nullptr;
   } else {

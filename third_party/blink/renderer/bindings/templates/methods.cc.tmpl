@@ -174,12 +174,7 @@ if (info[{{argument.index}}]->IsNullOrUndefined()) {
 {% endif %}{# method.name #}
 {% else %}{# argument.idl_type == 'EventListener' #}
 if (info[{{argument.index}}]->IsObject()) {
-  {{argument.local_cpp_variable}} = V8{{argument.idl_type}}::CreateOrNull(info[{{argument.index}}].As<v8::Object>());
-  if (!{{argument.local_cpp_variable}}) {
-    {{define_exception_state}}
-    exception_state.ThrowSecurityError("The callback provided as parameter {{argument.index + 1}} is a cross origin object.");
-    return;
-  }
+  {{argument.local_cpp_variable}} = V8{{argument.idl_type}}::Create(info[{{argument.index}}].As<v8::Object>());
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
   {{argument.local_cpp_variable}} = nullptr;
