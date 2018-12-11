@@ -2103,6 +2103,14 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
       pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id);
 }
 
+void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {
+  DCHECK_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
+            GetSyncSigninState());
+  prefs::SetUserOptedInWalletSyncTransport(
+      pref_service_, sync_service_->GetAuthenticatedAccountInfo().account_id,
+      /*opted_in=*/true);
+}
+
 void PersonalDataManager::LogServerCardLinkClicked() const {
   AutofillMetrics::LogServerCardLinkClicked(GetSyncSigninState());
 }

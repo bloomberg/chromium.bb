@@ -94,8 +94,13 @@ class AutofillManager : public AutofillHandler,
   virtual bool ShouldShowCreditCardSigninPromo(const FormData& form,
                                                const FormFieldData& field);
 
+  // Handlers for the "Set Cards From Account" row. This row should be shown to
+  // users who have cards in their account and can use Sync Transport. Clicking
+  // the row records the user's consent to see these cards on this device, and
+  // refreshes the popup.
   virtual bool ShouldShowCardsFromAccountOption(const FormData& form,
                                                 const FormFieldData& field);
+  virtual void OnUserAcceptedCardsFromAccountOption();
 
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
