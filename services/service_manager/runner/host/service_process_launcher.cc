@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/invitation.h"
-#include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/sandbox/switches.h"

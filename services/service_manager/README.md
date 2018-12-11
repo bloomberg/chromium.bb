@@ -180,7 +180,7 @@ Finally some build targets corresponding to the above things:
 
 **`//services/my_service/BUILD.gn`**
 ``` python
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
 source_set("lib") {

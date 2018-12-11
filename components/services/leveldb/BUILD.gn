@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -32,7 +32,7 @@ static_library("lib") {
   ]
 }
 
-service("leveldb") {
+service_executable("leveldb") {
   sources = [
     "leveldb_app.cc",
     "leveldb_app.h",

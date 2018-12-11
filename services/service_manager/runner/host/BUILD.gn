@@ -2,9 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/cpp/service.gni")
-import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 source_set("lib") {
@@ -42,10 +42,7 @@ source_set("lib") {
       "service_process_launcher.h",
     ]
 
-    deps += [
-      "//mojo/core/embedder",
-      "//services/service_manager/public/cpp/standalone_service",
-    ]
+    deps += [ "//mojo/core/embedder" ]
   }
 }
 
@@ -73,14 +70,9 @@ if (!is_ios) {
     ]
   }
 
-  service("host_test_service") {
+  service_executable("host_test_service") {
     sources = [
       "host_test_service_main.cc",
-    ]
-
-    deps = [
-      "//mojo/public/cpp/system",
-      "//services/service_manager/public/cpp/standalone_service:main",
     ]
   }
 

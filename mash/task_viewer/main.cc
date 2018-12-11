@@ -4,7 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mash/task_viewer/task_viewer.h"
-#include "services/service_manager/public/cpp/standalone_service/service_main.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
   base::MessageLoop message_loop;

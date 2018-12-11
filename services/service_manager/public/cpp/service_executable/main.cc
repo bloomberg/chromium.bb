@@ -13,9 +13,8 @@
 #include "base/process/launch.h"
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
-#include "services/service_manager/public/cpp/standalone_service/service_main.h"
-#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
-#include "services/service_manager/public/cpp/standalone_service/switches.h"
+#include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/service_manager/runner/init.h"
 
@@ -47,8 +46,8 @@ int main(int argc, char** argv) {
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 
   service_manager::WaitForDebuggerIfNecessary();
-  service_manager::RunStandaloneService(base::BindOnce(&ServiceMain));
-
+  service_manager::ServiceExecutableEnvironment environment;
+  ServiceMain(environment.TakeServiceRequestFromCommandLine());
   base::TaskScheduler::GetInstance()->Shutdown();
 
   return 0;

@@ -2,12 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("standalone_service") {
+source_set("support") {
   sources = [
-    "standalone_service.cc",
-    "standalone_service.h",
-    "switches.cc",
-    "switches.h",
+    "service_executable_environment.cc",
+    "service_executable_environment.h",
   ]
 
   deps = [
@@ -38,7 +36,10 @@ source_set("standalone_service") {
 # point which accepts canonical command-line arguments to establish a connection
 # to the Service Manager. In order to link properly, dependents must ensure that
 # they define a ServiceMain() symbol which matches the signature in
-# //services/service_manager/public/cpp/standalone_service/service_main.h.
+# //services/service_manager/public/cpp/service_executable/service_main.h.
+#
+# Note that GN targets based on the service_executable() template defined in
+# service_executable.gni implicitly link against this.
 source_set("main") {
   public = [
     "service_main.h",
@@ -49,7 +50,7 @@ source_set("main") {
   ]
 
   deps = [
-    ":standalone_service",
+    ":support",
     "//base",
     "//base:i18n",
     "//services/service_manager/runner:init",

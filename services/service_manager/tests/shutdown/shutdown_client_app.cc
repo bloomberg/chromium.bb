@@ -9,7 +9,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/cpp/standalone_service/service_main.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/tests/shutdown/shutdown_unittest.mojom.h"
 
 namespace service_manager {

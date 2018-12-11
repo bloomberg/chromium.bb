@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -56,7 +56,7 @@ if (is_linux && enable_plugins) {
   }
 }
 
-service("font_service") {
+service_executable("font_service") {
   sources = [
     "main.cc",
   ]

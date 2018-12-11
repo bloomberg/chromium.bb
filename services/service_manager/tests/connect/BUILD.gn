@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -64,7 +64,7 @@ service_manifest("connect_test_sandboxed_manifest") {
   source = "connect_test_sandboxed_app_manifest.json"
 }
 
-service("connect_test_package") {
+service_executable("connect_test_package") {
   testonly = true
   sources = [
     "connect_test_package.cc",
@@ -88,7 +88,7 @@ service_manifest("connect_test_package_manifest") {
   ]
 }
 
-service("connect_test_app") {
+service_executable("connect_test_app") {
   testonly = true
   sources = [
     "connect_test_app.cc",
@@ -107,7 +107,7 @@ service_manifest("connect_test_app_manifest") {
   source = "connect_test_app_manifest.json"
 }
 
-service("connect_test_class_app") {
+service_executable("connect_test_class_app") {
   testonly = true
   sources = [
     "connect_test_class_app.cc",
@@ -126,7 +126,7 @@ service_manifest("connect_test_class_app_manifest") {
   source = "connect_test_class_app_manifest.json"
 }
 
-service("connect_test_singleton_app") {
+service_executable("connect_test_singleton_app") {
   testonly = true
   sources = [
     "connect_test_singleton_app.cc",
@@ -155,7 +155,7 @@ executable("connect_test_exe") {
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
+    "//services/service_manager/public/cpp/service_executable:main",
   ]
 }
 

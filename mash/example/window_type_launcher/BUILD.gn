@@ -4,11 +4,11 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/repack.gni")
 
-service("window_type_launcher") {
+service_executable("window_type_launcher") {
   testonly = true
   sources = [
     "window_type_launcher.cc",
@@ -31,8 +31,6 @@ service("window_type_launcher") {
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
-
-  resources = [ "$root_out_dir/views_mus_resources.pak" ]
 }
 
 service_manifest("manifest") {

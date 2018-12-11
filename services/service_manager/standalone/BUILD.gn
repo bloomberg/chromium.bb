@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//services/service_manager/public/cpp/service.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -23,8 +22,4 @@ source_set("standalone") {
     "//services/service_manager/runner/host:lib",
     "//url",
   ]
-
-  if (!is_ios) {
-    deps += [ "//services/service_manager/public/cpp/standalone_service" ]
-  }
 }
