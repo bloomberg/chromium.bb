@@ -757,6 +757,15 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ALLOW_REF_FRAME_MVS,
 
+  /*!\brief Codec control function to turn on / off dual filter usage
+   * for a sequence.
+   *
+   * This will enable or disable use of dual interpolation filter.
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_DUAL_FILTER,
+
   /*!\brief Codec control function to turn on / off masked compound usage
    * for a sequence.
    *
@@ -1085,6 +1094,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_REF_FRAME_MVS, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_REF_FRAME_MVS, unsigned int)
 #define AOM_CTRL_AV1E_SET_ALLOW_REF_FRAME_MVS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DUAL_FILTER, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DUAL_FILTER
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_MASKED_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_MASKED_COMP

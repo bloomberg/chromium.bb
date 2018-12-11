@@ -72,7 +72,7 @@ struct av1_extracfg {
 
   aom_timing_info_type_t timing_info_type;
   unsigned int frame_parallel_decoding_mode;
-  int use_dual_filter;
+  int enable_dual_filter;
   AQ_MODE aq_mode;
   DELTAQ_MODE deltaq_mode;
   unsigned int frame_periodic_boost;
@@ -671,7 +671,7 @@ static aom_codec_err_t set_encoder_config(
 
   oxcf->monochrome = cfg->monochrome;
   oxcf->full_still_picture_hdr = cfg->full_still_picture_hdr;
-  oxcf->enable_dual_filter = extra_cfg->use_dual_filter;
+  oxcf->enable_dual_filter = extra_cfg->enable_dual_filter;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_jnt_comp =
       extra_cfg->enable_jnt_comp & extra_cfg->enable_order_hint;
@@ -1032,7 +1032,7 @@ static aom_codec_err_t ctrl_set_timing_info_type(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_enable_df(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.use_dual_filter = CAST(AV1E_SET_ENABLE_DF, args);
+  extra_cfg.enable_dual_filter = CAST(AV1E_SET_ENABLE_DF, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
