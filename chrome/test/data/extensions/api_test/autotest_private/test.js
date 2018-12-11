@@ -169,13 +169,18 @@ var defaultTests = [
             });
         });
   },
-  // This launches Chrome.
-  function launchApp() {
+  // This launches and closes Chrome.
+  function launchCloseApp() {
     chrome.autotestPrivate.launchApp('mgndgikekgjfcpckkfioiadnlibdjbkf',
-      function() {
-        chrome.test.assertNoLastError();
-        chrome.test.succeed();
-      });
+        function() {
+          chrome.test.assertNoLastError();
+          chrome.autotestPrivate.isAppShown('mgndgikekgjfcpckkfioiadnlibdjbkf',
+              function(appShown) {
+                chrome.test.assertNoLastError();
+                chrome.test.assertTrue(appShown);
+                chrome.test.succeed();
+               });
+        });
   },
   function setCrostiniEnabled() {
     chrome.autotestPrivate.setCrostiniEnabled(true, chrome.test.callbackFail(
@@ -221,9 +226,31 @@ var defaultTests = [
           chrome.test.succeed();
         });
   },
+  // No any ARC app by default
+  function getArcApp() {
+    chrome.autotestPrivate.getArcApp(
+         'bifanmfigailifmdhaomnmchcgflbbdn',
+         chrome.test.callbackFail('App is not available'));
+  },
+  // No any ARC package by default
+  function getArcPackage() {
+    chrome.autotestPrivate.getArcPackage(
+         'fake.package',
+         chrome.test.callbackFail('Package is not available'));
+  },
+  // Launch fails, no any ARC app by default
+  function launchArcApp() {
+    chrome.autotestPrivate.launchArcApp(
+        'bifanmfigailifmdhaomnmchcgflbbdn',
+        '#Intent;',
+        function(appLaunched) {
+          chrome.test.assertFalse(appLaunched);
+          chrome.test.succeed();
+        });
+  },
 ];
 
-var arcProvisionedTests = [
+var arcEnabledTests = [
   // This test verifies that isArcProvisioned returns True in case ARC
   // provisiong is done.
   function isArcProvisioned() {
@@ -234,11 +261,90 @@ var arcProvisionedTests = [
           chrome.test.succeed();
         });
   },
+  // ARC app is available
+  function getArcApp() {
+    // bifanmfigailifmdhaomnmchcgflbbdn id is taken from
+    //   ArcAppListPrefs::GetAppId(
+    //   "fake.package", "fake.package.activity");
+    chrome.autotestPrivate.getArcApp('bifanmfigailifmdhaomnmchcgflbbdn',
+        chrome.test.callbackPass(function(appInfo) {
+          chrome.test.assertNoLastError();
+          // See AutotestPrivateArcEnabled for constants.
+          chrome.test.assertEq('Fake App', appInfo.name);
+          chrome.test.assertEq('fake.package', appInfo.packageName);
+          chrome.test.assertEq('fake.package.activity', appInfo.activity);
+          chrome.test.assertEq('', appInfo.intentUri);
+          chrome.test.assertEq('', appInfo.iconResourceId);
+          chrome.test.assertEq(0, appInfo.lastLaunchTime);
+          // Install time is set right before this call. Assume we are 5
+          // min maximum after setting the install time.
+          chrome.test.assertTrue(Date.now() >= appInfo.installTime);
+          chrome.test.assertTrue(
+              Date.now() <= appInfo.installTime + 5 * 60 * 1000.0);
+          chrome.test.assertEq(false, appInfo.sticky);
+          chrome.test.assertEq(false, appInfo.notificationsEnabled);
+          chrome.test.assertEq(true, appInfo.ready);
+          chrome.test.assertEq(false, appInfo.suspended);
+          chrome.test.assertEq(true, appInfo.showInLauncher);
+          chrome.test.assertEq(false, appInfo.shortcut);
+          chrome.test.assertEq(true, appInfo.launchable);
+
+          chrome.test.succeed();
+        }));
+  },
+  // ARC is available but app does not exist
+  function getArcNonExistingApp() {
+    chrome.autotestPrivate.getArcApp(
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        chrome.test.callbackFail('App is not available'));
+  },
+  // ARC package is available
+  function getArcPackage() {
+    chrome.autotestPrivate.getArcPackage('fake.package',
+        chrome.test.callbackPass(function(packageInfo) {
+          chrome.test.assertNoLastError();
+          // See AutotestPrivateArcEnabled for constants.
+          chrome.test.assertEq('fake.package', packageInfo.packageName);
+          chrome.test.assertEq(10, packageInfo.packageVersion);
+          chrome.test.assertEq('100', packageInfo.lastBackupAndroidId);
+          // Backup time is set right before this call. Assume we are 5
+          // min maximum after setting the backup time.
+          chrome.test.assertTrue(Date.now() >= packageInfo.lastBackupTime);
+          chrome.test.assertTrue(
+              Date.now() <= packageInfo.lastBackupTime + 5 * 60 * 1000.0);
+          chrome.test.assertEq(true, packageInfo.shouldSync);
+          chrome.test.assertEq(false, packageInfo.system);
+          chrome.test.assertEq(false, packageInfo.vpnProvider);
+          chrome.test.succeed();
+        }));
+  },
+  // Launch existing ARC app
+  function launchArcApp() {
+    chrome.autotestPrivate.launchArcApp(
+        'bifanmfigailifmdhaomnmchcgflbbdn',
+        '#Intent;',
+        function(appLaunched) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertTrue(appLaunched);
+          chrome.test.succeed();
+        });
+  },
+  // Launch non-existing ARC app
+  function launchNonExistingApp() {
+    chrome.autotestPrivate.launchArcApp(
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        '#Intent;',
+        function(appLaunched) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertFalse(appLaunched);
+          chrome.test.succeed();
+        });
+  },
 ];
 
 var test_suites = {
   'default': defaultTests,
-  'arcProvisioned': arcProvisionedTests
+  'arcEnabled': arcEnabledTests
 };
 
 chrome.test.getConfig(function(config) {

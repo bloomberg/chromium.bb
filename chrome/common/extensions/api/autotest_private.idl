@@ -106,6 +106,37 @@ namespace autotestPrivate {
 
   callback IsArcProvisionedCallback = void (boolean arcProvisioned);
 
+  dictionary ArcAppDict {
+    DOMString name;
+    DOMString packageName;
+    DOMString activity;
+    DOMString intentUri;
+    DOMString iconResourceId;
+    double lastLaunchTime;
+    double installTime;
+    boolean sticky;
+    boolean notificationsEnabled;
+    boolean ready;
+    boolean suspended;
+    boolean showInLauncher;
+    boolean shortcut;
+    boolean launchable;
+  };
+  callback GetArcAppCallback = void (ArcAppDict package);
+
+  dictionary ArcPackageDict {
+    DOMString packageName;
+    long packageVersion;
+    DOMString lastBackupAndroidId;
+    double lastBackupTime;
+    boolean shouldSync;
+    boolean system;
+    boolean vpnProvider;
+  };
+  callback GetArcPackageCallback = void (ArcPackageDict package);
+
+  callback LaunchArcAppCallback = void (boolean appLaunched);
+
   callback TakeScreenshotCallback = void (DOMString base64Png);
 
   callback VoidCallback = void ();
@@ -180,8 +211,23 @@ namespace autotestPrivate {
     // Returns true if ARC is provisioned.
     static void isArcProvisioned(IsArcProvisionedCallback callback);
 
+    // Gets information about the requested ARC app.
+    static void getArcApp(DOMString appId, GetArcAppCallback callback);
+
+    // Gets information about requested ARC package.
+    static void getArcPackage(DOMString packageName,
+                              GetArcPackageCallback callback);
+
+    // Launches ARC app with optional intent. Returns true if ARC is active,
+    // app exists and launch request is passed to Android.
+    static void launchArcApp(DOMString appId, DOMString intent,
+                             LaunchArcAppCallback callback);
+
     // Launches an application from the launcher with the given appId.
     static void launchApp(DOMString appId, VoidCallback callback);
+
+    // Closes an application the given appId in case it was running.
+    static void closeApp(DOMString appId, VoidCallback callback);
 
     // Update printer. Printer with empty ID is considered new.
     static void updatePrinter(Printer printer);
