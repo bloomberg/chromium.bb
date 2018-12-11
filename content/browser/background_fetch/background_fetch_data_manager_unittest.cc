@@ -35,9 +35,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -716,6 +718,32 @@ class BackgroundFetchDataManagerTest
     std::move(quit_closure).Run();
   }
 
+  class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
+   public:
+    explicit DataPipeDrainerClient(std::string* output) : output_(output) {}
+    void Run() { run_loop_.Run(); }
+
+    void OnDataAvailable(const void* data, size_t num_bytes) override {
+      output_->append(reinterpret_cast<const char*>(data), num_bytes);
+    }
+    void OnDataComplete() override { run_loop_.Quit(); }
+
+   private:
+    base::RunLoop run_loop_;
+    std::string* output_;
+  };
+
+  std::string CopyBody(blink::mojom::Blob* blob) {
+    mojo::DataPipe pipe;
+    blob->ReadAll(std::move(pipe.producer_handle), /* client= */ nullptr);
+
+    std::string output;
+    DataPipeDrainerClient client(&output);
+    mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
+    client.Run();
+    return output;
+  }
+
   blink::mojom::SerializedBlobPtr BuildBlob(const std::string data) {
     auto blob_data = std::make_unique<storage::BlobDataBuilder>(
         "blob-id:" + base::GenerateGUID());
@@ -727,6 +755,9 @@ class BackgroundFetchDataManagerTest
     auto blob = blink::mojom::SerializedBlob::New();
     blob->uuid = blob_handle->uuid();
     blob->size = blob_handle->size();
+    storage::BlobImpl::Create(
+        std::make_unique<storage::BlobDataHandle>(*blob_handle),
+        MakeRequest(&blob->blob));
     return blob;
   }
 
@@ -1614,6 +1645,45 @@ TEST_F(BackgroundFetchDataManagerTest, MatchRequests) {
   EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
   // We are marking the responses as failed in Download Manager.
   EXPECT_EQ(settled_fetches.size(), num_requests);
+}
+
+TEST_F(BackgroundFetchDataManagerTest, MatchRequestsWithBody) {
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  std::vector<blink::mojom::FetchAPIRequestPtr> requests =
+      CreateValidRequests(origin(), 2u);
+  const std::string upload_data = "Upload data!";
+  requests[1]->blob = BuildBlob(upload_data);
+
+  auto options = blink::mojom::BackgroundFetchOptions::New();
+  blink::mojom::BackgroundFetchError error;
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  {
+    EXPECT_CALL(*this, OnRegistrationCreated(registration_id, _, _, _, _, _));
+
+    CreateRegistration(registration_id, std::move(requests), std::move(options),
+                       SkBitmap(), &error);
+    ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  }
+
+  std::vector<BackgroundFetchSettledFetch> settled_fetches;
+  MatchRequests(registration_id, /* request_to_match= */ nullptr,
+                /* cache_query_params= */ nullptr, /* match_all= */ true,
+                &error, &settled_fetches);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  ASSERT_EQ(settled_fetches.size(), 2u);
+  EXPECT_FALSE(settled_fetches[0].request->blob);
+
+  auto& request = settled_fetches[1].request;
+  ASSERT_TRUE(request->blob);
+  EXPECT_EQ(request->blob->size, upload_data.size());
+
+  ASSERT_TRUE(request->blob->blob);
+  blink::mojom::BlobPtr blob(std::move(request->blob->blob));
+  EXPECT_EQ(CopyBody(blob.get()), upload_data);
 }
 
 TEST_F(BackgroundFetchDataManagerTest, MatchRequestsFromCache) {

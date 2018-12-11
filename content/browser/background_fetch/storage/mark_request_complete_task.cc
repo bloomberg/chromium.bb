@@ -190,8 +190,8 @@ void MarkRequestCompleteTask::DidOpenCache(
   blink::mojom::FetchAPIRequestPtr request =
       BackgroundFetchSettledFetch::CloneRequest(request_info_->fetch_request());
 
-  // We need to keep the handle refcounted while the write is happening,
-  // so it's passed along to the callback.
+  // TODO(crbug.com/774054): The request blob stored in the cache is being
+  // overwritten here, it should be written back.
   handle.value()->Put(
       std::move(request), std::move(response),
       base::BindOnce(&MarkRequestCompleteTask::DidWriteToCache,

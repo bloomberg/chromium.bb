@@ -1119,8 +1119,11 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
     return;
   }
 
+  auto data_handle = cache_entry_handler_->CreateBlobDataHandle(
+      CreateHandle(), std::move(entry));
+
   if (query_cache_context->query_types & QUERY_CACHE_ENTRIES)
-    match->entry = std::move(entry);
+    match->entry = std::move(data_handle->entry());
 
   if (query_cache_context->query_types & QUERY_CACHE_REQUESTS) {
     query_cache_context->estimated_out_bytes +=
@@ -1130,6 +1133,9 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
           .Run(CacheStorageError::kErrorQueryTooLarge, nullptr);
       return;
     }
+
+    cache_entry_handler_->PopulateRequestBody(data_handle,
+                                              match->request.get());
   } else {
     match->request.reset();
   }
@@ -1142,7 +1148,7 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
           .Run(CacheStorageError::kErrorQueryTooLarge, nullptr);
       return;
     }
-    if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
+    if (data_handle->entry()->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
       QueryCacheOpenNextEntry(std::move(query_cache_context));
       return;
     }
@@ -1155,7 +1161,7 @@ void CacheStorageCache::QueryCacheDidReadMetadata(
       return;
     }
 
-    cache_entry_handler_->PopulateResponseBody(CreateHandle(), std::move(entry),
+    cache_entry_handler_->PopulateResponseBody(data_handle,
                                                match->response.get());
   } else if (!(query_cache_context->query_types &
                QUERY_CACHE_RESPONSES_NO_BODIES)) {
@@ -1592,13 +1598,20 @@ void CacheStorageCache::PutDidWriteHeaders(
 
   // The metadata is written, now for the response content. The data is streamed
   // from the blob into the cache entry.
-  if (!put_context->response->blob ||
-      put_context->response->blob->uuid.empty()) {
-    UpdateCacheSize(base::BindOnce(std::move(put_context->callback),
-                                   CacheStorageError::kSuccess));
+  if (put_context->response->blob &&
+      !put_context->response->blob->uuid.empty()) {
+    PutWriteBlobToCache(std::move(put_context), INDEX_RESPONSE_BODY);
     return;
   }
-  PutWriteBlobToCache(std::move(put_context), INDEX_RESPONSE_BODY);
+
+  if (put_context->side_data_blob) {
+    DCHECK_EQ(owner_, CacheStorageOwner::kBackgroundFetch);
+    PutWriteBlobToCache(std::move(put_context), INDEX_SIDE_DATA);
+    return;
+  }
+
+  UpdateCacheSize(base::BindOnce(std::move(put_context->callback),
+                                 CacheStorageError::kSuccess));
 }
 
 void CacheStorageCache::PutWriteBlobToCache(
