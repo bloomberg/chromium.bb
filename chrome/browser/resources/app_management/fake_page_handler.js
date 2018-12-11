@@ -17,6 +17,8 @@ cr.define('app_management', function() {
         'blpcfgokakmgnkcojhhkbfbldkacnbeo',
         'pjkljhegncpnkpknbcohdijeoejaedia',
         'aapocclcgogkmnckokdopfmhonfmgoek',
+        'kbfnbcaeplbcioakkpcpgfkobkghlhen',
+        'gmbgaklkmjakoegficnlkhebmhkjfich',
       ];
 
       this.page.onAppsAdded(fakeAppIdList);

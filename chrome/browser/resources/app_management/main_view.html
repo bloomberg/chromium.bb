@@ -2,10 +2,14 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/html/icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 
 <dom-module id="app-management-main-view">
   <template>
-    <style>
+    <style include="cr-hidden-style">
       :host {
         --primary-text-color: rgba(0, 0, 0, 0.87);
         --secondary-text-color: rgba(0, 0, 0, 0.54);
@@ -41,43 +45,81 @@
         height: 64px;
       }
 
-      #app-icon {
+      .app-icon {
         height: 32px;
         margin-inline-end: 20px;
         margin-inline-start: 24px;
         width: 32px;
       }
 
-      #app-title {
+      .app-title {
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      #subpage-arrow {
+      .subpage-arrow {
         margin-inline-end: 8px;
         padding: 12px;
       }
 
+      #app-list-title {
+        color: var(--card-title-text-color);
+        font-weight: 400;
+        padding: 16px 24px;
+      }
+
       #more-apps {
+        align-items: center;
         border-top: 1px solid rgba(0, 0, 0, 0.12);
         color: var(--secondary-text-color);
-        padding: 16px 24px;
+        display: flex;
+        height: 50px;
+        justify-content: space-between;
+        padding-inline-start: 24px;
+      }
+
+      #right-button {
+        height: 36px;
+        margin-inline-end: 12px;
+        width: 36px;
       }
     </style>
     <cr-toolbar page-name="$i18n{title}" search-prompt="$i18n{searchPrompt}">
     </cr-toolbar>
     <div id="app-list">
       <div id="app-list-title">$i18n{appListTitle}</div>
-      <template is="dom-repeat" items="[[apps_]]">
+      <template is="dom-repeat" items="[[displayedApps_]]">
         <div class="app-list-item">
-          <img id="app-icon" src="[[iconUrlFromId_(item)]]">
-          <div id="app-title">[[item]]</div>
-          <img id="subpage-arrow"
+          <img class="app-icon" src="[[iconUrlFromId_(item)]]">
+          <div class="app-title">[[item]]</div>
+          <img class="subpage-arrow"
             src="chrome://resources/images/arrow_right.svg">
         </div>
       </template>
-      <div id="more-apps">$i18n{moreApps}</div>
+
+      <iron-collapse opened="[[listExpanded_]]">
+        <div>
+        <template is="dom-repeat" items="[[collapsedApps_]]">
+          <div class="app-list-item">
+            <img class="app-icon" src="[[iconUrlFromId_(item)]]">
+            <div class="app-title">[[item]]</div>
+            <img class="subpage-arrow"
+              src="chrome://resources/images/arrow_right.svg">
+          </div>
+        </template>
+        </div>
+      </iron-collapse>
+      <div id="more-apps" on-click="toggleListExpanded_">
+        <span>[[moreAppsString_(apps_.length, listExpanded_)]]</span>
+        <paper-icon-button-light id="right-button">
+          <button id="collapse-button">
+            <iron-icon icon="[[getCollapsedIcon_(listExpanded_)]]"
+                id="dropdown-indicator">
+            </iron-icon>
+          </button>
+        </paper-icon-button-light>
+      </div>
     </div>
   </template>
   <script src="chrome://apps/main_view.js"></script>

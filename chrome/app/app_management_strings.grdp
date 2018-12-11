@@ -4,8 +4,11 @@
   <message name="IDS_APP_MANAGEMENT_APP_LIST_TITLE" desc="Title of app list card on main app management page.">
     Recently opened apps
   </message>
+  <message name="IDS_APP_MANAGEMENT_LESS_APPS" desc="Show less for apps.">
+    Show less
+  </message>
   <message name="IDS_APP_MANAGEMENT_MORE_APPS" desc="Label for more apps button at bottom of app list card.">
-    See more apps
+    Show <ph name="NUMBER_OF_MORE_APPS">$1<ex>4</ex></ph> more apps
   </message>
   <message name="IDS_APP_MANAGEMENT_SEARCH_PROMPT" desc="Prompt in search bar of main app management page.">
     Search Settings

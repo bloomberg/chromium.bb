@@ -28,6 +28,7 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
       content::WebUIDataSource::Create(chrome::kChromeUIAppLauncherPageHost);
 
   source->AddLocalizedString("appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE);
+  source->AddLocalizedString("lessApps", IDS_APP_MANAGEMENT_LESS_APPS);
   source->AddLocalizedString("moreApps", IDS_APP_MANAGEMENT_MORE_APPS);
   source->AddLocalizedString("searchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT);
   source->AddLocalizedString("title", IDS_APP_MANAGEMENT_TITLE);
@@ -50,6 +51,8 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
                           IDR_APP_MANAGEMENT_BROWSER_PROXY_JS);
+  source->AddResourcePath("constants.html", IDR_APP_MANAGEMENT_CONSTANTS_HTML);
+  source->AddResourcePath("constants.js", IDR_APP_MANAGEMENT_CONSTANTS_JS);
   source->AddResourcePath("fake_page_handler.js",
                           IDR_APP_MANAGEMENT_FAKE_PAGE_HANDLER_JS);
   source->AddResourcePath("main_view.html", IDR_APP_MANAGEMENT_MAIN_VIEW_HTML);
