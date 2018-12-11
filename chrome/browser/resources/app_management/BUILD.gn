@@ -10,6 +10,7 @@ if (!is_android) {
     deps = [
       ":app",
       ":browser_proxy",
+      ":constants",
       ":fake_page_handler",
       ":main_view",
     ]
@@ -28,6 +29,9 @@ if (!is_android) {
       ":fake_page_handler",
       "//ui/webui/resources/js:cr",
     ]
+  }
+
+  js_library("constants") {
   }
 
   js_library("externs") {
@@ -55,6 +59,10 @@ if (!is_android) {
   }
 
   js_library("main_view") {
-    deps = []
+    deps = [
+      ":browser_proxy",
+      ":constants",
+      "//ui/webui/resources/js:load_time_data",
+    ]
   }
 }
