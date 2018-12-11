@@ -41,6 +41,9 @@ struct VectorIcon;
 const char kACMatchPropertySuggestionText[] = "match suggestion text";
 const char kACMatchPropertyContentsPrefix[] = "match contents prefix";
 const char kACMatchPropertyContentsStartIndex[] = "match contents start index";
+// A match attribute when a default match's score has been boosted with a higher
+// scoring non-default match.
+const char kACMatchPropertyScoreBoostedFrom[] = "score_boosted_from";
 
 // AutocompleteMatch ----------------------------------------------------------
 

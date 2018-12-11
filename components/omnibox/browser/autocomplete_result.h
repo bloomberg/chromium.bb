@@ -135,8 +135,22 @@ class AutocompleteResult {
   size_t EstimateMemoryUsage() const;
 
  private:
-  friend class AutocompleteProviderTest;
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchEntityWithHigherRelevance);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchEntityWithLowerRelevance);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchEntityWithEqualRelevance);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchNonEntityWithHigherRelevance);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchNonEntityWithLowerRelevance);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchNonEntityWithEqualRelevance);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, IsBetterMatchBothEntities);
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,
+                           IsBetterMatchBothNonEntities);
 
   typedef std::map<AutocompleteProvider*, ACMatches> ProviderToMatches;
 
