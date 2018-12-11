@@ -268,8 +268,10 @@ static void amdgpu_cs_vcn_dec_create(void)
 	ib_cpu[len++] = msg_buf.addr >> 32;
 	ib_cpu[len++] = 0x81C3;
 	ib_cpu[len++] = 0;
-	for (; len % 16; ++len)
-		ib_cpu[len] = 0x81ff;
+	for (; len % 16; ) {
+		ib_cpu[len++] = 0x81ff;
+		ib_cpu[len++] = 0;
+	}
 
 	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
 	CU_ASSERT_EQUAL(r, 0);
@@ -336,8 +338,10 @@ static void amdgpu_cs_vcn_dec_decode(void)
 
 	ib_cpu[len++] = 0x81C6;
 	ib_cpu[len++] = 0x1;
-	for (; len % 16; ++len)
-		ib_cpu[len] = 0x80000000;
+	for (; len % 16; ) {
+		ib_cpu[len++] = 0x81ff;
+		ib_cpu[len++] = 0;
+	}
 
 	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
 	CU_ASSERT_EQUAL(r, 0);
@@ -373,8 +377,10 @@ static void amdgpu_cs_vcn_dec_destroy(void)
 	ib_cpu[len++] = msg_buf.addr >> 32;
 	ib_cpu[len++] = 0x81C3;
 	ib_cpu[len++] = 0;
-	for (; len % 16; ++len)
-		ib_cpu[len] = 0x80000000;
+	for (; len % 16; ) {
+		ib_cpu[len++] = 0x81ff;
+		ib_cpu[len++] = 0;
+	}
 
 	r = submit(len, AMDGPU_HW_IP_VCN_DEC);
 	CU_ASSERT_EQUAL(r, 0);
