@@ -1815,10 +1815,10 @@ bool FormStructure::IsMalformed() const {
     return true;
 
   // Some badly formatted web sites repeat fields - limit number of fields to
-  // 100, which is far larger than any valid form and proto still fits into 2K.
+  // 250, which is far larger than any valid form and proto still fits into 10K.
   // Do not send requests for forms with more than this many fields, as they are
   // near certainly not valid/auto-fillable.
-  const size_t kMaxFieldsOnTheForm = 100;
+  const size_t kMaxFieldsOnTheForm = 250;
   if (field_count() > kMaxFieldsOnTheForm)
     return true;
   return false;
