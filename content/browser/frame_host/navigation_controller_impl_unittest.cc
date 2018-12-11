@@ -3624,7 +3624,8 @@ TEST_F(NavigationControllerTest, IsSameDocumentNavigation) {
   // matches if the URL doesn't look same-origin.
   const GURL blank_url(url::kAboutBlankURL);
   const url::Origin blank_origin;
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, blank_url);
+  NavigationSimulator::NavigateAndCommitFromDocument(blank_url,
+                                                     main_test_rfh());
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
       url, url::Origin::Create(url), true, main_test_rfh()));
 
@@ -3702,7 +3703,7 @@ TEST_F(NavigationControllerTest,
   // scheme.
   const GURL file_url("file:///foo/index.html");
   const url::Origin file_origin = url::Origin::Create(file_url);
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, file_url);
+  NavigationSimulator::NavigateAndCommitFromDocument(file_url, main_test_rfh());
   EXPECT_TRUE(
       file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
   EXPECT_EQ(0, rph->bad_msg_count());
@@ -3739,10 +3740,12 @@ TEST_F(NavigationControllerTest,
   // Don't honor allow_universal_access_from_file_urls if actual URL is
   // not file scheme.
   const GURL url("http://www.google.com/home.html");
-  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url);
+  TestRenderFrameHost* new_rfh = static_cast<TestRenderFrameHost*>(
+      NavigationSimulator::NavigateAndCommitFromDocument(url, main_test_rfh()));
+  rph = new_rfh->GetProcess();
   EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
       different_origin_url, url::Origin::Create(different_origin_url), true,
-      main_test_rfh()));
+      new_rfh));
   EXPECT_EQ(1, rph->bad_msg_count());
 }
 

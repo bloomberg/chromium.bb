@@ -75,9 +75,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void SetContentsMimeType(const std::string& mime_type) override;
   void SendBeforeUnloadACK(bool proceed) override;
   void SimulateSwapOutACK() override;
-  // DEPRECATED: Use NavigationSimulator::NavigateAndCommitFromDocument().
-  void NavigateAndCommitRendererInitiated(bool did_create_new_entry,
-                                          const GURL& url) override;
   void SimulateFeaturePolicyHeader(
       blink::mojom::FeaturePolicyFeature feature,
       const std::vector<url::Origin>& whitelist) override;

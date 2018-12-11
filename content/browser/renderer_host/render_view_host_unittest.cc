@@ -23,6 +23,7 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_render_view_host.h"
@@ -71,8 +72,8 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
 // All about URLs reported by the renderer should get rewritten to about:blank.
 // See RenderViewHost::OnNavigate for a discussion.
 TEST_F(RenderViewHostTest, FilterAbout) {
-  main_test_rfh()->NavigateAndCommitRendererInitiated(
-      true, GURL("about:cache"));
+  NavigationSimulator::NavigateAndCommitFromDocument(GURL("about:cache"),
+                                                     main_test_rfh());
   ASSERT_TRUE(controller().GetVisibleEntry());
   EXPECT_EQ(GURL(kBlockedURL), controller().GetVisibleEntry()->GetURL());
 }
