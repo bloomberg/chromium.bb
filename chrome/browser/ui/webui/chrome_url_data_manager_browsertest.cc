@@ -63,14 +63,20 @@ public:
       content::NavigationHandle* navigation_handle) override {
     navigation_result_ =
         navigation_handle->IsErrorPage() ? ERROR_PAGE : SUCCESS;
+    net_error_ = navigation_handle->GetNetErrorCode();
   }
 
   NavigationResult navigation_result() const { return navigation_result_; }
+  net::Error net_error() const { return net_error_; }
 
-  void Reset() { navigation_result_ = NOT_FINISHED; }
+  void Reset() {
+    navigation_result_ = NOT_FINISHED;
+    net_error_ = net::OK;
+  }
 
  private:
   NavigationResult navigation_result_;
+  net::Error net_error_ = net::OK;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
@@ -96,12 +102,16 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, UnknownResource) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON"));
   EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
+  EXPECT_EQ(net::OK, observer.net_error());
 
   // Unknown resource
   observer.Reset();
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome://theme/IDR_ASDFGHJKL"));
   EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
+  // The presence of net error means that navigation did not commit to the
+  // original url.
+  EXPECT_NE(net::OK, observer.net_error());
 }
 
 // Makes sure browser does not crash when the resource scale is very large.
@@ -112,10 +122,14 @@ IN_PROC_BROWSER_TEST_F(ChromeURLDataManagerTest, LargeResourceScale) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@2x"));
   EXPECT_EQ(NavigationObserver::SUCCESS, observer.navigation_result());
+  EXPECT_EQ(net::OK, observer.net_error());
 
   // Unreasonably large scale
   observer.Reset();
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome://theme/IDR_SETTINGS_FAVICON@99999x"));
   EXPECT_EQ(NavigationObserver::ERROR_PAGE, observer.navigation_result());
+  // The presence of net error means that navigation did not commit to the
+  // original url.
+  EXPECT_NE(net::OK, observer.net_error());
 }
