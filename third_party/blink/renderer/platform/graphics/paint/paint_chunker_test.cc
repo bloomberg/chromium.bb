@@ -33,12 +33,6 @@ class TestChunkerDisplayItem : public DisplayItem {
   TestChunkerDisplayItem(const DisplayItemClient& client,
                          DisplayItem::Type type = DisplayItem::kDrawingFirst)
       : DisplayItem(client, type, sizeof(*this)) {}
-
-  void Replay(GraphicsContext&) const final { NOTREACHED(); }
-  void AppendToDisplayItemList(const FloatSize&,
-                               cc::DisplayItemList&) const final {
-    NOTREACHED();
-  }
 };
 
 class TestDisplayItemRequiringSeparateChunk : public TestChunkerDisplayItem {

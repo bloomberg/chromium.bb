@@ -28,10 +28,6 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
   cc::Layer* GetLayer() const;
 
   // DisplayItem
-  void Replay(GraphicsContext&) const override;
-  void AppendToDisplayItemList(const FloatSize&,
-                               cc::DisplayItemList&) const override;
-  bool DrawsContent() const override;
   bool Equals(const DisplayItem&) const override;
 #if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;

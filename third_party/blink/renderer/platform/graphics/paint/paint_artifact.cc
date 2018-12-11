@@ -130,14 +130,6 @@ void PaintArtifact::Replay(cc::PaintCanvas& canvas,
   canvas.drawPicture(display_item_list->ReleaseAsRecord());
 }
 
-DISABLE_CFI_PERF
-void PaintArtifact::AppendToDisplayItemList(const FloatSize& visual_rect_offset,
-                                            cc::DisplayItemList& list) const {
-  TRACE_EVENT0("blink,benchmark", "PaintArtifact::AppendToDisplayItemList");
-  for (const DisplayItem& item : display_item_list_)
-    item.AppendToDisplayItemList(visual_rect_offset, list);
-}
-
 void PaintArtifact::FinishCycle() {
   // BlinkGenPropertyTrees uses PaintController::ClearPropertyTreeChangedStateTo
   // for clearing the property tree changed state at the end of paint instead of

@@ -45,7 +45,7 @@ static sk_sp<PaintRecord> CreateRectRecordWithTranslate(
   return recorder.finishRecordingAsPicture();
 }
 
-TEST_F(DrawingDisplayItemTest, VisualRectAndDrawingBounds) {
+TEST_F(DrawingDisplayItemTest, DrawsContent) {
   FloatRect record_bounds(5.5, 6.6, 7.7, 8.8);
   LayoutRect drawing_bounds(record_bounds);
   client_.SetVisualRect(drawing_bounds);
@@ -53,18 +53,19 @@ TEST_F(DrawingDisplayItemTest, VisualRectAndDrawingBounds) {
   DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
                           CreateRectRecord(record_bounds));
   EXPECT_EQ(FloatRect(drawing_bounds), item.VisualRect());
+  EXPECT_TRUE(item.DrawsContent());
+}
 
-  auto list1 = base::MakeRefCounted<cc::DisplayItemList>();
-  item.AppendToDisplayItemList(FloatSize(), *list1);
-  EXPECT_EQ(EnclosingIntRect(drawing_bounds), list1->VisualRectForTesting(0));
+TEST_F(DrawingDisplayItemTest, NullPaintRecord) {
+  DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
+                          nullptr);
+  EXPECT_FALSE(item.DrawsContent());
+}
 
-  FloatSize offset(2.1, 3.6);
-  auto list2 = base::MakeRefCounted<cc::DisplayItemList>();
-  item.AppendToDisplayItemList(offset, *list2);
-  FloatRect visual_rect_with_offset(drawing_bounds);
-  visual_rect_with_offset.Move(-offset);
-  EXPECT_EQ(EnclosingIntRect(visual_rect_with_offset),
-            list2->VisualRectForTesting(0));
+TEST_F(DrawingDisplayItemTest, EmptyPaintRecord) {
+  DrawingDisplayItem item(client_, DisplayItem::Type::kDocumentBackground,
+                          sk_make_sp<PaintRecord>());
+  EXPECT_FALSE(item.DrawsContent());
 }
 
 TEST_F(DrawingDisplayItemTest, Equals) {

@@ -22,16 +22,6 @@ ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
 
 ScrollHitTestDisplayItem::~ScrollHitTestDisplayItem() = default;
 
-void ScrollHitTestDisplayItem::Replay(GraphicsContext&) const {
-  NOTREACHED();
-}
-
-void ScrollHitTestDisplayItem::AppendToDisplayItemList(
-    const FloatSize&,
-    cc::DisplayItemList&) const {
-  NOTREACHED();
-}
-
 bool ScrollHitTestDisplayItem::Equals(const DisplayItem& other) const {
   return DisplayItem::Equals(other) &&
          &scroll_node() ==
