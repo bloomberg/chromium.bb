@@ -207,6 +207,8 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   ASSERT_TRUE(base::PathService::Get(base::DIR_TEMP, &temp_dir));
   // Chrome OS allows the following directories.
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/Downloads", ""));
+  EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/MyFiles", ""));
+  EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/MyFiles/file.pdf", ""));
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/log", ""));
   EXPECT_TRUE(IsAccessAllowed("/home/chronos/user/WebRTC Logs", ""));
   EXPECT_TRUE(IsAccessAllowed("/media", ""));
@@ -223,6 +225,8 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
 
   // If profile path is given, the following additional paths are allowed.
   EXPECT_TRUE(IsAccessAllowed("/profile/Downloads", "/profile"));
+  EXPECT_TRUE(IsAccessAllowed("/profile/MyFiles", "/profile"));
+  EXPECT_TRUE(IsAccessAllowed("/profile/MyFiles/file.pdf", "/profile"));
   EXPECT_TRUE(IsAccessAllowed("/profile/WebRTC Logs", "/profile"));
 
   // GCache/v2/<opaque ID>/Logs is allowed.
