@@ -154,7 +154,6 @@ class VdaVideoDecoder : public VideoDecoder,
                                   gfx::Size texture_size,
                                   GLenum texture_target);
   void ReusePictureBuffer(int32_t picture_buffer_id);
-  void AddEventOnParentThread(std::unique_ptr<MediaLogEvent> event);
 
   // Error handling.
   void EnterErrorState();
@@ -191,9 +190,11 @@ class VdaVideoDecoder : public VideoDecoder,
   //
   // Shared state.
   //
+
   // Only read on GPU thread during initialization, which is mutually exclusive
   // with writes on the parent thread.
   VideoDecoderConfig config_;
+
   // Only written on the GPU thread during initialization, which is mutually
   // exclusive with reads on the parent thread.
   std::unique_ptr<VideoDecodeAccelerator> vda_;

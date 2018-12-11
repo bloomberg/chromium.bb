@@ -64,14 +64,14 @@ gl::GLContext* FakeCommandBufferHelper::GetGLContext() {
   return nullptr;
 }
 
+bool FakeCommandBufferHelper::HasStub() {
+  return has_stub_;
+}
+
 bool FakeCommandBufferHelper::MakeContextCurrent() {
   DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   is_context_current_ = !is_context_lost_;
-  return is_context_current_;
-}
-
-bool FakeCommandBufferHelper::IsContextCurrent() const {
   return is_context_current_;
 }
 
