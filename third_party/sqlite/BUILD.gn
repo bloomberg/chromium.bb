@@ -5,6 +5,7 @@
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # Compile-time options passed to SQLite.
 #
@@ -415,6 +416,7 @@ if (is_linux || is_mac) {
   }
 }
 
+# Libfuzzer-based fuzzer test from SQLite source tree.
 fuzzer_test("sqlite3_ossfuzz_fuzzer") {
   include_dirs = [ "." ]
   sources = [
@@ -424,6 +426,127 @@ fuzzer_test("sqlite3_ossfuzz_fuzzer") {
     ":sqlite",
   ]
   dict = "fuzz/sql.dict"
+}
+
+source_set("sqlite3_lpm_fuzzer_core") {
+  sources = [
+    "fuzz/sql_run_queries.cc",
+    "fuzz/sql_run_queries.h",
+  ]
+  deps = [
+    ":sqlite",
+  ]
+  public_deps = [
+    ":sqlite3_lpm_fuzzer_input",
+  ]
+  configs += [
+    ":sqlite_warnings",
+    ":chromium_sqlite3_compile_options",
+  ]
+  all_dependent_configs = [
+    ":lpm_fuzzer_omit_non_websql",
+    ":chromium_sqlite3_compile_options",
+  ]
+}
+
+# LPM-based fuzzer test.
+fuzzer_test("sqlite3_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  additional_configs = [ ":sqlite_warnings" ]
+  libfuzzer_options = [
+    "max_len=2111000",
+    "len_control=0",
+  ]
+}
+
+# FTS3-focused LPM-based fuzzer test.
+fuzzer_test("sqlite3_fts3_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  additional_configs = [
+    ":sqlite_warnings",
+    ":sqlite3_fts3_lpm_fuzzer_config",
+  ]
+  libfuzzer_options = [
+    "max_len=2111000",
+    "len_control=0",
+  ]
+}
+
+fuzzer_test("sqlite3_select_printf_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_printf_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  libfuzzer_options = [ "max_len=111000" ]
+}
+
+fuzzer_test("sqlite3_select_strftime_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+    "fuzz/sql_strftime_fuzzer.cc",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  libfuzzer_options = [ "max_len=111000" ]
+}
+
+fuzzer_test("sqlite3_select_expr_lpm_fuzzer") {
+  sources = [
+    "fuzz/sql_expr_fuzzer.cc",
+    "fuzz/sql_query_proto_to_string.cc",
+    "fuzz/sql_query_proto_to_string.h",
+  ]
+  deps = [
+    ":sqlite3_lpm_fuzzer_core",
+    "//third_party/libprotobuf-mutator",
+  ]
+  libfuzzer_options = [
+    "max_len=111000",
+    "len_control=0",
+  ]
+}
+
+config("sqlite3_fts3_lpm_fuzzer_config") {
+  defines = [ "FUZZ_FTS3" ]
+}
+
+config("lpm_fuzzer_omit_non_websql") {
+  defines = [
+    "FUZZ_OMIT_SAVEPOINT",
+    "FUZZ_OMIT_PRAGMA",
+  ]
+}
+
+proto_library("sqlite3_lpm_fuzzer_input") {
+  sources = [
+    "fuzz/icu_codes.proto",
+    "fuzz/sql_queries.proto",
+    "fuzz/sql_query_grammar.proto",
+  ]
 }
 
 config("sqlite3_dbfuzz2_config") {
