@@ -419,15 +419,6 @@ class Generator(generator.Generator):
   def _LiteClosureType(self, kind):
     if kind in mojom.PRIMITIVES:
       return _kind_to_closure_type[kind]
-    if mojom.IsInterfaceKind(kind):
-      return kind.module.namespace + "." + kind.name + "Proxy"
-    if mojom.IsInterfaceRequestKind(kind):
-      return kind.kind.module.namespace + "." + kind.kind.name + "Request"
-    if (mojom.IsStructKind(kind) or
-        mojom.IsEnumKind(kind)):
-      return kind.module.namespace + "." + kind.name
-    if mojom.IsUnionKind(kind):
-      return kind.module.namespace + "." + kind.name
     if mojom.IsArrayKind(kind):
       return "Array<%s>" % self._ClosureType(kind.kind)
     if mojom.IsMapKind(kind) and self._IsStringableKind(kind.key_kind):
@@ -440,13 +431,33 @@ class Generator(generator.Generator):
       return "Map<%s, %s>" % (
           self._LiteClosureType(kind.key_kind),
           self._LiteClosureType(kind.value_kind))
+
+    if mojom.IsAssociatedKind(kind) or mojom.IsInterfaceRequestKind(kind):
+      named_kind = kind.kind
+    else:
+      named_kind = kind
+
+    name = []
+    if named_kind.module:
+      name.append(named_kind.module.namespace)
+    if named_kind.parent_kind:
+      name.append(named_kind.parent_kind.name)
+    name.append("" + named_kind.name)
+    name = ".".join(name)
+
+    if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
+        mojom.IsEnumKind(kind)):
+      return name
+    if mojom.IsInterfaceKind(kind):
+      return name + "Proxy"
+    if mojom.IsInterfaceRequestKind(kind):
+      return name + "Request"
     # TODO(calamity): Support associated interfaces properly.
     if mojom.IsAssociatedInterfaceKind(kind):
-      return "mojo.internal.AssociatedInterfaceProxy"
+      return "Object"
     # TODO(calamity): Support associated interface requests properly.
     if mojom.IsAssociatedInterfaceRequestKind(kind):
-      return "mojo.internal.AssociatedInterfaceRequest"
-    # TODO(calamity): Support enums properly.
+      return "Object"
 
     raise Exception("No valid closure type: %s" % kind)
 

@@ -10,3 +10,12 @@ goog.provide('{{module.namespace}}.{{struct.name}}');
 {%-  endfor %}
   }
 };
+
+{#--- Enum definitions #}
+{% for enum in struct.enums %}
+/** @enum {number} */
+{{module.namespace}}.{{struct.name}}.{{enum.name}} = {};
+{%-   for field in enum.fields %}
+{{module.namespace}}.{{struct.name}}.{{enum.name}}.{{field.name}};
+{%-   endfor %}
+{%- endfor %}
