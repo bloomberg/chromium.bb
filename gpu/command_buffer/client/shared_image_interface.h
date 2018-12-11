@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_CLIENT_SHARED_IMAGE_INTERFACE_H_
 
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -43,6 +44,16 @@ class SharedImageInterface {
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage) = 0;
+
+  // Same behavior as the above, except that this version takes |pixel_data|
+  // which is used to populate the SharedImage.  |pixel_data| should have the
+  // same format which would be passed to glTexImage2D to populate a similarly
+  // specified texture.
+  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
+                                    const gfx::Size& size,
+                                    const gfx::ColorSpace& color_space,
+                                    uint32_t usage,
+                                    base::span<const uint8_t> pixel_data) = 0;
 
   // Creates a shared image out of a GpuMemoryBuffer, using |color_space|.
   // |usage| is a combination of |SharedImageUsage| bits that describes which

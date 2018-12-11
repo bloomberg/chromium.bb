@@ -50,6 +50,13 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
       uint32_t usage) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
+      viz::ResourceFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      uint32_t usage,
+      base::span<const uint8_t> pixel_data) override;
+  std::unique_ptr<SharedImageBacking> CreateSharedImage(
+      const Mailbox& mailbox,
       int client_id,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
@@ -92,6 +99,9 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
     // Whether to allow SHARED_IMAGE_USAGE_SCANOUT.
     bool allow_scanout = false;
 
+    // Whether the texture is a compressed type.
+    bool is_compressed = false;
+
     GLenum gl_format = 0;
     GLenum gl_type = 0;
     const gles2::Texture::CompatibilitySwizzle* swizzle = nullptr;
@@ -126,6 +136,8 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
   int32_t max_texture_size_ = 0;
   bool texture_usage_angle_ = false;
   bool es3_capable_ = false;
+  bool desktop_gl_ = false;
+  bool supports_unpack_subimage_ = false;
 };
 
 }  // namespace gpu

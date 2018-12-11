@@ -42,6 +42,12 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
                                  const gfx::ColorSpace& color_space,
                                  uint32_t usage) override;
 
+  gpu::Mailbox CreateSharedImage(ResourceFormat format,
+                                 const gfx::Size& size,
+                                 const gfx::ColorSpace& color_space,
+                                 uint32_t usage,
+                                 base::span<const uint8_t> pixel_data) override;
+
   gpu::Mailbox CreateSharedImage(
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,

@@ -9949,58 +9949,56 @@ TEST_F(LayerTreeHostImplTestPrepareTiles, PrepareTilesWhenInvisible) {
 }
 
 TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
-  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-  viz::TestGLES2Interface* gl = gl_owned.get();
+  auto test_context_provider = viz::TestContextProvider::Create();
+  viz::TestSharedImageInterface* sii =
+      test_context_provider->SharedImageInterface();
+  CreateHostImpl(DefaultSettings(), FakeLayerTreeFrameSink::Create3d(
+                                        std::move(test_context_provider)));
 
-  std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink =
-      FakeLayerTreeFrameSink::Create3d(std::move(gl_owned));
-  CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));
-
-  EXPECT_EQ(0u, gl->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 
   UIResourceId ui_resource_id = 1;
   bool is_opaque = false;
   UIResourceBitmap bitmap(gfx::Size(1, 1), is_opaque);
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
-  EXPECT_EQ(1u, gl->NumTextures());
+  EXPECT_EQ(1u, sii->shared_image_count());
   viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id1);
 
   // Multiple requests with the same id is allowed.  The previous texture is
   // deleted.
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
-  EXPECT_EQ(1u, gl->NumTextures());
+  EXPECT_EQ(1u, sii->shared_image_count());
   viz::ResourceId id2 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id2);
   EXPECT_NE(id1, id2);
 
   // Deleting invalid UIResourceId is allowed and does not change state.
   host_impl_->DeleteUIResource(-1);
-  EXPECT_EQ(1u, gl->NumTextures());
+  EXPECT_EQ(1u, sii->shared_image_count());
 
   // Should return zero for invalid UIResourceId.  Number of textures should
   // not change.
   EXPECT_EQ(0u, host_impl_->ResourceIdForUIResource(-1));
-  EXPECT_EQ(1u, gl->NumTextures());
+  EXPECT_EQ(1u, sii->shared_image_count());
 
   host_impl_->DeleteUIResource(ui_resource_id);
   EXPECT_EQ(0u, host_impl_->ResourceIdForUIResource(ui_resource_id));
-  EXPECT_EQ(0u, gl->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 
   // Should not change state for multiple deletion on one UIResourceId
   host_impl_->DeleteUIResource(ui_resource_id);
-  EXPECT_EQ(0u, gl->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 }
 
 TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
-  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-  gl_owned->set_support_compressed_texture_etc1(true);
-  viz::TestGLES2Interface* gl = gl_owned.get();
+  auto test_context_provider = viz::TestContextProvider::Create();
+  viz::TestSharedImageInterface* sii =
+      test_context_provider->SharedImageInterface();
+  CreateHostImpl(DefaultSettings(), FakeLayerTreeFrameSink::Create3d(
+                                        std::move(test_context_provider)));
 
-  CreateHostImpl(DefaultSettings(),
-                 FakeLayerTreeFrameSink::Create3d(std::move(gl_owned)));
-
-  EXPECT_EQ(0u, gl->NumTextures());
+  EXPECT_EQ(0u, sii->shared_image_count());
 
   gfx::Size size(4, 4);
   // SkImageInfo has no support for ETC1.  The |info| below contains the right
@@ -10013,7 +10011,7 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   UIResourceBitmap bitmap(std::move(pixel_ref), size);
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
-  EXPECT_EQ(1u, gl->NumTextures());
+  EXPECT_EQ(1u, sii->shared_image_count());
   viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id1);
 }

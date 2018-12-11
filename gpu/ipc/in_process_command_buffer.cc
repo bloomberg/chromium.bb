@@ -148,6 +148,28 @@ class InProcessCommandBuffer::SharedImageInterface
     return mailbox;
   }
 
+  Mailbox CreateSharedImage(viz::ResourceFormat format,
+                            const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            uint32_t usage,
+                            base::span<const uint8_t> pixel_data) override {
+    auto mailbox = Mailbox::Generate();
+    std::vector<uint8_t> pixel_data_copy(pixel_data.begin(), pixel_data.end());
+    {
+      base::AutoLock lock(lock_);
+      // Note: we enqueue the task under the lock to guarantee monotonicity of
+      // the release ids as seen by the service. Unretained is safe because
+      // InProcessCommandBuffer synchronizes with the GPU thread at destruction
+      // time, cancelling tasks, before |this| is destroyed.
+      parent_->ScheduleGpuTask(base::BindOnce(
+          &InProcessCommandBuffer::CreateSharedImageWithDataOnGpuThread,
+          gpu_thread_weak_ptr_, mailbox, format, size, color_space, usage,
+          MakeSyncToken(next_fence_sync_release_++),
+          std::move(pixel_data_copy)));
+    }
+    return mailbox;
+  }
+
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
                             const gfx::ColorSpace& color_space,
@@ -1296,6 +1318,30 @@ void InProcessCommandBuffer::CreateSharedImageOnGpuThread(
   LazyCreateSharedImageFactory();
   if (!shared_image_factory_->CreateSharedImage(mailbox, format, size,
                                                 color_space, usage)) {
+    // Signal errors by losing the command buffer.
+    command_buffer_->SetParseError(error::kLostContext);
+    return;
+  }
+  context_group_->mailbox_manager()->PushTextureUpdates(sync_token);
+  shared_image_client_state_->ReleaseFenceSync(sync_token.release_count());
+}
+
+void InProcessCommandBuffer::CreateSharedImageWithDataOnGpuThread(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    const SyncToken& sync_token,
+    std::vector<uint8_t> pixel_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
+  // |shared_image_factory_| never writes to the surface, so skip unnecessary
+  // MakeCurrent to improve performance. https://crbug.com/457431
+  if (!context_->IsCurrent(nullptr) && !MakeCurrent())
+    return;
+  LazyCreateSharedImageFactory();
+  if (!shared_image_factory_->CreateSharedImage(
+          mailbox, format, size, color_space, usage, pixel_data)) {
     // Signal errors by losing the command buffer.
     command_buffer_->SetParseError(error::kLostContext);
     return;

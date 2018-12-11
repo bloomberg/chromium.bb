@@ -126,6 +126,17 @@ gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
 }
 
 gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
+    ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> pixel_data) {
+  auto mailbox = gpu::Mailbox::Generate();
+  shared_images_.insert(mailbox);
+  return mailbox;
+}
+
+gpu::Mailbox TestSharedImageInterface::CreateSharedImage(
     gfx::GpuMemoryBuffer* gpu_memory_buffer,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const gfx::ColorSpace& color_space,

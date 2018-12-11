@@ -8,6 +8,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -32,6 +33,106 @@
 namespace gpu {
 
 namespace {
+
+class ScopedResetAndRestoreUnpackState {
+ public:
+  ScopedResetAndRestoreUnpackState(gl::GLApi* api,
+                                   bool es3_capable,
+                                   bool desktop_gl,
+                                   bool supports_unpack_subimage,
+                                   bool uploading_data)
+      : api_(api) {
+    if (es3_capable) {
+      // Need to unbind any GL_PIXEL_UNPACK_BUFFER for the nullptr in
+      // glTexImage2D to mean "no pixels" (as opposed to offset 0 in the
+      // buffer).
+      api_->glGetIntegervFn(GL_PIXEL_UNPACK_BUFFER_BINDING, &unpack_buffer_);
+      if (unpack_buffer_)
+        api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+    if (uploading_data) {
+      api_->glGetIntegervFn(GL_UNPACK_ALIGNMENT, &unpack_alignment_);
+      if (unpack_alignment_ != 4)
+        api_->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, 4);
+
+      if (es3_capable || supports_unpack_subimage) {
+        api_->glGetIntegervFn(GL_UNPACK_ROW_LENGTH, &unpack_row_length_);
+        if (unpack_row_length_)
+          api_->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
+        api_->glGetIntegervFn(GL_UNPACK_SKIP_ROWS, &unpack_skip_rows_);
+        if (unpack_skip_rows_)
+          api_->glPixelStoreiFn(GL_UNPACK_SKIP_ROWS, 0);
+        api_->glGetIntegervFn(GL_UNPACK_SKIP_PIXELS, &unpack_skip_pixels_);
+        if (unpack_skip_pixels_)
+          api_->glPixelStoreiFn(GL_UNPACK_SKIP_PIXELS, 0);
+      }
+
+      if (es3_capable) {
+        api_->glGetIntegervFn(GL_UNPACK_SKIP_IMAGES, &unpack_skip_images_);
+        if (unpack_skip_images_)
+          api_->glPixelStoreiFn(GL_UNPACK_SKIP_IMAGES, 0);
+        api_->glGetIntegervFn(GL_UNPACK_IMAGE_HEIGHT, &unpack_image_height_);
+        if (unpack_image_height_)
+          api_->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
+      }
+
+      if (desktop_gl) {
+        api->glGetBooleanvFn(GL_UNPACK_SWAP_BYTES, &unpack_swap_bytes_);
+        if (unpack_swap_bytes_)
+          api->glPixelStoreiFn(GL_UNPACK_SWAP_BYTES, GL_FALSE);
+        api->glGetBooleanvFn(GL_UNPACK_LSB_FIRST, &unpack_lsb_first_);
+        if (unpack_lsb_first_)
+          api->glPixelStoreiFn(GL_UNPACK_LSB_FIRST, GL_FALSE);
+      }
+    }
+  }
+
+  ~ScopedResetAndRestoreUnpackState() {
+    if (unpack_buffer_)
+      api_->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, unpack_buffer_);
+    if (unpack_alignment_ != 4)
+      api_->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, unpack_alignment_);
+    if (unpack_row_length_)
+      api_->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, unpack_row_length_);
+    if (unpack_image_height_)
+      api_->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height_);
+    if (unpack_skip_rows_)
+      api_->glPixelStoreiFn(GL_UNPACK_SKIP_ROWS, unpack_skip_rows_);
+    if (unpack_skip_images_)
+      api_->glPixelStoreiFn(GL_UNPACK_SKIP_IMAGES, unpack_skip_images_);
+    if (unpack_skip_pixels_)
+      api_->glPixelStoreiFn(GL_UNPACK_SKIP_PIXELS, unpack_skip_pixels_);
+    if (unpack_swap_bytes_)
+      api_->glPixelStoreiFn(GL_UNPACK_SWAP_BYTES, unpack_swap_bytes_);
+    if (unpack_lsb_first_)
+      api_->glPixelStoreiFn(GL_UNPACK_LSB_FIRST, unpack_lsb_first_);
+  }
+
+ private:
+  gl::GLApi* const api_;
+
+  // Always used if |es3_capable|.
+  GLint unpack_buffer_ = 0;
+
+  // Always used when |uploading_data|.
+  GLint unpack_alignment_ = 4;
+
+  // Used when |uploading_data_| and (|es3_capable| or
+  // |supports_unpack_subimage|).
+  GLint unpack_row_length_ = 0;
+  GLint unpack_skip_pixels_ = 0;
+  GLint unpack_skip_rows_ = 0;
+
+  // Used when |uploading_data| and |es3_capable|.
+  GLint unpack_skip_images_ = 0;
+  GLint unpack_image_height_ = 0;
+
+  // Used when |desktop_gl|.
+  GLboolean unpack_swap_bytes_ = GL_FALSE;
+  GLboolean unpack_lsb_first_ = GL_FALSE;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedResetAndRestoreUnpackState);
+};
 
 class ScopedRestoreTexture {
  public:
@@ -312,7 +413,8 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
       uint32_t usage,
       scoped_refptr<gles2::TexturePassthrough> passthrough_texture,
       GLenum internal_format,
-      GLenum driver_internal_format)
+      GLenum driver_internal_format,
+      bool is_cleared)
       : SharedImageBacking(mailbox,
                            format,
                            size,
@@ -321,7 +423,8 @@ class SharedImageBackingPassthroughGLTexture : public SharedImageBacking {
                            passthrough_texture->estimated_size()),
         texture_passthrough_(std::move(passthrough_texture)),
         internal_format_(internal_format),
-        driver_internal_format_(driver_internal_format) {
+        driver_internal_format_(driver_internal_format),
+        is_cleared_(is_cleared) {
     DCHECK(texture_passthrough_);
   }
 
@@ -406,6 +509,12 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
       feature_info->feature_flags().gpu_memory_buffer_formats;
   texture_usage_angle_ = feature_info->feature_flags().angle_texture_usage;
   es3_capable_ = feature_info->IsES3Capable();
+  desktop_gl_ = !feature_info->gl_version_info().is_es;
+  // Can't use the value from feature_info, as we unconditionally enable this
+  // extension, and assume it can't be used if PBOs are not used (which isn't
+  // true for Skia used direclty against GL).
+  supports_unpack_subimage_ =
+      gl::g_current_gl_driver->ext.b_GL_EXT_unpack_subimage;
   bool enable_texture_storage =
       feature_info->feature_flags().ext_texture_storage;
   bool enable_scanout_images =
@@ -414,17 +523,20 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
   for (int i = 0; i <= viz::RESOURCE_FORMAT_MAX; ++i) {
     auto format = static_cast<viz::ResourceFormat>(i);
     FormatInfo& info = format_info_[i];
-    // TODO(piman): do we need to support ETC1?
-    if (!viz::GLSupportsFormat(format) ||
-        viz::IsResourceFormatCompressed(format))
+    if (!viz::GLSupportsFormat(format))
       continue;
     GLuint image_internal_format = viz::GLInternalFormat(format);
     GLenum gl_format = viz::GLDataFormat(format);
     GLenum gl_type = viz::GLDataType(format);
-    if (validators->texture_internal_format.IsValid(image_internal_format) &&
-        validators->texture_format.IsValid(gl_format) &&
+    bool uncompressed_format_valid =
+        validators->texture_internal_format.IsValid(image_internal_format) &&
+        validators->texture_format.IsValid(gl_format);
+    bool compressed_format_valid =
+        validators->compressed_texture_format.IsValid(image_internal_format);
+    if ((uncompressed_format_valid || compressed_format_valid) &&
         validators->pixel_type.IsValid(gl_type)) {
       info.enabled = true;
+      info.is_compressed = compressed_format_valid;
       info.gl_format = gl_format;
       info.gl_type = gl_type;
       info.swizzle = gles2::TextureManager::GetCompatibilitySwizzle(
@@ -437,7 +549,7 @@ SharedImageBackingFactoryGLTexture::SharedImageBackingFactoryGLTexture(
     }
     if (!info.enabled)
       continue;
-    if (enable_texture_storage) {
+    if (enable_texture_storage && !info.is_compressed) {
       GLuint storage_internal_format = viz::TextureStorageFormat(format);
       if (validators->texture_internal_format_storage.IsValid(
               storage_internal_format)) {
@@ -481,6 +593,18 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
+  return CreateSharedImage(mailbox, format, size, color_space, usage,
+                           base::span<const uint8_t>());
+}
+
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryGLTexture::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> pixel_data) {
   const FormatInfo& format_info = format_info_[format];
   if (!format_info.enabled) {
     LOG(ERROR) << "CreateSharedImage: invalid format";
@@ -501,6 +625,54 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
 
   GLenum target = use_buffer ? format_info.target_for_scanout : GL_TEXTURE_2D;
 
+  // If we have initial data to upload, ensure it is sized appropriately.
+  if (!pixel_data.empty()) {
+    if (format_info.is_compressed) {
+      const char* error_message = "unspecified";
+      if (!gles2::ValidateCompressedTexDimensions(
+              target, 0 /* level */, size.width(), size.height(), 1 /* depth */,
+              format_info.gl_format, false /* restrict_for_webgl */,
+              &error_message)) {
+        LOG(ERROR) << "CreateSharedImage: "
+                      "ValidateCompressedTexDimensionsFailed with error: "
+                   << error_message;
+        return nullptr;
+      }
+
+      GLsizei bytes_required = 0;
+      if (!gles2::GetCompressedTexSizeInBytes(
+              nullptr /* function_name */, size.width(), size.height(),
+              1 /* depth */, format_info.gl_format, &bytes_required,
+              nullptr /* error_state */)) {
+        LOG(ERROR) << "CreateSharedImage: Unable to compute required size for "
+                      "initial texture upload.";
+        return nullptr;
+      }
+
+      if (bytes_required < 0 ||
+          pixel_data.size() != static_cast<size_t>(bytes_required)) {
+        LOG(ERROR) << "CreateSharedImage: Initial data does not have expected "
+                      "size.";
+        return nullptr;
+      }
+    } else {
+      uint32_t bytes_required;
+      if (!gles2::GLES2Util::ComputeImageDataSizes(
+              size.width(), size.height(), 1 /* depth */, format_info.gl_format,
+              format_info.gl_type, 4 /* alignment */, &bytes_required, nullptr,
+              nullptr)) {
+        LOG(ERROR) << "CreateSharedImage: Unable to compute required size for "
+                      "initial texture upload.";
+        return nullptr;
+      }
+      if (pixel_data.size() != bytes_required) {
+        LOG(ERROR) << "CreateSharedImage: Initial data does not have expected "
+                      "size.";
+        return nullptr;
+      }
+    }
+  }
+
   gl::GLApi* api = gl::g_current_gl_context;
   ScopedRestoreTexture scoped_restore(api, target);
 
@@ -516,6 +688,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   // the internal format in the LevelInfo. https://crbug.com/628064
   GLuint level_info_internal_format = format_info.gl_format;
   bool is_cleared = false;
+  bool needs_subimage_upload = false;
   if (use_buffer) {
     image = image_factory_->CreateAnonymousImage(
         size, format_info.buffer_format, gfx::BufferUsage::SCANOUT,
@@ -528,32 +701,44 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
+    needs_subimage_upload = !pixel_data.empty();
   } else if (format_info.supports_storage) {
     api->glTexStorage2DEXTFn(target, 1, format_info.storage_internal_format,
                              size.width(), size.height());
+    needs_subimage_upload = !pixel_data.empty();
+  } else if (format_info.is_compressed) {
+    ScopedResetAndRestoreUnpackState scoped_unpack_state(
+        api, es3_capable_, desktop_gl_, supports_unpack_subimage_,
+        !pixel_data.empty());
+    api->glCompressedTexImage2DFn(target, 0, format_info.gl_format,
+                                  size.width(), size.height(), 0,
+                                  pixel_data.size(), pixel_data.data());
   } else {
-    // Need to unbind any GL_PIXEL_UNPACK_BUFFER for the nullptr in
-    // glTexImage2D to mean "no pixels" (as opposed to offset 0 in the
-    // buffer).
-    GLint bound_pixel_unpack_buffer = 0;
-    if (es3_capable_) {
-      api->glGetIntegervFn(GL_PIXEL_UNPACK_BUFFER_BINDING,
-                           &bound_pixel_unpack_buffer);
-      if (bound_pixel_unpack_buffer)
-        api->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
-    }
+    ScopedResetAndRestoreUnpackState scoped_unpack_state(
+        api, es3_capable_, desktop_gl_, supports_unpack_subimage_,
+        !pixel_data.empty());
     api->glTexImage2DFn(target, 0, format_info.image_internal_format,
                         size.width(), size.height(), 0,
                         format_info.adjusted_format, format_info.gl_type,
-                        nullptr);
-    if (bound_pixel_unpack_buffer)
-      api->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_pixel_unpack_buffer);
+                        pixel_data.data());
+  }
+
+  // If we are using a buffer or TexStorage API but have data to upload, do so
+  // now via TexSubImage2D.
+  if (needs_subimage_upload) {
+    ScopedResetAndRestoreUnpackState scoped_unpack_state(
+        api, es3_capable_, desktop_gl_, supports_unpack_subimage_,
+        !pixel_data.empty());
+    api->glTexSubImage2DFn(target, 0, 0, 0, size.width(), size.height(),
+                           format_info.adjusted_format, format_info.gl_type,
+                           pixel_data.data());
   }
 
   return MakeBacking(mailbox, target, service_id, image, gles2::Texture::BOUND,
                      level_info_internal_format, format_info.gl_format,
-                     format_info.gl_type, format_info.swizzle, is_cleared,
-                     format, size, color_space, usage);
+                     format_info.gl_type, format_info.swizzle,
+                     pixel_data.empty() ? is_cleared : true, format, size,
+                     color_space, usage);
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -687,7 +872,7 @@ SharedImageBackingFactoryGLTexture::MakeBacking(
     return std::make_unique<SharedImageBackingPassthroughGLTexture>(
         mailbox, format, size, color_space, usage,
         std::move(passthrough_texture), level_info_internal_format,
-        driver_internal_format);
+        driver_internal_format, is_cleared);
   } else {
     gles2::Texture* texture = new gles2::Texture(service_id);
     texture->SetLightweightRef();

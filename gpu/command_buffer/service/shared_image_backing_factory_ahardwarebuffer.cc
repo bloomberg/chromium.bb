@@ -463,6 +463,18 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
   return backing;
 }
 
+std::unique_ptr<SharedImageBacking>
+SharedImageBackingFactoryAHB::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> pixel_data) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 SharedImageBackingFactoryAHB::FormatInfo::FormatInfo() = default;
 SharedImageBackingFactoryAHB::FormatInfo::~FormatInfo() = default;
 

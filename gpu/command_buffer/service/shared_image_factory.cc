@@ -88,6 +88,19 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   return RegisterBacking(std::move(backing), !using_wrapped_sk_image);
 }
 
+bool SharedImageFactory::CreateSharedImage(
+    const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> pixel_data) {
+  std::unique_ptr<SharedImageBacking> backing =
+      backing_factory_->CreateSharedImage(mailbox, format, size, color_space,
+                                          usage, pixel_data);
+  return RegisterBacking(std::move(backing), true);
+}
+
 bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            int client_id,
                                            gfx::GpuMemoryBufferHandle handle,
