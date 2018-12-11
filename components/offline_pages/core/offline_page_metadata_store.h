@@ -227,7 +227,7 @@ class OfflinePageMetadataStore {
   std::vector<base::OnceClosure> pending_commands_;
 
   // Time of the last time the store was closed. Kept for metrics reporting.
-  base::Time last_closing_time_;
+  base::TimeTicks last_closing_time_;
 
   base::WeakPtrFactory<OfflinePageMetadataStore> weak_ptr_factory_;
   base::WeakPtrFactory<OfflinePageMetadataStore> closing_weak_ptr_factory_;

@@ -13,9 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/clock.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_store_types.h"
 #include "components/offline_pages/core/offline_store_utils.h"
@@ -413,7 +411,7 @@ void OfflinePageMetadataStore::InitializeInternal(
   if (!last_closing_time_.is_null()) {
     ReportStoreEvent(OfflinePagesStoreEvent::kReopened);
     UMA_HISTOGRAM_CUSTOM_TIMES("OfflinePages.SQLStorage.TimeFromCloseToOpen",
-                               OfflineClock()->Now() - last_closing_time_,
+                               base::TimeTicks::Now() - last_closing_time_,
                                base::TimeDelta::FromMilliseconds(10),
                                base::TimeDelta::FromMinutes(10),
                                50 /* buckets */);
@@ -468,7 +466,7 @@ void OfflinePageMetadataStore::CloseInternal() {
   }
   TRACE_EVENT_ASYNC_STEP_PAST0("offline_pages", "Metadata Store", this, "Open");
 
-  last_closing_time_ = OfflineClock()->Now();
+  last_closing_time_ = base::TimeTicks::Now();
   ReportStoreEvent(OfflinePagesStoreEvent::kClosed);
 
   state_ = StoreState::NOT_LOADED;

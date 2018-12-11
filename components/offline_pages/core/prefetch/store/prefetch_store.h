@@ -173,7 +173,7 @@ class PrefetchStore {
   InitializationStatus initialization_status_;
 
   // Time of the last time the store was closed. Kept for metrics reporting.
-  base::Time last_closing_time_;
+  base::TimeTicks last_closing_time_;
 
   // Weak pointer to control the callback.
   base::WeakPtrFactory<PrefetchStore> weak_ptr_factory_;
