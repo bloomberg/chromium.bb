@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/device/serial/serial_device_enumerator_impl.h"
+#include "services/device/serial/serial_port_manager_impl.h"
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -14,10 +14,10 @@ namespace device {
 
 namespace {
 
-class SerialDeviceEnumeratorImplTest : public DeviceServiceTestBase {
+class SerialPortManagerImplTest : public DeviceServiceTestBase {
  public:
-  SerialDeviceEnumeratorImplTest() = default;
-  ~SerialDeviceEnumeratorImplTest() override = default;
+  SerialPortManagerImplTest() = default;
+  ~SerialPortManagerImplTest() override = default;
 
  protected:
   void SetUp() override {
@@ -27,16 +27,16 @@ class SerialDeviceEnumeratorImplTest : public DeviceServiceTestBase {
 
   void TearDown() override { enumerator_.reset(); }
 
-  mojom::SerialDeviceEnumeratorPtr enumerator_;
+  mojom::SerialPortManagerPtr enumerator_;
 
-  DISALLOW_COPY_AND_ASSIGN(SerialDeviceEnumeratorImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SerialPortManagerImplTest);
 };
 
 // This is to simply test that on Linux/Mac/Windows a client can connect to
 // Device Service and bind the serial SerialDeviceEnumerator interface
 // correctly.
 // TODO(leonhsl): figure out how to add more robust tests.
-TEST_F(SerialDeviceEnumeratorImplTest, SimpleConnectTest) {
+TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
   enumerator_.FlushForTesting();
 }
 

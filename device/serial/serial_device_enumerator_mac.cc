@@ -102,9 +102,9 @@ int Clamp(int value, int min, int max) {
 // Returns an array of devices as retrieved through the new method of
 // enumerating serial devices (IOKit).  This new method gives more information
 // about the devices than the old method.
-std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
-  std::vector<mojom::SerialDeviceInfoPtr> devices;
-  
+std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
+  std::vector<mojom::SerialPortInfoPtr> devices;
+
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // Make a service query to find all serial devices.
   CFMutableDictionaryRef matchingDict =
@@ -121,7 +121,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
   base::mac::ScopedIOObject<io_iterator_t> scoped_it(it);
   base::mac::ScopedIOObject<io_service_t> scoped_device;
   while (scoped_device.reset(IOIteratorNext(scoped_it.get())), scoped_device) {
-    auto callout_info = mojom::SerialDeviceInfo::New();
+    auto callout_info = mojom::SerialPortInfo::New();
 
     uint16_t vendorId;
     if (GetUInt16Property(scoped_device.get(), CFSTR(kUSBVendorID),
@@ -150,7 +150,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
     std::string dialinDevice;
     if (GetStringProperty(scoped_device.get(), CFSTR(kIODialinDeviceKey),
                           &dialinDevice)) {
-      mojom::SerialDeviceInfoPtr dialin_info = callout_info.Clone();
+      mojom::SerialPortInfoPtr dialin_info = callout_info.Clone();
       dialin_info->path = dialinDevice;
       devices.push_back(std::move(dialin_info));
     }
@@ -169,7 +169,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
 // Returns an array of devices as retrieved through the old method of
 // enumerating serial devices (pattern matching in /dev/). This old method gives
 // less information about the devices than the new method.
-std::vector<mojom::SerialDeviceInfoPtr> GetDevicesOld() {
+std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
   const base::FilePath kDevRoot("/dev");
   const int kFilesAndSymLinks =
       base::FileEnumerator::FILES | base::FileEnumerator::SHOW_SYM_LINKS;
@@ -184,7 +184,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesOld() {
   valid_patterns.insert("/dev/cu.*");
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
-  std::vector<mojom::SerialDeviceInfoPtr> devices;
+  std::vector<mojom::SerialPortInfoPtr> devices;
   base::FileEnumerator enumerator(kDevRoot, false, kFilesAndSymLinks);
   do {
     const base::FilePath next_device_path(enumerator.Next());
@@ -195,7 +195,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesOld() {
     std::set<std::string>::const_iterator i = valid_patterns.begin();
     for (; i != valid_patterns.end(); ++i) {
       if (base::MatchPattern(next_device, *i)) {
-        auto info = mojom::SerialDeviceInfo::New();
+        auto info = mojom::SerialPortInfo::New();
         info->path = next_device;
         devices.push_back(std::move(info));
         break;
@@ -217,10 +217,9 @@ SerialDeviceEnumeratorMac::SerialDeviceEnumeratorMac() {}
 
 SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
 
-std::vector<mojom::SerialDeviceInfoPtr>
-SerialDeviceEnumeratorMac::GetDevices() {
-  std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
-  std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();
+std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
+  std::vector<mojom::SerialPortInfoPtr> devices = GetDevicesNew();
+  std::vector<mojom::SerialPortInfoPtr> old_devices = GetDevicesOld();
 
   base::UmaHistogramSparse("Hardware.Serial.NewMinusOldDeviceListSize",
                            Clamp(devices.size() - old_devices.size(), -10, 10));

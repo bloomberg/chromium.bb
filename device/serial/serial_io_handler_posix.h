@@ -30,7 +30,7 @@ class SerialIoHandlerPosix : public SerialIoHandler {
   bool ConfigurePortImpl() override;
   bool PostOpen() override;
   bool Flush() const override;
-  mojom::SerialDeviceControlSignalsPtr GetControlSignals() const override;
+  mojom::SerialPortControlSignalsPtr GetControlSignals() const override;
   bool SetControlSignals(
       const mojom::SerialHostControlSignals& control_signals) override;
   mojom::SerialConnectionInfoPtr GetPortInfo() const override;

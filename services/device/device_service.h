@@ -159,10 +159,9 @@ class DeviceService : public service_manager::Service {
 
   void BindWakeLockProviderRequest(mojom::WakeLockProviderRequest request);
 
-  void BindSerialDeviceEnumeratorRequest(
-      mojom::SerialDeviceEnumeratorRequest request);
+  void BindSerialPortManagerRequest(mojom::SerialPortManagerRequest request);
 
-  void BindSerialIoHandlerRequest(mojom::SerialIoHandlerRequest request);
+  void BindSerialPortRequest(mojom::SerialPortRequest request);
 
   void BindUsbDeviceManagerRequest(mojom::UsbDeviceManagerRequest request);
 

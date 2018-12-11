@@ -403,15 +403,15 @@ bool SerialIoHandlerPosix::Flush() const {
   return true;
 }
 
-mojom::SerialDeviceControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
+mojom::SerialPortControlSignalsPtr SerialIoHandlerPosix::GetControlSignals()
     const {
   int status;
   if (ioctl(file().GetPlatformFile(), TIOCMGET, &status) == -1) {
     VPLOG(1) << "Failed to get port control signals";
-    return mojom::SerialDeviceControlSignalsPtr();
+    return mojom::SerialPortControlSignalsPtr();
   }
 
-  auto signals = mojom::SerialDeviceControlSignals::New();
+  auto signals = mojom::SerialPortControlSignals::New();
   signals->dcd = (status & TIOCM_CAR) != 0;
   signals->cts = (status & TIOCM_CTS) != 0;
   signals->dsr = (status & TIOCM_DSR) != 0;

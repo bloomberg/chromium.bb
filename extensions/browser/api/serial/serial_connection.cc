@@ -165,7 +165,7 @@ ApiResourceManager<SerialConnection>::GetFactoryInstance() {
 SerialConnection::SerialConnection(
     const std::string& port,
     const std::string& owner_extension_id,
-    device::mojom::SerialIoHandlerPtrInfo io_handler_info)
+    device::mojom::SerialPortPtrInfo io_handler_info)
     : ApiResource(owner_extension_id),
       port_(port),
       persistent_(false),
@@ -352,7 +352,7 @@ void SerialConnection::GetControlSignals(
   DCHECK(io_handler_);
   auto resp_callback = base::BindOnce(
       [](GetControlSignalsCompleteCallback callback,
-         device::mojom::SerialDeviceControlSignalsPtr signals) {
+         device::mojom::SerialPortControlSignalsPtr signals) {
         if (!signals) {
           std::move(callback).Run(nullptr);
           return;

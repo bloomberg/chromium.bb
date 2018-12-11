@@ -24,13 +24,13 @@ using content::BrowserThread;
 
 namespace extensions {
 
-// Encapsulates an mojo interface ptr of device::mojom::SerialIoHandler, which
+// Encapsulates an mojo interface ptr of device::mojom::SerialPort, which
 // corresponds with an open serial port in remote side(Device Service). NOTE:
 // Instances of this object should only be constructed on the IO thread, and all
 // methods should only be called on the IO thread unless otherwise noted.
 class SerialConnection : public ApiResource {
  public:
-  using OpenCompleteCallback = device::mojom::SerialIoHandler::OpenCallback;
+  using OpenCompleteCallback = device::mojom::SerialPort::OpenCallback;
   using GetInfoCompleteCallback =
       base::OnceCallback<void(bool,
                               std::unique_ptr<api::serial::ConnectionInfo>)>;
@@ -50,25 +50,24 @@ class SerialConnection : public ApiResource {
                               api::serial::SendError error)>;
 
   using ConfigureCompleteCallback =
-      device::mojom::SerialIoHandler::ConfigurePortCallback;
+      device::mojom::SerialPort::ConfigurePortCallback;
 
-  using FlushCompleteCallback = device::mojom::SerialIoHandler::FlushCallback;
+  using FlushCompleteCallback = device::mojom::SerialPort::FlushCallback;
 
   using GetControlSignalsCompleteCallback = base::OnceCallback<void(
       std::unique_ptr<api::serial::DeviceControlSignals>)>;
 
   using SetControlSignalsCompleteCallback =
-      device::mojom::SerialIoHandler::SetControlSignalsCallback;
+      device::mojom::SerialPort::SetControlSignalsCallback;
 
-  using SetBreakCompleteCallback =
-      device::mojom::SerialIoHandler::SetBreakCallback;
+  using SetBreakCompleteCallback = device::mojom::SerialPort::SetBreakCallback;
 
   using ClearBreakCompleteCallback =
-      device::mojom::SerialIoHandler::ClearBreakCallback;
+      device::mojom::SerialPort::ClearBreakCallback;
 
   SerialConnection(const std::string& port,
                    const std::string& owner_extension_id,
-                   device::mojom::SerialIoHandlerPtrInfo io_handler_info);
+                   device::mojom::SerialPortPtrInfo io_handler_info);
   ~SerialConnection() override;
 
   // ApiResource override.
@@ -122,7 +121,7 @@ class SerialConnection : public ApiResource {
   // Connection configuration query. Returns retrieved ConnectionInfo value via
   // |callback|, and indicates whether it's complete info. Some ConnectionInfo
   // fields are filled with local info from |this|, while some other fields must
-  // be retrieved from remote SerialIoHandler interface, which may fail.
+  // be retrieved from remote SerialPort interface, which may fail.
   void GetInfo(GetInfoCompleteCallback callback) const;
 
   // Reads current control signals (DCD, CTS, etc.) and returns via |callback|.
@@ -206,7 +205,7 @@ class SerialConnection : public ApiResource {
   base::CancelableClosure send_timeout_task_;
 
   // Mojo interface ptr corresponding with remote asynchronous I/O handler.
-  device::mojom::SerialIoHandlerPtr io_handler_;
+  device::mojom::SerialPortPtr io_handler_;
   // Closure which is set by client and will be called when |io_handler_|
   // connection encountered an error.
   base::OnceClosure connection_error_handler_;

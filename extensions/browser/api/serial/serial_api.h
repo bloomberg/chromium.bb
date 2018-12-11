@@ -50,9 +50,9 @@ class SerialGetDevicesFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnGotDevices(std::vector<device::mojom::SerialDeviceInfoPtr> devices);
+  void OnGotDevices(std::vector<device::mojom::SerialPortInfoPtr> devices);
 
-  device::mojom::SerialDeviceEnumeratorPtr enumerator_;
+  device::mojom::SerialPortManagerPtr enumerator_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialGetDevicesFunction);
 };
@@ -86,7 +86,7 @@ class SerialConnectFunction : public SerialAsyncApiFunction {
   // ApiResourceManager<SerialConnection> upon success.
   std::unique_ptr<SerialConnection> connection_;
 
-  device::mojom::SerialIoHandlerPtrInfo io_handler_info_;
+  device::mojom::SerialPortPtrInfo io_handler_info_;
 };
 
 class SerialUpdateFunction : public SerialAsyncApiFunction {
@@ -309,9 +309,9 @@ namespace mojo {
 
 template <>
 struct TypeConverter<extensions::api::serial::DeviceInfo,
-                     device::mojom::SerialDeviceInfoPtr> {
+                     device::mojom::SerialPortInfoPtr> {
   static extensions::api::serial::DeviceInfo Convert(
-      const device::mojom::SerialDeviceInfoPtr& input);
+      const device::mojom::SerialPortInfoPtr& input);
 };
 
 }  // namespace mojo

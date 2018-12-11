@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_IMPL_H_
-#define SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_IMPL_H_
+#ifndef SERVICES_DEVICE_SERIAL_SERIAL_PORT_IMPL_H_
+#define SERVICES_DEVICE_SERIAL_SERIAL_PORT_IMPL_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,18 +20,18 @@ namespace device {
 // SerialIoHandler is exposed only via the Device Service.
 // crbug.com/748505
 // This class must be constructed and run on IO thread.
-class SerialIoHandlerImpl : public mojom::SerialIoHandler {
+class SerialPortImpl : public mojom::SerialPort {
  public:
   static void Create(
-      mojom::SerialIoHandlerRequest request,
+      mojom::SerialPortRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
-  explicit SerialIoHandlerImpl(
+  explicit SerialPortImpl(
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  ~SerialIoHandlerImpl() override;
+  ~SerialPortImpl() override;
 
  private:
-  // mojom::SerialIoHandler methods:
+  // mojom::SerialPort methods:
   void Open(const std::string& port,
             mojom::SerialConnectionOptionsPtr options,
             OpenCallback callback) override;
@@ -51,9 +51,9 @@ class SerialIoHandlerImpl : public mojom::SerialIoHandler {
 
   scoped_refptr<device::SerialIoHandler> io_handler_;
 
-  DISALLOW_COPY_AND_ASSIGN(SerialIoHandlerImpl);
+  DISALLOW_COPY_AND_ASSIGN(SerialPortImpl);
 };
 
 }  // namespace device
 
-#endif  // SERVICES_DEVICE_SERIAL_SERIAL_IO_HANDLER_IMPL_H_
+#endif  // SERVICES_DEVICE_SERIAL_SERIAL_PORT_IMPL_H_

@@ -90,8 +90,8 @@ int Clamp(int value, int min, int max) {
 // Returns an array of devices as retrieved through the new method of
 // enumerating serial devices (SetupDi).  This new method gives more information
 // about the devices than the old method.
-std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
-  std::vector<mojom::SerialDeviceInfoPtr> devices;
+std::vector<mojom::SerialPortInfoPtr> GetDevicesNew() {
+  std::vector<mojom::SerialPortInfoPtr> devices;
 
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // Make a device interface query to find all serial devices.
@@ -112,7 +112,7 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
       // serial device. If the COM can't be found, ignore the device.
       continue;
 
-    auto info = mojom::SerialDeviceInfo::New();
+    auto info = mojom::SerialPortInfo::New();
     info->path = com_port;
 
     std::string display_name;
@@ -143,13 +143,13 @@ std::vector<mojom::SerialDeviceInfoPtr> GetDevicesNew() {
 // Returns an array of devices as retrieved through the old method of
 // enumerating serial devices (searching the registry). This old method gives
 // less information about the devices than the new method.
-std::vector<mojom::SerialDeviceInfoPtr> GetDevicesOld() {
+std::vector<mojom::SerialPortInfoPtr> GetDevicesOld() {
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
-  std::vector<mojom::SerialDeviceInfoPtr> devices;
+  std::vector<mojom::SerialPortInfoPtr> devices;
   for (; iter_key.Valid(); ++iter_key) {
-    auto info = mojom::SerialDeviceInfo::New();
+    auto info = mojom::SerialPortInfo::New();
     info->path = base::UTF16ToASCII(iter_key.Value());
     devices.push_back(std::move(info));
   }
@@ -168,10 +168,9 @@ SerialDeviceEnumeratorWin::SerialDeviceEnumeratorWin() {}
 
 SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 
-std::vector<mojom::SerialDeviceInfoPtr>
-SerialDeviceEnumeratorWin::GetDevices() {
-  std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
-  std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();
+std::vector<mojom::SerialPortInfoPtr> SerialDeviceEnumeratorWin::GetDevices() {
+  std::vector<mojom::SerialPortInfoPtr> devices = GetDevicesNew();
+  std::vector<mojom::SerialPortInfoPtr> old_devices = GetDevicesOld();
 
   base::UmaHistogramSparse("Hardware.Serial.NewMinusOldDeviceListSize",
                            Clamp(devices.size() - old_devices.size(), -10, 10));

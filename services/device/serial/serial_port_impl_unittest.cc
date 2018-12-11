@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/device/serial/serial_io_handler_impl.h"
+#include "services/device/serial/serial_port_impl.h"
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
@@ -14,21 +14,20 @@ namespace device {
 
 namespace {
 
-class SerialIoHandlerImplTest : public DeviceServiceTestBase {
+class SerialPortImplTest : public DeviceServiceTestBase {
  public:
-  SerialIoHandlerImplTest() = default;
-  ~SerialIoHandlerImplTest() override = default;
+  SerialPortImplTest() = default;
+  ~SerialPortImplTest() override = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SerialIoHandlerImplTest);
+  DISALLOW_COPY_AND_ASSIGN(SerialPortImplTest);
 };
 
 // This is to simply test that on Linux/Mac/Windows a client can connect to
-// Device Service and bind the serial SerialIoHandler interface
-// correctly.
+// Device Service and bind the serial SerialPort interface correctly.
 // TODO(leonhsl): figure out how to add more robust tests.
-TEST_F(SerialIoHandlerImplTest, SimpleConnectTest) {
-  mojom::SerialIoHandlerPtr io_handler;
+TEST_F(SerialPortImplTest, SimpleConnectTest) {
+  mojom::SerialPortPtr io_handler;
   connector()->BindInterface(mojom::kServiceName, &io_handler);
   io_handler.FlushForTesting();
 }
