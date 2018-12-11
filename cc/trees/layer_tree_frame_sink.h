@@ -81,6 +81,10 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
 
   bool HasClient() { return !!client_; }
 
+  void set_source_frame_number(int64_t frame_number) {
+    source_frame_number_ = frame_number;
+  }
+
   // The viz::ContextProviders may be null if frames should be submitted with
   // software SharedMemory resources.
   viz::ContextProvider* context_provider() const {
@@ -138,6 +142,8 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 
   std::unique_ptr<ContextLostForwarder> worker_context_lost_forwarder_;
+
+  int64_t source_frame_number_;
 
  private:
   THREAD_CHECKER(thread_checker_);

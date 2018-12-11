@@ -2089,6 +2089,9 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     return false;
   }
 
+  layer_tree_frame_sink_->set_source_frame_number(
+      active_tree_->source_frame_number());
+
   auto compositor_frame = GenerateCompositorFrame(frame);
   layer_tree_frame_sink_->SubmitCompositorFrame(
       std::move(compositor_frame), debug_state_.show_hit_test_borders);

@@ -997,6 +997,7 @@ void TileManager::ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule) {
     DCHECK(tile->HasRasterTask());
 
     TileTask* task = tile->raster_task_.get();
+    task->set_frame_number(tile->source_frame_number());
 
     DCHECK(!task->HasCompleted());
 

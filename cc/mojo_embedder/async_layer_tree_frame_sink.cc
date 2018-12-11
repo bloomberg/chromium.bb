@@ -173,8 +173,8 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
-  TRACE_EVENT0("cc,benchmark",
-               "AsyncLayerTreeFrameSink::SubmitCompositorFrame");
+  TRACE_EVENT1("cc,benchmark", "AsyncLayerTreeFrameSink::SubmitCompositorFrame",
+               "source_frame_number_", source_frame_number_);
 
   // It's possible to request an immediate composite from cc which will bypass
   // BeginFrame. In that case, we cannot collect full graphics pipeline data.

@@ -77,6 +77,8 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
   typedef std::vector<scoped_refptr<Task>> Vector;
 
   TaskState& state() { return state_; }
+  void set_frame_number(int64_t frame_number) { frame_number_ = frame_number; }
+  int64_t frame_number() { return frame_number_; }
 
   // Subclasses should implement this method. RunOnWorkerThread may be called
   // on any thread, and subclasses are responsible for locking and thread
@@ -91,6 +93,7 @@ class CC_EXPORT Task : public base::RefCountedThreadSafe<Task> {
 
  private:
   TaskState state_;
+  int64_t frame_number_ = -1;
 };
 
 // A task dependency graph describes the order in which to execute a set
