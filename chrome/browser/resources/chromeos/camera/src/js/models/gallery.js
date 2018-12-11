@@ -212,10 +212,10 @@ cca.models.Gallery.prototype.lastPicture = function() {
 cca.models.Gallery.prototype.checkLastPicture = function() {
   return this.lastPicture().then((picture) => {
     // Assume only external pictures were removed without updating the model.
-    if (cca.models.FileSystem.externalFs && picture) {
+    if (cca.models.FileSystem.externalDir && picture) {
       var name = picture.pictureEntry.name;
-      return cca.models.FileSystem.getFile_(
-          cca.models.FileSystem.externalFs, name, false).then((entry) => {
+      return cca.models.FileSystem.getFile(
+          cca.models.FileSystem.externalDir, name, false).then((entry) => {
         return [picture, (entry != null)];
       });
     } else {

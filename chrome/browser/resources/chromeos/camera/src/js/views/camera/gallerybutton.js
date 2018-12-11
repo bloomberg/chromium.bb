@@ -91,7 +91,7 @@ cca.views.camera.GalleryButton.prototype.updateButton_ = function() {
  * @private
  */
 cca.views.camera.GalleryButton.prototype.openGallery_ = function(picture) {
-  if (cca.models.FileSystem.externalFs && chrome.fileManagerPrivate) {
+  if (cca.models.FileSystem.externalDir && chrome.fileManagerPrivate) {
     const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
     chrome.fileManagerPrivate.executeTask(
         id, [picture.pictureEntry], (result) => {

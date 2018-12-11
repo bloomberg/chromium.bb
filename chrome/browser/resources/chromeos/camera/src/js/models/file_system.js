@@ -45,51 +45,67 @@ cca.models.FileSystem.VIDEO_PREFIX = 'VID_';
 cca.models.FileSystem.THUMBNAIL_PREFIX = 'thumb-';
 
 /**
- * Internal file system.
- * @type {FileSystem}
+ * Directory in the internal file system.
+ * @type {DirectoryEntry}
  */
-cca.models.FileSystem.internalFs = null;
+cca.models.FileSystem.internalDir = null;
 
 /**
- * External file system.
- * @type {FileSystem}
+ * Directory in the external file system.
+ * @type {DirectoryEntry}
  */
-cca.models.FileSystem.externalFs = null;
+cca.models.FileSystem.externalDir = null;
 
 /**
- * Initializes the internal file system.
- * @return {!Promise<FileSystem>} Promise for the internal file system.
+ * Initializes the directory in the internal file system.
+ * @return {!Promise<DirectoryEntry>} Promise for the directory in the internal
+ * file system.
  * @private
  */
-cca.models.FileSystem.initInternalFs_ = function() {
+cca.models.FileSystem.initInternalDir_ = function() {
   return new Promise((resolve, reject) => {
     webkitRequestFileSystem(
-        window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */, resolve, reject);
+        window.PERSISTENT, 768 * 1024 * 1024 /* 768MB */, (fs) => {
+          resolve(fs.root);
+        }, reject);
   });
 };
 
 /**
- * Initializes the external file system.
- * @return {!Promise<?FileSystem>} Promise for the external file system.
+ * Initializes the directory in the external file system.
+ * @return {!Promise<?FileSystem>} Promise for the directory in the external
+ * file system.
  * @private
  */
-cca.models.FileSystem.initExternalFs_ = function() {
+cca.models.FileSystem.initExternalDir_ = function() {
   return new Promise((resolve) => {
     if (!cca.util.isChromeOS()) {
-      resolve(null);
+      resolve([null, null]);
       return;
     }
     chrome.fileSystem.getVolumeList((volumes) => {
       if (volumes) {
         for (var i = 0; i < volumes.length; i++) {
-          if (volumes[i].volumeId.indexOf('downloads:Downloads') !== -1) {
-            chrome.fileSystem.requestFileSystem(volumes[i], resolve);
+          if (volumes[i].volumeId.indexOf('downloads:Downloads') !== -1 ||
+              volumes[i].volumeId.indexOf('downloads:MyFiles') !== -1) {
+            chrome.fileSystem.requestFileSystem(volumes[i], (fs) => {
+              resolve([fs && fs.root, volumes[i].volumeId]);
+            });
             return;
           }
         }
       }
-      resolve(null);
+      resolve([null, null]);
     });
+  }).then(([dir, volumeId]) => {
+    if (volumeId && volumeId.indexOf('downloads:MyFiles') !== -1) {
+      return cca.models.FileSystem.readDir_(dir).then((entries) => {
+        return entries.find((entry) => {
+          return entry.name == "Downloads" && entry.isDirectory;
+        });
+      })
+    }
+    return dir;
   });
 };
 
@@ -126,19 +142,19 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
   };
 
   return Promise.all([
-    cca.models.FileSystem.initInternalFs_(),
-    cca.models.FileSystem.initExternalFs_(),
+    cca.models.FileSystem.initInternalDir_(),
+    cca.models.FileSystem.initExternalDir_(),
     checkAcked,
     checkMigrated,
-  ]).then(([internalFs, externalFs, acked, migrated]) => {
-    cca.models.FileSystem.internalFs = internalFs;
-    cca.models.FileSystem.externalFs = externalFs;
-    if (migrated && !cca.models.FileSystem.externalFs) {
+  ]).then(([internalDir, externalDir, acked, migrated]) => {
+    cca.models.FileSystem.internalDir = internalDir;
+    cca.models.FileSystem.externalDir = externalDir;
+    if (migrated && !externalDir) {
       throw 'External file system should be available.';
     }
 
     // Check if acknowledge-prompt and migrate-pictures are needed.
-    if (migrated || !cca.models.FileSystem.externalFs) {
+    if (migrated || !cca.models.FileSystem.externalDir) {
       return [false, false];
     } else {
       return cca.models.FileSystem.hasInternalPictures_().then((result) => {
@@ -170,15 +186,15 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
 };
 
 /**
- * Reads file entries from the file system.
- * @param {FileSystem} fs File system to be read.
+ * Reads file entries from the directory.
+ * @param {DirectoryEntry} dir Directory entry to be read.
  * @return {!Promise<!Array.<FileEntry>>} Promise for the read file entries.
  * @private
  */
-cca.models.FileSystem.readFs_ = function(fs) {
+cca.models.FileSystem.readDir_ = function(dir) {
   return new Promise((resolve, reject) => {
-    if (fs) {
-      var dirReader = fs.root.createReader();
+    if (dir) {
+      var dirReader = dir.createReader();
       var entries = [];
       var readEntries = () => {
         dirReader.readEntries((inEntries) => {
@@ -203,8 +219,8 @@ cca.models.FileSystem.readFs_ = function(fs) {
  * @private
  */
 cca.models.FileSystem.hasInternalPictures_ = function() {
-  var fs = cca.models.FileSystem.internalFs;
-  return cca.models.FileSystem.readFs_(fs).then((entries) => {
+  var dir = cca.models.FileSystem.internalDir;
+  return cca.models.FileSystem.readDir_(dir).then((entries) => {
     for (var index = entries.length - 1; index >= 0; index--) {
       // Check if there is any picture other than thumbnail in file entries.
       // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
@@ -221,18 +237,18 @@ cca.models.FileSystem.hasInternalPictures_ = function() {
  * @return {!Promise} Promise for the operation.
  */
 cca.models.FileSystem.migratePictures = function() {
-  var internalFs = cca.models.FileSystem.internalFs;
-  var externalFs = cca.models.FileSystem.externalFs;
+  var internalEntry = cca.models.FileSystem.internalDir;
+  var externalEntry = cca.models.FileSystem.externalDir;
 
   var migratePicture = (pictureEntry, thumbnailEntry) => {
     var name = cca.models.FileSystem.regulatePictureName(pictureEntry);
-    return cca.models.FileSystem.getFile_(
-        externalFs, name, true).then((entry) => {
+    return cca.models.FileSystem.getFile(
+        externalEntry, name, true).then((entry) => {
       return new Promise((resolve, reject) => {
-        pictureEntry.copyTo(externalFs.root, entry.name, (result) => {
+        pictureEntry.copyTo(externalEntry, entry.name, (result) => {
           if (result.name != pictureEntry.name && thumbnailEntry) {
             // Thumbnails can be recreated later if failing to rename them here.
-            thumbnailEntry.moveTo(internalFs.root,
+            thumbnailEntry.moveTo(internalEntry,
                 cca.models.FileSystem.getThumbnailName(result));
           }
           pictureEntry.remove(() => {});
@@ -242,21 +258,22 @@ cca.models.FileSystem.migratePictures = function() {
     });
   };
 
-  return cca.models.FileSystem.readFs_(internalFs).then((internalEntries) => {
-    var pictureEntries = [];
-    var thumbnailEntriesByName = {};
-    cca.models.FileSystem.parseInternalEntries_(
-        internalEntries, thumbnailEntriesByName, pictureEntries);
+  return cca.models.FileSystem.readDir_(internalEntry).then(
+    (internalEntries) => {
+      var pictureEntries = [];
+      var thumbnailEntriesByName = {};
+      cca.models.FileSystem.parseInternalEntries_(
+          internalEntries, thumbnailEntriesByName, pictureEntries);
 
-    var migrated = [];
-    for (var index = 0; index < pictureEntries.length; index++) {
-      var entry = pictureEntries[index];
-      var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
-      var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
-      migrated.push(migratePicture(entry, thumbnailEntry));
-    }
-    return Promise.all(migrated);
-  });
+      var migrated = [];
+      for (var index = 0; index < pictureEntries.length; index++) {
+        var entry = pictureEntries[index];
+        var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
+        var thumbnailEntry = thumbnailEntriesByName[thumbnailName];
+        migrated.push(migratePicture(entry, thumbnailEntry));
+      }
+      return Promise.all(migrated);
+    });
 };
 
 /**
@@ -309,14 +326,14 @@ cca.models.FileSystem.regulatePictureName = function(entry) {
 /**
  * Saves the blob to the given file name. Name of the actually saved file
  * might be different from the given file name if the file already exists.
- * @param {FileSystem} fs File system to be written.
+ * @param {DirectoryEntry} dir Directory entry to be written.
  * @param {string} name Name of the file.
  * @param {Blob} blob Data of the file to be saved.
  * @return {!Promise<FileEntry>} Promise for the result.
  * @private
  */
-cca.models.FileSystem.saveToFile_ = function(fs, name, blob) {
-  return cca.models.FileSystem.getFile_(fs, name, true).then((entry) => {
+cca.models.FileSystem.saveToFile_ = function(dir, name, blob) {
+  return cca.models.FileSystem.getFile(dir, name, true).then((entry) => {
     return new Promise((resolve, reject) => {
       entry.createWriter((fileWriter) => {
         fileWriter.onwriteend = () => {
@@ -336,9 +353,10 @@ cca.models.FileSystem.saveToFile_ = function(fs, name, blob) {
  * @return {!Promise<FileEntry>} Promise for the result.
  */
 cca.models.FileSystem.savePicture = function(isVideo, blob) {
-  var fs = cca.models.FileSystem.externalFs || cca.models.FileSystem.internalFs;
+  var dir = cca.models.FileSystem.externalDir ||
+                      cca.models.FileSystem.internalDir;
   var name = cca.models.FileSystem.generatePictureName_(isVideo, Date.now());
-  return cca.models.FileSystem.saveToFile_(fs, name, blob);
+  return cca.models.FileSystem.saveToFile_(dir, name, blob);
 };
 
 /**
@@ -404,7 +422,7 @@ cca.models.FileSystem.saveThumbnail = function(isVideo, entry) {
   }).then((blob) => {
     var thumbnailName = cca.models.FileSystem.getThumbnailName(entry);
     return cca.models.FileSystem.saveToFile_(
-        cca.models.FileSystem.internalFs, thumbnailName, blob);
+        cca.models.FileSystem.internalDir, thumbnailName, blob);
   });
 };
 
@@ -476,13 +494,13 @@ cca.models.FileSystem.parseInternalEntries_ = function(
  */
 cca.models.FileSystem.getEntries = function() {
   return Promise.all([
-    cca.models.FileSystem.readFs_(cca.models.FileSystem.internalFs),
-    cca.models.FileSystem.readFs_(cca.models.FileSystem.externalFs),
+    cca.models.FileSystem.readDir_(cca.models.FileSystem.internalDir),
+    cca.models.FileSystem.readDir_(cca.models.FileSystem.externalDir),
   ]).then(([internalEntries, externalEntries]) => {
     var pictureEntries = [];
     var thumbnailEntriesByName = {};
 
-    if (cca.models.FileSystem.externalFs) {
+    if (cca.models.FileSystem.externalDir) {
       pictureEntries = externalEntries.filter((entry) => {
         if (!cca.models.FileSystem.hasVideoPrefix(entry) &&
             !cca.models.FileSystem.hasImagePrefix_(entry)) {
@@ -507,7 +525,7 @@ cca.models.FileSystem.getEntries = function() {
  */
 cca.models.FileSystem.pictureURL = function(entry) {
   return new Promise((resolve) => {
-    if (cca.models.FileSystem.externalFs) {
+    if (cca.models.FileSystem.externalDir) {
       entry.file((file) => {
         resolve(URL.createObjectURL(file));
       });
@@ -519,20 +537,19 @@ cca.models.FileSystem.pictureURL = function(entry) {
 
 /**
  * Gets the file by the given name, avoiding name conflicts if necessary.
- * @param {FileSystem} fs File system to get the file.
+ * @param {DirectoryEntry} dir Directory entry to get the file.
  * @param {string} name File name. Result file may have a different name.
  * @param {boolean} create True to create file, false otherwise.
  * @return {!Promise<?FileEntry>} Promise for the result.
- * @private
  */
-cca.models.FileSystem.getFile_ = function(fs, name, create) {
+cca.models.FileSystem.getFile = function(dir, name, create) {
   return new Promise((resolve, reject) => {
     var options = create ? {create: true, exclusive: true} : {create: false};
-    fs.root.getFile(name, options, resolve, reject);
+    dir.getFile(name, options, resolve, reject);
   }).catch((error) => {
     if (create && error.name == 'InvalidModificationError') {
       // Avoid name conflicts for creating files.
-      return cca.models.FileSystem.getFile_(fs,
+      return cca.models.FileSystem.getFile(dir,
           cca.models.FileSystem.incrementFileName_(name), create);
     } else if (!create && error.name == 'NotFoundError') {
       return null;
