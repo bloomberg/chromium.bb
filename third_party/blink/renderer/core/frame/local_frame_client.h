@@ -91,7 +91,6 @@ class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
-class SharedWorkerRepositoryClient;
 class SubstituteData;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
@@ -342,10 +341,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   CreateServiceWorkerProvider() = 0;
 
   virtual WebContentSettingsClient* GetContentSettingsClient() = 0;
-
-  virtual SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() {
-    return nullptr;
-  }
 
   virtual std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) = 0;

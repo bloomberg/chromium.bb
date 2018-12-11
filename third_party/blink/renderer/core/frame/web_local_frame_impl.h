@@ -58,7 +58,6 @@ class FindInPage;
 class IntSize;
 class LocalFrameClientImpl;
 class ScrollableArea;
-class SharedWorkerRepositoryClient;
 class TextFinder;
 class WebAssociatedURLLoader;
 struct WebAssociatedURLLoaderOptions;
@@ -92,8 +91,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString AssignedName() const override;
   void SetName(const WebString&) override;
   WebVector<WebIconURL> IconURLs(int icon_types_mask) const override;
-  void InitializeSharedWorkerRepositoryClient(
-      service_manager::InterfaceProvider*) override;
   WebSize GetScrollOffset() const override;
   void SetScrollOffset(const WebSize&) override;
   WebSize DocumentSize() const override;
@@ -420,10 +417,6 @@ class CORE_EXPORT WebLocalFrameImpl final
     return content_settings_client_;
   }
 
-  SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() const {
-    return shared_worker_repository_client_.get();
-  }
-
   void SetInputEventsScaleForEmulation(float);
 
   WebTextCheckClient* GetTextCheckerClient() const {
@@ -496,8 +489,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   WebAutofillClient* autofill_client_;
   WebContentSettingsClient* content_settings_client_ = nullptr;
-  std::unique_ptr<SharedWorkerRepositoryClient>
-      shared_worker_repository_client_;
 
   Member<FindInPage> find_in_page_;
 

@@ -228,7 +228,6 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
-#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -576,12 +575,6 @@ WebVector<WebIconURL> WebLocalFrameImpl::IconURLs(int icon_types_mask) const {
 void WebLocalFrameImpl::SetContentSettingsClient(
     WebContentSettingsClient* client) {
   content_settings_client_ = client;
-}
-
-void WebLocalFrameImpl::InitializeSharedWorkerRepositoryClient(
-    service_manager::InterfaceProvider* interface_provider) {
-  shared_worker_repository_client_ =
-      SharedWorkerRepositoryClient::Create(interface_provider);
 }
 
 ScrollableArea* WebLocalFrameImpl::LayoutViewport() const {

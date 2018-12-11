@@ -1783,8 +1783,6 @@ void RenderFrameImpl::Initialize() {
   new PepperBrowserConnection(this);
 #endif
 
-  GetWebFrame()->InitializeSharedWorkerRepositoryClient(GetInterfaceProvider());
-
   RegisterMojoInterfaces();
 
   // We delay calling this until we have the WebFrame so that any observer or

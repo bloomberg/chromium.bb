@@ -255,7 +255,6 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_url.h"
-#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/core/xmlns_names.h"
@@ -2835,9 +2834,6 @@ void Document::Shutdown() {
   if (GetPage())
     GetPage()->DocumentDetached(this);
   probe::documentDetached(this);
-
-  if (frame_->Client()->GetSharedWorkerRepositoryClient())
-    frame_->Client()->GetSharedWorkerRepositoryClient()->DocumentDetached(this);
 
   // FIXME: consider using PausableObject.
   if (scripted_animation_controller_)

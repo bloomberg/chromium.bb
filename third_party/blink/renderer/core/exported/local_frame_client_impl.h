@@ -222,8 +222,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       override;
   WebContentSettingsClient* GetContentSettingsClient() override;
 
-  SharedWorkerRepositoryClient* GetSharedWorkerRepositoryClient() override;
-
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
       WebApplicationCacheHostClient*) override;
 
