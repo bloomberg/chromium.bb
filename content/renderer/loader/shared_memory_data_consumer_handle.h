@@ -79,7 +79,7 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
   // context when the writer is detached, i.e. |Close| or |Fail| is called,
   // and the callback will never be called.
   SharedMemoryDataConsumerHandle(BackpressureMode mode,
-                                 const base::Closure& on_reader_detached,
+                                 base::OnceClosure on_reader_detached,
                                  std::unique_ptr<Writer>* writer);
   ~SharedMemoryDataConsumerHandle() override;
 

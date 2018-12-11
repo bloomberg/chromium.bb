@@ -862,7 +862,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     }
 
     auto read_handle = std::make_unique<SharedMemoryDataConsumerHandle>(
-        mode, base::Bind(&Context::CancelBodyStreaming, this),
+        mode, base::BindOnce(&Context::CancelBodyStreaming, this),
         &body_stream_writer_);
 
     // Here |body_stream_writer_| has an indirect reference to |this| and that
