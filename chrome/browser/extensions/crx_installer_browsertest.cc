@@ -160,7 +160,8 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
       proxy_(proxy) {}
 
   // Overriding some of the ExtensionInstallUI API.
-  void OnInstallSuccess(const Extension* extension, SkBitmap* icon) override {
+  void OnInstallSuccess(scoped_refptr<const Extension> extension,
+                        SkBitmap* icon) override {
     proxy_->set_extension_id(extension->id());
     proxy_->set_confirmation_requested(did_call_show_dialog());
   }
