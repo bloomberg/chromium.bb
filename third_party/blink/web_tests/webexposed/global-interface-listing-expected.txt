@@ -812,6 +812,8 @@ interface CSSStyleSheet : StyleSheet
     method deleteRule
     method insertRule
     method removeRule
+    method replace
+    method replaceSync
 interface CSSStyleValue
     static method parse
     static method parseAll
@@ -1646,13 +1648,10 @@ interface Document : Node
     method createAttribute
     method createAttributeNS
     method createCDATASection
-    method createCSSStyleSheet
-    method createCSSStyleSheetSync
     method createComment
     method createDocumentFragment
     method createElement
     method createElementNS
-    method createEmptyCSSStyleSheet
     method createEvent
     method createExpression
     method createNSResolver

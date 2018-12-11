@@ -426,6 +426,12 @@ void StyleSheetContents::CheckLoaded() {
     if (loading_clients[i]->LoadCompleted())
       continue;
 
+    if (loading_clients[i]->IsConstructed()) {
+      // Resolve the promise for CSSStyleSheet.replace calls.
+      loading_clients[i]->ResolveReplacePromiseIfNeeded(did_load_error_occur_);
+      continue;
+    }
+
     // sheetLoaded might be invoked after its owner node is removed from
     // document.
     if (Node* owner_node = loading_clients[i]->ownerNode()) {
@@ -552,7 +558,6 @@ StyleSheetContents* StyleSheetContents::ParentStyleSheet() const {
 void StyleSheetContents::RegisterClient(CSSStyleSheet* sheet) {
   DCHECK(!loading_clients_.Contains(sheet));
   DCHECK(!completed_clients_.Contains(sheet));
-
   // InspectorCSSAgent::BuildObjectForRule creates CSSStyleSheet without any
   // owner node.
   if (!sheet->OwnerDocument())
