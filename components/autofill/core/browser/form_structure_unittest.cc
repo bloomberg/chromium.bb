@@ -2408,9 +2408,9 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   EXPECT_EQ(expected_query_string, encoded_query_string);
 
   FormData malformed_form(form);
-  // Add 150 address fields - the form is not valid anymore, but previous ones
+  // Add 300 address fields - the form is not valid anymore, but previous ones
   // are. The result should be the same as in previous test.
-  for (size_t i = 0; i < 150; ++i) {
+  for (size_t i = 0; i < 300; ++i) {
     field.label = ASCIIToUTF16("Address");
     field.name = ASCIIToUTF16("address");
     malformed_form.fields.push_back(field);
@@ -3070,9 +3070,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
-  // Add 150 address fields - now the form is invalid, as it has too many
+  // Add 300 address fields - now the form is invalid, as it has too many
   // fields.
-  for (size_t i = 0; i < 150; ++i) {
+  for (size_t i = 0; i < 300; ++i) {
     field.label = ASCIIToUTF16("Address");
     field.name = ASCIIToUTF16("address");
     field.form_control_type = "text";
