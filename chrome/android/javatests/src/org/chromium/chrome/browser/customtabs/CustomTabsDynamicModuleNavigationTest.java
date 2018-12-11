@@ -99,7 +99,8 @@ public class CustomTabsDynamicModuleNavigationTest {
 
         CustomTabsDynamicModuleTestUtils.FakeCCTActivityDelegate activityDelegate =
                 (CustomTabsDynamicModuleTestUtils.FakeCCTActivityDelegate)
-                        cctActivity.getActivityDelegateForTesting();
+                        cctActivity.getComponent()
+                                .resolveDynamicModuleCoordinator().getActivityDelegateForTesting();
 
         activityDelegate.waitForNavigationEvent(CustomTabsCallback.NAVIGATION_STARTED,
                 0, 3);

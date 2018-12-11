@@ -45,9 +45,9 @@ public class ModuleEntryPoint {
         return -1;
     }
 
-    public ActivityDelegate createActivityDelegate(ActivityHostImpl activityHost) {
+    public IActivityDelegate createActivityDelegate(IActivityHost.Stub activityHost) {
         try {
-            return new ActivityDelegate(mEntryPoint.createActivityDelegate(activityHost));
+            return mEntryPoint.createActivityDelegate(activityHost);
         } catch (RemoteException e) {
             assert false;
         }

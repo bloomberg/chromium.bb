@@ -440,7 +440,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     /**
      * @return The saved bundle for the last recorded state.
      */
-    protected Bundle getSavedInstanceState() {
+    public Bundle getSavedInstanceState() {
         return mSavedInstanceState;
     }
 
@@ -643,6 +643,16 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mWindowAndroid != null) mWindowAndroid.saveInstanceState(outState);
+
+        mLifecycleDispatcher.dispatchOnSaveInstanceState(outState);
+    }
+
+    @CallSuper
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+
+        mLifecycleDispatcher.dispatchOnWindowFocusChanged(hasFocus);
     }
 
     /**

@@ -11,11 +11,15 @@ import android.view.ViewStub;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+
+import javax.inject.Inject;
 
 /**
  * Delegate that manages top bar area inside of {@link CustomTabActivity}.
  */
-class CustomTabTopBarDelegate {
+@ActivityScope
+public class CustomTabTopBarDelegate {
     private final ChromeActivity mActivity;
     private ViewGroup mTopBarView;
     @Nullable
@@ -23,6 +27,7 @@ class CustomTabTopBarDelegate {
     @Nullable
     private Integer mTopBarHeight;
 
+    @Inject
     public CustomTabTopBarDelegate(ChromeActivity activity) {
         mActivity = activity;
     }

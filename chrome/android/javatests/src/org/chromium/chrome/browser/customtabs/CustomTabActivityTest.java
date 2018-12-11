@@ -90,6 +90,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModuleCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -1271,7 +1272,8 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !cctActivity.isModuleLoading();
+                return !cctActivity.getComponent()
+                        .resolveDynamicModuleCoordinator().isModuleLoading();
             }
         });
 
@@ -1299,7 +1301,8 @@ public class CustomTabActivityTest {
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
-            cctActivity.setTopBarContentView(anyView);
+            cctActivity.getComponent().resolveDynamicModuleCoordinator()
+                    .setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNotNull(topBar);
             Assert.assertThat(anyView.getParent(), equalTo(topBar));
@@ -1317,13 +1320,14 @@ public class CustomTabActivityTest {
                 CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(moduleManagedUrl, null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         waitForModuleLoading();
-
+        DynamicModuleCoordinator coordinator =
+                getActivity().getComponent().resolveDynamicModuleCoordinator();
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
-            cctActivity.setTopBarContentView(anyView);
+            coordinator.setTopBarContentView(anyView);
             // Second call will not crash.
-            cctActivity.setTopBarContentView(anyView);
+            coordinator.setTopBarContentView(anyView);
         });
     }
 
@@ -1343,7 +1347,6 @@ public class CustomTabActivityTest {
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
-            cctActivity.setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNull(topBar);
         });
@@ -1364,7 +1367,6 @@ public class CustomTabActivityTest {
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
-            cctActivity.setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNull(topBar);
         });
@@ -1387,7 +1389,8 @@ public class CustomTabActivityTest {
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
-            cctActivity.setTopBarContentView(anyView);
+            cctActivity.getComponent().resolveDynamicModuleCoordinator()
+                    .setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNull(topBar);
         });
@@ -1408,7 +1411,8 @@ public class CustomTabActivityTest {
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             View anyView = new View(cctActivity);
-            cctActivity.setTopBarContentView(anyView);
+            cctActivity.getComponent().resolveDynamicModuleCoordinator()
+                    .setTopBarContentView(anyView);
             ViewGroup topBar = cctActivity.findViewById(R.id.topbar);
             Assert.assertNotNull(topBar);
             Assert.assertThat(anyView.getParent(), equalTo(topBar));
@@ -1433,7 +1437,6 @@ public class CustomTabActivityTest {
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
-            cctActivity.setTopBarContentView(new View(cctActivity));
             View toolbarView = cctActivity.findViewById(R.id.toolbar);
             Assert.assertTrue(
                     "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
@@ -1458,7 +1461,8 @@ public class CustomTabActivityTest {
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
-            cctActivity.setTopBarContentView(new View(cctActivity));
+            cctActivity.getComponent().resolveDynamicModuleCoordinator()
+                    .setTopBarContentView(new View(cctActivity));
             View toolbarView = cctActivity.findViewById(R.id.toolbar);
             Assert.assertTrue(
                     "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
@@ -1482,10 +1486,10 @@ public class CustomTabActivityTest {
                 CustomTabIntentDataProvider.EXTRA_MODULE_MANAGED_HOST_LIST, "www.google.com");
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
         waitForModuleLoading();
-
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
-            cctActivity.setTopBarContentView(new View(cctActivity));
+            cctActivity.getComponent().resolveDynamicModuleCoordinator()
+                    .setTopBarContentView(new View(cctActivity));
             View toolbarView = cctActivity.findViewById(R.id.toolbar);
             Assert.assertTrue(
                     "A custom tab toolbar is never shown", toolbarView instanceof CustomTabToolbar);
@@ -1510,7 +1514,8 @@ public class CustomTabActivityTest {
 
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
-            cctActivity.setTopBarContentView(new View(cctActivity));
+            cctActivity.getComponent().resolveDynamicModuleCoordinator()
+                    .setTopBarContentView(new View(cctActivity));
             ViewGroup toolbarContainerView = cctActivity.findViewById(R.id.toolbar_container);
             for (int index = 0; index < toolbarContainerView.getChildCount(); index++) {
                 View childView = toolbarContainerView.getChildAt(index);
@@ -1537,8 +1542,6 @@ public class CustomTabActivityTest {
         ThreadUtils.runOnUiThread(() -> {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
-            int newHeight = defaultHeight + 10;
-            cctActivity.setTopBarHeight(newHeight);
             Assert.assertEquals(
                     defaultHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
         });
@@ -1561,7 +1564,7 @@ public class CustomTabActivityTest {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
             int newHeight = defaultHeight + 10;
-            cctActivity.setTopBarHeight(newHeight);
+            cctActivity.getComponent().resolveDynamicModuleCoordinator().setTopBarHeight(newHeight);
             Assert.assertEquals(
                     defaultHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
         });
@@ -1584,7 +1587,7 @@ public class CustomTabActivityTest {
             CustomTabActivity cctActivity = mCustomTabActivityTestRule.getActivity();
             int defaultHeight = cctActivity.getFullscreenManager().getTopControlsHeight();
             int newHeight = defaultHeight + 10;
-            cctActivity.setTopBarHeight(newHeight);
+            cctActivity.getComponent().resolveDynamicModuleCoordinator().setTopBarHeight(newHeight);
             Assert.assertEquals(
                     newHeight, cctActivity.getFullscreenManager().getTopControlsHeight());
         });
@@ -2279,13 +2282,13 @@ public class CustomTabActivityTest {
         final String url =
                 mWebServer.setResponse("/test.html", TITLE_FROM_POSTMESSAGE_TO_CHANNEL, null);
 
-        Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(url, null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
-
-        getActivity().maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
+        DynamicModuleCoordinator coordinator =
+                getActivity().getComponent().resolveDynamicModuleCoordinator();
+        coordinator.maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
             @Override
             public boolean onPostMessage(String message, Bundle extras) {
                 return true;
@@ -2294,8 +2297,8 @@ public class CustomTabActivityTest {
             @Override
             public boolean onNotifyMessageChannelReady(Bundle extras) {
                 // Now attempt to post a message.
-                Assert.assertTrue(
-                        getActivity().postMessage("New title") == CustomTabsService.RESULT_SUCCESS);
+                Assert.assertEquals(coordinator.postMessage("New title"),
+                        CustomTabsService.RESULT_SUCCESS);
                 return true;
             }
 
@@ -2303,9 +2306,8 @@ public class CustomTabActivityTest {
             public void onDisconnectChannel(Context appContext) {}
         });
 
-        Assert.assertTrue(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertTrue(coordinator.requestPostMessageChannel(FAKE_ORIGIN_URI));
         // The callback registered above will post a message once the requested channel is ready.
-
         waitForTitle("New title");
     }
 
@@ -2314,19 +2316,21 @@ public class CustomTabActivityTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
+    @EnableFeatures({ChromeFeatureList.CCT_MODULE, ChromeFeatureList.CCT_MODULE_POST_MESSAGE})
     public void testPostMessageReceivedFromPageByDynamicModule() throws Exception {
         final CallbackHelper messageChannelHelper = new CallbackHelper();
         final CallbackHelper onPostMessageHelper = new CallbackHelper();
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
 
-        Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(url, null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
 
-        getActivity().maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
+        DynamicModuleCoordinator coordinator =
+                getActivity().getComponent().resolveDynamicModuleCoordinator();
+
+        coordinator.maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
             @Override
             public boolean onPostMessage(String message, Bundle extras) {
                 onPostMessageHelper.notifyCalled();
@@ -2340,10 +2344,10 @@ public class CustomTabActivityTest {
             }
 
             @Override
-            public void onDisconnectChannel(Context appContext) {}
+                public void onDisconnectChannel(Context appContext) {}
         });
 
-        Assert.assertTrue(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertTrue(coordinator.requestPostMessageChannel(FAKE_ORIGIN_URI));
         messageChannelHelper.waitForCallback();
         onPostMessageHelper.waitForCallback();
     }
@@ -2365,49 +2369,57 @@ public class CustomTabActivityTest {
 
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
 
+        // If feature disabled dynamic module is not instantiated
+        DynamicModuleCoordinator coordinator =
+                getActivity().getComponent().resolveDynamicModuleCoordinator();
+
         // We shouldn't be able to open a channel or post messages yet.
-        Assert.assertFalse(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
-        Assert.assertTrue(getActivity().postMessage("Message")
+        Assert.assertFalse(coordinator
+                .requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertTrue(coordinator.postMessage("Message")
                 == CustomTabsService.RESULT_FAILURE_DISALLOWED);
 
         // Now fake initialisation of the dynamic module.
-        getActivity().maybeInitialiseDynamicModulePostMessageHandler(new PostMessageBackend() {
-            @Override
-            public boolean onPostMessage(String message, Bundle extras) {
-                onPostMessageHelper.notifyCalled();
-                return true;
-            }
+        coordinator.maybeInitialiseDynamicModulePostMessageHandler(
+                new PostMessageBackend() {
+                    @Override
+                    public boolean onPostMessage(String message, Bundle extras) {
+                        onPostMessageHelper.notifyCalled();
+                        return true;
+                    }
 
-            @Override
-            public boolean onNotifyMessageChannelReady(Bundle extras) {
-                messageChannelHelper.notifyCalled();
-                return true;
-            }
+                    @Override
+                    public boolean onNotifyMessageChannelReady(Bundle extras) {
+                        messageChannelHelper.notifyCalled();
+                        return true;
+                    }
 
-            @Override
-            public void onDisconnectChannel(Context appContext) {}
-        });
+                    @Override
+                    public void onDisconnectChannel(Context appContext) {}
+                });
 
         // We can now request a postMessage channel.
-        Assert.assertTrue(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertTrue(coordinator
+                .requestPostMessageChannel(FAKE_ORIGIN_URI));
     }
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_MODULE)
     @DisableFeatures(ChromeFeatureList.CCT_MODULE_POST_MESSAGE)
     public void testPostMessageFromDynamicModuleDisallowedWhenFeatureDisabled() throws Exception {
         final String url = mWebServer.setResponse("/test.html", MESSAGE_FROM_PAGE_TO_CHANNEL, null);
 
-        Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, url);
+        Intent intent = CustomTabsDynamicModuleTestUtils.makeDynamicModuleIntent(url, null);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), url);
-
+        DynamicModuleCoordinator coordinator = getActivity().getComponent()
+                .resolveDynamicModuleCoordinator();
         // We shouldn't be able to open a channel or post messages yet.
-        Assert.assertFalse(getActivity().requestPostMessageChannel(FAKE_ORIGIN_URI));
-        Assert.assertTrue(getActivity().postMessage("Message")
-                == CustomTabsService.RESULT_FAILURE_DISALLOWED);
+        Assert.assertFalse(coordinator.requestPostMessageChannel(FAKE_ORIGIN_URI));
+        Assert.assertEquals(coordinator.postMessage("Message"),
+                CustomTabsService.RESULT_FAILURE_DISALLOWED);
     }
 
     /**
@@ -3384,7 +3396,12 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !mCustomTabActivityTestRule.getActivity().isModuleLoading();
+                if (!getActivity().getIntentDataProvider().isDynamicModuleEnabled()) return true;
+
+                DynamicModuleCoordinator module =
+                        mCustomTabActivityTestRule.getActivity().getComponent()
+                                .resolveDynamicModuleCoordinator();
+                return module != null && !module.isModuleLoading();
             }
         });
     }

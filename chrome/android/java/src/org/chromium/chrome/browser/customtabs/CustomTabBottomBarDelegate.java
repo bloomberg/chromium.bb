@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -35,10 +36,13 @@ import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Delegate that manages bottom bar area inside of {@link CustomTabActivity}.
  */
-class CustomTabBottomBarDelegate implements FullscreenListener {
+@ActivityScope
+public class CustomTabBottomBarDelegate implements FullscreenListener {
     private static final String TAG = "CustomTab";
     private static final CachedMetrics.ActionEvent REMOTE_VIEWS_SHOWN =
             new CachedMetrics.ActionEvent("CustomTabsRemoteViewsShown");
@@ -70,6 +74,7 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
         }
     };
 
+    @Inject
     public CustomTabBottomBarDelegate(ChromeActivity activity,
             CustomTabIntentDataProvider dataProvider, ChromeFullscreenManager fullscreenManager) {
         mActivity = activity;
