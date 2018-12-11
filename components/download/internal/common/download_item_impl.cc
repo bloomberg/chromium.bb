@@ -1234,6 +1234,9 @@ void DownloadItemImpl::DestinationUpdate(
                        TRACE_EVENT_SCOPE_THREAD, "bytes_so_far",
                        GetReceivedBytes());
 
+  if (IsPaused() && destination_info_.received_bytes == bytes_so_far)
+    return;
+
   UpdateObservers();
 }
 
