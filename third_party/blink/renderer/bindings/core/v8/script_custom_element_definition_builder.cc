@@ -24,6 +24,45 @@
 
 namespace blink {
 
+namespace {
+
+// Returns false if GetOwnPropertyDescriptor() or Get() failed and the callsite
+// needs to rethrow an exception.  Returns true otherwise.
+// |result_desc| is not updated if property_name is not found in the prototype
+// chain.
+bool GetPropertyDescriptorOnPrototypeChain(
+    v8::Local<v8::Object> start_prototype,
+    const char* property_name,
+    v8::Isolate* isolate,
+    v8::Local<v8::Value>* result_desc) {
+  DCHECK(isolate);
+  DCHECK(result_desc);
+  v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
+  v8::Local<v8::Value> prototype = start_prototype;
+  v8::Local<v8::String> v8_prototype = V8AtomicString(isolate, "__proto__");
+  v8::Local<v8::String> v8_name = V8AtomicString(isolate, property_name);
+  while (prototype->IsObject()) {
+    v8::Local<v8::Value> desc;
+    if (!prototype.As<v8::Object>()
+             ->GetOwnPropertyDescriptor(current_context, v8_name)
+             .ToLocal(&desc))
+      return false;
+    if (desc->IsObject()) {
+      *result_desc = desc;
+      return true;
+    }
+    v8::Local<v8::Value> parent_prototype;
+    if (!prototype.As<v8::Object>()
+             ->Get(current_context, v8_prototype)
+             .ToLocal(&parent_prototype))
+      return false;
+    prototype = parent_prototype;
+  }
+  return true;
+}
+
+}  // anonymous namespace
+
 ScriptCustomElementDefinitionBuilder::ScriptCustomElementDefinitionBuilder(
     ScriptState* script_state,
     CustomElementRegistry* registry,
@@ -195,14 +234,12 @@ bool ScriptCustomElementDefinitionBuilder::RememberOriginalProperties() {
     v8::Local<v8::Context> current_context = isolate->GetCurrentContext();
     v8::TryCatch try_catch(isolate);
     v8::Local<v8::Value> value_desc;
-    if (!prototype
-             ->GetOwnPropertyDescriptor(current_context,
-                                        V8AtomicString(isolate, "value"))
-             .ToLocal(&value_desc)) {
+    if (!GetPropertyDescriptorOnPrototypeChain(prototype, "value", isolate,
+                                               &value_desc)) {
       exception_state_.RethrowV8Exception(try_catch.Exception());
       return false;
     }
-    if (!value_desc->IsObject()) {
+    if (value_desc.IsEmpty() || !value_desc->IsObject()) {
       exception_state_.ThrowDOMException(
           DOMExceptionCode::kTypeMismatchError,
           "A class for form-associated custom elements must have a 'value' "

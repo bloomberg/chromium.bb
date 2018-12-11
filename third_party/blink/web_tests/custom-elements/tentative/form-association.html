@@ -65,7 +65,22 @@ test(() => {
     static get formAssociated() { return true; }
   }
   assert_throws("TypeMismatchError", () => { customElements.define('my-control', MyControl) });
+  assert_throws("TypeMismatchError", () => { customElements.define('my-control2', class extends MyControl {}); });
 }, 'define() requires value property setter');
+
+test(() => {
+  class MyControlBase extends HTMLElement {
+    static get formAssociated() { return true; }
+    set value(v) { }
+  }
+  class MyControlDerived extends MyControlBase {}
+
+  try {
+    customElements.define('my-control-derived', MyControlDerived);
+  } catch (exception) {
+    assert_unreached('define() should not throw anything');
+  }
+}, 'define() accepts value property setter on a base class');
 
 test(() => {
   let controls = $('#form1').elements;
