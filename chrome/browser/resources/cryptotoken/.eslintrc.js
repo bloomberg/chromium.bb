@@ -3,11 +3,8 @@
 // found in the LICENSE file.
 
 module.exports = {
-  'env': {
-    'browser': true,
-    'es6': true,
-  },
   'rules': {
-    'no-var': 'error',
+    'no-var': 'off',
+    'prefer-const': 'off',
   },
 };
