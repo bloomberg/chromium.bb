@@ -9,6 +9,7 @@
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/download/features.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
@@ -438,6 +439,11 @@
   AppLauncherTabHelper::CreateForWebState(
       webState, [[AppLauncherAbuseDetector alloc] init],
       self.appLauncherCoordinator);
+
+  if (AutofillTabHelper::FromWebState(webState)) {
+    AutofillTabHelper::FromWebState(webState)->SetBaseViewController(
+        self.viewController);
+  }
 
   PassKitTabHelper::CreateForWebState(webState, self.passKitCoordinator);
 
