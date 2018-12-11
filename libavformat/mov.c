@@ -4730,6 +4730,8 @@ static int mov_read_trun(MOVContext *c, AVIOContext *pb, MOVAtom atom)
             break;
         }
     }
+    if (index_entry_pos > st->nb_index_entries)
+        return AVERROR_INVALIDDATA;
 
     avio_r8(pb); /* version */
     flags = avio_rb24(pb);
