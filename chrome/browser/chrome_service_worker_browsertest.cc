@@ -282,6 +282,15 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
               "  event.waitUntil(self.clients.claim());"
               "};"
               "this.onfetch = function(event) {"
+              // Ignore the default favicon request. The default favicon request
+              // is sent after the page loading is finished, and we can't
+              // control the timing of the request. If the request is sent after
+              // clients.claim() is called, fetch event for the default favicon
+              // request is triggered and the tests become flaky. See
+              // https://crbug.com/912543.
+              "  if (event.request.url.endsWith('/favicon.ico')) {"
+              "    return;"
+              "  }"
               "  event.respondWith("
               "      self.clients.matchAll().then(function(clients) {"
               "          clients.forEach(function(client) {"
