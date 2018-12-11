@@ -90,7 +90,7 @@ TEST_F(WindowPortMusTest, ClientSurfaceEmbedderUpdatesLayer) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
   window.SetBounds(gfx::Rect(300, 300));
-  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   // Allocate a new LocalSurfaceId. The ui::Layer should be updated.
   window.AllocateLocalSurfaceId();
@@ -110,7 +110,7 @@ TEST_F(WindowPortMusTest,
   window.set_owned_by_parent(false);
   window.SetBounds(gfx::Rect(300, 300));
   // Simulate an embedding.
-  window.SetEmbedFrameSinkId(viz::FrameSinkId(0, 1));
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
   root_window()->AddChild(&window);
 
   // AckAllChanges() so that can verify a bounds change happens from
@@ -199,6 +199,19 @@ TEST_F(WindowPortMusTest, LocalOcclusionStateFromVisibility) {
   // Changes to HIDDEN when parent hides.
   parent.Hide();
   EXPECT_EQ(Window::OcclusionState::HIDDEN, window.occlusion_state());
+}
+
+TEST_F(WindowPortMusTest, PrepareForEmbed) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  window.set_owned_by_parent(false);
+  window.SetBounds(gfx::Rect(400, 300));
+
+  WindowPortMusTestHelper helper(&window);
+  helper.SimulateEmbedding();
+  auto* window_mus = WindowPortMus::Get(&window);
+  ASSERT_TRUE(window_mus->client_surface_embedder());
+  EXPECT_TRUE(window_mus->client_surface_embedder()->HasPrimarySurfaceId());
 }
 
 }  // namespace aura

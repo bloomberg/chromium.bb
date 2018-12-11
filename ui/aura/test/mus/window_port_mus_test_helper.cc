@@ -23,6 +23,7 @@ WindowPortMusTestHelper::~WindowPortMusTestHelper() = default;
 void WindowPortMusTestHelper::SimulateEmbedding() {
   window_port_mus_->GetWindow()->SetEmbedFrameSinkId(
       viz::FrameSinkId(next_client_id_++, 1));
+  window_port_mus_->PrepareForEmbed();
 }
 
 base::WeakPtr<cc::LayerTreeFrameSink> WindowPortMusTestHelper::GetFrameSink() {
