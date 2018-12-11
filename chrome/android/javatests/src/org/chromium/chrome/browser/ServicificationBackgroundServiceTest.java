@@ -50,8 +50,7 @@ public final class ServicificationBackgroundServiceTest {
     @Test
     @MediumTest
     @Feature({"ServicificationStartup"})
-    @CommandLineFlags.
-    Add({"enable-features=NetworkService,NetworkServiceInProcess,AllowStartingServiceManagerOnly"})
+    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
     public void testSeriveManagerStarts() {
         startOnRunTaskAndVerify(ServiceManagerStartupUtils.TASK_TAG, true);
     }
