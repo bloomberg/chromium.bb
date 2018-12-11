@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
@@ -38,6 +39,17 @@ using autofill_helper::RemoveProfile;
 using autofill_helper::SetCreditCards;
 using autofill_helper::UpdateProfile;
 
+// Copied from data_type_debug_info_emitter.cc.
+enum ModelTypeEntityChange {
+  LOCAL_DELETION = 0,
+  LOCAL_CREATION = 1,
+  LOCAL_UPDATE = 2,
+  REMOTE_DELETION = 3,
+  REMOTE_NON_INITIAL_UPDATE = 4,
+  REMOTE_INITIAL_UPDATE = 5,
+  MODEL_TYPE_ENTITY_CHANGE_COUNT = 6
+};
+
 // Class that enables or disables USS based on test parameter. Must be the first
 // base class of the test fixture.
 // TODO(jkrcal): When the new implementation fully launches, remove this class,
@@ -64,7 +76,11 @@ class TwoClientAutofillProfileSyncTest : public UssSwitchToggler,
   TwoClientAutofillProfileSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientAutofillProfileSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Tests that check Sync.ModelTypeEntityChange* histograms require
+  // self-notifications. The reason is that every commit will eventually trigger
+  // an incoming update on the same client, and without self-notifications we
+  // have no good way to reliably trigger these updates.
+  bool TestUsesSelfNotifications() override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillProfileSyncTest);
@@ -106,6 +122,39 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(0U, GetAllAutoFillProfiles(0).size());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
+                       SyncHistogramsInitialSync) {
+  ASSERT_TRUE(SetupClients());
+
+  AddProfile(0, CreateAutofillProfile(PROFILE_HOMER));
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(0).size());
+
+  AddProfile(1, CreateAutofillProfile(PROFILE_MARION));
+  ASSERT_EQ(1U, GetAllAutoFillProfiles(1).size());
+
+  base::HistogramTester histograms;
+
+  ASSERT_TRUE(SetupSync());
+  ASSERT_EQ(2U, GetAllAutoFillProfiles(0).size());
+
+  // The order of events is roughly: First client (whichever that happens to be)
+  // connects to the server, commits its entity, and gets no initial updates
+  // because nothing was on the server yet. Then the second client connects,
+  // commits its entity, and receives the first client's entity as an initial
+  // update. Then the first client receives the second's entity as a non-initial
+  // update. And finally, at some point, each client receives its own entity
+  // back as a non-initial update, for a total of 1 initial and 3 non-initial
+  // updates.
+  histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                               LOCAL_CREATION, 2);
+  histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                               REMOTE_INITIAL_UPDATE, 1);
+  histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                               REMOTE_NON_INITIAL_UPDATE, 3);
+  histograms.ExpectTotalCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                              6);
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
