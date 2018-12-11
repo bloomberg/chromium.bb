@@ -67,11 +67,13 @@
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:
     (NSApplication*)sender {
-  // Send a last message to the host indicating that the host should close all
-  // associated browser windows.
-  if (appShimController_)
-    appShimController_->host()->QuitApp();
-  return NSTerminateNow;
+  if (terminateNow_ || !appShimController_)
+    return NSTerminateNow;
+
+  appShimController_->host()->QuitApp();
+  // Wait for the channel to close before terminating.
+  terminateRequested_ = YES;
+  return NSTerminateLater;
 }
 
 - (void)applicationWillHide:(NSNotification*)notification {
@@ -82,6 +84,16 @@
 - (void)applicationWillUnhide:(NSNotification*)notification {
   if (appShimController_)
     appShimController_->host()->SetAppHidden(false);
+}
+
+- (void)terminateNow {
+  if (terminateRequested_) {
+    [NSApp replyToApplicationShouldTerminate:NSTerminateNow];
+    return;
+  }
+
+  terminateNow_ = YES;
+  [NSApp terminate:nil];
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
