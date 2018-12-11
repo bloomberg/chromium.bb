@@ -225,7 +225,7 @@ void D3D11VideoDecoder::Initialize(
 
   init_cb_ = init_cb;
   output_cb_ = output_cb;
-  is_encrypted_ = config.is_encrypted();
+  config_ = config;
 
   D3D11VideoDecoderImpl::InitCB cb = base::BindOnce(
       &D3D11VideoDecoder::OnGpuInitComplete, weak_factory_.GetWeakPtr());
@@ -306,7 +306,7 @@ void D3D11VideoDecoder::Initialize(
     return;
   }
 
-  if (is_encrypted_)
+  if (config_.is_encrypted())
     dec_config.guidConfigBitstreamEncryption = D3D11_DECODER_ENCRYPTION_HW_CENC;
 
   memcpy(&decoder_guid_, &decoder_guid, sizeof decoder_guid_);
@@ -326,7 +326,7 @@ void D3D11VideoDecoder::Initialize(
 #endif
 
   // Ensure that if we are encrypted, that we have a CDM.
-  if (is_encrypted_ && !proxy_context) {
+  if (config_.is_encrypted() && !proxy_context) {
     NotifyError("Video stream is encrypted, but no cdm was found");
     return;
   }
@@ -551,7 +551,7 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
     // thread and D3D device.  See https://crbug.com/911847
     texture_desc.MiscFlags = 0;
   }
-  if (is_encrypted_)
+  if (config_.is_encrypted())
     texture_desc.MiscFlags |= D3D11_RESOURCE_MISC_HW_PROTECTED;
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
@@ -600,11 +600,14 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   picture_buffer->set_in_client_use(true);
 
   // Note: The pixel format doesn't matter.
-  gfx::Rect visible_rect(picture->visible_rect());
-  // TODO(liberato): Pixel aspect ratio should come from the VideoDecoderConfig
-  // (except when it should come from the SPS).
-  // https://crbug.com/837337
-  double pixel_aspect_ratio = 1.0;
+  gfx::Rect visible_rect = picture->visible_rect();
+  if (visible_rect.IsEmpty())
+    visible_rect = config_.visible_rect();
+
+  // TODO(https://crbug.com/843150): Use aspect ratio from decoder (SPS) if
+  // stream metadata doesn't overrride it.
+  double pixel_aspect_ratio = config_.GetPixelAspectRatio();
+
   base::TimeDelta timestamp = picture_buffer->timestamp_;
   scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
       PIXEL_FORMAT_NV12, picture_buffer->mailbox_holders(),
@@ -621,7 +624,7 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // that ALLOW_OVERLAY is required for encrypted video path.
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
 
-  if (is_encrypted_) {
+  if (config_.is_encrypted()) {
     frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
     frame->metadata()->SetBoolean(VideoFrameMetadata::HW_PROTECTED, true);
   }

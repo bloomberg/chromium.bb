@@ -193,7 +193,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // During init, these will be set.
   InitCB init_cb_;
   OutputCB output_cb_;
-  bool is_encrypted_ = false;
+  VideoDecoderConfig config_;
 
   D3D11CreateDeviceCB create_device_func_;
 
