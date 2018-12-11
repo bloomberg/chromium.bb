@@ -106,6 +106,11 @@ def AddCommandLineOptions(parser):
       type=os.path.realpath,
       help='The relative filepath to a file containing '
            'command-line flags to set on the device')
+  parser.add_argument(
+      '--use-apk-under-test-flags-file',
+      action='store_true',
+      help='Wether to use the flags file for the apk under test. If set, '
+           "the filename will be looked up in the APK's PackageInfo.")
   parser.set_defaults(allow_unknown=True)
   parser.set_defaults(command_line_flags=None)
 

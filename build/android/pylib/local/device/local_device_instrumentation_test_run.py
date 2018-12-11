@@ -343,8 +343,16 @@ class LocalDeviceInstrumentationTestRun(
 
   def _CreateFlagChangerIfNeeded(self, device):
     if str(device) not in self._flag_changers:
+      cmdline_file = 'test-cmdline-file'
+      if self._test_instance.use_apk_under_test_flags_file:
+        if self._test_instance.package_info:
+          cmdline_file = self._test_instance.package_info.cmdline_file
+        else:
+          logging.warning(
+              'No PackageInfo found, falling back to using flag file %s',
+              cmdline_file)
       self._flag_changers[str(device)] = flag_changer.FlagChanger(
-        device, "test-cmdline-file")
+          device, cmdline_file)
 
   #override
   def _CreateShards(self, tests):

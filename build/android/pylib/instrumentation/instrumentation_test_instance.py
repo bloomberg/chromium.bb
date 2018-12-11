@@ -485,6 +485,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._initializeTestFilterAttributes(args)
 
     self._flags = None
+    self._use_apk_under_test_flags_file = False
     self._initializeFlagAttributes(args)
 
     self._driver_apk = None
@@ -659,6 +660,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           if a not in requested_annotations)
 
   def _initializeFlagAttributes(self, args):
+    self._use_apk_under_test_flags_file = args.use_apk_under_test_flags_file
     self._flags = ['--enable-test-intents']
     if args.command_line_flags:
       self._flags.extend(args.command_line_flags)
@@ -812,6 +814,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def total_external_shards(self):
     return self._total_external_shards
+
+  @property
+  def use_apk_under_test_flags_file(self):
+    return self._use_apk_under_test_flags_file
 
   @property
   def wait_for_java_debugger(self):
