@@ -138,4 +138,13 @@ void ChromeBrowserMainExtraPartsViews::PostMainMessageLoopRun() {
   // down explicitly here to avoid a case where such an event arrives during
   // shutdown.
   relaunch_notification_controller_.reset();
+
+#if defined(USE_AURA)
+  // Explicitly release |devtools_server_| to avoid use-after-free under
+  // single process mash, where |devtools_server_| indirectly accesses
+  // the Env of ash::Shell during destruction and ash::Shell as part of
+  // ChromeBrowserMainExtraPartsAsh is released before
+  // ChromeBrowserMainExtraPartsViews.
+  devtools_server_.reset();
+#endif
 }
