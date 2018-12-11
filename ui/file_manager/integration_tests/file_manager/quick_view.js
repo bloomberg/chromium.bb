@@ -109,6 +109,19 @@ testcase.openQuickViewDrive = async function() {
 
   // Open the file in Quick View.
   await openQuickView(appId, ENTRIES.hello.nameText);
+
+  // Check that the correct mime type is displayed.
+  const mimeTypeSelector = [
+    '#quick-view',
+    '#metadata-box',
+    // TODO(crbug.com/677338): Replace the attribute selector with key="Type"
+    // once the key is populated with polymer2 enabled.
+    'files-metadata-entry[i18n-values="key:METADATA_BOX_MEDIA_MIME_TYPE"]',
+    '#value div',
+  ];
+  chrome.test.assertEq(
+      'text/plain',
+      (await remoteCall.waitForElement(appId, mimeTypeSelector)).text);
 };
 
 /**

@@ -498,6 +498,10 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
         names_.end()) {
       field_mask |= ProvidedFileSystemInterface::METADATA_FIELD_THUMBNAIL;
     }
+    if (!field_mask) {
+      OnGetMetadataCompleted(nullptr, base::File::FILE_OK);
+      return;
+    }
 
     parser.file_system()->GetMetadata(
         parser.file_path(), field_mask,
