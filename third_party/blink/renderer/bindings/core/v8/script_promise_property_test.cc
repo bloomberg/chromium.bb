@@ -112,7 +112,7 @@ class ScriptPromisePropertyTestBase {
   virtual ~ScriptPromisePropertyTestBase() { DestroyContext(); }
 
   Document& GetDocument() { return page_->GetDocument(); }
-  v8::Isolate* GetIsolate() { return ToIsolate(&GetDocument()); }
+  v8::Isolate* GetIsolate() { return GetDocument().GetIsolate(); }
   ScriptState* MainScriptState() {
     return ToScriptStateForMainWorld(GetDocument().GetFrame());
   }

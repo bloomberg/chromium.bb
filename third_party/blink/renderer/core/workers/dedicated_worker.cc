@@ -164,7 +164,7 @@ void DedicatedWorker::Start() {
   DCHECK(GetExecutionContext()->IsContextThread());
 
   v8_inspector::V8StackTraceId stack_id =
-      ThreadDebugger::From(ToIsolate(GetExecutionContext()))
+      ThreadDebugger::From(GetExecutionContext()->GetIsolate())
           ->StoreCurrentStackTrace("Worker Created");
 
   if (auto* scope = DynamicTo<WorkerGlobalScope>(*GetExecutionContext()))
