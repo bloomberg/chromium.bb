@@ -43,15 +43,6 @@ void TransformEventTouchPositions(blink::WebTouchEvent* event,
   }
 }
 
-blink::WebGestureEvent DummyGestureScrollUpdate(
-    base::TimeTicks time_stamp,
-    blink::WebGestureDevice source_device =
-        blink::kWebGestureDeviceUninitialized) {
-  return blink::WebGestureEvent(blink::WebInputEvent::kGestureScrollUpdate,
-                                blink::WebInputEvent::kNoModifiers, time_stamp,
-                                source_device);
-}
-
 gfx::PointF ComputePointInRootInPixels(
     const gfx::PointF& point,
     content::RenderWidgetHostViewBase* root_view,
@@ -272,11 +263,11 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
   if (view == touchpad_gesture_target_.target)
     touchpad_gesture_target_.target = nullptr;
 
-  if (view == bubbling_gesture_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target = nullptr;
-    first_bubbling_scroll_target_.target = nullptr;
-  } else if (view == first_bubbling_scroll_target_.target) {
-    first_bubbling_scroll_target_.target = nullptr;
+  if (view == bubbling_gesture_scroll_target_) {
+    bubbling_gesture_scroll_target_ = nullptr;
+    bubbling_gesture_scroll_origin_ = nullptr;
+  } else if (view == bubbling_gesture_scroll_origin_) {
+    bubbling_gesture_scroll_origin_ = nullptr;
   }
 
   if (view == last_mouse_move_target_) {
@@ -593,17 +584,11 @@ void RenderWidgetHostInputEventRouter::DispatchMouseWheelEvent(
                       blink::WebMouseWheelEvent::kPhaseEnded ||
                   mouse_wheel_event.momentum_phase ==
                       blink::WebMouseWheelEvent::kPhaseEnded) &&
-                 bubbling_gesture_scroll_target_.target) {
+                 bubbling_gesture_scroll_target_) {
         // Send a GSE to the bubbling target and cancel scroll bubbling since
         // the wheel target view is destroyed and the wheel end event won't get
         // processed.
-        blink::WebGestureEvent fake_scroll_update =
-            DummyGestureScrollUpdate(mouse_wheel_event.TimeStamp(),
-                                     bubbling_gesture_scroll_source_device_);
-        SendGestureScrollEnd(bubbling_gesture_scroll_target_.target,
-                             fake_scroll_update);
-        bubbling_gesture_scroll_target_.target = nullptr;
-        first_bubbling_scroll_target_.target = nullptr;
+        CancelScrollBubbling();
       }
     }
   }
@@ -789,13 +774,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
   }
 
   if (is_sequence_start) {
-    if (touch_target_.target == bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(
-          bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(touch_event.TimeStamp(),
-                                   bubbling_gesture_scroll_source_device_));
-      CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
-    }
+    CancelScrollBubblingIfConflicting(touch_target_.target);
   }
 
   touch_event_ack_queue_->Add(touch_event.unique_touch_event_id,
@@ -987,6 +966,28 @@ void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
 
 namespace {
 
+// Returns true if |target_view| is one of |starting_view|'s ancestors.
+// If |stay_within| is provided, we only consider ancestors within that
+// sub-tree.
+bool IsAncestorView(RenderWidgetHostViewChildFrame* starting_view,
+                    const RenderWidgetHostViewBase* target_view,
+                    const RenderWidgetHostViewBase* stay_within = nullptr) {
+  RenderWidgetHostViewBase* cur_view = starting_view->GetParentView();
+  while (cur_view) {
+    if (cur_view == target_view)
+      return true;
+
+    if (stay_within && cur_view == stay_within)
+      return false;
+
+    cur_view = cur_view->IsRenderWidgetHostViewChildFrame()
+                   ? static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
+                         ->GetParentView()
+                   : nullptr;
+  }
+  return false;
+}
+
 // Given |event| in root coordinates, return an event in |target_view|'s
 // coordinates.
 blink::WebGestureEvent GestureEventInTarget(
@@ -1003,8 +1004,8 @@ blink::WebGestureEvent GestureEventInTarget(
 
 void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     RenderWidgetHostViewBase* target_view,
-    const blink::WebGestureEvent& event,
-    const RenderWidgetHostViewBase* resending_view) {
+    RenderWidgetHostViewChildFrame* resending_view,
+    const blink::WebGestureEvent& event) {
   DCHECK(target_view);
   DCHECK(event.GetType() == blink::WebInputEvent::kGestureScrollBegin ||
          event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
@@ -1018,6 +1019,9 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // If target_view has unrelated gesture events in progress, do
     // not proceed. This could cause confusion between independent
     // scrolls.
+    // TODO(mcnee): If we are unable to bubble this gesture sequence, we
+    // should inform the child view, so that it does not go on to send us
+    // the updates. See https://crbug.com/828422
     if (target_view == touchscreen_gesture_target_.target ||
         target_view == touchpad_gesture_target_.target ||
         target_view == touch_target_.target) {
@@ -1029,18 +1033,18 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // event ack which didn't consume any scroll delta, and so another level
     // of bubbling is needed. This requires a GestureScrollEnd be sent to the
     // last view, which will no longer be the scroll target.
-    if (bubbling_gesture_scroll_target_.target) {
+    if (bubbling_gesture_scroll_target_) {
       SendGestureScrollEnd(
-          bubbling_gesture_scroll_target_.target,
-          GestureEventInTarget(event, bubbling_gesture_scroll_target_.target));
+          bubbling_gesture_scroll_target_,
+          GestureEventInTarget(event, bubbling_gesture_scroll_target_));
     } else {
-      first_bubbling_scroll_target_.target = target_view;
+      bubbling_gesture_scroll_origin_ = resending_view;
     }
 
-    bubbling_gesture_scroll_target_.target = target_view;
+    bubbling_gesture_scroll_target_ = target_view;
     bubbling_gesture_scroll_source_device_ = event.SourceDevice();
   } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
-    if (!bubbling_gesture_scroll_target_.target) {
+    if (!bubbling_gesture_scroll_target_) {
       // The GestureScrollBegin event is not bubbled, don't bubble the rest of
       // the scroll events.
       return;
@@ -1049,34 +1053,31 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // Don't bubble the GSE events that are generated and sent to intermediate
     // bubbling targets.
     if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd &&
-        target_view != first_bubbling_scroll_target_.target) {
+        resending_view != bubbling_gesture_scroll_origin_) {
       return;
     }
   }
 
   // If the router tries to resend a gesture scroll event back to the same
   // view, we could hang.
-  DCHECK_NE(resending_view, bubbling_gesture_scroll_target_.target);
+  DCHECK_NE(resending_view, bubbling_gesture_scroll_target_);
   // We've seen reports of this, but don't know the cause yet. For now,
   // instead of CHECKing or hanging, we'll report the issue and abort scroll
   // bubbling.
   // TODO(828422): Remove once this issue no longer occurs.
-  if (resending_view == bubbling_gesture_scroll_target_.target) {
+  if (resending_view == bubbling_gesture_scroll_target_) {
     ReportBubblingScrollToSameView(event, resending_view);
-    first_bubbling_scroll_target_.target = nullptr;
-    bubbling_gesture_scroll_target_.target = nullptr;
-    bubbling_gesture_scroll_source_device_ =
-        blink::kWebGestureDeviceUninitialized;
+    CancelScrollBubbling();
     return;
   }
 
-  bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
-      GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
+  bubbling_gesture_scroll_target_->ProcessGestureEvent(
+      GestureEventInTarget(event, bubbling_gesture_scroll_target_),
       latency_info);
 
   if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd) {
-    first_bubbling_scroll_target_.target = nullptr;
-    bubbling_gesture_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_origin_ = nullptr;
+    bubbling_gesture_scroll_target_ = nullptr;
     bubbling_gesture_scroll_source_device_ =
         blink::kWebGestureDeviceUninitialized;
   }
@@ -1085,29 +1086,18 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
 void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
     RenderWidgetHostViewBase* view,
     const blink::WebGestureEvent& event) {
+  DCHECK_EQ(blink::WebInputEvent::kGesturePinchBegin, event.GetType());
+  DCHECK_EQ(blink::kWebGestureDeviceTouchscreen, event.SourceDevice());
   blink::WebGestureEvent scroll_begin(event);
   scroll_begin.SetType(blink::WebInputEvent::kGestureScrollBegin);
-  switch (event.GetType()) {
-    case blink::WebInputEvent::kGestureScrollUpdate:
-      scroll_begin.data.scroll_begin.delta_x_hint =
-          event.data.scroll_update.delta_x;
-      scroll_begin.data.scroll_begin.delta_y_hint =
-          event.data.scroll_update.delta_y;
-      scroll_begin.data.scroll_begin.delta_hint_units =
-          event.data.scroll_update.delta_units;
-      break;
-    case blink::WebInputEvent::kGesturePinchBegin:
-      scroll_begin.data.scroll_begin.delta_x_hint = 0;
-      scroll_begin.data.scroll_begin.delta_y_hint = 0;
-      scroll_begin.data.scroll_begin.delta_hint_units =
-          blink::WebGestureEvent::kPrecisePixels;
-      break;
-    default:
-      NOTREACHED();
-  }
+  scroll_begin.data.scroll_begin.delta_x_hint = 0;
+  scroll_begin.data.scroll_begin.delta_y_hint = 0;
+  scroll_begin.data.scroll_begin.delta_hint_units =
+      blink::WebGestureEvent::kPrecisePixels;
   view->ProcessGestureEvent(
       scroll_begin,
-      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event));
+      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
+          scroll_begin));
 }
 
 void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
@@ -1123,13 +1113,8 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
       scroll_end.data.scroll_end.delta_units =
           event.data.scroll_begin.delta_hint_units;
       break;
-    case blink::WebInputEvent::kGestureScrollUpdate:
-      scroll_end.data.scroll_end.inertial_phase =
-          event.data.scroll_update.inertial_phase;
-      scroll_end.data.scroll_end.delta_units =
-          event.data.scroll_update.delta_units;
-      break;
     case blink::WebInputEvent::kGesturePinchEnd:
+      DCHECK_EQ(blink::kWebGestureDeviceTouchscreen, event.SourceDevice());
       scroll_end.data.scroll_end.inertial_phase =
           blink::WebGestureEvent::kUnknownMomentumPhase;
       scroll_end.data.scroll_end.delta_units =
@@ -1140,22 +1125,82 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
   }
   view->ProcessGestureEvent(
       scroll_end,
-      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event));
+      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(scroll_end));
 }
 
-void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
-    RenderWidgetHostViewBase* target_view) {
-  DCHECK(target_view);
-  if (target_view == first_bubbling_scroll_target_.target) {
-    first_bubbling_scroll_target_.target = nullptr;
-    bubbling_gesture_scroll_target_.target = nullptr;
-    bubbling_gesture_scroll_source_device_ =
-        blink::kWebGestureDeviceUninitialized;
+void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
+    RenderWidgetHostViewBase* view,
+    blink::WebGestureDevice source_device) {
+  blink::WebGestureEvent scroll_end(blink::WebInputEvent::kGestureScrollEnd,
+                                    blink::WebInputEvent::kNoModifiers,
+                                    base::TimeTicks::Now(), source_device);
+  scroll_end.data.scroll_end.inertial_phase =
+      blink::WebGestureEvent::kUnknownMomentumPhase;
+  scroll_end.data.scroll_end.delta_units =
+      blink::WebGestureEvent::kPrecisePixels;
+  view->ProcessGestureEvent(
+      scroll_end,
+      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(scroll_end));
+}
+
+void RenderWidgetHostInputEventRouter::WillDetachChildView(
+    const RenderWidgetHostViewChildFrame* detaching_view) {
+  // If necessary, cancel ongoing scroll bubbling in response to a frame
+  // connector change.
+  if (!bubbling_gesture_scroll_target_ || !bubbling_gesture_scroll_origin_)
+    return;
+
+  // We cancel bubbling only when the child view affects the current scroll
+  // bubbling sequence.
+  if (detaching_view == bubbling_gesture_scroll_origin_ ||
+      IsAncestorView(bubbling_gesture_scroll_origin_, detaching_view)) {
+    CancelScrollBubbling();
+  }
+}
+
+void RenderWidgetHostInputEventRouter::CancelScrollBubbling() {
+  DCHECK(bubbling_gesture_scroll_target_);
+  SendGestureScrollEnd(bubbling_gesture_scroll_target_,
+                       bubbling_gesture_scroll_source_device_);
+  // TODO(mcnee): We should also inform |bubbling_gesture_scroll_origin_| that
+  // we are no longer bubbling its events, otherwise it could continue to send
+  // them and interfere with a new scroll gesture being bubbled.
+  // See https://crbug.com/828422
+  bubbling_gesture_scroll_origin_ = nullptr;
+  bubbling_gesture_scroll_target_ = nullptr;
+  bubbling_gesture_scroll_source_device_ =
+      blink::kWebGestureDeviceUninitialized;
+}
+
+void RenderWidgetHostInputEventRouter::CancelScrollBubblingIfConflicting(
+    const RenderWidgetHostViewBase* target) {
+  if (!target)
+    return;
+  if (!bubbling_gesture_scroll_target_ || !bubbling_gesture_scroll_origin_)
+    return;
+
+  const RenderWidgetHostViewBase* first_bubbling_scroll_target =
+      bubbling_gesture_scroll_origin_->GetParentView();
+  // TODO(mcnee): This seems wrong. We should not be sending an independent
+  // gesture sequence to any of |bubbling_gesture_scroll_origin_|'s ancestors
+  // up to and including |bubbling_gesture_scroll_target_|.
+  // See https://crbug.com/828422
+  if (target == bubbling_gesture_scroll_target_) {
+    // TODO(mcnee): We shouldn't send the scroll end if we're not actually
+    // cancelling.
+    SendGestureScrollEnd(bubbling_gesture_scroll_target_,
+                         bubbling_gesture_scroll_source_device_);
+    if (bubbling_gesture_scroll_target_ == first_bubbling_scroll_target) {
+      bubbling_gesture_scroll_origin_ = nullptr;
+      bubbling_gesture_scroll_target_ = nullptr;
+      bubbling_gesture_scroll_source_device_ =
+          blink::kWebGestureDeviceUninitialized;
+    }
   }
 }
 
 void RenderWidgetHostInputEventRouter::StopFling() {
-  if (!bubbling_gesture_scroll_target_.target)
+  if (!bubbling_gesture_scroll_target_)
     return;
 
   if (!last_fling_start_target_ || !last_fling_start_target_->host())
@@ -1390,15 +1435,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchscreenGestureEvent(
         IsViewInMap(touchscreen_gesture_target_.target);
 
     // Abort any scroll bubbling in progress to avoid double entry.
-    if (touchscreen_gesture_target_.target &&
-        touchscreen_gesture_target_.target ==
-            bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(
-          bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(gesture_event.TimeStamp(),
-                                   bubbling_gesture_scroll_source_device_));
-      CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
-    }
+    CancelScrollBubblingIfConflicting(touchscreen_gesture_target_.target);
   }
 
   // If we set a target and it's not in the map, we won't get notified if the
@@ -1522,15 +1559,7 @@ void RenderWidgetHostInputEventRouter::DispatchTouchpadGestureEvent(
         target_location.value() - touchpad_gesture_event.PositionInWidget();
 
     // Abort any scroll bubbling in progress to avoid double entry.
-    if (touchpad_gesture_target_.target &&
-        touchpad_gesture_target_.target ==
-            bubbling_gesture_scroll_target_.target) {
-      SendGestureScrollEnd(
-          bubbling_gesture_scroll_target_.target,
-          DummyGestureScrollUpdate(touchpad_gesture_event.TimeStamp(),
-                                   bubbling_gesture_scroll_source_device_));
-      CancelScrollBubbling(bubbling_gesture_scroll_target_.target);
-    }
+    CancelScrollBubblingIfConflicting(touchpad_gesture_target_.target);
   }
 
   if (!touchpad_gesture_target_.target) {

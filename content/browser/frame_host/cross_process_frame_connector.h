@@ -202,8 +202,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   // which is set through CSS.
   bool is_hidden_ = false;
 
-  bool is_scroll_bubbling_;
-
   // Used to make sure we only log UMA once per renderer crash.
   bool is_crash_already_logged_ = false;
 
