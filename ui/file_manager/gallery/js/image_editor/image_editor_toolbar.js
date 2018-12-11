@@ -278,14 +278,14 @@ ImageEditorToolbar.prototype.addRange = function(
   range.appendChild(label);
 
   var scale = opt_scale || 1;
-  var slider = document.createElement('paper-slider');
+  var slider = document.createElement('cr-slider');
   slider.min = Math.ceil(min * scale);
   slider.max = Math.floor(max * scale);
   slider.value = value * scale;
-  slider.addEventListener('change', function(event) {
+  slider.addEventListener('value-changed', () => {
     if (this.updateCallback_)
       this.updateCallback_(this.getOptions());
-  }.bind(this));
+  });
   range.appendChild(slider);
 
   range.name = name;
@@ -343,7 +343,7 @@ ImageEditorToolbar.prototype.show = function(on) {
   // Focus the first input on the toolbar.
   if (on) {
     var input = this.container_.querySelector(
-        'button, paper-button, input, paper-slider, cr-input');
+        'button, paper-button, input, cr-slider, cr-input');
     if (input)
       input.focus();
   }
