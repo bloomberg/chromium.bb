@@ -407,6 +407,11 @@ void LocalCardMigrationDialogView::WindowClosing() {
 void LocalCardMigrationDialogView::DeleteCard(const std::string& guid) {
   controller_->DeleteCard(guid);
   ConstructView();
+  UpdateLayout();
+}
+
+// TODO(crbug.com/913571): Figure out a way to avoid two consecutive layouts.
+void LocalCardMigrationDialogView::UpdateLayout() {
   Layout();
   // Since the dialog does not have anchor view or arrow, cannot use
   // SizeToContents() for now. TODO(crbug.com/867194): Try to fix the

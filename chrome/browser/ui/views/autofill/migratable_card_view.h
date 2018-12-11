@@ -37,6 +37,11 @@ class MigratableCardView : public views::View, public views::ButtonListener {
   bool IsSelected();
   std::string GetGuid();
 
+  std::unique_ptr<views::View> GetMigratableCardDescriptionView(
+      const MigratableCreditCard& migratable_credit_card,
+      bool should_show_checkbox,
+      ButtonListener* listener);
+
   // views::View
   const char* GetClassName() const override;
 
@@ -49,6 +54,8 @@ class MigratableCardView : public views::View, public views::ButtonListener {
   // The checkbox_ can remain null if the card list in the local
   // card migration dialog contains only one card.
   views::Checkbox* checkbox_ = nullptr;
+
+  views::View* checkbox_uncheck_text_container_ = nullptr;
 
   views::ImageButton* delete_card_from_local_button_ = nullptr;
 
