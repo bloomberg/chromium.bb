@@ -24,6 +24,29 @@
 namespace content {
 namespace {
 
+base::Optional<std::string> GetStringAttribute(
+    const BrowserAccessibility& node,
+    ax::mojom::StringAttribute attr) {
+  // Language and Font Family are different from other string attributes
+  // in that they inherit.
+  if (attr == ax::mojom::StringAttribute::kFontFamily ||
+      attr == ax::mojom::StringAttribute::kLanguage) {
+    std::string value = node.GetInheritedStringAttribute(attr);
+    if (value.empty()) {
+      return base::nullopt;
+    }
+    return value;
+  }
+
+  // Always return the attribute if the node has it, even if the value is an
+  // empty string.
+  std::string value;
+  if (node.GetStringAttribute(attr, &value)) {
+    return value;
+  }
+  return base::nullopt;
+}
+
 base::Optional<int32_t> GetCellAttribute(const ui::AXNode* ax_node,
                                          ax::mojom::IntAttribute attr) {
   switch (attr) {
@@ -235,17 +258,6 @@ void AccessibilityTreeFormatterBlink::AddProperties(
   dict->SetInteger("unclippedBoundsWidth", unclipped_bounds.width());
   dict->SetInteger("unclippedBoundsHeight", unclipped_bounds.height());
 
-  // Language and Font Family are different from other string attributes
-  // in that they inherit.
-  std::string font_family =
-      node.GetInheritedStringAttribute(ax::mojom::StringAttribute::kFontFamily);
-  if (!font_family.empty())
-    dict->SetString("fontFamily", font_family);
-  std::string language =
-      node.GetInheritedStringAttribute(ax::mojom::StringAttribute::kLanguage);
-  if (!language.empty())
-    dict->SetString("language", language);
-
   for (int32_t state_index = static_cast<int32_t>(ax::mojom::State::kNone);
        state_index <= static_cast<int32_t>(ax::mojom::State::kMaxValue);
        ++state_index) {
@@ -263,11 +275,9 @@ void AccessibilityTreeFormatterBlink::AddProperties(
        static_cast<int32_t>(ax::mojom::StringAttribute::kMaxValue);
        ++attr_index) {
     auto attr = static_cast<ax::mojom::StringAttribute>(attr_index);
-    if (attr != ax::mojom::StringAttribute::kFontFamily &&
-        attr != ax::mojom::StringAttribute::kLanguage) {
-      if (node.HasStringAttribute(attr))
-        dict->SetString(ui::ToString(attr), node.GetStringAttribute(attr));
-    }
+    auto maybe_value = GetStringAttribute(node, attr);
+    if (maybe_value.has_value())
+      dict->SetString(ui::ToString(attr), maybe_value.value());
   }
 
   for (int32_t attr_index =
