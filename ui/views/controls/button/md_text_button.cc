@@ -111,6 +111,16 @@ void MdTextButton::StateChanged(ButtonState old_state) {
   UpdateColors();
 }
 
+void MdTextButton::OnFocus() {
+  LabelButton::OnFocus();
+  UpdateColors();
+}
+
+void MdTextButton::OnBlur() {
+  LabelButton::OnBlur();
+  UpdateColors();
+}
+
 std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   // The prominent button hover effect is a shadow.
@@ -248,7 +258,8 @@ void MdTextButton::UpdateColors() {
     bg_color = *bg_color_override_;
   } else if (is_prominent_) {
     bg_color = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_ProminentButtonColor);
+        HasFocus() ? ui::NativeTheme::kColorId_ProminentButtonFocusedColor
+                   : ui::NativeTheme::kColorId_ProminentButtonColor);
     if (is_disabled) {
       bg_color = color_utils::BlendTowardOppositeLuma(
           bg_color, gfx::kDisabledControlAlpha);

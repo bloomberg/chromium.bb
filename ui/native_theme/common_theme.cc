@@ -106,6 +106,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ButtonEnabledColor:
     case NativeTheme::kColorId_ButtonHoverColor:
       return kButtonEnabledColor;
+    case NativeTheme::kColorId_ProminentButtonFocusedColor:
+      return gfx::kGoogleBlue400;
     case NativeTheme::kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue500;
     case NativeTheme::kColorId_TextOnProminentButtonColor:

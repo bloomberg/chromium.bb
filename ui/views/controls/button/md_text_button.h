@@ -39,9 +39,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // background and ink drop effects.
   void set_corner_radius(float radius);
 
-  // View:
-  void OnPaintBackground(gfx::Canvas* canvas) override;
-
   // LabelButton:
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
@@ -55,6 +52,11 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void StateChanged(ButtonState old_state) override;
 
  protected:
+  // View:
+  void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+
   MdTextButton(ButtonListener* listener, int button_context);
 
  private:

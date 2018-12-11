@@ -27,6 +27,8 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     // Button
     case kColorId_ButtonEnabledColor:
       return SK_ColorWHITE;
+    case kColorId_ProminentButtonFocusedColor:
+      return gfx::kGoogleBlue500;
     case kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue600;
 

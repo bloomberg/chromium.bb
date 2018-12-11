@@ -198,6 +198,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 
     // ProminentButton
     case ui::NativeTheme::kColorId_ProminentButtonColor:
+    case ui::NativeTheme::kColorId_ProminentButtonFocusedColor:
       return GetBgColor(
           "GtkTreeView#treeview.view "
           "GtkTreeView#treeview.view.cell:selected:focus");
