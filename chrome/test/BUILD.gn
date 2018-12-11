@@ -4851,6 +4851,7 @@ if (!is_android) {
       "//third_party/icu",
       "//third_party/libpng",
       "//third_party/zlib",
+      "//ui/base:base_interactive_ui_tests",
       "//ui/base:test_support",
       "//ui/events:events_interactive_ui_tests",
       "//ui/resources:ui_test_pak",
