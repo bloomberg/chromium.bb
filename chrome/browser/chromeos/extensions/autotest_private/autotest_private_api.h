@@ -267,6 +267,36 @@ class AutotestPrivateIsArcProvisionedFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetArcAppFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcApp",
+                             AUTOTESTPRIVATE_GETARCAPP)
+
+ private:
+  ~AutotestPrivateGetArcAppFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateGetArcPackageFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcPackage",
+                             AUTOTESTPRIVATE_GETARCPACKAGE)
+
+ private:
+  ~AutotestPrivateGetArcPackageFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateLaunchArcAppFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchArcApp",
+                             AUTOTESTPRIVATE_LAUNCHARCAPP)
+
+ private:
+  ~AutotestPrivateLaunchArcAppFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.launchApp",
@@ -274,6 +304,16 @@ class AutotestPrivateLaunchAppFunction : public UIThreadExtensionFunction {
 
  private:
   ~AutotestPrivateLaunchAppFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateCloseAppFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.closeApp",
+                             AUTOTESTPRIVATE_CLOSEAPP)
+
+ private:
+  ~AutotestPrivateCloseAppFunction() override;
   ResponseAction Run() override;
 };
 

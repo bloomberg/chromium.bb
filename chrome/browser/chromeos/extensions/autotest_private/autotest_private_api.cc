@@ -36,7 +36,10 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/shelf_spinner_controller.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 #include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
@@ -47,6 +50,7 @@
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
+#include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/common/service_manager_connection.h"
@@ -677,8 +681,10 @@ ExtensionFunction::ResponseAction AutotestPrivateIsAppShownFunction::Run() {
 
   const ash::ShelfItem* item =
       controller->GetItem(ash::ShelfID(params->app_id));
+  // App must be running and not pending in deferred launch.
   const bool window_attached =
-      item && item->status == ash::ShelfItemStatus::STATUS_RUNNING;
+      item && item->status == ash::ShelfItemStatus::STATUS_RUNNING &&
+      !controller->GetShelfSpinnerController()->HasApp(params->app_id);
   return RespondNow(
       OneArgument(std::make_unique<base::Value>(window_attached)));
 }
@@ -698,6 +704,117 @@ AutotestPrivateIsArcProvisionedFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcPackageFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcAppFunction::~AutotestPrivateGetArcAppFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetArcAppFunction::Run() {
+  std::unique_ptr<api::autotest_private::GetArcApp::Params> params(
+      api::autotest_private::GetArcApp::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateGetArcAppFunction " << params->app_id;
+
+  ArcAppListPrefs* const prefs =
+      ArcAppListPrefs::Get(Profile::FromBrowserContext(browser_context()));
+  if (!prefs)
+    return RespondNow(Error("ARC is not available"));
+
+  const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(params->app_id);
+  if (!app_info)
+    return RespondNow(Error("App is not available"));
+
+  auto app_value = std::make_unique<base::DictionaryValue>();
+
+  app_value->SetKey("name", base::Value(app_info->name));
+  app_value->SetKey("packageName", base::Value(app_info->package_name));
+  app_value->SetKey("activity", base::Value(app_info->activity));
+  app_value->SetKey("intentUri", base::Value(app_info->intent_uri));
+  app_value->SetKey("iconResourceId", base::Value(app_info->icon_resource_id));
+  app_value->SetKey("lastLaunchTime",
+                    base::Value(app_info->last_launch_time.ToJsTime()));
+  app_value->SetKey("installTime",
+                    base::Value(app_info->install_time.ToJsTime()));
+  app_value->SetKey("sticky", base::Value(app_info->sticky));
+  app_value->SetKey("notificationsEnabled",
+                    base::Value(app_info->notifications_enabled));
+  app_value->SetKey("ready", base::Value(app_info->ready));
+  app_value->SetKey("suspended", base::Value(app_info->suspended));
+  app_value->SetKey("showInLauncher", base::Value(app_info->show_in_launcher));
+  app_value->SetKey("shortcut", base::Value(app_info->shortcut));
+  app_value->SetKey("launchable", base::Value(app_info->launchable));
+
+  return RespondNow(OneArgument(std::move(app_value)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetArcPackageFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetArcPackageFunction::~AutotestPrivateGetArcPackageFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
+  std::unique_ptr<api::autotest_private::GetArcPackage::Params> params(
+      api::autotest_private::GetArcPackage::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateGetArcPackageFunction " << params->package_name;
+
+  ArcAppListPrefs* const prefs =
+      ArcAppListPrefs::Get(Profile::FromBrowserContext(browser_context()));
+  if (!prefs)
+    return RespondNow(Error("ARC is not available"));
+
+  const std::unique_ptr<ArcAppListPrefs::PackageInfo> package_info =
+      prefs->GetPackage(params->package_name);
+  if (!package_info)
+    return RespondNow(Error("Package is not available"));
+
+  auto package_value = std::make_unique<base::DictionaryValue>();
+  package_value->SetKey("packageName", base::Value(package_info->package_name));
+  package_value->SetKey("packageVersion",
+                        base::Value(package_info->package_version));
+  package_value->SetKey(
+      "lastBackupAndroidId",
+      base::Value(base::Int64ToString(package_info->last_backup_android_id)));
+  package_value->SetKey("lastBackupTime",
+                        base::Value(base::Time::FromDeltaSinceWindowsEpoch(
+                                        base::TimeDelta::FromMicroseconds(
+                                            package_info->last_backup_time))
+                                        .ToJsTime()));
+  package_value->SetKey("shouldSync", base::Value(package_info->should_sync));
+  package_value->SetKey("system", base::Value(package_info->system));
+  package_value->SetKey("vpnProvider", base::Value(package_info->vpn_provider));
+  return RespondNow(OneArgument(std::move(package_value)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateLaunchArcIntentFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateLaunchArcAppFunction::~AutotestPrivateLaunchArcAppFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateLaunchArcAppFunction::Run() {
+  std::unique_ptr<api::autotest_private::LaunchArcApp::Params> params(
+      api::autotest_private::LaunchArcApp::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateLaunchArcIntentFunction " << params->app_id << "/"
+           << params->intent;
+
+  base::Optional<std::string> launch_intent;
+  if (!params->intent.empty())
+    launch_intent = params->intent;
+  const bool result = arc::LaunchAppWithIntent(
+      Profile::FromBrowserContext(browser_context()), params->app_id,
+      launch_intent, 0 /* event_flags */,
+      arc::UserInteractionType::APP_STARTED_FROM_EXTENSION_API,
+      0 /* display_id */);
+  return RespondNow(OneArgument(std::make_unique<base::Value>(result)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateLaunchAppFunction
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -714,9 +831,29 @@ ExtensionFunction::ResponseAction AutotestPrivateLaunchAppFunction::Run() {
   if (!controller)
     return RespondNow(Error("Controller not available"));
   controller->LaunchApp(ash::ShelfID(params->app_id),
-                        ash::ShelfLaunchSource::LAUNCH_FROM_APP_LIST,
+                        ash::ShelfLaunchSource::LAUNCH_FROM_UNKNOWN,
                         0, /* event_flags */
                         display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateLaunchAppFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateCloseAppFunction::~AutotestPrivateCloseAppFunction() = default;
+
+ExtensionFunction::ResponseAction AutotestPrivateCloseAppFunction::Run() {
+  std::unique_ptr<api::autotest_private::CloseApp::Params> params(
+      api::autotest_private::CloseApp::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  DVLOG(1) << "AutotestPrivateCloseAppFunction " << params->app_id;
+
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  if (!controller)
+    return RespondNow(Error("Controller not available"));
+  controller->Close(ash::ShelfID(params->app_id));
   return RespondNow(NoArguments());
 }
 
