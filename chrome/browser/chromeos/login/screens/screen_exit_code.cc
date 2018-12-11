@@ -104,6 +104,8 @@ std::string ExitCodeToString(ScreenExitCode code) {
       return "ASSISTANT_OPTIN_FLOW_FINISHED";
     case ScreenExitCode::MULTIDEVICE_SETUP_FINISHED:
       return "MULTIDEVICE_SETUP_FINISHED";
+    case ScreenExitCode::SUPERVISION_TRANSITION_FINISHED:
+      return "SUPERVISION_TRANSITION_FINISHED";
     case ScreenExitCode::EXIT_CODES_COUNT:
     default:
       NOTREACHED();

@@ -33,6 +33,7 @@ class ScreenManager {
   friend class WizardControllerOobeResumeTest;
   friend class WizardControllerBrokenLocalStateTest;
   friend class WizardControllerOobeConfigurationTest;
+  friend class WizardControllerSupervisionTransitionOobeTest;
 
   // Created screens.
   std::map<OobeScreen, std::unique_ptr<BaseScreen>> screens_;

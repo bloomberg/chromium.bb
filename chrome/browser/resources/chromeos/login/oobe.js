@@ -66,6 +66,7 @@ cr.define('cr.ui.Oobe', function() {
       login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
       login.VoiceInteractionValuePropScreen.register();
       login.WaitForContainerReadyScreen.register();
+      login.SupervisionTransitionScreen.register();
       login.DemoSetupScreen.register();
       login.DemoPreferencesScreen.register();
       login.DiscoverScreen.register();

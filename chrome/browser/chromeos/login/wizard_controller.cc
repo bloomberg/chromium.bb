@@ -64,6 +64,7 @@
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/screens/terms_of_service_screen.h"
 #include "chrome/browser/chromeos/login/screens/update_required_screen.h"
@@ -521,6 +522,9 @@ std::unique_ptr<BaseScreen> WizardController::CreateScreen(OobeScreen screen) {
   } else if (screen == OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY) {
     return std::make_unique<WaitForContainerReadyScreen>(
         this, oobe_ui->GetWaitForContainerReadyScreenView());
+  } else if (screen == OobeScreen::SCREEN_SUPERVISION_TRANSITION) {
+    return std::make_unique<SupervisionTransitionScreen>(
+        this, oobe_ui->GetSupervisionTransitionScreenView());
   } else if (screen == OobeScreen::SCREEN_UPDATE_REQUIRED) {
     return std::make_unique<UpdateRequiredScreen>(
         this, oobe_ui->GetUpdateRequiredScreenView());
@@ -808,6 +812,13 @@ void WizardController::ShowWaitForContainerReadyScreen() {
   UpdateStatusAreaVisibilityForScreen(
       OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_WAIT_FOR_CONTAINER_READY));
+}
+
+void WizardController::ShowSupervisionTransitionScreen() {
+  VLOG(1) << "Showing supervision transition screen.";
+  UpdateStatusAreaVisibilityForScreen(
+      OobeScreen::SCREEN_SUPERVISION_TRANSITION);
+  SetCurrentScreen(GetScreen(OobeScreen::SCREEN_SUPERVISION_TRANSITION));
 }
 
 void WizardController::ShowUpdateRequiredScreen() {
@@ -1151,6 +1162,10 @@ void WizardController::OnWaitForContainerReadyFinished() {
   StartVoiceInteractionSetupWizard();
 }
 
+void WizardController::OnSupervisionTransitionFinished() {
+  OnOobeFlowFinished();
+}
+
 void WizardController::OnAssistantOptInFlowFinished() {
   ShowMultiDeviceSetupScreen();
 }
@@ -1199,7 +1214,8 @@ void WizardController::OnDemoPreferencesCanceled() {
 }
 
 void WizardController::OnOobeFlowFinished() {
-  if (is_in_session_oobe_) {
+  if (is_in_session_oobe_ && current_screen_->screen_id() !=
+                                 OobeScreen::SCREEN_SUPERVISION_TRANSITION) {
     GetLoginDisplayHost()->SetStatusAreaVisible(true);
     GetLoginDisplayHost()->Finalize(base::OnceClosure());
     return;
@@ -1398,6 +1414,7 @@ void WizardController::UpdateStatusAreaVisibilityForScreen(OobeScreen screen) {
              screen == OobeScreen::SCREEN_KIOSK_AUTOLAUNCH ||
              screen == OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING ||
              screen == OobeScreen::SCREEN_WRONG_HWID ||
+             screen == OobeScreen::SCREEN_SUPERVISION_TRANSITION ||
              screen == OobeScreen::SCREEN_ARC_KIOSK_SPLASH ||
              screen == OobeScreen::SCREEN_OOBE_CONTROLLER_PAIRING ||
              screen == OobeScreen::SCREEN_OOBE_HOST_PAIRING) {
@@ -1509,6 +1526,8 @@ void WizardController::AdvanceToScreen(OobeScreen screen) {
     ShowFingerprintSetupScreen();
   } else if (screen == OobeScreen::SCREEN_MARKETING_OPT_IN) {
     ShowMarketingOptInScreen();
+  } else if (screen == OobeScreen::SCREEN_SUPERVISION_TRANSITION) {
+    ShowSupervisionTransitionScreen();
   } else if (screen != OobeScreen::SCREEN_TEST_NO_WINDOW) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
@@ -1696,6 +1715,9 @@ void WizardController::OnExit(ScreenExitCode exit_code) {
       break;
     case ScreenExitCode::MULTIDEVICE_SETUP_FINISHED:
       OnMultiDeviceSetupFinished();
+      break;
+    case ScreenExitCode::SUPERVISION_TRANSITION_FINISHED:
+      OnSupervisionTransitionFinished();
       break;
     default:
       NOTREACHED();

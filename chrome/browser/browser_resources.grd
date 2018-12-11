@@ -670,6 +670,7 @@
       </if>
       <if expr="chromeos">
         <include name="IDR_ASSISTANT_LOGO_PNG" file="resources\chromeos\assistant_optin\assistant_logo.png" type="BINDATA" />
+        <include name="IDR_SUPERVISION_ICON_PNG" file="resources\chromeos\supervision\supervision_icon.png" type="BINDATA" />
       </if>
       <if expr="safe_browsing_mode == 1">
         <include name="IDR_RESET_PASSWORD_HTML" file="resources\reset_password\reset_password.html" type="BINDATA" compress="gzip" />

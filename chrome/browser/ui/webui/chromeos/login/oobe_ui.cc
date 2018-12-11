@@ -70,6 +70,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
@@ -127,6 +128,7 @@ constexpr char kArcOverlayCSSPath[] = "overlay.css";
 constexpr char kArcPlaystoreCSSPath[] = "playstore.css";
 constexpr char kArcPlaystoreJSPath[] = "playstore.js";
 constexpr char kArcPlaystoreLogoPath[] = "playstore.svg";
+constexpr char kArcSupervisionIconPath[] = "supervision_icon.png";
 constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
 constexpr char kCustomElementsJSPath[] = "custom_elements.js";
 constexpr char kCustomElementsUserPodHTMLPath[] =
@@ -156,6 +158,7 @@ constexpr char kEnrollmentJSPath[] = "enrollment.js";
 void AddProductLogoResources(content::WebUIDataSource* source) {
   // Required for Assistant OOBE.
   source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);
+  source->AddResourcePath(kArcSupervisionIconPath, IDR_SUPERVISION_ICON_PNG);
 
 #if defined(GOOGLE_CHROME_BUILD)
   source->AddResourcePath(kLogo24PX1XSvgPath, IDR_PRODUCT_LOGO_24PX_1X);
@@ -425,6 +428,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<WaitForContainerReadyScreenHandler>());
 
+  AddScreenHandler(std::make_unique<SupervisionTransitionScreenHandler>());
+
   AddScreenHandler(std::make_unique<UpdateRequiredScreenHandler>());
 
   AddScreenHandler(std::make_unique<AssistantOptInFlowScreenHandler>());
@@ -624,6 +629,10 @@ OobeUI::GetVoiceInteractionValuePropScreenView() {
 
 WaitForContainerReadyScreenView* OobeUI::GetWaitForContainerReadyScreenView() {
   return GetView<WaitForContainerReadyScreenHandler>();
+}
+
+SupervisionTransitionScreenView* OobeUI::GetSupervisionTransitionScreenView() {
+  return GetView<SupervisionTransitionScreenHandler>();
 }
 
 UpdateRequiredView* OobeUI::GetUpdateRequiredScreenView() {
