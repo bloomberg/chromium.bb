@@ -65,6 +65,8 @@ const char* TaskTypeNames::TaskTypeToString(TaskType task_type) {
       return "ExperimentalWebSchedulingUserInteraction";
     case TaskType::kExperimentalWebSchedulingBestEffort:
       return "ExperimentalWebSchedulingBackground";
+    case TaskType::kFontLoading:
+      return "FontLoading";
     case TaskType::kInternalDefault:
       return "InternalDefault";
     case TaskType::kInternalLoading:
