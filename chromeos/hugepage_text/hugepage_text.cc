@@ -9,6 +9,8 @@
 
 #include <link.h>
 #include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 
 #include "base/bit_cast.h"
 #include "base/logging.h"
@@ -60,6 +62,10 @@ static void* GetTransparentHugepageMapping(const size_t hsize) {
     PLOG(INFO) << "no transparent hugepage support, fall back to small page";
     munmap(haddr, hsize);
     return NULL;
+  }
+
+  if (mlock(haddr, hsize)) {
+    PLOG(INFO) << "Mlocking text pages failed";
   }
   return haddr;
 }
