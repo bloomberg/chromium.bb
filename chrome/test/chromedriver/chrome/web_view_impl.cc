@@ -569,8 +569,8 @@ Status WebViewImpl::AddCookie(const std::string& name,
   params.SetString("path", path);
   params.SetBoolean("secure", secure);
   params.SetBoolean("httpOnly", httpOnly);
-  params.SetDouble("expirationDate", expiry);
-  params.SetDouble("expires", expiry);
+  if (expiry >= 0)
+    params.SetDouble("expires", expiry);
 
   std::unique_ptr<base::DictionaryValue> result;
   Status status =
