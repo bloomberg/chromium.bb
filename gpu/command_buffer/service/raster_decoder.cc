@@ -13,6 +13,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/containers/flat_map.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -2326,24 +2327,33 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
       return;
     }
 
-    deserialized_op->Raster(canvas, playback_params);
-    deserialized_op->DestroyThis();
-
-    paint_buffer_size -= skip;
-    paint_buffer_memory += skip;
-
 #if defined(OS_MACOSX)
-    // Aggressively call glFlush on macOS to determine if this is sufficient to
-    // avoid GL driver crashes. This will cause very significant performance
-    // regressions.
-    // TODO(ccameron): If this makes the crashes go away, then (1) try moving
-    // this flush outside of the above while loop and (2) add instrumentation
-    // to find the culprit ops.
+    // Flush before and after the raster op. Add crash instrumentation to dump
+    // the current raster op.
+    // TODO(ccameron): Harvest this data to see if there is a pattern to the ops
+    // that cause crashes.
     // https://crbug.com/906453
     if (gr_context())
       gr_context()->flush();
     api()->glFlushFn();
+    static auto* crash_key = base::debug::AllocateCrashKeyString(
+        "mac_paint_op_in_flush", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(
+        crash_key, cc::PaintOpTypeToString(deserialized_op->GetType()));
 #endif
+
+    deserialized_op->Raster(canvas, playback_params);
+    deserialized_op->DestroyThis();
+
+#if defined(OS_MACOSX)
+    if (gr_context())
+      gr_context()->flush();
+    api()->glFlushFn();
+    base::debug::ClearCrashKeyString(crash_key);
+#endif
+
+    paint_buffer_size -= skip;
+    paint_buffer_memory += skip;
   }
 }
 
@@ -2388,19 +2398,6 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   // prepareForExternalIO above. Use kDeferLaterCommands to ensure we yield to
   // the Scheduler before processing more commands.
   current_decoder_error_ = error::kDeferLaterCommands;
-
-#if defined(OS_MACOSX)
-  // Aggressively call glFlush on macOS to determine if this is sufficient to
-  // avoid GL driver crashes.
-  // TODO(ccameron): If this is not sufficient, then add a flush to
-  // DoRasterCHROMIUM as well. Also add crash report data to indicate which
-  // sequence of commands result in the crash, and formalize this as a GPU
-  // bug workaround.
-  // https://crbug.com/906453
-  if (gr_context())
-    gr_context()->flush();
-  api()->glFlushFn();
-#endif
 }
 
 void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
