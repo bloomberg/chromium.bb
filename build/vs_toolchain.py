@@ -215,8 +215,14 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, dll_pattern, suffix):
   # ARM64 doesn't have a redist for the ucrt DLLs because they are always
   # present in the OS.
   if target_cpu != 'arm64':
-    ucrt_dll_dirs = os.path.join(win_sdk_dir, 'Redist', 'ucrt', 'DLLs',
-                                 target_cpu)
+    # Starting with the 10.0.17763 SDK the ucrt files are in a version-named
+    # directory - this handles both cases.
+    redist_dir = os.path.join(win_sdk_dir, 'Redist')
+    version_dirs = glob.glob(redist_dir + r'\10.*')
+    if len(version_dirs) > 0:
+      version_dirs.sort(reverse=True)
+      redist_dir = version_dirs[0]
+    ucrt_dll_dirs = os.path.join(redist_dir, 'ucrt', 'DLLs', target_cpu)
     ucrt_files = glob.glob(os.path.join(ucrt_dll_dirs, 'api-ms-win-*.dll'))
     assert len(ucrt_files) > 0
     for ucrt_src_file in ucrt_files:
@@ -387,7 +393,7 @@ def _CopyDebugger(target_dir, target_cpu):
         # TODO(crbug.com/773476): remove version requirement.
         raise Exception('%s not found in "%s"\r\nYou must install the '
                         '"Debugging Tools for Windows" feature from the Windows'
-                        ' 10 SDK. You must use v10.0.17134.0. of the SDK'
+                        ' 10 SDK.'
                         % (debug_file, full_path))
     target_path = os.path.join(target_dir, debug_file)
     _CopyRuntimeImpl(target_path, full_path)
