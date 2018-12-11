@@ -34,28 +34,6 @@ blink::Manifest::ImageResource CreateIcon(const std::string& src,
 
 }  // namespace
 
-TEST(BackgroundFetchStructTraitsTest, BackgroundFetchRegistrationRoundTrip) {
-  BackgroundFetchRegistration registration;
-  registration.developer_id = "my_id";
-  registration.unique_id = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
-  registration.download_total = 9001;
-  registration.result = blink::mojom::BackgroundFetchResult::FAILURE;
-  registration.failure_reason =
-      blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI;
-
-  BackgroundFetchRegistration roundtrip_registration;
-  ASSERT_TRUE(blink::mojom::BackgroundFetchRegistration::Deserialize(
-      blink::mojom::BackgroundFetchRegistration::Serialize(&registration),
-      &roundtrip_registration));
-
-  EXPECT_EQ(roundtrip_registration.developer_id, registration.developer_id);
-  EXPECT_EQ(roundtrip_registration.unique_id, registration.unique_id);
-
-  EXPECT_EQ(roundtrip_registration.download_total, registration.download_total);
-  EXPECT_EQ(roundtrip_registration.result, registration.result);
-  EXPECT_EQ(roundtrip_registration.failure_reason, registration.failure_reason);
-}
-
 TEST(BackgroundFetchStructTraitsTest, ImageResourceRoundtrip) {
   blink::Manifest::ImageResource icon =
       CreateIcon("my_icon.png", {{256, 256}}, "image/png");

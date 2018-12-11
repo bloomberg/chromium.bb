@@ -21,33 +21,6 @@ blink::mojom::SerializedBlobPtr CloneSerializedBlob(
 
 namespace content {
 
-BackgroundFetchRegistration::BackgroundFetchRegistration()
-    : result(blink::mojom::BackgroundFetchResult::UNSET),
-      failure_reason(blink::mojom::BackgroundFetchFailureReason::NONE) {}
-
-BackgroundFetchRegistration::BackgroundFetchRegistration(
-    const std::string& developer_id,
-    const std::string& unique_id,
-    uint64_t upload_total,
-    uint64_t uploaded,
-    uint64_t download_total,
-    uint64_t downloaded,
-    blink::mojom::BackgroundFetchResult result,
-    blink::mojom::BackgroundFetchFailureReason failure_reason)
-    : developer_id(developer_id),
-      unique_id(unique_id),
-      upload_total(upload_total),
-      uploaded(uploaded),
-      download_total(download_total),
-      downloaded(downloaded),
-      result(result),
-      failure_reason(failure_reason) {}
-
-BackgroundFetchRegistration::BackgroundFetchRegistration(
-    const BackgroundFetchRegistration& other) = default;
-
-BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
-
 // static
 blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
     const blink::mojom::FetchAPIResponsePtr& response) {

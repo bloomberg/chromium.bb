@@ -44,26 +44,27 @@ class BackgroundFetchEmbeddedWorkerTestHelper
     fetched_event_closure_ = closure;
   }
 
-  const base::Optional<BackgroundFetchRegistration>& last_registration() const {
+  const blink::mojom::BackgroundFetchRegistrationPtr& last_registration()
+      const {
     return last_registration_;
   }
 
  protected:
   // EmbeddedWorkerTestHelper overrides:
   void OnBackgroundFetchAbortEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback)
       override;
   void OnBackgroundFetchClickEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback)
       override;
   void OnBackgroundFetchFailEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback)
       override;
   void OnBackgroundFetchSuccessEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback) override;
 
@@ -78,7 +79,7 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   base::Closure fetch_fail_event_closure_;
   base::Closure fetched_event_closure_;
 
-  base::Optional<BackgroundFetchRegistration> last_registration_;
+  blink::mojom::BackgroundFetchRegistrationPtr last_registration_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEmbeddedWorkerTestHelper);
 };

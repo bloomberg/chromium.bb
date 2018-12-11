@@ -91,7 +91,7 @@ DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
 
 bool ToBackgroundFetchRegistration(
     const proto::BackgroundFetchMetadata& metadata_proto,
-    BackgroundFetchRegistration* registration) {
+    blink::mojom::BackgroundFetchRegistration* registration) {
   DCHECK(registration);
   const auto& registration_proto = metadata_proto.registration();
 

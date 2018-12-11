@@ -17,8 +17,9 @@
 
 namespace content {
 
-// Tracks the live BackgroundFetchRegistration objects across the renderer
-// processes and provides the functionality to notify them of progress updates.
+// Tracks the live BackgroundFetchRegistration objects across the
+// renderer processes and provides the functionality to notify them of progress
+// updates.
 class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
  public:
   BackgroundFetchRegistrationNotifier();
@@ -33,7 +34,7 @@ class CONTENT_EXPORT BackgroundFetchRegistrationNotifier {
   // Notifies any registered observers for the |registration| of the progress.
   // This will cause JavaScript events to fire.
   // Completed fetches must also call Notify with the final state.
-  void Notify(const BackgroundFetchRegistration& registration);
+  void Notify(const blink::mojom::BackgroundFetchRegistration& registration);
 
   // Notifies any registered observers for the registration identifier by
   // |unique_id| that the records for the fetch are no longer available.

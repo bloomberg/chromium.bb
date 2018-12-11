@@ -39,7 +39,6 @@ struct PlatformNotificationData;
 
 namespace content {
 
-struct BackgroundFetchRegistration;
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
 class MockRenderProcessHost;
@@ -175,16 +174,16 @@ class EmbeddedWorkerTestHelper {
   virtual void OnActivateEvent(
       mojom::ServiceWorker::DispatchActivateEventCallback callback);
   virtual void OnBackgroundFetchAbortEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
   virtual void OnBackgroundFetchClickEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   virtual void OnBackgroundFetchFailEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
   virtual void OnBackgroundFetchSuccessEvent(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
   virtual void OnCookieChangeEvent(
@@ -269,16 +268,16 @@ class EmbeddedWorkerTestHelper {
   void OnActivateEventStub(
       mojom::ServiceWorker::DispatchActivateEventCallback callback);
   void OnBackgroundFetchAbortEventStub(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
   void OnBackgroundFetchClickEventStub(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   void OnBackgroundFetchFailEventStub(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
   void OnBackgroundFetchSuccessEventStub(
-      const BackgroundFetchRegistration& registration,
+      blink::mojom::BackgroundFetchRegistrationPtr registration,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
   void OnCookieChangeEventStub(

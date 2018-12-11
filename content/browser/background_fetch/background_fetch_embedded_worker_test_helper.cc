@@ -19,9 +19,9 @@ BackgroundFetchEmbeddedWorkerTestHelper::
     ~BackgroundFetchEmbeddedWorkerTestHelper() = default;
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback) {
-  last_registration_ = registration;
+  last_registration_ = std::move(registration);
 
   if (fail_abort_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
@@ -34,9 +34,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
 }
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback) {
-  last_registration_ = registration;
+  last_registration_ = std::move(registration);
 
   if (fail_click_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
@@ -49,9 +49,9 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
 }
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
-  last_registration_ = registration;
+  last_registration_ = std::move(registration);
 
   if (fail_fetch_fail_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
@@ -64,10 +64,10 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
 }
 
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
-  last_registration_ = registration;
+  last_registration_ = std::move(registration);
 
   if (fail_fetched_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
