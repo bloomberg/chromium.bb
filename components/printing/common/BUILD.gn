@@ -29,6 +29,13 @@ static_library("common") {
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
   ]
+
+  if (is_mac) {
+    sources += [
+      "printer_capabilities_mac.h",
+      "printer_capabilities_mac.mm",
+    ]
+  }
 }
 
 source_set("unit_tests") {
@@ -44,4 +51,8 @@ source_set("unit_tests") {
     "//printing:test_support",
     "//testing/gtest",
   ]
+
+  if (is_mac) {
+    sources += [ "printer_capabilities_mac_unittest.mm" ]
+  }
 }

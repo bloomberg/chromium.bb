@@ -3031,6 +3031,10 @@ const char kCreateAppWindowsInAppShimProcessDescription[] =
     "Create native windows the app shim process, instead of of the browser "
     "process.";
 
+const char kEnableCustomMacPaperSizesName[] = "Enable custom paper sizes";
+const char kEnableCustomMacPaperSizesDescription[] =
+    "Allow use of custom paper sizes in Print Preview.";
+
 const char kMacTouchBarName[] = "Hardware Touch Bar";
 const char kMacTouchBarDescription[] = "Control the use of the Touch Bar.";
 
