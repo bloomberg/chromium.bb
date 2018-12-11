@@ -93,14 +93,16 @@ var allTests = [
   },
 
   function boundsForRangeClips() {
-    let clipped = rootNode.find({attributes: {name: "This text overflows"}});
+    let clipped = rootNode.find({attributes: {
+        name: "This text overflows"}});
     clipped.boundsForRange(0, clipped.name.length, (clippedBounds) => {
       assertTrue(
           clipped.parent.location.width < clipped.unclippedLocation.width);
       assertEq(clipped.parent.location.width, clippedBounds.width);
     });
 
-    let hidden = rootNode.find({attributes: {name: "This text is hidden"}});
+    let hidden = rootNode.find({attributes: {
+      name: "This text is hidden"});
     hidden.boundsForRange(0, hidden.name.length, (hiddenBounds) => {
       assertTrue(hidden.parent.location.width < hidden.unclippedLocation.width);
       assertTrue(
