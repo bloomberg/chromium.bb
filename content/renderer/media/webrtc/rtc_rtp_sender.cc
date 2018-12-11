@@ -216,6 +216,7 @@ class RTCRtpSender::RTCRtpSenderInternal
       new_parameters.encodings[i].dtx = encoding.dtx;
       new_parameters.encodings[i].active = encoding.active;
       new_parameters.encodings[i].bitrate_priority = encoding.bitrate_priority;
+      new_parameters.encodings[i].network_priority = encoding.network_priority;
       new_parameters.encodings[i].ptime = encoding.ptime;
       new_parameters.encodings[i].max_bitrate_bps = encoding.max_bitrate_bps;
       new_parameters.encodings[i].max_framerate = encoding.max_framerate;

@@ -248,6 +248,8 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
   webrtc::RtpEncodingParameters webrtc_encoding;
   webrtc_encoding.active = encoding->active();
   webrtc_encoding.bitrate_priority = PriorityToDouble(encoding->priority());
+  webrtc_encoding.network_priority =
+      PriorityToDouble(encoding->networkPriority());
   if (encoding->hasMaxBitrate())
     webrtc_encoding.max_bitrate_bps = clampTo<int>(encoding->maxBitrate());
   return webrtc_encoding;
@@ -318,6 +320,8 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
       encoding->setMaxBitrate(web_encoding.max_bitrate_bps.value());
     encoding->setPriority(
         PriorityFromDouble(web_encoding.bitrate_priority).c_str());
+    encoding->setNetworkPriority(
+        PriorityFromDouble(web_encoding.network_priority).c_str());
     encodings.push_back(encoding);
   }
   parameters->setEncodings(encodings);
