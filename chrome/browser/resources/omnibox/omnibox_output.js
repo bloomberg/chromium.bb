@@ -724,6 +724,12 @@ cr.define('omnibox_output', function() {
      * @return {!Array<string>}
      */
     static textToWords_(text) {
+      const MAX_TEXT_LENGTH = 200;
+      if (text.length > MAX_TEXT_LENGTH) {
+        text = text.slice(0, MAX_TEXT_LENGTH);
+        console.warn(`text to be filtered too long, truncatd; max length: ${
+            MAX_TEXT_LENGTH}, truncated text: ${text}`);
+      }
       return text.match(/[a-z]+|[A-Z][a-z]*|\d+|./g) || [];
     }
   }
