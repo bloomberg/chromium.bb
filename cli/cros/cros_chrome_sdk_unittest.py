@@ -568,8 +568,8 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
         self.FULL_VERSION,
         self.sdk.GetFullVersion(self.VERSION))
 
-  def testFullVersionFromRecentLatest(self):
-    """Test full version calculation when there is no matching LATEST- file."""
+  def _SetupMissingVersions(self):
+    """Version & Version-1 are missing, but Version-2 exists."""
     def _RaiseGSNoSuchKey(*_args, **_kwargs):
       raise gs.GSNoSuchKey('file does not exist')
     self.sdk_mock.UnMockAttr('GetFullVersion')
@@ -583,9 +583,20 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.RECENT_VERSION_FOUND),
         output=self.FULL_VERSION_RECENT)
+
+  def testFullVersionFromRecentLatest(self):
+    """Test full version calculation when there is no matching LATEST- file."""
+    self._SetupMissingVersions()
     self.assertEquals(
         self.FULL_VERSION_RECENT,
         self.sdk.GetFullVersion(self.VERSION))
+
+  def testExactVersion(self):
+    """Test exact version when there is no matching LATEST- file."""
+    self._SetupMissingVersions()
+    self.sdk.require_exact_version = True
+    self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
+                      self.VERSION)
 
   def testFullVersionCaching(self):
     """Test full version calculation and caching."""

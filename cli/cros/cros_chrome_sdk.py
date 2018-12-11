@@ -94,7 +94,7 @@ class SDKFetcher(object):
 
   def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
                sdk_path=None, toolchain_path=None, silent=False,
-               use_external_config=None):
+               use_external_config=None, require_exact_version=False):
     """Initialize the class.
 
     Args:
@@ -111,6 +111,7 @@ class SDKFetcher(object):
       use_external_config: When identifying the configuration for a board,
         force usage of the external configuration if both external and internal
         are available.
+      require_exact_version: Use exact SDK version only.
     """
     site_config = config_lib.GetConfig()
 
@@ -131,6 +132,7 @@ class SDKFetcher(object):
     self.chrome_src = chrome_src
     self.sdk_path = sdk_path
     self.toolchain_path = toolchain_path
+    self.require_exact_version = require_exact_version
     self.silent = silent
 
     # For external configs, there is no need to run 'gsutil config', because
@@ -372,7 +374,7 @@ class SDKFetcher(object):
     """
     version_file = '%s/LATEST-%s' % (self.gs_base, version)
     full_version = self._GetFullVersionFromStorage(version_file)
-    if full_version is None:
+    if full_version is None and not self.require_exact_version:
       logging.warning('No LATEST file matching SDK version %s', version)
       return self._GetFullVersionFromRecentLatest(version)
     return full_version
@@ -700,14 +702,18 @@ class ChromeSDKCommand(command.CliCommand):
         help='Use the goma installation at the specified PATH.')
     parser.add_argument(
         '--version', default=None, type=cls.ValidateVersion,
-        help="Specify the SDK version to use. This can be a platform version "
-             "ending in .0.0, e.g. 1234.0.0, in which case the full version "
-             "will be extracted from the corresponding LATEST file for the "
-             "specified board. If no LATEST file exists, an older version "
-             "will be used if available. Alternatively, a full version may be "
-             "specified, e.g. R56-1234.0.0, in which case that exact version "
-             "will be used. Defaults to using the version specified in the "
-             "CHROMEOS_LKGM file in the chromium checkout.")
+        help='Specify the SDK version to use. This can be a platform version '
+             'ending in .0.0, e.g. 1234.0.0, in which case the full version '
+             'will be extracted from the corresponding LATEST file for the '
+             'specified board. If no LATEST file exists, an older version '
+             'will be used if available. Alternatively, a full version may be '
+             'specified, e.g. R56-1234.0.0, in which case that exact version '
+             'will be used. Defaults to using the version specified in the '
+             'CHROMEOS_LKGM file in the chromium checkout.')
+    parser.add_argument(
+        '--require-exact-version', default=False, action='store_true',
+        help='Use the exact SDK version; do not attempt to use previous '
+             'versions.')
     parser.add_argument(
         'cmd', nargs='*', default=None,
         help='The command to execute in the SDK environment.  Defaults to '
@@ -1084,7 +1090,7 @@ class ChromeSDKCommand(command.CliCommand):
     if 'symbol_level' in gn_args:
       symbol_level = gn_args.pop('symbol_level')
       logging.info('Removing symbol_level = %d from gn args, use '
-                   '--gn-extra-args to specify a non default value.' %
+                   '--gn-extra-args to specify a non default value.',
                    symbol_level)
 
     if options.gn_extra_args:
@@ -1276,13 +1282,16 @@ class ChromeSDKCommand(command.CliCommand):
     self.silent = bool(self.options.cmd)
     # Lazy initialize because SDKFetcher creates a GSContext() object in its
     # constructor, which may block on user input.
-    self.sdk = SDKFetcher(self.options.cache_dir, self.options.board,
-                          clear_cache=self.options.clear_sdk_cache,
-                          chrome_src=self.options.chrome_src,
-                          sdk_path=self.options.sdk_path,
-                          toolchain_path=self.options.toolchain_path,
-                          silent=self.silent,
-                          use_external_config=self.options.use_external_config)
+    self.sdk = SDKFetcher(
+        self.options.cache_dir, self.options.board,
+        clear_cache=self.options.clear_sdk_cache,
+        chrome_src=self.options.chrome_src,
+        sdk_path=self.options.sdk_path,
+        toolchain_path=self.options.toolchain_path,
+        silent=self.silent,
+        use_external_config=self.options.use_external_config,
+        require_exact_version=self.options.require_exact_version
+    )
 
     prepare_version = self.options.version
     if not prepare_version and not self.options.sdk_path:
