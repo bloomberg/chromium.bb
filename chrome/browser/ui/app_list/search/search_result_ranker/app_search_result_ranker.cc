@@ -42,14 +42,23 @@ std::unique_ptr<AppLaunchPredictor> CreatePredictor(
 // Save |proto| to |predictor_filename|.
 void SaveToDiskOnWorkerThread(const base::FilePath& predictor_filename,
                               const AppLaunchPredictorProto& proto) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::string proto_str;
-  if (!proto.SerializeToString(&proto_str))
+  if (!proto.SerializeToString(&proto_str)) {
+    LOG(ERROR)
+        << "Unable to serialize AppLaunchPredictorProto, not saving to disk.";
     return;
-
-  base::ImportantFileWriter::WriteFileAtomically(predictor_filename, proto_str,
-                                                 "AppSearchResultRanker");
+  }
+  bool write_result;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+    write_result = base::ImportantFileWriter::WriteFileAtomically(
+        predictor_filename, proto_str, "AppSearchResultRanker");
+  }
+  if (!write_result) {
+    LOG(ERROR) << "Error writing predictor file " << predictor_filename;
+  }
 }
 
 // Loads a AppLaunchPredictor from |predictor_filename|.
