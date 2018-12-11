@@ -571,8 +571,9 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
   bottom.className = 'thumbnail-bottom';
   var mimeType = this.metadataModel_.getCache(
       [entry], ['contentMimeType'])[0].contentMimeType;
+  const locationInfo = this.volumeManager_.getLocationInfo(entry);
   var detailIcon = filelist.renderFileTypeIcon(
-      li.ownerDocument, entry, mimeType);
+      li.ownerDocument, entry, locationInfo, mimeType);
   if (isDirectory) {
     var checkmark = li.ownerDocument.createElement('div');
     checkmark.className = 'detail-checkmark';

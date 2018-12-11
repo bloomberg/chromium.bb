@@ -179,6 +179,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesAppEntryTypes) {
   RunGeneratedTest("/common/js/files_app_entry_types_unittest.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FileType) {
+  RunGeneratedTest("/common/js/file_type_unittest.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, UtilTest) {
   RunGeneratedTest("/common/js/util_unittest.html");
 }

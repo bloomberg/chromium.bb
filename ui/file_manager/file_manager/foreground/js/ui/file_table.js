@@ -730,7 +730,9 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
 
   var mimeType = this.metadataModel_.getCache([entry],
       ['contentMimeType'])[0].contentMimeType;
-  var icon = filelist.renderFileTypeIcon(this.ownerDocument, entry, mimeType);
+  const locationInfo = this.volumeManager_.getLocationInfo(entry);
+  var icon = filelist.renderFileTypeIcon(
+      this.ownerDocument, entry, locationInfo, mimeType);
   if (FileType.isImage(entry, mimeType) || FileType.isVideo(entry, mimeType) ||
       FileType.isAudio(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
     icon.appendChild(this.renderThumbnail_(entry));

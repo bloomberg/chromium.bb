@@ -5,25 +5,6 @@
 // Namespace
 const directorytree = {};
 
-/**
- * Returns a string to be used as an attribute value to customize the entry
- * icon.
- *
- * @param {VolumeManagerCommon.RootType} rootType The root type to entry.
- * @param {Entry|FilesAppEntry} entry
- * @return {string} a string
- */
-directorytree.getIconOverrides = function(rootType, entry) {
-  // Overrides per RootType and defined by fullPath.
-  const overrides = {
-    [VolumeManagerCommon.RootType.DOWNLOADS]: {
-      '/Downloads': VolumeManagerCommon.VolumeType.DOWNLOADS,
-    },
-  };
-  const root = overrides[rootType];
-  return root ? root[entry.fullPath] : null;
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTreeBase
 
@@ -679,7 +660,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
     }
   } else {
     const rootType = location.rootType || null;
-    const iconOverride = directorytree.getIconOverrides(rootType, dirEntry);
+    const iconOverride = FileType.getIconOverrides(dirEntry, rootType);
     // Add Downloads icon as volume so current test code passes with
     // MyFilesVolume flag enabled and disabled.
     if (iconOverride)
