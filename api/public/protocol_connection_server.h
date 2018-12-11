@@ -5,12 +5,16 @@
 #ifndef API_PUBLIC_PROTOCOL_CONNECTION_SERVER_H_
 #define API_PUBLIC_PROTOCOL_CONNECTION_SERVER_H_
 
+#include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
+#include "api/public/message_demuxer.h"
 #include "api/public/protocol_connection.h"
 #include "api/public/server_config.h"
 #include "base/error.h"
+#include "base/ip_address.h"
 #include "base/macros.h"
 
 namespace openscreen {
@@ -25,12 +29,15 @@ class ProtocolConnectionServer {
     kSuspended,
   };
 
-  class Observer : public ProtocolConnectionObserver {
+  class Observer : public ProtocolConnectionServiceObserver {
    public:
     virtual ~Observer() = default;
 
     // Called when the state becomes kSuspended.
     virtual void OnSuspended() = 0;
+
+    virtual void OnIncomingConnection(
+        std::unique_ptr<ProtocolConnection>&& connection) = 0;
   };
 
   virtual ~ProtocolConnectionServer();
@@ -57,6 +64,14 @@ class ProtocolConnectionServer {
   // connections.
   virtual bool Resume() = 0;
 
+  virtual void RunTasks() = 0;
+
+  // Synchronously open a new connection to an endpoint identified by
+  // |endpoint_id|.  Returns nullptr if it can't be completed synchronously
+  // (e.g. there are no existing open connections to that endpoint).
+  virtual std::unique_ptr<ProtocolConnection> CreateProtocolConnection(
+      uint64_t endpoint_id) = 0;
+
   // Returns the current state of the listener.
   State state() const { return state_; }
 
@@ -64,15 +79,19 @@ class ProtocolConnectionServer {
   const Error& last_error() const { return last_error_; }
 
  protected:
-  ProtocolConnectionServer(const ServerConfig& config, Observer* observer);
+  explicit ProtocolConnectionServer(MessageDemuxer* demuxer,
+                                    Observer* observer);
 
-  ServerConfig config_;
   State state_ = State::kStopped;
   Error last_error_;
+  MessageDemuxer* const demuxer_;
   Observer* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolConnectionServer);
 };
+
+std::ostream& operator<<(std::ostream& os,
+                         ProtocolConnectionServer::State state);
 
 }  // namespace openscreen
 

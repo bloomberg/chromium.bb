@@ -48,6 +48,10 @@ void NetworkServiceManager::Dispose() {
 
 void NetworkServiceManager::RunEventLoopOnce() {
   InternalServices::RunEventLoopOnce();
+  if (connection_client_)
+    connection_client_->RunTasks();
+  if (connection_server_)
+    connection_server_->RunTasks();
 }
 
 ScreenListener* NetworkServiceManager::GetMdnsScreenListener() {

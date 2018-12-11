@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef API_IMPL_MDNS_SCREEN_LISTENER_FACTORY_H_
-#define API_IMPL_MDNS_SCREEN_LISTENER_FACTORY_H_
+#ifndef API_PUBLIC_MDNS_SCREEN_LISTENER_FACTORY_H_
+#define API_PUBLIC_MDNS_SCREEN_LISTENER_FACTORY_H_
 
 #include <memory>
 
@@ -25,4 +25,4 @@ class MdnsScreenListenerFactory {
 
 }  // namespace openscreen
 
-#endif  // API_IMPL_MDNS_SCREEN_LISTENER_FACTORY_H_
+#endif  // API_PUBLIC_MDNS_SCREEN_LISTENER_FACTORY_H_

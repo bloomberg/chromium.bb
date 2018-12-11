@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <unistd.h>
+
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 
 #include "platform/api/logging.h"
 
@@ -39,6 +42,8 @@ std::ostream& operator<<(std::ostream& os, const CombinedLogLevel& level) {
 
 }  // namespace
 
+int g_log_fd;
+
 void SetLogLevel(LogLevel level, int verbose_level) {
   g_log_level = CombinedLogLevel{level, verbose_level};
 }
@@ -51,8 +56,10 @@ void LogWithLevel(LogLevel level,
   if (CombinedLogLevel{level, verbose_level} < g_log_level)
     return;
 
-  std::cout << "[" << CombinedLogLevel{level, verbose_level} << ":" << file
-            << ":" << line << "] " << msg << std::endl;
+  std::stringstream ss;
+  ss << "[" << CombinedLogLevel{level, verbose_level} << ":" << file << ":"
+     << line << "] " << msg << std::endl;
+  write(g_log_fd, ss.str().c_str(), ss.str().size());
 }
 
 void Break() {

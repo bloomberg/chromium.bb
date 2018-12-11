@@ -206,6 +206,26 @@ bool IPAddress::ParseV6(const std::string& s, IPAddress* address) {
   return true;
 }
 
+bool operator==(const IPEndpoint& a, const IPEndpoint& b) {
+  return (a.address == b.address) && (a.port == b.port);
+}
+
+bool IPEndpointComparator::operator()(const IPEndpoint& a,
+                                      const IPEndpoint& b) const {
+  if (a.address.version() != b.address.version())
+    return a.address.version() < b.address.version();
+  if (a.address.IsV4()) {
+    int ret = memcmp(a.address.bytes_.data(), b.address.bytes_.data(), 4);
+    if (ret != 0)
+      return ret < 0;
+  } else {
+    int ret = memcmp(a.address.bytes_.data(), b.address.bytes_.data(), 16);
+    if (ret != 0)
+      return ret < 0;
+  }
+  return a.port < b.port;
+}
+
 std::ostream& operator<<(std::ostream& out, const IPAddress& address) {
   uint8_t values[16];
   size_t len = 0;

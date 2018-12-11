@@ -101,7 +101,8 @@ bool BindUdpSocket(UdpSocketPtr socket,
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_port = htons(endpoint.port);
-    address.sin_addr.s_addr = INADDR_ANY;
+    endpoint.address.CopyToV4(
+        reinterpret_cast<uint8_t*>(&address.sin_addr.s_addr));
     return bind(socket->fd, reinterpret_cast<struct sockaddr*>(&address),
                 sizeof(address)) != -1;
   } else {
@@ -124,7 +125,7 @@ bool BindUdpSocket(UdpSocketPtr socket,
     address.sin6_family = AF_INET6;
     address.sin6_flowinfo = 0;
     address.sin6_port = htons(endpoint.port);
-    address.sin6_addr = IN6ADDR_ANY_INIT;
+    endpoint.address.CopyToV6(reinterpret_cast<uint8_t*>(&address.sin6_addr));
     address.sin6_scope_id = 0;
     return bind(socket->fd, reinterpret_cast<struct sockaddr*>(&address),
                 sizeof(address)) != -1;

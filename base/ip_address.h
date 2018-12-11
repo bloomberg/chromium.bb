@@ -76,6 +76,8 @@ class IPAddress {
   static bool ParseV4(const std::string& s, IPAddress* address);
   static bool ParseV6(const std::string& s, IPAddress* address);
 
+  friend class IPEndpointComparator;
+
   Version version_;
   std::array<uint8_t, 16> bytes_;
 };
@@ -84,6 +86,13 @@ struct IPEndpoint {
  public:
   IPAddress address;
   uint16_t port;
+};
+
+bool operator==(const IPEndpoint& a, const IPEndpoint& b);
+
+class IPEndpointComparator {
+ public:
+  bool operator()(const IPEndpoint& a, const IPEndpoint& b) const;
 };
 
 // Outputs a string of the form:

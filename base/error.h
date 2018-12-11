@@ -22,6 +22,7 @@ class Error {
     kNone = 0,
     // CBOR parsing error.
     kCborParsing = 1,
+    kCborIncompleteMessage,
 
     // Presentation start errors.
     kNoAvailableScreens,

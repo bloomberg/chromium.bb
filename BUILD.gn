@@ -19,17 +19,29 @@ group("gn_all") {
   ]
 }
 
-executable("demo") {
-  sources = [
-    "//demo/demo.cc",
-  ]
+if (current_os == "mac") {
+  source_set("demo") {
+  }
+} else {
+  # TODO(btolsch): Darwin linker has deprecated -m, which handles the multiple
+  # definition error.  Until the boringssl/mDNSResponder conflict is fixed
+  # (which appears to be exactly the same code in both projects), the demo is
+  # excluded on mac.
+  executable("demo") {
+    sources = [
+      "//demo/demo.cc",
+    ]
 
-  deps = [
-    "//api",
-    "//base",
-    "//discovery/mdns",
-    "//platform",
-  ]
+    # TODO(btolsch): Handles MD5_* conflict between boringssl and mDNSResponder
+    # temporarily.
+    ldflags = [ "-Wl,-z,muldefs" ]
+    deps = [
+      "//api:api_with_chromium_quic",
+      "//base",
+      "//discovery/mdns",
+      "//platform",
+    ]
+  }
 }
 
 executable("unittests") {

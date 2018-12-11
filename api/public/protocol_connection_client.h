@@ -5,10 +5,14 @@
 #ifndef API_PUBLIC_PROTOCOL_CONNECTION_CLIENT_H_
 #define API_PUBLIC_PROTOCOL_CONNECTION_CLIENT_H_
 
+#include <memory>
+#include <ostream>
 #include <string>
 
+#include "api/public/message_demuxer.h"
 #include "api/public/protocol_connection.h"
 #include "base/error.h"
+#include "base/ip_address.h"
 #include "base/macros.h"
 
 namespace openscreen {
@@ -22,6 +26,38 @@ namespace openscreen {
 class ProtocolConnectionClient {
  public:
   enum class State { kStopped = 0, kStarting, kRunning, kStopping };
+
+  class ConnectionRequestCallback {
+   public:
+    virtual ~ConnectionRequestCallback() = default;
+
+    // Called when a new connection was created between 5-tuples.
+    virtual void OnConnectionOpened(
+        uint64_t request_id,
+        std::unique_ptr<ProtocolConnection>&& connection) = 0;
+    virtual void OnConnectionFailed(uint64_t request_id) = 0;
+  };
+
+  class ConnectRequest {
+   public:
+    ConnectRequest();
+    ConnectRequest(ProtocolConnectionClient* parent, uint64_t request_id);
+    ConnectRequest(ConnectRequest&& other);
+    ~ConnectRequest();
+    ConnectRequest& operator=(ConnectRequest&& other);
+
+    explicit operator bool() const { return request_id_; }
+
+    uint64_t request_id() const { return request_id_; }
+
+    // Records that the requested connect operation is successful so it doesn't
+    // need to attempt a cancel on destruction.
+    void MarkSuccess() { request_id_ = 0; }
+
+   private:
+    ProtocolConnectionClient* parent_ = nullptr;
+    uint64_t request_id_ = 0;
+  };
 
   virtual ~ProtocolConnectionClient();
 
@@ -39,6 +75,20 @@ class ProtocolConnectionClient {
   // Returns true if state() != (kStopped|kStopping).
   virtual bool Stop() = 0;
 
+  virtual void RunTasks() = 0;
+
+  // Open a new connection to |endpoint|.  This may succeed synchronously if
+  // there are already connections open to |endpoint|, otherwise it will be
+  // asynchronous.
+  virtual ConnectRequest Connect(const IPEndpoint& endpoint,
+                                 ConnectionRequestCallback* request) = 0;
+
+  // Synchronously open a new connection to an endpoint identified by
+  // |endpoint_id|.  Returns nullptr if it can't be completed synchronously
+  // (e.g. there are no existing open connections to that endpoint).
+  virtual std::unique_ptr<ProtocolConnection> CreateProtocolConnection(
+      uint64_t endpoint_id) = 0;
+
   // Returns the current state of the listener.
   State state() const { return state_; }
 
@@ -46,14 +96,22 @@ class ProtocolConnectionClient {
   const Error& last_error() const { return last_error_; }
 
  protected:
-  explicit ProtocolConnectionClient(ProtocolConnectionObserver* observer);
+  explicit ProtocolConnectionClient(
+      MessageDemuxer* demuxer,
+      ProtocolConnectionServiceObserver* observer);
+
+  virtual void CancelConnectRequest(uint64_t request_id) = 0;
 
   State state_ = State::kStopped;
   Error last_error_;
-  ProtocolConnectionObserver* const observer_;
+  MessageDemuxer* const demuxer_;
+  ProtocolConnectionServiceObserver* const observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolConnectionClient);
 };
+
+std::ostream& operator<<(std::ostream& os,
+                         ProtocolConnectionClient::State state);
 
 }  // namespace openscreen
 

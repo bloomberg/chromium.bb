@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "api/impl/mdns_screen_listener_factory.h"
+#include "api/public/mdns_screen_listener_factory.h"
 
 #include "api/impl/internal_services.h"
 

@@ -11,5 +11,8 @@
 #define DISALLOW_COPY_AND_ASSIGN(ClassName) \
   DISALLOW_COPY(ClassName);                 \
   DISALLOW_ASSIGN(ClassName)
+#define DISALLOW_IMPLICIT_CONSTRUCTORS(ClassName) \
+  ClassName() = delete;                           \
+  DISALLOW_COPY_AND_ASSIGN(ClassName)
 
 #endif  // BASE_MACROS_H_

@@ -6,10 +6,28 @@
 
 namespace openscreen {
 
-ProtocolConnectionServer::ProtocolConnectionServer(const ServerConfig& config,
+ProtocolConnectionServer::ProtocolConnectionServer(MessageDemuxer* demuxer,
                                                    Observer* observer)
-    : config_(config), observer_(observer) {}
+    : demuxer_(demuxer), observer_(observer) {}
 
 ProtocolConnectionServer::~ProtocolConnectionServer() = default;
+
+std::ostream& operator<<(std::ostream& os,
+                         ProtocolConnectionServer::State state) {
+  switch (state) {
+    case ProtocolConnectionServer::State::kStopped:
+      return os << "STOPPED";
+    case ProtocolConnectionServer::State::kStarting:
+      return os << "STARTING";
+    case ProtocolConnectionServer::State::kRunning:
+      return os << "RUNNING";
+    case ProtocolConnectionServer::State::kStopping:
+      return os << "STOPPING";
+    case ProtocolConnectionServer::State::kSuspended:
+      return os << "SUSPENDED";
+    default:
+      return os << "UNKNOWN";
+  }
+}
 
 }  // namespace openscreen

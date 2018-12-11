@@ -75,6 +75,7 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
   // NOTE: hostname implicit in map key.
   struct HostnameWatchers {
     std::vector<ServiceInstance*> services;
+    // TODO(btolsch): std::vector<IPAddress>
     IPAddress address;
   };
 

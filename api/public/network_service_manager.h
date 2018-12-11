@@ -40,6 +40,9 @@ class NetworkServiceManager final {
   // by the service instance destructors.
   static void Dispose();
 
+  // Runs the event loop once for all of its owned services.  This mostly
+  // consists of check for available network events and passing that data to the
+  // listening services.
   void RunEventLoopOnce();
 
   // Returns an instance of the mDNS screen listener, or nullptr if

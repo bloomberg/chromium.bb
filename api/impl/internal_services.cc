@@ -23,11 +23,7 @@ const IPAddress kMulticastIPv6Address{
     0xff, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfb,
 };
-const IPEndpoint kMulticastListeningEndpoint{IPAddress{0, 0, 0, 0}, 5353};
-const IPEndpoint kMulticastIPv6ListeningEndpoint{
-    IPAddress{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-              0x00, 0x00, 0x00, 0x00, 0x00},
-    5353};
+const uint16_t kMulticastListeningPort = 5353;
 
 class MdnsResponderAdapterImplFactory final
     : public MdnsResponderAdapterFactory {
@@ -51,10 +47,7 @@ bool SetUpMulticastSocket(platform::UdpSocketPtr socket,
       break;
     }
 
-    const IPEndpoint listen_endpoint = IsIPv6Socket(socket)
-                                           ? kMulticastIPv6ListeningEndpoint
-                                           : kMulticastListeningEndpoint;
-    if (!BindUdpSocket(socket, listen_endpoint, ifindex)) {
+    if (!BindUdpSocket(socket, {{}, kMulticastListeningPort}, ifindex)) {
       OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
                     << platform::GetLastErrorString();
       break;
@@ -81,7 +74,7 @@ int g_instance_ref_count = 0;
 void InternalServices::RunEventLoopOnce() {
   OSP_CHECK(g_instance) << "No listener or publisher is alive.";
   g_instance->mdns_service_.HandleNewEvents(
-      platform::OnePlatformLoopIteration(g_instance->internal_service_waiter_));
+      platform::OnePlatformLoopIteration(g_instance->mdns_waiter_));
 }
 
 // static
@@ -174,20 +167,20 @@ InternalServices::InternalServices()
                     kServiceProtocol,
                     std::make_unique<MdnsResponderAdapterImplFactory>(),
                     std::make_unique<InternalPlatformLinkage>(this)),
-      internal_service_waiter_(platform::CreateEventWaiter()) {
-  OSP_DCHECK(internal_service_waiter_);
+      mdns_waiter_(platform::CreateEventWaiter()) {
+  OSP_DCHECK(mdns_waiter_);
 }
 
 InternalServices::~InternalServices() {
-  DestroyEventWaiter(internal_service_waiter_);
+  DestroyEventWaiter(mdns_waiter_);
 }
 
 void InternalServices::RegisterMdnsSocket(platform::UdpSocketPtr socket) {
-  platform::WatchUdpSocketReadable(internal_service_waiter_, socket);
+  platform::WatchUdpSocketReadable(mdns_waiter_, socket);
 }
 
 void InternalServices::DeregisterMdnsSocket(platform::UdpSocketPtr socket) {
-  platform::StopWatchingUdpSocketReadable(internal_service_waiter_, socket);
+  platform::StopWatchingUdpSocketReadable(mdns_waiter_, socket);
 }
 
 // static

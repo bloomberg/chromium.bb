@@ -107,8 +107,7 @@ std::vector<platform::UdpSocketPtr> SetupMulticastSockets(
       DestroyUdpSocket(socket);
       continue;
     }
-    if (!BindUdpSocket(socket, IPEndpoint{IPAddress{0, 0, 0, 0}, 5353},
-                       ifindex)) {
+    if (!BindUdpSocket(socket, {{}, 5353}, ifindex)) {
       OSP_LOG_ERROR << "bind failed for interface " << ifindex << ": "
                     << platform::GetLastErrorString();
       DestroyUdpSocket(socket);
@@ -314,6 +313,7 @@ void BrowseDemo(const std::string& service_name,
 }  // namespace openscreen
 
 int main(int argc, char** argv) {
+  openscreen::platform::LogInit(nullptr);
   openscreen::platform::SetLogLevel(openscreen::platform::LogLevel::kVerbose,
                                     0);
   std::string service_instance;

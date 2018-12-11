@@ -22,7 +22,8 @@ std::string LogLevelToString(LogLevel level);
 
 //
 // PLATFORM IMPLEMENTATION
-// The follow functions must be implemented by the platform.
+// The following functions must be implemented by the platform.
+void LogInit(const char* filename);
 void SetLogLevel(LogLevel level, int verbose_level = 0);
 void LogWithLevel(LogLevel level,
                   int verbose_level,

@@ -11,9 +11,8 @@ source_set("impl") {
     "mdns_responder_service.cc",
     "mdns_responder_service.h",
     "mdns_screen_listener_factory.cc",
-    "mdns_screen_listener_factory.h",
     "mdns_screen_publisher_factory.cc",
-    "mdns_screen_publisher_factory.h",
+    "network_service_manager.cc",
     "screen_list.cc",
     "screen_list.h",
     "screen_listener_impl.cc",
@@ -22,9 +21,34 @@ source_set("impl") {
     "screen_publisher_impl.h",
   ]
 
-  deps = [
+  public_deps = [
     "../public:api",
+    "//msgs",
+  ]
+  deps = [
+    "quic",
     "//base",
     "//platform",
+  ]
+}
+
+source_set("chromium_quic_integration") {
+  sources = [
+    "protocol_connection_client_factory.cc",
+    "protocol_connection_server_factory.cc",
+    "quic/quic_connection_factory_impl.cc",
+    "quic/quic_connection_factory_impl.h",
+    "quic/quic_connection_impl.cc",
+    "quic/quic_connection_impl.h",
+  ]
+
+  public_configs = [ "//third_party/chromium_quic:chromium_quic_config" ]
+
+  deps = [
+    "quic",
+    "//base",
+    "//msgs",
+    "//platform",
+    "//third_party/chromium_quic",
   ]
 }
