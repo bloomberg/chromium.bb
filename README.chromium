@@ -266,3 +266,11 @@ D. Local Modifications
   - Fix:
     https://github.com/unicode-org/icu/pull/265
     https://github.com/unicode-org/icu/pull/278
+
+11. Locale parsing with tz unicode extension.
+
+  - patches/locale_id_tz_parsing.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-11053
+  - Fix:
+    https://github.com/unicode-org/icu/pull/300
