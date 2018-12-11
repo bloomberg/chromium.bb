@@ -613,8 +613,10 @@ class Channel::ReadBuffer {
   DISALLOW_COPY_AND_ASSIGN(ReadBuffer);
 };
 
-Channel::Channel(Delegate* delegate)
-    : delegate_(delegate), read_buffer_(new ReadBuffer) {}
+Channel::Channel(Delegate* delegate, HandlePolicy handle_policy)
+    : delegate_(delegate),
+      handle_policy_(handle_policy),
+      read_buffer_(new ReadBuffer) {}
 
 Channel::~Channel() {}
 
@@ -701,6 +703,9 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t* next_read_size_hint) {
     std::vector<PlatformHandle> handles;
     bool deferred = false;
     if (num_handles > 0) {
+      if (handle_policy_ == HandlePolicy::kRejectHandles)
+        return false;
+
       if (!GetReadPlatformHandles(payload, payload_size, num_handles,
                                   extra_header, extra_header_size, &handles,
                                   &deferred)) {

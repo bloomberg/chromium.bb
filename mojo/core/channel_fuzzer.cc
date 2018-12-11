@@ -49,12 +49,14 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   FakeChannelDelegate receiver_delegate;
   auto receiver = Channel::Create(&receiver_delegate,
                                   ConnectionParams(channel.TakeLocalEndpoint()),
+                                  Channel::HandlePolicy::kRejectHandles,
                                   environment->message_loop.task_runner());
   receiver->Start();
 
   FakeChannelDelegate sender_delegate;
   auto sender = Channel::Create(&sender_delegate,
                                 ConnectionParams(channel.TakeRemoteEndpoint()),
+                                Channel::HandlePolicy::kRejectHandles,
                                 environment->message_loop.task_runner());
   sender->Start();
 

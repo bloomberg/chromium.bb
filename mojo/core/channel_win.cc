@@ -35,8 +35,11 @@ class ChannelWin : public Channel,
  public:
   ChannelWin(Delegate* delegate,
              ConnectionParams connection_params,
+             HandlePolicy handle_policy,
              scoped_refptr<base::TaskRunner> io_task_runner)
-      : Channel(delegate), self_(this), io_task_runner_(io_task_runner) {
+      : Channel(delegate, handle_policy),
+        self_(this),
+        io_task_runner_(io_task_runner) {
     if (connection_params.server_endpoint().is_valid()) {
       handle_ = connection_params.TakeServerEndpoint()
                     .TakePlatformHandle()
@@ -378,8 +381,10 @@ class ChannelWin : public Channel,
 scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
+    HandlePolicy handle_policy,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-  return new ChannelWin(delegate, std::move(connection_params), io_task_runner);
+  return new ChannelWin(delegate, std::move(connection_params), handle_policy,
+                        io_task_runner);
 }
 
 }  // namespace core

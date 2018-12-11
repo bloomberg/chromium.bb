@@ -33,6 +33,16 @@ constexpr bool IsAlignedForChannelMessage(size_t n) {
 class MOJO_SYSTEM_IMPL_EXPORT Channel
     : public base::RefCountedThreadSafe<Channel> {
  public:
+  enum class HandlePolicy {
+    // If a Channel is constructed in this mode, it will accept messages with
+    // platform handle attachements.
+    kAcceptHandles,
+
+    // If a Channel is constructed in this mode, it will reject messages with
+    // platform handle attachments and treat them as malformed messages.
+    kRejectHandles,
+  };
+
   struct Message;
 
   using MessagePtr = std::unique_ptr<Message>;
@@ -268,7 +278,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   static scoped_refptr<Channel> Create(
       Delegate* delegate,
       ConnectionParams connection_params,
+      HandlePolicy handle_policy,
       scoped_refptr<base::TaskRunner> io_task_runner);
+
+  // Allows the caller to change the Channel's HandlePolicy after construction.
+  void set_handle_policy(HandlePolicy policy) { handle_policy_ = policy; }
 
   // Request that the channel be shut down. This should always be called before
   // releasing the last reference to a Channel to ensure that it's cleaned up
@@ -302,7 +316,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   virtual void LeakHandle() = 0;
 
  protected:
-  explicit Channel(Delegate* delegate);
+  Channel(Delegate* delegate, HandlePolicy handle_policy);
   virtual ~Channel();
 
   Delegate* delegate() const { return delegate_; }
@@ -361,6 +375,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   class ReadBuffer;
 
   Delegate* delegate_;
+  HandlePolicy handle_policy_;
   const std::unique_ptr<ReadBuffer> read_buffer_;
 
   // Handle to the process on the other end of this Channel, iff known.

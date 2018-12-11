@@ -102,8 +102,11 @@ class ChannelPosix : public Channel,
  public:
   ChannelPosix(Delegate* delegate,
                ConnectionParams connection_params,
+               HandlePolicy handle_policy,
                scoped_refptr<base::TaskRunner> io_task_runner)
-      : Channel(delegate), self_(this), io_task_runner_(io_task_runner) {
+      : Channel(delegate, handle_policy),
+        self_(this),
+        io_task_runner_(io_task_runner) {
     if (connection_params.server_endpoint().is_valid())
       server_ = connection_params.TakeServerEndpoint();
     else
@@ -766,8 +769,9 @@ class ChannelPosix : public Channel,
 scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
+    HandlePolicy handle_policy,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-  return new ChannelPosix(delegate, std::move(connection_params),
+  return new ChannelPosix(delegate, std::move(connection_params), handle_policy,
                           io_task_runner);
 }
 
