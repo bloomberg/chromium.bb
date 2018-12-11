@@ -301,6 +301,7 @@ void DownloadController::CreateAndroidDownload(
 }
 
 void DownloadController::AboutToResumeDownload(DownloadItem* download_item) {
+  download_item->RemoveObserver(this);
   download_item->AddObserver(this);
 
   // If a download is resumed from an interrupted state, record its strong
@@ -411,8 +412,6 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
   switch (item->GetState()) {
     case DownloadItem::IN_PROGRESS: {
       Java_DownloadController_onDownloadUpdated(env, j_item);
-      if (item->IsPaused())
-        item->RemoveObserver(this);
       break;
     }
     case DownloadItem::COMPLETE:
@@ -438,7 +437,6 @@ void DownloadController::OnDownloadUpdated(DownloadItem* item) {
       // resume in this case.
       Java_DownloadController_onDownloadInterrupted(env, j_item,
           IsInterruptedDownloadAutoResumable(item));
-      item->RemoveObserver(this);
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
