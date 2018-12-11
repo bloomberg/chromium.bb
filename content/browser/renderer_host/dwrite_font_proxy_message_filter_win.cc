@@ -106,17 +106,6 @@ const wchar_t* kLastResortFontNames[] = {
     L"Sans",     L"Arial",   L"MS UI Gothic",    L"Microsoft Sans Serif",
     L"Segoe UI", L"Calibri", L"Times New Roman", L"Courier New"};
 
-// Feature to enable loading font files from outside the system font directory.
-const base::Feature kEnableCustomFonts {
-  "DirectWriteCustomFonts", base::FEATURE_ENABLED_BY_DEFAULT
-};
-
-// Feature to force loading font files using the custom font file path. Has no
-// effect if kEnableCustomFonts is disabled.
-const base::Feature kForceCustomFonts {
-  "ForceDirectWriteCustomFonts", base::FEATURE_DISABLED_BY_DEFAULT
-};
-
 struct RequiredFontStyle {
   const wchar_t* family_name;
   DWRITE_FONT_WEIGHT required_weight;
@@ -179,8 +168,7 @@ bool CheckRequiredStylesPresent(IDWriteFontCollection* collection,
 }  // namespace
 
 DWriteFontProxyImpl::DWriteFontProxyImpl()
-    : windows_fonts_path_(GetWindowsFontsPath()),
-      custom_font_file_loading_mode_(ENABLE) {}
+    : windows_fonts_path_(GetWindowsFontsPath()) {}
 
 DWriteFontProxyImpl::~DWriteFontProxyImpl() = default;
 
@@ -478,11 +466,6 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
     return;
   }
 
-  if (!base::FeatureList::IsEnabled(kEnableCustomFonts))
-    custom_font_file_loading_mode_ = DISABLE;
-  else if (base::FeatureList::IsEnabled(kForceCustomFonts))
-    custom_font_file_loading_mode_ = FORCE;
-
   // Temp code to help track down crbug.com/561873
   for (size_t font = 0; font < arraysize(kLastResortFontNames); font++) {
     uint32_t font_index = 0;
@@ -597,11 +580,9 @@ bool DWriteFontProxyImpl::AddLocalFile(
   base::string16 file_path = base::i18n::FoldCase(file_path_chars.data());
 
   if (!base::StartsWith(file_path, windows_fonts_path_,
-                        base::CompareCase::SENSITIVE) ||
-      custom_font_file_loading_mode_ == FORCE) {
+                        base::CompareCase::SENSITIVE)) {
     LogLoaderType(FILE_OUTSIDE_SANDBOX);
-    if (custom_font_file_loading_mode_ != DISABLE)
-      custom_font_path_set->insert(file_path);
+    custom_font_path_set->insert(file_path);
   } else {
     LogLoaderType(FILE_SYSTEM_FONT_DIR);
     path_set->insert(file_path);

@@ -38,4 +38,7 @@ per-file embedded_frame_sink*.*=xidachen@chromium.org
 per-file embedded_frame_sink*.*=junov@chromium.org
 per-file embedded_frame_sink*.*=kylechar@chromium.org
 
+# DirectWrite Font Code
+per-file dwrite_*=drott@chromium.org
+
 # COMPONENT: Internals>Core
