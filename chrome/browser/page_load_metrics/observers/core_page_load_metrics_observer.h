@@ -210,8 +210,6 @@ class CorePageLoadMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnUserInput(const blink::WebInputEvent& event) override;
-  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
-                            extra_request_complete_info) override;
   void OnResourceDataUseObserved(
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
@@ -243,9 +241,7 @@ class CorePageLoadMetricsObserver
   ui::PageTransition transition_;
   bool was_no_store_main_resource_;
 
-  // Note: these are only approximations, based on WebContents attribution from
-  // ResourceRequestInfo objects while this is the currently committed load in
-  // the WebContents.
+  // Number of complete resources loaded by the page.
   int num_cache_resources_;
   int num_network_resources_;
 

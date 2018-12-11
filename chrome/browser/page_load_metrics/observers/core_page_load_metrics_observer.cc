@@ -763,22 +763,19 @@ void CorePageLoadMetricsObserver::OnUserInput(
   }
 }
 
-void CorePageLoadMetricsObserver::OnLoadedResource(
-    const page_load_metrics::ExtraRequestCompleteInfo&
-        extra_request_complete_info) {
-  if (extra_request_complete_info.was_cached) {
-    ++num_cache_resources_;
-    cache_bytes_ += extra_request_complete_info.raw_body_bytes;
-  } else {
-    ++num_network_resources_;
-    network_bytes_ += extra_request_complete_info.raw_body_bytes;
-  }
-}
-
 void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
+    if (resource->is_complete) {
+      if (!resource->was_fetched_via_cache) {
+        network_bytes_ += resource->encoded_body_length;
+        num_network_resources_++;
+      } else {
+        cache_bytes_ += resource->encoded_body_length;
+        num_cache_resources_++;
+      }
+    }
     network_bytes_including_headers_ += resource->delta_bytes;
   }
 }
