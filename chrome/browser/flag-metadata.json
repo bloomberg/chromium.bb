@@ -1034,6 +1034,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-custom-mac-paper-sizes",
+    "owners": [ "//printing/OWNERS" ],
+    "expiry_milestone": 76
+  },
+  {
     "name": "enable-data-reduction-proxy-main-menu",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

@@ -4435,6 +4435,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillAlwaysShowServerCardsInSyncTransport)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_MACOSX)
+    {"enable-custom-mac-paper-sizes",
+     flag_descriptions::kEnableCustomMacPaperSizesName,
+     flag_descriptions::kEnableCustomMacPaperSizesDescription, kOsMac,
+     FEATURE_VALUE_TYPE(printing::features::kEnableCustomMacPaperSizes)},
+#endif
 };
 
 class FlagsStateSingleton {

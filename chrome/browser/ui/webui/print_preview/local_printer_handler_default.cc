@@ -11,10 +11,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "components/printing/common/printer_capabilities.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend.h"
+
+#if defined(OS_MACOSX)
+#include "components/printing/browser/features.h"
+#include "components/printing/common/printer_capabilities_mac.h"
+#endif
 
 namespace {
 
@@ -29,8 +35,15 @@ printing::PrinterList EnumeratePrintersAsync() {
 }
 
 std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
-    const std::string& device_name,
-    const printing::PrinterSemanticCapsAndDefaults::Papers& additional_papers) {
+    const std::string& device_name) {
+  printing::PrinterSemanticCapsAndDefaults::Papers additional_papers;
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(
+          printing::features::kEnableCustomMacPaperSizes)) {
+    additional_papers = printing::GetMacCustomPaperSizes();
+  }
+#endif
+
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
@@ -97,13 +110,9 @@ void LocalPrinterHandlerDefault::StartGetCapability(
     GetCapabilityCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // TODO(thestig): Fetch custom paper sizes.
-  printing::PrinterSemanticCapsAndDefaults::Papers additional_papers;
-
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&FetchCapabilitiesAsync, device_name, additional_papers),
-      std::move(cb));
+      base::BindOnce(&FetchCapabilitiesAsync, device_name), std::move(cb));
 }
 
 void LocalPrinterHandlerDefault::StartPrint(

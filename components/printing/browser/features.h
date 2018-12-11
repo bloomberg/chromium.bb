@@ -6,12 +6,17 @@
 #define COMPONENTS_PRINTING_BROWSER_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 
 namespace printing {
 namespace features {
 
 // Use pdf compositor service to generate PDF files for printing.
 extern const base::Feature kUsePdfCompositorServiceForPrint;
+
+#if defined(OS_MACOSX)
+extern const base::Feature kEnableCustomMacPaperSizes;
+#endif
 
 }  // namespace features
 }  // namespace printing
