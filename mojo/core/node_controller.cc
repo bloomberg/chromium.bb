@@ -369,13 +369,14 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
 
   scoped_refptr<NodeChannel> channel =
       NodeChannel::Create(this, std::move(node_connection_params),
+                          Channel::HandlePolicy::kAcceptHandles,
                           io_task_runner_, process_error_callback);
 
-#else   // !defined(OS_MACOSX) && !defined(OS_NACL)
-  scoped_refptr<NodeChannel> channel =
-      NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
-                          process_error_callback);
-#endif  // !defined(OS_MACOSX) && !defined(OS_NACL)
+#else   // !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
+  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
+      this, std::move(connection_params), Channel::HandlePolicy::kAcceptHandles,
+      io_task_runner_, process_error_callback);
+#endif  // !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
 
   // We set up the invitee channel with a temporary name so it can be identified
   // as a pending invitee if it writes any messages to the channel. We may start
@@ -403,8 +404,9 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
     // into our |peers_| map. That will happen as soon as we receive an
     // AcceptInvitee message from them.
     bootstrap_inviter_channel_ =
-        NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
-                            ProcessErrorCallback());
+        NodeChannel::Create(this, std::move(connection_params),
+                            Channel::HandlePolicy::kAcceptHandles,
+                            io_task_runner_, ProcessErrorCallback());
     // Prevent the inviter pipe handle from being closed on shutdown. Pipe
     // closure may be used by the inviter to detect the invitee process has
     // exited.
@@ -419,8 +421,12 @@ void NodeController::ConnectIsolatedOnIOThread(
     const std::string& connection_name) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
+  // Processes using isolated connections to communicate have no ability to lean
+  // on a broker for handle relaying, so we allow them to send handles to each
+  // other at their own peril.
   scoped_refptr<NodeChannel> channel = NodeChannel::Create(
-      this, std::move(connection_params), io_task_runner_, {});
+      this, std::move(connection_params), Channel::HandlePolicy::kAcceptHandles,
+      io_task_runner_, {});
 
   RequestContext request_context;
   ports::NodeName token;
@@ -852,9 +858,9 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
 
   PlatformChannel broker_channel;
   ConnectionParams connection_params(broker_channel.TakeLocalEndpoint());
-  scoped_refptr<NodeChannel> client =
-      NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
-                          ProcessErrorCallback());
+  scoped_refptr<NodeChannel> client = NodeChannel::Create(
+      this, std::move(connection_params), Channel::HandlePolicy::kAcceptHandles,
+      io_task_runner_, ProcessErrorCallback());
 
 #if defined(OS_WIN)
   // The broker must have a working handle to the client process in order to
@@ -934,7 +940,8 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
     broker = NodeChannel::Create(
         this,
         ConnectionParams(PlatformChannelEndpoint(std::move(broker_channel))),
-        io_task_runner_, ProcessErrorCallback());
+        Channel::HandlePolicy::kAcceptHandles, io_task_runner_,
+        ProcessErrorCallback());
     AddPeer(broker_name, broker, true /* start_channel */);
   }
 
@@ -1075,10 +1082,18 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
     return;
   }
 
+#if defined(OS_WIN)
+  // Introduced peers are never our broker nor our inviter, so we never accept
+  // handles from them directly.
+  constexpr auto kPeerHandlePolicy = Channel::HandlePolicy::kRejectHandles;
+#else
+  constexpr auto kPeerHandlePolicy = Channel::HandlePolicy::kAcceptHandles;
+#endif
+
   scoped_refptr<NodeChannel> channel = NodeChannel::Create(
       this,
       ConnectionParams(PlatformChannelEndpoint(std::move(channel_handle))),
-      io_task_runner_, ProcessErrorCallback());
+      kPeerHandlePolicy, io_task_runner_, ProcessErrorCallback());
 
   DVLOG(1) << "Adding new peer " << name << " via broker introduction.";
   AddPeer(name, channel, true /* start_channel */);

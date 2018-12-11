@@ -194,8 +194,9 @@ class ChannelFuchsia : public Channel,
  public:
   ChannelFuchsia(Delegate* delegate,
                  ConnectionParams connection_params,
+                 HandlePolicy handle_policy,
                  scoped_refptr<base::TaskRunner> io_task_runner)
-      : Channel(delegate),
+      : Channel(delegate, handle_policy),
         self_(this),
         handle_(
             connection_params.TakeEndpoint().TakePlatformHandle().TakeHandle()),
@@ -457,9 +458,10 @@ class ChannelFuchsia : public Channel,
 scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
+    HandlePolicy handle_policy,
     scoped_refptr<base::TaskRunner> io_task_runner) {
   return new ChannelFuchsia(delegate, std::move(connection_params),
-                            std::move(io_task_runner));
+                            handle_policy, std::move(io_task_runner));
 }
 
 }  // namespace core

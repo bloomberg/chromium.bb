@@ -102,6 +102,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   FakeNodeChannelDelegate receiver_delegate;
   auto receiver = NodeChannel::Create(
       &receiver_delegate, ConnectionParams(channel.TakeLocalEndpoint()),
+      Channel::HandlePolicy::kRejectHandles,
       environment->message_loop.task_runner(), base::DoNothing());
   receiver->Start();
 
@@ -113,6 +114,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   FakeChannelDelegate sender_delegate;
   auto sender = Channel::Create(&sender_delegate,
                                 ConnectionParams(channel.TakeRemoteEndpoint()),
+                                Channel::HandlePolicy::kRejectHandles,
                                 environment->message_loop.task_runner());
   sender->Start();
   auto message = std::make_unique<Channel::Message>(size, 0 /* num_handles */);
