@@ -5111,7 +5111,8 @@ crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/831496 virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
-crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
+# TODO (michaelludwig) - Restore after Skia roll, crbug.com/913948
+#crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
 crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
@@ -5308,7 +5309,8 @@ crbug.com/867376 [ Mac ] http/tests/devtools/elements/elements-inspect-iframe-fr
 crbug.com/867376 [ Mac ] http/tests/devtools/elements/css-variables/resolve-inherited-css-variables.js [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-color.html [ Timeout Pass ]
 crbug.com/867376 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-image-over-image.html [ Timeout Pass ]
-crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
+# TODO (michaelludwig) - Restore after Skia roll, crbug.com/913948
+#crbug.com/867376 [ Linux ] virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Timeout Pass ]
 crbug.com/867982 [ Debug ] external/wpt/requestidlecallback/basic.html [ Timeout Pass ]
 crbug.com/882756 [ Debug ] external/wpt/requestidlecallback/cancel-invoked.html [ Timeout Pass ]
 
@@ -5433,7 +5435,8 @@ crbug.com/824539 [ Android ] transforms/transformed-caret.html [ Failure ]
 crbug.com/824539 [ Android ] virtual/layout_ng/fast/block/margin-collapse/019.html [ Crash Failure ]
 
 # Sheriff 2018-07-30
-crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
+# TODO (michaelludwig) - Restore after Skia roll, crbug.com/913948
+# crbug.com/866166 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Timeout ]
 crbug.com/868706 external/wpt/css/css-layout-api/auto-block-size-inflow.https.html [ Pass Failure ]
 
 # Sheriff 2018-07-31
@@ -5761,3 +5764,33 @@ crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.html [ Pass Fai
 crbug.com/v8/8319 external/wpt/wasm/jsapi/memory/constructor.any.worker.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.html [ Pass Failure ]
 crbug.com/v8/8319 external/wpt/wasm/jsapi/table/constructor.any.worker.html [ Pass Failure ]
+
+# TODO(michaelludwig) - Remove after Skia roll for crbug.com/913948
+# (many layout tests, but each only changed by a several pixels)
+crbug.com/913948 media/video-layer-crash.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-patterns.html [ Pass Failure ]
+# This layout test is marked as skipped on Windows, so keep that in place
+crbug.com/913948 [ Android ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
+crbug.com/913948 [ Linux ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
+crbug.com/913948 [ Mac ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-background-image-cover.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-border-image.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-filter.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-image-canvas-pattern.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-image-canvas.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-image-filter-all.html [ Pass Failure Timeout ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-image-profile-match.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-image.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ Pass Failure Timeout ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-object.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/color-profile-svg.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure Timeout ]
+crbug.com/913948 virtual/gpu-rasterization/images/exif-orientation-height-image-document.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/image-map-anchor-children.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/rgb-png-with-cmyk-color-profile.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/sprite-no-bleed.html [ Pass Failure ]
+crbug.com/913948 virtual/gpu-rasterization/images/ycbcr-with-cmyk-color-profile.html [ Pass Failure ]
+crbug.com/913948 virtual/video-surface-layer/media/video-layer-crash.html [ Pass Failure ]
