@@ -136,9 +136,10 @@ class CORE_EXPORT StyleEngine final
   void AddStyleSheetCandidateNode(Node&);
   void RemoveStyleSheetCandidateNode(Node&, ContainerNode& insertion_point);
   void ModifiedStyleSheetCandidateNode(Node&);
-  void AdoptedStyleSheetsWillChange(TreeScope&,
-                                    StyleSheetList* old_sheets,
-                                    StyleSheetList* new_sheets);
+  void AdoptedStyleSheetsWillChange(
+      TreeScope&,
+      const HeapVector<Member<CSSStyleSheet>>& old_sheets,
+      const HeapVector<Member<CSSStyleSheet>>& new_sheets);
   void AddedCustomElementDefaultStyles(
       const HeapVector<Member<CSSStyleSheet>>& default_styles);
   void MediaQueriesChangedInScope(TreeScope&);

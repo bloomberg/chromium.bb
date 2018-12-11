@@ -38,6 +38,7 @@
 namespace blink {
 
 class ContainerNode;
+class CSSStyleSheet;
 class DOMSelection;
 class Document;
 class Element;
@@ -46,7 +47,6 @@ class HitTestResult;
 class IdTargetObserverRegistry;
 class SVGTreeScopeResources;
 class ScopedStyleResolver;
-class StyleSheetList;
 
 // The root node of a document tree (in which case this is a Document) or of a
 // shadow tree (in which case this is a ShadowRoot). Various things, like
@@ -142,9 +142,10 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   SVGTreeScopeResources& EnsureSVGTreeScopedResources();
 
   bool HasAdoptedStyleSheets() const;
-  StyleSheetList& AdoptedStyleSheets();
-  void SetAdoptedStyleSheets(StyleSheetList*);
-  void SetAdoptedStyleSheets(StyleSheetList*, ExceptionState&);
+  const HeapVector<Member<CSSStyleSheet>>& AdoptedStyleSheets();
+  void SetAdoptedStyleSheets(HeapVector<Member<CSSStyleSheet>>&);
+  void SetAdoptedStyleSheets(HeapVector<Member<CSSStyleSheet>>&,
+                             ExceptionState&);
 
  protected:
   TreeScope(ContainerNode&, Document&);
@@ -176,7 +177,7 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
 
   Member<SVGTreeScopeResources> svg_tree_scoped_resources_;
 
-  Member<StyleSheetList> adopted_style_sheets_;
+  HeapVector<Member<CSSStyleSheet>> adopted_style_sheets_;
 };
 
 inline bool TreeScope::HasElementWithId(const AtomicString& id) const {

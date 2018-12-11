@@ -34,20 +34,6 @@ StyleSheetList* StyleSheetList::Create() {
   return MakeGarbageCollected<StyleSheetList>();
 }
 
-StyleSheetList* StyleSheetList::Create(
-    const HeapVector<Member<CSSStyleSheet>>& style_sheet_vector,
-    ExceptionState& exception_state) {
-  if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled()) {
-    exception_state.ThrowTypeError("Illegal constructor");
-    return nullptr;
-  }
-  return MakeGarbageCollected<StyleSheetList>(style_sheet_vector);
-}
-
-StyleSheetList::StyleSheetList(
-    const HeapVector<Member<CSSStyleSheet>>& style_sheet_vector)
-    : style_sheet_vector_(style_sheet_vector) {}
-
 StyleSheetList::StyleSheetList(TreeScope* tree_scope)
     : tree_scope_(tree_scope) {
   CHECK(tree_scope);

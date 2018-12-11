@@ -288,19 +288,19 @@ void StyleEngine::ModifiedStyleSheetCandidateNode(Node& node) {
     SetNeedsActiveStyleUpdate(node.GetTreeScope());
 }
 
-void StyleEngine::AdoptedStyleSheetsWillChange(TreeScope& tree_scope,
-                                               StyleSheetList* old_sheets,
-                                               StyleSheetList* new_sheets) {
+void StyleEngine::AdoptedStyleSheetsWillChange(
+    TreeScope& tree_scope,
+    const HeapVector<Member<CSSStyleSheet>>& old_sheets,
+    const HeapVector<Member<CSSStyleSheet>>& new_sheets) {
   if (GetDocument().IsDetached())
     return;
 
-  unsigned old_sheets_count = old_sheets ? old_sheets->length() : 0;
-  unsigned new_sheets_count = new_sheets ? new_sheets->length() : 0;
+  unsigned old_sheets_count = old_sheets.size();
+  unsigned new_sheets_count = new_sheets.size();
 
   unsigned min_count = std::min(old_sheets_count, new_sheets_count);
   unsigned index = 0;
-  while (index < min_count &&
-         old_sheets->item(index) == new_sheets->item(index)) {
+  while (index < min_count && old_sheets[index] == new_sheets[index]) {
     index++;
   }
 
@@ -308,11 +308,10 @@ void StyleEngine::AdoptedStyleSheetsWillChange(TreeScope& tree_scope,
     return;
 
   for (unsigned i = index; i < old_sheets_count; ++i) {
-    ToCSSStyleSheet(old_sheets->item(i))
-        ->RemovedAdoptedFromTreeScope(tree_scope);
+    old_sheets[i]->RemovedAdoptedFromTreeScope(tree_scope);
   }
   for (unsigned i = index; i < new_sheets_count; ++i) {
-    ToCSSStyleSheet(new_sheets->item(i))->AddedAdoptedToTreeScope(tree_scope);
+    new_sheets[i]->AddedAdoptedToTreeScope(tree_scope);
   }
 
   if (new_sheets_count) {

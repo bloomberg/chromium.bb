@@ -65,17 +65,11 @@ void ShadowTreeStyleSheetCollection::CollectStyleSheets(
   if (!GetTreeScope().HasAdoptedStyleSheets())
     return;
 
-  StyleSheetList& adopted_style_sheets = GetTreeScope().AdoptedStyleSheets();
-  unsigned length = adopted_style_sheets.length();
-  for (unsigned index = 0; index < length; ++index) {
-    StyleSheet* sheet = adopted_style_sheets.item(index);
-    if (!sheet)
-      continue;
-    CSSStyleSheet* css_sheet = ToCSSStyleSheet(sheet);
-    if (!css_sheet || !css_sheet->CanBeActivated(g_null_atom))
+  for (CSSStyleSheet* sheet : GetTreeScope().AdoptedStyleSheets()) {
+    if (!sheet || !sheet->CanBeActivated(g_null_atom))
       continue;
     collection.AppendActiveStyleSheet(
-        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
+        std::make_pair(sheet, master_engine.RuleSetForSheet(*sheet)));
   }
 }
 
