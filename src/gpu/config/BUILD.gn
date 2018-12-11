@@ -5,6 +5,13 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/ui.gni")
+import("//build/config/win/manifest.gni")
+
+windows_manifest("gpu_manifest") {
+  sources = [
+    default_compatibility_manifest,  # Want the normal OS compat list.
+  ]
+}
 
 group("config") {
   if (is_component_build) {
@@ -150,6 +157,7 @@ source_set("config_sources") {
 
   deps = [
     ":process_json",
+    ":gpu_manifest",
     "//base",
     "//gpu/ipc/common:gpu_preferences_interface",
     "//media:media_buildflags",
