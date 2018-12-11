@@ -231,6 +231,7 @@ source_set("external_files") {
 source_set("ui_internal") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "browser_view_controller+private.h",
     "browser_view_controller.h",
     "browser_view_controller.mm",
     "browser_view_controller_dependency_factory.h",

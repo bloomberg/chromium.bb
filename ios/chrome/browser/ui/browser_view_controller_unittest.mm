@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view_controller+private.h"
+
 #import <Foundation/Foundation.h>
 #import <PassKit/PassKit.h>
 
@@ -31,7 +34,6 @@
 #import "ios/chrome/browser/ui/activity_services/share_protocol.h"
 #import "ios/chrome/browser/ui/activity_services/share_to_data.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view_controller_dependency_factory.h"
 #import "ios/chrome/browser/ui/browser_view_controller_helper.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"

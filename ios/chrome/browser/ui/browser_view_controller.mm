@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/browser_view_controller+private.h"
 
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MessageUI/MessageUI.h>
@@ -556,6 +557,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   BrowserContainerCoordinator* _browserContainerCoordinator;
 }
 
+// Activates/deactivates the object. This will enable/disable the ability for
+// this object to browse, and to have live UIWebViews associated with it. While
+// not active, the UI will not react to changes in the tab model, so generally
+// an inactive BVC should not be visible.
+@property(nonatomic, assign, getter=isActive) BOOL active;
 // Command dispatcher.
 @property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 // The browser's side swipe controller.  Lazily instantiated on the first call.
@@ -908,68 +914,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   return _browserContainerCoordinator.viewController.view;
 }
 
-- (void)setActive:(BOOL)active {
-  if (_active == active) {
-    return;
-  }
-  _active = active;
-
-  // If not active, display an activity indicator overlay over the view to
-  // prevent interaction with the web page.
-  // TODO(crbug.com/637093): This coordinator should be managed by the
-  // coordinator used to present BrowserViewController, when implemented.
-  if (active) {
-    [self.activityOverlayCoordinator stop];
-    self.activityOverlayCoordinator = nil;
-  } else if (!self.activityOverlayCoordinator) {
-    self.activityOverlayCoordinator =
-        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
-    [self.activityOverlayCoordinator start];
-  }
-
-  if (_browserState) {
-    ActiveStateManager* active_state_manager =
-        ActiveStateManager::FromBrowserState(_browserState);
-    active_state_manager->SetActive(active);
-
-    TextToSpeechPlaybackControllerFactory::GetInstance()
-        ->GetForBrowserState(_browserState)
-        ->SetEnabled(_active);
-  }
-
-  self.webUsageEnabled = active;
-  [self updateDialogPresenterActiveState];
-  [self updateBroadcastState];
-
-  // Stop the NTP on web usage toggle. This happens when clearing browser
-  // data, and forces the NTP to be recreated in -displayTab below.
-  // TODO(crbug.com/906199): Move this to the NewTabPageTabHelper when
-  // WebStateObserver has a webUsage callback.
-  if (!active) {
-    for (const auto& element : _ntpCoordinatorsForWebStates)
-      [element.second stop];
-  }
-
-  if (active) {
-    // Make sure the tab (if any; it's possible to get here without a current
-    // tab if the caller is about to create one) ends up on screen completely.
-    Tab* currentTab = [self.tabModel currentTab];
-    // Force loading the view in case it was not loaded yet.
-    [self loadViewIfNeeded];
-    if (currentTab && _expectingForegroundTab) {
-      PagePlaceholderTabHelper::FromWebState(currentTab.webState)
-          ->AddPlaceholderForNextNavigation();
-    }
-    if (currentTab)
-      [self displayTab:currentTab];
-  } else {
-    [_dialogPresenter cancelAllDialogs];
-  }
-  [_paymentRequestManager enablePaymentRequest:active];
-
-  [self setNeedsStatusBarAppearanceUpdate];
-}
-
 - (BOOL)isPlayingTTS {
   return _voiceSearchController && _voiceSearchController->IsPlayingAudio();
 }
@@ -1263,32 +1207,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [self.bubblePresenter presentBubblesIfEligible];
 }
 
-- (void)browserStateDestroyed {
-  [self setActive:NO];
-  [_paymentRequestManager close];
-  _paymentRequestManager = nil;
-  [self.tabModel browserStateDestroyed];
-
-  TextToSpeechPlaybackControllerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->SetWebStateList(nullptr);
-
-  WebStateListWebUsageEnablerFactory::GetInstance()
-      ->GetForBrowserState(_browserState)
-      ->SetWebStateList(nullptr);
-
-  // Disconnect child coordinators.
-  [_activityServiceCoordinator disconnect];
-  [self.popupMenuCoordinator stop];
-  [self.tabStripCoordinator stop];
-  self.tabStripCoordinator = nil;
-  self.tabStripView = nil;
-
-  _browserState = nullptr;
-  [self.commandDispatcher stopDispatchingToTarget:self];
-  self.commandDispatcher = nil;
-}
-
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox {
   NSTimeInterval startTime = [NSDate timeIntervalSinceReferenceDate];
@@ -1380,6 +1298,82 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   [self.dispatcher cancelOmniboxEdit];
 }
 
+- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
+  return [self.tabStripCoordinator placeholderView];
+}
+
+- (void)resetNTP {
+  for (const auto& element : _ntpCoordinatorsForWebStates)
+    [element.second stop];
+  [self loadViewIfNeeded];
+  if (self.tabModel.currentTab)
+    [self displayTab:self.tabModel.currentTab];
+}
+
+#pragma mark - browser_view_controller+private.h
+
+- (void)setActive:(BOOL)active {
+  if (_active == active) {
+    return;
+  }
+  _active = active;
+
+  // If not active, display an activity indicator overlay over the view to
+  // prevent interaction with the web page.
+  // TODO(crbug.com/637093): This coordinator should be managed by the
+  // coordinator used to present BrowserViewController, when implemented.
+  if (active) {
+    [self.activityOverlayCoordinator stop];
+    self.activityOverlayCoordinator = nil;
+  } else if (!self.activityOverlayCoordinator) {
+    self.activityOverlayCoordinator =
+        [[ActivityOverlayCoordinator alloc] initWithBaseViewController:self];
+    [self.activityOverlayCoordinator start];
+  }
+
+  if (_browserState) {
+    ActiveStateManager* active_state_manager =
+        ActiveStateManager::FromBrowserState(_browserState);
+    active_state_manager->SetActive(active);
+
+    TextToSpeechPlaybackControllerFactory::GetInstance()
+        ->GetForBrowserState(_browserState)
+        ->SetEnabled(_active);
+  }
+
+  self.webUsageEnabled = active;
+  [self updateDialogPresenterActiveState];
+  [self updateBroadcastState];
+
+  // Stop the NTP on web usage toggle. This happens when clearing browser
+  // data, and forces the NTP to be recreated in -displayTab below.
+  // TODO(crbug.com/906199): Move this to the NewTabPageTabHelper when
+  // WebStateObserver has a webUsage callback.
+  if (!active) {
+    for (const auto& element : _ntpCoordinatorsForWebStates)
+      [element.second stop];
+  }
+
+  if (active) {
+    // Make sure the tab (if any; it's possible to get here without a current
+    // tab if the caller is about to create one) ends up on screen completely.
+    Tab* currentTab = [self.tabModel currentTab];
+    // Force loading the view in case it was not loaded yet.
+    [self loadViewIfNeeded];
+    if (currentTab && _expectingForegroundTab) {
+      PagePlaceholderTabHelper::FromWebState(currentTab.webState)
+          ->AddPlaceholderForNextNavigation();
+    }
+    if (currentTab)
+      [self displayTab:currentTab];
+  } else {
+    [_dialogPresenter cancelAllDialogs];
+  }
+  [_paymentRequestManager enablePaymentRequest:active];
+
+  [self setNeedsStatusBarAppearanceUpdate];
+}
+
 - (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox {
   [_activityServiceCoordinator cancelShare];
@@ -1448,16 +1442,30 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   }
 }
 
-- (UIView<TabStripFoldAnimation>*)tabStripPlaceholderView {
-  return [self.tabStripCoordinator placeholderView];
-}
+- (void)browserStateDestroyed {
+  [self setActive:NO];
+  [_paymentRequestManager close];
+  _paymentRequestManager = nil;
+  [self.tabModel browserStateDestroyed];
 
-- (void)resetNTP {
-  for (const auto& element : _ntpCoordinatorsForWebStates)
-    [element.second stop];
-  [self loadViewIfNeeded];
-  if (self.tabModel.currentTab)
-    [self displayTab:self.tabModel.currentTab];
+  TextToSpeechPlaybackControllerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebStateList(nullptr);
+
+  WebStateListWebUsageEnablerFactory::GetInstance()
+      ->GetForBrowserState(_browserState)
+      ->SetWebStateList(nullptr);
+
+  // Disconnect child coordinators.
+  [_activityServiceCoordinator disconnect];
+  [self.popupMenuCoordinator stop];
+  [self.tabStripCoordinator stop];
+  self.tabStripCoordinator = nil;
+  self.tabStripView = nil;
+
+  _browserState = nullptr;
+  [self.commandDispatcher stopDispatchingToTarget:self];
+  self.commandDispatcher = nil;
 }
 
 - (void)shutdown {
