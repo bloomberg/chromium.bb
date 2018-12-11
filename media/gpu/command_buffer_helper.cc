@@ -48,25 +48,18 @@ class CommandBufferHelperImpl
     return decoder_helper_->GetGLContext();
   }
 
+  bool HasStub() override {
+    DVLOG(4) << __func__;
+    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    return stub_;
+  }
+
   bool MakeContextCurrent() override {
     DVLOG(2) << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
     return decoder_helper_ && decoder_helper_->MakeContextCurrent();
-  }
-
-  bool IsContextCurrent() const override {
-    DVLOG(2) << __func__;
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-    if (!stub_)
-      return false;
-
-    gl::GLContext* context = stub_->decoder_context()->GetGLContext();
-    if (!context)
-      return false;
-
-    return context->IsCurrent(nullptr);
   }
 
   GLuint CreateTexture(GLenum target,

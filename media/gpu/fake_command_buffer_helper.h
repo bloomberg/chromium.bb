@@ -39,8 +39,8 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
 
   // CommandBufferHelper implementation.
   gl::GLContext* GetGLContext() override;
+  bool HasStub() override;
   bool MakeContextCurrent() override;
-  bool IsContextCurrent() const override;
   GLuint CreateTexture(GLenum target,
                        GLenum internal_format,
                        GLsizei width,

@@ -285,7 +285,7 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK(!vda_);
 
-  // Set up |command_buffer_helper_|.
+  // Set up |command_buffer_helper|.
   scoped_refptr<CommandBufferHelper> command_buffer_helper =
       std::move(create_command_buffer_helper_cb_).Run();
   if (!command_buffer_helper) {
