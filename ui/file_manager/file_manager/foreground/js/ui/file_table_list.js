@@ -169,13 +169,16 @@ filelist.decorateListItem = function(li, entry, metadataModel) {
  * Render the type column of the detail table.
  * @param {!Document} doc Owner document.
  * @param {!Entry} entry The Entry object to render.
+ * @param {EntryLocation} locationInfo
  * @param {string=} opt_mimeType Optional mime type for the file.
  * @return {!HTMLDivElement} Created element.
  */
-filelist.renderFileTypeIcon = function(doc, entry, opt_mimeType) {
+filelist.renderFileTypeIcon = function(doc, entry, locationInfo, opt_mimeType) {
   var icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   icon.className = 'detail-icon';
-  icon.setAttribute('file-type-icon', FileType.getIcon(entry, opt_mimeType));
+  icon.setAttribute(
+      'file-type-icon',
+      FileType.getIcon(entry, opt_mimeType, locationInfo.rootType));
   return icon;
 };
 
