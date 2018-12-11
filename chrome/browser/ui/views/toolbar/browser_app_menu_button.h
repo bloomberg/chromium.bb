@@ -36,9 +36,9 @@ class BrowserAppMenuButton : public AppMenuButton,
   // drag-and-drop operation.
   void ShowMenu(bool for_drop);
 
-  // Sets the background to a prominent color if |is_prominent| is true. This is
-  // used for an experimental UI for In-Product Help.
-  void SetIsProminent(bool is_prominent);
+  // Sets whether an in-product help feature promo is showing for the app menu.
+  // When true, the button is highlighted in a noticeable color.
+  void SetPromoIsShowing(bool promo_is_showing);
 
   // views::MenuButton:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -63,7 +63,7 @@ class BrowserAppMenuButton : public AppMenuButton,
  private:
   void UpdateBorder();
 
-  // views::MenuButton:
+  // AppMenuButton:
   const char* GetClassName() const override;
   bool GetDropFormats(
       int* formats,
@@ -77,6 +77,7 @@ class BrowserAppMenuButton : public AppMenuButton,
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
+  SkColor GetInkDropBaseColor() const override;
 
   AppMenuIconController::TypeAndSeverity type_and_severity_{
       AppMenuIconController::IconType::NONE,
@@ -88,6 +89,9 @@ class BrowserAppMenuButton : public AppMenuButton,
   // Any trailing margin to be applied. Used when the browser is in
   // a maximized state to extend to the full window width.
   int margin_trailing_ = 0;
+
+  // Whether an in-product help promo is currently showing for the app menu.
+  bool promo_is_showing_ = false;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

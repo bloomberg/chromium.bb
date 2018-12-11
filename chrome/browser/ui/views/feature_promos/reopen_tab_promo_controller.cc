@@ -33,7 +33,7 @@ void ReopenTabPromoController::ShowPromo() {
   BrowserAppMenuButton* app_menu_button =
       browser_view_->toolbar()->app_menu_button();
   app_menu_button->AddMenuListener(this);
-  app_menu_button->SetHighlighted(true);
+  app_menu_button->SetPromoIsShowing(true);
 
   promo_bubble_ = FeaturePromoBubbleView::CreateOwned(
       app_menu_button, views::BubbleBorder::Arrow::TOP_RIGHT,
@@ -66,8 +66,7 @@ void ReopenTabPromoController::OnWidgetDestroying(views::Widget* widget) {
     BrowserAppMenuButton* app_menu_button =
         browser_view_->toolbar()->app_menu_button();
     app_menu_button->RemoveMenuListener(this);
-    app_menu_button->SetHighlighted(false);
-
+    app_menu_button->SetPromoIsShowing(false);
     iph_service_->HelpDismissed();
   }
 }
@@ -77,6 +76,8 @@ void ReopenTabPromoController::AppMenuClosed() {
   // menu item. We notify the service regardless of whether IPH succeeded.
   // Success is determined by whether the reopen tab event was sent.
   iph_service_->HelpDismissed();
+
+  browser_view_->toolbar()->app_menu_button()->SetPromoIsShowing(false);
 
   AppMenu* app_menu = browser_view_->toolbar()->app_menu_button()->app_menu();
   app_menu->RemoveObserver(this);
