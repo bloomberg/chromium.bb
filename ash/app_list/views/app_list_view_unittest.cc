@@ -139,7 +139,14 @@ class AppListViewTest : public views::ViewsTestBase,
   // and returns false on failure.
   bool SetAppListState(ash::AppListState state) {
     ContentsView* contents_view = view_->app_list_main_view()->contents_view();
-    contents_view->SetActiveState(state);
+
+    // The default method of changing the state to |kStateSearchResults| is via
+    // |ShowSearchResults|
+    if (state == ash::AppListState::kStateSearchResults)
+      contents_view->ShowSearchResults(true);
+    else
+      contents_view->SetActiveState(state);
+
     contents_view->Layout();
     return IsStateShown(state);
   }
@@ -1700,7 +1707,7 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
   IsStateShown(ash::AppListState::kStateStart);
 
   // Change pages. View should not have moved without Layout().
-  contents_view->SetActiveState(ash::AppListState::kStateSearchResults);
+  contents_view->ShowSearchResults(true);
   IsStateShown(ash::AppListState::kStateStart);
 
   // Change to a third page. This queues up the second animation behind the
