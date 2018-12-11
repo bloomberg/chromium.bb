@@ -39,7 +39,7 @@ from blinkpy.web_tests.models import test_expectations
 _log = logging.getLogger(__name__)
 
 
-class LayoutTestFinder(object):
+class WebTestFinder(object):
 
     def __init__(self, port, options):
         self._port = port

@@ -32,7 +32,7 @@ images and text) and allows one-click rebaselining of tests.
 """
 
 from blinkpy.common.host import Host
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.web_tests.layout_package import json_results_generator
 from blinkpy.tool.commands.abstract_local_server_command import AbstractLocalServerCommand
 from blinkpy.tool.servers.rebaseline_server import get_test_baselines, RebaselineHTTPServer, STATE_NEEDS_REBASELINE
@@ -76,7 +76,7 @@ class RebaselineServer(AbstractLocalServerCommand):
             result_dict['baselines'] = get_test_baselines(result.test_name(), self._test_config)
             new_tests_subtree[result.test_name()] = result_dict
 
-        LayoutTestResults(results_json).for_each_test(gather_baselines_for_test)
+        WebTestResults(results_json).for_each_test(gather_baselines_for_test)
         results_json['tests'] = new_tests_subtree
 
     def _prepare_config(self, options, args, tool):

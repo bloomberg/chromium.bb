@@ -1017,7 +1017,7 @@ class TestExpectations(object):
         return set(suffixes)
 
     @staticmethod
-    # test_result is an instance of blinkpy.common.net.layout_test_results.LayoutTestResult
+    # test_result is an instance of blinkpy.common.net.web_test_results.WebTestResult
     def suffixes_for_test_result(test_result):
         suffixes = set()
         actual_results = test_result.actual_results()

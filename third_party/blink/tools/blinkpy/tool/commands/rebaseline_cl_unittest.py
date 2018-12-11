@@ -10,7 +10,7 @@ from blinkpy.common.checkout.git_mock import MockGit
 from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.tool.commands.rebaseline import TestBaselineSet
@@ -59,7 +59,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
                 'is_try_builder': True,
             },
         })
-        layout_test_results = LayoutTestResults({
+        layout_test_results = WebTestResults({
             'tests': {
                 'one': {
                     'crash.html': {'expected': 'PASS', 'actual': 'CRASH', 'is_unexpected': True},

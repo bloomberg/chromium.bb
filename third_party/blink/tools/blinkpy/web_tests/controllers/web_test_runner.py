@@ -55,7 +55,7 @@ class TestRunInterruptedException(Exception):
         return self.__class__, (self.reason,)
 
 
-class LayoutTestRunner(object):
+class WebTestRunner(object):
 
     def __init__(self, options, port, printer, results_directory, test_is_slow_fn):
         self._options = options

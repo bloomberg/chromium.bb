@@ -8,7 +8,7 @@ import unittest
 
 from blinkpy.common import path_finder
 from blinkpy.common.host_mock import MockHost
-from blinkpy.web_tests.controllers import layout_test_finder
+from blinkpy.web_tests.controllers import web_test_finder
 
 _MOCK_ROOT = os.path.join(
     path_finder.get_chromium_src_dir(), 'third_party', 'pymock')
@@ -16,7 +16,7 @@ sys.path.append(_MOCK_ROOT)
 import mock
 
 
-class LayoutTestFinderTests(unittest.TestCase):
+class WebTestFinderTests(unittest.TestCase):
 
     def test_find_fastest_tests(self):
         host = MockHost()
@@ -37,7 +37,7 @@ class LayoutTestFinderTests(unittest.TestCase):
 
         port.tests = lambda paths: paths or all_tests
 
-        finder = layout_test_finder.LayoutTestFinder(port, {})
+        finder = web_test_finder.WebTestFinder(port, {})
         finder._times_trie = lambda: {
             'fast': {
                 'css': {
@@ -79,7 +79,7 @@ class LayoutTestFinderTests(unittest.TestCase):
 
         port.tests = lambda paths: paths or all_tests
 
-        finder = layout_test_finder.LayoutTestFinder(port, {})
+        finder = web_test_finder.WebTestFinder(port, {})
 
         finder._times_trie = lambda: {
             'fast': {
@@ -95,7 +95,7 @@ class LayoutTestFinderTests(unittest.TestCase):
         self.assertEqual(set(tests[1]), set(['fast/css/1.html']))
 
     def test_split_chunks(self):
-        split = layout_test_finder.LayoutTestFinder._split_into_chunks  # pylint: disable=protected-access
+        split = web_test_finder.WebTestFinder._split_into_chunks  # pylint: disable=protected-access
 
         with mock.patch('__builtin__.hash', int):
 

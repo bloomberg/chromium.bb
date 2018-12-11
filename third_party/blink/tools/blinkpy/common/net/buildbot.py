@@ -34,7 +34,7 @@ import urllib
 import urllib2
 
 from blinkpy.common.memoized import memoized
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.net.network_transaction import NetworkTransaction
 from blinkpy.web_tests.layout_package import json_results_generator
 
@@ -57,13 +57,13 @@ class Build(collections.namedtuple('Build', ('builder_name', 'build_number'))):
 class BuildBot(object):
     """This class represents an interface to BuildBot-related functionality.
 
-    This includes fetching layout test results from Google Storage;
-    for more information about the layout test result format, see:
+    This includes fetching web test results from Google Storage;
+    for more information about the web test result format, see:
         https://www.chromium.org/developers/the-json-test-results-format
     """
 
     def results_url(self, builder_name, build_number=None, step_name=None):
-        """Returns a URL for one set of archived layout test results.
+        """Returns a URL for one set of archived web test results.
 
         If a build number is given, this will be results for a particular run;
         otherwise it will be the accumulated results URL, which should have
@@ -93,7 +93,7 @@ class BuildBot(object):
     def fetch_retry_summary_json(self, build):
         """Fetches and returns the text of the archived retry_summary file.
 
-        This file is expected to contain the results of retrying layout tests
+        This file is expected to contain the results of retrying web tests
         with and without a patch in a try job. It includes lists of tests
         that failed only with the patch ("failures"), and tests that failed
         both with and without ("ignored").
@@ -107,10 +107,10 @@ class BuildBot(object):
 
     @memoized
     def fetch_results(self, build, full=False):
-        """Returns a LayoutTestResults object for results from a given Build.
+        """Returns a WebTestResults object for results from a given Build.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
-        return self.fetch_layout_test_results(
+        return self.fetch_web_test_results(
             self.results_url(build.builder_name, build.build_number,
                              step_name=self.get_layout_test_step_name(build)),
             full)
@@ -146,15 +146,15 @@ class BuildBot(object):
         suites = list(set(suites))
         if len(suites) != 1:
             raise Exception(
-                'build %s on builder %s expected to only have one layout test '
+                'build %s on builder %s expected to only have one web test '
                 'step, instead has %s' % (
                     build.build_number, build.builder_name, suites))
 
         return suites[0]
 
     @memoized
-    def fetch_layout_test_results(self, results_url, full=False):
-        """Returns a LayoutTestResults object for results fetched from a given URL.
+    def fetch_web_test_results(self, results_url, full=False):
+        """Returns a WebTestResults object for results fetched from a given URL.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
         base_filename = 'full_results.json' if full else 'failing_results.json'
@@ -167,7 +167,7 @@ class BuildBot(object):
             lambda: self.fetch_file('%s/LAST_CHANGE' % results_url))
         if revision is None:
             _log.debug('Got 404 response from:\n%s/LAST_CHANGE', results_url)
-        return LayoutTestResults.results_from_string(results_file, revision)
+        return WebTestResults.results_from_string(results_file, revision)
 
     def fetch_file(self, url):
         # It seems this can return None if the url redirects and then returns 404.

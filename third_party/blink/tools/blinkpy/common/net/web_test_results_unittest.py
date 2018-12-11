@@ -28,10 +28,10 @@
 
 import unittest
 
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 
 
-class LayoutTestResultsTest(unittest.TestCase):
+class WebTestResultsTest(unittest.TestCase):
     # The real files have no whitespace, but newlines make this much more readable.
     example_full_results_json = """ADD_RESULTS({
     "tests": {
@@ -97,26 +97,26 @@ class LayoutTestResultsTest(unittest.TestCase):
 });"""
 
     def test_results_from_string(self):
-        self.assertIsNone(LayoutTestResults.results_from_string(None))
-        self.assertIsNone(LayoutTestResults.results_from_string(''))
+        self.assertIsNone(WebTestResults.results_from_string(None))
+        self.assertIsNone(WebTestResults.results_from_string(''))
 
     def test_was_interrupted(self):
-        self.assertTrue(LayoutTestResults.results_from_string(
+        self.assertTrue(WebTestResults.results_from_string(
             'ADD_RESULTS({"tests":{},"interrupted":true});').run_was_interrupted())
-        self.assertFalse(LayoutTestResults.results_from_string(
+        self.assertFalse(WebTestResults.results_from_string(
             'ADD_RESULTS({"tests":{},"interrupted":false});').run_was_interrupted())
 
     def test_chromium_revision(self):
-        self.assertEqual(LayoutTestResults.results_from_string(self.example_full_results_json).chromium_revision(), 1234)
+        self.assertEqual(WebTestResults.results_from_string(self.example_full_results_json).chromium_revision(), 1234)
 
     def test_actual_results(self):
-        results = LayoutTestResults.results_from_string(self.example_full_results_json)
+        results = WebTestResults.results_from_string(self.example_full_results_json)
         self.assertEqual(results.result_for_test('fast/dom/prototype-banana.html').actual_results(), 'PASS')
         self.assertEqual(results.result_for_test('fast/dom/prototype-taco.html').actual_results(), 'PASS TEXT')
         self.assertFalse(results.result_for_test('nonexistant.html'))
 
     def test_didnt_run_as_expected_results(self):
-        results = LayoutTestResults.results_from_string(self.example_full_results_json)
+        results = WebTestResults.results_from_string(self.example_full_results_json)
         self.assertEqual(
             [r.test_name() for r in results.didnt_run_as_expected_results()],
             [
@@ -130,7 +130,7 @@ class LayoutTestResultsTest(unittest.TestCase):
             ])
 
     def test_didnt_run_as_expected_slow_test(self):
-        results = LayoutTestResults({
+        results = WebTestResults({
             'tests': {
                 'fast': {
                     'dom': {

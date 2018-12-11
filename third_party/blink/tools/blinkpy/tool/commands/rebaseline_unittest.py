@@ -7,7 +7,7 @@ import optparse
 import unittest
 
 from blinkpy.common.net.buildbot import Build
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.tool.commands.rebaseline import (
@@ -89,7 +89,7 @@ class BaseTestCase(unittest.TestCase):
 
     def _setup_mock_build_data(self):
         for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
-            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
+            self.tool.buildbot.set_results(Build(builder), WebTestResults({
                 'tests': {
                     'userscripts': {
                         'first-test.html': {
@@ -178,7 +178,7 @@ class TestRebaseline(BaseTestCase):
         }, **kwargs))
 
     def test_rebaseline_test_passes_on_all_builders(self):
-        self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
+        self.tool.buildbot.set_results(Build('MOCK Win7'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'first-test.html': {
@@ -467,7 +467,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
                     ('Bug(x) [ Mac ] userscripts/skipped-test.html [ WontFix ]\n'
                      'Bug(y) [ Win ] userscripts/skipped-test.html [ Skip ]\n'))
         self._write('userscripts/skipped-test.html', 'Dummy test contents')
-        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
+        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'skipped-test.html': {
@@ -477,7 +477,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
                 }
             }
         }))
-        self.tool.buildbot.set_results(Build('MOCK Win7'), LayoutTestResults({
+        self.tool.buildbot.set_results(Build('MOCK Win7'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'skipped-test.html': {
@@ -504,7 +504,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         # Flaky expectations should be kept even if the test passes.
         self._write(self.test_expectations_path, 'Bug(x) userscripts/flaky-test.html [ Pass Failure ]\n')
         self._write('userscripts/flaky-test.html', 'Dummy test contents')
-        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
+        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'flaky-test.html': {
@@ -530,7 +530,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.test_expectations_path, 'Bug(foo) userscripts/all-pass.html [ Failure ]\n')
         self._write('userscripts/all-pass.html', 'Dummy test contents')
         test_baseline_set = TestBaselineSet(self.tool)
-        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
+        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'all-pass.html': {
@@ -557,7 +557,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         self._write('userscripts/all-pass.html', 'Dummy test contents')
         test_baseline_set = TestBaselineSet(self.tool)
         for builder in ['MOCK Win7', 'MOCK Win10', 'MOCK Mac10.10', 'MOCK Mac10.11', 'MOCK Precise', 'MOCK Trusty']:
-            self.tool.buildbot.set_results(Build(builder), LayoutTestResults({
+            self.tool.buildbot.set_results(Build(builder), WebTestResults({
                 'tests': {
                     'userscripts': {
                         'all-pass.html': {
@@ -584,7 +584,7 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.test_expectations_path, 'Bug(foo) userscripts/all-pass.html [ Failure ]\n')
         self._write('userscripts/all-pass.html', 'Dummy test contents')
         test_baseline_set = TestBaselineSet(self.tool)
-        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), LayoutTestResults({
+        self.tool.buildbot.set_results(Build('MOCK Mac10.11'), WebTestResults({
             'tests': {
                 'userscripts': {
                     'all-pass.html': {

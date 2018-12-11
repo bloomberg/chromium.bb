@@ -151,7 +151,7 @@ class WPTExpectationsUpdater(object):
 
         Args:
             full_port_name: The fully-qualified port name, e.g. "win-win10".
-            layout_test_results: A list of LayoutTestResult objects.
+            layout_test_results: A list of WebTestResult objects.
 
         Returns:
             A dictionary with the structure: {
