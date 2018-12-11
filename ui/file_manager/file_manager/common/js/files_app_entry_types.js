@@ -579,7 +579,10 @@ class VolumeEntry {
    * @override
    */
   createReader() {
-    const readers = [this.rootEntry_.createReader()];
+    const readers = [];
+    if (this.rootEntry_)
+      readers.push(this.rootEntry_.createReader());
+
     if (this.children_.length)
       readers.push(new StaticReader(this.children_));
 

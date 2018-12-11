@@ -384,6 +384,47 @@ function testVolumeEntryCreateReader(testReportCallback) {
       testReportCallback);
 }
 
+/** Tests VolumeEntry createReader when root entry isn't resolved yet. */
+function testVolumeEntryCreateReaderUnresolved(testReportCallback) {
+  // A VolumeInfo that doesn't resolve the display root.
+  const fakeVolumeInfo = /** @type{!VolumeInfo} */ ({
+    displayRoot: null,
+    label: 'Fake Filesystem label',
+    volumeType: VolumeManagerCommon.VolumeType.DOWNLOADS,
+    resolveDisplayRoot: (successCallback, errorCallback) => {
+      // Do nothing here.
+    },
+  });
+
+  const volumeEntry = new VolumeEntry(fakeVolumeInfo);
+  const crostini = fakeVolumeEntry(VolumeManagerCommon.VolumeType.CROSTINI);
+  const android = fakeVolumeEntry(VolumeManagerCommon.VolumeType.ANDROID_FILES);
+
+  volumeEntry.addEntry(crostini);
+  volumeEntry.addEntry(android);
+  const reader = volumeEntry.createReader();
+
+  const readFiles = [];
+  const accumulateResults = (readerResult) => {
+    readerResult.map((f) => readFiles.push(f));
+    if (readerResult.length > 0)
+      reader.readEntries(accumulateResults);
+  };
+
+  reader.readEntries(accumulateResults);
+  // readEntries runs asynchronously, so let's wait it to be called.
+  reportPromise(
+      waitUntil(() => {
+        return readFiles.length >= 2;
+      }).then(() => {
+        // Now we can check the final result.
+        assertEquals(2, readFiles.length);
+        assertEquals(crostini, readFiles[0]);
+        assertEquals(android, readFiles[1]);
+      }),
+      testReportCallback);
+}
+
 /**
  * Tests VolumeEntry getFile and getDirectory methods.
  */
@@ -435,6 +476,7 @@ function testVolumeEntryDelayedDisplayRoot(testReportCallback) {
       }),
       testReportCallback);
 }
+
 /** Tests VolumeEntry.getParent */
 function testVolumeEntryGetParent(testReportCallback) {
   const volumeEntry = fakeVolumeEntry(null);
