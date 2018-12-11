@@ -789,9 +789,15 @@ EntryListItem.prototype.sortEntries = function(entries) {
   if (!this.entry)
     return DirectoryItem.prototype.sortEntries.apply(this, [entries]);
 
+  // Use locationInfo from first entry because it only compare within the same
+  // volume.
+  const locationInfo =
+      this.parentTree_.volumeManager_.getLocationInfo(entries[0]);
+  const compareFunction = util.compareLabelAndGroupBottomEntries(
+      locationInfo, this.entry.getUIChildren());
+
   const filter = this.fileFilter_.filter.bind(this.fileFilter_);
-  return entries.filter(filter).sort(
-      util.compareNameAndGroupBottomEntries(this.entry.getUIChildren()));
+  return entries.filter(filter).sort(compareFunction);
 };
 
 /**

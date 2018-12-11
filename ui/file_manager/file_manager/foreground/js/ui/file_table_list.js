@@ -123,7 +123,7 @@ FileListSelectionController.prototype.handleKeyDown = function(e) {
 /**
  * Common item decoration for table's and grid's items.
  * @param {cr.ui.ListItem} li List item.
- * @param {Entry} entry The entry.
+ * @param {Entry|FilesAppEntry} entry The entry.
  * @param {!MetadataModel} metadataModel Cache to
  *     retrieve metadada.
  */
@@ -185,17 +185,18 @@ filelist.renderFileTypeIcon = function(doc, entry, locationInfo, opt_mimeType) {
 /**
  * Render filename label for grid and list view.
  * @param {!Document} doc Owner document.
- * @param {!Entry} entry The Entry object to render.
+ * @param {!Entry|!FilesAppEntry} entry The Entry object to render.
+ * @param {EntryLocation} locationInfo
  * @return {!HTMLDivElement} The label.
  */
-filelist.renderFileNameLabel = function(doc, entry) {
+filelist.renderFileNameLabel = function(doc, entry, locationInfo) {
   // Filename need to be in a '.filename-label' container for correct
   // work of inplace renaming.
   var box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
   box.className = 'filename-label';
   var fileName = doc.createElement('span');
   fileName.className = 'entry-name';
-  fileName.textContent = entry.name;
+  fileName.textContent = util.getEntryLabel(locationInfo, entry);
   box.appendChild(fileName);
 
   return box;

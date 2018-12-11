@@ -48,7 +48,7 @@ function DirectoryModel(
                                     this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ =
-      new FileListContext(fileFilter, metadataModel);
+      new FileListContext(fileFilter, metadataModel, volumeManager);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
   /**
@@ -472,7 +472,7 @@ DirectoryModel.prototype.rescan = function(refresh) {
   }
 
   var dirContents = this.currentDirContents_.clone();
-  dirContents.setFileList([]);
+  dirContents.setFileList(new FileListModel(this.metadataModel_));
   dirContents.setMetadataSnapshot(
       this.currentDirContents_.createMetadataSnapshot());
 
@@ -698,8 +698,8 @@ DirectoryModel.prototype.scan_ = function(
       if (volumeInfo &&
           volumeInfo.volumeType === VolumeManagerCommon.VolumeType.DOWNLOADS &&
           locationInfo.isRootEntry) {
-        metrics.recordMediumCount('DownloadsCount',
-                                  dirContents.fileList_.length);
+        metrics.recordMediumCount(
+            'DownloadsCount', dirContents.getFileListLength());
       }
     }
 
