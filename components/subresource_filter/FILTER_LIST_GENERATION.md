@@ -93,11 +93,17 @@ An example using [EasyList](https://easylist.to/easylist/easylist.txt) follows:
 3. head -n 1000 ordered_list.txt | cut -d' ' -f2 > smaller_list.txt
 ```
 
-## 4. Turn the smaller list into a form usable by Chromium tools
-The smaller filterlist has been generated. If you'd like to convert it to Chromium's binary indexed format, proceed with the following steps:
+## 4. Append all of the whitelist rules to be safe
+```sh
+1. grep ^@@ easylist.txt >> smaller_list.txt
+2. sort smaller_list.txt | uniq > final_list.txt
+```
+
+## 5. Turn the final list into a form usable by Chromium tools
+The final filterlist has been generated. If you'd like to convert it to Chromium's binary indexed format, proceed with the following steps:
 
 ```sh
 1. ninja -C out/Release/ subresource_filter_tools
-2. out/Release/ruleset_converter --input_format=filter-list --output_format=unindexed-ruleset --input_files=smaller_list.txt --output_file=smaller_list_unindexed
-3. out/Release/subresource_indexing_tool smaller_list_unindexed smaller_list_indexed
+2. out/Release/ruleset_converter --input_format=filter-list --output_format=unindexed-ruleset --input_files=final_list.txt --output_file=final_list_unindexed
+3. out/Release/subresource_indexing_tool final_list_unindexed final_list_indexed
 ```
