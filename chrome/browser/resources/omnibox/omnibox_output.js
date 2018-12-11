@@ -487,19 +487,19 @@ cr.define('omnibox_output', function() {
     constructor() {
       super();
 
-      const container = document.createElement('span');
-      container.classList.add('pair-container');
-      this.appendChild(container);
+      this.container_ = document.createElement('div');
+      this.container_.classList.add('pair-container');
+      this.appendChild(this.container_);
 
       /** @type {!Element} */
       this.first_ = document.createElement('div');
       this.first_.classList.add('pair-item');
-      container.appendChild(this.first_);
+      this.container_.appendChild(this.first_);
 
       /** @type {!Element} */
       this.second_ = document.createElement('div');
       this.second_.classList.add('pair-item');
-      container.appendChild(this.second_);
+      this.container_.appendChild(this.second_);
     }
 
     /** @private @override */
@@ -511,6 +511,32 @@ cr.define('omnibox_output', function() {
     /** @override @return {string} */
     get text() {
       return `${this.values_[0]}.${this.values_[1]}`;
+    }
+  }
+
+  class OutputOverlappingPairProperty extends OutputPairProperty {
+    constructor() {
+      super();
+
+      this.notOverlapWarning_ = document.createElement('div');
+      this.notOverlapWarning_.classList.add('overlap-warning');
+      this.container_.appendChild(this.notOverlapWarning_);
+    }
+
+    /** @private @override */
+    render_() {
+      const overlap = this.values_[0].endsWith(this.values_[1]);
+      const firstText = this.values_[1] && overlap ?
+          this.values_[0].slice(0, -this.values_[1].length) :
+          this.values_[0];
+
+      this.first_.textContent = firstText;
+      this.second_.textContent = this.values_[1];
+      this.notOverlapWarning_.textContent = overlap ?
+          '' :
+          `btw, these texts do not overlap; '${
+              this.values_[1]}' was expected to be a suffix of '${
+              this.values_[0]}'`;
     }
   }
 
@@ -777,14 +803,12 @@ cr.define('omnibox_output', function() {
         'URL', '', 'destinationUrl', true, 'The URL for the result.',
         ['destinationUrl'], OutputLinkProperty),
     new Column(
-        'Fill Into Edit', '', 'fillIntoEdit', false,
-        'The text shown in the omnibox when the result is selected.',
-        ['fillIntoEdit'], OutputTextProperty),
-    new Column(
-        'Inline Autocompletion', '', 'inlineAutocompletion', false,
-        'The text shown in the omnibox as a blue highlight selection ' +
+        'Fill & Inline', '', 'fillAndInline', false,
+        'The text shown in the omnibox when the result is selected. / The ' +
+            'text shown in the omnibox as a blue highlight selection ' +
             'following the cursor, if this match is shown inline.',
-        ['inlineAutocompletion'], OutputTextProperty),
+        ['fillIntoEdit', 'inlineAutocompletion'],
+        OutputOverlappingPairProperty),
     new Column(
         'Del', '', 'deletable', false,
         'A green checkmark indicates that the result can be deleted from the ' +
@@ -840,6 +864,9 @@ cr.define('omnibox_output', function() {
   customElements.define('output-haeder', OutputHeader, {extends: 'th'});
   customElements.define(
       'output-pair-property', OutputPairProperty, {extends: 'td'});
+  customElements.define(
+      'output-overlapping-pair-property', OutputOverlappingPairProperty,
+      {extends: 'td'});
   customElements.define(
       'output-boolean-property', OutputBooleanProperty, {extends: 'td'});
   customElements.define(
