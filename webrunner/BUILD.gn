@@ -57,7 +57,9 @@ executable("castrunner_exe") {
   ]
 }
 
-test("castrunner_unittests") {
+# TODO(crbug.com/901955): This target is to be used for both unit tests and
+# integration tests.
+test("castrunner_tests") {
   sources = [
     "app/cast/cast_runner_unittest.cc",
   ]
@@ -69,6 +71,10 @@ test("castrunner_unittests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+  package_deps = [ [
+        ":service_pkg",
+        "chromium",
+      ] ]
 }
 
 fuchsia_package("webrunner_pkg") {
