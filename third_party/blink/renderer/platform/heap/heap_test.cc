@@ -29,11 +29,14 @@
  */
 
 #include <algorithm>
+#include <atomic>
 #include <memory>
 #include <utility>
 
+#include "base/atomic_ref_count.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -65,9 +68,11 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
     return MakeGarbageCollected<IntWrapper>(x);
   }
 
-  virtual ~IntWrapper() { AtomicIncrement(&destructor_calls_); }
+  virtual ~IntWrapper() {
+    destructor_calls_.fetch_add(1, std::memory_order_relaxed);
+  }
 
-  static int destructor_calls_;
+  static std::atomic_int destructor_calls_;
   void Trace(blink::Visitor* visitor) {}
 
   int Value() const { return x_; }
@@ -84,6 +89,8 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
   IntWrapper() = delete;
   int x_;
 };
+
+std::atomic_int IntWrapper::destructor_calls_{0};
 
 struct IntWrapperHash {
   static unsigned GetHash(const IntWrapper& key) {
@@ -486,24 +493,21 @@ class OffHeapInt : public RefCounted<OffHeapInt> {
   int x_;
 };
 
-int IntWrapper::destructor_calls_ = 0;
 int OffHeapInt::destructor_calls_ = 0;
 
 class ThreadedTesterBase {
  protected:
   static void Test(ThreadedTesterBase* tester) {
-    Vector<std::unique_ptr<Thread>, kNumberOfThreads> threads;
-    for (int i = 0; i < kNumberOfThreads; i++) {
-      threads.push_back(Platform::Current()->CreateThread(
+    std::unique_ptr<Thread> threads[kNumberOfThreads];
+    for (auto& thread : threads) {
+      thread = Platform::Current()->CreateThread(
           ThreadCreationParams(WebThreadType::kTestThread)
-              .SetThreadNameForTest("blink gc testing thread")));
+              .SetThreadNameForTest("blink gc testing thread"));
       PostCrossThreadTask(
-          *threads.back()->GetTaskRunner(), FROM_HERE,
+          *thread->GetTaskRunner(), FROM_HERE,
           CrossThreadBind(ThreadFunc, CrossThreadUnretained(tester)));
     }
-    while (AcquireLoad(&tester->threads_to_finish_)) {
-      test::YieldCurrentThread();
-    }
+    tester->done_.Wait();
     delete tester;
   }
 
@@ -514,21 +518,26 @@ class ThreadedTesterBase {
   static const int kGcPerThread = 5;
   static const int kNumberOfAllocations = 50;
 
-  ThreadedTesterBase() : gc_count_(0), threads_to_finish_(kNumberOfThreads) {}
-
   virtual ~ThreadedTesterBase() = default;
 
   inline bool Done() const {
-    return AcquireLoad(&gc_count_) >= kNumberOfThreads * kGcPerThread;
+    return gc_count_.load(std::memory_order_acquire) >=
+           kNumberOfThreads * kGcPerThread;
   }
 
-  volatile int gc_count_;
-  volatile int threads_to_finish_;
+  std::atomic_int gc_count_{0};
 
  private:
-  static void ThreadFunc(void* data) {
-    reinterpret_cast<ThreadedTesterBase*>(data)->RunThread();
+  static void ThreadFunc(ThreadedTesterBase* tester) {
+    ThreadState::AttachCurrentThread();
+    tester->RunThread();
+    ThreadState::DetachCurrentThread();
+    if (!tester->threads_to_finish_.Decrement())
+      tester->done_.Signal();
   }
+
+  base::AtomicRefCount threads_to_finish_{kNumberOfThreads};
+  base::WaitableEvent done_;
 };
 
 // Needed to give this variable a definition (the initializer above is only a
@@ -566,8 +575,6 @@ class ThreadedHeapTester : public ThreadedTesterBase {
   }
 
   void RunThread() override {
-    ThreadState::AttachCurrentThread();
-
     // Add a cross-thread persistent from this thread; the test object
     // verifies that it will have been cleared out after the threads
     // have all detached, running their termination GCs while doing so.
@@ -592,7 +599,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
         if (gc_count < kGcPerThread) {
           PreciselyCollectGarbage();
           gc_count++;
-          AtomicIncrement(&gc_count_);
+          gc_count_.fetch_add(1, std::memory_order_release);
         }
 
         // Taking snapshot shouldn't have any bad side effect.
@@ -606,9 +613,6 @@ class ThreadedHeapTester : public ThreadedTesterBase {
       }
       test::YieldCurrentThread();
     }
-
-    ThreadState::DetachCurrentThread();
-    AtomicDecrement(&threads_to_finish_);
   }
 };
 
@@ -618,8 +622,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
 
  private:
   void RunThread() override {
-    ThreadState::AttachCurrentThread();
-
     int gc_count = 0;
     while (!Done()) {
       {
@@ -635,7 +637,7 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         if (gc_count < kGcPerThread) {
           PreciselyCollectGarbage();
           gc_count++;
-          AtomicIncrement(&gc_count_);
+          gc_count_.fetch_add(1, std::memory_order_release);
         }
 
         // Taking snapshot shouldn't have any bad side effect.
@@ -648,8 +650,6 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
       }
       test::YieldCurrentThread();
     }
-    ThreadState::DetachCurrentThread();
-    AtomicDecrement(&threads_to_finish_);
   }
 };
 
@@ -703,16 +703,12 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
   };
 
   void RunThread() override {
-    ThreadState::AttachCurrentThread();
-
     PersistentChain::Create(100);
 
     // Upon thread detach, GCs will run until all persistents have been
     // released. We verify that the draining of persistents proceeds
     // as expected by dropping one Persistent<> per GC until there
     // are none left.
-    ThreadState::DetachCurrentThread();
-    AtomicDecrement(&threads_to_finish_);
   }
 };
 
@@ -4116,7 +4112,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
 
 TEST(HeapTest, CollectionNesting) {
   ClearOutOldGarbage();
-  int* key = &IntWrapper::destructor_calls_;
+  int k;
+  int* key = &k;
   IntWrapper::destructor_calls_ = 0;
   typedef HeapVector<Member<IntWrapper>> IntVector;
   typedef HeapDeque<Member<IntWrapper>> IntDeque;
@@ -6451,11 +6448,8 @@ class ThreadedClearOnShutdownTester : public ThreadedTesterBase {
   void RunWhileAttached();
 
   void RunThread() override {
-    ThreadState::AttachCurrentThread();
     EXPECT_EQ(42, ThreadSpecificIntWrapper().Value());
     RunWhileAttached();
-    ThreadState::DetachCurrentThread();
-    AtomicDecrement(&threads_to_finish_);
   }
 
   class HeapObject;
