@@ -444,6 +444,42 @@ TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_FeatureNotEnabled) {
   EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
 }
 
+// Do not trigger migration if user only signs in.
+TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_SignInOnly) {
+  EnableAutofillCreditCardLocalCardMigrationExperiment();
+
+  // Make a non-primary account available with both a refresh token and cookie
+  // to be in Sync Transport for Wallet mode, in which case this account is
+  // signed in only without sync enabled.
+  sync_service_.SetIsAuthenticatedAccountPrimary(false);
+  sync_service_.SetActiveDataTypes(
+      syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
+
+  // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
+  // enter below.
+  AddLocalCreditCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "1", "guid1");
+  // Add another local credit card.
+  AddLocalCreditCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                     test::NextYear().c_str(), "1", "guid2");
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+  EXPECT_FALSE(local_card_migration_manager_->LocalCardMigrationWasTriggered());
+}
+
 // Use one local card with more valid local cards available but billing customer
 // number is blank, will not trigger migration.
 TEST_F(LocalCardMigrationManagerTest, MigrateCreditCard_NoPaymentsAccount) {

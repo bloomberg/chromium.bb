@@ -150,8 +150,11 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
   bool has_google_payments_account =
       (payments::GetBillingCustomerId(personal_data_manager_,
                                       payments_client_->GetPrefService()) != 0);
+  bool sync_feature_enabled =
+      (personal_data_manager_->GetSyncSigninState() ==
+       AutofillSyncSigninState::kSignedInAndSyncFeature);
   return migration_experiment_enabled && credit_card_upload_enabled &&
-         has_google_payments_account;
+         has_google_payments_account && sync_feature_enabled;
 }
 
 void LocalCardMigrationManager::OnDidGetUploadDetails(
