@@ -17,8 +17,6 @@ namespace ui {
 class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
  public:
   // Create TestAXNodeWrapper instances on-demand from an AXTree and AXNode.
-  // Note that this sets the AXTreeDelegate, you can't use this class if
-  // you also want to implement AXTreeDelegate.
   static TestAXNodeWrapper* GetOrCreate(AXTree* tree, AXNode* node);
 
   // Set a global coordinate offset for testing.

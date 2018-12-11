@@ -84,7 +84,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
-  void FireGeneratedEvent(AXEventGenerator::Event event_type,
+  void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
   gfx::Rect GetViewBounds() override;
 
@@ -108,11 +108,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
                              int32_t* end_index);
 
  private:
-  // AXTreeDelegate overrides.
+  // AXTreeObserver overrides.
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
-      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
+      const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
   bool UseRootScrollOffsetsWhenComputingBounds() override;
 

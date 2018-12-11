@@ -37,7 +37,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
-  void FireGeneratedEvent(AXEventGenerator::Event event_type,
+  void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
   void OnAccessibilityEvents(
@@ -50,7 +50,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   void FireNativeMacNotification(NSString* mac_notification,
                                  BrowserAccessibility* node);
 
-  // AXTreeDelegate methods.
+  // AXTreeObserver methods.
   void OnAtomicUpdateFinished(ui::AXTree* tree,
                               bool root_changed,
                               const std::vector<Change>& changes) override;

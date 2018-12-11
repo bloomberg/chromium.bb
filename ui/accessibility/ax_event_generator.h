@@ -11,14 +11,15 @@
 
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_observer.h"
 
 namespace ui {
 
-// Subclass of AXTreeDelegate that automatically generates AXEvents to fire
+// Subclass of AXTreeObserver that automatically generates AXEvents to fire
 // based on changes to an accessibility tree.  Every platform
 // tends to want different events, so this class lets each platform
 // handle the events it wants and ignore the others.
-class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
+class AX_EXPORT AXEventGenerator : public AXTreeObserver {
  public:
   enum class Event : int32_t {
     ACTIVE_DESCENDANT_CHANGED,
@@ -87,14 +88,14 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   // before using this class.
   AXEventGenerator();
 
-  // Automatically registers itself as the delegate of |tree| and
+  // Automatically registers itself as the observer of |tree| and
   // clears it on desctruction. |tree| must be valid for the lifetime
   // of this object.
   explicit AXEventGenerator(AXTree* tree);
 
   ~AXEventGenerator() override;
 
-  // Clears this class as the delegate of the previous tree that was
+  // Clears this class as the observer of the previous tree that was
   // being monitored, if any, and starts monitoring |new_tree|, if not
   // nullptr. Note that |new_tree| must be valid for the lifetime of
   // this object or until you call SetTree again.
@@ -112,7 +113,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   void ClearEvents();
 
   // This is called automatically based on changes to the tree observed
-  // by AXTreeDelegate, but you can also call it directly to add events
+  // by AXTreeObserver, but you can also call it directly to add events
   // and retrieve them later.
   //
   // Note that events are organized by node and then by event id to
@@ -126,7 +127,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   }
 
  protected:
-  // AXTreeDelegate overrides.
+  // AXTreeObserver overrides.
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
                             const AXNodeData& new_node_data) override;
@@ -163,12 +164,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
       ax::mojom::IntListAttribute attr,
       const std::vector<int32_t>& old_value,
       const std::vector<int32_t>& new_value) override;
-  void OnStringListAttributeChanged(
-      AXTree* tree,
-      AXNode* node,
-      ax::mojom::StringListAttribute attr,
-      const std::vector<std::string>& old_value,
-      const std::vector<std::string>& new_value) override;
   void OnTreeDataChanged(AXTree* tree,
                          const ui::AXTreeData& old_data,
                          const ui::AXTreeData& new_data) override;
@@ -176,9 +171,6 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) override;
   void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override;
   void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override;
-  void OnNodeCreated(AXTree* tree, AXNode* node) override;
-  void OnNodeReparented(AXTree* tree, AXNode* node) override;
-  void OnNodeChanged(AXTree* tree, AXNode* node) override;
   void OnAtomicUpdateFinished(AXTree* tree,
                               bool root_changed,
                               const std::vector<Change>& changes) override;

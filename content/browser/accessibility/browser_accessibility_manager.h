@@ -26,6 +26,7 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -111,7 +112,7 @@ struct BrowserAccessibilityFindInPageInfo {
 };
 
 // Manages a tree of BrowserAccessibility objects.
-class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
+class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver {
  public:
   // Creates the platform-specific BrowserAccessibilityManager, but
   // with no parent window pointer. Only useful for unit tests.
@@ -132,7 +133,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   virtual void FireFocusEvent(BrowserAccessibility* node);
   virtual void FireBlinkEvent(ax::mojom::Event event_type,
                               BrowserAccessibility* node) {}
-  virtual void FireGeneratedEvent(AXEventGenerator::Event event_type,
+  virtual void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                                   BrowserAccessibility* node) {}
 
   // Checks whether focus has changed since the last time it was checked,
@@ -343,7 +344,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   float device_scale_factor() const { return device_scale_factor_; }
   ui::AXTree* ax_tree() const { return tree_.get(); }
 
-  // AXTreeDelegate implementation.
+  // AXTreeObserver implementation.
   void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override;
   void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override;
@@ -352,7 +353,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
-      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
+      const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
   BrowserAccessibilityDelegate* delegate() const { return delegate_; }
 
@@ -459,6 +460,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   // For testing only: If true, the manually-set device scale factor will be
   // used and it won't be updated from the delegate.
   bool use_custom_device_scale_factor_for_testing_;
+
+  ui::AXEventGenerator event_generator_;
 
   // Fire all events regardless of focus and with no delay, to avoid test
   // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.

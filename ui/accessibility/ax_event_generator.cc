@@ -68,20 +68,20 @@ AXEventGenerator::AXEventGenerator() = default;
 
 AXEventGenerator::AXEventGenerator(AXTree* tree) : tree_(tree) {
   if (tree_)
-    tree_->SetDelegate(this);
+    tree_->AddObserver(this);
 }
 
 AXEventGenerator::~AXEventGenerator() {
   if (tree_)
-    tree_->SetDelegate(nullptr);
+    tree_->RemoveObserver(this);
 }
 
 void AXEventGenerator::SetTree(AXTree* new_tree) {
   if (tree_)
-    tree_->SetDelegate(nullptr);
+    tree_->RemoveObserver(this);
   tree_ = new_tree;
   if (tree_)
-    tree_->SetDelegate(this);
+    tree_->AddObserver(this);
 }
 
 void AXEventGenerator::ReleaseTree() {
@@ -290,15 +290,6 @@ void AXEventGenerator::OnIntListAttributeChanged(
   AddEvent(node, Event::OTHER_ATTRIBUTE_CHANGED);
 }
 
-void AXEventGenerator::OnStringListAttributeChanged(
-    AXTree* tree,
-    AXNode* node,
-    ax::mojom::StringListAttribute attr,
-    const std::vector<std::string>& old_value,
-    const std::vector<std::string>& new_value) {
-  DCHECK_EQ(tree_, tree);
-}
-
 void AXEventGenerator::OnTreeDataChanged(AXTree* tree,
                                          const ui::AXTreeData& old_tree_data,
                                          const ui::AXTreeData& new_tree_data) {
@@ -337,18 +328,6 @@ void AXEventGenerator::OnNodeWillBeReparented(AXTree* tree, AXNode* node) {
 }
 
 void AXEventGenerator::OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) {
-  DCHECK_EQ(tree_, tree);
-}
-
-void AXEventGenerator::OnNodeCreated(AXTree* tree, AXNode* node) {
-  DCHECK_EQ(tree_, tree);
-}
-
-void AXEventGenerator::OnNodeReparented(AXTree* tree, AXNode* node) {
-  DCHECK_EQ(tree_, tree);
-}
-
-void AXEventGenerator::OnNodeChanged(AXTree* tree, AXNode* node) {
   DCHECK_EQ(tree_, tree);
 }
 

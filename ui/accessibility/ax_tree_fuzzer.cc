@@ -3,27 +3,12 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_observer.h"
 
-class EmptyAXTreeDelegate : public ui::AXTreeDelegate {
+class EmptyAXTreeObserver : public ui::AXTreeObserver {
  public:
-  EmptyAXTreeDelegate() {}
-
-  void OnNodeDataWillChange(ui::AXTree* tree,
-                            const ui::AXNodeData& old_node_data,
-                            const ui::AXNodeData& new_node_data) override {}
-  void OnTreeDataChanged(ui::AXTree* tree,
-                         const ui::AXTreeData& old_data,
-                         const ui::AXTreeData& new_data) override {}
-  void OnNodeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnSubtreeWillBeDeleted(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnNodeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnSubtreeWillBeReparented(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnNodeCreated(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnNodeReparented(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnNodeChanged(ui::AXTree* tree, ui::AXNode* node) override {}
-  void OnAtomicUpdateFinished(ui::AXTree* tree,
-                              bool root_changed,
-                              const std::vector<Change>& changes) override {}
+  EmptyAXTreeObserver() {}
+  ~EmptyAXTreeObserver() override{};
 };
 
 // Entry point for LibFuzzer.
@@ -44,10 +29,11 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   // Run with --v=1 to aid in debugging a specific crash.
   VLOG(1) << "Input accessibility tree:\n" << initial_state.ToString();
 
-  EmptyAXTreeDelegate delegate;
+  EmptyAXTreeObserver observer;
   ui::AXTree tree;
-  tree.SetDelegate(&delegate);
+  tree.AddObserver(&observer);
   tree.Unserialize(initial_state);
+  tree.RemoveObserver(&observer);
 
   return 0;
 }

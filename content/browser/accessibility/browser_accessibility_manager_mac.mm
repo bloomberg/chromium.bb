@@ -193,7 +193,7 @@ void PostAnnouncementNotification(NSString* announcement) {
 }
 
 void BrowserAccessibilityManagerMac::FireGeneratedEvent(
-    AXEventGenerator::Event event_type,
+    ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
   if (!node->IsNative())
@@ -205,7 +205,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
   // Refer to |AXObjectCache::postPlatformNotification| in WebKit source code.
   NSString* mac_notification = nullptr;
   switch (event_type) {
-    case Event::ACTIVE_DESCENDANT_CHANGED:
+    case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
       if (node->GetRole() == ax::mojom::Role::kTree) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else if (node->GetRole() == ax::mojom::Role::kTextFieldWithComboBox) {
@@ -220,7 +220,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         return;
       }
       break;
-    case Event::LOAD_COMPLETE:
+    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       // This notification should only be fired on the top document.
       // Iframes should use |ax::mojom::Event::kLayoutComplete| to signify that
       // they have finished loading.
@@ -230,17 +230,17 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         mac_notification = NSAccessibilityLayoutCompleteNotification;
       }
       break;
-    case Event::INVALID_STATUS_CHANGED:
+    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
       break;
-    case Event::SELECTED_CHILDREN_CHANGED:
+    case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
       if (ui::IsTableLike(node->GetRole())) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else {
         mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
       }
       break;
-    case Event::DOCUMENT_SELECTION_CHANGED: {
+    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
       mac_notification = NSAccessibilitySelectedTextChangedNotification;
       // WebKit fires a notification both on the focused object and the page
       // root.
@@ -274,10 +274,10 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       }
       break;
     }
-    case Event::CHECKED_STATE_CHANGED:
+    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       mac_notification = NSAccessibilityValueChangedNotification;
       break;
-    case Event::VALUE_CHANGED:
+    case ui::AXEventGenerator::Event::VALUE_CHANGED:
       mac_notification = NSAccessibilityValueChangedNotification;
       if (base::mac::IsAtLeastOS10_11() && !text_edits_.empty()) {
         base::string16 deleted_text;
@@ -304,17 +304,18 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         return;
       }
       break;
-    case Event::LIVE_REGION_CREATED:
+    case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
       mac_notification = NSAccessibilityLiveRegionCreatedNotification;
       break;
-    case Event::ALERT:
+    case ui::AXEventGenerator::Event::ALERT:
       NSAccessibilityPostNotification(
           native_node, NSAccessibilityLiveRegionCreatedNotification);
       // Voiceover requires a live region changed notification to actually
       // announce the live region.
-      FireGeneratedEvent(Event::LIVE_REGION_CHANGED, node);
+      FireGeneratedEvent(ui::AXEventGenerator::Event::LIVE_REGION_CHANGED,
+                         node);
       return;
-    case Event::LIVE_REGION_CHANGED: {
+    case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED: {
       // Voiceover seems to drop live region changed notifications if they come
       // too soon after a live region created notification.
       // TODO(nektar): Limit the number of changed notifications as well.
@@ -352,10 +353,10 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
           base::TimeDelta::FromMilliseconds(kLiveRegionChangeIntervalMS));
       return;
     }
-    case Event::ROW_COUNT_CHANGED:
+    case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
       mac_notification = NSAccessibilityRowCountChangedNotification;
       break;
-    case Event::EXPANDED:
+    case ui::AXEventGenerator::Event::EXPANDED:
       if (node->GetRole() == ax::mojom::Role::kRow ||
           node->GetRole() == ax::mojom::Role::kTreeItem) {
         mac_notification = NSAccessibilityRowExpandedNotification;
@@ -363,7 +364,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         mac_notification = NSAccessibilityExpandedChanged;
       }
       break;
-    case Event::COLLAPSED:
+    case ui::AXEventGenerator::Event::COLLAPSED:
       if (node->GetRole() == ax::mojom::Role::kRow ||
           node->GetRole() == ax::mojom::Role::kTreeItem) {
         mac_notification = NSAccessibilityRowCollapsedNotification;
@@ -371,21 +372,21 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         mac_notification = NSAccessibilityExpandedChanged;
       }
       break;
-    case Event::MENU_ITEM_SELECTED:
+    case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
       mac_notification = NSAccessibilityMenuItemSelectedNotification;
       break;
-    case Event::CHILDREN_CHANGED:
-    case Event::DESCRIPTION_CHANGED:
-    case Event::DOCUMENT_TITLE_CHANGED:
-    case Event::LIVE_REGION_NODE_CHANGED:
-    case Event::LOAD_START:
-    case Event::NAME_CHANGED:
-    case Event::OTHER_ATTRIBUTE_CHANGED:
-    case Event::RELATED_NODE_CHANGED:
-    case Event::ROLE_CHANGED:
-    case Event::SCROLL_POSITION_CHANGED:
-    case Event::SELECTED_CHANGED:
-    case Event::STATE_CHANGED:
+    case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+    case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
+    case ui::AXEventGenerator::Event::LOAD_START:
+    case ui::AXEventGenerator::Event::NAME_CHANGED:
+    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
+    case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
+    case ui::AXEventGenerator::Event::ROLE_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
+    case ui::AXEventGenerator::Event::STATE_CHANGED:
       // There are some notifications that aren't meaningful on Mac.
       // It's okay to skip them.
       return;
