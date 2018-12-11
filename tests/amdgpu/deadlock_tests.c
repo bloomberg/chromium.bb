@@ -124,7 +124,8 @@ CU_BOOL suite_deadlock_tests_enable(void)
 	 * by default (currently GFX8/9 dGPUS)
 	 */
 	if (device_handle->info.family_id != AMDGPU_FAMILY_VI &&
-	    device_handle->info.family_id != AMDGPU_FAMILY_AI) {
+	    device_handle->info.family_id != AMDGPU_FAMILY_AI &&
+	    device_handle->info.family_id != AMDGPU_FAMILY_CI) {
 		printf("\n\nGPU reset is not enabled for the ASIC, deadlock suite disabled\n");
 		enable = CU_FALSE;
 	}
