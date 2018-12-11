@@ -22,21 +22,20 @@
   OP(EndQueryEXT)                                /* 263 */ \
   OP(LoseContextCHROMIUM)                        /* 264 */ \
   OP(InsertFenceSyncCHROMIUM)                    /* 265 */ \
-  OP(WaitSyncTokenCHROMIUM)                      /* 266 */ \
-  OP(BeginRasterCHROMIUMImmediate)               /* 267 */ \
-  OP(RasterCHROMIUM)                             /* 268 */ \
-  OP(EndRasterCHROMIUM)                          /* 269 */ \
-  OP(CreateTransferCacheEntryINTERNAL)           /* 270 */ \
-  OP(DeleteTransferCacheEntryINTERNAL)           /* 271 */ \
-  OP(UnlockTransferCacheEntryINTERNAL)           /* 272 */ \
-  OP(DeletePaintCacheTextBlobsINTERNALImmediate) /* 273 */ \
-  OP(DeletePaintCachePathsINTERNALImmediate)     /* 274 */ \
-  OP(ClearPaintCacheINTERNAL)                    /* 275 */ \
-  OP(CreateAndConsumeTextureINTERNALImmediate)   /* 276 */ \
-  OP(CopySubTexture)                             /* 277 */ \
-  OP(TraceBeginCHROMIUM)                         /* 278 */ \
-  OP(TraceEndCHROMIUM)                           /* 279 */ \
-  OP(SetActiveURLCHROMIUM)                       /* 280 */
+  OP(BeginRasterCHROMIUMImmediate)               /* 266 */ \
+  OP(RasterCHROMIUM)                             /* 267 */ \
+  OP(EndRasterCHROMIUM)                          /* 268 */ \
+  OP(CreateTransferCacheEntryINTERNAL)           /* 269 */ \
+  OP(DeleteTransferCacheEntryINTERNAL)           /* 270 */ \
+  OP(UnlockTransferCacheEntryINTERNAL)           /* 271 */ \
+  OP(DeletePaintCacheTextBlobsINTERNALImmediate) /* 272 */ \
+  OP(DeletePaintCachePathsINTERNALImmediate)     /* 273 */ \
+  OP(ClearPaintCacheINTERNAL)                    /* 274 */ \
+  OP(CreateAndConsumeTextureINTERNALImmediate)   /* 275 */ \
+  OP(CopySubTexture)                             /* 276 */ \
+  OP(TraceBeginCHROMIUM)                         /* 277 */ \
+  OP(TraceEndCHROMIUM)                           /* 278 */ \
+  OP(SetActiveURLCHROMIUM)                       /* 279 */
 
 enum CommandId {
   kOneBeforeStartPoint =

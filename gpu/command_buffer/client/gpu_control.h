@@ -104,11 +104,9 @@ class GPU_EXPORT GpuControl {
                                base::OnceClosure callback) = 0;
 
   // This allows the command buffer proxy to mark the next flush with sync token
-  // dependencies for the gpu scheduler. This is used in addition to the
-  // WaitSyncToken command in the command buffer which is still needed. For
-  // example, the WaitSyncToken command is used to pull texture updates when
-  // used in conjunction with MailboxManagerSync.
-  virtual void WaitSyncTokenHint(const SyncToken& sync_token) = 0;
+  // dependencies for the gpu scheduler, or to block prior to the flush in case
+  // of android webview.
+  virtual void WaitSyncToken(const SyncToken& sync_token) = 0;
 
   // Under some circumstances a sync token may be used which has not been
   // verified to have been flushed. For example, fence syncs queued on the same

@@ -269,55 +269,57 @@ class RecordReplayContext : public GpuControl {
     return -1;
   }
 
-  void DestroyImage(int32_t id) override { NOTIMPLEMENTED(); }
+  void DestroyImage(int32_t id) override { NOTREACHED(); }
 
   void SignalQuery(uint32_t query, base::OnceClosure callback) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
   }
 
   void CreateGpuFence(uint32_t gpu_fence_id, ClientGpuFence source) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
   }
 
   void GetGpuFence(uint32_t gpu_fence_id,
                    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)>
                        callback) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
   }
 
-  void SetLock(base::Lock*) override { NOTIMPLEMENTED(); }
+  void SetLock(base::Lock*) override { NOTREACHED(); }
 
-  void EnsureWorkVisible() override {}
+  void EnsureWorkVisible() override { NOTREACHED(); }
 
   gpu::CommandBufferNamespace GetNamespaceID() const override {
-    return command_buffer_->GetNamespaceID();
+    return gpu::CommandBufferNamespace::INVALID;
   }
 
   CommandBufferId GetCommandBufferID() const override {
-    return command_buffer_->GetCommandBufferID();
+    return gpu::CommandBufferId();
   }
 
-  void FlushPendingWork() override {}
+  void FlushPendingWork() override { NOTREACHED(); }
 
   uint64_t GenerateFenceSyncRelease() override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
     return 0;
   }
 
   bool IsFenceSyncReleased(uint64_t release) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
     return true;
   }
 
   void SignalSyncToken(const gpu::SyncToken& sync_token,
                        base::OnceClosure callback) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
   }
 
-  void WaitSyncTokenHint(const gpu::SyncToken& sync_token) override {}
+  void WaitSyncToken(const gpu::SyncToken& sync_token) override {
+    NOTREACHED();
+  }
 
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken& sync_token) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
     return true;
   }
 

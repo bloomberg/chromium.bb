@@ -54,7 +54,9 @@ static const GLenum valid_texture_min_filter_mode_table[] = {
 };
 
 static const GLenum valid_texture_parameter_table[] = {
-    GL_TEXTURE_MAG_FILTER, GL_TEXTURE_MIN_FILTER, GL_TEXTURE_WRAP_S,
+    GL_TEXTURE_MAG_FILTER,
+    GL_TEXTURE_MIN_FILTER,
+    GL_TEXTURE_WRAP_S,
     GL_TEXTURE_WRAP_T,
 };
 
@@ -63,7 +65,8 @@ static const GLenum valid_texture_wrap_mode_table[] = {
 };
 
 static const gfx::BufferUsage valid_gfx_buffer_usage_table[] = {
-    gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
+    gfx::BufferUsage::GPU_READ,
+    gfx::BufferUsage::SCANOUT,
     gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
     gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT,
 };
