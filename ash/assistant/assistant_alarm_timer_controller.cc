@@ -16,15 +16,23 @@ namespace ash {
 
 namespace {
 
-constexpr char kTimerFireNotificationGroupId[] = "assistant/timer_fire";
+// Grouping key for timer notifications.
+constexpr char kTimerNotificationGroupingKey[] = "assistant/timer";
+
+// Interval at which alarms/timers are ticked.
+constexpr base::TimeDelta kTickInterval = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
 AssistantAlarmTimerController::AssistantAlarmTimerController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), binding_(this) {}
+    : assistant_controller_(assistant_controller), binding_(this) {
+  AddModelObserver(this);
+}
 
-AssistantAlarmTimerController::~AssistantAlarmTimerController() = default;
+AssistantAlarmTimerController::~AssistantAlarmTimerController() {
+  RemoveModelObserver(this);
+}
 
 void AssistantAlarmTimerController::BindRequest(
     mojom::AssistantAlarmTimerControllerRequest request) {
@@ -32,13 +40,41 @@ void AssistantAlarmTimerController::BindRequest(
   binding_.Bind(std::move(request));
 }
 
-// TODO(dmblack): Abstract this out into a model that tracks timer state so that
-// we can observe it to either add a system notification or an in-Assistant
-// notification depending on UI visibility state. These notifications will need
-// to be updated in sync with clock ticks until the notification is dismissed.
+void AssistantAlarmTimerController::AddModelObserver(
+    AssistantAlarmTimerModelObserver* observer) {
+  model_.AddObserver(observer);
+}
+
+void AssistantAlarmTimerController::RemoveModelObserver(
+    AssistantAlarmTimerModelObserver* observer) {
+  model_.RemoveObserver(observer);
+}
+
+// TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
 void AssistantAlarmTimerController::OnTimerSoundingStarted() {
-  // TODO(llin): Migrate to use the AlarmManager API to better support multiple
-  // timers when the API is available.
+  static constexpr char kIdPrefix[] = "assistant/timer";
+
+  AlarmTimer timer;
+  timer.id = kIdPrefix + std::to_string(next_timer_id_++);
+  timer.type = AlarmTimerType::kTimer;
+  timer.end_time = base::TimeTicks::Now();
+  model_.AddAlarmTimer(timer);
+}
+
+// TODO(dmblack): Remove method when the LibAssistant Alarm/Timer API is ready.
+void AssistantAlarmTimerController::OnTimerSoundingFinished() {
+  model_.RemoveAllAlarmsTimers();
+}
+
+void AssistantAlarmTimerController::OnAlarmTimerAdded(
+    const AlarmTimer& alarm_timer,
+    const base::TimeDelta& time_remaining) {
+  // Schedule a repeating timer to tick the tracked alarms/timers.
+  if (!timer_.IsRunning()) {
+    timer_.Start(FROM_HERE, kTickInterval, &model_,
+                 &AssistantAlarmTimerModel::Tick);
+  }
+
   const std::string title =
       l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
   const std::string message =
@@ -52,7 +88,7 @@ void AssistantAlarmTimerController::OnTimerSoundingStarted() {
   notification->title = title;
   notification->message = message;
   notification->action_url = action_url;
-  notification->grouping_key = kTimerFireNotificationGroupId;
+  notification->grouping_key = kTimerNotificationGroupingKey;
 
   // "STOP" button.
   notification->buttons.push_back(
@@ -70,13 +106,17 @@ void AssistantAlarmTimerController::OnTimerSoundingStarted() {
               l10n_util::GetStringUTF8(
                   IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_QUERY))));
 
+  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
   assistant_controller_->notification_controller()->OnShowNotification(
       std::move(notification));
 }
 
-void AssistantAlarmTimerController::OnTimerSoundingFinished() {
+void AssistantAlarmTimerController::OnAllAlarmsTimersRemoved() {
+  timer_.Stop();
+
+  DCHECK(chromeos::assistant::features::IsTimerNotificationEnabled());
   assistant_controller_->notification_controller()->OnRemoveNotification(
-      kTimerFireNotificationGroupId);
+      kTimerNotificationGroupingKey);
 }
 
 }  // namespace ash
