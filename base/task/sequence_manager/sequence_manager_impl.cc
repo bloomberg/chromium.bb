@@ -459,16 +459,13 @@ Optional<PendingTask> SequenceManagerImpl::TakeTaskImpl() {
   WakeUpReadyDelayedQueues(&lazy_now);
 
   while (true) {
-    internal::WorkQueue* work_queue = nullptr;
-    bool should_run =
-        main_thread_only().selector.SelectWorkQueueToService(&work_queue);
+    internal::WorkQueue* work_queue =
+        main_thread_only().selector.SelectWorkQueueToService();
     TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
         TRACE_DISABLED_BY_DEFAULT("sequence_manager.debug"), "SequenceManager",
-        this,
-        AsValueWithSelectorResult(should_run, work_queue,
-                                  /* force_verbose */ false));
+        this, AsValueWithSelectorResult(work_queue, /* force_verbose */ false));
 
-    if (!should_run)
+    if (!work_queue)
       return nullopt;
 
     // If the head task was canceled, remove it and run the selector again.
@@ -747,7 +744,6 @@ internal::EnqueueOrder SequenceManagerImpl::GetNextSequenceNumber() {
 
 std::unique_ptr<trace_event::ConvertableToTraceFormat>
 SequenceManagerImpl::AsValueWithSelectorResult(
-    bool should_run,
     internal::WorkQueue* selected_work_queue,
     bool force_verbose) const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
@@ -769,7 +765,7 @@ SequenceManagerImpl::AsValueWithSelectorResult(
   state->BeginDictionary("selector");
   main_thread_only().selector.AsValueInto(state.get());
   state->EndDictionary();
-  if (should_run) {
+  if (selected_work_queue) {
     state->SetString("selected_queue",
                      selected_work_queue->task_queue()->GetName());
     state->SetString("work_queue_name", selected_work_queue->name());
@@ -922,8 +918,7 @@ scoped_refptr<TaskQueue> SequenceManagerImpl::CreateTaskQueue(
 }
 
 std::string SequenceManagerImpl::DescribeAllPendingTasks() const {
-  return AsValueWithSelectorResult(/* should_run */ false, nullptr,
-                                   /* force_verbose */ true)
+  return AsValueWithSelectorResult(nullptr, /* force_verbose */ true)
       ->ToString();
 }
 
