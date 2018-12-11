@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -200,6 +201,7 @@ public class FeedNewTabPageTest {
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage"})
+    @DisabledTest(message = "https://crbug.com/914068")
     public void testArticleSectionHeader() throws Exception {
         final int expectedCountWhenCollapsed = 2;
         final int expectedCountWhenExpanded = 4; // 3 header views and the empty view.
