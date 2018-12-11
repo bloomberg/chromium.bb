@@ -1708,6 +1708,16 @@ AutofillMetrics::FormEventLogger::FormEventLogger(
       logged_suggestion_filled_was_masked_server_card_(false),
       form_interactions_ukm_logger_(form_interactions_ukm_logger) {}
 
+void AutofillMetrics::FormEventLogger::OnDidParseForm() {
+  Log(AutofillMetrics::FORM_EVENT_DID_PARSE_FORM);
+  if (is_for_credit_card_) {
+    base::RecordAction(
+        base::UserMetricsAction("Autofill_ParsedCreditCardForm"));
+  } else {
+    base::RecordAction(base::UserMetricsAction("Autofill_ParsedProfileForm"));
+  }
+}
+
 void AutofillMetrics::FormEventLogger::OnDidInteractWithAutofillableForm(
     FormSignature form_signature,
     AutofillSyncSigninState sync_state) {

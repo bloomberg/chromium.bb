@@ -3397,6 +3397,38 @@ TEST_F(AutofillMetricsTest, PolledProfileSuggestions_DebounceLogs) {
                    "Autofill_PolledProfileSuggestions"));
 }
 
+// Test that we log parsed form event for credit card forms.
+TEST_P(AutofillMetricsIFrameTest, CreditCardParsedFormEvents) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Card Number", "card_number", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NAME_FULL);
+  test::CreateTestFormField("Expiration", "cc_exp", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Verification", "verification", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_VERIFICATION_CODE);
+
+  // Simulate seeing and parsing the form.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.FormEvents.CreditCard.WithNoData",
+      AutofillMetrics::FORM_EVENT_DID_PARSE_FORM, 1);
+}
+
 // Test that we log interacted form event for credit cards related.
 TEST_P(AutofillMetricsIFrameTest, CreditCardInteractedFormEvents) {
   // Set up our form data.
@@ -5346,6 +5378,82 @@ TEST_P(AutofillMetricsIFrameTest, CreditCardWillSubmitFormEvents) {
             FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE,
         0);
   }
+}
+
+// Test that we log parsed form events for address and cards in the same form.
+TEST_F(AutofillMetricsTest, MixedParsedFormEvents) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+  test::CreateTestFormField("Card Number", "card_number", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NAME_FULL);
+  test::CreateTestFormField("Expiration", "cc_exp", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Verification", "verification", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_VERIFICATION_CODE);
+
+  // Simulate seeing and parsing the form.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.FormEvents.Address.WithNoData",
+      AutofillMetrics::FORM_EVENT_DID_PARSE_FORM, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.FormEvents.CreditCard.WithNoData",
+      AutofillMetrics::FORM_EVENT_DID_PARSE_FORM, 1);
+}
+
+// Test that we log parsed form events for address.
+TEST_F(AutofillMetricsTest, AddressParsedFormEvents) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("State", "state", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STATE);
+  test::CreateTestFormField("City", "city", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_CITY);
+  test::CreateTestFormField("Street", "street", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(ADDRESS_HOME_STREET_ADDRESS);
+
+  // Simulate seeing and parsing the form.
+  std::vector<FormData> forms;
+  forms.push_back(form);
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.FormEvents.Address.WithNoData",
+      AutofillMetrics::FORM_EVENT_DID_PARSE_FORM, 1);
 }
 
 // Test that we log interacted form events for address.
