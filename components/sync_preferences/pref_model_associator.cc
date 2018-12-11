@@ -99,8 +99,8 @@ void PrefModelAssociator::InitPrefAndAssociate(
     std::unique_ptr<base::Value> sync_value(
         reader.ReadToValue(preference.value()));
     if (!sync_value.get()) {
-      LOG(ERROR) << "Failed to deserialize preference value: "
-                 << reader.GetErrorMessage();
+      LOG(ERROR) << "Failed to deserialize value of preference '" << pref_name
+                 << "': " << reader.GetErrorMessage();
       return;
     }
 
