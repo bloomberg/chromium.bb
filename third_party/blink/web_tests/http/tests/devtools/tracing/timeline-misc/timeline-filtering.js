@@ -298,11 +298,11 @@
   dumpRecords();
 
   TestRunner.addResult(`Filtered by 'bar':`);
-  view._textFilterUI._internalSetValue('bar', true);
+  view._textFilterUI.setValue('bar', true);
   dumpRecords();
 
   TestRunner.addResult(`Filtered by 'foo':`);
-  view._textFilterUI._internalSetValue('foo', true);
+  view._textFilterUI.setValue('foo', true);
   dumpRecords();
 
   TestRunner.completeTest();
