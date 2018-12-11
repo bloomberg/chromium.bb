@@ -55,6 +55,10 @@ include_rules = [
   "+services/network/public",
   "+services/service_manager/public/cpp",
 
+  # network service related unit tests
+  "+services/network/test",
+  "+mojo/core/embedder/embedder.h",
+
   "+storage/browser/quota",
   "+storage/common/quota",
 
