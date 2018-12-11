@@ -183,51 +183,6 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   SendNavigateWithParams(&params, was_within_same_document);
 }
 
-void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
-                                                  int error_code) {
-  if (IsBrowserSideNavigationEnabled()) {
-    NavigationRequest* request = frame_tree_node_->navigation_request();
-    CHECK(request);
-    // Simulate a beforeUnload ACK from the renderer if the browser is waiting
-    // for it. If it runs it will update the request state.
-    if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
-      static_cast<TestRenderFrameHost*>(frame_tree_node()->current_frame_host())
-          ->SendBeforeUnloadACK(true);
-    }
-    if (!request->loader_for_testing()) {
-      base::RunLoop loop;
-      request->set_on_start_checks_complete_closure_for_testing(
-          loop.QuitClosure());
-      loop.Run();
-    }
-    TestNavigationURLLoader* url_loader =
-        static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
-    CHECK(url_loader);
-    url_loader->SimulateError(error_code);
-    return;
-  }
-
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params error_params;
-  error_params.error_code = error_code;
-  error_params.url = url;
-  OnDidFailProvisionalLoadWithError(error_params);
-}
-
-void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
-  CHECK(GetNavigationHandle());
-  GURL error_url = GURL(kUnreachableWebDataURL);
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
-  params.url = GetNavigationHandle()->GetURL();
-  params.transition = GetParent() ? ui::PAGE_TRANSITION_MANUAL_SUBFRAME
-                                  : ui::PAGE_TRANSITION_LINK;
-  params.url_is_unreachable = true;
-  params.page_state = PageState::CreateForTesting(
-      GetNavigationHandle()->GetURL(), false, nullptr, nullptr);
-  SendNavigateWithParams(&params, false /* was_within_same_document */);
-}
-
 void TestRenderFrameHost::SimulateNavigationStop() {
   if (is_loading()) {
     OnDidStopLoading();
