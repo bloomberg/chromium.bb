@@ -1002,3 +1002,163 @@ TEST_F(AutocompleteResultTest, ConvertsOpenTabsCorrectly) {
   EXPECT_TRUE(result.match_at(1)->has_tab_match);
   EXPECT_FALSE(result.match_at(2)->has_tab_match);
 }
+
+namespace {
+
+void CheckRelevanceExpectations(const AutocompleteMatch& first,
+                                const AutocompleteMatch& second,
+                                int first_expected_relevance,
+                                int second_expected_relevance,
+                                const char* first_expected_boosted_from,
+                                const char* second_expected_boosted_from) {
+  EXPECT_EQ(first_expected_relevance, first.relevance);
+  EXPECT_EQ(second_expected_relevance, second.relevance);
+  EXPECT_EQ(std::string(first_expected_boosted_from),
+            first.GetAdditionalInfo(kACMatchPropertyScoreBoostedFrom));
+  EXPECT_EQ(std::string(second_expected_boosted_from),
+            second.GetAdditionalInfo(kACMatchPropertyScoreBoostedFrom));
+}
+
+}  // namespace
+
+TEST_F(AutocompleteResultTest, IsBetterMatchEntityWithHigherRelevance) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  first.relevance = 1000;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  second.relevance = 600;
+
+  // Expect the entity suggestion to be better and its relevance unchanged.
+  // HOME_PAGE is used here because it doesn't trigger the special logic in
+  // OmniboxFieldTrial::GetDemotionsByType. There should otherwise be no
+  // demotions since the field trial params are cleared in the test setup.
+  EXPECT_TRUE(AutocompleteResult::IsBetterMatch(first, second,
+                                                OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 600, "", "");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchEntityWithLowerRelevance) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  first.relevance = 600;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  second.relevance = 1000;
+
+  // Expect the entity suggestion to be better and its relevance to have been
+  // boosted to that of the non-entity suggestion.
+  EXPECT_TRUE(AutocompleteResult::IsBetterMatch(first, second,
+                                                OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 1000, "600", "");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchEntityWithEqualRelevance) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  first.relevance = 1000;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  second.relevance = 1000;
+
+  // Expect the entity suggestion to be better and the relevance scores
+  // unchanged.
+  EXPECT_TRUE(AutocompleteResult::IsBetterMatch(first, second,
+                                                OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 1000, "", "");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchNonEntityWithHigherRelevance) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  first.relevance = 1000;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  second.relevance = 600;
+
+  // Expect the non-entity suggestion to *not* be better and the relevance of
+  // the entity suggestion to have been boosted.
+  EXPECT_FALSE(AutocompleteResult::IsBetterMatch(first, second,
+                                                 OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 1000, "", "600");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchNonEntityWithLowerRelevance) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  first.relevance = 600;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  second.relevance = 1000;
+
+  // Expect the non-entity suggestion to *not* be better and the relevance
+  // scores unchanged.
+  EXPECT_FALSE(AutocompleteResult::IsBetterMatch(first, second,
+                                                 OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 600, 1000, "", "");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchNonEntityWithEqualRelevance) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  first.relevance = 1000;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  second.relevance = 1000;
+
+  // Expect the non-entity suggestion to *not* be better and the relevance
+  // scores unchanged.
+  EXPECT_FALSE(AutocompleteResult::IsBetterMatch(first, second,
+                                                 OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 1000, "", "");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchBothEntities) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  first.relevance = 1000;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST_ENTITY;
+  second.relevance = 600;
+
+  // Expect the first suggestion to be better since its relevance is higher and
+  // the relevance scores unchanged.
+  EXPECT_TRUE(AutocompleteResult::IsBetterMatch(first, second,
+                                                OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 600, "", "");
+
+  // Expect the reversed condition to be false and the relevance scores
+  // unchanged.
+  EXPECT_FALSE(AutocompleteResult::IsBetterMatch(second, first,
+                                                 OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 600, "", "");
+}
+
+TEST_F(AutocompleteResultTest, IsBetterMatchBothNonEntities) {
+  AutocompleteMatch first;
+  first.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  first.relevance = 1000;
+
+  AutocompleteMatch second;
+  second.type = AutocompleteMatchType::SEARCH_SUGGEST;
+  second.relevance = 600;
+
+  // Expect the first suggestion to be better since its relevance is higher and
+  // the relevance scores unchanged.
+  EXPECT_TRUE(AutocompleteResult::IsBetterMatch(first, second,
+                                                OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 600, "", "");
+
+  // Expect the reversed condition to be false and the relevance scores
+  // unchanged.
+  EXPECT_FALSE(AutocompleteResult::IsBetterMatch(second, first,
+                                                 OmniboxEventProto::HOME_PAGE));
+  CheckRelevanceExpectations(first, second, 1000, 600, "", "");
+}
