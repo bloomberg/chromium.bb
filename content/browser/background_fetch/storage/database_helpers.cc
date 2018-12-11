@@ -145,9 +145,9 @@ bool MojoFailureReasonFromRegistrationProto(
       *failure_reason =
           blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED;
       return true;
-    case proto::BackgroundFetchRegistration::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-      *failure_reason = blink::mojom::BackgroundFetchFailureReason::
-          TOTAL_DOWNLOAD_SIZE_EXCEEDED;
+    case proto::BackgroundFetchRegistration::DOWNLOAD_TOTAL_EXCEEDED:
+      *failure_reason =
+          blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED;
       return true;
     case proto::BackgroundFetchRegistration::FETCH_ERROR:
       *failure_reason = blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;

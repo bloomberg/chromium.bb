@@ -431,10 +431,11 @@ void BackgroundFetchDelegateProxy::OnJobCancelled(
     const std::string& job_unique_id,
     blink::mojom::BackgroundFetchFailureReason reason_to_abort) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(reason_to_abort ==
-             blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
-         reason_to_abort == blink::mojom::BackgroundFetchFailureReason::
-                                TOTAL_DOWNLOAD_SIZE_EXCEEDED);
+  DCHECK(
+      reason_to_abort ==
+          blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI ||
+      reason_to_abort ==
+          blink::mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED);
 
   // TODO(delphick): The controller may not exist as persistence is not yet
   // implemented.

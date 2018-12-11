@@ -351,8 +351,8 @@ const String BackgroundFetchRegistration::failureReason() const {
       return "fetch-error";
     case mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED:
       return "quota-exceeded";
-    case mojom::BackgroundFetchFailureReason::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
-      return "total-download-exceeded";
+    case mojom::BackgroundFetchFailureReason::DOWNLOAD_TOTAL_EXCEEDED:
+      return "download-total-exceeded";
   }
   NOTREACHED();
 }

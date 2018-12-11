@@ -28,7 +28,7 @@ message BackgroundFetchRegistration {
     FETCH_ERROR = 4;
     SERVICE_WORKER_UNAVAILABLE = 5;
     QUOTA_EXCEEDED = 6;
-    TOTAL_DOWNLOAD_SIZE_EXCEEDED = 7;
+    DOWNLOAD_TOTAL_EXCEEDED = 7;
   }
 
   // See definition of |unique_id| in BackgroundFetchRegistrationId.
