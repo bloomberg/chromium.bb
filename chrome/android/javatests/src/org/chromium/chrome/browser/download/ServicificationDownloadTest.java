@@ -83,8 +83,7 @@ public final class ServicificationDownloadTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @CommandLineFlags.
-    Add({"enable-features=NetworkService,NetworkServiceInProcess,AllowStartingServiceManagerOnly"})
+    @CommandLineFlags.Add({"enable-features=NetworkService,AllowStartingServiceManagerOnly"})
     public void testResumeInterruptedDownload() {
         mServicificationBackgroundService.onRunTask(
                 new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
