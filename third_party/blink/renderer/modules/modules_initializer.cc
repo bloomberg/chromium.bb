@@ -222,10 +222,10 @@ void ModulesInitializer::InitInspectorAgentSession(
       MakeGarbageCollected<DeviceOrientationInspectorAgent>(inspected_frames));
   session->Append(
       MakeGarbageCollected<InspectorDOMStorageAgent>(inspected_frames));
+  session->Append(MakeGarbageCollected<InspectorAccessibilityAgent>(
+      inspected_frames, dom_agent));
   if (allow_view_agents) {
     session->Append(InspectorDatabaseAgent::Create(page));
-    session->Append(MakeGarbageCollected<InspectorAccessibilityAgent>(
-        inspected_frames, dom_agent));
     session->Append(InspectorCacheStorageAgent::Create(inspected_frames));
   }
 }
