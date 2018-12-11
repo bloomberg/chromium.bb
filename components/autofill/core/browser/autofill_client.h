@@ -198,13 +198,15 @@ class AutofillClient : public RiskDataLoader {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       LocalCardMigrationCallback start_migrating_cards_callback) = 0;
 
-  // Will show a dialog containing a error message if |migratable_credit_cards|
-  // is an empty vector, or the migration results for cards in
+  // Will show a dialog containing a error message if |has_server_error|
+  // is true, or the migration results for cards in
   // |migratable_credit_cards| otherwise. If migration succeeds the dialog will
-  // contain a |tip_message|. The dialog is invoked when the migration process
+  // contain a |tip_message|. |migratable_credit_cards| will be used when
+  // constructing the dialog. The dialog is invoked when the migration process
   // is finished. Runs |delete_local_card_callback| if the user chose to delete
   // one invalid card from local storage.
   virtual void ShowLocalCardMigrationResults(
+      const bool has_server_error,
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) = 0;

@@ -104,6 +104,7 @@ void TestAutofillClient::ConfirmMigrateLocalCardToCloud(
 }
 
 void TestAutofillClient::ShowLocalCardMigrationResults(
+    const bool has_server_error,
     const base::string16& tip_message,
     const std::vector<MigratableCreditCard>& migratable_credit_cards,
     MigrationDeleteCardCallback delete_local_card_callback) {}
