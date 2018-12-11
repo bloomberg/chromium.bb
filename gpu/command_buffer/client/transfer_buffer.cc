@@ -153,7 +153,7 @@ void TransferBuffer::ReallocateRingBuffer(unsigned int size, bool shrink) {
   if (usable_ && (shrink || needed_buffer_size > current_size)) {
     // We should never attempt to reallocate the buffer if someone has a result
     // pointer that hasn't been released. This would cause a use-after-free.
-    CHECK(!outstanding_result_pointer_);
+    DCHECK(!outstanding_result_pointer_);
     if (HaveBuffer()) {
       Free();
     }
@@ -177,7 +177,7 @@ void TransferBuffer::ShrinkOrExpandRingBufferIfNecessary(
     unsigned int size_to_allocate) {
   // We should never attempt to shrink the buffer if someone has a result
   // pointer that hasn't been released.
-  CHECK(!outstanding_result_pointer_);
+  DCHECK(!outstanding_result_pointer_);
   // Don't resize the buffer while blocks are in use to avoid throwing away
   // live allocations.
   if (HaveBuffer() && ring_buffer_->NumUsedBlocks() > 0)
@@ -244,13 +244,17 @@ void* TransferBuffer::AcquireResultBuffer() {
   // ensure this invariant.
   DCHECK(!outstanding_result_pointer_);
   ReallocateRingBuffer(result_size_);
+#if DCHECK_IS_ON()
   outstanding_result_pointer_ = true;
+#endif
   return result_buffer_;
 }
 
 void TransferBuffer::ReleaseResultBuffer() {
   DCHECK(outstanding_result_pointer_);
+#if DCHECK_IS_ON()
   outstanding_result_pointer_ = false;
+#endif
 }
 
 int TransferBuffer::GetResultOffset() {

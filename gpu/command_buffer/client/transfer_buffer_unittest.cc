@@ -742,7 +742,7 @@ TEST_F(TransferBufferTest, MultipleAllocsAndFrees) {
   EXPECT_EQ(transfer_buffer_->GetFragmentedFreeSize(), original_free_size);
 }
 
-#if defined(GTEST_HAS_DEATH_TEST)
+#if defined(GTEST_HAS_DEATH_TEST) && DCHECK_IS_ON()
 
 TEST_F(TransferBufferTest, ResizeDuringScopedResultPtr) {
   Initialize();
@@ -756,7 +756,6 @@ TEST_F(TransferBufferTest, ResizeDuringScopedResultPtr) {
                "outstanding_result_pointer_");
 }
 
-#if DCHECK_IS_ON()
 TEST_F(TransferBufferTest, AllocDuringScopedResultPtr) {
   Initialize();
   ScopedResultPtr<int> ptr(transfer_buffer_.get());
@@ -776,7 +775,6 @@ TEST_F(TransferBufferTest, TwoScopedResultPtrs) {
                "outstanding_result_pointer_");
 }
 
-#endif  // DCHECK_IS_ON()
-#endif  // defined(GTEST_HAS_DEATH_TEST)
+#endif  // defined(GTEST_HAS_DEATH_TEST) && DCHECK_IS_ON()
 
 }  // namespace gpu
