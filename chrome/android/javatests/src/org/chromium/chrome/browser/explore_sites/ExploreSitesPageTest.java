@@ -42,11 +42,14 @@ import java.util.ArrayList;
 /**
  * Simple test to demonstrate use of ScreenShooter rule.
  */
+// TODO(https://crbug.com/894334): Remove format suppression once formatting bug is fixed.
+// clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags
-        .Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-        @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
-        public class ExploreSitesPageTest {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
+public class ExploreSitesPageTest {
+    // clang-format on
+
     ArrayList<ExploreSitesCategory> getTestingCatalog() {
         final ArrayList<ExploreSitesCategory> categoryList = new ArrayList<>();
         for (int i = 0; i < 4; i++) {
