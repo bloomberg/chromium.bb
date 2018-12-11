@@ -217,6 +217,12 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kOptimizedFunctionWithOneShotBytecode:
       blink_feature = WebFeature::kV8OptimizedFunctionWithOneShotBytecode;
       break;
+    case v8::Isolate::kRegExpMatchIsTrueishOnNonJSRegExp:
+      blink_feature = WebFeature::kV8RegExpMatchIsTrueishOnNonJSRegExp;
+      break;
+    case v8::Isolate::kRegExpMatchIsFalseishOnJSRegExp:
+      blink_feature = WebFeature::kV8RegExpMatchIsFalseishOnJSRegExp;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.
