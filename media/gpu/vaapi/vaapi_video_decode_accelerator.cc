@@ -966,8 +966,8 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
   }
 
   pending_output_cbs_.push(
-      base::Bind(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
-                 dec_surface, bitstream_id, visible_rect, color_space));
+      base::BindOnce(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
+                     dec_surface, bitstream_id, visible_rect, color_space));
   TryOutputPicture();
 }
 
