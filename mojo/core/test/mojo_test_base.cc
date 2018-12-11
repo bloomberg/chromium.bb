@@ -19,11 +19,6 @@
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "base/mac/mach_port_broker.h"
-#include "mojo/core/embedder/default_mach_broker.h"
-#endif
-
 namespace mojo {
 namespace core {
 namespace test {
@@ -43,20 +38,7 @@ MojoTestBase::ClientController::ClientController(const std::string& client_name,
                                                  MojoTestBase* test,
                                                  LaunchType launch_type) {
 #if !defined(OS_IOS)
-#if defined(OS_MACOSX)
-  // This lock needs to be held while launching the child because the Mach port
-  // broker only allows task ports to be received from known child processes.
-  // However, it can only know the child process's pid after the child has
-  // launched. To prevent a race where the child process sends its task port
-  // before the pid has been registered, the lock needs to be held over both
-  // launch and child pid registration.
-  auto* broker = DefaultMachBroker::Get();
-  base::AutoLock lock(broker->GetLock());
-#endif
   pipe_ = helper_.StartChild(client_name, launch_type);
-#if defined(OS_MACOSX)
-  broker->ExpectPid(helper_.test_child().Handle());
-#endif
 #endif
 }
 
@@ -69,11 +51,6 @@ int MojoTestBase::ClientController::WaitForShutdown() {
   was_shutdown_ = true;
 #if !defined(OS_IOS)
   int retval = helper_.WaitForChildShutdown();
-#if defined(OS_MACOSX)
-  auto* broker = DefaultMachBroker::Get();
-  base::AutoLock lock(broker->GetLock());
-  broker->RemovePid(helper_.test_child().Handle());
-#endif
   return retval;
 #else
   NOTREACHED();
