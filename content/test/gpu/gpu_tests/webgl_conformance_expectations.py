@@ -199,8 +199,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
-    self.Fail('conformance/rendering/point-specific-shader-variables.html',
-        ['win'], bug=616335)
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win'], bug=478572)
 
