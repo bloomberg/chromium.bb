@@ -632,18 +632,3 @@ fuzzer_test("libwebp_enc_dec_api_fuzzer") {
   defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
   additional_configs = [ ":libwebp_config_internal" ]
 }
-
-fuzzer_test("libwebp_anim_encoder_fuzzer") {
-  sources = [
-    "fuzzing/fuzz_webp_animencoder.cc",
-  ]
-  dict = "fuzzing/fuzz.dict"
-  seed_corpus = "fuzzing/fuzz_seed_corpus"
-  deps = [
-    ":libwebp",
-    ":libwebp_webp",
-  ]
-  cflags_cc = [ "-Wno-unused-function" ]
-  defines = [ "WEBP_MAX_IMAGE_SIZE=838860800" ]
-  additional_configs = [ ":libwebp_config_internal" ]
-}
