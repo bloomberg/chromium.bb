@@ -235,6 +235,19 @@ class LocalDeviceInstrumentationTestRun(
           shared_preference_utils.ApplySharedPreferenceSetting(
               shared_pref, setting)
 
+      @trace_event.traced
+      def set_vega_permissions(dev):
+        # Normally, installation of VrCore automatically grants storage
+        # permissions. However, since VrCore is part of the system image on
+        # the Vega standalone headset, we don't install the APK as part of test
+        # setup. Instead, grant the permissions here so that it can take
+        # screenshots.
+        if dev.product_name == 'vega':
+          dev.GrantPermissions('com.google.vr.vrcore', [
+              'android.permission.WRITE_EXTERNAL_STORAGE',
+              'android.permission.READ_EXTERNAL_STORAGE'
+          ])
+
       @instrumentation_tracing.no_tracing
       def push_test_data(dev):
         device_root = posixpath.join(dev.GetExternalStoragePath(),
@@ -262,8 +275,10 @@ class LocalDeviceInstrumentationTestRun(
         valgrind_tools.SetChromeTimeoutScale(
             dev, self._test_instance.timeout_scale)
 
-      steps += [set_debug_app, edit_shared_prefs, push_test_data,
-                create_flag_changer]
+      steps += [
+          set_debug_app, edit_shared_prefs, push_test_data, create_flag_changer,
+          set_vega_permissions
+      ]
 
       def bind_crash_handler(step, dev):
         return lambda: crash_handler.RetryOnSystemCrash(step, dev)
@@ -716,7 +731,8 @@ class LocalDeviceInstrumentationTestRun(
             host_file = os.path.join(host_dir, 'list_tests.json')
             dev.PullFile(dev_test_list_json.name, host_file)
             with open(host_file, 'r') as host_file:
-                return json.load(host_file)
+              return json.load(host_file)
+
       return crash_handler.RetryOnSystemCrash(_run, d)
 
     raw_test_lists = self._env.parallel_devices.pMap(list_tests).pGet(None)
@@ -794,19 +810,19 @@ class LocalDeviceInstrumentationTestRun(
 
   def _SaveScreenshot(self, device, screenshot_device_file, test_name, results,
                       link_name):
-      screenshot_filename = '%s-%s.png' % (
-          test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
-      if device.FileExists(screenshot_device_file.name):
-        with self._env.output_manager.ArchivedTempfile(
-            screenshot_filename, 'screenshot',
-            output_manager.Datatype.PNG) as screenshot_host_file:
-          try:
-            device.PullFile(screenshot_device_file.name,
-                            screenshot_host_file.name)
-          finally:
-            screenshot_device_file.close()
-        for result in results:
-          result.SetLink(link_name, screenshot_host_file.Link())
+    screenshot_filename = '%s-%s.png' % (
+        test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
+    if device.FileExists(screenshot_device_file.name):
+      with self._env.output_manager.ArchivedTempfile(
+          screenshot_filename, 'screenshot',
+          output_manager.Datatype.PNG) as screenshot_host_file:
+        try:
+          device.PullFile(screenshot_device_file.name,
+                          screenshot_host_file.name)
+        finally:
+          screenshot_device_file.close()
+      for result in results:
+        result.SetLink(link_name, screenshot_host_file.Link())
 
   def _ProcessRenderTestResults(
       self, device, render_tests_device_output_dir, results):

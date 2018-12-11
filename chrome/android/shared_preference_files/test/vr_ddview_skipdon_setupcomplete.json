@@ -12,7 +12,9 @@
       "PairedControllerAddress": "FOO",
       "GvrPlatformLibraryPref": false,
       "EnableVrCoreHeadTracking": false,
-      "EnableDeveloperService": false
+      "EnableDeveloperService": false,
+      "gConfigFlags:enable_screen_capture": true,
+      "EnableAdbRecording": true
     }
   }
 ]
