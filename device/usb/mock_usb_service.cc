@@ -12,7 +12,7 @@
 
 namespace device {
 
-MockUsbService::MockUsbService() : UsbService(nullptr) {}
+MockUsbService::MockUsbService() : UsbService() {}
 
 MockUsbService::~MockUsbService() = default;
 

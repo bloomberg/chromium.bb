@@ -288,7 +288,8 @@ class UsbServiceWin::BlockingTaskHelper {
 };
 
 UsbServiceWin::UsbServiceWin()
-    : UsbService(CreateBlockingTaskRunner()),
+    : UsbService(),
+      blocking_task_runner_(CreateBlockingTaskRunner()),
       device_observer_(this),
       weak_factory_(this) {
   DeviceMonitorWin* device_monitor =
@@ -297,13 +298,13 @@ UsbServiceWin::UsbServiceWin()
     device_observer_.Add(device_monitor);
 
   helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
-  blocking_task_runner()->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevices,
                             base::Unretained(helper_.get())));
 }
 
 UsbServiceWin::~UsbServiceWin() {
-  blocking_task_runner()->DeleteSoon(FROM_HERE, helper_.release());
+  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
 }
 
 void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
@@ -316,7 +317,7 @@ void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
 
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::string& device_path) {
-  blocking_task_runner()->PostTask(
+  blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&BlockingTaskHelper::EnumerateDevicePath,
                             base::Unretained(helper_.get()), device_path));
 }
@@ -367,9 +368,8 @@ void UsbServiceWin::CreateDeviceObject(const std::string& device_path,
   if (!enumeration_ready())
     ++first_enumeration_countdown_;
 
-  scoped_refptr<UsbDeviceWin> device(
-      new UsbDeviceWin(device_path, hub_path, bus_number, port_number,
-                       driver_name, blocking_task_runner()));
+  scoped_refptr<UsbDeviceWin> device(new UsbDeviceWin(
+      device_path, hub_path, bus_number, port_number, driver_name));
   devices_by_path_[device->device_path()] = device;
   device->ReadDescriptors(base::Bind(&UsbServiceWin::DeviceReady,
                                      weak_factory_.GetWeakPtr(), device));

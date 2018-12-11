@@ -68,7 +68,7 @@ class UsbDeviceLinux : public UsbDevice {
               OpenCallback callback,
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   const std::string device_path_;
 

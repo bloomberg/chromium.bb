@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "device/usb/scoped_libusb_device_ref.h"
 #include "device/usb/usb_descriptors.h"
@@ -78,7 +78,7 @@ class UsbDeviceImpl : public UsbDevice {
               OpenCallback callback,
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
   bool visited_ = false;
 
   const ScopedLibusbDeviceRef platform_device_;

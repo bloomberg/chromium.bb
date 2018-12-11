@@ -18,6 +18,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
@@ -111,7 +112,7 @@ class UsbDeviceHandleImpl::InterfaceClaimer
  public:
   InterfaceClaimer(scoped_refptr<UsbDeviceHandleImpl> handle,
                    int interface_number,
-                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+                   scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   int interface_number() const { return interface_number_; }
   int alternate_setting() const { return alternate_setting_; }
@@ -130,7 +131,7 @@ class UsbDeviceHandleImpl::InterfaceClaimer
   const scoped_refptr<UsbDeviceHandleImpl> handle_;
   const int interface_number_;
   int alternate_setting_;
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   ResultCallback release_callback_;
   base::SequenceChecker sequence_checker_;
 
@@ -140,7 +141,7 @@ class UsbDeviceHandleImpl::InterfaceClaimer
 UsbDeviceHandleImpl::InterfaceClaimer::InterfaceClaimer(
     scoped_refptr<UsbDeviceHandleImpl> handle,
     int interface_number,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : handle_(handle),
       interface_number_(interface_number),
       alternate_setting_(0),
@@ -148,6 +149,7 @@ UsbDeviceHandleImpl::InterfaceClaimer::InterfaceClaimer(
 
 UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int rc = libusb_release_interface(handle_->handle(), interface_number_);
   if (rc != LIBUSB_SUCCESS) {
     USB_LOG(DEBUG) << "Failed to release interface: "
@@ -233,9 +235,9 @@ class UsbDeviceHandleImpl::Transfer {
   scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer> claimed_interface_;
   size_t length_;
   bool cancelled_ = false;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TransferCallback callback_;
   IsochronousTransferCallback iso_callback_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 // static
@@ -372,9 +374,8 @@ UsbDeviceHandleImpl::Transfer::Transfer(
       buffer_(buffer),
       claimed_interface_(claimed_interface),
       length_(length),
-      callback_(std::move(callback)) {
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-}
+      callback_(std::move(callback)),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 UsbDeviceHandleImpl::Transfer::Transfer(
     scoped_refptr<UsbDeviceHandleImpl> device_handle,
@@ -385,9 +386,8 @@ UsbDeviceHandleImpl::Transfer::Transfer(
       device_handle_(device_handle),
       buffer_(buffer),
       claimed_interface_(claimed_interface),
-      iso_callback_(std::move(callback)) {
-  task_runner_ = base::ThreadTaskRunnerHandle::Get();
-}
+      iso_callback_(std::move(callback)),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
 UsbDeviceHandleImpl::Transfer::~Transfer() {
   if (platform_transfer_) {
@@ -396,6 +396,7 @@ UsbDeviceHandleImpl::Transfer::~Transfer() {
 }
 
 void UsbDeviceHandleImpl::Transfer::Submit() {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   const int rv = libusb_submit_transfer(platform_transfer_);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to submit transfer: "
@@ -508,7 +509,8 @@ scoped_refptr<UsbDevice> UsbDeviceHandleImpl::GetDevice() const {
 }
 
 void UsbDeviceHandleImpl::Close() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_)
     return;
 
@@ -533,7 +535,8 @@ void UsbDeviceHandleImpl::Close() {
 
 void UsbDeviceHandleImpl::SetConfiguration(int configuration_value,
                                            ResultCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_) {
     std::move(callback).Run(false);
     return;
@@ -546,13 +549,14 @@ void UsbDeviceHandleImpl::SetConfiguration(int configuration_value,
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleImpl::SetConfigurationOnBlockingThread,
-                     this, configuration_value, std::move(callback)));
+      base::BindOnce(&UsbDeviceHandleImpl::SetConfigurationBlocking, this,
+                     configuration_value, std::move(callback)));
 }
 
 void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
                                          ResultCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_) {
     std::move(callback).Run(false);
     return;
@@ -563,14 +567,14 @@ void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
   }
 
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread, this,
-                     interface_number, std::move(callback)));
+      FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ClaimInterfaceBlocking,
+                                this, interface_number, std::move(callback)));
 }
 
 void UsbDeviceHandleImpl::ReleaseInterface(int interface_number,
                                            ResultCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_ || !base::ContainsKey(claimed_interfaces_, interface_number)) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(std::move(callback), false));
@@ -597,7 +601,8 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
     int interface_number,
     int alternate_setting,
     ResultCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_ || !base::ContainsKey(claimed_interfaces_, interface_number)) {
     std::move(callback).Run(false);
     return;
@@ -605,26 +610,27 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
 
   blocking_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread,
-          this, interface_number, alternate_setting, std::move(callback)));
+      base::BindOnce(&UsbDeviceHandleImpl::SetInterfaceAlternateSettingBlocking,
+                     this, interface_number, alternate_setting,
+                     std::move(callback)));
 }
 
 void UsbDeviceHandleImpl::ResetDevice(ResultCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_) {
     std::move(callback).Run(false);
     return;
   }
 
   blocking_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&UsbDeviceHandleImpl::ResetDeviceOnBlockingThread, this,
-                     std::move(callback)));
+      FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ResetDeviceBlocking, this,
+                                std::move(callback)));
 }
 
 void UsbDeviceHandleImpl::ClearHalt(uint8_t endpoint, ResultCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (!device_) {
     std::move(callback).Run(false);
     return;
@@ -639,8 +645,8 @@ void UsbDeviceHandleImpl::ClearHalt(uint8_t endpoint, ResultCallback callback) {
   }
 
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ClearHaltOnBlockingThread,
-                                this, endpoint, std::move(callback)));
+      FROM_HERE, base::BindOnce(&UsbDeviceHandleImpl::ClearHaltBlocking, this,
+                                endpoint, std::move(callback)));
 }
 
 void UsbDeviceHandleImpl::ControlTransfer(
@@ -653,7 +659,7 @@ void UsbDeviceHandleImpl::ControlTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     unsigned int timeout,
     TransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!device_) {
     task_runner_->PostTask(
@@ -698,7 +704,7 @@ void UsbDeviceHandleImpl::IsochronousTransferIn(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     IsochronousTransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!device_) {
     ReportIsochronousTransferError(std::move(callback), packet_lengths,
@@ -724,7 +730,7 @@ void UsbDeviceHandleImpl::IsochronousTransferOut(
     const std::vector<uint32_t>& packet_lengths,
     unsigned int timeout,
     IsochronousTransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!device_) {
     ReportIsochronousTransferError(std::move(callback), packet_lengths,
@@ -750,7 +756,7 @@ void UsbDeviceHandleImpl::GenericTransfer(
     scoped_refptr<base::RefCountedBytes> buffer,
     unsigned int timeout,
     TransferCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!device_) {
     task_runner_->PostTask(
@@ -807,7 +813,8 @@ void UsbDeviceHandleImpl::GenericTransfer(
 
 const UsbInterfaceDescriptor* UsbDeviceHandleImpl::FindInterfaceByEndpoint(
     uint8_t endpoint_address) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   const auto endpoint_it = endpoint_map_.find(endpoint_address);
   if (endpoint_it != endpoint_map_.end())
     return endpoint_it->second.interface;
@@ -820,7 +827,7 @@ UsbDeviceHandleImpl::UsbDeviceHandleImpl(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : device_(std::move(device)),
       handle_(std::move(handle)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
       blocking_task_runner_(blocking_task_runner) {
   DCHECK(handle_.IsValid()) << "Cannot create device with an invalid handle.";
 }
@@ -841,9 +848,9 @@ UsbDeviceHandleImpl::~UsbDeviceHandleImpl() {
   }
 }
 
-void UsbDeviceHandleImpl::SetConfigurationOnBlockingThread(
-    int configuration_value,
-    ResultCallback callback) {
+void UsbDeviceHandleImpl::SetConfigurationBlocking(int configuration_value,
+                                                   ResultCallback callback) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int rv = libusb_set_configuration(handle(), configuration_value);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to set configuration " << configuration_value
@@ -869,9 +876,9 @@ void UsbDeviceHandleImpl::SetConfigurationComplete(bool success,
   std::move(callback).Run(success);
 }
 
-void UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread(
-    int interface_number,
-    ResultCallback callback) {
+void UsbDeviceHandleImpl::ClaimInterfaceBlocking(int interface_number,
+                                                 ResultCallback callback) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int rv = libusb_claim_interface(handle(), interface_number);
   scoped_refptr<InterfaceClaimer> interface_claimer;
   if (rv == LIBUSB_SUCCESS) {
@@ -908,10 +915,11 @@ void UsbDeviceHandleImpl::ClaimInterfaceComplete(
   std::move(callback).Run(interface_claimer != nullptr);
 }
 
-void UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread(
+void UsbDeviceHandleImpl::SetInterfaceAlternateSettingBlocking(
     int interface_number,
     int alternate_setting,
     ResultCallback callback) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int rv = libusb_set_interface_alt_setting(handle(), interface_number,
                                             alternate_setting);
   if (rv != LIBUSB_SUCCESS) {
@@ -944,7 +952,8 @@ void UsbDeviceHandleImpl::SetInterfaceAlternateSettingComplete(
   std::move(callback).Run(success);
 }
 
-void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(ResultCallback callback) {
+void UsbDeviceHandleImpl::ResetDeviceBlocking(ResultCallback callback) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int rv = libusb_reset_device(handle());
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to reset device: "
@@ -954,8 +963,9 @@ void UsbDeviceHandleImpl::ResetDeviceOnBlockingThread(ResultCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), rv == LIBUSB_SUCCESS));
 }
 
-void UsbDeviceHandleImpl::ClearHaltOnBlockingThread(uint8_t endpoint,
-                                                    ResultCallback callback) {
+void UsbDeviceHandleImpl::ClearHaltBlocking(uint8_t endpoint,
+                                            ResultCallback callback) {
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   int rv = libusb_clear_halt(handle(), endpoint);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to clear halt: "
@@ -966,7 +976,7 @@ void UsbDeviceHandleImpl::ClearHaltOnBlockingThread(uint8_t endpoint,
 }
 
 void UsbDeviceHandleImpl::RefreshEndpointMap() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(device_);
   endpoint_map_.clear();
   const UsbConfigDescriptor* config = device_->active_configuration();
@@ -1000,7 +1010,8 @@ void UsbDeviceHandleImpl::ReportIsochronousTransferError(
     UsbDeviceHandle::IsochronousTransferCallback callback,
     const std::vector<uint32_t> packet_lengths,
     UsbTransferStatus status) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   std::vector<UsbDeviceHandle::IsochronousPacket> packets(
       packet_lengths.size());
   for (size_t i = 0; i < packet_lengths.size(); ++i) {
@@ -1013,7 +1024,7 @@ void UsbDeviceHandleImpl::ReportIsochronousTransferError(
 }
 
 void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(transfer);
 
   // Transfer is owned by libusb until its completion callback is run. This
@@ -1026,7 +1037,7 @@ void UsbDeviceHandleImpl::SubmitTransfer(std::unique_ptr<Transfer> transfer) {
 
 void UsbDeviceHandleImpl::TransferComplete(Transfer* transfer,
                                            base::OnceClosure callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(base::ContainsKey(transfers_, transfer))
       << "Missing transfer completed";
   transfers_.erase(transfer);

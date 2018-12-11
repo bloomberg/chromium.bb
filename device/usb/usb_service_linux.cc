@@ -64,10 +64,10 @@ void OnDeviceOpenedToReadDescriptors(
 
 }  // namespace
 
-class UsbServiceLinux::FileThreadHelper : public UdevWatcher::Observer {
+class UsbServiceLinux::BlockingTaskHelper : public UdevWatcher::Observer {
  public:
-  FileThreadHelper(base::WeakPtr<UsbServiceLinux> service);
-  ~FileThreadHelper() override;
+  BlockingTaskHelper(base::WeakPtr<UsbServiceLinux> service);
+  ~BlockingTaskHelper() override;
 
   void Start();
 
@@ -84,10 +84,10 @@ class UsbServiceLinux::FileThreadHelper : public UdevWatcher::Observer {
 
   base::SequenceChecker sequence_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
+  DISALLOW_COPY_AND_ASSIGN(BlockingTaskHelper);
 };
 
-UsbServiceLinux::FileThreadHelper::FileThreadHelper(
+UsbServiceLinux::BlockingTaskHelper::BlockingTaskHelper(
     base::WeakPtr<UsbServiceLinux> service)
     : service_(service), task_runner_(base::SequencedTaskRunnerHandle::Get()) {
   // Detaches from the sequence on which this object was created. It will be
@@ -95,12 +95,12 @@ UsbServiceLinux::FileThreadHelper::FileThreadHelper(
   sequence_checker_.DetachFromSequence();
 }
 
-UsbServiceLinux::FileThreadHelper::~FileThreadHelper() {
+UsbServiceLinux::BlockingTaskHelper::~BlockingTaskHelper() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 // static
-void UsbServiceLinux::FileThreadHelper::Start() {
+void UsbServiceLinux::BlockingTaskHelper::Start() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
@@ -114,7 +114,7 @@ void UsbServiceLinux::FileThreadHelper::Start() {
       FROM_HERE, base::BindOnce(&UsbServiceLinux::HelperStarted, service_));
 }
 
-void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
+void UsbServiceLinux::BlockingTaskHelper::OnDeviceAdded(
     ScopedUdevDevicePtr device) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
@@ -186,7 +186,7 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceAdded(
                      active_configuration, bus_number, port_number));
 }
 
-void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
+void UsbServiceLinux::BlockingTaskHelper::OnDeviceRemoved(
     ScopedUdevDevicePtr device) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
@@ -200,15 +200,17 @@ void UsbServiceLinux::FileThreadHelper::OnDeviceRemoved(
 }
 
 UsbServiceLinux::UsbServiceLinux()
-    : UsbService(CreateBlockingTaskRunner()), weak_factory_(this) {
-  helper_ = std::make_unique<FileThreadHelper>(weak_factory_.GetWeakPtr());
-  blocking_task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&FileThreadHelper::Start,
+    : UsbService(),
+      blocking_task_runner_(CreateBlockingTaskRunner()),
+      weak_factory_(this) {
+  helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&BlockingTaskHelper::Start,
                                 base::Unretained(helper_.get())));
 }
 
 UsbServiceLinux::~UsbServiceLinux() {
-  blocking_task_runner()->DeleteSoon(FROM_HERE, helper_.release());
+  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
 }
 
 void UsbServiceLinux::GetDevices(const GetDevicesCallback& callback) {
