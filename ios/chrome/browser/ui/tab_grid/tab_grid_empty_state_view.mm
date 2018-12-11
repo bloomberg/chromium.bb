@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -13,14 +14,21 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kVerticalMargin = 16;
+}  // namespace
+
 @interface TabGridEmptyStateView ()
+@property(nonatomic, strong) UIView* container;
+@property(nonatomic, strong) UIScrollView* scrollView;
+@property(nonatomic, strong) NSLayoutConstraint* scrollViewHeight;
 @property(nonatomic, copy, readonly) NSString* title;
 @property(nonatomic, copy, readonly) NSString* body;
 @end
 
 @implementation TabGridEmptyStateView
-@synthesize title = _title;
-@synthesize body = _body;
+
+@synthesize scrollViewContentInsets = _scrollViewContentInsets;
 
 - (instancetype)initWithPage:(TabGridPage)page {
   if (self = [super initWithFrame:CGRectZero]) {
@@ -45,18 +53,39 @@
   return self;
 }
 
+#pragma mark - Accessor
+
+- (void)setScrollViewContentInsets:(UIEdgeInsets)scrollViewContentInsets {
+  _scrollViewContentInsets = scrollViewContentInsets;
+  self.scrollView.contentInset = scrollViewContentInsets;
+  self.scrollViewHeight.constant =
+      scrollViewContentInsets.top + scrollViewContentInsets.bottom;
+}
+
 #pragma mark - UIView
 
 - (void)willMoveToSuperview:(UIView*)newSuperview {
-  // The first time this moves to a superview, perform the view setup.
-  if (newSuperview && self.subviews.count == 0) {
-    [self setupViews];
+  if (newSuperview) {
+    // The first time this moves to a superview, perform the view setup.
+    if (self.subviews.count == 0)
+      [self setupViews];
+    [self.container.widthAnchor
+        constraintEqualToAnchor:self.safeAreaLayoutGuide.widthAnchor]
+        .active = YES;
   }
 }
 
 #pragma mark - Private
 
 - (void)setupViews {
+  UIView* container = [[UIView alloc] init];
+  container.translatesAutoresizingMaskIntoConstraints = NO;
+  self.container = container;
+
+  UIScrollView* scrollView = [[UIScrollView alloc] init];
+  scrollView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.scrollView = scrollView;
+
   UILabel* topLabel = [[UILabel alloc] init];
   topLabel.translatesAutoresizingMaskIntoConstraints = NO;
   topLabel.text = self.title;
@@ -65,7 +94,7 @@
   topLabel.adjustsFontForContentSizeCategory = YES;
   topLabel.numberOfLines = 0;
   topLabel.textAlignment = NSTextAlignmentCenter;
-  [self addSubview:topLabel];
+
   UILabel* bottomLabel = [[UILabel alloc] init];
   bottomLabel.translatesAutoresizingMaskIntoConstraints = NO;
   bottomLabel.text = self.body;
@@ -74,17 +103,44 @@
   bottomLabel.adjustsFontForContentSizeCategory = YES;
   bottomLabel.numberOfLines = 0;
   bottomLabel.textAlignment = NSTextAlignmentCenter;
-  [self addSubview:bottomLabel];
+
+  [container addSubview:topLabel];
+  [container addSubview:bottomLabel];
+  [scrollView addSubview:container];
+  [self addSubview:scrollView];
+
+  NSLayoutConstraint* scrollViewHeightConstraint = [scrollView.heightAnchor
+      constraintEqualToAnchor:container.heightAnchor
+                     constant:(self.scrollViewContentInsets.top +
+                               self.scrollViewContentInsets.bottom)];
+  scrollViewHeightConstraint.priority = UILayoutPriorityDefaultLow;
+  scrollViewHeightConstraint.active = YES;
+  self.scrollViewHeight = scrollViewHeightConstraint;
+
   [NSLayoutConstraint activateConstraints:@[
-    [topLabel.topAnchor constraintEqualToAnchor:self.topAnchor],
-    [topLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [topLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
+    [topLabel.topAnchor constraintEqualToAnchor:container.topAnchor
+                                       constant:kVerticalMargin],
+    [topLabel.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+    [topLabel.trailingAnchor constraintEqualToAnchor:container.trailingAnchor],
     [topLabel.bottomAnchor
         constraintEqualToAnchor:bottomLabel.topAnchor
                        constant:-kTabGridEmptyStateVerticalMargin],
-    [bottomLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [bottomLabel.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
-    [bottomLabel.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
+    [bottomLabel.leadingAnchor constraintEqualToAnchor:container.leadingAnchor],
+    [bottomLabel.trailingAnchor
+        constraintEqualToAnchor:container.trailingAnchor],
+    [bottomLabel.bottomAnchor constraintEqualToAnchor:container.bottomAnchor
+                                             constant:-kVerticalMargin],
+
+    [container.topAnchor constraintEqualToAnchor:scrollView.topAnchor],
+    [container.bottomAnchor constraintEqualToAnchor:scrollView.bottomAnchor],
+    [container.centerXAnchor constraintEqualToAnchor:scrollView.centerXAnchor],
+
+    [scrollView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+    [scrollView.topAnchor constraintGreaterThanOrEqualToAnchor:self.topAnchor],
+    [scrollView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:self.bottomAnchor],
+    [scrollView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
+    [scrollView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
   ]];
 }
 

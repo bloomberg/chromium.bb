@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_empty_view.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_layout.h"
@@ -170,23 +171,27 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return self.collectionView;
 }
 
-- (void)setEmptyStateView:(UIView*)emptyStateView {
+- (void)setEmptyStateView:(UIView<GridEmptyView>*)emptyStateView {
   if (_emptyStateView)
     [_emptyStateView removeFromSuperview];
   _emptyStateView = emptyStateView;
+  emptyStateView.scrollViewContentInsets =
+      self.collectionView.adjustedContentInset;
   emptyStateView.translatesAutoresizingMaskIntoConstraints = NO;
   [self.collectionView.backgroundView addSubview:emptyStateView];
   id<LayoutGuideProvider> safeAreaGuide =
       self.collectionView.backgroundView.safeAreaLayoutGuide;
   [NSLayoutConstraint activateConstraints:@[
-    [self.collectionView.backgroundView.centerXAnchor
-        constraintEqualToAnchor:emptyStateView.centerXAnchor],
     [self.collectionView.backgroundView.centerYAnchor
         constraintEqualToAnchor:emptyStateView.centerYAnchor],
     [safeAreaGuide.leadingAnchor
-        constraintLessThanOrEqualToAnchor:emptyStateView.leadingAnchor],
+        constraintEqualToAnchor:emptyStateView.leadingAnchor],
     [safeAreaGuide.trailingAnchor
-        constraintGreaterThanOrEqualToAnchor:emptyStateView.trailingAnchor],
+        constraintEqualToAnchor:emptyStateView.trailingAnchor],
+    [emptyStateView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:safeAreaGuide.topAnchor],
+    [emptyStateView.bottomAnchor
+        constraintLessThanOrEqualToAnchor:safeAreaGuide.bottomAnchor],
   ]];
 }
 
@@ -311,6 +316,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self tappedItemAtIndexPath:indexPath];
   // Tapping on the current selected cell should not deselect it.
   return NO;
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
+  self.emptyStateView.scrollViewContentInsets = scrollView.contentInset;
 }
 
 #pragma mark - GridCellDelegate
