@@ -47,6 +47,7 @@ namespace {
 static const char kUnreachableWebDataURL[] = "chrome-error://chromewebdata/";
 const char kDeprecatedUnreachableWebDataURL[] = "data:text/html,chromewebdata";
 
+// TODO(johnchen@chromium.org): Remove when we stop supporting legacy protocol.
 // Defaults to 20 years into the future when adding a cookie.
 const double kDefaultCookieExpiryTime = 20*365*24*60*60;
 
@@ -1560,17 +1561,37 @@ Status ExecuteAddCookie(Session* session,
   if (status.IsError())
     return status;
   std::string domain;
-  cookie->GetString("domain", &domain);
+  if (!GetOptionalString(cookie, "domain", &domain))
+    return Status(kInvalidArgument, "invalid 'domain'");
   std::string path("/");
-  cookie->GetString("path", &path);
+  if (!GetOptionalString(cookie, "path", &path))
+    return Status(kInvalidArgument, "invalid 'path'");
   bool secure = false;
-  cookie->GetBoolean("secure", &secure);
+  if (!GetOptionalBool(cookie, "secure", &secure))
+    return Status(kInvalidArgument, "invalid 'secure'");
   bool httpOnly = false;
-  cookie->GetBoolean("httpOnly", &httpOnly);
+  if (!GetOptionalBool(cookie, "httpOnly", &httpOnly))
+    return Status(kInvalidArgument, "invalid 'httpOnly'");
   double expiry;
-  if (!cookie->GetDouble("expiry", &expiry))
-    expiry = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() +
-              kDefaultCookieExpiryTime;
+  bool has_value;
+  if (session->w3c_compliant) {
+    // W3C spec says expiry is a safe integer.
+    int64_t expiry_int64;
+    if (!GetOptionalSafeInt(cookie, "expiry", &expiry_int64, &has_value) ||
+        (has_value && expiry_int64 < 0))
+      return Status(kInvalidArgument, "invalid 'expiry'");
+    // Use negative value to indicate expiry not specified.
+    expiry = has_value ? static_cast<double>(expiry_int64) : -1.0;
+  } else {
+    // JSON wire protocol didn't specify the type of expiry, but ChromeDriver
+    // has always accepted double, so we keep that in legacy mode.
+    if (!GetOptionalDouble(cookie, "expiry", &expiry, &has_value) ||
+        (has_value && expiry < 0))
+      return Status(kInvalidArgument, "invalid 'expiry'");
+    if (!has_value)
+      expiry = (base::Time::Now() - base::Time::UnixEpoch()).InSeconds() +
+               kDefaultCookieExpiryTime;
+  }
   return web_view->AddCookie(name, url, cookie_value, domain, path,
       secure, httpOnly, expiry);
 }

@@ -47,7 +47,7 @@ Below is a list of all WebDriver commands and their current support in ChromeDri
 | POST   | /session/{session id}/execute/async                            | Execute Async Script       | Partially Complete | [2398](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2398) [2556](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2556)
 | GET    | /session/{session id}/cookie                                   | Get All Cookies            | Complete           |
 | GET    | /session/{session id}/cookie/{name}                            | Get Named Cookie           | Complete           |
-| POST   | /session/{session id}/cookie                                   | Add Cookie                 | Partially Complete | [2002](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2002)
+| POST   | /session/{session id}/cookie                                   | Add Cookie                 | Complete           |
 | DELETE | /session/{session id}/cookie/{name}                            | Delete Cookie              | Complete           |
 | DELETE | /session/{session id)/cookie                                   | Delete All Cookies         | Complete           |
 | POST   | /session/{session id}/actions                                  | Perform Actions            | Incomplete         | [1897](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1897)
