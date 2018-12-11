@@ -37,7 +37,7 @@ constexpr VideoCodecProfile kCodecProfiles[] = {H264PROFILE_MIN, VP8PROFILE_MIN,
 constexpr int32_t kBitstreamId = 123;
 constexpr size_t kInputSize = 256;
 
-constexpr size_t kNumPictures = 2;
+constexpr size_t kNumPictures = 4;
 const gfx::Size kPictureSize(64, 48);
 
 constexpr size_t kNewNumPictures = 3;
@@ -58,6 +58,7 @@ class MockAcceleratedVideoDecoder : public AcceleratedVideoDecoder {
   MOCK_METHOD0(Decode, DecodeResult());
   MOCK_CONST_METHOD0(GetPicSize, gfx::Size());
   MOCK_CONST_METHOD0(GetRequiredNumOfPictures, size_t());
+  MOCK_CONST_METHOD0(GetNumReferenceFrames, size_t());
 };
 
 class MockVaapiWrapper : public VaapiWrapper {
@@ -205,6 +206,9 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     EXPECT_CALL(*mock_decoder_, GetRequiredNumOfPictures())
         .WillOnce(Return(num_pictures));
     EXPECT_CALL(*mock_decoder_, GetPicSize()).WillOnce(Return(picture_size));
+    const size_t kNumReferenceFrames = num_pictures / 2;
+    EXPECT_CALL(*mock_decoder_, GetNumReferenceFrames())
+        .WillOnce(Return(kNumReferenceFrames));
     EXPECT_CALL(*mock_vaapi_wrapper_, DestroyContextAndSurfaces());
 
     if (expect_dismiss_picture_buffers) {
@@ -212,8 +216,8 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
           .Times(num_picture_buffers_to_dismiss);
     }
 
-    EXPECT_CALL(*this,
-                ProvidePictureBuffers(num_pictures, _, 1, picture_size, _))
+    EXPECT_CALL(*this, ProvidePictureBuffers(num_pictures - kNumReferenceFrames,
+                                             _, 1, picture_size, _))
         .WillOnce(RunClosure(quit_closure));
 
     base::SharedMemoryHandle handle;
@@ -237,14 +241,16 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<VideoCodecProfile>,
     base::RunLoop run_loop;
     base::Closure quit_closure = run_loop.QuitClosure();
 
-    EXPECT_CALL(*mock_vaapi_wrapper_,
-                CreateContextAndSurfaces(_, picture_size, num_pictures, _))
-        .WillOnce(
-            DoAll(WithArg<3>(Invoke(
-                      [num_pictures](std::vector<VASurfaceID>* va_surface_ids) {
-                        va_surface_ids->resize(num_pictures);
-                      })),
-                  Return(true)));
+    const size_t kNumReferenceFrames = num_pictures / 2;
+    EXPECT_CALL(
+        *mock_vaapi_wrapper_,
+        CreateContextAndSurfaces(_, picture_size, kNumReferenceFrames, _))
+        .WillOnce(DoAll(
+            WithArg<3>(Invoke([kNumReferenceFrames](
+                                  std::vector<VASurfaceID>* va_surface_ids) {
+              va_surface_ids->resize(kNumReferenceFrames);
+            })),
+            Return(true)));
     EXPECT_CALL(*mock_vaapi_picture_factory_,
                 MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
         .Times(num_pictures);

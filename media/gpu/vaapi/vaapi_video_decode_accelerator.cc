@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -94,8 +95,8 @@ bool IsGeminiLakeOrLater() {
 }
 // Decides if the current platform and profile may decode using the client's
 // PictureBuffers, or engage the Vpp to adapt VaApi's and the client's format.
-bool ShouldDecodeOnclientPictureBuffers(bool has_va_surface_ids,
-                                        VideoCodecProfile profile) {
+bool ShouldDecodeOnclientPictureBuffers(VideoCodecProfile profile,
+                                        bool has_va_surface_ids = true) {
   return has_va_surface_ids && (profile == VP9PROFILE_PROFILE0) &&
          (IsKabyLakeOrLater() || IsGeminiLakeOrLater());
 }
@@ -173,6 +174,8 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
+      requested_num_reference_frames_(0),
+      previously_requested_num_reference_frames_(0),
       profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
@@ -459,7 +462,8 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
             FROM_HERE,
             base::Bind(&VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
                        weak_this_, decoder_->GetRequiredNumOfPictures(),
-                       decoder_->GetPicSize()));
+                       decoder_->GetPicSize(),
+                       decoder_->GetNumReferenceFrames()));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
 
@@ -496,22 +500,36 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
   }
 }
 
-void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(size_t num_pics,
-                                                           gfx::Size size) {
+void VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange(
+    size_t num_pics,
+    gfx::Size size,
+    size_t num_reference_frames) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!awaiting_va_surfaces_recycle_);
+  DCHECK_GT(num_pics, num_reference_frames);
 
   // At this point decoder has stopped running and has already posted onto our
   // loop any remaining output request callbacks, which executed before we got
-  // here. Some of them might have been pended though, because we might not
-  // have had enough TFPictures to output surfaces to. Initiate a wait cycle,
+  // here. Some of them might have been pended though, because we might not have
+  // had enough PictureBuffers to output surfaces to. Initiate a wait cycle,
   // which will wait for client to return enough PictureBuffers to us, so that
   // we can finish all pending output callbacks, releasing associated surfaces.
-  VLOGF(2) << "Initiating surface set change";
   awaiting_va_surfaces_recycle_ = true;
 
-  requested_num_pics_ = num_pics;
   requested_pic_size_ = size;
+
+  // If we cannot |decode_using_client_picture_buffers_|, split the requested
+  // |num_pics| between VA reference frames and client PictureBuffers proper.
+  if (ShouldDecodeOnclientPictureBuffers(profile_))
+    requested_num_reference_frames_ = 0;
+  else
+    requested_num_reference_frames_ = num_reference_frames;
+
+  requested_num_pics_ = num_pics - requested_num_reference_frames_;
+
+  VLOGF(2) << " |requested_num_pics_| = " << requested_num_pics_
+           << "; |requested_num_reference_frames_| = "
+           << requested_num_reference_frames_;
 
   TryFinishSurfaceSetChange();
 }
@@ -522,14 +540,19 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   if (!awaiting_va_surfaces_recycle_)
     return;
 
+  const size_t kExpectedMaxAvailableVASurfaces =
+      decode_using_client_picture_buffers_
+          ? pictures_.size()
+          : previously_requested_num_reference_frames_;
+
   if (!pending_output_cbs_.empty() ||
-      pictures_.size() != available_va_surfaces_.size()) {
-    // Either:
-    // 1. Not all pending pending output callbacks have been executed yet.
-    // Wait for the client to return enough pictures and retry later.
-    // 2. The above happened and all surface release callbacks have been posted
-    // as the result, but not all have executed yet. Post ourselves after them
-    // to let them release surfaces.
+      kExpectedMaxAvailableVASurfaces != available_va_surfaces_.size()) {
+    // If we're here the stream resolution has changed; we need to wait until:
+    // - all |pending_output_cbs_| have been executed
+    // - all VASurfaces are back to |available_va_surfaces_|; we can't use
+    //   |requested_num_reference_frames_| for comparison, since it might have
+    //   changed in the previous call to InitiateSurfaceSetChange(), so we use
+    //   |previously_requested_num_reference_frames_| instead.
     DVLOGF(2) << "Awaiting pending output/surface release callbacks to finish";
     task_runner_->PostTask(
         FROM_HERE,
@@ -537,6 +560,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
                    weak_this_));
     return;
   }
+
+  previously_requested_num_reference_frames_ = requested_num_reference_frames_;
 
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
@@ -561,6 +586,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
       base::BindOnce(&Client::ProvidePictureBuffers, client_,
                      requested_num_pics_, format, 1, requested_pic_size_,
                      vaapi_picture_factory_->GetGLTextureTarget()));
+  // |client_| may respond via AssignPictureBuffers().
 }
 
 void VaapiVideoDecodeAccelerator::Decode(
@@ -631,7 +657,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   }
 
   decode_using_client_picture_buffers_ =
-      ShouldDecodeOnclientPictureBuffers(!va_surface_ids.empty(), profile_);
+      ShouldDecodeOnclientPictureBuffers(profile_, !va_surface_ids.empty());
 
   // If we have some |va_surface_ids|, use them for decode, otherwise ask
   // |vaapi_wrapper_| to allocate them for us.
@@ -639,14 +665,15 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     RETURN_AND_NOTIFY_ON_FAILURE(
         vaapi_wrapper_->CreateContext(va_format, requested_pic_size_),
         "Failed creating VA Context", PLATFORM_FAILURE, );
+    DCHECK_EQ(va_surface_ids.size(), buffers.size());
   } else {
     va_surface_ids.clear();
     RETURN_AND_NOTIFY_ON_FAILURE(
         vaapi_wrapper_->CreateContextAndSurfaces(
-            va_format, requested_pic_size_, buffers.size(), &va_surface_ids),
+            va_format, requested_pic_size_, requested_num_reference_frames_,
+            &va_surface_ids),
         "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   }
-  DCHECK_EQ(va_surface_ids.size(), buffers.size());
 
   available_va_surfaces_.assign(va_surface_ids.begin(), va_surface_ids.end());
 
@@ -956,9 +983,10 @@ scoped_refptr<VASurface> VaapiVideoDecodeAccelerator::CreateSurface() {
     const VASurfaceID id = available_va_surfaces_.front();
     available_va_surfaces_.pop_front();
 
-    TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
-                      pictures_.size() - available_va_surfaces_.size(),
-                      "available", available_va_surfaces_.size());
+    TRACE_COUNTER_ID2(
+        "media,gpu", "Vaapi VASurfaceIDs", this, "used",
+        requested_num_reference_frames_ - available_va_surfaces_.size(),
+        "available", available_va_surfaces_.size());
 
     return new VASurface(id, requested_pic_size_,
                          vaapi_wrapper_->va_surface_format(),
@@ -991,9 +1019,10 @@ void VaapiVideoDecodeAccelerator::RecycleVASurfaceID(
   base::AutoLock auto_lock(lock_);
   available_va_surfaces_.push_back(va_surface_id);
   if (!decode_using_client_picture_buffers_) {
-    TRACE_COUNTER_ID2("media,gpu", "Vaapi VASurfaceIDs", this, "used",
-                      pictures_.size() - available_va_surfaces_.size(),
-                      "available", available_va_surfaces_.size());
+    TRACE_COUNTER_ID2(
+        "media,gpu", "Vaapi VASurfaceIDs", this, "used",
+        requested_num_reference_frames_ - available_va_surfaces_.size(),
+        "available", available_va_surfaces_.size());
   }
   surfaces_available_.Signal();
 
