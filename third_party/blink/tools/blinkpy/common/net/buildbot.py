@@ -110,6 +110,9 @@ class BuildBot(object):
         """Returns a WebTestResults object for results from a given Build.
         Uses full_results.json if full is True, otherwise failing_results.json.
         """
+        if not build.builder_name or not build.build_number:
+            _log.debug('Builder name or build number is None')
+            return None
         return self.fetch_web_test_results(
             self.results_url(build.builder_name, build.build_number,
                              step_name=self.get_layout_test_step_name(build)),
@@ -117,6 +120,10 @@ class BuildBot(object):
 
     @memoized
     def get_layout_test_step_name(self, build):
+        if not build.builder_name or not build.build_number:
+            _log.debug('Builder name or build number is None')
+            return None
+
         url = '%s/testfile?%s' % (TEST_RESULTS_SERVER, urllib.urlencode({
             'builder': build.builder_name,
             'buildnumber': build.build_number,
