@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.jsdialog.JavascriptAppModalDialog;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
@@ -112,6 +113,8 @@ public class VrBrowserJavaScriptModalDialogTest {
      */
     private JavascriptAppModalDialog getCurrentDialog() throws ExecutionException {
         return (JavascriptAppModalDialog) ThreadUtils.runOnUiThreadBlocking(
-                () -> mActivity.getModalDialogManager().getCurrentDialogForTest().getController());
+                ()
+                        -> mActivity.getModalDialogManager().getCurrentDialogForTest().get(
+                                ModalDialogProperties.CONTROLLER));
     }
 }

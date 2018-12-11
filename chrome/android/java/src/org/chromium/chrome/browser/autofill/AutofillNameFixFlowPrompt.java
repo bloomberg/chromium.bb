@@ -22,9 +22,7 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Prompt that asks users to confirm user's name before saving card to Google.
@@ -50,7 +48,7 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
     }
 
     private final AutofillNameFixFlowPromptDelegate mDelegate;
-    private final ModalDialogView mDialog;
+    private final PropertyModel mDialogModel;
 
     private final View mDialogView;
     private final EditText mUserNameInput;
@@ -75,25 +73,21 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
         mNameFixFlowTooltipIcon = (ImageView) mDialogView.findViewById(R.id.cc_name_tooltip_icon);
         mNameFixFlowTooltipIcon.setOnClickListener((view) -> onTooltipIconClicked());
 
-        PropertyModel model =
-                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, this)
-                        .with(ModalDialogProperties.TITLE, title)
-                        .with(ModalDialogProperties.TITLE_ICON, context, drawableId)
-                        .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView)
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
-                                R.string.cancel)
-                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
-                        .build();
-
-        mDialog = new ModalDialogView(context);
-        PropertyModelChangeProcessor.create(model, mDialog, new ModalDialogViewBinder());
+        mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                               .with(ModalDialogProperties.CONTROLLER, this)
+                               .with(ModalDialogProperties.TITLE, title)
+                               .with(ModalDialogProperties.TITLE_ICON, context, drawableId)
+                               .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView)
+                               .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, confirmButtonLabel)
+                               .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                       context.getResources(), R.string.cancel)
+                               .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                               .build();
 
         // Hitting the "submit" button on the software keyboard should submit.
         mUserNameInput.setOnEditorActionListener((view, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                onClick(ModalDialogView.ButtonType.POSITIVE);
+                onClick(mDialogModel, ModalDialogView.ButtonType.POSITIVE);
                 return true;
             }
             return false;
@@ -108,11 +102,11 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
 
         mContext = activity;
         mModalDialogManager = activity.getModalDialogManager();
-        mModalDialogManager.showDialog(mDialog, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
-    protected void dismiss() {
-        mModalDialogManager.dismissDialog(mDialog);
+    protected void dismiss(@DialogDismissalCause int dismissalCause) {
+        mModalDialogManager.dismissDialog(mDialogModel, dismissalCause);
     }
 
     /**
@@ -135,17 +129,16 @@ public class AutofillNameFixFlowPrompt implements ModalDialogView.Controller {
     }
 
     @Override
-    public void onClick(@ModalDialogView.ButtonType int buttonType) {
+    public void onClick(PropertyModel model, int buttonType) {
         if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
             mDelegate.onUserAccept(mUserNameInput.getText().toString());
         } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
-            mModalDialogManager.dismissDialog(
-                    mDialog, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+            mModalDialogManager.dismissDialog(model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
         }
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, int dismissalCause) {
         mDelegate.onPromptDismissed();
     }
 }

@@ -8,17 +8,17 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
-import android.view.ContextThemeWrapper;
-import android.view.LayoutInflater;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
-import org.chromium.base.VisibleForTesting;
+import org.chromium.base.Callback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
+import org.chromium.chrome.browser.widget.BoundedLinearLayout;
 import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.ui.UiUtils;
 
@@ -26,18 +26,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Generic builder for app modal or tab modal alert dialogs.
+ * Generic dialog view for app modal or tab modal alert dialogs.
  */
-public class ModalDialogView implements View.OnClickListener {
+public class ModalDialogView extends BoundedLinearLayout implements View.OnClickListener {
     /**
      * Interface that controls the actions on the modal dialog.
      */
     public interface Controller {
         /**
          * Handle click event of the buttons on the dialog.
+         * @param model The dialog model that is associated with this click event.
          * @param buttonType The type of the button.
          */
-        void onClick(@ButtonType int buttonType);
+        void onClick(PropertyModel model, @ButtonType int buttonType);
 
         /**
          * Handle dismiss event when the dialog is dismissed by actions on the dialog. Note that it
@@ -46,10 +47,11 @@ public class ModalDialogView implements View.OnClickListener {
          * clicked), because the dismissal cause can be different values depending on modal dialog
          * type and mode of presentation (e.g. it could be unknown on VR but a specific value on
          * non-VR).
+         * @param model The dialog model that is associated with this dismiss event.
          * @param dismissalCause The reason of the dialog being dismissed.
          * @see DialogDismissalCause
          */
-        void onDismiss(@DialogDismissalCause int dismissalCause);
+        void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause);
     }
 
     @IntDef({ButtonType.POSITIVE, ButtonType.NEGATIVE})
@@ -61,8 +63,6 @@ public class ModalDialogView implements View.OnClickListener {
 
     private Controller mController;
 
-    private final View mDialogView;
-
     private FadingEdgeScrollView mScrollView;
     private ViewGroup mTitleContainer;
     private TextView mTitleView;
@@ -72,34 +72,29 @@ public class ModalDialogView implements View.OnClickListener {
     private View mButtonBar;
     private Button mPositiveButton;
     private Button mNegativeButton;
-    private String mContentDescription;
+    private Callback<Integer> mOnButtonClickedCallback;
     private boolean mTitleScrollable;
 
-    // TODO(huayinz): Remove this temporary variable once ModalDialogManager takes a model.
-    private boolean mCancelOnTouchOutside;
-
     /**
-     * Temporary constructor before ModalDialogManager takes a model.
-     * @param context The {@link Context} from which the dialog view should be inflated.
-     * TODO(huayinz): Change this once ModalDialogManager takes a model.
+     * Constructor for inflating from XML.
      */
-    public ModalDialogView(Context context) {
-        mDialogView =
-                LayoutInflater.from(new ContextThemeWrapper(context, R.style.ModalDialogTheme))
-                        .inflate(R.layout.modal_dialog_view, null);
-        initialize();
+    public ModalDialogView(Context context, AttributeSet attrs) {
+        super(context, attrs);
     }
 
-    private void initialize() {
-        mScrollView = mDialogView.findViewById(R.id.modal_dialog_scroll_view);
-        mTitleContainer = mDialogView.findViewById(R.id.title_container);
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+
+        mScrollView = findViewById(R.id.modal_dialog_scroll_view);
+        mTitleContainer = findViewById(R.id.title_container);
         mTitleView = mTitleContainer.findViewById(R.id.title);
         mTitleIcon = mTitleContainer.findViewById(R.id.title_icon);
-        mMessageView = mDialogView.findViewById(R.id.message);
-        mCustomViewContainer = mDialogView.findViewById(R.id.custom);
-        mButtonBar = mDialogView.findViewById(R.id.button_bar);
-        mPositiveButton = mDialogView.findViewById(R.id.positive_button);
-        mNegativeButton = mDialogView.findViewById(R.id.negative_button);
+        mMessageView = findViewById(R.id.message);
+        mCustomViewContainer = findViewById(R.id.custom);
+        mButtonBar = findViewById(R.id.button_bar);
+        mPositiveButton = findViewById(R.id.positive_button);
+        mNegativeButton = findViewById(R.id.negative_button);
 
         mPositiveButton.setOnClickListener(this);
         mNegativeButton.setOnClickListener(this);
@@ -116,20 +111,15 @@ public class ModalDialogView implements View.OnClickListener {
                 });
     }
 
+    // View.OnClickListener implementation.
+
     @Override
     public void onClick(View view) {
         if (view == mPositiveButton) {
-            mController.onClick(ButtonType.POSITIVE);
+            mOnButtonClickedCallback.onResult(ButtonType.POSITIVE);
         } else if (view == mNegativeButton) {
-            mController.onClick(ButtonType.NEGATIVE);
+            mOnButtonClickedCallback.onResult(ButtonType.NEGATIVE);
         }
-    }
-
-    /**
-     * @return The content view of this dialog.
-     */
-    public View getView() {
-        return mDialogView;
     }
 
     /**
@@ -147,17 +137,11 @@ public class ModalDialogView implements View.OnClickListener {
     }
 
     /**
-     * @param contentDescription The content description of the dialog view for accessibility.
+     * @param callback The {@link Callback<Integer>} when a button on the dialog button bar is
+     *                 clicked. The {@link Integer} indicates the button type.
      */
-    void setContentDescription(String contentDescription) {
-        mContentDescription = contentDescription;
-    }
-
-    /**
-     * @return The content description of the dialog view.
-     */
-    public CharSequence getContentDescription() {
-        return mContentDescription != null ? mContentDescription : mTitleView.getText();
+    void setOnButtonClickedCallback(Callback<Integer> callback) {
+        mOnButtonClickedCallback = callback;
     }
 
     /** @param title The title of the dialog. */
@@ -186,7 +170,7 @@ public class ModalDialogView implements View.OnClickListener {
         // should not be shown at the same time.
         mTitleContainer.setVisibility(View.GONE);
 
-        mTitleContainer = mDialogView.findViewById(
+        mTitleContainer = findViewById(
                 titleScrollable ? R.id.scrollable_title_container : R.id.title_container);
         mTitleView = mTitleContainer.findViewById(R.id.title);
         mTitleIcon = mTitleContainer.findViewById(R.id.title_icon);
@@ -261,21 +245,6 @@ public class ModalDialogView implements View.OnClickListener {
         getButton(buttonType).setEnabled(enabled);
     }
 
-    /**
-     * @return Returns true if the dialog is dismissed when the user touches outside of the dialog.
-     */
-    public boolean getCancelOnTouchOutside() {
-        return mCancelOnTouchOutside;
-    }
-
-    /**
-     * @param cancelOnTouchOutside Whether the dialog can be cancelled on touch outside.
-     * TODO(huayinz): Remove this method once ModalDialogManager takes a model.
-     */
-    void setCancelOnTouchOutside(boolean cancelOnTouchOutside) {
-        mCancelOnTouchOutside = cancelOnTouchOutside;
-    }
-
     private void updateContentVisibility() {
         boolean titleVisible = !TextUtils.isEmpty(mTitleView.getText());
         boolean titleIconVisible = mTitleIcon.getDrawable() != null;
@@ -298,10 +267,5 @@ public class ModalDialogView implements View.OnClickListener {
         mPositiveButton.setVisibility(positiveButtonVisible ? View.VISIBLE : View.GONE);
         mNegativeButton.setVisibility(negativeButtonVisible ? View.VISIBLE : View.GONE);
         mButtonBar.setVisibility(buttonBarVisible ? View.VISIBLE : View.GONE);
-    }
-
-    @VisibleForTesting
-    public Button getButtonForTesting(@ButtonType int buttonType) {
-        return getButton(buttonType);
     }
 }

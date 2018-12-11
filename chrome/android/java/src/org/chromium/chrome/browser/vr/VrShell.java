@@ -340,7 +340,7 @@ public class VrShell extends GvrLayout
     private void injectVrHostedUiView() {
         mNonVrModalDialogManager = mActivity.getModalDialogManager();
         mNonVrModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
-        mVrModalPresenter = new VrModalPresenter(this);
+        mVrModalPresenter = new VrModalPresenter(mActivity, this);
         mVrModalDialogManager =
                 new ModalDialogManager(mVrModalPresenter, ModalDialogManager.ModalDialogType.APP);
         mActivity.overrideModalDialogManager(mVrModalDialogManager);

@@ -121,7 +121,6 @@
     <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->
     <style name="ModalDialogTheme" parent="AlertDialogTheme">
         <item name="android:windowFrame">@null</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimAmount">0.5</item>
         <item name="buttonBarButtonStyle">@style/TextButton</item>
         <item name="android:windowSoftInputMode">adjustResize|stateHidden</item>

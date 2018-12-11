@@ -13,16 +13,14 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /**
  * This class implements a VrAlertDialog which is similar to Android AlertDialog in VR.
  */
 public class VrAlertDialog extends AlertDialog {
     private ModalDialogManager mModalDialogManager;
-    private ModalDialogView mModalDialogView;
+    private PropertyModel mModalDialogModel;
     private CharSequence mMessage;
     private DialogButton mButtonPositive;
     private DialogButton mButtonNegative;
@@ -59,8 +57,8 @@ public class VrAlertDialog extends AlertDialog {
      */
     @Override
     public void show() {
-        mModalDialogView = createView();
-        mModalDialogManager.showDialog(mModalDialogView, ModalDialogManager.ModalDialogType.APP);
+        mModalDialogModel = createDialogModel();
+        mModalDialogManager.showDialog(mModalDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
     /**
@@ -103,13 +101,13 @@ public class VrAlertDialog extends AlertDialog {
      */
     @Override
     public void dismiss() {
-        mModalDialogManager.dismissDialog(mModalDialogView);
+        mModalDialogManager.dismissDialog(mModalDialogModel, DialogDismissalCause.UNKNOWN);
     }
 
-    private ModalDialogView createView() {
+    private PropertyModel createDialogModel() {
         ModalDialogView.Controller controller = new ModalDialogView.Controller() {
             @Override
-            public void onClick(int buttonType) {
+            public void onClick(PropertyModel model, int buttonType) {
                 if (buttonType == ModalDialogView.ButtonType.POSITIVE) {
                     mButtonPositive.getListener().onClick(null, mButtonPositive.getId());
                 } else if (buttonType == ModalDialogView.ButtonType.NEGATIVE) {
@@ -119,7 +117,7 @@ public class VrAlertDialog extends AlertDialog {
             }
 
             @Override
-            public void onDismiss(@DialogDismissalCause int dialogDismissal) {}
+            public void onDismiss(PropertyModel model, int dismissalCause) {}
         };
         assert(mView == null || mMessage == null);
 
@@ -127,17 +125,12 @@ public class VrAlertDialog extends AlertDialog {
         String positiveButtonText = mButtonPositive != null ? mButtonPositive.getText() : null;
         String negativeButtonText = mButtonNegative != null ? mButtonNegative.getText() : null;
 
-        final PropertyModel model =
-                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                        .with(ModalDialogProperties.CONTROLLER, controller)
-                        .with(ModalDialogProperties.MESSAGE, message)
-                        .with(ModalDialogProperties.CUSTOM_VIEW, mView)
-                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText)
-                        .build();
-
-        ModalDialogView dialogView = new ModalDialogView(getContext());
-        PropertyModelChangeProcessor.create(model, dialogView, new ModalDialogViewBinder());
-        return dialogView;
+        return new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                .with(ModalDialogProperties.CONTROLLER, controller)
+                .with(ModalDialogProperties.MESSAGE, message)
+                .with(ModalDialogProperties.CUSTOM_VIEW, mView)
+                .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, positiveButtonText)
+                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, negativeButtonText)
+                .build();
     }
 }

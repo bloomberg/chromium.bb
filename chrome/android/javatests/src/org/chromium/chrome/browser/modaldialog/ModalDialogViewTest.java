@@ -21,6 +21,8 @@ import static org.hamcrest.Matchers.not;
 import android.content.res.Resources;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -76,9 +78,12 @@ public class ModalDialogViewTest {
             mModelBuilder = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS);
 
             mContentView = new FrameLayout(activity);
-            mModalDialogView = new ModalDialogView(activity);
+            mModalDialogView =
+                    (ModalDialogView) LayoutInflater
+                            .from(new ContextThemeWrapper(activity, R.style.ModalDialogTheme))
+                            .inflate(R.layout.modal_dialog_view, null);
             activity.setContentView(mContentView);
-            mContentView.addView(mModalDialogView.getView(), MATCH_PARENT, WRAP_CONTENT);
+            mContentView.addView(mModalDialogView, MATCH_PARENT, WRAP_CONTENT);
 
             mCustomScrollView = new ScrollView(activity);
             mCustomTextView1 = new TextView(activity);
@@ -95,7 +100,7 @@ public class ModalDialogViewTest {
         createModel(mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                             .with(ModalDialogProperties.TITLE_ICON, mActivityTestRule.getActivity(),
                                     R.drawable.ic_add));
-        mRenderTestRule.render(mModalDialogView.getView(), "title_and_title_icon");
+        mRenderTestRule.render(mModalDialogView, "title_and_title_icon");
     }
 
     @Test
@@ -110,7 +115,7 @@ public class ModalDialogViewTest {
                         .with(ModalDialogProperties.POSITIVE_BUTTON_DISABLED, true)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, mResources,
                                 R.string.cancel));
-        mRenderTestRule.render(mModalDialogView.getView(), "title_and_message");
+        mRenderTestRule.render(mModalDialogView, "title_and_message");
     }
 
     @Test
@@ -123,7 +128,7 @@ public class ModalDialogViewTest {
                         .with(ModalDialogProperties.MESSAGE,
                                 TextUtils.join("\n", Collections.nCopies(100, "Message")))
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mResources, R.string.ok));
-        mRenderTestRule.render(mModalDialogView.getView(), "scrollable_title");
+        mRenderTestRule.render(mModalDialogView, "scrollable_title");
     }
 
     @Test
@@ -139,7 +144,7 @@ public class ModalDialogViewTest {
                 mModelBuilder.with(ModalDialogProperties.TITLE, mResources, R.string.title)
                         .with(ModalDialogProperties.CUSTOM_VIEW, mCustomScrollView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, mResources, R.string.ok));
-        mRenderTestRule.render(mModalDialogView.getView(), "custom_view");
+        mRenderTestRule.render(mModalDialogView, "custom_view");
     }
 
     @Test

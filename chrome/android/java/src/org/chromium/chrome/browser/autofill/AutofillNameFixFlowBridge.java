@@ -12,6 +12,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.autofill.AutofillNameFixFlowPrompt.AutofillNameFixFlowPromptDelegate;
+import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -81,7 +82,9 @@ final class AutofillNameFixFlowBridge implements AutofillNameFixFlowPromptDelega
      */
     @CalledByNative
     private void dismiss() {
-        if (mNameFixFlowPrompt != null) mNameFixFlowPrompt.dismiss();
+        if (mNameFixFlowPrompt != null) {
+            mNameFixFlowPrompt.dismiss(DialogDismissalCause.DISMISSED_BY_NATIVE);
+        }
     }
 
     private native void nativePromptDismissed(long nativeCardNameFixFlowViewAndroid);

@@ -63,7 +63,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
         if (mPresenter == null) return;
 
         // If has bottom controls, the view hierarchy will be updated by mBottomSheetObserver.
-        if (mPresenter.getModalDialog() != null && !mHasBottomControls) {
+        if (mPresenter.getDialogModel() != null && !mHasBottomControls) {
             mPresenter.updateContainerHierarchy(!hasFocus);
         }
     }
@@ -72,7 +72,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
      * Handle a back press event.
      */
     public boolean handleBackPress() {
-        if (mPresenter == null || mPresenter.getModalDialog() == null) return false;
+        if (mPresenter == null || mPresenter.getDialogModel() == null) return false;
         mPresenter.dismissCurrentDialog(DialogDismissalCause.NAVIGATE_BACK_OR_TOUCH_OUTSIDE);
         return true;
     }

@@ -15,9 +15,7 @@ import org.chromium.chrome.browser.modaldialog.DialogDismissalCause;
 import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
 import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
-import org.chromium.chrome.browser.modaldialog.ModalDialogViewBinder;
 import org.chromium.chrome.browser.modelutil.PropertyModel;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 
 /**
  * A base class for creating, showing and dismissing a modal dialog for a JavaScript popup.
@@ -33,7 +31,7 @@ public abstract class JavascriptModalDialog implements ModalDialogView.Controlle
     private final boolean mShouldShowSuppressCheckBox;
 
     private ModalDialogManager mModalDialogManager;
-    private ModalDialogView mDialogView;
+    private PropertyModel mDialogModel;
     protected JavascriptDialogCustomView mDialogCustomView;
 
     protected JavascriptModalDialog(String title, String message, String promptText,
@@ -60,23 +58,20 @@ public abstract class JavascriptModalDialog implements ModalDialogView.Controlle
         mDialogCustomView.setSuppressCheckBoxVisibility(mShouldShowSuppressCheckBox);
 
         Resources resources = activity.getResources();
-        PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                                      .with(ModalDialogProperties.CONTROLLER, this)
-                                      .with(ModalDialogProperties.TITLE, mTitle)
-                                      .with(ModalDialogProperties.MESSAGE, mMessage)
-                                      .with(ModalDialogProperties.CUSTOM_VIEW, mDialogCustomView)
-                                      .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
-                                              mPositiveButtonTextId)
-                                      .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
-                                              mNegativeButtonTextId)
-                                      .with(ModalDialogProperties.TITLE_SCROLLABLE, true)
-                                      .build();
-
-        mDialogView = new ModalDialogView(activity);
-        PropertyModelChangeProcessor.create(model, mDialogView, new ModalDialogViewBinder());
+        mDialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                               .with(ModalDialogProperties.CONTROLLER, this)
+                               .with(ModalDialogProperties.TITLE, mTitle)
+                               .with(ModalDialogProperties.MESSAGE, mMessage)
+                               .with(ModalDialogProperties.CUSTOM_VIEW, mDialogCustomView)
+                               .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,
+                                       mPositiveButtonTextId)
+                               .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
+                                       mNegativeButtonTextId)
+                               .with(ModalDialogProperties.TITLE_SCROLLABLE, true)
+                               .build();
 
         mModalDialogManager = activity.getModalDialogManager();
-        mModalDialogManager.showDialog(mDialogView, dialogType);
+        mModalDialogManager.showDialog(mDialogModel, dialogType);
     }
 
     /**
@@ -85,20 +80,20 @@ public abstract class JavascriptModalDialog implements ModalDialogView.Controlle
      */
     protected void dismiss(@DialogDismissalCause int dismissalCause) {
         if (mModalDialogManager == null) return;
-        mModalDialogManager.dismissDialog(mDialogView, dismissalCause);
+        mModalDialogManager.dismissDialog(mDialogModel, dismissalCause);
     }
 
     @Override
-    public void onClick(@ModalDialogView.ButtonType int buttonType) {
+    public void onClick(PropertyModel model, int buttonType) {
         if (mModalDialogManager == null) return;
         switch (buttonType) {
             case ModalDialogView.ButtonType.POSITIVE:
                 mModalDialogManager.dismissDialog(
-                        mDialogView, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
+                        model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
                 break;
             case ModalDialogView.ButtonType.NEGATIVE:
                 mModalDialogManager.dismissDialog(
-                        mDialogView, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+                        model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
                 break;
             default:
                 Log.e(TAG, "Unexpected button pressed in dialog: " + buttonType);
@@ -106,7 +101,7 @@ public abstract class JavascriptModalDialog implements ModalDialogView.Controlle
     }
 
     @Override
-    public void onDismiss(@DialogDismissalCause int dismissalCause) {
+    public void onDismiss(PropertyModel model, int dismissalCause) {
         if (mDialogCustomView == null) return;
         switch (dismissalCause) {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
@@ -122,7 +117,7 @@ public abstract class JavascriptModalDialog implements ModalDialogView.Controlle
             default:
                 cancel(false, mDialogCustomView.isSuppressCheckBoxChecked());
         }
-        mDialogView = null;
+        mDialogModel = null;
         mDialogCustomView = null;
         mModalDialogManager = null;
     }

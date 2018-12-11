@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.content.pm.ActivityInfo;
@@ -50,7 +54,8 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.jsdialog.JavascriptTabModalDialog;
-import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogProperties;
+import org.chromium.chrome.browser.modelutil.PropertyModel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -228,8 +233,7 @@ public class TabsTest {
             }
         });
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> dialog.get().onClick(ModalDialogView.ButtonType.POSITIVE));
+        onView(withId(R.id.positive_button)).perform(click());
 
         dialog.set(null);
 
@@ -1976,10 +1980,10 @@ public class TabsTest {
 
     private JavascriptTabModalDialog getCurrentAlertDialog() {
         return (JavascriptTabModalDialog) ThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            ModalDialogView dialogView = mActivityTestRule.getActivity()
-                                                 .getModalDialogManager()
-                                                 .getCurrentDialogForTest();
-            return dialogView != null ? dialogView.getController() : null;
+            PropertyModel dialogModel = mActivityTestRule.getActivity()
+                                                .getModalDialogManager()
+                                                .getCurrentDialogForTest();
+            return dialogModel != null ? dialogModel.get(ModalDialogProperties.CONTROLLER) : null;
         });
     }
 }
