@@ -35,11 +35,11 @@ namespace blink {
 
 struct IDBDatabaseMetadata;
 class IDBKey;
+class IDBValue;
 class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBDatabaseError;
 struct WebIDBNameAndVersion;
-class WebIDBValue;
 
 class WebIDBCallbacks {
  public:
@@ -52,16 +52,16 @@ class WebIDBCallbacks {
   virtual void OnSuccess(WebIDBCursor*,
                          std::unique_ptr<IDBKey>,
                          std::unique_ptr<IDBKey> primary_key,
-                         WebIDBValue) = 0;
+                         std::unique_ptr<IDBValue>) = 0;
   virtual void OnSuccess(WebIDBDatabase*, const IDBDatabaseMetadata&) = 0;
   virtual void OnSuccess(std::unique_ptr<IDBKey>) = 0;
-  virtual void OnSuccess(WebIDBValue) = 0;
-  virtual void OnSuccess(WebVector<WebIDBValue>) = 0;
+  virtual void OnSuccess(std::unique_ptr<IDBValue>) = 0;
+  virtual void OnSuccess(Vector<std::unique_ptr<IDBValue>>) = 0;
   virtual void OnSuccess(long long) = 0;
   virtual void OnSuccess() = 0;
   virtual void OnSuccess(std::unique_ptr<IDBKey>,
                          std::unique_ptr<IDBKey> primary_key,
-                         WebIDBValue) = 0;
+                         std::unique_ptr<IDBValue>) = 0;
   virtual void OnBlocked(long long old_version) = 0;
   virtual void OnUpgradeNeeded(long long old_version,
                                WebIDBDatabase*,

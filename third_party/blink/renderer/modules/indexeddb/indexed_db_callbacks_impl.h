@@ -15,12 +15,12 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
 namespace blink {
 
 class WebIDBCallbacks;
 class WebIDBCursorImpl;
-class WebIDBValue;
 
 // Implements the child-process end of the pipe used to deliver callbacks.
 // |callback_runner_| is used to post tasks back to the thread which owns the
@@ -32,7 +32,8 @@ class IndexedDBCallbacksImpl : public mojom::blink::IDBCallbacks {
   // cases.
   enum : int64_t { kNoTransaction = -1 };
 
-  static WebIDBValue ConvertValue(const mojom::blink::IDBValuePtr& value);
+  static std::unique_ptr<IDBValue> ConvertValue(
+      const mojom::blink::IDBValuePtr& input);
 
   IndexedDBCallbacksImpl(std::unique_ptr<WebIDBCallbacks> callbacks,
                          int64_t transaction_id,

@@ -12,9 +12,9 @@
 #include "base/gtest_prod_util.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
@@ -35,7 +35,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
 
   void SetPrefetchData(Vector<std::unique_ptr<IDBKey>> keys,
                        Vector<std::unique_ptr<IDBKey>> primary_keys,
-                       Vector<WebIDBValue> values);
+                       Vector<std::unique_ptr<IDBValue>> values);
 
   void CachedAdvance(unsigned long count, WebIDBCallbacks* callbacks);
   void CachedContinue(WebIDBCallbacks* callbacks);
@@ -68,7 +68,7 @@ class MODULES_EXPORT WebIDBCursorImpl : public WebIDBCursor {
   // allocations.
   Vector<std::unique_ptr<IDBKey>> prefetch_keys_;
   Vector<std::unique_ptr<IDBKey>> prefetch_primary_keys_;
-  Vector<WebIDBValue> prefetch_values_;
+  Vector<std::unique_ptr<IDBValue>> prefetch_values_;
 
   // Number of continue calls that would qualify for a pre-fetch.
   int continue_count_;

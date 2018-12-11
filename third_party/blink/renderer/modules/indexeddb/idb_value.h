@@ -21,7 +21,6 @@ class BlobDataHandle;
 class SerializedScriptValue;
 class WebData;
 class WebBlobInfo;
-class WebIDBValue;
 
 // Represents an IndexedDB Object Store value retrieved from the backing store.
 //
@@ -88,11 +87,6 @@ class MODULES_EXPORT IDBValue final {
   // last Blob from an IDBValue is used when unwrapping values.
   scoped_refptr<BlobDataHandle> TakeLastBlob();
 
-#if DCHECK_IS_ON()
-  // Called by WebIDBValue to inform IDBValue of owneship changes.
-  void SetIsOwnedByWebIDBValue(bool);
-#endif  // DCHECK_IS_ON()
-
  private:
   DISALLOW_COPY_AND_ASSIGN(IDBValue);
 
@@ -111,18 +105,11 @@ class MODULES_EXPORT IDBValue final {
   std::unique_ptr<IDBKey> primary_key_;
   IDBKeyPath key_path_;
 
-  // Used to register memory externally allocated by the WebIDBValue, and to
+  // Used to register memory externally allocated by the IDBValue, and to
   // unregister that memory in the destructor. Unused in other construction
   // paths.
   v8::Isolate* isolate_ = nullptr;
   int64_t external_allocated_size_ = 0;
-#if DCHECK_IS_ON()
-  // True if the IDBValue is owned by a WebIDBValue.
-  //
-  // IDBValue instances that are not owned by WebIDBValue are owned by Blink
-  // objects, and must have a V8 isolate associated with them.
-  bool is_owned_by_web_idb_value_ = false;
-#endif  // DCHECK_IS_ON()
 };
 
 }  // namespace blink

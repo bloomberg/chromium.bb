@@ -8,7 +8,8 @@
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-shared.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 
 namespace blink {
 
@@ -16,12 +17,12 @@ struct WebIDBObservation {
   int64_t object_store_id;
   mojom::IDBOperationType type;
   Persistent<IDBKeyRange> key_range;
-  WebIDBValue value;
+  std::unique_ptr<IDBValue> value;
 
   WebIDBObservation(int64_t object_store_id,
                     mojom::IDBOperationType type,
                     IDBKeyRange* key_range,
-                    WebIDBValue value)
+                    std::unique_ptr<IDBValue> value)
       : object_store_id(object_store_id),
         type(type),
         key_range(key_range),
@@ -31,7 +32,7 @@ struct WebIDBObservation {
   WebIDBObservation& operator=(WebIDBObservation&&) = default;
 
  private:
-  // WebIDBObservation has to be move-only, because WebIDBValue is move-only.
+  // WebIDBObservation has to be move-only, because IDBValue is move-only.
   // Making the restriction explicit results in slightly better compilation
   // error messages in code that attempts copying.
   WebIDBObservation(const WebIDBObservation&) = delete;
