@@ -879,8 +879,6 @@ function isElementVisible_(elem) {
 
   let originalElement = elem;
   let nextOffsetParent = originalElement.offsetParent;
-  let computedStyle =
-      elem.ownerDocument.defaultView.getComputedStyle(elem, null);
 
   // We are currently handling all scrolling through the app, which means we can
   // only scroll the window, not any scrollable containers in the DOM itself. So
@@ -891,6 +889,9 @@ function isElementVisible_(elem) {
   let bodyWidth = getBodyWidth_();
 
   while (elem && elem.nodeName.toUpperCase() != 'BODY') {
+    let computedStyle =
+        elem.ownerDocument.defaultView.getComputedStyle(elem, null);
+
     if (elem.style.display === 'none' || elem.style.visibility === 'hidden' ||
         elem.style.opacity === 0 || computedStyle.display === 'none' ||
         computedStyle.visibility === 'hidden' || computedStyle.opacity === 0) {
@@ -925,7 +926,6 @@ function isElementVisible_(elem) {
     }
 
     elem = elem.parentNode;
-    computedStyle = elem.ownerDocument.defaultView.getComputedStyle(elem, null);
   }
   return true;
 };
