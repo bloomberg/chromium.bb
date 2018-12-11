@@ -11,6 +11,7 @@ import("//build/nocompile.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
+import("//tools/grit/grit_rule.gni")
 
 process_version_rc_template("version") {
   template_file = "gcp_setup.rc.version"
@@ -32,10 +33,27 @@ source_set("common") {
   ]
 }
 
+grit("setup_resources") {
+  source = "gcp_setup_resources.grd"
+  inputs = [
+    "gcp_icon.ico",
+  ]
+  outputs = [
+    "grit/gcp_setup_resources.h",
+    "grit/gcp_setup_resources.rc",
+  ]
+  resource_ids = ""
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+}
+
 # Builds a self extracting 7-zip binary using the 7-zip SFX sources but with
 # the credential provider's version resources.
 executable("gcp_sfx") {
   deps = [
+    ":setup_resources",
     ":version",
     "//third_party/lzma_sdk/Util/SfxSetup:7zS2_source",
   ]
@@ -50,6 +68,7 @@ executable("gcp_setup") {
   ]
   deps = [
     ":common",
+    ":setup_resources",
     "../eventlog:gcp_eventlog_messages",
     "../gaiacp:common",
     "//chrome/common:version_header",
