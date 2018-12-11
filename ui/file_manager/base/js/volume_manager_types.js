@@ -100,6 +100,9 @@ VolumeManagerCommon.RootType = {
   // 'Offline'.
   DRIVE_FAKE_ROOT: 'drive_fake_root',
 
+  // 'Add new services' menu item.
+  DEPRECATED_ADD_NEW_SERVICES_MENU: 'deprecated_add_new_services_menu',
+
   // Root for crostini 'Linux files'.
   CROSTINI: 'crostini',
 
@@ -130,27 +133,28 @@ Object.freeze(VolumeManagerCommon.RootType);
  * @const
  */
 VolumeManagerCommon.RootTypesForUMA = [
-  VolumeManagerCommon.RootType.DOWNLOADS,
-  VolumeManagerCommon.RootType.ARCHIVE,
-  VolumeManagerCommon.RootType.REMOVABLE,
-  VolumeManagerCommon.RootType.DRIVE,
-  VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT,
-  VolumeManagerCommon.RootType.TEAM_DRIVE,
-  VolumeManagerCommon.RootType.MTP,
-  VolumeManagerCommon.RootType.PROVIDED,
-  VolumeManagerCommon.RootType.DRIVE_OTHER,
-  VolumeManagerCommon.RootType.DRIVE_OFFLINE,
-  VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
-  VolumeManagerCommon.RootType.DRIVE_RECENT,
-  VolumeManagerCommon.RootType.MEDIA_VIEW,
-  VolumeManagerCommon.RootType.RECENT,
-  VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT,
-  VolumeManagerCommon.RootType.CROSTINI,
-  VolumeManagerCommon.RootType.ANDROID_FILES,
-  VolumeManagerCommon.RootType.MY_FILES,
-  VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,
-  VolumeManagerCommon.RootType.COMPUTER,
-  VolumeManagerCommon.RootType.EXTERNAL_MEDIA,
+  VolumeManagerCommon.RootType.DOWNLOADS,                         // 0
+  VolumeManagerCommon.RootType.ARCHIVE,                           // 1
+  VolumeManagerCommon.RootType.REMOVABLE,                         // 2
+  VolumeManagerCommon.RootType.DRIVE,                             // 3
+  VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT,            // 4
+  VolumeManagerCommon.RootType.TEAM_DRIVE,                        // 5
+  VolumeManagerCommon.RootType.MTP,                               // 6
+  VolumeManagerCommon.RootType.PROVIDED,                          // 7
+  VolumeManagerCommon.RootType.DRIVE_OTHER,                       // 8
+  VolumeManagerCommon.RootType.DRIVE_OFFLINE,                     // 9
+  VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,              // 10
+  VolumeManagerCommon.RootType.DRIVE_RECENT,                      // 11
+  VolumeManagerCommon.RootType.MEDIA_VIEW,                        // 12
+  VolumeManagerCommon.RootType.RECENT,                            // 13
+  VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT,                   // 14
+  VolumeManagerCommon.RootType.DEPRECATED_ADD_NEW_SERVICES_MENU,  // 15
+  VolumeManagerCommon.RootType.CROSTINI,                          // 16
+  VolumeManagerCommon.RootType.ANDROID_FILES,                     // 17
+  VolumeManagerCommon.RootType.MY_FILES,                          // 18
+  VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT,              // 19
+  VolumeManagerCommon.RootType.COMPUTER,                          // 20
+  VolumeManagerCommon.RootType.EXTERNAL_MEDIA,                    // 21
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
