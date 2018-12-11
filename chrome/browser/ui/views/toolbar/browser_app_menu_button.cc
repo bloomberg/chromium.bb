@@ -34,12 +34,24 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
+#include "ui/views/view.h"
+#include "ui/views/view_properties.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #endif  // defined(OS_CHROMEOS)
+
+namespace {
+
+// Button background and icon color for in-product help promos.
+// TODO(collinbaker): https://crbug.com/909747 handle themed toolbar colors, and
+// maybe move this into theme system.
+constexpr SkColor kFeaturePromoHighlightColor = gfx::kGoogleBlue600;
+
+}  // namespace
 
 // static
 bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
@@ -69,13 +81,19 @@ void BrowserAppMenuButton::SetTypeAndSeverity(
   UpdateIcon();
 }
 
-void BrowserAppMenuButton::SetIsProminent(bool is_prominent) {
-  if (is_prominent) {
-    SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ProminentButtonColor)));
-  } else {
-    SetBackground(nullptr);
-  }
+void BrowserAppMenuButton::SetPromoIsShowing(bool promo_is_showing) {
+  if (promo_is_showing_ == promo_is_showing)
+    return;
+
+  promo_is_showing_ = promo_is_showing;
+  // We override GetInkDropBaseColor below in the |promo_is_showing_| case. This
+  // sets the ink drop into the activated state, which will highlight it in the
+  // desired color.
+  GetInkDrop()->AnimateToState(promo_is_showing_
+                                   ? views::InkDropState::ACTIVATED
+                                   : views::InkDropState::HIDDEN);
+
+  UpdateIcon();
   SchedulePaint();
 }
 
@@ -118,8 +136,10 @@ void BrowserAppMenuButton::UpdateIcon() {
   const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (type_and_severity_.severity) {
     case AppMenuIconController::Severity::NONE:
-      severity_color = GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+      severity_color = promo_is_showing_
+                           ? kFeaturePromoHighlightColor
+                           : GetThemeProvider()->GetColor(
+                                 ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
       break;
     case AppMenuIconController::Severity::LOW:
       severity_color = native_theme->GetSystemColor(
@@ -250,4 +270,9 @@ std::unique_ptr<views::InkDrop> BrowserAppMenuButton::CreateInkDrop() {
 std::unique_ptr<views::InkDropHighlight>
 BrowserAppMenuButton::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight(this);
+}
+
+SkColor BrowserAppMenuButton::GetInkDropBaseColor() const {
+  return promo_is_showing_ ? kFeaturePromoHighlightColor
+                           : AppMenuButton::GetInkDropBaseColor();
 }

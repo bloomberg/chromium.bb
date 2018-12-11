@@ -100,7 +100,7 @@ void IncognitoWindowTracker::ShowPromo() {
       FeaturePromoBubbleView::ActivationAction::ACTIVATE);
   views::Widget* widget = incognito_promo_->GetWidget();
   incognito_promo_observer_.Add(widget);
-  app_menu_button->SetIsProminent(true);
+  app_menu_button->SetPromoIsShowing(true);
 }
 
 void IncognitoWindowTracker::OnWidgetDestroying(views::Widget* widget) {
@@ -110,7 +110,7 @@ void IncognitoWindowTracker::OnWidgetDestroying(views::Widget* widget) {
     incognito_promo_observer_.Remove(widget);
     BrowserAppMenuButton* app_menu_button = GetAppMenuButton();
     if (app_menu_button)
-      app_menu_button->SetIsProminent(false);
+      app_menu_button->SetPromoIsShowing(false);
   }
 }
 
