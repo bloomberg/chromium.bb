@@ -569,6 +569,15 @@
     },
 
     'chromium_code_coverage_isolated_scripts': {
+      'blink_json_parser_fuzzer': {
+        'swarming': {
+          # Fuzzer targets are temporarily to be run locally on the builder
+          # rather than on swarming avoid placing the corpus on the public
+          # isolate or making a swarming job depend on external data.
+          # see crbug.com/910235
+          'can_use_on_swarming_builders': False,
+        },
+      },
       'webkit_layout_tests': {
         'args': [
           '--additional-driver-flag=--no-sandbox',
@@ -581,7 +590,6 @@
          },
       },
     },
-
 
     'chromium_gtests': {
       'angle_unittests': {},

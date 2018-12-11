@@ -5,6 +5,7 @@
 """Run a single fuzz target built with code coverage instrumentation."""
 
 import argparse
+import json
 import os
 import shutil
 import signal
@@ -137,6 +138,21 @@ def _ParseCommandArguments():
       required=True,
       help='Timeout value for running a single fuzz target.')
 
+  # Ignored. Used to comply with isolated script contract, see chromium_tests
+  # and swarming recipe modules for more details.
+  arg_parser.add_argument(
+      '--isolated-script-test-output',
+      type=str,
+      required=False,
+      help=argparse.SUPPRESS)
+
+  # Ditto.
+  arg_parser.add_argument(
+      '--isolated-script-test-perf-output',
+      type=str,
+      required=False,
+      help=argparse.SUPPRESS)
+
   if len(sys.argv) == 1:
     arg_parser.print_help()
     sys.exit(1)
@@ -212,8 +228,27 @@ def Main():
   args = _ParseCommandArguments()
   fuzzer_name = os.path.splitext(os.path.basename(args.fuzzer))[0]
   corpus_dir = _PrepareCorpus(fuzzer_name, args.output_dir)
+  start_time = time.time()
   _RunFuzzTarget(args.fuzzer, fuzzer_name, args.output_dir, corpus_dir,
                  args.timeout)
+  if args.isolated_script_test_output:
+    # TODO(crbug.com/913827): Actually comply with the isolated script contract
+    # on src/testing/scripts/common.
+    with open(args.isolated_script_test_output, 'w') as f:
+      json.dump({
+          fuzzer_name: {
+              'expected': 'PASS',
+              'actual': 'PASS',
+          },
+          "interrupted": False,
+          "path_delimiter": ".",
+          "version": 3,
+          "seconds_since_epoch": start_time,
+          "num_failures_by_type": {
+              "FAIL": 0,
+              "PASS": 1
+          },
+      }, f)
 
   return 0
 

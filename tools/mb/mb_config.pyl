@@ -1123,12 +1123,12 @@
     ],
 
     'clang_code_coverage': [
-      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols',
+      'release_bot', 'clang', 'use_clang_coverage', 'no_symbols', 'libfuzzer',
     ],
 
     'clang_code_coverage_trybot': [
       'gpu_tests', 'use_dummy_lastchange', 'release_trybot', 'clang', 'use_clang_coverage', 'no_symbols',
-      'partial_clang_instrumentation'
+      'libfuzzer', 'partial_clang_instrumentation'
     ],
 
     'clang_release_bot_minimal_symbols_x86': [

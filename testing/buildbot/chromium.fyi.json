@@ -7125,6 +7125,14 @@
     ],
     "isolated_scripts": [
       {
+        "isolate_coverage_data": true,
+        "isolate_name": "blink_json_parser_fuzzer",
+        "name": "blink_json_parser_fuzzer",
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        }
+      },
+      {
         "args": [
           "--additional-driver-flag=--no-sandbox",
           "--num-retries=3"

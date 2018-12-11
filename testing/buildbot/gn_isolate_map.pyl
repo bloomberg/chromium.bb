@@ -197,6 +197,19 @@
     "label": "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
     "type": "console_test_launcher",
   },
+  "blink_json_parser_fuzzer": {
+    "label": "//third_party/blink/renderer/platform:blink_json_parser_fuzzer",
+    "type": "script",
+    "script": "//tools/code_coverage/run_fuzz_target.py",
+    "args": [
+      "--fuzzer",
+      "./blink_json_parser_fuzzer",
+      "--output-dir",
+      "${ISOLATED_OUTDIR}",
+      "--timeout",
+      "3600",
+    ],
+  },
   "blink_platform_unittests": {
     "label": "//third_party/blink/renderer/platform:blink_platform_unittests",
     "type": "console_test_launcher",

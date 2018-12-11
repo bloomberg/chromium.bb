@@ -23,6 +23,16 @@ source_set("libfuzzer_main") {
   } else {
     sources += [ "unittest_main.cc" ]
   }
+  if (use_clang_coverage) {
+    # For purposes of code coverage calculation, fuzzer targets are run through
+    # a wrapper script in this directory, which handles corpus retrieval and
+    # appropriate parameter passing to run the target in an isolate. This
+    # directive makes this script and its dependencies to be included in the
+    # target's isolate.
+    data = [
+      "//tools/code_coverage/",
+    ]
+  }
 }
 
 # A config used by all fuzzer_tests.
