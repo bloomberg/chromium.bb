@@ -593,6 +593,33 @@ GEN('#endif  // !defined(OS_CHROMEOS)');
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/people_page/sync_controls.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPeoplePageSyncControlsTest() {}
+
+CrSettingsPeoplePageSyncControlsTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/people_page/sync_controls.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_sync_browser_proxy.js',
+    'test_util.js',
+    'people_page_sync_controls.js',
+  ]),
+};
+
+TEST_F('CrSettingsPeoplePageSyncControlsTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/people_page/sync_page.html.
  * @constructor
  * @extends {CrSettingsBrowserTest}
