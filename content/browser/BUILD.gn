@@ -440,6 +440,8 @@ jumbo_source_set("browser") {
     "background_fetch/background_fetch_scheduler.h",
     "background_fetch/background_fetch_service_impl.cc",
     "background_fetch/background_fetch_service_impl.h",
+    "background_fetch/storage/cache_entry_handler_impl.cc",
+    "background_fetch/storage/cache_entry_handler_impl.h",
     "background_fetch/storage/cleanup_task.cc",
     "background_fetch/storage/cleanup_task.h",
     "background_fetch/storage/create_metadata_task.cc",
