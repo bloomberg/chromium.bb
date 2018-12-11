@@ -59,6 +59,19 @@ class CORE_EXPORT DisplayLockContext final
     UntracedMember<DisplayLockContext> context_ = nullptr;
   };
 
+  class ScopedForcedUpdate {
+   public:
+    ScopedForcedUpdate(ScopedForcedUpdate&&);
+    ~ScopedForcedUpdate();
+
+   private:
+    friend class DisplayLockContext;
+
+    ScopedForcedUpdate(DisplayLockContext*);
+
+    UntracedMember<DisplayLockContext> context_ = nullptr;
+  };
+
   DisplayLockContext(Element*, ExecutionContext*);
   ~DisplayLockContext() override;
 
@@ -121,6 +134,14 @@ class CORE_EXPORT DisplayLockContext final
   // and the pending one is stored in the context until it is needed.
   ScopedPendingFrameRect GetScopedPendingFrameRect();
 
+  // Returns a ScopedForcedUpdate object which for the duration of its lifetime
+  // will allow updates to happen on this element's subtree. For the element
+  // itself, the frame rect will still be the same as at the time the lock was
+  // acquired.
+  // Only one ScopedForcedUpdate can be retrieved from the same context at a
+  // time.
+  ScopedForcedUpdate GetScopedForcedUpdate();
+
  private:
   friend class DisplayLockContextTest;
   friend class DisplayLockSuspendedHandle;
@@ -177,6 +198,10 @@ class CORE_EXPORT DisplayLockContext final
   // GetScopedPendingFrameRect() for more information.
   void NotifyPendingFrameRectScopeEnded();
 
+  // When ScopedForcedUpdate is destroyed, it calls this function. See
+  // GetScopedForcedUpdate() for more information.
+  void NotifyForcedUpdateScopeEnded();
+
   HeapVector<Member<V8DisplayLockCallback>> callbacks_;
   Member<ScriptPromiseResolver> resolver_;
 
@@ -205,12 +230,14 @@ class CORE_EXPORT DisplayLockContext final
   Member<Element> element_;
   WeakMember<Element> weak_element_handle_;
 
-  bool process_queue_task_scheduled_ = false;
   unsigned suspended_count_ = 0;
   State state_ = kUninitialized;
   LifecycleUpdateState lifecycle_update_state_ = kNeedsStyle;
   LayoutRect pending_frame_rect_;
   base::Optional<LayoutRect> locked_frame_rect_;
+
+  bool process_queue_task_scheduled_ = false;
+  bool update_forced_ = false;
 };
 
 }  // namespace blink

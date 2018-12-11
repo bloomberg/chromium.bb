@@ -338,20 +338,27 @@ void DisplayLockContext::NotifyConnectedMayHaveChanged() {
 
 bool DisplayLockContext::ShouldStyle() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return state_ >= kCommitting;
+  return update_forced_ || state_ >= kCommitting;
 }
 
 void DisplayLockContext::DidStyle() {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  if (state_ != kCommitting)
+  if (state_ != kCommitting && !update_forced_)
     return;
 
   // We must have contain: content for display locking.
+  // Note that we should also have content containment even if we're forcing
+  // this update to happen. Otherwise, proceeding with layout may cause
+  // unexpected behavior. By rejecting the promise, the behavior can be detected
+  // by script.
   auto* style = GetElement()->GetComputedStyle();
   if (!style || !style->ContainsContent()) {
     RejectAndCleanUp();
     return;
   }
+
+  if (state_ != kCommitting)
+    return;
 
   if (lifecycle_update_state_ <= kNeedsStyle) {
     // Normally we need to do layout next, but if it's not dirty then we can
@@ -365,8 +372,9 @@ void DisplayLockContext::DidStyle() {
 
 bool DisplayLockContext::ShouldLayout() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return std::tie(state_, lifecycle_update_state_) >=
-         std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsLayout};
+  return update_forced_ ||
+         std::tie(state_, lifecycle_update_state_) >=
+             std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsLayout};
 }
 
 void DisplayLockContext::DidLayout() {
@@ -380,8 +388,9 @@ void DisplayLockContext::DidLayout() {
 
 bool DisplayLockContext::ShouldPrePaint() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
-  return std::tie(state_, lifecycle_update_state_) >=
-         std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsPrePaint};
+  return update_forced_ || std::tie(state_, lifecycle_update_state_) >=
+                               std::tuple<State, LifecycleUpdateState>{
+                                   kCommitting, kNeedsPrePaint};
 }
 
 void DisplayLockContext::DidPrePaint() {
@@ -398,6 +407,9 @@ void DisplayLockContext::DidPrePaint() {
 
 bool DisplayLockContext::ShouldPaint() const {
   SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  // Note that forced updates should never require us to paint, so we don't
+  // check |update_forced_| here. In other words, although |update_forced_|
+  // could be true here, we still should not paint.
   return std::tie(state_, lifecycle_update_state_) >=
          std::tuple<State, LifecycleUpdateState>{kCommitting, kNeedsPaint};
 }
@@ -449,6 +461,24 @@ void DisplayLockContext::NotifyPendingFrameRectScopeEnded() {
   DCHECK(locked_frame_rect_);
   pending_frame_rect_ = GetElement()->GetLayoutBox()->FrameRect();
   GetElement()->GetLayoutBox()->SetFrameRectForDisplayLock(*locked_frame_rect_);
+}
+
+DisplayLockContext::ScopedForcedUpdate
+DisplayLockContext::GetScopedForcedUpdate() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  DCHECK(!update_forced_);
+  update_forced_ = true;
+  // Now that the update is forced, we should ensure that style and layout code
+  // can reach it via dirty bits.
+  MarkAncestorsForStyleRecalcIfNeeded();
+  MarkAncestorsForLayoutIfNeeded();
+  return ScopedForcedUpdate(this);
+}
+
+void DisplayLockContext::NotifyForcedUpdateScopeEnded() {
+  SCOPED_LOGGER(__PRETTY_FUNCTION__);
+  DCHECK(update_forced_);
+  update_forced_ = false;
 }
 
 void DisplayLockContext::FinishResolution() {
@@ -545,6 +575,21 @@ DisplayLockContext::ScopedPendingFrameRect::ScopedPendingFrameRect(
 DisplayLockContext::ScopedPendingFrameRect::~ScopedPendingFrameRect() {
   if (context_)
     context_->NotifyPendingFrameRectScopeEnded();
+}
+
+DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
+    DisplayLockContext* context)
+    : context_(context) {}
+
+DisplayLockContext::ScopedForcedUpdate::ScopedForcedUpdate(
+    ScopedForcedUpdate&& other)
+    : context_(other.context_) {
+  other.context_ = nullptr;
+}
+
+DisplayLockContext::ScopedForcedUpdate::~ScopedForcedUpdate() {
+  if (context_)
+    context_->NotifyForcedUpdateScopeEnded();
 }
 
 }  // namespace blink
