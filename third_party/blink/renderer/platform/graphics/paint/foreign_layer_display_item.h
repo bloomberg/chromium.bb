@@ -7,6 +7,7 @@
 
 #include "cc/layers/layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
+#include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
@@ -39,9 +40,11 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 
 // Records a foreign layer into a GraphicsContext.
 // Use this where you would use a recorder class.
-PLATFORM_EXPORT void RecordForeignLayer(GraphicsContext&,
-                                        DisplayItem::Type,
-                                        scoped_refptr<cc::Layer>);
+PLATFORM_EXPORT void RecordForeignLayer(
+    GraphicsContext&,
+    DisplayItem::Type,
+    scoped_refptr<cc::Layer>,
+    const base::Optional<PropertyTreeState>& = base::nullopt);
 
 }  // namespace blink
 
