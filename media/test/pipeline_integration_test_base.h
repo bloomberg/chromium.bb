@@ -89,6 +89,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
     kUnreliableDuration = 8,
     kWebAudio = 16,
     kMonoOutput = 32,
+    kDemuxerMayPassOrFail = 64,  // e.g., for demuxer fuzzing
   };
 
   // Setup method to intialize various state according to flags.
