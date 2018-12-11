@@ -169,7 +169,7 @@ cca.App.prototype.start = function() {
     var message = chrome.i18n.getMessage('migratePicturesMsg');
     return cca.nav.open('dialog', message, false).then((acked) => {
       if (!acked) {
-        throw 'no-migrate';
+        throw new Error('no-migrate');
       }
     });
   }).then(() => {
@@ -180,7 +180,7 @@ cca.App.prototype.start = function() {
     cca.nav.open('camera');
   }).catch((error) => {
     console.error(error);
-    if (error == 'no-migrate') {
+    if (error && error.message == 'no-migrate') {
       chrome.app.window.current().close();
       return;
     }

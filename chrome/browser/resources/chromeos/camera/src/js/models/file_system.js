@@ -145,7 +145,7 @@ cca.models.FileSystem.initialize = function(promptMigrate) {
     cca.models.FileSystem.internalDir = internalDir;
     cca.models.FileSystem.externalDir = externalDir;
     if (migrated && !externalDir) {
-      throw 'External file system should be available.';
+      throw new Error('External file system should be available.');
     }
 
     // Check if acknowledge-prompt and migrate-pictures are needed.
@@ -386,7 +386,7 @@ cca.models.FileSystem.createThumbnail_ = function(isVideo, url) {
         if (blob) {
           resolve(blob);
         } else {
-          reject('Failed to create thumbnail.');
+          reject(new Error('Failed to create thumbnail.'));
         }
       }, 'image/jpeg');
     });
