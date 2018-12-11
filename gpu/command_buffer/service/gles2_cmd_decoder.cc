@@ -13748,7 +13748,7 @@ bool GLES2DecoderImpl::ClearLevelUsingGL(Texture* texture,
   bool result = false;
   if (api()->glCheckFramebufferStatusEXTFn(fb_target) ==
       GL_FRAMEBUFFER_COMPLETE) {
-    api()->glColorMaskFn(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     api()->glClearColorFn(0.0, 0.0, 0.0, 0.0);
     api()->glClearStencilFn(0);
     state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
