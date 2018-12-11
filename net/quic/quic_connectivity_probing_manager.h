@@ -20,23 +20,25 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicConnectivityProbingManager
     : public QuicChromiumPacketWriter::Delegate {
  public:
-  // Delegate interface which receives notifications on network probing
-  // results.
+  // Delegate interface which receives notifications on probing results.
   class NET_EXPORT_PRIVATE Delegate {
    public:
     virtual ~Delegate() {}
-    // Called when probing on |network| succeeded. Caller hands off ownership
-    // of |socket|, |writer| and |reader| for |network| to delegate.
-    virtual void OnProbeNetworkSucceeded(
+
+    // Called when probing to |peer_address| on |network| succeeded.
+    // Caller hands off the ownership of |socket|, |writer| and |reader| for
+    // |peer_address| on |network| to delegate.
+    virtual void OnProbeSucceeded(
         NetworkChangeNotifier::NetworkHandle network,
+        const quic::QuicSocketAddress& peer_address,
         const quic::QuicSocketAddress& self_address,
         std::unique_ptr<DatagramClientSocket> socket,
         std::unique_ptr<QuicChromiumPacketWriter> writer,
         std::unique_ptr<QuicChromiumPacketReader> reader) = 0;
 
-    // Called when probing on |network| fails.
-    virtual void OnProbeNetworkFailed(
-        NetworkChangeNotifier::NetworkHandle network) = 0;
+    // Called when probing to |peer_address| on |network| failed.
+    virtual void OnProbeFailed(NetworkChangeNotifier::NetworkHandle network,
+                               const quic::QuicSocketAddress& peer_address) = 0;
 
     // Called when a connectivity probing packet needs to be sent to
     // |peer_address| using |writer|. Returns true if subsequent packets can be

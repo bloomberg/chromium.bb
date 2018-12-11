@@ -433,15 +433,16 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnWriteUnblocked() override;
 
   // QuicConnectivityProbingManager::Delegate override.
-  void OnProbeNetworkSucceeded(
+  void OnProbeSucceeded(
       NetworkChangeNotifier::NetworkHandle network,
+      const quic::QuicSocketAddress& peer_address,
       const quic::QuicSocketAddress& self_address,
       std::unique_ptr<DatagramClientSocket> socket,
       std::unique_ptr<QuicChromiumPacketWriter> writer,
       std::unique_ptr<QuicChromiumPacketReader> reader) override;
 
-  void OnProbeNetworkFailed(
-      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnProbeFailed(NetworkChangeNotifier::NetworkHandle network,
+                     const quic::QuicSocketAddress& peer_address) override;
 
   bool OnSendConnectivityProbingPacket(
       QuicChromiumPacketWriter* writer,

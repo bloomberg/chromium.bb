@@ -176,8 +176,9 @@ void QuicConnectivityProbingManager::OnConnectivityProbingReceived(
                       base::TimeTicks::Now() - probe_start_time_);
 
   // Notify the delegate that the probe succeeds and reset everything.
-  delegate_->OnProbeNetworkSucceeded(network_, self_address, std::move(socket_),
-                                     std::move(writer_), std::move(reader_));
+  delegate_->OnProbeSucceeded(network_, peer_address_, self_address,
+                              std::move(socket_), std::move(writer_),
+                              std::move(reader_));
   CancelProbingIfAny();
 }
 
@@ -200,7 +201,7 @@ void QuicConnectivityProbingManager::SendConnectivityProbingPacket(
 
 void QuicConnectivityProbingManager::NotifyDelegateProbeFailed() {
   if (network_ != NetworkChangeNotifier::kInvalidNetworkHandle) {
-    delegate_->OnProbeNetworkFailed(network_);
+    delegate_->OnProbeFailed(network_, peer_address_);
     CancelProbingIfAny();
   }
 }
