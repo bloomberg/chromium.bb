@@ -44,6 +44,9 @@ class CSSStyleSheetInit;
 class Document;
 class ExceptionState;
 class MediaQuerySet;
+class ScriptPromise;
+class ScriptPromiseResolver;
+class ScriptState;
 class SecurityOrigin;
 class StyleSheetContents;
 
@@ -53,6 +56,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
  public:
   static const Document* SingleOwnerDocument(const CSSStyleSheet*);
 
+  static CSSStyleSheet* Create(Document&, ExceptionState&);
   static CSSStyleSheet* Create(Document&,
                                const CSSStyleSheetInit*,
                                ExceptionState&);
@@ -99,6 +103,12 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void removeRule(unsigned index, ExceptionState& exception_state) {
     deleteRule(index, exception_state);
   }
+
+  ScriptPromise replace(ScriptState* script_state,
+                        const String& text,
+                        ExceptionState&);
+  void replaceSync(const String& text, ExceptionState&);
+  void ResolveReplacePromiseIfNeeded(bool load_error_occured);
 
   // For CSSRuleList.
   unsigned length() const;
@@ -195,6 +205,12 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool IsAlternate() const;
   bool CanBeActivated(const String& current_preferrable_name) const;
 
+  void SetIsConstructed(bool is_constructed) {
+    is_constructed_ = is_constructed;
+  }
+
+  bool IsConstructed() { return is_constructed_; }
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -235,6 +251,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool alternate_from_constructor_ = false;
   bool enable_rule_access_for_inspector_ = false;
 
+  bool is_constructed_ = false;
+
   String title_;
   scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
@@ -247,6 +265,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   HeapHashSet<Member<TreeScope>> adopted_tree_scopes_;
   Member<Document> associated_document_;
   HashSet<AtomicString> custom_element_tag_names_;
+  Member<ScriptPromiseResolver> resolver_;
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;

@@ -51,7 +51,6 @@
 #include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
@@ -69,7 +68,6 @@
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/css_style_sheet_init.h"
 #include "third_party/blink/renderer/core/css/cssom/computed_style_property_map.h"
 #include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
@@ -1129,63 +1127,6 @@ Element* Document::CreateElement(const QualifiedName& q_name,
 
   return CustomElement::CreateUncustomizedOrUndefinedElement(*this, q_name,
                                                              flags, is);
-}
-
-ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
-                                            const String& text,
-                                            ExceptionState& exception_state) {
-  return Document::createCSSStyleSheet(
-      script_state, text, CSSStyleSheetInit::Create(), exception_state);
-}
-
-ScriptPromise Document::createCSSStyleSheet(ScriptState* script_state,
-                                            const String& text,
-                                            const CSSStyleSheetInit* options,
-                                            ExceptionState& exception_state) {
-  // Even though this function returns a Promise, it actually does all the work
-  // at once here because CSS parsing is done synchronously on the main thread.
-  // TODO(rakina): Find a way to improve this.
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
-  sheet->SetText(text, true /* allow_import_rules */, exception_state);
-  sheet->SetAssociatedDocument(this);
-  return ScriptPromise::Cast(script_state, ToV8(sheet, script_state));
-}
-
-CSSStyleSheet* Document::createCSSStyleSheetSync(
-    ScriptState* script_state,
-    const String& text,
-    ExceptionState& exception_state) {
-  return Document::createCSSStyleSheetSync(
-      script_state, text, CSSStyleSheetInit::Create(), exception_state);
-}
-
-CSSStyleSheet* Document::createCSSStyleSheetSync(
-    ScriptState* script_state,
-    const String& text,
-    const CSSStyleSheetInit* options,
-    ExceptionState& exception_state) {
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
-  sheet->SetText(text, false /* allow_import_rules */, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
-  sheet->SetAssociatedDocument(this);
-  return sheet;
-}
-
-CSSStyleSheet* Document::createEmptyCSSStyleSheet(
-    ScriptState* script_state,
-    const CSSStyleSheetInit* options,
-    ExceptionState& exception_state) {
-  CSSStyleSheet* sheet = CSSStyleSheet::Create(*this, options, exception_state);
-  sheet->SetAssociatedDocument(this);
-  return sheet;
-}
-
-CSSStyleSheet* Document::createEmptyCSSStyleSheet(
-    ScriptState* script_state,
-    ExceptionState& exception_state) {
-  return Document::createEmptyCSSStyleSheet(
-      script_state, CSSStyleSheetInit::Create(), exception_state);
 }
 
 ScriptValue Document::registerElement(ScriptState* script_state,

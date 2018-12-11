@@ -13,6 +13,7 @@
   </div>
 </section>
 <section id="secondSection"></section>
+<section id="thirdSection"></section>
 
 <script>
 'use strict';
@@ -43,7 +44,7 @@ test(() => {
 }, "document.adoptedStyleSheets should initially have length 0.");
 
 test(() => {
-  const sheet = document.createEmptyCSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
+  const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
   assert_equals(sheet.title, "Red");
   assert_equals(sheet.ownerNode, null);
   assert_equals(sheet.ownerRule, null);
@@ -61,7 +62,7 @@ test(() => {
   assert_equals(sheet.cssRules.length, 2);
   assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
 
-  const sheet2 = document.createEmptyCSSStyleSheet({});
+  const sheet2 = new CSSStyleSheet({});
   assert_equals(sheet2.title, "")
   assert_equals(sheet2.ownerNode, null);
   assert_equals(sheet2.ownerRule, null);
@@ -76,7 +77,7 @@ test(() => {
   sheet2.deleteRule(0);
   assert_equals(sheet2.cssRules.length, 0);
 
-const sheet3 = document.createEmptyCSSStyleSheet();
+const sheet3 = new CSSStyleSheet();
   assert_equals(sheet3.title, "")
   assert_equals(sheet3.ownerNode, null);
   assert_equals(sheet3.ownerRule, null);
@@ -90,10 +91,11 @@ const sheet3 = document.createEmptyCSSStyleSheet();
 
   sheet3.deleteRule(0);
   assert_equals(sheet3.cssRules.length, 0);
-}, 'Document.createEmptyCSSStyleSheet produces empty CSSStyleSheet');
+}, 'new CSSStyleSheet produces empty CSSStyleSheet');
 
 promise_test(() => {
-  const promise_sheet = document.createCSSStyleSheet(redStyleTexts[0], {title: "Red", disabled: true, media: "screen, print"});
+  const sheet = new CSSStyleSheet({title: "Red", disabled: true, media: "screen, print"});
+  const promise_sheet = sheet.replace(redStyleTexts[0]);
   return promise_sheet.then(function(sheet) {
     assert_equals(sheet.title, "Red");
     assert_equals(sheet.ownerNode, null);
@@ -109,21 +111,31 @@ promise_test(() => {
     assert_equals(sheet.cssRules.length, 2);
     assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
   });
-}, 'Document.createCSSStyleSheet produces Promise<CSSStyleSheet>');
+}, 'CSSStyleSheet.replace produces Promise<CSSStyleSheet>');
+
+function createAllSheetsPromise() {
+  const greenSheet = new CSSStyleSheet();
+  const redSheet = new CSSStyleSheet({media: "screen, print"});
+  const blueSheet = new CSSStyleSheet({title: "Blue", disabled: true});
+  const whiteSheet = new CSSStyleSheet({title: "White", alternate: true});
+  const yellowSheet = new CSSStyleSheet({disabled: false});
+
+  const greenPromise = greenSheet.replace(greenStyleText);
+  const redPromise = redSheet.replace(redStyleTexts[0] + redStyleTexts[1]);
+  const bluePromise = blueSheet.replace(blueStyleTexts[0] + blueStyleTexts[1]);
+  const whitePromise = whiteSheet.replace(whiteStyleText);
+  const yellowPromise = yellowSheet.replace(yellowStyleText);
+  return [greenPromise, redPromise, bluePromise, whitePromise, yellowPromise];
+}
 
 promise_test(() => {
-  const green = document.createCSSStyleSheet(greenStyleText);
-  const red = document.createCSSStyleSheet(redStyleTexts[0] + redStyleTexts[1], {media: "screen, print"});
-  const blue = document.createCSSStyleSheet(blueStyleTexts[0] + blueStyleTexts[1], {title: "Blue", disabled: true});
-  const white = document.createCSSStyleSheet(whiteStyleText, {title: "White", alternate: true});
-  const yellow = document.createCSSStyleSheet(yellowStyleText, {disabled: false});
-
-  return Promise.all([green, red, blue, white, yellow]).then(values => {
+  return Promise.all(createAllSheetsPromise()).then(values => {
     const greenStyleSheet = values[0];
     const redStyleSheet = values[1];
     const blueStyleSheet = values[2];
     const whiteStyleSheet = values[3];
     const yellowStyleSheet = values[4];
+
     // Lists of style sheets can be created, assigned and read.
     const whiteList = new StyleSheetList([whiteStyleSheet]);
     document.adoptedStyleSheets = whiteList;
@@ -161,13 +173,7 @@ promise_test(() => {
 }, 'Constructed style sheets can be applied on document');
 
 promise_test(() => {
-  const green = document.createCSSStyleSheet(greenStyleText);
-  const red = document.createCSSStyleSheet(redStyleTexts[0] + redStyleTexts[1], {media: "screen, print"});
-  const blue = document.createCSSStyleSheet(blueStyleTexts[0] + blueStyleTexts[1], {title: "Blue", disabled: true});
-  const white = document.createCSSStyleSheet(whiteStyleText, {title: "White", alternate: true});
-  const yellow = document.createCSSStyleSheet(yellowStyleText, {disabled: false});
-
-  return Promise.all([green, red, blue, white, yellow]).then(values => {
+  return Promise.all(createAllSheetsPromise()).then(values => {
     const greenStyleSheet = values[0];
     const redStyleSheet = values[1];
     const blueStyleSheet = values[2];
@@ -205,7 +211,8 @@ promise_test(() => {
 }, 'Constructed style sheets can be applied on shadow root');
 
 promise_test(() => {
-  const redStyleSheetPromise = document.createCSSStyleSheet(redStyleTexts[0]);
+  const plainSheet = new CSSStyleSheet();
+  const redStyleSheetPromise = plainSheet.replace(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
     document.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
@@ -238,7 +245,8 @@ promise_test(() => {
 }, 'Changes to constructed stylesheets through CSSOM is reflected');
 
 promise_test(() => {
-  const redStyleSheetPromise = document.createCSSStyleSheet(redStyleTexts[0]);
+  const plainSheet = new CSSStyleSheet();
+  const redStyleSheetPromise = plainSheet.replace(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
     document.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
     shadowRoot.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
@@ -280,7 +288,8 @@ promise_test(() => {
   const whiteIframeSpan = thirdDiv.children[3];
   const yellowIframeSpan = thirdDiv.children[4];
 
-  const redStyleSheetPromise = document.createCSSStyleSheet(redStyleTexts[0]);
+  const plainSheet = new CSSStyleSheet();
+  const redStyleSheetPromise = plainSheet.replace(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
     assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([redStyleSheet]); });
     assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
@@ -317,7 +326,7 @@ promise_test(() => {
   const yellowIframeSpan = thirdDiv.children[4];
 
   // Make sure both the main Document and the iframe are not styled
-  const emptyStyleSheet = document.createEmptyCSSStyleSheet();
+  const emptyStyleSheet = new CSSStyleSheet();
   document.adoptedStyleSheets = new StyleSheetList([emptyStyleSheet]);
   assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
   assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
@@ -331,7 +340,8 @@ promise_test(() => {
   assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(0, 0, 0)");
   assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
 
-  const iframeRedStyleSheetPromise = iframe.contentDocument.createCSSStyleSheet(redStyleTexts[0]);
+  const iframePlainSheet = new iframe.contentWindow.CSSStyleSheet();
+  const iframeRedStyleSheetPromise = iframePlainSheet.replace(redStyleTexts[0]);
   return iframeRedStyleSheetPromise.then(function(iframeRedStyleSheet) {
     assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([iframeRedStyleSheet]); });
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
@@ -370,9 +380,8 @@ const nonConstructedStyleSheet = nonConstructedStyle.sheet;
 
 test(() => {
   assert_equals(getComputedStyle(divNonConstructed).color, "rgb(0, 0, 0)");
-  document.adoptedStyleSheets = new StyleSheetList([nonConstructedStyleSheet]);
-  assert_equals(getComputedStyle(divNonConstructed).color, "rgb(255, 0, 0)");
-}, 'Adding non-constructed stylesheet to AdoptedStyleSheets is allowed when the owner document of the stylesheet is in the same document tree as the AdoptedStyleSheets');
+  assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([nonConstructedStyleSheet]); });
+}, 'Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet is in the same document tree as the AdoptedStyleSheets');
 
 test(() => {
   const iframe = document.createElement("iframe");
@@ -398,37 +407,65 @@ test(() => {
   assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
 }, 'Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees');
 
+function attachShadowDiv(host) {
+  const shadowRoot = host.attachShadow({mode: 'open'});
+  const shadowDiv = document.createElement("div");
+  shadowRoot.appendChild(shadowDiv);
+  return shadowDiv;
+}
 
 test(() => {
-  const sheet = document.createCSSStyleSheetSync(redStyleTexts[0], {title: "Red", disabled: true, media: "screen, print"});
-  assert_equals(sheet.title, "Red");
-  assert_equals(sheet.ownerNode, null);
-  assert_equals(sheet.ownerRule, null);
-  assert_equals(sheet.media.length, 2);
-  assert_equals(sheet.media.item(0), "screen");
-  assert_equals(sheet.media.item(1), "print");
-  assert_true(sheet.disabled);
+  // Attach a div inside a shadow root with the class ".red".
+  const span = document.createElement("span");
+  thirdSection.appendChild(span);
+  const shadowDiv = attachShadowDiv(span);
+  shadowDiv.classList.add("red");
+  // Create empty stylesheet.
+  const sheet = new CSSStyleSheet();
+  span.shadowRoot.adoptedStyleSheets = new StyleSheetList([sheet]);
+  assert_equals(getComputedStyle(shadowDiv).color, "rgb(0, 0, 0)");
+  // Replace the stylesheet text that will color it red.
+  sheet.replaceSync(redStyleTexts[0]);
+  assert_equals(getComputedStyle(shadowDiv).color, "rgb(255, 0, 0)");
   assert_equals(sheet.cssRules.length, 1);
   assert_equals(sheet.cssRules[0].cssText, redStyleTexts[0]);
-
   sheet.insertRule(redStyleTexts[1]);
   assert_equals(sheet.cssRules.length, 2);
   assert_equals(sheet.cssRules[0].cssText, redStyleTexts[1]);
-}, "Document.createCSSStyleSheetSync creates stylesheets synchronously");
+}, 'CSSStyleSheet.replaceSync replaces stylesheet text synchronously');
 
 const import_text = '@import url("constructable-import.css");';
-test(() => {
-  assert_throws("NotAllowedError", () => { document.createCSSStyleSheetSync(import_text) });
-}, "Document.createCSSStyleSheetSync throws exception when there is import rule inside");
 
+test(() => {
+  assert_throws("NotAllowedError", () => { (new CSSStyleSheet).replaceSync(import_text) });
+}, 'CSSStyleSheet.replaceSync throws exception when there is import rule inside');
+
+test(() => {
+  assert_throws("NotAllowedError", () => { (new CSSStyleSheet).insertRule(import_text) });
+}, 'Inserting an @import rule through insertRule on a constructed stylesheet throws an exception');
 
 promise_test(() => {
-  const sheet_promise = document.createCSSStyleSheet(import_text);
-  return sheet_promise.then(function(sheet) {
+  const span = document.createElement("span");
+  thirdSection.appendChild(span);
+  const shadowDiv = attachShadowDiv(span);
+  const sheet = new CSSStyleSheet();
+  span.shadowRoot.adoptedStyleSheets = new StyleSheetList([sheet]);
+  assert_equals(getComputedStyle(shadowDiv).color, "rgb(0, 0, 0)");
+  // Replace and assert that the imported rule is applied.
+  const sheet_promise = sheet.replace(import_text);
+  return sheet_promise.then((sheet) => {
     assert_equals(sheet.cssRules.length, 1);
     assert_equals(sheet.cssRules[0].cssText, import_text);
+    assert_equals(getComputedStyle(shadowDiv).color, "rgb(255, 0, 0)");
   });
-}, "Document.createCSSStyleSheet throws allows import rule inside");
+}, 'CSSStyleSheet.replace allows import rule inside');
 
+promise_test(() => {
+  const sheet = new CSSStyleSheet();
+  const sheet_promise = sheet.replace("import url('not-there.css');");
+  return sheet_promise.catch((reason) => {
+    assert_equals(reason.name, "NotAllowedError");
+  });
+}, 'CSSStyleSheet.replace returns rejected promise on failed imports');
 </script>
 

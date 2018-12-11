@@ -89,7 +89,6 @@ class AXObjectCache;
 class Attr;
 class CDATASection;
 class CSSStyleSheet;
-class CSSStyleSheetInit;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
@@ -160,7 +159,6 @@ class Range;
 class ResizeObserverController;
 class ResourceFetcher;
 class RootScrollerController;
-class ScriptPromise;
 class ScriptValue;
 class SVGDocumentExtensions;
 class SVGUseElement;
@@ -348,30 +346,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Creates an element without custom element processing.
   Element* CreateRawElement(const QualifiedName&,
                             const CreateElementFlags = CreateElementFlags());
-
-  CSSStyleSheet* createEmptyCSSStyleSheet(ScriptState*,
-                                          const CSSStyleSheetInit*,
-                                          ExceptionState&);
-
-  CSSStyleSheet* createEmptyCSSStyleSheet(ScriptState*, ExceptionState&);
-
-  ScriptPromise createCSSStyleSheet(ScriptState*,
-                                    const String&,
-                                    ExceptionState&);
-
-  ScriptPromise createCSSStyleSheet(ScriptState*,
-                                    const String&,
-                                    const CSSStyleSheetInit*,
-                                    ExceptionState&);
-
-  CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
-                                         const String&,
-                                         const CSSStyleSheetInit*,
-                                         ExceptionState&);
-
-  CSSStyleSheet* createCSSStyleSheetSync(ScriptState*,
-                                         const String&,
-                                         ExceptionState&);
 
   Element* ElementFromPoint(double x, double y) const;
   HeapVector<Member<Element>> ElementsFromPoint(double x, double y) const;

@@ -21,12 +21,18 @@
 // https://drafts.csswg.org/cssom/#the-cssstylesheet-interface
 
 [
+    ConstructorCallWith=Document,
+    RaisesException=Constructor,
+    Constructor(optional CSSStyleSheetInit options),
     Exposed=Window
 ] interface CSSStyleSheet : StyleSheet {
     readonly attribute CSSRule? ownerRule;
     [SameObject, RaisesException] readonly attribute CSSRuleList cssRules;
     [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index = 0);
     [RaisesException] void deleteRule(unsigned long index);
+
+    [RuntimeEnabled=ConstructableStylesheets, CallWith=ScriptState, RaisesException] Promise<CSSStyleSheet> replace(DOMString text);
+    [RuntimeEnabled=ConstructableStylesheets, RaisesException] void replaceSync(DOMString text);
 
     // Non-standard APIs
     [MeasureAs=CSSStyleSheetRules, RaisesException] readonly attribute CSSRuleList rules;
