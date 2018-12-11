@@ -10,6 +10,7 @@
 
 namespace ui {
 class Event;
+struct EventDispatchDetails;
 }
 
 namespace ws {
@@ -20,7 +21,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) HostEventDispatcher {
   // NOTE: as with other event dispatch related functions, the *caller* owns
   // |event|, but HostEventDispatcher may modify |event| as necessary (but not
   // delete it).
-  virtual void DispatchEventFromQueue(ui::Event* event) = 0;
+  virtual ui::EventDispatchDetails DispatchEventFromQueue(ui::Event* event) = 0;
 
  protected:
   virtual ~HostEventDispatcher() = default;

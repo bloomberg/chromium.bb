@@ -71,7 +71,9 @@ EventDispatchDetails EventSource::SendEventToSinkFromRewriter(
     status = (*it)->RewriteEvent(*event_for_rewriting, &rewritten_event);
     if (status == EVENT_REWRITE_DISCARD) {
       CHECK(!rewritten_event);
-      return EventDispatchDetails();
+      EventDispatchDetails details;
+      details.event_discarded = true;
+      return details;
     }
     if (status == EVENT_REWRITE_CONTINUE) {
       CHECK(!rewritten_event);

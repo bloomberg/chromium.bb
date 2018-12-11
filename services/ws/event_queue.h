@@ -26,6 +26,7 @@ class WindowTreeHost;
 
 namespace ui {
 class Event;
+struct EventDispatchDetails;
 }
 
 namespace ws {
@@ -54,11 +55,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventQueue
   // is true, the event is passed through EventRewriters first. Events received
   // from the platform go through EventRewriters, so generally
   // |honor_rewriters| should be true, remote injection may need to circumvent
-  // that though.
-  static void DispatchOrQueueEvent(WindowService* service,
-                                   aura::WindowTreeHost* window_tree_host,
-                                   ui::Event* event,
-                                   bool honor_rewriters);
+  // that though. If the event was not queued, the return value contains the
+  // result of the event processing.
+  static base::Optional<ui::EventDispatchDetails> DispatchOrQueueEvent(
+      WindowService* service,
+      aura::WindowTreeHost* window_tree_host,
+      ui::Event* event,
+      bool honor_rewriters);
 
   // Returns true if |event| should be queued at this time.
   bool ShouldQueueEvent(HostEventQueue* host, const ui::Event& event);

@@ -34,12 +34,13 @@ class WindowService;
 //
 // Implementation note: an event may be handled in any of the following
 // ways:
-// . It may be dispatched to remote client. This is detected by way of
+// . It may be dispatched to a remote client. This is detected by way of
 //   OnWillSendEventToClient().
 // . It may be handled locally.
 // . It may be held and processed later on. This happens if pointer events are
 //   being held if WindowEventDispatcher. See
 //   WindowEventDispatcher::HoldPointerMoves() for details.
+// . It may be discarded by an EventRewriter.
 // For the case of the event being sent to a remote client this has to ensure
 // if the remote client, or WindowTreeHost is destroyed, then no ack is
 // received.

@@ -25,22 +25,22 @@ HostEventQueue::~HostEventQueue() {
     event_queue_->OnHostEventQueueDestroyed(this);
 }
 
-void HostEventQueue::DispatchOrQueueEvent(ui::Event* event,
-                                          bool honor_rewriters) {
-  if (event_queue_ && event_queue_->ShouldQueueEvent(this, *event))
+base::Optional<ui::EventDispatchDetails> HostEventQueue::DispatchOrQueueEvent(
+    ui::Event* event,
+    bool honor_rewriters) {
+  if (event_queue_ && event_queue_->ShouldQueueEvent(this, *event)) {
     event_queue_->QueueEvent(this, *event, honor_rewriters);
-  else
-    DispatchEventDontQueue(event, honor_rewriters);
+    return base::nullopt;
+  }
+  return DispatchEventDontQueue(event, honor_rewriters);
 }
 
-void HostEventQueue::DispatchEventDontQueue(ui::Event* event,
-                                            bool honor_rewriters) {
-  if (honor_rewriters) {
-    host_event_dispatcher_->DispatchEventFromQueue(event);
-  } else {
-    // No need to do anything with the result of sending the event.
-    ignore_result(window_tree_host_->event_sink()->OnEventFromSource(event));
-  }
+ui::EventDispatchDetails HostEventQueue::DispatchEventDontQueue(
+    ui::Event* event,
+    bool honor_rewriters) {
+  if (honor_rewriters)
+    return host_event_dispatcher_->DispatchEventFromQueue(event);
+  return window_tree_host_->event_sink()->OnEventFromSource(event);
 }
 
 }  // namespace ws
