@@ -57,6 +57,7 @@ cr.define('cr.ui.Oobe', function() {
       login.EncryptionMigrationScreen.register();
       login.VoiceInteractionValuePropScreen.register();
       login.WaitForContainerReadyScreen.register();
+      login.SupervisionTransitionScreen.register();
       login.UpdateRequiredScreen.register();
       login.DemoSetupScreen.register();
       login.DiscoverScreen.register();

@@ -195,6 +195,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowEncryptionMigrationScreen();
   void ShowVoiceInteractionValuePropScreen();
   void ShowWaitForContainerReadyScreen();
+  void ShowSupervisionTransitionScreen();
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
   void ShowMultiDeviceSetupScreen();
@@ -247,6 +248,7 @@ class WizardController : public BaseScreenDelegate,
   void OnDemoPreferencesContinued();
   void OnDemoPreferencesCanceled();
   void OnWaitForContainerReadyFinished();
+  void OnSupervisionTransitionFinished();
   void OnAssistantOptInFlowFinished();
   void OnMultiDeviceSetupFinished();
   void OnOobeFlowFinished();
@@ -469,6 +471,7 @@ class WizardController : public BaseScreenDelegate,
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeConfigurationTest;
   friend class WizardControllerOobeResumeTest;
+  friend class WizardControllerSupervisionTransitionOobeTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 

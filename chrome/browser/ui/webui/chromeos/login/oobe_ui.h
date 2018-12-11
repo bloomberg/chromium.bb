@@ -74,6 +74,7 @@ class UpdateView;
 class UpdateRequiredView;
 class VoiceInteractionValuePropScreenView;
 class WaitForContainerReadyScreenView;
+class SupervisionTransitionScreenView;
 class WelcomeView;
 class WrongHWIDScreenView;
 
@@ -141,6 +142,7 @@ class OobeUI : public ui::MojoWebUIController,
   EncryptionMigrationScreenView* GetEncryptionMigrationScreenView();
   VoiceInteractionValuePropScreenView* GetVoiceInteractionValuePropScreenView();
   WaitForContainerReadyScreenView* GetWaitForContainerReadyScreenView();
+  SupervisionTransitionScreenView* GetSupervisionTransitionScreenView();
   UpdateRequiredView* GetUpdateRequiredScreenView();
   AssistantOptInFlowScreenView* GetAssistantOptInFlowScreenView();
   MultiDeviceSetupScreenView* GetMultiDeviceSetupScreenView();

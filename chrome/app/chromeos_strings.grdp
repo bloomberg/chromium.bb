@@ -3302,6 +3302,26 @@
     Please wait...
   </message>
 
+  <!-- Supervision transition OOBE screen. -->
+  <message name="IDS_REMOVING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when stopping supervision.">
+    Stopping supervision...
+  </message>
+  <message name="IDS_ADDING_SUPERVISION_TITLE" desc="Title of the supervision transition OOBE screen when adding supervision.">
+    Setting up supervision...
+  </message>
+  <message name="IDS_SUPERVISION_TRANSITION_MESSAGE" desc="Introduction message for the supervision transition OOBE screen.">
+    Keep device turned on
+  </message>
+  <message name="IDS_SUPERVISION_TRANSITION_ERROR_TITLE" desc="Title of the supervision transition OOBE error screen.">
+    Something went wrong
+  </message>
+  <message name="IDS_SUPERVISION_TRANSITION_ERROR_MESSAGE" desc="Introduction message for the supervision transition OOBE error screen.">
+    Data from some apps may be lost
+  </message>
+  <message name="IDS_SUPERVISION_TRANSITION_ERROR_BUTTON" desc="Button label for acknowledging that supervision transition failed.">
+    OK
+  </message>
+
   <!-- Print Job Notification -->
   <message name="IDS_PRINT_JOB_NOTIFICATION_DISPLAY_SOURCE" desc="The context title of printing notification.">
     Print

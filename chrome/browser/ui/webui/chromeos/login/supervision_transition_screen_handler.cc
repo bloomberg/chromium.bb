@@ -1,0 +1,130 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/webui/chromeos/login/supervision_transition_screen_handler.h"
+
+#include "base/logging.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/arc/arc_prefs.h"
+#include "components/login/localized_values_builder.h"
+
+namespace {
+
+constexpr char kJsScreenPath[] = "login.SupervisionTransitionScreen";
+constexpr base::TimeDelta kWaitingTimeout = base::TimeDelta::FromMinutes(2);
+
+}  // namespace
+
+namespace chromeos {
+
+SupervisionTransitionScreenHandler::SupervisionTransitionScreenHandler()
+    : BaseScreenHandler(kScreenId) {
+  set_call_js_prefix(kJsScreenPath);
+}
+
+SupervisionTransitionScreenHandler::~SupervisionTransitionScreenHandler() {
+  if (screen_)
+    screen_->OnViewDestroyed(this);
+  timer_.Stop();
+}
+
+void SupervisionTransitionScreenHandler::DeclareLocalizedValues(
+    ::login::LocalizedValuesBuilder* builder) {
+  builder->Add("removingSupervisionTitle", IDS_REMOVING_SUPERVISION_TITLE);
+  builder->Add("addingSupervisionTitle", IDS_ADDING_SUPERVISION_TITLE);
+  builder->Add("supervisionTransitionIntroMessage",
+               IDS_SUPERVISION_TRANSITION_MESSAGE);
+  builder->Add("supervisionTransitionErrorTitle",
+               IDS_SUPERVISION_TRANSITION_ERROR_TITLE);
+  builder->Add("supervisionTransitionErrorMessage",
+               IDS_SUPERVISION_TRANSITION_ERROR_MESSAGE);
+  builder->Add("supervisionTransitionButton",
+               IDS_SUPERVISION_TRANSITION_ERROR_BUTTON);
+}
+
+void SupervisionTransitionScreenHandler::RegisterMessages() {
+  AddCallback(
+      "finishSupervisionTransition",
+      &SupervisionTransitionScreenHandler::OnSupervisionTransitionFinished);
+  BaseScreenHandler::RegisterMessages();
+}
+
+void SupervisionTransitionScreenHandler::Bind(
+    SupervisionTransitionScreen* screen) {
+  BaseScreenHandler::SetBaseScreen(screen);
+  screen_ = screen;
+  if (page_is_ready())
+    Initialize();
+}
+
+void SupervisionTransitionScreenHandler::Unbind() {
+  screen_ = nullptr;
+  BaseScreenHandler::SetBaseScreen(nullptr);
+  timer_.Stop();
+}
+
+void SupervisionTransitionScreenHandler::Show() {
+  if (!page_is_ready() || !screen_) {
+    show_on_init_ = true;
+    return;
+  }
+
+  timer_.Start(
+      FROM_HERE, kWaitingTimeout,
+      base::BindOnce(
+          &SupervisionTransitionScreenHandler::OnSupervisionTransitionFailed,
+          weak_factory_.GetWeakPtr()));
+
+  registrar_.Init(profile_->GetPrefs());
+  registrar_.Add(
+      arc::prefs::kArcSupervisionTransition,
+      base::BindRepeating(
+          &SupervisionTransitionScreenHandler::OnSupervisionTransitionFinished,
+          weak_factory_.GetWeakPtr()));
+
+  LoginScreenClient::Get()->login_screen()->SetAllowLoginAsGuest(false);
+  LoginScreenClient::Get()->login_screen()->SetShowGuestButtonInOobe(false);
+
+  base::DictionaryValue data;
+  data.SetBoolean("isRemovingSupervision",
+                  arc::GetSupervisionTransition(profile_) ==
+                      arc::ArcSupervisionTransition::CHILD_TO_REGULAR);
+  ShowScreenWithData(kScreenId, &data);
+}
+
+void SupervisionTransitionScreenHandler::Hide() {}
+
+void SupervisionTransitionScreenHandler::Initialize() {
+  profile_ = ProfileManager::GetPrimaryUserProfile();
+
+  if (!screen_ || !show_on_init_)
+    return;
+
+  Show();
+  show_on_init_ = false;
+}
+
+void SupervisionTransitionScreenHandler::OnSupervisionTransitionFailed() {
+  LOG(ERROR) << "Supervision transition failed; resetting ARC++ data.";
+  arc::ArcSessionManager::Get()->RequestArcDataRemoval();
+  arc::ArcSessionManager::Get()->StopAndEnableArc();
+  if (screen_) {
+    AllowJavascript();
+    FireWebUIListener("supervision-transition-failed");
+  }
+}
+
+void SupervisionTransitionScreenHandler::OnSupervisionTransitionFinished() {
+  if (screen_)
+    screen_->OnSupervisionTransitionFinished();
+}
+
+}  // namespace chromeos

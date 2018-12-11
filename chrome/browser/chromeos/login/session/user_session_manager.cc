@@ -1674,6 +1674,11 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
 
       ActivateWizard(OobeScreen::SCREEN_TERMS_OF_SERVICE);
       return false;
+    } else if (!user_manager->IsCurrentUserNew() &&
+               arc::GetSupervisionTransition(profile) !=
+                   arc::ArcSupervisionTransition::NO_TRANSITION) {
+      ActivateWizard(OobeScreen::SCREEN_SUPERVISION_TRANSITION);
+      return false;
     }
   }
 

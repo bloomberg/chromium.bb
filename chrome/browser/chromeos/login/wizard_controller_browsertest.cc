@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
+#include "chrome/browser/chromeos/login/screens/mock_supervision_transition_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_wrong_hwid_screen.h"
@@ -64,6 +65,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
@@ -84,6 +86,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/session_manager/core/session_manager.h"
+#include "components/session_manager/session_manager_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -479,6 +483,68 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, VolumeIsAdjustedForChromeVox) {
   ASSERT_FALSE(cras->IsOutputMuted());
   ASSERT_EQ(WizardController::kMinAudibleOutputVolumePercent,
             cras->GetOutputVolumePercent());
+}
+
+class WizardControllerSupervisionTransitionOobeTest
+    : public WizardControllerTest {
+ protected:
+  WizardControllerSupervisionTransitionOobeTest() = default;
+
+  void SetUpOnMainThread() override {
+    WizardControllerTest::SetUpOnMainThread();
+    // Setup existing user session and profile.
+    const AccountId test_account_id_ =
+        AccountId::FromUserEmailGaiaId("test@gmail.com", "123456");
+    session_manager::SessionManager::Get()->CreateSession(
+        test_account_id_, test_account_id_.GetUserEmail(),
+        /* is_child= */ false);
+    ProfileHelper::Get()->GetProfileByUserIdHashForTest(
+        test_account_id_.GetUserEmail());
+    // Pretend OOBE was complete.
+    StartupUtils::MarkOobeCompleted();
+
+    WizardController::default_controller()->is_official_build_ = true;
+    MOCK(mock_supervision_transition_screen_,
+         OobeScreen::SCREEN_SUPERVISION_TRANSITION,
+         MockSupervisionTransitionScreen, MockSupervisionTransitionScreenView);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kLoginManager);
+    command_line->AppendSwitchASCII(switches::kLoginProfile,
+                                    TestingProfile::kTestUserProfileDir);
+  }
+
+  void OnSupervisionTransitionFinished() {
+    WizardController::default_controller()->OnExit(
+        ScreenExitCode::SUPERVISION_TRANSITION_FINISHED);
+  }
+
+  MockOutShowHide<MockSupervisionTransitionScreen,
+                  MockSupervisionTransitionScreenView>*
+      mock_supervision_transition_screen_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerSupervisionTransitionOobeTest);
+};
+
+// Tests that when supervision transition screen finishes, session
+// proceeds to ACTIVE state.
+IN_PROC_BROWSER_TEST_F(WizardControllerSupervisionTransitionOobeTest,
+                       SupervisionTransitionScreenFinished) {
+  EXPECT_CALL(*mock_supervision_transition_screen_, Show()).Times(1);
+  ASSERT_NE(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
+  // Start from login screen.
+  LoginDisplayHost::default_host()->StartSignInScreen(LoginScreenContext());
+  // Advance to supervision transition screen.
+  WizardController::default_controller()->AdvanceToScreen(
+      OobeScreen::SCREEN_SUPERVISION_TRANSITION);
+  CheckCurrentScreen(OobeScreen::SCREEN_SUPERVISION_TRANSITION);
+  OnSupervisionTransitionFinished();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(session_manager::SessionManager::Get()->session_state(),
+            session_manager::SessionState::ACTIVE);
 }
 
 class TimeZoneTestRunner {
@@ -2697,7 +2763,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 
 // TODO(khorimoto): Add tests for MultiDevice Setup UI.
 
-static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 50,
+static_assert(static_cast<int>(ScreenExitCode::EXIT_CODES_COUNT) == 51,
               "tests for new control flow are missing");
 
 }  // namespace chromeos
