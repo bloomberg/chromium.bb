@@ -238,6 +238,22 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
     AddString(translated_strings.get(), "linkCantRemove",
               IDS_NTP_CUSTOM_LINKS_CANT_REMOVE);
 
+    // Doodle Sharing
+    AddString(translated_strings.get(), "shareDoodle",
+              IDS_NTP_DOODLE_SHARE_LABEL);
+    AddString(translated_strings.get(), "shareClose",
+              IDS_NTP_DOODLE_SHARE_DIALOG_CLOSE_LABEL);
+    AddString(translated_strings.get(), "shareFacebook",
+              IDS_NTP_DOODLE_SHARE_DIALOG_FACEBOOK_LABEL);
+    AddString(translated_strings.get(), "shareTwitter",
+              IDS_NTP_DOODLE_SHARE_DIALOG_TWITTER_LABEL);
+    AddString(translated_strings.get(), "shareMail",
+              IDS_NTP_DOODLE_SHARE_DIALOG_MAIL_LABEL);
+    AddString(translated_strings.get(), "copyLink",
+              IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL);
+    AddString(translated_strings.get(), "shareLink",
+              IDS_NTP_DOODLE_SHARE_DIALOG_LINK_LABEL);
+
     // Voice Search
     AddString(translated_strings.get(), "audioError",
               IDS_NEW_TAB_VOICE_AUDIO_ERROR);

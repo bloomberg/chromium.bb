@@ -4876,6 +4876,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_CUSTOM_BG_PHOTO_SELECTED" desc="Label to indicate that a photo has been selected. (On the New Tab Page)">
        selected
       </message>
+      <message name="IDS_NTP_DOODLE_SHARE_LABEL" desc="The text label for the share button of a static or animated doodle that opens a sharing dialog.">
+        Share Doodle
+      </message>
+      <message name="IDS_NTP_DOODLE_SHARE_DIALOG_CLOSE_LABEL" desc="The text label for the close button on the doodle sharing dialog.">
+        Close
+      </message>
+      <message name="IDS_NTP_DOODLE_SHARE_DIALOG_FACEBOOK_LABEL" desc="The text label for the Facebook button on the doodle sharing dialog.">
+        Facebook
+      </message>
+      <message name="IDS_NTP_DOODLE_SHARE_DIALOG_TWITTER_LABEL" desc="The text label for the Twitter button on the doodle sharing dialog.">
+        Twitter
+      </message>
+      <message name="IDS_NTP_DOODLE_SHARE_DIALOG_MAIL_LABEL" desc="The text label for the mail button on the doodle sharing dialog.">
+        E-mail
+      </message>
+      <message name="IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL" desc="The text label for the copy link button on the doodle sharing dialog.">
+        Copy Link
+      </message>
+      <message name="IDS_NTP_DOODLE_SHARE_DIALOG_LINK_LABEL" desc="The text label for the share link text area on the doodle sharing dialog.">
+        Doodle Link
+      </message>
 
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
