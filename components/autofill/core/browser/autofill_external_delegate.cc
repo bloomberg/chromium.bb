@@ -206,6 +206,10 @@ void AutofillExternalDelegate::OnPopupHidden() {
   driver_->PopupHidden();
 }
 
+void AutofillExternalDelegate::OnPopupSuppressed() {
+  manager_->DidSuppressPopup(query_form_, query_field_);
+}
+
 void AutofillExternalDelegate::DidSelectSuggestion(
     const base::string16& value,
     int identifier) {

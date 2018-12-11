@@ -469,6 +469,22 @@ void AutofillManager::ProcessPendingFormForUpload() {
                               /*observed_submission=*/false);
 }
 
+void AutofillManager::DidSuppressPopup(const FormData& form,
+                                       const FormFieldData& field) {
+  FormStructure* form_structure = nullptr;
+  AutofillField* autofill_field = nullptr;
+  if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
+    return;
+
+  if (autofill_field->Type().group() == CREDIT_CARD) {
+    credit_card_form_event_logger_->OnPopupSuppressed(*form_structure,
+                                                      *autofill_field);
+  } else {
+    address_form_event_logger_->OnPopupSuppressed(*form_structure,
+                                                  *autofill_field);
+  }
+}
+
 void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
                                                const FormFieldData& field,
                                                const gfx::RectF& bounding_box,

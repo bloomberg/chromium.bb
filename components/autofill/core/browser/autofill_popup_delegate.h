@@ -23,6 +23,8 @@ class AutofillPopupDelegate {
   // Called when the Autofill popup is hidden.
   virtual void OnPopupHidden() = 0;
 
+  virtual void OnPopupSuppressed() = 0;
+
   // Called when the autofill suggestion indicated by |identifier| has been
   // temporarily selected (e.g., hovered).
   virtual void DidSelectSuggestion(const base::string16& value,
