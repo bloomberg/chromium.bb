@@ -61,7 +61,8 @@ def GenerateBundleApks(bundle_path, bundle_apks_path, aapt2_path,
           '--overwrite',
       ]
       if universal:
-        cmd_args += ['--universal']
+        cmd_args += ['--mode=universal']
+
       build_utils.CheckOutput(cmd_args)
 
   md5_check.CallAndRecordIfStale(
