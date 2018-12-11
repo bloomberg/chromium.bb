@@ -2,21 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSUMER_H_
-#define IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSUMER_H_
+#ifndef IOS_CHROME_BROWSER_UI_POPUP_MENU_PUBLIC_POPUP_MENU_CONSUMER_H_
+#define IOS_CHROME_BROWSER_UI_POPUP_MENU_PUBLIC_POPUP_MENU_CONSUMER_H_
 
 #import <Foundation/Foundation.h>
 
 @protocol PopupMenuItem;
-@protocol PopupMenuTableViewControllerCommands;
 @class TableViewItem;
 
 // Consumer protocol for the popup menu.
 @protocol PopupMenuConsumer
 
-// Command handler for this consumer.
-@property(nonatomic, weak) id<PopupMenuTableViewControllerCommands>
-    commandHandler;
 // Item to be highlighted. Nil if no item should be highlighted. Must be set
 // after the popup menu items.
 @property(nonatomic, weak) TableViewItem<PopupMenuItem>* itemToHighlight;
@@ -30,4 +26,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSUMER_H_
+#endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_PUBLIC_POPUP_MENU_CONSUMER_H_

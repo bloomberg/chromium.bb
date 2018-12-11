@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller.h"
 
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/image_util/image_util.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller_delegate.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,7 +29,7 @@ const CGFloat kBackgroundAlpha = 0.65;
 @implementation PopupMenuViewController
 
 @synthesize contentContainer = _contentContainer;
-@synthesize commandHandler = _commandHandler;
+@synthesize delegate = _delegate;
 
 #pragma mark - Public
 
@@ -79,8 +79,8 @@ const CGFloat kBackgroundAlpha = 0.65;
     blur.translatesAutoresizingMaskIntoConstraints = NO;
     blur.layer.cornerRadius = kPopupMenuCornerRadius;
     blur.clipsToBounds = YES;
-    blur.backgroundColor =
-        [UIColor colorWithWhite:kBackgroundGreyScale alpha:kBackgroundAlpha];
+    blur.backgroundColor = [UIColor colorWithWhite:kBackgroundGreyScale
+                                             alpha:kBackgroundAlpha];
     [_contentContainer addSubview:blur];
     AddSameConstraints(_contentContainer, blur);
   }
@@ -100,7 +100,7 @@ const CGFloat kBackgroundAlpha = 0.65;
 
 // Handler receiving the touch event on the background scrim.
 - (void)dismissPopup {
-  [self.commandHandler dismissPopupMenuAnimated:YES];
+  [self.delegate popupMenuViewControllerWillDismiss:self];
 }
 
 @end

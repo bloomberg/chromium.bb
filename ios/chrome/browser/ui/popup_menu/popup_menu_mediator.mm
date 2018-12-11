@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -15,12 +16,12 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
-#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_consumer.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -62,11 +63,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 }
 }
 
-@interface PopupMenuMediator ()<BookmarkModelBridgeObserver,
-                                CRWWebStateObserver,
-                                PopupMenuTableViewControllerCommands,
-                                ReadingListMenuNotificationDelegate,
-                                WebStateListObserving> {
+@interface PopupMenuMediator () <BookmarkModelBridgeObserver,
+                                 CRWWebStateObserver,
+                                 ReadingListMenuNotificationDelegate,
+                                 WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
   // Bridge to register for bookmark changes.
@@ -309,7 +309,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   }
 }
 
-- (void)setPopupMenu:(PopupMenuTableViewController*)popupMenu {
+- (void)setPopupMenu:(id<PopupMenuConsumer>)popupMenu {
   _popupMenu = popupMenu;
 
   [_popupMenu setPopupMenuItems:self.items];
@@ -317,7 +317,6 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     _popupMenu.itemToHighlight = self.openNewIncognitoTabItem;
     self.triggerNewIncognitoTabTip = NO;
   }
-  _popupMenu.commandHandler = self;
   if (self.webState) {
     [self updatePopupMenu];
   }
@@ -392,7 +391,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   return _items;
 }
 
-#pragma mark - PopupMenuTableViewControllerCommands
+#pragma mark - PopupMenuActionHandlerCommands
 
 - (void)readPageLater {
   if (!self.webState)

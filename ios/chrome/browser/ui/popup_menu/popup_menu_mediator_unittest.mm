@@ -6,7 +6,7 @@
 #include "base/time/default_clock.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/reading_list/core/reading_list_model_impl.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_web_state.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -49,7 +49,7 @@ class PopupMenuMediatorTest : public PlatformTest {
     popup_menu_strict_ =
         OCMStrictClassMock([PopupMenuTableViewController class]);
     OCMExpect([popup_menu_strict_ setPopupMenuItems:[OCMArg any]]);
-    OCMExpect([popup_menu_strict_ setCommandHandler:[OCMArg any]]);
+    OCMExpect([popup_menu_strict_ setDelegate:[OCMArg any]]);
     SetUpWebStateList();
   }
 

@@ -11,15 +11,7 @@
 extern NSString* const kPopupMenuToolsMenuTableViewId;
 extern NSString* const kPopupMenuNavigationTableViewId;
 
-// Alpha for the background color of the highlighted items.
-extern const CGFloat kSelectedItemBackgroundAlpha;
-// Duration of the highlight animation of the popup menu.
-extern const CGFloat kHighlightAnimationDuration;
-
-// Radius for the rounded corner of the popup menu.
-extern const CGFloat kPopupMenuCornerRadius;
-
-// Tools Menu item IDs.
+// Accessibility IDs for the Tools Menu items.
 // Reload item accessibility Identifier.
 extern NSString* const kToolsMenuReload;
 // Stop item accessibility Identifier.
