@@ -139,9 +139,8 @@ void TaskQueueImpl::UnregisterTaskQueue() {
   // order inversion for tasks that are posted from within a lock, with a
   // destructor that acquires the same lock.
 
-  std::priority_queue<Task> delayed_incoming_queue =
-      main_thread_only().delayed_incoming_queue.TakeTasks();
-
+  DelayedIncomingQueue delayed_incoming_queue;
+  delayed_incoming_queue.swap(&main_thread_only().delayed_incoming_queue);
   std::unique_ptr<WorkQueue> immediate_work_queue =
       std::move(main_thread_only().immediate_work_queue);
   std::unique_ptr<WorkQueue> delayed_work_queue =
@@ -737,23 +736,6 @@ void TaskQueueImpl::QueueAsValueInto(const TaskDeque& queue,
 }
 
 // static
-void TaskQueueImpl::QueueAsValueInto(const std::priority_queue<Task>& queue,
-                                     TimeTicks now,
-                                     trace_event::TracedValue* state) {
-  // Remove const to search |queue| in the destructive manner. Restore the
-  // content from |visited| later.
-  std::priority_queue<Task>* mutable_queue =
-      const_cast<std::priority_queue<Task>*>(&queue);
-  std::priority_queue<Task> visited;
-  while (!mutable_queue->empty()) {
-    TaskAsValueInto(mutable_queue->top(), now, state);
-    visited.push(std::move(const_cast<Task&>(mutable_queue->top())));
-    mutable_queue->pop();
-  }
-  *mutable_queue = std::move(visited);
-}
-
-// static
 void TaskQueueImpl::TaskAsValueInto(const Task& task,
                                     TimeTicks now,
                                     trace_event::TracedValue* state) {
@@ -1012,7 +994,7 @@ void TaskQueueImpl::DeletePendingTasks() {
   main_thread_only().immediate_work_queue->DeletePendingTasks();
   // TODO(altimin): Add clear() method to DelayedIncomingQueue.
   DelayedIncomingQueue queue_to_delete;
-  main_thread_only().delayed_incoming_queue.swap(queue_to_delete);
+  main_thread_only().delayed_incoming_queue.swap(&queue_to_delete);
 
   TaskDeque deque;
   {
@@ -1059,28 +1041,40 @@ void TaskQueueImpl::DelayedIncomingQueue::pop() {
   queue_.pop();
 }
 
-void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks() {
-  std::priority_queue<Task> remaining_tasks;
-  while (!empty()) {
-    if (!top().task.IsCancelled()) {
-      if (top().is_high_res)
-        pending_high_res_tasks_++;
-      remaining_tasks.push(std::move(const_cast<Task&>(top())));
-    }
-    pop();
-  }
-  queue_ = std::move(remaining_tasks);
+void TaskQueueImpl::DelayedIncomingQueue::swap(DelayedIncomingQueue* rhs) {
+  std::swap(pending_high_res_tasks_, rhs->pending_high_res_tasks_);
+  std::swap(queue_, rhs->queue_);
 }
 
-void TaskQueueImpl::DelayedIncomingQueue::swap(DelayedIncomingQueue& other) {
-  queue_.swap(other.queue_);
-  std::swap(pending_high_res_tasks_, other.pending_high_res_tasks_);
+void TaskQueueImpl::DelayedIncomingQueue::SweepCancelledTasks() {
+  // Under the hood a std::priority_queue is a heap and usually it's built on
+  // top of a std::vector. We poke at that vector directly here to filter out
+  // canceled tasks in place.
+  bool task_deleted = false;
+  auto it = queue_.c.begin();
+  while (it != queue_.c.end()) {
+    if (it->task.IsCancelled()) {
+      if (it->is_high_res)
+        pending_high_res_tasks_--;
+      *it = std::move(queue_.c.back());
+      queue_.c.pop_back();
+      task_deleted = true;
+    } else {
+      it++;
+    }
+  }
+
+  // If we deleted something, re-enforce the heap property.
+  if (task_deleted)
+    std::make_heap(queue_.c.begin(), queue_.c.end(), queue_.comp);
 }
 
 void TaskQueueImpl::DelayedIncomingQueue::AsValueInto(
     TimeTicks now,
     trace_event::TracedValue* state) const {
-  QueueAsValueInto(queue_, now, state);
+  for (const Task& task : queue_.c) {
+    TaskAsValueInto(task, now, state);
+  }
 }
 
 }  // namespace internal
