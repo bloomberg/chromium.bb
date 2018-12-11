@@ -115,12 +115,13 @@ class TouchActionTest : public testing::Test {
   void RunShadowDOMTest(std::string file);
   void RunIFrameTest(std::string file);
   void SendTouchEvent(WebView*, WebInputEvent::Type, IntPoint client_point);
-  WebViewImpl* SetupTest(std::string file, TouchActionTrackingWebWidgetClient&);
+  WebViewImpl* SetupTest(std::string file, TouchActionTrackingWebWidgetClient*);
   void RunTestOnTree(ContainerNode* root,
                      WebView*,
                      TouchActionTrackingWebWidgetClient&);
 
   std::string base_url_;
+  std::unique_ptr<frame_test_helpers::TestWebViewClient> web_view_client_;
   frame_test_helpers::WebViewHelper web_view_helper_;
 };
 
@@ -137,7 +138,7 @@ void TouchActionTest::RunTouchActionTest(std::string file) {
   // turn them into persistent, stack allocated references. This
   // workaround is sufficient to handle this artificial test
   // scenario.
-  WebViewImpl* web_view = SetupTest(file, client);
+  WebViewImpl* web_view = SetupTest(file, &client);
 
   Persistent<Document> document =
       static_cast<Document*>(web_view->MainFrameImpl()->GetDocument());
@@ -150,7 +151,7 @@ void TouchActionTest::RunTouchActionTest(std::string file) {
 void TouchActionTest::RunShadowDOMTest(std::string file) {
   TouchActionTrackingWebWidgetClient client;
 
-  WebViewImpl* web_view = SetupTest(file, client);
+  WebViewImpl* web_view = SetupTest(file, &client);
 
   DummyExceptionStateForTesting es;
 
@@ -178,7 +179,7 @@ void TouchActionTest::RunShadowDOMTest(std::string file) {
 void TouchActionTest::RunIFrameTest(std::string file) {
   TouchActionTrackingWebWidgetClient client;
 
-  WebViewImpl* web_view = SetupTest(file, client);
+  WebViewImpl* web_view = SetupTest(file, &client);
   WebFrame* cur_frame = web_view->MainFrame()->FirstChild();
   ASSERT_TRUE(cur_frame);
 
@@ -196,13 +197,19 @@ void TouchActionTest::RunIFrameTest(std::string file) {
 
 WebViewImpl* TouchActionTest::SetupTest(
     std::string file,
-    TouchActionTrackingWebWidgetClient& client) {
+    TouchActionTrackingWebWidgetClient* client) {
+  if (client) {
+    web_view_client_ =
+        std::make_unique<frame_test_helpers::TestWebViewClient>(client);
+  } else {
+    web_view_client_.reset();
+  }
   url_test_helpers::RegisterMockedURLLoadFromBase(
       WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
       WebString::FromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + file, nullptr, nullptr, &client);
+      base_url_ + file, nullptr, web_view_client_.get());
 
   // Set size to enable hit testing, and avoid line wrapping for consistency
   // with browser.

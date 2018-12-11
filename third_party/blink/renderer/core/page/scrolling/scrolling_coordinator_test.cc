@@ -72,7 +72,7 @@ class ScrollingCoordinatorTest : public testing::Test,
   ScrollingCoordinatorTest()
       : ScopedPaintTouchActionRectsForTest(GetParam()),
         base_url_("http://www.test.com/") {
-    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    helper_.Initialize(nullptr, nullptr, &ConfigureSettings);
     GetWebView()->MainFrameWidget()->Resize(IntSize(320, 240));
 
     // macOS attaches main frame scrollbars to the VisualViewport so the

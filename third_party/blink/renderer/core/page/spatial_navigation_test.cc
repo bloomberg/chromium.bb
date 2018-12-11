@@ -611,7 +611,7 @@ TEST_F(SpatialNavigationTest, TopOfPinchedViewport) {
 
 TEST_F(SpatialNavigationTest, HasRemoteFrame) {
   frame_test_helpers::WebViewHelper helper;
-  helper.InitializeAndLoad("about:blank", nullptr, nullptr, nullptr, nullptr);
+  helper.InitializeAndLoad("about:blank");
 
   WebViewImpl* webview = helper.GetWebView();
   WebURL base_url = url_test_helpers::ToKURL("http://www.test.com/");

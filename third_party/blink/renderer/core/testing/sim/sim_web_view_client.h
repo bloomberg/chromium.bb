@@ -9,9 +9,11 @@
 
 namespace blink {
 
-class SimWebViewClient final : public frame_test_helpers::TestWebViewClient {
+class SimWebWidgetClient final
+    : public frame_test_helpers::TestWebWidgetClient {
  public:
-  explicit SimWebViewClient(content::LayerTreeViewDelegate* delegate);
+  // WebWidgetClient overrides.
+  void DidMeaningfulLayout(WebMeaningfulLayout) override;
 
   int VisuallyNonEmptyLayoutCount() const {
     return visually_non_empty_layout_count_;
@@ -23,6 +25,17 @@ class SimWebViewClient final : public frame_test_helpers::TestWebViewClient {
     return finished_loading_layout_count_;
   }
 
+ private:
+  int visually_non_empty_layout_count_ = 0;
+  int finished_parsing_layout_count_ = 0;
+  int finished_loading_layout_count_ = 0;
+};
+
+class SimWebViewClient final : public frame_test_helpers::TestWebViewClient {
+ public:
+  explicit SimWebViewClient(SimWebWidgetClient*,
+                            content::LayerTreeViewDelegate*);
+
   // WebViewClient implementation.
   WebView* CreateView(WebLocalFrame* opener,
                       const WebURLRequest&,
@@ -33,13 +46,18 @@ class SimWebViewClient final : public frame_test_helpers::TestWebViewClient {
                       WebSandboxFlags,
                       const SessionStorageNamespaceId&) override;
 
- private:
-  // WebWidgetClient overrides.
-  void DidMeaningfulLayout(WebMeaningfulLayout) override;
+  int VisuallyNonEmptyLayoutCount() const {
+    return widget_client_->VisuallyNonEmptyLayoutCount();
+  }
+  int FinishedParsingLayoutCount() const {
+    return widget_client_->FinishedParsingLayoutCount();
+  }
+  int FinishedLoadingLayoutCount() const {
+    return widget_client_->FinishedLoadingLayoutCount();
+  }
 
-  int visually_non_empty_layout_count_ = 0;
-  int finished_parsing_layout_count_ = 0;
-  int finished_loading_layout_count_ = 0;
+ private:
+  SimWebWidgetClient* const widget_client_;
 
   frame_test_helpers::WebViewHelper web_view_helper_;
 };

@@ -66,7 +66,7 @@ class FrameSerializerTest : public testing::Test,
  protected:
   void SetUp() override {
     // We want the images to load.
-    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
+    helper_.Initialize(nullptr, nullptr, &ConfigureSettings);
   }
 
   void TearDown() override {

@@ -288,6 +288,8 @@ WebRemoteFrameImpl* CreateRemoteChild(
 WebViewHelper::WebViewHelper() : web_view_(nullptr) {}
 
 WebViewHelper::~WebViewHelper() {
+  // Close the WebViewImpl before the WebViewClient/WebWidgetClient are
+  // destroyed.
   Reset();
 }
 
@@ -295,7 +297,6 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
-    TestWebWidgetClient* test_web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
   Reset();
 
@@ -312,10 +313,8 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
-  WebWidgetClient* web_widget_client = test_web_widget_client;
-  if (!web_widget_client)
-    web_widget_client = test_web_view_client_->WidgetClient();
-  blink::WebFrameWidget::CreateForMainFrame(web_widget_client, frame);
+  blink::WebFrameWidget::CreateForMainFrame(
+      test_web_view_client_->WidgetClient(), frame);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
@@ -326,20 +325,17 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 WebViewImpl* WebViewHelper::Initialize(
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
-    TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
   return InitializeWithOpener(nullptr, web_frame_client, web_view_client,
-                              web_widget_client, update_settings_func);
+                              update_settings_func);
 }
 
 WebViewImpl* WebViewHelper::InitializeAndLoad(
     const std::string& url,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
-    TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
-  Initialize(web_frame_client, web_view_client, web_widget_client,
-             update_settings_func);
+  Initialize(web_frame_client, web_view_client, update_settings_func);
 
   LoadFrame(GetWebView()->MainFrameImpl(), url);
 
@@ -398,12 +394,12 @@ void WebViewHelper::Resize(WebSize size) {
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                                       class WebView* opener) {
-  web_view_client =
+  test_web_view_client_ =
       CreateDefaultClientIfNeeded(web_view_client, owned_test_web_view_client_);
-  web_view_ = static_cast<WebViewImpl*>(
-      WebView::Create(web_view_client, web_view_client,
-                      /*is_hidden=*/false,
-                      /*compositing_enabled=*/true, opener));
+  web_view_ = static_cast<WebViewImpl*>(WebView::Create(
+      test_web_view_client_, test_web_view_client_->WidgetClient(),
+      /*is_hidden=*/false,
+      /*compositing_enabled=*/true, opener));
   web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies
@@ -414,12 +410,10 @@ void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
   web_view_->GetSettings()->SetLoadsImagesAutomatically(true);
 
   web_view_->MainFrameWidget()->SetLayerTreeView(
-      web_view_client->layer_tree_view());
+      test_web_view_client_->layer_tree_view());
   web_view_->SetDeviceScaleFactor(
-      web_view_client->GetScreenInfo().device_scale_factor);
+      test_web_view_client_->GetScreenInfo().device_scale_factor);
   web_view_->SetDefaultPageScaleLimits(1, 4);
-
-  test_web_view_client_ = web_view_client;
 }
 
 int TestWebFrameClient::loads_in_progress_ = 0;
@@ -536,7 +530,12 @@ TestWebWidgetClient::TestWebWidgetClient() {
   layer_tree_view_ = layer_tree_view_factory_.Initialize();
 }
 
-TestWebViewClient::TestWebViewClient(content::LayerTreeViewDelegate* delegate) {
+TestWebViewClient::TestWebViewClient(TestWebWidgetClient* widget_client,
+                                     content::LayerTreeViewDelegate* delegate) {
+  // NOTE: The WebWidgetClient* could possibly be |this|, so do not call any
+  // virtual methods on it here!
+  test_web_widget_client_ =
+      CreateDefaultClientIfNeeded(widget_client, owned_test_web_widget_client_);
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
 }
 

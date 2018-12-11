@@ -194,9 +194,10 @@ class AutoResizeWebViewClient : public frame_test_helpers::TestWebViewClient {
   TestData test_data_;
 };
 
-class TapHandlingWebViewClient : public frame_test_helpers::TestWebViewClient {
+class TapHandlingWebWidgetClient
+    : public frame_test_helpers::TestWebWidgetClient {
  public:
-  // WebViewClient methods
+  // WebWidgetClient overrides.
   void DidHandleGestureEvent(const WebGestureEvent& event,
                              bool event_cancelled) override {
     if (event.GetType() == WebInputEvent::kGestureTap) {
@@ -488,7 +489,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   // initialization code between WebView and WebLocalFrame creation.
   frame_test_helpers::TestWebViewClient web_view_client;
   WebViewImpl* web_view = static_cast<WebViewImpl*>(
-      WebView::Create(&web_view_client, &web_view_client,
+      WebView::Create(&web_view_client, web_view_client.WidgetClient(),
                       /*is_hidden=*/false,
                       /*compositing_enabled=*/true, nullptr));
   EXPECT_NE(SK_ColorBLUE, web_view->MainFrameWidget()->BackgroundColor());
@@ -2530,9 +2531,10 @@ IntSize WebViewTest::PrintICBSizeFromPageSize(const FloatSize& page_size) {
 }
 
 TEST_F(WebViewTest, ClientTapHandling) {
-  TapHandlingWebViewClient client;
+  TapHandlingWebWidgetClient client;
+  frame_test_helpers::TestWebViewClient view_client(&client);
   WebView* web_view =
-      web_view_helper_.InitializeAndLoad("about:blank", nullptr, &client);
+      web_view_helper_.InitializeAndLoad("about:blank", nullptr, &view_client);
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::GetStaticTimeStampForTests(),
                         kWebGestureDeviceTouchscreen);
@@ -3163,11 +3165,12 @@ class MiddleClickAutoscrollWebWidgetClient
 
 TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   MiddleClickAutoscrollWebWidgetClient client;
+  frame_test_helpers::TestWebViewClient view_client(&client);
   ScopedMiddleClickAutoscrollForTest middle_click_autoscroll(true);
   RegisterMockedHttpURLLoad("content-width-1000.html");
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
-      base_url_ + "content-width-1000.html", nullptr, nullptr, &client);
+      base_url_ + "content-width-1000.html", nullptr, &view_client);
   web_view->MainFrameWidget()->Resize(WebSize(100, 100));
   UpdateAllLifecyclePhases();
   RunPendingTasks();
@@ -3219,8 +3222,8 @@ static void ConfigueCompositingWebView(WebSettings* settings) {
 
 TEST_F(WebViewTest, ShowPressOnTransformedLink) {
   frame_test_helpers::WebViewHelper web_view_helper;
-  WebViewImpl* web_view_impl = web_view_helper.Initialize(
-      nullptr, nullptr, nullptr, &ConfigueCompositingWebView);
+  WebViewImpl* web_view_impl =
+      web_view_helper.Initialize(nullptr, nullptr, &ConfigueCompositingWebView);
 
   int page_width = 640;
   int page_height = 480;
@@ -3785,9 +3788,10 @@ class TouchEventHandlerWebWidgetClient
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
 TEST_F(WebViewTest, HasTouchEventHandlers) {
   TouchEventHandlerWebWidgetClient client;
+  frame_test_helpers::TestWebViewClient view_client(&client);
   std::string url = RegisterMockedHttpURLLoad("has_touch_event_handlers.html");
   WebViewImpl* web_view_impl =
-      web_view_helper_.InitializeAndLoad(url, nullptr, nullptr, &client);
+      web_view_helper_.InitializeAndLoad(url, nullptr, &view_client);
   const EventHandlerRegistry::EventHandlerClass kTouchEvent =
       EventHandlerRegistry::kTouchStartOrMoveEventBlocking;
 
@@ -4226,12 +4230,14 @@ class MojoTestHelper {
   MojoTestHelper(const String& test_file,
                  frame_test_helpers::WebViewHelper& web_view_helper)
       : web_view_helper_(web_view_helper) {
-    web_view_ = web_view_helper.InitializeAndLoad(
-        WebString(test_file).Utf8(), &web_frame_client_, &web_view_client_);
+    web_view_ = web_view_helper.InitializeAndLoad(WebString(test_file).Utf8(),
+                                                  &web_frame_client_);
   }
+
   ~MojoTestHelper() {
     web_view_helper_.Reset();  // Remove dependency on locally scoped client.
   }
+
   // Bind the test API to a service with the given |name| and repeating Bind
   // method given by |callback|.
   void BindTestApi(
@@ -4248,7 +4254,6 @@ class MojoTestHelper {
   WebViewImpl* web_view_;
   frame_test_helpers::WebViewHelper& web_view_helper_;
   frame_test_helpers::TestWebFrameClient web_frame_client_;
-  frame_test_helpers::TestWebViewClient web_view_client_;
   std::unique_ptr<service_manager::InterfaceProvider::TestApi> test_api_;
 };
 

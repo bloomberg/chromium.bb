@@ -88,8 +88,7 @@ class VisualViewportTest : public testing::Test,
       void (*override_settings_func)(WebSettings*) = nullptr) {
     if (!override_settings_func)
       override_settings_func = &ConfigureSettings;
-    helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
-                       override_settings_func);
+    helper_.Initialize(nullptr, &web_view_client_, override_settings_func);
     WebView()->SetDefaultPageScaleLimits(1, 4);
   }
 
@@ -97,8 +96,7 @@ class VisualViewportTest : public testing::Test,
       void (*override_settings_func)(WebSettings*) = nullptr) {
     if (!override_settings_func)
       override_settings_func = &ConfigureAndroidSettings;
-    helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
-                       override_settings_func);
+    helper_.Initialize(nullptr, &web_view_client_, override_settings_func);
     WebView()->SetDefaultPageScaleLimits(0.25f, 5);
   }
 
@@ -208,7 +206,7 @@ class VisualViewportTest : public testing::Test,
 
  protected:
   std::string base_url_;
-  frame_test_helpers::TestWebViewClient mock_web_view_client_;
+  frame_test_helpers::TestWebViewClient web_view_client_;
   frame_test_helpers::WebViewHelper helper_;
 };
 
@@ -1765,8 +1763,8 @@ TEST_P(VisualViewportTest, ElementVisibleBoundsInVisualViewport) {
 // Test that the various window.scroll and document.body.scroll properties and
 // methods don't change with the visual viewport.
 TEST_P(VisualViewportTest, visualViewportIsInert) {
-  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
-                                                  &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl =
+      helper_.Initialize(nullptr, nullptr, &ConfigureAndroidCompositing);
 
   web_view_impl->MainFrameWidget()->Resize(IntSize(200, 300));
 
@@ -2118,8 +2116,8 @@ TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
-  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
-                                                  &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl =
+      helper_.Initialize(nullptr, nullptr, &ConfigureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2192,8 +2190,8 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
-  WebViewImpl* web_view_impl = helper_.Initialize(
-      nullptr, nullptr, nullptr, &ConfigureAndroidNonCompositing);
+  WebViewImpl* web_view_impl =
+      helper_.Initialize(nullptr, nullptr, &ConfigureAndroidNonCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2262,8 +2260,8 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 // Make sure a browser control resize with background-attachment:not-fixed
 // background doesn't cause invalidation or layout.
 TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
-  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
-                                                  &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl =
+      helper_.Initialize(nullptr, nullptr, &ConfigureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2325,8 +2323,8 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 }
 
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
-  WebViewImpl* web_view_impl = helper_.Initialize(nullptr, nullptr, nullptr,
-                                                  &ConfigureAndroidCompositing);
+  WebViewImpl* web_view_impl =
+      helper_.Initialize(nullptr, nullptr, &ConfigureAndroidCompositing);
 
   int page_width = 320;
   int page_height = 590;

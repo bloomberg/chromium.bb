@@ -79,7 +79,7 @@ class RootScrollerTest : public testing::Test,
   }
 
   WebViewImpl* Initialize(const std::string& page_name,
-                          frame_test_helpers::TestWebViewClient* client) {
+                          frame_test_helpers::TestWebWidgetClient* client) {
     return InitializeInternal(base_url_ + page_name, client);
   }
 
@@ -178,8 +178,14 @@ class RootScrollerTest : public testing::Test,
 
   WebViewImpl* InitializeInternal(
       const std::string& url,
-      frame_test_helpers::TestWebViewClient* client) {
-    helper_.InitializeAndLoad(url, nullptr, client, nullptr,
+      frame_test_helpers::TestWebWidgetClient* client) {
+    if (client) {
+      view_client_ =
+          std::make_unique<frame_test_helpers::TestWebViewClient>(client);
+    } else {
+      view_client_.reset();
+    }
+    helper_.InitializeAndLoad(url, nullptr, view_client_.get(),
                               &ConfigureSettings);
 
     // Initialize browser controls to be shown.
@@ -197,6 +203,7 @@ class RootScrollerTest : public testing::Test,
   }
 
   std::string base_url_;
+  std::unique_ptr<frame_test_helpers::TestWebViewClient> view_client_;
   frame_test_helpers::WebViewHelper helper_;
   RuntimeEnabledFeatures::Backup features_backup_;
 };
@@ -235,8 +242,8 @@ TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
             EffectiveRootScroller(MainFrame()->GetDocument()));
 }
 
-class OverscrollTestWebViewClient
-    : public frame_test_helpers::TestWebViewClient {
+class OverscrollTestWebWidgetClient
+    : public frame_test_helpers::TestWebWidgetClient {
  public:
   MOCK_METHOD5(DidOverscroll,
                void(const WebFloatSize&,
@@ -249,7 +256,7 @@ class OverscrollTestWebViewClient
 // Tests that setting an element as the root scroller causes it to control url
 // bar hiding and overscroll.
 TEST_F(RootScrollerTest, TestSetRootScroller) {
-  OverscrollTestWebViewClient client;
+  OverscrollTestWebWidgetClient client;
   Initialize("root-scroller.html", &client);
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
