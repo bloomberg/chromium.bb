@@ -438,6 +438,158 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAroundListBullet) {
 // Tests that involve selection inside, outside, and spanning text controls.
 //
 
+TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextField) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" value="Inside text field.">
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let input = document.querySelector('input');
+      input.focus();
+      input.selectionStart = 0;
+      input.selectionEnd = input.value.length;
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const Element* input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  const auto ax_selection =
+      AXSelection::FromCurrentSelection(ToTextControl(*input));
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_input, ax_selection.Base().ContainerObject());
+  EXPECT_EQ(0, ax_selection.Base().TextOffset());
+  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_input, ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(18, ax_selection.Extent().TextOffset());
+}
+
+TEST_F(AccessibilitySelectionTest, FromCurrentSelectionInTextarea) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let textarea = document.querySelector('textarea');
+      textarea.focus();
+      textarea.selectionStart = 0;
+      textarea.selectionEnd = textarea.textLength;
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  const Element* textarea = GetDocument().QuerySelector("textarea");
+  ASSERT_NE(nullptr, textarea);
+  ASSERT_TRUE(IsTextControl(textarea));
+
+  const AXObject* ax_textarea = GetAXObjectByElementId("textarea");
+  ASSERT_NE(nullptr, ax_textarea);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_textarea->RoleValue());
+
+  const auto ax_selection =
+      AXSelection::FromCurrentSelection(ToTextControl(*textarea));
+  ASSERT_TRUE(ax_selection.IsValid());
+
+  EXPECT_TRUE(ax_selection.Base().IsTextPosition());
+  EXPECT_EQ(ax_textarea, ax_selection.Base().ContainerObject());
+  EXPECT_EQ(0, ax_selection.Base().TextOffset());
+  EXPECT_TRUE(ax_selection.Extent().IsTextPosition());
+  EXPECT_EQ(ax_textarea, ax_selection.Extent().ContainerObject());
+  EXPECT_EQ(53, ax_selection.Extent().TextOffset());
+}
+
+TEST_F(AccessibilitySelectionTest, ClearCurrentSelectionInTextField) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" value="Inside text field.">
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let input = document.querySelector('input');
+      input.focus();
+      input.selectionStart = 0;
+      input.selectionEnd = input.textLength;
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  SelectionInDOMTree selection = Selection().GetSelectionInDOMTree();
+  ASSERT_FALSE(selection.IsNone());
+
+  AXSelection::ClearCurrentSelection(GetDocument());
+  selection = Selection().GetSelectionInDOMTree();
+  EXPECT_TRUE(selection.IsNone());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  EXPECT_FALSE(ax_selection.IsValid());
+  EXPECT_EQ("", GetSelectionText(ax_selection));
+}
+
+TEST_F(AccessibilitySelectionTest, ClearCurrentSelectionInTextarea) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  SetBodyInnerHTML(R"HTML(
+      <textarea id="textarea">
+        Inside
+        textarea
+        field.
+      </textarea>
+      )HTML");
+
+  ASSERT_FALSE(AXSelection::FromCurrentSelection(GetDocument()).IsValid());
+
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let textarea = document.querySelector('textarea');
+      textarea.focus();
+      textarea.selectionStart = 0;
+      textarea.selectionEnd = textarea.textLength;
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  SelectionInDOMTree selection = Selection().GetSelectionInDOMTree();
+  ASSERT_FALSE(selection.IsNone());
+
+  AXSelection::ClearCurrentSelection(GetDocument());
+  selection = Selection().GetSelectionInDOMTree();
+  EXPECT_TRUE(selection.IsNone());
+
+  const auto ax_selection = AXSelection::FromCurrentSelection(GetDocument());
+  EXPECT_FALSE(ax_selection.IsValid());
+  EXPECT_EQ("", GetSelectionText(ax_selection));
+}
+
 TEST_F(AccessibilitySelectionTest, ForwardSelectionInTextField) {
   SetBodyInnerHTML(R"HTML(
       <input id="input" value="Inside text field.">
