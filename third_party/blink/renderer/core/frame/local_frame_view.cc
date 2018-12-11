@@ -2959,9 +2959,16 @@ void LocalFrameView::PushPaintArtifactToCompositor(
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kCompositingCommit);
 
+  PaintArtifactCompositor::ViewportProperties viewport_properties;
+  viewport_properties.page_scale = page->GetVisualViewport().GetPageScaleNode();
+
+  PaintArtifactCompositor::Settings settings;
+  settings.prefer_compositing_to_lcd_text =
+      page->GetSettings().GetPreferCompositingToLCDTextEnabled();
+
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), composited_element_ids,
-      page->GetVisualViewport().GetPageScaleNode());
+      viewport_properties, settings);
 }
 
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(

@@ -519,6 +519,7 @@ static bool SkipGroupIfEffectivelyInvisible(
 
 void PaintArtifactCompositor::LayerizeGroup(
     const PaintArtifact& paint_artifact,
+    const Settings& settings,
     Vector<PendingLayer>& pending_layers,
     const EffectPaintPropertyNode& current_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
@@ -579,8 +580,8 @@ void PaintArtifactCompositor::LayerizeGroup(
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
       wtf_size_t first_layer_in_subgroup = pending_layers.size();
-      LayerizeGroup(paint_artifact, pending_layers, *unaliased_subgroup,
-                    chunk_it);
+      LayerizeGroup(paint_artifact, settings, pending_layers,
+                    *unaliased_subgroup, chunk_it);
       // Now the chunk iterator stepped over the subgroup we just saw.
       // If the subgroup generated 2 or more layers then the subgroup must be
       // composited to satisfy grouping requirement.
@@ -625,11 +626,12 @@ void PaintArtifactCompositor::LayerizeGroup(
 
 void PaintArtifactCompositor::CollectPendingLayers(
     const PaintArtifact& paint_artifact,
+    const Settings& settings,
     Vector<PendingLayer>& pending_layers) {
   Vector<PaintChunk>::const_iterator cursor =
       paint_artifact.PaintChunks().begin();
-  LayerizeGroup(paint_artifact, pending_layers, EffectPaintPropertyNode::Root(),
-                cursor);
+  LayerizeGroup(paint_artifact, settings, pending_layers,
+                EffectPaintPropertyNode::Root(), cursor);
   DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
 }
 
@@ -753,7 +755,8 @@ cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
     CompositorElementIdSet& composited_element_ids,
-    TransformPaintPropertyNode* viewport_scale_node) {
+    const ViewportProperties& viewport_properties,
+    const Settings& settings) {
   DCHECK(root_layer_);
 
   // The tree will be null after detaching and this update can be ignored.
@@ -779,13 +782,13 @@ void PaintArtifactCompositor::Update(
   PropertyTreeManager property_tree_manager(
       *this, *host->property_trees(), root_layer_.get(), &layer_list_builder);
   Vector<PendingLayer, 0> pending_layers;
-  CollectPendingLayers(*paint_artifact, pending_layers);
+  CollectPendingLayers(*paint_artifact, settings, pending_layers);
 
   cc::LayerTreeHost::ViewportPropertyIds viewport_property_ids;
-  if (viewport_scale_node) {
+  if (viewport_properties.page_scale) {
     viewport_property_ids.page_scale_transform =
         property_tree_manager.EnsureCompositorPageScaleTransformNode(
-            viewport_scale_node);
+            viewport_properties.page_scale);
   }
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     host->RegisterViewportPropertyIds(viewport_property_ids);
