@@ -168,7 +168,6 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/writing_direction.h"
 #include "third_party/blink/renderer/core/exported/local_frame_client_impl.h"
-#include "third_party/blink/renderer/core/exported/shared_worker_repository_client_impl.h"
 #include "third_party/blink/renderer/core/exported/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/core/exported/web_dev_tools_agent_impl.h"
 #include "third_party/blink/renderer/core/exported/web_document_loader_impl.h"
@@ -229,6 +228,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
@@ -581,7 +581,7 @@ void WebLocalFrameImpl::SetContentSettingsClient(
 void WebLocalFrameImpl::InitializeSharedWorkerRepositoryClient(
     service_manager::InterfaceProvider* interface_provider) {
   shared_worker_repository_client_ =
-      SharedWorkerRepositoryClientImpl::Create(interface_provider);
+      SharedWorkerRepositoryClient::Create(interface_provider);
 }
 
 ScrollableArea* WebLocalFrameImpl::LayoutViewport() const {

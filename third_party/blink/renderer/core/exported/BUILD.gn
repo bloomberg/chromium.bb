@@ -7,8 +7,6 @@ blink_core_sources("exported") {
   sources = [
     "local_frame_client_impl.cc",
     "local_frame_client_impl.h",
-    "shared_worker_repository_client_impl.cc",
-    "shared_worker_repository_client_impl.h",
     "web_array_buffer.cc",
     "web_array_buffer_converter.cc",
     "web_associated_url_loader_impl.cc",

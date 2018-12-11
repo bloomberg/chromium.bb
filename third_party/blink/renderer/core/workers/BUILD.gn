@@ -47,6 +47,7 @@ blink_core_sources("workers") {
     "shared_worker_global_scope.h",
     "shared_worker_reporting_proxy.cc",
     "shared_worker_reporting_proxy.h",
+    "shared_worker_repository_client.cc",
     "shared_worker_repository_client.h",
     "shared_worker_thread.cc",
     "shared_worker_thread.h",
