@@ -36,6 +36,7 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/geolocation/omnibox_geolocation_config.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #include "ios/chrome/browser/ui/background_generator.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
