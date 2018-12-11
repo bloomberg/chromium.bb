@@ -18,7 +18,8 @@ class ElementVisibilityObserver;
 class HTMLMediaElement;
 
 // AutoplayPolicy is the class for handles autoplay logics.
-class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
+class CORE_EXPORT AutoplayPolicy final
+    : public GarbageCollected<AutoplayPolicy> {
  public:
   // Different autoplay policy types.
   enum class Type {
@@ -33,7 +34,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
     kDocumentUserActivationRequired,
   };
 
-  CORE_EXPORT static Type GetAutoplayPolicyForDocument(const Document&);
+  static Type GetAutoplayPolicyForDocument(const Document&);
 
   // Return true if the given |document| is allowed to play.
   // This method may check parent frames if allow=autoplay (Feature Policy) was
@@ -41,7 +42,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // and so on.
   // Otherwise, frames are allowed to play if they have been activated or, for
   // the main frame, if it has a high MEI.
-  CORE_EXPORT static bool IsDocumentAllowedToPlay(const Document&);
+  static bool IsDocumentAllowedToPlay(const Document&);
 
   // Returns true if the given |document| has high media engagement.
   static bool DocumentHasHighMediaEngagement(const Document&);
@@ -86,7 +87,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
 
   // Indicates the media element is or will autoplay because of being
   // muted.
-  CORE_EXPORT bool IsOrWillBeAutoplayingMuted() const;
+  bool IsOrWillBeAutoplayingMuted() const;
 
   // Unlock user gesture if a user gesture can be utilized.
   void TryUnlockingUserGesture();
