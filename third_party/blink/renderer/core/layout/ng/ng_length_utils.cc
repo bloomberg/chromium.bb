@@ -1015,7 +1015,7 @@ NGLogicalSize CalculateBorderBoxSize(
   if (node.Style().LogicalHeight().IsPercentOrCalc() ||
       node.Style().LogicalMinHeight().IsPercentOrCalc() ||
       node.Style().LogicalMaxHeight().IsPercentOrCalc() ||
-      (node.GetLayoutBox()->IsFlexItem() &&
+      (node.GetLayoutBox()->IsFlexItemIncludingNG() &&
        node.Style().FlexBasis().IsPercentOrCalc())) {
     // This call has the side-effect of setting HasPercentHeightDescendants
     // correctly.

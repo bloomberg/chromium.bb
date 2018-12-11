@@ -51,6 +51,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   const char* GetName() const override { return "LayoutFlexibleBox"; }
 
   bool IsFlexibleBox() const final { return true; }
+  bool IsFlexibleBoxIncludingNG() const final { return true; }
+  bool IsFlexibleBoxIncludingDeprecatedAndNG() const final { return true; }
   void UpdateBlockLayout(bool relayout_children) final;
 
   LayoutUnit BaselinePosition(

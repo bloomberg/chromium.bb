@@ -847,7 +847,7 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
   // In general we can't relayout a flex item independently of its container;
   // not only is the result incorrect due to the override size that's set, it
   // also messes with the cached main size on the flexbox.
-  if (object->IsBox() && ToLayoutBox(object)->IsFlexItem())
+  if (object->IsBox() && ToLayoutBox(object)->IsFlexItemIncludingNG())
     return false;
 
   // Inside multicol it's generally problematic to allow relayout roots. The

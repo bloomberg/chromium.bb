@@ -118,7 +118,7 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   // check can be removed if ::-webkit-media-controls is made
   // internal.
   if (child->GetNode()->IsMediaControls())
-    return child->IsFlexibleBox();
+    return child->IsFlexibleBoxIncludingNG();
 
   if (child->GetNode()->IsTextTrackContainer() ||
       child->GetNode()->IsMediaRemotingInterstitial() ||

@@ -286,7 +286,7 @@ void LayoutTable::UpdateLogicalWidth() {
   if (PreferredLogicalWidthsDirty())
     ComputePreferredLogicalWidths();
 
-  if (IsFlexItemIncludingDeprecated() || IsGridItem()) {
+  if (IsFlexItemIncludingDeprecatedAndNG() || IsGridItem()) {
     // TODO(jfernandez): Investigate whether the grid layout algorithm provides
     // all the logic needed and that we're not skipping anything essential due
     // to the early return here.

@@ -4493,7 +4493,7 @@ void LayoutBlockFlow::PositionSpannerDescendant(
 DISABLE_CFI_PERF
 bool LayoutBlockFlow::CreatesNewFormattingContext() const {
   if (IsInline() || IsFloatingOrOutOfFlowPositioned() || HasOverflowClip() ||
-      IsFlexItemIncludingDeprecated() || IsCustomItem() ||
+      IsFlexItemIncludingDeprecatedAndNG() || IsCustomItem() ||
       IsDocumentElement() || IsGridItem() || IsWritingModeRoot() ||
       StyleRef().Display() == EDisplay::kFlowRoot ||
       ShouldApplyPaintContainment() || ShouldApplyLayoutContainment() ||

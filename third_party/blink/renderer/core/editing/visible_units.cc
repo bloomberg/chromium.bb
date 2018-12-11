@@ -936,7 +936,8 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (!layout_object->IsSelectable())
     return false;
 
-  if (layout_object->IsLayoutBlockFlow() || layout_object->IsFlexibleBox() ||
+  if (layout_object->IsLayoutBlockFlow() ||
+      layout_object->IsFlexibleBoxIncludingNG() ||
       layout_object->IsLayoutGrid()) {
     if (ToLayoutBlock(layout_object)->LogicalHeight() ||
         anchor_node->GetDocument().body() == anchor_node) {
