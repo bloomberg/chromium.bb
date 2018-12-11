@@ -66,7 +66,6 @@ TEST_F(WorkQueueSetsTest, ChangeSetIndex) {
   WorkQueue* work_queue = NewTaskQueue("queue");
   size_t set = TaskQueue::kNormalPriority;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
-
   EXPECT_EQ(set, work_queue->work_queue_set_index());
 }
 
@@ -74,26 +73,18 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_QueueEmpty) {
   WorkQueue* work_queue = NewTaskQueue("queue");
   size_t set = TaskQueue::kNormalPriority;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_FALSE(
-      work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, OnTaskPushedToEmptyQueue) {
   WorkQueue* work_queue = NewTaskQueue("queue");
   size_t set = TaskQueue::kNormalPriority;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_FALSE(
-      work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
+  EXPECT_EQ(nullptr, work_queue_sets_->GetOldestQueueInSet(set));
 
   // Calls OnTaskPushedToEmptyQueue.
   work_queue->Push(FakeTaskWithEnqueueOrder(10));
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(work_queue, selected_work_queue);
+  EXPECT_EQ(work_queue, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_SingleTaskInSet) {
@@ -101,10 +92,7 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_SingleTaskInSet) {
   work_queue->Push(FakeTaskWithEnqueueOrder(10));
   size_t set = 1;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(work_queue, selected_work_queue);
+  EXPECT_EQ(work_queue, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, GetOldestQueueAndEnqueueOrderInSet) {
@@ -113,11 +101,9 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueAndEnqueueOrderInSet) {
   size_t set = 1;
   work_queue_sets_->ChangeSetIndex(work_queue, set);
 
-  WorkQueue* selected_work_queue;
   EnqueueOrder enqueue_order;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueAndEnqueueOrderInSet(
-      set, &selected_work_queue, &enqueue_order));
-  EXPECT_EQ(work_queue, selected_work_queue);
+  EXPECT_EQ(work_queue, work_queue_sets_->GetOldestQueueAndEnqueueOrderInSet(
+                            set, &enqueue_order));
   EXPECT_EQ(10u, enqueue_order);
 }
 
@@ -132,10 +118,7 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet) {
   work_queue_sets_->ChangeSetIndex(queue1, set);
   work_queue_sets_->ChangeSetIndex(queue2, set);
   work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue3, selected_work_queue);
+  EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, OnPopQueue) {
@@ -150,16 +133,11 @@ TEST_F(WorkQueueSetsTest, OnPopQueue) {
   work_queue_sets_->ChangeSetIndex(queue1, set);
   work_queue_sets_->ChangeSetIndex(queue2, set);
   work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 
   queue2->PopTaskForTesting();
   work_queue_sets_->OnPopQueue(queue2);
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
@@ -173,16 +151,11 @@ TEST_F(WorkQueueSetsTest, OnPopQueue_QueueBecomesEmpty) {
   work_queue_sets_->ChangeSetIndex(queue1, set);
   work_queue_sets_->ChangeSetIndex(queue2, set);
   work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue3, selected_work_queue);
+  EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
 
   queue3->PopTaskForTesting();
   work_queue_sets_->OnPopQueue(queue3);
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest,
@@ -197,10 +170,7 @@ TEST_F(WorkQueueSetsTest,
   work_queue_sets_->ChangeSetIndex(queue1, set);
   work_queue_sets_->ChangeSetIndex(queue2, set);
   work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet_RemoveQueue) {
@@ -215,10 +185,7 @@ TEST_F(WorkQueueSetsTest, GetOldestQueueInSet_MultipleAgesInSet_RemoveQueue) {
   work_queue_sets_->ChangeSetIndex(queue2, set);
   work_queue_sets_->ChangeSetIndex(queue3, set);
   work_queue_sets_->RemoveQueue(queue3);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, ChangeSetIndex_Complex) {
@@ -236,25 +203,12 @@ TEST_F(WorkQueueSetsTest, ChangeSetIndex_Complex) {
   work_queue_sets_->ChangeSetIndex(queue2, set1);
   work_queue_sets_->ChangeSetIndex(queue3, set2);
   work_queue_sets_->ChangeSetIndex(queue4, set2);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(
-      work_queue_sets_->GetOldestQueueInSet(set1, &selected_work_queue));
-  EXPECT_EQ(queue2, selected_work_queue);
-
-  EXPECT_TRUE(
-      work_queue_sets_->GetOldestQueueInSet(set2, &selected_work_queue));
-  EXPECT_EQ(queue4, selected_work_queue);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set1));
+  EXPECT_EQ(queue4, work_queue_sets_->GetOldestQueueInSet(set2));
 
   work_queue_sets_->ChangeSetIndex(queue4, set1);
-
-  EXPECT_TRUE(
-      work_queue_sets_->GetOldestQueueInSet(set1, &selected_work_queue));
-  EXPECT_EQ(queue4, selected_work_queue);
-
-  EXPECT_TRUE(
-      work_queue_sets_->GetOldestQueueInSet(set2, &selected_work_queue));
-  EXPECT_EQ(queue3, selected_work_queue);
+  EXPECT_EQ(queue4, work_queue_sets_->GetOldestQueueInSet(set1));
+  EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set2));
 }
 
 TEST_F(WorkQueueSetsTest, IsSetEmpty_NoWork) {
@@ -291,14 +245,10 @@ TEST_F(WorkQueueSetsTest, BlockQueuesByFence) {
 
   size_t set = TaskQueue::kControlPriority;
 
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(selected_work_queue, queue1);
+  EXPECT_EQ(queue1, work_queue_sets_->GetOldestQueueInSet(set));
 
   queue1->InsertFence(EnqueueOrder::blocking_fence());
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(selected_work_queue, queue2);
+  EXPECT_EQ(queue2, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 TEST_F(WorkQueueSetsTest, PushNonNestableTaskToFront) {
@@ -312,15 +262,10 @@ TEST_F(WorkQueueSetsTest, PushNonNestableTaskToFront) {
   work_queue_sets_->ChangeSetIndex(queue1, set);
   work_queue_sets_->ChangeSetIndex(queue2, set);
   work_queue_sets_->ChangeSetIndex(queue3, set);
-
-  WorkQueue* selected_work_queue;
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue3, selected_work_queue);
+  EXPECT_EQ(queue3, work_queue_sets_->GetOldestQueueInSet(set));
 
   queue1->PushNonNestableTaskToFront(FakeNonNestableTaskWithEnqueueOrder(2));
-
-  EXPECT_TRUE(work_queue_sets_->GetOldestQueueInSet(set, &selected_work_queue));
-  EXPECT_EQ(queue1, selected_work_queue);
+  EXPECT_EQ(queue1, work_queue_sets_->GetOldestQueueInSet(set));
 }
 
 }  // namespace internal

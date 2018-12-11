@@ -54,12 +54,11 @@ class BASE_EXPORT WorkQueueSets {
   void OnQueueBlocked(WorkQueue* work_queue);
 
   // O(1)
-  bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;
+  WorkQueue* GetOldestQueueInSet(size_t set_index) const;
 
   // O(1)
-  bool GetOldestQueueAndEnqueueOrderInSet(
+  WorkQueue* GetOldestQueueAndEnqueueOrderInSet(
       size_t set_index,
-      WorkQueue** out_work_queue,
       EnqueueOrder* out_enqueue_order) const;
 
   // O(1)
