@@ -244,11 +244,14 @@ v8::Local<v8::Object> ModuleSystemTestEnvironment::CreateGlobal(
     const std::string& name) {
   v8::EscapableHandleScope handle_scope(isolate_);
   v8::Local<v8::Object> object = v8::Object::New(isolate_);
-  isolate_->GetCurrentContext()->Global()->Set(
-      v8::String::NewFromUtf8(isolate_, name.c_str(),
-                              v8::NewStringType::kInternalized)
-          .ToLocalChecked(),
-      object);
+  isolate_->GetCurrentContext()
+      ->Global()
+      ->Set(context_->v8_context(),
+            v8::String::NewFromUtf8(isolate_, name.c_str(),
+                                    v8::NewStringType::kInternalized)
+                .ToLocalChecked(),
+            object)
+      .ToChecked();
   return handle_scope.Escape(object);
 }
 

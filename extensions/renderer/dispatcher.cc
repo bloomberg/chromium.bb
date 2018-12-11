@@ -178,7 +178,10 @@ class ChromeNativeHandler : public ObjectBackedNativeHandler {
                                 v8::NewStringType::kInternalized)
             .ToLocalChecked());
     v8::Local<v8::Object> global(context()->v8_context()->Global());
-    v8::Local<v8::Value> chrome(global->Get(chrome_string));
+    // TODO(crbug.com/913942): Possibly replace ToLocalChecked here with
+    // actual error handling.
+    v8::Local<v8::Value> chrome(
+        global->Get(context()->v8_context(), chrome_string).ToLocalChecked());
     if (chrome->IsUndefined()) {
       chrome = v8::Object::New(context()->isolate());
       global->Set(context()->v8_context(), chrome_string, chrome).ToChecked();
