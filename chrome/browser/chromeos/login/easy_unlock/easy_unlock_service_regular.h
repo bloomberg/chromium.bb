@@ -19,7 +19,6 @@
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/network_request_error.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -28,8 +27,6 @@ class ListValue;
 }  // namespace base
 
 namespace cryptauth {
-class CryptAuthDeviceManager;
-class CryptAuthEnrollmentManager;
 class RemoteDeviceLoader;
 }  // namespace cryptauth
 
@@ -52,7 +49,6 @@ class EasyUnlockNotificationController;
 class EasyUnlockServiceRegular
     : public EasyUnlockService,
       public proximity_auth::ScreenlockBridge::Observer,
-      public cryptauth::CryptAuthDeviceManager::Observer,
       public device_sync::DeviceSyncClient::Observer,
       public multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
@@ -76,10 +72,6 @@ class EasyUnlockServiceRegular
   // Loads the RemoteDevice instances that will be supplied to
   // ProximityAuthSystem.
   void LoadRemoteDevices();
-
-  // Called when |remote_device_loader_| completes.
-  void OnRemoteDevicesLoaded(
-      const multidevice::RemoteDeviceList& remote_devices);
 
   void UseLoadedRemoteDevices(
       const multidevice::RemoteDeviceRefList& remote_devices);
@@ -110,12 +102,6 @@ class EasyUnlockServiceRegular
 
   void OnWillFinalizeUnlock(bool success) override;
   void OnSuspendDoneInternal() override;
-
-  // CryptAuthDeviceManager::Observer:
-  void OnSyncStarted() override;
-  void OnSyncFinished(cryptauth::CryptAuthDeviceManager::SyncResult sync_result,
-                      cryptauth::CryptAuthDeviceManager::DeviceChangeResult
-                          device_change_result) override;
 
   // device_sync::DeviceSyncClient::Observer:
   void OnReady() override;
@@ -149,22 +135,11 @@ class EasyUnlockServiceRegular
       EasyUnlockScreenlockStateHandler::HardlockState state_on_success,
       bool success);
 
-  // Returns the CryptAuthEnrollmentManager, which manages the profile's
-  // CryptAuth enrollment.
-  cryptauth::CryptAuthEnrollmentManager* GetCryptAuthEnrollmentManager();
-
-  // Returns the CryptAuthEnrollmentManager, which manages the profile's
-  // synced devices from CryptAuth.
-  cryptauth::CryptAuthDeviceManager* GetCryptAuthDeviceManager();
-
   // Refreshes the ChromeOS cryptohome keys if the user has reauthed recently.
   // Otherwise, hardlock the device.
   void RefreshCryptohomeKeysIfPossible();
 
   multidevice::RemoteDeviceRefList GetUnlockKeys();
-
-  ScopedObserver<cryptauth::CryptAuthDeviceManager, EasyUnlockServiceRegular>
-      scoped_crypt_auth_device_manager_observer_;
 
   // True if the user just unlocked the screen using Easy Unlock. Reset once
   // the screen unlocks. Used to distinguish Easy Unlock-powered unlocks from

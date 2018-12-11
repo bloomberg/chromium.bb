@@ -547,13 +547,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
                            remote_device.GetDeviceId());
   }
 
-  // If |chromeos::features::kMultiDeviceApi| is enabled, both a remote device
-  // and local device are expected, and this service cannot continue unless
-  // both are present.
-  //
-  // If the flag is disabled, just one device, the remote device, is expected to
-  // be passed along -- if a second device is present, it can simply be ignored.
-  //
+  // Both a remote device and local device are expected, and this service cannot
+  // continue unless both are present.
   // TODO(crbug.com/856380): The remote and local devices need to be passed in a
   // less hacky way.
   if (remote_devices.size() > 2u) {
@@ -565,8 +560,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      remote_devices.size() != 2u) {
+  if (remote_devices.size() != 2u) {
     PA_LOG(ERROR) << "Expected a device list of size 2, received list of size "
                   << remote_devices.size();
     SetHardlockStateForUser(account_id,
@@ -622,10 +616,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     return;
   }
 
-  // Likewise, a similar issue could exist when the kMultiDeviceApi flag is
-  // enabled.
-  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
-      !local_device) {
+  if (!local_device) {
     SetHardlockStateForUser(account_id,
                             EasyUnlockScreenlockStateHandler::NO_PAIRING);
     return;
