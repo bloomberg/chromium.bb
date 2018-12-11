@@ -42,6 +42,16 @@
                              base::TimeDelta::FromDays(1), 50)
 
 namespace resource_coordinator {
+namespace {
+
+// Returns an int64_t number as label_id or query_id. The number is generated
+// incrementally from 1.
+int64_t NewInt64ForLabelIdOrQueryId() {
+  static int64_t id = 0;
+  return ++id;
+}
+
+}  // namespace
 
 // Per-WebContents helper class that observes its WebContents, notifying
 // TabActivityWatcher when interesting events occur. Also provides
@@ -56,7 +66,7 @@ class TabActivityWatcher::WebContentsData
   // Calculates the tab reactivation score for a background tab. Returns nullopt
   // if the score could not be calculated, e.g. because the tab is in the
   // foreground.
-  base::Optional<float> CalculateReactivationScore(bool also_log_to_ukm) {
+  base::Optional<float> CalculateReactivationScore() {
     if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
       return base::nullopt;
 
@@ -65,34 +75,22 @@ class TabActivityWatcher::WebContentsData
     const auto mru = GetMRUFeatures();
     const int lru_index = mru.total - mru.index - 1;
 
-    // If the least recently used index is greater than both numbers, then we
-    // don't need to score or log the tab; directly return instead.
-    if (lru_index >= GetNumOldestTabsToScoreWithTabRanker() &&
-        lru_index >= GetNumOldestTabsToLogWithTabRanker()) {
+    // If the least recently used index is greater than or equal to N, which
+    // means the tab is not in the oldest N list, we should simply skip it.
+    // The N is defaulted as kMaxInt so that all tabs are scored.
+    if (lru_index >= GetNumOldestTabsToScoreWithTabRanker())
       return base::nullopt;
-    }
 
     base::Optional<tab_ranker::TabFeatures> tab = GetTabFeatures(mru);
     if (!tab.has_value())
       return base::nullopt;
 
-    if (also_log_to_ukm && lru_index < GetNumOldestTabsToLogWithTabRanker()) {
-      // A new label_id_ is generated for this query.
-      // The same label_id_ will be logged with ForegroundedOrClosed event later
-      // on so that TabFeatures can be paired with ForegroundedOrClosed.
-      label_id_ = static_cast<int64_t>(
-          base::RandGenerator(std::numeric_limits<uint64_t>::max() - 1) + 1);
-      TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
-          ukm_source_id_, tab.value(), web_contents(), label_id_);
-    }
-
-    if (lru_index < GetNumOldestTabsToScoreWithTabRanker()) {
-      float score;
-      if (TabActivityWatcher::GetInstance()->predictor_.ScoreTab(
-              tab.value(), &score) == tab_ranker::TabRankerResult::kSuccess)
-        return score;
-    }
-
+    float score = 0.0f;
+    const tab_ranker::TabRankerResult result =
+        TabActivityWatcher::GetInstance()->predictor_.ScoreTab(tab.value(),
+                                                               &score);
+    if (result == tab_ranker::TabRankerResult::kSuccess)
+      return score;
     return base::nullopt;
   }
 
@@ -162,6 +160,24 @@ class TabActivityWatcher::WebContentsData
       TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
           ukm_source_id_, tab.value(), web_contents(), 0);
     }
+  }
+
+  // Logs current TabFeatures; skips if current tab is foregrounded.
+  void LogCurrentTabFeatures() {
+    if (backgrounded_time_.is_null())
+      return;
+    const base::Optional<tab_ranker::TabFeatures> tab =
+        GetTabFeatures(mru_features_);
+    if (!tab.has_value())
+      return;
+
+    // A new label_id_ is generated for this query.
+    // The same label_id_ will be logged with ForegroundedOrClosed event later
+    // on so that TabFeatures can be paired with ForegroundedOrClosed.
+    label_id_ = NewInt64ForLabelIdOrQueryId();
+
+    TabActivityWatcher::GetInstance()->tab_metrics_logger_->LogTabMetrics(
+        ukm_source_id_, tab.value(), web_contents(), label_id_);
   }
 
   // Sets foregrounded_time_ to NowTicks() so this becomes the
@@ -501,17 +517,35 @@ TabActivityWatcher::TabActivityWatcher()
 TabActivityWatcher::~TabActivityWatcher() = default;
 
 base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
-    content::WebContents* web_contents,
-    bool also_log_to_ukm) {
+    content::WebContents* web_contents) {
   WebContentsData* web_contents_data =
       WebContentsData::FromWebContents(web_contents);
   if (!web_contents_data)
     return base::nullopt;
-  return web_contents_data->CalculateReactivationScore(also_log_to_ukm);
+  return web_contents_data->CalculateReactivationScore();
 }
 
-void TabActivityWatcher::SetQueryIdForTabMetricsLogger(int64_t query_id) {
-  tab_metrics_logger_->set_query_id(query_id);
+void TabActivityWatcher::LogOldestNTabFeatures() {
+  const int oldest_n_to_log = GetNumOldestTabsToLogWithTabRanker();
+  if (oldest_n_to_log <= 0)
+    return;
+
+  // Set query_id so that all TabFeatures logged in this query can be joined.
+  tab_metrics_logger_->set_query_id(NewInt64ForLabelIdOrQueryId());
+
+  std::vector<WebContentsData*> web_contents_data = GetSortedWebContentsData();
+  const int contents_data_size = web_contents_data.size();
+  // Only log oldest n tabs which are tabs
+  // from web_contents_data.size() - 1
+  // to web_contents_data.size() - oldest_n_to_log.
+  const int last_index_to_log =
+      std::max(contents_data_size - oldest_n_to_log, 0);
+  for (int i = contents_data_size - 1; i >= last_index_to_log; --i) {
+    // Set correct mru_features_.
+    web_contents_data[i]->mru_features_.index = i;
+    web_contents_data[i]->mru_features_.total = contents_data_size;
+    web_contents_data[i]->LogCurrentTabFeatures();
+  }
 }
 
 void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
@@ -596,37 +630,41 @@ TabActivityWatcher* TabActivityWatcher::GetInstance() {
   return instance.get();
 }
 
+std::vector<TabActivityWatcher::WebContentsData*>
+TabActivityWatcher::GetSortedWebContentsData() {
+  // Put all web_contents_data into a vector.
+  std::vector<WebContentsData*> web_contents_data;
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    // Ignore incognito browsers.
+    if (browser->profile()->IsOffTheRecord())
+      continue;
+
+    const int count = browser->tab_strip_model()->count();
+
+    for (int i = 0; i < count; i++) {
+      auto* const other = WebContentsData::FromWebContents(
+          browser->tab_strip_model()->GetWebContentsAt(i));
+      if (other)
+        web_contents_data.push_back(other);
+    }
+  }
+
+  // Sort all web_contents_data by MoreRecentlyUsed.
+  std::sort(web_contents_data.begin(), web_contents_data.end(),
+            WebContentsData::MoreRecentlyUsed);
+  return web_contents_data;
+}
 // When a WillCloseAllTabs is invoked, all MRU index of that tab_strip_model
 // is calculated and saved at that point.
 void TabActivityWatcher::WillCloseAllTabs(TabStripModel* tab_strip_model) {
   if (tab_strip_model) {
-    // Put all web_contents_data into a vector.
-    std::vector<WebContentsData*> web_contents_data;
-    for (Browser* browser : *BrowserList::GetInstance()) {
-      // Ignore incognito browsers.
-      if (browser->profile()->IsOffTheRecord())
-        continue;
-
-      const int count = browser->tab_strip_model()->count();
-
-      for (int i = 0; i < count; i++) {
-        auto* other = WebContentsData::FromWebContents(
-            browser->tab_strip_model()->GetWebContentsAt(i));
-        if (other)
-          web_contents_data.push_back(other);
-      }
-    }
-
-    // Sort all web_contents_data by MoreRecentlyUsed.
-    std::sort(web_contents_data.begin(), web_contents_data.end(),
-              WebContentsData::MoreRecentlyUsed);
-
+    std::vector<WebContentsData*> web_contents_data =
+        GetSortedWebContentsData();
     // Assign index for each web_contents_data.
     const std::size_t total_tabs = web_contents_data.size();
     for (std::size_t i = 0; i < total_tabs; ++i) {
-      WebContentsData* const contents_i = web_contents_data[i];
-      contents_i->mru_features_.index = i;
-      contents_i->mru_features_.total = total_tabs;
+      web_contents_data[i]->mru_features_.index = i;
+      web_contents_data[i]->mru_features_.total = total_tabs;
     }
 
     // Add will_be_closed tabs to |all_closing_tabs_| set.
