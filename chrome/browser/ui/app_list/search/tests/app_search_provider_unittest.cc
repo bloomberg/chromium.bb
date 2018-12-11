@@ -356,9 +356,6 @@ TEST_F(AppSearchProviderTest, FetchRecommendations) {
 }
 
 TEST_F(AppSearchProviderTest, FetchRecommendationsWithContinueReading) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(app_list_features::kEnableContinueReading);
-
   constexpr char kLocalSessionTag[] = "local";
   constexpr char kLocalSessionName[] = "LocalSessionName";
   constexpr char kForeignSessionTag1[] = "foreign1";

@@ -475,9 +475,6 @@ class InternalDataSource : public AppSearchProvider::DataSource {
   void AddApps(AppSearchProvider::Apps* apps) override {
     for (const auto& internal_app : GetInternalAppList(profile())) {
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading)) {
-        if (!app_list_features::IsContinueReadingEnabled())
-          continue;
-
         sync_sessions::SessionSyncService* service =
             SessionSyncServiceFactory::GetInstance()->GetForProfile(profile());
         if (!service || (!service->GetOpenTabsUIDelegate() &&

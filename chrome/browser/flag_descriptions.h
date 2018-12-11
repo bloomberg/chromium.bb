@@ -1973,9 +1973,6 @@ extern const char kEnableBackgroundBlurDescription[];
 extern const char kEnableChromeOsAccountManagerName[];
 extern const char kEnableChromeOsAccountManagerDescription[];
 
-extern const char kEnableContinueReadingName[];
-extern const char kEnableContinueReadingDescription[];
-
 extern const char kEnableDiscoverAppName[];
 extern const char kEnableDiscoverAppDescription[];
 
