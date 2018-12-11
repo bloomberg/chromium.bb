@@ -137,8 +137,7 @@ promise_test(() => {
     const yellowStyleSheet = values[4];
 
     // Lists of style sheets can be created, assigned and read.
-    const whiteList = new StyleSheetList([whiteStyleSheet]);
-    document.adoptedStyleSheets = whiteList;
+    document.adoptedStyleSheets = [whiteStyleSheet];
     // alternate stylesheets aren't applied when title != current preferable name
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
@@ -146,7 +145,7 @@ promise_test(() => {
     assert_equals(getComputedStyle(whiteSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
 
-    document.adoptedStyleSheets = new StyleSheetList([greenStyleSheet, blueStyleSheet]);
+    document.adoptedStyleSheets = [greenStyleSheet, blueStyleSheet];
     // disabled stylesheets aren't applied
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 128, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
@@ -154,8 +153,7 @@ promise_test(() => {
     assert_equals(getComputedStyle(whiteSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
 
-    const orangeList = new StyleSheetList([redStyleSheet, yellowStyleSheet]);
-    document.adoptedStyleSheets = orangeList;
+    document.adoptedStyleSheets = [redStyleSheet, yellowStyleSheet];
 
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
@@ -163,7 +161,7 @@ promise_test(() => {
     assert_equals(getComputedStyle(whiteSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(yellowSpan).color, "rgb(255, 255, 0)");
 
-    document.adoptedStyleSheets = new StyleSheetList([redStyleSheet, yellowStyleSheet, greenStyleSheet, blueStyleSheet]);
+    document.adoptedStyleSheets = [redStyleSheet, yellowStyleSheet, greenStyleSheet, blueStyleSheet];
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 128, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
@@ -179,29 +177,28 @@ promise_test(() => {
     const blueStyleSheet = values[2];
     const whiteStyleSheet = values[3];
     const yellowStyleSheet = values[4];
-    shadowRoot.adoptedStyleSheets = new StyleSheetList([whiteStyleSheet]);
+    shadowRoot.adoptedStyleSheets = [whiteStyleSheet];
     assert_equals(getComputedStyle(greenShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(blueShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowShadowSpan).color, "rgb(0, 0, 0)");
 
-    shadowRoot.adoptedStyleSheets = new StyleSheetList([greenStyleSheet, blueStyleSheet]);
+    shadowRoot.adoptedStyleSheets = [greenStyleSheet, blueStyleSheet];
     assert_equals(getComputedStyle(greenShadowSpan).color, "rgb(0, 128, 0)");
     assert_equals(getComputedStyle(redShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(blueShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowShadowSpan).color, "rgb(0, 0, 0)");
 
-    const orangeList = new StyleSheetList([redStyleSheet, yellowStyleSheet]);
-    shadowRoot.adoptedStyleSheets = orangeList;
+    shadowRoot.adoptedStyleSheets = [redStyleSheet, yellowStyleSheet];
     assert_equals(getComputedStyle(greenShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redShadowSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueShadowSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteShadowSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(yellowShadowSpan).color, "rgb(255, 255, 0)");
 
-    shadowRoot.adoptedStyleSheets = new StyleSheetList([redStyleSheet, yellowStyleSheet, greenStyleSheet, blueStyleSheet]);
+    shadowRoot.adoptedStyleSheets = [redStyleSheet, yellowStyleSheet, greenStyleSheet, blueStyleSheet];
     assert_equals(getComputedStyle(greenShadowSpan).color, "rgb(0, 128, 0)");
     assert_equals(getComputedStyle(redShadowSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueShadowSpan).color, "rgb(0, 0, 0)");
@@ -214,7 +211,7 @@ promise_test(() => {
   const plainSheet = new CSSStyleSheet();
   const redStyleSheetPromise = plainSheet.replace(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
-    document.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
+    document.adoptedStyleSheets = [redStyleSheet];
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
@@ -248,8 +245,8 @@ promise_test(() => {
   const plainSheet = new CSSStyleSheet();
   const redStyleSheetPromise = plainSheet.replace(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
-    document.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
-    shadowRoot.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
+    document.adoptedStyleSheets = [redStyleSheet];
+    shadowRoot.adoptedStyleSheets = [redStyleSheet];
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
@@ -291,14 +288,14 @@ promise_test(() => {
   const plainSheet = new CSSStyleSheet();
   const redStyleSheetPromise = plainSheet.replace(redStyleTexts[0]);
   return redStyleSheetPromise.then(function(redStyleSheet) {
-    assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([redStyleSheet]); });
+    assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = [redStyleSheet]; });
     assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowIframeSpan).color, "rgb(0, 0, 0)");
 
-    document.adoptedStyleSheets = new StyleSheetList([redStyleSheet]);
+    document.adoptedStyleSheets = [redStyleSheet];
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
@@ -327,7 +324,7 @@ promise_test(() => {
 
   // Make sure both the main Document and the iframe are not styled
   const emptyStyleSheet = new CSSStyleSheet();
-  document.adoptedStyleSheets = new StyleSheetList([emptyStyleSheet]);
+  document.adoptedStyleSheets = [emptyStyleSheet];
   assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
   assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
   assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
@@ -343,14 +340,14 @@ promise_test(() => {
   const iframePlainSheet = new iframe.contentWindow.CSSStyleSheet();
   const iframeRedStyleSheetPromise = iframePlainSheet.replace(redStyleTexts[0]);
   return iframeRedStyleSheetPromise.then(function(iframeRedStyleSheet) {
-    assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([iframeRedStyleSheet]); });
+    assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = [iframeRedStyleSheet]; });
     assert_equals(getComputedStyle(greenSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(blueSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(whiteSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(yellowSpan).color, "rgb(0, 0, 0)");
 
-    iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([iframeRedStyleSheet]);
+    iframe.contentDocument.adoptedStyleSheets = [iframeRedStyleSheet];
     assert_equals(getComputedStyle(greenIframeSpan).color, "rgb(0, 0, 0)");
     assert_equals(getComputedStyle(redIframeSpan).color, "rgb(255, 0, 0)");
     assert_equals(getComputedStyle(blueIframeSpan).color, "rgb(0, 0, 0)");
@@ -380,7 +377,7 @@ const nonConstructedStyleSheet = nonConstructedStyle.sheet;
 
 test(() => {
   assert_equals(getComputedStyle(divNonConstructed).color, "rgb(0, 0, 0)");
-  assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([nonConstructedStyleSheet]); });
+  assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = [nonConstructedStyleSheet]; });
 }, 'Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet is in the same document tree as the AdoptedStyleSheets');
 
 test(() => {
@@ -391,7 +388,7 @@ test(() => {
   iframe.contentDocument.body.appendChild(iframeDiv);
 
   assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
-  assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = new StyleSheetList([nonConstructedStyleSheet]); });
+  assert_throws('NotAllowedError', () => { iframe.contentDocument.adoptedStyleSheets = [nonConstructedStyleSheet]; });
   assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
 
   iframeStyle = iframe.contentDocument.createElement("style");
@@ -403,7 +400,7 @@ test(() => {
   divNonConstructed.appendChild(nonConstructedSpan);
 
   assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
-  assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = new StyleSheetList([iframeStyleSheet]); });
+  assert_throws('NotAllowedError', () => { document.adoptedStyleSheets = [iframeStyleSheet]; });
   assert_equals(getComputedStyle(iframeDiv).color, "rgb(0, 0, 0)");
 }, 'Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees');
 
@@ -422,7 +419,7 @@ test(() => {
   shadowDiv.classList.add("red");
   // Create empty stylesheet.
   const sheet = new CSSStyleSheet();
-  span.shadowRoot.adoptedStyleSheets = new StyleSheetList([sheet]);
+  span.shadowRoot.adoptedStyleSheets = [sheet];
   assert_equals(getComputedStyle(shadowDiv).color, "rgb(0, 0, 0)");
   // Replace the stylesheet text that will color it red.
   sheet.replaceSync(redStyleTexts[0]);
@@ -449,7 +446,7 @@ promise_test(() => {
   thirdSection.appendChild(span);
   const shadowDiv = attachShadowDiv(span);
   const sheet = new CSSStyleSheet();
-  span.shadowRoot.adoptedStyleSheets = new StyleSheetList([sheet]);
+  span.shadowRoot.adoptedStyleSheets = [sheet];
   assert_equals(getComputedStyle(shadowDiv).color, "rgb(0, 0, 0)");
   // Replace and assert that the imported rule is applied.
   const sheet_promise = sheet.replace(import_text);

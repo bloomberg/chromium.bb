@@ -38,14 +38,11 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
 
  public:
   static StyleSheetList* Create();
-  static StyleSheetList* Create(const HeapVector<Member<CSSStyleSheet>>&,
-                                ExceptionState&);
 
   static StyleSheetList* Create(TreeScope* tree_scope) {
     return MakeGarbageCollected<StyleSheetList>(tree_scope);
   }
 
-  explicit StyleSheetList(const HeapVector<Member<CSSStyleSheet>>&);
   explicit StyleSheetList(TreeScope*);
   StyleSheetList() {}
 
