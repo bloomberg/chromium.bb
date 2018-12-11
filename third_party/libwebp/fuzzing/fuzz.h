@@ -32,7 +32,7 @@ static const size_t kFuzzPxLimit = 1024 * 1024;
 static const int kFuzzFrameLimit = 3;
 
 // Reads and sums (up to) 128 spread-out bytes.
-uint8_t FuzzHash(const uint8_t* const data, size_t size) {
+static uint8_t FuzzHash(const uint8_t* const data, size_t size) {
   uint8_t value = 0;
   size_t incr = size / 128;
   if (!incr)
@@ -173,6 +173,7 @@ static int ExtractAndCropOrScale(WebPPicture* const pic,
                                  uint32_t* const bit_pos) {
   if (pic == NULL)
     return 0;
+#if !defined(WEBP_REDUCE_SIZE)
   const int alter_input = Extract(1, data, size, bit_pos);
   const int crop_or_scale = Extract(1, data, size, bit_pos);
   const int width_ratio = 1 + Extract(7, data, size, bit_pos);
@@ -193,5 +194,10 @@ static int ExtractAndCropOrScale(WebPPicture* const pic,
       return WebPPictureRescale(pic, scaled_width, scaled_height);
     }
   }
+#else   // defined(WEBP_REDUCE_SIZE)
+  (void)data;
+  (void)size;
+  (void)bit_pos;
+#endif  // !defined(WEBP_REDUCE_SIZE)
   return 1;
 }
