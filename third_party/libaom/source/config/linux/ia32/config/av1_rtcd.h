@@ -31,6 +31,8 @@ struct txfm_param;
 struct aom_variance_vtable;
 struct search_site_config;
 struct yv12_buffer_config;
+struct NN_CONFIG;
+typedef struct NN_CONFIG NN_CONFIG;
 
 /* Function pointers return by CfL functions */
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t* input,
@@ -883,7 +885,26 @@ void av1_highbd_dr_prediction_z1_c(uint16_t* dst,
                                    int dx,
                                    int dy,
                                    int bd);
-#define av1_highbd_dr_prediction_z1 av1_highbd_dr_prediction_z1_c
+void av1_highbd_dr_prediction_z1_avx2(uint16_t* dst,
+                                      ptrdiff_t stride,
+                                      int bw,
+                                      int bh,
+                                      const uint16_t* above,
+                                      const uint16_t* left,
+                                      int upsample_above,
+                                      int dx,
+                                      int dy,
+                                      int bd);
+RTCD_EXTERN void (*av1_highbd_dr_prediction_z1)(uint16_t* dst,
+                                                ptrdiff_t stride,
+                                                int bw,
+                                                int bh,
+                                                const uint16_t* above,
+                                                const uint16_t* left,
+                                                int upsample_above,
+                                                int dx,
+                                                int dy,
+                                                int bd);
 
 void av1_highbd_dr_prediction_z2_c(uint16_t* dst,
                                    ptrdiff_t stride,
@@ -908,7 +929,26 @@ void av1_highbd_dr_prediction_z3_c(uint16_t* dst,
                                    int dx,
                                    int dy,
                                    int bd);
-#define av1_highbd_dr_prediction_z3 av1_highbd_dr_prediction_z3_c
+void av1_highbd_dr_prediction_z3_avx2(uint16_t* dst,
+                                      ptrdiff_t stride,
+                                      int bw,
+                                      int bh,
+                                      const uint16_t* above,
+                                      const uint16_t* left,
+                                      int upsample_left,
+                                      int dx,
+                                      int dy,
+                                      int bd);
+RTCD_EXTERN void (*av1_highbd_dr_prediction_z3)(uint16_t* dst,
+                                                ptrdiff_t stride,
+                                                int bw,
+                                                int bh,
+                                                const uint16_t* above,
+                                                const uint16_t* left,
+                                                int upsample_left,
+                                                int dx,
+                                                int dy,
+                                                int bd);
 
 void av1_highbd_inv_txfm_add_c(const tran_low_t* dqcoeff,
                                uint8_t* dst,
@@ -935,6 +975,10 @@ void av1_highbd_inv_txfm_add_16x16_sse4_1(const tran_low_t* dqcoeff,
                                           uint8_t* dst,
                                           int stride,
                                           const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_16x16_avx2(const tran_low_t* dqcoeff,
+                                        uint8_t* dst,
+                                        int stride,
+                                        const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_16x16)(const tran_low_t* dqcoeff,
                                                   uint8_t* dst,
                                                   int stride,
@@ -948,6 +992,10 @@ void av1_highbd_inv_txfm_add_16x32_sse4_1(const tran_low_t* dqcoeff,
                                           uint8_t* dst,
                                           int stride,
                                           const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_16x32_avx2(const tran_low_t* dqcoeff,
+                                        uint8_t* dst,
+                                        int stride,
+                                        const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_16x32)(const tran_low_t* dqcoeff,
                                                   uint8_t* dst,
                                                   int stride,
@@ -974,6 +1022,10 @@ void av1_highbd_inv_txfm_add_16x8_sse4_1(const tran_low_t* dqcoeff,
                                          uint8_t* dst,
                                          int stride,
                                          const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_16x8_avx2(const tran_low_t* dqcoeff,
+                                       uint8_t* dst,
+                                       int stride,
+                                       const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_16x8)(const tran_low_t* dqcoeff,
                                                  uint8_t* dst,
                                                  int stride,
@@ -987,6 +1039,10 @@ void av1_highbd_inv_txfm_add_32x16_sse4_1(const tran_low_t* dqcoeff,
                                           uint8_t* dst,
                                           int stride,
                                           const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_32x16_avx2(const tran_low_t* dqcoeff,
+                                        uint8_t* dst,
+                                        int stride,
+                                        const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_32x16)(const tran_low_t* dqcoeff,
                                                   uint8_t* dst,
                                                   int stride,
@@ -1017,6 +1073,10 @@ void av1_highbd_inv_txfm_add_32x8_sse4_1(const tran_low_t* dqcoeff,
                                          uint8_t* dst,
                                          int stride,
                                          const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_32x8_avx2(const tran_low_t* dqcoeff,
+                                       uint8_t* dst,
+                                       int stride,
+                                       const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_32x8)(const tran_low_t* dqcoeff,
                                                  uint8_t* dst,
                                                  int stride,
@@ -1069,6 +1129,10 @@ void av1_highbd_inv_txfm_add_8x16_sse4_1(const tran_low_t* dqcoeff,
                                          uint8_t* dst,
                                          int stride,
                                          const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_8x16_avx2(const tran_low_t* dqcoeff,
+                                       uint8_t* dst,
+                                       int stride,
+                                       const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_8x16)(const tran_low_t* dqcoeff,
                                                  uint8_t* dst,
                                                  int stride,
@@ -1082,6 +1146,10 @@ void av1_highbd_inv_txfm_add_8x32_sse4_1(const tran_low_t* dqcoeff,
                                          uint8_t* dst,
                                          int stride,
                                          const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_8x32_avx2(const tran_low_t* dqcoeff,
+                                       uint8_t* dst,
+                                       int stride,
+                                       const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_8x32)(const tran_low_t* dqcoeff,
                                                  uint8_t* dst,
                                                  int stride,
@@ -1108,6 +1176,10 @@ void av1_highbd_inv_txfm_add_8x8_sse4_1(const tran_low_t* dqcoeff,
                                         uint8_t* dst,
                                         int stride,
                                         const TxfmParam* txfm_param);
+void av1_highbd_inv_txfm_add_8x8_avx2(const tran_low_t* dqcoeff,
+                                      uint8_t* dst,
+                                      int stride,
+                                      const TxfmParam* txfm_param);
 RTCD_EXTERN void (*av1_highbd_inv_txfm_add_8x8)(const tran_low_t* dqcoeff,
                                                 uint8_t* dst,
                                                 int stride,
@@ -1800,6 +1872,10 @@ RTCD_EXTERN void (*av1_jnt_convolve_y)(
     const int subpel_y_q4,
     ConvolveParams* conv_params);
 
+void av1_round_shift_array_c(int32_t* arr, int size, int bit);
+void av1_round_shift_array_sse4_1(int32_t* arr, int size, int bit);
+RTCD_EXTERN void (*av1_round_shift_array)(int32_t* arr, int size, int bit);
+
 int av1_selfguided_restoration_c(const uint8_t* dgd8,
                                  int width,
                                  int height,
@@ -2252,6 +2328,12 @@ static void setup_rtcd_internal(void) {
     av1_highbd_convolve_y_sr = av1_highbd_convolve_y_sr_ssse3;
   if (flags & HAS_AVX2)
     av1_highbd_convolve_y_sr = av1_highbd_convolve_y_sr_avx2;
+  av1_highbd_dr_prediction_z1 = av1_highbd_dr_prediction_z1_c;
+  if (flags & HAS_AVX2)
+    av1_highbd_dr_prediction_z1 = av1_highbd_dr_prediction_z1_avx2;
+  av1_highbd_dr_prediction_z3 = av1_highbd_dr_prediction_z3_c;
+  if (flags & HAS_AVX2)
+    av1_highbd_dr_prediction_z3 = av1_highbd_dr_prediction_z3_avx2;
   av1_highbd_inv_txfm_add = av1_highbd_inv_txfm_add_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add = av1_highbd_inv_txfm_add_sse4_1;
@@ -2260,18 +2342,26 @@ static void setup_rtcd_internal(void) {
   av1_highbd_inv_txfm_add_16x16 = av1_highbd_inv_txfm_add_16x16_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_16x16 = av1_highbd_inv_txfm_add_16x16_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_16x16 = av1_highbd_inv_txfm_add_16x16_avx2;
   av1_highbd_inv_txfm_add_16x32 = av1_highbd_inv_txfm_add_16x32_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_16x32 = av1_highbd_inv_txfm_add_16x32_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_16x32 = av1_highbd_inv_txfm_add_16x32_avx2;
   av1_highbd_inv_txfm_add_16x4 = av1_highbd_inv_txfm_add_16x4_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_16x4 = av1_highbd_inv_txfm_add_16x4_sse4_1;
   av1_highbd_inv_txfm_add_16x8 = av1_highbd_inv_txfm_add_16x8_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_16x8 = av1_highbd_inv_txfm_add_16x8_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_16x8 = av1_highbd_inv_txfm_add_16x8_avx2;
   av1_highbd_inv_txfm_add_32x16 = av1_highbd_inv_txfm_add_32x16_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_32x16 = av1_highbd_inv_txfm_add_32x16_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_32x16 = av1_highbd_inv_txfm_add_32x16_avx2;
   av1_highbd_inv_txfm_add_32x32 = av1_highbd_inv_txfm_add_32x32_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_32x32 = av1_highbd_inv_txfm_add_32x32_sse4_1;
@@ -2280,6 +2370,8 @@ static void setup_rtcd_internal(void) {
   av1_highbd_inv_txfm_add_32x8 = av1_highbd_inv_txfm_add_32x8_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_32x8 = av1_highbd_inv_txfm_add_32x8_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_32x8 = av1_highbd_inv_txfm_add_32x8_avx2;
   av1_highbd_inv_txfm_add_4x16 = av1_highbd_inv_txfm_add_4x16_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_4x16 = av1_highbd_inv_txfm_add_4x16_sse4_1;
@@ -2292,15 +2384,21 @@ static void setup_rtcd_internal(void) {
   av1_highbd_inv_txfm_add_8x16 = av1_highbd_inv_txfm_add_8x16_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_8x16 = av1_highbd_inv_txfm_add_8x16_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_8x16 = av1_highbd_inv_txfm_add_8x16_avx2;
   av1_highbd_inv_txfm_add_8x32 = av1_highbd_inv_txfm_add_8x32_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_8x32 = av1_highbd_inv_txfm_add_8x32_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_8x32 = av1_highbd_inv_txfm_add_8x32_avx2;
   av1_highbd_inv_txfm_add_8x4 = av1_highbd_inv_txfm_add_8x4_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_8x4 = av1_highbd_inv_txfm_add_8x4_sse4_1;
   av1_highbd_inv_txfm_add_8x8 = av1_highbd_inv_txfm_add_8x8_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_inv_txfm_add_8x8 = av1_highbd_inv_txfm_add_8x8_sse4_1;
+  if (flags & HAS_AVX2)
+    av1_highbd_inv_txfm_add_8x8 = av1_highbd_inv_txfm_add_8x8_avx2;
   av1_highbd_jnt_convolve_2d = av1_highbd_jnt_convolve_2d_c;
   if (flags & HAS_SSE4_1)
     av1_highbd_jnt_convolve_2d = av1_highbd_jnt_convolve_2d_sse4_1;
@@ -2356,6 +2454,9 @@ static void setup_rtcd_internal(void) {
   av1_jnt_convolve_y = av1_jnt_convolve_y_sse2;
   if (flags & HAS_AVX2)
     av1_jnt_convolve_y = av1_jnt_convolve_y_avx2;
+  av1_round_shift_array = av1_round_shift_array_c;
+  if (flags & HAS_SSE4_1)
+    av1_round_shift_array = av1_round_shift_array_sse4_1;
   av1_selfguided_restoration = av1_selfguided_restoration_c;
   if (flags & HAS_SSE4_1)
     av1_selfguided_restoration = av1_selfguided_restoration_sse4_1;

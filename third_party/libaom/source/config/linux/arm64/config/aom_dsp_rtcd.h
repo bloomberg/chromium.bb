@@ -3300,10 +3300,6 @@ void aom_v_predictor_8x8_neon(uint8_t* dst,
                               const uint8_t* left);
 #define aom_v_predictor_8x8 aom_v_predictor_8x8_neon
 
-void av1_round_shift_array_c(int32_t* arr, int size, int bit);
-void av1_round_shift_array_neon(int32_t* arr, int size, int bit);
-#define av1_round_shift_array av1_round_shift_array_neon
-
 void aom_dsp_rtcd(void);
 
 #include "config/aom_config.h"

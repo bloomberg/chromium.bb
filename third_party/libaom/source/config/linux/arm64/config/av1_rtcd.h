@@ -31,6 +31,8 @@ struct txfm_param;
 struct aom_variance_vtable;
 struct search_site_config;
 struct yv12_buffer_config;
+struct NN_CONFIG;
+typedef struct NN_CONFIG NN_CONFIG;
 
 /* Function pointers return by CfL functions */
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t* input,
@@ -915,6 +917,10 @@ void av1_jnt_convolve_y_neon(const uint8_t* src,
                              const int subpel_y_q4,
                              ConvolveParams* conv_params);
 #define av1_jnt_convolve_y av1_jnt_convolve_y_neon
+
+void av1_round_shift_array_c(int32_t* arr, int size, int bit);
+void av1_round_shift_array_neon(int32_t* arr, int size, int bit);
+#define av1_round_shift_array av1_round_shift_array_neon
 
 int av1_selfguided_restoration_c(const uint8_t* dgd8,
                                  int width,
