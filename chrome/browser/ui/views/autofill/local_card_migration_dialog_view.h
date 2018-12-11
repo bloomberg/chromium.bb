@@ -48,6 +48,7 @@ class LocalCardMigrationDialogView : public LocalCardMigrationDialog,
   // Called by MigratableCardView when the user clicks the trash can button.
   // |guid| is the GUID of the credit card to be deleted.
   void DeleteCard(const std::string& guid);
+  void UpdateLayout();
 
  private:
   void ConstructView();
