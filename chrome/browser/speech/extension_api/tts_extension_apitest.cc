@@ -60,8 +60,7 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
       const content::Utterance* utterance,
       const content::VoiceData& voice_data) override {}
 
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override {
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override {
     return false;
   }
 
@@ -162,9 +161,9 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
                  content::TtsEventType event_type,
                  int char_index,
                  const std::string& message) {
-    TtsControllerDelegateImpl* tts_controller_delegate =
-        TtsControllerDelegateImpl::GetInstance();
-    if (wait_for_non_empty_queue && tts_controller_delegate->QueueSize() == 0) {
+    content::TtsController* tts_controller =
+        content::TtsController::GetInstance();
+    if (wait_for_non_empty_queue && tts_controller->QueueSize() == 0) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&MockTtsPlatformImpl::SendEvent, ptr_factory_.GetWeakPtr(),
@@ -173,8 +172,7 @@ class MockTtsPlatformImpl : public content::TtsPlatform {
       return;
     }
 
-    content::TtsController::GetInstance()->OnTtsEvent(utterance_id, event_type,
-                                                      char_index, message);
+    tts_controller->OnTtsEvent(utterance_id, event_type, char_index, message);
   }
 
  private:
@@ -229,8 +227,10 @@ class TtsApiTest : public ExtensionApiTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
-    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
-        &mock_platform_impl_);
+    content::TtsController* tts_controller =
+        content::TtsController::GetInstance();
+    tts_controller->SetTtsPlatform(&mock_platform_impl_);
+    tts_controller->SetTtsEngineDelegate(TtsExtensionEngine::GetInstance());
   }
 
   void AddNetworkSpeechSynthesisExtension() {

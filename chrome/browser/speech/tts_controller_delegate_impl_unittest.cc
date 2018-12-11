@@ -1,58 +1,27 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Unit tests for the TTS Controller.
 
-#include "content/public/browser/tts_controller.h"
+#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_platform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
 
-class TtsControllerTest : public testing::Test {
-};
-
-// Platform Tts implementation that does nothing.
-class DummyTtsPlatformImpl : public content::TtsPlatform {
- public:
-  DummyTtsPlatformImpl() {}
-  virtual ~DummyTtsPlatformImpl() {}
-  bool PlatformImplAvailable() override { return true; }
-  bool Speak(int utterance_id,
-             const std::string& utterance,
-             const std::string& lang,
-             const content::VoiceData& voice,
-             const content::UtteranceContinuousParameters& params) override {
-    return true;
-  }
-  bool IsSpeaking() override { return false; }
-  bool StopSpeaking() override { return true; }
-  void Pause() override {}
-  void Resume() override {}
-  void GetVoices(std::vector<content::VoiceData>* out_voices) override {}
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override {
-    return false;
-  }
-  void WillSpeakUtteranceWithVoice(
-      const content::Utterance* utterance,
-      const content::VoiceData& voice_data) override {}
-  void SetError(const std::string& error) override {}
-  std::string GetError() override { return std::string(); }
-  void ClearError() override {}
-};
+class TtsControllerTest : public testing::Test {};
 
 // Subclass of TtsController with a public ctor and dtor.
-class TestableTtsController : public TtsControllerDelegateImpl {
+class MockTtsControllerDelegate : public TtsControllerDelegateImpl {
  public:
-  TestableTtsController() {}
-  ~TestableTtsController() override {}
+  MockTtsControllerDelegate() {}
+  ~MockTtsControllerDelegate() override {}
 
   PrefService* pref_service_ = nullptr;
 
@@ -63,31 +32,9 @@ class TestableTtsController : public TtsControllerDelegateImpl {
   }
 };
 
-TEST_F(TtsControllerTest, TestTtsControllerShutdown) {
-  DummyTtsPlatformImpl platform_impl;
-  TestableTtsController* controller =
-      new TestableTtsController();
-
-  controller->SetTtsPlatform(&platform_impl);
-
-  content::Utterance* utterance1 = new content::Utterance(nullptr);
-  utterance1->set_can_enqueue(true);
-  utterance1->set_src_id(1);
-  controller->SpeakOrEnqueue(utterance1);
-
-  content::Utterance* utterance2 = new content::Utterance(nullptr);
-  utterance2->set_can_enqueue(true);
-  utterance2->set_src_id(2);
-  controller->SpeakOrEnqueue(utterance2);
-
-  // Make sure that deleting the controller when there are pending
-  // utterances doesn't cause a crash.
-  delete controller;
-}
-
 TEST_F(TtsControllerTest, TestGetMatchingVoice) {
-  std::unique_ptr<TestableTtsController> tts_controller =
-      std::make_unique<TestableTtsController>();
+  std::unique_ptr<MockTtsControllerDelegate> tts_controller_delegate =
+      std::make_unique<MockTtsControllerDelegate>();
 #if defined(OS_CHROMEOS)
   TestingPrefServiceSimple pref_service_;
   // Uses default pref voices.
@@ -99,14 +46,15 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
       "noLanguage", base::Value("{\"name\":\"Android\",\"extension\":\"\"}"));
   pref_service_.registry()->RegisterDictionaryPref(
       prefs::kTextToSpeechLangToVoiceName, std::move(lang_to_voices));
-  tts_controller->pref_service_ = &pref_service_;
+  tts_controller_delegate->pref_service_ = &pref_service_;
 #endif  // defined(OS_CHROMEOS)
 
   {
     // Calling GetMatchingVoice with no voices returns -1.
     content::Utterance utterance(nullptr);
     std::vector<content::VoiceData> voices;
-    EXPECT_EQ(-1, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(-1,
+              tts_controller_delegate->GetMatchingVoice(&utterance, voices));
   }
 
   {
@@ -116,7 +64,7 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     std::vector<content::VoiceData> voices;
     voices.push_back(content::VoiceData());
     voices.push_back(content::VoiceData());
-    EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(0, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
   }
 
   {
@@ -133,7 +81,7 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     content::VoiceData de_voice;
     de_voice.lang = "de";
     voices.push_back(de_voice);
-    EXPECT_EQ(1, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(1, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
   }
 
   {
@@ -154,64 +102,64 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     voice4.name = "Voice4";
     voices.push_back(voice4);
     content::VoiceData voice5;
-    voice5.extension_id = "id5";
+    voice5.engine_id = "id5";
     voices.push_back(voice5);
     content::VoiceData voice6;
-    voice6.extension_id = "id7";
+    voice6.engine_id = "id7";
     voice6.name = "Voice6";
     voice6.lang = "es-es";
     voices.push_back(voice6);
     content::VoiceData voice7;
-    voice7.extension_id = "id7";
+    voice7.engine_id = "id7";
     voice7.name = "Voice7";
     voice7.lang = "es-mx";
     voices.push_back(voice7);
     content::VoiceData voice8;
-    voice8.extension_id = "";
+    voice8.engine_id = "";
     voice8.name = "Android";
     voice8.lang = "";
     voice8.native = true;
     voices.push_back(voice8);
 
     content::Utterance utterance(nullptr);
-    EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(0, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     std::set<content::TtsEventType> types;
     types.insert(content::TTS_EVENT_WORD);
     utterance.set_required_event_types(types);
-    EXPECT_EQ(1, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(1, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     utterance.set_lang("de-DE");
-    EXPECT_EQ(2, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(2, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     utterance.set_lang("fr-FR");
-    EXPECT_EQ(3, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(3, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     utterance.set_voice_name("Voice4");
-    EXPECT_EQ(4, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(4, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     utterance.set_voice_name("");
-    utterance.set_extension_id("id5");
-    EXPECT_EQ(5, tts_controller->GetMatchingVoice(&utterance, voices));
+    utterance.set_engine_id("id5");
+    EXPECT_EQ(5, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
 #if defined(OS_CHROMEOS)
     // Voice6 is matched when the utterance locale exactly matches its locale.
-    utterance.set_extension_id("");
+    utterance.set_engine_id("");
     utterance.set_lang("es-es");
-    EXPECT_EQ(6, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(6, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     // The 7th voice is the default for "es", even though the utterance is
     // "es-ar". |voice6| is not matched because it is not the default.
-    utterance.set_extension_id("");
+    utterance.set_engine_id("");
     utterance.set_lang("es-ar");
-    EXPECT_EQ(7, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(7, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     // The 8th voice is like the built-in "Android" voice, it has no lang
     // and no extension ID. Make sure it can still be matched.
     utterance.set_voice_name("Android");
-    utterance.set_extension_id("");
+    utterance.set_engine_id("");
     utterance.set_lang("");
-    EXPECT_EQ(8, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(8, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 #endif  // defined(OS_CHROMEOS)
   }
 
@@ -219,12 +167,12 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     // Check voices against system language.
     std::vector<content::VoiceData> voices;
     content::VoiceData voice0;
-    voice0.extension_id = "id0";
+    voice0.engine_id = "id0";
     voice0.name = "voice0";
     voice0.lang = "en-GB";
     voices.push_back(voice0);
     content::VoiceData voice1;
-    voice1.extension_id = "id1";
+    voice1.engine_id = "id1";
     voice1.name = "voice1";
     voice1.lang = "en-US";
     voices.push_back(voice1);
@@ -233,12 +181,12 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
     // voice1 is matched against the exact default system language.
     g_browser_process->SetApplicationLocale("en-US");
     utterance.set_lang("");
-    EXPECT_EQ(1, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(1, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
     // voice0 is matched against the system language which has no region piece.
     g_browser_process->SetApplicationLocale("en");
     utterance.set_lang("");
-    EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(0, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 
 #if defined(OS_CHROMEOS)
     // Add another preference.
@@ -252,48 +200,60 @@ TEST_F(TtsControllerTest, TestGetMatchingVoice) {
 
     // voice0 is matched against the pref over the system language.
     g_browser_process->SetApplicationLocale("en-US");
-    EXPECT_EQ(0, tts_controller->GetMatchingVoice(&utterance, voices));
+    EXPECT_EQ(0, tts_controller_delegate->GetMatchingVoice(&utterance, voices));
 #endif  // defined(OS_CHROMEOS)
   }
 }
 
 #if defined(OS_CHROMEOS)
 TEST_F(TtsControllerTest, TestTtsControllerUtteranceDefaults) {
-  std::unique_ptr<TestableTtsController> controller =
-      std::make_unique<TestableTtsController>();
+  std::unique_ptr<MockTtsControllerDelegate> tts_controller_delegate =
+      std::make_unique<MockTtsControllerDelegate>();
+
+  double rate = blink::kWebSpeechSynthesisDoublePrefNotSet;
+  double pitch = blink::kWebSpeechSynthesisDoublePrefNotSet;
+  double volume = blink::kWebSpeechSynthesisDoublePrefNotSet;
 
   std::unique_ptr<content::Utterance> utterance1 =
       std::make_unique<content::Utterance>(nullptr);
-  // Initialized to default (unset constant) values.
-  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
-            utterance1->continuous_parameters().rate);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
-            utterance1->continuous_parameters().pitch);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDoublePrefNotSet,
-            utterance1->continuous_parameters().volume);
-
-  controller->UpdateUtteranceDefaults(utterance1.get());
+  tts_controller_delegate->UpdateUtteranceDefaultsFromPrefs(
+      utterance1.get(), &rate, &pitch, &volume);
   // Updated to global defaults.
-  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
-            utterance1->continuous_parameters().rate);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
-            utterance1->continuous_parameters().pitch);
-  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
-            utterance1->continuous_parameters().volume);
+  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechRate, rate);
+  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechPitch, pitch);
+  EXPECT_EQ(blink::kWebSpeechSynthesisDefaultTextToSpeechVolume, volume);
 
   // Now we will set prefs and expect those to be used as defaults.
+  rate = blink::kWebSpeechSynthesisDoublePrefNotSet;
+  pitch = blink::kWebSpeechSynthesisDoublePrefNotSet;
+  volume = blink::kWebSpeechSynthesisDoublePrefNotSet;
   TestingPrefServiceSimple pref_service_;
   pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechRate, 1.5);
   pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechPitch, 2.0);
   pref_service_.registry()->RegisterDoublePref(prefs::kTextToSpeechVolume, 0.5);
-  controller->pref_service_ = &pref_service_;
+  tts_controller_delegate->pref_service_ = &pref_service_;
 
   std::unique_ptr<content::Utterance> utterance2 =
       std::make_unique<content::Utterance>(nullptr);
-  controller->UpdateUtteranceDefaults(utterance2.get());
+  tts_controller_delegate->UpdateUtteranceDefaultsFromPrefs(
+      utterance2.get(), &rate, &pitch, &volume);
   // Updated to pref values.
-  EXPECT_EQ(1.5f, utterance2->continuous_parameters().rate);
-  EXPECT_EQ(2.0f, utterance2->continuous_parameters().pitch);
-  EXPECT_EQ(0.5f, utterance2->continuous_parameters().volume);
+  EXPECT_EQ(1.5f, rate);
+  EXPECT_EQ(2.0f, pitch);
+  EXPECT_EQ(0.5f, volume);
+
+  // If we explicitly set rate, pitch and volume, they should not be changed.
+  rate = 1.1f;
+  pitch = 1.2f;
+  volume = 1.3f;
+
+  std::unique_ptr<content::Utterance> utterance3 =
+      std::make_unique<content::Utterance>(nullptr);
+  tts_controller_delegate->UpdateUtteranceDefaultsFromPrefs(
+      utterance3.get(), &rate, &pitch, &volume);
+  // Updated to pref values.
+  EXPECT_EQ(1.1f, rate);
+  EXPECT_EQ(1.2f, pitch);
+  EXPECT_EQ(1.3f, volume);
 }
 #endif  // defined(OS_CHROMEOS)

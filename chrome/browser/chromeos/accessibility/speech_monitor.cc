@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
+#include "content/public/browser/tts_controller.h"
 
 namespace chromeos {
 
@@ -16,11 +16,11 @@ const char kChromeVoxUpdate2[] = "n to learn more about chrome vox Next.";
 }  // namespace
 
 SpeechMonitor::SpeechMonitor() {
-  TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(this);
+  content::TtsController::GetInstance()->SetTtsPlatform(this);
 }
 
 SpeechMonitor::~SpeechMonitor() {
-  TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
+  content::TtsController::GetInstance()->SetTtsPlatform(
       content::TtsPlatform::GetInstance());
 }
 
@@ -76,7 +76,7 @@ bool SpeechMonitor::Speak(
     const std::string& lang,
     const content::VoiceData& voice,
     const content::UtteranceContinuousParameters& params) {
-  TtsControllerDelegateImpl::GetInstance()->OnTtsEvent(
+  content::TtsController::GetInstance()->OnTtsEvent(
       utterance_id, content::TTS_EVENT_END, static_cast<int>(utterance.size()),
       std::string());
   return true;
@@ -116,7 +116,7 @@ void SpeechMonitor::WillSpeakUtteranceWithVoice(
     loop_runner_->Quit();
 }
 
-bool SpeechMonitor::LoadBuiltInTtsExtension(
+bool SpeechMonitor::LoadBuiltInTtsEngine(
     content::BrowserContext* browser_context) {
   return false;
 }

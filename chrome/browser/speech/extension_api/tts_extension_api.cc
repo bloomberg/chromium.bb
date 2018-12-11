@@ -278,7 +278,7 @@ bool TtsSpeakFunction::RunAsync() {
   utterance->set_can_enqueue(can_enqueue);
   utterance->set_required_event_types(required_event_types);
   utterance->set_desired_event_types(desired_event_types);
-  utterance->set_extension_id(voice_extension_id);
+  utterance->set_engine_id(voice_extension_id);
   utterance->set_options(options.get());
   utterance->set_event_delegate(new TtsExtensionEventHandler(extension_id()));
 
@@ -320,8 +320,8 @@ ExtensionFunction::ResponseAction TtsGetVoicesFunction::Run() {
     result_voice->SetBoolean(constants::kRemoteKey, voice.remote);
     if (!voice.lang.empty())
       result_voice->SetString(constants::kLangKey, voice.lang);
-    if (!voice.extension_id.empty())
-      result_voice->SetString(constants::kExtensionIdKey, voice.extension_id);
+    if (!voice.engine_id.empty())
+      result_voice->SetString(constants::kExtensionIdKey, voice.engine_id);
 
     auto event_types = std::make_unique<base::ListValue>();
     for (auto iter = voice.events.begin(); iter != voice.events.end(); ++iter) {

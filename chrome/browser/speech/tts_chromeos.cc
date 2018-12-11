@@ -18,12 +18,12 @@ bool TtsPlatformImplChromeOs::PlatformImplAvailable() {
                                               ->IsConnected();
 }
 
-bool TtsPlatformImplChromeOs::LoadBuiltInTtsExtension(
+bool TtsPlatformImplChromeOs::LoadBuiltInTtsEngine(
     content::BrowserContext* browser_context) {
   content::TtsEngineDelegate* tts_engine_delegate =
       content::TtsController::GetInstance()->GetTtsEngineDelegate();
   if (tts_engine_delegate)
-    return tts_engine_delegate->LoadBuiltInTtsExtension(browser_context);
+    return tts_engine_delegate->LoadBuiltInTtsEngine(browser_context);
   return false;
 }
 

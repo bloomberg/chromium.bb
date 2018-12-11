@@ -98,7 +98,7 @@ void TtsHandler::OnVoicesChanged() {
     response.SetString("languageCode", language_code);
     response.SetString("fullLanguageCode", voice.lang);
     response.SetInteger("languageScore", language_score);
-    response.SetString("extensionId", voice.extension_id);
+    response.SetString("extensionId", voice.engine_id);
     responses.GetList().push_back(std::move(response));
   }
   AllowJavascript();
@@ -141,7 +141,7 @@ void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
       new content::Utterance(Profile::FromWebUI(web_ui()));
   utterance->set_text(text);
   utterance->set_voice_name(name);
-  utterance->set_extension_id(extension_id);
+  utterance->set_engine_id(extension_id);
   utterance->set_src_url(GURL("chrome://settings/manageAccessibility/tts"));
   utterance->set_event_delegate(this);
   content::TtsController::GetInstance()->Stop();
@@ -191,7 +191,7 @@ int TtsHandler::GetVoiceLangMatchScore(const content::VoiceData* voice,
 
 void TtsHandler::WakeTtsEngine(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  TtsExtensionEngine::GetInstance()->LoadBuiltInTtsExtension(profile);
+  TtsExtensionEngine::GetInstance()->LoadBuiltInTtsEngine(profile);
   extensions::ProcessManager::Get(profile)->WakeEventPage(
       extension_misc::kGoogleSpeechSynthesisExtensionId,
       base::BindOnce(&TtsHandler::OnTtsEngineAwake,

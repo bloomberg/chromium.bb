@@ -57,7 +57,6 @@
 #include "chrome/browser/prerender/prerender_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/browser/task_manager/mock_web_contents_task_manager.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
@@ -3462,11 +3461,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 class TtsPlatformMock : public content::TtsPlatform {
  public:
   TtsPlatformMock() : speaking_requested_(false) {
-    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(this);
+    content::TtsController::GetInstance()->SetTtsPlatform(this);
   }
 
   virtual ~TtsPlatformMock() {
-    TtsControllerDelegateImpl::GetInstance()->SetTtsPlatform(
+    content::TtsController::GetInstance()->SetTtsPlatform(
         TtsPlatform::GetInstance());
   }
 
@@ -3505,8 +3504,7 @@ class TtsPlatformMock : public content::TtsPlatform {
 
   void Resume() override {}
 
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override {
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override {
     return false;
   }
 
