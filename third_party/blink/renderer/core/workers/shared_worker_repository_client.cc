@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/exported/shared_worker_repository_client_impl.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 
 #include <memory>
 #include <utility>
@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
 namespace {
@@ -105,7 +104,7 @@ class SharedWorkerConnectListener final
   Persistent<SharedWorker> worker_;
 };
 
-void SharedWorkerRepositoryClientImpl::Connect(
+void SharedWorkerRepositoryClient::Connect(
     SharedWorker* worker,
     MessagePortChannel port,
     const KURL& url,
@@ -151,17 +150,17 @@ void SharedWorkerRepositoryClientImpl::Connect(
           mojom::blink::BlobURLToken::Version_)));
 }
 
-void SharedWorkerRepositoryClientImpl::DocumentDetached(Document* document) {
+void SharedWorkerRepositoryClient::DocumentDetached(Document* document) {
   // Delete any associated SharedWorkerConnectListeners, which will signal, via
   // the dropped mojo connection, disinterest in the associated shared worker.
   client_map_.erase(GetId(document));
 }
 
-SharedWorkerRepositoryClientImpl::SharedWorkerRepositoryClientImpl(
+SharedWorkerRepositoryClient::SharedWorkerRepositoryClient(
     service_manager::InterfaceProvider* interface_provider)
     : interface_provider_(interface_provider) {}
 
-void SharedWorkerRepositoryClientImpl::AddWorker(
+void SharedWorkerRepositoryClient::AddWorker(
     Document* document,
     std::unique_ptr<mojom::blink::SharedWorkerClient> client,
     mojom::blink::SharedWorkerClientRequest request) {
@@ -172,8 +171,8 @@ void SharedWorkerRepositoryClientImpl::AddWorker(
   clients->AddBinding(std::move(client), std::move(request));
 }
 
-SharedWorkerRepositoryClientImpl::DocumentID
-SharedWorkerRepositoryClientImpl::GetId(Document* document) {
+SharedWorkerRepositoryClient::DocumentID SharedWorkerRepositoryClient::GetId(
+    Document* document) {
   DCHECK(document);
   return reinterpret_cast<DocumentID>(document);
 }

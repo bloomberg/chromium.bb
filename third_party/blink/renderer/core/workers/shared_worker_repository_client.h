@@ -31,11 +31,20 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPOSITORY_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_SHARED_WORKER_REPOSITORY_CLIENT_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_client.mojom-blink.h"
+#include "third_party/blink/public/mojom/worker/shared_worker_connector.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+
+namespace service_manager {
+class InterfaceProvider;
+}  // namespace service_manager
 
 namespace blink {
 
@@ -45,21 +54,43 @@ class KURL;
 class SharedWorker;
 
 class CORE_EXPORT SharedWorkerRepositoryClient {
-  DISALLOW_NEW();
+  USING_FAST_MALLOC(SharedWorkerRepositoryClient);
 
  public:
-  SharedWorkerRepositoryClient() = default;
-  virtual ~SharedWorkerRepositoryClient() = default;
+  static std::unique_ptr<SharedWorkerRepositoryClient> Create(
+      service_manager::InterfaceProvider* interface_provider) {
+    return base::WrapUnique(
+        new SharedWorkerRepositoryClient(interface_provider));
+  }
 
-  virtual void Connect(SharedWorker*,
-                       MessagePortChannel,
-                       const KURL&,
-                       mojom::blink::BlobURLTokenPtr,
-                       const String& name) = 0;
+  ~SharedWorkerRepositoryClient() = default;
 
-  virtual void DocumentDetached(Document*) = 0;
+  void Connect(SharedWorker*,
+               MessagePortChannel,
+               const KURL&,
+               mojom::blink::BlobURLTokenPtr,
+               const String& name);
+  void DocumentDetached(Document*);
 
  private:
+  explicit SharedWorkerRepositoryClient(service_manager::InterfaceProvider*);
+
+  void AddWorker(Document* document,
+                 std::unique_ptr<mojom::blink::SharedWorkerClient> client,
+                 mojom::blink::SharedWorkerClientRequest request);
+
+  // Unique identifier for the parent document of a worker (unique within a
+  // given process).
+  using DocumentID = unsigned long long;
+  static DocumentID GetId(Document*);
+
+  service_manager::InterfaceProvider* interface_provider_;
+  mojom::blink::SharedWorkerConnectorPtr connector_;
+
+  using ClientSet = mojo::StrongBindingSet<mojom::blink::SharedWorkerClient>;
+  using ClientMap = HashMap<DocumentID, std::unique_ptr<ClientSet>>;
+  ClientMap client_map_;
+
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerRepositoryClient);
 };
 
