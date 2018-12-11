@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -381,6 +382,15 @@ public class LocationBarLayout extends FrameLayout
         }
 
         if (!inProgress) {
+            // The accessibility bounding box is not properly updated when focusing the Omnibox
+            // from the NTP fakebox.  Clearing/re-requesting focus triggers the bounding box to
+            // be recalculated.
+            if (didFocusUrlFromFakebox() && !inProgress && mUrlHasFocus
+                    && AccessibilityUtil.isAccessibilityEnabled()) {
+                mUrlBar.clearFocus();
+                mUrlBar.requestFocus();
+            }
+
             for (UrlFocusChangeListener listener : mUrlFocusChangeListeners) {
                 listener.onUrlAnimationFinished(mUrlHasFocus);
             }
