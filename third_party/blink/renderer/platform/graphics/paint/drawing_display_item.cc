@@ -13,28 +13,6 @@
 
 namespace blink {
 
-void DrawingDisplayItem::Replay(GraphicsContext& context) const {
-  if (record_)
-    context.DrawRecord(record_);
-}
-
-void DrawingDisplayItem::AppendToDisplayItemList(
-    const FloatSize& visual_rect_offset,
-    cc::DisplayItemList& list) const {
-  if (record_) {
-    list.StartPaint();
-    list.push<cc::DrawRecordOp>(record_);
-    // Convert visual rect into the GraphicsLayer's coordinate space.
-    auto visual_rect = VisualRect();
-    visual_rect.Move(-visual_rect_offset);
-    list.EndPaintOfUnpaired(EnclosingIntRect(visual_rect));
-  }
-}
-
-bool DrawingDisplayItem::DrawsContent() const {
-  return record_.get();
-}
-
 #if DCHECK_IS_ON()
 void DrawingDisplayItem::PropertiesAsJSON(JSONObject& json) const {
   DisplayItem::PropertiesAsJSON(json);

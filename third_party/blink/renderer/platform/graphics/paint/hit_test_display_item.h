@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class GraphicsContext;
+
 // A special DisplayItem containing hit test data.
 class PLATFORM_EXPORT HitTestDisplayItem final : public DisplayItem {
  public:

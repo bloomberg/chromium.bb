@@ -33,11 +33,6 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
                      sk_sp<const PaintRecord> record,
                      bool known_to_be_opaque = false);
 
-  void Replay(GraphicsContext&) const final;
-  void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
-                               cc::DisplayItemList&) const final;
-  bool DrawsContent() const final;
-
   const sk_sp<const PaintRecord>& GetPaintRecord() const { return record_; }
 
   bool KnownToBeOpaque() const {
@@ -64,8 +59,11 @@ inline DrawingDisplayItem::DrawingDisplayItem(const DisplayItemClient& client,
                                               Type type,
                                               sk_sp<const PaintRecord> record,
                                               bool known_to_be_opaque)
-    : DisplayItem(client, type, sizeof(*this)),
-      record_(record && record->size() ? std::move(record) : nullptr),
+    : DisplayItem(client,
+                  type,
+                  sizeof(*this),
+                  /* draws_content*/ record && record->size()),
+      record_(DrawsContent() ? std::move(record) : nullptr),
       known_to_be_opaque_(known_to_be_opaque) {
   DCHECK(IsDrawingType(type));
 }

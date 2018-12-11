@@ -55,20 +55,6 @@ cc::Layer* ForeignLayerDisplayItem::GetLayer() const {
   return static_cast<const ForeignLayerDisplayItemClient&>(Client()).GetLayer();
 }
 
-void ForeignLayerDisplayItem::Replay(GraphicsContext&) const {
-  NOTREACHED();
-}
-
-void ForeignLayerDisplayItem::AppendToDisplayItemList(
-    const FloatSize&,
-    cc::DisplayItemList&) const {
-  NOTREACHED();
-}
-
-bool ForeignLayerDisplayItem::DrawsContent() const {
-  return false;
-}
-
 bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
   return DisplayItem::Equals(other) &&
          GetLayer() ==

@@ -18,14 +18,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #endif
 
-namespace cc {
-class DisplayItemList;
-}
-
 namespace blink {
 
-class GraphicsContext;
-class FloatSize;
 enum class PaintPhase;
 
 class PLATFORM_EXPORT DisplayItem {
@@ -147,11 +141,15 @@ class PLATFORM_EXPORT DisplayItem {
 
   // Some fields are copied from |client|, because we need to access them in
   // later paint cycles when |client| may have been destroyed.
-  DisplayItem(const DisplayItemClient& client, Type type, size_t derived_size)
+  DisplayItem(const DisplayItemClient& client,
+              Type type,
+              size_t derived_size,
+              bool draws_content = false)
       : client_(&client),
         visual_rect_(client.VisualRect()),
         outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
         type_(type),
+        draws_content_(draws_content),
         fragment_(0),
         is_cacheable_(client.IsCacheable()),
         is_tombstone_(false) {
@@ -180,8 +178,6 @@ class PLATFORM_EXPORT DisplayItem {
   };
 
   Id GetId() const { return Id(*client_, GetType(), fragment_); }
-
-  virtual void Replay(GraphicsContext&) const {}
 
   const DisplayItemClient& Client() const {
     DCHECK(client_);
@@ -215,13 +211,6 @@ class PLATFORM_EXPORT DisplayItem {
     DCHECK(fragment < (1 << 14));
     fragment_ = fragment;
   }
-
-  // Appends this display item to the cc::DisplayItemList, if applicable.
-  // |visual_rect_offset| is the offset between the space of the GraphicsLayer
-  // which owns the display item and the coordinate space of VisualRect().
-  // TODO(wangxianzhu): Remove the parameter for CompositeAfterPaint.
-  virtual void AppendToDisplayItemList(const FloatSize& visual_rect_offset,
-                                       cc::DisplayItemList&) const {}
 
 // See comments of enum Type for usage of the following macros.
 #define DEFINE_CATEGORY_METHODS(Category)                           \
@@ -269,7 +258,7 @@ class PLATFORM_EXPORT DisplayItem {
   // DisplayItem.
   bool IsTombstone() const { return is_tombstone_; }
 
-  virtual bool DrawsContent() const { return false; }
+  bool DrawsContent() const { return draws_content_; }
 
 #if DCHECK_IS_ON()
   static WTF::String TypeAsDebugString(DisplayItem::Type);
@@ -284,18 +273,19 @@ class PLATFORM_EXPORT DisplayItem {
 
   // The default DisplayItem constructor is only used by ContiguousContainer::
   // AppendByMoving() where a tombstone DisplayItem is constructed at the source
-  // location. Only set is_tombstone_ to true, leaving other fields as-is so
-  // that we can get their original values. |visual_rect_| and
-  // |outset_for_raster_effects_| are special, see DisplayItemList::
-  // AppendByMoving().
-  DisplayItem() : is_tombstone_(true) {}
+  // location. Only set draws_content_ to false and is_tombstone_ to true,
+  // leaving other fields as-is so that we can get their original values.
+  // |visual_rect_| and |outset_for_raster_effects_| are special, see
+  // DisplayItemList::AppendByMoving().
+  DisplayItem() : draws_content_(false), is_tombstone_(true) {}
 
   const DisplayItemClient* client_;
   FloatRect visual_rect_;
   float outset_for_raster_effects_;
 
-  static_assert(kTypeLast < (1 << 8), "DisplayItem::Type should fit in 8 bits");
-  unsigned type_ : 8;
+  static_assert(kTypeLast < (1 << 7), "DisplayItem::Type should fit in 7 bits");
+  unsigned type_ : 7;
+  unsigned draws_content_ : 1;
   unsigned derived_size_ : 8;  // size of the actual derived class
   unsigned fragment_ : 14;
   unsigned is_cacheable_ : 1;
