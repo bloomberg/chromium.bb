@@ -179,6 +179,8 @@ public class ExploreSitesSection {
         int tileCount = 0;
         for (final ExploreSitesCategory category : categoryList) {
             if (tileCount >= MAX_CATEGORIES) break;
+            // Skip empty categories from being shown on NTP.
+            if (category.getNumDisplayed() == 0) continue;
             createTileView(tileCount, category);
             tileCount++;
         }

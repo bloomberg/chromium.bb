@@ -57,7 +57,8 @@ void CatalogReady(ScopedJavaGlobalRef<jobject>(j_result_obj),
     for (auto& site : category.sites) {
       Java_ExploreSitesSite_createSiteInCategory(
           env, site.site_id, ConvertUTF8ToJavaString(env, site.title),
-          ConvertUTF8ToJavaString(env, site.url.spec()), j_category);
+          ConvertUTF8ToJavaString(env, site.url.spec()), site.is_blacklisted,
+          j_category);
     }
   }
   base::android::RunObjectCallbackAndroid(j_callback_obj, j_result_obj);

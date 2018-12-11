@@ -22,7 +22,11 @@ constexpr int kFaviconsPerCategoryImage = 4;
 // Image data is not represented here because it is requested separately from
 // the UI layer.
 struct ExploreSitesSite {
-  ExploreSitesSite(int site_id, int category_id, GURL url, std::string title);
+  ExploreSitesSite(int site_id,
+                   int category_id,
+                   GURL url,
+                   std::string title,
+                   bool is_blacklisted);
   ExploreSitesSite(ExploreSitesSite&& other);
   virtual ~ExploreSitesSite();
 
@@ -30,6 +34,7 @@ struct ExploreSitesSite {
   int category_id;
   GURL url;
   std::string title;
+  bool is_blacklisted;
 
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesSite);
 };

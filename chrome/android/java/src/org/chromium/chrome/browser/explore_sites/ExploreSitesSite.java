@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.modelutil.PropertyModel;
  * An object encapsulating info for a website.
  */
 public class ExploreSitesSite {
+    static final int DEFAULT_TILE_INDEX = -1;
     static final PropertyModel.ReadableIntPropertyKey ID_KEY =
             new PropertyModel.ReadableIntPropertyKey();
     static final PropertyModel.WritableIntPropertyKey TILE_INDEX_KEY =
@@ -23,15 +24,20 @@ public class ExploreSitesSite {
             new PropertyModel.ReadableObjectPropertyKey<>();
     static final PropertyModel.WritableObjectPropertyKey<Bitmap> ICON_KEY =
             new PropertyModel.WritableObjectPropertyKey<>();
+    static final PropertyModel.WritableBooleanPropertyKey BLACKLISTED_KEY =
+            new PropertyModel.WritableBooleanPropertyKey();
 
     private PropertyModel mModel;
 
-    public ExploreSitesSite(int id, int tileIndex, String title, String url) {
-        mModel = new PropertyModel.Builder(ID_KEY, TILE_INDEX_KEY, TITLE_KEY, URL_KEY, ICON_KEY)
+    public ExploreSitesSite(int id, String title, String url, boolean isBlacklisted) {
+        mModel = new PropertyModel
+                         .Builder(ID_KEY, TILE_INDEX_KEY, TITLE_KEY, URL_KEY, ICON_KEY,
+                                 BLACKLISTED_KEY)
                          .with(ID_KEY, id)
-                         .with(TILE_INDEX_KEY, tileIndex)
                          .with(TITLE_KEY, title)
                          .with(URL_KEY, url)
+                         .with(BLACKLISTED_KEY, isBlacklisted)
+                         .with(TILE_INDEX_KEY, DEFAULT_TILE_INDEX)
                          .build();
     }
 
@@ -40,10 +46,9 @@ public class ExploreSitesSite {
     }
 
     @CalledByNative
-    private static void createSiteInCategory(
-            int siteId, String title, String url, ExploreSitesCategory category) {
-        ExploreSitesSite site =
-                new ExploreSitesSite(siteId, category.getSites().size(), title, url);
+    private static void createSiteInCategory(int siteId, String title, String url,
+            boolean isBlacklisted, ExploreSitesCategory category) {
+        ExploreSitesSite site = new ExploreSitesSite(siteId, title, url, isBlacklisted);
         category.addSite(site);
     }
 }
