@@ -27,7 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_NODE_INPUT_H_
 
 #include <memory>
-#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_summing_junction.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
@@ -44,12 +43,11 @@ class AudioNodeOutput;
 // number of channels of the input's bus is the maximum of the number of
 // channels of all its connections.
 
-class MODULES_EXPORT AudioNodeInput final : public AudioSummingJunction {
+class AudioNodeInput final : public AudioSummingJunction {
   USING_FAST_MALLOC(AudioNodeInput);
 
  public:
   static std::unique_ptr<AudioNodeInput> Create(AudioHandler&);
-  ~AudioNodeInput() override;
 
   // AudioSummingJunction
   void DidUpdate() override;
