@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Starts a local HTTP server which displays layout test failures (given a test
+"""Starts a local HTTP server which displays web test failures (given a test
 results directory), provides comparisons of expected and actual results (both
 images and text) and allows one-click rebaselining of tests.
 """
@@ -40,9 +40,9 @@ from blinkpy.tool.servers.rebaseline_server import get_test_baselines, Rebaselin
 
 class TestConfig(object):
 
-    def __init__(self, test_port, layout_tests_directory, results_directory, platforms, host):
+    def __init__(self, test_port, web_tests_directory, results_directory, platforms, host):
         self.test_port = test_port
-        self.layout_tests_directory = layout_tests_directory
+        self.web_tests_directory = web_tests_directory
         self.results_directory = results_directory
         self.platforms = platforms
         self.host = host
@@ -88,9 +88,9 @@ class RebaselineServer(AbstractLocalServerCommand):
         results_json = json_results_generator.load_json(host.filesystem, results_json_path)
 
         port = tool.port_factory.get()
-        layout_tests_directory = port.layout_tests_dir()
-        platforms = host.filesystem.listdir(host.filesystem.join(layout_tests_directory, 'platform'))
-        self._test_config = TestConfig(port, layout_tests_directory, results_directory, platforms, host)
+        web_tests_directory = port.web_tests_dir()
+        platforms = host.filesystem.listdir(host.filesystem.join(web_tests_directory, 'platform'))
+        self._test_config = TestConfig(port, web_tests_directory, results_directory, platforms, host)
 
         print 'Gathering current baselines...'
         self._gather_baselines(results_json)

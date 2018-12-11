@@ -32,9 +32,9 @@ class TryFlagTest(unittest.TestCase):
         git_cl = MockGitCL(host)
         finder = PathFinder(host.filesystem)
 
-        flag_file = finder.path_from_layout_tests(
+        flag_file = finder.path_from_web_tests(
             'additional-driver-flag.setting')
-        flag_expectations_file = finder.path_from_layout_tests(
+        flag_expectations_file = finder.path_from_web_tests(
             'FlagExpectations', 'foo')
 
         cmd = ['trigger', '--flag=--foo']
@@ -123,7 +123,7 @@ class TryFlagTest(unittest.TestCase):
         filesystem = host.filesystem
         finder = PathFinder(filesystem)
 
-        flag_expectations_file = finder.path_from_layout_tests(
+        flag_expectations_file = finder.path_from_web_tests(
             'FlagExpectations', 'foo')
         filesystem.write_text_file(
             flag_expectations_file,
@@ -161,7 +161,7 @@ class TryFlagTest(unittest.TestCase):
         host = MockHost()
         filesystem = host.filesystem
         finder = PathFinder(filesystem)
-        flag_expectations_file = finder.path_from_layout_tests(
+        flag_expectations_file = finder.path_from_web_tests(
             'FlagExpectations', 'foo')
         self._setup_mock_results(host.buildbot)
         cmd = ['update', '--flag=--foo']

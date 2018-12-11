@@ -53,7 +53,7 @@ class BaseTestCase(unittest.TestCase):
 
         # In AbstractParallelRebaselineCommand._rebaseline_commands, a default port
         # object is gotten using self.tool.port_factory.get(), which is used to get
-        # test paths -- and the layout tests directory may be different for the "test"
+        # test paths -- and the web tests directory may be different for the "test"
         # ports and real ports. Since only "test" ports are used in this class,
         # we can make the default port also a "test" port.
         self.original_port_factory_get = self.tool.port_factory.get
@@ -72,7 +72,7 @@ class BaseTestCase(unittest.TestCase):
     def _expand(self, path):
         if self.tool.filesystem.isabs(path):
             return path
-        return self.tool.filesystem.join(self.mac_port.layout_tests_dir(), path)
+        return self.tool.filesystem.join(self.mac_port.web_tests_dir(), path)
 
     def _read(self, path):
         return self.tool.filesystem.read_text_file(self._expand(path))
@@ -702,7 +702,7 @@ class TestBaselineSetTest(unittest.TestCase):
         host = MockBlinkTool()
         host.port_factory = MockPortFactory(host)
         port = host.port_factory.get()
-        base_dir = port.layout_tests_dir()
+        base_dir = port.web_tests_dir()
         host.filesystem.write_text_file(base_dir + '/a/x.html', '<html>')
         host.filesystem.write_text_file(base_dir + '/a/y.html', '<html>')
         host.filesystem.write_text_file(base_dir + '/a/z.html', '<html>')

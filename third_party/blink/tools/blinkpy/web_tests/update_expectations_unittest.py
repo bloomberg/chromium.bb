@@ -12,7 +12,7 @@ from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.web_tests.update_expectations import ExpectationsRemover
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory import PortFactory
-from blinkpy.web_tests.port.test import LAYOUT_TEST_DIR
+from blinkpy.web_tests.port.test import WEB_TEST_DIR
 from blinkpy.web_tests.update_expectations import main
 from blinkpy.tool.commands.flaky_tests import FlakyTests
 
@@ -116,7 +116,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
                      'test/f.html',
                      'test/g.html']
         for test in test_list:
-            path = filesystem.join(LAYOUT_TEST_DIR, test)
+            path = filesystem.join(WEB_TEST_DIR, test)
             filesystem.write_binary_file(path, '')
 
     def _create_expectations_remover(self, type_flag='all', remove_missing=False):

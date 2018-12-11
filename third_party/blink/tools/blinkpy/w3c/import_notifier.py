@@ -88,7 +88,7 @@ class ImportNotifier(object):
         for test_name in rebaselined_tests:
             test_without_ext, _ = self.host.filesystem.splitext(test_name)
             changed_baselines = []
-            # TODO(robertma): Refactor this into layout_tests.port.base.
+            # TODO(robertma): Refactor this into web_tests.port.base.
             baseline_name = test_without_ext + '-expected.txt'
             for changed_file in changed_files:
                 if changed_file.endswith(baseline_name):
@@ -165,7 +165,7 @@ class ImportNotifier(object):
         for directory, failures in self.new_failures_by_directory.iteritems():
             summary = '[WPT] New failures introduced in {} by import {}'.format(directory, gerrit_url)
 
-            full_directory = self.host.filesystem.join(self.finder.layout_tests_dir(), directory)
+            full_directory = self.host.filesystem.join(self.finder.web_tests_dir(), directory)
             owners_file = self.host.filesystem.join(full_directory, 'OWNERS')
             is_wpt_notify_enabled = self.owners_extractor.is_wpt_notify_enabled(owners_file)
 
@@ -214,7 +214,7 @@ class ImportNotifier(object):
             A multi-line string.
         """
         path_from_wpt = self.host.filesystem.relpath(
-            directory, self.finder.path_from_layout_tests('external', 'wpt'))
+            directory, self.finder.path_from_web_tests('external', 'wpt'))
         commit_list = ''
         for sha, subject in imported_commits:
             # subject is a Unicode string and can contain non-ASCII characters.
@@ -238,12 +238,12 @@ class ImportNotifier(object):
             test_name = self.default_port.lookup_virtual_test_base(test_name)
         # find_owners_file takes either a relative path from the *root* of the
         # repository, or an absolute path.
-        abs_test_path = self.finder.path_from_layout_tests(test_name)
+        abs_test_path = self.finder.path_from_web_tests(test_name)
         owners_file = self.owners_extractor.find_owners_file(self.host.filesystem.dirname(abs_test_path))
         if not owners_file:
             return None
         owned_directory = self.host.filesystem.dirname(owners_file)
-        short_directory = self.host.filesystem.relpath(owned_directory, self.finder.layout_tests_dir())
+        short_directory = self.host.filesystem.relpath(owned_directory, self.finder.web_tests_dir())
         return short_directory
 
     def file_bugs(self, bugs, dry_run, service_account_key_json=None):

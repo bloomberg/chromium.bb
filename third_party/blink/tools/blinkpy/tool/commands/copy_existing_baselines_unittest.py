@@ -21,9 +21,9 @@ class TestCopyExistingBaselines(BaseTestCase):
         options_dict.update(kwargs)
         return optparse.Values(options_dict)
 
-    def baseline_path(self, path_from_layout_test_dir):
+    def baseline_path(self, path_from_web_test_dir):
         port = self.tool.port_factory.get()
-        return self.tool.filesystem.join(port.layout_tests_dir(), path_from_layout_test_dir)
+        return self.tool.filesystem.join(port.web_tests_dir(), path_from_web_test_dir)
 
     # The tests in this class all depend on the fall-back path graph
     # that is set up in |TestPort.FALLBACK_PATHS|.

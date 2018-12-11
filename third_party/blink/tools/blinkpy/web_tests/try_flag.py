@@ -49,14 +49,14 @@ class TryFlag(object):
 
     def _force_flag_for_test_runner(self):
         flag = self._args.flag
-        path = self._path_finder.path_from_layout_tests(FLAG_FILE)
+        path = self._path_finder.path_from_web_tests(FLAG_FILE)
         self._filesystem.write_text_file(path, flag + '\n')
         self._git.add_list([path])
         self._git.commit_locally_with_message(
             'Flag try job: force %s for run_web_tests.py.' % flag)
 
     def _flag_expectations_path(self):
-        return self._path_finder.path_from_layout_tests(
+        return self._path_finder.path_from_web_tests(
             'FlagExpectations', self._args.flag.lstrip('-'))
 
     def _clear_expectations(self):

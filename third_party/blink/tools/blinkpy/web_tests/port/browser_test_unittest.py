@@ -51,8 +51,8 @@ class _BrowserTestTestCaseMixin(object):
         self.assertTrue(isinstance(self.make_port(options=optparse.Values({'driver_name': 'browser_tests'})
                                                   ).create_driver(1), browser_test_driver.BrowserTestDriver))
 
-    def test_layout_tests_dir(self):
-        self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests'))
+    def test_web_tests_dir(self):
+        self.assertTrue(self.make_port().web_tests_dir().endswith('chrome/test/data/printing/layout_tests'))
 
     def test_virtual_test_suites(self):
         # The browser_tests port do not use virtual test suites, so we are just testing the stub.

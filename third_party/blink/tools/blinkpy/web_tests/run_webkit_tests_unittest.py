@@ -581,7 +581,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_smoke_test(self):
         host = MockHost()
-        smoke_test_filename = test.LAYOUT_TEST_DIR + '/SmokeTests'
+        smoke_test_filename = test.WEB_TEST_DIR + '/SmokeTests'
         host.filesystem.write_text_file(smoke_test_filename, 'passes/text.html\n')
 
         # Test the default smoke testing.
@@ -612,7 +612,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_smoke_test_default_retry(self):
         host = MockHost()
-        smoke_test_filename = test.LAYOUT_TEST_DIR + '/SmokeTests'
+        smoke_test_filename = test.WEB_TEST_DIR + '/SmokeTests'
         host.filesystem.write_text_file(
             smoke_test_filename, 'failures/unexpected/text-image-checksum.html\n')
 
@@ -971,7 +971,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_reftest_mismatching_both_text_and_pixel(self):
         test_name = 'failures/unexpected/reftest.html'
         host = MockHost()
-        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'mismatch')
+        host.filesystem.write_text_file(test.WEB_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'mismatch')
         run_details, _, _ = logging_run([test_name], tests_included=True, host=host)
         self.assertNotEqual(run_details.exit_code, 0)
         self.assertEqual(run_details.initial_results.total, 1)
@@ -982,9 +982,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_extra_baselines(self):
         host = MockHost()
-        extra_txt = test.LAYOUT_TEST_DIR + '/passes/image-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/passes/image-expected.txt'
         host.filesystem.write_text_file(extra_txt, 'Extra txt')
-        extra_wav = test.LAYOUT_TEST_DIR + '/passes/image-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/passes/image-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
         test_name = 'passes/image.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1000,9 +1000,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_empty_overriding_baselines(self):
         host = MockHost()
-        base_baseline = test.LAYOUT_TEST_DIR + '/passes/image-expected.txt'
+        base_baseline = test.WEB_TEST_DIR + '/passes/image-expected.txt'
         host.filesystem.write_text_file(base_baseline, 'Non-empty')
-        platform_baseline = test.LAYOUT_TEST_DIR + '/platform/test-mac-mac10.10/passes/image-expected.txt'
+        platform_baseline = test.WEB_TEST_DIR + '/platform/test-mac-mac10.10/passes/image-expected.txt'
         host.filesystem.write_text_file(platform_baseline, '')
         test_name = 'passes/image.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1015,9 +1015,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reftest_extra_baselines(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/reftest-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
-        extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/passes/reftest-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
         test_name = 'passes/reftest.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1033,9 +1033,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reftest_with_text_extra_baselines(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/reftest-with-text-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
-        extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/passes/reftest-with-text-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
         test_name = 'passes/reftest-with-text.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1051,7 +1051,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reftest_extra_png_baseline(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/reftest-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
         test_name = 'passes/reftest.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1061,12 +1061,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_passing_testharness_extra_baselines(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/testharness-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
-        extra_txt = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
         host.filesystem.write_text_file(extra_txt,
             'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.')
-        extra_wav = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/passes/testharness-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
         test_name = 'passes/testharness.html'
         run_details, log_stream, _ = logging_run([test_name], tests_included=True, host=host)
@@ -1084,7 +1084,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_passing_testharness_extra_txt_baseline(self):
         host = MockHost()
-        extra_txt = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
         host.filesystem.write_text_file(extra_txt,
             'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.')
         test_name = 'passes/testharness.html'
@@ -1095,7 +1095,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_passing_testharness_extra_mismatching_txt_baseline(self):
         host = MockHost()
-        extra_txt = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
         host.filesystem.write_text_file(extra_txt,
             'This is a testharness.js-based test.\nFAIL: bah\nHarness: the test ran to completion.')
         test_name = 'passes/testharness.html'
@@ -1112,9 +1112,9 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # An all-pass testharness text baseline is necessary when it overrides a fallback baseline.
         host = MockHost()
         # The base baseline expects a failure.
-        base_baseline = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.txt'
+        base_baseline = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
         host.filesystem.write_text_file(base_baseline, 'Failure')
-        platform_baseline = test.LAYOUT_TEST_DIR + '/platform/test-mac-mac10.10/passes/testharness-expected.txt'
+        platform_baseline = test.WEB_TEST_DIR + '/platform/test-mac-mac10.10/passes/testharness-expected.txt'
         host.filesystem.write_text_file(platform_baseline,
             'This is a testharness.js-based test.\nPASS: bah\nHarness: the test ran to completion.')
         run_details, log_stream, _ = logging_run(
@@ -1221,7 +1221,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 class RebaselineTest(unittest.TestCase, StreamTestingMixin):
     """Tests for flags which cause new baselines to be written.
 
-    When running layout tests, there are several flags which write new
+    When running web tests, there are several flags which write new
     baselines. This is separate from the "blink_tool.py rebaseline" commands,
     which fetch new baselines from elsewhere rather than generating them.
     """
@@ -1233,19 +1233,19 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             written_files: from FileSystem.written_files.
             log_stream: The log stream from the run.
             expected_file_base: Relative path to the baseline,
-                without the extension, from the layout test directory.
+                without the extension, from the web test directory.
             expected_extensions: Expected extensions which should be written.
         """
         for ext in expected_extensions:
             baseline = '%s-expected%s' % (expected_file_base, ext)
-            baseline_full_path = '%s/%s' % (test.LAYOUT_TEST_DIR, baseline)
+            baseline_full_path = '%s/%s' % (test.WEB_TEST_DIR, baseline)
             self.assertIsNotNone(written_files.get(baseline_full_path))
             baseline_message = 'Writing new baseline "%s"\n' % baseline
             self.assert_contains(log_stream, baseline_message)
         # Assert that baselines with other extensions were not written.
         for ext in ({'.png', '.txt', '.wav'} - set(expected_extensions)):
             baseline = '%s-expected%s' % (expected_file_base, ext)
-            baseline_full_path = '%s/%s' % (test.LAYOUT_TEST_DIR, baseline)
+            baseline_full_path = '%s/%s' % (test.WEB_TEST_DIR, baseline)
             self.assertIsNone(written_files.get(baseline_full_path))
 
     def test_reset_results_basic(self):
@@ -1327,7 +1327,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # Tests that we update existing baseline for a testharness test.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR + '/failures/unexpected/testharness-expected.txt', 'foo')
+            test.WEB_TEST_DIR + '/failures/unexpected/testharness-expected.txt', 'foo')
         details, log_stream, _ = logging_run(
             [
                 '--reset-results',
@@ -1358,7 +1358,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # if the new baseline is different from the fallback baseline.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we also
@@ -1385,7 +1385,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # if the new baseline is different from the fallback baseline.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we also
@@ -1434,9 +1434,9 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reset_results_remove_extra_baselines(self):
         host = MockHost()
-        extra_txt = test.LAYOUT_TEST_DIR + '/failures/unexpected/image-only-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/failures/unexpected/image-only-expected.txt'
         host.filesystem.write_text_file(extra_txt, 'Extra txt')
-        extra_wav = test.LAYOUT_TEST_DIR + '/failures/unexpected/image-only-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/failures/unexpected/image-only-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
         details, log_stream, _ = logging_run(
             ['--reset-results', 'failures/unexpected/image-only.html'],
@@ -1452,11 +1452,11 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reset_results_reftest_remove_extra_baselines(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/reftest-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
-        extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/passes/reftest-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
-        extra_txt = test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/passes/reftest-expected.txt'
         host.filesystem.write_text_file(extra_txt, 'reftest')
         details, _, _ = logging_run(['--reset-results', 'passes/reftest.html'],
                                     tests_included=True, host=host)
@@ -1469,9 +1469,9 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reset_results_reftest_with_text_remove_extra_baselines(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/reftest-with-text-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
-        extra_wav = test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.wav'
+        extra_wav = test.WEB_TEST_DIR + '/passes/reftest-with-text-expected.wav'
         host.filesystem.write_text_file(extra_wav, 'Extra wav')
         details, _, _ = logging_run(['--reset-results', 'passes/reftest-with-text.html'],
                                     tests_included=True, host=host)
@@ -1480,13 +1480,13 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(len(written_files.keys()), 7)
         self.assertIsNone(written_files[extra_png])
         self.assertIsNone(written_files[extra_wav])
-        self.assertNotIn(test.LAYOUT_TEST_DIR + '/passes/reftest-with-text-expected.txt', written_files)
+        self.assertNotIn(test.WEB_TEST_DIR + '/passes/reftest-with-text-expected.txt', written_files)
 
     def test_reset_results_passing_testharness_remove_extra_baselines(self):
         host = MockHost()
-        extra_png = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.png'
+        extra_png = test.WEB_TEST_DIR + '/passes/testharness-expected.png'
         host.filesystem.write_text_file(extra_png, 'Extra png')
-        extra_txt = test.LAYOUT_TEST_DIR + '/passes/testharness-expected.txt'
+        extra_txt = test.WEB_TEST_DIR + '/passes/testharness-expected.txt'
         host.filesystem.write_text_file(extra_txt, 'Extra txt')
         details, log_stream, _ = logging_run(
             ['--reset-results', 'passes/testharness.html'],
@@ -1517,7 +1517,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # results are different from the current baselines.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we also
@@ -1542,7 +1542,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # results are different from the current baselines.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we also
@@ -1568,7 +1568,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # actual results are the same as the fallback baselines.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we check
@@ -1576,7 +1576,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             # result is the same as this fallback baseline.
             'text-image-checksum_fail-txt')
         flag_specific_baseline_txt = (
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/flag-specific/flag/failures/unexpected/text-image-checksum-expected.txt')
         host.filesystem.write_text_file(
             flag_specific_baseline_txt, 'existing-baseline-different-from-fallback')
@@ -1601,7 +1601,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # results are different from the current baselines.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we also
@@ -1626,7 +1626,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # baseline (which should not matter).
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/platform/test-mac-mac10.10/failures/unexpected/text-image-checksum-expected.png',
             'wrong-png-baseline')
 
@@ -1651,11 +1651,11 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # baseline (which should not matter).
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/platform/test-mac-mac10.10/failures/unexpected/text-image-checksum-expected.png',
             'wrong-png-baseline')
         host.filesystem.remove(
-            test.LAYOUT_TEST_DIR + '/failures/unexpected/text-image-checksum-expected.png')
+            test.WEB_TEST_DIR + '/failures/unexpected/text-image-checksum-expected.png')
 
         details, log_stream, _ = logging_run(
             [
@@ -1677,7 +1677,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         # actual results are the same as the fallback baselines.
         host = MockHost()
         host.filesystem.write_text_file(
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/failures/unexpected/text-image-checksum-expected.txt',
             # This value is the same as actual text result of the test defined
             # in blinkpy.web_tests.port.test. This is added so that we check
@@ -1685,7 +1685,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
             # result is the same as this fallback baseline.
             'text-image-checksum_fail-txt')
         virtual_baseline_txt = (
-            test.LAYOUT_TEST_DIR +
+            test.WEB_TEST_DIR +
             '/virtual/virtual_failures/failures/unexpected/text-image-checksum-expected.txt')
         host.filesystem.write_text_file(
             virtual_baseline_txt, 'existing-baseline-different-from-fallback')
