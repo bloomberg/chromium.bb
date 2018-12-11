@@ -5535,7 +5535,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  DCHECK_EQ(_documentURL.host(), newURL.host());
+  // Is it ok that newURL can be restore session URL?
+  if (!IsRestoreSessionUrl(_documentURL) && !IsRestoreSessionUrl(newURL)) {
+    DCHECK_EQ(_documentURL.host(), newURL.host());
+  }
   DCHECK(_documentURL != newURL);
 
   // If called during window.history.pushState or window.history.replaceState

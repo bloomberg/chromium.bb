@@ -522,6 +522,19 @@ void WKBasedNavigationManagerImpl::Restore(
   }
 }
 
+void WKBasedNavigationManagerImpl::LoadURLWithParams(
+    const NavigationManager::WebLoadParams& params) {
+  if (IsRestoreSessionInProgress() &&
+      !wk_navigation_util::IsRestoreSessionUrl(params.url)) {
+    AddRestoreCompletionCallback(
+        base::BindOnce(&NavigationManagerImpl::LoadURLWithParams,
+                       base::Unretained(this), params));
+    return;
+  }
+
+  NavigationManagerImpl::LoadURLWithParams(params);
+}
+
 void WKBasedNavigationManagerImpl::AddRestoreCompletionCallback(
     base::OnceClosure callback) {
   if (!is_restore_session_in_progress_) {

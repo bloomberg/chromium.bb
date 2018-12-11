@@ -135,6 +135,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   bool CanPruneAllButLastCommittedItem() const override;
   void Restore(int last_committed_item_index,
                std::vector<std::unique_ptr<NavigationItem>> items) override;
+  void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
   void AddRestoreCompletionCallback(base::OnceClosure callback) override;
   void LoadIfNecessary() override;
 
