@@ -11,7 +11,7 @@
 // MessagePump interface called CFRunLoopBase.  CFRunLoopBase contains all
 // of the machinery necessary to dispatch events to a delegate, but does not
 // implement the specific run loop.  Concrete subclasses must provide their
-// own DoRun and Quit implementations.
+// own DoRun and DoQuit implementations.
 //
 // A concrete subclass that just runs a CFRunLoop loop is provided in
 // MessagePumpCFRunLoop.  For an NSRunLoop, the similar MessagePumpNSRunLoop
@@ -83,6 +83,7 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
  public:
   // MessagePump:
   void Run(Delegate* delegate) override;
+  void Quit() override;
   void ScheduleWork() override;
   void ScheduleDelayedWork(const TimeTicks& delayed_work_time) override;
   void SetTimerSlack(TimerSlack timer_slack) override;
@@ -104,10 +105,20 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // up and tear down things before and after the "meat" of DoRun.
   virtual void DoRun(Delegate* delegate) = 0;
 
+  // Similar to DoRun, this allows subclasses to perform custom handling when
+  // quitting a run loop. Return true if the quit took effect immediately;
+  // otherwise call OnDidQuit() when the quit is actually applied (e.g., a
+  // nested native runloop exited).
+  virtual bool DoQuit() = 0;
+
+  // Should be called by subclasses to signal when a deferred quit takes place.
+  void OnDidQuit();
+
   // Accessors for private data members to be used by subclasses.
   CFRunLoopRef run_loop() const { return run_loop_; }
   int nesting_level() const { return nesting_level_; }
   int run_nesting_level() const { return run_nesting_level_; }
+  bool keep_running() const { return keep_running_; }
 
   // Sets this pump's delegate.  Signals the appropriate sources if
   // |delegateless_work_| is true.  |delegate| can be NULL.
@@ -251,6 +262,10 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // most recent attempt to run nesting-deferred work.
   int deepest_nesting_level_;
 
+  // Whether we should continue running application tasks. Set to false when
+  // Quit() is called for the innermost run loop.
+  bool keep_running_;
+
   // "Delegateless" work flags are set when work is ready to be performed but
   // must wait until a delegate is available to process it.  This can happen
   // when a MessagePumpCFRunLoopBase is instantiated and work arrives without
@@ -276,7 +291,7 @@ class BASE_EXPORT MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
   ~MessagePumpCFRunLoop() override;
 
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
  private:
   void EnterExitRunLoop(CFRunLoopActivity activity) override;
@@ -295,16 +310,13 @@ class BASE_EXPORT MessagePumpNSRunLoop : public MessagePumpCFRunLoopBase {
   ~MessagePumpNSRunLoop() override;
 
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
  private:
   // A source that doesn't do anything but provide something signalable
   // attached to the run loop.  This source will be signalled when Quit
   // is called, to cause the loop to wake up so that it can stop.
   CFRunLoopSourceRef quit_source_;
-
-  // False after Quit is called.
-  bool keep_running_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpNSRunLoop);
 };
@@ -318,7 +330,7 @@ class MessagePumpUIApplication : public MessagePumpCFRunLoopBase {
   MessagePumpUIApplication();
   ~MessagePumpUIApplication() override;
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
   // This message pump can not spin the main message loop directly.  Instead,
   // call |Attach()| to set up a delegate.  It is an error to call |Run()|.
@@ -351,13 +363,10 @@ class MessagePumpNSApplication : public MessagePumpCFRunLoopBase {
   ~MessagePumpNSApplication() override;
 
   void DoRun(Delegate* delegate) override;
-  void Quit() override;
+  bool DoQuit() override;
 
  private:
   friend class ScopedPumpMessagesInPrivateModes;
-
-  // False after Quit is called.
-  bool keep_running_;
 
   // True if DoRun is managing its own run loop as opposed to letting
   // -[NSApplication run] handle it.  The outermost run loop in the application
