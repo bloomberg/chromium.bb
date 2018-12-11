@@ -44,6 +44,7 @@ namespace gpu {
 
 class GpuChannelManager;
 class GpuChannelMessageFilter;
+class ImageDecodeAcceleratorWorker;
 class Scheduler;
 class SharedImageStub;
 class SyncPointManager;
@@ -62,7 +63,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannel : public IPC::Listener,
              scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
              int32_t client_id,
              uint64_t client_tracing_id,
-             bool is_gpu_host);
+             bool is_gpu_host,
+             ImageDecodeAcceleratorWorker* image_decode_accelerator_worker);
   ~GpuChannel() override;
 
   // Init() sets up the underlying IPC channel.  Use a separate method because

@@ -264,7 +264,8 @@ void GpuServiceImpl::InitializeWithHost(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
       scheduler_.get(), sync_point_manager_, gpu_memory_buffer_factory_.get(),
       gpu_feature_info_, std::move(activity_flags),
-      std::move(default_offscreen_surface), vulkan_context_provider());
+      std::move(default_offscreen_surface),
+      nullptr /* image_decode_accelerator_worker */, vulkan_context_provider());
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

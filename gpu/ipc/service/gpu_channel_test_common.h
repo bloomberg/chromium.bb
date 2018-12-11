@@ -33,8 +33,11 @@ class GpuChannelTestCommon : public testing::Test {
   ~GpuChannelTestCommon() override;
 
  protected:
-  GpuChannelManager* channel_manager() { return channel_manager_.get(); }
-  base::TestSimpleTaskRunner* task_runner() { return task_runner_.get(); }
+  GpuChannelManager* channel_manager() const { return channel_manager_.get(); }
+  base::TestSimpleTaskRunner* task_runner() const { return task_runner_.get(); }
+  base::TestSimpleTaskRunner* io_task_runner() const {
+    return io_task_runner_.get();
+  }
 
   GpuChannel* CreateChannel(int32_t client_id, bool is_gpu_host);
 

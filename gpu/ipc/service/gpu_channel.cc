@@ -81,6 +81,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
   GpuChannelMessageFilter(
       GpuChannel* gpu_channel,
       Scheduler* scheduler,
+      ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
 
   // Methods called on main thread.
@@ -128,12 +129,14 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelMessageFilter
 GpuChannelMessageFilter::GpuChannelMessageFilter(
     GpuChannel* gpu_channel,
     Scheduler* scheduler,
+    ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
     : gpu_channel_(gpu_channel),
       scheduler_(scheduler),
       main_task_runner_(std::move(main_task_runner)),
       image_decode_accelerator_stub_(
           base::MakeRefCounted<ImageDecodeAcceleratorStub>(
+              image_decode_accelerator_worker,
               gpu_channel,
               static_cast<int32_t>(
                   GpuChannelReservedRoutes::kImageDecodeAccelerator))) {
@@ -326,7 +329,8 @@ GpuChannel::GpuChannel(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     int32_t client_id,
     uint64_t client_tracing_id,
-    bool is_gpu_host)
+    bool is_gpu_host,
+    ImageDecodeAcceleratorWorker* image_decode_accelerator_worker)
     : gpu_channel_manager_(gpu_channel_manager),
       scheduler_(scheduler),
       sync_point_manager_(sync_point_manager),
@@ -340,7 +344,8 @@ GpuChannel::GpuChannel(
       weak_factory_(this) {
   DCHECK(gpu_channel_manager_);
   DCHECK(client_id_);
-  filter_ = new GpuChannelMessageFilter(this, scheduler, task_runner);
+  filter_ = new GpuChannelMessageFilter(
+      this, scheduler, image_decode_accelerator_worker, task_runner);
   // SharedImageInterfaceProxy/Stub is a singleton per channel, using a reserved
   // route.
   const int32_t shared_image_route_id =
