@@ -87,7 +87,7 @@
 <translation id="2320166752086256636">Klavyeyi gizle</translation>
 <translation id="2339560363438331454">Senkronizasyon ve Google Hizmetleri</translation>
 <translation id="2351097562818989364">Çeviri ayarlarınız sıfırlandı.</translation>
-<translation id="2359808026110333948">Devam Et</translation>
+<translation id="2359808026110333948">Devam et</translation>
 <translation id="2360196772093551345">Mobil Site İste</translation>
 <translation id="2381405137052800939">Temel ayarlar</translation>
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Son 1 Gün</translation>
 <translation id="3037605927509011580">Hay aksi!</translation>
 <translation id="3112556859945124369">İşaretle…</translation>
-<translation id="3126574100374611517">Kredi Kartlarını Yönet...</translation>
 <translation id="3157684681743766797">Tümünü İşaretle…</translation>
 <translation id="3175081911749765310">Web Hizmetleri</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
@@ -347,6 +346,7 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="6464071786529933911">Yeni Gizli Sekmede Aç</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe silindi</translation>
 <translation id="6541915733953096570">Son 1 Saat</translation>
+<translation id="6548479190262846511">Bu site için şifre bulunamadı</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="6656103420185847513">Klasörü Düzenleyin</translation>
 <translation id="6657585470893396449">Şifre</translation>

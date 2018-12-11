@@ -87,7 +87,7 @@
 <translation id="2320166752086256636">Billentyűzet elrejtése</translation>
 <translation id="2339560363438331454">Szinkronizálás és Google</translation>
 <translation id="2351097562818989364">A fordítási beállítások visszaállítása megtörtént.</translation>
-<translation id="2359808026110333948">Folytatás</translation>
+<translation id="2359808026110333948">Tovább</translation>
 <translation id="2360196772093551345">Mobilwebhely kérése</translation>
 <translation id="2381405137052800939">Alapok</translation>
 <translation id="2386793615875593361">1 kijelölve</translation>
@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Elmúlt nap</translation>
 <translation id="3037605927509011580">A manóba!</translation>
 <translation id="3112556859945124369">Megjelölés…</translation>
-<translation id="3126574100374611517">Hitelkártyák kezelése…</translation>
 <translation id="3157684681743766797">Az összes megjelölése…</translation>
 <translation id="3175081911749765310">Webszolgáltató</translation>
 <translation id="3207960819495026254">Könyvjelzőzött</translation>
@@ -347,6 +346,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
 <translation id="6541915733953096570">Elmúlt óra</translation>
+<translation id="6548479190262846511">Nem található jelszó a webhelyhez</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>
 <translation id="6657585470893396449">Jelszó</translation>

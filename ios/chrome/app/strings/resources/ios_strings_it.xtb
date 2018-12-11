@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Ultimo giorno</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3112556859945124369">Segna come…</translation>
-<translation id="3126574100374611517">Gestisci carte di credito…</translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>
 <translation id="3175081911749765310">Servizi web</translation>
 <translation id="3207960819495026254">Aggiunto ai Preferiti</translation>
@@ -347,6 +346,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6464071786529933911">Apri in nuova scheda in incognito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
 <translation id="6541915733953096570">Ultima ora</translation>
+<translation id="6548479190262846511">Non è stata trovata alcuna password per questo sito</translation>
 <translation id="6643016212128521049">Cancella</translation>
 <translation id="6656103420185847513">Modifica cartella</translation>
 <translation id="6657585470893396449">Password</translation>

@@ -40,6 +40,7 @@
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1550523713251050646">আরও বিকল্পের জন্য ক্লিক করুন</translation>
 <translation id="1570871743947603115">ব্লুটুথ টগল করুন। <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">এই সেশনে আপনার সব অ্যাক্টিভিটি অ্যাক্সেস করুন</translation>
 <translation id="1608626060424371292">এই ব্যবহারকারীকে সরান</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT" /> সময় বাকি আছে</translation>
 <translation id="1654477262762802994">ভয়েস কোয়েরি শুরু করুন</translation>
@@ -87,7 +88,7 @@
 <translation id="2341729377289034582">স্ক্রিনটি পোর্ট্রেট মোডে লক করা আছে</translation>
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
-<translation id="2359808026110333948">অবিরত</translation>
+<translation id="2359808026110333948">চালিয়ে যান</translation>
 <translation id="2365393535144473978">মোবাইল ডেটা সক্ষম করলে ব্লুটুথও সক্ষম হয়ে যাবে।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="239188844683466770">'বিরক্ত করবেন না' মোড টগল করুন</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">সংযোগ জুড়ুন</translation>
 <translation id="2961963223658824723">কিছু সমস্যা হয়েছে। কয়েক সেকেন্ডের মধ্যে আবার চেষ্টা করুন।</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">অ্যাপ, এক্সটেনশন এবং থিম ইনস্টল করুন</translation>
 <translation id="2995447421581609334">কাস্ট ডিভাইসগুলি দেখান।</translation>
 <translation id="2996462380875591307">ডক করা ম্যাগনিফায়ার চালু আছে। আবার Ctrl+Search+D প্রেস করে সেটিকে বন্ধ করুন।</translation>
 <translation id="3000461861112256445">মোনো অডিও</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">রিস্টার্ট করুন এবং রিসেট করুন</translation>
 <translation id="4961318399572185831">স্ক্রিন কাস্ট করুন</translation>
 <translation id="5030687792513154421">সময় শেষ</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" />টি নতুন ফোনে কানেক্ট করা হয়েছে</translation>
 <translation id="5083553833479578423">অ্যাসিস্ট্যান্ট-এর আরও বৈশিষ্ট্য আনলক করুন।</translation>
 <translation id="5136175204352732067">বিভিন্ন কীবোর্ড কানেক্ট করা হয়েছে</translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
@@ -326,6 +329,7 @@
 <translation id="6627638273713273709">সার্চ+Shift+K</translation>
 <translation id="6650933572246256093">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পাস কীটি প্রবেশ করুন: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
+<translation id="6665545700722362599">ওয়েবসাইট, অ্যাপ এবং এক্সটেনশনকে লোকেশন ভিত্তিক পরিষেবা, ডিভাইসের মাইক্রোফোন, ক্যামেরা ও অন্যান্য ফিচার ব্যবহার করতে অনুমতি দেয়</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">আলাদা করা যায় এমন কীবোর্ডের একটি জরুরি আপডেট প্রয়োজন</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
@@ -345,6 +349,7 @@
 <translation id="6981982820502123353">অ্যাক্সেযোগ্যতা</translation>
 <translation id="698231206551913481">একবার এই ব্যবহারকারীকে সরানো হলে এর সঙ্গে সংশ্লিষ্ট সমস্ত ফাইল এবং স্থানীয় ডেটা স্থায়ীভাবে মুছে ফেলা হবে।</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" />-এ আবার ব্যবহার করতে পারবেন।</translation>
+<translation id="7025533177575372252"><ph name="DEVICE_NAME" />-কে আপনার ফোনের সাথে কানেক্ট করুন</translation>
 <translation id="7029814467594812963">সেশন থেকে প্রস্থান</translation>
 <translation id="7066646422045619941">এই নেটওয়ার্কটি আপনার প্রশাসকের দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="7067196344162293536">স্বতঃ ঘূর্ণন</translation>
@@ -356,6 +361,7 @@
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> এ পুরানো রেসুলিউশানে ফেরানো হচ্ছে</translation>
+<translation id="7222902781030499995">টাইমার বন্ধ করুন</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="726276584504105859">বিভক্ত স্ক্রিন ব্যবহার করতে এখানে টেনে আনুন</translation>
 <translation id="7303365578352795231">অন্য ডিভাইসে উত্তর দেওয়া হচ্ছে।</translation>
@@ -388,6 +394,7 @@
 <translation id="7798302898096527229">Search টিপুন বা বাতিল করতে Shift টিপুন</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> এবং <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">জোরালো সিগন্যাল</translation>
+<translation id="7837740436429729974">সময় শেষ</translation>
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" />-এ কানেক্ট করা হচ্ছে</translation>
 <translation id="7842569679327885685">সতর্কতা: পরীক্ষামূলক বৈশিষ্ট্য</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
@@ -421,6 +428,7 @@
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">নোট তৈরি করুন</translation>
+<translation id="8375916635258623388">এই <ph name="DEVICE_NAME" />টি এবং আপনার ফোন নিজে থেকেই কানেক্ট হয়ে যাবে</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> এর জন্য বিকল্পগুলির মেনু</translation>
 <translation id="8394567579869570560">আপনার অভিভাবক এই ডিভাইসটি লক করে দিয়েছেন</translation>
 <translation id="8406981827175133772">ফুল-স্ক্রিন ম্যাগনিফায়ার</translation>
@@ -458,6 +466,7 @@
 <translation id="8874184842967597500">সংযুক্ত নয়</translation>
 <translation id="8877788021141246043">রিমাইন্ডার সেট করুন</translation>
 <translation id="8878886163241303700">স্ক্রিন সম্প্রসারণ করা হচ্ছে</translation>
+<translation id="8898978413391960553">০০:০০ সেকেন্ড</translation>
 <translation id="8921624153894383499">Google সহায়ক এই ভাষায় কথা বলে না।</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>

@@ -121,6 +121,13 @@
 
           Vaikimisi pole hallatud seadmetes saadaval ühtegi kiiravamisrežiimi.</translation>
 <translation id="123081309365616809">Sisu ülekandmise lubamine seadmesse</translation>
+<translation id="1231349879329465225">Võimaldab lubada või keelata kiire ülemineku.
+      See kehtib seadme kõigi kasutajate ja liideste puhul.
+      Kiire ülemineku kasutamiseks peab nii see seade kui ka võrgupõhine ONC atribuut olema lubatud.
+      Pärast määramist jääb kiire ülemineku funktsioon lubatuks, kuni see reeglis keelatakse.
+
+      Kui reegel on määramata või seatud olekule Väär, ei kasutata kiiret üleminekut.
+      Kui reegel on seatud väärtusele Tõene, kasutatakse kiiret üleminekut juhul, kui juhtmeta pääsupunkt seda toetab.</translation>
 <translation id="1243570869342663665">Teenuse SafeSites täiskasvanutele mõeldud sisu filtreerimise haldamine.</translation>
 <translation id="1257550411839719984">Allalaadimise vaikekataloogi määramine</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>
@@ -138,6 +145,7 @@
       Erinevalt reeglist <ph name="URL_LIST_POLICY_NAME" /> kehtivad reeglid mõlemas suunas. See tähendab, et kui Internet Exploreri pistikprogramm on olemas ja lubatud, juhib see ka seda, kas <ph name="IE_PRODUCT_NAME" /> peaks avama URL-id rakenduses <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Kasuta puhverserveri pac-skripti</translation>
 <translation id="1304973015437969093">Taustal installitavate laienduste/rakenduste ID-d ja värskenduste URL-id</translation>
+<translation id="1307415922184340052">Saatke kasutajanimi ja faili nimi iga prinditöö puhul omaprinterite serverile. Vaikimisi neid ei saadeta.</translation>
 <translation id="1307454923744766368">Lähtekohad või hostinimede mustrid, mille puhul ei kehti
       ebaturvaliste lähtekohtade piirangud</translation>
 <translation id="1313457536529613143">Määratleb ekraani tumenduse viivituse skaleerimismäära protsentides, kui täheldatakse kasutaja tegevust ekraani tumendamise ajal või peagi pärast ekraani väljalülitumist.
@@ -3430,4 +3438,5 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
       Seadmed ei saa nendel konkreetsetel ajavahemikel automaatselt värskendusi kontrollida. Seadmeid, mis tuleb viia vanemale versioonile või mis kasutavad vanemat kui minimaalset nõutavat versiooni <ph name="PRODUCT_OS_NAME" />, see reegel võimalike turvaohtude tõttu ei mõjuta. Lisaks ei blokeeri see reegel kasutajate või administraatorite taotletud värskenduste kontrolle.
       Kui see reegel on määramata või ei sisalda ajavahemikke, toimub järgmine.
       See reegel automaatseid värskenduste kontrolle ei blokeeri, kuid muud reeglid võivad seda teha.</translation>
+<translation id="991560005425213776">Kasutajanime ja faili nime saatmine omaprinteritele</translation>
 </translationbundle>

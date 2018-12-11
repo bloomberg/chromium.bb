@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Zvýšenie hlasitosti</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Posunutie kurzora na začiatok predchádzajúceho slova</translation>
-<translation id="1671169355475348905">Prepnutie na metódu vstupu predchádzajúceho jazyka</translation>
 <translation id="1679841710523778799">Zvýšenie jasu</translation>
 <translation id="168356808214100546">Pridržanie klávesa <ph name="ALT" />. Následné klepnutie na kláves <ph name="TAB" />, kým neprejdete na okno, ktoré chcete otvoriť. Následné uvoľnenie klávesa.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -44,7 +43,6 @@
 <translation id="2574014812750545982">Obnovenie úrovne priblíženia/oddialenia na stránke</translation>
 <translation id="2596078834055697711">Vytvorenie snímky obrazovky okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="TAB" /> alebo <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Prepnutie na metódu vstupu ďalšieho jazyka</translation>
 <translation id="2699509451653686398">Uloženie aktuálnej webovej stránky ako záložky</translation>
 <translation id="2750942583782703988">Obnovenie aktuálnej stránky</translation>
 <translation id="2764005613199379871">Umiestnenie zamerania do panela s adresou vyhľadávania</translation>

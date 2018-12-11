@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;Tools</translation>
 <translation id="1122242684574577509">Authentication failed. Click to visit the login page for the Wi-Fi network you are using (<ph name="NETWORK_ID" />).</translation>
 <translation id="1122960773616686544">Bookmark name</translation>
-<translation id="1123187597739372905">Show sync settings</translation>
 <translation id="1124772482545689468">User</translation>
 <translation id="1125550662859510761">Looks like <ph name="WIDTH" /> x <ph name="HEIGHT" /> (Native)</translation>
 <translation id="1128109161498068552">Do not allow any sites to use system exclusive messages to access MIDI devices</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">Edit search engine</translation>
 <translation id="1134009406053225289">Open in incognito window</translation>
-<translation id="1136155683023653803">Passwords, bookmarks, history and more are synced to your account</translation>
 <translation id="1137673463384776352">Open link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Access your Bluetooth and Serial devices</translation>
 <translation id="1140610710803014750">To get your bookmarks on all your devices, sign in and turn on sync.</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">Always allow <ph name="HOST" /> to access sensors</translation>
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1156488781945104845">Current time</translation>
-<translation id="1157102636231978136">Your browsing data and activity, synced to your Google account</translation>
 <translation id="1161575384898972166">Please sign in to <ph name="TOKEN_NAME" /> to export the client certificate.</translation>
 <translation id="1161699061380012396">Chrome OS input method</translation>
 <translation id="1163931534039071049">&amp;View frame source</translation>
@@ -624,13 +621,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Open full screen</translation>
 <translation id="189358972401248634">Other languages</translation>
-<translation id="1894591787927543791">Save card to use Google Pay</translation>
 <translation id="1895658205118569222">Shutdown</translation>
 <translation id="1895934970388272448">You must confirm registration on your printer to finish this process - check it now.</translation>
 <translation id="1897762215429052132">Setup network connection, language, keyboard layout...</translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
 <translation id="1902576642799138955">Validity Period</translation>
-<translation id="1904518222538904133">One of your cards can only be used on this device</translation>
 <translation id="1905375423839394163">Chromebook device name</translation>
 <translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
 <translation id="1909880997794698664">Are you sure you want to permanently keep this device in kiosk mode?</translation>
@@ -854,6 +849,7 @@
 <translation id="225614027745146050">Welcome</translation>
 <translation id="225692081236532131">Activation status</translation>
 <translation id="2261323523305321874">Your administrator has made a system-wide change that disables some old profiles.</translation>
+<translation id="2262332168014443534">Lite mode now makes browsing faster on all pages, including HTTPS.</translation>
 <translation id="2262477216570151239">Delay before repeat</translation>
 <translation id="2263189956353037928">Sign out &amp; sign back in</translation>
 <translation id="2263497240924215535">(Disabled)</translation>
@@ -1105,6 +1101,7 @@
 <translation id="2660779039299703961">Event</translation>
 <translation id="266079277508604648">Can’t connect to printer. Check that the printer is turned on and is connected to your Chromebook by Wi-Fi or USB.</translation>
 <translation id="2661146741306740526">16 x 9</translation>
+<translation id="2661714428027871023">Browse faster and use less data with Lite mode. Click to find out more.</translation>
 <translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="2663302507110284145">Language</translation>
 <translation id="2665394472441560184">Add a new word</translation>
@@ -1278,6 +1275,7 @@
 <translation id="2908162660801918428">Add Media Gallery by Directory</translation>
 <translation id="2910318910161511225">Connect to a network and try again</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
+<translation id="2915102088417824677">View activity log</translation>
 <translation id="2916073183900451334">Pressing Tab on a web page highlights links, as well as form fields</translation>
 <translation id="2916745397441987255">Search extensions</translation>
 <translation id="2921081876747860777">Please create a password to protect your local data.</translation>
@@ -1655,6 +1653,7 @@
 <translation id="3514373592552233661">Preferred networks will be preferred over other known networks if more than one is available</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
 <translation id="3523642406908660543">Ask when a site wants to use a plug-in to access your computer (recommended)</translation>
+<translation id="3526034519184079374">Can't Read or Change Site's Data</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3527276236624876118">A supervised user named <ph name="USER_DISPLAY_NAME" /> has been created.</translation>
 <translation id="3528033729920178817">This page is tracking your location.</translation>
@@ -2066,6 +2065,7 @@
 <translation id="4104163789986725820">E&amp;xport...</translation>
 <translation id="4107048419833779140">Identify and eject storage devices</translation>
 <translation id="4109135793348361820">Move window to <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">Download complete: <ph name="FILE_NAME" />. Press Shift+F6 to cycle to the downloads bar area.</translation>
 <translation id="4110895898888439383">Browse the web in high contrast mode</translation>
 <translation id="4115002065223188701">Network out of range</translation>
 <translation id="4115080753528843955">Some content services use unique identifiers for the purposes of authorising access to protected content</translation>
@@ -2226,6 +2226,7 @@
 <translation id="44141919652824029">Allow '<ph name="APP_NAME" />' to get the list of your attached USB devices?</translation>
 <translation id="4414232939543644979">New &amp;Incognito Window</translation>
 <translation id="4415245286584082850">No devices found. Open a help centre article in a new tab.</translation>
+<translation id="4415276339145661267">Manage your Google account</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (aka NIST P-384)</translation>
 <translation id="4416582610654027550">Type a valid URL</translation>
 <translation id="4419409365248380979">Always allow <ph name="HOST" /> to set cookies</translation>
@@ -2321,6 +2322,7 @@
 <translation id="4568213207643490790">Sorry, Google accounts are not allowed on this device.</translation>
 <translation id="4568854179928172494">Modified time</translation>
 <translation id="4569747168316751899">When idle</translation>
+<translation id="4570387585180509432">Addresses, phone numbers and more</translation>
 <translation id="4572659312570518089">Authentication cancelled while connecting to "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> file</translation>
 <translation id="457386861538956877">More...</translation>
@@ -2332,7 +2334,6 @@
 <translation id="4585793705637313973">Edit page</translation>
 <translation id="4590324241397107707">Database Storage</translation>
 <translation id="4593021220803146968">&amp;Go to <ph name="URL" /></translation>
-<translation id="459505086032485258">Show Google services settings</translation>
 <translation id="4595560905247879544">Apps and extensions can only be modified by the manager (<ph name="CUSTODIAN_NAME" />).</translation>
 <translation id="4596295440756783523">You have certificates on file that identify these servers</translation>
 <translation id="4598556348158889687">Storage management</translation>
@@ -2999,6 +3000,7 @@
 <translation id="5585912436068747822">Formatting failed</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Loading apps...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> wants to pair to devices</translation>
 <translation id="5592595402373377407">Not enough data available yet.</translation>
 <translation id="5593357315997824387">Sync my files</translation>
 <translation id="5595152862129936745">Very far</translation>
@@ -3031,6 +3033,7 @@
 <translation id="5627676517703583263">Browse smart with Chrome</translation>
 <translation id="562935524653278697">Your administrator has disabled syncing of your bookmarks, history, passwords and other settings.</translation>
 <translation id="5632566673632479864">Your account <ph name="EMAIL" /> is no longer allowed as the primary account. Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device.</translation>
+<translation id="5632592977009207922">Downloading, <ph name="PERCENT_REMAINING" />% remaining</translation>
 <translation id="563535393368633106">Ask before accessing (recommended)</translation>
 <translation id="5636996382092289526">To use <ph name="NETWORK_ID" /> you may first need to <ph name="LINK_START" />visit the network's sign-in page<ph name="LINK_END" />, which will open automatically in a few seconds. If it doesn't happen, the network can't be used.</translation>
 <translation id="5637476008227280525">Mobile data enable</translation>
@@ -3413,6 +3416,7 @@
 <translation id="6198252989419008588">Change PIN</translation>
 <translation id="6199801702437275229">Waiting for space info...</translation>
 <translation id="6201792273624501289">Linux apps</translation>
+<translation id="6202304368170870640">You can use your PIN to sign in to or unlock your device.</translation>
 <translation id="6205710420833115353">Some operations are taking longer than expected. Do you want to abort them?</translation>
 <translation id="6206311232642889873">Cop&amp;y Image</translation>
 <translation id="6207200176136643843">Reset to default zoom level</translation>
@@ -3737,6 +3741,7 @@
 <translation id="6706210727756204531">Scope</translation>
 <translation id="6707389671160270963">SSL Client Certificate</translation>
 <translation id="6708242697268981054">Origin:</translation>
+<translation id="6709133671862442373">News</translation>
 <translation id="6709357832553498500">Connect using <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6718273304615422081">Zipping...</translation>
@@ -3917,7 +3922,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="6998793565256476099">Enrol device for video conferencing</translation>
 <translation id="7000347579424117903">Include Ctrl, Alt or Search</translation>
-<translation id="700203306553508933">Save cards to use Google Pay</translation>
 <translation id="7002055706763150362">To set up Smart Lock for Chromebook, Google needs to make sure that it’s you – type your password to get started.</translation>
 <translation id="7002454948392136538">Choose the manager for this supervised user</translation>
 <translation id="7003339318920871147">Web Databases</translation>
@@ -4245,6 +4249,7 @@
 <translation id="7497215489070763236">Server CA certificate</translation>
 <translation id="7497981768003291373">You have no recently captured WebRTC text logs.</translation>
 <translation id="7502658306369382406">IPv6 address</translation>
+<translation id="7503127198245469314">Remove headset to block or allow on the desktop display</translation>
 <translation id="7503191893372251637">Netscape Certificate Type</translation>
 <translation id="7503821294401948377">Could not load icon '<ph name="ICON" />' for browser action.</translation>
 <translation id="750509436279396091">Open downloads folder</translation>
@@ -4411,6 +4416,7 @@
 <translation id="7782102568078991263">No more suggestions from Google</translation>
 <translation id="778330624322499012">Could not load <ph name="PLUGIN_NAME" /></translation>
 <translation id="7784067724422331729">Security settings on your computer blocked this file.</translation>
+<translation id="7784796923038949829">Can't read or change site's data</translation>
 <translation id="778480864305029524">To use Instant Tethering, turn on notifications for Google Play Services.</translation>
 <translation id="7786207843293321886">Exit Guest</translation>
 <translation id="7786889348652477777">&amp;Reload App</translation>
@@ -4643,7 +4649,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8059417245945632445">&amp;Inspect devices</translation>
 <translation id="8063235345342641131">Default green avatar</translation>
 <translation id="8064671687106936412">Key:</translation>
-<translation id="8065485338434000013">Some of your cards can only be used on this device</translation>
 <translation id="806812017500012252">Reorder by title</translation>
 <translation id="8068253693380742035">Touch to sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
@@ -4859,6 +4864,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8425213833346101688">Change</translation>
 <translation id="8425492902634685834">Pin to task bar</translation>
 <translation id="8425755597197517046">Pa&amp;ste and Search</translation>
+<translation id="8425768983279799676">You can use your PIN to unlock your device.</translation>
 <translation id="8426713856918551002">Enabling</translation>
 <translation id="8427292751741042100">embedded on any host</translation>
 <translation id="8428213095426709021">Settings</translation>

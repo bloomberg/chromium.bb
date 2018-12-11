@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Tu so prikazani odprti zavihki</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Ime imetnika kartice</translation>
-<translation id="1809549658008855907">Ali želite kartice shraniti v Google Račun?</translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1834321415901700177">Na tem spletnem mestu so škodljivi programi</translation>
 <translation id="1839551713262164453">Preverjanje vrednosti pravilnika je bilo neuspešno z napakami</translation>
 <translation id="1842969606798536927">Plačilo</translation>
-<translation id="1866450167992311397">Uporaba kartic na več mestih</translation>
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
 <translation id="1871284979644508959">Obvezno polje</translation>
 <translation id="1874765382782611674">Sprejete debetne kartice</translation>
@@ -179,7 +177,7 @@
 <translation id="20817612488360358">Za uporabo so nastavljene sistemske nastavitve strežnika proxy, vendar je navedena tudi izrecna konfiguracija proxyja.</translation>
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2094505752054353250">Neujemanje domen</translation>
-<translation id="2096368010154057602">Departma</translation>
+<translation id="2096368010154057602">Področje</translation>
 <translation id="2102134110707549001">Predlagaj zapleteno geslo …</translation>
 <translation id="2108755909498034140">Znova zaženite računalnik</translation>
 <translation id="2113977810652731515">Kartica</translation>
@@ -220,7 +218,7 @@
 <translation id="2355395290879513365">Napadalci morda vidijo slike, ki si jih ogledujete na tem spletnem mestu, in vas ukanijo, tako da jih spremenijo.</translation>
 <translation id="2356070529366658676">Vprašaj</translation>
 <translation id="2359629602545592467">Več valut</translation>
-<translation id="2359808026110333948">Nadaljuj</translation>
+<translation id="2359808026110333948">Naprej</translation>
 <translation id="2360873523816792727">Če želite uporabljati kartice v vseh napravah, vklopite sinhronizacijo.</translation>
 <translation id="2365563543831475020">Poročilo o zrušitvi, zajeto takrat: <ph name="CRASH_TIME" />, ni bilo naloženo</translation>
 <translation id="2367567093518048410">Raven</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">Dovoli (privzeto)</translation>
 <translation id="3427342743765426898">&amp;Uveljavi urejanje</translation>
 <translation id="342781501876943858">Chromium priporoča, da ponastavite geslo, če ste ga uporabljali tudi na drugih spletnih mestih.</translation>
-<translation id="3430691998045392297">Čas predvajanja filma se razlikuje. Ali želite nadaljevati?</translation>
 <translation id="3431636764301398940">Shrani to kartico v tej napravi</translation>
 <translation id="3447661539832366887">Lastnik te naprave je izklopil igro z dinozavri</translation>
 <translation id="3447884698081792621">Prikaz potrdila (izdal: <ph name="ISSUER" />)</translation>
@@ -450,7 +447,7 @@
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
-<translation id="3885155851504623709">Okrožje</translation>
+<translation id="3885155851504623709">Župnija</translation>
 <translation id="3886446263141354045">Vaša zahteva za dostop do tega mesta je poslana uporabniku <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Dodajanje e-poštnega naslova</translation>
 <translation id="3901925938762663762">Kartica je potekla</translation>
@@ -618,7 +615,7 @@
 <translation id="5086888986931078152">Morda boste izgubili dostop do zaščitene vsebine na nekaterih spletnih mestih.</translation>
 <translation id="5087286274860437796">Potrdilo strežnika trenutno ni veljavno.</translation>
 <translation id="5087580092889165836">Dodaj kartico</translation>
-<translation id="5089810972385038852">Zvezna država</translation>
+<translation id="5089810972385038852">Država:</translation>
 <translation id="5094747076828555589">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chromium ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="5098332213681597508">To ime je iz vašega Google Računa.</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
 <translation id="5730040223043577876">Chrome priporoča, da ponastavite geslo, če ste ga uporabljali na drugih spletnih mestih.</translation>
 <translation id="5732392974455271431">Starši ga lahko odblokirajo</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Ta kartica in njen naslov za izstavitev računa bosta shranjena v Google Računu, tako da boste lahko hitreje dokončali nakup, ko boste prijavljeni}one{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Računu, tako da boste lahko hitreje dokončali nakup, ko boste prijavljeni}two{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Računu, tako da boste lahko hitreje dokončali nakup, ko boste prijavljeni}few{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Računu, tako da boste lahko hitreje dokončali nakup, ko boste prijavljeni}other{Te kartice in njihovi naslovi za izstavitev računa bodo shranjeni v Google Računu, tako da boste lahko hitreje dokončali nakup, ko boste prijavljeni}}</translation>
 <translation id="5763042198335101085">Vnesite veljaven e-poštni naslov</translation>
 <translation id="5765072501007116331">Če si želite ogledati načine dostave in zahteve, izberite naslov</translation>
 <translation id="5770114862687765385">Videti je, da je datoteka poškodovana. Kliknite gumb »Ponastavi«, da ponastavite sejo.</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026">Sprosti manj kot <ph name="SIZE" />. Nekatera spletna mesta se bodo ob naslednjem obisku morda počasneje naložila.</translation>
 <translation id="6337534724793800597">Filtriraj pravilnike po imenu</translation>
 <translation id="6358450015545214790">Več o teh nastavitvah</translation>
-<translation id="635989537247018238">V naslednjem koraku lahko izberete, katere kartice želite shraniti</translation>
 <translation id="6383221683286411806">Morda bo prišlo do bremenitev.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{in še 1 predlog}one{in še # predlog}two{in še # predloga}few{in še # predlogi}other{in še # predlogov}}</translation>
 <translation id="6387754724289022810">Če želite naslednjič hitreje plačati, shranite kartico in naslov za izstavitev računa v Google Računu in v tej napravi.</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">Ogledujete si stran razširitve</translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
 <translation id="6604181099783169992">Tipala za gibanje in svetlobe</translation>
-<translation id="6607617806003952240">Ne morem več pomagati. Nadaljujte ročno.</translation>
 <translation id="6624427990725312378">Podatki o stiku</translation>
 <translation id="6626291197371920147">Dodajanje veljavne številke kartice</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
@@ -854,6 +848,7 @@
 <translation id="6865412394715372076">Te kartice trenutno ni mogoče preveriti</translation>
 <translation id="6868206169573555318">Znova zaženite za posodobitev</translation>
 <translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
+<translation id="6885646002011712606">Pomočnik za samodejno izpolnjevanje je na voljo pri dnu zaslona</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
 <translation id="6895330447102777224">Kartica je potrjena.</translation>
@@ -870,7 +865,7 @@
 <translation id="6964255747740675745">Omrežne konfiguracije ni bilo mogoče razčleniti (neveljaven JSON).</translation>
 <translation id="6965382102122355670">V redu</translation>
 <translation id="6965978654500191972">Naprava</translation>
-<translation id="6970216967273061347">Okraj</translation>
+<translation id="6970216967273061347">Okrožje</translation>
 <translation id="6973656660372572881">Določeni so stalni strežniki proxy in URL skripta .pac.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">Izklop zvoka (privzeto)</translation>
@@ -883,7 +878,7 @@
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7064851114919012435">Podatki o stiku</translation>
 <translation id="7079718277001814089">To spletno mesto vsebuje zlonamerno programsko opremo</translation>
-<translation id="7087282848513945231">Okraj</translation>
+<translation id="7087282848513945231">Okrožje</translation>
 <translation id="7090678807593890770">Iščite v Googlu s poizvedbo <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Skrij</translation>
 <translation id="7108819624672055576">Omogoča razširitev</translation>
@@ -891,8 +886,9 @@
 <translation id="7119414471315195487">Zaprite druge zavihke ali programe</translation>
 <translation id="7129409597930077180">Pošiljanje na ta naslov ni mogoče. Izberite drugega.</translation>
 <translation id="7138472120740807366">Način dostave</translation>
-<translation id="7139724024395191329">Emirat</translation>
+<translation id="7139724024395191329">Emirat:</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
+<translation id="7158980942472052083">Neveljaven URL. URL mora imeti standardno shemo.</translation>
 <translation id="717330890047184534">ID za Gaio:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Shranjevanje in izpolnjevanje plačilnih sredstev</translation>
@@ -996,6 +992,7 @@ Dodatne podrobnosti:
 <translation id="7716424297397655342">Tega spletnega mesta ni mogoče naložiti iz predpomnilnika</translation>
 <translation id="7723047071702270851">Urejanje kartice</translation>
 <translation id="774634243536837715">Nevarna vsebina blokirana.</translation>
+<translation id="7747182086178764941">Prikazan je zaslon za prvi zagon pomočnika za samodejno izpolnjevanje</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="7755287808199759310">Starš ga lahko odblokira</translation>
 <translation id="7758069387465995638">Povezavo je morda blokiral požarni zid ali protivirusni program.</translation>
@@ -1141,7 +1138,6 @@ Dodatne podrobnosti:
 <translation id="8763927697961133303">Naprava USB</translation>
 <translation id="8768895707659403558">Če želite uporabljati kartice v vseh napravah, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Ta kartica je dodana v Google Račun. Zdaj jo lahko uporabljate v poljubni napravi, v kateri ste prijavljeni.}one{Te kartice so dodane v Google Račun. Zdaj jih lahko uporabljate v poljubni napravi, v kateri ste prijavljeni.}two{Te kartice so dodane v Google Račun. Zdaj jih lahko uporabljate v poljubni napravi, v kateri ste prijavljeni.}few{Te kartice so dodane v Google Račun. Zdaj jih lahko uporabljate v poljubni napravi, v kateri ste prijavljeni.}other{Te kartice so dodane v Google Račun. Zdaj jih lahko uporabljate v poljubni napravi, v kateri ste prijavljeni.}}</translation>
 <translation id="8792621596287649091">Izgubite lahko dostop do računa za <ph name="ORG_NAME" /> ali postanete žrtev kraje identitete. Chromium priporoča, da spremenite geslo.</translation>
 <translation id="8800988563907321413">Tu so prikazani predlogi v bližini</translation>
 <translation id="8820817407110198400">Zaznamki</translation>

@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
 <translation id="1570871743947603115">Ativar/desativar Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Aceda a toda a sua atividade nesta sessão.</translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2961963223658824723">Ocorreu um erro. Tente novamente dentro de alguns segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Instalar aplicações, extensões e temas</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmissão.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">Reiniciar e repor</translation>
 <translation id="4961318399572185831">Transmitir ecrã</translation>
 <translation id="5030687792513154421">O tempo terminou</translation>
+<translation id="5035236842988137213">O dispositivo <ph name="DEVICE_NAME" /> estabeleceu ligação a um novo telemóvel.</translation>
 <translation id="5083553833479578423">Desbloqueie mais funcionalidades do Assistente.</translation>
 <translation id="5136175204352732067">Teclado diferente ligado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
+<translation id="6665545700722362599">Conceda aos Websites, às aplicações e às extensões autorização para utilizar os Serviços de localização, o microfone, a câmara ou outras funcionalidades do dispositivo.</translation>
 <translation id="6691659475504239918">Pesquisa + Shift + H</translation>
 <translation id="6696025732084565524">O teclado amovível necessita de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão de menu IME</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os ficheiros e dados locais associados a este utilizador são permanentemente eliminados assim que este utilizador é removido.</translation>
 <translation id="7015766095477679451">Volte à(s) <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Ligue o dispositivo <ph name="DEVICE_NAME" /> ao telemóvel.</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo gestor.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">A ligar</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">A reverter para a resolução antiga dentro de <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Parar temporizador</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
 <translation id="7303365578352795231">A responder noutro dispositivo…</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
+<translation id="7837740436429729974">Acabou o tempo</translation>
 <translation id="7842211907556571265">A ligar a <ph name="NETWORK_NAME" />…</translation>
 <translation id="7842569679327885685">Aviso: funcionalidade experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Criar nota</translation>
+<translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> e o telemóvel serão associados automaticamente.</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Os teus pais bloquearam este dispositivo</translation>
 <translation id="8406981827175133772">Lupa de ecrã inteiro</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">Sem ligação</translation>
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
+<translation id="8898978413391960553">00:00 seg.</translation>
 <translation id="8921624153894383499">O Assistente Google não fala este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>

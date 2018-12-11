@@ -89,14 +89,12 @@
 <translation id="1122198203221319518">&amp;เครื่องมือ</translation>
 <translation id="1122242684574577509">การตรวจสอบสิทธิ์ล้มเหลว คลิกเพื่อไปที่หน้าการเข้าสู่ระบบสำหรับเครือข่าย Wi-Fi ที่คุณกำลังใช้อยู่ (<ph name="NETWORK_ID" />)</translation>
 <translation id="1122960773616686544">ชื่อบุ๊กมาร์ก</translation>
-<translation id="1123187597739372905">แสดงการตั้งค่าการซิงค์</translation>
 <translation id="1124772482545689468">ผู้ใช้</translation>
 <translation id="1125550662859510761">ดูเหมือน <ph name="WIDTH" /> x <ph name="HEIGHT" /> (ค่าดั้งเดิม)</translation>
 <translation id="1128109161498068552">ไม่อนุญาตให้ไซต์ใดๆ ใช้ข้อความเฉพาะของระบบในการเข้าถึงอุปกรณ์ MIDI</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">แก้ไขเครื่องมือค้นหา</translation>
 <translation id="1134009406053225289">เปิดในหน้าต่างที่ไม่ระบุตัวตน</translation>
-<translation id="1136155683023653803">ระบบจะซิงค์รหัสผ่าน บุ๊กมาร์ก ประวัติการเข้าชม และอื่นๆ ไปยังบัญชีของคุณ</translation>
 <translation id="1137673463384776352">เปิดลิงก์ใน <ph name="APP" /></translation>
 <translation id="1140351953533677694">เข้าถึงอุปกรณ์บลูทูธและอุปกรณ์ซีเรียล</translation>
 <translation id="1140610710803014750">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -115,7 +113,6 @@
 <translation id="1151917987301063366">อนุญาตให้ <ph name="HOST" /> เข้าถึงเซ็นเซอร์เสมอ</translation>
 <translation id="1153356358378277386">อุปกรณ์ที่จับคู่</translation>
 <translation id="1156488781945104845">เวลาปัจจุบัน</translation>
-<translation id="1157102636231978136">ข้อมูลและกิจกรรมการท่องเว็บซึ่งซิงค์กับบัญชี Google</translation>
 <translation id="1161575384898972166">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /> เพื่อส่งออกใบรับรองไคลเอ็นต์</translation>
 <translation id="1161699061380012396">วิธีการป้อนข้อมูลของ Chrome OS</translation>
 <translation id="1163931534039071049">&amp;ดูรหัสต้นฉบับของเฟรม</translation>
@@ -299,7 +296,7 @@
 <translation id="1420834118113404499">ใบอนุญาตสื่อ</translation>
 <translation id="1420920093772172268"><ph name="TURN_ON_BLUETOOTH_LINK" /> เพื่ออนุญาตการจับคู่อุปกรณ์</translation>
 <translation id="1422159345171879700">โหลดสคริปต์ที่ไม่ปลอดภัย</translation>
-<translation id="1426410128494586442">ใช่</translation>
+<translation id="1426410128494586442">ยอมรับ</translation>
 <translation id="1426870617281699524">คลิก "ลองอีกครั้ง" และยอมรับการแจ้งเตือนที่แสดงบนคอมพิวเตอร์</translation>
 <translation id="142758023928848008">เปิดใช้งาน sticky keys (เพื่อแสดงแป้นพิมพ์ลัดโดยการพิมพ์ต่อเนื่องกัน)</translation>
 <translation id="143027896309062157">อ่านและเปลี่ยนข้อมูลทั้งหมดของคุณบนคอมพิวเตอร์และเว็บไซต์ที่คุณเข้าชม</translation>
@@ -624,13 +621,11 @@
 <translation id="1890674179660343635">&lt;span&gt;รหัส: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">เปิดการแสดงแบบเต็มหน้าจอ</translation>
 <translation id="189358972401248634">ภาษาอื่นๆ</translation>
-<translation id="1894591787927543791">บันทึกบัตรเพื่อใช้ Google Pay</translation>
 <translation id="1895658205118569222">ปิด</translation>
 <translation id="1895934970388272448">คุณต้องยืนยันการลงทะเบียนเครื่องพิมพ์ของคุณเพื่อให้ขั้นตอนนี้เสร็จสิ้น ตรวจสอบเลย</translation>
 <translation id="1897762215429052132">ตั้งค่าการเชื่อมต่อเครือข่าย ภาษา รูปแบบแป้นพิมพ์...</translation>
 <translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
 <translation id="1902576642799138955">ระยะเวลาที่มีผลบังคับใช้</translation>
-<translation id="1904518222538904133">คุณมีบัตรใบหนึ่งที่ใช้ได้ในอุปกรณ์นี้เท่านั้น</translation>
 <translation id="1905375423839394163">ชื่ออุปกรณ์ Chromebook</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1909880997794698664">คุณต้องการเก็บอุปกรณ์นี้ไว้ในโหมดคีออสก์อย่างถาวรหรือไม่</translation>
@@ -854,6 +849,7 @@
 <translation id="225614027745146050">ยินดีต้อนรับ</translation>
 <translation id="225692081236532131">สถานะการเปิดใช้งาน</translation>
 <translation id="2261323523305321874">ผู้ดูแลระบบได้ทำการเปลี่ยนแปลงทั้งระบบซึ่งทำให้มีการปิดใช้โปรไฟล์เก่าบางรายการ</translation>
+<translation id="2262332168014443534">ตอนนี้โหมด Lite ช่วยให้คุณเรียกดูหน้าเว็บทุกหน้ารวมถึง HTTPS ได้รวดเร็วขึ้น</translation>
 <translation id="2262477216570151239">หน่วงเวลาก่อนพิมพ์ซ้ำ</translation>
 <translation id="2263189956353037928">ออกจากระบบและลงชื่อเข้าใช้ใหม่</translation>
 <translation id="2263497240924215535">(ปิดการใช้งาน)</translation>
@@ -915,7 +911,7 @@
 <translation id="2356070529366658676">ถาม</translation>
 <translation id="2357949918965361754">คุณสามารถใช้ฟีเจอร์นี้เพื่อแสดงเนื้อหาจาก Chrome บน TV หรืออุปกรณ์อื่นๆ ได้</translation>
 <translation id="2359345697448000899">จัดการส่วนขยายของคุณโดยคลิกที่ "ส่วนขยาย" ในเมนู "เครื่องมือ"</translation>
-<translation id="2359808026110333948">ดำเนินการต่อ</translation>
+<translation id="2359808026110333948">ต่อไป</translation>
 <translation id="236117173274098341">เพิ่มประสิทธิภาพ</translation>
 <translation id="236141728043665931">บล็อกการเข้าถึงไมโครโฟนเสมอ</translation>
 <translation id="2365507699358342471">เว็บไซต์นี้จะดูข้อความและรูปภาพที่คัดลอกไปยังคลิปบอร์ดได้</translation>
@@ -1106,6 +1102,7 @@
 <translation id="2660779039299703961">กิจกรรม</translation>
 <translation id="266079277508604648">เชื่อมต่อเครื่องพิมพ์ไม่ได้ โปรดตรวจสอบว่าเครื่องพิมพ์เปิดอยู่และเชื่อมต่อกับ Chromebook ผ่าน Wi-Fi หรือ USB</translation>
 <translation id="2661146741306740526">16x9</translation>
+<translation id="2661714428027871023">เรียกดูหน้าเว็บได้เร็วขึ้นและใช้เน็ตน้อยลงได้ด้วยโหมด Lite คลิกเพื่อดูข้อมูลเพิ่มเติม</translation>
 <translation id="2662876636500006917">Chrome Web Store</translation>
 <translation id="2663302507110284145">ภาษา</translation>
 <translation id="2665394472441560184">เพิ่มคำใหม่</translation>
@@ -1279,6 +1276,7 @@
 <translation id="2908162660801918428">เพิ่มแกลเลอรีสื่อตามไดเรกทอรี</translation>
 <translation id="2910318910161511225">เชื่อมต่อกับเครือข่ายแล้วลองอีกครั้ง</translation>
 <translation id="2913331724188855103">อนุญาตให้ไซต์บันทึกและอ่านข้อมูลคุกกี้ (แนะนำ)</translation>
+<translation id="2915102088417824677">ดูบันทึกกิจกรรม</translation>
 <translation id="2916073183900451334">การกดแท็บบนหน้าเว็บจะเน้นลิงก์ และฟิลด์ของฟอร์ม</translation>
 <translation id="2916745397441987255">ค้นหาส่วนขยาย</translation>
 <translation id="2921081876747860777">โปรดสร้างรหัสผ่านเพื่อปกป้องข้อมูลในเครื่อง</translation>
@@ -1656,6 +1654,7 @@
 <translation id="3514373592552233661">ระบบจะเลือกเครือข่ายที่ต้องการแทนเครือข่ายที่รู้จักอื่นๆ หากมีเครือข่ายที่รู้จักมากกว่า 1 เครือข่าย</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
 <translation id="3523642406908660543">ถามเมื่อเว็บไซต์ต้องการใช้ปลั๊กอินเพื่อเข้าถึงคอมพิวเตอร์ของคุณ (แนะนำ)</translation>
+<translation id="3526034519184079374">อ่านหรือเปลี่ยนแปลงข้อมูลของเว็บไซต์ไม่ได้</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3527276236624876118">ผู้ใช้ภายใต้การดูแลชื่อ <ph name="USER_DISPLAY_NAME" /> ได้ถูกสร้างขึ้น</translation>
 <translation id="3528033729920178817">หน้าเว็บนี้กำลังติดตามตำแหน่งของคุณอยู่</translation>
@@ -2067,6 +2066,7 @@
 <translation id="4104163789986725820">ส่ง&amp;ออก</translation>
 <translation id="4107048419833779140">ระบุและยกเลิกการต่อเชื่อมอุปกรณ์จัดเก็บข้อมูล</translation>
 <translation id="4109135793348361820">ย้ายหน้าต่างไปยัง <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
+<translation id="4110490973560452005">ดาวน์โหลดเสร็จสมบูรณ์: <ph name="FILE_NAME" /> กด Shift+F6 เพื่อวนกลับไปยังบริเวณแถบดาวน์โหลด</translation>
 <translation id="4110895898888439383">ท่องเว็บในโหมดคอนทราสต์สูง</translation>
 <translation id="4115002065223188701">เครือข่ายอยู่นอกช่วงสัญญาณ</translation>
 <translation id="4115080753528843955">บริการเนื้อหาบางอย่างใช้ตัวระบุที่ไม่ซ้ำกันเพื่อการให้สิทธิ์เข้าถึงเนื้อหาที่มีการป้องกัน</translation>
@@ -2227,6 +2227,7 @@
 <translation id="44141919652824029">อนุญาตให้ "<ph name="APP_NAME" />" เรียกรายการอุปกรณ์ USB ที่เชื่อมต่ออยู่ใช่ไหม</translation>
 <translation id="4414232939543644979">หน้าต่างใหม่&amp;ที่ไม่ระบุตัวตน</translation>
 <translation id="4415245286584082850">ไม่พบอุปกรณ์ โปรดเปิดบทความในศูนย์ช่วยเหลือในแท็บใหม่</translation>
+<translation id="4415276339145661267">จัดการบัญชี Google</translation>
 <translation id="4415748029120993980">SECG elliptic curve secp384r1 (เรียกอีกอย่างว่า NIST P-384)</translation>
 <translation id="4416582610654027550">พิมพ์ URL ที่ถูกต้อง</translation>
 <translation id="4419409365248380979">อนุญาตให้ <ph name="HOST" /> ตั้งค่าคุกกี้ได้ตลอดเวลา</translation>
@@ -2322,6 +2323,7 @@
 <translation id="4568213207643490790">ขออภัย เราไม่อนุญาตให้ใช้บัญชี Google ในอุปกรณ์เครื่องนี้</translation>
 <translation id="4568854179928172494">เวลาที่แก้ไข</translation>
 <translation id="4569747168316751899">เมื่อไม่ได้ใช้งาน</translation>
+<translation id="4570387585180509432">ที่อยู่ หมายเลขโทรศัพท์ และอื่นๆ</translation>
 <translation id="4572659312570518089">การตรวจสอบสิทธิ์ถูกยกเลิกขณะที่เชื่อมต่อกับ "<ph name="DEVICE_NAME" />"</translation>
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
@@ -2333,7 +2335,6 @@
 <translation id="4585793705637313973">แก้ไขหน้า</translation>
 <translation id="4590324241397107707">พื้นที่จัดเก็บฐานข้อมูล</translation>
 <translation id="4593021220803146968">&amp;ไปที่ <ph name="URL" /></translation>
-<translation id="459505086032485258">แสดงการตั้งค่าบริการของ Google</translation>
 <translation id="4595560905247879544">แอปและส่วนขยายสามารถแก้ไขได้โดยผู้จัดการ (<ph name="CUSTODIAN_NAME" />) เท่านั้น</translation>
 <translation id="4596295440756783523">คุณมีใบรับรองของไฟล์ซึ่งระบุตัวตนของเซิร์ฟเวอร์เหล่านี้:</translation>
 <translation id="4598556348158889687">การจัดการพื้นที่เก็บข้อมูล</translation>
@@ -2424,7 +2425,7 @@
 <translation id="473546211690256853">บัญชีนี้จัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="4735803855089279419">ระบบระบุตัวบ่งชี้อุปกรณ์ของอุปกรณ์นี้ไม่สำเร็จ</translation>
 <translation id="4737715515457435632">โปรดเชื่อมต่อเครือข่าย</translation>
-<translation id="473775607612524610">การอัปเดต</translation>
+<translation id="473775607612524610">อัปเดต</translation>
 <translation id="474217410105706308">ปิดเสียงแท็บ</translation>
 <translation id="4742746985488890273">ตรึงที่ชั้นวาง</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ดูวิธีอัปเดตแอปพลิเคชัน<ph name="END_LINK" /></translation>
@@ -2688,7 +2689,7 @@
 <translation id="5151354047782775295">เพิ่มพื้นที่ว่างของดิสก์หรือเลือกข้อมูลที่อาจลบออกเองโดยอัตโนมัติ</translation>
 <translation id="5153234146675181447">เลิกจำโทรศัพท์</translation>
 <translation id="5154108062446123722">การตั้งค่าขั้นสูงสำหรับ <ph name="PRINTING_DESTINATION" /></translation>
-<translation id="5154702632169343078">Subject</translation>
+<translation id="5154702632169343078">เรื่อง</translation>
 <translation id="5157635116769074044">ตรึงหน้าเว็บนี้ไว้ที่หน้าจอเริ่ม...</translation>
 <translation id="5158593464696388225">ไม่สามารถบันทึกรูปภาพ</translation>
 <translation id="5158983316805876233">ใช้พร็อกซีเดียวกันสำหรับโปรโตคอลทั้งหมด</translation>
@@ -3000,6 +3001,7 @@
 <translation id="5585912436068747822">การจัดรูปแบบล้มเหลว</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">กำลังโหลดแอป...</translation>
+<translation id="5592010267127539419"><ph name="URL_HOST" /> ต้องการจับคู่กับอุปกรณ์ต่างๆ</translation>
 <translation id="5592595402373377407">ยังไม่มีข้อมูลเพียงพอ</translation>
 <translation id="5593357315997824387">ซิงค์ไฟล์</translation>
 <translation id="5595152862129936745">ไกลมาก</translation>
@@ -3032,6 +3034,7 @@
 <translation id="5627676517703583263">ท่องเว็บอย่างมีประสิทธิภาพด้วย Chrome</translation>
 <translation id="562935524653278697">ผู้ดูแลระบบของคุณได้ปิดใช้การซิงค์ของบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ</translation>
 <translation id="5632566673632479864">บัญชี <ph name="EMAIL" /> ของคุณไม่ได้รับอนุญาตในฐานะบัญชีหลักอีกต่อไป เนื่องจากบัญชีนี้จัดการโดย <ph name="DOMAIN" /> ระบบจะล้างบุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ ของคุณจากอุปกรณ์นี้</translation>
+<translation id="5632592977009207922">กำลังดาวน์โหลด เหลือ <ph name="PERCENT_REMAINING" />%</translation>
 <translation id="563535393368633106">ถามก่อนที่จะเข้าถึง (แนะนำ)</translation>
 <translation id="5636996382092289526">หากต้องการใช้ <ph name="NETWORK_ID" /> ก่อนอื่น คุณอาจจำเป็นต้อง<ph name="LINK_START" />ไปที่หน้าลงชื่อเข้าใช้ของเครือข่าย<ph name="LINK_END" /> ซึ่งจะเปิดขึ้นโดยอัตโนมัติในอีกไม่กี่วินาที ถ้าหน้าดังกล่าวไม่เปิดขึ้น แสดงว่าไม่สามารถใช้เครือข่ายดังกล่าวได้</translation>
 <translation id="5637476008227280525">เปิดใช้อินเทอร์เน็ตมือถือ</translation>
@@ -3414,6 +3417,7 @@
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
 <translation id="6199801702437275229">กำลังรอข้อมูลพื้นที่...</translation>
 <translation id="6201792273624501289">แอป Linux</translation>
+<translation id="6202304368170870640">คุณใช้ PIN เพื่อลงชื่อเข้าใช้หรือปลดล็อกอุปกรณ์ได้</translation>
 <translation id="6205710420833115353">การดำเนินการบางอย่างใช้เวลานานกว่าที่คาดไว้ คุณต้องการล้มเลิกไหม</translation>
 <translation id="6206311232642889873">คัดลอ&amp;กรูปภาพ</translation>
 <translation id="6207200176136643843">รีเซ็ตเป็นระดับการซูมเริ่มต้น</translation>
@@ -3738,6 +3742,7 @@
 <translation id="6706210727756204531">ขอบเขต</translation>
 <translation id="6707389671160270963">ใบรับรองไคลเอ็นต์ SSL</translation>
 <translation id="6708242697268981054">ต้นทาง:</translation>
+<translation id="6709133671862442373">ข่าวสาร</translation>
 <translation id="6709357832553498500">เชื่อมต่อโดยใช้ <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6718273304615422081">กำลังซิป...</translation>
@@ -3918,7 +3923,6 @@
 <translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
 <translation id="6998793565256476099">ลงทะเบียนอุปกรณ์สำหรับการประชุมทางวิดีโอ</translation>
 <translation id="7000347579424117903">รวม Ctrl, Alt หรือแป้นค้นหา</translation>
-<translation id="700203306553508933">บันทึกบัตรเพื่อใช้ Google Pay</translation>
 <translation id="7002055706763150362">ในการตั้งค่า Smart Lock สำหรับ Chromebook นั้น Google จะต้องตรวจสอบว่าเป็นคุณจริงๆ โปรดพิมพ์รหัสผ่านเพื่อเริ่มต้นใช้งาน</translation>
 <translation id="7002454948392136538">เลือกผู้จัดการสำหรับผู้ใช้ภายใต้การดูแลนี้</translation>
 <translation id="7003339318920871147">ฐานข้อมูลเว็บ</translation>
@@ -4246,6 +4250,7 @@
 <translation id="7497215489070763236">ใบรับรอง CA ของเซิร์ฟเวอร์</translation>
 <translation id="7497981768003291373">คุณไม่มีบันทึกข้อความ WebRTC ที่จับภาพเมื่อเร็วๆ นี้</translation>
 <translation id="7502658306369382406">ที่อยู่ IPv6</translation>
+<translation id="7503127198245469314">ถอดอุปกรณ์ครอบศีรษะออกเพื่อบล็อกหรืออนุญาตในจอแสดงผลของเดสก์ท็อป</translation>
 <translation id="7503191893372251637">ประเภทใบรับรองของ Netscape </translation>
 <translation id="7503821294401948377">ไม่สามารถโหลดไอคอน "<ph name="ICON" />" เพื่อให้เกิดการทำงานของเบราว์เซอร์</translation>
 <translation id="750509436279396091">เปิดโฟลเดอร์ดาวน์โหลด</translation>
@@ -4412,6 +4417,7 @@
 <translation id="7782102568078991263">ไม่มีคำแนะนำเพิ่มเติมจาก Google</translation>
 <translation id="778330624322499012">ไม่สามารถโหลด <ph name="PLUGIN_NAME" /></translation>
 <translation id="7784067724422331729">การตั้งค่าความปลอดภัยในคอมพิวเตอร์ของคุณบล็อกไฟล์นี้</translation>
+<translation id="7784796923038949829">อ่านหรือเปลี่ยนแปลงข้อมูลของเว็บไซต์ไม่ได้</translation>
 <translation id="778480864305029524">เปิดการแจ้งเตือนสำหรับบริการ Google Play เพื่อใช้การเชื่อมต่ออินเทอร์เน็ตผ่านมือถือแบบด่วน</translation>
 <translation id="7786207843293321886">ออกจากเซสชันผู้มาเยือน</translation>
 <translation id="7786889348652477777">โ&amp;หลดแอปซ้ำ</translation>
@@ -4644,7 +4650,6 @@
 <translation id="8059417245945632445">&amp;ตรวจสอบอุปกรณ์</translation>
 <translation id="8063235345342641131">รูปโปรไฟล์เริ่มต้นสีเขียว</translation>
 <translation id="8064671687106936412">คีย์:</translation>
-<translation id="8065485338434000013">บัตรบางใบจะใช้ได้ในอุปกรณ์นี้เท่านั้น</translation>
 <translation id="806812017500012252">จัดลำดับใหม่ตามชื่อ</translation>
 <translation id="8068253693380742035">แตะเพื่อลงชื่อเข้าใช้</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
@@ -4860,6 +4865,7 @@
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8425492902634685834">กำหนดลงบนทาสก์บาร์</translation>
 <translation id="8425755597197517046">&amp;วางและค้นหา</translation>
+<translation id="8425768983279799676">คุณใช้ PIN เพื่อปลดล็อกอุปกรณ์ได้</translation>
 <translation id="8426713856918551002">กำลังเปิดใช้</translation>
 <translation id="8427292751741042100">ฝังในโฮสต์ใดก็ได้</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>

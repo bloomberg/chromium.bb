@@ -87,7 +87,7 @@
 <translation id="2320166752086256636">Paslēpt tastatūru</translation>
 <translation id="2339560363438331454">Sinhronizēšana un Google pakalpojumi</translation>
 <translation id="2351097562818989364">Tulkošanas iestatījumi ir atiestatīti.</translation>
-<translation id="2359808026110333948">Turpināt</translation>
+<translation id="2359808026110333948">Turpiniet</translation>
 <translation id="2360196772093551345">Pieprasīt mobilo vietni</translation>
 <translation id="2381405137052800939">Pamata</translation>
 <translation id="2386793615875593361">Atlasīts 1 fotoattēls</translation>
@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Iepriekšējā diena</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
 <translation id="3112556859945124369">Atzīmēt…</translation>
-<translation id="3126574100374611517">Pārvaldīt kredītkartes…</translation>
 <translation id="3157684681743766797">Atzīmēt visus…</translation>
 <translation id="3175081911749765310">Tīm. pak.</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
@@ -347,6 +346,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6464071786529933911">Atvērt jaunā inkogn. cilnē</translation>
 <translation id="6482629121755362506">Dzēsti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Iepriekšējā stunda</translation>
+<translation id="6548479190262846511">Šai vietnei nav atrasta neviena parole</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="6656103420185847513">Mapes rediģēšana</translation>
 <translation id="6657585470893396449">Parole</translation>

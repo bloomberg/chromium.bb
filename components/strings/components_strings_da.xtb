@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Dine åbne faner vises her</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kortindehaverens navn</translation>
-<translation id="1809549658008855907">Vil du gemme kort på din Google-konto?</translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette website indeholder skadelige programmer</translation>
 <translation id="1839551713262164453">Validering af politikværdier mislykkedes med fejl</translation>
 <translation id="1842969606798536927">Betal</translation>
-<translation id="1866450167992311397">Brug dine kort flere steder</translation>
 <translation id="1871208020102129563">Proxy er indstillet til at bruge faste proxyservere, ikke webadresser til .pac-scripts.</translation>
 <translation id="1871284979644508959">Skal udfyldes</translation>
 <translation id="1874765382782611674">Accepterede betalingskort</translation>
@@ -179,7 +177,7 @@
 <translation id="20817612488360358">Indstillingerne for systemproxy er angivet at blive brugt, men en eksplicit proxykonfiguration er også angivet.</translation>
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2094505752054353250">Uoverensstemmelse mellem domæner</translation>
-<translation id="2096368010154057602">Departement</translation>
+<translation id="2096368010154057602">Afdeling</translation>
 <translation id="2102134110707549001">Foreslå stærk adgangskode…</translation>
 <translation id="2108755909498034140">Genstart computeren</translation>
 <translation id="2113977810652731515">Kort</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">Tillad (standardindstilling)</translation>
 <translation id="3427342743765426898">&amp;Annuller fortryd redigering</translation>
 <translation id="342781501876943858">Chromium anbefaler, at du nulstiller din adgangskode, hvis du har brugt den på andre websites.</translation>
-<translation id="3430691998045392297">Filmscreeningen er anderledes. Vil du fortsætte?</translation>
 <translation id="3431636764301398940">Gem dette kort på denne enhed</translation>
 <translation id="3447661539832366887">Ejeren af denne enhed har lukket dinosaurspillet.</translation>
 <translation id="3447884698081792621">Vis certifikat (udstedt af <ph name="ISSUER" />)</translation>
@@ -450,7 +447,7 @@
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3858027520442213535">Opdater dato og tid</translation>
 <translation id="3884278016824448484">Modstridende enheds-id</translation>
-<translation id="3885155851504623709">Sogn</translation>
+<translation id="3885155851504623709">Amt</translation>
 <translation id="3886446263141354045">Din anmodning om adgang til dette website er blevet sendt til <ph name="NAME" />.</translation>
 <translation id="3890664840433101773">Tilføj mail</translation>
 <translation id="3901925938762663762">Kortet er udløbet</translation>
@@ -618,7 +615,7 @@
 <translation id="5086888986931078152">Du kan miste adgang til beskyttet indhold fra visse websites.</translation>
 <translation id="5087286274860437796">Serverens certifikatet er ikke gyldigt i øjeblikket.</translation>
 <translation id="5087580092889165836">Tilføj kort</translation>
-<translation id="5089810972385038852">Delstat</translation>
+<translation id="5089810972385038852">Stat</translation>
 <translation id="5094747076828555589">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da Chromium ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5095208057601539847">Provins</translation>
 <translation id="5098332213681597508">Dette navn er fra din Google-konto.</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">Aktuel bruger</translation>
 <translation id="5730040223043577876">Chrome anbefaler, at du nulstiller din adgangskode, hvis du har brugt den på andre websites.</translation>
 <translation id="5732392974455271431">Dine forældre kan fjerne blokeringen for dig</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Dette kort og den tilhørende faktureringsadresse gemmes på din Google-konto, så du hurtigere kan betale de steder, hvor du er logget ind}one{Dette kort og den tilhørende faktureringsadresse gemmes på din Google-konto, så du hurtigere kan betale de steder, hvor du er logget ind}other{Disse kort og de tilhørende faktureringsadresser gemmes på din Google-konto, så du hurtigere kan betale de steder, hvor du er logget ind}}</translation>
 <translation id="5763042198335101085">Angiv en gyldig mailadresse</translation>
 <translation id="5765072501007116331">Vælg en adresse for at se leveringsmetoder og -krav</translation>
 <translation id="5770114862687765385">Filen ser ud til at være beskadiget. Klik på knappen "Nulstil" for at nulstille sessionen.</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026">Frigiver mindre end <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere under dit næste besøg.</translation>
 <translation id="6337534724793800597">Filtrér politikker efter navn</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
-<translation id="635989537247018238">I det næste trin kan du vælge, hvilke kort der skal gemmes</translation>
 <translation id="6383221683286411806">Potentielle debiteringer forude</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">Gem dit kort og din faktureringsadresse på din Google-konto og denne enhed for at betale hurtigere næste gang.</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">Du ser en udvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsmuligheder</translation>
 <translation id="6604181099783169992">Bevægelses- eller lyssensorer</translation>
-<translation id="6607617806003952240">Jeg kan desværre ikke hjælpe mere. Fortsæt manuelt.</translation>
 <translation id="6624427990725312378">Kontaktoplysninger</translation>
 <translation id="6626291197371920147">Tilføj gyldigt kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> -søgning</translation>
@@ -854,6 +848,7 @@
 <translation id="6865412394715372076">Dette kort kan ikke bekræftes lige nu</translation>
 <translation id="6868206169573555318">Genstart for at opdatere</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
+<translation id="6885646002011712606">Assistenten til AutoFyld findes nederst på skærmen</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Politikniveauet understøttes ikke.</translation>
 <translation id="6895330447102777224">Dit kort er bekræftet</translation>
@@ -893,6 +888,7 @@
 <translation id="7138472120740807366">Leveringsmetode</translation>
 <translation id="7139724024395191329">Emirat</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> anden}one{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> anden}other{<ph name="PAYMENT_METHOD_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> andre}}</translation>
+<translation id="7158980942472052083">Webadressen er ugyldig. Webadessen skal have et standardskema.</translation>
 <translation id="717330890047184534">Gaia-id:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> anden}one{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> anden}other{<ph name="SHIPPING_OPTION_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andre}}</translation>
 <translation id="7179323680825933600">Gem og udfyld betalingsmetoder</translation>
@@ -996,6 +992,7 @@ Yderligere oplysninger:
 <translation id="7716424297397655342">Dette website kan ikke indlæses fra cachen</translation>
 <translation id="7723047071702270851">Rediger kort</translation>
 <translation id="774634243536837715">Farligt indhold er blokeret.</translation>
+<translation id="7747182086178764941">Skærmen til brug af assistenten til AutoFyld første gang vises</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="7755287808199759310">Din forælder kan fjerne blokeringen for dig</translation>
 <translation id="7758069387465995638">Firewall- eller antivirussoftware kan have blokeret forbindelsen.</translation>
@@ -1142,7 +1139,6 @@ Yderligere oplysninger:
 <translation id="8763927697961133303">USB-enhed</translation>
 <translation id="8768895707659403558"><ph name="SIGN_IN_LINK" /> for at bruge dine kort på alle dine enheder.</translation>
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Dette kort er føjet til din Google-konto. Du kan nu bruge det på enhver enhed, hvor du er logget ind.}one{Dette kort er føjet til din Google-konto. Du kan nu bruge det på enhver enhed, hvor du er logget ind.}other{Disse kort er føjet til din Google-konto. Du kan nu bruge dem på enhver enhed, hvor du er logget ind.}}</translation>
 <translation id="8792621596287649091">Du kan miste adgangen til din <ph name="ORG_NAME" />-konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>
 <translation id="8800988563907321413">Her vises de forslag, der er tæt på dig</translation>
 <translation id="8820817407110198400">Bogmærker</translation>

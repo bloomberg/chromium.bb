@@ -16,7 +16,6 @@
 <translation id="152892567002884378">Volume up</translation>
 <translation id="1560480564179555003"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="ESC" /></translation>
 <translation id="1652741121070700329">Move to the start of the previous word</translation>
-<translation id="1671169355475348905">Switch to the input method of the previous language</translation>
 <translation id="1679841710523778799">Turn brightness up</translation>
 <translation id="168356808214100546">Press and hold <ph name="ALT" />, tap <ph name="TAB" /> until you get to the window that you want to open, then release.</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -44,7 +43,6 @@
 <translation id="2574014812750545982">Reset zoom level on the page</translation>
 <translation id="2596078834055697711">Take window screenshot</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, then <ph name="TAB" /> or <ph name="RIGHT" /></translation>
-<translation id="2687057317448262550">Switch to the input method of the next language</translation>
 <translation id="2699509451653686398">Save your current web page as a bookmark</translation>
 <translation id="2750942583782703988">Reload your current page</translation>
 <translation id="2764005613199379871">Place focus in search address bar</translation>

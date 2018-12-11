@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Past Day</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3112556859945124369">Mark…</translation>
-<translation id="3126574100374611517">Manage Credit Cards…</translation>
 <translation id="3157684681743766797">Mark All…</translation>
 <translation id="3175081911749765310">Web Services</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
@@ -347,6 +346,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
 <translation id="6541915733953096570">Past Hour</translation>
+<translation id="6548479190262846511">No passwords for this site found</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6656103420185847513">Edit Folder</translation>
 <translation id="6657585470893396449">Password</translation>

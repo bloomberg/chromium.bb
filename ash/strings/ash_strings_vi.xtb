@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
 <translation id="1550523713251050646">Nhấp để xem các tùy chọn khác</translation>
 <translation id="1570871743947603115">Bật/tắt Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Truy cập vào tất cả hoạt động của bạn trong phiên này</translation>
 <translation id="1608626060424371292">Xóa người dùng này</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Bắt đầu đặt câu hỏi bằng giọng nói</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Thêm kết nối</translation>
 <translation id="2961963223658824723">Đã xảy ra sự cố. Hãy thử lại sau vài giây.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Cài đặt ứng dụng, tiện ích và chủ đề</translation>
 <translation id="2995447421581609334">Hiển thị các thiết bị truyền.</translation>
 <translation id="2996462380875591307">Đã bật tính năng Phóng to ở vị trí cố định. Hãy nhấn lại tổ hợp phím Ctrl+Search+D để tắt tính năng này.</translation>
 <translation id="3000461861112256445">Đơn âm</translation>
@@ -239,6 +241,7 @@
 <translation id="4924411785043111640">Khởi động lại và đặt lại</translation>
 <translation id="4961318399572185831">Truyền màn hình</translation>
 <translation id="5030687792513154421">Đã hết thời gian</translation>
+<translation id="5035236842988137213">Đã kết nối <ph name="DEVICE_NAME" /> với một điện thoại mới</translation>
 <translation id="5083553833479578423">Mở khóa các tính năng khác của Trợ lý.</translation>
 <translation id="5136175204352732067">Đã kết nối bàn phím khác</translation>
 <translation id="5168181903108465623">Có thiết bị truyền</translation>
@@ -326,6 +329,7 @@
 <translation id="6627638273713273709">Tìm kiếm+Shift+K</translation>
 <translation id="6650933572246256093">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Vui lòng nhập mã xác nhận này trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Mật khẩu</translation>
+<translation id="6665545700722362599">Cấp cho trang web, ứng dụng và tiện ích quyền sử dụng dịch vụ vị trí, micrô, máy ảnh hoặc các tính năng khác của thiết bị</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Bàn phím có thể tháo rời của bạn cần một bản cập nhật quan trọng</translation>
 <translation id="6700713906295497288">Nút menu IME</translation>
@@ -345,6 +349,7 @@
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
 <translation id="7015766095477679451">Quay lại lúc <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Kết nối <ph name="DEVICE_NAME" /> với điện thoại của bạn</translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
@@ -356,6 +361,7 @@
 <translation id="7143207342074048698">Đang kết nối</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Dừng lịch hẹn giờ</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
 <translation id="7303365578352795231">Đang trả lời trên thiết bị khác.</translation>
@@ -388,6 +394,7 @@
 <translation id="7798302898096527229">Nhấn phím Search hoặc Shift để hủy.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> và <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Tín hiệu mạnh</translation>
+<translation id="7837740436429729974">Hết giờ</translation>
 <translation id="7842211907556571265">Đang kết nối với <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7846634333498149051">Bàn phím</translation>
@@ -421,6 +428,7 @@
 <translation id="8308637677604853869">Menu trước</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Tạo ghi chú</translation>
+<translation id="8375916635258623388"><ph name="DEVICE_NAME" /> này và điện thoại của bạn sẽ tự động kết nối</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Cha mẹ của bạn đã khóa thiết bị này</translation>
 <translation id="8406981827175133772">Phóng to toàn màn hình</translation>
@@ -458,6 +466,7 @@
 <translation id="8874184842967597500">Chưa kết nối</translation>
 <translation id="8877788021141246043">Đặt lời nhắc</translation>
 <translation id="8878886163241303700">Mở rộng màn hình</translation>
+<translation id="8898978413391960553">00:00 giây</translation>
 <translation id="8921624153894383499">Trợ lý Google không hỗ trợ ngôn ngữ này.</translation>
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
 <translation id="8940956008527784070">Pin yếu (<ph name="PERCENTAGE" />%)</translation>

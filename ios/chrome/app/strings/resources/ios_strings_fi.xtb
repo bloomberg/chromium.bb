@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Viimeisen päivän ajalta</translation>
 <translation id="3037605927509011580">Voi räkä!</translation>
 <translation id="3112556859945124369">Merkitse…</translation>
-<translation id="3126574100374611517">Määritä luottokortit…</translation>
 <translation id="3157684681743766797">Merkitse kaikki…</translation>
 <translation id="3175081911749765310">Verkkopalvelut</translation>
 <translation id="3207960819495026254">Kirjanmerkeissä</translation>
@@ -347,6 +346,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="6464071786529933911">Avaa incognito-tilassa</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> kohdetta poistettu</translation>
 <translation id="6541915733953096570">Viimeisen tunnin ajalta</translation>
+<translation id="6548479190262846511">Tälle sivustolle ei löytynyt salasanoja</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6656103420185847513">Muokkaa kansiota</translation>
 <translation id="6657585470893396449">Salasana</translation>

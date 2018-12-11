@@ -51,6 +51,7 @@
 <translation id="1334095593597963605">הד תו ומילה</translation>
 <translation id="1339428534620983148">העמודה הקודמת בטבלה</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">טיפ</translation>
 <translation id="1346748346194534595">ימינה</translation>
 <translation id="135978014023467274">‏ChromeVox עודכן לגירסה 63.</translation>
 <translation id="136718599399906424">השורה הבאה בטבלה</translation>
@@ -103,6 +104,7 @@
 <translation id="1828385960365606039">מאי</translation>
 <translation id="1834891354138622109">עמודה</translation>
 <translation id="1845944666972354496">אפשר להפעיל באמצעות לחיצה פעמיים</translation>
+<translation id="1846771122725914429">‏צג ברייל תואם Bluetooth</translation>
 <translation id="1865601187525349519">סוף הטקסט</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">אמור את התאריך והשעה הנוכחיים.</translation>
@@ -160,6 +162,7 @@
 <translation id="2422937916923936891">תיבת סימון של פריט תפריט</translation>
 <translation id="2428534162001909979">תפריטי פקודות</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">כתובית</translation>
 <translation id="2435413342408885429">‏<ph name="KEY" /> הוא כעת מקש הצירוף החדש של ChromeVox.</translation>
 <translation id="2450814015951372393">תיבת סימון</translation>
 <translation id="2462626033734746142">קבוצת לחצני בחירה</translation>
@@ -646,6 +649,7 @@
 <translation id="5887397643266327462">כיתובי ברייל הופעלו.</translation>
 <translation id="5891934789323004067">טבלה</translation>
 <translation id="5899860758576822363">‏הפעל בעוצמת שמע נמוכה כשתוסף ה-ChromeVox מקריא</translation>
+<translation id="5906974869830879618">יש להזין קוד אימות</translation>
 <translation id="5921587111466148855">פרק</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{סימן שווה}two{# סימני שווה}many{# סימני שווה}other{# סימני שווה}}</translation>
 <translation id="5939518447894949180">אפס</translation>
@@ -702,6 +706,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{נקודתיים}two{# סימני נקודתיים}many{# סימני נקודתיים}other{# סימני נקודתיים}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, תפריט</translation>
 <translation id="6444046323172968959">תיבת דו-שיח של התראה</translation>
+<translation id="6452403590345320472">תוכן העניינים</translation>
 <translation id="6459511626086141404">מפת מפתחות שטוחה</translation>
 <translation id="6468049171101508116">הלחצן הבא</translation>
 <translation id="646954774886932461">אינדקס</translation>
@@ -996,6 +1001,7 @@
 <translation id="948171205378458592">האט את קצב הדיבור</translation>
 <translation id="958854023026327378">החלקה מטה עם אצבע אחת</translation>
 <translation id="962913030769097253">הכותרת הבאה של רמה 1</translation>
+<translation id="966588271015727539">‏בחירת צג ברייל תואם Bluetooth</translation>
 <translation id="973955474346881951">הפעל/השבת מצב דביק</translation>
 <translation id="976849232629612000">אין פריטים.</translation>
 <translation id="995852680044449248">תחילת קו חוצה</translation>

@@ -36,7 +36,7 @@
 <translation id="1173894706177603556">Pārdēvēt</translation>
 <translation id="1175364870820465910">Drukāt...</translation>
 <translation id="1181037720776840403">Noņemt</translation>
-<translation id="1201402288615127009">Nākamais</translation>
+<translation id="1201402288615127009">Tālāk</translation>
 <translation id="1201895884277373915">Vairāk no šīs vietnes</translation>
 <translation id="1206967143813997005">Sākotnējais paraksts nav derīgs</translation>
 <translation id="1209206284964581585">Pagaidām slēpt</translation>
@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Šeit tiks parādītas jūsu atvērtās cilnes</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kartes īpašnieka vārds, uzvārds</translation>
-<translation id="1809549658008855907">Vai saglabāt kartes jūsu Google kontā?</translation>
 <translation id="1821930232296380041">Pieprasījums vai tā parametri nebija derīgi.</translation>
 <translation id="1826516787628120939">Pārbaude</translation>
 <translation id="1834321415901700177">Šī vietne satur kaitnieciskas programmas</translation>
 <translation id="1839551713262164453">Politikas vērtību validēšana neizdevās, tika konstatētas kļūdas</translation>
 <translation id="1842969606798536927">Maksāt</translation>
-<translation id="1866450167992311397">Karšu izmantošana vairākās vietās</translation>
 <translation id="1871208020102129563">Starpniekserveris ir iestatīts, lai tas lietotu fiksētus starpniekserverus, nevis .pac skripta URL.</translation>
 <translation id="1871284979644508959">Obligātais lauks</translation>
 <translation id="1874765382782611674">Atbalstītās debetkartes</translation>
@@ -220,7 +218,7 @@
 <translation id="2355395290879513365">Uzbrucēji var skatīt attēlus, kurus skatāt šajā vietnē, un apmānīt jūs, pārveidojot šos attēlus.</translation>
 <translation id="2356070529366658676">Vaicāt</translation>
 <translation id="2359629602545592467">Vairākas</translation>
-<translation id="2359808026110333948">Turpināt</translation>
+<translation id="2359808026110333948">Turpiniet</translation>
 <translation id="2360873523816792727">Lai kartes varētu izmantot visās ierīcēs, ieslēdziet sinhronizāciju.</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> notverts ziņojums par avāriju; netika lejupielādēts</translation>
 <translation id="2367567093518048410">Līmenis</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">Atļaut (pēc noklusējuma)</translation>
 <translation id="3427342743765426898">&amp;Labojuma atsaukuma atcelšana</translation>
 <translation id="342781501876943858">Chromium iesaka atiestatīt jūsu paroli, ja izmantojāt to citās vietnēs.</translation>
-<translation id="3430691998045392297">Filmas rādīšana atšķiras. Vai vēlaties turpināt?</translation>
 <translation id="3431636764301398940">Saglabāt šo karti šajā ierīcē</translation>
 <translation id="3447661539832366887">Šīs ierīces īpašnieks ir izslēdzis dinozauru spēli.</translation>
 <translation id="3447884698081792621">Parādīt sertifikātu (izsniedza <ph name="ISSUER" />)</translation>
@@ -712,7 +709,6 @@
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
 <translation id="5730040223043577876">Chrome iesaka atiestatīt jūsu paroli, ja izmantojāt to citās vietnēs.</translation>
 <translation id="5732392974455271431">Lai atbloķētu, vērsieties pie vecākiem</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Šī karte un tās norēķinu adrese tiks saglabāta jūsu Google kontā, lai jūs varētu norēķināties ātrāk neatkarīgi no tā, kurā ierīcē esat pierakstījies.}zero{Šīs kartes un to norēķinu adreses tiks saglabātas jūsu Google kontā, lai jūs varētu norēķināties ātrāk neatkarīgi no tā, kurā ierīcē esat pierakstījies.}one{Šīs kartes un to norēķinu adreses tiks saglabātas jūsu Google kontā, lai jūs varētu norēķināties ātrāk neatkarīgi no tā, kurā ierīcē esat pierakstījies.}other{Šīs kartes un to norēķinu adreses tiks saglabātas jūsu Google kontā, lai jūs varētu norēķināties ātrāk neatkarīgi no tā, kurā ierīcē esat pierakstījies.}}</translation>
 <translation id="5763042198335101085">Ievadiet derīgu e-pasta adresi</translation>
 <translation id="5765072501007116331">Lai skatītu piegādes veidus un prasības, atlasiet adresi.</translation>
 <translation id="5770114862687765385">Šķiet, ka fails ir bojāts. Lai atiestatītu sesiju, noklikšķiniet uz pogas “Atiestatīt”.</translation>
@@ -796,7 +792,6 @@
 <translation id="6337133576188860026">Tiks atbrīvots mazāk nekā <ph name="SIZE" />. Dažas vietnes nākamajā apmeklējumā var ielādēt lēnāk.</translation>
 <translation id="6337534724793800597">Filtrēt politikas pēc nosaukuma</translation>
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
-<translation id="635989537247018238">Nākamajā darbībā varat izvēlēties, kuras kartes saglabāt</translation>
 <translation id="6383221683286411806">Iespējams, tiks pieprasīta maksa.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{vēl 1 ieteikums}zero{vēl # ieteikumi}one{vēl # ieteikums}other{vēl # ieteikumi}}</translation>
 <translation id="6387754724289022810">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet kartes datus un norēķinu adresi savā Google kontā un šajā ierīcē.</translation>
@@ -822,7 +817,6 @@
 <translation id="6569060085658103619">Jūs skatāt paplašinājumu lapu.</translation>
 <translation id="6596325263575161958">Šifrēšanas opcijas</translation>
 <translation id="6604181099783169992">Kustību un gaismas sensori</translation>
-<translation id="6607617806003952240">Es vairs nevaru palīdzēt. Lūdzu, turpiniet manuāli.</translation>
 <translation id="6624427990725312378">Kontaktinformācija</translation>
 <translation id="6626291197371920147">Derīga kartes numura pievienošana</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> meklēšana</translation>
@@ -853,6 +847,7 @@
 <translation id="6865412394715372076">Pašlaik nevar verificēt šo karti.</translation>
 <translation id="6868206169573555318">Palaist atkārtoti, lai atjauninātu</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
+<translation id="6885646002011712606">Automātiskās aizpildes palīgs ir pieejams ekrāna apakšējā daļā</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" />: <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Politikas līmenis netiek atbalstīts.</translation>
 <translation id="6895330447102777224">Karte ir apstiprināta</translation>
@@ -890,8 +885,9 @@
 <translation id="7119414471315195487">Aizveriet citas cilnes vai programmas</translation>
 <translation id="7129409597930077180">Nevar nosūtīt uz šo adresi. Atlasiet citu adresi.</translation>
 <translation id="7138472120740807366">Piegādes veids</translation>
-<translation id="7139724024395191329">Emirāts</translation>
+<translation id="7139724024395191329">Emirāti</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}zero{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
+<translation id="7158980942472052083">Nederīgs URL. Vietrādim URL ir jābūt ar standarta shēmu.</translation>
 <translation id="717330890047184534">GAIA ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}zero{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Saglabāt un aizpildīt maksājumu veidus</translation>
@@ -995,6 +991,7 @@ Papildu informācija:
 <translation id="7716424297397655342">Šo vietni nevar ielādēt no kešatmiņas</translation>
 <translation id="7723047071702270851">Kartes informācijas rediģēšana</translation>
 <translation id="774634243536837715">Bloķēts bīstams saturs</translation>
+<translation id="7747182086178764941">Tiek rādīts automātiskās aizpildes palīga pirmās palaišanas ekrāns</translation>
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="7755287808199759310">Lai atbloķētu, vēsieties pie vecāka</translation>
 <translation id="7758069387465995638">Iespējams, savienojumu ir bloķējis ugunsmūris vai pretvīrusu programmatūra.</translation>
@@ -1141,7 +1138,6 @@ Papildu informācija:
 <translation id="8763927697961133303">USB ierīce</translation>
 <translation id="8768895707659403558">Lai kartes varētu izmantot visās ierīcēs, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Šī karte ir pievienota jūsu Google kontam. Tagad to varat izmantot visās ierīcēs, kurās esat pierakstījies.}zero{Šīs kartes ir pievienotas jūsu Google kontam. Tagad tās varat izmantot visās ierīcēs, kurās esat pierakstījies.}one{Šīs kartes ir pievienotas jūsu Google kontam. Tagad tās varat izmantot visās ierīcēs, kurās esat pierakstījies.}other{Šīs kartes ir pievienotas jūsu Google kontam. Tagad tās varat izmantot visās ierīcēs, kurās esat pierakstījies.}}</translation>
 <translation id="8792621596287649091">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chromium iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="8800988563907321413">Šeit tiks parādīti funkcijas Tuvumā ieteikumi</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>

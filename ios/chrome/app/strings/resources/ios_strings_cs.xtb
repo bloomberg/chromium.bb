@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Z uplynulého dne</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3112556859945124369">Označit…</translation>
-<translation id="3126574100374611517">Spravovat platební karty...</translation>
 <translation id="3157684681743766797">Označit vše…</translation>
 <translation id="3175081911749765310">Webové služby</translation>
 <translation id="3207960819495026254">Přidáno do záložek</translation>
@@ -263,7 +262,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5244474230056479698">Údaje se synchronizují do účtu <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
-<translation id="5327248766486351172">Název</translation>
+<translation id="5327248766486351172">Jméno</translation>
 <translation id="5388358297987318779">Otevřít obrázek</translation>
 <translation id="5409365236829784218">Nemáte nainstalovanou žádnou aplikaci, která by tento soubor uměla otevřít.</translation>
 <translation id="5433691172869980887">Uživatelské jméno bylo zkopírováno</translation>
@@ -347,6 +346,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6464071786529933911">Otevřít v nové anonymní kartě</translation>
 <translation id="6482629121755362506">Počet smazaných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="6541915733953096570">Z uplynulé hodiny</translation>
+<translation id="6548479190262846511">Nebyla nalezena žádná hesla pro tento web</translation>
 <translation id="6643016212128521049">Vymazat</translation>
 <translation id="6656103420185847513">Úprava složky</translation>
 <translation id="6657585470893396449">Heslo</translation>

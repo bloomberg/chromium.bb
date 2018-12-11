@@ -355,6 +355,7 @@
 <translation id="7143207342074048698">連線中</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
+<translation id="7222902781030499995">停止計時器</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
 <translation id="7303365578352795231">正在透過其他裝置回答問題。</translation>
@@ -387,6 +388,7 @@
 <translation id="7798302898096527229">按下搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="7829386189513694949">訊號穩定</translation>
+<translation id="7837740436429729974">時間到</translation>
 <translation id="7842211907556571265">正在連線至<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：實驗功能</translation>
 <translation id="7846634333498149051">鍵盤</translation>
@@ -457,6 +459,7 @@
 <translation id="8874184842967597500">未連線</translation>
 <translation id="8877788021141246043">設定提醒</translation>
 <translation id="8878886163241303700">延伸螢幕</translation>
+<translation id="8898978413391960553">00:00 秒</translation>
 <translation id="8921624153894383499">Google 助理不支援這個語言。</translation>
 <translation id="8938800817013097409">USB-C 裝置 (背面右側連接埠)</translation>
 <translation id="8940956008527784070">電池電量不足 (<ph name="PERCENTAGE" />%)</translation>

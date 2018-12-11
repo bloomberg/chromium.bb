@@ -108,6 +108,13 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 
           Som standard er ingen tilstande for hurtig oplåsning tilgængelige på administrerede enheder.</translation>
 <translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
+<translation id="1231349879329465225">Gør det muligt at aktivere eller deaktivere Fast Transition.
+      Denne indstilling gælder for alle brugere og på alle grænseflader på enheden.
+      Både denne indstilling og ONC-ejendommen pr. netværk skal aktiveres, før Fast Transition kan bruges.
+      Når indstillingen er angivet, anvendes Fast Transition, indtil den deaktiveres ved en ændring af politikken.
+
+      Hvis denne politik ikke er angivet eller er angivet som falsk, anvendes Fast Transition ikke.
+      Hvis den er angivet som sand, anvendes Fast Transition, hvis det trådløse adgangspunkt understøtter funktionen.</translation>
 <translation id="1243570869342663665">Administrer filtrering af voksenindhold for SafeSites.</translation>
 <translation id="1257550411839719984">Angiv standardmappe til downloads</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
@@ -125,6 +132,7 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       I modsætning til <ph name="URL_LIST_POLICY_NAME" /> gælder regler for begge retninger. Når Internet Explorer-tilføjelsen er til stede og aktiveret, styrer den dermed også, om <ph name="IE_PRODUCT_NAME" /> skal åbne disse webadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
 <translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser skal installeres ubemærket</translation>
+<translation id="1307415922184340052">Send brugernavn og filnavn til native-printerens server ved alle udskriftsjob. Standardindstillingen er ikke at sende.</translation>
 <translation id="1307454923744766368">Kilder eller mønstre for hostname, hvor begrænsninger på usikre kilder ikke bør anvendes</translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
 
@@ -3290,4 +3298,5 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
       Enhederne har ikke mulighed for automatisk at søge efter opdateringer i de angivne tidsintervaller. Enheder, der kræver en tilbagetrækning eller er ældre end minimumsversionen for <ph name="PRODUCT_OS_NAME" />, berøres ikke af denne politik på grund af potentielle sikkerhedsproblemer. Derudover blokerer politikken ikke for søgning efter opdateringer, hvis brugere eller administratorer anmoder om dette.
       Når denne politik ikke er angivet eller ikke indeholder tidsintervaller:
       Automatiske søgninger efter opdateringer blokeres ikke af denne politik, men blokeres muligvis af andre politikker.</translation>
+<translation id="991560005425213776">Send brugernavn og filnavn til native-printere</translation>
 </translationbundle>

@@ -51,6 +51,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1334095593597963605">echo ng character at salita</translation>
 <translation id="1339428534620983148">Nakaraang column ng talahanayan</translation>
 <translation id="1342835525016946179">article</translation>
+<translation id="1346059596910821859">Tip</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="135978014023467274">Na-update ka sa ChromeVox 63!</translation>
 <translation id="136718599399906424">Susunod na row ng talahanayan</translation>
@@ -103,6 +104,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1828385960365606039">Mayo</translation>
 <translation id="1834891354138622109">Column</translation>
 <translation id="1845944666972354496">I-double tap para i-activate</translation>
+<translation id="1846771122725914429">Bluetooth na Braille Display</translation>
 <translation id="1865601187525349519">Dulo ng text</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Sabihin ang kasalukuyang oras at petsa.</translation>
@@ -160,6 +162,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2422937916923936891">Check box ng item sa menu</translation>
 <translation id="2428534162001909979">Mga Menu ng Command</translation>
 <translation id="2429669115401274487">PM</translation>
+<translation id="242998846562331953">Subtitle</translation>
 <translation id="2435413342408885429">Ang <ph name="KEY" /> ay ang bago na ngayong modifier ng ChromeVox.</translation>
 <translation id="2450814015951372393">Check box</translation>
 <translation id="2462626033734746142">Pangkat ng radio button</translation>
@@ -646,6 +649,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5887397643266327462">Na-enable ang mga caption ng braille.</translation>
 <translation id="5891934789323004067">Talahanayan</translation>
 <translation id="5899860758576822363">I-play sa mas mahinang volume kapag nagsasalita ang ChromeVox</translation>
+<translation id="5906974869830879618">Maglagay ng pin</translation>
 <translation id="5921587111466148855">Kabanata</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{equal}one{# equal sign}other{# na equal sign}}</translation>
 <translation id="5939518447894949180">I-reset</translation>
@@ -702,6 +706,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="641759969622533235">{COUNT,plural, =1{tutuldok}one{# tutuldok}other{# na tutuldok}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Dialog ng alerto</translation>
+<translation id="6452403590345320472">Talaan ng mga nilalaman</translation>
 <translation id="6459511626086141404">Flat na keymap</translation>
 <translation id="6468049171101508116">Susunod na button</translation>
 <translation id="646954774886932461">Index</translation>
@@ -996,6 +1001,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="948171205378458592">Bawasan ang rate ng speech</translation>
 <translation id="958854023026327378">Mag-swipe pababa gamit ang isang daliri</translation>
 <translation id="962913030769097253">Susunod na heading sa antas 1</translation>
+<translation id="966588271015727539">Pumili ng bluetooth na braille display</translation>
 <translation id="973955474346881951">I-enable/I-disable ang sticky mode</translation>
 <translation id="976849232629612000">Walang mga item.</translation>
 <translation id="995852680044449248">Simula ng strike through</translation>

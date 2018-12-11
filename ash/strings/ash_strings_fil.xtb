@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Malaking mouse cursor</translation>
 <translation id="1550523713251050646">Mag-click para sa higit pang mga opsyon</translation>
 <translation id="1570871743947603115">I-toggle ang Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">I-access ang lahat ng iyong aktibidad sa session na ito</translation>
 <translation id="1608626060424371292">Alisin ang user na ito</translation>
 <translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Magsimula ng query gamit ang boses</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Magdagdag ng koneksyon</translation>
 <translation id="2961963223658824723">Nagkaproblema. Subukang muli sa loob ng ilang segundo.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Mag-install ng mga app, extension, at tema</translation>
 <translation id="2995447421581609334">Ipakita ang mga cast device.</translation>
 <translation id="2996462380875591307">Na-enable ang Naka-dock na Magnifier. Pinduting muli ang Ctrl+Search+D para i-off ito.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">I-restart at i-reset</translation>
 <translation id="4961318399572185831">I-cast ang screen</translation>
 <translation id="5030687792513154421">Tapos na ang oras</translation>
+<translation id="5035236842988137213">Kumonekta ang <ph name="DEVICE_NAME" /> sa isang bagong telepono</translation>
 <translation id="5083553833479578423">Mag-unlock ng higit pang feature ng Assistant.</translation>
 <translation id="5136175204352732067">Ibang keyboard ang nakakonekta</translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Maghanap+Shift+K</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
+<translation id="6665545700722362599">Nagbibigay ng pahintulot sa mga website, app, at extension na gumamit ng mga serbisyo ng lokasyon, gamitin ang mikropono, camera, o iba pang feature ng device</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Nangangailangan ng mahalagang update ang iyong naaalis na keyboard</translation>
 <translation id="6700713906295497288">Button ng menu ng IME</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
 <translation id="698231206551913481">Permanenteng made-delete ang lahat ng file at lokal na data na nauugnay sa user na ito kapag inalis na ang user na ito.</translation>
 <translation id="7015766095477679451">Bumalik nang <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Ikonekta ang iyong <ph name="DEVICE_NAME" /> sa telepono mo</translation>
 <translation id="7029814467594812963">Lumabas sa session</translation>
 <translation id="7066646422045619941">Na-disable ng iyong administrator ang network na ito.</translation>
 <translation id="7067196344162293536">Awtomatikong pag-rotate</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">Kumokonekta</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Magre-revert sa lumang resolution sa loob ng <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Ihinto ang timer</translation>
 <translation id="7256634071279256947">Mikropono sa likod</translation>
 <translation id="726276584504105859">I-drag dito upang magamit ang split screen</translation>
 <translation id="7303365578352795231">Sinasagot sa ibang device.</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> at <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Malakas ang signal</translation>
+<translation id="7837740436429729974">Oras na</translation>
 <translation id="7842211907556571265">Kumokonekta sa <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Babala: Pang-eskperimentong feature</translation>
 <translation id="7846634333498149051">Keyboard</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">Nakaraang menu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Gumawa ng tala</translation>
+<translation id="8375916635258623388">Awtomatikong kokonekta ang <ph name="DEVICE_NAME" /> na ito at ang iyong telepono</translation>
 <translation id="8392451568018454956">Menu ng mga pagpipilian para sa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ni-lock ng iyong magulang ang device na ito</translation>
 <translation id="8406981827175133772">Fullscreen Magnifier</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">Hindi nakakonekta</translation>
 <translation id="8877788021141246043">Magtakda ng paalala</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
+<translation id="8898978413391960553">00:00s</translation>
 <translation id="8921624153894383499">Hindi nagsasalita ng ganitong wika ang Google Assistant.</translation>
 <translation id="8938800817013097409">USB-C device (kanang port sa likod)</translation>
 <translation id="8940956008527784070">Mahina na ang baterya (<ph name="PERCENTAGE" />%)</translation>

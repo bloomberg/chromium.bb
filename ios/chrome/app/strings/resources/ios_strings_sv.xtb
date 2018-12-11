@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">Senaste dagen</translation>
 <translation id="3037605927509011580">Oj, ett fel har uppstått!</translation>
 <translation id="3112556859945124369">Markera …</translation>
-<translation id="3126574100374611517">Hantera kreditkort …</translation>
 <translation id="3157684681743766797">Markera alla …</translation>
 <translation id="3175081911749765310">Webbtjänster</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
@@ -347,6 +346,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6464071786529933911">Öppna i ny inkognitoflik</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt har tagits bort</translation>
 <translation id="6541915733953096570">Senaste timmen</translation>
+<translation id="6548479190262846511">Inga lösenord hittades för den här webbplatsen</translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6656103420185847513">Redigera mapp</translation>
 <translation id="6657585470893396449">Lösenord</translation>

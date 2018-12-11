@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Stor muspekare</translation>
 <translation id="1550523713251050646">Klicka här för fler alternativ</translation>
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">Få tillgång till all aktivitet i sessionen</translation>
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Lägg till anslutning</translation>
 <translation id="2961963223658824723">Ett fel har uppstått. Försök igen om några sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">Installera appar, tillägg och teman</translation>
 <translation id="2995447421581609334">Visa cast-enheter</translation>
 <translation id="2996462380875591307">Dockad skärmförstoring har aktiverats. Tryck på Ctrl + Sök + D igen om du vill inaktivera funktionen.</translation>
 <translation id="3000461861112256445">Monoljud</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">Starta om och återställ</translation>
 <translation id="4961318399572185831">Casta skärmen</translation>
 <translation id="5030687792513154421">Tiden är slut</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> har anslutits till en ny mobil</translation>
 <translation id="5083553833479578423">Lås upp fler funktioner för Assistent</translation>
 <translation id="5136175204352732067">Ett annat tangentbord har anslutits</translation>
 <translation id="5168181903108465623">Överföringsenheter finns tillgängliga</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Söktangenten + Skift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Ange denna lösenordsnyckel på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Lösenord</translation>
+<translation id="6665545700722362599">Ge webbplatser, appar och tillägg behörighet att använda platstjänster, enhetens mikrofon, kamera eller andra funktioner</translation>
 <translation id="6691659475504239918">Sök+Skift+H</translation>
 <translation id="6696025732084565524">Det behövs en viktig uppdatering till ditt frånkopplingsbara tangentbord</translation>
 <translation id="6700713906295497288">IME-menyknapp</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="698231206551913481">Alla filer inklusive lokal data som tillhör den här användaren tas bort permanent när användaren tas bort.</translation>
 <translation id="7015766095477679451">Prova igen klockan <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Anslut <ph name="DEVICE_NAME" /> med mobilen</translation>
 <translation id="7029814467594812963">Avsluta session</translation>
 <translation id="7066646422045619941">Det här nätverket har inaktiverats av administratören.</translation>
 <translation id="7067196344162293536">Rotera automatiskt</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">Ansluter</translation>
 <translation id="7165278925115064263">Alt + Skift + K</translation>
 <translation id="7168224885072002358">Återgår till den gamla upplösningen om <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Stoppa timer</translation>
 <translation id="7256634071279256947">Mikrofonen på baksidan</translation>
 <translation id="726276584504105859">Dra hit för att dela upp skärmen</translation>
 <translation id="7303365578352795231">Svarar på en annan enhet.</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">Avbryt genom att trycka på söktangenten eller Skift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> och <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">stark signal</translation>
+<translation id="7837740436429729974">Tiden är ute</translation>
 <translation id="7842211907556571265">Ansluter till <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Varning: Experimentfunktion</translation>
 <translation id="7846634333498149051">Tangentbord</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">Föregående meny</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Skapa anteckning</translation>
+<translation id="8375916635258623388">Denna <ph name="DEVICE_NAME" /> ansluts automatiskt till din mobil</translation>
 <translation id="8392451568018454956">Alternativmenyn för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Din förälder har låst enheten</translation>
 <translation id="8406981827175133772">Helskärmsförstoring</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">Inte ansluten</translation>
 <translation id="8877788021141246043">Ställ in en påminnelse</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
+<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>
 <translation id="8940956008527784070">Låg batterinivå (<ph name="PERCENTAGE" /> %)</translation>

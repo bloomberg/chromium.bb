@@ -134,7 +134,6 @@
 <translation id="3024255823539804759">روز گذشته</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
-<translation id="3126574100374611517">مدیریت کارت‌های اعتباری...</translation>
 <translation id="3157684681743766797">علامت‌گذاری همه...</translation>
 <translation id="3175081911749765310">خدمات وب</translation>
 <translation id="3207960819495026254">نشانک‌گذاری شده</translation>
@@ -347,6 +346,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6464071786529933911">در برگه ناشناس جدید</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
 <translation id="6541915733953096570">ساعت گذشته</translation>
+<translation id="6548479190262846511">گذرواژه‌ای برای این سایت پیدا نشد</translation>
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>
 <translation id="6657585470893396449">گذرواژه</translation>

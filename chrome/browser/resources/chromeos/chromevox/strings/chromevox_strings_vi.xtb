@@ -51,6 +51,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1334095593597963605">nói ký tự và từ</translation>
 <translation id="1339428534620983148">Cột trước của bảng</translation>
 <translation id="1342835525016946179">bài viết</translation>
+<translation id="1346059596910821859">Mẹo</translation>
 <translation id="1346748346194534595">Phải</translation>
 <translation id="135978014023467274">Bạn đã cập nhật lên ChromeVox 63!</translation>
 <translation id="136718599399906424">Hàng tiếp theo của bảng</translation>
@@ -103,6 +104,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1828385960365606039">Tháng 5</translation>
 <translation id="1834891354138622109">Cột</translation>
 <translation id="1845944666972354496">Nhấn đúp để kích hoạt</translation>
+<translation id="1846771122725914429">Màn hình chữ nổi Bluetooth</translation>
 <translation id="1865601187525349519">Cuối văn bản</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Nói thời gian và ngày tháng hiện tại.</translation>
@@ -160,6 +162,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2422937916923936891">Hộp kiểm mục menu</translation>
 <translation id="2428534162001909979">Menu lệnh</translation>
 <translation id="2429669115401274487">CH</translation>
+<translation id="242998846562331953">Phụ đề</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> giờ là phím bổ trợ ChromeVox mới.</translation>
 <translation id="2450814015951372393">Hộp kiểm</translation>
 <translation id="2462626033734746142">Nhóm nút radio</translation>
@@ -646,6 +649,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5887397643266327462">Phụ đề chữ nổi đã được bật.</translation>
 <translation id="5891934789323004067">Bảng</translation>
 <translation id="5899860758576822363">Phát ở âm lượng thấp hơn khi ChromeVox đang nói</translation>
+<translation id="5906974869830879618">Vui lòng nhập mã PIN</translation>
 <translation id="5921587111466148855">Chương</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{dấu bằng}other{# dấu bằng}}</translation>
 <translation id="5939518447894949180">Đặt lại</translation>
@@ -702,6 +706,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="641759969622533235">{COUNT,plural, =1{dấu hai chấm}other{# dấu hai chấm}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Hộp thoại thông báo</translation>
+<translation id="6452403590345320472">Mục lục</translation>
 <translation id="6459511626086141404">Sơ đồ bàn phím phẳng</translation>
 <translation id="6468049171101508116">Nút tiếp theo</translation>
 <translation id="646954774886932461">Chú dẫn</translation>
@@ -996,6 +1001,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="948171205378458592">Giảm tốc độ nói</translation>
 <translation id="958854023026327378">Vuốt xuống dưới bằng một ngón tay</translation>
 <translation id="962913030769097253">Tiêu đề cấp 1 tiếp theo</translation>
+<translation id="966588271015727539">Chọn màn hình chữ nổi Bluetooth</translation>
 <translation id="973955474346881951">Bật/tắt chế độ cố định</translation>
 <translation id="976849232629612000">Không có mục nào.</translation>
 <translation id="995852680044449248">Đầu chữ bị gạch ngang</translation>

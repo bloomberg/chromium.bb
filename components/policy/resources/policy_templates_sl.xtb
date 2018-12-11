@@ -119,6 +119,13 @@
 
           Za upravljane naprave privzeto ni na voljo noben hiter način odklepanja.</translation>
 <translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
+<translation id="1231349879329465225">Omogoča omogočanje ali onemogočanje hitrega prehoda.
+      To velja za vse uporabnike in vse vmesnike v napravi.
+      Če želite uporabiti možnost hitrega prehoda, morate omogočiti to nastavitev in lastnost ONC za posamezno omrežje.
+      Ko je možnost hitrega prehoda nastavljena, ostane omogočena, dokler je ne onemogočite s spremembo pravilnika.
+
+      Če pravilnik ni nastavljen ali je onemogočen, se možnost hitrega prehoda ne uporablja.
+      Če je omogočen, se možnost hitrega prehoda uporablja, ko ga podpira brezžična dostopna točka.</translation>
 <translation id="1243570869342663665">Upravljanje filtriranja vsebine za odrasle s filtrom SafeSites</translation>
 <translation id="1257550411839719984">Določi privzeti imenik za prenos</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
@@ -136,6 +143,7 @@
       Drugače kot pri pravilniku <ph name="URL_LIST_POLICY_NAME" /> pravila veljajo v obeh smereh. Če je nameščen in omogočen dodatek za Internet Explorer, ta prav tako nadzira, ali naj <ph name="IE_PRODUCT_NAME" /> odpre te URL-je v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Uporabi skript .pac za proxy</translation>
 <translation id="1304973015437969093">ID-ji razširitev/aplikacij in URL-ji posodobitev se namestijo brez obveščanja</translation>
+<translation id="1307415922184340052">Pošiljanje uporabniškega imena in imena datoteke strežniku izvornih tiskalnikov z vsakim tiskalnim opravilom. Privzeta nastavitev je, da se ne pošiljata.</translation>
 <translation id="1307454923744766368">Izvori ali vzorci imena gostitelja, za katere se omejitve glede
       izvorov, ki niso varni, ne smejo uporabljati</translation>
 <translation id="1313457536529613143">Določa odstotek spremembe zakasnitve zatemnitve zaslona, kadar se zazna dejavnost uporabnika, medtem ko je zaslon v zatemnjenem načinu ali kmalu potem ko je bil izklopljen.
@@ -3439,4 +3447,5 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
       V določenih časovnih intervalih naprave ne bodo mogle samodejno preverjati, ali so na voljo posodobitve. Zaradi morebitnih varnostnih težav ta pravilnik ne bo vplival na naprave, ki zahtevajo povrnitev na prejšnjo različico ali imajo različico nižjo od najmanjše različice sistema <ph name="PRODUCT_OS_NAME" />. Ta pravilnik prav tako ne bo blokiral preverjanj posodobitev, ki so jih zahtevali uporabniki ali skrbniki.
       Ko ta pravilnik ni nastavljen ali ne vsebuje časovnih intervalov:
       Ta pravilnik ne bo blokiral nobenih samodejnih preverjanj posodobitev, vendar jih bodo morda blokirali drugi pravilniki.</translation>
+<translation id="991560005425213776">Pošiljanje uporabniškega imena in imena datoteke izvornim tiskalnikom</translation>
 </translationbundle>

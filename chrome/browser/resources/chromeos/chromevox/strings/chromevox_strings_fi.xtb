@@ -51,6 +51,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1334095593597963605">merkkien ja sanojen puhuminen</translation>
 <translation id="1339428534620983148">Taulukon edellinen sarake</translation>
 <translation id="1342835525016946179">artikkeli</translation>
+<translation id="1346059596910821859">Vinkki</translation>
 <translation id="1346748346194534595">Oikealle</translation>
 <translation id="135978014023467274">ChromeVox päivitettiin versioon 63!</translation>
 <translation id="136718599399906424">Taulukon seuraava rivi</translation>
@@ -103,6 +104,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1828385960365606039">touko</translation>
 <translation id="1834891354138622109">Sarake</translation>
 <translation id="1845944666972354496">Aktivoi kaksoisnapauttamalla</translation>
+<translation id="1846771122725914429">Bluetooth-pistekirjoitusnäyttö</translation>
 <translation id="1865601187525349519">Tekstin loppu</translation>
 <translation id="1876229593313240038">dok.</translation>
 <translation id="188130072164734898">Sano tämänhetkinen aika ja päivämäärä.</translation>
@@ -160,6 +162,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="2422937916923936891">Valikkokohteen valintaruutu</translation>
 <translation id="2428534162001909979">Komentovalikot</translation>
 <translation id="2429669115401274487">ip</translation>
+<translation id="242998846562331953">Tekstitys</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> on nyt uusi ChromeVoxin muokkausnäppäin.</translation>
 <translation id="2450814015951372393">Valintaruutu</translation>
 <translation id="2462626033734746142">Valintanappiryhmä</translation>
@@ -646,6 +649,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5887397643266327462">Pistekirjoituskuvatekstit ovat käytössä.</translation>
 <translation id="5891934789323004067">Taulukko</translation>
 <translation id="5899860758576822363">Vähennä äänenvoimakkuutta, kun ChromeVox puhuu.</translation>
+<translation id="5906974869830879618">Syötä PIN-koodi</translation>
 <translation id="5921587111466148855">Luku</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{yhtäläisyys}other{# yhtäläisyysmerkkiä}}</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
@@ -702,6 +706,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="641759969622533235">{COUNT,plural, =1{kaksoispiste}other{# kaksoispistettä}}</translation>
 <translation id="6438968337250688271"><ph name="NAME" />, valikko</translation>
 <translation id="6444046323172968959">Ilmoitusvalintaikkuna</translation>
+<translation id="6452403590345320472">Sisällysluettelo</translation>
 <translation id="6459511626086141404">Flat-näppäinkartta</translation>
 <translation id="6468049171101508116">Seuraava-painike</translation>
 <translation id="646954774886932461">Hakemisto</translation>
@@ -996,6 +1001,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="948171205378458592">Vähennä puhenopeutta</translation>
 <translation id="958854023026327378">Pyyhkäise alas yhdellä sormella</translation>
 <translation id="962913030769097253">Seuraava tason 1 otsikko</translation>
+<translation id="966588271015727539">Valitse Bluetooth-pistekirjoitusnäyttö</translation>
 <translation id="973955474346881951">Kiinnitystilan ottaminen käyttöön / poistaminen käytöstä</translation>
 <translation id="976849232629612000">Ei kohteita</translation>
 <translation id="995852680044449248">Yliviivauksen alku</translation>

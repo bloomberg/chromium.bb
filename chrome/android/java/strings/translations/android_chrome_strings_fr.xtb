@@ -80,6 +80,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1539064842193522527">Lien ouvert dans Chrome</translation>
 <translation id="1549000191223877751">Déplacer vers autre fenêtre</translation>
 <translation id="1553358976309200471">Mettre à jour Chrome</translation>
+<translation id="1556911995758835928">*Nouveau* Aperçu rapide</translation>
 <translation id="1566400915470565838">Pour utiliser l'application <ph name="APP_NAME" />, veuillez vous connecter à Internet.</translation>
 <translation id="1569387923882100876">Appareil connecté</translation>
 <translation id="1571304935088121812">Copier le nom d'utilisateur</translation>
@@ -111,6 +112,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="1821253160463689938">Utilise des cookies pour mémoriser vos préférences, même si vous n'accédez pas à ces pages</translation>
 <translation id="1829244130665387512">Rechercher sur la page</translation>
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
+<translation id="1856325424225101786">Réinitialiser le mode simplifié ?</translation>
 <translation id="1868024384445905608">Chrome permet désormais de télécharger des fichiers plus vite</translation>
 <translation id="1880072593381090678">Pages populaires de Chrome</translation>
 <translation id="1883903952484604915">Mes fichiers</translation>
@@ -163,6 +165,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="2154484045852737596">Modifier la carte</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2173302385160625112">Vérifiez votre connexion Internet</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, application Web : <ph name="APP_URL" /></translation>
 <translation id="2221802148287197464">Automatiser</translation>
 <translation id="2227444325776770048">Continuer en tant que <ph name="USER_FULL_NAME" /></translation>
@@ -292,6 +295,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3269956123044984603">Activez l'option "Synchro auto des données" dans les paramètres Android de votre compte Google pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="32895400574683172">Les notifications sont autorisées</translation>
+<translation id="3295530008794733555">Naviguez plus rapidement en consommant moins de données</translation>
 <translation id="3295602654194328831">Masquer les informations</translation>
 <translation id="3298243779924642547">Simplifié</translation>
 <translation id="3303414029551471755">Poursuivre et télécharger le contenu ?</translation>
@@ -331,11 +335,13 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3630011985153972676">Autorisez Chrome à télécharger des articles via le Wi-Fi dans les paramètres.</translation>
 <translation id="3632295766818638029">Afficher le mot de passe</translation>
 <translation id="363596933471559332">Connexion automatique aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à effectuer la validation avant chaque connexion à un site Web.</translation>
+<translation id="3658159451045945436">Le processus de réinitialisation efface l'historique de l'économiseur de données, y compris la liste des sites consultés.</translation>
 <translation id="3662546969139119822">Aucun historique ici</translation>
 <translation id="3672452749423051839">Suggestions en cas d'erreur de navigation</translation>
 <translation id="3692944402865947621">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage indisponible.</translation>
 <translation id="3714981814255182093">Ouvrir la barre de recherche</translation>
 <translation id="3716182511346448902">Cette page utilise trop de mémoire, Chrome a donc interrompu son chargement.</translation>
+<translation id="3724958268700778519">L'Assistant Google vous permet de régler vos achats sur le Web plus rapidement et, ainsi, de gagner du temps.</translation>
 <translation id="3739899004075612870">Favori ajouté dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> Mo par d'autres applis</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
@@ -353,7 +359,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3859306556332390985">Avance rapide</translation>
 <translation id="3894427358181296146">Ajouter un dossier</translation>
 <translation id="3895926599014793903">Forcer l'activation du zoom</translation>
-<translation id="3918221729963301892">Ne plus afficher</translation>
+<translation id="3912508018559818924">Recherche du meilleur contenu sur le Web…</translation>
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3928666092801078803">Combiner mes données</translation>
 <translation id="393697183122708255">Aucune recherche vocale activée dispo.</translation>
@@ -371,6 +377,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode privé n'emp�
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/ ?</translation>
 <translation id="3997476611815694295">Stockage non important</translation>
 <translation id="4002066346123236978">Titre</translation>
+<translation id="4008040567710660924">Autorisez les cookies pour un site spécifique.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}other{# h}}</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
 <translation id="4046123991198612571">Piste suivante</translation>
@@ -387,6 +394,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4113030288477039509">Géré par votre administrateur</translation>
+<translation id="411332046216682877">Appuyez ici pour lancer une recherche rapidement</translation>
 <translation id="4116038641877404294">Téléchargez des pages pour y accéder hors connexion</translation>
 <translation id="4127069705158143605">{BOOKMARKS_COUNT,plural, =1{%1$d favori}one{%1$d favori}other{%1$d favoris}}</translation>
 <translation id="4149994727733219643">Vue simplifiée pour les pages Web</translation>
@@ -418,6 +426,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4398088515904522762">Pour utiliser cette fonctionnalité, activez l'option <ph name="BEGIN_LINK" />Activité et interactions<ph name="END_LINK" />.</translation>
 <translation id="4404568932422911380">Aucun favori</translation>
 <translation id="4409723563706114196">Utiliser le service de prédiction</translation>
+<translation id="4411535500181276704">Mode simplifié</translation>
 <translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="4433925000917964731">Page simplifiée fournie par Google</translation>
 <translation id="4434045419905280838">Pop-up et redirections</translation>
@@ -430,12 +439,14 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
 <translation id="4479647676395637221">Demander avant d'autoriser des sites à utiliser ma caméra (recommandé)</translation>
 <translation id="4487967297491345095">Toutes les données de l'application Chrome seront supprimées de façon définitive, y compris les fichiers, paramètres, comptes, bases de données, etc.</translation>
+<translation id="4493497663118223949">Mode simplifié activé</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Il y a # jour}one{Il y a # jour}other{Il y a # jours}}</translation>
 <translation id="451872707440238414">Rechercher dans vos favoris</translation>
 <translation id="4521489764227272523">Les données sélectionnées ont été supprimées de Chrome et des appareils synchronisés.
 
 Votre compte Google conserve peut-être d'autres contenus d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> concernant, par exemple, vos recherches ou vos activités via d'autres services Google.</translation>
 <translation id="4532845899244822526">Sélectionner un dossier</translation>
+<translation id="4538018662093857852">Activer le mode simplifié</translation>
 <translation id="4550003330909367850">Pour afficher ou copier votre mot de passe ici, définissez le verrouillage de l'écran sur cet appareil.</translation>
 <translation id="4558311620361989323">Raccourcis de pages Web</translation>
 <translation id="4561979708150884304">Aucune connexion</translation>
@@ -528,6 +539,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5224771365102442243">Avec vidéo</translation>
 <translation id="5233638681132016545">Nouvel onglet</translation>
 <translation id="5264003212305142034">Sachez que vous pouvez personnaliser les <ph name="BEGIN_LINK1" />Paramètres<ph name="END_LINK1" /> à tout moment. Nous pouvons utiliser le contenu des sites que vous consultez, ainsi que vos activités de navigation et vos interactions avec le navigateur, pour personnaliser Chrome, et d'autres services Google comme Traduction, la recherche Google et les annonces.</translation>
+<translation id="526421993248218238">Impossible de charger cette page</translation>
 <translation id="5271967389191913893">Impossible d'ouvrir le contenu à télécharger sur l'appareil.</translation>
 <translation id="5274381992091475657">Assistant de saisie automatique</translation>
 <translation id="528192093759286357">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
@@ -693,6 +705,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6395288395575013217">LIEN</translation>
 <translation id="6404511346730675251">Modifier le favori</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
+<translation id="641482588075295793">La lecture automatique n'est pas disponible en mode simplifié</translation>
 <translation id="641643625718530986">Imprimer…</translation>
 <translation id="6416782512398055893"><ph name="MBS" /> Mo téléchargé(s)</translation>
 <translation id="6433501201775827830">Sélectionner votre moteur de recherche</translation>
@@ -824,6 +837,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7423538860840206698">Accès en lecture au presse-papiers bloqué</translation>
 <translation id="7431991332293347422">Contrôler la manière dont votre historique de navigation est utilisé pour personnaliser la recherche et plus encore</translation>
 <translation id="7437998757836447326">Se déconnecter de Chrome</translation>
+<translation id="7438641746574390233">Lorsque le mode simplifié est activé, Chrome utilise les serveurs Google pour accélérer le chargement des pages. Le mode simplifié réécrit les pages dont le chargement est très lent pour ne charger que le contenu essentiel. Ce mode ne s'applique pas aux onglets de navigation privée.</translation>
 <translation id="7444811645081526538">Autres catégories</translation>
 <translation id="7445411102860286510">Autoriser les sites à lire automatiquement des vidéos dont le son est coupé (recommandé)</translation>
 <translation id="7453467225369441013">Vous déconnecte de la plupart des sites. Vous ne serez cependant pas déconnecté de votre compte Google.</translation>
@@ -842,6 +856,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="751961395872307827">Impossible de se connecter au site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">Impossible d'obtenir des suggestions</translation>
+<translation id="7559975015014302720">Mode simplifié désactivé</translation>
 <translation id="7562080006725997899">Effacement des données de navigation en cours</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="757524316907819857">Empêcher les sites de lire les contenus protégés</translation>
@@ -849,6 +864,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7593557518625677601">Ouvrez paramètres Android et réactivez synchro système Android pour démarrer synchro Chrome.</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
 <translation id="7605594153474022051">La synchronisation ne fonctionne pas</translation>
+<translation id="7606077192958116810">Le mode simplifié est activé. Gérez-le dans les paramètres.</translation>
 <translation id="7612619742409846846">Connecté à Google en tant que</translation>
 <translation id="7619072057915878432">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'échec du réseau.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obtenir de l'aide<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />effectuer une nouvelle recherche<ph name="END_LINK2" /></translation>
@@ -866,6 +882,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
 <translation id="773905249182896430">Assure votre protection et celle de votre appareil contre les sites dangereux</translation>
 <translation id="7759822418208302953">Désactivation de l'assistant de saisie automatique</translation>
+<translation id="7761870125254530914">En continuant, vous acceptez les conditions d'utilisation de Google relatives au paiement rapide. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="7762668264895820836">Carte SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Ajouter une adresse</translation>
 <translation id="7765158879357617694">Déplacer</translation>
@@ -1009,6 +1026,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8853345339104747198">"<ph name="TAB_TITLE" />", onglet</translation>
 <translation id="885701979325669005">Stockage</translation>
 <translation id="8901170036886848654">Aucun favori trouvé.</translation>
+<translation id="8903053969062019677">{OPEN_TABS,plural, =1{%1$d onglet ouvert, appuyez pour changer d'onglet}one{%1$d onglet ouvert, appuyez pour changer d'onglet}other{%1$d onglets ouverts, appuyez pour changer d'onglet}}</translation>
 <translation id="8905378131945614900">Échec de l'installation du module RV</translation>
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
@@ -1017,6 +1035,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Ouvrir dans une autre fenêtre</translation>
 <translation id="8951232171465285730">Chrome vous a permis de gagner <ph name="MEGABYTES" /> Mo</translation>
+<translation id="8958424370300090006">Bloquez les cookies pour un site spécifique.</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
 <translation id="8965591936373831584">en attente</translation>
 <translation id="8972098258593396643">Télécharger dans le dossier par défaut ?</translation>
@@ -1035,6 +1054,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="9070377983101773829">Démarrer la recherche vocale</translation>
 <translation id="9071742570345586758">Pour afficher des contenus de réalité virtuelle, installez les services Google VR</translation>
 <translation id="9074336505530349563">Connectez-vous et activez la synchronisation pour obtenir des suggestions de contenu personnalisées de la part de Google</translation>
+<translation id="9079796397681444569">Naviguez facilement dans Chrome à l'aide des boutons situés en bas de l'écran</translation>
 <translation id="9080642952018487277">Activer le mode privé</translation>
 <translation id="9086455579313502267">Impossible d'accéder au réseau.</translation>
 <translation id="9099018167121903954"><ph name="KILOBYTES" /> Ko téléchargé(s)</translation>

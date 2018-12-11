@@ -119,6 +119,13 @@
 
           A felügyelt eszközöknél alapértelmezés szerint nem lehet gyorsfeloldási módszert használni.</translation>
 <translation id="123081309365616809">Tartalom eszközre való átküldésének engedélyezése</translation>
+<translation id="1231349879329465225">Lehetővé teszi a Fast Transition (gyors váltás) funkció engedélyezését és letiltását.
+      Minden felhasználóra és az eszköz minden felületére vonatkozik.
+      A Fast Transition funkció használatához ezt a beállítást és a hálózatonkénti ONC tulajdonságot is engedélyezni kell.
+      Beállítása után a Fast Transition funkció addig érvényben marad, amíg a házirend módosításával le nem tiltják.
+
+      Ha a házirend nincs beállítva, vagy értéke hamis, a rendszer nem használja a Fast Transition funkciót.
+      Ha a házirend beállítása igaz, a rendszer használja a Fast Transition funkciót, amennyiben a vezeték nélküli hozzáférési pont is támogatja.</translation>
 <translation id="1243570869342663665">A SafeSites felnőtteknek szóló tartalmakra vonatkozó szűrőinek vezérlése.</translation>
 <translation id="1257550411839719984">Alapértelmezett letöltési könyvtár beállítása</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>
@@ -136,6 +143,7 @@
       A <ph name="URL_LIST_POLICY_NAME" /> házirendtől eltérően a szabályok mindkét irányban érvényesek. Ez azt jelenti, hogy amikor az Internet Explorer-bővítmény jelen és engedélyezett állapotban van, a házirend azt is vezérli, hogy az <ph name="IE_PRODUCT_NAME" /> a <ph name="PRODUCT_NAME" /> böngészőben nyissa-e meg ezeket az URL-eket.</translation>
 <translation id="1297182715641689552">Használjon .pac proxyszkriptet</translation>
 <translation id="1304973015437969093">Bővítmény- és alkalmazásazonosítók és frissítési URL-ek csendes telepítése</translation>
+<translation id="1307415922184340052">Felhasználónév és fájlnév küldése a natív nyomtatók számára minden nyomtatási munkánál. Alapértelmezés szerint a rendszer nem küldi el ezeket az adatokat.</translation>
 <translation id="1307454923744766368">Eredetek vagy gazdagépnévminták, melyekre nem érvényesek
       a nem biztonságos eredetekre vonatkozó korlátozások</translation>
 <translation id="1313457536529613143">Azt a százalékot adja meg, amelynek alapján a képernyő-elsötétítési késleltetés skálázódik, ha az elsötétedés során, vagy röviddel a képernyő kikapcsolódása után felhasználói tevékenység történik.
@@ -3315,4 +3323,5 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Az eszközök nem tudnak automatikusan frissítéseket keresni a megadott időintervallumokon belül. A korábbi állapot visszaállítását igénylő és a minimális <ph name="PRODUCT_OS_NAME" />-verzió alatti eszközökre nem érvényes ez a házirend a lehetséges biztonsági problémák elkerülése érdekében. Továbbá a házirend nem tiltja a felhasználók és adminisztrátorok által kérelmezett frissítéskereséseket.
       Ha a házirend nincs beállítva, vagy nem tartalmaz időintervallumokat:
       Ez a házirend nem tiltja az automatikus frissítéskereséseket, más házirendek azonban tilthatják őket.</translation>
+<translation id="991560005425213776">Felhasználónév és fájlnév küldése a natív nyomtatók számára</translation>
 </translationbundle>

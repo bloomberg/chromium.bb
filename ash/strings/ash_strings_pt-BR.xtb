@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Cursor grande do mouse</translation>
 <translation id="1550523713251050646">Clique para ver mais opções</translation>
 <translation id="1570871743947603115">Alternar Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">acessar todas as suas atividades nesta sessão;</translation>
 <translation id="1608626060424371292">Remover este usuário</translation>
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar uma consulta por voz</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Adicionar conexão</translation>
 <translation id="2961963223658824723">Algo deu errado. Tente novamente em alguns segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">instalar apps, extensões e temas;</translation>
 <translation id="2995447421581609334">Mostrar dispositivos de transmissão.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Pressione Ctrl+Pesquisa+D novamente para desativá-la.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
@@ -239,6 +241,7 @@
 <translation id="4924411785043111640">Reiniciar e redefinir</translation>
 <translation id="4961318399572185831">Transmitir tela</translation>
 <translation id="5030687792513154421">Tempo esgotado</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> conectado a um novo smartphone</translation>
 <translation id="5083553833479578423">Desbloqueie mais recursos do Assistente.</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
@@ -327,6 +330,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6627638273713273709">Pesquisar+Shift+K</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Digite esta senha no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Senha</translation>
+<translation id="6665545700722362599">conceder aos sites, apps e extensões permissão para usar serviços de localização, microfone, câmera ou outros recursos do dispositivo;</translation>
 <translation id="6691659475504239918">Pesquisa+Shift+H</translation>
 <translation id="6696025732084565524">Seu teclado removível precisa de uma atualização crítica</translation>
 <translation id="6700713906295497288">Botão do menu do IME</translation>
@@ -346,6 +350,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="698231206551913481">Todos os arquivos e dados locais associados a este usuário serão excluídos permanentemente quando o usuário for removido.</translation>
 <translation id="7015766095477679451">Volte às <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Conecte seu <ph name="DEVICE_NAME" /> ao smartphone</translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
 <translation id="7066646422045619941">Esta rede foi desativada pelo seu administrador.</translation>
 <translation id="7067196344162293536">Rotação automática</translation>
@@ -357,6 +362,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Parar timer</translation>
 <translation id="7256634071279256947">Microfone traseiro</translation>
 <translation id="726276584504105859">Arraste aqui para usar a tela dividida</translation>
 <translation id="7303365578352795231">Respondendo em outro dispositivo.</translation>
@@ -389,6 +395,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7798302898096527229">Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
+<translation id="7837740436429729974">Tempo esgotado</translation>
 <translation id="7842211907556571265">Conectando-se a <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Aviso: recurso experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
@@ -422,6 +429,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Criar nota</translation>
+<translation id="8375916635258623388">Este <ph name="DEVICE_NAME" /> e seu smartphone serão conectados automaticamente</translation>
 <translation id="8392451568018454956">Menu de opções para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Seu pai/mãe bloqueou o dispositivo</translation>
 <translation id="8406981827175133772">Lupa de tela cheia</translation>
@@ -459,6 +467,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8874184842967597500">Não conectado</translation>
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
+<translation id="8898978413391960553">00:00s</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>

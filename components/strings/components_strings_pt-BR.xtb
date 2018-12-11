@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Suas guias abertas são exibidas aqui</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Nome do titular do cartão</translation>
-<translation id="1809549658008855907">Salvar cartões na sua Conta do Google?</translation>
 <translation id="1821930232296380041">Solicitação ou parâmetros de solicitação inválidos</translation>
 <translation id="1826516787628120939">Em verificação</translation>
 <translation id="1834321415901700177">Este site contém programas perigosos</translation>
 <translation id="1839551713262164453">Falha com erros na validação dos valores da política</translation>
 <translation id="1842969606798536927">Pagar</translation>
-<translation id="1866450167992311397">Usar seus cartões em mais lugares</translation>
 <translation id="1871208020102129563">O proxy foi configurado para utilizar servidores de proxy fixo e não um URL de script .pac.</translation>
 <translation id="1871284979644508959">Campo obrigatório</translation>
 <translation id="1874765382782611674">Cartões de débito aceitos</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">Permitir (padrão)</translation>
 <translation id="3427342743765426898">&amp;Refazer editar</translation>
 <translation id="342781501876943858">O Chromium recomenda redefinir sua senha se você a reutilizou em outros sites.</translation>
-<translation id="3430691998045392297">A exibição do filme é diferente. Você quer continuar?</translation>
 <translation id="3431636764301398940">Salvar este cartão neste dispositivo</translation>
 <translation id="3447661539832366887">O proprietário deste dispositivo desativou o jogo do dinossauro.</translation>
 <translation id="3447884698081792621">Mostrar certificado (emitido por <ph name="ISSUER" />)</translation>
@@ -450,7 +447,7 @@
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3858027520442213535">Atualizar data e hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivo em conflito</translation>
-<translation id="3885155851504623709">Paróquia</translation>
+<translation id="3885155851504623709">Município</translation>
 <translation id="3886446263141354045">Sua solicitação para acessar este site foi enviada para <ph name="NAME" /></translation>
 <translation id="3890664840433101773">Adicionar e-mail</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">Usuário atual</translation>
 <translation id="5730040223043577876">O Chrome recomenda redefinir sua senha se você a reutilizou em outros sites.</translation>
 <translation id="5732392974455271431">Seus responsáveis podem desbloqueá-lo para você</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Esse cartão e o endereço de faturamento correspondente serão salvos na sua Conta do Google para agilizar os pagamentos sempre que você estiver conectado}one{Esse cartão e o endereço de faturamento correspondente serão salvos na sua Conta do Google para agilizar os pagamentos sempre que você estiver conectado}other{Esses cartões e os endereços de faturamento correspondentes serão salvos na sua Conta do Google para agilizar os pagamentos sempre que você estiver conectado}}</translation>
 <translation id="5763042198335101085">Informe um endereço de e-mail válido.</translation>
 <translation id="5765072501007116331">Para ver métodos e requisitos de entrega, selecione um endereço</translation>
 <translation id="5770114862687765385">O arquivo parece estar corrompido. Clique no botão "Redefinir" para reiniciar a sessão.</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026">Libera menos de <ph name="SIZE" />. O carregamento de alguns sites pode ficar mais lento no seu próximo acesso.</translation>
 <translation id="6337534724793800597">Filtrar políticas por nome</translation>
 <translation id="6358450015545214790">O que são essas informações?</translation>
-<translation id="635989537247018238">Na próxima etapa, escolha os cartões que serão salvos</translation>
 <translation id="6383221683286411806">Acesso sujeito a cobranças.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 outra sugestão}one{# outra sugestão}other{# outras sugestões}}</translation>
 <translation id="6387754724289022810">Para agilizar o pagamento na próxima vez, salve o cartão e o endereço de faturamento na sua Conta do Google e neste dispositivo.</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">Você está vendo uma página de extensões</translation>
 <translation id="6596325263575161958">Opções de criptografia</translation>
 <translation id="6604181099783169992">Sensores de luz ou movimento</translation>
-<translation id="6607617806003952240">Não posso mais ajudar. Continue manualmente.</translation>
 <translation id="6624427990725312378">Informações de Contato</translation>
 <translation id="6626291197371920147">Adicionar número de cartão de crédito válido</translation>
 <translation id="6628463337424475685">Pesquisa do <ph name="ENGINE" /></translation>
@@ -854,6 +848,7 @@
 <translation id="6865412394715372076">Não é possível verificar este cartão no momento</translation>
 <translation id="6868206169573555318">Reiniciar para atualizar</translation>
 <translation id="6874604403660855544">&amp;Refazer adicionar</translation>
+<translation id="6885646002011712606">O "Assistente de preenchimento automático" está disponível perto da parte inferior da tela</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
 <translation id="6895330447102777224">Seu cartão foi confirmado</translation>
@@ -893,6 +888,7 @@
 <translation id="7138472120740807366">Método de entrega</translation>
 <translation id="7139724024395191329">Emirado</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
+<translation id="7158980942472052083">URL inválido. É necessário um URL com um esquema padrão.</translation>
 <translation id="717330890047184534">Código Gaia:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="7179323680825933600">Salvar e preencher as formas de pagamento</translation>
@@ -996,6 +992,7 @@ Mais detalhes:
 <translation id="7716424297397655342">Não é possível carregar este site a partir do cache</translation>
 <translation id="7723047071702270851">Edite o Cartão</translation>
 <translation id="774634243536837715">Conteúdo perigoso bloqueado.</translation>
+<translation id="7747182086178764941">Exibição da tela de primeiro acesso do "Assistente de preenchimento automático"</translation>
 <translation id="7752995774971033316">Não gerenciado</translation>
 <translation id="7755287808199759310">Seu responsável pode desbloqueá-lo para você</translation>
 <translation id="7758069387465995638">É possível que o software antivírus ou o firewall tenha bloqueado a conexão.</translation>
@@ -1003,7 +1000,7 @@ Mais detalhes:
 <translation id="7761701407923456692">O certificado do servidor não é compatível com o URL.</translation>
 <translation id="7763386264682878361">Analisador de manifesto de pagamento</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
-<translation id="777702478322588152">Prefeitura</translation>
+<translation id="777702478322588152">Município</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7793809570500803535">A página da web em <ph name="SITE" /> pode estar temporariamente indisponível ou pode ter sido movida permanentemente para um novo endereço da Web.</translation>
 <translation id="7800304661137206267">A conexão foi criptografada utilizando <ph name="CIPHER" />, com <ph name="MAC" /> para mensagem de autenticação e <ph name="KX" /> como o mecanismo de troca de chaves.</translation>
@@ -1142,7 +1139,6 @@ Mais detalhes:
 <translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="8768895707659403558">Para usar seus cartões em todos os dispositivos, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Esse cartão foi adicionado à sua Conta do Google. Agora você pode usá-lo em qualquer dispositivo conectado.}one{Esse cartão foi adicionado à sua Conta do Google. Agora você pode usá-lo em qualquer dispositivo conectado.}other{Esses cartões foram adicionados à sua Conta do Google. Agora você pode usá-los em qualquer dispositivo conectado.}}</translation>
 <translation id="8792621596287649091">Você pode perder o acesso à sua conta de <ph name="ORG_NAME" /> ou ter sua identidade roubada. O Chromium recomenda que sua senha seja alterada agora.</translation>
 <translation id="8800988563907321413">As sugestões de itens nas proximidades são exibidas aqui</translation>
 <translation id="8820817407110198400">Favoritos</translation>

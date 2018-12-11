@@ -40,6 +40,7 @@
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
 <translation id="1570871743947603115">Slå av/på Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">se all aktiviteten din i denne økten</translation>
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="2961963223658824723">Noe gikk galt. Prøv på nytt om noen sekunder.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">installere apper, utvidelser og temaer</translation>
 <translation id="2995447421581609334">Vis Cast-enheter.</translation>
 <translation id="2996462380875591307">Dokket lupe er slått på. Trykk på Ctrl + Søk + D igjen for å slå det av.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">Start på nytt og tilbakestill</translation>
 <translation id="4961318399572185831">Cast skjermen</translation>
 <translation id="5030687792513154421">Tiden er ute</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> koblet til en ny telefon</translation>
 <translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">Søk + Shift + K</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
+<translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon og kamera eller andre funksjoner</translation>
 <translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6696025732084565524">Det avtakbare tastaturet trenger en kritisk oppdatering</translation>
 <translation id="6700713906295497288">IME-menyknappen</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="698231206551913481">Alle filer og lokale data som er tilknyttet denne brukeren, slettes permanent når brukeren fjernes.</translation>
 <translation id="7015766095477679451">Kom tilbake <ph name="COME_BACK_TIME" />.</translation>
+<translation id="7025533177575372252">Koble <ph name="DEVICE_NAME" /> til telefonen</translation>
 <translation id="7029814467594812963">Avslutt økten</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7222902781030499995">Stopp nedtellingen</translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
 <translation id="7303365578352795231">Svarer på en annen enhet</translation>
@@ -387,6 +393,7 @@
 <translation id="7798302898096527229">Trykk på Søk eller Shift for å avbryte</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> og <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sterkt signal</translation>
+<translation id="7837740436429729974">Tiden er ute</translation>
 <translation id="7842211907556571265">Kobler til <ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">Advarsel: Funksjon på forsøksstadiet</translation>
 <translation id="7846634333498149051">Tastatur</translation>
@@ -420,6 +427,7 @@
 <translation id="8308637677604853869">Forrige meny</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /><ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Opprett et notat</translation>
+<translation id="8375916635258623388"><ph name="DEVICE_NAME" /> og telefonen din kobles sammen automatisk</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Forelderen din har låst denne enheten</translation>
 <translation id="8406981827175133772">Lupe for hele skjermen</translation>
@@ -457,6 +465,7 @@
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
 <translation id="8877788021141246043">Angi en påminnelse</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
+<translation id="8898978413391960553">00:00 s</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
 <translation id="8940956008527784070">Lavt batterinivå (<ph name="PERCENTAGE" /> %)</translation>

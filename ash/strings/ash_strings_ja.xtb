@@ -40,6 +40,7 @@
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
 <translation id="1570871743947603115">Bluetooth を切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">このセッションのすべてのアクティビティにアクセスする</translation>
 <translation id="1608626060424371292">このユーザーを削除</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">音声検索を開始</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">接続を追加</translation>
 <translation id="2961963223658824723">エラーが発生しました。数秒後にもう一度お試しください。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">アプリ、拡張機能、テーマをインストールする</translation>
 <translation id="2995447421581609334">キャスト デバイスを表示します。</translation>
 <translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="3000461861112256445">モノラル音声</translation>
@@ -238,6 +240,7 @@
 <translation id="4924411785043111640">再起動してリセット</translation>
 <translation id="4961318399572185831">画面をキャスト</translation>
 <translation id="5030687792513154421">時間切れです</translation>
+<translation id="5035236842988137213"><ph name="DEVICE_NAME" /> が新しいスマートフォンに接続されました</translation>
 <translation id="5083553833479578423">さらに多くのアシスタント機能をぜひご活用ください。</translation>
 <translation id="5136175204352732067">別のキーボードが接続されています</translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
@@ -325,6 +328,7 @@
 <translation id="6627638273713273709">検索+Shift+K</translation>
 <translation id="6650933572246256093">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。このデバイスに次のパスキーを入力してください: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">パスワード</translation>
+<translation id="6665545700722362599">ウェブサイト、アプリ、拡張機能に対して、位置情報サービスまたはデバイスのマイクやカメラなどの機能の使用を許可する</translation>
 <translation id="6691659475504239918">検索+Shift+H</translation>
 <translation id="6696025732084565524">お使いのキーボード（取り外し可能）に重要なアップデートを適用する必要があります</translation>
 <translation id="6700713906295497288">IME メニューボタン</translation>
@@ -344,6 +348,7 @@
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="698231206551913481">このユーザーを削除すると、このユーザーに関連付けられているファイルとローカルデータもすべて完全に削除されます。</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> になったら利用を再開できます。</translation>
+<translation id="7025533177575372252">スマートフォンを使って <ph name="DEVICE_NAME" /> を接続する</translation>
 <translation id="7029814467594812963">セッションを終了</translation>
 <translation id="7066646422045619941">このネットワークは管理者によって無効にされています。</translation>
 <translation id="7067196344162293536">自動回転</translation>
@@ -355,6 +360,7 @@
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
+<translation id="7222902781030499995">タイマーを停止します</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
 <translation id="7303365578352795231">別の端末で応答しています。</translation>
@@ -388,6 +394,7 @@
 <translation id="7798302898096527229">キャンセルするには検索キーまたは Shift キーを押します。</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">電波: 強い</translation>
+<translation id="7837740436429729974">タイムアップ</translation>
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> に接続しています</translation>
 <translation id="7842569679327885685">警告: 試験運用版の機能</translation>
 <translation id="7846634333498149051">キーボード</translation>
@@ -421,6 +428,7 @@
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">メモを作成</translation>
+<translation id="8375916635258623388">この <ph name="DEVICE_NAME" /> とお使いのスマートフォンは自動的に接続されます</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8394567579869570560">保護者の方がこの端末をロックしました</translation>
 <translation id="8406981827175133772">拡大鏡（全画面）</translation>
@@ -458,6 +466,7 @@
 <translation id="8874184842967597500">未接続</translation>
 <translation id="8877788021141246043">リマインダーを設定して</translation>
 <translation id="8878886163241303700">画面を拡張しています</translation>
+<translation id="8898978413391960553">00:00 秒</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>
 <translation id="8938800817013097409">USB-C デバイス（背面右のポート）</translation>
 <translation id="8940956008527784070">バッテリー残量: 少（<ph name="PERCENTAGE" />%）</translation>

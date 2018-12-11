@@ -108,6 +108,13 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 
           Niciun mod de deblocare rapidă nu este disponibil în mod prestabilit pentru dispozitivele gestionate.</translation>
 <translation id="123081309365616809">Activează proiectarea conținutului pe dispozitiv</translation>
+<translation id="1231349879329465225">Permite activarea sau dezactivarea Tranziției rapide.
+      Se aplică pentru toți utilizatorii și toate interfețele de pe dispozitiv.
+      Ca să poți folosi Tranziția rapidă, trebuie activate această setare și proprietatea ONC pe rețea.
+      După ce este setată, Tranziția rapidă rămâne activă până când politica este modificată pentru a o dezactiva.
+
+      Dacă politica nu este setată sau este dezactivată, Tranziția rapidă nu se folosește.
+      Dacă este activată, Tranziția rapidă se folosește atunci când este compatibilă cu punctul de acces wireless.</translation>
 <translation id="1243570869342663665">Gestionează filtrarea conținutului pentru adulți cu SafeSites.</translation>
 <translation id="1257550411839719984">Setează directorul prestabilit pentru descărcare</translation>
 <translation id="1265053460044691532">Limitați intervalul de timp pentru care un utilizator autentificat prin SAML se poate conecta offline</translation>
@@ -125,6 +132,7 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
       Spre deosebire de politica <ph name="URL_LIST_POLICY_NAME" />, regulile se aplică în ambele direcții: când suplimentul Internet Explorer este prezent și este activat, stabilește și dacă <ph name="IE_PRODUCT_NAME" /> trebuie să deschidă aceste URL-uri în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1297182715641689552">Utilizează un script .pac pentru proxy</translation>
 <translation id="1304973015437969093">ID-uri pentru extensii/aplicații și adrese URL pentru actualizări de instalat în fundal</translation>
+<translation id="1307415922184340052">Trimite numele de utilizator sau numele fișierului la serverul imprimantelor native cu fiecare sarcină de printare. Setarea prestabilită este de a nu trimite.</translation>
 <translation id="1307454923744766368">Origini sau modele de nume de gazdă pentru care nu se aplică restricțiile cu privire la originile nesigure</translation>
 <translation id="1313457536529613143">Specifică procentul de ajustare a intervalului până la reducerea luminozității ecranului atunci când se înregistrează activități ale utilizatorului în timp ce luminozitatea ecranului este redusă sau la scurt timp după ce ecranul a fost oprit.
 
@@ -3288,4 +3296,5 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="988537626274109600">Această politică stabilește intervalele de timp în care dispozitivul <ph name="PRODUCT_OS_NAME" /> nu poate căuta automat actualizări.
       Când politica este setată la o listă nevidă de intervale de timp, dispozitivele nu vor putea căuta automat actualizări în intervalele de timp specificate. Dispozitivele care necesită retragerea sau care sunt sub versiunea <ph name="PRODUCT_OS_NAME" /> minimă nu vor fi afectate de această politică, din cauza potențialelor probleme de securitate. În plus, politica nu blochează căutările de actualizări solicitate de utilizatori sau administratori.
       Când politica este dezactivată sau nu conține intervale de timp, căutările automate de actualizări nu vor fi blocate de această politică, dar pot fi blocate de alte politici.</translation>
+<translation id="991560005425213776">Trimite numele de utilizator și numele fișierului la imprimantele native</translation>
 </translationbundle>
