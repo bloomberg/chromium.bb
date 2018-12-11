@@ -16,7 +16,6 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_tab_helper.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
