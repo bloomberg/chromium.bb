@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -148,6 +149,12 @@ bool CanRequestAutomation(const Extension* extension,
   return false;
 }
 
+ui::AXTreeID GetAXTreeIDFromRenderFrameHost(content::RenderFrameHost* rfh) {
+  auto* registry = ui::AXTreeIDRegistry::GetInstance();
+  return registry->GetAXTreeID(ui::AXTreeIDRegistry::FrameID(
+      rfh->GetProcess()->GetID(), rfh->GetRoutingID()));
+}
+
 }  // namespace
 
 // Helper class that receives accessibility data from |WebContents|.
@@ -187,7 +194,7 @@ class AutomationWebContentsObserver
 
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
-    ui::AXTreeID tree_id = render_frame_host->GetAXTreeID();
+    ui::AXTreeID tree_id = GetAXTreeIDFromRenderFrameHost(render_frame_host);
     AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
         tree_id, browser_context_);
   }
@@ -195,7 +202,8 @@ class AutomationWebContentsObserver
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                            const MediaPlayerId& id) override {
     content::AXEventNotificationDetails content_event_bundle;
-    content_event_bundle.ax_tree_id = id.render_frame_host->GetAXTreeID();
+    content_event_bundle.ax_tree_id =
+        GetAXTreeIDFromRenderFrameHost(id.render_frame_host);
     content_event_bundle.events.resize(1);
     content_event_bundle.events[0].event_type =
         ax::mojom::Event::kMediaStartedPlaying;
@@ -207,7 +215,8 @@ class AutomationWebContentsObserver
       const MediaPlayerId& id,
       WebContentsObserver::MediaStoppedReason reason) override {
     content::AXEventNotificationDetails content_event_bundle;
-    content_event_bundle.ax_tree_id = id.render_frame_host->GetAXTreeID();
+    content_event_bundle.ax_tree_id =
+        GetAXTreeIDFromRenderFrameHost(id.render_frame_host);
     content_event_bundle.events.resize(1);
     content_event_bundle.events[0].event_type =
         ax::mojom::Event::kMediaStoppedPlaying;
@@ -226,7 +235,7 @@ class AutomationWebContentsObserver
         return;
 
       content::AXEventNotificationDetails content_event_bundle;
-      content_event_bundle.ax_tree_id = rfh->GetAXTreeID();
+      content_event_bundle.ax_tree_id = GetAXTreeIDFromRenderFrameHost(rfh);
       content_event_bundle.events.resize(1);
       content_event_bundle.events[0].event_type =
           ax::mojom::Event::kMediaStartedPlaying;

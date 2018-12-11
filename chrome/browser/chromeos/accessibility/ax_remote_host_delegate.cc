@@ -19,7 +19,7 @@ AXRemoteHostDelegate::AXRemoteHostDelegate(AXHostService* host_service,
   DCHECK(remote_host_ptr_);
 
   // AX tree ID is automatically assigned.
-  DCHECK_NE(tree_id(), ui::AXTreeIDUnknown());
+  DCHECK_NE(ax_tree_id(), ui::AXTreeIDUnknown());
 
   // Handle both clean and unclean shutdown of the remote app.
   remote_host_ptr_.set_connection_error_handler(base::BindOnce(
@@ -36,7 +36,7 @@ void AXRemoteHostDelegate::HandleAccessibilityEvent(
     const ui::AXTreeID& tree_id,
     const std::vector<ui::AXTreeUpdate>& updates,
     const ui::AXEvent& event) {
-  CHECK_EQ(tree_id, this->tree_id());
+  CHECK_EQ(tree_id, ax_tree_id());
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
   event_bundle.tree_id = tree_id;
   for (const ui::AXTreeUpdate& update : updates)
@@ -60,7 +60,7 @@ void AXRemoteHostDelegate::FlushForTesting() {
 
 void AXRemoteHostDelegate::OnRemoteHostDisconnected() {
   extensions::AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
-      tree_id(), nullptr /* browser_context */);
-  host_service_->OnRemoteHostDisconnected(tree_id());
+      ax_tree_id(), nullptr /* browser_context */);
+  host_service_->OnRemoteHostDisconnected(ax_tree_id());
   // This object is now deleted.
 }

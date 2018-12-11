@@ -24,8 +24,6 @@ AXTreeID::AXTreeID(ax::mojom::AXTreeIDType type) : type_(type) {
 AXTreeID::AXTreeID(const std::string& string) {
   if (string.empty()) {
     type_ = ax::mojom::AXTreeIDType::kUnknown;
-  } else if (string == "0") {
-    type_ = ax::mojom::AXTreeIDType::kDesktop;
   } else {
     type_ = ax::mojom::AXTreeIDType::kToken;
     base::Value string_value(string);
@@ -49,8 +47,6 @@ std::string AXTreeID::ToString() const {
   switch (type_) {
     case ax::mojom::AXTreeIDType::kUnknown:
       return "";
-    case ax::mojom::AXTreeIDType::kDesktop:
-      return "0";
     case ax::mojom::AXTreeIDType::kToken:
       return base::CreateUnguessableTokenValue(*token_).GetString();
   }
@@ -91,12 +87,6 @@ const AXTreeID& AXTreeIDUnknown() {
   static const base::NoDestructor<AXTreeID> ax_tree_id_unknown(
       ax::mojom::AXTreeIDType::kUnknown);
   return *ax_tree_id_unknown;
-}
-
-const AXTreeID& DesktopAXTreeID() {
-  static const base::NoDestructor<AXTreeID> desktop_ax_tree_id(
-      ax::mojom::AXTreeIDType::kDesktop);
-  return *desktop_ax_tree_id;
 }
 
 }  // namespace ui
