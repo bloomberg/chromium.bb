@@ -564,7 +564,7 @@ void LayerTreeHost::SetNeedsCommit() {
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
 }
 
-bool LayerTreeHost::RequestedMainFramePending() {
+bool LayerTreeHost::RequestedMainFramePendingForTesting() {
   return proxy_->RequestedAnimatePending();
 }
 

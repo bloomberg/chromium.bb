@@ -83,7 +83,12 @@ class LayerTreeView : public blink::WebLayerTreeView,
 
   bool IsSurfaceSynchronizationEnabled() const;
 
-  // Like setNeedsRedraw but forces the frame to be drawn, without early-outs.
+  // Indicates that blink needs a BeginFrame, but that nothing might actually be
+  // dirty. Calls to this should never be done directly, but should go through
+  // WebWidgetClient::ScheduleAnimate() instead, or they can bypass test
+  // overrides.
+  void SetNeedsBeginFrame();
+  // Like SetNeedsRedraw but forces the frame to be drawn, without early-outs.
   // Redraw will be forced after the next commit
   void SetNeedsForcedRedraw();
   // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
@@ -139,7 +144,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
                                double duration_sec) override;
   bool HasPendingPageScaleAnimation() const override;
   void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
-  void SetNeedsBeginFrame() override;
   void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       base::OnceCallback<void(const SkBitmap&)> callback) override;
@@ -207,7 +211,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
 
   // cc::LayerTreeHostSingleThreadClient implementation.
-  void RequestScheduleAnimation() override;
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
@@ -224,6 +227,11 @@ class LayerTreeView : public blink::WebLayerTreeView,
       base::OnceCallback<void(base::TimeTicks)> callback);
 
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
+
+  // Exposed for the WebTest harness to query.
+  bool CompositeIsSynchronousForTesting() const {
+    return CompositeIsSynchronous();
+  }
 
  protected:
   friend class RenderViewImplScaleFactorTest;

@@ -416,7 +416,10 @@ void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
   // WebFrameWidget needs to be initialized before initializing the core frame?
   if (!web_frame->LocalRootFrameWidget())
     return;
-  web_frame->LocalRootFrameWidget()->ScheduleAnimation();
+  // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
+  WebWidgetClient* web_widget_client =
+      web_frame->LocalRootFrameWidget()->Client();
+  web_widget_client->ScheduleAnimation();
 }
 
 IntRect ChromeClientImpl::ViewportToScreen(
@@ -933,10 +936,10 @@ void ChromeClientImpl::SetEventListenerProperties(
 
 void ChromeClientImpl::BeginLifecycleUpdates() {
   web_view_->StopDeferringCommits();
-
-  if (WebLayerTreeView* tree_view = web_view_->LayerTreeView()) {
-    tree_view->SetNeedsBeginFrame();
-  }
+  // The WidgetClient is null for some WebViews, in which case they can not
+  // composite.
+  if (web_view_->WidgetClient())
+    web_view_->WidgetClient()->ScheduleAnimation();
 }
 
 cc::EventListenerProperties ChromeClientImpl::EventListenerProperties(

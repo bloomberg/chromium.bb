@@ -63,10 +63,6 @@ class LayerTreeViewDelegate {
   // or committing a frame (at the same time Tracing measurements are taken).
   virtual void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) = 0;
 
-  // Requests that the client schedule a composite now, and calculate
-  // appropriate delay for potential future frame.
-  virtual void RequestScheduleAnimation() = 0;
-
   // Requests a visual frame-based update to the state of the delegate if there
   // is an update available. |record_main_frame_metrics| will be true if
   // this is a main frame for which we want metrics.

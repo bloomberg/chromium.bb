@@ -3208,6 +3208,9 @@ TEST_F(WebViewTest, MiddleClickAutoscrollCursor) {
   web_view->GetChromeClient().SetCursorForPlugin(WebCursorInfo(IBeamCursor()),
                                                  local_frame);
   EXPECT_EQ(IBeamCursor().GetType(), client.GetLastCursorType());
+
+  // Explicitly reset to break dependency on locally scoped client.
+  web_view_helper_.Reset();
 }
 
 static void ConfigueCompositingWebView(WebSettings* settings) {

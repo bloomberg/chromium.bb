@@ -578,15 +578,6 @@ void WebFrameWidgetImpl::Initialize() {
     SetBackgroundColorOverride(Color::kTransparent);
 }
 
-void WebFrameWidgetImpl::ScheduleAnimation() {
-  if (layer_tree_view_) {
-    layer_tree_view_->SetNeedsBeginFrame();
-    return;
-  }
-  DCHECK(Client());
-  Client()->ScheduleAnimation();
-}
-
 void WebFrameWidgetImpl::IntrinsicSizingInfoChanged(
     const IntrinsicSizingInfo& sizing_info) {
   WebIntrinsicSizingInfo web_sizing_info;

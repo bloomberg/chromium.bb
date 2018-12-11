@@ -56,7 +56,8 @@ void SimTest::SetUp() {
   Test::SetUp();
 
   web_view_helper_.Initialize(&web_frame_client_, &web_view_client_);
-  compositor_.SetWebView(WebView(), *web_view_client_.layer_tree_view());
+  compositor_.SetWebView(WebView(), *web_view_client_.layer_tree_view(),
+                         web_view_client_);
   page_.SetPage(WebView().GetPage());
 }
 

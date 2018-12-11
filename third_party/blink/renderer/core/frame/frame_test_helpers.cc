@@ -393,10 +393,7 @@ WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
 }
 
 void WebViewHelper::Resize(WebSize size) {
-  test_web_view_client_->ClearAnimationScheduled();
   GetWebView()->MainFrameWidget()->Resize(size);
-  EXPECT_FALSE(test_web_view_client_->AnimationScheduled());
-  test_web_view_client_->ClearAnimationScheduled();
 }
 
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/test_runner.h"
@@ -22,15 +23,27 @@ namespace test_runner {
 
 ProxyWebWidgetClient::ProxyWebWidgetClient(
     blink::WebWidgetClient* base_class_widget_client,
-    blink::WebWidgetClient* widget_test_client)
+    blink::WebWidgetClient* widget_test_client,
+    content::RenderWidget* render_widget)
     : base_class_widget_client_(base_class_widget_client),
-      widget_test_client_(widget_test_client) {}
+      widget_test_client_(widget_test_client),
+      render_widget_(render_widget) {}
 
 void ProxyWebWidgetClient::DidInvalidateRect(const blink::WebRect& r) {
   base_class_widget_client_->DidInvalidateRect(r);
 }
 void ProxyWebWidgetClient::ScheduleAnimation() {
-  widget_test_client_->ScheduleAnimation();
+  // When using threaded compositing, have the RenderWidget schedule a request
+  // for a frame, as we use the compositor's scheduler. Otherwise the testing
+  // WebWidgetClient schedules it.
+  // Note that for WebViewTestProxy the RenderWidget is not subclassed to
+  // override the WebWidgetClient, instead it is injected into RenderViewImpl,
+  // so if we call RenderWidget here we jump out of the test harness as
+  // intended.
+  if (!render_widget_->layer_tree_view()->CompositeIsSynchronousForTesting())
+    render_widget_->ScheduleAnimation();
+  else
+    widget_test_client_->ScheduleAnimation();
 }
 void ProxyWebWidgetClient::IntrinsicSizingInfoChanged(
     const blink::WebIntrinsicSizingInfo& info) {
@@ -178,7 +191,8 @@ void WebViewTestProxy::Initialize(WebTestInterfaces* interfaces,
   view_test_client_ = interfaces->CreateWebViewTestClient(this, nullptr);
   // This uses the widget_test_client set above on WebWidgetTestProxyBase.
   proxy_widget_client_ = std::make_unique<ProxyWebWidgetClient>(
-      RenderViewImpl::WidgetClient(), web_widget_client.get());
+      RenderViewImpl::WidgetClient(), web_widget_client.get(),
+      RenderViewImpl::GetWidget());
 
   // On WebWidgetTestProxyBase.
   // It's weird that the WebView has the proxy client, but the

@@ -388,6 +388,7 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   // RenderWidgetOwnerDelegate implementation ----------------------------------
 
   blink::WebWidget* GetWebWidgetForWidget() const override;
+  blink::WebWidgetClient* GetWebWidgetClientForWidget() override;
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
@@ -412,7 +413,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
       float top_controls_height,
       float bottom_controls_height,
       bool browser_controls_shrink_blink_size) override;
-  void RequestScheduleAnimationForWidget() override;
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;

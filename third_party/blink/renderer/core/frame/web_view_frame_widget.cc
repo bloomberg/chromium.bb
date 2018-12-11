@@ -178,10 +178,6 @@ void WebViewFrameWidget::SetLayerTreeView(WebLayerTreeView*) {
   NOTREACHED();
 }
 
-void WebViewFrameWidget::ScheduleAnimation() {
-  web_view_->ScheduleAnimationForWidget();
-}
-
 base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
 WebViewFrameWidget::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {

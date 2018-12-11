@@ -137,10 +137,6 @@ class WebLayerTreeView {
 
   // Flow control and scheduling ---------------------------------------
 
-  // Indicates that blink needs a BeginFrame, but that nothing might actually be
-  // dirty.
-  virtual void SetNeedsBeginFrame() {}
-
   // Run layout and paint of all pending document changes asynchronously.
   virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
 

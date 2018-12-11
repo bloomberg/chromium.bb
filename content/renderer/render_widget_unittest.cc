@@ -473,6 +473,9 @@ class RenderWidgetPopupUnittest : public testing::Test {
 class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
  public:
   blink::WebWidget* GetWebWidgetForWidget() const override { return nullptr; }
+  blink::WebWidgetClient* GetWebWidgetClientForWidget() override {
+    return nullptr;
+  }
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override {
     return false;
@@ -499,7 +502,6 @@ class StubRenderWidgetOwnerDelegate : public RenderWidgetOwnerDelegate {
       float top_controls_height,
       float bottom_controls_height,
       bool browser_controls_shrink_blink_size) override {}
-  void RequestScheduleAnimationForWidget() override {}
   void SetScreenMetricsEmulationParametersForWidget(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override {}

@@ -67,7 +67,9 @@ class WebWidgetClient {
   // Called when a region of the WebWidget needs to be re-painted.
   virtual void DidInvalidateRect(const WebRect&) {}
 
-  // Called when a call to WebWidget::animate is required
+  // Called to request a BeginMainFrame from the compositor. For tests with
+  // single thread and no scheduler, the impl should schedule a task to run
+  // a synchronous composite.
   virtual void ScheduleAnimation() {}
 
   // A notification callback for when the intrinsic sizing of the

@@ -56,7 +56,6 @@ class CORE_EXPORT WebFrameWidgetBase
   // Called once the local root is bound via |BindLocalRoot()|.
   virtual void Initialize() = 0;
   virtual bool ForSubframe() const = 0;
-  virtual void ScheduleAnimation() = 0;
   virtual void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) {}
   virtual base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
   EnsureCompositorMutatorDispatcher(

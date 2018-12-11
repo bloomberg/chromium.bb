@@ -934,10 +934,11 @@ void RenderWidget::SetFocus(bool enable) {
 }
 
 void RenderWidget::SetNeedsMainFrame() {
-  LayerTreeView* ltv = layer_tree_view();
-  if (!ltv)
-    return;
-  ltv->SetNeedsBeginFrame();
+  // The WebWidgetClient is not |this| if tests override it for the WebView and
+  // WebViewClient.
+  blink::WebWidgetClient* client =
+      owner_delegate_ ? owner_delegate_->GetWebWidgetClientForWidget() : this;
+  client->ScheduleAnimation();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1056,12 +1057,11 @@ void RenderWidget::DidCompletePageScaleAnimation() {
     owner_delegate_->DidCompletePageScaleAnimationForWidget();
 }
 
-void RenderWidget::RequestScheduleAnimation() {
-  if (owner_delegate_) {
-    owner_delegate_->RequestScheduleAnimationForWidget();
-    return;
-  }
-  ScheduleAnimation();
+void RenderWidget::ScheduleAnimation() {
+  // This call is not needed in single thread mode for tests without a
+  // scheduler, but they need to override the WebWidgetClient and replace this
+  // method in order to schedule a synchronous composite task themselves.
+  layer_tree_view_->SetNeedsBeginFrame();
 }
 
 void RenderWidget::UpdateVisualState(bool record_main_frame_metrics) {
