@@ -45,6 +45,8 @@ RasterDecoderContextState::RasterDecoderContextState(
       real_context_(std::move(context)),
       surface_(std::move(surface)),
       weak_ptr_factory_(this) {
+  if (use_vulkan_gr_context)
+    use_virtualized_gl_contexts = false;
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "RasterDecoderContextState", base::ThreadTaskRunnerHandle::Get());
@@ -161,6 +163,9 @@ bool RasterDecoderContextState::InitializeGL(
 }
 
 bool RasterDecoderContextState::MakeCurrent(gl::GLSurface* surface) {
+  if (use_vulkan_gr_context)
+    return true;
+
   if (context_lost_)
     return false;
 
@@ -183,6 +188,8 @@ void RasterDecoderContextState::MarkContextLost() {
 }
 
 bool RasterDecoderContextState::IsCurrent(gl::GLSurface* surface) {
+  if (use_vulkan_gr_context)
+    return true;
   return context_->IsCurrent(surface);
 }
 
