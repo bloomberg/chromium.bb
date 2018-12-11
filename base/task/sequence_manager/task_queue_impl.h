@@ -282,7 +282,7 @@ class BASE_EXPORT TaskQueueImpl {
     bool empty() const { return queue_.empty(); }
     size_t size() const { return queue_.size(); }
     const Task& top() const { return queue_.top(); }
-    void swap(DelayedIncomingQueue& other);
+    void swap(DelayedIncomingQueue* other);
 
     bool has_pending_high_resolution_tasks() const {
       return pending_high_res_tasks_;
@@ -293,7 +293,14 @@ class BASE_EXPORT TaskQueueImpl {
     void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
 
    private:
-    std::priority_queue<Task> queue_;
+    struct PQueue : public std::priority_queue<Task> {
+      // Expose the container and comparator.
+      using std::priority_queue<Task>::c;
+      using std::priority_queue<Task>::comp;
+    };
+
+    PQueue queue_;
+
     // Number of pending tasks in the queue that need high resolution timing.
     int pending_high_res_tasks_ = 0;
 

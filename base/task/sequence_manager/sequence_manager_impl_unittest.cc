@@ -2852,6 +2852,43 @@ TEST_P(SequenceManagerTest, SweepCanceledDelayedTasks) {
   EXPECT_EQ(0u, queues_[0]->GetNumberOfPendingTasks());
 }
 
+TEST_P(SequenceManagerTest, SweepCanceledDelayedTasks_ManyTasks) {
+  CreateTaskQueues(1u);
+
+  TimeTicks start_time = manager_->NowTicks();
+
+  constexpr const int kNumTasks = 100;
+
+  std::vector<std::unique_ptr<CancelableTask>> tasks(100);
+  std::vector<TimeTicks> run_times;
+  for (int i = 0; i < kNumTasks; i++) {
+    tasks[i] = std::make_unique<CancelableTask>(GetTickClock());
+    queues_[0]->task_runner()->PostDelayedTask(
+        FROM_HERE,
+        BindOnce(&CancelableTask::RecordTimeTask,
+                 tasks[i]->weak_factory_.GetWeakPtr(), &run_times),
+        TimeDelta::FromSeconds(i + 1));
+  }
+
+  // Invalidate ever other timer.
+  for (int i = 0; i < kNumTasks; i++) {
+    if (i % 2)
+      tasks[i]->weak_factory_.InvalidateWeakPtrs();
+  }
+
+  manager_->ReclaimMemory();
+  EXPECT_EQ(50u, queues_[0]->GetNumberOfPendingTasks());
+
+  // Make sure the priority queue still operates as expected.
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  ASSERT_EQ(50u, run_times.size());
+  for (int i = 0; i < 50; i++) {
+    TimeTicks expected_run_time =
+        start_time + TimeDelta::FromSeconds(2 * i + 1);
+    EXPECT_EQ(run_times[i], expected_run_time);
+  }
+}
+
 TEST_P(SequenceManagerTest, DelayTillNextTask) {
   CreateTaskQueues(2u);
 
