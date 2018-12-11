@@ -1312,15 +1312,34 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, GestureScrollToDismiss) {
 }
 
 // Tests that the mouse-scroll cannot dismiss the app list.
-TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseScrollToDismiss) {
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       MouseScrollDoesntDismissPeekingLauncher) {
   // Show app list in non-tablet mode. Mouse-scroll up.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
   GetAppListTestHelper()->CheckVisibility(true);
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->MoveMouseTo(GetPointOutsideSearchbox());
+
+  // Scroll up to get fullscreen.
   generator->MoveMouseWheel(0, 1);
   GetAppListTestHelper()->WaitUntilIdle();
-  GetAppListTestHelper()->CheckVisibility(false);
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Reset and show app list in non-tablet mode. Mouse-scroll down.
+  GetAppListTestHelper()->DismissAndRunLoop();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Scroll down to get fullscreen.
+  generator->MoveMouseWheel(0, -1);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  GetAppListTestHelper()->CheckVisibility(true);
 
   // Show app list in tablet mode. Mouse-scroll up.
   EnableTabletMode(true);
@@ -1329,6 +1348,30 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, MouseScrollToDismiss) {
   generator->MoveMouseWheel(0, 1);
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
+}
+
+// Tests that mouse-scroll up at fullscreen will dismiss app list.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       MouseScrollToDismissFromFullscreen) {
+  // Show app list in non-tablet mode. Mouse-scroll down.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::PEEKING);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveMouseTo(GetPointOutsideSearchbox());
+
+  // Scroll up with mouse wheel to fullscreen.
+  generator->MoveMouseWheel(0, 1);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(
+      app_list::AppListViewState::FULLSCREEN_ALL_APPS);
+  GetAppListTestHelper()->CheckVisibility(true);
+  generator->MoveMouseTo(GetPointOutsideSearchbox());
+
+  // Scroll up with mouse wheel to close app list.
+  generator->MoveMouseWheel(0, 1);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(app_list::AppListViewState::CLOSED);
+  GetAppListTestHelper()->CheckVisibility(false);
 }
 
 // Tests the app list opacity in overview mode.
