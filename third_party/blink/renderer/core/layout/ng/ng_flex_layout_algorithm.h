@@ -29,6 +29,18 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;
+
+ private:
+  // This is same method as FlexItem but we need that logic before FlexItem is
+  // constructed.
+  bool MainAxisIsInlineAxis(NGBlockNode child);
+  LayoutUnit MainAxisContentExtent(LayoutUnit sum_hypothetical_main_size);
+
+  NGLogicalSize border_box_size_;
+  NGBoxStrut border_scrollbar_padding_;
+  NGLogicalSize content_box_size_;
+  NGBoxStrut borders_;
+  NGBoxStrut padding_;
 };
 
 }  // namespace blink
