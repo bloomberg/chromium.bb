@@ -283,14 +283,14 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
 TEST_P(WindowTreeClientTestSurfaceSync, ClientSurfaceEmbedderCreated) {
   Window window(nullptr);
   window.Init(ui::LAYER_NOT_DRAWN);
-  WindowPortMusTestHelper(&window).SimulateEmbedding();
 
   WindowPortMus* window_port_mus = WindowPortMus::Get(&window);
-  ASSERT_NE(nullptr, window_port_mus);
+  ASSERT_TRUE(window_port_mus);
 
-  // A ClientSurfaceEmbedder is only created once there is bounds and a
-  // FrameSinkId.
+  // A ClientSurfaceEmbedder is only created once there is an embedding.
   EXPECT_EQ(nullptr, window_port_mus->client_surface_embedder());
+  WindowPortMusTestHelper(&window).SimulateEmbedding();
+
   gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
   ASSERT_NE(new_bounds, window.bounds());
   window.SetBounds(new_bounds);

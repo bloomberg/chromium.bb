@@ -240,6 +240,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   PropertyConverter* GetPropertyConverter();
 
+  // Calls GetOrAllocateLocalSurfaceId() with the current size.
+  void GetOrAllocateLocalSurfaceIdForCurrentSize();
+
   // WindowMus:
   Window* GetWindow() override;
   void AddChildFromServer(WindowMus* window) override;

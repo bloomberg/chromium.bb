@@ -319,6 +319,12 @@ bool WindowPortMus::PrepareForEmbed() {
     return false;
 
   has_embedding_ = true;
+  if (!client_surface_embedder_) {
+    client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
+        window_, /* inject_gutter */ false, gfx::Insets());
+  }
+  // Triggers updating |client_surface_embedder_|.
+  GetOrAllocateLocalSurfaceIdForCurrentSize();
   return true;
 }
 
@@ -327,13 +333,21 @@ void WindowPortMus::OnEmbedAck(
     base::WeakPtr<WindowPortMus> window,
     ws::mojom::WindowTree::EmbedCallback real_callback,
     bool result) {
-  if (window && !result)
+  if (window && !result) {
     window->has_embedding_ = false;
+    window->client_surface_embedder_.reset();
+  }
   std::move(real_callback).Run(window && result);
 }
 
 PropertyConverter* WindowPortMus::GetPropertyConverter() {
   return window_tree_client_->delegate_->GetPropertyConverter();
+}
+
+void WindowPortMus::GetOrAllocateLocalSurfaceIdForCurrentSize() {
+  const gfx::Size size_in_pixels =
+      gfx::ScaleToCeiledSize(window_->bounds().size(), GetDeviceScaleFactor());
+  GetOrAllocateLocalSurfaceId(size_in_pixels);
 }
 
 Window* WindowPortMus::GetWindow() {
@@ -578,6 +592,7 @@ void WindowPortMus::PrepareForDestroy() {
 
 void WindowPortMus::NotifyEmbeddedAppDisconnected() {
   has_embedding_ = false;
+  client_surface_embedder_.reset();
   for (WindowObserver& observer : *GetObservers(window_))
     observer.OnEmbeddedAppDisconnected(window_);
 }
@@ -704,11 +719,9 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   embed_frame_sink_id_ = GenerateFrameSinkIdFromServerId();
   window_->SetEmbedFrameSinkId(embed_frame_sink_id_);
 
-  gfx::Size size_in_pixel =
-      gfx::ConvertSizeToPixel(GetDeviceScaleFactor(), window_->bounds().size());
   // Make sure |local_surface_id_| and |last_surface_size_in_pixels_| are
   // correct for the new created |local_layer_tree_frame_sink_|.
-  GetOrAllocateLocalSurfaceId(size_in_pixel);
+  GetOrAllocateLocalSurfaceIdForCurrentSize();
   return client_layer_tree_frame_sink;
 }
 
@@ -755,10 +768,9 @@ void WindowPortMus::UpdatePrimarySurfaceId() {
       viz::SurfaceId(window_->GetFrameSinkId(),
                      GetLocalSurfaceIdAllocation().local_surface_id());
 
-  if (!client_surface_embedder_) {
-    client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
-        window_, /* inject_gutter */ false, gfx::Insets());
-  }
+  // ClientSurfaceEmbedder is only applicable if we have an actual embedding.
+  if (!has_embedding_)
+    return;
 
   client_surface_embedder_->SetSurfaceId(primary_surface_id_);
   client_surface_embedder_->UpdateSizeAndGutters();
