@@ -48,21 +48,6 @@ template <class Key,
           class Alloc = std::allocator<std::pair<const Key, T>>>
 using hash_map = std::unordered_map<Key, T, Hash, Pred, Alloc>;
 
-// Use std::unordered_multimap instead.
-template <class Key,
-          class T,
-          class Hash = BASE_HASH_NAMESPACE::hash<Key>,
-          class Pred = std::equal_to<Key>,
-          class Alloc = std::allocator<std::pair<const Key, T>>>
-using hash_multimap = std::unordered_multimap<Key, T, Hash, Pred, Alloc>;
-
-// Use std::unordered_multiset instead.
-template <class Key,
-          class Hash = BASE_HASH_NAMESPACE::hash<Key>,
-          class Pred = std::equal_to<Key>,
-          class Alloc = std::allocator<Key>>
-using hash_multiset = std::unordered_multiset<Key, Hash, Pred, Alloc>;
-
 // Use std::unordered_set instead.
 template <class Key,
           class Hash = BASE_HASH_NAMESPACE::hash<Key>,

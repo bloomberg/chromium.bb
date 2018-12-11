@@ -8,10 +8,10 @@
 #include <stdint.h>
 
 #include <set>
+#include <unordered_map>
 #include <utility>
 
 #include "base/containers/flat_set.h"
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
@@ -74,9 +74,10 @@ GetBehaviorFromSafeSearchClassification(
 
 struct SupervisedUserURLFilter::Contents {
   URLMatcher url_matcher;
-  base::hash_multimap<HostnameHash,
-                      scoped_refptr<SupervisedUserSiteList>,
-                      HashHostnameHash> hostname_hashes;
+  std::unordered_multimap<HostnameHash,
+                          scoped_refptr<SupervisedUserSiteList>,
+                          HashHostnameHash>
+      hostname_hashes;
   // This only tracks pattern lists.
   std::map<URLMatcherConditionSet::ID, scoped_refptr<SupervisedUserSiteList>>
       site_lists_by_matcher_id;
