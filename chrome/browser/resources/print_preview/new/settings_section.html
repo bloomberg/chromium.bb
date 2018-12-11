@@ -23,6 +23,7 @@
         flex-direction: column;
         justify-content: center;
         min-height: 38px;
+        word-break: break-word;
       }
 
       ::slotted([slot=controls]) {
@@ -37,7 +38,6 @@
         line-height: calc(20/13 * 1em);
         padding-inline-end: var(--policy-icon-padding);
         width: calc(75px - var(--policy-icon-padding));
-        word-break: break-word;
       }
 
       :host([managed]:not([show-policy-on-end])) ::slotted([slot=title]) {
