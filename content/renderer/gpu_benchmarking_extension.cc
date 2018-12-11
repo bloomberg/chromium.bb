@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/gpu_benchmarking_extension.h"
+#include "content/renderer/gpu_benchmarking_extension.h"
 
 #include <stddef.h>
 
@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "cc/layers/layer.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/trees/layer_tree_host.h"
@@ -33,7 +34,7 @@
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "content/renderer/gpu/layer_tree_view.h"
+#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -72,8 +73,8 @@
 #include <wrl/client.h>
 #endif
 
-using blink::WebLocalFrame;
 using blink::WebImageCache;
+using blink::WebLocalFrame;
 using blink::WebPrivatePtr;
 using blink::WebSize;
 using blink::WebView;
@@ -84,8 +85,7 @@ namespace {
 class SkPictureSerializer {
  public:
   explicit SkPictureSerializer(const base::FilePath& dirpath)
-      : dirpath_(dirpath),
-        layer_id_(0) {
+      : dirpath_(dirpath), layer_id_(0) {
     // Let skia register known effect subclasses. This basically enables
     // reflection on those subclasses required for picture serialization.
     SkiaBenchmarking::Initialize();
@@ -160,9 +160,7 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
     context_.Reset(isolate_, context);
   }
 
-  v8::Isolate* isolate() {
-    return isolate_;
-  }
+  v8::Isolate* isolate() { return isolate_; }
 
   v8::Local<v8::Function> GetCallback() {
     return v8::Local<v8::Function>::New(isolate_, callback_);
@@ -258,7 +256,7 @@ void OnMicroBenchmarkCompleted(CallbackAndContext* callback_and_context,
   if (frame) {
     v8::Local<v8::Value> value =
         V8ValueConverter::Create()->ToV8Value(result.get(), context);
-    v8::Local<v8::Value> argv[] = { value };
+    v8::Local<v8::Value> argv[] = {value};
 
     frame->CallFunctionEvenIfScriptDisabled(callback_and_context->GetCallback(),
                                             v8::Object::New(isolate), 1, argv);
@@ -515,16 +513,15 @@ void GpuBenchmarking::Install(RenderFrameImpl* frame) {
   if (controller.IsEmpty())
     return;
 
-  v8::Local<v8::Object> chrome = GetOrCreateChromeObject(isolate,
-                                                          context->Global());
+  v8::Local<v8::Object> chrome =
+      GetOrCreateChromeObject(isolate, context->Global());
   chrome->Set(gin::StringToV8(isolate, "gpuBenchmarking"), controller.ToV8());
 }
 
 GpuBenchmarking::GpuBenchmarking(RenderFrameImpl* frame)
     : render_frame_(frame) {}
 
-GpuBenchmarking::~GpuBenchmarking() {
-}
+GpuBenchmarking::~GpuBenchmarking() {}
 
 void GpuBenchmarking::EnsureRemoteInterface() {
   if (!input_injector_) {
@@ -630,8 +627,7 @@ void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
     return;
 
   base::FilePath dirpath = base::FilePath::FromUTF8Unsafe(dirname);
-  if (!base::CreateDirectory(dirpath) ||
-      !base::PathIsWritable(dirpath)) {
+  if (!base::CreateDirectory(dirpath) || !base::PathIsWritable(dirpath)) {
     std::string msg("Path is not writable: ");
     msg.append(dirpath.MaybeAsASCII());
     isolate->ThrowException(v8::Exception::Error(
@@ -713,10 +709,8 @@ bool GpuBenchmarking::SmoothDrag(gin::Arguments* args) {
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
   float speed_in_pixels_s = 800;
 
-  if (!GetArg(args, &start_x) ||
-      !GetArg(args, &start_y) ||
-      !GetArg(args, &end_x) ||
-      !GetArg(args, &end_y) ||
+  if (!GetArg(args, &start_x) || !GetArg(args, &start_y) ||
+      !GetArg(args, &end_x) || !GetArg(args, &end_y) ||
       !GetOptionalArg(args, &callback) ||
       !GetOptionalArg(args, &gesture_source_type) ||
       !GetOptionalArg(args, &speed_in_pixels_s)) {
@@ -791,8 +785,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
       !GetOptionalArg(args, &distance_length) ||
       !GetOptionalArg(args, &overscroll_length) ||
       !GetOptionalArg(args, &repeat_count) ||
-      !GetOptionalArg(args, &callback) ||
-      !GetOptionalArg(args, &start_x) ||
+      !GetOptionalArg(args, &callback) || !GetOptionalArg(args, &start_x) ||
       !GetOptionalArg(args, &start_y) ||
       !GetOptionalArg(args, &speed_in_pixels_s)) {
     return false;
@@ -986,10 +979,8 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
   int duration_ms = 50;
   int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
 
-  if (!GetArg(args, &position_x) ||
-      !GetArg(args, &position_y) ||
-      !GetOptionalArg(args, &callback) ||
-      !GetOptionalArg(args, &duration_ms) ||
+  if (!GetArg(args, &position_x) || !GetArg(args, &position_y) ||
+      !GetOptionalArg(args, &callback) || !GetOptionalArg(args, &duration_ms) ||
       !GetOptionalArg(args, &gesture_source_type)) {
     return false;
   }
@@ -1147,8 +1138,7 @@ void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {
       RenderThreadImpl::current()->GetGpuChannel();
   if (!gpu_channel)
     return;
-  const gpu::GpuFeatureInfo& gpu_feature_info =
-      gpu_channel->gpu_feature_info();
+  const gpu::GpuFeatureInfo& gpu_feature_info = gpu_channel->gpu_feature_info();
   const std::vector<int32_t>& workarounds =
       gpu_feature_info.enabled_gpu_driver_bug_workarounds;
   for (int32_t workaround : workarounds) {
@@ -1159,16 +1149,14 @@ void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {
 
   // This code must be kept in sync with compositor_util's
   // GetDriverBugWorkaroundsImpl.
-  for (auto ext : base::SplitString(gpu_feature_info.disabled_extensions,
-                                    " ",
-                                    base::TRIM_WHITESPACE,
-                                    base::SPLIT_WANT_NONEMPTY)) {
+  for (auto ext :
+       base::SplitString(gpu_feature_info.disabled_extensions, " ",
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     gpu_driver_bug_workarounds.push_back("disabled_extension_" + ext);
   }
-  for (auto ext : base::SplitString(gpu_feature_info.disabled_webgl_extensions,
-                                    " ",
-                                    base::TRIM_WHITESPACE,
-                                    base::SPLIT_WANT_NONEMPTY)) {
+  for (auto ext :
+       base::SplitString(gpu_feature_info.disabled_webgl_extensions, " ",
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     gpu_driver_bug_workarounds.push_back("disabled_webgl_extension_" + ext);
   }
 

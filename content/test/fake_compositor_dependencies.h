@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "content/renderer/gpu/compositor_dependencies.h"
+#include "content/renderer/compositor/compositor_dependencies.h"
 #include "third_party/blink/public/platform/scheduler/test/web_fake_thread_scheduler.h"
 
 namespace content {

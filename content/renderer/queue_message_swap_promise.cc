@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/queue_message_swap_promise.h"
+#include "content/renderer/queue_message_swap_promise.h"
 
 #include <memory>
 
@@ -10,7 +10,7 @@
 #include "content/common/widget_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/frame_swap_message_queue.h"
 #include "ipc/ipc_sync_message_filter.h"
 
 namespace content {

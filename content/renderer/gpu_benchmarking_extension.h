@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
-#define CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
+#ifndef CONTENT_RENDERER_GPU_BENCHMARKING_EXTENSION_H_
+#define CONTENT_RENDERER_GPU_BENCHMARKING_EXTENSION_H_
 
 #include "base/macros.h"
 #include "content/common/input/input_injector.mojom.h"
@@ -16,7 +16,7 @@ class Arguments;
 namespace v8 {
 class Isolate;
 class Object;
-}
+}  // namespace v8
 
 namespace content {
 
@@ -43,8 +43,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   void PrintToSkPicture(v8::Isolate* isolate, const std::string& dirname);
   void PrintPagesToSkPictures(v8::Isolate* isolate,
                               const std::string& filename);
-  void PrintPagesToXPS(v8::Isolate* isolate,
-                         const std::string& filename);
+  void PrintPagesToXPS(v8::Isolate* isolate, const std::string& filename);
   bool GestureSourceTypeSupported(int gesture_source_type);
 
   // All arguments in these methods are in visual viewport coordinates.
@@ -102,4 +101,4 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_GPU_BENCHMARKING_EXTENSION_H_
+#endif  // CONTENT_RENDERER_GPU_BENCHMARKING_EXTENSION_H_

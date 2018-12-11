@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/queue_message_swap_promise.h"
+#include "content/renderer/queue_message_swap_promise.h"
 
 #include <stddef.h>
 
@@ -15,8 +15,8 @@
 #include "cc/trees/swap_promise.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/widget_messages.h"
-#include "content/renderer/gpu/frame_swap_message_queue.h"
-#include "content/renderer/gpu/layer_tree_view.h"
+#include "content/renderer/compositor/layer_tree_view.h"
+#include "content/renderer/frame_swap_message_queue.h"
 #include "content/renderer/render_widget.h"
 #include "content/test/mock_render_process.h"
 #include "ipc/ipc_message.h"
@@ -71,9 +71,8 @@ class QueueMessageSwapPromiseTest : public testing::Test {
 
   ~QueueMessageSwapPromiseTest() override {}
 
-  std::unique_ptr<cc::SwapPromise> QueueMessageImpl(
-      IPC::Message* msg,
-      int source_frame_number) {
+  std::unique_ptr<cc::SwapPromise> QueueMessageImpl(IPC::Message* msg,
+                                                    int source_frame_number) {
     return RenderWidget::QueueMessageImpl(msg, frame_swap_message_queue_.get(),
                                           sync_message_filter_,
                                           source_frame_number);

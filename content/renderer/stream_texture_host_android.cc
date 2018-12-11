@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/stream_texture_host_android.h"
+#include "content/renderer/stream_texture_host_android.h"
 
 #include "base/unguessable_token.h"
 #include "content/renderer/render_thread_impl.h"

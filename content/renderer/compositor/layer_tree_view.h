@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_H_
-#define CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_H_
+#ifndef CONTENT_RENDERER_COMPOSITOR_LAYER_TREE_VIEW_H_
+#define CONTENT_RENDERER_COMPOSITOR_LAYER_TREE_VIEW_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,6 @@
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_monitor.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -46,7 +45,7 @@ class ScopedDeferMainFrameUpdate;
 namespace gfx {
 class ColorSpace;
 class Size;
-}
+}  // namespace gfx
 
 namespace ui {
 class LatencyInfo;
@@ -55,10 +54,9 @@ class LatencyInfo;
 namespace content {
 class LayerTreeViewDelegate;
 
-class CONTENT_EXPORT LayerTreeView
-    : public blink::WebLayerTreeView,
-      public cc::LayerTreeHostClient,
-      public cc::LayerTreeHostSingleThreadClient {
+class LayerTreeView : public blink::WebLayerTreeView,
+                      public cc::LayerTreeHostClient,
+                      public cc::LayerTreeHostSingleThreadClient {
  public:
   // The |main_thread| is the task runner that the compositor will use for the
   // main thread (where it is constructed). The |compositor_thread| is the task
@@ -265,4 +263,4 @@ class CONTENT_EXPORT LayerTreeView
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_H_
+#endif  // CONTENT_RENDERER_COMPOSITOR_LAYER_TREE_VIEW_H_

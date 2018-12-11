@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/frame_swap_message_queue.h"
 
 #include <utility>
 
@@ -101,8 +101,8 @@ TEST_F(FrameSwapMessageQueueTest, TestQueueMessageFirst) {
   QueueVisualStateMessage(1, CloneMessage(first_message_), &visual_state_first);
   ASSERT_TRUE(visual_state_first);
   // Queuing the second time should result in true.
-  QueueVisualStateMessage(
-      1, CloneMessage(second_message_), &visual_state_first);
+  QueueVisualStateMessage(1, CloneMessage(second_message_),
+                          &visual_state_first);
   ASSERT_FALSE(visual_state_first);
   // Queuing for a different frame should result in true.
   QueueVisualStateMessage(2, CloneMessage(first_message_), &visual_state_first);
@@ -204,8 +204,7 @@ void FrameSwapMessageQueueTest::TestDidNotSwap(
   QueueNextSwapMessage(CloneMessage(first_message_));
   QueueVisualStateMessage(2, CloneMessage(second_message_));
   QueueVisualStateMessage(3, CloneMessage(third_message_));
-  const int rid[] = {first_message_.routing_id(),
-                     second_message_.routing_id(),
+  const int rid[] = {first_message_.routing_id(), second_message_.routing_id(),
                      third_message_.routing_id()};
 
   bool msg_delivered = reason != cc::SwapPromise::COMMIT_FAILS &&

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_COMPOSITOR_DEPENDENCIES_H_
-#define CONTENT_RENDERER_GPU_COMPOSITOR_DEPENDENCIES_H_
+#ifndef CONTENT_RENDERER_COMPOSITOR_COMPOSITOR_DEPENDENCIES_H_
+#define CONTENT_RENDERER_COMPOSITOR_COMPOSITOR_DEPENDENCIES_H_
 
 #include <memory>
 #include <vector>
@@ -18,13 +18,13 @@ class SingleThreadTaskRunner;
 namespace cc {
 class TaskGraphRunner;
 class UkmRecorderFactory;
-}
+}  // namespace cc
 
 namespace blink {
 namespace scheduler {
 class WebThreadScheduler;
 }
-}
+}  // namespace blink
 
 namespace content {
 
@@ -59,4 +59,4 @@ class CompositorDependencies {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_COMPOSITOR_DEPENDENCIES_H_
+#endif  // CONTENT_RENDERER_COMPOSITOR_COMPOSITOR_DEPENDENCIES_H_

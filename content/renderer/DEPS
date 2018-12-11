@@ -45,4 +45,7 @@ specific_include_rules = {
   "renderer_main\.cc": [
     "+ui/ozone/public/client_native_pixmap_factory_ozone.h",
   ],
+  ".*_(unit|pixel|perf)test.*\.cc": [
+    "+components/viz/test",
+  ],
 }

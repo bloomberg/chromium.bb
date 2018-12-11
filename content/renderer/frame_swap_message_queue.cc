@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/frame_swap_message_queue.h"
 
 #include <algorithm>
 #include <limits>
@@ -82,13 +82,11 @@ class VisualStateQueue : public FrameSwapMessageSubQueue {
 }  // namespace
 
 FrameSwapMessageQueue::FrameSwapMessageQueue(int32_t routing_id)
-    : visual_state_queue_(new VisualStateQueue()),
-      routing_id_(routing_id) {
+    : visual_state_queue_(new VisualStateQueue()), routing_id_(routing_id) {
   DETACH_FROM_THREAD(impl_thread_checker_);
 }
 
-FrameSwapMessageQueue::~FrameSwapMessageQueue() {
-}
+FrameSwapMessageQueue::~FrameSwapMessageQueue() {}
 
 bool FrameSwapMessageQueue::Empty() const {
   base::AutoLock lock(lock_);
@@ -110,8 +108,7 @@ void FrameSwapMessageQueue::DidActivate(int source_frame_number) {
                                      &next_drain_messages_);
 }
 
-void FrameSwapMessageQueue::DidSwap(int source_frame_number) {
-}
+void FrameSwapMessageQueue::DidSwap(int source_frame_number) {}
 
 void FrameSwapMessageQueue::DidNotSwap(
     int source_frame_number,

@@ -30,7 +30,7 @@
 #include "content/public/common/gpu_stream_constants.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/screen_info.h"
-#include "content/renderer/gpu/layer_tree_view.h"
+#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/web_worker_fetch_context_impl.h"
