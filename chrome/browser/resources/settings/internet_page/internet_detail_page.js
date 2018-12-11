@@ -90,7 +90,8 @@ Polymer({
       value: null,
     },
 
-    /** Whether a managed network is available in the visible network list.
+    /**
+     * Whether a managed network is available in the visible network list.
      * @private {boolean}
      */
     managedNetworkAvailable: {
@@ -198,7 +199,7 @@ Polymer({
       return;
 
     const queryParams = settings.getQueryParameters();
-    let guid = queryParams.get('guid') || '';
+    const guid = queryParams.get('guid') || '';
     if (!guid) {
       console.error('No guid specified for page:' + route);
       this.close_();
@@ -648,8 +649,8 @@ Polymer({
    * @return {boolean}
    */
   hasRecommendedFields_: function(networkProperties) {
-    for (let property in networkProperties) {
-      let propertyValue = networkProperties[property];
+    for (const property in networkProperties) {
+      const propertyValue = networkProperties[property];
       if (this.isNetworkPolicyRecommended(propertyValue) ||
           (typeof propertyValue == 'object' &&
            this.hasRecommendedFields_(propertyValue))) {
@@ -746,7 +747,7 @@ Polymer({
     if (!this.isVpn_(networkProperties) || !prefButtonAllowed) {
       return null;
     }
-    let fakePref = Object.assign({}, prefButtonAllowed);
+    const fakePref = Object.assign({}, prefButtonAllowed);
     if (prefButtonAllowed.value) {
       delete fakePref.enforcement;
       delete fakePref.controlledBy;
