@@ -4893,6 +4893,7 @@ interface RTCRtpReceiver
     getter track
     method constructor
     method getContributingSources
+    method getParameters
     method getStats
 interface RTCRtpSender
     static method getCapabilities

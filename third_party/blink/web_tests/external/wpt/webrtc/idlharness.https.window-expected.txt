@@ -263,7 +263,7 @@ PASS RTCRtpReceiver interface: attribute track
 FAIL RTCRtpReceiver interface: attribute transport assert_true: The prototype object must have a property "transport" expected true got false
 FAIL RTCRtpReceiver interface: attribute rtcpTransport assert_true: The prototype object must have a property "rtcpTransport" expected true got false
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
-FAIL RTCRtpReceiver interface: operation getParameters() assert_own_property: interface prototype object missing non-static operation expected property "getParameters" missing
+PASS RTCRtpReceiver interface: operation getParameters()
 PASS RTCRtpReceiver interface: operation getContributingSources()
 FAIL RTCRtpReceiver interface: operation getSynchronizationSources() assert_own_property: interface prototype object missing non-static operation expected property "getSynchronizationSources" missing
 PASS RTCRtpReceiver interface: operation getStats()

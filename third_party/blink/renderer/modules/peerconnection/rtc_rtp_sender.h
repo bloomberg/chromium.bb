@@ -26,6 +26,10 @@ class RTCRtpCapabilities;
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters*);
+RTCRtpHeaderExtensionParameters* ToRtpHeaderExtensionParameters(
+    const webrtc::RtpHeaderExtensionParameters& headers);
+RTCRtpCodecParameters* ToRtpCodecParameters(
+    const webrtc::RtpCodecParameters& codecs);
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
 class RTCRtpSender final : public ScriptWrappable {

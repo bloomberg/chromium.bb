@@ -263,7 +263,7 @@ PASS RTCRtpReceiver interface: attribute track
 FAIL RTCRtpReceiver interface: attribute transport assert_true: The prototype object must have a property "transport" expected true got false
 FAIL RTCRtpReceiver interface: attribute rtcpTransport assert_true: The prototype object must have a property "rtcpTransport" expected true got false
 PASS RTCRtpReceiver interface: operation getCapabilities(DOMString)
-FAIL RTCRtpReceiver interface: operation getParameters() assert_own_property: interface prototype object missing non-static operation expected property "getParameters" missing
+PASS RTCRtpReceiver interface: operation getParameters()
 PASS RTCRtpReceiver interface: operation getContributingSources()
 FAIL RTCRtpReceiver interface: operation getSynchronizationSources() assert_own_property: interface prototype object missing non-static operation expected property "getSynchronizationSources" missing
 PASS RTCRtpReceiver interface: operation getStats()
@@ -274,7 +274,7 @@ FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').r
 FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "rtcpTransport" with the proper type assert_inherits: property "rtcpTransport" not found in prototype chain
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getCapabilities(DOMString)" with the proper type
 PASS RTCRtpReceiver interface: calling getCapabilities(DOMString) on new RTCPeerConnection().addTransceiver('audio').receiver with too few arguments must throw TypeError
-FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getParameters()" with the proper type assert_inherits: property "getParameters" not found in prototype chain
+PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getParameters()" with the proper type
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getContributingSources()" with the proper type
 FAIL RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getSynchronizationSources()" with the proper type assert_inherits: property "getSynchronizationSources" not found in prototype chain
 PASS RTCRtpReceiver interface: new RTCPeerConnection().addTransceiver('audio').receiver must inherit property "getStats()" with the proper type

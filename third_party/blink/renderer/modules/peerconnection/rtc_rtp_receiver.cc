@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_contributing_source.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_capabilities.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_stats_report.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
@@ -145,6 +146,46 @@ RTCRtpCapabilities* RTCRtpReceiver::getCapabilities(const String& kind) {
   capabilities->setHeaderExtensions(header_extensions);
 
   return capabilities;
+}
+
+RTCRtpReceiveParameters* RTCRtpReceiver::getParameters() {
+  RTCRtpReceiveParameters* parameters = RTCRtpReceiveParameters::Create();
+  std::unique_ptr<webrtc::RtpParameters> webrtc_parameters =
+      receiver_->GetParameters();
+
+  RTCRtcpParameters* rtcp = RTCRtcpParameters::Create();
+  rtcp->setReducedSize(webrtc_parameters->rtcp.reduced_size);
+  parameters->setRtcp(rtcp);
+
+  HeapVector<Member<RTCRtpDecodingParameters>> encodings;
+  encodings.ReserveCapacity(
+      SafeCast<wtf_size_t>(webrtc_parameters->encodings.size()));
+  for (const auto& webrtc_encoding : webrtc_parameters->encodings) {
+    RTCRtpDecodingParameters* encoding = RTCRtpDecodingParameters::Create();
+    if (!webrtc_encoding.rid.empty()) {
+      // TODO(orphis): Add rid when supported by WebRTC
+    }
+    encodings.push_back(encoding);
+  }
+  parameters->setEncodings(encodings);
+
+  HeapVector<Member<RTCRtpHeaderExtensionParameters>> headers;
+  headers.ReserveCapacity(
+      SafeCast<wtf_size_t>(webrtc_parameters->header_extensions.size()));
+  for (const auto& webrtc_header : webrtc_parameters->header_extensions) {
+    headers.push_back(ToRtpHeaderExtensionParameters(webrtc_header));
+  }
+  parameters->setHeaderExtensions(headers);
+
+  HeapVector<Member<RTCRtpCodecParameters>> codecs;
+  codecs.ReserveCapacity(
+      SafeCast<wtf_size_t>(webrtc_parameters->codecs.size()));
+  for (const auto& webrtc_codec : webrtc_parameters->codecs) {
+    codecs.push_back(ToRtpCodecParameters(webrtc_codec));
+  }
+  parameters->setCodecs(codecs);
+
+  return parameters;
 }
 
 }  // namespace blink
