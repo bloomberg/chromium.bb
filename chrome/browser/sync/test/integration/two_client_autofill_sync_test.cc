@@ -4,11 +4,13 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/autofill_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -38,6 +40,17 @@ using autofill_helper::RemoveProfile;
 using autofill_helper::SetCreditCards;
 using autofill_helper::UpdateProfile;
 
+// Copied from data_type_debug_info_emitter.cc.
+enum ModelTypeEntityChange {
+  LOCAL_DELETION = 0,
+  LOCAL_CREATION = 1,
+  LOCAL_UPDATE = 2,
+  REMOTE_DELETION = 3,
+  REMOTE_NON_INITIAL_UPDATE = 4,
+  REMOTE_INITIAL_UPDATE = 5,
+  MODEL_TYPE_ENTITY_CHANGE_COUNT = 6
+};
+
 // Class that enables or disables USS based on test parameter. Must be the first
 // base class of the test fixture.
 // TODO(jkrcal): When the new implementation fully launches, remove this class,
@@ -64,7 +77,11 @@ class TwoClientAutofillProfileSyncTest : public UssSwitchToggler,
   TwoClientAutofillProfileSyncTest() : SyncTest(TWO_CLIENT) {}
   ~TwoClientAutofillProfileSyncTest() override {}
 
-  bool TestUsesSelfNotifications() override { return false; }
+  // Tests that check Sync.ModelTypeEntityChange* histograms require
+  // self-notifications. The reason is that every commit will eventually trigger
+  // an incoming update on the same client, and without self-notifications we
+  // have no good way to reliably trigger these updates.
+  bool TestUsesSelfNotifications() override { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientAutofillProfileSyncTest);
@@ -106,6 +123,134 @@ IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest,
   RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
   EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
   EXPECT_EQ(0U, GetAllAutoFillProfiles(0).size());
+}
+
+IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, SyncHistogramsSanity) {
+  ASSERT_TRUE(SetupSync());
+
+  // Client0 adds a profile.
+  {
+    base::HistogramTester histograms;
+
+    UpdatedProgressMarkerChecker checker(GetSyncService(0));
+
+    AddProfile(0, CreateAutofillProfile(PROFILE_MARION));
+    EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+    EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+
+    // Wait until the self-notification on Client0 has been processed, so that
+    // we get consistent histogram counts below.
+    checker.Wait();
+
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 LOCAL_CREATION, 1);
+    // We should get 2 remote updates, one per client.
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 REMOTE_NON_INITIAL_UPDATE, 2);
+    histograms.ExpectTotalCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                3);
+  }
+
+  // Client1 adds a profile.
+  {
+    base::HistogramTester histograms;
+
+    UpdatedProgressMarkerChecker checker(GetSyncService(1));
+
+    AddProfile(1, CreateAutofillProfile(PROFILE_HOMER));
+    EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+    EXPECT_EQ(2U, GetAllAutoFillProfiles(0).size());
+
+    // Wait until the self-notification on Client1 has been processed, so that
+    // we get consistent histogram counts below.
+    checker.Wait();
+
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 LOCAL_CREATION, 1);
+    // We should get 2 remote updates, one per client.
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 REMOTE_NON_INITIAL_UPDATE, 2);
+    histograms.ExpectTotalCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                3);
+  }
+
+  // TODO(crbug.com/904390): Add a duplicate profile on Client0 (similar to what
+  // the PersonalDataManagerSanity test does), and make sure that it doesn't
+  // trigger any entity changes. Currently it's flaky and sometimes does trigger
+  // a LOCAL_UPDATE change, but neither the AutofillProfileChecker nor the
+  // UpdatedProgressMarkerChecker actually wait for it, so it messes up *later*
+  // test expectations.
+
+  // Client1 removes a profile.
+  {
+    base::HistogramTester histograms;
+
+    UpdatedProgressMarkerChecker checker(GetSyncService(1));
+
+    RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
+    EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+    EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+
+    // Wait until the self-notification on Client1 has been processed, so that
+    // we get consistent histogram counts below.
+    checker.Wait();
+
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 LOCAL_DELETION, 1);
+    // We should get one remote deletion update per client.
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 REMOTE_DELETION, 2);
+    histograms.ExpectTotalCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                3);
+  }
+
+  // Client0 updates a profile.
+  {
+    base::HistogramTester histograms;
+
+    UpdatedProgressMarkerChecker checker(GetSyncService(0));
+
+    UpdateProfile(0, GetAllAutoFillProfiles(0)[0]->guid(),
+                  AutofillType(autofill::NAME_FIRST),
+                  base::ASCIIToUTF16("Bart"));
+    EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+    EXPECT_EQ(1U, GetAllAutoFillProfiles(0).size());
+
+    // Wait until the self-notification on Client0 has been processed, so that
+    // we get consistent histogram counts below.
+    checker.Wait();
+
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 LOCAL_UPDATE, 1);
+    // We should get 2 remote updates, one per client.
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 REMOTE_NON_INITIAL_UPDATE, 2);
+    histograms.ExpectTotalCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                3);
+  }
+
+  // Client1 removes remaining profile.
+  {
+    base::HistogramTester histograms;
+
+    UpdatedProgressMarkerChecker checker(GetSyncService(0));
+
+    RemoveProfile(1, GetAllAutoFillProfiles(1)[0]->guid());
+    EXPECT_TRUE(AutofillProfileChecker(0, 1).Wait());
+    EXPECT_EQ(0U, GetAllAutoFillProfiles(0).size());
+
+    // Wait until the self-notification on Client0 has been processed, so that
+    // we get consistent histogram counts below.
+    checker.Wait();
+
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 LOCAL_DELETION, 1);
+    // We should get one remote deletion update per client.
+    histograms.ExpectBucketCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                 REMOTE_DELETION, 2);
+    histograms.ExpectTotalCount("Sync.ModelTypeEntityChange3.AUTOFILL_PROFILE",
+                                3);
+  }
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientAutofillProfileSyncTest, AddDuplicateProfiles) {
