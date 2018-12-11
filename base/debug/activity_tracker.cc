@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
+#include "base/bits.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -55,8 +56,8 @@ AtomicSequenceNumber g_next_id;
 // Gets the next non-zero identifier. It is only unique within a process.
 uint32_t GetNextDataId() {
   uint32_t id;
-  while ((id = g_next_id.GetNext()) == 0)
-    ;
+  while ((id = g_next_id.GetNext()) == 0) {
+  }
   return id;
 }
 
@@ -91,12 +92,12 @@ PersistentMemoryAllocator::Reference AllocateFrom(
 
 // Determines the previous aligned index.
 size_t RoundDownToAlignment(size_t index, size_t alignment) {
-  return index & (0 - alignment);
+  return bits::AlignDown(index, alignment);
 }
 
 // Determines the next aligned index.
 size_t RoundUpToAlignment(size_t index, size_t alignment) {
-  return (index + (alignment - 1)) & (0 - alignment);
+  return bits::Align(index, alignment);
 }
 
 // Converts "tick" timing into wall time.
@@ -692,7 +693,6 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
 #endif
       stack_slots_(
           static_cast<uint32_t>((size - sizeof(Header)) / sizeof(Activity))) {
-
   // Verify the parameters but fail gracefully if they're not valid so that
   // production code based on external inputs will not crash.  IsValid() will
   // return false in this case.

@@ -24,7 +24,7 @@ namespace {
 const size_t kSkiaAlignment = 4u;
 
 size_t RoundDownToAlignment(size_t bytes, size_t alignment) {
-  return bytes - (bytes & (alignment - 1));
+  return base::bits::AlignDown(bytes, alignment);
 }
 
 SkIRect MakeSrcRect(const PaintImage& image) {

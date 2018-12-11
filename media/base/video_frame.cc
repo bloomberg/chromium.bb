@@ -11,6 +11,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -38,20 +39,6 @@ gfx::Rect Intersection(gfx::Rect a, const gfx::Rect& b) {
 
 // Static constexpr class for generating unique identifiers for each VideoFrame.
 static base::AtomicSequenceNumber g_unique_id_generator;
-
-static bool IsPowerOfTwo(size_t x) {
-  return x != 0 && (x & (x - 1)) == 0;
-}
-
-static inline size_t RoundUp(size_t value, size_t alignment) {
-  DCHECK(IsPowerOfTwo(alignment));
-  return ((value + (alignment - 1)) & ~(alignment - 1));
-}
-
-static inline size_t RoundDown(size_t value, size_t alignment) {
-  DCHECK(IsPowerOfTwo(alignment));
-  return value & ~(alignment - 1);
-}
 
 static std::string StorageTypeToString(
     const VideoFrame::StorageType storage_type) {
@@ -706,8 +693,8 @@ gfx::Size VideoFrame::PlaneSize(VideoPixelFormat format,
     // Align to multiple-of-two size overall. This ensures that non-subsampled
     // planes can be addressed by pixel with the same scaling as the subsampled
     // planes.
-    width = RoundUp(width, 2);
-    height = RoundUp(height, 2);
+    width = base::bits::Align(width, 2);
+    height = base::bits::Align(height, 2);
   }
 
   const gfx::Size subsample = SampleSize(format, plane);
@@ -791,14 +778,14 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
 size_t VideoFrame::Rows(size_t plane, VideoPixelFormat format, int height) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_height = SampleSize(format, plane).height();
-  return RoundUp(height, sample_height) / sample_height;
+  return base::bits::Align(height, sample_height) / sample_height;
 }
 
 // static
 size_t VideoFrame::Columns(size_t plane, VideoPixelFormat format, int width) {
   DCHECK(IsValidPlane(plane, format));
   const int sample_width = SampleSize(format, plane).width();
-  return RoundUp(width, sample_width) / sample_width;
+  return base::bits::Align(width, sample_width) / sample_width;
 }
 
 // static
@@ -855,8 +842,9 @@ const uint8_t* VideoFrame::visible_data(size_t plane) const {
 
   // Calculate an offset that is properly aligned for all planes.
   const gfx::Size alignment = CommonAlignment(format());
-  const gfx::Point offset(RoundDown(visible_rect_.x(), alignment.width()),
-                          RoundDown(visible_rect_.y(), alignment.height()));
+  const gfx::Point offset(
+      base::bits::AlignDown(visible_rect_.x(), alignment.width()),
+      base::bits::AlignDown(visible_rect_.y(), alignment.height()));
 
   const gfx::Size subsample = SampleSize(format(), plane);
   DCHECK(offset.x() % subsample.width() == 0);
@@ -1108,8 +1096,8 @@ gfx::Size VideoFrame::DetermineAlignedSize(VideoPixelFormat format,
                                            const gfx::Size& dimensions) {
   const gfx::Size alignment = CommonAlignment(format);
   const gfx::Size adjusted =
-      gfx::Size(RoundUp(dimensions.width(), alignment.width()),
-                RoundUp(dimensions.height(), alignment.height()));
+      gfx::Size(base::bits::Align(dimensions.width(), alignment.width()),
+                base::bits::Align(dimensions.height(), alignment.height()));
   DCHECK((adjusted.width() % alignment.width() == 0) &&
          (adjusted.height() % alignment.height() == 0));
   return adjusted;
@@ -1266,8 +1254,8 @@ std::vector<int32_t> VideoFrame::ComputeStrides(VideoPixelFormat format,
     strides.push_back(RowBytes(0, format, coded_size.width()));
   } else {
     for (size_t plane = 0; plane < num_planes; ++plane) {
-      strides.push_back(RoundUp(RowBytes(plane, format, coded_size.width()),
-                                kFrameAddressAlignment));
+      strides.push_back(base::bits::Align(
+          RowBytes(plane, format, coded_size.width()), kFrameAddressAlignment));
     }
   }
   return strides;
@@ -1307,7 +1295,8 @@ std::vector<size_t> VideoFrame::CalculatePlaneSize() const {
       // These values were chosen to mirror ffmpeg's get_video_buffer().
       // TODO(dalecurtis): This should be configurable; eventually ffmpeg wants
       // us to use av_cpu_max_align(), but... for now, they just hard-code 32.
-      const size_t height = RoundUp(rows(plane), kFrameAddressAlignment);
+      const size_t height =
+          base::bits::Align(rows(plane), kFrameAddressAlignment);
       const size_t width = std::abs(stride(plane));
       plane_size.push_back(width * height);
     }

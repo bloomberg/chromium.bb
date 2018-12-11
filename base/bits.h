@@ -42,6 +42,12 @@ inline size_t Align(size_t size, size_t alignment) {
   return (size + alignment - 1) & ~(alignment - 1);
 }
 
+// Round down |size| to a multiple of alignment, which must be a power of two.
+inline size_t AlignDown(size_t size, size_t alignment) {
+  DCHECK(IsPowerOfTwo(alignment));
+  return size & ~(alignment - 1);
+}
+
 // CountLeadingZeroBits(value) returns the number of zero bits following the
 // most significant 1 bit in |value| if |value| is non-zero, otherwise it
 // returns {sizeof(T) * 8}.
