@@ -31,12 +31,14 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -787,10 +789,41 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     }
 
     /**
+     * @return Whether the Custom Tab should attempt to load a dynamic module, i.e.
+     * if the feature is enabled, the package is provided and package is Google-signed.
+     *
+     * Will return false if native is not initialized.
+     */
+    public boolean isDynamicModuleEnabled() {
+        if (!ChromeFeatureList.isInitialized()) return false;
+
+        ComponentName componentName = getModuleComponentName();
+        // Return early if no component name was provided. It's important to do this before checking
+        // the feature experiment group, to avoid entering users into the experiment that do not
+        // even receive the extras for using the feature.
+        if (componentName == null) return false;
+
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_MODULE)) {
+            Log.w(TAG, "The %s feature is disabled.", ChromeFeatureList.CCT_MODULE);
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.FEATURE_DISABLED);
+            return false;
+        }
+
+        ExternalAuthUtils authUtils = ChromeApplication.getComponent().resolveExternalAuthUtils();
+        if (!authUtils.isGoogleSigned(componentName.getPackageName())) {
+            Log.w(TAG, "The %s package is not Google-signed.", componentName.getPackageName());
+            ModuleMetrics.recordLoadResult(ModuleMetrics.LoadResult.NOT_GOOGLE_SIGNED);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @return The component name of the module entry point, or null if not specified.
      */
     @Nullable
-    ComponentName getModuleComponentName() {
+    public ComponentName getModuleComponentName() {
         return mModuleComponentName;
     }
 
@@ -800,7 +833,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * or null if not specified.
      */
     @Nullable
-    Pattern getExtraModuleManagedUrlsPattern() {
+    public Pattern getExtraModuleManagedUrlsPattern() {
         return mModuleManagedUrlsPattern;
     }
 
@@ -809,7 +842,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
      * @return The list of module managed hosts, or null if not specified.
      */
     @Nullable
-    List<String> getExtraModuleManagedHosts() {
+    public List<String> getExtraModuleManagedHosts() {
         return mModuleManagedHosts;
     }
 
@@ -823,7 +856,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
     /**
      * @return Whether to hide CCT header on module managed URLs.
      */
-    boolean shouldHideCctHeaderOnModuleManagedUrls() {
+    public boolean shouldHideCctHeaderOnModuleManagedUrls() {
         return mHideCctHeaderOnModuleManagedUrls;
     }
 }

@@ -4,13 +4,17 @@
 
 package org.chromium.chrome.browser.init;
 
+import android.os.Bundle;
+
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.SaveInstanceStateObserver;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
+import org.chromium.chrome.browser.lifecycle.WindowFocusChangedObserver;
 
 /**
  * Dispatches lifecycle events of activities extending {@link AsyncInitializationActivity} to
@@ -24,6 +28,10 @@ public class ActivityLifecycleDispatcher {
     private final ObserverList<StartStopWithNativeObserver> mStartStopObservers =
             new ObserverList<>();
     private final ObserverList<Destroyable> mDestroyables = new ObserverList<>();
+    private final ObserverList<SaveInstanceStateObserver> mSaveInstanceStateObservers =
+            new ObserverList<>();
+    private final ObserverList<WindowFocusChangedObserver> mWindowFocusChangesObservers =
+            new ObserverList<>();
 
     /**
      * Registers an observer.
@@ -46,6 +54,12 @@ public class ActivityLifecycleDispatcher {
         if (observer instanceof Destroyable) {
             mDestroyables.addObserver((Destroyable) observer);
         }
+        if (observer instanceof SaveInstanceStateObserver) {
+            mSaveInstanceStateObservers.addObserver((SaveInstanceStateObserver) observer);
+        }
+        if (observer instanceof WindowFocusChangedObserver) {
+            mWindowFocusChangesObservers.addObserver((WindowFocusChangedObserver) observer);
+        }
     }
 
     /**
@@ -66,6 +80,12 @@ public class ActivityLifecycleDispatcher {
         }
         if (observer instanceof Destroyable) {
             mDestroyables.removeObserver((Destroyable) observer);
+        }
+        if (observer instanceof SaveInstanceStateObserver) {
+            mSaveInstanceStateObservers.removeObserver((SaveInstanceStateObserver) observer);
+        }
+        if (observer instanceof WindowFocusChangedObserver) {
+            mWindowFocusChangesObservers.removeObserver((WindowFocusChangedObserver) observer);
         }
     }
 
@@ -114,6 +134,18 @@ public class ActivityLifecycleDispatcher {
     void dispatchOnDestroy() {
         for (Destroyable destroyable : mDestroyables) {
             destroyable.destroy();
+        }
+    }
+
+    void dispatchOnSaveInstanceState(Bundle outBundle) {
+        for (SaveInstanceStateObserver observer: mSaveInstanceStateObservers) {
+            observer.onSaveInstanceState(outBundle);
+        }
+    }
+
+    void dispatchOnWindowFocusChanged(boolean hasFocus) {
+        for (WindowFocusChangedObserver observer: mWindowFocusChangesObservers) {
+            observer.onWindowFocusChanged(hasFocus);
         }
     }
 }
