@@ -75,6 +75,7 @@ class AcceleratorFilter;
 class ActivationClient;
 class CompoundEventFilter;
 class FocusController;
+class FocusRules;
 class ShadowController;
 class VisibilityController;
 class WindowModalityController;
@@ -401,6 +402,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   FirstRunHelper* first_run_helper() { return first_run_helper_.get(); }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
+  ::wm::FocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
@@ -770,6 +772,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
+  // Owned by |focus_controller_|.
+  ::wm::FocusRules* focus_rules_ = nullptr;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;

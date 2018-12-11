@@ -249,6 +249,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // notification until that happens.
   void MaybeNotifyOnActiveUserPrefServiceChanged();
 
+  // Called when IsUserSessionBlocked() becomes true. If there isn't an active
+  // window, tries to activate one.
+  void EnsureActiveWindowAfterUnblockingUserSession();
+
   // Bindings for users of the mojom::SessionController interface.
   mojo::BindingSet<mojom::SessionController> bindings_;
 

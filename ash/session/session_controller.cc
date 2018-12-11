@@ -37,6 +37,8 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
+#include "ui/wm/core/focus_controller.h"
+#include "ui/wm/core/focus_rules.h"
 
 using session_manager::SessionState;
 
@@ -524,6 +526,7 @@ void SessionController::SetSessionState(SessionState state) {
   if (state_ == state)
     return;
 
+  const bool was_user_session_blocked = IsUserSessionBlocked();
   const bool was_locked = state_ == SessionState::LOCKED;
   state_ = state;
   for (auto& observer : observers_)
@@ -547,6 +550,9 @@ void SessionController::SetSessionState(SessionState state) {
     ConnectToSigninScreenPrefService();
     signin_screen_prefs_requested_ = true;
   }
+
+  if (was_user_session_blocked && !IsUserSessionBlocked())
+    EnsureActiveWindowAfterUnblockingUserSession();
 }
 
 void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
@@ -728,6 +734,22 @@ void SessionController::MaybeNotifyOnActiveUserPrefServiceChanged() {
 
   for (auto& observer : observers_)
     observer.OnActiveUserPrefServiceChanged(last_active_user_prefs_);
+}
+
+void SessionController::EnsureActiveWindowAfterUnblockingUserSession() {
+  if (!Shell::HasInstance())
+    return;
+
+  ::wm::FocusController* focus_controller = Shell::Get()->focus_controller();
+  if (focus_controller->GetActiveWindow() ||
+      !Shell::GetRootWindowForNewWindows()) {
+    return;
+  }
+  aura::Window* to_activate =
+      Shell::Get()->focus_rules()->GetNextActivatableWindow(
+          Shell::GetRootWindowForNewWindows());
+  if (to_activate)
+    focus_controller->ActivateWindow(to_activate);
 }
 
 }  // namespace ash

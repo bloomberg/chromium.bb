@@ -905,6 +905,7 @@ Shell::~Shell() {
 
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
+  focus_rules_ = nullptr;
   focus_controller_.reset();
   screen_position_controller_.reset();
 
@@ -1063,8 +1064,8 @@ void Shell::Init(
   AddPreTargetHandler(env_filter_.get());
 
   // FocusController takes ownership of AshFocusRules.
-  focus_controller_ =
-      std::make_unique<::wm::FocusController>(new wm::AshFocusRules());
+  focus_rules_ = new wm::AshFocusRules();
+  focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
 
   window_selector_controller_ = std::make_unique<WindowSelectorController>();
