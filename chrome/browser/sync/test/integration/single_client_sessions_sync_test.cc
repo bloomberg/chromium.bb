@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/signin/gaia_cookie_manager_service_factory.h"
 #include "chrome/browser/sync/session_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/sessions/core/session_types.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
@@ -77,8 +79,10 @@ void ExpectUniqueSampleGE(const HistogramTester& histogram_tester,
   std::unique_ptr<HistogramSamples> samples =
       histogram_tester.GetHistogramSamplesSinceCreation(name);
   int sample_count = samples->GetCount(sample);
-  EXPECT_GE(sample_count, expected_inclusive_lower_bound);
-  EXPECT_EQ(sample_count, samples->TotalCount());
+  EXPECT_GE(sample_count, expected_inclusive_lower_bound)
+      << " for histogram " << name << " sample " << sample;
+  EXPECT_EQ(sample_count, samples->TotalCount())
+      << " for histogram " << name << " sample " << sample;
 }
 
 class IsHistoryURLSyncedChecker : public SingleClientStatusChangeChecker {
@@ -636,10 +640,17 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
     // It is possible that multiple sync cycles occurred during the call to
     // OpenTab, which would cause multiple identical samples.
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
-                         false, 1);
+                         /*sample=*/false,
+                         /*expected_inclusive_lower_bound=*/1);
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarEmptyOnMismatch",
-                         true, 1);
+                         /*sample=*/true,
+                         /*expected_inclusive_lower_bound=*/1);
   }
+
+  // Avoid interferences from actual GaiaCookieManagerService trying to fetch
+  // gaia account information, which would exercise
+  // ProfileSyncService::OnGaiaAccountsInCookieUpdated().
+  GaiaCookieManagerServiceFactory::GetForProfile(GetProfile(0))->CancelAll();
 
   // Trigger a cookie jar change (user signing in to content area).
   // Updating the cookie jar has to travel to the sync engine. It is possible
@@ -670,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
 
     // Verify the histograms were recorded properly.
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
-                         true, 1);
+                         /*sample=*/true, /*expected_inclusive_lower_bound=*/1);
     histogram_tester.ExpectTotalCount("Sync.CookieJarEmptyOnMismatch", 0);
   }
 }
