@@ -157,6 +157,7 @@ public class LocationBarLayout extends FrameLayout
         mDeleteButton = findViewById(R.id.delete_button);
 
         mUrlBar = findViewById(R.id.url_bar);
+
         mUrlCoordinator = new UrlBarCoordinator((UrlBar) mUrlBar);
         mUrlCoordinator.setDelegate(this);
 
@@ -200,7 +201,8 @@ public class LocationBarLayout extends FrameLayout
 
         setLayoutTransition(null);
 
-        mStatusViewCoordinator = new StatusViewCoordinator(mIsTablet, this, this);
+        mStatusViewCoordinator =
+                new StatusViewCoordinator(mIsTablet, findViewById(R.id.location_bar_status), this);
 
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());
 
