@@ -1749,7 +1749,7 @@ class AppCacheStorageImplTest : public testing::Test {
       backend_->RegisterHost(1);
       AppCacheHost* host1 = backend_->GetHost(1);
       const GURL kEmptyPageUrl(MockHttpServer::GetMockUrl("empty.html"));
-      host1->first_party_url_ = kEmptyPageUrl;
+      host1->SetFirstPartyUrlForTesting(kEmptyPageUrl);
       host1->SelectCache(kEmptyPageUrl,
                          kAppCacheNoCacheId,
                          MockHttpServer::GetMockUrl("manifest"));

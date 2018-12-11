@@ -31,21 +31,13 @@ class URLRequest;
 namespace content {
 FORWARD_DECLARE_TEST(AppCacheGroupTest, CleanupUnusedGroup);
 FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
-FORWARD_DECLARE_TEST(AppCacheHostTest, Basic);
-FORWARD_DECLARE_TEST(AppCacheHostTest, SelectNoCache);
-FORWARD_DECLARE_TEST(AppCacheHostTest, ForeignEntry);
 FORWARD_DECLARE_TEST(AppCacheHostTest, FailedCacheLoad);
 FORWARD_DECLARE_TEST(AppCacheHostTest, FailedGroupLoad);
 FORWARD_DECLARE_TEST(AppCacheHostTest, SetSwappableCache);
-FORWARD_DECLARE_TEST(AppCacheHostTest, ForDedicatedWorker);
-FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheAllowed);
-FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheBlocked);
-FORWARD_DECLARE_TEST(AppCacheHostTest, SelectCacheTwice);
 FORWARD_DECLARE_TEST(AppCacheTest, CleanupUnusedCache);
 class AppCache;
 class AppCacheFrontend;
 class AppCacheGroupTest;
-class AppCacheHostTest;
 class AppCacheRequest;
 class AppCacheRequestHandler;
 class AppCacheRequestHandlerTest;
@@ -190,6 +182,12 @@ class CONTENT_EXPORT AppCacheHost
   }
 
   const GURL& first_party_url() const { return first_party_url_; }
+  void SetFirstPartyUrlForTesting(const GURL& url) {
+    first_party_url_ = url;
+#if DCHECK_IS_ON()
+    first_party_url_initialized_ = true;
+#endif
+  }
 
   // Returns a weak pointer reference to the host.
   base::WeakPtr<AppCacheHost> GetWeakPtr();
@@ -205,7 +203,6 @@ class CONTENT_EXPORT AppCacheHost
       AppCacheSubresourceURLFactory* subresource_factory);
 
  private:
-  friend class content::AppCacheHostTest;
   friend class content::AppCacheStorageImplTest;
   friend class content::AppCacheRequestHandlerTest;
   friend class content::appcache_update_job_unittest::AppCacheUpdateJobTest;
@@ -347,19 +344,15 @@ class CONTENT_EXPORT AppCacheHost
 
   // First party url to be used in policy checks.
   GURL first_party_url_;
+#if DCHECK_IS_ON()
+  bool first_party_url_initialized_ = false;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheGroupTest, QueueUpdate);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectNoCache);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, ForeignEntry);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, FailedCacheLoad);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, FailedGroupLoad);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SetSwappableCache);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, ForDedicatedWorker);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheAllowed);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheBlocked);
-  FRIEND_TEST_ALL_PREFIXES(content::AppCacheHostTest, SelectCacheTwice);
   FRIEND_TEST_ALL_PREFIXES(content::AppCacheTest, CleanupUnusedCache);
 
   // In the network service world points to the subresource URLLoaderFactory.

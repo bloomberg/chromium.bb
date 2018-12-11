@@ -2234,7 +2234,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
 
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
-    host->first_party_url_ = kManifestUrl;
+    host->SetFirstPartyUrlForTesting(kManifestUrl);
     host->SelectCache(MockHttpServer::GetMockUrl("files/empty1"),
                       kAppCacheNoCacheId, kManifestUrl);
 

@@ -438,7 +438,7 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
-    host.first_party_url_ = kDocAndOriginUrl;
+    host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
@@ -479,7 +479,7 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
     AppCacheHost host(1, &mock_frontend_, &service_);
-    host.first_party_url_ = kDocAndOriginUrl;
+    host.SetFirstPartyUrlForTesting(kDocAndOriginUrl);
     host.SelectCache(kDocAndOriginUrl, kAppCacheNoCacheId, kManifestUrl);
     EXPECT_EQ(1, mock_quota_proxy->GetInUseCount(kOrigin));
 
