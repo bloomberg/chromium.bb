@@ -31,6 +31,8 @@ struct txfm_param;
 struct aom_variance_vtable;
 struct search_site_config;
 struct yv12_buffer_config;
+struct NN_CONFIG;
+typedef struct NN_CONFIG NN_CONFIG;
 
 /* Function pointers return by CfL functions */
 typedef void (*cfl_subsample_lbd_fn)(const uint8_t* input,
@@ -1024,6 +1026,10 @@ RTCD_EXTERN void (*av1_jnt_convolve_y)(
     const int subpel_y_q4,
     ConvolveParams* conv_params);
 
+void av1_round_shift_array_c(int32_t* arr, int size, int bit);
+void av1_round_shift_array_neon(int32_t* arr, int size, int bit);
+RTCD_EXTERN void (*av1_round_shift_array)(int32_t* arr, int size, int bit);
+
 int av1_selfguided_restoration_c(const uint8_t* dgd8,
                                  int width,
                                  int height,
@@ -1323,6 +1329,9 @@ static void setup_rtcd_internal(void) {
   av1_jnt_convolve_y = av1_jnt_convolve_y_c;
   if (flags & HAS_NEON)
     av1_jnt_convolve_y = av1_jnt_convolve_y_neon;
+  av1_round_shift_array = av1_round_shift_array_c;
+  if (flags & HAS_NEON)
+    av1_round_shift_array = av1_round_shift_array_neon;
   av1_selfguided_restoration = av1_selfguided_restoration_c;
   if (flags & HAS_NEON)
     av1_selfguided_restoration = av1_selfguided_restoration_neon;
