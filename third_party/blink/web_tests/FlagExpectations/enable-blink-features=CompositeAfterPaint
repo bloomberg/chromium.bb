@@ -367,10 +367,6 @@ crbug.com/589265 fast/forms/text/input-appearance-autocomplete-very-long-value.h
 crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure ]
 crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.html [ Failure ]
 
-# Some work remains to fully support composited animation and scrolling.
-crbug.com/702350 virtual/threaded/transitions/opacity-transform-transitions-inside-iframe.html [ Timeout ]
-crbug.com/702353 virtual/threaded/transitions/transition-end-event-destroy-iframe.html [ Timeout ]
-
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/http/tests/devtools/ [ Skip ]
 Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Failure Crash ]
