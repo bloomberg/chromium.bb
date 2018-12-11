@@ -619,6 +619,10 @@ void MenuItemView::Layout() {
     View* child = child_at(0);
     gfx::Size size = child->GetPreferredSize();
     child->SetBounds(0, GetTopMargin(), size.width(), size.height());
+    // TODO(crbug/913998): this is a hack. We should change
+    // ExtensionToolbarMenuView so that it does not move itself when laid out,
+    // and accomplish the same thing via insets or similar.
+    child->Layout();
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
