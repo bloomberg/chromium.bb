@@ -8,20 +8,38 @@ cr.define('app_management', function() {
     constructor(page) {
       /** @type {appManagement.mojom.PageInterface} */
       this.page = page;
+
+      /** @type {!Array<appManagement.mojom.App>} */
+      this.apps_ = [
+        this.createApp('ahfgeienlihckogmohjhadlkjgocpleb'),
+        this.createApp(
+            'aohghmighlieiainnegkcijnfilokake',
+            {type: apps.mojom.AppType.kArc}),
+        this.createApp('blpcfgokakmgnkcojhhkbfbldkacnbeo'),
+        this.createApp('pjkljhegncpnkpknbcohdijeoejaedia'),
+        this.createApp('aapocclcgogkmnckokdopfmhonfmgoek'),
+      ];
     }
 
     getApps() {
-      const fakeAppIdList = [
-        'ahfgeienlihckogmohjhadlkjgocpleb',
-        'aohghmighlieiainnegkcijnfilokake',
-        'blpcfgokakmgnkcojhhkbfbldkacnbeo',
-        'pjkljhegncpnkpknbcohdijeoejaedia',
-        'aapocclcgogkmnckokdopfmhonfmgoek',
-        'kbfnbcaeplbcioakkpcpgfkobkghlhen',
-        'gmbgaklkmjakoegficnlkhebmhkjfich',
-      ];
+      this.page.onAppsAdded(this.apps_);
+    }
 
-      this.page.onAppsAdded(fakeAppIdList);
+    /**
+     * @param {string} id
+     * @param {Object=} config
+     * @return {!appManagement.mojom.App}
+     */
+    createApp(id, config) {
+      const app = /** @type {!appManagement.mojom.App} */ ({
+        id: id,
+        type: apps.mojom.AppType.kUnknown,
+        title: 'App Title',
+      });
+      if (config)
+        Object.assign(app, config);
+
+      return app;
     }
   }
 
