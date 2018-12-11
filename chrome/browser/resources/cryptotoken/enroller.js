@@ -830,6 +830,7 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
 
         if (v2Challenge && shouldUseWebAuthn) {
           // If we can proxy to WebAuthn, send the request via WebAuthn.
+          console.log('Proxying registration request to WebAuthn');
           this.doRegisterWebAuthn_(enrollAppIds[0], v2Challenge, request);
         } else {
           self.handler_ =
