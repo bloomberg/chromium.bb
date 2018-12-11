@@ -25,7 +25,6 @@ js_type_check("closure_compile") {
     ":browser_proxy",
     ":constants",
     ":downloads",
-    ":externs",
     ":item",
     ":manager",
     ":search_service",
@@ -35,9 +34,10 @@ js_type_check("closure_compile") {
 
 js_library("browser_proxy") {
   deps = [
-    ":externs",
+    "//chrome/browser/ui/webui/md_downloads:mojo_bindings_js_externs",
     "//ui/webui/resources/js:cr",
   ]
+  externs_list = [ "externs.js" ]
 }
 
 js_library("constants") {
@@ -53,14 +53,6 @@ js_library("downloads") {
   ]
 }
 
-js_library("externs") {
-  extra_deps = [ "//chrome/browser/ui/webui/md_downloads:mojo_bindings_js" ]
-  externs_list = [
-    "$root_gen_dir/chrome/browser/ui/webui/md_downloads/md_downloads.mojom-lite.externs.js",
-    "$externs_path/mojo.js",
-  ]
-}
-
 js_library("icon_loader") {
   deps = [
     "//ui/webui/resources/js:assert",
@@ -73,7 +65,6 @@ js_library("item") {
   deps = [
     ":browser_proxy",
     ":constants",
-    ":externs",
     ":icon_loader",
     "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-inky-focus-behavior-extracted",
     "//ui/webui/resources/js:cr",
@@ -85,7 +76,6 @@ js_library("item") {
 js_library("manager") {
   deps = [
     ":browser_proxy",
-    ":externs",
     ":item",
     ":search_service",
     ":toolbar",
@@ -102,7 +92,6 @@ js_library("manager") {
 js_library("search_service") {
   deps = [
     ":browser_proxy",
-    ":externs",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
   ]
