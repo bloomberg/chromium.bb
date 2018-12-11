@@ -734,9 +734,10 @@ void ChromeClientImpl::AttachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositor_timeline,
     LocalFrame* local_frame) {
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(local_frame);
-  if (CompositorAnimationHost* animation_host =
-          web_frame->LocalRootFrameWidget()->AnimationHost())
-    animation_host->AddTimeline(*compositor_timeline);
+  if (auto* widget = web_frame->LocalRootFrameWidget()) {
+    if (auto* animation_host = widget->AnimationHost())
+      animation_host->AddTimeline(*compositor_timeline);
+  }
 }
 
 void ChromeClientImpl::DetachCompositorAnimationTimeline(
