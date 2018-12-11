@@ -3071,6 +3071,11 @@
           'pdf_fuzzers',
         ],
       },
+      'Mac Builder (dbg)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'Mac10.10 Tests': {
         'mixins': [
             'mac_10.10',
