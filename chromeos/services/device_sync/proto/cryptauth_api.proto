@@ -31,13 +31,12 @@ message DeviceClassifier {
   optional string device_software_package = 19;
 
   // Device type/platform.
-  // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
-  optional DeviceType device_type = 32 [default = UNKNOWN];
+  optional string device_type = 32 [default = "unknown"];
 }
 
 enum DeviceType {
   UNKNOWN = 0;
-  ANDROIDOS = 1;
+  ANDROID = 1;
   CHROME = 2;
   IOS = 3;
   BROWSER = 4;
@@ -97,8 +96,7 @@ message ExternalDeviceInfo {
   optional bool mobile_hotspot_supported = 7 [default = false];
 
   // The type of the device (e.g. Android vs iOS).
-  // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
-  optional DeviceType device_type = 8 [default = UNKNOWN];
+  optional string device_type = 8 [default = "unknown"];
 
   // A list of seeds for EID BLE advertisements targeting this device.
   repeated BeaconSeed beacon_seeds = 9;
@@ -298,8 +296,7 @@ message GcmDeviceInfo {
   optional string device_manufacturer = 31;
 
   // Used to indicate which type of device this is.
-  // TODO(khorimoto): Change this to a string so it works with Apiary endpoints.
-  optional DeviceType device_type = 32 [default = ANDROIDOS];
+  optional DeviceType device_type = 32 [default = ANDROID];
 
   // Fields corresponding to screenlock type/features and hardware features
   // should be numbered in the 400 range.

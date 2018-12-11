@@ -6,6 +6,55 @@
 
 namespace cryptauth {
 
+std::ostream& operator<<(std::ostream& stream, const DeviceType& device_type) {
+  switch (device_type) {
+    case DeviceType::ANDROID:
+      stream << "[Android]";
+      break;
+    case DeviceType::CHROME:
+      stream << "[Chrome]";
+      break;
+    case DeviceType::IOS:
+      stream << "[iOS]";
+      break;
+    case DeviceType::BROWSER:
+      stream << "[Browser]";
+      break;
+    default:
+      stream << "[Unknown device type]";
+      break;
+  }
+  return stream;
+}
+
+cryptauth::DeviceType DeviceTypeStringToEnum(
+    const std::string& device_type_as_string) {
+  if (device_type_as_string == "android")
+    return cryptauth::DeviceType::ANDROID;
+  if (device_type_as_string == "chrome")
+    return cryptauth::DeviceType::CHROME;
+  if (device_type_as_string == "ios")
+    return cryptauth::DeviceType::IOS;
+  if (device_type_as_string == "browser")
+    return cryptauth::DeviceType::BROWSER;
+  return cryptauth::DeviceType::UNKNOWN;
+}
+
+std::string DeviceTypeEnumToString(cryptauth::DeviceType device_type) {
+  switch (device_type) {
+    case cryptauth::DeviceType::ANDROID:
+      return "android";
+    case cryptauth::DeviceType::CHROME:
+      return "chrome";
+    case cryptauth::DeviceType::IOS:
+      return "ios";
+    case cryptauth::DeviceType::BROWSER:
+      return "browser";
+    default:
+      return "unknown";
+  }
+}
+
 std::ostream& operator<<(std::ostream& stream,
                          const SoftwareFeature& software_feature) {
   switch (software_feature) {
