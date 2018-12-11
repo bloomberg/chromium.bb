@@ -131,18 +131,16 @@ class PaintArtifactCompositorTest : public testing::Test,
     Update(artifact, element_ids);
   }
 
-  void Update(scoped_refptr<const PaintArtifact> artifact,
-              CompositorElementIdSet& element_ids) {
-    // Pass nullptr for the visual viewport paint property nodes since we're
-    // really just checking the internals of PaintArtifactCompositor.
-    Update(artifact, element_ids, nullptr);
-  }
+  using ViewportProperties = PaintArtifactCompositor::ViewportProperties;
+  using Settings = PaintArtifactCompositor::Settings;
 
-  void Update(scoped_refptr<const PaintArtifact> artifact,
-              CompositorElementIdSet& element_ids,
-              TransformPaintPropertyNode* viewport_scale_transform_node) {
+  void Update(
+      scoped_refptr<const PaintArtifact> artifact,
+      CompositorElementIdSet& element_ids,
+      const ViewportProperties& viewport_properties = ViewportProperties(),
+      const Settings& settings = Settings()) {
     paint_artifact_compositor_->Update(artifact, element_ids,
-                                       viewport_scale_transform_node);
+                                       viewport_properties, settings);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
 
@@ -3255,8 +3253,10 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
       TransformPaintPropertyNode::Root(), std::move(transform_state));
 
   TestPaintArtifact artifact;
+  ViewportProperties viewport_properties;
+  viewport_properties.page_scale = scale_transform_node.get();
   CompositorElementIdSet element_ids;
-  Update(artifact.Build(), element_ids, scale_transform_node.get());
+  Update(artifact.Build(), element_ids, viewport_properties);
 
   cc::TransformTree& transform_tree = GetPropertyTrees().transform_tree;
   cc::TransformNode* cc_transform_node = transform_tree.FindNodeFromElementId(

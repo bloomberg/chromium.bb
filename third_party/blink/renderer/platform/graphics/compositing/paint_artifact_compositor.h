@@ -69,13 +69,22 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
         new PaintArtifactCompositor(std::move(scroll_callback)));
   }
 
+  struct ViewportProperties {
+    const TransformPaintPropertyNode* page_scale = nullptr;
+  };
+
+  struct Settings {
+    bool prefer_compositing_to_lcd_text = false;
+  };
+
   // Updates the layer tree to match the provided paint artifact.
   //
   // Populates |composited_element_ids| with the CompositorElementId of all
   // animations for which we saw a paint chunk and created a layer.
   void Update(scoped_refptr<const PaintArtifact>,
               CompositorElementIdSet& composited_element_ids,
-              TransformPaintPropertyNode* viewport_scale_node);
+              const ViewportProperties& viewport_properties,
+              const Settings& settings);
 
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
@@ -154,7 +163,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
   void CollectPendingLayers(const PaintArtifact&,
+                            const Settings& settings,
                             Vector<PendingLayer>& pending_layers);
+
   // This is the internal recursion of collectPendingLayers. This function
   // loops over the list of paint chunks, scoped by an isolated group
   // (i.e. effect node). Inside of the loop, chunks are tested for overlap
@@ -173,6 +184,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // overlap with other chunks in the parent group, if grouping requirement
   // can be satisfied (and the effect node has no direct reason).
   static void LayerizeGroup(const PaintArtifact&,
+                            const Settings& settings,
                             Vector<PendingLayer>& pending_layers,
                             const EffectPaintPropertyNode&,
                             Vector<PaintChunk>::const_iterator& chunk_cursor);
