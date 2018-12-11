@@ -15,6 +15,7 @@
         --cr-slider-position-transition: 80ms ease;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         cursor: default;
+        outline: none;
         user-select: none;
       }
 
@@ -37,7 +38,7 @@
       }
 
       #barContainer {
-        border-top-color: var(--google-blue-600-opacity-24);
+        border-top-color: var(--cr-slider-container-color, var(--google-blue-600-opacity-24));
         height: var(--cr-slider-bar-height);
         margin: 0 16px;
         position: absolute;
@@ -89,7 +90,7 @@
       }
 
       paper-ripple {
-        color: var(--google-blue-600);
+        color: var(--cr-slider-knob-color, var(--google-blue-600));
         height: 32px;
         left: -11px;
         pointer-events: none;
@@ -206,8 +207,7 @@
         </div>
       </div>
       <div id="knobContainer">
-        <div id="knob" tabindex="0" on-transitionend="onKnobTransitionEnd_">
-        </div>
+        <div id="knob" on-transitionend="onKnobTransitionEnd_"></div>
       </div>
       <div id="labelContainer" aria-label="[[label_]]">
         <div id="label">[[label_]]</div>

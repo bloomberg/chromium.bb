@@ -140,43 +140,50 @@ function exposureImage(testVolumeName, volumeType) {
     var origMetadata = null;
 
     // Click the exposure button.
-    return gallery.waitAndClickElement(appId, buttonQuery).then(function() {
-      // Wait until the edit controls appear.
-      return Promise.all([
-        gallery.waitForElement(appId, '.brightness > paper-slider'),
-        gallery.waitForElement(appId, '.contrast > paper-slider'),
-      ]);
-    }).then(function() {
-      return gallery.callRemoteTestUtil(
-          'changeValue', appId, ['.brightness > paper-slider', 20]);
-    }).then(function() {
-      return gallery.callRemoteTestUtil(
-          'changeValue', appId, ['.contrast > paper-slider', -20]);
-    }).then(function() {
-      return gallery.callRemoteTestUtil('getMetadata', null, [url]);
-    }).then(function(metadata) {
-      origMetadata = metadata;
-
-      // Push the Enter key.
-      return gallery.fakeKeyDown(appId, 'body', 'Enter', false, false, false);
-    }).then(function() {
-      // Wait until the image is updated.
-      return repeatUntil(function() {
-        return gallery.callRemoteTestUtil('getMetadata', null, [url])
+    return gallery.waitAndClickElement(appId, buttonQuery)
+        .then(function() {
+          // Wait until the edit controls appear.
+          return Promise.all([
+            gallery.waitForElement(appId, '.brightness > cr-slider'),
+            gallery.waitForElement(appId, '.contrast > cr-slider'),
+          ]);
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.brightness > cr-slider', 20]);
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil(
+              'changeValue', appId, ['.contrast > cr-slider', -20]);
+        })
+        .then(function() {
+          return gallery.callRemoteTestUtil('getMetadata', null, [url]);
+        })
         .then(function(metadata) {
-          if (origMetadata.modificationTime != metadata.modificationTime) {
-            return true;
-          } else {
-            return pending(
-                '%s is not updated. ' +
-                    'First last modified: %s, Second last modified: %s.',
-                url,
-                origMetadata.modificationTime,
-                metadata.modificationTime);
-          }
+          origMetadata = metadata;
+
+          // Push the Enter key.
+          return gallery.fakeKeyDown(
+              appId, 'body', 'Enter', false, false, false);
+        })
+        .then(function() {
+          // Wait until the image is updated.
+          return repeatUntil(function() {
+            return gallery.callRemoteTestUtil('getMetadata', null, [url])
+                .then(function(metadata) {
+                  if (origMetadata.modificationTime !=
+                      metadata.modificationTime) {
+                    return true;
+                  } else {
+                    return pending(
+                        '%s is not updated. First ' +
+                            'last modified: %s, Second last modified: %s.',
+                        url, origMetadata.modificationTime,
+                        metadata.modificationTime);
+                  }
+                });
+          });
         });
-      });
-    });
   });
 }
 

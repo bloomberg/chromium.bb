@@ -265,7 +265,8 @@ cr_slider.SliderTick;
 
     /** @private */
     onDisabledChanged_: function() {
-      this.$.knob.setAttribute('tabindex', this.disabled_ ? '-1' : '0');
+      this.setAttribute('tabindex', this.disabled_ ? -1 : 0);
+      this.$.knob.setAttribute('tabindex', this.disabled_ ? -1 : 0);
       this.blur();
     },
 
