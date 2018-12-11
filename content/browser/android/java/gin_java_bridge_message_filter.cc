@@ -188,11 +188,4 @@ void GinJavaBridgeMessageFilter::OnObjectWrapperDeleted(
     host->OnObjectWrapperDeleted(current_routing_id_, object_id);
 }
 
-// static
-void GinJavaBridgeMessageFilter::RemoveFilter(
-    GinJavaBridgeDispatcherHost* host) {
-  RenderProcessHost* rph = host->web_contents()->GetMainFrame()->GetProcess();
-  rph->RemoveUserData(kGinJavaBridgeMessageFilterKey);
-}
-
 }  // namespace content
