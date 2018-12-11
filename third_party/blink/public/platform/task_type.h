@@ -131,6 +131,9 @@ enum class TaskType : unsigned {
   kExperimentalWebSchedulingUserInteraction = 53,
   kExperimentalWebSchedulingBestEffort = 54,
 
+  // https://drafts.csswg.org/css-font-loading/#task-source
+  kFontLoading = 56,
+
   ///////////////////////////////////////
   // Not-speced tasks should use one of the following task types
   ///////////////////////////////////////
@@ -205,7 +208,7 @@ enum class TaskType : unsigned {
   kWorkerThreadTaskQueueV8 = 47,
   kWorkerThreadTaskQueueCompositor = 48,
 
-  kCount = 56,
+  kCount = 57,
 };
 
 }  // namespace blink

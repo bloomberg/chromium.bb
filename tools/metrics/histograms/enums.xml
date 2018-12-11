@@ -43958,7 +43958,10 @@ Called by update_net_trust_anchors.py.-->
   <int value="50" label="NetworkingWithURLLoaderAnnotation"/>
   <int value="51" label="WorkerAnimation"/>
   <int value="52" label="MainThreadTaskQueueCleanup"/>
+  <int value="53" label="ExperimentalWebSchedulingUserInteraction"/>
+  <int value="54" label="ExperimentalWebSchedulingBestEffort"/>
   <int value="55" label="InternalTranslation"/>
+  <int value="56" label="FontLoading"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">
