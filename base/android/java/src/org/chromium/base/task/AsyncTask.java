@@ -279,6 +279,25 @@ public abstract class AsyncTask<Result> {
         return r;
     }
 
+    @SuppressWarnings({"MissingCasesInEnumSwitch"})
+    private void executionPreamble() {
+        if (mStatus != Status.PENDING) {
+            switch (mStatus) {
+                case RUNNING:
+                    throw new IllegalStateException("Cannot execute task:"
+                            + " the task is already running.");
+                case FINISHED:
+                    throw new IllegalStateException("Cannot execute task:"
+                            + " the task has already been executed "
+                            + "(a task can be executed only once)");
+            }
+        }
+
+        mStatus = Status.RUNNING;
+
+        onPreExecute();
+    }
+
     /**
      * Executes the task with the specified parameters. The task returns
      * itself (this) so that the caller can keep a reference to it.
@@ -309,27 +328,23 @@ public abstract class AsyncTask<Result> {
      * @throws IllegalStateException If {@link #getStatus()} returns either
      *         {@link AsyncTask.Status#RUNNING} or {@link AsyncTask.Status#FINISHED}.
      */
-    @SuppressWarnings({"MissingCasesInEnumSwitch"})
     @MainThread
     public final AsyncTask<Result> executeOnExecutor(Executor exec) {
-        if (mStatus != Status.PENDING) {
-            switch (mStatus) {
-                case RUNNING:
-                    throw new IllegalStateException("Cannot execute task:"
-                            + " the task is already running.");
-                case FINISHED:
-                    throw new IllegalStateException("Cannot execute task:"
-                            + " the task has already been executed "
-                            + "(a task can be executed only once)");
-            }
-        }
-
-        mStatus = Status.RUNNING;
-
-        onPreExecute();
-
+        executionPreamble();
         exec.execute(mFuture);
+        return this;
+    }
 
+    /**
+     * Executes an AsyncTask on the given TaskRunner.
+     *
+     * @param taskRunner taskRunner to run this AsyncTask on.
+     * @return This instance of AsyncTask.
+     */
+    @MainThread
+    public final AsyncTask<Result> executeOnTaskRunner(TaskRunner taskRunner) {
+        executionPreamble();
+        taskRunner.postTask(mFuture);
         return this;
     }
 
