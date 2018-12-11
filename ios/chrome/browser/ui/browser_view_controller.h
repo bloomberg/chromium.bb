@@ -73,12 +73,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // Invisible button used to dismiss the keyboard.
 @property(nonatomic, strong) UIButton* typingShield;
 
-// Activates/deactivates the object. This will enable/disable the ability for
-// this object to browse, and to have live UIWebViews associated with it. While
-// not active, the UI will not react to changes in the tab model, so generally
-// an inactive BVC should not be visible.
-@property(nonatomic, assign, getter=isActive) BOOL active;
-
 // Returns whether or not text to speech is playing.
 @property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
 
@@ -103,11 +97,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // bubble will not be shown.
 - (void)presentBubblesIfEligible;
 
-// Called when the browser state provided to this instance is being destroyed.
-// At this point the browser will no longer ever be active, and will likely be
-// deallocated soon.
-- (void)browserStateDestroyed;
-
 // Opens a new tab as if originating from |originPoint| and |focusOmnibox|.
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
                      focusOmnibox:(BOOL)focusOmnibox;
@@ -125,11 +114,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 
 // Shows the voice search UI.
 - (void)startVoiceSearch;
-
-// Dismisses all presented views, excluding the omnibox if |dismissOmnibox| is
-// NO, then calls |completion|.
-- (void)clearPresentedStateWithCompletion:(ProceduralBlock)completion
-                           dismissOmnibox:(BOOL)dismissOmnibox;
 
 // Returns a tab strip placeholder view created from the current state of the
 // tab strip. It is used to animate the transition from the browser view
@@ -149,9 +133,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
 // TODO(crbug.com/906199): NewTabPageTabHelper should use an observer to listen
 // to browsing data changes.
 - (void)resetNTP;
-
-// Called before the instance is deallocated.
-- (void)shutdown;
 
 @end
 
