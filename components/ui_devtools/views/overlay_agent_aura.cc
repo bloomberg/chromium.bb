@@ -461,9 +461,13 @@ int OverlayAgentAura::FindElementIdTargetedByPoint(
 void OverlayAgentAura::ShowDistancesInHighlightOverlay(int pinned_id,
                                                        int element_id) {
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r2(
-      dom_agent()->GetElementFromNodeId(element_id)->GetNodeWindowAndBounds());
+      dom_agent()
+          ->GetElementFromNodeId(element_id)
+          ->GetNodeWindowAndScreenBounds());
   const std::pair<gfx::NativeWindow, gfx::Rect> pair_r1(
-      dom_agent()->GetElementFromNodeId(pinned_id)->GetNodeWindowAndBounds());
+      dom_agent()
+          ->GetElementFromNodeId(pinned_id)
+          ->GetNodeWindowAndScreenBounds());
   gfx::Rect r2(pair_r2.second);
   gfx::Rect r1(pair_r1.second);
   pinned_rect_ = r1;
@@ -520,7 +524,7 @@ Response OverlayAgentAura::HighlightNode(int node_id, bool show_size) {
   highlight_rect_config_ = HighlightRectsConfiguration::NO_DRAW;
   show_size_on_canvas_ = show_size;
   layer_for_highlighting_->SetVisible(
-      UpdateHighlight(element->GetNodeWindowAndBounds()));
+      UpdateHighlight(element->GetNodeWindowAndScreenBounds()));
   return Response::OK();
 }
 

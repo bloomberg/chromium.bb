@@ -93,8 +93,8 @@ std::unique_ptr<protocol::Array<std::string>> ViewElement::GetAttributes()
   return attributes;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> ViewElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+ViewElement::GetNodeWindowAndScreenBounds() const {
   return std::make_pair(view_->GetWidget()->GetNativeWindow(),
                         view_->GetBoundsInScreen());
 }

@@ -67,9 +67,9 @@ class UI_DEVTOOLS_EXPORT UIElement {
   virtual void GetVisible(bool* visible) const = 0;
   virtual void SetVisible(bool visible) = 0;
 
-  // If element exists, return its associated native window and its bounds.
-  // Otherwise, return null and empty bounds.
-  virtual std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndBounds()
+  // If element exists, return its associated native window and its screen
+  // bounds. Otherwise, return null and empty bounds.
+  virtual std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()
       const = 0;
   // Get a list of interleaved keys and values of attributes to be displayed
   // on the element in the dev tools hierarchy view.
