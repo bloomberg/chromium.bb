@@ -5009,7 +5009,6 @@ grit("resources") {
     "//chrome/browser/engagement:mojo_bindings_js",
     "//chrome/browser/media:mojo_bindings_js",
     "//chrome/browser/resources/ssl/ssl_error_assistant:make_ssl_error_assistant_protobuf",
-    "//chrome/browser/ui/webui/app_management:mojo_bindings_js",
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings_js",
     "//chrome/browser/ui/webui/md_downloads:mojo_bindings_js",
@@ -5058,6 +5057,8 @@ grit("resources") {
       "//chrome/browser/ui/webui/eoc_internals:mojo_bindings_js",
       "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js",
     ]
+  } else {
+    deps += [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
   }
 
   if (!is_android && optimize_webui) {

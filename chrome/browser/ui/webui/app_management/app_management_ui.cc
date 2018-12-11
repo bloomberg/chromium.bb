@@ -34,6 +34,16 @@ content::WebUIDataSource* CreateAppManagementUIHTMLSource(Profile* profile) {
 
   source->AddResourcePath("app_management.mojom-lite.js",
                           IDR_APP_MANAGEMENT_MOJO_LITE_JS);
+  source->AddResourcePath("types.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_TYPES_MOJO_LITE_JS);
+  source->AddResourcePath("big_buffer.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_BIG_BUFFER_MOJO_LITE_JS);
+  source->AddResourcePath("bitmap.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_BITMAP_MOJO_LITE_JS);
+  source->AddResourcePath("image.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_IMAGE_MOJO_LITE_JS);
+  source->AddResourcePath("image_info.mojom-lite.js",
+                          IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
   source->AddResourcePath("app.html", IDR_APP_MANAGEMENT_APP_HTML);
   source->AddResourcePath("app.js", IDR_APP_MANAGEMENT_APP_JS);
   source->AddResourcePath("browser_proxy.html",
