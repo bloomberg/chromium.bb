@@ -109,8 +109,6 @@ public class ClearBrowsingDataPreferencesBasicTest {
     @Test
     @SmallTest
     public void testCheckBoxTextNonsigned() throws Exception {
-        SigninTestUtil.resetSigninState();
-
         final Preferences preferences = mActivityTestRule.startPreferences(
                 ClearBrowsingDataPreferencesBasic.class.getName());
 

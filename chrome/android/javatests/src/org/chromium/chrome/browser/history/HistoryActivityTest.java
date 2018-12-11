@@ -740,7 +740,6 @@ public class HistoryActivityTest {
 
         // Sign out of account.
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
-        SigninTestUtil.resetSigninState();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
