@@ -46,7 +46,6 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
@@ -81,12 +80,6 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
-#include "gpu/vulkan/buildflags.h"
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "gpu/vulkan/init/vulkan_factory.h"
-#include "gpu/vulkan/vulkan_implementation.h"
-#include "gpu/vulkan/vulkan_surface.h"
-#endif
 #include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
@@ -101,10 +94,6 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/latency/latency_tracker.h"
-
-namespace gpu {
-class VulkanSurface;
-}
 
 namespace content {
 
@@ -252,10 +241,6 @@ class CompositorDependencies {
   // http://crbug.com/657959.
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  std::unique_ptr<gpu::VulkanImplementation> vulkan_implementation;
-  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider;
-#endif
  private:
   friend class base::NoDestructor<CompositorDependencies>;
 
@@ -347,26 +332,6 @@ class CompositorDependencies {
 };
 
 const unsigned int kMaxDisplaySwapBuffers = 1U;
-
-#if BUILDFLAG(ENABLE_VULKAN)
-scoped_refptr<viz::VulkanContextProvider> GetSharedVulkanContextProvider() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVulkan))
-    return nullptr;
-
-  scoped_refptr<viz::VulkanContextProvider>& context_provider =
-      CompositorDependencies::Get().vulkan_context_provider;
-  if (!context_provider) {
-    std::unique_ptr<gpu::VulkanImplementation>& vulkan_implementation =
-        CompositorDependencies::Get().vulkan_implementation;
-    DCHECK(!vulkan_implementation);
-    vulkan_implementation = gpu::CreateVulkanImplementation();
-    context_provider = viz::VulkanInProcessContextProvider::Create(
-        vulkan_implementation.get());
-  }
-  return context_provider;
-}
-#endif
 
 gpu::SharedMemoryLimits GetCompositorContextSharedMemoryLimits(
     gfx::NativeWindow window) {
@@ -584,118 +549,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
 
   base::WeakPtrFactory<AndroidOutputSurface> weak_ptr_factory_;
 };
-
-#if BUILDFLAG(ENABLE_VULKAN)
-class VulkanOutputSurface : public viz::OutputSurface {
- public:
-  explicit VulkanOutputSurface(
-      scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : OutputSurface(std::move(vulkan_context_provider)),
-        task_runner_(std::move(task_runner)),
-        weak_ptr_factory_(this) {}
-
-  ~VulkanOutputSurface() override { Destroy(); }
-
-  bool Initialize(gfx::AcceleratedWidget widget) {
-    DCHECK(!surface_);
-    std::unique_ptr<gpu::VulkanSurface> surface(
-        vulkan_context_provider()->GetVulkanImplementation()->CreateViewSurface(
-            widget));
-    if (!surface->Initialize(vulkan_context_provider()->GetDeviceQueue(),
-                             gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
-      return false;
-    }
-    surface_ = std::move(surface);
-
-    return true;
-  }
-
-  void BindToClient(viz::OutputSurfaceClient* client) override {
-    client_ = client;
-  }
-
-  void EnsureBackbuffer() override { NOTIMPLEMENTED(); }
-
-  void DiscardBackbuffer() override { NOTIMPLEMENTED(); }
-
-  void BindFramebuffer() override { NOTIMPLEMENTED(); }
-
-  void SetDrawRectangle(const gfx::Rect& rect) override { NOTIMPLEMENTED(); }
-
-  viz::OverlayCandidateValidator* GetOverlayCandidateValidator()
-      const override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-
-  bool IsDisplayedAsOverlayPlane() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  unsigned GetOverlayTextureId() const override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  gfx::BufferFormat GetOverlayBufferFormat() const override {
-    NOTIMPLEMENTED();
-    return gfx::BufferFormat::BGRA_8888;
-  }
-
-  void Reshape(const gfx::Size& size,
-               float device_scale_factor,
-               const gfx::ColorSpace& color_space,
-               bool has_alpha,
-               bool use_stencil) override {
-    NOTIMPLEMENTED();
-  }
-
-  bool HasExternalStencilTest() const override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  void ApplyExternalStencil() override { NOTIMPLEMENTED(); }
-
-  uint32_t GetFramebufferCopyTextureFormat() override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  void SwapBuffers(viz::OutputSurfaceFrame frame) override {
-    surface_->SwapBuffers();
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&VulkanOutputSurface::SwapBuffersAck,
-                                      weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  gpu::VulkanSurface* GetVulkanSurface() override { return surface_.get(); }
-
-  unsigned UpdateGpuFence() override {
-    NOTIMPLEMENTED();
-    return 0;
-  }
-
-  void Destroy() {
-    if (surface_) {
-      surface_->Destroy();
-      surface_.reset();
-    }
-  }
-
- private:
-  void SwapBuffersAck() { client_->DidReceiveSwapBuffersAck(); }
-
-  std::unique_ptr<gpu::VulkanSurface> surface_;
-  viz::OutputSurfaceClient* client_ = nullptr;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<VulkanOutputSurface> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(VulkanOutputSurface);
-};
-#endif
 
 static bool g_initialized = false;
 
@@ -1047,11 +900,6 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
   if (!host_->IsVisible())
     return;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (CreateVulkanOutputSurface())
-    return;
-#endif
-
   DCHECK(surface_handle_ != gpu::kNullSurfaceHandle);
   BrowserMainLoop::GetInstance()
       ->gpu_channel_establish_factory()
@@ -1059,29 +907,6 @@ void CompositorImpl::HandlePendingLayerTreeFrameSinkRequest() {
           base::BindOnce(&CompositorImpl::OnGpuChannelEstablished,
                          weak_factory_.GetWeakPtr()));
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-bool CompositorImpl::CreateVulkanOutputSurface() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVulkan))
-    return false;
-
-  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
-      GetSharedVulkanContextProvider();
-  if (!vulkan_context_provider)
-    return false;
-
-  // TODO(crbug.com/582558): Need to match GL and implement DidSwapBuffers.
-  auto vulkan_surface = std::make_unique<VulkanOutputSurface>(
-      vulkan_context_provider, base::ThreadTaskRunnerHandle::Get());
-  if (!vulkan_surface->Initialize(window_))
-    return false;
-
-  InitializeDisplay(std::move(vulkan_surface), nullptr);
-
-  return !!display_;
-}
-#endif
 
 void CompositorImpl::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
@@ -1162,8 +987,6 @@ void CompositorImpl::InitializeDisplay(
 
   if (context_provider) {
     gpu_capabilities_ = context_provider->ContextCapabilities();
-  } else {
-    // TODO(danakj): Populate gpu_capabilities_ for VulkanContextProvider.
   }
 
   viz::FrameSinkManagerImpl* manager = GetFrameSinkManager();

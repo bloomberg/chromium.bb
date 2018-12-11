@@ -26,7 +26,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "gpu/vulkan/buildflags.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -162,9 +161,6 @@ class CONTENT_EXPORT CompositorImpl
 
   void HandlePendingLayerTreeFrameSinkRequest();
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  bool CreateVulkanOutputSurface();
-#endif
   void OnGpuChannelEstablished(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host);
   void InitializeDisplay(
