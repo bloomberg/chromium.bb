@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_DEFERRED_TASK_HANDLER_H_
 
+#include <atomic>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -134,15 +135,12 @@ class MODULES_EXPORT DeferredTaskHandler final
   // Thread Safety and Graph Locking:
   //
   void SetAudioThreadToCurrentThread();
-  ThreadIdentifier AudioThread() const { return AcquireLoad(&audio_thread_); }
 
-  // TODO(hongchan): Use no-barrier load here. (crbug.com/247328)
-  //
   // It is okay to use a relaxed (no-barrier) load here. Because the data
   // referenced by m_audioThread is not actually being used, thus we do not
   // need a barrier between the load of m_audioThread and of that data.
   bool IsAudioThread() const {
-    return CurrentThread() == AcquireLoad(&audio_thread_);
+    return CurrentThread() == audio_thread_.load(std::memory_order_relaxed);
   }
 
   void lock();
@@ -245,7 +243,7 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;
-  volatile ThreadIdentifier audio_thread_;
+  std::atomic<ThreadIdentifier> audio_thread_;
 };
 
 }  // namespace blink

@@ -350,8 +350,7 @@ void DeferredTaskHandler::ClearHandlersToBeDeleted() {
 
 void DeferredTaskHandler::SetAudioThreadToCurrentThread() {
   DCHECK(!IsMainThread());
-  ThreadIdentifier thread = CurrentThread();
-  ReleaseStore(&audio_thread_, thread);
+  audio_thread_.store(CurrentThread(), std::memory_order_relaxed);
 }
 
 void DeferredTaskHandler::DisableOutputsForTailProcessing() {

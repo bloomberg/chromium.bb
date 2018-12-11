@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_ANALYSER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_REALTIME_ANALYSER_H_
 
+#include <atomic>
 #include <memory>
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
@@ -77,11 +78,13 @@ class RealtimeAnalyser final {
  private:
   // The audio thread writes the input audio here.
   AudioFloatArray input_buffer_;
-  unsigned write_index_;
+  std::atomic_uint write_index_{0};
 
-  unsigned GetWriteIndex() const { return AcquireLoad(&write_index_); }
+  unsigned GetWriteIndex() const {
+    return write_index_.load(std::memory_order_acquire);
+  }
   void SetWriteIndex(unsigned new_index) {
-    ReleaseStore(&write_index_, new_index);
+    write_index_.store(new_index, std::memory_order_release);
   }
 
   // Input audio is downmixed to this bus before copying to m_inputBuffer.

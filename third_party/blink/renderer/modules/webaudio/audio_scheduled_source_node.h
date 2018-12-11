@@ -29,6 +29,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_SCHEDULED_SOURCE_NODE_H_
 
+#include <atomic>
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
@@ -67,11 +68,11 @@ class AudioScheduledSourceHandler : public AudioHandler {
   double LatencyTime() const override { return 0; }
 
   PlaybackState GetPlaybackState() const {
-    return static_cast<PlaybackState>(AcquireLoad(&playback_state_));
+    return playback_state_.load(std::memory_order_acquire);
   }
 
   void SetPlaybackState(PlaybackState new_state) {
-    ReleaseStore(&playback_state_, new_state);
+    playback_state_.store(new_state, std::memory_order_release);
   }
 
   bool IsPlayingOrScheduled() const {
@@ -137,7 +138,7 @@ class AudioScheduledSourceHandler : public AudioHandler {
  private:
   // This is accessed by both the main thread and audio thread.  Use the setter
   // and getter to protect the access to this.
-  int playback_state_;
+  std::atomic<PlaybackState> playback_state_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
