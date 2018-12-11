@@ -1151,21 +1151,25 @@ bool AppListView::HandleScroll(const gfx::Vector2d& offset,
       return true;
   }
 
+  // The AppList should not be dismissed with scroll in tablet mode.
+  if (is_tablet_mode())
+    return true;
+
   // If the event is a mousewheel event, the offset is always large enough,
   // otherwise the offset must be larger than the scroll threshold.
   if (type == ui::ET_MOUSEWHEEL ||
       abs(offset.y()) > kAppListMinScrollToSwitchStates) {
-    if (offset.y() > 0 && !is_tablet_mode()) {
-      Dismiss();
-    } else {
-      if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS)
-        return true;
-      SetState(AppListViewState::FULLSCREEN_ALL_APPS);
-      const AppListPeekingToFullscreenSource source =
-          type == ui::ET_MOUSEWHEEL ? kMousewheelScroll : kMousepadScroll;
-      UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, source,
-                                kMaxPeekingToFullscreen);
+    if (app_list_state_ == AppListViewState::FULLSCREEN_ALL_APPS) {
+      if (offset.y() > 0)
+        Dismiss();
+      return true;
     }
+
+    SetState(AppListViewState::FULLSCREEN_ALL_APPS);
+    const AppListPeekingToFullscreenSource source =
+        type == ui::ET_MOUSEWHEEL ? kMousewheelScroll : kMousepadScroll;
+    UMA_HISTOGRAM_ENUMERATION(kAppListPeekingToFullscreenHistogram, source,
+                              kMaxPeekingToFullscreen);
   }
   return true;
 }
