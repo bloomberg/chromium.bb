@@ -9219,7 +9219,7 @@ TEST_F(WebFrameSwapTest, SwapFirstChild) {
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("\n\nhello\n\nb\n\n\na\n\nc", content);
+  EXPECT_EQ("  \n\nhello\n\nb \n\na\n\nc", content);
 }
 
 void WebFrameTest::SwapAndVerifyMiddleChildConsistency(
@@ -9255,7 +9255,7 @@ TEST_F(WebFrameSwapTest, SwapMiddleChild) {
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("\n\na\n\nhello\n\nc", content);
+  EXPECT_EQ("  \n\na\n\nhello\n\nc", content);
 }
 
 void WebFrameTest::SwapAndVerifyLastChildConsistency(const char* const message,
@@ -9285,7 +9285,7 @@ TEST_F(WebFrameSwapTest, SwapLastChild) {
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("\n\na\n\nb\n\n\na\n\nhello", content);
+  EXPECT_EQ("  \n\na\n\nb \n\na\n\nhello", content);
 }
 
 TEST_F(WebFrameSwapTest, DetachProvisionalFrame) {
@@ -9398,7 +9398,7 @@ TEST_F(WebFrameSwapTest, SwapParentShouldDetachChildren) {
   frame_test_helpers::LoadFrame(local_frame, base_url_ + "subframe-hello.html");
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
-  EXPECT_EQ("\n\na\n\nhello\n\nc", content);
+  EXPECT_EQ("  \n\na\n\nhello\n\nc", content);
 }
 
 TEST_F(WebFrameSwapTest, SwapPreservesGlobalContext) {
