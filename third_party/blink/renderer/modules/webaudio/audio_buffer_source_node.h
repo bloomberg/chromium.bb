@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_SOURCE_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_BUFFER_SOURCE_NODE_H_
 
+#include <atomic>
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
@@ -133,10 +134,12 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   scoped_refptr<AudioParamHandler> playback_rate_;
   scoped_refptr<AudioParamHandler> detune_;
 
-  bool DidSetLooping() const { return AcquireLoad(&did_set_looping_); }
+  bool DidSetLooping() const {
+    return did_set_looping_.load(std::memory_order_acquire);
+  }
   void SetDidSetLooping(bool loop) {
-    bool new_looping = DidSetLooping() || loop;
-    ReleaseStore(&did_set_looping_, new_looping);
+    if (loop)
+      did_set_looping_.store(true, std::memory_order_release);
   }
 
   // If m_isLooping is false, then this node will be done playing and become
@@ -146,7 +149,7 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   bool is_looping_;
 
   // True if the source .loop attribute was ever set.
-  int did_set_looping_;
+  std::atomic_bool did_set_looping_;
 
   double loop_start_;
   double loop_end_;
