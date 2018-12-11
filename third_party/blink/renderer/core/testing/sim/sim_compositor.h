@@ -70,7 +70,7 @@ class SimCompositor final : public content::StubLayerTreeViewDelegate {
   // to the compositor's state.
   bool NeedsBeginFrame() const {
     cc::LayerTreeHost* layer_tree_host = layer_tree_view_->layer_tree_host();
-    return test_web_view_client_->AnimationScheduled() ||
+    return test_web_view_client_->TestWidgetClient()->AnimationScheduled() ||
            layer_tree_host->RequestedMainFramePendingForTesting();
   }
   // Returns true if commits are deferred in the compositor. Since these tests

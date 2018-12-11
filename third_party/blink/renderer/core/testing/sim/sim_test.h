@@ -53,6 +53,7 @@ class SimTest : public testing::Test {
   SimNetwork network_;
   SimCompositor compositor_;
   SimWebFrameClient web_frame_client_;
+  SimWebWidgetClient web_widget_client_;
   SimWebViewClient web_view_client_;
   SimPage page_;
   frame_test_helpers::WebViewHelper web_view_helper_;

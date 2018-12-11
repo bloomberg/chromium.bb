@@ -52,7 +52,7 @@ SimCanvas::Commands SimCompositor::BeginFrame(double time_delta_in_seconds) {
   DCHECK(NeedsBeginFrame());
   DCHECK_GT(time_delta_in_seconds, 0);
 
-  test_web_view_client_->ClearAnimationScheduled();
+  test_web_view_client_->TestWidgetClient()->ClearAnimationScheduled();
 
   last_frame_time_ += base::TimeDelta::FromSecondsD(time_delta_in_seconds);
 

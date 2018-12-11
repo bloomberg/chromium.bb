@@ -180,14 +180,17 @@ TEST_F(ScrollbarsTest, DocumentStyleRecalcPreservesScrollbars) {
               layout_viewport->HorizontalScrollbar());
 }
 
-class ScrollbarsWebViewClient : public frame_test_helpers::TestWebViewClient {
+class ScrollbarsWebWidgetClient
+    : public frame_test_helpers::TestWebWidgetClient {
  public:
+  // WebWidgetClient overrides.
   void ConvertWindowToViewport(WebFloatRect* rect) override {
     rect->x *= device_scale_factor_;
     rect->y *= device_scale_factor_;
     rect->width *= device_scale_factor_;
     rect->height *= device_scale_factor_;
   }
+
   void set_device_scale_factor(float device_scale_factor) {
     device_scale_factor_ = device_scale_factor;
   }
@@ -197,12 +200,13 @@ class ScrollbarsWebViewClient : public frame_test_helpers::TestWebViewClient {
 };
 
 TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
-  ScrollbarsWebViewClient client;
+  ScrollbarsWebWidgetClient client;
+  frame_test_helpers::TestWebViewClient view_client(&client);
   client.set_device_scale_factor(1.f);
 
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
-      web_view_helper.Initialize(nullptr, &client, nullptr, nullptr);
+      web_view_helper.Initialize(nullptr, &view_client);
 
   // Needed so visual viewport supplies its own scrollbars.
   web_view_impl->GetSettings()->SetViewportEnabled(true);

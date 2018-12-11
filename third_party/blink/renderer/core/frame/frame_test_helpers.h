@@ -184,29 +184,10 @@ class TestWebWidgetClient : public WebWidgetClient {
   TestWebWidgetClient();
   ~TestWebWidgetClient() override = default;
 
-  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
-
- private:
-  content::LayerTreeView* layer_tree_view_ = nullptr;
-  LayerTreeViewFactory layer_tree_view_factory_;
-};
-
-class TestWebViewClient : public WebViewClient, public WebWidgetClient {
- public:
-  // If no delegate is given, a stub is used.
-  explicit TestWebViewClient(content::LayerTreeViewDelegate* = nullptr);
-  ~TestWebViewClient() override = default;
-
-  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
-
   // WebWidgetClient:
   void ScheduleAnimation() override { animation_scheduled_ = true; }
 
-  // WebViewClient:
-  bool CanHandleGestureEvent() override { return true; }
-  bool CanUpdateLayout() override { return true; }
-  WebWidgetClient* WidgetClient() override { return this; }
-  blink::WebScreenInfo GetScreenInfo() override { return {}; }
+  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
 
   bool AnimationScheduled() { return animation_scheduled_; }
   void ClearAnimationScheduled() { animation_scheduled_ = false; }
@@ -215,6 +196,30 @@ class TestWebViewClient : public WebViewClient, public WebWidgetClient {
   content::LayerTreeView* layer_tree_view_ = nullptr;
   LayerTreeViewFactory layer_tree_view_factory_;
   bool animation_scheduled_ = false;
+};
+
+class TestWebViewClient : public WebViewClient {
+ public:
+  // If no delegate is given, a stub is used. If no TestWebWidgetClient is
+  // given, an instance of TestWebWidgetClient is created and used.
+  explicit TestWebViewClient(TestWebWidgetClient* = nullptr,
+                             content::LayerTreeViewDelegate* = nullptr);
+  ~TestWebViewClient() override = default;
+
+  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
+  TestWebWidgetClient* TestWidgetClient() { return test_web_widget_client_; }
+
+  // WebViewClient overrides.
+  bool CanHandleGestureEvent() override { return true; }
+  bool CanUpdateLayout() override { return true; }
+  WebWidgetClient* WidgetClient() override { return test_web_widget_client_; }
+  blink::WebScreenInfo GetScreenInfo() override { return {}; }
+
+ private:
+  std::unique_ptr<TestWebWidgetClient> owned_test_web_widget_client_;
+  TestWebWidgetClient* test_web_widget_client_;
+  content::LayerTreeView* layer_tree_view_ = nullptr;
+  LayerTreeViewFactory layer_tree_view_factory_;
 };
 
 // Convenience class for handling the lifetime of a WebView and its associated
@@ -235,13 +240,11 @@ class WebViewHelper {
       WebFrame* opener,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
-      TestWebWidgetClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as InitializeWithOpener(), but always sets the opener to null.
   WebViewImpl* Initialize(TestWebFrameClient* = nullptr,
                           TestWebViewClient* = nullptr,
-                          TestWebWidgetClient* = nullptr,
                           void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as Initialize() but also performs the initial load of the url. Only
@@ -250,7 +253,6 @@ class WebViewHelper {
       const std::string& url,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
-      TestWebWidgetClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Creates and initializes the WebView with a main WebRemoteFrame. Passing
@@ -283,7 +285,6 @@ class WebViewHelper {
 
   WebViewImpl* web_view_;
   UseMockScrollbarSettings mock_scrollbar_settings_;
-  // Non-null if the WebViewHelper owns the TestWebViewClient.
   std::unique_ptr<TestWebViewClient> owned_test_web_view_client_;
   TestWebViewClient* test_web_view_client_;
 

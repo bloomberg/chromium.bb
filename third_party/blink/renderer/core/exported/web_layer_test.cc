@@ -34,7 +34,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
 
   void SetUp() override {
     web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();
-    web_view_helper_->Initialize(nullptr, &web_view_client_, nullptr,
+    web_view_helper_->Initialize(nullptr, &web_view_client_,
                                  &ConfigureCompositingWebView);
     web_view_helper_->Resize(WebSize(200, 200));
 
@@ -43,6 +43,8 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
     DCHECK(paint_artifact_compositor());
     paint_artifact_compositor()->EnableExtraDataForTesting();
   }
+
+  void TearDown() override { web_view_helper_.reset(); }
 
   // Both sets the inner html and runs the document lifecycle.
   void InitializeWithHTML(LocalFrame& frame, const String& html_content) {

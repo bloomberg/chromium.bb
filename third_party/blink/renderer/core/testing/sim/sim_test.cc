@@ -22,7 +22,7 @@ SimTest::SimTest()
       // SimCompositor overrides the LayerTreeViewDelegate to respond to
       // BeginMainFrame(), which will update and paint the WebViewImpl given to
       // SetWebView().
-      web_view_client_(&compositor_) {
+      web_view_client_(&web_widget_client_, &compositor_) {
   Document::SetThreadedParsingEnabledForTesting(false);
   // Use the mock theme to get more predictable code paths, this also avoids
   // the OS callbacks in ScrollAnimatorMac which can schedule frames

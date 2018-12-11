@@ -53,21 +53,6 @@
 
 namespace blink {
 
-namespace {
-
-class TestWebViewClient : public frame_test_helpers::TestWebViewClient {
- public:
-  explicit TestWebViewClient(WebNavigationPolicy* target) : target_(target) {}
-  ~TestWebViewClient() override = default;
-
-  void Show(WebNavigationPolicy policy) override { *target_ = policy; }
-
- private:
-  WebNavigationPolicy* target_;
-};
-
-}  // anonymous namespace
-
 class ViewCreatingClient : public frame_test_helpers::TestWebViewClient {
  public:
   WebView* CreateView(WebLocalFrame* opener,
