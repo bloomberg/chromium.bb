@@ -32,77 +32,21 @@
 
 #include <memory>
 #include <utility>
+#include "base/logging.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_shared_worker.h"
-#include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
-#include "third_party/blink/renderer/core/frame/use_counter.h"
-#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker.h"
+#include "third_party/blink/renderer/core/workers/shared_worker_connect_listener.h"
 
 namespace blink {
-namespace {
-
-mojom::SharedWorkerCreationContextType ToCreationContextType(
-    bool is_secure_context) {
-  return is_secure_context ? mojom::SharedWorkerCreationContextType::kSecure
-                           : mojom::SharedWorkerCreationContextType::kNonsecure;
-}
-
-}  // namespace
-
-// This is the client implementation to ServiceWorkerConnectorImpl in the
-// browser process. This will be destructed when the owner document is
-// destroyed.
-// TODO(nhiroki): Move this class into its own file.
-class SharedWorkerConnectListener final
-    : public mojom::blink::SharedWorkerClient {
- public:
-  explicit SharedWorkerConnectListener(SharedWorker* worker)
-      : worker_(worker) {}
-
-  ~SharedWorkerConnectListener() override {
-    // We have lost our connection to the worker. If this happens before
-    // Connected() is called, then it suggests that the document is gone or
-    // going away.
-  }
-
-  // mojom::blink::SharedWorkerClient overrides.
-  void OnCreated(
-      mojom::SharedWorkerCreationContextType creation_context_type) override {
-    worker_->SetIsBeingConnected(true);
-
-    // No nested workers (for now) - connect() can only be called from a
-    // document context.
-    DCHECK(worker_->GetExecutionContext()->IsDocument());
-    DCHECK_EQ(creation_context_type,
-              ToCreationContextType(
-                  worker_->GetExecutionContext()->IsSecureContext()));
-  }
-
-  void OnConnected(const Vector<mojom::WebFeature>& features_used) override {
-    worker_->SetIsBeingConnected(false);
-    for (auto feature : features_used)
-      OnFeatureUsed(feature);
-  }
-
-  void OnScriptLoadFailed() override {
-    worker_->DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
-    worker_->SetIsBeingConnected(false);
-  }
-
-  void OnFeatureUsed(mojom::WebFeature feature) override {
-    UseCounter::Count(worker_->GetExecutionContext(), feature);
-  }
-
-  Persistent<SharedWorker> worker_;
-};
 
 const char SharedWorkerRepositoryClient::kSupplementName[] =
     "SharedWorkerRepositoryClient";
@@ -158,7 +102,9 @@ void SharedWorkerRepositoryClient::Connect(
 
   connector_->Connect(
       std::move(info), std::move(client_ptr),
-      ToCreationContextType(worker->GetExecutionContext()->IsSecureContext()),
+      worker->GetExecutionContext()->IsSecureContext()
+          ? mojom::SharedWorkerCreationContextType::kSecure
+          : mojom::SharedWorkerCreationContextType::kNonsecure,
       port.ReleaseHandle(),
       mojom::blink::BlobURLTokenPtr(mojom::blink::BlobURLTokenPtrInfo(
           blob_url_token.PassInterface().PassHandle(),
