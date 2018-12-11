@@ -107,6 +107,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
                                GL_INNOCENT_CONTEXT_RESET_ARB);
     }
 
+    sii_ = provider->SharedImageInterface();
+
     return LayerTreeTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate, std::move(provider),
         std::move(worker_context_provider));
@@ -162,6 +164,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   // CreateDisplayLayerTreeFrameSink can both use it on different threads.
   base::Lock gl_lock_;
   viz::TestGLES2Interface* gl_ = nullptr;
+  viz::TestSharedImageInterface* sii_ = nullptr;
 
   int times_to_fail_create_;
   int times_to_lose_during_commit_;
@@ -1494,7 +1497,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
   void DidSetVisibleOnImplTree(LayerTreeHostImpl* impl, bool visible) override {
     if (!visible) {
       // All resources should have been evicted.
-      ASSERT_EQ(0u, gl_->NumTextures());
+      ASSERT_EQ(0u, sii_->shared_image_count());
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource3_->id()));
@@ -1514,7 +1517,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
       case 1:
         // The first two resources should have been created on LTHI after the
         // commit.
-        ASSERT_EQ(2u, gl_->NumTextures());
+        ASSERT_EQ(2u, sii_->shared_image_count());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
@@ -1522,7 +1525,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         EXPECT_TRUE(impl->CanDraw());
         // Evict all UI resources. This will trigger a commit.
         impl->EvictAllUIResources();
-        ASSERT_EQ(0u, gl_->NumTextures());
+        ASSERT_EQ(0u, sii_->shared_image_count());
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource2_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
@@ -1531,7 +1534,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         break;
       case 2:
         // The first two resources should have been recreated.
-        ASSERT_EQ(2u, gl_->NumTextures());
+        ASSERT_EQ(2u, sii_->shared_image_count());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(2, ui_resource_->resource_create_count);
         EXPECT_EQ(1, ui_resource_->lost_resource_count);
@@ -1543,7 +1546,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
       case 3:
         // The first resource should have been recreated after visibility was
         // restored.
-        ASSERT_EQ(2u, gl_->NumTextures());
+        ASSERT_EQ(2u, sii_->shared_image_count());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(3, ui_resource_->resource_create_count);
         EXPECT_EQ(2, ui_resource_->lost_resource_count);
@@ -1585,7 +1588,7 @@ class UIResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
       case 0:
         // The UIResource has been created and a gpu resource made for it.
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        EXPECT_EQ(1u, gl_->NumTextures());
+        EXPECT_EQ(1u, sii_->shared_image_count());
         // Lose the LayerTreeFrameSink connection. The UI resource should
         // be replaced and the old texture should be destroyed.
         impl->DidLoseLayerTreeFrameSink();
@@ -1594,7 +1597,7 @@ class UIResourceFreedIfLostWhileExported : public LayerTreeHostContextTest {
         // The UIResource has been recreated, the old texture is not kept
         // around.
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
-        EXPECT_EQ(1u, gl_->NumTextures());
+        EXPECT_EQ(1u, sii_->shared_image_count());
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(

@@ -275,6 +275,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
                                     const gfx::ColorSpace& color_space,
                                     uint32_t usage,
                                     const SyncToken& sync_token);
+  void CreateSharedImageWithDataOnGpuThread(const Mailbox& mailbox,
+                                            viz::ResourceFormat format,
+                                            const gfx::Size& size,
+                                            const gfx::ColorSpace& color_space,
+                                            uint32_t usage,
+                                            const SyncToken& sync_token,
+                                            std::vector<uint8_t> pixel_data);
   void CreateGMBSharedImageOnGpuThread(const Mailbox& mailbox,
                                        gfx::GpuMemoryBufferHandle handle,
                                        gfx::BufferFormat format,

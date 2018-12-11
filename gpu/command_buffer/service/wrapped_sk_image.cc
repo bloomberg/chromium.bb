@@ -237,6 +237,17 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
 
 std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
     const Mailbox& mailbox,
+    viz::ResourceFormat format,
+    const gfx::Size& size,
+    const gfx::ColorSpace& color_space,
+    uint32_t usage,
+    base::span<const uint8_t> pixel_data) {
+  NOTREACHED();
+  return nullptr;
+}
+
+std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
+    const Mailbox& mailbox,
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,

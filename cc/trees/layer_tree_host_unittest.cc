@@ -4300,32 +4300,32 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    auto* context = static_cast<viz::TestContextProvider*>(
-                        impl->layer_tree_frame_sink()->context_provider())
-                        ->TestContextGL();
+    auto* sii = static_cast<viz::TestContextProvider*>(
+                    impl->layer_tree_frame_sink()->context_provider())
+                    ->SharedImageInterface();
 
     int frame = impl->active_tree()->source_frame_number();
     switch (frame) {
       case 0:
-        ASSERT_EQ(0u, context->NumTextures());
+        ASSERT_EQ(0u, sii->shared_image_count());
         break;
       case 1:
         // Created two textures.
-        ASSERT_EQ(2u, context->NumTextures());
+        ASSERT_EQ(2u, sii->shared_image_count());
         break;
       case 2:
         // One texture left after one deletion.
-        ASSERT_EQ(1u, context->NumTextures());
+        ASSERT_EQ(1u, sii->shared_image_count());
         break;
       case 3:
         // Resource manager state should not change when delete is called on an
         // invalid id.
-        ASSERT_EQ(1u, context->NumTextures());
+        ASSERT_EQ(1u, sii->shared_image_count());
         break;
       case 4:
         // Creation after deletion: two more creates should total up to
         // three textures.
-        ASSERT_EQ(3u, context->NumTextures());
+        ASSERT_EQ(3u, sii->shared_image_count());
         break;
     }
   }

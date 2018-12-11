@@ -97,11 +97,14 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/traced_value.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
+#include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -3251,8 +3254,12 @@ void LayerTreeHostImpl::CleanUpTileManagerResources() {
   // contexts. Flushing now helps ensure these are cleaned up quickly
   // preventing driver cache growth. See crbug.com/643251
   if (layer_tree_frame_sink_) {
-    if (auto* compositor_context = layer_tree_frame_sink_->context_provider())
-      compositor_context->ContextGL()->ShallowFlushCHROMIUM();
+    if (auto* compositor_context = layer_tree_frame_sink_->context_provider()) {
+      // TODO(ericrk): Remove ordering barrier once |compositor_context| no
+      // longer uses GL.
+      compositor_context->ContextGL()->OrderingBarrierCHROMIUM();
+      compositor_context->ContextSupport()->FlushPendingWork();
+    }
     if (auto* worker_context =
             layer_tree_frame_sink_->worker_context_provider()) {
       viz::RasterContextProvider::ScopedRasterContextLock hold(worker_context);
@@ -3277,6 +3284,8 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   ClearUIResources();
 
   if (layer_tree_frame_sink_->context_provider()) {
+    // TODO(ericrk): Remove this once all uses of ContextGL from LTFS are
+    // removed.
     auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
     gl->Finish();
   }
@@ -5187,9 +5196,13 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     upload_size = gfx::ScaleToCeiledSize(source_size, scale, scale);
   }
 
-  // For gpu compositing, a texture will be allocated and the UIResource
-  // will be uploaded into it.
-  viz::TextureAllocation texture_alloc;
+  // For gpu compositing, a SharedImage mailbox will be allocated and the
+  // UIResource will be uploaded into it.
+  gpu::Mailbox mailbox;
+  uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY;
+  // For gpu compositing, we also calculate the GL texture target.
+  // TODO(ericrk): Remove references to GL from this code.
+  GLenum texture_target = GL_TEXTURE_2D;
   // For software compositing, shared memory will be allocated and the
   // UIResource will be copied into it.
   std::unique_ptr<base::SharedMemory> shared_memory;
@@ -5198,10 +5211,16 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   if (layer_tree_frame_sink_->context_provider()) {
     viz::ContextProvider* context_provider =
         layer_tree_frame_sink_->context_provider();
-    texture_alloc = viz::TextureAllocation::MakeTextureId(
-        context_provider->ContextGL(), context_provider->ContextCapabilities(),
-        format, settings_.resource_settings.use_gpu_memory_buffer_resources,
-        /*for_framebuffer_attachment=*/false);
+    const auto& caps = context_provider->ContextCapabilities();
+    bool overlay_candidate =
+        settings_.resource_settings.use_gpu_memory_buffer_resources &&
+        caps.texture_storage_image &&
+        viz::IsGpuMemoryBufferFormatSupported(format);
+    if (overlay_candidate) {
+      shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
+      texture_target = gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
+                                                   BufferFormat(format), caps);
+    }
   } else {
     shared_memory =
         viz::bitmap_allocation::AllocateMappedBitmap(upload_size, format);
@@ -5212,10 +5231,15 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     // If not scaled, we can copy the pixels 1:1 from the source bitmap to our
     // destination backing of a texture or shared bitmap.
     if (layer_tree_frame_sink_->context_provider()) {
-      viz::TextureAllocation::UploadStorage(
-          layer_tree_frame_sink_->context_provider()->ContextGL(),
-          layer_tree_frame_sink_->context_provider()->ContextCapabilities(),
-          format, upload_size, texture_alloc, color_space, bitmap.GetPixels());
+      viz::ContextProvider* context_provider =
+          layer_tree_frame_sink_->context_provider();
+      auto* sii = context_provider->SharedImageInterface();
+      size_t size_to_send =
+          viz::ResourceSizes::CheckedSizeInBytes<unsigned int>(upload_size,
+                                                               format);
+      mailbox = sii->CreateSharedImage(
+          format, upload_size, color_space, shared_image_usage,
+          base::span<const uint8_t>(bitmap.GetPixels(), size_to_send));
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
       SkImageInfo src_info =
@@ -5274,10 +5298,14 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     if (layer_tree_frame_sink_->context_provider()) {
       SkPixmap pixmap;
       scaled_surface->peekPixels(&pixmap);
-      viz::TextureAllocation::UploadStorage(
-          layer_tree_frame_sink_->context_provider()->ContextGL(),
-          layer_tree_frame_sink_->context_provider()->ContextCapabilities(),
-          format, upload_size, texture_alloc, color_space, pixmap.addr());
+      viz::ContextProvider* context_provider =
+          layer_tree_frame_sink_->context_provider();
+      auto* sii = context_provider->SharedImageInterface();
+      mailbox = sii->CreateSharedImage(
+          format, upload_size, color_space, shared_image_usage,
+          base::span<const uint8_t>(
+              reinterpret_cast<const uint8_t*>(pixmap.addr()),
+              pixmap.computeByteSize()));
     }
   }
 
@@ -5290,16 +5318,12 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   // allocated in this method above.
   viz::TransferableResource transferable;
   if (layer_tree_frame_sink_->context_provider()) {
-    gpu::gles2::GLES2Interface* gl =
-        layer_tree_frame_sink_->context_provider()->ContextGL();
-    gpu::Mailbox mailbox;
-    gl->ProduceTextureDirectCHROMIUM(texture_alloc.texture_id, mailbox.name);
-    gpu::SyncToken sync_token =
-        viz::ClientResourceProvider::GenerateSyncTokenHelper(gl);
+    gpu::SyncToken sync_token = layer_tree_frame_sink_->context_provider()
+                                    ->SharedImageInterface()
+                                    ->GenUnverifiedSyncToken();
 
     transferable = viz::TransferableResource::MakeGLOverlay(
-        mailbox, GL_LINEAR, texture_alloc.texture_target, sync_token,
-        upload_size, texture_alloc.overlay_candidate);
+        mailbox, GL_LINEAR, texture_target, sync_token, upload_size, false);
     transferable.format = format;
   } else {
     mojo::ScopedSharedBufferHandle memory_handle =
@@ -5325,7 +5349,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   data.format = format;
   data.shared_bitmap_id = shared_bitmap_id;
   data.shared_memory = std::move(shared_memory);
-  data.texture_id = texture_alloc.texture_id;
+  data.mailbox = mailbox;
   data.resource_id_for_export = id;
   ui_resource_map_[uid] = std::move(data);
 
@@ -5352,15 +5376,13 @@ void LayerTreeHostImpl::DeleteUIResourceBacking(
     UIResourceData data,
     const gpu::SyncToken& sync_token) {
   // Resources are either software or gpu backed, not both.
-  DCHECK(!(data.shared_memory && data.texture_id));
+  DCHECK(!(data.shared_memory && !data.mailbox.IsZero()));
   if (data.shared_memory)
     layer_tree_frame_sink_->DidDeleteSharedBitmap(data.shared_bitmap_id);
-  if (data.texture_id) {
-    gpu::gles2::GLES2Interface* gl =
-        layer_tree_frame_sink_->context_provider()->ContextGL();
-    if (sync_token.HasData())
-      gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
-    gl->DeleteTextures(1, &data.texture_id);
+  if (!data.mailbox.IsZero()) {
+    auto* sii =
+        layer_tree_frame_sink_->context_provider()->SharedImageInterface();
+    sii->DestroySharedImage(sync_token, data.mailbox);
   }
   // |data| goes out of scope and deletes anything it owned.
 }

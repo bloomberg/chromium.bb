@@ -211,7 +211,7 @@ class CC_EXPORT LayerTreeHostImpl
     viz::SharedBitmapId shared_bitmap_id;
     std::unique_ptr<base::SharedMemory> shared_memory;
     // Backing for gpu compositing.
-    uint32_t texture_id;
+    gpu::Mailbox mailbox;
 
     // The name with which to refer to the resource in frames submitted to the
     // display compositor.

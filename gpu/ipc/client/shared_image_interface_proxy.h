@@ -5,9 +5,11 @@
 #ifndef GPU_IPC_CLIENT_SHARED_IMAGE_INTERFACE_PROXY_H_
 #define GPU_IPC_CLIENT_SHARED_IMAGE_INTERFACE_PROXY_H_
 
+#include "base/memory/read_only_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
+#include "gpu/command_buffer/common/buffer.h"
 
 namespace gpu {
 class GpuChannelHost;
@@ -22,6 +24,11 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
                             const gfx::Size& size,
                             const gfx::ColorSpace& color_space,
                             uint32_t usage) override;
+  Mailbox CreateSharedImage(viz::ResourceFormat format,
+                            const gfx::Size& size,
+                            const gfx::ColorSpace& color_space,
+                            uint32_t usage,
+                            base::span<const uint8_t> pixel_data) override;
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
                             const gfx::ColorSpace& color_space,
@@ -34,11 +41,20 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
   SyncToken GenUnverifiedSyncToken() override;
 
  private:
+  bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,
+                          size_t* shm_offset,
+                          bool* done_with_shm) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
   GpuChannelHost* const host_;
   const int32_t route_id_;
   base::Lock lock_;
   uint32_t next_release_id_ GUARDED_BY(lock_) = 0;
   uint32_t last_flush_id_ GUARDED_BY(lock_) = 0;
+
+  // A buffer used to upload initial data during SharedImage creation.
+  base::MappedReadOnlyRegion upload_buffer_ GUARDED_BY(lock_);
+  // The offset into |upload_buffer_| at which data is no longer used.
+  size_t upload_buffer_offset_ GUARDED_BY(lock_) = 0;
 };
 
 }  // namespace gpu
