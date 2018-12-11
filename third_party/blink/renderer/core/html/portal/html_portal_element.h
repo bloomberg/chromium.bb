@@ -21,9 +21,7 @@ class ScriptState;
 // element can be used to embed another top-level browsing context, which can be
 // activated using script. The portal element is still under development and not
 // part of the HTML standard. It can be enabled by passing
-// --enable-features=Portals. See
-// https://github.com/KenjiBaheux/portals/blob/master/explainer.md for more
-// details.
+// --enable-features=Portals. See also https://github.com/WICG/portals.
 class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   DEFINE_WRAPPERTYPEINFO();
 
