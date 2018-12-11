@@ -1653,16 +1653,22 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
     this.preloadThumbnailImage_(entries[0]);
   }
 
-  this.metadataModel_.get(entries, ['externalFileUrl']).then(
-      function(metadataList) {
+  this.metadataModel_
+      .get(entries, ['alternateUrl', 'externalFileUrl', 'hosted'])
+      .then(function(metadataList) {
         // |Copy| is the only menu item affected by allDriveFilesAvailable_.
         // It could be open right now, update its UI.
         this.copyCommand_.disabled =
             !this.canCutOrCopy_(false /* not move operation */);
         for (var i = 0; i < entries.length; i++) {
           if (entries[i].isFile) {
-            asyncData[entries[i].toURL()].externalFileUrl =
-                metadataList[i].externalFileUrl;
+            if (metadataList[i].hosted) {
+              asyncData[entries[i].toURL()].externalFileUrl =
+                  metadataList[i].alternateUrl;
+            } else {
+              asyncData[entries[i].toURL()].externalFileUrl =
+                  metadataList[i].externalFileUrl;
+            }
           }
         }
       }.bind(this));
