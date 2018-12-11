@@ -82,9 +82,18 @@ void SavePasswordProgressLogger::LogPasswordForm(
   }
   log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
                 ScrubElementID(form.new_password_element));
+  if (form.has_renderer_ids) {
+    log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT_RENDERER_ID),
+                  UintToString(form.new_password_element_renderer_id));
+  }
   if (!form.confirmation_password_element.empty()) {
     log.SetString(GetStringFromID(STRING_CONFIRMATION_PASSWORD_ELEMENT),
                   ScrubElementID(form.confirmation_password_element));
+    if (form.has_renderer_ids) {
+      log.SetString(
+          GetStringFromID(STRING_CONFIRMATION_PASSWORD_ELEMENT_RENDERER_ID),
+          UintToString(form.confirmation_password_element_renderer_id));
+    }
   }
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
                  form.type == PasswordForm::TYPE_GENERATED);
@@ -208,8 +217,13 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Password element renderer id";
     case SavePasswordProgressLogger::STRING_NEW_PASSWORD_ELEMENT:
       return "New password element";
+    case SavePasswordProgressLogger::STRING_NEW_PASSWORD_ELEMENT_RENDERER_ID:
+      return "New password element renderer id";
     case SavePasswordProgressLogger::STRING_CONFIRMATION_PASSWORD_ELEMENT:
       return "Confirmation password element";
+    case SavePasswordProgressLogger::
+        STRING_CONFIRMATION_PASSWORD_ELEMENT_RENDERER_ID:
+      return "Confirmation password element renderer id";
     case SavePasswordProgressLogger::STRING_PASSWORD_GENERATED:
       return "Password generated";
     case SavePasswordProgressLogger::STRING_TIMES_USED:
