@@ -19,7 +19,7 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
-#include "content/renderer/gpu/layer_tree_view.h"
+#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/render_frame_proxy.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_DELEGATE_H_
-#define CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_DELEGATE_H_
+#ifndef CONTENT_RENDERER_COMPOSITOR_LAYER_TREE_VIEW_DELEGATE_H_
+#define CONTENT_RENDERER_COMPOSITOR_LAYER_TREE_VIEW_DELEGATE_H_
 
 #include <memory>
 #include <vector>
@@ -88,4 +88,4 @@ class LayerTreeViewDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_GPU_LAYER_TREE_VIEW_DELEGATE_H_
+#endif  // CONTENT_RENDERER_COMPOSITOR_LAYER_TREE_VIEW_DELEGATE_H_
