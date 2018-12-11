@@ -3113,11 +3113,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "tls13-variant",
-    "owners": [ "davidben", "svaldez" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "top-chrome-touch-ui",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

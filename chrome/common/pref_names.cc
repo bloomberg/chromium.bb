@@ -1697,11 +1697,6 @@ const char kSSLVersionMin[] = "ssl.version_min";
 // are "tls1.2", "tls1.3"
 const char kSSLVersionMax[] = "ssl.version_max";
 
-// String specifying the TLS 1.3 variant to negotiate when negotiating TLS 1.3.
-// Supported values are "disabled", which disables TLS 1.3, "draft23", and
-// "final".
-const char kTLS13Variant[] = "ssl.tls13_variant";
-
 // String specifying the TLS ciphersuites to disable. Ciphersuites are
 // specified as a comma-separated list of 16-bit hexadecimal values, with
 // the values being the ciphersuites assigned by the IANA registry (e.g.

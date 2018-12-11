@@ -29,19 +29,11 @@ enum {
   SSL_PROTOCOL_VERSION_TLS1_3 = 0x0304,
 };
 
-enum TLS13Variant {
-  kTLS13VariantDraft23,
-  kTLS13VariantFinal,
-};
-
 // Default minimum protocol version.
 NET_EXPORT extern const uint16_t kDefaultSSLVersionMin;
 
 // Default maximum protocol version.
 NET_EXPORT extern const uint16_t kDefaultSSLVersionMax;
-
-// Default TLS 1.3 variant.
-NET_EXPORT extern const TLS13Variant kDefaultTLS13Variant;
 
 // A collection of SSL-related configuration settings.
 struct NET_EXPORT SSLConfig {
@@ -66,10 +58,6 @@ struct NET_EXPORT SSLConfig {
   // means no protocol versions are enabled.
   uint16_t version_min;
   uint16_t version_max;
-
-  // The TLS 1.3 variant that is enabled. This only takes affect if TLS 1.3 is
-  // also enabled via version_min and version_max.
-  TLS13Variant tls13_variant;
 
   // Whether early data is enabled on this connection. Note that early data has
   // weaker security properties than normal data and changes the
