@@ -750,6 +750,7 @@ void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
 
 void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
     DeviceSettingsService::OwnershipStatus status) {
+  VLOG(1) << "OnEnrollmentOwnershipCheckCompleted status=" << status;
   if (status == DeviceSettingsService::OWNERSHIP_NONE) {
     ShowEnrollmentScreen();
   } else if (status == DeviceSettingsService::OWNERSHIP_TAKEN) {
@@ -760,6 +761,7 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
             &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
             weak_factory_.GetWeakPtr(), status));
     if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+      VLOG(1) << "Showing enrollment because device is PERMANENTLY_UNTRUSTED";
       ShowEnrollmentScreen();
     }
   } else {
