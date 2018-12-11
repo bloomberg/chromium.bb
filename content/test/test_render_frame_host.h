@@ -106,14 +106,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       service_manager::mojom::InterfaceProviderRequest request,
       bool was_within_same_document);
 
-  // Simulates a navigation to |url| failing with the error code |error_code|.
-  // DEPRECATED: use NavigationSimulator instead.
-  void SimulateNavigationError(const GURL& url, int error_code);
-
-  // Simulates the commit of an error page following a navigation failure.
-  // DEPRECATED: use NavigationSimulator instead.
-  void SimulateNavigationErrorPageCommit();
-
   // With the current navigation logic this method is a no-op.
   // Simulates a renderer-initiated navigation to |url| starting in the
   // RenderFrameHost.

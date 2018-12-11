@@ -456,13 +456,14 @@ TEST_F(NavigationControllerTestWithBrowserSideNavigation,
   NavigateAndCommit(initial_url);
 
   // Set the pending entry as url_1 and create the NavigationHandle.
-  controller.LoadURL(url_1, Referrer(), ui::PAGE_TRANSITION_TYPED,
-                     std::string());
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(url_1, contents());
+  navigation->Start();
   EXPECT_EQ(url_1, controller.GetVisibleEntry()->GetURL());
 
   // The navigation fails and needs to show an error page. This resets the
   // pending entry.
-  main_test_rfh()->SimulateNavigationError(url_1, net::ERR_TIMED_OUT);
+  navigation->Fail(net::ERR_TIMED_OUT);
   EXPECT_EQ(initial_url, controller.GetVisibleEntry()->GetURL());
 
   // A navigation to url_2 starts, creating a pending navigation entry.

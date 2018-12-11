@@ -456,9 +456,8 @@ TEST_F(RenderProcessHostUnitTest, DISABLED_ReuseNavigationProcess) {
   // RenderProcessHost with the REUSE_PENDING_OR_COMMITTED_SITE policy should
   // return the process of the speculative RenderFrameHost.
   navigation->Commit();
-  contents()->GetController().LoadURL(kUrl2, Referrer(),
-                                      ui::PAGE_TRANSITION_TYPED, std::string());
-  main_test_rfh()->SendBeforeUnloadACK(true);
+  navigation = NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
+  navigation->Start();
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl2);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
@@ -470,8 +469,7 @@ TEST_F(RenderProcessHostUnitTest, DISABLED_ReuseNavigationProcess) {
   // no longer return the process of the speculative RenderFrameHost.
   int speculative_process_host_id =
       contents()->GetPendingMainFrame()->GetProcess()->GetID();
-  contents()->GetPendingMainFrame()->SimulateNavigationError(kUrl2,
-                                                             net::ERR_ABORTED);
+  navigation->Fail(net::ERR_ABORTED);
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl2);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
