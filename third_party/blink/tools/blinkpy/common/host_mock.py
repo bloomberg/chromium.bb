@@ -93,7 +93,7 @@ class MockHost(MockSystemHost):
                 'is_try_builder': True,
             },
             'android_blink_rel': {
-                'bucket': 'master.tryserver.chromium.android',
+                'bucket': 'luci.chromium.try',
                 'port_name': 'android-kitkat',
                 'specifiers': ['KitKat', 'Release'],
                 'is_try_builder': True,
