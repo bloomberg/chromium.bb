@@ -55,7 +55,6 @@ jumbo_component("wtf") {
     "ascii_ctype.h",
     "assertions.cc",
     "assertions.h",
-    "atomics.h",
     "bit_vector.cc",
     "bit_vector.h",
     "bloom_filter.h",
