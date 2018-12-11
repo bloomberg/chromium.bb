@@ -143,7 +143,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ContentEditableFocusFeedback',
  * Test feedback when an item in an dialog receives focus and then focus
  *     leaves the dialog.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'DialogFeedback', function() {
+// Flaky on Chromium OS: crbug.com/622387.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_DialogFeedback', function() {
   this.loadHtml('<div>' +
       '<button id="show">Show</button>' +
       '<div aria-label="compose message" role="dialog">' +
@@ -250,7 +251,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'CloseDialogTabRecovery', function() {
 /**
  * Test feedback when a list box with an active descendant receives focus.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'ListBoxFeedback', function() {
+// Flaky on Chromium OS: crbug.com/622387.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ListBoxFeedback', function() {
   this.loadHtml('<div>' +
       '<p id="before">My listbox</p>' +
       '<div id="listbox" role="listbox" tabindex="0"' +
