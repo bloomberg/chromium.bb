@@ -76,6 +76,7 @@
     falco-paladin
     fizz-accelerator-paladin
     fizz-paladin
+    flapjack-paladin
     gale-paladin
     glados-paladin
     gonzo-paladin
@@ -1657,15 +1658,23 @@
   fizz-tot-chrome-pfq-informational-tryjob
   fizz-tot-chromium-pfq-informational-tryjob
   fizz-unittest-stress
+  flapjack-chrome-pfq-tryjob
   flapjack-chromium-pfq-tryjob
   flapjack-compile-only-pre-cq
+  flapjack-factory-tryjob
+  flapjack-firmware-tryjob
   flapjack-full-tryjob
   flapjack-llvm-next-toolchain-tryjob
   flapjack-llvm-toolchain-tryjob
   flapjack-no-vmtest-pre-cq
   flapjack-paladin-tryjob
+  flapjack-payloads-tryjob
   flapjack-pre-cq
+  flapjack-release-afdo-generate-tryjob
+  flapjack-release-afdo-tryjob
+  flapjack-release-afdo-use-tryjob
   flapjack-release-tryjob
+  flapjack-tot-chrome-pfq-informational-tryjob
   flapjack-tot-chromium-pfq-informational-tryjob
   flapjack-unittest-stress
   gale-compile-only-pre-cq
@@ -2375,6 +2384,7 @@
     falco-paladin
     fizz-accelerator-paladin
     fizz-paladin
+    flapjack-paladin
     gale-paladin
     glados-paladin
     gonzo-paladin

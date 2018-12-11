@@ -34,6 +34,7 @@ arm_internal_release_boards = frozenset([
     'daisy_skate',
     'daisy_spring',
     'elm',
+    'flapjack',
     'gale',
     'gonzo',
     'gru',
