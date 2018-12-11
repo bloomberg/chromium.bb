@@ -207,8 +207,13 @@ def BuildFileList(override_dir):
       result.append((combined, to))
 
   # Copy the x86 ucrt DLLs to all directories with x86 binaries that are
-  # added to the path by SetEnv.cmd, and to sys32.
-  ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
+  # added to the path by SetEnv.cmd, and to sys32. Starting with the 17763
+  # SDK the ucrt files are in WIN_VERSION\ucrt instead of just ucrt.
+  ucrt_dir = os.path.join(sdk_path, 'redist', WIN_VERSION, r'ucrt\dlls\x86')
+  if not os.path.exists(ucrt_dir):
+    ucrt_dir = os.path.join(sdk_path, r'redist\ucrt\dlls\x86')
+  ucrt_paths = glob.glob(ucrt_dir + r'\*')
+  assert(len(ucrt_paths) > 0)
   for ucrt_path in ucrt_paths:
     ucrt_file = os.path.split(ucrt_path)[1]
     for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
@@ -216,7 +221,11 @@ def BuildFileList(override_dir):
 
   # Copy the x64 ucrt DLLs to all directories with x64 binaries that are
   # added to the path by SetEnv.cmd, and to sys64.
-  ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
+  ucrt_dir = os.path.join(sdk_path, 'redist', WIN_VERSION, r'ucrt\dlls\x64')
+  if not os.path.exists(ucrt_dir):
+    ucrt_dir = os.path.join(sdk_path, r'redist\ucrt\dlls\x64')
+  ucrt_paths = glob.glob(ucrt_dir + r'\*')
+  assert(len(ucrt_paths) > 0)
   for ucrt_path in ucrt_paths:
     ucrt_file = os.path.split(ucrt_path)[1]
     for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
