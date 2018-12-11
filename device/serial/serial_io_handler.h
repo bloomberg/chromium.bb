@@ -84,7 +84,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
   // Reads current control signals (DCD, CTS, etc.) into an existing
   // DeviceControlSignals structure. Returns |true| iff the signals were
   // successfully read.
-  virtual mojom::SerialDeviceControlSignalsPtr GetControlSignals() const = 0;
+  virtual mojom::SerialPortControlSignalsPtr GetControlSignals() const = 0;
 
   // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
   // the signals were successfully set. Unininitialized flags in the

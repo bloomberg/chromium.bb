@@ -48,7 +48,7 @@ class ViscaWebcam : public Webcam {
 
   void OpenOnIOThread(const std::string& path,
                       const std::string& extension_id,
-                      device::mojom::SerialIoHandlerPtrInfo io_handler_info,
+                      device::mojom::SerialPortPtrInfo port_ptr_info,
                       const OpenCompleteCallback& open_callback);
 
   // Callback function that will be called after the serial connection has been

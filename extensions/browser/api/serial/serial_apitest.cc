@@ -50,31 +50,30 @@ using testing::Return;
 namespace extensions {
 namespace {
 
-class FakeSerialDeviceEnumerator
-    : public device::mojom::SerialDeviceEnumerator {
+class FakeSerialPortManager : public device::mojom::SerialPortManager {
  public:
-  FakeSerialDeviceEnumerator() = default;
-  ~FakeSerialDeviceEnumerator() override = default;
+  FakeSerialPortManager() = default;
+  ~FakeSerialPortManager() override = default;
 
  private:
-  // device::mojom::SerialDeviceEnumerator methods:
+  // device::mojom::SerialPortManager methods:
   void GetDevices(GetDevicesCallback callback) override {
-    std::vector<device::mojom::SerialDeviceInfoPtr> devices;
-    auto device0 = device::mojom::SerialDeviceInfo::New();
+    std::vector<device::mojom::SerialPortInfoPtr> devices;
+    auto device0 = device::mojom::SerialPortInfo::New();
     device0->path = "/dev/fakeserialmojo";
-    auto device1 = device::mojom::SerialDeviceInfo::New();
+    auto device1 = device::mojom::SerialPortInfo::New();
     device1->path = "\\\\COM800\\";
     devices.push_back(std::move(device0));
     devices.push_back(std::move(device1));
     std::move(callback).Run(std::move(devices));
   }
 
-  DISALLOW_COPY_AND_ASSIGN(FakeSerialDeviceEnumerator);
+  DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
 };
 
-class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
+class FakeSerialPort : public device::mojom::SerialPort {
  public:
-  FakeSerialIoHandler() {
+  FakeSerialPort() {
     options_.bitrate = 9600;
     options_.data_bits = device::mojom::SerialDataBits::EIGHT;
     options_.parity_bit = device::mojom::SerialParityBit::NO_PARITY;
@@ -82,10 +81,10 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
     options_.cts_flow_control = false;
     options_.has_cts_flow_control = true;
   }
-  ~FakeSerialIoHandler() override = default;
+  ~FakeSerialPort() override = default;
 
  private:
-  // device::mojom::SerialIoHandler methods:
+  // device::mojom::SerialPort methods:
   void Open(const std::string& port,
             device::mojom::SerialConnectionOptionsPtr options,
             OpenCallback callback) override {
@@ -116,7 +115,7 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   }
   void Flush(FlushCallback callback) override { std::move(callback).Run(true); }
   void GetControlSignals(GetControlSignalsCallback callback) override {
-    auto signals = device::mojom::SerialDeviceControlSignals::New();
+    auto signals = device::mojom::SerialPortControlSignals::New();
     signals->dcd = true;
     signals->cts = true;
     signals->ri = true;
@@ -184,10 +183,10 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   // Currently applied connection options.
   device::mojom::SerialConnectionOptions options_;
   std::vector<uint8_t> buffer_;
-  FakeSerialIoHandler::ReadCallback pending_read_callback_;
+  FakeSerialPort::ReadCallback pending_read_callback_;
   uint32_t pending_read_bytes_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeSerialIoHandler);
+  DISALLOW_COPY_AND_ASSIGN(FakeSerialPort);
 };
 
 class SerialApiTest : public ExtensionApiTest {
@@ -196,23 +195,23 @@ class SerialApiTest : public ExtensionApiTest {
 #if SIMULATE_SERIAL_PORTS
     // Because Device Service also runs in this process(browser process), we can
     // set our binder to intercept requests for
-    // SerialDeviceEnumerator/SerialIoHandler interfaces to it.
+    // SerialPortManager/SerialPort interfaces to it.
     service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
         device::mojom::kServiceName,
-        base::BindRepeating(&SerialApiTest::BindSerialDeviceEnumerator,
+        base::BindRepeating(&SerialApiTest::BindSerialPortManager,
                             base::Unretained(this)));
     service_manager::ServiceBinding::OverrideInterfaceBinderForTesting(
         device::mojom::kServiceName,
-        base::BindRepeating(&SerialApiTest::BindSerialIoHandler));
+        base::BindRepeating(&SerialApiTest::BindSerialPort));
 #endif
   }
 
   ~SerialApiTest() override {
 #if SIMULATE_SERIAL_PORTS
     service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::SerialDeviceEnumerator>(device::mojom::kServiceName);
+        device::mojom::SerialPortManager>(device::mojom::kServiceName);
     service_manager::ServiceBinding::ClearInterfaceBinderOverrideForTesting<
-        device::mojom::SerialIoHandler>(device::mojom::kServiceName);
+        device::mojom::SerialPort>(device::mojom::kServiceName);
 #endif
   }
 
@@ -229,18 +228,16 @@ class SerialApiTest : public ExtensionApiTest {
   void FailEnumeratorRequest() { fail_enumerator_request_ = true; }
 
  protected:
-  void BindSerialDeviceEnumerator(
-      device::mojom::SerialDeviceEnumeratorRequest request) {
+  void BindSerialPortManager(device::mojom::SerialPortManagerRequest request) {
     if (fail_enumerator_request_)
       return;
 
-    mojo::MakeStrongBinding(std::make_unique<FakeSerialDeviceEnumerator>(),
+    mojo::MakeStrongBinding(std::make_unique<FakeSerialPortManager>(),
                             std::move(request));
   }
 
-  static void BindSerialIoHandler(
-      device::mojom::SerialIoHandlerRequest request) {
-    mojo::MakeStrongBinding(std::make_unique<FakeSerialIoHandler>(),
+  static void BindSerialPort(device::mojom::SerialPortRequest request) {
+    mojo::MakeStrongBinding(std::make_unique<FakeSerialPort>(),
                             std::move(request));
   }
 

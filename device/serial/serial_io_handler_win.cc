@@ -459,15 +459,15 @@ bool SerialIoHandlerWin::Flush() const {
   return true;
 }
 
-mojom::SerialDeviceControlSignalsPtr SerialIoHandlerWin::GetControlSignals()
+mojom::SerialPortControlSignalsPtr SerialIoHandlerWin::GetControlSignals()
     const {
   DWORD status;
   if (!GetCommModemStatus(file().GetPlatformFile(), &status)) {
     VPLOG(1) << "Failed to get port control signals";
-    return mojom::SerialDeviceControlSignalsPtr();
+    return mojom::SerialPortControlSignalsPtr();
   }
 
-  auto signals = mojom::SerialDeviceControlSignals::New();
+  auto signals = mojom::SerialPortControlSignals::New();
   signals->dcd = (status & MS_RLSD_ON) != 0;
   signals->cts = (status & MS_CTS_ON) != 0;
   signals->dsr = (status & MS_DSR_ON) != 0;

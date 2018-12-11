@@ -17,7 +17,7 @@ TEST(SerialDeviceEnumeratorTest, GetDevices) {
   // attempting to enumerate devices does not cause a crash.
   auto enumerator = SerialDeviceEnumerator::Create();
   ASSERT_TRUE(enumerator);
-  std::vector<mojom::SerialDeviceInfoPtr> devices = enumerator->GetDevices();
+  std::vector<mojom::SerialPortInfoPtr> devices = enumerator->GetDevices();
 }
 
 }  // namespace device

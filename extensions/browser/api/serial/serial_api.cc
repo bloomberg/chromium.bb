@@ -90,14 +90,14 @@ ExtensionFunction::ResponseAction SerialGetDevicesFunction::Run() {
                       mojo::MakeRequest(&enumerator_));
   enumerator_.set_connection_error_handler(
       base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this,
-                     std::vector<device::mojom::SerialDeviceInfoPtr>()));
+                     std::vector<device::mojom::SerialPortInfoPtr>()));
   enumerator_->GetDevices(
       base::BindOnce(&SerialGetDevicesFunction::OnGotDevices, this));
   return RespondLater();
 }
 
 void SerialGetDevicesFunction::OnGotDevices(
-    std::vector<device::mojom::SerialDeviceInfoPtr> devices) {
+    std::vector<device::mojom::SerialPortInfoPtr> devices) {
   std::unique_ptr<base::ListValue> results =
       serial::GetDevices::Results::Create(
           mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices));
@@ -556,8 +556,8 @@ namespace mojo {
 // static
 extensions::api::serial::DeviceInfo
 TypeConverter<extensions::api::serial::DeviceInfo,
-              device::mojom::SerialDeviceInfoPtr>::
-    Convert(const device::mojom::SerialDeviceInfoPtr& device) {
+              device::mojom::SerialPortInfoPtr>::
+    Convert(const device::mojom::SerialPortInfoPtr& device) {
   extensions::api::serial::DeviceInfo info;
   info.path = device->path;
   if (device->has_vendor_id)

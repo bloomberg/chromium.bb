@@ -22,8 +22,8 @@
         "device:power_monitor": [ "device.mojom.PowerMonitor" ],
         "device:screen_orientation": [ "device.mojom.ScreenOrientationListener" ],
         "device:serial": [
-          "device.mojom.SerialDeviceEnumerator",
-          "device.mojom.SerialIoHandler"
+          "device.mojom.SerialPortManager",
+          "device.mojom.SerialPort"
         ],
         "device:time_zone_monitor": [ "device.mojom.TimeZoneMonitor" ],
         "device:usb": [ "device.mojom.UsbDeviceManager" ],

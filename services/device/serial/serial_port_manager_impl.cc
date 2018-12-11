@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/device/serial/serial_device_enumerator_impl.h"
+#include "services/device/serial/serial_port_manager_impl.h"
 
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
@@ -12,18 +12,16 @@ namespace device {
 
 namespace {
 
-void CreateAndBindOnBlockableRunner(
-    mojom::SerialDeviceEnumeratorRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<SerialDeviceEnumeratorImpl>(),
+void CreateAndBindOnBlockableRunner(mojom::SerialPortManagerRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<SerialPortManagerImpl>(),
                           std::move(request));
 }
 
 }  // namespace
 
 // static
-void SerialDeviceEnumeratorImpl::Create(
-    mojom::SerialDeviceEnumeratorRequest request) {
-  // SerialDeviceEnumeratorImpl must live on a thread that is allowed to do
+void SerialPortManagerImpl::Create(mojom::SerialPortManagerRequest request) {
+  // SerialPortManagerImpl must live on a thread that is allowed to do
   // blocking IO.
   scoped_refptr<base::SequencedTaskRunner> blockable_sequence_runner =
       base::CreateSequencedTaskRunnerWithTraits(
@@ -33,12 +31,12 @@ void SerialDeviceEnumeratorImpl::Create(
       base::BindOnce(&CreateAndBindOnBlockableRunner, std::move(request)));
 }
 
-SerialDeviceEnumeratorImpl::SerialDeviceEnumeratorImpl()
+SerialPortManagerImpl::SerialPortManagerImpl()
     : enumerator_(device::SerialDeviceEnumerator::Create()) {}
 
-SerialDeviceEnumeratorImpl::~SerialDeviceEnumeratorImpl() = default;
+SerialPortManagerImpl::~SerialPortManagerImpl() = default;
 
-void SerialDeviceEnumeratorImpl::GetDevices(GetDevicesCallback callback) {
+void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
   DCHECK(enumerator_);
   std::move(callback).Run(enumerator_->GetDevices());
 }

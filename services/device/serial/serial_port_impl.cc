@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/device/serial/serial_io_handler_impl.h"
+#include "services/device/serial/serial_port_impl.h"
 
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -12,26 +12,26 @@
 namespace device {
 
 // static
-void SerialIoHandlerImpl::Create(
-    mojom::SerialIoHandlerRequest request,
+void SerialPortImpl::Create(
+    mojom::SerialPortRequest request,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  mojo::MakeStrongBinding(std::make_unique<SerialIoHandlerImpl>(ui_task_runner),
+  mojo::MakeStrongBinding(std::make_unique<SerialPortImpl>(ui_task_runner),
                           std::move(request));
 }
 
-SerialIoHandlerImpl::SerialIoHandlerImpl(
+SerialPortImpl::SerialPortImpl(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : io_handler_(device::SerialIoHandler::Create(ui_task_runner)) {}
 
-SerialIoHandlerImpl::~SerialIoHandlerImpl() = default;
+SerialPortImpl::~SerialPortImpl() = default;
 
-void SerialIoHandlerImpl::Open(const std::string& port,
-                               mojom::SerialConnectionOptionsPtr options,
-                               OpenCallback callback) {
+void SerialPortImpl::Open(const std::string& port,
+                          mojom::SerialConnectionOptionsPtr options,
+                          OpenCallback callback) {
   io_handler_->Open(port, *options, std::move(callback));
 }
 
-void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
+void SerialPortImpl::Read(uint32_t bytes, ReadCallback callback) {
   auto buffer = base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(bytes));
   io_handler_->Read(std::make_unique<ReceiveBuffer>(
       buffer, bytes,
@@ -46,8 +46,8 @@ void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
           std::move(callback), buffer)));
 }
 
-void SerialIoHandlerImpl::Write(const std::vector<uint8_t>& data,
-                                WriteCallback callback) {
+void SerialPortImpl::Write(const std::vector<uint8_t>& data,
+                           WriteCallback callback) {
   io_handler_->Write(std::make_unique<SendBuffer>(
       data, base::BindOnce(
                 [](WriteCallback callback, int bytes_sent,
@@ -57,44 +57,42 @@ void SerialIoHandlerImpl::Write(const std::vector<uint8_t>& data,
                 std::move(callback))));
 }
 
-void SerialIoHandlerImpl::CancelRead(mojom::SerialReceiveError reason) {
+void SerialPortImpl::CancelRead(mojom::SerialReceiveError reason) {
   io_handler_->CancelRead(reason);
 }
 
-void SerialIoHandlerImpl::CancelWrite(mojom::SerialSendError reason) {
+void SerialPortImpl::CancelWrite(mojom::SerialSendError reason) {
   io_handler_->CancelWrite(reason);
 }
 
-void SerialIoHandlerImpl::Flush(FlushCallback callback) {
+void SerialPortImpl::Flush(FlushCallback callback) {
   std::move(callback).Run(io_handler_->Flush());
 }
 
-void SerialIoHandlerImpl::GetControlSignals(
-    GetControlSignalsCallback callback) {
+void SerialPortImpl::GetControlSignals(GetControlSignalsCallback callback) {
   std::move(callback).Run(io_handler_->GetControlSignals());
 }
 
-void SerialIoHandlerImpl::SetControlSignals(
+void SerialPortImpl::SetControlSignals(
     mojom::SerialHostControlSignalsPtr signals,
     SetControlSignalsCallback callback) {
   std::move(callback).Run(io_handler_->SetControlSignals(*signals));
 }
 
-void SerialIoHandlerImpl::ConfigurePort(
-    mojom::SerialConnectionOptionsPtr options,
-    ConfigurePortCallback callback) {
+void SerialPortImpl::ConfigurePort(mojom::SerialConnectionOptionsPtr options,
+                                   ConfigurePortCallback callback) {
   std::move(callback).Run(io_handler_->ConfigurePort(*options));
 }
 
-void SerialIoHandlerImpl::GetPortInfo(GetPortInfoCallback callback) {
+void SerialPortImpl::GetPortInfo(GetPortInfoCallback callback) {
   std::move(callback).Run(io_handler_->GetPortInfo());
 }
 
-void SerialIoHandlerImpl::SetBreak(SetBreakCallback callback) {
+void SerialPortImpl::SetBreak(SetBreakCallback callback) {
   std::move(callback).Run(io_handler_->SetBreak());
 }
 
-void SerialIoHandlerImpl::ClearBreak(ClearBreakCallback callback) {
+void SerialPortImpl::ClearBreak(ClearBreakCallback callback) {
   std::move(callback).Run(io_handler_->ClearBreak());
 }
 
