@@ -1069,10 +1069,6 @@ def DefaultSettings():
       # ==================================================================
       # Hints to Buildbot master UI
 
-      # If set, tells buildbot what name to give to the corresponding builder
-      # on its waterfall.
-      buildbot_waterfall_name=None,
-
       # If not None, the name (in waterfall.CIDB_KNOWN_WATERFALLS) of the
       # waterfall that this target should be active on.
       active_waterfall=None,
