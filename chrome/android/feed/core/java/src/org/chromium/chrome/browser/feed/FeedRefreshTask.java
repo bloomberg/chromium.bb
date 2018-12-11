@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * A task implementation that loads native and then tries to refresh the Feed's articles. Failures
  * or interruptions are not retried or rescheduled.
  */
+@UsedByReflection("BackgroundTaskReflection.java")
 public class FeedRefreshTask extends NativeBackgroundTask {
     // The amount of "flex" to add around the fetching periods, as a ratio of the period.
     private static final double FLEX_FACTOR = 0.1;
