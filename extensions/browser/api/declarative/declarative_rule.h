@@ -234,7 +234,7 @@ class DeclarativeRule {
       content::BrowserContext* browser_context,
       const Extension* extension,
       base::Time extension_installation_time,
-      linked_ptr<JsonRule> rule,
+      const JsonRule& rule,
       ConsistencyChecker check_consistency,
       std::string* error);
 
@@ -448,20 +448,20 @@ DeclarativeRule<ConditionT, ActionT>::Create(
     content::BrowserContext* browser_context,
     const Extension* extension,
     base::Time extension_installation_time,
-    linked_ptr<JsonRule> rule,
+    const JsonRule& rule,
     ConsistencyChecker check_consistency,
     std::string* error) {
   std::unique_ptr<DeclarativeRule> error_result;
 
   std::unique_ptr<ConditionSet> conditions = ConditionSet::Create(
-      extension, url_matcher_condition_factory, rule->conditions, error);
+      extension, url_matcher_condition_factory, rule.conditions, error);
   if (!error->empty())
     return std::move(error_result);
   CHECK(conditions.get());
 
   bool bad_message = false;
   std::unique_ptr<ActionSet> actions = ActionSet::Create(
-      browser_context, extension, rule->actions, error, &bad_message);
+      browser_context, extension, rule.actions, error, &bad_message);
   if (bad_message) {
     // TODO(battre) Export concept of bad_message to caller, the extension
     // should be killed in case it is true.
@@ -479,11 +479,11 @@ DeclarativeRule<ConditionT, ActionT>::Create(
     return std::move(error_result);
   }
 
-  CHECK(rule->priority.get());
-  int priority = *(rule->priority);
+  CHECK(rule.priority.get());
+  int priority = *(rule.priority);
 
-  GlobalRuleId rule_id(extension->id(), *(rule->id));
-  Tags tags = rule->tags ? *rule->tags : Tags();
+  GlobalRuleId rule_id(extension->id(), *(rule.id));
+  Tags tags = rule.tags ? *rule.tags : Tags();
   return std::unique_ptr<DeclarativeRule>(
       new DeclarativeRule(rule_id, tags, extension_installation_time,
                           std::move(conditions), std::move(actions), priority));

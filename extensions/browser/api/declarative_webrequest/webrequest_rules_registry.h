@@ -91,7 +91,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // Implementation of RulesRegistry:
   std::string AddRulesImpl(
       const std::string& extension_id,
-      const std::vector<linked_ptr<api::events::Rule>>& rules) override;
+      const std::vector<const api::events::Rule*>& rules) override;
   std::string RemoveRulesImpl(
       const std::string& extension_id,
       const std::vector<std::string>& rule_identifiers) override;

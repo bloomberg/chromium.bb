@@ -217,18 +217,14 @@ ExtensionFunction::ResponseValue
 EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
   ConvertBinaryListElementsToBase64(args_.get());
 
-  // TODO(devlin): Remove the dependency on linked_ptr here.
-  std::vector<linked_ptr<api::events::Rule>> linked_rules;
-  for (api::events::Rule& rule : params_->rules) {
-    linked_rules.push_back(
-        make_linked_ptr(new api::events::Rule(std::move(rule))));
-  }
-  std::string error = rules_registry_->AddRules(extension_id(), linked_rules);
+  std::vector<const api::events::Rule*> rules_out;
+  std::string error = rules_registry_->AddRules(
+      extension_id(), std::move(params_->rules), &rules_out);
   if (!error.empty())
     return Error(error);
 
   auto rules_value = std::make_unique<base::ListValue>();
-  for (const auto& rule : linked_rules)
+  for (const auto* rule : rules_out)
     rules_value->Append(rule->ToValue());
   return OneArgument(std::move(rules_value));
 }
@@ -306,7 +302,7 @@ bool EventsEventGetRulesFunction::CreateParams() {
 
 ExtensionFunction::ResponseValue
 EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
-  std::vector<linked_ptr<Rule> > rules;
+  std::vector<const Rule*> rules;
   if (params_->rule_identifiers.get()) {
     rules_registry_->GetRules(extension_id(), *params_->rule_identifiers,
                               &rules);
@@ -315,7 +311,7 @@ EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
   }
 
   auto rules_value = std::make_unique<base::ListValue>();
-  for (const auto& rule : rules)
+  for (const auto* rule : rules)
     rules_value->Append(rule->ToValue());
   return OneArgument(std::move(rules_value));
 }

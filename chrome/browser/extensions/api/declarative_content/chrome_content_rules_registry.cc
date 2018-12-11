@@ -227,7 +227,7 @@ ChromeContentRulesRegistry::GetMatchingRules(content::WebContents* tab) const {
 
 std::string ChromeContentRulesRegistry::AddRulesImpl(
     const std::string& extension_id,
-    const std::vector<linked_ptr<api::events::Rule>>& api_rules) {
+    const std::vector<const api::events::Rule*>& api_rules) {
   EvaluationScope evaluation_scope(this);
   const Extension* extension = ExtensionRegistry::Get(browser_context())
       ->GetInstalledExtension(extension_id);
@@ -246,7 +246,7 @@ std::string ChromeContentRulesRegistry::AddRulesImpl(
         evaluator.get();
   }
 
-  for (const linked_ptr<api::events::Rule>& api_rule : api_rules) {
+  for (auto* api_rule : api_rules) {
     ExtensionIdRuleIdPair rule_id(extension_id, *api_rule->id);
     DCHECK(content_rules_.find(rule_id) == content_rules_.end());
 
