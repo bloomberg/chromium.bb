@@ -34,7 +34,6 @@ class MediaRouterDialogControllerViews
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
-  void OnWidgetDestroying(views::Widget* widget) override;
 
   // Sets a callback to be called whenever a dialog is created.
   void SetDialogCreationCallbackForTesting(base::RepeatingClosure callback);
@@ -52,6 +51,10 @@ class MediaRouterDialogControllerViews
   std::unique_ptr<MediaRouterViewsUI> ui_;
 
   base::RepeatingClosure dialog_creation_callback_;
+
+  // This is not null while there is a dialog shown and |this| is observing the
+  // widget.
+  views::Widget* dialog_widget_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerViews);
 };
