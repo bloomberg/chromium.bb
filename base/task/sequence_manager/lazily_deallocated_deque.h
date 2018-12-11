@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -86,6 +87,10 @@ class LazilyDeallocatedDeque {
 
     // Grow if needed, by the minimum amount.
     if (!head_->CanPush()) {
+      // TODO(alexclarke): Remove once we've understood the OOMs.
+      size_t size = size_;
+      base::debug::Alias(&size);
+
       std::unique_ptr<Ring> new_ring = std::make_unique<Ring>(kMinimumRingSize);
       new_ring->next_ = std::move(head_);
       head_ = std::move(new_ring);
@@ -105,6 +110,10 @@ class LazilyDeallocatedDeque {
 
     // Grow if needed.
     if (!tail_->CanPush()) {
+      // TODO(alexclarke): Remove once we've understood the OOMs.
+      size_t size = size_;
+      base::debug::Alias(&size);
+
       // Doubling the size is a common strategy, but one which can be wasteful
       // so we use a (somewhat) slower growth curve.
       tail_->next_ = std::make_unique<Ring>(2 + tail_->capacity() +
