@@ -315,6 +315,10 @@ bool AutofillManager::ShouldShowCardsFromAccountOption(
   return personal_data_->ShouldShowCardsFromAccountOption();
 }
 
+void AutofillManager::OnUserAcceptedCardsFromAccountOption() {
+  personal_data_->OnUserAcceptedCardsFromAccountOption();
+}
+
 bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
                                        const base::TimeTicks timestamp) {
   bool enabled = IsAutofillEnabled();

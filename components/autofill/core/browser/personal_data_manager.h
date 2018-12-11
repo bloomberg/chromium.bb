@@ -383,6 +383,10 @@ class PersonalDataManager : public KeyedService,
   // account should be shown in the dropdown.
   bool ShouldShowCardsFromAccountOption() const;
 
+  // Triggered when a user selects the option to see cards from their account.
+  // Records the sync transport consent.
+  void OnUserAcceptedCardsFromAccountOption();
+
   // Logs the fact that the server card link was clicked including information
   // about the current sync state.
   void LogServerCardLinkClicked() const;

@@ -248,7 +248,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
   } else if (identifier == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
     manager_->client()->ExecuteCommand(identifier);
   } else if (identifier == POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
-    // TODO(crbug.com/905052): Handle this event.
+    manager_->OnUserAcceptedCardsFromAccountOption();
   } else {
     if (identifier > 0)  // Denotes an Autofill suggestion.
       AutofillMetrics::LogAutofillSuggestionAcceptedIndex(position);
