@@ -70,21 +70,21 @@ class BuilderTest(LoggingTestCase):
             BuildBot().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
             'https://test-results.appspot.com/data/layout_results/WebKit_Mac10_8__dbg_/results/layout-test-results')
 
-    def test_fetch_layout_test_results_with_no_results_fetched(self):
+    def test_fetch_web_test_results_with_no_results_fetched(self):
         buildbot = BuildBot()
 
         def fetch_file(url):
             return None if url.endswith('failing_results.json') else 'contents'
 
         buildbot.fetch_file = fetch_file
-        results = buildbot.fetch_layout_test_results(buildbot.results_url('B'))
+        results = buildbot.fetch_web_test_results(buildbot.results_url('B'))
         self.assertIsNone(results)
         self.assertLog([
             'DEBUG: Got 404 response from:\n'
             'https://test-results.appspot.com/data/layout_results/B/results/layout-test-results/failing_results.json\n'
         ])
 
-    def test_fetch_layout_test_results_weird_step_name(self):
+    def test_fetch_web_test_results_weird_step_name(self):
         buildbot = BuildBot()
 
         def fetch_file(url):

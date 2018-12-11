@@ -48,9 +48,9 @@ from blinkpy.common.net.file_uploader import FileUploader
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.tool import grammar
 from blinkpy.w3c.wpt_manifest import WPTManifest
-from blinkpy.web_tests.controllers.layout_test_finder import LayoutTestFinder
-from blinkpy.web_tests.controllers.layout_test_runner import LayoutTestRunner
 from blinkpy.web_tests.controllers.test_result_writer import TestResultWriter
+from blinkpy.web_tests.controllers.web_test_finder import WebTestFinder
+from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner
 from blinkpy.web_tests.layout_package import json_results_generator
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
@@ -89,9 +89,9 @@ class Manager(object):
         self._websockets_server_started = False
 
         self._results_directory = self._port.results_directory()
-        self._finder = LayoutTestFinder(self._port, self._options)
+        self._finder = WebTestFinder(self._port, self._options)
         self._path_finder = PathFinder(port.host.filesystem)
-        self._runner = LayoutTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
+        self._runner = WebTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
 
     def run(self, args):
         """Runs the tests and return a RunDetails object with the results."""

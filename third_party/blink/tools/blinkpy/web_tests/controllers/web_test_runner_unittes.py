@@ -32,7 +32,7 @@ import unittest
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.system.system_host_mock import MockSystemHost
 from blinkpy.web_tests import run_webkit_tests
-from blinkpy.web_tests.controllers.layout_test_runner import LayoutTestRunner, Sharder, TestRunInterruptedException
+from blinkpy.web_tests.controllers.web_test_runner import WebTestRunner, Sharder, TestRunInterruptedException
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_run_results import TestRunResults
@@ -70,7 +70,7 @@ class FakePrinter(object):
         pass
 
 
-class LockCheckingRunner(LayoutTestRunner):
+class LockCheckingRunner(WebTestRunner):
 
     def __init__(self, port, options, printer, tester, http_lock):
         super(LockCheckingRunner, self).__init__(options, port, printer, port.results_directory(), lambda test_name: False)
@@ -79,7 +79,7 @@ class LockCheckingRunner(LayoutTestRunner):
         self._should_have_http_lock = http_lock
 
 
-class LayoutTestRunnerTests(unittest.TestCase):
+class WebTestRunnerTests(unittest.TestCase):
 
     # pylint: disable=protected-access
 

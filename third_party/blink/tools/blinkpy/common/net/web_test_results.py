@@ -32,7 +32,7 @@ from blinkpy.common.memoized import memoized
 from blinkpy.web_tests.layout_package import json_results_generator
 
 
-class LayoutTestResult(object):
+class WebTestResult(object):
 
     def __init__(self, test_name, result_dict):
         self._test_name = test_name
@@ -78,17 +78,17 @@ class LayoutTestResult(object):
         return self.last_retry_result() == 'MISSING'
 
 
-# FIXME: This should be unified with ResultsSummary or other NRWT layout tests code
-# in the layout_tests package.
+# FIXME: This should be unified with ResultsSummary or other NRWT web tests code
+# in the web_tests package.
 # This doesn't belong in common.net, but we don't have a better place for it yet.
-class LayoutTestResults(object):
+class WebTestResults(object):
 
     @classmethod
     def results_from_string(cls, string, chromium_revision=None):
-        """Creates a LayoutTestResults object from a test result JSON string.
+        """Creates a WebTestResults object from a test result JSON string.
 
         Args:
-            string: JSON string containing layout test result.
+            string: JSON string containing web test result.
             chromium_revision: If given, it will override the chromium_revision
                 field in json, to indicate the last revision that has completed
                 uploading onto the storage server. chromium_revision can be a
@@ -131,32 +131,32 @@ class LayoutTestResults(object):
             if part not in tree:
                 return None
             tree = tree[part]
-        return LayoutTestResult(test, tree)
+        return WebTestResult(test, tree)
 
     def for_each_test(self, handler):
-        LayoutTestResults._for_each_test(self._test_result_tree(), handler, '')
+        WebTestResults._for_each_test(self._test_result_tree(), handler, '')
 
     @staticmethod
     def _for_each_test(tree, handler, prefix=''):
         for key in tree:
             new_prefix = (prefix + '/' + key) if prefix else key
             if 'actual' not in tree[key]:
-                LayoutTestResults._for_each_test(tree[key], handler, new_prefix)
+                WebTestResults._for_each_test(tree[key], handler, new_prefix)
             else:
-                handler(LayoutTestResult(new_prefix, tree[key]))
+                handler(WebTestResult(new_prefix, tree[key]))
 
     def _test_result_tree(self):
         return self._results['tests']
 
     def _filter_tests(self, result_filter):
-        """Returns LayoutTestResult objects for tests which pass the given filter."""
+        """Returns WebTestResult objects for tests which pass the given filter."""
         results = []
 
         def add_if_passes(result):
             if result_filter(result):
                 results.append(result)
 
-        LayoutTestResults._for_each_test(self._test_result_tree(), add_if_passes)
+        WebTestResults._for_each_test(self._test_result_tree(), add_if_passes)
         return sorted(results, key=lambda r: r.test_name())
 
     def didnt_run_as_expected_results(self):

@@ -222,7 +222,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             jobs: A dict mapping Build objects to TryJobStatus objects.
 
         Returns:
-            A dict mapping Build to LayoutTestResults for all completed jobs.
+            A dict mapping Build to WebTestResults for all completed jobs.
         """
         buildbot = self._tool.buildbot
         results = {}
@@ -237,12 +237,12 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 # layout tests to download baselines for.
                 continue
             results_url = buildbot.results_url(build.builder_name, build.build_number)
-            layout_test_results = buildbot.fetch_results(build)
-            if layout_test_results is None:
+            web_test_results = buildbot.fetch_results(build)
+            if web_test_results is None:
                 _log.info('Failed to fetch results for "%s".', build.builder_name)
                 _log.info('Results URL: %s/results.html', results_url)
                 continue
-            results[build] = layout_test_results
+            results[build] = web_test_results
         return results
 
     def _make_test_baseline_set_from_file(self, filename, builds_to_results):
@@ -266,7 +266,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         Args:
             tests: A list of tests.
-            builds_to_results: A dict mapping Builds to LayoutTestResults.
+            builds_to_results: A dict mapping Builds to WebTestResults.
 
         Returns:
             A TestBaselineSet object.
@@ -284,7 +284,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         modified tests will be rebaselined (depending on only_changed_tests).
 
         Args:
-            builds_to_results: A dict mapping Builds to LayoutTestResults.
+            builds_to_results: A dict mapping Builds to WebTestResults.
             only_changed_tests: Whether to only include baselines for tests that
                are changed in this CL. If False, all new baselines for failing
                tests will be downloaded, even for tests that were not modified.
@@ -322,7 +322,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
 
         Args:
             build: A Build instance.
-            layout_test_results: A LayoutTestResults instance or None.
+            layout_test_results: A WebTestResults instance or None.
 
         Returns:
             A sorted list of tests to rebaseline for this build.

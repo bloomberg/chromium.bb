@@ -10,7 +10,7 @@ from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.buildbot_mock import MockBuildBot
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
-from blinkpy.common.net.layout_test_results import LayoutTestResult, LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResult, WebTestResults
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_testing import LoggingTestCase
 from blinkpy.w3c.wpt_expectations_updater import WPTExpectationsUpdater, SimpleTestResult, MARKER_COMMENT
@@ -106,7 +106,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         # of the tests passed.
         host.buildbot.set_results(
             Build('MOCK Try Mac10.10', 333),
-            LayoutTestResults({
+            WebTestResults({
                 'tests': {
                     'external': {
                         'wpt': {
@@ -133,7 +133,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_only_passing_results(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -153,7 +153,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_unexpected_pass(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -182,7 +182,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_some_failing_results(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'external': {
                     'wpt': {
@@ -213,7 +213,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
     def test_get_failing_results_dict_non_wpt_test(self):
         host = self.mock_host()
-        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), WebTestResults({
             'tests': {
                 'x': {
                     'failing-test.html': {
@@ -470,7 +470,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
     def test_generate_results_dict(self):
         updater = WPTExpectationsUpdater(self.mock_host())
         layout_test_list = [
-            LayoutTestResult(
+            WebTestResult(
                 'external/wpt/test/name.html', {
                     'expected': 'bar',
                     'actual': 'foo',

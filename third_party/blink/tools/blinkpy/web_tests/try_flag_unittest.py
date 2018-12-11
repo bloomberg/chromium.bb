@@ -8,7 +8,7 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.common.net.buildbot import Build
 from blinkpy.common.net.git_cl import TryJobStatus
 from blinkpy.common.net.git_cl_mock import MockGitCL
-from blinkpy.common.net.layout_test_results import LayoutTestResults
+from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.web_tests.try_flag import TryFlag
 
@@ -69,7 +69,7 @@ class TryFlagTest(unittest.TestCase):
         self._run_trigger_test(regenerate=True)
 
     def _setup_mock_results(self, buildbot):
-        buildbot.set_results(self.linux_build, LayoutTestResults({
+        buildbot.set_results(self.linux_build, WebTestResults({
             'tests': {
                 'something': {
                     'fail-everywhere.html': {
@@ -85,7 +85,7 @@ class TryFlagTest(unittest.TestCase):
                 }
             }
         }))
-        buildbot.set_results(self.win_build, LayoutTestResults({
+        buildbot.set_results(self.win_build, WebTestResults({
             'tests': {
                 'something': {
                     'fail-everywhere.html': {
@@ -101,7 +101,7 @@ class TryFlagTest(unittest.TestCase):
                 }
             }
         }))
-        buildbot.set_results(self.mac_build, LayoutTestResults({
+        buildbot.set_results(self.mac_build, WebTestResults({
             'tests': {
                 'something': {
                     'pass-unexpectedly-mac.html': {
