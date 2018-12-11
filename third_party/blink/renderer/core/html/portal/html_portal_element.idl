@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/KenjiBaheux/portals/blob/master/explainer.md
+// https://wicg.github.io/portals/#the-portal-element
 
 [HTMLConstructor, RuntimeEnabled=Portals]
 interface HTMLPortalElement : HTMLElement {
