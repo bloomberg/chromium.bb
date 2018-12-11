@@ -3,7 +3,6 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="appearance_browser_proxy.html">
 <link rel="import" href="../controls/controlled_radio_button.html">
@@ -45,7 +44,7 @@
     </style>
     <settings-animated-pages id="pages" section="appearance"
         focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
+      <div route-path="default">
 <if expr="chromeos">
         <cr-link-row icon-class="icon-external" id="wallpaperButton"
             hidden="[[!pageVisibility.setWallpaper]]"
@@ -179,7 +178,7 @@
             label="$i18n{warnBeforeQuitting}">
         </settings-toggle-button>
 </if>
-      </neon-animatable>
+      </div>
       <template is="dom-if" route-path="/fonts">
         <settings-subpage
             associated-control="[[$$('#customize-fonts-subpage-trigger')]]"

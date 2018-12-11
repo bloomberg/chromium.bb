@@ -30,7 +30,7 @@
     </style>
     <settings-animated-pages id="pages" section="dateTime"
         focus-config="[[focusConfig_]]">
-      <neon-animatable id="main" route-path="default">
+      <div id="main" route-path="default">
         <template is="dom-if"
             if="[[!prefs.cros.flags.fine_grained_time_zone_detection_enabled.value]]"
             restamp>
@@ -84,7 +84,7 @@
             <button aria-label="$i18n{setDateTime}"></button>
           </paper-icon-button-light>
         </div>
-      </neon-animatable>
+      </div>
       <template is="dom-if" route-path="/dateTime/timeZone">
         <settings-subpage data-route="DATETIME_TIMEZONE_SUBPAGE"
             associated-control="[[$$('#timeZoneSettingsTrigger')]]"

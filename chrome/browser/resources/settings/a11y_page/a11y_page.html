@@ -5,7 +5,6 @@
 <link rel="import" href="../settings_shared_css.html">
 
 <if expr="chromeos">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="manage_a11y_page.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -19,7 +18,7 @@
 <if expr="chromeos">
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y" focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
+      <div route-path="default">
         <settings-toggle-button id="optionsInMenuToggle"
             label="$i18n{optionsInMenuLabel}"
             pref="{{prefs.settings.a11y.enable_menu}}">
@@ -37,7 +36,7 @@
                 aria-describedby="themesSecondary"></button>
           </paper-icon-button-light>
         </div>
-      </neon-animatable>
+      </div>
 
       <template is="dom-if" route-path="/manageAccessibility">
         <settings-subpage
