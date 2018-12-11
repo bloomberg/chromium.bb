@@ -117,17 +117,15 @@ void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : AXHostDelegate(ui::DesktopAXTreeID()),
-      enabled_(false),
-      processing_events_(false) {}
+    : enabled_(false), processing_events_(false) {}
 
 AutomationManagerAura::~AutomationManagerAura() {}
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
     desktop_root_ = std::make_unique<AXRootObjWrapper>(this);
-    current_tree_ = std::make_unique<AXTreeSourceAura>(desktop_root_.get(),
-                                                       ui::DesktopAXTreeID());
+    current_tree_ =
+        std::make_unique<AXTreeSourceAura>(desktop_root_.get(), ax_tree_id());
   }
   reset_serializer ? current_tree_serializer_.reset()
                    : current_tree_serializer_.reset(
@@ -150,7 +148,7 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   processing_events_ = true;
 
   ExtensionMsg_AccessibilityEventBundleParams event_bundle;
-  event_bundle.tree_id = ui::DesktopAXTreeID();
+  event_bundle.tree_id = ax_tree_id();
   event_bundle.mouse_location = aura::Env::GetInstance()->last_mouse_location();
 
   ui::AXTreeUpdate update;

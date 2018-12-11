@@ -14,9 +14,6 @@ bool UnionTraits<ax::mojom::AXTreeIDDataView, ui::AXTreeID>::Read(
     case ax::mojom::AXTreeIDDataView::Tag::UNKNOWN:
       out->type_ = ax::mojom::AXTreeIDType::kUnknown;
       return true;
-    case ax::mojom::AXTreeIDDataView::Tag::DESKTOP:
-      out->type_ = ax::mojom::AXTreeIDType::kDesktop;
-      return true;
     case ax::mojom::AXTreeIDDataView::Tag::TOKEN:
       out->type_ = ax::mojom::AXTreeIDType::kToken;
       if (!data.ReadToken(&out->token_))

@@ -152,8 +152,7 @@ class AXPosition {
         } else {
           str_text_offset = base::IntToString(text_offset_);
         }
-        str = "TextPosition tree_id=" + tree_id_.ToString() +
-              " anchor_id=" + base::IntToString(anchor_id_) +
+        str = "TextPosition anchor_id=" + base::IntToString(anchor_id_) +
               " text_offset=" + str_text_offset + " affinity=" +
               ui::ToString(static_cast<ax::mojom::TextAffinity>(affinity_));
         break;
