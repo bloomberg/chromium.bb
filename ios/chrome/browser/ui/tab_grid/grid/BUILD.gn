@@ -12,6 +12,7 @@ source_set("grid_ui") {
     "grid_constants.h",
     "grid_constants.mm",
     "grid_consumer.h",
+    "grid_empty_view.h",
     "grid_image_data_source.h",
     "grid_item.h",
     "grid_item.mm",
