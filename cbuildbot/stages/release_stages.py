@@ -237,7 +237,7 @@ class SigningStage(generic_stages.BoardSpecificBuilderStage):
       ValueError: If the signer result isn't valid json.
       RunCommandError: If we are unable to download signer results.
     """
-    gs_ctx = gs.GSContext(dry_run=self._run.debug)
+    gs_ctx = gs.GSContext(dry_run=self._run.options.debug)
 
     try:
       logging.info('Waiting for signer results.')
@@ -394,7 +394,7 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
 
       # If we have an explicit list of channels, use it.
       for channel in self.channels:
-        per_channel.put((channel, board, version, self._run.debug,
+        per_channel.put((channel, board, version, self._run.options.debug,
                          self._run.config.paygen_skip_testing,
                          self._run.config.paygen_skip_delta_payloads,
                          skip_duts_check))
