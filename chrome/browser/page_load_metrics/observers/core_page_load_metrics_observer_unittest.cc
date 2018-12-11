@@ -364,40 +364,17 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
   NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_RELOAD);
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Cached request.
-
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       true /*was_cached*/,
-       1024 * 20 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-  };
-
+  auto resources =
+      GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
+  SimulateResourceDataUseUpdate(resources);
   int64_t network_bytes = 0;
   int64_t cache_bytes = 0;
-  for (const auto& request : resources) {
-    SimulateLoadedResource(request);
-    if (!request.was_cached) {
-      network_bytes += request.raw_body_bytes;
-    } else {
-      cache_bytes += request.raw_body_bytes;
+  for (const auto& resource : resources) {
+    if (resource->is_complete) {
+      if (!resource->was_fetched_via_cache)
+        network_bytes += resource->encoded_body_length;
+      else
+        cache_bytes += resource->encoded_body_length;
     }
   }
 
@@ -466,39 +443,17 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
                                      ui::PAGE_TRANSITION_FORWARD_BACK));
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Cached request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       true /*was_cached*/,
-       1024 * 20 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-  };
-
+  auto resources =
+      GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
+  SimulateResourceDataUseUpdate(resources);
   int64_t network_bytes = 0;
   int64_t cache_bytes = 0;
-  for (const auto& request : resources) {
-    SimulateLoadedResource(request);
-    if (!request.was_cached) {
-      network_bytes += request.raw_body_bytes;
-    } else {
-      cache_bytes += request.raw_body_bytes;
+  for (const auto& resource : resources) {
+    if (resource->is_complete) {
+      if (!resource->was_fetched_via_cache)
+        network_bytes += resource->encoded_body_length;
+      else
+        cache_bytes += resource->encoded_body_length;
     }
   }
 
@@ -561,39 +516,17 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
   NavigateWithPageTransitionAndCommit(url, ui::PAGE_TRANSITION_LINK);
   SimulateTimingUpdate(timing);
 
-  page_load_metrics::ExtraRequestCompleteInfo resources[] = {
-      // Cached request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       true /*was_cached*/,
-       1024 * 20 /* raw_body_bytes */,
-       0 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-      // Uncached non-proxied request.
-      {GURL(kResourceUrl),
-       net::HostPortPair(),
-       -1 /* frame_tree_node_id */,
-       false /*was_cached*/,
-       1024 * 40 /* raw_body_bytes */,
-       1024 * 40 /* original_network_content_length */,
-       nullptr /* data_reduction_proxy_data */,
-       content::ResourceType::RESOURCE_TYPE_SCRIPT,
-       0,
-       {} /* load_timing_info */},
-  };
-
+  auto resources =
+      GetSampleResourceDataUpdateForTesting(10 * 1024 /* resource_size */);
+  SimulateResourceDataUseUpdate(resources);
   int64_t network_bytes = 0;
   int64_t cache_bytes = 0;
-  for (const auto& request : resources) {
-    SimulateLoadedResource(request);
-    if (!request.was_cached) {
-      network_bytes += request.raw_body_bytes;
-    } else {
-      cache_bytes += request.raw_body_bytes;
+  for (const auto& resource : resources) {
+    if (resource->is_complete) {
+      if (!resource->was_fetched_via_cache)
+        network_bytes += resource->encoded_body_length;
+      else
+        cache_bytes += resource->encoded_body_length;
     }
   }
 
@@ -652,6 +585,8 @@ TEST_F(CorePageLoadMetricsObserverTest, BytesAndResourcesCounted) {
                                       1);
   histogram_tester().ExpectTotalCount(internal::kHistogramPageLoadCacheBytes,
                                       1);
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramPageLoadNetworkBytesIncludingHeaders, 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramTotalCompletedResources, 1);
   histogram_tester().ExpectTotalCount(
