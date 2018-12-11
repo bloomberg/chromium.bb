@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -80,12 +79,6 @@ AudioThreadHangMonitor::AudioThreadHangMonitor(
 void AudioThreadHangMonitor::StartTimer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(monitor_sequence_);
 
-  auto* pm = base::PowerMonitor::Get();
-  if (pm) {
-    // May be null in unit tests.
-    pm->AddObserver(this);
-  }
-
   // Set the flag to true so that the first run doesn't detect a hang.
   alive_flag_->flag_ = true;
 
@@ -108,12 +101,6 @@ bool AudioThreadHangMonitor::NeverLoggedThreadHung() const {
 bool AudioThreadHangMonitor::NeverLoggedThreadRecoveredAfterHung() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(monitor_sequence_);
   return audio_thread_status_ == ThreadStatus::kHung;
-}
-
-void AudioThreadHangMonitor::OnResume() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(monitor_sequence_);
-  last_resume_time_ = clock_->NowTicks();
-  recent_ping_state_ = 0;
 }
 
 void AudioThreadHangMonitor::CheckIfAudioThreadIsAlive() {
@@ -152,9 +139,6 @@ void AudioThreadHangMonitor::CheckIfAudioThreadIsAlive() {
       LogHistogramThreadStatus();
 
       if (dump_on_hang_) {
-        int64_t time_since_resume =
-            (clock_->NowTicks() - last_resume_time_).InMilliseconds();
-        base::debug::Alias(&time_since_resume);
         base::debug::DumpWithoutCrashing();
       }
     }
