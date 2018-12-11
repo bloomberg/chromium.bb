@@ -38,6 +38,14 @@ class UI_BASE_EXPORT MediaKeysListener {
     // be suppressed.
     virtual MediaKeysHandleResult OnMediaKeysAccelerator(
         const Accelerator& accelerator) = 0;
+
+    // Called after a call to StartWatchingMediaKeys, once the listener is
+    // ready to receive key input. This will not be called after a call to
+    // StartWatchingMediaKeys if the listener was already listening. This may
+    // be called synchronously or asynchronously depending on the underlying
+    // implementation. For the Windows implementation, this is called on a
+    // background thread.
+    virtual void OnStartedWatchingMediaKeys() {}
   };
 
   // Can return nullptr if media keys listening is not implemented.

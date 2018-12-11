@@ -103,6 +103,9 @@ void MediaKeysListenerImpl::StartWatchingMediaKeys() {
 
   CFRunLoopAddSource(CFRunLoopGetCurrent(), event_tap_source_,
                      kCFRunLoopCommonModes);
+
+  // Notify the delegate that we're ready to receive key events.
+  delegate_->OnStartedWatchingMediaKeys();
 }
 
 void MediaKeysListenerImpl::StopWatchingMediaKeys() {
