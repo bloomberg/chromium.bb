@@ -19,6 +19,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+constexpr CGFloat kTableViewSeparatorInset = 16;
+}
+
 @interface SettingsRootTableViewController ()
 
 // Delete button for the toolbar.
@@ -84,6 +88,8 @@
   self.styler.cellBackgroundColor = [UIColor whiteColor];
   self.styler.cellTitleColor = [UIColor blackColor];
   self.tableView.estimatedRowHeight = kSettingsCellDefaultHeight;
+  self.tableView.separatorInset = UIEdgeInsetsMake(0, kTableViewSeparatorInset,
+                                                   0, kTableViewSeparatorInset);
   // Do not set the estimated height of the footer/header as if there is no
   // header/footer, there is an empty space.
 }
@@ -190,12 +196,14 @@
 }
 
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
-  [self.tableView performBatchUpdates:^{
-    [self removeFromModelItemAtIndexPaths:indexPaths];
-    [self.tableView deleteRowsAtIndexPaths:indexPaths
-                          withRowAnimation:UITableViewRowAnimationAutomatic];
-  }
-                           completion:nil];
+  [self.tableView
+      performBatchUpdates:^{
+        [self removeFromModelItemAtIndexPaths:indexPaths];
+        [self.tableView
+            deleteRowsAtIndexPaths:indexPaths
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      }
+               completion:nil];
 }
 
 @end
