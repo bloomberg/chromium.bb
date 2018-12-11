@@ -1102,18 +1102,9 @@ void LayerTreeHost::SetEventListenerProperties(
   // layer tree sets a wheel event handler region to be its entire bounds,
   // otherwise it sets it to empty.
   //
-  // Thus when it changes, we might want to request every layer to push
-  // properties and recompute its wheel event handler region, since the
-  // computation is done in PushPropertiesTo. However neither
-  // SetSubtreePropertyChanged() nor SetNeedsFullTreeSync() do this, so
-  // it is unclear why we call them.
-  // Also why we don't want to recompute the wheel event handler region for all
-  // layers when the blocking state goes away is unclear. Also why we mark all
-  // layers below the root layer as damaged is unclear.
-  // TODO(bokan): Sort out what should be set and why. https://crbug.com/881011
-  //
-  // TODO(sunxd): Remove NeedsFullTreeSync when computing mouse wheel event
-  // handler region is done.
+  // Thus when it changes, we want to request every layer to push properties
+  // and recompute its wheel event handler region, since the computation is
+  // done in PushPropertiesTo.
   if (event_class == EventListenerClass::kMouseWheel) {
     bool new_property_is_blocking =
         properties == EventListenerProperties::kBlocking ||
@@ -1123,10 +1114,9 @@ void LayerTreeHost::SetEventListenerProperties(
         old_properties == EventListenerProperties::kBlocking ||
         old_properties == EventListenerProperties::kBlockingAndPassive;
 
-    if (!old_property_is_blocking && new_property_is_blocking) {
-      if (root_layer())
-        root_layer()->SetSubtreePropertyChanged();
-      SetNeedsFullTreeSync();
+    if (old_property_is_blocking != new_property_is_blocking) {
+      LayerTreeHostCommon::CallFunctionForEveryLayer(
+          this, [](Layer* layer) { layer->SetNeedsPushProperties(); });
     }
   }
 
