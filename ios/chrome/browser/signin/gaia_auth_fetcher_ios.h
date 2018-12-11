@@ -68,7 +68,6 @@ class GaiaAuthFetcherIOS : public GaiaAuthFetcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
   void FetchComplete(const GURL& url,
                      const std::string& data,
-                     const net::ResponseCookies& cookies,
                      const net::URLRequestStatus& status,
                      int response_code);
 
