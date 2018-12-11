@@ -154,6 +154,9 @@ TEST_F(ChromeDesktopReportRequestGeneratorTest, InvalidInput) {
 }
 
 TEST_F(ChromeDesktopReportRequestGeneratorTest, SafeBrowsing) {
+  profile_.GetPrefs()->SetBoolean(enterprise_reporting::kReportSafeBrowsingData,
+                                  true);
+
   std::unique_ptr<base::DictionaryValue> report;
   report = base::DictionaryValue::From(
       base::JSONReader::Read("{\"browserReport\": "

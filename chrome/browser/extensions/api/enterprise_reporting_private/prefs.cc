@@ -31,7 +31,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kReportMachineIDData, true);
   registry->RegisterBooleanPref(kReportUserIDData, true);
   registry->RegisterBooleanPref(kReportExtensionsAndPluginsData, true);
-  registry->RegisterBooleanPref(kReportSafeBrowsingData, true);
+  registry->RegisterBooleanPref(kReportSafeBrowsingData, false);
   registry->RegisterBooleanPref(prefs::kCloudReportingEnabled, false);
 }
 
