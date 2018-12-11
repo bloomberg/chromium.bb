@@ -846,20 +846,21 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                            src.CellRowIndex());
       dst->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan,
                            src.CellRowSpan());
+    }
+
+    if (ui::IsCellOrTableHeader(dst->role) || ui::IsTableRow(dst->role)) {
+      // aria-rowindex and aria-colindex are supported on cells, headers and
+      // rows.
+      int aria_rowindex = src.AriaRowIndex();
+      if (aria_rowindex)
+        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
+                             aria_rowindex);
 
       int aria_colindex = src.AriaColumnIndex();
       if (aria_colindex) {
         dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellColumnIndex,
                              aria_colindex);
       }
-    }
-
-    if (ui::IsCellOrTableHeader(dst->role) || ui::IsTableRow(dst->role)) {
-      // aria-rowindex is supported on cells, headers and rows.
-      int aria_rowindex = src.AriaRowIndex();
-      if (aria_rowindex)
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kAriaCellRowIndex,
-                             aria_rowindex);
     }
 
     if (ui::IsTableHeader(dst->role) &&
