@@ -129,6 +129,12 @@ void FakeRTCRtpReceiver::GetStats(
   NOTIMPLEMENTED();
 }
 
+std::unique_ptr<webrtc::RtpParameters> FakeRTCRtpReceiver::GetParameters()
+    const {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 FakeRTCRtpTransceiver::FakeRTCRtpTransceiver(
     base::Optional<std::string> mid,
     FakeRTCRtpSender sender,

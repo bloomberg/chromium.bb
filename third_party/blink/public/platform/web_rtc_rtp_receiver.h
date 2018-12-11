@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/webrtc/api/rtpparameters.h"
 
 namespace blink {
 
@@ -34,6 +35,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpReceiver {
   GetSources() = 0;
   virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
                         RTCStatsFilter) = 0;
+  virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
 };
 
 }  // namespace blink

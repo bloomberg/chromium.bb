@@ -154,6 +154,11 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
                        std::move(callback), filter));
   }
 
+  std::unique_ptr<webrtc::RtpParameters> GetParameters() {
+    return std::make_unique<webrtc::RtpParameters>(
+        webrtc_receiver_->GetParameters());
+  }
+
  private:
   friend struct RTCRtpReceiver::RTCRtpReceiverInternalTraits;
 
@@ -258,6 +263,10 @@ void RTCRtpReceiver::GetStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
     blink::RTCStatsFilter filter) {
   internal_->GetStats(std::move(callback), filter);
+}
+
+std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiver::GetParameters() const {
+  return internal_->GetParameters();
 }
 
 RTCRtpReceiverOnlyTransceiver::RTCRtpReceiverOnlyTransceiver(

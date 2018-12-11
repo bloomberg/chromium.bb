@@ -255,6 +255,37 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
   return webrtc_encoding;
 }
 
+RTCRtpHeaderExtensionParameters* ToRtpHeaderExtensionParameters(
+    const webrtc::RtpHeaderExtensionParameters& webrtc_header) {
+  RTCRtpHeaderExtensionParameters* header =
+      RTCRtpHeaderExtensionParameters::Create();
+  header->setUri(webrtc_header.uri.c_str());
+  header->setId(webrtc_header.id);
+  header->setEncrypted(webrtc_header.encrypt);
+  return header;
+}
+
+RTCRtpCodecParameters* ToRtpCodecParameters(
+    const webrtc::RtpCodecParameters& webrtc_codec) {
+  RTCRtpCodecParameters* codec = RTCRtpCodecParameters::Create();
+  codec->setPayloadType(webrtc_codec.payload_type);
+  codec->setMimeType(WTF::String::FromUTF8(webrtc_codec.mime_type().c_str()));
+  if (webrtc_codec.clock_rate)
+    codec->setClockRate(webrtc_codec.clock_rate.value());
+  if (webrtc_codec.num_channels)
+    codec->setChannels(webrtc_codec.num_channels.value());
+  if (webrtc_codec.parameters.size()) {
+    std::string sdp_fmtp_line;
+    for (const auto& parameter : webrtc_codec.parameters) {
+      if (sdp_fmtp_line.size())
+        sdp_fmtp_line += ";";
+      sdp_fmtp_line += parameter.first + "=" + parameter.second;
+    }
+    codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
+  }
+  return codec;
+}
+
 RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
                            std::unique_ptr<WebRTCRtpSender> sender,
                            String kind,
@@ -311,17 +342,17 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
   HeapVector<Member<RTCRtpEncodingParameters>> encodings;
   encodings.ReserveCapacity(
       SafeCast<wtf_size_t>(webrtc_parameters->encodings.size()));
-  for (const auto& web_encoding : webrtc_parameters->encodings) {
+  for (const auto& webrtc_encoding : webrtc_parameters->encodings) {
     // TODO(orphis): Forward missing fields from the WebRTC library:
     // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy, rid
     RTCRtpEncodingParameters* encoding = RTCRtpEncodingParameters::Create();
-    encoding->setActive(web_encoding.active);
-    if (web_encoding.max_bitrate_bps)
-      encoding->setMaxBitrate(web_encoding.max_bitrate_bps.value());
+    encoding->setActive(webrtc_encoding.active);
+    if (webrtc_encoding.max_bitrate_bps)
+      encoding->setMaxBitrate(webrtc_encoding.max_bitrate_bps.value());
     encoding->setPriority(
-        PriorityFromDouble(web_encoding.bitrate_priority).c_str());
+        PriorityFromDouble(webrtc_encoding.bitrate_priority).c_str());
     encoding->setNetworkPriority(
-        PriorityFromDouble(web_encoding.network_priority).c_str());
+        PriorityFromDouble(webrtc_encoding.network_priority).c_str());
     encodings.push_back(encoding);
   }
   parameters->setEncodings(encodings);
@@ -329,36 +360,16 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
   HeapVector<Member<RTCRtpHeaderExtensionParameters>> headers;
   headers.ReserveCapacity(
       SafeCast<wtf_size_t>(webrtc_parameters->header_extensions.size()));
-  for (const auto& web_header : webrtc_parameters->header_extensions) {
-    auto* header = RTCRtpHeaderExtensionParameters::Create();
-    header->setUri(web_header.uri.c_str());
-    header->setId(web_header.id);
-    header->setEncrypted(web_header.encrypt);
-    headers.push_back(header);
+  for (const auto& webrtc_header : webrtc_parameters->header_extensions) {
+    headers.push_back(ToRtpHeaderExtensionParameters(webrtc_header));
   }
   parameters->setHeaderExtensions(headers);
 
   HeapVector<Member<RTCRtpCodecParameters>> codecs;
   codecs.ReserveCapacity(
       SafeCast<wtf_size_t>(webrtc_parameters->codecs.size()));
-  for (const auto& web_codec : webrtc_parameters->codecs) {
-    auto* codec = RTCRtpCodecParameters::Create();
-    codec->setPayloadType(web_codec.payload_type);
-    codec->setMimeType(WTF::String::FromUTF8(web_codec.mime_type().c_str()));
-    if (web_codec.clock_rate)
-      codec->setClockRate(web_codec.clock_rate.value());
-    if (web_codec.num_channels)
-      codec->setChannels(web_codec.num_channels.value());
-    if (web_codec.parameters.size()) {
-      std::string sdp_fmtp_line;
-      for (const auto& parameter : web_codec.parameters) {
-        if (sdp_fmtp_line.size())
-          sdp_fmtp_line += ";";
-        sdp_fmtp_line += parameter.first + "=" + parameter.second;
-      }
-      codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
-    }
-    codecs.push_back(codec);
+  for (const auto& webrtc_codec : webrtc_parameters->codecs) {
+    codecs.push_back(ToRtpCodecParameters(webrtc_codec));
   }
   parameters->setCodecs(codecs);
 

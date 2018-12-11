@@ -119,6 +119,7 @@ class CONTENT_EXPORT RTCRtpReceiver : public blink::WebRTCRtpReceiver {
   GetSources() override;
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>,
                 blink::RTCStatsFilter) override;
+  std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
 
  private:
   class RTCRtpReceiverInternal;

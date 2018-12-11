@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_contributing_source.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receive_parameters.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -33,6 +34,7 @@ class RTCRtpReceiver final : public ScriptWrappable {
   static RTCRtpCapabilities* getCapabilities(const String& kind);
 
   MediaStreamTrack* track() const;
+  RTCRtpReceiveParameters* getParameters();
   const HeapVector<Member<RTCRtpContributingSource>>& getContributingSources();
   ScriptPromise getStats(ScriptState*);
 
