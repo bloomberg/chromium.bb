@@ -106,6 +106,7 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
   // directories below.
   static const base::FilePath::CharType* const kLocalAccessWhiteList[] = {
       "/home/chronos/user/Downloads",
+      "/home/chronos/user/MyFiles",
       "/home/chronos/user/log",
       "/home/chronos/user/WebRTC Logs",
       "/media",
@@ -127,6 +128,7 @@ bool IsAccessAllowedInternal(const base::FilePath& path,
   if (!profile_path.empty()) {
     const base::FilePath downloads = profile_path.AppendASCII("Downloads");
     whitelist.push_back(downloads);
+    whitelist.push_back(profile_path.AppendASCII("MyFiles"));
     const base::FilePath webrtc_logs = profile_path.AppendASCII("WebRTC Logs");
     whitelist.push_back(webrtc_logs);
   }
