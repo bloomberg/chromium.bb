@@ -81,5 +81,5 @@ public class UrlConstants {
     public static final String CHROME_MEMEX_DEV_URL = "https://chrome-memex-dev.appspot.com/";
 
     public static final String EXPLORE_HOST = "explore";
-    public static final String EXPLORE_URL = "chrome-native://explore/";
+    public static final String EXPLORE_URL = "chrome-native://explore";
 }
