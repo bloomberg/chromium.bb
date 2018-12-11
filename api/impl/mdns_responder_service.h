@@ -38,12 +38,11 @@ class MdnsResponderService final : public ScreenListenerImpl::Delegate,
       std::unique_ptr<MdnsPlatformService> platform);
   ~MdnsResponderService() override;
 
-  void SetServiceConfig(
-      const std::string& hostname,
-      const std::string& instance,
-      uint16_t port,
-      const std::vector<platform::InterfaceIndex> whitelist,
-      const std::map<std::string, std::string>& txt_data);
+  void SetServiceConfig(const std::string& hostname,
+                        const std::string& instance,
+                        uint16_t port,
+                        const std::vector<platform::InterfaceIndex> whitelist,
+                        const std::map<std::string, std::string>& txt_data);
 
   void HandleNewEvents(const std::vector<platform::ReceivedData>& data);
 

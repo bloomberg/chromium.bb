@@ -134,7 +134,7 @@ std::string MakeTxtData(const std::map<std::string, std::string>& txt_data) {
     const auto key_size = line.first.size();
     const auto value_size = line.second.size();
     const auto line_size = value_size ? (key_size + 1 + value_size) : key_size;
-    if (IsValidTxtDataKey(line.first) || line_size > kMaxDnsStringLength ||
+    if (!IsValidTxtDataKey(line.first) || line_size > kMaxDnsStringLength ||
         (txt.size() + 1 + line_size) > kMaxStaticTxtDataSize) {
       return {};
     }
