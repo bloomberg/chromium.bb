@@ -465,6 +465,7 @@ Signer.prototype.doSign_ = async function() {
   }).then(shouldUseWebAuthn => {
     if (shouldUseWebAuthn) {
       // If we can proxy to WebAuthn, send the request via WebAuthn.
+      console.log('Proxying sign request to WebAuthn');
       return this.doSignWebAuthn_(encodedChallenges, challengeVal);
     }
     var request = makeSignHelperRequest(
