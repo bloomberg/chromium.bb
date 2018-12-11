@@ -48,7 +48,7 @@ UsbDeviceLinux::~UsbDeviceLinux() = default;
 #if defined(OS_CHROMEOS)
 
 void UsbDeviceLinux::CheckUsbAccess(ResultCallback callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   chromeos::PermissionBrokerClient* client =
       chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   DCHECK(client) << "Could not get permission broker client.";
@@ -59,7 +59,7 @@ void UsbDeviceLinux::CheckUsbAccess(ResultCallback callback) {
 #endif  // defined(OS_CHROMEOS)
 
 void UsbDeviceLinux::Open(OpenCallback callback) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
 #if defined(OS_CHROMEOS)
   chromeos::PermissionBrokerClient* client =
@@ -127,7 +127,7 @@ void UsbDeviceLinux::Opened(
     base::ScopedFD fd,
     OpenCallback callback,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
-  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   scoped_refptr<UsbDeviceHandle> device_handle =
       new UsbDeviceHandleUsbfs(this, std::move(fd), blocking_task_runner);
   handles().push_back(device_handle.get());

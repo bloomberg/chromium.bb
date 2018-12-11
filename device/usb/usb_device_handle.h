@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_checker.h"
 #include "device/usb/public/mojom/device.mojom.h"
 #include "device/usb/usb_descriptors.h"
 

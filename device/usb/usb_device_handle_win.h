@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/win/scoped_handle.h"
 #include "device/usb/scoped_winusb_handle.h"
 #include "device/usb/usb_device_handle.h"
@@ -20,7 +20,6 @@
 namespace base {
 class RefCountedBytes;
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }
 
 namespace device {
@@ -75,16 +74,11 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   friend class UsbDeviceWin;
 
   // Constructor used to build a connection to the device.
-  UsbDeviceHandleWin(
-      scoped_refptr<UsbDeviceWin> device,
-      bool composite,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device, bool composite);
 
   // Constructor used to build a connection to the device's parent hub.
-  UsbDeviceHandleWin(
-      scoped_refptr<UsbDeviceWin> device,
-      base::win::ScopedHandle handle,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  UsbDeviceHandleWin(scoped_refptr<UsbDeviceWin> device,
+                     base::win::ScopedHandle handle);
 
   ~UsbDeviceHandleWin() override;
 
@@ -146,7 +140,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
                               IsochronousTransferCallback callback,
                               UsbTransferStatus status);
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<UsbDeviceWin> device_;
 
@@ -164,7 +158,7 @@ class UsbDeviceHandleWin : public UsbDeviceHandle {
   std::map<uint8_t, Endpoint> endpoints_;
   std::map<Request*, std::unique_ptr<Request>> requests_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   base::WeakPtrFactory<UsbDeviceHandleWin> weak_factory_;

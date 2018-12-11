@@ -37,7 +37,6 @@ class UsbContext : public base::RefCountedThreadSafe<UsbContext> {
 
   PlatformUsbContext context_;
   std::unique_ptr<UsbEventHandler> event_handler_;
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbContext);
 };

@@ -19,7 +19,6 @@ struct usbdevfs_urb;
 
 namespace base {
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }
 
 namespace device {
@@ -77,7 +76,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
  protected:
   ~UsbDeviceHandleUsbfs() override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+  scoped_refptr<base::SequencedTaskRunner> task_runner() const {
     return task_runner_;
   }
 
@@ -89,7 +88,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   virtual void CloseBlocking();
 
  private:
-  class FileThreadHelper;
+  class BlockingTaskHelper;
   struct Transfer;
   struct InterfaceInfo {
     uint8_t alternate_setting;
@@ -125,7 +124,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   scoped_refptr<UsbDevice> device_;
   int fd_;  // Copy of the base::ScopedFD held by |helper_| valid if |device_|.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // Maps claimed interfaces by interface number to their current alternate
@@ -139,7 +138,7 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
 
   // Helper object exists on the blocking task thread and all calls to it and
   // its destruction must be posted there.
-  std::unique_ptr<FileThreadHelper> helper_;
+  std::unique_ptr<BlockingTaskHelper> helper_;
 
   std::list<std::unique_ptr<Transfer>> transfers_;
   base::SequenceChecker sequence_checker_;
