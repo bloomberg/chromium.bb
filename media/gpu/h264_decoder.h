@@ -168,6 +168,7 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
   DecodeResult Decode() override WARN_UNUSED_RESULT;
   gfx::Size GetPicSize() const override;
   size_t GetRequiredNumOfPictures() const override;
+  size_t GetNumReferenceFrames() const override;
 
   // Return true if we need to start a new picture.
   static bool IsNewPrimaryCodedPicture(const H264Picture* curr_pic,
@@ -182,17 +183,6 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
                                              H264Picture* pic);
 
  private:
-  // We need to keep at most kDPBMaxSize pictures in DPB for
-  // reference/to display later and an additional one for the one currently
-  // being decoded. We also ask for some additional ones since VDA needs
-  // to accumulate a few ready-to-output pictures before it actually starts
-  // displaying and giving them back. +2 instead of +1 because of subjective
-  // smoothness improvement during testing.
-  enum {
-    kPicsInPipeline = limits::kMaxVideoFrames + 2,
-    kMaxNumReqPictures = H264DPB::kDPBMaxSize + kPicsInPipeline,
-  };
-
   // Internal state of the decoder.
   enum State {
     // After initialization, need an SPS.
