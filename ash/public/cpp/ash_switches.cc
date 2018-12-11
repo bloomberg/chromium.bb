@@ -21,10 +21,6 @@ const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 // Disables the dimming and blur of the wallpaper on login and lock screens.
 const char kAshDisableLoginDimAndBlur[] = "ash-disable-login-dim-and-blur";
 
-// Disables a smoother animation for screen rotation.
-const char kAshDisableSmoothScreenRotation[] =
-    "ash-disable-smooth-screen-rotation";
-
 // Disables the split view on tablet mode.
 const char kAshDisableTabletSplitView[] = "disable-tablet-splitview";
 

@@ -3109,11 +3109,6 @@ const char kAshDisableLoginDimAndBlurName[] =
 const char kAshDisableLoginDimAndBlurDescription[] =
     "Disable dimming and blur on login screen.";
 
-const char kAshDisableSmoothScreenRotationName[] =
-    "Disable smooth rotation animations.";
-const char kAshDisableSmoothScreenRotationDescription[] =
-    "Disable smooth rotation animations.";
-
 const char kAshEnableDisplayMoveWindowAccelsName[] =
     "Enable shortcuts for moving window between displays.";
 const char kAshEnableDisplayMoveWindowAccelsDescription[] =

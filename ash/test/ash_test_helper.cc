@@ -136,18 +136,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
         ::switches::kHostWindowBounds, "1+1-800x600");
   }
 
-  // TODO(wutao): We enabled a smooth screen rotation animation, which is using
-  // an asynchronous method. However for some tests require to evaluate the
-  // screen rotation immediately after the operation of setting display
-  // rotation, we need to append a slow screen rotation animation flag to pass
-  // the tests. When we remove the flag "ash-disable-smooth-screen-rotation", we
-  // need to disable the screen rotation animation in the test.
-  if (!command_line_->GetProcessCommandLine()->HasSwitch(
-          switches::kAshDisableSmoothScreenRotation)) {
-    command_line_->GetProcessCommandLine()->AppendSwitch(
-        switches::kAshDisableSmoothScreenRotation);
-  }
-
   statistics_provider_ =
       std::make_unique<chromeos::system::ScopedFakeStatisticsProvider>();
 

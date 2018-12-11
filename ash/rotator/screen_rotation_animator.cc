@@ -166,12 +166,6 @@ ScreenRotationAnimator::ScreenRotationAnimator(aura::Window* root_window)
       metrics_reporter_(
           std::make_unique<ScreenRotationAnimationMetricsReporter>()),
       disable_animation_timers_for_test_(false),
-      // TODO(wutao): remove the flag. http://crbug.com/707800.
-      has_switch_ash_disable_smooth_screen_rotation_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAshDisableSmoothScreenRotation) &&
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kAshDisableSmoothScreenRotation) != "false"),
       weak_factory_(this) {}
 
 ScreenRotationAnimator::~ScreenRotationAnimator() {
@@ -198,9 +192,8 @@ void ScreenRotationAnimator::StartRotationAnimation(
   }
 
   rotation_request->old_rotation = current_rotation;
-  if (has_switch_ash_disable_smooth_screen_rotation_ ||
-      DisplayConfigurationController::ANIMATION_SYNC ==
-          rotation_request->mode) {
+  if (DisplayConfigurationController::ANIMATION_SYNC ==
+      rotation_request->mode) {
     StartSlowAnimation(std::move(rotation_request));
   } else {
     current_async_rotation_request_ = ScreenRotationRequest(*rotation_request);
@@ -372,8 +365,7 @@ void ScreenRotationAnimator::AnimateRotation(
   ui::Layer* screen_rotation_container_layer =
       GetScreenRotationContainer(root_window_)->layer();
   ui::Layer* new_root_layer;
-  if (!new_layer_tree_owner_ ||
-      has_switch_ash_disable_smooth_screen_rotation_) {
+  if (!new_layer_tree_owner_) {
     new_root_layer = screen_rotation_container_layer;
   } else {
     new_root_layer = new_layer_tree_owner_->root();
