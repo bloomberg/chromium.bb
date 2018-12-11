@@ -31,13 +31,6 @@
 -URLRequestTestHTTP.Redirect301Tests
 -URLRequestTestHTTP.Redirect302Tests
 
-# Flaky hangs, https://crbug.com/913155.
--NetworkErrorLoggingEndToEndTest.ReportNetworkError
--NetworkErrorLoggingEndToEndTest.UploadAtShutdown
-
-# Flaky test server spawning, https://crbug.com/913156.
--SSLClientSocketReadTest.*
-
 # SocketPosix::IsConnected has a different behavior on Fuchsia.
 # https://crbug.com/887587.
 -TCPSocketTest.BeforeConnectCallback
