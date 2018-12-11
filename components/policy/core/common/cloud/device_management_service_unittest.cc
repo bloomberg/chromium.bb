@@ -1195,7 +1195,7 @@ TEST_F(DeviceManagementRequestAuthTest, CannotUseOAuthTokenAsAuthData) {
       service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
                           shared_url_loader_factory_));
   ASSERT_DEATH(request_job->SetAuthData(DMAuth::FromOAuthToken(kOAuthToken)),
-               "This method does not accept OAuth2");
+               "");
 }
 
 }  // namespace policy
