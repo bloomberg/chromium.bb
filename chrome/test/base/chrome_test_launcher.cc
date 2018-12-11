@@ -147,7 +147,9 @@ int LaunchChromeTests(size_t parallel_jobs,
   install_static::ScopedInstallDetails install_details;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  ChromeCrashReporterClient::Create();
+#elif defined(OS_WIN)
   // We leak this pointer intentionally. The crash client needs to outlive
   // all other code.
   ChromeCrashReporterClient* crash_client = new ChromeCrashReporterClient();

@@ -27,10 +27,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/app/chrome_crash_reporter_client.h"
 #include "chrome/app_shim/app_shim_controller.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/crash/content/app/crashpad.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -182,6 +184,9 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
   base::mac::SetOverrideOuterBundlePath(info->chrome_outer_bundle_path);
   base::mac::SetOverrideFrameworkBundlePath(
       info->chrome_versioned_path.Append(chrome::kFrameworkName));
+
+  ChromeCrashReporterClient::Create();
+  crash_reporter::InitializeCrashpad(true, "app_shim");
 
   // Calculate the preferred locale used by Chrome.
   // We can't use l10n_util::OverrideLocaleWithCocoaLocale() because it calls
