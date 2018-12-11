@@ -364,7 +364,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   if (preskip) {
     if (!seg->segid_preskip) return 0;
   } else {
-    if (seg->segid_preskip) return mbmi->segment_id;
     if (mbmi->skip) {
       if (seg->temporal_update) {
         mbmi->seg_id_predicted = 0;
@@ -1500,7 +1499,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   else
     mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
 
-  mbmi->segment_id = read_inter_segment_id(cm, xd, mi_row, mi_col, 0, r);
+  if (!cm->seg.segid_preskip)
+    mbmi->segment_id = read_inter_segment_id(cm, xd, mi_row, mi_col, 0, r);
 
   read_cdef(cm, r, xd, mi_col, mi_row);
 
