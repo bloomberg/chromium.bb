@@ -15,7 +15,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/passwords/credential_manager_features.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/js_test_util.h"

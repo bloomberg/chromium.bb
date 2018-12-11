@@ -22,7 +22,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/ios_chrome_main_parts.h"
-#include "ios/chrome/browser/passwords/credential_manager_features.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/ssl/ios_ssl_error_handler.h"
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 #import "ios/chrome/browser/web/error_page_util.h"
