@@ -84,13 +84,13 @@ class PLATFORM_EXPORT CallbackInterfaceBase
   }
 
  protected:
-  CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
-                        v8::Local<v8::Context> callback_object_creation_context,
-                        SingleOperationOrNot);
+  explicit CallbackInterfaceBase(v8::Local<v8::Object> callback_object,
+                                 SingleOperationOrNot);
 
   // Returns true iff the callback interface is a single operation callback
   // interface and the callback interface type value is callable.
   bool IsCallbackObjectCallable() const { return is_callback_object_callable_; }
+
   ScriptState* IncumbentScriptState() { return incumbent_script_state_; }
 
  private:

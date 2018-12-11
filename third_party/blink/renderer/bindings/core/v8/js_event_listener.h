@@ -26,8 +26,7 @@ class CORE_EXPORT JSEventListener final : public JSBasedEventListener {
                   v8::Local<v8::Object> listener,
                   const V8PrivateProperty::Symbol& property)
       : JSBasedEventListener(kJSEventListenerType),
-        event_listener_(V8EventListener::CreateOrNull(listener)) {
-    DCHECK(event_listener_);
+        event_listener_(V8EventListener::Create(listener)) {
     Attach(script_state, listener, property, this);
   }
 
