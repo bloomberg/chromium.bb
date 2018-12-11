@@ -43,10 +43,6 @@ namespace content {
 namespace {
 
 // Any reasonable size, will be overridden by the decoder anyway.
-//
-// TODO(sandersd): DXVA VDA does not compute a visible rect itself; we should
-// not enable RTCVideoDecoderAdapter on Windows until that is fixed.
-// https://crbug.com/869660.
 const gfx::Size kDefaultSize(640, 480);
 
 // Assumed pixel format of the encoded content. WebRTC doesn't tell us, and in
