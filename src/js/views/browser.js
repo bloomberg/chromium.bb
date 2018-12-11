@@ -86,7 +86,7 @@ cca.views.Browser.prototype = {
  */
 cca.views.Browser.prototype.prepare = function() {
   // Hide export-button if using external file system.
-  if (cca.models.FileSystem.externalFs) {
+  if (cca.models.FileSystem.externalDir) {
     document.querySelector('#browser-export').hidden = true;
   }
 };
