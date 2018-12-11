@@ -84,7 +84,7 @@ class BuilderTest(LoggingTestCase):
             'https://test-results.appspot.com/data/layout_results/B/results/layout-test-results/failing_results.json\n'
         ])
 
-    def test_fetch_web_test_results_weird_step_name(self):
+    def test_fetch_results_with_weird_step_name(self):
         buildbot = BuildBot()
 
         def fetch_file(url):
@@ -101,6 +101,10 @@ class BuilderTest(LoggingTestCase):
         })
         self.assertLog([])
 
+    def test_fetch_results_without_build_number(self):
+        buildbot = BuildBot()
+        self.assertIsNone(buildbot.fetch_results(Build('builder', None)))
+
     def test_get_step_name(self):
         buildbot = BuildBot()
 
@@ -115,6 +119,10 @@ class BuilderTest(LoggingTestCase):
         step_name = buildbot.get_layout_test_step_name(Build('foo', 5))
         self.assertEqual(step_name, 'webkit_layout_tests (with patch)')
         self.assertLog([])
+
+    def test_get_step_name_without_build_number(self):
+        buildbot = BuildBot()
+        self.assertIsNone(buildbot.get_layout_test_step_name(Build('builder', None)))
 
 
 class BuildBotHelperFunctionTest(unittest.TestCase):
