@@ -183,3 +183,22 @@ tbody:not(:first-of-type) td.cell-provider-and-type .pair-item:first-child {
 .cell-contents-and-description .pair-item:first-child {
   color: blue;
 }
+
+.cell-fill-and-inline .pair-item {
+  display: inline-block;
+  vertical-align: middle;
+  word-break: break-all;
+}
+
+.cell-fill-and-inline .pair-item:first-child {
+  border: 1px solid white;
+}
+
+.cell-fill-and-inline .pair-item:nth-child(2):not(:empty) {
+  border: 1px solid;
+  font-weight: bold;
+}
+
+.cell-fill-and-inline .overlap-warning {
+  color: red;
+}
