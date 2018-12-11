@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <MessageUI/MessageUI.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 #import <QuartzCore/QuartzCore.h>
 
