@@ -248,8 +248,70 @@ def _DuplicateZhResources(resource_dirs):
   return renamed_paths
 
 
+def _RenameLocaleResourceDirs(resource_dirs):
+  """Rename locale resource directories into standard names when necessary.
+
+  This is necessary to deal with the fact that older Android releases only
+  support ISO 639-1 two-letter codes, and sometimes even obsolete versions
+  of them.
+
+  In practice it means:
+    * 3-letter ISO 639-2 qualifiers are renamed under a corresponding
+      2-letter one. E.g. for Filipino, strings under values-fil/ will be moved
+      to a new corresponding values-tl/ sub-directory.
+
+    * Modern ISO 639-1 codes will be renamed to their obsolete variant
+      for Indonesian, Hebrew and Yiddish (e.g. 'values-in/ -> values-id/).
+
+    * BCP 47 langauge tags will be renamed to an equivalent ISO 639-1
+      locale qualifier if possible (e.g. 'values-b+en+US/ -> values-en-rUS').
+      Though this is not necessary at the moment, because no third-party
+      package that Chromium links against uses these for the current list of
+      supported locales, this may change when the list is extended in the
+      future).
+
+  Args:
+    resource_dirs: list of top-level resource directories.
+  Returns:
+    A dictionary mapping renamed paths to their original location
+    (e.g. '.../values-tl/strings.xml' -> ' .../values-fil/strings.xml').
+  """
+  renamed_paths = dict()
+  for resource_dir in resource_dirs:
+    for path in _IterFiles(resource_dir):
+      locale = resource_utils.FindLocaleInStringResourceFilePath(path)
+      if not locale:
+        continue
+      cr_locale = resource_utils.ToChromiumLocaleName(locale)
+      if not cr_locale:
+        continue  # Unsupported Android locale qualifier!?
+      locale2 = resource_utils.ToAndroidLocaleName(cr_locale)
+      if locale != locale2:
+        path2 = path.replace('/values-%s/' % locale, '/values-%s/' % locale2)
+        if path == path2:
+          raise Exception('Could not substitute locale %s for %s in %s' %
+                          (locale, locale2, path))
+        if os.path.exists(path2):
+          # This happens sometimes, e.g. the Android support library comes
+          # with both values-sr/ and values-b+sr+Latn/.
+          continue
+        build_utils.MakeDirectory(os.path.dirname(path2))
+        shutil.move(path, path2)
+        renamed_paths[os.path.relpath(path2, resource_dir)] = os.path.relpath(
+            path, resource_dir)
+  return renamed_paths
+
+
 def _ToAndroidLocales(locale_whitelist, support_zh_hk):
-  """Converts the list of Chrome locales to aapt config locales."""
+  """Converts the list of Chrome locales to Android config locale qualifiers.
+
+  Args:
+    locale_whitelist: A list of Chromium locale names.
+    support_zh_hk: True if we need to support zh-HK by duplicating
+      the zh-TW strings.
+  Returns:
+    A list of matching Android config locale qualifier names.
+  """
   ret = set()
   for locale in locale_whitelist:
     locale = resource_utils.ToAndroidLocaleName(locale)
@@ -570,6 +632,7 @@ def _PackageApk(options, dep_subdirs, temp_dir, gen_dir, r_txt_path):
   """
   renamed_paths = dict()
   renamed_paths.update(_DuplicateZhResources(dep_subdirs))
+  renamed_paths.update(_RenameLocaleResourceDirs(dep_subdirs))
 
   # Create a function that selects which resource files should be packaged
   # into the final output. Any file that does not pass the predicate will
