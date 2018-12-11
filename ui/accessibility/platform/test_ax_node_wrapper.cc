@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_table_info.h"
+#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace ui {
@@ -20,15 +21,10 @@ base::hash_map<AXNode*, TestAXNodeWrapper*> g_node_to_wrapper_map;
 // A global coordinate offset.
 gfx::Vector2d g_offset;
 
-// A simple implementation of AXTreeDelegate to catch when AXNodes are
+// A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their wrappers.
-class TestAXTreeDelegate : public AXTreeDelegate {
-  void OnNodeDataWillChange(AXTree* tree,
-                            const AXNodeData& old_node_data,
-                            const AXNodeData& new_node_data) override {}
-  void OnTreeDataChanged(AXTree* tree,
-                         const AXTreeData& old_data,
-                         const AXTreeData& new_data) override {}
+class TestAXTreeObserver : public AXTreeObserver {
+ private:
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     auto iter = g_node_to_wrapper_map.find(node);
     if (iter != g_node_to_wrapper_map.end()) {
@@ -37,18 +33,9 @@ class TestAXTreeDelegate : public AXTreeDelegate {
       g_node_to_wrapper_map.erase(iter->first);
     }
   }
-  void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) override {}
-  void OnNodeWillBeReparented(AXTree* tree, AXNode* node) override {}
-  void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) override {}
-  void OnNodeCreated(AXTree* tree, AXNode* node) override {}
-  void OnNodeReparented(AXTree* tree, AXNode* node) override {}
-  void OnNodeChanged(AXTree* tree, AXNode* node) override {}
-  void OnAtomicUpdateFinished(AXTree* tree,
-                              bool root_changed,
-                              const std::vector<Change>& changes) override {}
 };
 
-TestAXTreeDelegate g_ax_tree_delegate;
+TestAXTreeObserver g_ax_tree_observer;
 
 }  // namespace
 
@@ -57,7 +44,8 @@ TestAXNodeWrapper* TestAXNodeWrapper::GetOrCreate(AXTree* tree, AXNode* node) {
   if (!tree || !node)
     return nullptr;
 
-  tree->SetDelegate(&g_ax_tree_delegate);
+  if (!tree->HasObserver(&g_ax_tree_observer))
+    tree->AddObserver(&g_ax_tree_observer);
   auto iter = g_node_to_wrapper_map.find(node);
   if (iter != g_node_to_wrapper_map.end())
     return iter->second;

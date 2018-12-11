@@ -113,31 +113,31 @@ void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
 }
 
 void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
-    AXEventGenerator::Event event_type,
+    ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
 
   switch (event_type) {
-    case Event::CHECKED_STATE_CHANGED:
+    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
       FireEvent(node, ax::mojom::Event::kCheckedStateChanged);
       break;
-    case Event::COLLAPSED:
+    case ui::AXEventGenerator::Event::COLLAPSED:
       FireExpandedEvent(node, false);
       break;
-    case Event::EXPANDED:
+    case ui::AXEventGenerator::Event::EXPANDED:
       FireExpandedEvent(node, true);
       break;
-    case Event::LOAD_COMPLETE:
+    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireLoadingEvent(node, false);
       break;
-    case Event::LOAD_START:
+    case ui::AXEventGenerator::Event::LOAD_START:
       FireLoadingEvent(node, true);
       break;
-    case Event::MENU_ITEM_SELECTED:
-    case Event::SELECTED_CHANGED:
+    case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
+    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
       FireSelectedEvent(node);
       break;
-    case Event::VALUE_CHANGED:
+    case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireEvent(node, ax::mojom::Event::kValueChanged);
       break;
     default:
@@ -149,7 +149,7 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
 void BrowserAccessibilityManagerAuraLinux::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
+    const std::vector<ui::AXTreeObserver::Change>& changes) {
   BrowserAccessibilityManager::OnAtomicUpdateFinished(tree, root_changed,
                                                       changes);
 

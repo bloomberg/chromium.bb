@@ -104,12 +104,13 @@ void BrowserAccessibilityManagerWin::FireBlinkEvent(
 }
 
 void BrowserAccessibilityManagerWin::FireGeneratedEvent(
-    AXEventGenerator::Event event_type,
+    ui::AXEventGenerator::Event event_type,
     BrowserAccessibility* node) {
   BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
   bool can_fire_events = CanFireEvents();
 
-  if (event_type == Event::LOAD_COMPLETE && can_fire_events)
+  if (event_type == ui::AXEventGenerator::Event::LOAD_COMPLETE &&
+      can_fire_events)
     load_complete_pending_ = false;
 
   if (load_complete_pending_ && can_fire_events && GetRoot()) {
@@ -118,22 +119,22 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
   }
 
   if (!can_fire_events && !load_complete_pending_ &&
-      event_type == Event::LOAD_COMPLETE && GetRoot() &&
+      event_type == ui::AXEventGenerator::Event::LOAD_COMPLETE && GetRoot() &&
       !GetRoot()->IsOffscreen() && GetRoot()->PlatformChildCount() > 0) {
     load_complete_pending_ = true;
   }
 
   switch (event_type) {
-    case Event::ACTIVE_DESCENDANT_CHANGED:
+    case ui::AXEventGenerator::Event::ACTIVE_DESCENDANT_CHANGED:
       FireWinAccessibilityEvent(IA2_EVENT_ACTIVE_DESCENDANT_CHANGED, node);
       break;
-    case Event::ALERT:
+    case ui::AXEventGenerator::Event::ALERT:
       FireWinAccessibilityEvent(EVENT_SYSTEM_ALERT, node);
       break;
-    case Event::CHILDREN_CHANGED:
+    case ui::AXEventGenerator::Event::CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, node);
       break;
-    case Event::LIVE_REGION_CHANGED:
+    case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
       // however, JAWS 2018 and earlier do not process the text inserted
       // events when "virtual cursor mode" is turned off (Insert+Z).
@@ -147,16 +148,16 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // EVENT_OBJECT_SHOW).
       FireWinAccessibilityEvent(EVENT_OBJECT_LIVEREGIONCHANGED, node);
       break;
-    case Event::LOAD_COMPLETE:
+    case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);
       break;
-    case Event::SCROLL_POSITION_CHANGED:
+    case ui::AXEventGenerator::Event::SCROLL_POSITION_CHANGED:
       FireWinAccessibilityEvent(EVENT_SYSTEM_SCROLLINGEND, node);
       break;
-    case Event::SELECTED_CHILDREN_CHANGED:
+    case ui::AXEventGenerator::Event::SELECTED_CHILDREN_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_SELECTIONWITHIN, node);
       break;
-    case Event::DOCUMENT_SELECTION_CHANGED: {
+    case ui::AXEventGenerator::Event::DOCUMENT_SELECTION_CHANGED: {
       // Fire the event on the object where the focus of the selection is.
       int32_t focus_id = GetTreeData().sel_focus_object_id;
       BrowserAccessibility* focus_object = GetFromID(focus_id);
@@ -164,24 +165,24 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireWinAccessibilityEvent(IA2_EVENT_TEXT_CARET_MOVED, focus_object);
       break;
     }
-    case Event::CHECKED_STATE_CHANGED:
-    case Event::COLLAPSED:
-    case Event::DESCRIPTION_CHANGED:
-    case Event::DOCUMENT_TITLE_CHANGED:
-    case Event::EXPANDED:
-    case Event::INVALID_STATUS_CHANGED:
-    case Event::LIVE_REGION_CREATED:
-    case Event::LIVE_REGION_NODE_CHANGED:
-    case Event::LOAD_START:
-    case Event::MENU_ITEM_SELECTED:
-    case Event::NAME_CHANGED:
-    case Event::OTHER_ATTRIBUTE_CHANGED:
-    case Event::RELATED_NODE_CHANGED:
-    case Event::ROLE_CHANGED:
-    case Event::ROW_COUNT_CHANGED:
-    case Event::SELECTED_CHANGED:
-    case Event::STATE_CHANGED:
-    case Event::VALUE_CHANGED:
+    case ui::AXEventGenerator::Event::CHECKED_STATE_CHANGED:
+    case ui::AXEventGenerator::Event::COLLAPSED:
+    case ui::AXEventGenerator::Event::DESCRIPTION_CHANGED:
+    case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
+    case ui::AXEventGenerator::Event::EXPANDED:
+    case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
+    case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
+    case ui::AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
+    case ui::AXEventGenerator::Event::LOAD_START:
+    case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
+    case ui::AXEventGenerator::Event::NAME_CHANGED:
+    case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
+    case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:
+    case ui::AXEventGenerator::Event::ROLE_CHANGED:
+    case ui::AXEventGenerator::Event::ROW_COUNT_CHANGED:
+    case ui::AXEventGenerator::Event::SELECTED_CHANGED:
+    case ui::AXEventGenerator::Event::STATE_CHANGED:
+    case ui::AXEventGenerator::Event::VALUE_CHANGED:
       // There are some notifications that aren't meaningful on Windows.
       // It's okay to skip them.
       break;
@@ -246,7 +247,7 @@ gfx::Rect BrowserAccessibilityManagerWin::GetViewBounds() {
 void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
+    const std::vector<ui::AXTreeObserver::Change>& changes) {
   BrowserAccessibilityManager::OnAtomicUpdateFinished(
       tree, root_changed, changes);
 
@@ -290,7 +291,7 @@ void BrowserAccessibilityManagerWin::OnAtomicUpdateFinished(
     BrowserAccessibility* obj = GetFromAXNode(changed_node);
     if (obj && obj->IsNative()) {
       ToBrowserAccessibilityWin(obj)->GetCOM()->UpdateStep3FireEvents(
-          change.type == AXTreeDelegate::SUBTREE_CREATED);
+          change.type == AXTreeObserver::SUBTREE_CREATED);
     }
   }
 }

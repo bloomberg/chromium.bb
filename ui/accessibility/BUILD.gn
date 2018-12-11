@@ -76,6 +76,8 @@ jumbo_component("accessibility") {
     "ax_tree_id.h",
     "ax_tree_id_registry.cc",
     "ax_tree_id_registry.h",
+    "ax_tree_observer.cc",
+    "ax_tree_observer.h",
     "ax_tree_serializer.cc",
     "ax_tree_serializer.h",
     "ax_tree_source.h",

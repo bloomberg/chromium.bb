@@ -116,8 +116,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::FromID(
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : AXEventGenerator(),
-      delegate_(delegate),
+    : delegate_(delegate),
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
@@ -126,16 +125,16 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       connected_to_parent_tree_node_(false),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
-      use_custom_device_scale_factor_for_testing_(false) {
-  SetTree(tree_.get());
+      use_custom_device_scale_factor_for_testing_(false),
+      event_generator_(tree_.get()) {
+  tree_->AddObserver(this);
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
     const ui::AXTreeUpdate& initial_tree,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
-    : AXEventGenerator(),
-      delegate_(delegate),
+    : delegate_(delegate),
       factory_(factory),
       tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
@@ -143,14 +142,15 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       last_focused_manager_(nullptr),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
-      use_custom_device_scale_factor_for_testing_(false) {
-  SetTree(tree_.get());
+      use_custom_device_scale_factor_for_testing_(false),
+      event_generator_(tree_.get()) {
+  tree_->AddObserver(this);
   Initialize(initial_tree);
 }
 
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
   tree_.reset(nullptr);
-  ReleaseTree();
+  event_generator_.ReleaseTree();
   g_ax_tree_id_map.Get().erase(ax_tree_id_);
 }
 
@@ -233,7 +233,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetRoot() {
   if (!tree_)
     return nullptr;
 
-  // tree_->root() can be null during AXTreeDelegate callbacks.
+  // tree_->root() can be null during AXTreeObserver callbacks.
   ui::AXNode* root = tree_->root();
   return root ? GetFromAXNode(root) : nullptr;
 }
@@ -349,7 +349,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
 
   // If this page is hidden by an interstitial, suppress all events.
   if (GetRootManager()->hidden_by_interstitial_page()) {
-    ClearEvents();
+    event_generator_.ClearEvents();
     return;
   }
 
@@ -360,7 +360,7 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     if (!connected_to_parent_tree_node_) {
       parent->OnDataChanged();
       parent->UpdatePlatformAttributes();
-      FireGeneratedEvent(Event::CHILDREN_CHANGED, parent);
+      FireGeneratedEvent(ui::AXEventGenerator::Event::CHILDREN_CHANGED, parent);
       connected_to_parent_tree_node_ = true;
     }
   } else {
@@ -374,14 +374,14 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   GetRootManager()->FireFocusEventsIfNeeded();
 
   // Fire any events related to changes to the tree.
-  for (auto targeted_event : *this) {
+  for (auto targeted_event : event_generator_) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
     if (!event_target || !event_target->CanFireEvents())
       continue;
 
     FireGeneratedEvent(targeted_event.event_params.event, event_target);
   }
-  ClearEvents();
+  event_generator_.ClearEvents();
 
   // Fire events from Blink.
   for (uint32_t index = 0; index < details.events.size(); index++) {
@@ -1066,7 +1066,6 @@ gfx::Rect BrowserAccessibilityManager::GetPageBoundsForRange(
 
 void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                       ui::AXNode* node) {
-  AXEventGenerator::OnNodeWillBeDeleted(tree, node);
   DCHECK(node);
   if (id_wrapper_map_.find(node->id()) == id_wrapper_map_.end())
     return;
@@ -1076,7 +1075,6 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
 
 void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
                                                          ui::AXNode* node) {
-  AXEventGenerator::OnSubtreeWillBeDeleted(tree, node);
   DCHECK(node);
   BrowserAccessibility* obj = GetFromAXNode(node);
   if (obj)
@@ -1085,7 +1083,6 @@ void BrowserAccessibilityManager::OnSubtreeWillBeDeleted(ui::AXTree* tree,
 
 void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
                                                 ui::AXNode* node) {
-  AXEventGenerator::OnNodeCreated(tree, node);
   BrowserAccessibility* wrapper = factory_->Create();
   wrapper->Init(this, node);
   id_wrapper_map_[node->id()] = wrapper;
@@ -1094,7 +1091,6 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
                                                    ui::AXNode* node) {
-  AXEventGenerator::OnNodeReparented(tree, node);
   BrowserAccessibility* wrapper = GetFromID(node->id());
   if (!wrapper) {
     wrapper = factory_->Create();
@@ -1107,7 +1103,6 @@ void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,
 
 void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,
                                                 ui::AXNode* node) {
-  AXEventGenerator::OnNodeChanged(tree, node);
   DCHECK(node);
   GetFromAXNode(node)->OnDataChanged();
 }
@@ -1115,8 +1110,7 @@ void BrowserAccessibilityManager::OnNodeChanged(ui::AXTree* tree,
 void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  AXEventGenerator::OnAtomicUpdateFinished(tree, root_changed, changes);
+    const std::vector<ui::AXTreeObserver::Change>& changes) {
   bool ax_tree_id_changed = false;
   if (GetTreeData().tree_id != ui::AXTreeIDUnknown() &&
       GetTreeData().tree_id != ax_tree_id_) {

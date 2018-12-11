@@ -202,16 +202,14 @@ api::automation::EventType ToAutomationEvent(
 AutomationAXTreeWrapper::AutomationAXTreeWrapper(
     ui::AXTreeID tree_id,
     AutomationInternalCustomBindings* owner)
-    : tree_id_(tree_id), owner_(owner) {
-  // We have to initialize AXEventGenerator here - we can't do it in the
-  // initializer list because AXTree hasn't been initialized yet at that point.
-  SetTree(&tree_);
+    : tree_id_(tree_id), owner_(owner), event_generator_(&tree_) {
+  tree_.AddObserver(this);
 }
 
 AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
-  // Clearing the delegate so we don't get a callback for every node
-  // being deleted.
-  tree_.SetDelegate(nullptr);
+  // Stop observing so we don't get a callback for every node being deleted.
+  event_generator_.SetTree(nullptr);
+  tree_.RemoveObserver(this);
 }
 
 // static
@@ -237,7 +235,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   }
 
   for (const auto& update : event_bundle.updates) {
-    set_event_from(update.event_from);
+    event_generator_.set_event_from(update.event_from);
     deleted_node_ids_.clear();
     did_send_tree_change_during_unserialization_ = false;
 
@@ -283,7 +281,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
   }
 
   // Send auto-generated AXEventGenerator events.
-  for (const auto& targeted_event : *this) {
+  for (const auto& targeted_event : event_generator_) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event_params.event);
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
@@ -295,7 +293,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
                                   event_type);
     }
   }
-  ClearEvents();
+  event_generator_.ClearEvents();
 
   for (const auto& event : event_bundle.events) {
     if (event.event_type == ax::mojom::Event::kFocus ||
@@ -325,7 +323,6 @@ void AutomationAXTreeWrapper::OnNodeDataWillChange(
     ui::AXTree* tree,
     const ui::AXNodeData& old_node_data,
     const ui::AXNodeData& new_node_data) {
-  AXEventGenerator::OnNodeDataWillChange(tree, old_node_data, new_node_data);
   if (old_node_data.GetStringAttribute(ax::mojom::StringAttribute::kName) !=
       new_node_data.GetStringAttribute(ax::mojom::StringAttribute::kName))
     text_changed_node_ids_.push_back(new_node_data.id);
@@ -333,7 +330,6 @@ void AutomationAXTreeWrapper::OnNodeDataWillChange(
 
 void AutomationAXTreeWrapper::OnNodeWillBeDeleted(ui::AXTree* tree,
                                                   ui::AXNode* node) {
-  AXEventGenerator::OnNodeWillBeDeleted(tree, node);
   did_send_tree_change_during_unserialization_ |= owner_->SendTreeChangeEvent(
       api::automation::TREE_CHANGE_TYPE_NODEREMOVED, tree, node);
   deleted_node_ids_.push_back(node->id());
@@ -342,8 +338,7 @@ void AutomationAXTreeWrapper::OnNodeWillBeDeleted(ui::AXTree* tree,
 void AutomationAXTreeWrapper::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  AXEventGenerator::OnAtomicUpdateFinished(tree, root_changed, changes);
+    const std::vector<ui::AXTreeObserver::Change>& changes) {
   DCHECK_EQ(&tree_, tree);
   for (const auto change : changes) {
     ui::AXNode* node = change.node;

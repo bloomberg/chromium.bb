@@ -7,6 +7,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree.h"
+#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using ax::mojom::IntAttribute;
@@ -348,8 +349,8 @@ AXNode* AXTableInfo::CreateExtraMacColumnNode(int col_index) {
   data.id = id;
   data.role = ax::mojom::Role::kColumn;
   node->SetData(data);
-  if (tree_->delegate())
-    tree_->delegate()->OnNodeCreated(tree_, node);
+  for (AXTreeObserver& observer : tree_->observers())
+    observer.OnNodeCreated(tree_, node);
   return node;
 }
 
@@ -361,8 +362,8 @@ AXNode* AXTableInfo::CreateExtraMacTableHeaderNode() {
   data.id = id;
   data.role = ax::mojom::Role::kTableHeaderContainer;
   node->SetData(data);
-  if (tree_->delegate())
-    tree_->delegate()->OnNodeCreated(tree_, node);
+  for (AXTreeObserver& observer : tree_->observers())
+    observer.OnNodeCreated(tree_, node);
 
   return node;
 }
@@ -397,8 +398,8 @@ void AXTableInfo::UpdateExtraMacColumnNodeAttributes(int col_index) {
 
 void AXTableInfo::ClearExtraMacNodes() {
   for (size_t i = 0; i < extra_mac_nodes.size(); i++) {
-    if (tree_->delegate())
-      tree_->delegate()->OnNodeWillBeDeleted(tree_, extra_mac_nodes[i]);
+    for (AXTreeObserver& observer : tree_->observers())
+      observer.OnNodeWillBeDeleted(tree_, extra_mac_nodes[i]);
     delete extra_mac_nodes[i];
   }
 }

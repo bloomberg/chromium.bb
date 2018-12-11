@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/containers/hash_tables.h"
+#include "base/observer_list.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -20,137 +21,8 @@ namespace ui {
 
 class AXTableInfo;
 class AXTree;
+class AXTreeObserver;
 struct AXTreeUpdateState;
-
-// Used when you want to be notified when changes happen to the tree.
-//
-// Some of the notifications are called in the middle of an update operation.
-// Be careful, as the tree may be in an inconsistent state at this time;
-// don't walk the parents and children at this time:
-//   OnNodeWillBeDeleted
-//   OnSubtreeWillBeDeleted
-//   OnNodeWillBeReparented
-//   OnSubtreeWillBeReparented
-//   OnNodeCreated
-//   OnNodeReparented
-//   OnNodeChanged
-//
-// In addition, one additional notification is fired at the end of an
-// atomic update, and it provides a vector of nodes that were added or
-// changed, for final postprocessing:
-//   OnAtomicUpdateFinished
-//
-class AX_EXPORT AXTreeDelegate {
- public:
-  AXTreeDelegate();
-  virtual ~AXTreeDelegate();
-
-  // Called before a node's data gets updated.
-  virtual void OnNodeDataWillChange(AXTree* tree,
-                                    const AXNodeData& old_node_data,
-                                    const AXNodeData& new_node_data) = 0;
-
-  // Individual callbacks for every attribute of AXNodeData that can change.
-  virtual void OnRoleChanged(AXTree* tree,
-                             AXNode* node,
-                             ax::mojom::Role old_role,
-                             ax::mojom::Role new_role) {}
-  virtual void OnStateChanged(AXTree* tree,
-                              AXNode* node,
-                              ax::mojom::State state,
-                              bool new_value) {}
-  virtual void OnStringAttributeChanged(AXTree* tree,
-                                        AXNode* node,
-                                        ax::mojom::StringAttribute attr,
-                                        const std::string& old_value,
-                                        const std::string& new_value) {}
-  virtual void OnIntAttributeChanged(AXTree* tree,
-                                     AXNode* node,
-                                     ax::mojom::IntAttribute attr,
-                                     int32_t old_value,
-                                     int32_t new_value) {}
-  virtual void OnFloatAttributeChanged(AXTree* tree,
-                                       AXNode* node,
-                                       ax::mojom::FloatAttribute attr,
-                                       float old_value,
-                                       float new_value) {}
-  virtual void OnBoolAttributeChanged(AXTree* tree,
-                                      AXNode* node,
-                                      ax::mojom::BoolAttribute attr,
-                                      bool new_value) {}
-  virtual void OnIntListAttributeChanged(
-      AXTree* tree,
-      AXNode* node,
-      ax::mojom::IntListAttribute attr,
-      const std::vector<int32_t>& old_value,
-      const std::vector<int32_t>& new_value) {}
-  virtual void OnStringListAttributeChanged(
-      AXTree* tree,
-      AXNode* node,
-      ax::mojom::StringListAttribute attr,
-      const std::vector<std::string>& old_value,
-      const std::vector<std::string>& new_value) {}
-
-  // Called when tree data changes.
-  virtual void OnTreeDataChanged(AXTree* tree,
-                                 const ui::AXTreeData& old_data,
-                                 const ui::AXTreeData& new_data) = 0;
-  // Called just before a node is deleted. Its id and data will be valid,
-  // but its links to parents and children are invalid. This is called
-  // in the middle of an update, the tree may be in an invalid state!
-  virtual void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) = 0;
-
-  // Same as OnNodeWillBeDeleted, but only called once for an entire subtree.
-  // This is called in the middle of an update, the tree may be in an
-  // invalid state!
-  virtual void OnSubtreeWillBeDeleted(AXTree* tree, AXNode* node) = 0;
-
-  // Called just before a node is deleted for reparenting. See
-  // |OnNodeWillBeDeleted| for additional information.
-  virtual void OnNodeWillBeReparented(AXTree* tree, AXNode* node) = 0;
-
-  // Called just before a subtree is deleted for reparenting. See
-  // |OnSubtreeWillBeDeleted| for additional information.
-  virtual void OnSubtreeWillBeReparented(AXTree* tree, AXNode* node) = 0;
-
-  // Called immediately after a new node is created. The tree may be in
-  // the middle of an update, don't walk the parents and children now.
-  virtual void OnNodeCreated(AXTree* tree, AXNode* node) = 0;
-
-  // Called immediately after a node is reparented. The tree may be in the
-  // middle of an update, don't walk the parents and children now.
-  virtual void OnNodeReparented(AXTree* tree, AXNode* node) = 0;
-
-  // Called when a node changes its data or children. The tree may be in
-  // the middle of an update, don't walk the parents and children now.
-  virtual void OnNodeChanged(AXTree* tree, AXNode* node) = 0;
-
-  enum ChangeType {
-    NODE_CREATED,
-    SUBTREE_CREATED,
-    NODE_CHANGED,
-    NODE_REPARENTED,
-    SUBTREE_REPARENTED
-  };
-
-  struct Change {
-    Change(AXNode* node, ChangeType type) {
-      this->node = node;
-      this->type = type;
-    }
-    AXNode* node;
-    ChangeType type;
-  };
-
-  // Called at the end of the update operation. Every node that was added
-  // or changed will be included in |changes|, along with an enum indicating
-  // the type of change - either (1) a node was created, (2) a node was created
-  // and it's the root of a new subtree, or (3) a node was changed. Finally,
-  // a bool indicates if the root of the tree was changed or not.
-  virtual void OnAtomicUpdateFinished(AXTree* tree,
-                                      bool root_changed,
-                                      const std::vector<Change>& changes) = 0;
-};
 
 // AXTree is a live, managed tree of AXNode objects that can receive
 // updates from another AXTreeSource via AXTreeUpdates, and it can be
@@ -170,8 +42,11 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   explicit AXTree(const AXTreeUpdate& initial_state);
   virtual ~AXTree();
 
-  virtual void SetDelegate(AXTreeDelegate* delegate);
-  AXTreeDelegate* delegate() const { return delegate_; }
+  void AddObserver(AXTreeObserver* observer);
+  bool HasObserver(AXTreeObserver* observer);
+  void RemoveObserver(const AXTreeObserver* observer);
+
+  base::ObserverList<AXTreeObserver>& observers() { return observers_; }
 
   AXNode* root() const { return root_; }
 
@@ -327,7 +202,7 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
 
-  AXTreeDelegate* delegate_ = nullptr;
+  base::ObserverList<AXTreeObserver> observers_;
   AXNode* root_ = nullptr;
   base::hash_map<int32_t, AXNode*> id_map_;
   std::string error_;

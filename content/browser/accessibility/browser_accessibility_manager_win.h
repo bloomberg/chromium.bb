@@ -41,7 +41,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void FireFocusEvent(BrowserAccessibility* node) override;
   void FireBlinkEvent(ax::mojom::Event event_type,
                       BrowserAccessibility* node) override;
-  void FireGeneratedEvent(AXEventGenerator::Event event_type,
+  void FireGeneratedEvent(ui::AXEventGenerator::Event event_type,
                           BrowserAccessibility* node) override;
 
   void FireWinAccessibilityEvent(LONG win_event, BrowserAccessibility* node);
@@ -55,11 +55,11 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   void OnAccessibleHwndDeleted();
 
  protected:
-  // AXTreeDelegate methods.
+  // AXTreeObserver methods.
   void OnAtomicUpdateFinished(
       ui::AXTree* tree,
       bool root_changed,
-      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
+      const std::vector<ui::AXTreeObserver::Change>& changes) override;
 
  private:
   // Give BrowserAccessibilityManager::Create access to our constructor.

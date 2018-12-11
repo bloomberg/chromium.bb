@@ -15,6 +15,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_table_info.h"
+#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -112,7 +113,7 @@ struct AXTreeUpdateState {
   // This is similar to above, but we store node ids here because this list gets
   // generated before any nodes get created or re-used. Its purpose is to allow
   // us to know what nodes will be updated so we can make more intelligent
-  // decisions about when to notify delegates of removals or reparenting.
+  // decisions about when to notify observers of removals or reparenting.
   std::set<int> changed_node_ids;
 
   // Keeps track of new nodes created during this update.
@@ -124,9 +125,6 @@ struct AXTreeUpdateState {
   // Keeps track of any nodes removed. Used to identify re-parented nodes.
   std::set<int> removed_node_ids;
 };
-
-AXTreeDelegate::AXTreeDelegate() = default;
-AXTreeDelegate::~AXTreeDelegate() = default;
 
 AXTree::AXTree() {
   AXNodeData root;
@@ -150,8 +148,16 @@ AXTree::~AXTree() {
   table_info_map_.clear();
 }
 
-void AXTree::SetDelegate(AXTreeDelegate* delegate) {
-  delegate_ = delegate;
+void AXTree::AddObserver(AXTreeObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+bool AXTree::HasObserver(AXTreeObserver* observer) {
+  return observers_.HasObserver(observer);
+}
+
+void AXTree::RemoveObserver(const AXTreeObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 AXNode* AXTree::GetFromId(int32_t id) const {
@@ -165,8 +171,8 @@ void AXTree::UpdateData(const AXTreeData& new_data) {
 
   AXTreeData old_data = data_;
   data_ = new_data;
-  if (delegate_)
-    delegate_->OnTreeDataChanged(this, old_data, new_data);
+  for (AXTreeObserver& observer : observers_)
+    observer.OnTreeDataChanged(this, old_data, new_data);
 }
 
 gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
@@ -425,48 +431,46 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
     }
   }
 
-  if (delegate_) {
-    std::set<AXNode*>& new_nodes = update_state.new_nodes;
-    std::vector<AXTreeDelegate::Change> changes;
-    changes.reserve(update.nodes.size());
-    for (size_t i = 0; i < update.nodes.size(); ++i) {
-      AXNode* node = GetFromId(update.nodes[i].id);
-      if (!node)
-        continue;
+  std::set<AXNode*>& new_nodes = update_state.new_nodes;
+  std::vector<AXTreeObserver::Change> changes;
+  changes.reserve(update.nodes.size());
+  for (size_t i = 0; i < update.nodes.size(); ++i) {
+    AXNode* node = GetFromId(update.nodes[i].id);
+    if (!node)
+      continue;
 
-      bool is_new_node = new_nodes.find(node) != new_nodes.end();
-      bool is_reparented_node =
-          is_new_node && update_state.HasRemovedNode(node);
+    bool is_new_node = new_nodes.find(node) != new_nodes.end();
+    bool is_reparented_node = is_new_node && update_state.HasRemovedNode(node);
 
-      AXTreeDelegate::ChangeType change = AXTreeDelegate::NODE_CHANGED;
-      if (is_new_node) {
-        if (is_reparented_node) {
-          // A reparented subtree is any new node whose parent either doesn't
-          // exist, or whose parent is not new.
-          // Note that we also need to check for the special case when we update
-          // the root without replacing it.
-          bool is_subtree = !node->parent() ||
-                            new_nodes.find(node->parent()) == new_nodes.end() ||
-                            (node->parent() == root_ && root_updated);
-          change = is_subtree ? AXTreeDelegate::SUBTREE_REPARENTED
-                              : AXTreeDelegate::NODE_REPARENTED;
-        } else {
-          // A new subtree is any new node whose parent is either not new, or
-          // whose parent happens to be new only because it has been reparented.
-          // Note that we also need to check for the special case when we update
-          // the root without replacing it.
-          bool is_subtree = !node->parent() ||
-                            new_nodes.find(node->parent()) == new_nodes.end() ||
-                            update_state.HasRemovedNode(node->parent()) ||
-                            (node->parent() == root_ && root_updated);
-          change = is_subtree ? AXTreeDelegate::SUBTREE_CREATED
-                              : AXTreeDelegate::NODE_CREATED;
-        }
+    AXTreeObserver::ChangeType change = AXTreeObserver::NODE_CHANGED;
+    if (is_new_node) {
+      if (is_reparented_node) {
+        // A reparented subtree is any new node whose parent either doesn't
+        // exist, or whose parent is not new.
+        // Note that we also need to check for the special case when we update
+        // the root without replacing it.
+        bool is_subtree = !node->parent() ||
+                          new_nodes.find(node->parent()) == new_nodes.end() ||
+                          (node->parent() == root_ && root_updated);
+        change = is_subtree ? AXTreeObserver::SUBTREE_REPARENTED
+                            : AXTreeObserver::NODE_REPARENTED;
+      } else {
+        // A new subtree is any new node whose parent is either not new, or
+        // whose parent happens to be new only because it has been reparented.
+        // Note that we also need to check for the special case when we update
+        // the root without replacing it.
+        bool is_subtree = !node->parent() ||
+                          new_nodes.find(node->parent()) == new_nodes.end() ||
+                          update_state.HasRemovedNode(node->parent()) ||
+                          (node->parent() == root_ && root_updated);
+        change = is_subtree ? AXTreeObserver::SUBTREE_CREATED
+                            : AXTreeObserver::NODE_CREATED;
       }
-      changes.push_back(AXTreeDelegate::Change(node, change));
     }
-    delegate_->OnAtomicUpdateFinished(
-        this, root_->id() != old_root_id, changes);
+    changes.push_back(AXTreeObserver::Change(node, change));
+  }
+  for (AXTreeObserver& observer : observers_) {
+    observer.OnAtomicUpdateFinished(this, root_->id() != old_root_id, changes);
   }
 
   // Clear list_info_map_
@@ -499,8 +503,8 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
         table_info_map_.erase(table_node->id());
       }
       // See note about const_cast, above.
-      if (delegate_)
-        delegate_->OnNodeChanged(tree, table_node);
+      for (AXTreeObserver& observer : observers_)
+        observer.OnNodeChanged(tree, table_node);
     }
     return table_info;
   }
@@ -510,8 +514,8 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
     return nullptr;
 
   table_info_map_[table_node->id()] = table_info;
-  if (delegate_)
-    delegate_->OnNodeChanged(tree, table_node);
+  for (AXTreeObserver& observer : observers_)
+    observer.OnNodeChanged(tree, table_node);
 
   return table_info;
 }
@@ -526,12 +530,12 @@ AXNode* AXTree::CreateNode(AXNode* parent,
                            AXTreeUpdateState* update_state) {
   AXNode* new_node = new AXNode(this, parent, id, index_in_parent);
   id_map_[new_node->id()] = new_node;
-  if (delegate_) {
+  for (AXTreeObserver& observer : observers_) {
     if (update_state->HasChangedNode(new_node) &&
         !update_state->HasRemovedNode(new_node))
-      delegate_->OnNodeCreated(this, new_node);
+      observer.OnNodeCreated(this, new_node);
     else
-      delegate_->OnNodeReparented(this, new_node);
+      observer.OnNodeReparented(this, new_node);
   }
   return new_node;
 }
@@ -571,8 +575,8 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     node->SetData(src);
   }
 
-  if (delegate_)
-    delegate_->OnNodeChanged(this, node);
+  for (AXTreeObserver& observer : observers_)
+    observer.OnNodeChanged(this, node);
 
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
@@ -618,29 +622,33 @@ bool AXTree::UpdateNode(const AXNodeData& src,
 }
 
 void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
-  if (!delegate_)
-    return;
-
   const AXNodeData& old_data = node->data();
-  delegate_->OnNodeDataWillChange(this, old_data, new_data);
+  for (AXTreeObserver& observer : observers_)
+    observer.OnNodeDataWillChange(this, old_data, new_data);
 
-  if (old_data.role != new_data.role)
-    delegate_->OnRoleChanged(this, node, old_data.role, new_data.role);
+  if (old_data.role != new_data.role) {
+    for (AXTreeObserver& observer : observers_)
+      observer.OnRoleChanged(this, node, old_data.role, new_data.role);
+  }
 
   if (old_data.state != new_data.state) {
     for (int32_t i = static_cast<int32_t>(ax::mojom::State::kNone) + 1;
          i <= static_cast<int32_t>(ax::mojom::State::kMaxValue); ++i) {
       ax::mojom::State state = static_cast<ax::mojom::State>(i);
-      if (old_data.HasState(state) != new_data.HasState(state))
-        delegate_->OnStateChanged(this, node, state, new_data.HasState(state));
+      if (old_data.HasState(state) != new_data.HasState(state)) {
+        for (AXTreeObserver& observer : observers_)
+          observer.OnStateChanged(this, node, state, new_data.HasState(state));
+      }
     }
   }
 
   auto string_callback = [this, node](ax::mojom::StringAttribute attr,
                                       const std::string& old_string,
                                       const std::string& new_string) {
-    delegate_->OnStringAttributeChanged(this, node, attr, old_string,
+    for (AXTreeObserver& observer : observers_) {
+      observer.OnStringAttributeChanged(this, node, attr, old_string,
                                         new_string);
+    }
   };
   CallIfAttributeValuesChanged(old_data.string_attributes,
                                new_data.string_attributes, std::string(),
@@ -649,7 +657,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
   auto bool_callback = [this, node](ax::mojom::BoolAttribute attr,
                                     const bool& old_bool,
                                     const bool& new_bool) {
-    delegate_->OnBoolAttributeChanged(this, node, attr, new_bool);
+    for (AXTreeObserver& observer : observers_)
+      observer.OnBoolAttributeChanged(this, node, attr, new_bool);
   };
   CallIfAttributeValuesChanged(old_data.bool_attributes,
                                new_data.bool_attributes, false, bool_callback);
@@ -657,14 +666,16 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
   auto float_callback = [this, node](ax::mojom::FloatAttribute attr,
                                      const float& old_float,
                                      const float& new_float) {
-    delegate_->OnFloatAttributeChanged(this, node, attr, old_float, new_float);
+    for (AXTreeObserver& observer : observers_)
+      observer.OnFloatAttributeChanged(this, node, attr, old_float, new_float);
   };
   CallIfAttributeValuesChanged(old_data.float_attributes,
                                new_data.float_attributes, 0.0f, float_callback);
 
   auto int_callback = [this, node](ax::mojom::IntAttribute attr,
                                    const int& old_int, const int& new_int) {
-    delegate_->OnIntAttributeChanged(this, node, attr, old_int, new_int);
+    for (AXTreeObserver& observer : observers_)
+      observer.OnIntAttributeChanged(this, node, attr, old_int, new_int);
   };
   CallIfAttributeValuesChanged(old_data.int_attributes, new_data.int_attributes,
                                0, int_callback);
@@ -673,7 +684,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
                               ax::mojom::IntListAttribute attr,
                               const std::vector<int32_t>& old_intlist,
                               const std::vector<int32_t>& new_intlist) {
-    delegate_->OnIntListAttributeChanged(this, node, attr, old_intlist,
+    for (AXTreeObserver& observer : observers_)
+      observer.OnIntListAttributeChanged(this, node, attr, old_intlist,
                                          new_intlist);
   };
   CallIfAttributeValuesChanged(old_data.intlist_attributes,
@@ -684,7 +696,8 @@ void AXTree::CallNodeChangeCallbacks(AXNode* node, const AXNodeData& new_data) {
       [this, node](ax::mojom::StringListAttribute attr,
                    const std::vector<std::string>& old_stringlist,
                    const std::vector<std::string>& new_stringlist) {
-        delegate_->OnStringListAttributeChanged(this, node, attr,
+        for (AXTreeObserver& observer : observers_)
+          observer.OnStringListAttributeChanged(this, node, attr,
                                                 old_stringlist, new_stringlist);
       };
   CallIfAttributeValuesChanged(old_data.stringlist_attributes,
@@ -769,11 +782,11 @@ void AXTree::UpdateReverseRelations(AXNode* node, const AXNodeData& new_data) {
 void AXTree::DestroySubtree(AXNode* node,
                             AXTreeUpdateState* update_state) {
   DCHECK(update_state);
-  if (delegate_) {
+  for (AXTreeObserver& observer : observers_) {
     if (!update_state->HasChangedNode(node))
-      delegate_->OnSubtreeWillBeDeleted(this, node);
+      observer.OnSubtreeWillBeDeleted(this, node);
     else
-      delegate_->OnSubtreeWillBeReparented(this, node);
+      observer.OnSubtreeWillBeReparented(this, node);
   }
   DestroyNodeAndSubtree(node, update_state);
 }
@@ -792,11 +805,11 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
     table_info_map_.erase(node->id());
   }
 
-  if (delegate_) {
+  for (AXTreeObserver& observer : observers_) {
     if (!update_state || !update_state->HasChangedNode(node))
-      delegate_->OnNodeWillBeDeleted(this, node);
+      observer.OnNodeWillBeDeleted(this, node);
     else
-      delegate_->OnNodeWillBeReparented(this, node);
+      observer.OnNodeWillBeReparented(this, node);
   }
   id_map_.erase(node->id());
   for (int i = 0; i < node->child_count(); ++i)

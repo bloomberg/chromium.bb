@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/accessibility/ax_tree_serializer.h"
 #include "ui/gfx/transform.h"
 
@@ -54,11 +55,13 @@ bool IsNodeOffscreen(const AXTree& tree, int32_t id) {
   return result;
 }
 
-class FakeAXTreeDelegate : public AXTreeDelegate {
+class TestAXTreeObserver : public AXTreeObserver {
  public:
-  FakeAXTreeDelegate()
-      : tree_data_changed_(false),
-        root_changed_(false) {}
+  TestAXTreeObserver(AXTree* tree)
+      : tree_(tree), tree_data_changed_(false), root_changed_(false) {
+    tree_->AddObserver(this);
+  }
+  ~TestAXTreeObserver() final { tree_->RemoveObserver(this); }
 
   void OnNodeDataWillChange(AXTree* tree,
                             const AXNodeData& old_node_data,
@@ -210,6 +213,7 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   }
 
  private:
+  AXTree* tree_;
   bool tree_data_changed_;
   bool root_changed_;
   std::vector<int32_t> deleted_ids_;
@@ -431,29 +435,26 @@ TEST(AXTreeTest, NoReparentingOfRootIfNoNewRoot) {
   update.node_id_to_clear = root.id;
   update.nodes = {root, child1, child2};
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
   ASSERT_TRUE(tree.Unserialize(update));
 
-  EXPECT_EQ(0U, fake_delegate.deleted_ids().size());
-  EXPECT_EQ(0U, fake_delegate.subtree_deleted_ids().size());
-  EXPECT_EQ(0U, fake_delegate.created_ids().size());
+  EXPECT_EQ(0U, test_observer.deleted_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_deleted_ids().size());
+  EXPECT_EQ(0U, test_observer.created_ids().size());
 
-  EXPECT_EQ(0U, fake_delegate.node_creation_finished_ids().size());
-  EXPECT_EQ(0U, fake_delegate.subtree_creation_finished_ids().size());
-  EXPECT_EQ(0U, fake_delegate.node_reparented_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_reparented_finished_ids().size());
 
-  ASSERT_EQ(2U, fake_delegate.subtree_reparented_finished_ids().size());
-  EXPECT_EQ(child1.id, fake_delegate.subtree_reparented_finished_ids()[0]);
-  EXPECT_EQ(child2.id, fake_delegate.subtree_reparented_finished_ids()[1]);
+  ASSERT_EQ(2U, test_observer.subtree_reparented_finished_ids().size());
+  EXPECT_EQ(child1.id, test_observer.subtree_reparented_finished_ids()[0]);
+  EXPECT_EQ(child2.id, test_observer.subtree_reparented_finished_ids()[1]);
 
-  ASSERT_EQ(1U, fake_delegate.change_finished_ids().size());
-  EXPECT_EQ(root.id, fake_delegate.change_finished_ids()[0]);
+  ASSERT_EQ(1U, test_observer.change_finished_ids().size());
+  EXPECT_EQ(root.id, test_observer.change_finished_ids()[0]);
 
-  EXPECT_FALSE(fake_delegate.root_changed());
-  EXPECT_FALSE(fake_delegate.tree_data_changed());
-
-  tree.SetDelegate(nullptr);
+  EXPECT_FALSE(test_observer.root_changed());
+  EXPECT_FALSE(test_observer.tree_data_changed());
 }
 
 TEST(AXTreeTest, ReparentRootIfRootChanged) {
@@ -484,39 +485,36 @@ TEST(AXTreeTest, ReparentRootIfRootChanged) {
   update.node_id_to_clear = root.id;
   update.nodes = {root2, child1, child2};
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
   ASSERT_TRUE(tree.Unserialize(update));
 
-  ASSERT_EQ(1U, fake_delegate.deleted_ids().size());
-  EXPECT_EQ(root.id, fake_delegate.deleted_ids()[0]);
+  ASSERT_EQ(1U, test_observer.deleted_ids().size());
+  EXPECT_EQ(root.id, test_observer.deleted_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.subtree_deleted_ids().size());
-  EXPECT_EQ(root.id, fake_delegate.subtree_deleted_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_deleted_ids().size());
+  EXPECT_EQ(root.id, test_observer.subtree_deleted_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.created_ids().size());
-  EXPECT_EQ(root2.id, fake_delegate.created_ids()[0]);
+  ASSERT_EQ(1U, test_observer.created_ids().size());
+  EXPECT_EQ(root2.id, test_observer.created_ids()[0]);
 
-  EXPECT_EQ(0U, fake_delegate.node_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_creation_finished_ids().size());
 
-  ASSERT_EQ(1U, fake_delegate.subtree_creation_finished_ids().size());
-  EXPECT_EQ(root2.id, fake_delegate.subtree_creation_finished_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_creation_finished_ids().size());
+  EXPECT_EQ(root2.id, test_observer.subtree_creation_finished_ids()[0]);
 
-  ASSERT_EQ(2U, fake_delegate.node_reparented_finished_ids().size());
-  EXPECT_EQ(child1.id, fake_delegate.node_reparented_finished_ids()[0]);
-  EXPECT_EQ(child2.id, fake_delegate.node_reparented_finished_ids()[1]);
+  ASSERT_EQ(2U, test_observer.node_reparented_finished_ids().size());
+  EXPECT_EQ(child1.id, test_observer.node_reparented_finished_ids()[0]);
+  EXPECT_EQ(child2.id, test_observer.node_reparented_finished_ids()[1]);
 
-  EXPECT_EQ(0U, fake_delegate.subtree_reparented_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.subtree_reparented_finished_ids().size());
 
-  EXPECT_EQ(0U, fake_delegate.change_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.change_finished_ids().size());
 
-  EXPECT_TRUE(fake_delegate.root_changed());
-  EXPECT_FALSE(fake_delegate.tree_data_changed());
-
-  tree.SetDelegate(nullptr);
+  EXPECT_TRUE(test_observer.root_changed());
+  EXPECT_FALSE(test_observer.tree_data_changed());
 }
 
-TEST(AXTreeTest, TreeDelegateIsCalled) {
+TEST(AXTreeTest, TreeObserverIsCalled) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(2);
@@ -533,34 +531,30 @@ TEST(AXTreeTest, TreeDelegateIsCalled) {
   update.nodes[0].child_ids.push_back(4);
   update.nodes[1].id = 4;
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
-
+  TestAXTreeObserver test_observer(&tree);
   ASSERT_TRUE(tree.Unserialize(update));
 
-  ASSERT_EQ(2U, fake_delegate.deleted_ids().size());
-  EXPECT_EQ(1, fake_delegate.deleted_ids()[0]);
-  EXPECT_EQ(2, fake_delegate.deleted_ids()[1]);
+  ASSERT_EQ(2U, test_observer.deleted_ids().size());
+  EXPECT_EQ(1, test_observer.deleted_ids()[0]);
+  EXPECT_EQ(2, test_observer.deleted_ids()[1]);
 
-  ASSERT_EQ(1U, fake_delegate.subtree_deleted_ids().size());
-  EXPECT_EQ(1, fake_delegate.subtree_deleted_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_deleted_ids().size());
+  EXPECT_EQ(1, test_observer.subtree_deleted_ids()[0]);
 
-  ASSERT_EQ(2U, fake_delegate.created_ids().size());
-  EXPECT_EQ(3, fake_delegate.created_ids()[0]);
-  EXPECT_EQ(4, fake_delegate.created_ids()[1]);
+  ASSERT_EQ(2U, test_observer.created_ids().size());
+  EXPECT_EQ(3, test_observer.created_ids()[0]);
+  EXPECT_EQ(4, test_observer.created_ids()[1]);
 
-  ASSERT_EQ(1U, fake_delegate.subtree_creation_finished_ids().size());
-  EXPECT_EQ(3, fake_delegate.subtree_creation_finished_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_creation_finished_ids().size());
+  EXPECT_EQ(3, test_observer.subtree_creation_finished_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.node_creation_finished_ids().size());
-  EXPECT_EQ(4, fake_delegate.node_creation_finished_ids()[0]);
+  ASSERT_EQ(1U, test_observer.node_creation_finished_ids().size());
+  EXPECT_EQ(4, test_observer.node_creation_finished_ids()[0]);
 
-  ASSERT_TRUE(fake_delegate.root_changed());
-
-  tree.SetDelegate(nullptr);
+  ASSERT_TRUE(test_observer.root_changed());
 }
 
-TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
+TEST(AXTreeTest, TreeObserverIsCalledForTreeDataChanges) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(1);
@@ -569,13 +563,12 @@ TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
   initial_state.tree_data.title = "Initial";
   AXTree tree(initial_state);
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
 
   // An empty update shouldn't change tree data.
   AXTreeUpdate empty_update;
   EXPECT_TRUE(tree.Unserialize(empty_update));
-  EXPECT_FALSE(fake_delegate.tree_data_changed());
+  EXPECT_FALSE(test_observer.tree_data_changed());
   EXPECT_EQ("Initial", tree.data().title);
 
   // An update with tree data shouldn't change tree data if
@@ -583,7 +576,7 @@ TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
   AXTreeUpdate ignored_tree_data_update;
   ignored_tree_data_update.tree_data.title = "Ignore Me";
   EXPECT_TRUE(tree.Unserialize(ignored_tree_data_update));
-  EXPECT_FALSE(fake_delegate.tree_data_changed());
+  EXPECT_FALSE(test_observer.tree_data_changed());
   EXPECT_EQ("Initial", tree.data().title);
 
   // An update with |has_tree_data| set should update the tree data.
@@ -591,10 +584,8 @@ TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
   tree_data_update.has_tree_data = true;
   tree_data_update.tree_data.title = "New Title";
   EXPECT_TRUE(tree.Unserialize(tree_data_update));
-  EXPECT_TRUE(fake_delegate.tree_data_changed());
+  EXPECT_TRUE(test_observer.tree_data_changed());
   EXPECT_EQ("New Title", tree.data().title);
-
-  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
@@ -607,9 +598,8 @@ TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
   initial_state.nodes[1].child_ids.push_back(3);
   initial_state.nodes[2].id = 3;
 
-  FakeAXTreeDelegate fake_delegate;
   AXTree tree(initial_state);
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
 
   AXTreeUpdate update;
   update.nodes.resize(2);
@@ -619,17 +609,17 @@ TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
   update.nodes[0].child_ids.push_back(3);
   update.nodes[1].id = 3;
   EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
-  std::vector<int> created = fake_delegate.node_creation_finished_ids();
+  std::vector<int> created = test_observer.node_creation_finished_ids();
   std::vector<int> subtree_reparented =
-      fake_delegate.subtree_reparented_finished_ids();
+      test_observer.subtree_reparented_finished_ids();
   std::vector<int> node_reparented =
-      fake_delegate.node_reparented_finished_ids();
+      test_observer.node_reparented_finished_ids();
   ASSERT_FALSE(base::ContainsValue(created, 3));
   ASSERT_TRUE(base::ContainsValue(subtree_reparented, 3));
   ASSERT_FALSE(base::ContainsValue(node_reparented, 3));
 }
 
-TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {
+TEST(AXTreeTest, TreeObserverIsNotCalledForReparenting) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
   initial_state.nodes.resize(2);
@@ -646,32 +636,29 @@ TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {
   update.nodes[0].child_ids.push_back(4);
   update.nodes[1].id = 4;
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
 
   EXPECT_TRUE(tree.Unserialize(update));
 
-  ASSERT_EQ(1U, fake_delegate.deleted_ids().size());
-  EXPECT_EQ(1, fake_delegate.deleted_ids()[0]);
+  ASSERT_EQ(1U, test_observer.deleted_ids().size());
+  EXPECT_EQ(1, test_observer.deleted_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.subtree_deleted_ids().size());
-  EXPECT_EQ(1, fake_delegate.subtree_deleted_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_deleted_ids().size());
+  EXPECT_EQ(1, test_observer.subtree_deleted_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.created_ids().size());
-  EXPECT_EQ(4, fake_delegate.created_ids()[0]);
+  ASSERT_EQ(1U, test_observer.created_ids().size());
+  EXPECT_EQ(4, test_observer.created_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.subtree_creation_finished_ids().size());
-  EXPECT_EQ(4, fake_delegate.subtree_creation_finished_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_creation_finished_ids().size());
+  EXPECT_EQ(4, test_observer.subtree_creation_finished_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.subtree_reparented_finished_ids().size());
-  EXPECT_EQ(2, fake_delegate.subtree_reparented_finished_ids()[0]);
+  ASSERT_EQ(1U, test_observer.subtree_reparented_finished_ids().size());
+  EXPECT_EQ(2, test_observer.subtree_reparented_finished_ids()[0]);
 
-  EXPECT_EQ(0U, fake_delegate.node_creation_finished_ids().size());
-  EXPECT_EQ(0U, fake_delegate.node_reparented_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_creation_finished_ids().size());
+  EXPECT_EQ(0U, test_observer.node_reparented_finished_ids().size());
 
-  ASSERT_TRUE(fake_delegate.root_changed());
-
-  tree.SetDelegate(nullptr);
+  ASSERT_TRUE(test_observer.root_changed());
 }
 
 // UAF caught by ax_tree_fuzzer
@@ -728,8 +715,7 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   initial_state.nodes[0].AddState(ax::mojom::State::kFocusable);
   AXTree tree(initial_state);
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
 
   // Change the role and state.
   AXTreeUpdate update;
@@ -743,13 +729,11 @@ TEST(AXTreeTest, RoleAndStateChangeCallbacks) {
   EXPECT_TRUE(tree.Unserialize(update));
 
   const std::vector<std::string>& change_log =
-      fake_delegate.attribute_change_log();
+      test_observer.attribute_change_log();
   ASSERT_EQ(3U, change_log.size());
   EXPECT_EQ("Role changed from button to checkBox", change_log[0]);
   EXPECT_EQ("visited changed to true", change_log[1]);
   EXPECT_EQ("checkedState changed from 2 to 1", change_log[2]);
-
-  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, AttributeChangeCallbacks) {
@@ -776,8 +760,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
                                          1);
   AXTree tree(initial_state);
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
 
   // Change existing attributes.
   AXTreeUpdate update0;
@@ -801,7 +784,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_TRUE(tree.Unserialize(update0));
 
   const std::vector<std::string>& change_log =
-      fake_delegate.attribute_change_log();
+      test_observer.attribute_change_log();
   ASSERT_EQ(9U, change_log.size());
   EXPECT_EQ("name changed from N1 to N2", change_log[0]);
   EXPECT_EQ("description changed from D1 to D2", change_log[1]);
@@ -813,8 +796,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("scrollX changed from 5 to 6", change_log[7]);
   EXPECT_EQ("scrollXMin changed from 1 to 2", change_log[8]);
 
-  FakeAXTreeDelegate fake_delegate2;
-  tree.SetDelegate(&fake_delegate2);
+  TestAXTreeObserver test_observer2(&tree);
 
   // Add and remove attributes.
   AXTreeUpdate update1;
@@ -834,7 +816,7 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_TRUE(tree.Unserialize(update1));
 
   const std::vector<std::string>& change_log2 =
-      fake_delegate2.attribute_change_log();
+      test_observer2.attribute_change_log();
   ASSERT_EQ(11U, change_log2.size());
   EXPECT_EQ("name changed from N2 to ", change_log2[0]);
   EXPECT_EQ("description changed from D2 to D3", change_log2[1]);
@@ -847,8 +829,6 @@ TEST(AXTreeTest, AttributeChangeCallbacks) {
   EXPECT_EQ("scrollXMin changed from 2 to 0", change_log2[8]);
   EXPECT_EQ("scrollX changed from 6 to 7", change_log2[9]);
   EXPECT_EQ("scrollXMax changed from 0 to 10", change_log2[10]);
-
-  tree.SetDelegate(nullptr);
 }
 
 TEST(AXTreeTest, IntListChangeCallbacks) {
@@ -872,8 +852,7 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
       ax::mojom::IntListAttribute::kRadioGroupIds, two);
   AXTree tree(initial_state);
 
-  FakeAXTreeDelegate fake_delegate;
-  tree.SetDelegate(&fake_delegate);
+  TestAXTreeObserver test_observer(&tree);
 
   // Change existing attributes.
   AXTreeUpdate update0;
@@ -887,13 +866,12 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   EXPECT_TRUE(tree.Unserialize(update0));
 
   const std::vector<std::string>& change_log =
-      fake_delegate.attribute_change_log();
+      test_observer.attribute_change_log();
   ASSERT_EQ(2U, change_log.size());
   EXPECT_EQ("controlsIds changed from 1 to 2,2", change_log[0]);
   EXPECT_EQ("radioGroupIds changed from 2,2 to 3", change_log[1]);
 
-  FakeAXTreeDelegate fake_delegate2;
-  tree.SetDelegate(&fake_delegate2);
+  TestAXTreeObserver test_observer2(&tree);
 
   // Add and remove attributes.
   AXTreeUpdate update1;
@@ -907,13 +885,11 @@ TEST(AXTreeTest, IntListChangeCallbacks) {
   EXPECT_TRUE(tree.Unserialize(update1));
 
   const std::vector<std::string>& change_log2 =
-      fake_delegate2.attribute_change_log();
+      test_observer2.attribute_change_log();
   ASSERT_EQ(3U, change_log2.size());
   EXPECT_EQ("controlsIds changed from 2,2 to ", change_log2[0]);
   EXPECT_EQ("radioGroupIds changed from 3 to 2,2", change_log2[1]);
   EXPECT_EQ("flowtoIds changed from  to 3", change_log2[2]);
-
-  tree.SetDelegate(nullptr);
 }
 
 // Create a very simple tree and make sure that we can get the bounds of
