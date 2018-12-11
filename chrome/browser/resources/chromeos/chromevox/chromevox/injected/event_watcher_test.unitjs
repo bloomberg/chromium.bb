@@ -114,7 +114,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'FocusLinksBackwards', function() {
 /**
  * Test feedback when an editable text field gets focus.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'TextFocusFeedback', function() {
+// Flaky on Chromium OS: crbug.com/622387, crbug.com/912390.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_TextFocusFeedback', function() {
   this.loadHtml('<div>' +
       '<label for="mytext">Label</label>' +
       '<input id="mytext" value="Value" title="Title" />' +
@@ -191,7 +192,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'AlertDialogFeedback', function() {
  * quickly - make sure the notification that we entered the dialog
  * isn't interrupted.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'DoubleFocusAlertDialogFeedback',
+// Flaky on Chromium OS: crbug.com/622387, crbug.com/912390.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_DoubleFocusAlertDialogFeedback',
     function() {
   this.loadHtml('<div>' +
       '<div role="alertdialog">' +
@@ -682,7 +684,8 @@ TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_DateWidget', function() {
  * Test that ChromeVox speaks the correct state when a focused control
  * changes as the result of a key up, not just key down.
  */
-TEST_F('ChromeVoxEventWatcherUnitTest', 'ToggleOnKeyUp', function() {
+// Flaky on Chromium OS: crbug.com/622387, crbug.com/912390.
+TEST_F('ChromeVoxEventWatcherUnitTest', 'DISABLED_ToggleOnKeyUp', function() {
   this.loadHtml('<div>' +
       '<div tabIndex=0 id="pressable" role="button" aria-pressed="false">' +
       'Toggle' +
