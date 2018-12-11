@@ -47,15 +47,17 @@ class MockQuicChromiumClientSession
                     const quic::QuicSocketAddress& local_address,
                     const quic::QuicSocketAddress& peer_address));
 
-  MOCK_METHOD1(OnProbeNetworkFailed,
-               void(NetworkChangeNotifier::NetworkHandle network));
+  MOCK_METHOD2(OnProbeFailed,
+               void(NetworkChangeNotifier::NetworkHandle network,
+                    const quic::QuicSocketAddress& peer_address));
 
   MOCK_METHOD2(OnSendConnectivityProbingPacket,
                bool(QuicChromiumPacketWriter* writer,
                     const quic::QuicSocketAddress& peer_address));
 
-  void OnProbeNetworkSucceeded(
+  void OnProbeSucceeded(
       NetworkChangeNotifier::NetworkHandle network,
+      const quic::QuicSocketAddress& peer_address,
       const quic::QuicSocketAddress& self_address,
       std::unique_ptr<DatagramClientSocket> socket,
       std::unique_ptr<QuicChromiumPacketWriter> writer,
@@ -259,7 +261,8 @@ TEST_F(QuicConnectivityProbingManagerTest, RetryProbingWithExponentailBackoff) {
 
   // Move forward another 1600ms, expect probing manager will no longer send any
   // connectivity probing packet but declare probing as failed .
-  EXPECT_CALL(session_, OnProbeNetworkFailed(testNetworkHandle)).Times(1);
+  EXPECT_CALL(session_, OnProbeFailed(testNetworkHandle, testPeerAddress))
+      .Times(1);
   int timeout_ms = (1 << 4) * initial_timeout_ms;
   test_task_runner_->FastForwardBy(
       base::TimeDelta::FromMilliseconds(timeout_ms));
@@ -297,7 +300,7 @@ TEST_F(QuicConnectivityProbingManagerTest, CancelProbing) {
   // Request cancel probing, manager will no longer send connectivity probing
   // packet for this probing.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, _)).Times(0);
-  EXPECT_CALL(session_, OnProbeNetworkFailed(_)).Times(0);
+  EXPECT_CALL(session_, OnProbeFailed(_, _)).Times(0);
   probing_manager_.CancelProbing(testNetworkHandle);
   test_task_runner_->RunUntilIdle();
 }
@@ -335,7 +338,8 @@ TEST_F(QuicConnectivityProbingManagerTest, ProbingWriterError) {
   // write error. Manager will notify session of the probe failure, cancel
   // probing to prevent future connectivity probing packet to be sent.
   EXPECT_CALL(session_, OnSendConnectivityProbingPacket(_, _)).Times(0);
-  EXPECT_CALL(session_, OnProbeNetworkFailed(testNetworkHandle)).Times(1);
+  EXPECT_CALL(session_, OnProbeFailed(testNetworkHandle, testPeerAddress))
+      .Times(1);
   writer_ptr->OnWriteComplete(ERR_CONNECTION_CLOSED);
   test_task_runner_->FastForwardBy(
       base::TimeDelta::FromMilliseconds(initial_timeout_ms));

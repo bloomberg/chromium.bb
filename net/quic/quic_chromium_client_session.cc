@@ -1871,8 +1871,9 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
                       quic::ConnectionCloseBehavior::SILENT_CLOSE);
 }
 
-void QuicChromiumClientSession::OnProbeNetworkSucceeded(
+void QuicChromiumClientSession::OnProbeSucceeded(
     NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress& peer_address,
     const quic::QuicSocketAddress& self_address,
     std::unique_ptr<DatagramClientSocket> socket,
     std::unique_ptr<QuicChromiumPacketWriter> writer,
@@ -1936,8 +1937,9 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
   }
 }
 
-void QuicChromiumClientSession::OnProbeNetworkFailed(
-    NetworkChangeNotifier::NetworkHandle network) {
+void QuicChromiumClientSession::OnProbeFailed(
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress& peer_address) {
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_FAILED,
       NetLog::Int64Callback("network", network));
