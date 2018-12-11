@@ -36,15 +36,6 @@ class MockProximityAuthClient : public ProximityAuthClient {
            base::Callback<void(const std::string& challenge)> callback));
   MOCK_CONST_METHOD0(GetAuthenticatedUsername, std::string(void));
   MOCK_METHOD0(GetPrefManager, ProximityAuthPrefManager*(void));
-  MOCK_METHOD0(GetDeviceClassifier, cryptauth::DeviceClassifier(void));
-  MOCK_METHOD0(GetAccountId, std::string(void));
-  MOCK_METHOD0(GetCryptAuthEnrollmentManager,
-               cryptauth::CryptAuthEnrollmentManager*(void));
-  MOCK_METHOD0(GetCryptAuthDeviceManager,
-               cryptauth::CryptAuthDeviceManager*(void));
-  std::unique_ptr<cryptauth::CryptAuthClientFactory>
-  CreateCryptAuthClientFactory() override;
-  MOCK_METHOD0(GetLocalDevicePublicKey, std::string(void));
 
   // Proxy mock methods because implementation requires returning scoped_ptr.
   MOCK_METHOD0(CreateCryptAuthClientFactoryPtr,

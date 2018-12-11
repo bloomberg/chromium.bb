@@ -12,9 +12,4 @@ MockProximityAuthClient::MockProximityAuthClient() {}
 
 MockProximityAuthClient::~MockProximityAuthClient() {}
 
-std::unique_ptr<cryptauth::CryptAuthClientFactory>
-MockProximityAuthClient::CreateCryptAuthClientFactory() {
-  return base::WrapUnique(CreateCryptAuthClientFactoryPtr());
-}
-
 }  // namespace proximity_auth

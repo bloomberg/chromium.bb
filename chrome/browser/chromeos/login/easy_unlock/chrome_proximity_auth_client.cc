@@ -90,48 +90,4 @@ ChromeProximityAuthClient::GetPrefManager() {
   return nullptr;
 }
 
-std::unique_ptr<cryptauth::CryptAuthClientFactory>
-ChromeProximityAuthClient::CreateCryptAuthClientFactory() {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return GetCryptAuthService()->CreateCryptAuthClientFactory();
-}
-
-cryptauth::DeviceClassifier ChromeProximityAuthClient::GetDeviceClassifier() {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return GetCryptAuthService()->GetDeviceClassifier();
-}
-
-std::string ChromeProximityAuthClient::GetAccountId() {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return GetCryptAuthService()->GetAccountId();
-}
-
-cryptauth::CryptAuthEnrollmentManager*
-ChromeProximityAuthClient::GetCryptAuthEnrollmentManager() {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return GetCryptAuthService()->GetCryptAuthEnrollmentManager();
-}
-
-cryptauth::CryptAuthDeviceManager*
-ChromeProximityAuthClient::GetCryptAuthDeviceManager() {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return GetCryptAuthService()->GetCryptAuthDeviceManager();
-}
-
-std::string ChromeProximityAuthClient::GetLocalDevicePublicKey() {
-  return GetDeviceSyncClient()->GetLocalDeviceMetadata()->public_key();
-}
-
-cryptauth::CryptAuthService* ChromeProximityAuthClient::GetCryptAuthService() {
-  DCHECK(!base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return ChromeCryptAuthServiceFactory::GetInstance()->GetForBrowserContext(
-      profile_);
-}
-
-device_sync::DeviceSyncClient*
-ChromeProximityAuthClient::GetDeviceSyncClient() {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
-  return device_sync::DeviceSyncClientFactory::GetForProfile(profile_);
-}
-
 }  // namespace chromeos
