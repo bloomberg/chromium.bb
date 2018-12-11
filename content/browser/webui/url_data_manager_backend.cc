@@ -271,6 +271,12 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
   TRACE_EVENT_ASYNC_END0("browser", "DataManager:Request", this);
   DCHECK(!data_);
 
+  if (!bytes) {
+    NotifyStartError(
+        net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_FAILED));
+    return;
+  }
+
   if (bytes)
     set_expected_content_size(bytes->size());
 

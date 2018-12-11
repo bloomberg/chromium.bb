@@ -47,6 +47,12 @@ base::StringPiece AwContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
+base::RefCountedMemory* AwContentClient::GetDataResourceBytes(
+    int resource_id) const {
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id);
+}
+
 bool AwContentClient::CanSendWhileSwappedOut(const IPC::Message* message) {
   // For legacy API support we perform a few browser -> renderer synchronous IPC
   // messages that block the browser. However, the synchronous IPC replies might
