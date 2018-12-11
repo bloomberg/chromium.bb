@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 
+#include <algorithm>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -649,9 +651,12 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
   std::unique_ptr<ToolbarActionViewController> removed_action =
       std::move(*iter);
   toolbar_actions_.erase(iter);
-  delegate_->RemoveViewForAction(removed_action.get());
+
+  // If we kill the view before we undo the popout, highlights and pop-ups can
+  // get left in weird states, so undo the popout first.
   if (popped_out_action_ == removed_action.get())
     UndoPopOut();
+  delegate_->RemoveViewForAction(removed_action.get());
   removed_action.reset();
 
   // If the extension is being upgraded we don't want the bar to shrink
