@@ -59,14 +59,6 @@ class CONTENT_EXPORT DWriteFontProxyImpl : public mojom::DWriteFontProxy {
   void InitializeDirectWrite();
 
  private:
-  bool AddFilesForFont(std::set<base::string16>* path_set,
-                       std::set<base::string16>* custom_font_path_set,
-                       IDWriteFont* font);
-  bool AddLocalFile(std::set<base::string16>* path_set,
-                    std::set<base::string16>* custom_font_path_set,
-                    IDWriteLocalFontFileLoader* local_loader,
-                    IDWriteFontFile* font_file);
-
   bool IsLastResortFallbackFont(uint32_t font_index);
 
  private:

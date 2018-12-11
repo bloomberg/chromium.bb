@@ -11265,6 +11265,7 @@ Called by update_net_error_codes.py.-->
   <int value="10" label="AddLocalFile: get reference key failed"/>
   <int value="11" label="AddLocalFile: get path length failed"/>
   <int value="12" label="AddLocalFile: get path failed"/>
+  <int value="13" label="FontFilePathAndTtcIndex: file count invalid"/>
 </enum>
 
 <enum name="DiscoveryNetworkMonitorConnectionType">

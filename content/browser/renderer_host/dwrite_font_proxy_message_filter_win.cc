@@ -65,6 +65,7 @@ enum MessageFilterError {
   ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED = 10,
   ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED = 11,
   ADD_LOCAL_FILE_GET_PATH_FAILED = 12,
+  GET_FILE_COUNT_INVALID_NUMBER_OF_FILES = 13,
 
   MESSAGE_FILTER_ERROR_MAX_VALUE
 };
@@ -161,6 +162,134 @@ bool CheckRequiredStylesPresent(IDWriteFontCollection* collection,
       }
       break;
     }
+  }
+  return true;
+}
+
+bool FontFilePathAndTtcIndex(IDWriteFont* font,
+                             base::string16& file_path,
+                             uint32_t& ttc_index) {
+  mswr::ComPtr<IDWriteFontFace> font_face;
+  HRESULT hr;
+  hr = font->CreateFontFace(&font_face);
+  if (FAILED(hr)) {
+    base::UmaHistogramSparse("DirectWrite.Fonts.Proxy.CreateFontFaceResult",
+                             hr);
+    LogMessageFilterError(ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
+    return false;
+  }
+
+  UINT32 file_count;
+  hr = font_face->GetFiles(&file_count, nullptr);
+  if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED);
+    return false;
+  }
+
+  // We've learned from the DirectWrite team at MS that the number of font files
+  // retrieved per IDWriteFontFile can only ever be 1. Other font formats such
+  // as Type 1, which represent one font in multiple files, are currently not
+  // supported in the API (as of December 2018, Windows 10). In Chrome we do not
+  // plan to support Type 1 fonts, or generally other font formats different
+  // from OpenType, hence no need to loop over file_count or retrieve multiple
+  // files.
+  DCHECK_EQ(file_count, 1u);
+  if (file_count > 1) {
+    LogMessageFilterError(GET_FILE_COUNT_INVALID_NUMBER_OF_FILES);
+    return false;
+  }
+
+  mswr::ComPtr<IDWriteFontFile> font_file;
+  hr = font_face->GetFiles(&file_count, &font_file);
+  if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILES_FAILED);
+    return false;
+  }
+
+  mswr::ComPtr<IDWriteFontFileLoader> loader;
+  hr = font_file->GetLoader(&loader);
+  if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_LOADER_FAILED);
+    return false;
+  }
+
+  mswr::ComPtr<IDWriteLocalFontFileLoader> local_loader;
+  hr = loader.CopyTo(local_loader.GetAddressOf());  // QueryInterface.
+
+  if (hr == E_NOINTERFACE) {
+    // We could get here if the system font collection contains fonts that
+    // are backed by something other than files in the system fonts folder.
+    // I don't think that is actually possible, so for now we'll just
+    // ignore it (result will be that we'll be unable to match any styles
+    // for this font, forcing blink/skia to fall back to whatever font is
+    // next). If we get telemetry indicating that this case actually
+    // happens, we can implement this by exposing the loader via ipc. That
+    // will likely be by loading the font data into shared memory, although
+    // we could proxy the stream reads directly instead.
+    LogLoaderType(OTHER_LOADER);
+    DCHECK(false);
+    return false;
+  } else if (FAILED(hr)) {
+    LogMessageFilterError(ADD_FILES_FOR_FONT_QI_FAILED);
+    return false;
+  }
+
+  const void* key;
+  UINT32 key_size;
+  hr = font_file->GetReferenceKey(&key, &key_size);
+  if (FAILED(hr)) {
+    LogMessageFilterError(ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED);
+    return false;
+  }
+
+  UINT32 path_length = 0;
+  hr = local_loader->GetFilePathLengthFromKey(key, key_size, &path_length);
+  if (FAILED(hr)) {
+    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED);
+    return false;
+  }
+  base::string16 retrieve_file_path;
+  retrieve_file_path.resize(
+      ++path_length);  // Reserve space for the null terminator.
+  hr = local_loader->GetFilePathFromKey(key, key_size, &retrieve_file_path[0],
+                                        path_length);
+  if (FAILED(hr)) {
+    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_FAILED);
+    return false;
+  }
+  // No need for the null-terminator in base::string16.
+  retrieve_file_path.resize(--path_length);
+
+  uint32_t retrieve_ttc_index = font_face->GetIndex();
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  file_path = retrieve_file_path;
+  ttc_index = retrieve_ttc_index;
+
+  return true;
+}
+
+bool AddFilesForFont(IDWriteFont* font,
+                     const base::string16& windows_fonts_path,
+                     std::set<base::string16>* path_set,
+                     std::set<base::string16>* custom_font_path_set) {
+  base::string16 file_path;
+  uint32_t dummy_ttc_index;
+  if (!FontFilePathAndTtcIndex(font, file_path, dummy_ttc_index)) {
+    return false;
+  }
+
+  base::string16 file_path_folded = base::i18n::FoldCase(file_path);
+
+  if (!base::StartsWith(file_path_folded, windows_fonts_path,
+                        base::CompareCase::SENSITIVE)) {
+    LogLoaderType(FILE_OUTSIDE_SANDBOX);
+    custom_font_path_set->insert(file_path);
+  } else {
+    LogLoaderType(FILE_SYSTEM_FONT_DIR);
+    path_set->insert(file_path);
   }
   return true;
 }
@@ -303,7 +432,8 @@ void DWriteFontProxyImpl::GetFontFiles(uint32_t family_index,
       return;
     }
 
-    if (!AddFilesForFont(&path_set, &custom_font_path_set, font.Get())) {
+    if (!AddFilesForFont(font.Get(), windows_fonts_path_, &path_set,
+                         &custom_font_path_set)) {
       if (IsLastResortFallbackFont(family_index))
         LogMessageFilterError(LAST_RESORT_FONT_ADD_FILES_FAILED);
     }
@@ -477,117 +607,6 @@ void DWriteFontProxyImpl::InitializeDirectWrite() {
     }
   }
   LogLastResortFontCount(last_resort_fonts_.size());
-}
-
-bool DWriteFontProxyImpl::AddFilesForFont(
-    std::set<base::string16>* path_set,
-    std::set<base::string16>* custom_font_path_set,
-    IDWriteFont* font) {
-  mswr::ComPtr<IDWriteFontFace> font_face;
-  HRESULT hr;
-  hr = font->CreateFontFace(&font_face);
-  if (FAILED(hr)) {
-    base::UmaHistogramSparse("DirectWrite.Fonts.Proxy.CreateFontFaceResult",
-                             hr);
-    LogMessageFilterError(ADD_FILES_FOR_FONT_CREATE_FACE_FAILED);
-    return false;
-  }
-
-  UINT32 file_count;
-  hr = font_face->GetFiles(&file_count, nullptr);
-  if (FAILED(hr)) {
-    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILE_COUNT_FAILED);
-    return false;
-  }
-
-  std::vector<mswr::ComPtr<IDWriteFontFile>> font_files;
-  font_files.resize(file_count);
-  hr = font_face->GetFiles(
-      &file_count, reinterpret_cast<IDWriteFontFile**>(font_files.data()));
-  if (FAILED(hr)) {
-    LogMessageFilterError(ADD_FILES_FOR_FONT_GET_FILES_FAILED);
-    return false;
-  }
-
-  for (unsigned int file_index = 0; file_index < file_count; ++file_index) {
-    mswr::ComPtr<IDWriteFontFileLoader> loader;
-    hr = font_files[file_index]->GetLoader(&loader);
-    if (FAILED(hr)) {
-      LogMessageFilterError(ADD_FILES_FOR_FONT_GET_LOADER_FAILED);
-      return false;
-    }
-
-    mswr::ComPtr<IDWriteLocalFontFileLoader> local_loader;
-    hr = loader.CopyTo(local_loader.GetAddressOf());  // QueryInterface.
-
-    if (hr == E_NOINTERFACE) {
-      // We could get here if the system font collection contains fonts that
-      // are backed by something other than files in the system fonts folder.
-      // I don't think that is actually possible, so for now we'll just
-      // ignore it (result will be that we'll be unable to match any styles
-      // for this font, forcing blink/skia to fall back to whatever font is
-      // next). If we get telemetry indicating that this case actually
-      // happens, we can implement this by exposing the loader via ipc. That
-      // will likely be by loading the font data into shared memory, although
-      // we could proxy the stream reads directly instead.
-      LogLoaderType(OTHER_LOADER);
-      DCHECK(false);
-
-      return false;
-    } else if (FAILED(hr)) {
-      LogMessageFilterError(ADD_FILES_FOR_FONT_QI_FAILED);
-      return false;
-    }
-
-    if (!AddLocalFile(path_set, custom_font_path_set, local_loader.Get(),
-                      font_files[file_index].Get())) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool DWriteFontProxyImpl::AddLocalFile(
-    std::set<base::string16>* path_set,
-    std::set<base::string16>* custom_font_path_set,
-    IDWriteLocalFontFileLoader* local_loader,
-    IDWriteFontFile* font_file) {
-  HRESULT hr;
-  const void* key;
-  UINT32 key_size;
-  hr = font_file->GetReferenceKey(&key, &key_size);
-  if (FAILED(hr)) {
-    LogMessageFilterError(ADD_LOCAL_FILE_GET_REFERENCE_KEY_FAILED);
-    return false;
-  }
-
-  UINT32 path_length = 0;
-  hr = local_loader->GetFilePathLengthFromKey(key, key_size, &path_length);
-  if (FAILED(hr)) {
-    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_LENGTH_FAILED);
-    return false;
-  }
-  ++path_length;  // Reserve space for the null terminator.
-  std::vector<base::char16> file_path_chars;
-  file_path_chars.resize(path_length);
-  hr = local_loader->GetFilePathFromKey(key, key_size, file_path_chars.data(),
-                                        path_length);
-  if (FAILED(hr)) {
-    LogMessageFilterError(ADD_LOCAL_FILE_GET_PATH_FAILED);
-    return false;
-  }
-
-  base::string16 file_path = base::i18n::FoldCase(file_path_chars.data());
-
-  if (!base::StartsWith(file_path, windows_fonts_path_,
-                        base::CompareCase::SENSITIVE)) {
-    LogLoaderType(FILE_OUTSIDE_SANDBOX);
-    custom_font_path_set->insert(file_path);
-  } else {
-    LogLoaderType(FILE_SYSTEM_FONT_DIR);
-    path_set->insert(file_path);
-  }
-  return true;
 }
 
 bool DWriteFontProxyImpl::IsLastResortFallbackFont(uint32_t font_index) {
