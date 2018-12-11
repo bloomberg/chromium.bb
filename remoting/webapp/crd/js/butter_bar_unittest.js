@@ -239,6 +239,28 @@ QUnit.test('should be shown if the index has increased', function(assert) {
   });
 });
 
+
+QUnit.test('should be shown if the index has decreased', function(assert) {
+  var MigrationPhase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase;
+  var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
+  this.currentMessage = 0;
+  chrome.storage.sync.get.callsArgWith(1, {
+    "message-state": {
+      "hidden": true,
+      "index": 1,
+      "timestamp": 0,
+    }
+  });
+  this.now = remoting.ButterBar.kTimeout_ + 1;
+  return this.butterBar.init().then(() => {
+    assert.ok(this.butterBar.root_.hidden == false);
+    verifyLog(
+        assert, 0, MigrationEvent.DEPRECATION_NOTICE_IMPRESSION,
+        MigrationPhase.BETA)
+  });
+});
+
+
 QUnit.test('should be red and not dismissable for the final message',
            function(assert) {
   var MigrationPhase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase;

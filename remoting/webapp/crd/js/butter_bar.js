@@ -25,8 +25,9 @@ remoting.ButterBar = function(writeLogFunction) {
   this.messages_ = [
     {id: /*i18n-content*/'WEBSITE_INVITE_BETA', dismissable: true},
     {id: /*i18n-content*/'WEBSITE_INVITE_STABLE', dismissable: true},
-    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION_1', dismissable: true},
-    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION_2', dismissable: false},
+    {id: /*i18n-content*/'WEBSITE_INVITE_FILE_TRANSFER', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_MULTI_MONITOR', dismissable: true},
+    {id: /*i18n-content*/'WEBSITE_INVITE_DEPRECATION', dismissable: false},
   ];
   // TODO(jamiewalch): Read the message index using metricsPrivate.
   this.currentMessage_ = -1;
@@ -155,8 +156,9 @@ remoting.ButterBar.prototype.getMigrationPhase_ = function() {
     case 1:
       return Phase.STABLE;
     case 2:
-      return Phase.DEPRECATION_1;
     case 3:
+      return Phase.DEPRECATION_1;
+    case 4:
       return Phase.DEPRECATION_2;
     default:
       return Phase.UNSPECIFIED_PHASE;
@@ -184,7 +186,7 @@ remoting.ButterBar.prototype.onStateLoaded_ = function(syncValues, url) {
   // it unconditionally.
   var elapsed = remoting.ButterBar.now_() - messageState.timestamp;
   var show =
-      this.currentMessage_ > messageState.index ||
+      this.currentMessage_ != messageState.index ||
       !this.messages_[this.currentMessage_].dismissable ||
       (!messageState.hidden && elapsed <= remoting.ButterBar.kTimeout_);
 
