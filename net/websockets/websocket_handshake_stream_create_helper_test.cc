@@ -229,6 +229,7 @@ class WebSocketHandshakeStreamCreateHelperTest
             SpdySessionDependencies::SpdyCreateSession(&session_deps);
         const SpdySessionKey key(HostPortPair::FromURL(url),
                                  ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+                                 SpdySessionKey::IsProxySession::kFalse,
                                  SocketTag());
         base::WeakPtr<SpdySession> spdy_session =
             CreateSpdySession(http_network_session.get(), key, net_log);

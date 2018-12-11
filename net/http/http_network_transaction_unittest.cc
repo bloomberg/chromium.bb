@@ -265,6 +265,57 @@ void TestLoadTimingNotReusedWithPac(const LoadTimingInfo& load_timing_info,
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
+// ProxyResolver that records URLs passed to it, and that can be told what
+// result to return.
+class CapturingProxyResolver : public ProxyResolver {
+ public:
+  CapturingProxyResolver()
+      : proxy_server_(ProxyServer::SCHEME_HTTP, HostPortPair("myproxy", 80)) {}
+  ~CapturingProxyResolver() override = default;
+
+  int GetProxyForURL(const GURL& url,
+                     ProxyInfo* results,
+                     CompletionOnceCallback callback,
+                     std::unique_ptr<Request>* request,
+                     const NetLogWithSource& net_log) override {
+    results->UseProxyServer(proxy_server_);
+    resolved_.push_back(url);
+    return OK;
+  }
+
+  // Sets whether the resolver should use direct connections, instead of a
+  // proxy.
+  void set_proxy_server(ProxyServer proxy_server) {
+    proxy_server_ = proxy_server;
+  }
+
+  const std::vector<GURL>& resolved() const { return resolved_; }
+
+ private:
+  std::vector<GURL> resolved_;
+
+  ProxyServer proxy_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(CapturingProxyResolver);
+};
+
+class CapturingProxyResolverFactory : public ProxyResolverFactory {
+ public:
+  explicit CapturingProxyResolverFactory(CapturingProxyResolver* resolver)
+      : ProxyResolverFactory(false), resolver_(resolver) {}
+
+  int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
+                          std::unique_ptr<ProxyResolver>* resolver,
+                          CompletionOnceCallback callback,
+                          std::unique_ptr<Request>* request) override {
+    *resolver = std::make_unique<ForwardingProxyResolver>(resolver_);
+    return OK;
+  }
+
+ private:
+  ProxyResolver* resolver_;
+};
+
 std::unique_ptr<HttpNetworkSession> CreateSession(
     SpdySessionDependencies* session_deps) {
   return SpdySessionDependencies::SpdyCreateSession(session_deps);
@@ -5249,7 +5300,8 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyGetWithSessionRace) {
   // Race a session to the proxy, which completes first.
   session_deps_.host_resolver->set_ondemand_mode(false);
   SpdySessionKey key(HostPortPair("proxy", 70), ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kTrue, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       CreateSpdySession(session.get(), key, log.bound());
 
@@ -5963,6 +6015,272 @@ TEST_F(HttpNetworkTransactionTest, HttpsProxySpdyLoadTimingTwoHttpRequests) {
 
   rv = trans2.Read(buf.get(), 256, callback.callback());
   EXPECT_EQ(2, callback.GetResult(rv));
+}
+
+// Test that an HTTP/2 CONNECT through an HTTPS Proxy to a HTTP/2 server and a
+// direct (non-proxied) request to the proxy server are not pooled, as that
+// would break socket pool isolation.
+TEST_F(HttpNetworkTransactionTest, SpdyProxyIsolation1) {
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  proxy_config.set_pac_url(GURL("http://fooproxyurl"));
+
+  CapturingProxyResolver capturing_proxy_resolver;
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ProxyResolutionService>(
+          std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
+              proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
+          std::make_unique<CapturingProxyResolverFactory>(
+              &capturing_proxy_resolver),
+          nullptr);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  SpdyTestUtil spdy_util1;
+  // CONNECT to www.example.org:443 via HTTP/2.
+  spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
+      NULL, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+  // fetch https://www.example.org/ via HTTP/2.
+  const char kMyUrl[] = "https://www.example.org/";
+  spdy::SpdySerializedFrame get(spdy_util1.ConstructSpdyGet(kMyUrl, 1, LOWEST));
+  spdy::SpdySerializedFrame wrapped_get(
+      spdy_util_.ConstructWrappedSpdyFrame(get, 1));
+  spdy::SpdySerializedFrame conn_resp(
+      spdy_util_.ConstructSpdyGetReply(NULL, 0, 1));
+  spdy::SpdySerializedFrame get_resp(
+      spdy_util1.ConstructSpdyGetReply(NULL, 0, 1));
+  spdy::SpdySerializedFrame wrapped_get_resp(
+      spdy_util_.ConstructWrappedSpdyFrame(get_resp, 1));
+  spdy::SpdySerializedFrame body(spdy_util1.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame wrapped_body(
+      spdy_util_.ConstructWrappedSpdyFrame(body, 1));
+  spdy::SpdySerializedFrame window_update_get_resp(
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp.size()));
+  spdy::SpdySerializedFrame window_update_body(
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_body.size()));
+
+  MockWrite spdy_writes1[] = {
+      CreateMockWrite(connect, 0),
+      CreateMockWrite(wrapped_get, 2),
+      CreateMockWrite(window_update_get_resp, 6),
+      CreateMockWrite(window_update_body, 7),
+  };
+
+  MockRead spdy_reads1[] = {
+      CreateMockRead(conn_resp, 1, ASYNC),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(wrapped_get_resp, 4, ASYNC),
+      CreateMockRead(wrapped_body, 5, ASYNC),
+      MockRead(ASYNC, 0, 8),
+  };
+
+  SequencedSocketData spdy_data1(spdy_reads1, spdy_writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data1);
+
+  // Fetch https://proxy:70/ via HTTP/2. Needs a new SpdyTestUtil, since it uses
+  // a new pipe.
+  SpdyTestUtil spdy_util2;
+  spdy::SpdySerializedFrame req(
+      spdy_util2.ConstructSpdyGet("https://proxy:70/", 1, LOWEST));
+  MockWrite spdy_writes2[] = {CreateMockWrite(req, 0)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame data(spdy_util2.ConstructSpdyDataFrame(1, true));
+  MockRead spdy_reads2[] = {
+      CreateMockRead(resp, 1),
+      CreateMockRead(data, 2),
+      MockRead(ASYNC, 0, 3),
+  };
+  SequencedSocketData spdy_data2(spdy_reads2, spdy_writes2);
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data2);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl3);
+
+  TestCompletionCallback callback;
+  std::string response_data;
+
+  // Make a request using proxy:70 as a HTTP/2 proxy.
+  capturing_proxy_resolver.set_proxy_server(
+      ProxyServer(ProxyServer::SCHEME_HTTPS, HostPortPair("proxy", 70)));
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://www.example.org/");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpNetworkTransaction trans1(LOWEST, session.get());
+  int rv = trans1.Start(&request1, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Allow the SpdyProxyClientSocket's write callback to complete.
+  base::RunLoop().RunUntilIdle();
+  // Now allow the read of the response to complete.
+  spdy_data1.Resume();
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response = trans1.GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200", response->headers->GetStatusLine());
+
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
+  EXPECT_EQ(kUploadData, response_data);
+  RunUntilIdle();
+
+  // Make a direct HTTP/2 request to proxy:70.
+  capturing_proxy_resolver.set_proxy_server(ProxyServer::Direct());
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://proxy:70/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction trans2(LOWEST, session.get());
+  EXPECT_THAT(callback.GetResult(trans2.Start(&request2, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
+}
+
+// Same as above, but reverse request order, since the code to check for an
+// existing session is different for tunnels and direct connections.
+TEST_F(HttpNetworkTransactionTest, SpdyProxyIsolation2) {
+  // Configure against https proxy server "myproxy:80".
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  proxy_config.set_pac_url(GURL("http://fooproxyurl"));
+
+  CapturingProxyResolver capturing_proxy_resolver;
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ProxyResolutionService>(
+          std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
+              proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
+          std::make_unique<CapturingProxyResolverFactory>(
+              &capturing_proxy_resolver),
+          nullptr);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  // Fetch https://proxy:70/ via HTTP/2.
+  SpdyTestUtil spdy_util1;
+  spdy::SpdySerializedFrame req(
+      spdy_util1.ConstructSpdyGet("https://proxy:70/", 1, LOWEST));
+  MockWrite spdy_writes1[] = {CreateMockWrite(req, 0)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util1.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame data(spdy_util1.ConstructSpdyDataFrame(1, true));
+  MockRead spdy_reads1[] = {
+      CreateMockRead(resp, 1),
+      CreateMockRead(data, 2),
+      MockRead(ASYNC, 0, 3),
+  };
+  SequencedSocketData spdy_data1(spdy_reads1, spdy_writes1);
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data1);
+
+  SpdyTestUtil spdy_util2;
+  // CONNECT to www.example.org:443 via HTTP/2.
+  spdy::SpdySerializedFrame connect(spdy_util_.ConstructSpdyConnect(
+      nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
+  // fetch https://www.example.org/ via HTTP/2.
+  const char kMyUrl[] = "https://www.example.org/";
+  spdy::SpdySerializedFrame get(spdy_util2.ConstructSpdyGet(kMyUrl, 1, LOWEST));
+  spdy::SpdySerializedFrame wrapped_get(
+      spdy_util_.ConstructWrappedSpdyFrame(get, 1));
+  spdy::SpdySerializedFrame conn_resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame get_resp(
+      spdy_util2.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame wrapped_get_resp(
+      spdy_util_.ConstructWrappedSpdyFrame(get_resp, 1));
+  spdy::SpdySerializedFrame body(spdy_util2.ConstructSpdyDataFrame(1, true));
+  spdy::SpdySerializedFrame wrapped_body(
+      spdy_util_.ConstructWrappedSpdyFrame(body, 1));
+  spdy::SpdySerializedFrame window_update_get_resp(
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_get_resp.size()));
+  spdy::SpdySerializedFrame window_update_body(
+      spdy_util_.ConstructSpdyWindowUpdate(1, wrapped_body.size()));
+
+  MockWrite spdy_writes2[] = {
+      CreateMockWrite(connect, 0),
+      CreateMockWrite(wrapped_get, 2),
+      CreateMockWrite(window_update_get_resp, 6),
+      CreateMockWrite(window_update_body, 7),
+  };
+
+  MockRead spdy_reads2[] = {
+      CreateMockRead(conn_resp, 1, ASYNC),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(wrapped_get_resp, 4, ASYNC),
+      CreateMockRead(wrapped_body, 5, ASYNC),
+      MockRead(ASYNC, 0, 8),
+  };
+
+  SequencedSocketData spdy_data2(spdy_reads2, spdy_writes2);
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data2);
+
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  ssl.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  SSLSocketDataProvider ssl2(ASYNC, OK);
+  ssl2.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl2);
+  SSLSocketDataProvider ssl3(ASYNC, OK);
+  ssl3.next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl3);
+
+  TestCompletionCallback callback;
+  std::string response_data;
+
+  // Make a direct HTTP/2 request to proxy:70.
+  capturing_proxy_resolver.set_proxy_server(ProxyServer::Direct());
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("https://proxy:70/");
+  request1.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction trans1(LOWEST, session.get());
+  EXPECT_THAT(callback.GetResult(trans1.Start(&request1, callback.callback(),
+                                              NetLogWithSource())),
+              IsOk());
+  ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
+  RunUntilIdle();
+
+  // Make a request using proxy:70 as a HTTP/2 proxy.
+  capturing_proxy_resolver.set_proxy_server(
+      ProxyServer(ProxyServer::SCHEME_HTTPS, HostPortPair("proxy", 70)));
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("https://www.example.org/");
+  request2.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  HttpNetworkTransaction trans2(LOWEST, session.get());
+  int rv = trans2.Start(&request2, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+
+  // Allow the SpdyProxyClientSocket's write callback to complete.
+  base::RunLoop().RunUntilIdle();
+  // Now allow the read of the response to complete.
+  spdy_data2.Resume();
+  rv = callback.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
+
+  const HttpResponseInfo* response2 = trans2.GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ("HTTP/1.1 200", response2->headers->GetStatusLine());
+
+  ASSERT_THAT(ReadTransaction(&trans2, &response_data), IsOk());
+  EXPECT_EQ(kUploadData, response_data);
 }
 
 // Test the challenge-response-retry sequence through an HTTPS Proxy
@@ -12280,48 +12598,6 @@ TEST_F(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
   EXPECT_EQ("hello world", response_data);
 }
 
-class CapturingProxyResolver : public ProxyResolver {
- public:
-  CapturingProxyResolver() = default;
-  ~CapturingProxyResolver() override = default;
-
-  int GetProxyForURL(const GURL& url,
-                     ProxyInfo* results,
-                     CompletionOnceCallback callback,
-                     std::unique_ptr<Request>* request,
-                     const NetLogWithSource& net_log) override {
-    ProxyServer proxy_server(ProxyServer::SCHEME_HTTP,
-                             HostPortPair("myproxy", 80));
-    results->UseProxyServer(proxy_server);
-    resolved_.push_back(url);
-    return OK;
-  }
-
-  const std::vector<GURL>& resolved() const { return resolved_; }
-
- private:
-  std::vector<GURL> resolved_;
-
-  DISALLOW_COPY_AND_ASSIGN(CapturingProxyResolver);
-};
-
-class CapturingProxyResolverFactory : public ProxyResolverFactory {
- public:
-  explicit CapturingProxyResolverFactory(CapturingProxyResolver* resolver)
-      : ProxyResolverFactory(false), resolver_(resolver) {}
-
-  int CreateProxyResolver(const scoped_refptr<PacFileData>& pac_script,
-                          std::unique_ptr<ProxyResolver>* resolver,
-                          CompletionOnceCallback callback,
-                          std::unique_ptr<Request>* request) override {
-    *resolver = std::make_unique<ForwardingProxyResolver>(resolver_);
-    return OK;
-  }
-
- private:
-  ProxyResolver* resolver_;
-};
-
 // Test that proxy is resolved using the origin url,
 // regardless of the alternative server.
 TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
@@ -12589,7 +12865,8 @@ TEST_F(HttpNetworkTransactionTest,
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.example.org", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       CreateSpdySession(session.get(), key, NetLogWithSource());
 
@@ -14256,7 +14533,8 @@ TEST_F(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   // Set up an initial SpdySession in the pool to reuse.
   HostPortPair host_port_pair("www.example.org", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
-                     PRIVACY_MODE_DISABLED, SocketTag());
+                     PRIVACY_MODE_DISABLED,
+                     SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> spdy_session =
       CreateSpdySession(session.get(), key, NetLogWithSource());
 
@@ -15927,8 +16205,9 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   session_deps_.socket_factory->AddSocketDataProvider(&http_data);
 
   HostPortPair host_port_pair_a("www.a.com", 443);
-  SpdySessionKey spdy_session_key_a(host_port_pair_a, ProxyServer::Direct(),
-                                    PRIVACY_MODE_DISABLED, SocketTag());
+  SpdySessionKey spdy_session_key_a(
+      host_port_pair_a, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
 
@@ -15961,8 +16240,9 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a));
 
   HostPortPair host_port_pair_b("www.b.com", 443);
-  SpdySessionKey spdy_session_key_b(host_port_pair_b, ProxyServer::Direct(),
-                                    PRIVACY_MODE_DISABLED, SocketTag());
+  SpdySessionKey spdy_session_key_b(
+      host_port_pair_b, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
   HttpRequestInfo request2;
@@ -15992,8 +16272,9 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_b));
 
   HostPortPair host_port_pair_a1("www.a.com", 80);
-  SpdySessionKey spdy_session_key_a1(host_port_pair_a1, ProxyServer::Direct(),
-                                     PRIVACY_MODE_DISABLED, SocketTag());
+  SpdySessionKey spdy_session_key_a1(
+      host_port_pair_a1, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   EXPECT_FALSE(
       HasSpdySession(session->spdy_session_pool(), spdy_session_key_a1));
   HttpRequestInfo request3;

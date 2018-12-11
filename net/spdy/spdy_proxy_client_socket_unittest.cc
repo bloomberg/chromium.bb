@@ -170,6 +170,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
       endpoint_spdy_session_key_(endpoint_host_port_pair_,
                                  proxy_,
                                  PRIVACY_MODE_DISABLED,
+                                 SpdySessionKey::IsProxySession::kFalse,
                                  SocketTag()) {
   session_deps_.net_log = net_log_.bound().net_log();
 }

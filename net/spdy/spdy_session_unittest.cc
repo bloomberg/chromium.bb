@@ -150,6 +150,7 @@ class SpdySessionTest : public PlatformTest, public WithScopedTaskEnvironment {
         key_(HostPortPair::FromURL(test_url_),
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
+             SpdySessionKey::IsProxySession::kFalse,
              SocketTag()),
         ssl_(SYNCHRONOUS, OK) {}
 
@@ -3534,7 +3535,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Create an idle SPDY session.
   SpdySessionKey key1(HostPortPair("www.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                      SocketTag());
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   base::WeakPtr<SpdySession> session1 =
       ::net::CreateSpdySession(http_session_.get(), key1, NetLogWithSource());
   EXPECT_FALSE(pool->IsStalled());
@@ -3542,7 +3543,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.
   SpdySessionKey key2(HostPortPair("mail.example.org", 80),
                       ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
-                      SocketTag());
+                      SpdySessionKey::IsProxySession::kFalse, SocketTag());
   HostResolver::RequestInfo info(key2.host_port_pair());
   AddressList addresses;
   std::unique_ptr<HostResolver::Request> request;
@@ -3677,10 +3678,12 @@ TEST_F(SpdySessionTest, SpdySessionKeyPrivacyMode) {
   CreateNetworkSession();
 
   HostPortPair host_port_pair("www.example.org", 443);
-  SpdySessionKey key_privacy_enabled(host_port_pair, ProxyServer::Direct(),
-                                     PRIVACY_MODE_ENABLED, SocketTag());
-  SpdySessionKey key_privacy_disabled(host_port_pair, ProxyServer::Direct(),
-                                      PRIVACY_MODE_DISABLED, SocketTag());
+  SpdySessionKey key_privacy_enabled(
+      host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_ENABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag());
+  SpdySessionKey key_privacy_disabled(
+      host_port_pair, ProxyServer::Direct(), PRIVACY_MODE_DISABLED,
+      SpdySessionKey::IsProxySession::kFalse, SocketTag());
 
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_enabled));
   EXPECT_FALSE(HasSpdySession(spdy_session_pool_, key_privacy_disabled));
