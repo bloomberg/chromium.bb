@@ -28,6 +28,7 @@ namespace webrtc_event_logging {
 // issue where we read the entire file into memory.
 const size_t kMaxRemoteLogFileSizeBytes = 50000000u;
 
+const int kDefaultOutputPeriodMs = 5000;
 const int kMaxOutputPeriodMs = 60000;
 
 namespace {
@@ -405,6 +406,10 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   DCHECK(error_message);
   DCHECK(error_message->empty());
 
+  if (output_period_ms < 0) {
+    output_period_ms = kDefaultOutputPeriodMs;
+  }
+
   if (!AreLogParametersValid(max_file_size_bytes, output_period_ms, web_app_id,
                              error_message)) {
     // |error_message| will have been set by AreLogParametersValid().
@@ -656,12 +661,6 @@ bool WebRtcRemoteEventLogManager::AreLogParametersValid(
   if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
     LOG(WARNING) << "File size exceeds maximum allowed.";
     *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
-    return false;
-  }
-
-  if (output_period_ms < 0) {
-    LOG(WARNING) << "Output period (ms) must be non-negative.";
-    *error_message = kStartRemoteLoggingFailureOutputPeriodMsIsNegative;
     return false;
   }
 

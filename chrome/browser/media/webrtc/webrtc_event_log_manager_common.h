@@ -102,7 +102,6 @@ extern const char kStartRemoteLoggingFailureFeatureDisabled[];
 extern const char kStartRemoteLoggingFailureUnlimitedSizeDisallowed[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooSmall[];
 extern const char kStartRemoteLoggingFailureMaxSizeTooLarge[];
-extern const char kStartRemoteLoggingFailureOutputPeriodMsIsNegative[];
 extern const char kStartRemoteLoggingFailureOutputPeriodMsTooLarge[];
 extern const char kStartRemoteLoggingFailureIllegalWebAppId[];
 extern const char kStartRemoteLoggingFailureUnknownOrInactivePeerConnection[];
