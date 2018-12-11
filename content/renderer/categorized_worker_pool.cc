@@ -385,12 +385,13 @@ bool CategorizedWorkerPool::RunTaskWithLockAcquired(
 
 void CategorizedWorkerPool::RunTaskInCategoryWithLockAcquired(
     cc::TaskCategory category) {
-  TRACE_EVENT0("toplevel", "TaskGraphRunner::RunTask");
 
   lock_.AssertAcquired();
 
   auto prioritized_task = work_queue_.GetNextTaskToRun(category);
 
+  TRACE_EVENT1("toplevel", "TaskGraphRunner::RunTask", "source_frame_number_",
+               prioritized_task.task->frame_number());
   // There may be more work available, so wake up another worker thread.
   SignalHasReadyToRunTasksWithLockAcquired();
 
