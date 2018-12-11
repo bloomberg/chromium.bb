@@ -41,7 +41,7 @@ class WindowElement : public aura::WindowObserver, public UIElement {
   void GetVisible(bool* visible) const override;
   void SetVisible(bool visible) override;
   std::unique_ptr<protocol::Array<std::string>> GetAttributes() const override;
-  std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndBounds()
+  std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()
       const override;
 
   static aura::Window* From(const UIElement* element);

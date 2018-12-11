@@ -100,8 +100,8 @@ std::unique_ptr<protocol::Array<std::string>> WindowElement::GetAttributes()
   return attributes;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> WindowElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+WindowElement::GetNodeWindowAndScreenBounds() const {
   return std::make_pair(static_cast<aura::Window*>(window_),
                         window_->GetBoundsInScreen());
 }

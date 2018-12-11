@@ -69,8 +69,8 @@ std::unique_ptr<protocol::Array<std::string>> SurfaceElement::GetAttributes()
   return attributes;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> SurfaceElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+SurfaceElement::GetNodeWindowAndScreenBounds() const {
   return {};
 }
 

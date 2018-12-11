@@ -98,7 +98,7 @@ std::unique_ptr<protocol::Array<std::string>> FrameSinkElement::GetAttributes()
 }
 
 std::pair<gfx::NativeWindow, gfx::Rect>
-FrameSinkElement::GetNodeWindowAndBounds() const {
+FrameSinkElement::GetNodeWindowAndScreenBounds() const {
   return {};
 }
 

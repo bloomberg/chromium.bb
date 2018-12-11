@@ -41,8 +41,8 @@ std::unique_ptr<protocol::Array<std::string>> RootElement::GetAttributes()
   return nullptr;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> RootElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+RootElement::GetNodeWindowAndScreenBounds() const {
   NOTREACHED();
   return {};
 }

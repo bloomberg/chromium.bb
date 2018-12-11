@@ -82,8 +82,8 @@ std::unique_ptr<protocol::Array<std::string>> WidgetElement::GetAttributes()
   return attributes;
 }
 
-std::pair<gfx::NativeWindow, gfx::Rect> WidgetElement::GetNodeWindowAndBounds()
-    const {
+std::pair<gfx::NativeWindow, gfx::Rect>
+WidgetElement::GetNodeWindowAndScreenBounds() const {
   return std::make_pair(widget_->GetNativeWindow(),
                         widget_->GetWindowBoundsInScreen());
 }
