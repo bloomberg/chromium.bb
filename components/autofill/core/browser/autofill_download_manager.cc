@@ -649,13 +649,16 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
       &resource_request->headers);
 
   // Set headers specific to the API if using it.
-  if (UseApi()) {
+  if (UseApi())
     // Encode response serialized proto in base64 for safety.
     resource_request->headers.SetHeader(kGoogEncodeResponseIfExecutable,
                                         "base64");
-    // Put API key in request's header if there is.
-    if (!api_key_.empty())
-      resource_request->headers.SetHeader(kGoogApiKey, api_key_);
+
+  // Put API key in request's header if there is.
+  if (!api_key_.empty() &&
+      variations::ShouldAppendVariationHeaders(request_url)) {
+    // Make sure that we only send the API key to endpoints trusted by Chrome.
+    resource_request->headers.SetHeader(kGoogApiKey, api_key_);
   }
 
   auto simple_loader = network::SimpleURLLoader::Create(
