@@ -455,6 +455,9 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                             board=self.board,
                             version=self.version,
                             bucket=gspaths.ChromeosReleases.BUCKET)
+      payload_build = gspaths.Build(build)
+      if self.debug:
+        payload_build.bucket = gspaths.ChromeosReleases.TEST_BUCKET
 
       try:
         # Generate the payloads.
@@ -462,6 +465,7 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
                                                    self.board))
         paygen = paygen_build_lib.PaygenBuild(
             build,
+            payload_build,
             work_dir=tempdir,
             site_config=self._run.site_config,
             dry_run=self.debug,

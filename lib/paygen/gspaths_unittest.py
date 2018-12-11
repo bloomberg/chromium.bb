@@ -398,6 +398,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         {
             'tgt_image': gspaths.Image(build=self.build, key=self.key),
             'src_image': None,
+            'build': self.build,
             'uri': full_uri,
             'exists': False
         })
@@ -407,6 +408,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
         {
             'src_image': gspaths.Image(build=self.src_build),
             'tgt_image': gspaths.Image(build=self.build, key=self.key),
+            'build': self.build,
             'uri': delta_uri,
             'exists': False
         })
@@ -419,6 +421,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                        image_version=image_version,
                                        image_channel='image-channel'),
             'src_image': None,
+            'build': self.build,
             'uri': max_full_uri,
             'exists': False
         })
@@ -431,6 +434,7 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
                                        key=self.key,
                                        image_version=image_version,
                                        image_channel='image-channel'),
+            'build': self.build,
             'uri': max_delta_uri,
             'exists': False
         })

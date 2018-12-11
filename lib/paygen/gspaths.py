@@ -101,13 +101,13 @@ class Image(utils.RestrictedAttrDict):
     super(Image, self).__init__(*args, **kwargs)
 
     # If these match defaults, set to None.
-    if self['build']:
-      self._clear_if_default('image_channel', self['build'].channel)
-      self._clear_if_default('image_version', self['build'].version)
+    if self.build:
+      self._clear_if_default('image_channel', self.build.channel)
+      self._clear_if_default('image_version', self.build.version)
 
     # Force a default image_type if unspecified.
-    if not self['image_type']:
-      self['image_type'] = Image.DEFAULT_IMAGE_TYPE
+    if not self.image_type:
+      self.image_type = Image.DEFAULT_IMAGE_TYPE
 
   def __str__(self):
     if self.uri:
@@ -155,15 +155,21 @@ class Payload(utils.RestrictedAttrDict):
                Image or UnsignedImageArchive.
     src_image: A representation of image it updates from. None for
                Full updates, or the same type as tgt_image otherwise.
+    build: A build if it is supposed to be different than the tgt_image's
+           build.
     uri: The URI of the payload. This can be any format understood by urilib.
     exists: A boolean. If true, artifacts for this build already exist.
   """
   _name = 'Payload definition'
-  _slots = ('tgt_image', 'src_image', 'uri', 'exists')
+  _slots = ('tgt_image', 'src_image', 'build', 'uri', 'exists')
 
   def __init__(self, exists=False, *args, **kwargs):
     kwargs.update(exists=exists)
     super(Payload, self).__init__(*args, **kwargs)
+
+    # If there was no build passed, set the target image's build as the default.
+    if not self.build and self.tgt_image.build:
+      self.build = Build(self.tgt_image.build)
 
   def __str__(self):
     if self.uri:
@@ -176,6 +182,8 @@ class ChromeosReleases(object):
   """Name space class for static methods for URIs in chromeos-releases."""
 
   BUCKET = 'chromeos-releases'
+
+  TEST_BUCKET = 'chromeos-releases-test'
 
   # Build flags
   LOCK = 'LOCK'

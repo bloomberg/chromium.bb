@@ -62,7 +62,7 @@ class PaygenPayload(object):
   _KERNEL = 'kernel'
   _ROOTFS = 'root'
 
-  def __init__(self, payload, work_dir, sign, verify, dry_run=False):
+  def __init__(self, payload, work_dir, sign, verify):
     """Init for PaygenPayload.
 
     Args:
@@ -71,12 +71,10 @@ class PaygenPayload(object):
       work_dir: A working directory for output files. Can NOT be shared.
       sign: Boolean saying if the payload should be signed (normally, you do).
       verify: whether the payload should be verified after being generated
-      dry_run: do not do any actual work
     """
     self.payload = payload
     self.work_dir = work_dir
     self._verify = verify
-    self._dry_run = dry_run
 
     self.src_image_file = os.path.join(work_dir, 'src_image.bin')
     self.tgt_image_file = os.path.join(work_dir, 'tgt_image.bin')
@@ -675,10 +673,6 @@ class PaygenPayload(object):
 
   def Run(self):
     """Create, verify and upload the results."""
-    if self._dry_run:
-      logging.info('dry-run mode; skipping Create+Verify+Upload steps')
-      return
-
     logging.info('* Starting payload generation')
     start_time = datetime.datetime.now()
 
@@ -690,8 +684,7 @@ class PaygenPayload(object):
     end_time = datetime.datetime.now()
     logging.info('* Finished payload generation in %s', end_time - start_time)
 
-
-def CreateAndUploadPayload(payload, sign=True, verify=True, dry_run=False):
+def CreateAndUploadPayload(payload, sign=True, verify=True):
   """Helper to create a PaygenPayloadLib instance and use it.
 
   Mainly can be used as a single function to help with parallelism.
@@ -700,9 +693,8 @@ def CreateAndUploadPayload(payload, sign=True, verify=True, dry_run=False):
     payload: An instance of gspaths.Payload describing the payload to generate.
     sign: Boolean saying if the payload should be signed (normally, you do).
     verify: whether the payload should be verified (default: True)
-    dry_run: don't perform actual work
   """
   # We need to create a temp directory inside the chroot so be able to access
   # from both inside and outside the chroot.
   with chroot_util.TempDirInChroot() as work_dir:
-    PaygenPayload(payload, work_dir, sign, verify, dry_run=dry_run).Run()
+    PaygenPayload(payload, work_dir, sign, verify).Run()

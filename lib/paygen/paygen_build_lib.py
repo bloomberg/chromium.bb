@@ -232,20 +232,16 @@ def _DefaultPayloadUri(payload, random_str=None):
   if payload.src_image:
     src_version = payload.src_image.build.version
 
-  build = gspaths.Build(channel=payload.tgt_image.build.channel,
-                        board=payload.tgt_image.build.board,
-                        version=payload.tgt_image.build.version,
-                        bucket=payload.tgt_image.build.bucket)
-
   if gspaths.IsImage(payload.tgt_image):
     # Signed payload.
     return gspaths.ChromeosReleases.PayloadUri(
-        build, random_str=random_str, key=payload.tgt_image.key,
+        payload.build, random_str=random_str, key=payload.tgt_image.key,
         image_channel=payload.tgt_image.image_channel,
         image_version=payload.tgt_image.image_version, src_version=src_version)
   elif gspaths.IsUnsignedImageArchive(payload.tgt_image):
     # Unsigned test payload.
-    return gspaths.ChromeosReleases.PayloadUri(build, random_str=random_str,
+    return gspaths.ChromeosReleases.PayloadUri(payload.build,
+                                               random_str=random_str,
                                                src_version=src_version)
   else:
     raise Error('Unknown image type %s' % type(payload.tgt_image))
@@ -354,21 +350,20 @@ class PaygenBuild(object):
   _version_to_full_test_payloads = {}
 
 
-  def __init__(self, build, work_dir, site_config,
-               dry_run=False,
-               skip_delta_payloads=False,
-               skip_duts_check=False):
+  def __init__(self, build, payload_build, work_dir, site_config, dry_run=False,
+               skip_delta_payloads=False, skip_duts_check=False):
     """Initializer."""
     self._build = build
     self._work_dir = work_dir
     self._site_config = site_config
     self._dry_run = dry_run
-    self._ctx = gs.GSContext(dry_run=dry_run)
+    self._ctx = gs.GSContext()
     self._skip_delta_payloads = skip_delta_payloads
     self._archive_board = None
     self._archive_build = None
     self._archive_build_uri = None
     self._skip_duts_check = skip_duts_check
+    self._payload_build = payload_build
 
   # Hidden class level cache value.
   _cachedPaygenJson = None
@@ -707,9 +702,11 @@ class PaygenBuild(object):
             full_test_payload, source_build.channel, source_build.version))
 
     for p in payloads:
+      p.build = self._payload_build
       _FillInPayloadUri(p)
 
     for t in payload_tests:
+      t.payload.build = self._payload_build
       _FillInPayloadUri(t.payload)
 
     return payloads, payload_tests
@@ -728,8 +725,7 @@ class PaygenBuild(object):
     """
     payloads_args = [(payload,
                       isinstance(payload.tgt_image, gspaths.Image),
-                      True,
-                      self._dry_run)
+                      True)
                      for payload in payloads]
 
     parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
@@ -932,7 +928,7 @@ class PaygenBuild(object):
     logging.info('Examining: %s', self._build)
 
     try:
-      with gslock.Lock(lock_uri, dry_run=self._dry_run):
+      with gslock.Lock(lock_uri):
         logging.info('Starting: %s', self._build)
 
         payloads, payload_tests = self._DiscoverRequiredPayloads()

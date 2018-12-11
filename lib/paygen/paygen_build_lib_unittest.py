@@ -163,11 +163,10 @@ class BasePaygenBuildLibTestWithBuilds(BasePaygenBuildLibTest,
     self.delta_payload_test = paygen_build_lib.PayloadTest(
         self.test_delta_payload)
 
-  def _GetPaygenBuildInstance(self,
-                              dry_run=False,
-                              skip_delta_payloads=False):
+  def _GetPaygenBuildInstance(self, dry_run=False, skip_delta_payloads=False):
     """Helper method to create a standard Paygen instance."""
-    return paygen_build_lib.PaygenBuild(self.target_build, self.tempdir,
+    return paygen_build_lib.PaygenBuild(self.target_build, self.target_build,
+                                        self.tempdir,
                                         config_lib_unittest.MockSiteConfig(),
                                         dry_run=dry_run,
                                         skip_delta_payloads=skip_delta_payloads)
@@ -476,7 +475,7 @@ class TestPaygenBuildLibDiscoverRequiredPayloads(MockImageDiscoveryHelper,
   def _GetPaygenBuildInstance(self, build, skip_delta_payloads=False):
     """Helper method to create a standard Paygen instance."""
     return paygen_build_lib.PaygenBuild(
-        build, self.tempdir,
+        build, build, self.tempdir,
         config_lib_unittest.MockSiteConfig(),
         skip_delta_payloads=skip_delta_payloads)
 
@@ -813,7 +812,7 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
   """Test GeneratePayloads method."""
 
   def testGeneratePayloads(self):
-    """Test paygen_build_lib._GeneratePayloads, no dry_run."""
+    """Test paygen_build_lib._GeneratePayloads"""
     poolMock = self.PatchObject(parallel, 'RunTasksInProcessPool')
 
     paygen = self._GetPaygenBuildInstance()
@@ -824,25 +823,9 @@ class TestPayloadGeneration(BasePaygenBuildLibTestWithBuilds):
     self.assertEqual(
         poolMock.call_args_list,
         [mock.call(paygen_payload_lib.CreateAndUploadPayload,
-                   [(self.mp_full_payload, True, True, False),
-                    (self.mp_delta_payload, True, True, False),
-                    (self.test_delta_payload, False, True, False)])])
-
-  def testGeneratePayloadsDryrun(self):
-    """Ensure we correctly pass along the dryrun flag."""
-    poolMock = self.PatchObject(parallel, 'RunTasksInProcessPool')
-
-    paygen = self._GetPaygenBuildInstance(dry_run=True)
-    paygen._GeneratePayloads((self.mp_full_payload,
-                              self.mp_delta_payload,
-                              self.test_delta_payload))
-
-    self.assertEqual(
-        poolMock.call_args_list,
-        [mock.call(paygen_payload_lib.CreateAndUploadPayload,
-                   [(self.mp_full_payload, True, True, True),
-                    (self.mp_delta_payload, True, True, True),
-                    (self.test_delta_payload, False, True, True)])])
+                   [(self.mp_full_payload, True, True),
+                    (self.mp_delta_payload, True, True),
+                    (self.test_delta_payload, False, True)])])
 
   def testCleanupBuild(self):
     """Test PaygenBuild._CleanupBuild."""

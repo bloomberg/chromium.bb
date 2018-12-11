@@ -432,6 +432,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
         gspaths.Build(
             version='foo-version', board='foo-board', channel='foo-channel',
             bucket=gspaths.ChromeosReleases.BUCKET),
+        mock.ANY,
         work_dir=mock.ANY,
         site_config=stage._run.site_config,
         dry_run=True,
@@ -487,6 +488,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
             board='foo-board-variant',
             channel='foo-channel',
             bucket=gspaths.ChromeosReleases.BUCKET),
+        mock.ANY,
         dry_run=True,
         work_dir=mock.ANY,
         site_config=stage._run.site_config,
@@ -576,6 +578,53 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
           False,
           skip_duts_check=False)
       parallel_tests.assert_called_once_with([mock.ANY, mock.ANY])
+
+  def testPayloadBuildSetCorrectly(self):
+    """Test that payload build is passed correctly to PaygenBuild."""
+    stage = self.ConstructStage()
+    self.PatchObject(paygen_build_lib, 'ScheduleAutotestTests')
+
+    # Call the method under test.
+    stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False, False,
+                              False, skip_duts_check=False)
+
+    # Ensure arguments are properly converted and passed along.
+    build = gspaths.Build(version='foo-version', board='foo-board',
+                          channel='foo-channel',
+                          bucket=gspaths.ChromeosReleases.BUCKET)
+    self.paygenBuildMock.assert_called_with(
+        build,
+        build,
+        work_dir=mock.ANY,
+        site_config=stage._run.site_config,
+        dry_run=False,
+        skip_delta_payloads=False,
+        skip_duts_check=False)
+
+  def testTestPayloadBuildSetCorrectly(self):
+    """Test that test payload build is passed correctly to PaygenBuild."""
+    stage = self.ConstructStage()
+    self.PatchObject(paygen_build_lib, 'ScheduleAutotestTests')
+
+    # Call the method under test.
+    stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version', True, False,
+                              False, skip_duts_check=False)
+
+    # Ensure arguments are properly converted and passed along.
+    build = gspaths.Build(version='foo-version', board='foo-board',
+                          channel='foo-channel',
+                          bucket=gspaths.ChromeosReleases.BUCKET)
+    test_payload_build = gspaths.Build(build)
+    test_payload_build.bucket = gspaths.ChromeosReleases.TEST_BUCKET
+
+    self.paygenBuildMock.assert_called_with(
+        build,
+        test_payload_build,
+        work_dir=mock.ANY,
+        site_config=stage._run.site_config,
+        dry_run=True,
+        skip_delta_payloads=False,
+        skip_duts_check=False)
 
 
 class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
