@@ -165,7 +165,7 @@ class NetworkErrorLoggingEndToEndTest : public TestWithScopedTaskEnvironment {
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingEndToEndTest);
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
 // TODO(https://crbug.com/829650): Fix and re-enable these tests.
 #define MAYBE_ReportNetworkError DISABLED_ReportNetworkError
 #else
@@ -208,7 +208,7 @@ TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
   ExpectDictIntegerValue(0, *body_dict, "status_code");
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_FUCHSIA)
 // TODO(https://crbug.com/829650): Fix and re-enable these tests.
 #define MAYBE_UploadAtShutdown DISABLED_UploadAtShutdown
 #else
