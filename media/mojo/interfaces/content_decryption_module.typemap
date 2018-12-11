@@ -21,7 +21,6 @@ deps = [
 
 type_mappings = [
   "media.mojom.CdmConfig=media::CdmConfig",
-  "media.mojom.CdmKeyStatus=media::CdmKeyInformation::KeyStatus",
   "media.mojom.CdmPromiseResult.Exception=media::CdmPromise::Exception",
   "media.mojom.CdmSessionType=media::CdmSessionType",
   "media.mojom.CdmMessageType=media::CdmMessageType",
