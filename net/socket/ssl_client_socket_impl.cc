@@ -835,15 +835,6 @@ int SSLClientSocketImpl::Init() {
 
   SSL_set_early_data_enabled(ssl_.get(), ssl_config_.early_data_enabled);
 
-  switch (ssl_config_.tls13_variant) {
-    case kTLS13VariantDraft23:
-      SSL_set_tls13_variant(ssl_.get(), tls13_draft23);
-      break;
-    case kTLS13VariantFinal:
-      SSL_set_tls13_variant(ssl_.get(), tls13_rfc);
-      break;
-  }
-
   if (!base::FeatureList::IsEnabled(features::kEnforceTLS13Downgrade) ||
       base::GetFieldTrialParamByFeatureAsBool(features::kEnforceTLS13Downgrade,
                                               "known_roots_only", false)) {

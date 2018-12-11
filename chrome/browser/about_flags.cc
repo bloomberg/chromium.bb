@@ -714,40 +714,6 @@ const FeatureEntry::Choice kSiteIsolationOptOutChoices[] = {
      switches::kDisableSiteIsolation, ""},
 };
 
-const FeatureEntry::Choice kTLS13VariantChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kTLS13VariantDisabled, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The Draft 18 variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The Experiment variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The RecordType variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The NoSessionID variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The Experiment2 variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The Experiment3 variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    // The Draft22 variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    {flag_descriptions::kTLS13VariantDraft23, switches::kTLS13Variant,
-     switches::kTLS13VariantDraft23},
-    // The Draft28 variant was deprecated.
-    {flag_descriptions::kTLS13VariantDeprecated, switches::kTLS13Variant,
-     switches::kTLS13VariantDisabled},
-    {flag_descriptions::kTLS13VariantFinal, switches::kTLS13Variant,
-     switches::kTLS13VariantFinal},
-};
-
 const FeatureEntry::FeatureParam kEnforceTLS13DowngradeKnownOnly[] = {
     {"known_roots_only", "true"}};
 
@@ -2514,9 +2480,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutomaticTabDiscardingDescription, kOsWin | kOsMac,
      FEATURE_VALUE_TYPE(features::kAutomaticTabDiscarding)},
 #endif  // OS_WIN || OS_MACOSX
-    {"tls13-variant", flag_descriptions::kTLS13VariantName,
-     flag_descriptions::kTLS13VariantDescription, kOsAll,
-     MULTI_VALUE_TYPE(kTLS13VariantChoices)},
     {"enforce-tls13-downgrade", flag_descriptions::kEnforceTLS13DowngradeName,
      flag_descriptions::kEnforceTLS13DowngradeDescription, kOsAll,
      FEATURE_WITH_PARAMS_VALUE_TYPE(net::features::kEnforceTLS13Downgrade,

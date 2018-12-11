@@ -1892,13 +1892,6 @@ const char kThreadedScrollingDescription[] =
     "this can dramatically hurt scrolling performance of most websites and is "
     "intended for testing purposes only.";
 
-const char kTLS13VariantName[] = "TLS 1.3";
-const char kTLS13VariantDescription[] = "Sets the TLS 1.3 variant used.";
-const char kTLS13VariantDisabled[] = "Disabled";
-const char kTLS13VariantDeprecated[] = "Disabled (Deprecated Setting)";
-const char kTLS13VariantDraft23[] = "Enabled (Draft 23)";
-const char kTLS13VariantFinal[] = "Enabled (Final)";
-
 const char kTopSitesFromSiteEngagementName[] = "Top Sites from Site Engagement";
 const char kTopSitesFromSiteEngagementDescription[] =
     "Enable Top Sites on the New Tab Page to be sourced and sorted using site "

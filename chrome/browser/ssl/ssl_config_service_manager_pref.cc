@@ -113,8 +113,6 @@ std::vector<std::string> CanonicalizeHostnamePatterns(
   return out;
 }
 
-const char kTLS13VariantExperimentName[] = "TLS13Variant";
-
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManagerPref
 
@@ -155,7 +153,6 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
   BooleanPrefMember symantec_legacy_infrastructure_enabled_;
   StringPrefMember ssl_version_min_;
   StringPrefMember ssl_version_max_;
-  StringPrefMember tls13_variant_;
   StringListPrefMember h2_client_cert_coalescing_host_patterns_;
 
   // The cached list of disabled SSL cipher suites.
@@ -169,29 +166,6 @@ class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
 SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     PrefService* local_state) {
   DCHECK(local_state);
-
-  const std::string tls13_variant =
-      base::GetFieldTrialParamValue(kTLS13VariantExperimentName, "variant");
-  const char* tls13_value = nullptr;
-  const char* version_value = nullptr;
-  if (tls13_variant == "disabled") {
-    tls13_value = switches::kTLS13VariantDisabled;
-  } else if (tls13_variant == "draft23") {
-    tls13_value = switches::kTLS13VariantDraft23;
-    version_value = switches::kSSLVersionTLSv13;
-  } else if (tls13_variant == "final") {
-    tls13_value = switches::kTLS13VariantFinal;
-    version_value = switches::kSSLVersionTLSv13;
-  }
-
-  if (tls13_value) {
-    local_state->SetDefaultPrefValue(prefs::kTLS13Variant,
-                                     base::Value(tls13_value));
-  }
-  if (version_value) {
-    local_state->SetDefaultPrefValue(prefs::kSSLVersionMax,
-                                     base::Value(version_value));
-  }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
       base::BindRepeating(&SSLConfigServiceManagerPref::OnPreferenceChanged,
@@ -209,7 +183,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
                         local_state_callback);
   ssl_version_max_.Init(prefs::kSSLVersionMax, local_state,
                         local_state_callback);
-  tls13_variant_.Init(prefs::kTLS13Variant, local_state, local_state_callback);
   h2_client_cert_coalescing_host_patterns_.Init(
       prefs::kH2ClientCertCoalescingHosts, local_state, local_state_callback);
 
@@ -235,7 +208,6 @@ void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
       default_verifier_config.disable_symantec_enforcement);
   registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
   registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
-  registry->RegisterStringPref(prefs::kTLS13Variant, std::string());
   registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
   registry->RegisterListPref(prefs::kH2ClientCertCoalescingHosts);
 }
@@ -287,7 +259,6 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
       symantec_legacy_infrastructure_enabled_.GetValue();
   std::string version_min_str = ssl_version_min_.GetValue();
   std::string version_max_str = ssl_version_max_.GetValue();
-  std::string tls13_variant_str = tls13_variant_.GetValue();
 
   network::mojom::SSLVersion version_min;
   if (SSLProtocolVersionFromString(version_min_str, &version_min))
@@ -297,15 +268,6 @@ SSLConfigServiceManagerPref::GetSSLConfigFromPrefs() const {
   if (SSLProtocolVersionFromString(version_max_str, &version_max) &&
       version_max >= network::mojom::SSLVersion::kTLS12) {
     config->version_max = version_max;
-  }
-
-  if (tls13_variant_str == switches::kTLS13VariantDisabled) {
-    if (config->version_max > network::mojom::SSLVersion::kTLS12)
-      config->version_max = network::mojom::SSLVersion::kTLS12;
-  } else if (tls13_variant_str == switches::kTLS13VariantDraft23) {
-    config->tls13_variant = network::mojom::TLS13Variant::kDraft23;
-  } else if (tls13_variant_str == switches::kTLS13VariantFinal) {
-    config->tls13_variant = network::mojom::TLS13Variant::kFinal;
   }
 
   config->disabled_cipher_suites = disabled_cipher_suites_;

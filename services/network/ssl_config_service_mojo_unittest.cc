@@ -276,7 +276,6 @@ TEST_F(NetworkServiceSSLConfigServiceTest, NoSSLConfig) {
   // Make sure the default TLS version range is as expected.
   EXPECT_EQ(net::kDefaultSSLVersionMin, GetSSLConfig().version_min);
   EXPECT_EQ(net::kDefaultSSLVersionMax, GetSSLConfig().version_max);
-  EXPECT_EQ(net::kDefaultTLS13Variant, GetSSLConfig().tls13_variant);
 }
 
 // Check that passing in the default mojom::SSLConfig matches the default
@@ -292,7 +291,6 @@ TEST_F(NetworkServiceSSLConfigServiceTest, Default) {
   // Make sure the default TLS version range is as expected.
   EXPECT_EQ(net::kDefaultSSLVersionMin, GetSSLConfig().version_min);
   EXPECT_EQ(net::kDefaultSSLVersionMax, GetSSLConfig().version_max);
-  EXPECT_EQ(net::kDefaultTLS13Variant, GetSSLConfig().tls13_variant);
 }
 
 // Check that passing in the default mojom::SSLConfig matches the default

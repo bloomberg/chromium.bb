@@ -1091,13 +1091,6 @@ extern const char kStopNonTimersInBackgroundDescription[];
 extern const char kSystemKeyboardLockName[];
 extern const char kSystemKeyboardLockDescription[];
 
-extern const char kTLS13VariantName[];
-extern const char kTLS13VariantDescription[];
-extern const char kTLS13VariantDisabled[];
-extern const char kTLS13VariantDeprecated[];
-extern const char kTLS13VariantDraft23[];
-extern const char kTLS13VariantFinal[];
-
 extern const char kSuggestionsWithSubStringMatchName[];
 extern const char kSuggestionsWithSubStringMatchDescription[];
 

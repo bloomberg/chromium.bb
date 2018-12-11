@@ -42,7 +42,7 @@ const CommandLinePrefStore::SwitchToPreferenceMapEntry
          data_reduction_proxy::prefs::kDataReductionProxy},
         {switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist},
         {switches::kSSLVersionMin, prefs::kSSLVersionMin},
-        {switches::kTLS13Variant, prefs::kTLS13Variant},
+        {switches::kSSLVersionMax, prefs::kSSLVersionMax},
 #if defined(OS_ANDROID)
         {switches::kAuthAndroidNegotiateAccountType,
          prefs::kAuthAndroidNegotiateAccountType},
@@ -169,16 +169,6 @@ void ChromeCommandLinePrefStore::ApplySSLSwitches() {
         command_line()->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
     SetValue(prefs::kCipherSuiteBlacklist, std::move(list_value),
-             WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  }
-
-  // If a non-disabled TLS 1.3 variant flag is set, enable TLS 1.3 in
-  // SSLVersionMax.
-  if (command_line()->HasSwitch(switches::kTLS13Variant) &&
-      command_line()->GetSwitchValueASCII(switches::kTLS13Variant) !=
-          switches::kTLS13VariantDisabled) {
-    SetValue(prefs::kSSLVersionMax,
-             std::make_unique<base::Value>(switches::kSSLVersionTLSv13),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
