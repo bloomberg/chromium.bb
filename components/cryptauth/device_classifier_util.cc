@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "base/version.h"
+#include "chromeos/services/device_sync/proto/enum_util.h"
 #include "components/version_info/version_info.h"
 
 namespace cryptauth {
@@ -25,7 +26,8 @@ const cryptauth::DeviceClassifier& GetDeviceClassifier() {
     base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
                                                  &bugfix_version);
     classifier.set_device_os_version_code(major_version);
-    classifier.set_device_type(cryptauth::CHROME);
+    classifier.set_device_type(
+        cryptauth::DeviceTypeEnumToString(cryptauth::CHROME));
 
     const std::vector<uint32_t>& version_components =
         version_info::GetVersion().components();

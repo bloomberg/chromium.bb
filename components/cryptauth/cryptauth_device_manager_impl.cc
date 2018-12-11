@@ -247,8 +247,12 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
                           std::to_string(device.last_update_time_millis()));
   }
 
-  if (device.has_device_type() && DeviceType_IsValid(device.device_type())) {
-    dictionary->SetInteger(kExternalDeviceKeyDeviceType, device.device_type());
+  if (device.has_device_type() &&
+      DeviceType_IsValid(
+          cryptauth::DeviceTypeStringToEnum(device.device_type()))) {
+    dictionary->SetInteger(
+        kExternalDeviceKeyDeviceType,
+        cryptauth::DeviceTypeStringToEnum(device.device_type()));
   }
 
   dictionary->Set(kExternalDeviceKeyBeaconSeeds,
@@ -459,7 +463,8 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   int device_type;
   if (dictionary.GetInteger(kExternalDeviceKeyDeviceType, &device_type) &&
       DeviceType_IsValid(device_type)) {
-    external_device->set_device_type(static_cast<DeviceType>(device_type));
+    external_device->set_device_type(cryptauth::DeviceTypeEnumToString(
+        static_cast<DeviceType>(device_type)));
   }
 
   const base::ListValue* beacon_seeds;

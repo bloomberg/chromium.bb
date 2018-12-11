@@ -256,7 +256,9 @@ void ExpectSyncedDevicesAndPrefAreEqual(
     int device_type;
     if (device_dictionary->GetInteger("device_type", &device_type)) {
       EXPECT_TRUE(expected_device.has_device_type());
-      EXPECT_EQ(expected_device.device_type(), device_type);
+      EXPECT_EQ(
+          cryptauth::DeviceTypeStringToEnum(expected_device.device_type()),
+          device_type);
     } else {
       EXPECT_FALSE(expected_device.has_device_type());
     }
@@ -964,7 +966,8 @@ TEST_F(CryptAuthDeviceManagerImplTest, SyncFullyDetailedExternalDeviceInfos) {
   device_with_all_fields.set_bluetooth_address("aa:bb:cc:dd:ee:ff");
   device_with_all_fields.set_unlockable(true);
   device_with_all_fields.set_last_update_time_millis(123456789L);
-  device_with_all_fields.set_device_type(DeviceType::ANDROIDOS);
+  device_with_all_fields.set_device_type(
+      cryptauth::DeviceTypeEnumToString(ANDROID));
 
   BeaconSeed seed1;
   seed1.set_data(kBeaconSeed1Data);

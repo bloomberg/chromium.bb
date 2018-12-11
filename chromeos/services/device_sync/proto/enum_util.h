@@ -36,6 +36,23 @@ std::string SoftwareFeatureEnumToString(
 std::string SoftwareFeatureEnumToStringAllCaps(
     cryptauth::SoftwareFeature software_feature);
 
+std::ostream& operator<<(std::ostream& stream, const DeviceType& device_type);
+
+// Converts the string representation of a DeviceType to its associated
+// Proto enum value. Some Proto messages are sent to Apiary endpoints, which
+// translate Proto enums to strings instead of leaving them as enums. Thus, when
+// communicating with those endpoints, the proto values should be converted from
+// enums to strings before sending them.
+cryptauth::DeviceType DeviceTypeStringToEnum(
+    const std::string& device_type_as_string);
+
+// Converts a Proto enum DeviceType to its associated string
+// representation. Some Proto messages are sent to Apiary endpoints, which
+// translate Proto enums to strings instead of leaving them as enums. Thus, when
+// communicating with those endpoints, the proto values should be converted from
+// strings to enums after receiving them.
+std::string DeviceTypeEnumToString(cryptauth::DeviceType device_type);
+
 }  // namespace cryptauth
 
 #endif  // CHROMEOS_SERVICES_DEVICE_SYNC_PROTO_ENUM_UTIL_H_
