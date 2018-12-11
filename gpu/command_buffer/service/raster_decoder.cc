@@ -884,6 +884,9 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
 // Make this decoder's GL context current.
 bool RasterDecoderImpl::MakeCurrent() {
+  if (raster_decoder_context_state_->use_vulkan_gr_context)
+    return true;
+
   if (!context_.get())
     return false;
 
@@ -1606,12 +1609,14 @@ error::Error RasterDecoderImpl::HandleInsertFenceSyncCHROMIUM(
 }
 
 void RasterDecoderImpl::DoFinish() {
-  api()->glFinishFn();
+  if (!raster_decoder_context_state_->use_vulkan_gr_context)
+    api()->glFinishFn();
   ProcessPendingQueries(true);
 }
 
 void RasterDecoderImpl::DoFlush() {
-  api()->glFlushFn();
+  if (!raster_decoder_context_state_->use_vulkan_gr_context)
+    api()->glFlushFn();
   ProcessPendingQueries(false);
 }
 
