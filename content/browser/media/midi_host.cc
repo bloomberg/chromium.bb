@@ -37,8 +37,8 @@ const size_t kAcknowledgementThresholdBytes = 1024 * 1024;  // 1 MB.
 using midi::IsDataByte;
 using midi::IsSystemRealTimeMessage;
 using midi::IsValidWebMIDIData;
-using midi::kSysExByte;
 using midi::kEndOfSysExByte;
+using midi::kSysExByte;
 using midi::mojom::PortState;
 using midi::mojom::Result;
 
@@ -188,9 +188,8 @@ void MidiHost::SendData(uint32_t port,
   {
     base::AutoLock auto_lock(output_port_count_lock_);
     if (output_port_count_ <= port) {
-      bad_message::ReceivedBadMessage(
-          RenderProcessHost::FromID(renderer_process_id_),
-          bad_message::MH_INVALID_MIDI_PORT);
+      bad_message::ReceivedBadMessage(renderer_process_id_,
+                                      bad_message::MH_INVALID_MIDI_PORT);
       return;
     }
   }
@@ -202,9 +201,8 @@ void MidiHost::SendData(uint32_t port,
   // in JavaScript. The actual permission check for security purposes
   // happens here in the browser process.
   if (!has_sys_ex_permission_ && base::ContainsValue(data, kSysExByte)) {
-    bad_message::ReceivedBadMessage(
-        RenderProcessHost::FromID(renderer_process_id_),
-        bad_message::MH_SYS_EX_PERMISSION);
+    bad_message::ReceivedBadMessage(renderer_process_id_,
+                                    bad_message::MH_SYS_EX_PERMISSION);
     return;
   }
 
