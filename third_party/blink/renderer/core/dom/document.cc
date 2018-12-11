@@ -2579,6 +2579,26 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
   if (!node->InActiveDocument())
     return;
 
+  // If we're forcing location information to be updated, we need to ensure that
+  // all locked elements in the ancestor chain allow us to do the updates. When
+  // the scoped objects are destroyed, the locks are restored. Note that the
+  // frame rect of the locked elements themselves will still be the same as at
+  // the time the lock was acquired.
+  // TODO(vmpstr): This is somewhat inefficient, since we would pay the cost of
+  // traversing the ancestor chain even for nodes that are not in the locked
+  // subtree. We need to figure out if there is a supplementary structure that
+  // we can use to quickly identify nodes that are in the locked subtree.
+  Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list;
+  if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
+    for (auto* ancestor = node; ancestor;
+         ancestor = ancestor->ParentOrShadowHostNode()) {
+      if (!ancestor->IsElementNode())
+        continue;
+      if (auto* context = ToElement(ancestor)->GetDisplayLockContext())
+        scoped_update_forced_list.push_back(context->GetScopedForcedUpdate());
+    }
+  }
+
   // For all nodes we must have up-to-date style and have performed layout to do
   // any location-based calculation.
   UpdateStyleAndLayoutIgnorePendingStylesheets();
