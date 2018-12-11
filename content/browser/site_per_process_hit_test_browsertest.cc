@@ -5219,6 +5219,101 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessNonIntegerScaleFactorHitTestBrowserTest,
   NestedSurfaceHitTestTestHelper(shell(), embedded_test_server());
 }
 
+// Verify RenderWidgetHostInputEventRouter can successfully hit test
+// a MouseEvent and route it to a clipped OOPIF.
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestClippedFrame) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_clipped_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child_node = root->child_at(0);
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  RenderWidgetHostMouseEventMonitor root_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  gfx::PointF point_in_root(25, 25);
+  gfx::PointF point_in_child(100, 100);
+
+  blink::WebMouseEvent down_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  down_event.button = blink::WebPointerProperties::Button::kLeft;
+  down_event.click_count = 1;
+  SetWebEventPositions(&down_event, point_in_root, rwhv_root);
+
+  blink::WebMouseEvent up_event(
+      blink::WebInputEvent::kMouseUp, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  up_event.button = blink::WebPointerProperties::Button::kLeft;
+  up_event.click_count = 1;
+  SetWebEventPositions(&up_event, point_in_root, rwhv_root);
+
+  // Target at root.
+  RouteMouseEventAndWaitUntilDispatch(router, rwhv_root, rwhv_root,
+                                      &down_event);
+  EXPECT_TRUE(root_monitor.EventWasReceived());
+  EXPECT_FALSE(child_monitor.EventWasReceived());
+  EXPECT_NEAR(25, root_monitor.event().PositionInWidget().x, kHitTestTolerance);
+  EXPECT_NEAR(25, root_monitor.event().PositionInWidget().y, kHitTestTolerance);
+
+  root_monitor.ResetEventReceived();
+  child_monitor.ResetEventReceived();
+  RouteMouseEventAndWaitUntilDispatch(router, rwhv_root, rwhv_root, &up_event);
+  EXPECT_TRUE(root_monitor.EventWasReceived());
+  EXPECT_FALSE(child_monitor.EventWasReceived());
+  EXPECT_NEAR(25, root_monitor.event().PositionInWidget().x, kHitTestTolerance);
+  EXPECT_NEAR(25, root_monitor.event().PositionInWidget().y, kHitTestTolerance);
+
+  // Target at child.
+  root_monitor.ResetEventReceived();
+  child_monitor.ResetEventReceived();
+  SetWebEventPositions(&down_event, point_in_child, rwhv_root);
+  SetWebEventPositions(&up_event, point_in_child, rwhv_root);
+  RouteMouseEventAndWaitUntilDispatch(router, rwhv_root, rwhv_child,
+                                      &down_event);
+  // In surface layer hit testing, we should not query client asynchronously.
+  EXPECT_FALSE(root_monitor.EventWasReceived());
+  EXPECT_TRUE(child_monitor.EventWasReceived());
+  EXPECT_NEAR(90, child_monitor.event().PositionInWidget().x,
+              kHitTestTolerance);
+  EXPECT_NEAR(100, child_monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
+
+  root_monitor.ResetEventReceived();
+  child_monitor.ResetEventReceived();
+  RouteMouseEventAndWaitUntilDispatch(router, rwhv_root, rwhv_child, &up_event);
+  // We should reuse the target for mouse up.
+  EXPECT_FALSE(root_monitor.EventWasReceived());
+  EXPECT_TRUE(child_monitor.EventWasReceived());
+  EXPECT_TRUE(child_monitor.EventWasReceived());
+  EXPECT_NEAR(90, child_monitor.event().PositionInWidget().x,
+              kHitTestTolerance);
+  EXPECT_NEAR(100, child_monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
+}
+
 // Verify InputTargetClient works within an OOPIF process.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   GURL main_url(embedded_test_server()->GetURL(
