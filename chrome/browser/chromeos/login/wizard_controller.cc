@@ -1257,6 +1257,14 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
   } else if (skip_update_enroll_after_eula_ ||
              prescribed_enrollment_config_.should_enroll() ||
              configuration_forced_enrollment) {
+    VLOG(1) << "StartEnrollment from OnDeviceDisabledChecked(device_disabled="
+            << device_disabled << ") "
+            << "skip_update_enroll_after_eula_="
+            << skip_update_enroll_after_eula_
+            << ", prescribed_enrollment_config_.should_enroll()="
+            << prescribed_enrollment_config_.should_enroll()
+            << ", configuration_forced_enrollment="
+            << configuration_forced_enrollment;
     StartEnrollmentScreen(skip_update_enroll_after_eula_);
   } else {
     PerformOOBECompletedActions();
