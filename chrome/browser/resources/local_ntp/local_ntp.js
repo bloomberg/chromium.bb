@@ -1657,6 +1657,7 @@ var insertShareButton = function() {
   var shareButtonImg = document.createElement('img');
   shareButtonImg.id = IDS.DOODLE_SHARE_BUTTON_IMG;
   shareButtonWrapper.appendChild(shareButtonImg);
+  shareButtonWrapper.title = configData.translatedStrings.shareDoodle;
 
   shareButtonWrapper.style.left = targetDoodle.metadata.shareButtonX + 'px';
   shareButtonWrapper.style.top = targetDoodle.metadata.shareButtonY + 'px';
@@ -1716,6 +1717,7 @@ var updateShareDialog = function() {
   };
 
   closeButton.onclick = closeDialog;
+  closeButton.title = configData.translatedStrings.shareClose;
   shareDialog.onclick = function(e) {
     if (e.target == shareDialog) {
       closeDialog();
@@ -1734,28 +1736,33 @@ var updateShareDialog = function() {
         '&hashtag=' + encodeURIComponent('#GoogleDoodle');
     window.open(url);
   };
+  facebookButton.title = configData.translatedStrings.shareFacebook;
 
   twitterButton.onclick = function() {
     var url = 'https://twitter.com/intent/tweet' +
         '?text=' + encodeURIComponent(title + '\n' + shortLink);
     window.open(url);
   };
+  twitterButton.title = configData.translatedStrings.shareTwitter;
 
   mailButton.onclick = function() {
     var url = 'mailto:?subject=' + encodeURIComponent(title) +
         '&body=' + encodeURIComponent(shortLink);
     document.location.href = url;
   };
+  mailButton.title = configData.translatedStrings.shareMail;
 
   linkText.value = shortLink;
   linkText.onclick = function() {
     linkText.select();
   };
   linkText.setAttribute('readonly', true);
+  linkText.title = configData.translatedStrings.shareLink;
   copyButton.onclick = function() {
     linkText.select();
     document.execCommand('copy');
   };
+  copyButton.title = configData.translatedStrings.copyLink;
 };
 
 
