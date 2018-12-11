@@ -2,14 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# `7MM"""Mq.                       `7MM
-#   MM   `MM.                        MM
-#   MM   ,M9  .gP"Ya   ,6"Yb.   ,M""bMM  `7MMpMMMb.pMMMb.  .gP"Ya
-#   MMmmdM9  ,M'   Yb 8)   MM ,AP    MM    MM    MM    MM ,M'   Yb
-#   MM  YM.  8M""""""  ,pm9MM 8MI    MM    MM    MM    MM 8M""""""
-#   MM   `Mb.YM.    , 8M   MM `Mb    MM    MM    MM    MM YM.    ,
-# .JMML. .JMM.`Mbmmd' `Moo9^Yo.`Wbmd"MML..JMML  JMML  JMML.`Mbmmd'
-#
 # Please keep this file in sync with remoting/remoting_webapp_files.gypi .
 
 # JSCompiler externs.
