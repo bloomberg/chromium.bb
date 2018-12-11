@@ -3719,8 +3719,14 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     return reading_list::IsOfflineURLValid(
         url, ReadingListModelFactory::GetForBrowserState(_browserState));
   }
-  if (host == kChromeUINewTabHost)
+  if (host == kChromeUINewTabHost) {
     return !base::FeatureList::IsEnabled(kBrowserContainerContainsNTP);
+  }
+  if (host == kChromeUIExternalFileHost) {
+    id<CRWNativeContent> controller =
+        [self controllerForURL:url webState:self.tabModel.currentTab.webState];
+    return controller ? YES : NO;
+  }
 
   return NO;
 }
