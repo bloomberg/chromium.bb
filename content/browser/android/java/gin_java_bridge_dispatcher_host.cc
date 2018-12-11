@@ -79,11 +79,6 @@ void GinJavaBridgeDispatcherHost::WebContentsDestroyed() {
     filter->RemoveHost(this);
 }
 
-void GinJavaBridgeDispatcherHost::RenderProcessGone(
-    base::TerminationStatus status) {
-  GinJavaBridgeMessageFilter::RemoveFilter(this);
-}
-
 void GinJavaBridgeDispatcherHost::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
