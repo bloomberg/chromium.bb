@@ -6,8 +6,8 @@
 
 #import "base/logging.h"
 #import "ios/chrome/browser/translate/language_selection_delegate.h"
+#import "ios/chrome/browser/translate/language_selection_handler.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
-#import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/presenters/vertical_animation_container.h"
 #import "ios/chrome/browser/ui/translate/language_selection_mediator.h"
 #import "ios/chrome/browser/ui/translate/language_selection_view_controller.h"
@@ -16,71 +16,65 @@
 #error "This file requires ARC support."
 #endif
 
-@interface LanguageSelectionCoordinator ()<
-    LanguageSelectionViewControllerDelegate,
-    ContainedPresenterDelegate>
+@interface LanguageSelectionCoordinator () <
+    LanguageSelectionHandler,
+    LanguageSelectionViewControllerDelegate>
+
+// The WebStateList being observed.
+@property(nonatomic) WebStateList* webStateList;
 // Presenter to use to for presenting the view controller.
 @property(nonatomic) id<ContainedPresenter> presenter;
-// The base view controller the instance was initialized with.
-@property(nonatomic, weak) UIViewController* baseViewController;
 // The view controller this coordinator manages.
 @property(nonatomic) LanguageSelectionViewController* selectionViewController;
 // A mediator to interoperate with the translation model.
 @property(nonatomic) LanguageSelectionMediator* selectionMediator;
 // A delegate, provided by showLanguageSelectorWithContext:delegate:.
 @property(nonatomic, weak) id<LanguageSelectionDelegate> selectionDelegate;
-// YES if the coordinator has started displaying its UI.
-@property(nonatomic, readonly) BOOL started;
-
-// Starts displaying the UI for this coordinator, using self.presenter to handle
-// the positioning and display of self.selectionViewController.
-// It is an error to call this method when self.presenter is nil.
-- (void)start;
-
-// Cleans up state after the UI for this coordinator has stopped being
-// displayed.
-- (void)stop;
+// YES if the coordinator has been started.
+@property(nonatomic) BOOL started;
 
 @end
 
 @implementation LanguageSelectionCoordinator
 
-@synthesize baseViewController = _baseViewController;
-@synthesize presenter = _presenter;
-@synthesize selectionViewController = _selectionViewController;
-@synthesize selectionMediator = _selectionMediator;
-@synthesize selectionDelegate = _selectionDelegate;
-
-- (nullable instancetype)initWithBaseViewController:
-    (UIViewController*)viewController {
-  if ((self = [super init])) {
-    _baseViewController = viewController;
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                              webStateList:(WebStateList*)webStateList {
+  DCHECK(webStateList);
+  self = [super initWithBaseViewController:viewController
+                              browserState:browserState];
+  if (self) {
+    _webStateList = webStateList;
   }
   return self;
-}
-
-#pragma mark - private property implementation
-
-- (BOOL)started {
-  return self.presenter.presentedViewController != nil;
 }
 
 #pragma mark - private methods
 
 - (void)start {
-  self.presenter = [[VerticalAnimationContainer alloc] init];
-  self.presenter.baseViewController = self.baseViewController;
-  self.presenter.presentedViewController = self.selectionViewController;
-  self.presenter.delegate = self;
+  if (self.started)
+    return;
 
-  [self.presenter prepareForPresentation];
+  self.selectionMediator =
+      [[LanguageSelectionMediator alloc] initWithLanguageSelectionHandler:self];
+  self.selectionMediator.webStateList = self.webStateList;
 
-  [self.presenter presentAnimated:YES];
+  self.started = YES;
 }
 
 - (void)stop {
-  self.selectionViewController = nil;
+  if (!self.started)
+    return;
+
+  [self dismissLanguageSelector];
+  [self.selectionMediator disconnect];
   self.selectionMediator = nil;
+  self.presenter = nil;
+  self.selectionViewController = nil;
+  self.selectionDelegate = nil;
+
+  self.started = NO;
 }
 
 #pragma mark - LanguageSelectionHandler
@@ -88,25 +82,22 @@
 - (void)showLanguageSelectorWithContext:(LanguageSelectionContext*)context
                                delegate:
                                    (id<LanguageSelectionDelegate>)delegate {
-  if (self.started)
-    return;
-
   self.selectionDelegate = delegate;
 
-  self.selectionMediator =
-      [[LanguageSelectionMediator alloc] initWithContext:context];
+  self.selectionMediator.context = context;
 
   self.selectionViewController = [[LanguageSelectionViewController alloc] init];
   self.selectionViewController.delegate = self;
   self.selectionMediator.consumer = self.selectionViewController;
 
-  [self start];
+  self.presenter = [[VerticalAnimationContainer alloc] init];
+  self.presenter.baseViewController = self.baseViewController;
+  self.presenter.presentedViewController = self.selectionViewController;
+  [self.presenter prepareForPresentation];
+  [self.presenter presentAnimated:YES];
 }
 
 - (void)dismissLanguageSelector {
-  if (!self.started)
-    return;
-
   [self.selectionDelegate languageSelectorClosedWithoutSelection];
   [self.presenter dismissAnimated:NO];
 }
@@ -123,17 +114,6 @@
 - (void)languageSelectionCanceled {
   [self.selectionDelegate languageSelectorClosedWithoutSelection];
   [self.presenter dismissAnimated:YES];
-}
-
-#pragma mark - ContainedPresenterDelegate
-
-- (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
-  DCHECK(presenter == self.presenter);
-}
-
-- (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
-  DCHECK(presenter == self.presenter);
-  [self stop];
 }
 
 @end
