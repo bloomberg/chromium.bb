@@ -169,11 +169,6 @@ base::LazyInstance<ChromeContentUtilityClient>::DestructorAtExit
     g_chrome_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif
 
-#if defined(OS_POSIX)
-base::LazyInstance<ChromeCrashReporterClient>::Leaky g_chrome_crash_client =
-    LAZY_INSTANCE_INITIALIZER;
-#endif
-
 extern int NaClMain(const content::MainFunctionParams&);
 
 #if !defined(OS_CHROMEOS)
@@ -790,7 +785,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   crash_reporter::InitializeCrashKeys();
 
 #if defined(OS_POSIX)
-  crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
+  ChromeCrashReporterClient::Create();
 #endif
 
 #if defined(OS_MACOSX)

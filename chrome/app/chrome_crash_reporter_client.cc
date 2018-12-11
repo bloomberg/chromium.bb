@@ -41,6 +41,11 @@
 #include "components/version_info/version_info.h"
 #endif
 
+void ChromeCrashReporterClient::Create() {
+  static base::NoDestructor<ChromeCrashReporterClient> crash_client;
+  crash_reporter::SetCrashReporterClient(crash_client.get());
+}
+
 ChromeCrashReporterClient::ChromeCrashReporterClient() {}
 
 ChromeCrashReporterClient::~ChromeCrashReporterClient() {}
