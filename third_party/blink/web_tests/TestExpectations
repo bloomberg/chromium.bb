@@ -3044,6 +3044,9 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/infrastructure/testdriver/file_upload.sub.html [ Skip ]
+crbug.com/626703 [ Android ] external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.tentative.html [ Failure Timeout ]
+crbug.com/626703 [ Retina ] external/wpt/html/semantics/links/links-created-by-a-and-area-elements/target_blank_implicit_noopener.tentative.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-preserve-breaks-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-collapse-discard-001.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/white-space/text-space-trim-trim-inner-001.xht [ Failure ]
