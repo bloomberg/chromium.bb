@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
+#import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -66,6 +67,10 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
+
+// Coordinator for a language selection UI.
+@property(nonatomic, strong)
+    LanguageSelectionCoordinator* languageSelectionCoordinator;
 
 // Coordinator for Page Info UI.
 @property(nonatomic, strong) PageInfoLegacyCoordinator* pageInfoCoordinator;
@@ -207,6 +212,12 @@
   self.formInputAccessoryCoordinator.delegate = self;
   [self.formInputAccessoryCoordinator start];
 
+  self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState
+                    webStateList:self.tabModel.webStateList];
+  [self.languageSelectionCoordinator start];
+
   self.pageInfoCoordinator = [[PageInfoLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController
                     browserState:self.browserState];
@@ -249,6 +260,9 @@
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
+
+  [self.languageSelectionCoordinator stop];
+  self.languageSelectionCoordinator = nil;
 
   [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = nil;

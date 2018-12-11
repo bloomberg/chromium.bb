@@ -12,7 +12,6 @@
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/infobars/legacy_infobar_container_view_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
-#import "ios/chrome/browser/ui/translate/language_selection_coordinator.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -28,10 +27,6 @@
     LegacyInfobarContainerViewController* containerViewController;
 // The mediator for this Coordinator.
 @property(nonatomic, strong) InfobarContainerMediator* mediator;
-
-// Coordinator for the language selection UI.
-@property(nonatomic, strong)
-    LanguageSelectionCoordinator* languageSelectionCoordinator;
 
 @end
 
@@ -65,9 +60,6 @@
       didMoveToParentViewController:self.baseViewController];
   self.containerViewController.positioner = self.positioner;
 
-  self.languageSelectionCoordinator = [[LanguageSelectionCoordinator alloc]
-      initWithBaseViewController:self.baseViewController];
-
   // Create the mediator once the VC has been added to the View hierarchy.
   self.mediator = [[InfobarContainerMediator alloc]
       initWithConsumer:self.containerViewController
@@ -75,7 +67,6 @@
               tabModel:self.tabModel];
   self.mediator.syncPresenter = self.syncPresenter;
   self.mediator.signinPresenter = self;
-  self.mediator.languageSelectionHandler = self.languageSelectionCoordinator;
 
   [[UpgradeCenter sharedInstance] registerClient:self.mediator
                                   withDispatcher:self.dispatcher];
@@ -103,10 +94,6 @@
     return YES;
   }
   return NO;
-}
-
-- (id<LanguageSelectionHandler>)languageSelectionHandler {
-  return self.languageSelectionCoordinator;
 }
 
 #pragma mark - SigninPresenter

@@ -7,22 +7,29 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/translate/language_selection_handler.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ContainedPresenter;
+class WebStateList;
 
 // A coordinator for a language selection UI. This is intended for display as
 // a contained, not presented, view controller.
 // The methods defined in the LanguageSelectionHandler protocol will be called
 // to start the coordinator.
-@interface LanguageSelectionCoordinator : NSObject<LanguageSelectionHandler>
+@interface LanguageSelectionCoordinator : ChromeCoordinator
 
-// Creates a coordinator that will use |viewController| as the base view
-// controller for presenting its UI.
+// Creates a coordinator that uses a |viewController| a |browserState| and
+// a |webStateList|.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-    NS_DESIGNATED_INITIALIZER;
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+                              webStateList:(WebStateList*)webStateList;
 
-- (instancetype)init NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browserState:webStateList:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 

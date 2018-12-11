@@ -2894,9 +2894,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
   // init of the translation helpers if needed.
   // TODO(crbug.com/785238): Remove the need for this check.
   if (tab.webState->GetJSInjectionReceiver()) {
-    ChromeIOSTranslateClient::CreateForWebState(
-        tab.webState,
-        self.infobarContainerCoordinator.languageSelectionHandler);
+    ChromeIOSTranslateClient::CreateForWebState(tab.webState);
     language::IOSLanguageDetectionTabHelper::CreateForWebState(
         tab.webState,
         ChromeIOSTranslateClient::FromWebState(tab.webState)

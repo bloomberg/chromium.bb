@@ -44,12 +44,8 @@ class ChromeIOSTranslateClient
  public:
   ~ChromeIOSTranslateClient() override;
 
-  // Creates a translation client tab helper and attaches it to |web_state|. The
-  // |language_selection_handler| may not be nil, and is not retained by the
-  // ChromeIOSTranslateClient.
-  static void CreateForWebState(
-      web::WebState* web_state,
-      id<LanguageSelectionHandler> language_selection_handler);
+  // Creates a translation client tab helper and attaches it to |web_state|
+  static void CreateForWebState(web::WebState* web_state);
 
   // Helper method to return a new TranslatePrefs instance.
   static std::unique_ptr<translate::TranslatePrefs> CreateTranslatePrefs(
@@ -79,13 +75,16 @@ class ChromeIOSTranslateClient
   bool IsTranslatableURL(const GURL& url) override;
   void ShowReportLanguageDetectionErrorUI(const GURL& report_url) override;
 
+  void set_language_selection_handler(id<LanguageSelectionHandler> handler) {
+    language_selection_handler_ = handler;
+  }
+
  private:
-  ChromeIOSTranslateClient(
-      web::WebState* web_state,
-      id<LanguageSelectionHandler> language_selection_handler);
+  ChromeIOSTranslateClient(web::WebState* web_state);
   friend class web::WebStateUserData<ChromeIOSTranslateClient>;
 
   // web::WebStateObserver implementation.
+  void DidStartLoading(web::WebState* web_state) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
   // The WebState this instance is observing. Will be null after

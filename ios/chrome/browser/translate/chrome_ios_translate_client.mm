@@ -48,20 +48,16 @@
 #endif
 
 // static
-void ChromeIOSTranslateClient::CreateForWebState(
-    web::WebState* web_state,
-    id<LanguageSelectionHandler> language_selection_handler) {
+void ChromeIOSTranslateClient::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new ChromeIOSTranslateClient(
-                               web_state, language_selection_handler)));
+    web_state->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new ChromeIOSTranslateClient(web_state)));
   }
 }
 
-ChromeIOSTranslateClient::ChromeIOSTranslateClient(
-    web::WebState* web_state,
-    id<LanguageSelectionHandler> language_selection_handler)
+ChromeIOSTranslateClient::ChromeIOSTranslateClient(web::WebState* web_state)
     : web_state_(web_state),
       translate_manager_(std::make_unique<translate::TranslateManager>(
           this,
@@ -74,9 +70,7 @@ ChromeIOSTranslateClient::ChromeIOSTranslateClient(
               ->GetPrimaryModel())),
       translate_driver_(web_state,
                         web_state->GetNavigationManager(),
-                        translate_manager_.get()),
-      language_selection_handler_(language_selection_handler) {
-  DCHECK(language_selection_handler);
+                        translate_manager_.get()) {
   web_state_->AddObserver(this);
 }
 
@@ -194,6 +188,10 @@ bool ChromeIOSTranslateClient::IsTranslatableURL(const GURL& url) {
 void ChromeIOSTranslateClient::ShowReportLanguageDetectionErrorUI(
     const GURL& report_url) {
   NOTREACHED();
+}
+
+void ChromeIOSTranslateClient::DidStartLoading(web::WebState* web_state) {
+  [language_selection_handler_ dismissLanguageSelector];
 }
 
 void ChromeIOSTranslateClient::WebStateDestroyed(web::WebState* web_state) {
