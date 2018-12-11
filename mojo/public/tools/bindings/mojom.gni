@@ -1286,6 +1286,28 @@ template("mojom") {
         }
       }
     }
+
+    js_externs_target_suffix = "_js_externs"
+    js_externs_target_name = "${target_name}${js_externs_target_suffix}"
+    if (defined(invoker.sources)) {
+      js_library(js_externs_target_name) {
+        sources = []
+        extra_public_deps = [ ":$generator_js_target_name" ]
+        externs_list = [ "${externs_path}/mojo.js" ]
+        externs_list += process_file_template(
+                invoker.sources,
+                [ "{{source_gen_dir}}/{{source_name_part}}.mojom-lite.externs.js" ])
+
+        deps = []
+        foreach(d, all_deps) {
+          full_name = get_label_info(d, "label_no_toolchain")
+          deps += [ "${full_name}${js_externs_target_suffix}" ]
+        }
+      }
+    } else {
+      group(js_externs_target_name) {
+      }
+    }
   }
 }
 
