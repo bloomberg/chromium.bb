@@ -309,6 +309,11 @@ const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =
     "When enabled the page can always be scaled, regardless of author intent.";
 
+const char kSearchCopiedImageName[] = "Search copied image";
+const char kSearchCopiedImageDescription[] =
+    "Enable searching from the toolbar search button for an image copied to "
+    "the system pasteboard.";
+
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";

@@ -249,6 +249,10 @@ extern const char kPhysicalWebDescription[];
 extern const char kIgnoresViewportScaleLimitsName[];
 extern const char kIgnoresViewportScaleLimitsDescription[];
 
+// Title and description for the flag to enable searching for a copied image.
+extern const char kSearchCopiedImageName[];
+extern const char kSearchCopiedImageDescription[];
+
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];

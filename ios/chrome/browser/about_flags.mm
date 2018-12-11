@@ -494,6 +494,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"find-in-page-iframe", flag_descriptions::kFindInPageiFrameName,
      flag_descriptions::kFindInPageiFrameDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kFindInPageiFrame)},
+    {"search-copied-image", flag_descriptions::kSearchCopiedImageName,
+     flag_descriptions::kSearchCopiedImageDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSearchCopiedImage)},
 };
 
 // Add all switches from experimental flags to |command_line|.
