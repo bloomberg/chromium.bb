@@ -574,6 +574,20 @@ TEST_F(CountingPolicyTest, LogAndFetchFilteredActions) {
       base::BindOnce(
           &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
 
+  // Test for case insensitive matching for api_call.
+  CheckReadFilteredData(
+      policy, extension->id(), Action::ACTION_API_CALL, "tabs.testmethod", "",
+      "", -1,
+      base::BindOnce(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
+  // Test for prefix matching for api_call.
+  CheckReadFilteredData(
+      policy, extension->id(), Action::ACTION_API_CALL, "tabs.testM", "", "",
+      -1,
+      base::BindOnce(
+          &CountingPolicyTest::RetrieveActions_FetchFilteredActions1));
+
   CheckReadFilteredData(
       policy, "", Action::ACTION_DOM_ACCESS, "", "", "", -1,
       base::BindOnce(

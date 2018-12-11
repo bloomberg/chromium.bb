@@ -443,7 +443,7 @@ std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     where_next = " AND ";
   }
   if (!api_name.empty()) {
-    where_str += where_next + "api_name=?";
+    where_str += where_next + "api_name LIKE ?";
     where_next = " AND ";
   }
   if (type != Action::ACTION_ANY) {
@@ -473,7 +473,7 @@ std::unique_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
   if (!extension_id.empty())
     query.BindString(++i, extension_id);
   if (!api_name.empty())
-    query.BindString(++i, api_name);
+    query.BindString(++i, api_name + "%");
   if (type != Action::ACTION_ANY)
     query.BindInt(++i, static_cast<int>(type));
   if (!page_url.empty())
