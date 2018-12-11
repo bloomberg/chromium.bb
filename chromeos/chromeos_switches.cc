@@ -681,7 +681,6 @@ bool IsAssistantFlagsEnabled() {
 }
 
 bool IsAssistantEnabled() {
-  // TODO(xiaohuic): We will add locale restrictions later.
   return IsAssistantFlagsEnabled();
 }
 
