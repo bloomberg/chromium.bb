@@ -201,7 +201,7 @@ void AppShimController::SetUserAttention(
 }
 
 void AppShimController::Close() {
-  [delegate_ terminateNow];
+  [NSApp terminate:nil];
 }
 
 bool AppShimController::SendFocusApp(apps::AppShimFocusType focus_type,
