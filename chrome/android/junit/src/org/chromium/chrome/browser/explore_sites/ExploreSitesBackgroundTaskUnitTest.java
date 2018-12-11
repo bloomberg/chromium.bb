@@ -198,4 +198,29 @@ public class ExploreSitesBackgroundTaskUnitTest {
         assertEquals(1, taskFinishedList.size());
         assertEquals(false, taskFinishedList.get(0));
     }
+
+    @Test
+    public void testRemovesDeprecatedJobId() throws Exception {
+        TaskInfo.Builder deprecatedTaskInfoBuilder =
+                TaskInfo.createPeriodicTask(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID,
+                                ExploreSitesBackgroundTask.class, TimeUnit.HOURS.toMillis(4),
+                                TimeUnit.HOURS.toMillis(1))
+                        .setRequiredNetworkType(TaskInfo.NETWORK_TYPE_ANY)
+                        .setIsPersisted(true)
+                        .setUpdateCurrent(false);
+        mFakeTaskScheduler.schedule(
+                RuntimeEnvironment.application, deprecatedTaskInfoBuilder.build());
+        TaskInfo deprecatedTask =
+                mFakeTaskScheduler.getTaskInfo(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID);
+        assertNotNull(deprecatedTask);
+
+        ExploreSitesBackgroundTask.schedule(false /* updateCurrent */);
+        TaskInfo scheduledTask =
+                mFakeTaskScheduler.getTaskInfo(TaskIds.EXPLORE_SITES_REFRESH_JOB_ID);
+        assertNotNull(scheduledTask);
+
+        deprecatedTask =
+                mFakeTaskScheduler.getTaskInfo(TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID);
+        assertNull(deprecatedTask);
+    }
 }

@@ -90,7 +90,10 @@ public class BackgroundTaskSchedulerUmaTest {
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_EXPLORE_SITES_REFRESH,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
                         TaskIds.EXPLORE_SITES_REFRESH_JOB_ID));
-        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 17);
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_DEPRECATED_EXPLORE_SITES_REFRESH,
+                BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
+                        TaskIds.DEPRECATED_EXPLORE_SITES_REFRESH_JOB_ID));
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 18);
     }
 
     @Test
