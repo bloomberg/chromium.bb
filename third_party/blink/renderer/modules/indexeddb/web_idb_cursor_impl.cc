@@ -13,12 +13,10 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/indexed_db_dispatcher.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 
 using blink::WebBlobInfo;
 using blink::WebData;
 using blink::WebIDBCallbacks;
-using blink::WebIDBValue;
 using blink::mojom::blink::IDBCallbacksAssociatedPtrInfo;
 using blink::mojom::blink::IDBCursorAssociatedPtrInfo;
 
@@ -124,7 +122,7 @@ void WebIDBCursorImpl::PostSuccessHandlerCallback() {
 void WebIDBCursorImpl::SetPrefetchData(
     Vector<std::unique_ptr<IDBKey>> keys,
     Vector<std::unique_ptr<IDBKey>> primary_keys,
-    Vector<WebIDBValue> values) {
+    Vector<std::unique_ptr<IDBValue>> values) {
   // Keys and values are stored in reverse order so that a cache'd continue can
   // pop a value off of the back and prevent new memory allocations.
   prefetch_keys_.AppendRange(std::make_move_iterator(keys.rbegin()),
@@ -166,7 +164,7 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
   std::unique_ptr<IDBKey> key = std::move(prefetch_keys_.back());
   std::unique_ptr<IDBKey> primary_key =
       std::move(prefetch_primary_keys_.back());
-  WebIDBValue value = std::move(prefetch_values_.back());
+  std::unique_ptr<IDBValue> value = std::move(prefetch_values_.back());
 
   prefetch_keys_.pop_back();
   prefetch_primary_keys_.pop_back();

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_callbacks.h"
 
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_value.h"
 
 namespace blink {
 
@@ -14,14 +15,14 @@ MockWebIDBCallbacks::~MockWebIDBCallbacks() {}
 
 void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBKey> key,
                                     std::unique_ptr<IDBKey> primaryKey,
-                                    WebIDBValue value) {
+                                    std::unique_ptr<IDBValue> value) {
   DoOnSuccess(key, primaryKey, value);
 }
 
 void MockWebIDBCallbacks::OnSuccess(WebIDBCursor* cursor,
                                     std::unique_ptr<IDBKey> key,
                                     std::unique_ptr<IDBKey> primaryKey,
-                                    WebIDBValue value) {
+                                    std::unique_ptr<IDBValue> value) {
   DoOnSuccess(cursor, key, primaryKey, value);
 }
 
@@ -29,11 +30,11 @@ void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBKey> key) {
   DoOnSuccess(key);
 }
 
-void MockWebIDBCallbacks::OnSuccess(WebIDBValue value) {
+void MockWebIDBCallbacks::OnSuccess(std::unique_ptr<IDBValue> value) {
   DoOnSuccess(value);
 }
 
-void MockWebIDBCallbacks::OnSuccess(WebVector<WebIDBValue> values) {
+void MockWebIDBCallbacks::OnSuccess(Vector<std::unique_ptr<IDBValue>> values) {
   DoOnSuccess(values);
 }
 

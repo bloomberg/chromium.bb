@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_database_error.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 
 namespace blink {
 
@@ -25,11 +24,11 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
 
   void OnSuccess(std::unique_ptr<IDBKey>,
                  std::unique_ptr<IDBKey> primaryKey,
-                 WebIDBValue) override;
+                 std::unique_ptr<IDBValue>) override;
   MOCK_METHOD3(DoOnSuccess,
                void(const std::unique_ptr<IDBKey>& key,
                     const std::unique_ptr<IDBKey>& primaryKey,
-                    const WebIDBValue& value));
+                    const std::unique_ptr<IDBValue>& value));
 
   MOCK_METHOD1(OnSuccess, void(const WebVector<WebIDBNameAndVersion>&));
   MOCK_METHOD1(OnSuccess, void(const WebVector<WebString>&));
@@ -37,22 +36,22 @@ class MockWebIDBCallbacks : public WebIDBCallbacks {
   void OnSuccess(WebIDBCursor* cursor,
                  std::unique_ptr<IDBKey> key,
                  std::unique_ptr<IDBKey> primaryKey,
-                 WebIDBValue value) override;
+                 std::unique_ptr<IDBValue> value) override;
   MOCK_METHOD4(DoOnSuccess,
                void(WebIDBCursor*,
                     const std::unique_ptr<IDBKey>&,
                     const std::unique_ptr<IDBKey>& primaryKey,
-                    const WebIDBValue&));
+                    const std::unique_ptr<IDBValue>&));
 
   MOCK_METHOD2(OnSuccess, void(WebIDBDatabase*, const IDBDatabaseMetadata&));
   void OnSuccess(std::unique_ptr<IDBKey>) override;
   MOCK_METHOD1(DoOnSuccess, void(const std::unique_ptr<IDBKey>&));
 
-  void OnSuccess(WebIDBValue) override;
-  MOCK_METHOD1(DoOnSuccess, void(const WebIDBValue&));
+  void OnSuccess(std::unique_ptr<IDBValue>) override;
+  MOCK_METHOD1(DoOnSuccess, void(const std::unique_ptr<IDBValue>&));
 
-  void OnSuccess(WebVector<WebIDBValue>) override;
-  MOCK_METHOD1(DoOnSuccess, void(const WebVector<WebIDBValue>&));
+  void OnSuccess(Vector<std::unique_ptr<IDBValue>>) override;
+  MOCK_METHOD1(DoOnSuccess, void(const Vector<std::unique_ptr<IDBValue>>&));
 
   MOCK_METHOD1(OnSuccess, void(long long));
   MOCK_METHOD0(OnSuccess, void());

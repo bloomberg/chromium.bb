@@ -74,7 +74,7 @@ IDBObservation* IDBObservation::Create(WebIDBObservation observation,
 IDBObservation::IDBObservation(WebIDBObservation observation,
                                v8::Isolate* isolate)
     : key_range_(observation.key_range), operation_type_(observation.type) {
-  std::unique_ptr<IDBValue> value = observation.value.ReleaseIdbValue();
+  std::unique_ptr<IDBValue> value = std::move(observation.value);
   value->SetIsolate(isolate);
   value_ = IDBAny::Create(std::move(value));
 }

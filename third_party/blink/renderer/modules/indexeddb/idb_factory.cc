@@ -55,7 +55,6 @@
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_factory_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_name_and_version.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_value.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -130,7 +129,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void OnSuccess(WebIDBCursor* cursor,
                  std::unique_ptr<IDBKey> key,
                  std::unique_ptr<IDBKey> primary_key,
-                 WebIDBValue value) override {
+                 std::unique_ptr<IDBValue> value) override {
     NOTREACHED();
   }
 
@@ -141,9 +140,11 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
   void OnSuccess(std::unique_ptr<IDBKey> key) override { NOTREACHED(); }
 
-  void OnSuccess(WebIDBValue value) override { NOTREACHED(); }
+  void OnSuccess(std::unique_ptr<IDBValue> value) override { NOTREACHED(); }
 
-  void OnSuccess(WebVector<WebIDBValue> values) override { NOTREACHED(); }
+  void OnSuccess(Vector<std::unique_ptr<IDBValue>> values) override {
+    NOTREACHED();
+  }
 
   void OnSuccess(long long value) override { NOTREACHED(); }
 
@@ -151,7 +152,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
   void OnSuccess(std::unique_ptr<IDBKey> key,
                  std::unique_ptr<IDBKey> primary_key,
-                 WebIDBValue value) override {
+                 std::unique_ptr<IDBValue> value) override {
     NOTREACHED();
   }
 

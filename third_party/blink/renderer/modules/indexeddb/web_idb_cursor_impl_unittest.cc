@@ -86,11 +86,11 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
 
   void OnSuccess(std::unique_ptr<IDBKey> key,
                  std::unique_ptr<IDBKey> primaryKey,
-                 WebIDBValue value) override {
+                 std::unique_ptr<IDBValue> value) override {
     if (key_)
       *key_ = IDBKey::Clone(key);
     if (blobs_)
-      *blobs_ = value.BlobInfoForTesting();
+      *blobs_ = value->BlobInfo();
   }
 
  private:
@@ -153,7 +153,7 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
     // Fill the prefetch cache as requested.
     Vector<std::unique_ptr<IDBKey>> keys;
     Vector<std::unique_ptr<IDBKey>> primary_keys;
-    Vector<WebIDBValue> values;
+    Vector<std::unique_ptr<IDBValue>> values;
     size_t expected_size = 0;
     for (int i = 0; i < prefetch_count; ++i) {
       std::unique_ptr<IDBKey> key = IDBKey::CreateNumber(expected_key + i);
@@ -168,7 +168,7 @@ TEST_F(WebIDBCursorImplTest, PrefetchTest) {
         blob_info.emplace_back(WebBlobInfo::BlobForTesting(
             WebString("blobuuid"), "text/plain", 123));
       }
-      values.emplace_back(WebData(), std::move(blob_info));
+      values.emplace_back(IDBValue::Create(WebData(), std::move(blob_info)));
     }
     cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                              std::move(values));
@@ -224,7 +224,7 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
   int expected_key = 0;
   Vector<std::unique_ptr<IDBKey>> keys;
   Vector<std::unique_ptr<IDBKey>> primary_keys;
-  Vector<WebIDBValue> values;
+  Vector<std::unique_ptr<IDBValue>> values;
   size_t expected_size = 0;
   for (int i = 0; i < prefetch_count; ++i) {
     std::unique_ptr<IDBKey> key = IDBKey::CreateNumber(expected_key + i);
@@ -239,7 +239,7 @@ TEST_F(WebIDBCursorImplTest, AdvancePrefetchTest) {
       blob_info.emplace_back(WebBlobInfo::BlobForTesting(WebString("blobuuid"),
                                                          "text/plain", 123));
     }
-    values.emplace_back(WebData(), std::move(blob_info));
+    values.emplace_back(IDBValue::Create(WebData(), std::move(blob_info)));
   }
   cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                            std::move(values));
@@ -321,9 +321,9 @@ TEST_F(WebIDBCursorImplTest, PrefetchReset) {
   int prefetch_count = mock_cursor_->last_prefetch_count();
   Vector<std::unique_ptr<IDBKey>> keys(prefetch_count);
   Vector<std::unique_ptr<IDBKey>> primary_keys(prefetch_count);
-  Vector<WebIDBValue> values;
+  Vector<std::unique_ptr<IDBValue>> values;
   for (int i = 0; i < prefetch_count; ++i)
-    values.emplace_back(WebData(), WebVector<WebBlobInfo>());
+    values.emplace_back(IDBValue::Create(WebData(), WebVector<WebBlobInfo>()));
   cursor_->SetPrefetchData(std::move(keys), std::move(primary_keys),
                            std::move(values));
 
