@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_packet.h"
@@ -296,11 +297,22 @@ JSONTraceExporter::JSONTraceExporter(const std::string& config,
   auto* chrome_config = trace_event_config->mutable_chrome_config();
   chrome_config->set_trace_config(config_);
 
+// Only CrOS and Cast support system tracing.
+#if defined(OS_CHROMEOS) || (defined(IS_CHROMECAST) && defined(OS_LINUX))
   auto* system_trace_config = trace_config.add_data_sources()->mutable_config();
   system_trace_config->set_name(mojom::kSystemTraceDataSourceName);
   system_trace_config->set_target_buffer(0);
   auto* system_chrome_config = system_trace_config->mutable_chrome_config();
   system_chrome_config->set_trace_config(config_);
+#endif
+
+#if defined(OS_CHROMEOS)
+  auto* arc_trace_config = trace_config.add_data_sources()->mutable_config();
+  arc_trace_config->set_name(mojom::kArcTraceDataSourceName);
+  arc_trace_config->set_target_buffer(0);
+  auto* arc_chrome_config = arc_trace_config->mutable_chrome_config();
+  arc_chrome_config->set_trace_config(config_);
+#endif
 
   auto* trace_metadata_config =
       trace_config.add_data_sources()->mutable_config();
