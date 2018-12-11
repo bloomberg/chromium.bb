@@ -20,6 +20,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.util.ApplicationData;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -88,6 +89,7 @@ public class OAuth2TokenServiceIntegrationTest {
             mOAuth2TokenService.validateAccounts(false);
         });
         SigninHelper.resetSharedPrefs();
+        SigninTestUtil.resetSigninState();
     }
 
     private void mapAccountNamesToIds() {
