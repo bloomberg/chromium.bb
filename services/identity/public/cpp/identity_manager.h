@@ -219,6 +219,29 @@ class IdentityManager : public SigninManagerBase::Observer,
   // exists for the primary account.
   bool HasPrimaryAccountWithRefreshToken() const;
 
+  // Looks up and returns information for account with given |account_id|. If
+  // the account cannot be found, return an empty optional. This is equivalent
+  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
+  // without allocating memory for the vector.
+  base::Optional<AccountInfo>
+  FindAccountInfoForAccountWithRefreshTokenByAccountId(
+      const std::string& account_id) const;
+
+  // Looks up and returns information for account with given |email_address|. If
+  // the account cannot be found, return an empty optional. This is equivalent
+  // to searching on the vector returned by GetAccountsWithRefreshTokens() but
+  // without allocating memory for the vector.
+  base::Optional<AccountInfo>
+  FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+      const std::string& email_address) const;
+
+  // Looks up and returns information for account with given |gaia_id|. If the
+  // account cannot be found, return an empty optional. This is equivalent to
+  // searching on the vector returned by GetAccountsWithRefreshTokens() but
+  // without allocating memory for the vector.
+  base::Optional<AccountInfo> FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+      const std::string& gaia_id) const;
+
   // Creates an AccessTokenFetcher given the passed-in information.
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const std::string& account_id,

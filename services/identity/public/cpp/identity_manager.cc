@@ -124,6 +124,51 @@ bool IdentityManager::HasPrimaryAccountWithRefreshToken() const {
   return HasAccountWithRefreshToken(GetPrimaryAccountId());
 }
 
+base::Optional<AccountInfo>
+IdentityManager::FindAccountInfoForAccountWithRefreshTokenByAccountId(
+    const std::string& account_id) const {
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+
+  // AccountTrackerService always returns an AccountInfo, even on failure. In
+  // case of failure, the AccountInfo will be unpopulated, thus we should not
+  // be able to find a valid refresh token.
+  if (!HasAccountWithRefreshToken(account_info.account_id))
+    return base::nullopt;
+
+  return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
+}
+
+base::Optional<AccountInfo>
+IdentityManager::FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+    const std::string& email_address) const {
+  AccountInfo account_info =
+      account_tracker_service_->FindAccountInfoByEmail(email_address);
+
+  // AccountTrackerService always returns an AccountInfo, even on failure. In
+  // case of failure, the AccountInfo will be unpopulated, thus we should not
+  // be able to find a valid refresh token.
+  if (!HasAccountWithRefreshToken(account_info.account_id))
+    return base::nullopt;
+
+  return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
+}
+
+base::Optional<AccountInfo>
+IdentityManager::FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+    const std::string& gaia_id) const {
+  AccountInfo account_info =
+      account_tracker_service_->FindAccountInfoByGaiaId(gaia_id);
+
+  // AccountTrackerService always returns an AccountInfo, even on failure. In
+  // case of failure, the AccountInfo will be unpopulated, thus we should not
+  // be able to find a valid refresh token.
+  if (!HasAccountWithRefreshToken(account_info.account_id))
+    return base::nullopt;
+
+  return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
+}
+
 std::unique_ptr<AccessTokenFetcher>
 IdentityManager::CreateAccessTokenFetcherForAccount(
     const std::string& account_id,
