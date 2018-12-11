@@ -52,7 +52,7 @@ class VolumeControlImpl : public assistant_client::VolumeControl,
 
   ash::mojom::AssistantVolumeControlPtr volume_control_ptr_;
   mojo::Binding<ash::mojom::VolumeObserver> binding_;
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   int volume_ = 100;
   bool mute_ = false;
@@ -89,7 +89,7 @@ class AudioOutputProviderImpl : public assistant_client::AudioOutputProvider {
  private:
   VolumeControlImpl volume_control_impl_;
   service_manager::Connector* connector_;
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   mojom::AssistantAudioDecoderFactoryPtr audio_decoder_factory_ptr_;
   mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
@@ -130,7 +130,7 @@ class AudioDeviceOwner : public media::AudioRendererSink::RenderCallback {
   // Callback for assistant to notify that it completes the filling.
   void BufferFillDone(int num_bytes);
 
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   base::Lock lock_;

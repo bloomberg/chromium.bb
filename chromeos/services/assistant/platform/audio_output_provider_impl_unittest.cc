@@ -102,7 +102,8 @@ TEST_F(AudioDeviceOwnerTest, BufferFilling) {
   delegate.set_num_of_bytes_to_fill(200);
   delegate.Reset();
   auto owner = std::make_unique<AudioDeviceOwner>(
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
+      base::SequencedTaskRunnerHandle::Get(),
+      base::SequencedTaskRunnerHandle::Get());
   // Upon start, it will start to fill the buffer.
   owner->StartOnMainThread(&delegate, nullptr, format);
   delegate.Wait();

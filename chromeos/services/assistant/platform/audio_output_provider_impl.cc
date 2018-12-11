@@ -88,7 +88,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
       assistant_client::OutputStreamType type,
       assistant_client::OutputStreamFormat format)
       : connector_(connector),
-        main_thread_task_runner_(task_runner),
+        main_task_runner_(task_runner),
         background_thread_task_runner_(background_task_runner),
         audio_decoder_factory_(audio_decoder_factory),
         stream_type_(type),
@@ -101,7 +101,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
   ~AudioOutputImpl() override {
     // This ensures that it will be executed after StartOnMainThread.
-    main_thread_task_runner_->PostTask(
+    main_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             [](std::unique_ptr<AudioDeviceOwner> device_owner,
@@ -110,8 +110,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
               background_runner->DeleteSoon(FROM_HERE, device_owner.release());
             },
             std::move(device_owner_), background_thread_task_runner_));
-    main_thread_task_runner_->DeleteSoon(FROM_HERE,
-                                         audio_stream_handler_.release());
+    main_task_runner_->DeleteSoon(FROM_HERE, audio_stream_handler_.release());
   }
 
   // assistant_client::AudioOutput overrides:
@@ -119,7 +118,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
   void Start(assistant_client::AudioOutput::Delegate* delegate) override {
     if (IsEncodedFormat(format_)) {
-      main_thread_task_runner_->PostTask(
+      main_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
               &AudioStreamHandler::StartAudioDecoder,
@@ -129,7 +128,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
                              base::Unretained(device_owner_.get()),
                              audio_stream_handler_.get(), connector_)));
     } else {
-      main_thread_task_runner_->PostTask(
+      main_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&AudioDeviceOwner::StartOnMainThread,
                                     base::Unretained(device_owner_.get()),
                                     delegate, connector_, format_));
@@ -139,7 +138,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
   void Stop() override {
     if (IsEncodedFormat(format_)) {
       device_owner_->SetDelegate(nullptr);
-      main_thread_task_runner_->PostTask(
+      main_task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&AudioStreamHandler::OnStopped,
                          base::Unretained(audio_stream_handler_.get())));
@@ -152,7 +151,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
  private:
   service_manager::Connector* connector_;
-  scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> background_thread_task_runner_;
   mojom::AssistantAudioDecoderFactory* audio_decoder_factory_;
 
@@ -170,7 +169,7 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
 VolumeControlImpl::VolumeControlImpl(service_manager::Connector* connector)
     : binding_(this),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       weak_factory_(this) {
   connector->BindInterface(ash::mojom::kServiceName, &volume_control_ptr_);
   ash::mojom::VolumeObserverPtr observer;
@@ -188,7 +187,7 @@ float VolumeControlImpl::GetSystemVolume() {
 }
 
 void VolumeControlImpl::SetSystemVolume(float new_volume, bool user_initiated) {
-  main_thread_task_runner_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VolumeControlImpl::SetSystemVolumeOnMainThread,
                      weak_factory_.GetWeakPtr(), new_volume, user_initiated));
@@ -208,7 +207,7 @@ bool VolumeControlImpl::IsSystemMuted() {
 }
 
 void VolumeControlImpl::SetSystemMuted(bool muted) {
-  main_thread_task_runner_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VolumeControlImpl::SetSystemMutedOnMainThread,
                                 weak_factory_.GetWeakPtr(), muted));
 }
@@ -223,12 +222,12 @@ void VolumeControlImpl::OnMuteStateChanged(bool mute) {
 
 void VolumeControlImpl::SetSystemVolumeOnMainThread(float new_volume,
                                                     bool user_initiated) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   volume_control_ptr_->SetVolume(new_volume * 100.0, user_initiated);
 }
 
 void VolumeControlImpl::SetSystemMutedOnMainThread(bool muted) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   volume_control_ptr_->SetMuted(muted);
 }
 
@@ -237,7 +236,7 @@ AudioOutputProviderImpl::AudioOutputProviderImpl(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : volume_control_impl_(connector),
       connector_(connector),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(background_task_runner) {
   connector_->BindInterface(mojom::kAudioDecoderServiceName,
                             mojo::MakeRequest(&audio_decoder_factory_ptr_));
@@ -251,7 +250,7 @@ assistant_client::AudioOutput* AudioOutputProviderImpl::CreateAudioOutput(
     const assistant_client::OutputStreamFormat& stream_format) {
   // Owned by one arbitrary thread inside libassistant. It will be destroyed
   // once assistant_client::AudioOutput::Delegate::OnStopped() is called.
-  return new AudioOutputImpl(connector_, main_thread_task_runner_,
+  return new AudioOutputImpl(connector_, main_task_runner_,
                              background_task_runner_, audio_decoder_factory_,
                              type, stream_format);
 }
@@ -289,7 +288,7 @@ void AudioOutputProviderImpl::RegisterAudioEmittingStateCallback(
 AudioDeviceOwner::AudioDeviceOwner(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : main_thread_task_runner_(task_runner),
+    : main_task_runner_(task_runner),
       background_task_runner_(background_task_runner) {}
 
 AudioDeviceOwner::~AudioDeviceOwner() {
@@ -301,7 +300,7 @@ void AudioDeviceOwner::StartOnMainThread(
     service_manager::Connector* connector,
     const assistant_client::OutputStreamFormat& format) {
   DCHECK(!output_device_);
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
 
   delegate_ = delegate;
   format_ = format;
