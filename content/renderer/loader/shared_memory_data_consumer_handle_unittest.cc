@@ -657,7 +657,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, CallOnClearWhenDestructed1) {
   checkpoint.Call(0);
   handle_.reset(new SharedMemoryDataConsumerHandle(
       kApplyBackpressure,
-      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+      base::BindOnce(&DestructionTrackingFunction::Call, on_clear), &writer_));
   handle_.reset();
   on_clear = nullptr;
   checkpoint.Call(1);
@@ -683,7 +683,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, CallOnClearWhenDestructed2) {
   checkpoint.Call(0);
   handle_.reset(new SharedMemoryDataConsumerHandle(
       kApplyBackpressure,
-      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+      base::BindOnce(&DestructionTrackingFunction::Call, on_clear), &writer_));
   auto reader = handle_->ObtainReader(
       nullptr, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   handle_.reset();
@@ -713,7 +713,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, DoNotCallOnClearWhenDone) {
   checkpoint.Call(0);
   handle_.reset(new SharedMemoryDataConsumerHandle(
       kApplyBackpressure,
-      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+      base::BindOnce(&DestructionTrackingFunction::Call, on_clear), &writer_));
   on_clear = nullptr;
   checkpoint.Call(1);
   writer_->Close();
@@ -740,7 +740,7 @@ TEST_P(SharedMemoryDataConsumerHandleTest, DoNotCallOnClearWhenErrored) {
   checkpoint.Call(0);
   handle_.reset(new SharedMemoryDataConsumerHandle(
       kApplyBackpressure,
-      base::Bind(&DestructionTrackingFunction::Call, on_clear), &writer_));
+      base::BindOnce(&DestructionTrackingFunction::Call, on_clear), &writer_));
   on_clear = nullptr;
   checkpoint.Call(1);
   writer_->Fail();

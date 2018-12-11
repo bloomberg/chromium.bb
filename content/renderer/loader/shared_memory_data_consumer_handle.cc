@@ -53,12 +53,12 @@ using Result = blink::WebDataConsumerHandle::Result;
 class SharedMemoryDataConsumerHandle::Context final
     : public base::RefCountedThreadSafe<Context> {
  public:
-  explicit Context(const base::Closure& on_reader_detached)
+  explicit Context(base::OnceClosure on_reader_detached)
       : result_(kOk),
         first_offset_(0),
         client_(nullptr),
         writer_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        on_reader_detached_(on_reader_detached),
+        on_reader_detached_(std::move(on_reader_detached)),
         is_on_reader_detached_valid_(!on_reader_detached_.is_null()),
         is_handle_active_(true),
         is_two_phase_read_in_progress_(false) {}
@@ -72,10 +72,12 @@ class SharedMemoryDataConsumerHandle::Context final
     if (!is_handle_locked() && !is_handle_active()) {
       // No one is interested in the contents.
       if (is_on_reader_detached_valid_) {
+        is_on_reader_detached_valid_ = false;
         // We post a task even in the writer thread in order to avoid a
         // reentrance problem as calling |on_reader_detached_| may manipulate
         // the context synchronously.
-        writer_task_runner_->PostTask(FROM_HERE, on_reader_detached_);
+        writer_task_runner_->PostTask(FROM_HERE,
+                                      std::move(on_reader_detached_));
       }
       Clear();
     }
@@ -251,7 +253,7 @@ class SharedMemoryDataConsumerHandle::Context final
   Client* client_;
   scoped_refptr<base::SingleThreadTaskRunner> notification_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> writer_task_runner_;
-  base::Closure on_reader_detached_;
+  base::OnceClosure on_reader_detached_;
   // We need this boolean variable to remember if |on_reader_detached_| is
   // callable because we need to reset |on_reader_detached_| only on the writer
   // thread and hence |on_reader_detached_.is_null()| is untrustworthy on
@@ -440,13 +442,13 @@ Result SharedMemoryDataConsumerHandle::ReaderImpl::EndRead(size_t read_size) {
 SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
     BackpressureMode mode,
     std::unique_ptr<Writer>* writer)
-    : SharedMemoryDataConsumerHandle(mode, base::Closure(), writer) {}
+    : SharedMemoryDataConsumerHandle(mode, base::OnceClosure(), writer) {}
 
 SharedMemoryDataConsumerHandle::SharedMemoryDataConsumerHandle(
     BackpressureMode mode,
-    const base::Closure& on_reader_detached,
+    base::OnceClosure on_reader_detached,
     std::unique_ptr<Writer>* writer)
-    : context_(new Context(on_reader_detached)) {
+    : context_(new Context(std::move(on_reader_detached))) {
   writer->reset(new Writer(context_, mode));
 }
 
