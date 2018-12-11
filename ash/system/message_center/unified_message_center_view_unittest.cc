@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/unified_message_center_view.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
@@ -194,6 +195,11 @@ TEST_F(UnifiedMessageCenterViewTest, ContentsRelayout) {
 }
 
 TEST_F(UnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
+  // Skip the test if the lock screen notification is enabled.
+  // TODO(yoshiki): Clean up after the feature is launched crbug.com/913764.
+  if (features::IsLockScreenNotificationsEnabled())
+    return;
+
   AddNotification();
   AddNotification();
 
@@ -201,6 +207,21 @@ TEST_F(UnifiedMessageCenterViewTest, NotVisibleWhenLocked) {
   CreateMessageCenterView();
 
   EXPECT_FALSE(message_center_view()->visible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, VisibleWhenLocked) {
+  // Skip the test if the lock screen notification is disabled.
+  // TODO(yoshiki): Clean up after the feature is launched crbug.com/913764.
+  if (!features::IsLockScreenNotificationsEnabled())
+    return;
+
+  AddNotification();
+  AddNotification();
+
+  BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
+  CreateMessageCenterView();
+
+  EXPECT_TRUE(message_center_view()->visible());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, ClearAllPressed) {
