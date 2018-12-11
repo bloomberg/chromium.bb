@@ -1871,9 +1871,6 @@ extern const char kAshDisableSmoothScreenRotationDescription[];
 extern const char kAshEnableDisplayMoveWindowAccelsName[];
 extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
 
-extern const char kAshEnableKeyboardShortcutViewerName[];
-extern const char kAshEnableKeyboardShortcutViewerDescription[];
-
 extern const char kAshEnableMirroredScreenName[];
 extern const char kAshEnableMirroredScreenDescription[];
 
