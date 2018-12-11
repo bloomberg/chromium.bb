@@ -84,15 +84,11 @@ class WebTestResult(object):
 class WebTestResults(object):
 
     @classmethod
-    def results_from_string(cls, string, chromium_revision=None):
+    def results_from_string(cls, string):
         """Creates a WebTestResults object from a test result JSON string.
 
         Args:
             string: JSON string containing web test result.
-            chromium_revision: If given, it will override the chromium_revision
-                field in json, to indicate the last revision that has completed
-                uploading onto the storage server. chromium_revision can be a
-                git hash or position number.
         """
 
         if not string:
@@ -103,7 +99,7 @@ class WebTestResults(object):
         if not json_dict:
             return None
 
-        return cls(json_dict, chromium_revision)
+        return cls(json_dict)
 
     def __init__(self, parsed_json, chromium_revision=None):
         self._results = parsed_json
