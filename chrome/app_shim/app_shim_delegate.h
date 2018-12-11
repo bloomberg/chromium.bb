@@ -18,6 +18,8 @@ class AppShimController;
     : NSObject<NSApplicationDelegate, NSUserInterfaceValidations> {
  @private
   AppShimController* appShimController_;  // Weak, initially NULL.
+  BOOL terminateNow_;
+  BOOL terminateRequested_;
   std::vector<base::FilePath> filesToOpenAtStartup_;
 }
 
@@ -33,6 +35,10 @@ class AppShimController;
 // Otherwise, this adds the files to |filesToOpenAtStartup_|.
 // Takes an array of NSString*.
 - (void)openFiles:(NSArray*)filename;
+
+// Terminate immediately. This is necessary as we override terminate: to send
+// a QuitApp message.
+- (void)terminateNow;
 
 @end
 
