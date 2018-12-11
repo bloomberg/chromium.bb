@@ -1128,7 +1128,7 @@ CreditCard* PersonalDataManager::GetCreditCardByNumber(
 }
 
 void PersonalDataManager::GetNonEmptyTypes(
-    ServerFieldTypeSet* non_empty_types) {
+    ServerFieldTypeSet* non_empty_types) const {
   for (AutofillProfile* profile : GetProfiles())
     profile->GetNonEmptyTypes(app_locale_, non_empty_types);
   for (CreditCard* card : GetCreditCards())
@@ -1606,8 +1606,7 @@ const ProfileValidityMap& PersonalDataManager::GetProfileValidityByGUID(
   return empty_validity_map;
 }
 
-// TODO(crbug.com/618448): Refactor MergeProfile to not depend on class
-// variables.
+// static
 std::string PersonalDataManager::MergeProfile(
     const AutofillProfile& new_profile,
     std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
@@ -2045,7 +2044,7 @@ void PersonalDataManager::EnableAutofillPrefChanged() {
   Refresh();
 }
 
-bool PersonalDataManager::IsKnownCard(const CreditCard& credit_card) {
+bool PersonalDataManager::IsKnownCard(const CreditCard& credit_card) const {
   const auto stripped_pan = CreditCard::StripSeparators(credit_card.number());
   for (const auto& card : local_credit_cards_) {
     if (stripped_pan == CreditCard::StripSeparators(card->number()))
@@ -2451,8 +2450,12 @@ bool PersonalDataManager::ConvertWalletAddressesToLocalProfiles(
     if (!wallet_address->has_converted()) {
       // Try to merge the server address into a similar local profile, or create
       // a new local profile if no similar profile is found.
-      std::string address_guid =
-          MergeServerAddressesIntoProfiles(*wallet_address, local_profiles);
+      // TODO(crbug.com/864519): Use GetAccountInfoForPaymentsServer instead of
+      // going to IdentityManager directly. This will be necessary to properly
+      // support Wallet addresses with Butter.
+      std::string address_guid = MergeServerAddressesIntoProfiles(
+          *wallet_address, local_profiles, app_locale_,
+          identity_manager_->GetPrimaryAccountInfo().email);
 
       // Update the map to transfer the billing address relationship from the
       // server address to the converted/merged local profile.
@@ -2513,16 +2516,19 @@ bool PersonalDataManager::UpdateWalletCardsAlreadyConvertedBillingAddresses(
   return should_update_cards;
 }
 
-// TODO(crbug.com/687975): Reuse MergeProfiles in this function.
+// TODO(crbug.com/687975): Reuse MergeProfile in this function.
+// static
 std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
     const AutofillProfile& server_address,
-    std::vector<AutofillProfile>* existing_profiles) const {
+    std::vector<AutofillProfile>* existing_profiles,
+    const std::string& app_locale,
+    const std::string& primary_account_email) {
   // If there is already a local profile that is very similar, merge in any
   // missing values. Only merge with the first match.
-  AutofillProfileComparator comparator(app_locale_);
+  AutofillProfileComparator comparator(app_locale);
   for (auto& local_profile : *existing_profiles) {
     if (comparator.AreMergeable(server_address, local_profile) &&
-        local_profile.SaveAdditionalInfo(server_address, app_locale_)) {
+        local_profile.SaveAdditionalInfo(server_address, app_locale)) {
       local_profile.set_modification_date(AutofillClock::Now());
       AutofillMetrics::LogWalletAddressConversionType(
           AutofillMetrics::CONVERTED_ADDRESS_MERGED);
@@ -2539,11 +2545,7 @@ std::string PersonalDataManager::MergeServerAddressesIntoProfiles(
 
   // Wallet addresses don't have an email address, use the one from the
   // currently signed-in account.
-  // TODO(crbug.com/864519): Use GetAccountInfoForPaymentsServer instead of
-  // going to IdentityManager directly. This will be necessary to properly
-  // support Wallet addresses with Butter.
-  base::string16 email =
-      base::UTF8ToUTF16(identity_manager_->GetPrimaryAccountInfo().email);
+  base::string16 email = base::UTF8ToUTF16(primary_account_email);
   if (!email.empty())
     existing_profiles->back().SetRawInfo(EMAIL_ADDRESS, email);
 
@@ -2579,7 +2581,8 @@ void PersonalDataManager::MaybeCreateTestCreditCards() {
   AddCreditCard(CreateDisusedDeletableTestCreditCard(app_locale_));
 }
 
-bool PersonalDataManager::IsCreditCardDeletable(CreditCard* card) {
+// static
+bool PersonalDataManager::IsCreditCardDeletable(const CreditCard* card) {
   const base::Time deletion_threshold =
       AutofillClock::Now() - kDisusedCreditCardDeletionTimeDelta;
 
