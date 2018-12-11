@@ -7,7 +7,8 @@
 #include <fuchsia/fonts/cpp/fidl.h>
 
 #include "base/fuchsia/component_context.h"
-#include "skia/ext/fontmgr_fuchsia.h"
+#include "third_party/skia/include/core/SkFontMgr.h"
+#include "third_party/skia/include/ports/SkFontMgr_fuchsia.h"
 
 namespace {
 // This is a purposefully leaky pointer that has ownership of the FontMgr.
@@ -23,7 +24,7 @@ SK_API sk_sp<SkFontMgr> SkFontMgr::Factory() {
   if (g_default_fontmgr) {
     return sk_ref_sp(g_default_fontmgr);
   }
-  return sk_make_sp<skia::FuchsiaFontManager>(
+  return SkFontMgr_New_Fuchsia(
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToServiceSync<fuchsia::fonts::Provider>());
 }
