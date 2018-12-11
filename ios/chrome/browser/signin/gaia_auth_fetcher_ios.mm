@@ -253,8 +253,7 @@ void GaiaAuthFetcherIOSBridge::URLFetchSuccess(const std::string& data) {
   GURL url = FinishPendingRequest();
   // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
   // response code of a navigation. Default to 200 for success.
-  fetcher_->FetchComplete(url, data, net::ResponseCookies(),
-                          net::URLRequestStatus(), 200);
+  fetcher_->FetchComplete(url, data, net::URLRequestStatus(), 200);
 }
 
 void GaiaAuthFetcherIOSBridge::URLFetchFailure(bool is_cancelled) {
@@ -265,7 +264,7 @@ void GaiaAuthFetcherIOSBridge::URLFetchFailure(bool is_cancelled) {
   // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
   // response code of a navigation. Default to 500 for error.
   int error = is_cancelled ? net::ERR_ABORTED : net::ERR_FAILED;
-  fetcher_->FetchComplete(url, std::string(), net::ResponseCookies(),
+  fetcher_->FetchComplete(url, std::string(),
                           net::URLRequestStatus::FromError(error), 500);
 }
 
@@ -376,14 +375,12 @@ void GaiaAuthFetcherIOS::CancelRequest() {
 
 void GaiaAuthFetcherIOS::FetchComplete(const GURL& url,
                                        const std::string& data,
-                                       const net::ResponseCookies& cookies,
                                        const net::URLRequestStatus& status,
                                        int response_code) {
   DVLOG(2) << "Response " << url.spec() << ", code = " << response_code << "\n";
   DVLOG(2) << "data: " << data << "\n";
   SetPendingFetch(false);
-  DispatchFetchedRequest(url, data, cookies,
-                         static_cast<net::Error>(status.error()),
+  DispatchFetchedRequest(url, data, static_cast<net::Error>(status.error()),
                          response_code);
 }
 

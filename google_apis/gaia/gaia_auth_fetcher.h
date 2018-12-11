@@ -211,7 +211,6 @@ class GaiaAuthFetcher {
   // Dispatch the results of a request.
   void DispatchFetchedRequest(const GURL& url,
                               const std::string& data,
-                              const net::ResponseCookies& cookies,
                               net::Error net_error,
                               int response_code);
 

@@ -12,10 +12,6 @@
 class GoogleServiceAuthError;
 class OAuthMultiloginResult;
 
-namespace net {
-typedef std::vector<std::string> ResponseCookies;
-}
-
 typedef std::map<std::string, std::string> UserInfoMap;
 
 // An interface that defines the callbacks for objects that
