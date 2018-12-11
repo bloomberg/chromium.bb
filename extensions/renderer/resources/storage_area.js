@@ -5,6 +5,7 @@
 var normalizeArgumentsAndValidate =
     require('schemaUtils').normalizeArgumentsAndValidate
 var sendRequest = require('sendRequest').sendRequest;
+var jsEvent = require('event_bindings').Event;
 
 function extendSchema(schema) {
   var extendedSchema = $Array.slice(schema);
@@ -18,6 +19,7 @@ function StorageArea(namespace, schema) {
   // Binds an API function for a namespace to its browser-side call, e.g.
   // storage.sync.get('foo') -> (binds to) ->
   // storage.get('sync', 'foo').
+  // Note that callback methods are handled sperately.
   var self = this;
   function bindApiFunction(functionName) {
     var rawFunSchema =
@@ -42,6 +44,8 @@ function StorageArea(namespace, schema) {
   }
   var apiFunctions = ['get', 'set', 'remove', 'clear', 'getBytesInUse'];
   $Array.forEach(apiFunctions, bindApiFunction);
+
+  this.onChanged = new jsEvent('storage.' + namespace + '.onChanged');
 }
 
 exports.$set('StorageArea', StorageArea);
