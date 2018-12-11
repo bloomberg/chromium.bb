@@ -35,7 +35,7 @@ class HttpServiceTest : public ::testing::Test {
  public:
   HttpServiceTest()
       : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO_MOCK_TIME),
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
         binding_(&http_service_server_) {
     // Initialize the test server.
     test_server_.AddDefaultHandlers(
