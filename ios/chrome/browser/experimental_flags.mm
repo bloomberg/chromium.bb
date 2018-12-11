@@ -24,6 +24,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
+#include "ios/chrome/browser/passwords/password_manager_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/web/public/web_view_creation_util.h"
@@ -128,6 +129,10 @@ bool IsBookmarksUIRebootEnabled() {
 
 bool IsInfobarUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kInfobarUIReboot);
+}
+
+bool IsAutomaticPasswordGenerationEnabled() {
+  return base::FeatureList::IsEnabled(features::kPasswordGeneration);
 }
 
 }  // namespace experimental_flags

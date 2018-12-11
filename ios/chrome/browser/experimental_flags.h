@@ -63,6 +63,9 @@ bool IsInfobarUIRebootEnabled();
 // only once.
 bool MustClearApplicationGroupSandbox();
 
+// Whether password generation is enabled.
+bool IsAutomaticPasswordGenerationEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
