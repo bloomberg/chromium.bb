@@ -143,6 +143,10 @@ void ContentsView::SetActiveState(ash::AppListState state, bool animate) {
   if (IsStateActive(state))
     return;
 
+  // The primary way to set the state to search results should be via
+  // |ShowSearchResults|
+  DCHECK(state != ash::AppListState::kStateSearchResults);
+
   SetActiveStateInternal(GetPageIndexForState(state), false, animate);
 }
 
@@ -227,12 +231,11 @@ void ContentsView::ShowSearchResults(bool show) {
       GetPageIndexForState(ash::AppListState::kStateSearchResults);
   DCHECK_GE(search_page, 0);
 
-  // Search results page is hidden when it is behind the search box, so reshow
-  // it here.
-  if (show)
-    GetPageView(search_page)->SetVisible(true);
+  // Hide or Show results
+  GetPageView(search_page)->SetVisible(show);
 
-  SetActiveStateInternal(show ? search_page : page_before_search_, show, true);
+  SetActiveStateInternal(show ? search_page : page_before_search_, show,
+                         !AppListView::ShortAnimationsForTesting());
 }
 
 bool ContentsView::IsShowingSearchResults() const {
