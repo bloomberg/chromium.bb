@@ -3170,13 +3170,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCustomContextMenu)},
 #endif  // OS_ANDROID
 
-#if defined(OS_CHROMEOS)
-    {"ash-disable-smooth-screen-rotation",
-     flag_descriptions::kAshDisableSmoothScreenRotationName,
-     flag_descriptions::kAshDisableSmoothScreenRotationDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableSmoothScreenRotation)},
-#endif  // OS_CHROMEOS
-
     {"omnibox-display-title-for-current-url",
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlName,
      flag_descriptions::kOmniboxDisplayTitleForCurrentUrlDescription, kOsAll,

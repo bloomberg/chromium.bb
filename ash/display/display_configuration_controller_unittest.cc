@@ -28,12 +28,6 @@ class DisplayConfigurationControllerSmoothRotationTest : public AshTestBase {
   DisplayConfigurationControllerSmoothRotationTest() = default;
   ~DisplayConfigurationControllerSmoothRotationTest() override = default;
 
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kAshDisableSmoothScreenRotation, "false");
-    AshTestBase::SetUp();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayConfigurationControllerSmoothRotationTest);
 };
@@ -68,12 +62,11 @@ TEST_F(DisplayConfigurationControllerTest, GetTargetRotationWithAnimation) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayConfigurationController* controller =
       Shell::Get()->display_configuration_controller();
-  // AshTestHelper disables display animations; re-enable them.
   DisplayConfigurationControllerTestApi(controller).SetDisplayAnimator(true);
   controller->SetDisplayRotation(
       display.id(), display::Display::ROTATE_180,
       display::Display::RotationSource::USER,
-      DisplayConfigurationController::ANIMATION_ASYNC);
+      DisplayConfigurationController::ANIMATION_SYNC);
   EXPECT_EQ(display::Display::ROTATE_180,
             controller->GetTargetRotation(display.id()));
   EXPECT_EQ(display::Display::ROTATE_180, GetDisplayRotation(display.id()));
@@ -84,7 +77,6 @@ TEST_F(DisplayConfigurationControllerSmoothRotationTest,
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   DisplayConfigurationController* controller =
       Shell::Get()->display_configuration_controller();
-  // AshTestHelper disables display animations; re-enable them.
   DisplayConfigurationControllerTestApi(controller).SetDisplayAnimator(true);
   controller->SetDisplayRotation(
       display.id(), display::Display::ROTATE_180,
