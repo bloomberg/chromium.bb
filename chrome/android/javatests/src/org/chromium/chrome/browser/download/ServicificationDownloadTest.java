@@ -88,6 +88,7 @@ public final class ServicificationDownloadTest {
         mServicificationBackgroundService.onRunTask(
                 new TaskParams(ServiceManagerStartupUtils.TASK_TAG));
         mServicificationBackgroundService.waitForServiceManagerStart();
+        mServicificationBackgroundService.postTaskAndVerifyFullBrowserNotStarted();
 
         String tempFile = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
