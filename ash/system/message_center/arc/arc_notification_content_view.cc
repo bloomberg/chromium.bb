@@ -346,11 +346,14 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
 
 void ArcNotificationContentView::UpdateCornerRadius(int top_radius,
                                                     int bottom_radius) {
+  bool force_update =
+      top_radius_ != top_radius || bottom_radius_ != bottom_radius;
+
   top_radius_ = top_radius;
   bottom_radius_ = bottom_radius;
 
   if (GetWidget())
-    UpdateMask();
+    UpdateMask(force_update);
 }
 
 void ArcNotificationContentView::OnSlideChanged(bool in_progress) {
@@ -498,7 +501,7 @@ void ArcNotificationContentView::AttachSurface() {
   // (Re-)create the floating buttons after |surface_| is attached to a widget.
   MaybeCreateFloatingControlButtons();
 
-  UpdateMask();
+  UpdateMask(false /* force_update */);
 }
 
 void ArcNotificationContentView::ShowCopiedSurface() {
@@ -536,11 +539,10 @@ void ArcNotificationContentView::HideCopiedSurface() {
 
   // Re-install the mask since the custom mask is unset by
   // |::wm::RecreateLayers()| in |ShowCopiedSurface()| method.
-  mask_insets_.reset();
-  UpdateMask();
+  UpdateMask(true /* force_update */);
 }
 
-void ArcNotificationContentView::UpdateMask() {
+void ArcNotificationContentView::UpdateMask(bool force_update) {
   if (top_radius_ == 0 && bottom_radius_ == 0) {
     SetCustomMask(nullptr);
     mask_insets_.reset();
@@ -548,7 +550,7 @@ void ArcNotificationContentView::UpdateMask() {
   }
 
   gfx::Insets new_insets = GetContentsBounds().InsetsFrom(GetVisibleBounds());
-  if (mask_insets_ == new_insets)
+  if (mask_insets_ == new_insets && !force_update)
     return;
   mask_insets_ = new_insets;
 
@@ -622,7 +624,7 @@ void ArcNotificationContentView::Layout() {
     views::NativeViewHost::Layout();
     // Reinstall mask to update rounded mask insets. Set null mask unless radius
     // is set.
-    UpdateMask();
+    UpdateMask(false /* force_update */);
 
     // Scale notification surface if necessary.
     gfx::Transform transform;

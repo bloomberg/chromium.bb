@@ -90,7 +90,7 @@ class ArcNotificationContentView
   void HideCopiedSurface();
 
   // Generates a mask using |top_radius_| and |bottom_radius_| and installs it.
-  void UpdateMask();
+  void UpdateMask(bool force_update);
 
   // views::NativeViewHost
   void ViewHierarchyChanged(
