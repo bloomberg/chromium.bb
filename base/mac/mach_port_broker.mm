@@ -39,14 +39,15 @@ struct MachPortBroker_ParentRecvMsg : public MachPortBroker_ChildSendMsg {
 bool MachPortBroker::ChildSendTaskPortToParent(const std::string& name) {
   // Look up the named MachPortBroker port that's been registered with the
   // bootstrap server.
-  mach_port_t parent_port;
-  kern_return_t kr = bootstrap_look_up(bootstrap_port,
-      const_cast<char*>(GetMachPortName(name, true).c_str()), &parent_port);
+  mac::ScopedMachSendRight parent_port;
+  std::string bootstrap_name = GetMachPortName(name, true);
+  kern_return_t kr = bootstrap_look_up(
+      bootstrap_port, const_cast<char*>(bootstrap_name.c_str()),
+      mac::ScopedMachSendRight::Receiver(parent_port).get());
   if (kr != KERN_SUCCESS) {
-    BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_look_up";
+    BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_look_up " << bootstrap_name;
     return false;
   }
-  base::mac::ScopedMachSendRight scoped_right(parent_port);
 
   // Create the check in message. This will copy a send right on this process'
   // (the child's) task port and send it to the parent.
@@ -54,7 +55,7 @@ bool MachPortBroker::ChildSendTaskPortToParent(const std::string& name) {
   msg.header.msgh_bits = MACH_MSGH_BITS_REMOTE(MACH_MSG_TYPE_COPY_SEND) |
                          MACH_MSGH_BITS_COMPLEX;
   msg.header.msgh_size = sizeof(msg);
-  msg.header.msgh_remote_port = parent_port;
+  msg.header.msgh_remote_port = parent_port.get();
   msg.header.msgh_id = kTaskPortMessageId;
   msg.body.msgh_descriptor_count = 1;
   msg.child_task_port.name = mach_task_self();
@@ -96,14 +97,14 @@ bool MachPortBroker::Init() {
   DCHECK(server_port_.get() == MACH_PORT_NULL);
 
   // Check in with launchd and publish the service name.
-  mach_port_t port;
+  std::string bootstrap_name = GetMachPortName(name_, false);
   kern_return_t kr = bootstrap_check_in(
-      bootstrap_port, GetMachPortName(name_, false).c_str(), &port);
+      bootstrap_port, bootstrap_name.c_str(),
+      mac::ScopedMachReceiveRight::Receiver(server_port_).get());
   if (kr != KERN_SUCCESS) {
-    BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_check_in";
+    BOOTSTRAP_LOG(ERROR, kr) << "bootstrap_check_in " << bootstrap_name;
     return false;
   }
-  server_port_.reset(port);
 
   // Start the dispatch source.
   std::string queue_name =

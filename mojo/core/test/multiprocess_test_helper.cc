@@ -202,8 +202,26 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
       break;
   }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // This lock needs to be held while launching the child because the Mach port
+  // broker only allows task ports to be received from known child processes.
+  // However, it can only know the child process's pid after the child has
+  // launched. To prevent a race where the child process sends its task port
+  // before the pid has been registered, the lock needs to be held over both
+  // launch and child pid registration.
+  auto* mach_broker = mojo::core::DefaultMachBroker::Get();
+  mach_broker->GetLock().Acquire();
+#endif
+
   test_child_ =
       base::SpawnMultiProcessTestChild(test_child_main, command_line, options);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (test_child_.IsValid())
+    mach_broker->ExpectPid(test_child_.Pid());
+  mach_broker->GetLock().Release();
+#endif
+
   if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER)
     channel.RemoteProcessLaunchAttempted();
 
@@ -232,6 +250,13 @@ int MultiprocessTestHelper::WaitForChildShutdown() {
   int rv = -1;
   WaitForMultiprocessTestChildExit(test_child_, TestTimeouts::action_timeout(),
                                    &rv);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  auto* mach_broker = mojo::core::DefaultMachBroker::Get();
+  base::AutoLock lock(mach_broker->GetLock());
+  mach_broker->RemovePid(test_child_.Pid());
+#endif
+
   test_child_.Close();
   return rv;
 }
