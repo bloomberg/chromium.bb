@@ -397,6 +397,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
     return status;
 
   std::string prefix = CreateRegistrationKeyPrefix(origin);
+
+  // Read all registrations.
   {
     std::unique_ptr<leveldb::Iterator> itr(
         db_->NewIterator(leveldb::ReadOptions()));
@@ -421,21 +423,34 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
         break;
       }
       registrations->push_back(registration);
-
-      if (opt_resources_list) {
-        std::vector<ResourceRecord> resources;
-        status = ReadResourceRecords(registration, &resources);
-        if (status != STATUS_OK) {
-          registrations->clear();
-          opt_resources_list->clear();
-          break;
-        }
-        opt_resources_list->push_back(resources);
-      }
     }
   }
 
+  // Count reading all registrations as one "read operation" for UMA
+  // purposes.
   HandleReadResult(FROM_HERE, status);
+  if (status != STATUS_OK)
+    return status;
+
+  // Read the resources if requested. This must be done after the loop with
+  // leveldb::Iterator above, because it calls ReadResouceRecords() which
+  // deletes |db_| on failure, and iterators must be destroyed before the
+  // database.
+  if (opt_resources_list) {
+    for (const auto& registration : *registrations) {
+      std::vector<ResourceRecord> resources;
+      // NOTE: ReadResourceRecords already calls HandleReadResult() on its own,
+      // so to avoid double-counting the UMA, don't call it again after this.
+      status = ReadResourceRecords(registration, &resources);
+      if (status != STATUS_OK) {
+        registrations->clear();
+        opt_resources_list->clear();
+        break;
+      }
+      opt_resources_list->push_back(resources);
+    }
+  }
+
   return status;
 }
 
