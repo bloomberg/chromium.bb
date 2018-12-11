@@ -54,7 +54,7 @@ import java.util.ArrayList;
                     new ExploreSitesCategory(i, i, "Category #" + Integer.toString(i));
             for (int j = 0; j < 8; j++) {
                 ExploreSitesSite site = new ExploreSitesSite(
-                        i * 8 + j, j, "Site #" + Integer.toString(j), "https://example.com/");
+                        i * 8 + j, "Site #" + Integer.toString(j), "https://example.com/", false);
                 category.addSite(site);
             }
             categoryList.add(category);

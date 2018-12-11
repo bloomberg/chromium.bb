@@ -18,10 +18,12 @@ FROM categories
 WHERE version_token = ?
 ORDER BY category_id ASC;)";
 
-static const char kSelectSiteSql[] = R"(SELECT site_id, sites.url, title
+static const char kSelectSiteSql[] =
+    R"(SELECT site_id, sites.url, title,
+    site_blacklist.url IS NOT NULL as blacklisted
 FROM sites
 LEFT JOIN site_blacklist ON (sites.url = site_blacklist.url)
-WHERE category_id = ? AND site_blacklist.url IS NULL;)";
+WHERE category_id = ? ;)";
 
 const char kDeleteSiteSql[] = R"(DELETE FROM sites
 WHERE category_id NOT IN
@@ -134,10 +136,12 @@ GetCatalogSync(bool update_current, sql::Database* db) {
     site_statement.BindInt64(0, category.category_id);
 
     while (site_statement.Step()) {
-      category.sites.emplace_back(site_statement.ColumnInt(0),  // site_id
-                                  category.category_id,
-                                  GURL(site_statement.ColumnString(1)),  // url
-                                  site_statement.ColumnString(2));  // title
+      category.sites.emplace_back(
+          site_statement.ColumnInt(0),  // site_id
+          category.category_id,
+          GURL(site_statement.ColumnString(1)),  // url
+          site_statement.ColumnString(2),        // title
+          site_statement.ColumnBool(3));         // is_blacklisted
     }
     if (!site_statement.Succeeded())
       return std::make_pair(GetCatalogStatus::kFailed, nullptr);
