@@ -7,7 +7,8 @@
   position: absolute;
   top: 80px;
   left: 0;
-  display: -webkit-box;
+  display: flex;
+  justify-content: center;
   width: 100%;
 }
 
@@ -30,7 +31,7 @@
   color: #222;
   font-size: 12px;
   padding: 4px 16px;
-  margin: auto;
+  margin: 0 8px;
 }
 
 #butter-bar.red > p {

@@ -1354,10 +1354,13 @@ Securely access your computer from your iOS device. It's fast, simple and free.
       <message  name="IDS_WEBSITE_INVITE_STABLE" desc="Invitation to all users to try the new version">
         Chrome Remote Desktop is now on the web! Check out our <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>free web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message  name="IDS_WEBSITE_INVITE_DEPRECATION_1" desc="Invitation to all users to try the new version">
-        Chrome Remote Desktop is moving to a new home on the web. Try our <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>—it's fast and free, with all the same features as before.
+      <message  name="IDS_WEBSITE_INVITE_FILE_TRANSFER" desc="Announcement of the file transfer feature">
+        Chrome Remote Desktop is now on the web with new features including file transfer! Check out our <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
       </message>
-      <message  name="IDS_WEBSITE_INVITE_DEPRECATION_2" desc="Requirement all users to try the new version">
+      <message  name="IDS_WEBSITE_INVITE_MULTI_MONITOR" desc="Announcement of improved support for multi-monitor">
+        Chrome Remote Desktop is now on the web. Try our <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>—it's fast and free, with even more features, including improved support for multiple monitors.
+      </message>
+      <message  name="IDS_WEBSITE_INVITE_DEPRECATION" desc="Requirement all users to try the new version">
         This app is no longer supported. To ensure you're getting the latest features and security updates, please use the <ph name="LINK_BEGIN">$1<ex>&lt;a href=http://example.com&gt;</ex></ph>Chrome Remote Desktop web app<ph name="LINK_END">$2<ex>&lt;/a&gt;</ex></ph>.
       </message>
       <if expr="is_macosx">
