@@ -317,33 +317,34 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
             // callbacks will be deferred until browser startup completes.
             mCurrentBrowserStartType = BROWSER_START_TYPE_FULL_BROWSER;
             if (contentStart() > 0) enqueueCallbackExecution(STARTUP_FAILURE);
-        } else if (mCurrentBrowserStartType == BROWSER_START_TYPE_SERVICE_MANAGER_ONLY) {
-            // If full browser startup is not needed, execute all the callbacks now.
-            executeEnqueuedCallbacks(STARTUP_SUCCESS);
+            return;
+        }
+
+        if (mCurrentBrowserStartType == BROWSER_START_TYPE_SERVICE_MANAGER_ONLY) {
+            executeServiceManagerCallbacks(STARTUP_SUCCESS);
         }
         recordStartupUma();
     }
 
     private void executeEnqueuedCallbacks(int startupResult) {
         assert ThreadUtils.runningOnUiThread() : "Callback from browser startup from wrong thread.";
-        // If only ServiceManager is launched, don't set mFullBrowserStartupDone, wait for the full
-        // browser launch to set this variable.
-        mFullBrowserStartupDone = mCurrentBrowserStartType == BROWSER_START_TYPE_FULL_BROWSER;
+        mFullBrowserStartupDone = true;
         mStartupSuccess = (startupResult <= 0);
-        if (mFullBrowserStartupDone) {
-            for (StartupCallback asyncStartupCallback : mAsyncStartupCallbacks) {
-                if (mStartupSuccess) {
-                    asyncStartupCallback.onSuccess();
-                } else {
-                    asyncStartupCallback.onFailure();
-                }
+        for (StartupCallback asyncStartupCallback : mAsyncStartupCallbacks) {
+            if (mStartupSuccess) {
+                asyncStartupCallback.onSuccess();
+            } else {
+                asyncStartupCallback.onFailure();
             }
-            // We don't want to hold on to any objects after we do not need them anymore.
-            mAsyncStartupCallbacks.clear();
         }
-        // The ServiceManager should have been started, call the callbacks now.
-        // TODO(qinmin): Handle mServiceManagerCallbacks in serviceManagerStarted() instead of
-        // here once http://crbug.com/854231 is fixed.
+        // We don't want to hold on to any objects after we do not need them anymore.
+        mAsyncStartupCallbacks.clear();
+
+        executeServiceManagerCallbacks(startupResult);
+    }
+
+    private void executeServiceManagerCallbacks(int startupResult) {
+        mStartupSuccess = (startupResult <= 0);
         for (StartupCallback serviceMangerCallback : mServiceManagerCallbacks) {
             if (mStartupSuccess) {
                 serviceMangerCallback.onSuccess();

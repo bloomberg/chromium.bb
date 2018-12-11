@@ -936,8 +936,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
         new ServiceManagerContext(service_manager_thread_->task_runner()));
     download::SetIOTaskRunner(service_manager_thread_->task_runner());
 #if defined(OS_ANDROID)
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+    if (start_service_manager_only) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(&ServiceManagerStartupComplete));
+    }
 #endif
   }
 

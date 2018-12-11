@@ -45,6 +45,7 @@ public final class ServicificationBackgroundServiceTest {
         mServicificationBackgroundService.onRunTask(new TaskParams(taskTag));
         mServicificationBackgroundService.checkExpectations(shouldStart);
         mServicificationBackgroundService.waitForServiceManagerStart();
+        mServicificationBackgroundService.postTaskAndVerifyFullBrowserNotStarted();
     }
 
     @Test
