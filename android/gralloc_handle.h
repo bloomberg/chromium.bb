@@ -60,16 +60,16 @@ struct gralloc_handle_t {
 	uint32_t usage; /* android libhardware usage flags */
 
 	uint32_t stride; /* the stride in bytes */
-	uint64_t modifier; /* buffer modifiers */
-
 	int data_owner; /* owner of data (for validation) */
+	uint64_t modifier __attribute__((aligned(8))); /* buffer modifiers */
+
 	union {
 		void *data; /* pointer to struct gralloc_gbm_bo_t */
 		uint64_t reserved;
 	} __attribute__((aligned(8)));
 };
 
-#define GRALLOC_HANDLE_VERSION 3
+#define GRALLOC_HANDLE_VERSION 4
 #define GRALLOC_HANDLE_MAGIC 0x60585350
 #define GRALLOC_HANDLE_NUM_FDS 1
 #define GRALLOC_HANDLE_NUM_INTS (	\
