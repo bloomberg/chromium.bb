@@ -118,6 +118,9 @@ class SigninMetricsTest : public ::testing::Test {
     std::vector<AccessPoint> access_points;
     for (int ap = 0; ap < static_cast<int>(AccessPoint::ACCESS_POINT_MAX);
          ++ap) {
+      // Skip the deprecated ACCESS_POINT_FORCE_SIGNIN_WARNING
+      if (ap == 23)
+        continue;
       access_points.push_back(static_cast<AccessPoint>(ap));
     }
     return access_points;
