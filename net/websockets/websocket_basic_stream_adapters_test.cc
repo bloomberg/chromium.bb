@@ -302,6 +302,7 @@ class WebSocketSpdyStreamAdapterTest : public TestWithScopedTaskEnvironment {
         key_(HostPortPair::FromURL(url_),
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
+             SpdySessionKey::IsProxySession::kFalse,
              SocketTag()),
         session_(SpdySessionDependencies::SpdyCreateSession(&session_deps_)),
         ssl_(SYNCHRONOUS, OK) {}

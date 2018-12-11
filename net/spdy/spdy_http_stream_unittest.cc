@@ -131,6 +131,7 @@ class SpdyHttpStreamTest : public TestWithScopedTaskEnvironment {
         key_(host_port_pair_,
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED,
+             SpdySessionKey::IsProxySession::kFalse,
              SocketTag()),
         ssl_(SYNCHRONOUS, OK) {
     session_deps_.net_log = &net_log_;

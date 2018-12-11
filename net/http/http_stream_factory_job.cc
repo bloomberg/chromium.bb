@@ -413,15 +413,16 @@ SpdySessionKey HttpStreamFactory::Job::GetSpdySessionKey(
     const GURL& origin_url,
     PrivacyMode privacy_mode,
     const SocketTag& socket_tag) {
-  // In the case that we're using an HTTPS proxy for an HTTP url,
-  // we look for a SPDY session *to* the proxy, instead of to the
-  // origin server.
+  // In the case that we're using an HTTPS proxy for an HTTP url, look for a
+  // HTTP/2 proxy session *to* the proxy, instead of to the  origin server.
   if (!spdy_session_direct) {
     return SpdySessionKey(proxy_server.host_port_pair(), ProxyServer::Direct(),
-                          PRIVACY_MODE_DISABLED, socket_tag);
+                          PRIVACY_MODE_DISABLED,
+                          SpdySessionKey::IsProxySession::kTrue, socket_tag);
   }
   return SpdySessionKey(HostPortPair::FromURL(origin_url), proxy_server,
-                        privacy_mode, socket_tag);
+                        privacy_mode, SpdySessionKey::IsProxySession::kFalse,
+                        socket_tag);
 }
 
 bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
@@ -432,10 +433,10 @@ bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
     return false;
   }
 
-  // We need to make sure that if a spdy session was created for
+  // We need to make sure that if a HTTP/2 session was created for
   // https://somehost/ then we do not use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is
-  // https (the normal case) or if we are connecting to a SPDY proxy.
+  // https (the normal case) or if we are connecting to a HTTP/2 proxy.
   // https://crbug.com/133176
   return origin_url_.SchemeIs(url::kHttpsScheme) || try_websocket_over_http2_ ||
          proxy_info_.proxy_server().is_https();
@@ -797,7 +798,7 @@ int HttpStreamFactory::Job::DoEvaluateThrottle() {
     return OK;
   if (using_quic_)
     return OK;
-  // Ask |delegate_delegate_| to update the spdy session key for the request
+  // Ask |delegate_delegate_| to update the HTTP/2 session key for the request
   // that launched this job.
   delegate_->SetSpdySessionKey(this, spdy_session_key_);
 
@@ -968,7 +969,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
         net_log_, num_streams_);
   }
 
-  // If we can't use a SPDY session, don't bother checking for one after
+  // If we can't use a HTTP/2 session, don't bother checking for one after
   // the hostname is resolved.
   OnHostResolutionCallback resolution_callback =
       CanUseExistingSpdySession()
@@ -1018,7 +1019,7 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
   }
 
   if (result == ERR_SPDY_SESSION_ALREADY_EXISTS) {
-    // We found a SPDY connection after resolving the host. This is
+    // We found a HTTP/2 connection after resolving the host. This is
     // probably an IP pooled connection.
     existing_spdy_session_ =
         session_->spdy_session_pool()->FindAvailableSession(
@@ -1028,7 +1029,7 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
     } else {
-      // It is possible that the spdy session no longer exists.
+      // It is possible that the HTTP/2 session no longer exists.
       ReturnToStateInitConnection(true /* close connection */);
     }
     return OK;
