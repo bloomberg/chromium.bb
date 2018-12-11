@@ -151,7 +151,7 @@ class UkmServiceTest : public testing::Test {
         prefs::kUkmPersistedLogs,
         3,     // log count limit
         1000,  // byte limit
-        0);
+        0, std::string());
 
     result_persisted_logs.LoadPersistedUnsentLogs();
     result_persisted_logs.StageNextLog();

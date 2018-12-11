@@ -11,6 +11,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/metrics/metrics_service_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/ukm/persisted_logs_metrics_impl.h"
 #include "components/ukm/ukm_pref_names.h"
@@ -65,7 +66,8 @@ UkmReportingService::UkmReportingService(metrics::MetricsServiceClient* client,
                       prefs::kUkmPersistedLogs,
                       kMinPersistedLogs,
                       kMinPersistedBytes,
-                      kMaxLogRetransmitSize) {}
+                      kMaxLogRetransmitSize,
+                      client->GetUploadSigningKey()) {}
 
 UkmReportingService::~UkmReportingService() {}
 

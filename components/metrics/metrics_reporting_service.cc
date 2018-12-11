@@ -36,7 +36,9 @@ void MetricsReportingService::RegisterPrefs(PrefRegistrySimple* registry) {
 MetricsReportingService::MetricsReportingService(MetricsServiceClient* client,
                                                  PrefService* local_state)
     : ReportingService(client, local_state, kUploadLogAvoidRetransmitSize),
-      metrics_log_store_(local_state, kUploadLogAvoidRetransmitSize) {}
+      metrics_log_store_(local_state,
+                         kUploadLogAvoidRetransmitSize,
+                         client->GetUploadSigningKey()) {}
 
 MetricsReportingService::~MetricsReportingService() {}
 

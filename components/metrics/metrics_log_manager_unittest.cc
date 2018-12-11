@@ -26,7 +26,7 @@ namespace {
 
 class MetricsLogManagerTest : public testing::Test {
  public:
-  MetricsLogManagerTest() : log_store_(&pref_service_, 0) {
+  MetricsLogManagerTest() : log_store_(&pref_service_, 0, std::string()) {
     MetricsLogStore::RegisterPrefs(pref_service_.registry());
     log_store()->LoadPersistedUnsentLogs();
   }
