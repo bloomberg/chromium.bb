@@ -753,6 +753,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
     self.Flaky('conformance/glsl/functions/glsl-function-dot.html',
         ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
+    self.Flaky('conformance/glsl/functions/glsl-function-min-gentype.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
+    self.Flaky('conformance/glsl/implicit/add_ivec3_vec3.vert.html',
+        ['android', ('qualcomm', 'Adreno (TM) 418')], bug=912161)
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
         ['android', ('qualcomm', 'Adreno (TM) 418'), 'no_passthrough'],
