@@ -812,5 +812,20 @@ TEST_F(CanSwitchUserTest, OverviewModeDismissed) {
   EXPECT_EQ(1, switch_callback_hit_count());
 }
 
+using SessionControllerUnblockTest = NoSessionAshTestBase;
+
+TEST_F(SessionControllerUnblockTest, ActiveWindowAfterUnblocking) {
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsUserSessionBlocked());
+  auto widget = CreateTestWidget();
+  // |widget| should not be active as it is blocked by SessionController.
+  EXPECT_FALSE(widget->IsActive());
+  SimulateUserLogin("user@test.com");
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsUserSessionBlocked());
+
+  // |widget| should now be active as SessionController no longer is blocking
+  // windows from becoming active.
+  EXPECT_TRUE(widget->IsActive());
+}
+
 }  // namespace
 }  // namespace ash
