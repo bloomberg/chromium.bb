@@ -96,13 +96,16 @@ struct av1_extracfg {
   unsigned int cdf_update_mode;
   int enable_order_hint;
   int enable_jnt_comp;
-  int enable_ref_frame_mvs;    // sequence level
-  int allow_ref_frame_mvs;     // frame level
-  int enable_masked_comp;      // enable masked compound for sequence
-  int enable_interintra_comp;  // enable interintra compound for sequence
-  int enable_global_motion;    // enable global motion usage for sequence
-  int enable_warped_motion;    // sequence level
-  int allow_warped_motion;     // frame level
+  int enable_ref_frame_mvs;     // sequence level
+  int allow_ref_frame_mvs;      // frame level
+  int enable_masked_comp;       // enable masked compound for sequence
+  int enable_interintra_comp;   // enable interintra compound for sequence
+  int enable_diff_wtd_comp;     // enable diff-wtd compound usage
+  int enable_interinter_wedge;  // enable interinter-wedge compound usage
+  int enable_interintra_wedge;  // enable interintra-wedge compound usage
+  int enable_global_motion;     // enable global motion usage for sequence
+  int enable_warped_motion;     // sequence level
+  int allow_warped_motion;      // frame level
   int enable_superres;
 #if CONFIG_DENOISE
   float noise_level;
@@ -179,6 +182,9 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // allow ref_frame_mvs frame level
   1,                            // enable masked compound at sequence level
   1,                            // enable interintra compound at sequence level
+  1,                            // enable difference-weighted compound
+  1,                            // enable interinter wedge compound
+  1,                            // enable interintra wedge compound
   1,                            // enable_global_motion usage
   1,                            // enable_warped_motion at sequence level
   1,                            // allow_warped_motion at frame level
@@ -676,7 +682,13 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_jnt_comp =
       extra_cfg->enable_jnt_comp & extra_cfg->enable_order_hint;
   oxcf->enable_masked_comp = extra_cfg->enable_masked_comp;
+  oxcf->enable_diff_wtd_comp =
+      extra_cfg->enable_masked_comp & extra_cfg->enable_diff_wtd_comp;
+  oxcf->enable_interinter_wedge =
+      extra_cfg->enable_masked_comp & extra_cfg->enable_interinter_wedge;
   oxcf->enable_interintra_comp = extra_cfg->enable_interintra_comp;
+  oxcf->enable_interintra_wedge =
+      extra_cfg->enable_interintra_comp & extra_cfg->enable_interintra_wedge;
   oxcf->enable_ref_frame_mvs =
       extra_cfg->enable_ref_frame_mvs & extra_cfg->enable_order_hint;
 
@@ -1076,6 +1088,29 @@ static aom_codec_err_t ctrl_set_enable_interintra_comp(
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_interintra_comp =
       CAST(AV1E_SET_ENABLE_INTERINTRA_COMP, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_diff_wtd_comp(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_diff_wtd_comp = CAST(AV1E_SET_ENABLE_DIFF_WTD_COMP, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_interinter_wedge(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_interinter_wedge =
+      CAST(AV1E_SET_ENABLE_INTERINTER_WEDGE, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_interintra_wedge(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_interintra_wedge =
+      CAST(AV1E_SET_ENABLE_INTERINTRA_WEDGE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1842,6 +1877,9 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ALLOW_REF_FRAME_MVS, ctrl_set_allow_ref_frame_mvs },
   { AV1E_SET_ENABLE_MASKED_COMP, ctrl_set_enable_masked_comp },
   { AV1E_SET_ENABLE_INTERINTRA_COMP, ctrl_set_enable_interintra_comp },
+  { AV1E_SET_ENABLE_DIFF_WTD_COMP, ctrl_set_enable_diff_wtd_comp },
+  { AV1E_SET_ENABLE_INTERINTER_WEDGE, ctrl_set_enable_interinter_wedge },
+  { AV1E_SET_ENABLE_INTERINTRA_WEDGE, ctrl_set_enable_interintra_wedge },
   { AV1E_SET_ENABLE_GLOBAL_MOTION, ctrl_set_enable_global_motion },
   { AV1E_SET_ENABLE_WARPED_MOTION, ctrl_set_enable_warped_motion },
   { AV1E_SET_ALLOW_WARPED_MOTION, ctrl_set_allow_warped_motion },

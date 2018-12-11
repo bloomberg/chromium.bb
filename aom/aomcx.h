@@ -784,6 +784,33 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_INTERINTRA_COMP,
 
+  /*!\brief Codec control function to turn on / off difference weighted
+   * compound.
+   *
+   * This will enable or disable usage of difference weighted compound.
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_DIFF_WTD_COMP,
+
+  /*!\brief Codec control function to turn on / off interinter wedge
+   * compound.
+   *
+   * This will enable or disable usage of interinter wedge compound.
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_INTERINTER_WEDGE,
+
+  /*!\brief Codec control function to turn on / off interintra wedge
+   * compound.
+   *
+   * This will enable or disable usage of interintra wedge compound.
+   * The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_INTERINTRA_WEDGE,
+
   /*!\brief Codec control function to turn on / off global motion usage
    * for a sequence.
    *
@@ -1103,6 +1130,15 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_MASKED_COMP, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTERINTRA_COMP, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_INTERINTRA_COMP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DIFF_WTD_COMP, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_DIFF_WTD_COMP
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTERINTER_WEDGE, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_INTERINTER_WEDGE
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_INTERINTRA_WEDGE, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_INTERINTRA_WEDGE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_GLOBAL_MOTION, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_GLOBAL_MOTION

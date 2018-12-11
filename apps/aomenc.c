@@ -457,6 +457,18 @@ static const arg_def_t enable_interintra_comp =
     ARG_DEF(NULL, "enable-interintra-comp", 1,
             "Enable interintra compound "
             "(0: false, 1: true (default))");
+static const arg_def_t enable_diff_wtd_comp =
+    ARG_DEF(NULL, "enable-diff-wtd-comp", 1,
+            "Enable difference-weighted compound "
+            "(0: false, 1: true (default))");
+static const arg_def_t enable_interinter_wedge =
+    ARG_DEF(NULL, "enable-interinter-wedge", 1,
+            "Enable interinter wedge compound "
+            "(0: false, 1: true (default))");
+static const arg_def_t enable_interintra_wedge =
+    ARG_DEF(NULL, "enable-interintra-wedge", 1,
+            "Enable interintra wedge compound "
+            "(0: false, 1: true (default))");
 static const arg_def_t enable_global_motion =
     ARG_DEF(NULL, "enable-global-motion", 1,
             "Enable global motion "
@@ -675,6 +687,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_jnt_comp,
                                        &enable_masked_comp,
                                        &enable_interintra_comp,
+                                       &enable_diff_wtd_comp,
+                                       &enable_interinter_wedge,
+                                       &enable_interintra_wedge,
                                        &enable_global_motion,
                                        &enable_warped_motion,
                                        &enable_obmc,
@@ -742,6 +757,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_JNT_COMP,
                                         AV1E_SET_ENABLE_MASKED_COMP,
                                         AV1E_SET_ENABLE_INTERINTRA_COMP,
+                                        AV1E_SET_ENABLE_DIFF_WTD_COMP,
+                                        AV1E_SET_ENABLE_INTERINTER_WEDGE,
+                                        AV1E_SET_ENABLE_INTERINTRA_WEDGE,
                                         AV1E_SET_ENABLE_GLOBAL_MOTION,
                                         AV1E_SET_ENABLE_WARPED_MOTION,
                                         AV1E_SET_ENABLE_OBMC,

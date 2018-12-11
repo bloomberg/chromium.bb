@@ -8784,6 +8784,16 @@ static INLINE bool enable_wedge_search(MACROBLOCK *const x,
          x->edge_strength > cpi->sf.disable_wedge_search_edge_thresh;
 }
 
+static INLINE bool enable_wedge_interinter_search(MACROBLOCK *const x,
+                                                  const AV1_COMP *const cpi) {
+  return enable_wedge_search(x, cpi) && cpi->oxcf.enable_interinter_wedge;
+}
+
+static INLINE bool enable_wedge_interintra_search(MACROBLOCK *const x,
+                                                  const AV1_COMP *const cpi) {
+  return enable_wedge_search(x, cpi) && cpi->oxcf.enable_interintra_wedge;
+}
+
 static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                    MACROBLOCK *const x, BLOCK_SIZE bsize,
                                    int mi_row, int mi_col, MB_MODE_INFO *mbmi,
@@ -8859,7 +8869,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
     int64_t best_interintra_rd_nowedge = rd;
     int64_t best_interintra_rd_wedge = INT64_MAX;
     int_mv tmp_mv;
-    if (enable_wedge_search(x, cpi)) {
+    if (enable_wedge_interintra_search(x, cpi)) {
       mbmi->use_wedge_interintra = 1;
 
       rwedge = av1_cost_literal(get_interintra_wedge_bits(bsize)) +
@@ -9539,14 +9549,19 @@ static int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       masked_type_cost += x->compound_type_cost[bsize][cur_type - 1];
       rs2 = masked_type_cost;
 
-      if (enable_wedge_search(x, cpi) &&
-          ((*rd / cpi->max_comp_type_rd_threshold_div) *
+      if (((*rd / cpi->max_comp_type_rd_threshold_div) *
            cpi->max_comp_type_rd_threshold_mul) < ref_best_rd) {
-        best_rd_cur = build_and_cost_compound_type(
-            cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
-            &tmp_rate_mv, preds0, preds1, buffers->residual1, buffers->diff10,
-            strides, mi_row, mi_col, rd_stats->rate, ref_best_rd,
-            &calc_pred_masked_compound);
+        const COMPOUND_TYPE compound_type = mbmi->interinter_comp.type;
+
+        if (!((compound_type == COMPOUND_WEDGE &&
+               !enable_wedge_interinter_search(x, cpi)) ||
+              (compound_type == COMPOUND_DIFFWTD &&
+               !cpi->oxcf.enable_diff_wtd_comp)))
+          best_rd_cur = build_and_cost_compound_type(
+              cpi, x, cur_mv, bsize, this_mode, &rs2, *rate_mv, orig_dst,
+              &tmp_rate_mv, preds0, preds1, buffers->residual1, buffers->diff10,
+              strides, mi_row, mi_col, rd_stats->rate, ref_best_rd,
+              &calc_pred_masked_compound);
       }
     }
     if (best_rd_cur < *rd) {
