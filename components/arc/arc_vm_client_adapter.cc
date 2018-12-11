@@ -59,7 +59,10 @@ class ArcVmClientAdapter : public ArcClientAdapter {
     DCHECK(upstart_client);
     upstart_client->StartJob(
         kArcVmUpstartJob,
-        {},  // TODO(yusukes): Pass the content of the |request| to the job.
+        // arc_session_impl.cc fills the |account_id| field, and it is always
+        // guaranteed that the ID is not for Incognito mode and is a valid one.
+        // TODO(yusukes): Pass other fields of the |request| to the job.
+        {"CHROMEOS_USER=" + request.account_id()},
         base::BindOnce(&ArcVmClientAdapter::OnArcInstanceUpgraded,
                        weak_factory_.GetWeakPtr(), std::move(success_callback),
                        std::move(error_callback)));
