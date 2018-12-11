@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_consumer.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
 
 namespace bookmarks {
@@ -17,13 +17,13 @@ namespace feature_engagement {
 class Tracker;
 }
 @protocol BrowserCommands;
-@class PopupMenuTableViewController;
+@protocol PopupMenuConsumer;
 class ReadingListModel;
 class WebStateList;
 
 // Mediator for the popup menu. This object is in charge of creating and
 // updating the items of the popup menu.
-@interface PopupMenuMediator : NSObject
+@interface PopupMenuMediator : NSObject <PopupMenuActionHandlerCommands>
 
 // Initializes the mediator with a |type| of popup menu, whether it
 // |isIncognito|, a |readingListModel| used to display the badge for the reading
@@ -38,7 +38,7 @@ class WebStateList;
 // The WebStateList that this mediator listens for any changes on the current
 // WebState.
 @property(nonatomic, assign) WebStateList* webStateList;
-// The TableView to be configured with this mediator.
+// The consumer to be configured with this mediator.
 @property(nonatomic, strong) id<PopupMenuConsumer> popupMenu;
 // Dispatcher.
 @property(nonatomic, weak) id<BrowserCommands> dispatcher;

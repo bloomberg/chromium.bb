@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/reading_list/number_badge_view.h"
 #import "ios/chrome/browser/ui/reading_list/text_badge_view.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"

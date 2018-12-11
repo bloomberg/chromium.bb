@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_presenter.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter.h"
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_view_controller.h"
-#import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_presenter_delegate.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -26,7 +27,7 @@ const CGFloat kMinVerticalMargin = 15;
 const CGFloat kDamping = 0.85;
 }  // namespace
 
-@interface PopupMenuPresenter ()
+@interface PopupMenuPresenter () <PopupMenuViewControllerDelegate>
 @property(nonatomic, strong) PopupMenuViewController* popupViewController;
 // Constraints used for the initial positioning of the popup.
 @property(nonatomic, strong) NSArray<NSLayoutConstraint*>* initialConstraints;
@@ -37,7 +38,6 @@ const CGFloat kDamping = 0.85;
 @implementation PopupMenuPresenter
 
 @synthesize baseViewController = _baseViewController;
-@synthesize commandHandler = _commandHandler;
 @synthesize delegate = _delegate;
 @synthesize guideName = _guideName;
 @synthesize popupViewController = _popupViewController;
@@ -53,7 +53,7 @@ const CGFloat kDamping = 0.85;
     return;
 
   self.popupViewController = [[PopupMenuViewController alloc] init];
-  self.popupViewController.commandHandler = self.commandHandler;
+  self.popupViewController.delegate = self;
   [self.presentedViewController.view
       setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
                                       forAxis:UILayoutConstraintAxisHorizontal];
@@ -133,12 +133,13 @@ const CGFloat kDamping = 0.85;
 - (void)presentAnimated:(BOOL)animated {
   [NSLayoutConstraint deactivateConstraints:self.initialConstraints];
   [NSLayoutConstraint activateConstraints:self.presentedConstraints];
-  [self animate:^{
-    self.popupViewController.contentContainer.alpha = 1;
-    [self.baseViewController.view layoutIfNeeded];
-    self.popupViewController.contentContainer.transform =
-        CGAffineTransformIdentity;
-  }
+  [self
+      animate:^{
+        self.popupViewController.contentContainer.alpha = 1;
+        [self.baseViewController.view layoutIfNeeded];
+        self.popupViewController.contentContainer.transform =
+            CGAffineTransformIdentity;
+      }
       withCompletion:^(BOOL finished) {
         [self.delegate containedPresenterDidPresent:self];
       }];
@@ -155,12 +156,13 @@ const CGFloat kDamping = 0.85;
     [self.delegate containedPresenterDidDismiss:self];
   };
   if (animated) {
-    [self animate:^{
-      self.popupViewController.contentContainer.alpha = 0;
-      [self.baseViewController.view layoutIfNeeded];
-      self.popupViewController.contentContainer.transform =
-          CGAffineTransformMakeScale(0.1, 0.1);
-    }
+    [self
+               animate:^{
+                 self.popupViewController.contentContainer.alpha = 0;
+                 [self.baseViewController.view layoutIfNeeded];
+                 self.popupViewController.contentContainer.transform =
+                     CGAffineTransformMakeScale(0.1, 0.1);
+               }
         withCompletion:completion];
   } else {
     completion(YES);
@@ -189,8 +191,8 @@ const CGFloat kDamping = 0.85;
   UIView* parentView = self.baseViewController.view;
   UIView* container = self.popupViewController.contentContainer;
 
-  UILayoutGuide* namedGuide =
-      [NamedGuide guideWithName:self.guideName view:parentView];
+  UILayoutGuide* namedGuide = [NamedGuide guideWithName:self.guideName
+                                                   view:parentView];
   CGRect guideFrame =
       [self.popupViewController.view convertRect:namedGuide.layoutFrame
                                         fromView:namedGuide.owningView];
@@ -228,6 +230,13 @@ const CGFloat kDamping = 0.85;
         constraintGreaterThanOrEqualToAnchor:safeArea.topAnchor
                                     constant:kMinVerticalMargin],
   ];
+}
+
+#pragma mark - PopupMenuViewControllerDelegate
+
+- (void)popupMenuViewControllerWillDismiss:
+    (PopupMenuViewController*)viewController {
+  [self.delegate popupMenuPresenterWillDismiss:self];
 }
 
 @end

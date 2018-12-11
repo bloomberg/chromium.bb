@@ -2,27 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
 
 #include "base/ios/ios_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/commands/load_query_commands.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_footer_item.h"
-#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
-#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_footer_item.h"
+#import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller_delegate.h"
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::UserMetricsAction;
 
 namespace {
 const CGFloat kFooterHeight = 21;
@@ -39,8 +33,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 
 @dynamic tableViewModel;
 @synthesize baseViewController = _baseViewController;
-@synthesize commandHandler = _commandHandler;
-@synthesize dispatcher = _dispatcher;
+@synthesize delegate = _delegate;
 @synthesize itemToHighlight = _itemToHighlight;
 @synthesize viewDidAppear = _viewDidAppear;
 
@@ -59,8 +52,11 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
     return;
 
   base::RecordAction(base::UserMetricsAction("MobilePopupMenuSwipeToSelect"));
-  [self executeActionForItem:[self.tableViewModel itemAtIndexPath:rowIndexPath]
-                      origin:[cell convertPoint:cell.center toView:nil]];
+  [self.delegate popupMenuTableViewController:self
+                                didSelectItem:[self.tableViewModel
+                                                  itemAtIndexPath:rowIndexPath]
+                                       origin:[cell convertPoint:cell.center
+                                                          toView:nil]];
 }
 
 - (void)focusRowAtPoint:(CGPoint)point {
@@ -178,8 +174,10 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   UIView* cell = [self.tableView cellForRowAtIndexPath:indexPath];
   CGPoint center = [cell convertPoint:cell.center toView:nil];
-  [self executeActionForItem:[self.tableViewModel itemAtIndexPath:indexPath]
-                      origin:center];
+  [self.delegate popupMenuTableViewController:self
+                                didSelectItem:[self.tableViewModel
+                                                  itemAtIndexPath:indexPath]
+                                       origin:center];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -202,8 +200,8 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 // |point| must be in the window coordinates. Returns nil if |point| is outside
 // the bounds of the table view.
 - (NSIndexPath*)indexPathForInnerRowAtPoint:(CGPoint)point {
-  CGPoint pointInTableViewCoordinates =
-      [self.tableView convertPoint:point fromView:nil];
+  CGPoint pointInTableViewCoordinates = [self.tableView convertPoint:point
+                                                            fromView:nil];
   CGRect insetRect =
       CGRectInset(self.tableView.bounds, 0, kPopupMenuVerticalInsets);
   BOOL pointInTableViewBounds =
@@ -246,122 +244,6 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       dispatch_get_main_queue(), ^{
         [self highlightItem:item repeat:NO];
       });
-}
-
-// Executes the action associated with |identifier|, using |origin| as the point
-// of origin of the action if one is needed.
-- (void)executeActionForItem:(TableViewItem<PopupMenuItem>*)item
-                      origin:(CGPoint)origin {
-  PopupMenuAction identifier = item.actionIdentifier;
-  switch (identifier) {
-    case PopupMenuActionReload:
-      base::RecordAction(UserMetricsAction("MobileMenuReload"));
-      [self.dispatcher reload];
-      break;
-    case PopupMenuActionStop:
-      base::RecordAction(UserMetricsAction("MobileMenuStop"));
-      [self.dispatcher stopLoading];
-      break;
-    case PopupMenuActionOpenNewTab:
-      base::RecordAction(UserMetricsAction("MobileMenuNewTab"));
-      [self.dispatcher
-          openURLInNewTab:[OpenNewTabCommand commandWithIncognito:NO
-                                                      originPoint:origin]];
-      break;
-    case PopupMenuActionOpenNewIncognitoTab:
-      base::RecordAction(UserMetricsAction("MobileMenuNewIncognitoTab"));
-      [self.dispatcher
-          openURLInNewTab:[OpenNewTabCommand commandWithIncognito:YES
-                                                      originPoint:origin]];
-      break;
-    case PopupMenuActionReadLater:
-      base::RecordAction(UserMetricsAction("MobileMenuReadLater"));
-      [self.commandHandler readPageLater];
-      break;
-    case PopupMenuActionPageBookmark:
-      base::RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
-      [self.dispatcher bookmarkPage];
-      break;
-    case PopupMenuActionFindInPage:
-      base::RecordAction(UserMetricsAction("MobileMenuFindInPage"));
-      [self.dispatcher showFindInPage];
-      break;
-    case PopupMenuActionRequestDesktop:
-      base::RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
-      [self.dispatcher requestDesktopSite];
-      break;
-    case PopupMenuActionRequestMobile:
-      base::RecordAction(UserMetricsAction("MobileMenuRequestMobileSite"));
-      [self.dispatcher requestMobileSite];
-      break;
-    case PopupMenuActionSiteInformation:
-      base::RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
-      [self.dispatcher
-          showPageInfoForOriginPoint:self.baseViewController.view.center];
-      break;
-    case PopupMenuActionReportIssue:
-      base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
-      [self.dispatcher
-          showReportAnIssueFromViewController:self.baseViewController];
-      // Dismisses the popup menu without animation to allow the snapshot to be
-      // taken without the menu presented.
-      [self.dispatcher dismissPopupMenuAnimated:NO];
-      break;
-    case PopupMenuActionHelp:
-      base::RecordAction(UserMetricsAction("MobileMenuHelp"));
-      [self.dispatcher showHelpPage];
-      break;
-#if !defined(NDEBUG)
-    case PopupMenuActionViewSource:
-      [self.dispatcher viewSource];
-      break;
-#endif  // !defined(NDEBUG)
-
-    case PopupMenuActionBookmarks:
-      base::RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
-      [self.dispatcher showBookmarksManager];
-      break;
-    case PopupMenuActionReadingList:
-      base::RecordAction(UserMetricsAction("MobileMenuReadingList"));
-      [self.dispatcher showReadingList];
-      break;
-    case PopupMenuActionRecentTabs:
-      base::RecordAction(UserMetricsAction("MobileMenuRecentTabs"));
-      [self.dispatcher showRecentTabs];
-      break;
-    case PopupMenuActionHistory:
-      base::RecordAction(UserMetricsAction("MobileMenuHistory"));
-      [self.dispatcher showHistory];
-      break;
-    case PopupMenuActionSettings:
-      base::RecordAction(UserMetricsAction("MobileMenuSettings"));
-      [self.dispatcher showSettingsFromViewController:self.baseViewController];
-      break;
-    case PopupMenuActionCloseTab:
-      base::RecordAction(UserMetricsAction("MobileMenuCloseTab"));
-      [self.dispatcher closeCurrentTab];
-      break;
-    case PopupMenuActionNavigate:
-      // No metrics for this item.
-      [self.commandHandler navigateToPageForItem:item];
-      break;
-    case PopupMenuActionPasteAndGo:
-      base::RecordAction(UserMetricsAction("MobileMenuPasteAndGo"));
-      [self.dispatcher loadQuery:[UIPasteboard generalPasteboard].string
-                     immediately:YES];
-      break;
-    case PopupMenuActionVoiceSearch:
-      base::RecordAction(UserMetricsAction("MobileMenuVoiceSearch"));
-      [self.dispatcher startVoiceSearch];
-      break;
-    case PopupMenuActionQRCodeSearch:
-      base::RecordAction(UserMetricsAction("MobileMenuScanQRCode"));
-      [self.dispatcher showQRScanner];
-      break;
-  }
-
-  // Close the tools menu.
-  [self.dispatcher dismissPopupMenuAnimated:YES];
 }
 
 @end
