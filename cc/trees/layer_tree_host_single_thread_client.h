@@ -11,11 +11,9 @@ namespace cc {
 
 class LayerTreeHostSingleThreadClient {
  public:
-  // Request that the client schedule a composite.
+  // Request that the client schedule a composite. For tests using single thread
+  // without a scheduler.
   virtual void RequestScheduleComposite() {}
-  // Request that the client schedule a composite now, and calculate appropriate
-  // delay for potential future frame.
-  virtual void RequestScheduleAnimation() {}
 
   // Called whenever the begin frame interval changes. This interval can be used
   // for animations.

@@ -303,7 +303,6 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitCompositorFrame() override;
   void DidCompletePageScaleAnimation() override;
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override;
-  void RequestScheduleAnimation() override;
   void UpdateVisualState(bool record_main_frame_metrics) override;
   void WillBeginCompositorFrame() override;
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(
@@ -337,6 +336,7 @@ class CONTENT_EXPORT RenderWidget
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
+  void ScheduleAnimation() override;
   void IntrinsicSizingInfoChanged(
       const blink::WebIntrinsicSizingInfo&) override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;

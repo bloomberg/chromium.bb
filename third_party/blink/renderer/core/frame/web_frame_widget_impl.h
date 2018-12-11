@@ -138,7 +138,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void Initialize() override;
   void SetLayerTreeView(WebLayerTreeView*) override;
   bool ForSubframe() const override { return true; }
-  void ScheduleAnimation() override;
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
 

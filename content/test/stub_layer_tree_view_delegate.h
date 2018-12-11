@@ -26,7 +26,6 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
   void DidCompletePageScaleAnimation() override {}
-  void RequestScheduleAnimation() override {}
   void UpdateVisualState(bool record_main_frame_metrics) override {}
   void WillBeginCompositorFrame() override {}
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForWebTest(

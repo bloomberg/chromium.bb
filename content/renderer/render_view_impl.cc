@@ -1053,6 +1053,10 @@ blink::WebWidget* RenderViewImpl::GetWebWidgetForWidget() const {
   return frame_widget_;
 }
 
+blink::WebWidgetClient* RenderViewImpl::GetWebWidgetClientForWidget() {
+  return WidgetClient();
+}
+
 bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
     const blink::WebMouseEvent& event) {
   // If the mouse is locked, only the current owner of the mouse lock can
@@ -1150,12 +1154,6 @@ void RenderViewImpl::ResizeWebWidgetForWidget(
   webview()->ResizeWithBrowserControls(size, top_controls_height,
                                        bottom_controls_height,
                                        browser_controls_shrink_blink_size);
-}
-
-void RenderViewImpl::RequestScheduleAnimationForWidget() {
-  // Schedule the animation on the WidgetClient() which may not be the
-  // RenderWidget directly in web tests.
-  WidgetClient()->ScheduleAnimation();
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParametersForWidget(

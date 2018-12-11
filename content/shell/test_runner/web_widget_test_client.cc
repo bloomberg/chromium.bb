@@ -52,9 +52,10 @@ void WebWidgetTestClient::AnimateNow() {
   blink::WebWidget* web_widget = web_widget_test_proxy_base_->web_widget();
   web_widget->UpdateAllLifecyclePhasesAndCompositeForTesting(
       animation_requires_raster);
-  if (blink::WebPagePopup* popup = web_widget->GetPagePopup())
+  if (blink::WebPagePopup* popup = web_widget->GetPagePopup()) {
     popup->UpdateAllLifecyclePhasesAndCompositeForTesting(
         animation_requires_raster);
+  }
 }
 
 bool WebWidgetTestClient::RequestPointerLock() {

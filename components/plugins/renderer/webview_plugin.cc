@@ -322,7 +322,7 @@ void WebViewPlugin::WebViewHelper::ScheduleAnimation() {
   // Resizes must be self-contained: any lifecycle updating must
   // be triggerd from within the WebView or this WebViewPlugin.
   // This is because this WebViewPlugin is contained in another
-  // Web View which may be in the middle of updating its lifecycle,
+  // WebView which may be in the middle of updating its lifecycle,
   // but after layout is done, and it is illegal to dirty earlier
   // lifecycle stages during later ones.
   if (plugin_->is_resizing_)
@@ -330,6 +330,7 @@ void WebViewPlugin::WebViewHelper::ScheduleAnimation() {
   if (plugin_->container_) {
     // This should never happen; see also crbug.com/545039 for context.
     DCHECK(!plugin_->is_painting_);
+    // This goes to compositor of the containing frame.
     plugin_->container_->ScheduleAnimation();
   }
 }

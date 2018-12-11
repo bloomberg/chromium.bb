@@ -476,9 +476,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                float bottom_controls_height,
                                bool browser_controls_shrink_layout);
 
-  // TODO(lfg): Remove once WebViewFrameWidget is deleted.
-  void ScheduleAnimationForWidget();
-
   void UpdateBaseBackgroundColor();
 
   friend class WebView;  // So WebView::Create can call our constructor

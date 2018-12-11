@@ -3233,15 +3233,6 @@ GraphicsLayer* WebViewImpl::RootGraphicsLayer() {
   return root_graphics_layer_;
 }
 
-void WebViewImpl::ScheduleAnimationForWidget() {
-  if (layer_tree_view_) {
-    layer_tree_view_->SetNeedsBeginFrame();
-    return;
-  }
-  if (client_)
-    client_->WidgetClient()->ScheduleAnimation();
-}
-
 void WebViewImpl::SetLayerTreeView(WebLayerTreeView* layer_tree_view) {
   DCHECK(does_composite_);
   layer_tree_view_ = layer_tree_view;

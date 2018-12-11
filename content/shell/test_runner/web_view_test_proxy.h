@@ -39,7 +39,6 @@ struct WebWindowFeatures;
 }
 
 namespace test_runner {
-
 class AccessibilityController;
 class TestInterfaces;
 class TestRunnerForSpecificView;
@@ -56,7 +55,8 @@ class WebTestInterfaces;
 class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
  public:
   ProxyWebWidgetClient(blink::WebWidgetClient* base_class_widget_client,
-                       blink::WebWidgetClient* widget_test_client);
+                       blink::WebWidgetClient* widget_test_client,
+                       content::RenderWidget* render_widget);
 
   // blink::WebWidgetClient implementation.
   void DidInvalidateRect(const blink::WebRect&) override;
@@ -102,6 +102,7 @@ class TEST_RUNNER_EXPORT ProxyWebWidgetClient : public blink::WebWidgetClient {
  private:
   blink::WebWidgetClient* base_class_widget_client_;
   blink::WebWidgetClient* widget_test_client_;
+  content::RenderWidget* render_widget_;
 };
 
 // WebViewTestProxyBase is the "brain" of WebViewTestProxy in the sense that

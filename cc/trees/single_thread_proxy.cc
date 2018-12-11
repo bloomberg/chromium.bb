@@ -164,7 +164,6 @@ void SingleThreadProxy::SetLayerTreeFrameSink(
 void SingleThreadProxy::SetNeedsAnimate() {
   TRACE_EVENT0("cc", "SingleThreadProxy::SetNeedsAnimate");
   DCHECK(task_runner_provider_->IsMainThread());
-  single_thread_client_->RequestScheduleAnimation();
   if (animate_requested_)
     return;
   animate_requested_ = true;
