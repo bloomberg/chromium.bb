@@ -117,8 +117,7 @@ void IOSChromeLocalSessionEventRouter::NavigationItemsPruned(
   OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::NavigationItemChanged(
-    web::WebState* web_state) {
+void IOSChromeLocalSessionEventRouter::TitleWasSet(web::WebState* web_state) {
   OnWebStateChange(web_state);
 }
 
