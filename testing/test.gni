@@ -257,7 +257,11 @@ template("test") {
 
     fuchsia_package_runner(target_name) {
       testonly = true
-      forward_variables_from(invoker, [ "use_test_server" ])
+      forward_variables_from(invoker,
+                             [
+                               "use_test_server",
+                               "package_deps",
+                             ])
       runner_script = "//build/fuchsia/test_runner.py"
       package = ":$_pkg_target"
       package_name_override = _output_name
