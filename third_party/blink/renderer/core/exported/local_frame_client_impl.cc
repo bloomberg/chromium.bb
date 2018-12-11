@@ -89,7 +89,6 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/history_item.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/workers/shared_worker_repository_client.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -947,11 +946,6 @@ LocalFrameClientImpl::CreateServiceWorkerProvider() {
 
 WebContentSettingsClient* LocalFrameClientImpl::GetContentSettingsClient() {
   return web_frame_->GetContentSettingsClient();
-}
-
-SharedWorkerRepositoryClient*
-LocalFrameClientImpl::GetSharedWorkerRepositoryClient() {
-  return web_frame_->GetSharedWorkerRepositoryClient();
 }
 
 std::unique_ptr<WebApplicationCacheHost>

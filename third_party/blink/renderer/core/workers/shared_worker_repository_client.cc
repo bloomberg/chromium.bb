@@ -104,17 +104,35 @@ class SharedWorkerConnectListener final
   Persistent<SharedWorker> worker_;
 };
 
+const char SharedWorkerRepositoryClient::kSupplementName[] =
+    "SharedWorkerRepositoryClient";
+
+SharedWorkerRepositoryClient* SharedWorkerRepositoryClient::From(
+    Document& document) {
+  DCHECK(IsMainThread());
+  SharedWorkerRepositoryClient* client =
+      Supplement<Document>::From<SharedWorkerRepositoryClient>(document);
+  if (!client) {
+    client = MakeGarbageCollected<SharedWorkerRepositoryClient>(document);
+    Supplement<Document>::ProvideTo(document, client);
+  }
+  return client;
+}
+
+SharedWorkerRepositoryClient::SharedWorkerRepositoryClient(Document& document)
+    : ContextLifecycleObserver(&document) {
+  DCHECK(IsMainThread());
+  document.GetInterfaceProvider()->GetInterface(mojo::MakeRequest(&connector_));
+}
+
 void SharedWorkerRepositoryClient::Connect(
     SharedWorker* worker,
     MessagePortChannel port,
     const KURL& url,
     mojom::blink::BlobURLTokenPtr blob_url_token,
     const String& name) {
+  DCHECK(IsMainThread());
   DCHECK(!name.IsNull());
-
-  // Lazily bind the connector.
-  if (!connector_)
-    interface_provider_->GetInterface(mojo::MakeRequest(&connector_));
 
   // TODO(estark): this is broken, as it only uses the first header
   // when multiple might have been sent. Fix by making the
@@ -134,12 +152,9 @@ void SharedWorkerRepositoryClient::Connect(
       url, name, header, header_type,
       worker->GetExecutionContext()->GetSecurityContext().AddressSpace()));
 
-  // No nested workers (for now) - connect() can only be called from a document
-  // context.
-  Document* document = To<Document>(worker->GetExecutionContext());
   mojom::blink::SharedWorkerClientPtr client_ptr;
-  AddWorker(document, std::make_unique<SharedWorkerConnectListener>(worker),
-            mojo::MakeRequest(&client_ptr));
+  client_set_.AddBinding(std::make_unique<SharedWorkerConnectListener>(worker),
+                         mojo::MakeRequest(&client_ptr));
 
   connector_->Connect(
       std::move(info), std::move(client_ptr),
@@ -150,31 +165,16 @@ void SharedWorkerRepositoryClient::Connect(
           mojom::blink::BlobURLToken::Version_)));
 }
 
-void SharedWorkerRepositoryClient::DocumentDetached(Document* document) {
-  // Delete any associated SharedWorkerConnectListeners, which will signal, via
-  // the dropped mojo connection, disinterest in the associated shared worker.
-  client_map_.erase(GetId(document));
+void SharedWorkerRepositoryClient::ContextDestroyed(ExecutionContext*) {
+  DCHECK(IsMainThread());
+  // Close mojo connections which will signal disinterest in the associated
+  // shared worker.
+  client_set_.CloseAllBindings();
 }
 
-SharedWorkerRepositoryClient::SharedWorkerRepositoryClient(
-    service_manager::InterfaceProvider* interface_provider)
-    : interface_provider_(interface_provider) {}
-
-void SharedWorkerRepositoryClient::AddWorker(
-    Document* document,
-    std::unique_ptr<mojom::blink::SharedWorkerClient> client,
-    mojom::blink::SharedWorkerClientRequest request) {
-  const auto& result = client_map_.insert(GetId(document), nullptr);
-  std::unique_ptr<ClientSet>& clients = result.stored_value->value;
-  if (!clients)
-    clients = std::make_unique<ClientSet>();
-  clients->AddBinding(std::move(client), std::move(request));
-}
-
-SharedWorkerRepositoryClient::DocumentID SharedWorkerRepositoryClient::GetId(
-    Document* document) {
-  DCHECK(document);
-  return reinterpret_cast<DocumentID>(document);
+void SharedWorkerRepositoryClient::Trace(Visitor* visitor) {
+  Supplement<Document>::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink
