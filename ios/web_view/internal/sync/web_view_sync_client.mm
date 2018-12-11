@@ -4,6 +4,8 @@
 
 #import "ios/web_view/internal/sync/web_view_sync_client.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -20,6 +22,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync/password_model_worker.h"
+#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/passive_model_worker.h"
@@ -141,9 +144,15 @@ base::RepeatingClosure WebViewSyncClient::GetPasswordStateChangedCallback() {
 
 syncer::DataTypeController::TypeVector
 WebViewSyncClient::CreateDataTypeControllers() {
-  // The iOS port does not have any platform-specific datatypes.
-  return component_factory_->CreateCommonDataTypeControllers(
-      GetDisabledTypes());
+  // iOS WebView uses butter sync and so has no need to record user consents.
+  syncer::DataTypeController::TypeVector type_vector =
+      component_factory_->CreateCommonDataTypeControllers(GetDisabledTypes());
+  type_vector.erase(std::remove_if(type_vector.begin(), type_vector.end(),
+                                   [](const auto& data_type_controller) {
+                                     return data_type_controller->type() ==
+                                            syncer::USER_CONSENTS;
+                                   }));
+  return type_vector;
 }
 
 BookmarkUndoService* WebViewSyncClient::GetBookmarkUndoServiceIfExists() {
