@@ -1774,4 +1774,80 @@ TEST_F(IdentityManagerTest, GetAccountsMutator) {
   EXPECT_TRUE(mutator);
 }
 
+// Checks that FindAccountInfoForAccountWithRefreshTokenByAccountId() returns
+// information about the account if the account is found or nullopt if there
+// are no accounts with requested |account_id|.
+TEST_F(IdentityManagerTest,
+       FindAccountInfoForAccountWithRefreshTokenByAccountId) {
+  // Add an account (note: cannot use kTestEmail as it is already inserted
+  // by the fixture common code, so use a different address).
+  const AccountInfo foo_account_info =
+      MakeAccountAvailable(identity_manager(), "foo@bar.com");
+
+  base::Optional<AccountInfo> maybe_account_info;
+  maybe_account_info =
+      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          "dummy_value");
+  EXPECT_FALSE(maybe_account_info.has_value());
+
+  maybe_account_info =
+      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByAccountId(
+          foo_account_info.account_id);
+  EXPECT_TRUE(maybe_account_info.has_value());
+  EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
+  EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
+  EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
+}
+
+// Checks that FindAccountInfoForAccountWithRefreshTokenByEmailAddress() returns
+// information about the account if the account is found or nullopt if there
+// are no accounts with requested |email_address|.
+TEST_F(IdentityManagerTest,
+       FindAccountInfoForAccountWithRefreshTokenByEmailAddress) {
+  // Add an account (note: cannot use kTestEmail as it is already inserted
+  // by the fixture common code, so use a different address).
+  const AccountInfo foo_account_info =
+      MakeAccountAvailable(identity_manager(), "foo@bar.com");
+
+  base::Optional<AccountInfo> maybe_account_info;
+  maybe_account_info =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              "dummy_value");
+  EXPECT_FALSE(maybe_account_info.has_value());
+
+  maybe_account_info =
+      identity_manager()
+          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              foo_account_info.email);
+  EXPECT_TRUE(maybe_account_info.has_value());
+  EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
+  EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
+  EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
+}
+
+// Checks that FindAccountInfoForAccountWithRefreshTokenByGaiaId() returns
+// information about the account if the account is found or nullopt if there
+// are no accounts with requested |gaia_id|.
+TEST_F(IdentityManagerTest, FindAccountInfoForAccountWithRefreshTokenByGaiaId) {
+  // Add an account (note: cannot use kTestEmail as it is already inserted
+  // by the fixture common code, so use a different address).
+  const AccountInfo foo_account_info =
+      MakeAccountAvailable(identity_manager(), "foo@bar.com");
+
+  base::Optional<AccountInfo> maybe_account_info;
+  maybe_account_info =
+      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+          "dummy_value");
+  EXPECT_FALSE(maybe_account_info.has_value());
+
+  maybe_account_info =
+      identity_manager()->FindAccountInfoForAccountWithRefreshTokenByGaiaId(
+          foo_account_info.gaia);
+  EXPECT_TRUE(maybe_account_info.has_value());
+  EXPECT_EQ(foo_account_info.account_id, maybe_account_info.value().account_id);
+  EXPECT_EQ(foo_account_info.email, maybe_account_info.value().email);
+  EXPECT_EQ(foo_account_info.gaia, maybe_account_info.value().gaia);
+}
+
 }  // namespace identity
