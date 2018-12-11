@@ -47,6 +47,8 @@ class MODULES_EXPORT AXSelection final {
       const Document&,
       const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);
 
+  static AXSelection FromCurrentSelection(const TextControlElement&);
+
   static AXSelection FromSelection(
       const SelectionInDOMTree&,
       const AXSelectionBehavior = AXSelectionBehavior::kExtendToValidDOMRange);

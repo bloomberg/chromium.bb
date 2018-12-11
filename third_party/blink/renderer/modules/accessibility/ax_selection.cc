@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
+#include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 
@@ -119,16 +120,40 @@ void AXSelection::ClearCurrentSelection(Document& document) {
 AXSelection AXSelection::FromCurrentSelection(
     const Document& document,
     const AXSelectionBehavior selection_behavior) {
-  LocalFrame* frame = document.GetFrame();
+  const LocalFrame* frame = document.GetFrame();
   if (!frame)
     return {};
 
-  FrameSelection& frame_selection = frame->Selection();
+  const FrameSelection& frame_selection = frame->Selection();
   if (!frame_selection.IsAvailable())
     return {};
 
   return FromSelection(frame_selection.GetSelectionInDOMTree(),
                        selection_behavior);
+}
+
+// static
+AXSelection AXSelection::FromCurrentSelection(
+    const TextControlElement& text_control) {
+  const Document& document = text_control.GetDocument();
+  AXObjectCache* ax_object_cache = document.ExistingAXObjectCache();
+  if (!ax_object_cache)
+    return {};
+
+  auto* ax_object_cache_impl = static_cast<AXObjectCacheImpl*>(ax_object_cache);
+  const AXObject* ax_text_control =
+      ax_object_cache_impl->GetOrCreate(&text_control);
+  DCHECK(ax_text_control);
+  const TextAffinity affinity = text_control.Selection().Affinity();
+  const auto ax_base = AXPosition::CreatePositionInTextObject(
+      *ax_text_control, static_cast<int>(text_control.selectionStart()));
+  const auto ax_extent = AXPosition::CreatePositionInTextObject(
+      *ax_text_control, static_cast<int>(text_control.selectionEnd()),
+      affinity);
+
+  AXSelection::Builder selection_builder;
+  selection_builder.SetBase(ax_base).SetExtent(ax_extent);
+  return selection_builder.Build();
 }
 
 // static
