@@ -51,7 +51,6 @@
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/app/tests_hook.h"
-#import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -2856,11 +2855,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     passwordTabHelper->SetBaseViewController(self);
     passwordTabHelper->SetDispatcher(self.dispatcher);
     passwordTabHelper->SetPasswordControllerDelegate(self);
-  }
-
-  if (AutofillTabHelper* autofillTabHelper =
-          AutofillTabHelper::FromWebState(tab.webState)) {
-    autofillTabHelper->SetBaseViewController(self);
   }
 
   tab.dialogDelegate = self;
