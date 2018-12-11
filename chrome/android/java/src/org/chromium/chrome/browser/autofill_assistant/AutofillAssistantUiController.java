@@ -34,7 +34,7 @@ import java.util.Map;
  * Autofill Assistant related UIs and forward UI events to native side.
  */
 @JNINamespace("autofill_assistant")
-public class AutofillAssistantUiController implements AutofillAssistantUiDelegate.Client {
+public class AutofillAssistantUiController extends AbstractAutofillAssistantUiController {
     /** OAuth2 scope that RPCs require. */
     private static final String AUTH_TOKEN_TYPE =
             "oauth2:https://www.googleapis.com/auth/userinfo.profile";
@@ -94,6 +94,7 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         mUiControllerAndroid = 0;
     }
 
+    @Override
     public void init(UiDelegateHolder delegateHolder, Details details) {
         mUiDelegateHolder = delegateHolder;
         maybeUpdateDetails(details);
@@ -163,17 +164,8 @@ public class AutofillAssistantUiController implements AutofillAssistantUiDelegat
         return nativeOnRequestDebugContext(mUiControllerAndroid);
     }
 
-    /**
-     * Immediately and unconditionally destroys the UI Controller.
-     *
-     * <p>Call {@link UiDelegateHolder#shutdown} to shutdown Autofill Assistant properly and safely.
-     *
-     * <p>Destroy is different from shutdown in that {@code unsafeDestroy} just deletes the native
-     * controller and all the objects it owns, without changing the state of the UI. When that
-     * happens, everything stops irrevocably on the native side. Doing this at the wrong time will
-     * cause crashes.
-     */
-    void unsafeDestroy() {
+    @Override
+    public void onCompleteShutdown() {
         if (mUiControllerAndroid != 0) nativeDestroy(mUiControllerAndroid);
     }
 

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -36,18 +37,28 @@ public class AutofillAssistantFacade {
 
     /** Starts Autofill Assistant on the given {@code activity}. */
     public static void start(ChromeActivity activity) {
+        startInternal(activity, /* controller= */ null);
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static void startInternal(
+            ChromeActivity activity, @Nullable AbstractAutofillAssistantUiController controller) {
         Map<String, String> parameters = extractParameters(activity.getInitialIntent().getExtras());
         parameters.remove(PARAMETER_ENABLED);
+
+        final AbstractAutofillAssistantUiController targetController = controller == null
+                ? new AutofillAssistantUiController(activity, parameters)
+                : controller;
         if (!AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
             FirstRunScreen.show(activity, (result) -> {
-                if (result) initiateAutofillAssistant(activity, parameters);
+                if (result) initiateAutofillAssistant(activity, parameters, targetController);
             });
             return;
         }
 
         if (AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()
                 && AutofillAssistantPreferencesUtil.getSkipInitScreenPreference()) {
-            initiateAutofillAssistant(activity, parameters);
+            initiateAutofillAssistant(activity, parameters, targetController);
         }
         // We don't have consent to start Autofill Assistant and cannot show initial screen.
         // Do nothing.
@@ -56,12 +67,10 @@ public class AutofillAssistantFacade {
     /**
      * Instantiates all essential Autofill Assistant components and starts it.
      */
-    private static void initiateAutofillAssistant(
-            ChromeActivity activity, Map<String, String> parameters) {
-        AutofillAssistantUiController controller =
-                new AutofillAssistantUiController(activity, parameters);
+    private static void initiateAutofillAssistant(ChromeActivity activity,
+            Map<String, String> parameters, AbstractAutofillAssistantUiController controller) {
         UiDelegateHolder delegateHolder = new UiDelegateHolder(
-                controller, new AutofillAssistantUiDelegate(activity, controller));
+                new AutofillAssistantUiDelegate(activity, controller), controller);
         initTabObservers(activity, delegateHolder);
 
         controller.init(delegateHolder, Details.makeFromParameters(parameters));

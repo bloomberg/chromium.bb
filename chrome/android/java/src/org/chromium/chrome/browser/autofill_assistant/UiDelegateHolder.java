@@ -19,8 +19,8 @@ class UiDelegateHolder {
     /** Display the final message for that long before shutting everything down. */
     private static final long GRACEFUL_SHUTDOWN_DELAY_MS = 5_000;
 
-    private final AutofillAssistantUiController mUiController;
     private final AutofillAssistantUiDelegate mUiDelegate;
+    private final Listener mListener;
 
     private boolean mPaused;
     private boolean mHasBeenShutdown;
@@ -29,10 +29,14 @@ class UiDelegateHolder {
     private final Queue<Callback<AutofillAssistantUiDelegate>> mPendingUiOperations =
             new ArrayDeque<>();
 
-    UiDelegateHolder(
-            AutofillAssistantUiController controller, AutofillAssistantUiDelegate uiDelegate) {
-        mUiController = controller;
+    public interface Listener {
+        /** Called when UI completes change for shutdown. */
+        public void onCompleteShutdown();
+    }
+
+    UiDelegateHolder(AutofillAssistantUiDelegate uiDelegate, Listener listener) {
         mUiDelegate = uiDelegate;
+        mListener = listener;
     }
 
     /**
@@ -126,7 +130,7 @@ class UiDelegateHolder {
             mUiDelegate.dismissSnackbar(mDismissSnackbar);
         }
         mUiDelegate.hide();
-        mUiController.unsafeDestroy();
+        mListener.onCompleteShutdown();
     }
 
     /**
