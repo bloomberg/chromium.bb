@@ -217,7 +217,8 @@ bool ScriptController::ExecuteScriptIfJavaScriptURL(const KURL& url,
     return false;
 
   const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
-  String script_source = DecodeURLEscapeSequences(url.GetString());
+  String script_source = DecodeURLEscapeSequences(
+      url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
   bool should_bypass_main_world_content_security_policy =
       ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->GetDocument());

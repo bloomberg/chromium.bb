@@ -2088,7 +2088,8 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
 
   String script = DecodeURLEscapeSequences(
       static_cast<const KURL&>(url).GetString().Substring(
-          strlen("javascript:")));
+          strlen("javascript:")),
+      DecodeURLMode::kUTF8OrIsomorphic);
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
       LocalFrame::NotifyUserActivation(GetFrame(),
                                        UserGestureToken::kNewGesture);

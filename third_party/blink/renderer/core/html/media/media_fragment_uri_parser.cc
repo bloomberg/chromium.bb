@@ -112,12 +112,16 @@ void MediaFragmentURIParser::ParseFragments() {
     //  a. Decode percent-encoded octets in name and value as defined by RFC
     //     3986. If either name or value are not valid percent-encoded strings,
     //     then remove the name-value pair from the list.
-    String name = DecodeURLEscapeSequences(fragment_string.Substring(
-        parameter_start, equal_offset - parameter_start));
+    String name = DecodeURLEscapeSequences(
+        fragment_string.Substring(parameter_start,
+                                  equal_offset - parameter_start),
+        DecodeURLMode::kUTF8OrIsomorphic);
     String value;
     if (equal_offset != parameter_end) {
-      value = DecodeURLEscapeSequences(fragment_string.Substring(
-          equal_offset + 1, parameter_end - equal_offset - 1));
+      value = DecodeURLEscapeSequences(
+          fragment_string.Substring(equal_offset + 1,
+                                    parameter_end - equal_offset - 1),
+          DecodeURLMode::kUTF8OrIsomorphic);
     }
 
     //  b. Convert name and value to Unicode strings by interpreting them as

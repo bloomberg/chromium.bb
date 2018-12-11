@@ -307,8 +307,8 @@ void SVGUseElement::ClearResourceReference() {
 Element* SVGUseElement::ResolveTargetElement(ObserveBehavior observe_behavior) {
   if (!element_url_.HasFragmentIdentifier())
     return nullptr;
-  AtomicString element_identifier(
-      DecodeURLEscapeSequences(element_url_.FragmentIdentifier()));
+  AtomicString element_identifier(DecodeURLEscapeSequences(
+      element_url_.FragmentIdentifier(), DecodeURLMode::kUTF8OrIsomorphic));
   if (!IsStructurallyExternal()) {
     if (observe_behavior == kDontAddObserver)
       return GetTreeScope().getElementById(element_identifier);

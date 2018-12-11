@@ -386,7 +386,8 @@ DOMWindow* CreateWindow(const String& url_string,
       opener_frame.GetDocument()->GetContentSecurityPolicy() &&
       !ContentSecurityPolicy::ShouldBypassMainWorld(
           opener_frame.GetDocument())) {
-    String script_source = DecodeURLEscapeSequences(completed_url.GetString());
+    String script_source = DecodeURLEscapeSequences(
+        completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
 
     if (!opener_frame.GetDocument()
              ->GetContentSecurityPolicy()

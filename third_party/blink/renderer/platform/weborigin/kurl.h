@@ -293,8 +293,7 @@ PLATFORM_EXPORT bool ProtocolIsJavaScript(const String& url);
 
 PLATFORM_EXPORT bool IsValidProtocol(const String&);
 
-using DecodeURLResult = url::DecodeURLResult;
-
+using DecodeURLMode = url::DecodeURLMode;
 // Unescapes the given string using URL escaping rules.
 //
 // DANGER: If the URL has "%00" in it, the resulting string will have embedded
@@ -302,9 +301,11 @@ using DecodeURLResult = url::DecodeURLResult;
 //
 // This function is also used to decode javascript: URLs and as a general
 // purpose unescaping function.
-// TODO(tkent): Remove the second argument after collecting data.
+//
+// Caution: Specifying kUTF8OrIsomorphic to the second argument doesn't conform
+// to specifications in many cases.
 PLATFORM_EXPORT String DecodeURLEscapeSequences(const String&,
-                                                DecodeURLResult* = nullptr);
+                                                DecodeURLMode mode);
 
 PLATFORM_EXPORT String EncodeWithURLEscapeSequences(const String&);
 

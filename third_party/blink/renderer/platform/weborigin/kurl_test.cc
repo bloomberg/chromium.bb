@@ -234,22 +234,26 @@ TEST(KURLTest, DecodeURLEscapeSequences) {
 
   for (size_t i = 0; i < arraysize(decode_cases); i++) {
     String input(decode_cases[i].input);
-    String str = DecodeURLEscapeSequences(input);
+    String str =
+        DecodeURLEscapeSequences(input, DecodeURLMode::kUTF8OrIsomorphic);
     EXPECT_STREQ(decode_cases[i].output, str.Utf8().data());
   }
 
   // Our decode should decode %00
-  String zero = DecodeURLEscapeSequences("%00");
+  String zero =
+      DecodeURLEscapeSequences("%00", DecodeURLMode::kUTF8OrIsomorphic);
   EXPECT_STRNE("%00", zero.Utf8().data());
 
   // Decode UTF-8.
-  String decoded = DecodeURLEscapeSequences("%e6%bc%a2%e5%ad%97");
+  String decoded = DecodeURLEscapeSequences("%e6%bc%a2%e5%ad%97",
+                                            DecodeURLMode::kUTF8OrIsomorphic);
   const UChar kDecodedExpected[] = {0x6F22, 0x5b57};
   EXPECT_EQ(String(kDecodedExpected, arraysize(kDecodedExpected)), decoded);
 
   // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
   // %e4 %a0 are invalid for UTF-8, but %e5%a5%bd is valid.
-  String invalid = DecodeURLEscapeSequences("%e4%a0%e5%a5%bd");
+  String invalid = DecodeURLEscapeSequences("%e4%a0%e5%a5%bd",
+                                            DecodeURLMode::kUTF8OrIsomorphic);
   UChar invalid_expected_helper[6] = {0x00e4, 0x00a0, 0x00e5,
                                       0x00a5, 0x00bd, 0};
   String invalid_expected(

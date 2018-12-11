@@ -36,7 +36,9 @@ constexpr char kLegacyLaunchTimeoutKey[] = "__castLaunchTimeout__";
 std::string DecodeURLComponent(const std::string& encoded) {
   url::RawCanonOutputT<base::char16> unescaped;
   std::string output;
-  url::DecodeURLEscapeSequences(encoded.data(), encoded.size(), &unescaped);
+  url::DecodeURLEscapeSequences(encoded.data(), encoded.size(),
+                                url::DecodeURLMode::kUTF8OrIsomorphic,
+                                &unescaped);
   if (base::UTF16ToUTF8(unescaped.data(), unescaped.length(), &output))
     return output;
 

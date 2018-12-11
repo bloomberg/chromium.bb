@@ -146,7 +146,8 @@ bool CSPSource::PathMatches(const String& url_path) const {
   if (path_.IsEmpty() || (path_ == "/" && url_path.IsEmpty()))
     return true;
 
-  String path = DecodeURLEscapeSequences(url_path);
+  String path =
+      DecodeURLEscapeSequences(url_path, DecodeURLMode::kUTF8OrIsomorphic);
 
   if (path_.EndsWith("/"))
     return path.StartsWith(path_);

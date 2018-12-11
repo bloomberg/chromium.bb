@@ -79,8 +79,9 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
 
   if (spec.starts_with(prefix)) {
     url::RawCanonOutputW<1024> output;
-    url::DecodeURLEscapeSequences(spec.data() + prefix.length(),
-                                  spec.length() - prefix.length(), &output);
+    url::DecodeURLEscapeSequences(
+        spec.data() + prefix.length(), spec.length() - prefix.length(),
+        url::DecodeURLMode::kUTF8OrIsomorphic, &output);
     *dest =
         base::UTF16ToUTF8(base::StringPiece16(output.data(), output.length()));
     return true;

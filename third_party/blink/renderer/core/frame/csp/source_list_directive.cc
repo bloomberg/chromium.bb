@@ -568,7 +568,8 @@ bool SourceListDirective::ParsePath(const UChar* begin,
   }
 
   *path = DecodeURLEscapeSequences(
-      String(begin, static_cast<wtf_size_t>(position - begin)));
+      String(begin, static_cast<wtf_size_t>(position - begin)),
+      DecodeURLMode::kUTF8OrIsomorphic);
 
   DCHECK(position <= end);
   DCHECK(position == end || (*position == '#' || *position == '?'));

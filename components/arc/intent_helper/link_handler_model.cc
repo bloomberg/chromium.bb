@@ -40,6 +40,7 @@ bool GetQueryValue(const GURL& url,
         return false;
       url::RawCanonOutputW<kMaxValueLen> output;
       url::DecodeURLEscapeSequences(str.c_str() + value.begin, value.len,
+                                    url::DecodeURLMode::kUTF8OrIsomorphic,
                                     &output);
       *out = base::string16(output.data(), output.length());
       return true;
