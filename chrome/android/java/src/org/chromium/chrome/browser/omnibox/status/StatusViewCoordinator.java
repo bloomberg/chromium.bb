@@ -18,7 +18,6 @@ import android.support.annotation.IntDef;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
@@ -72,10 +71,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
     private final Delegate mDelegate;
     private final boolean mIsTablet;
-    private final View mParentView;
-    private final ImageView mNavigationButton;
-    private final ImageButton mSecurityButton;
-    private final TextView mVerboseStatusTextView;
+    private final StatusView mStatusView;
 
     private final float mUrlMinWidth;
     private final float mVerboseStatusMinWidth;
@@ -107,63 +103,58 @@ public class StatusViewCoordinator implements View.OnClickListener {
     /**
      * Creates a new StatusViewCoordinator.
      * @param isTablet Whether the UI is shown on a tablet.
-     * @param parentView The parent view that contains the status view, used to retrieve views.
+     * @param statusView The status view, used to supply and manipulate child views.
      * @param delegate The delegate that provides additional information needed to display this
      *                 view.
      */
-    public StatusViewCoordinator(boolean isTablet, View parentView, Delegate delegate) {
+    public StatusViewCoordinator(boolean isTablet, StatusView statusView, Delegate delegate) {
         mIsTablet = isTablet;
-        mParentView = parentView;
+        mStatusView = statusView;
         mDelegate = delegate;
 
-        mNavigationButton = mParentView.findViewById(R.id.navigation_button);
-        assert mNavigationButton != null : "Missing navigation type view.";
         mNavigationButtonType = mIsTablet ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
-        mSecurityButton = mParentView.findViewById(R.id.security_button);
         mSecurityIconResource = 0;
 
-        mVerboseStatusTextView = mParentView.findViewById(R.id.location_bar_verbose_status);
-
         mLocationBarButtonType = LocationBarButtonType.NONE;
-        mNavigationButton.setVisibility(View.INVISIBLE);
-        mSecurityButton.setVisibility(View.INVISIBLE);
+        mStatusView.getNavigationButton().setVisibility(View.INVISIBLE);
+        mStatusView.getSecurityButton().setVisibility(View.INVISIBLE);
 
         AnimatorListenerAdapter iconChangeAnimatorListener = new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 if (animation == mSecurityButtonShowAnimator) {
-                    mNavigationButton.setVisibility(View.INVISIBLE);
+                    mStatusView.getNavigationButton().setVisibility(View.INVISIBLE);
                 } else if (animation == mNavigationIconShowAnimator) {
-                    mSecurityButton.setVisibility(View.INVISIBLE);
+                    mStatusView.getSecurityButton().setVisibility(View.INVISIBLE);
                 }
             }
 
             @Override
             public void onAnimationStart(Animator animation) {
                 if (animation == mSecurityButtonShowAnimator) {
-                    mSecurityButton.setVisibility(View.VISIBLE);
+                    mStatusView.getSecurityButton().setVisibility(View.VISIBLE);
                 } else if (animation == mNavigationIconShowAnimator) {
-                    mNavigationButton.setVisibility(View.VISIBLE);
+                    mStatusView.getNavigationButton().setVisibility(View.VISIBLE);
                 }
             }
         };
 
         mSecurityButtonShowAnimator = new AnimatorSet();
         mSecurityButtonShowAnimator.playTogether(
-                ObjectAnimator.ofFloat(mNavigationButton, View.ALPHA, 0),
-                ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 1));
+                ObjectAnimator.ofFloat(mStatusView.getNavigationButton(), View.ALPHA, 0),
+                ObjectAnimator.ofFloat(mStatusView.getSecurityButton(), View.ALPHA, 1));
         mSecurityButtonShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         mSecurityButtonShowAnimator.addListener(iconChangeAnimatorListener);
 
         mNavigationIconShowAnimator = new AnimatorSet();
         mNavigationIconShowAnimator.playTogether(
-                ObjectAnimator.ofFloat(mNavigationButton, View.ALPHA, 1),
-                ObjectAnimator.ofFloat(mSecurityButton, View.ALPHA, 0));
+                ObjectAnimator.ofFloat(mStatusView.getNavigationButton(), View.ALPHA, 1),
+                ObjectAnimator.ofFloat(mStatusView.getSecurityButton(), View.ALPHA, 0));
         mNavigationIconShowAnimator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         mNavigationIconShowAnimator.addListener(iconChangeAnimatorListener);
 
-        Resources res = mParentView.getResources();
+        Resources res = mStatusView.getResources();
         mUrlMinWidth = res.getDimensionPixelSize(R.dimen.location_bar_min_url_width)
                 + res.getDimensionPixelSize(R.dimen.location_bar_start_icon_width)
                 + (res.getDimensionPixelSize(R.dimen.location_bar_lateral_padding) * 2);
@@ -195,9 +186,9 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * Signals that native initialization has completed.
      */
     public void onNativeInitialized() {
-        mSecurityButton.setOnClickListener(this);
-        mNavigationButton.setOnClickListener(this);
-        mVerboseStatusTextView.setOnClickListener(this);
+        mStatusView.getSecurityButton().setOnClickListener(this);
+        mStatusView.getNavigationButton().setOnClickListener(this);
+        mStatusView.getVerboseStatusTextView().setOnClickListener(this);
     }
 
     /**
@@ -242,11 +233,11 @@ public class StatusViewCoordinator implements View.OnClickListener {
         View viewToBeShown = null;
         switch (mLocationBarButtonType) {
             case LocationBarButtonType.SECURITY_ICON:
-                viewToBeShown = mSecurityButton;
+                viewToBeShown = mStatusView.getSecurityButton();
                 mLocationBarIconActiveAnimator = mSecurityButtonShowAnimator;
                 break;
             case LocationBarButtonType.NAVIGATION_ICON:
-                viewToBeShown = mNavigationButton;
+                viewToBeShown = mStatusView.getNavigationButton();
                 mLocationBarIconActiveAnimator = mNavigationIconShowAnimator;
                 break;
             case LocationBarButtonType.NONE:
@@ -273,17 +264,17 @@ public class StatusViewCoordinator implements View.OnClickListener {
         @DrawableRes
         int id = mToolbarDataProvider.getSecurityIconResource(mIsTablet);
         if (id == 0) {
-            mSecurityButton.setImageDrawable(null);
+            mStatusView.getSecurityButton().setImageDrawable(null);
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
-            mSecurityButton.setImageResource(id);
-            ApiCompatibilityUtils.setImageTintList(
-                    mSecurityButton, mToolbarDataProvider.getSecurityIconColorStateList());
+            mStatusView.getSecurityButton().setImageResource(id);
+            ApiCompatibilityUtils.setImageTintList(mStatusView.getSecurityButton(),
+                    mToolbarDataProvider.getSecurityIconColorStateList());
         }
 
         int contentDescriptionId = mToolbarDataProvider.getSecurityIconContentDescription();
-        String contentDescription = mParentView.getContext().getString(contentDescriptionId);
-        mSecurityButton.setContentDescription(contentDescription);
+        String contentDescription = mStatusView.getContext().getString(contentDescriptionId);
+        mStatusView.getSecurityButton().setContentDescription(contentDescription);
 
         updateVerboseStatusVisibility();
 
@@ -300,7 +291,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @return The view displaying the security icon.
      */
     public View getSecurityIconView() {
-        return mSecurityButton;
+        return mStatusView.getSecurityButton();
     }
 
     /**
@@ -325,30 +316,31 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param buttonType The type of navigation button to be shown.
      */
     public void setNavigationButtonType(@NavigationButtonType int buttonType) {
+        ImageView navigationButton = mStatusView.getNavigationButton();
         // TODO(twellington): Return early if the navigation button type and tint hasn't changed.
         if (!mIsTablet) return;
         switch (buttonType) {
             case NavigationButtonType.PAGE:
-                Drawable page = TintedDrawable.constructTintedDrawable(mParentView.getContext(),
+                Drawable page = TintedDrawable.constructTintedDrawable(mStatusView.getContext(),
                         R.drawable.ic_omnibox_page,
                         mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-                mNavigationButton.setImageDrawable(page);
+                navigationButton.setImageDrawable(page);
                 break;
             case NavigationButtonType.MAGNIFIER:
-                Drawable search = TintedDrawable.constructTintedDrawable(mParentView.getContext(),
+                Drawable search = TintedDrawable.constructTintedDrawable(mStatusView.getContext(),
                         R.drawable.omnibox_search,
                         mUseDarkColors ? R.color.dark_mode_tint : R.color.light_mode_tint);
-                mNavigationButton.setImageDrawable(search);
+                navigationButton.setImageDrawable(search);
                 break;
             case NavigationButtonType.EMPTY:
-                mNavigationButton.setImageDrawable(null);
+                navigationButton.setImageDrawable(null);
                 break;
             default:
                 assert false;
         }
 
-        if (mNavigationButton.getVisibility() != View.VISIBLE) {
-            mNavigationButton.setVisibility(View.VISIBLE);
+        if (navigationButton.getVisibility() != View.VISIBLE) {
+            navigationButton.setVisibility(View.VISIBLE);
         }
         mNavigationButtonType = buttonType;
 
@@ -359,13 +351,14 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * @param visible Whether the navigation button should be visible.
      */
     public void setSecurityButtonVisibility(boolean visible) {
-        if (!visible && mSecurityButton.getVisibility() == View.VISIBLE) {
-            mSecurityButton.setVisibility(View.GONE);
-        } else if (visible && mSecurityButton.getVisibility() == View.GONE
-                && mSecurityButton.getDrawable() != null
-                && mSecurityButton.getDrawable().getIntrinsicWidth() > 0
-                && mSecurityButton.getDrawable().getIntrinsicHeight() > 0) {
-            mSecurityButton.setVisibility(View.VISIBLE);
+        ImageButton securityButton = mStatusView.getSecurityButton();
+        if (!visible && securityButton.getVisibility() == View.VISIBLE) {
+            securityButton.setVisibility(View.GONE);
+        } else if (visible && securityButton.getVisibility() == View.GONE
+                && securityButton.getDrawable() != null
+                && securityButton.getDrawable().getIntrinsicWidth() > 0
+                && securityButton.getDrawable().getIntrinsicHeight() > 0) {
+            securityButton.setVisibility(View.VISIBLE);
         }
     }
 
@@ -379,12 +372,12 @@ public class StatusViewCoordinator implements View.OnClickListener {
 
         int verboseStatusVisibility = verboseStatusVisible ? View.VISIBLE : View.GONE;
 
-        mVerboseStatusTextView.setVisibility(verboseStatusVisibility);
+        mStatusView.getVerboseStatusTextView().setVisibility(verboseStatusVisibility);
 
-        View separator = mParentView.findViewById(R.id.location_bar_verbose_status_separator);
+        View separator = mStatusView.findViewById(R.id.location_bar_verbose_status_separator);
         separator.setVisibility(verboseStatusVisibility);
 
-        mParentView.findViewById(R.id.location_bar_verbose_status_extra_space)
+        mStatusView.findViewById(R.id.location_bar_verbose_status_extra_space)
                 .setVisibility(verboseStatusVisibility);
 
         if (!verboseStatusVisible) {
@@ -393,12 +386,14 @@ public class StatusViewCoordinator implements View.OnClickListener {
             return;
         }
 
-        mVerboseStatusTextView.setText(mToolbarDataProvider.getVerboseStatusString());
-        mVerboseStatusTextView.setTextColor(mToolbarDataProvider.getVerboseStatusTextColor(
-                mParentView.getResources(), mUseDarkColors));
+        mStatusView.getVerboseStatusTextView().setText(
+                mToolbarDataProvider.getVerboseStatusString());
+        mStatusView.getVerboseStatusTextView().setTextColor(
+                mToolbarDataProvider.getVerboseStatusTextColor(
+                        mStatusView.getResources(), mUseDarkColors));
 
         separator.setBackgroundColor(mToolbarDataProvider.getVerboseStatusSeparatorColor(
-                mParentView.getResources(), mUseDarkColors));
+                mStatusView.getResources(), mUseDarkColors));
     }
 
     /**
@@ -408,7 +403,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
     protected void updateLocationBarIconContainerVisibility() {
         @LocationBarButtonType
         int buttonToShow = getLocationBarButtonToShow();
-        mParentView.findViewById(R.id.location_bar_icon)
+        mStatusView.findViewById(R.id.location_bar_icon)
                 .setVisibility(
                         buttonToShow != LocationBarButtonType.NONE ? View.VISIBLE : View.GONE);
     }
@@ -418,7 +413,8 @@ public class StatusViewCoordinator implements View.OnClickListener {
      * show the Page Info popup.
      */
     public boolean shouldShowPageInfoForView(View v) {
-        return v == mSecurityButton || v == mNavigationButton || v == mVerboseStatusTextView;
+        return v == mStatusView.getSecurityButton() || v == mStatusView.getNavigationButton()
+                || v == mStatusView.getVerboseStatusTextView();
     }
 
     @Override
@@ -463,7 +459,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
             // Skip setting the max width if it hasn't changed since TextView#setMaxWidth
             // invalidates the view and requests a layout.
             if (previousMaxWidth != mVerboseStatusTextMaxWidth) {
-                mVerboseStatusTextView.setMaxWidth(mVerboseStatusTextMaxWidth);
+                mStatusView.getVerboseStatusTextView().setMaxWidth(mVerboseStatusTextMaxWidth);
             }
         }
 
