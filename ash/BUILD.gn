@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
@@ -2322,7 +2322,7 @@ static_library("interactive_ui_test_support") {
   ]
 }
 
-service("ash_service") {
+service_executable("ash_service") {
   output_name = "ash"
 
   sources = [

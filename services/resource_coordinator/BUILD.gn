@@ -67,7 +67,6 @@ source_set("lib") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
-    "//services/service_manager/public/cpp/standalone_service:standalone_service",
   ]
 }
 

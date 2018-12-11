@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//testing/test.gni")
 
 group("tests") {

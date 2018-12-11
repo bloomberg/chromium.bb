@@ -5,14 +5,14 @@
 import("//build/config/chromecast_build.gni")
 import("//media/webrtc/audio_processing.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
 # Currently standalone service binaries are not supported on Android or iOS.
 standalone_supported = !(is_android || is_ios)
 
-service("audio") {
+service_executable("audio") {
   sources = [
     "service_main.cc",
   ]

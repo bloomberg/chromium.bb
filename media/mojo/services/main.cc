@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/mojo/services/media_service_factory.h"
-#include "services/service_manager/public/cpp/standalone_service/service_main.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {

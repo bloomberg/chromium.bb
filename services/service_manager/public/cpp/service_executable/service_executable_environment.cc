@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
+#include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
 
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
@@ -11,10 +11,8 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/task_scheduler/task_scheduler.h"
-#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/core/embedder/embedder.h"
-#include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -35,7 +33,8 @@
 
 namespace service_manager {
 
-void RunStandaloneService(StandaloneServiceCallback callback) {
+ServiceExecutableEnvironment::ServiceExecutableEnvironment()
+    : ipc_thread_("IPC Thread") {
   DCHECK(!base::MessageLoopCurrent::Get());
 
 #if defined(OS_MACOSX)
@@ -43,9 +42,9 @@ void RunStandaloneService(StandaloneServiceCallback callback) {
   mojo::core::DefaultMachBroker::SendTaskPortToParent();
 #endif
 
+#if defined(OS_LINUX)
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-#if defined(OS_LINUX)
   if (command_line.HasSwitch(switches::kServiceSandboxType)) {
     // Warm parts of base in the copy of base in the mojo runner.
     base::RandUint64();
@@ -66,18 +65,21 @@ void RunStandaloneService(StandaloneServiceCallback callback) {
   mojo::core::Init();
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("StandaloneService");
-  base::Thread io_thread("io_thread");
-  io_thread.StartWithOptions(
+  ipc_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  mojo::core::ScopedIPCSupport ipc_support(
-      io_thread.task_runner(),
-      mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+  ipc_support_.emplace(ipc_thread_.task_runner(),
+                       mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
+}
 
+ServiceExecutableEnvironment::~ServiceExecutableEnvironment() = default;
+
+mojom::ServiceRequest
+ServiceExecutableEnvironment::TakeServiceRequestFromCommandLine() {
   auto invitation = mojo::IncomingInvitation::Accept(
       mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
-          command_line));
-  std::move(callback).Run(GetServiceRequestFromCommandLine(&invitation));
+          *base::CommandLine::ForCurrentProcess()));
+  return GetServiceRequestFromCommandLine(&invitation);
 }
 
 }  // namespace service_manager

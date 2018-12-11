@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//media/media_options.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -205,7 +205,7 @@ source_set("unit_tests") {
 # service out-of-process. While CdmService is tested as a packaged service,
 # which runs the service in-process.
 
-service("media") {
+service_executable("media") {
   testonly = true
 
   sources = [

@@ -4,7 +4,7 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//services/catalog/public/tools/catalog.gni")
-import("//services/service_manager/public/cpp/service.gni")
+import("//services/service_manager/public/cpp/service_executable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 
@@ -68,7 +68,7 @@ source_set("app_client") {
   ]
 }
 
-service("lifecycle_unittest_package") {
+service_executable("lifecycle_unittest_package") {
   testonly = true
   sources = [
     "package.cc",
@@ -91,7 +91,7 @@ service_manifest("lifecycle_unittest_package_manifest") {
   ]
 }
 
-service("lifecycle_unittest_app") {
+service_executable("lifecycle_unittest_app") {
   testonly = true
   sources = [
     "app.cc",
@@ -109,7 +109,7 @@ service_manifest("lifecycle_unittest_app_manifest") {
   source = "app_manifest.json"
 }
 
-service("lifecycle_unittest_parent") {
+service_executable("lifecycle_unittest_parent") {
   testonly = true
   sources = [
     "parent.cc",
@@ -136,7 +136,7 @@ executable("lifecycle_unittest_exe") {
     "//base",
     "//build/win:default_exe_manifest",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service:main",
+    "//services/service_manager/public/cpp/service_executable:main",
   ]
 }
 

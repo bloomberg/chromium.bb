@@ -70,7 +70,7 @@ component("embedder") {
       ":embedder_switches",
       "//mojo/core/embedder",
       "//services/service_manager/background:lib",
-      "//services/service_manager/public/cpp/standalone_service",
+      "//services/service_manager/public/cpp/service_executable:support",
       "//services/service_manager/runner:init",
       "//services/service_manager/runner/common",
     ]

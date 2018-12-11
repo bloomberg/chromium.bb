@@ -8,7 +8,7 @@
 #include "services/audio/service.h"
 #include "services/audio/service_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/standalone_service/service_main.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 
 void ServiceMain(service_manager::mojom::ServiceRequest request) {
   base::MessageLoop message_loop;

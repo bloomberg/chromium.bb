@@ -35,7 +35,7 @@
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
+#include "services/service_manager/public/cpp/service_executable/service_executable_environment.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/init.h"
@@ -263,39 +263,29 @@ int RunService(MainDelegate* delegate) {
 
   InitializeResources();
 
-  int exit_code = 0;
-  RunStandaloneService(base::Bind(
-      [](MainDelegate* delegate, int* exit_code,
-         mojom::ServiceRequest request) {
-        // TODO(rockot): Make the default MessageLoop type overridable for
-        // services. This is TYPE_UI because at least one service (the "ui"
-        // service) needs it to be.
-        base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
-        base::RunLoop run_loop;
+  service_manager::ServiceExecutableEnvironment environment;
 
-        std::string service_name =
-            base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                switches::kServiceName);
-        if (service_name.empty()) {
-          LOG(ERROR) << "Service process requires --service-name";
-          *exit_code = 1;
-          return;
-        }
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
+  base::RunLoop run_loop;
 
-        std::unique_ptr<Service> service =
-            delegate->CreateEmbeddedService(service_name);
-        if (!service) {
-          LOG(ERROR) << "Failed to start embedded service: " << service_name;
-          *exit_code = 1;
-          return;
-        }
+  std::string service_name =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kServiceName);
+  if (service_name.empty()) {
+    LOG(ERROR) << "Service process requires --service-name";
+    return 1;
+  }
 
-        service->set_termination_closure(run_loop.QuitClosure());
-        run_loop.Run();
-      },
-      delegate, &exit_code));
+  std::unique_ptr<Service> service =
+      delegate->CreateEmbeddedService(service_name);
+  if (!service) {
+    LOG(ERROR) << "Failed to start embedded service: " << service_name;
+    return 1;
+  }
 
-  return exit_code;
+  service->set_termination_closure(run_loop.QuitClosure());
+  run_loop.Run();
+  return 0;
 }
 
 }  // namespace

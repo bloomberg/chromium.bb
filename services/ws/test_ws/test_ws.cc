@@ -4,7 +4,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/standalone_service/service_main.h"
+#include "services/service_manager/public/cpp/service_executable/service_main.h"
 #include "services/ws/test_ws/test_window_service_factory.h"
 #include "ui/base/ui_base_paths.h"
 

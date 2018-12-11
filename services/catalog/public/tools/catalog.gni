@@ -32,8 +32,9 @@ import("//build/config/dcheck_always_on.gni")
 #       Typically a standalone service binary is expected to live next to
 #       the Service Manager embedder's binary, with the name
 #       "${service_name}.service", with an additional ".exe" suffix on Windows.
-#       Binaries following this naming scheme are typically output by "service"
-#       targets (see //services/service_manager/public/cpp/service.gni).
+#       Binaries following this naming scheme are typically output by
+#       service_executable targets. See
+#       //services/service_manager/public/cpp/service_executable.gni.
 #
 #    executable_overrides (optional)
 #       A list of overrides to apply in catalog metadata for individual
