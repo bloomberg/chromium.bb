@@ -58,11 +58,15 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
-    # Flaky on Linux Nvidia
-    self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
+    # TODO(sunnyps): re-enable after rebaselining
+    # self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
+    # self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
 
-    # Fails on Linux Nvidia
-    self.Fail('Pixel_Video_VP9', ['linux', 'nvidia'], bug=858826)
+    # TODO(sunnyps): temporarily disabling for rebaselining.
+    self.Fail('Pixel_Video_MP4', bug=869677)
+    self.Fail('Pixel_Video_VP9', bug=869677)
+    self.Fail('Pixel_DirectComposition_Video_MP4', bug=869677)
+    self.Fail('Pixel_DirectComposition_Video_VP9', bug=869677)
 
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.
@@ -79,10 +83,11 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
 
     # Failing on Mac Intel HighSierra
-    self.Fail('Pixel_Video_MP4',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
-    self.Fail('Pixel_Video_VP9',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
+    # TODO(sunnyps): re-enable after rebaselining.
+    # self.Fail('Pixel_Video_MP4',
+    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
+    # self.Fail('Pixel_Video_VP9',
+    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', 'mojave', ('intel', 0xa2e)], bug=774809)
     self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
@@ -111,9 +116,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGLSadCanvas', ['mac'], bug=872423)
     self.Fail('Pixel_WebGLSadCanvas', ['android'], bug=575305)
 
-    # Failing on Android in general: crbug.com/858826
-    self.Fail('Pixel_Video_MP4', ['android'], bug=858826)
-    self.Fail('Pixel_Video_VP9', ['android'], bug=858826)
+    # Flaky on Android: crbug.com/860548
+    # TODO(sunnyps): re-enable after rebaselining.
+    # self.Flaky('Pixel_Video_VP9', ['android'], bug=860548)
 
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
@@ -142,9 +147,3 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x679e)], bug=911413)
     self.Fail('Pixel_Video_MP4_FourColors_Rot_270',
         ['mac', ('amd', 0x679e)], bug=911413)
-
-    # Fails on Windows Nvidia
-    self.Fail('Pixel_DirectComposition_Video_MP4', ['win', 'nvidia'],
-        bug=913138)
-    self.Fail('Pixel_DirectComposition_Video_VP9', ['win', 'nvidia'],
-        bug=913138)
