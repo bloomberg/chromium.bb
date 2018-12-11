@@ -117,11 +117,6 @@ class RenderFrameHostTester {
   // navigation without making any network requests.
   virtual void SimulateSwapOutACK() = 0;
 
-  // Simulate a renderer-initiated navigation up until commit.
-  // DEPRECATED: Use NavigationSimulator::NavigateAndCommitFromDocument().
-  virtual void NavigateAndCommitRendererInitiated(bool did_create_new_entry,
-                                                  const GURL& url) = 0;
-
   // Set the feature policy header for the RenderFrameHost for test. Currently
   // this is limited to setting a whitelist for a single feature. This function
   // can be generalized as needed. Setting a header policy should only be done
