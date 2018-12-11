@@ -3277,12 +3277,6 @@ const char kEnableChromeOsAccountManagerName[] = "Enable Account Manager";
 const char kEnableChromeOsAccountManagerDescription[] =
     "Enables the Chrome OS Account Manager";
 
-const char kEnableContinueReadingName[] = "Enable continue reading";
-const char kEnableContinueReadingDescription[] =
-    "Enable continue reading feature in Launcher, which allows users to "
-    "seamlessly continue reading a web page when they switch devices from "
-    "phones or tablets to Chromebooks.";
-
 const char kEnableDiscoverAppName[] = "Enable Discover App";
 const char kEnableDiscoverAppDescription[] =
     "Enable Discover App icon in launcher.";

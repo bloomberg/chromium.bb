@@ -4148,9 +4148,6 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::features::kAutofillEnableAccountWalletStorage)},
 
 #if defined(OS_CHROMEOS)
-    {"enable-continue-reading", flag_descriptions::kEnableContinueReadingName,
-     flag_descriptions::kEnableContinueReadingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(app_list_features::kEnableContinueReading)},
     {"enable-zero-state-suggestions",
      flag_descriptions::kEnableZeroStateSuggestionsName,
      flag_descriptions::kEnableZeroStateSuggestionsDescription, kOsCrOS,
