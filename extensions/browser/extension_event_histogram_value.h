@@ -448,6 +448,9 @@ enum HistogramValue {
   AUTOMATION_INTERNAL_ON_GET_TEXT_LOCATION_RESULT = 427,
   INPUT_METHOD_PRIVATE_ON_SETTINGS_CHANGED = 428,
   INPUT_METHOD_PRIVATE_ON_SCREEN_PROJECTION_CHANGED = 429,
+  STORAGE_LOCAL_ON_CHANGE = 430,
+  STORAGE_SYNC_ON_CHANGE = 431,
+  STORAGE_MANAGED_ON_CHANGE = 432,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY
