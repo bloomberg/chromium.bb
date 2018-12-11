@@ -16,7 +16,9 @@
 
 TEST_F(RasterFormatTest, DeleteTexturesImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteTexturesImmediate& cmd =
       *GetBufferAs<cmds::DeleteTexturesImmediate>();
@@ -61,7 +63,9 @@ TEST_F(RasterFormatTest, GetError) {
 
 TEST_F(RasterFormatTest, GenQueriesEXTImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::GenQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::GenQueriesEXTImmediate>();
@@ -79,7 +83,9 @@ TEST_F(RasterFormatTest, GenQueriesEXTImmediate) {
 
 TEST_F(RasterFormatTest, DeleteQueriesEXTImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeleteQueriesEXTImmediate& cmd =
       *GetBufferAs<cmds::DeleteQueriesEXTImmediate>();
@@ -142,21 +148,6 @@ TEST_F(RasterFormatTest, InsertFenceSyncCHROMIUM) {
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLuint64>(11), cmd.release_count());
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
-TEST_F(RasterFormatTest, WaitSyncTokenCHROMIUM) {
-  cmds::WaitSyncTokenCHROMIUM& cmd =
-      *GetBufferAs<cmds::WaitSyncTokenCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLint>(11), static_cast<GLuint64>(12),
-              static_cast<GLuint64>(13));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::WaitSyncTokenCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLint>(11), cmd.namespace_id);
-  EXPECT_EQ(static_cast<GLuint64>(12), cmd.command_buffer_id());
-  EXPECT_EQ(static_cast<GLuint64>(13), cmd.release_count());
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
@@ -277,7 +268,9 @@ TEST_F(RasterFormatTest, UnlockTransferCacheEntryINTERNAL) {
 
 TEST_F(RasterFormatTest, DeletePaintCacheTextBlobsINTERNALImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeletePaintCacheTextBlobsINTERNALImmediate& cmd =
       *GetBufferAs<cmds::DeletePaintCacheTextBlobsINTERNALImmediate>();
@@ -296,7 +289,9 @@ TEST_F(RasterFormatTest, DeletePaintCacheTextBlobsINTERNALImmediate) {
 
 TEST_F(RasterFormatTest, DeletePaintCachePathsINTERNALImmediate) {
   static GLuint ids[] = {
-      12, 23, 34,
+      12,
+      23,
+      34,
   };
   cmds::DeletePaintCachePathsINTERNALImmediate& cmd =
       *GetBufferAs<cmds::DeletePaintCachePathsINTERNALImmediate>();

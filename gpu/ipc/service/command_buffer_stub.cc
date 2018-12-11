@@ -150,7 +150,6 @@ CommandBufferStub::CommandBufferStub(
       stream_id_(stream_id),
       route_id_(route_id),
       last_flush_id_(0),
-      waiting_for_sync_point_(false),
       previous_processed_num_(0),
       wait_set_get_buffer_count_(0) {}
 
@@ -176,7 +175,6 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
       message.type() != GpuCommandBufferMsg_RegisterTransferBuffer::ID &&
       message.type() != GpuCommandBufferMsg_DestroyTransferBuffer::ID &&
-      message.type() != GpuCommandBufferMsg_WaitSyncToken::ID &&
       message.type() != GpuCommandBufferMsg_SignalSyncToken::ID &&
       message.type() != GpuCommandBufferMsg_SignalQuery::ID) {
     if (!MakeCurrent())
@@ -201,7 +199,6 @@ bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnRegisterTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_DestroyTransferBuffer,
                         OnDestroyTransferBuffer);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_WaitSyncToken, OnWaitSyncToken)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalSyncToken, OnSignalSyncToken)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalQuery, OnSignalQuery)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_CreateImage, OnCreateImage);
@@ -517,7 +514,10 @@ void CommandBufferStub::CheckCompleteWaits() {
   }
 }
 
-void CommandBufferStub::OnAsyncFlush(int32_t put_offset, uint32_t flush_id) {
+void CommandBufferStub::OnAsyncFlush(
+    int32_t put_offset,
+    uint32_t flush_id,
+    const std::vector<SyncToken>& sync_token_fences) {
   TRACE_EVENT1("gpu", "CommandBufferStub::OnAsyncFlush", "put_offset",
                put_offset);
   DCHECK(command_buffer_);
@@ -525,10 +525,21 @@ void CommandBufferStub::OnAsyncFlush(int32_t put_offset, uint32_t flush_id) {
   // to catch regressions. Ignore the message.
   DVLOG_IF(0, flush_id - last_flush_id_ >= 0x8000000U)
       << "Received a Flush message out-of-order";
+  // Check if sync token waits are invalid or already complete. Do not use
+  // SyncPointManager::IsSyncTokenReleased() as it can't say if the wait is
+  // invalid.
+  for (const auto& sync_token : sync_token_fences)
+    DCHECK(!sync_point_client_state_->Wait(sync_token, base::DoNothing()));
 
   last_flush_id_ = flush_id;
   CommandBuffer::State pre_state = command_buffer_->GetState();
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
+
+  MailboxManager* mailbox_manager = context_group_->mailbox_manager();
+  if (mailbox_manager->UsesSync()) {
+    for (const auto& sync_token : sync_token_fences)
+      mailbox_manager->PullTextureUpdates(sync_token);
+  }
 
   {
     auto* gr_shader_cache = channel_->gpu_channel_manager()->gr_shader_cache();
@@ -678,43 +689,6 @@ void CommandBufferStub::OnRescheduleAfterFinished() {
 
 void CommandBufferStub::ScheduleGrContextCleanup() {
   channel_->gpu_channel_manager()->ScheduleGrContextCleanup();
-}
-
-// TODO(sunnyps): Remove the wait command once all sync tokens are passed as
-// task dependencies.
-bool CommandBufferStub::OnWaitSyncToken(const SyncToken& sync_token) {
-  DCHECK(!waiting_for_sync_point_);
-  DCHECK(command_buffer_->scheduled());
-  TRACE_EVENT_ASYNC_BEGIN1("gpu", "WaitSyncToken", this, "CommandBufferStub",
-                           this);
-
-  waiting_for_sync_point_ = sync_point_client_state_->WaitNonThreadSafe(
-      sync_token, channel_->task_runner(),
-      base::Bind(&CommandBufferStub::OnWaitSyncTokenCompleted, AsWeakPtr(),
-                 sync_token));
-
-  if (waiting_for_sync_point_) {
-    command_buffer_->SetScheduled(false);
-    channel_->OnCommandBufferDescheduled(this);
-    return true;
-  }
-
-  MailboxManager* mailbox_manager = context_group_->mailbox_manager();
-  if (mailbox_manager->UsesSync() && MakeCurrent())
-    mailbox_manager->PullTextureUpdates(sync_token);
-  return false;
-}
-
-void CommandBufferStub::OnWaitSyncTokenCompleted(const SyncToken& sync_token) {
-  DCHECK(waiting_for_sync_point_);
-  TRACE_EVENT_ASYNC_END1("gpu", "WaitSyncToken", this, "CommandBufferStub",
-                         this);
-  // Don't call PullTextureUpdates here because we can't MakeCurrent if we're
-  // executing commands on another context. The WaitSyncToken command will run
-  // again and call PullTextureUpdates once this command buffer gets scheduled.
-  waiting_for_sync_point_ = false;
-  command_buffer_->SetScheduled(true);
-  channel_->OnCommandBufferScheduled(this);
 }
 
 void CommandBufferStub::OnCreateImage(
