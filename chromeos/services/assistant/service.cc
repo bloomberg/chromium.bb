@@ -59,7 +59,7 @@ Service::Service(service_manager::mojom::ServiceRequest request,
       platform_binding_(this),
       session_observer_binding_(this),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       power_manager_observer_(this),
       network_connection_tracker_(network_connection_tracker),
       io_task_runner_(std::move(io_task_runner)),
@@ -184,11 +184,11 @@ void Service::UpdateAssistantManagerState() {
         assistant_manager_service_->Start(
             access_token_.value(), assistant_state_.hotword_enabled().value(),
             base::BindOnce(
-                [](scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                [](scoped_refptr<base::SequencedTaskRunner> task_runner,
                    base::OnceCallback<void()> callback) {
                   task_runner->PostTask(FROM_HERE, std::move(callback));
                 },
-                main_thread_task_runner_,
+                main_task_runner_,
                 base::BindOnce(&Service::FinalizeAssistantManagerService,
                                weak_ptr_factory_.GetWeakPtr())));
         DVLOG(1) << "Request Assistant start";

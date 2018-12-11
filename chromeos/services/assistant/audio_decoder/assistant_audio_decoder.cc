@@ -4,6 +4,9 @@
 
 #include "chromeos/services/assistant/audio_decoder/assistant_audio_decoder.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/threading/thread.h"
 #include "chromeos/services/assistant/audio_decoder/ipc_data_source.h"
 #include "media/base/audio_bus.h"
@@ -32,7 +35,7 @@ AssistantAudioDecoder::AssistantAudioDecoder(
     mojom::AssistantMediaDataSourcePtr data_source)
     : service_ref_(std::move(service_ref)),
       client_(std::move(client)),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      task_runner_(base::SequencedTaskRunnerHandle::Get()),
       data_source_(std::make_unique<IPCDataSource>(std::move(data_source))),
       media_thread_(std::make_unique<base::Thread>("media_thread")),
       weak_factory_(this) {
