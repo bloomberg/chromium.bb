@@ -989,9 +989,11 @@ class ChromiumOSFlashUpdater(BaseUpdater):
               self.REMOTE_HOSTLOG_FILE_PATH), partial_filename])),
           **self._cmd_kwargs_omit_error)
 
-  def _Reboot(self, error_stage):
+  def _Reboot(self, error_stage, timeout=None):
     try:
-      self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
+      if timeout is None:
+        timeout = self.REBOOT_TIMEOUT
+      self.device.Reboot(timeout_sec=timeout)
     except cros_build_lib.DieSystemExit:
       raise ChromiumOSUpdateError('%s cannot recover from reboot at %s' % (
           self.device.hostname, error_stage))
@@ -1400,7 +1402,14 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       # all; this change is just papering over the real bug.
       self._RetryCommand('crossystem clear_tpm_owner_request=1',
                          **self._cmd_kwargs_omit_error)
-    self._Reboot('post check of rootfs update')
+
+    # If the source image during an AU test is old, the device will powerwash
+    # after applying rootfs. On older devices this is taking longer than the
+    # allowed time to reboot. So double reboot timeout for this step only.
+    timeout = self.REBOOT_TIMEOUT
+    if self.is_au_endtoendtest:
+      timeout = self.REBOOT_TIMEOUT * 2
+    self._Reboot('post check of rootfs update', timeout=timeout)
 
   def PostCheckCrOSUpdate(self):
     """Post check for the whole auto-update process."""
