@@ -1096,7 +1096,7 @@ unsigned WebAXObject::AriaColumnIndex() const {
   if (IsDetached())
     return 0;
 
-  return private_->IsTableCellLikeRole() ? private_->AriaColumnIndex() : 0;
+  return private_->AriaColumnIndex();
 }
 
 int WebAXObject::AriaRowCount() const {
