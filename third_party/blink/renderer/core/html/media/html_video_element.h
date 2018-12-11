@@ -87,6 +87,8 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   unsigned webkitDroppedFrameCount() const;
 
   // Used by canvas to gain raw pixel access
+  //
+  // PaintFlags is optional. If unspecified, its blend mode defaults to kSrc.
   void PaintCurrentFrame(
       cc::PaintCanvas*,
       const IntRect&,
