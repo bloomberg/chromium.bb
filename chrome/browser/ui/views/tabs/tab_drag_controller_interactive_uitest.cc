@@ -736,16 +736,9 @@ void DragToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
 
   // Drag to target_tab_strip. This should stop the nested loop from dragging
   // the window.
-  //
-  // Note: It's possible on small screens for the windows to overlap, so we want
-  // to pick a point squarely within the second tab strip and not in the
-  // starting window.
-  const gfx::Rect old_window_bounds =
-      not_attached_tab_strip->GetWidget()->GetWindowBoundsInScreen();
-  const gfx::Rect target_bounds = target_tab_strip->GetBoundsInScreen();
-  gfx::Point target_point = target_bounds.CenterPoint();
-  target_point.set_x(std::max(target_point.x(), old_window_bounds.right() + 1));
-  ASSERT_TRUE(target_bounds.Contains(target_point));
+  gfx::Point target_point(target_tab_strip->width() / 2,
+                          target_tab_strip->height() / 2);
+  views::View::ConvertPointToScreen(target_tab_strip, &target_point);
   ASSERT_TRUE(test->DragInputToAsync(target_point));
 }
 

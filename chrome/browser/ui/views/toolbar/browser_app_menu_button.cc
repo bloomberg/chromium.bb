@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 
-#include <set>
-
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
@@ -38,7 +36,6 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/metrics.h"
-#include "ui/views/view_properties.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
@@ -56,11 +53,6 @@ BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
   set_ink_drop_visible_opacity(kToolbarInkDropVisibleOpacity);
 
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
-
-  // Because we're using the internal padding to keep track of the changes we
-  // make to the leading margin to handle Fitts' Law, it's easier to just
-  // allocate the property once and modify the value.
-  SetProperty(views::kInternalPaddingKey, new gfx::Insets());
   UpdateBorder();
 }
 
@@ -166,10 +158,9 @@ void BrowserAppMenuButton::UpdateIcon() {
 }
 
 void BrowserAppMenuButton::SetTrailingMargin(int margin) {
-  gfx::Insets* const internal_padding = GetProperty(views::kInternalPaddingKey);
-  if (internal_padding->right() == margin)
+  if (margin == margin_trailing_)
     return;
-  internal_padding->set_right(margin);
+  margin_trailing_ = margin;
   UpdateBorder();
   InvalidateLayout();
 }
@@ -186,12 +177,12 @@ const char* BrowserAppMenuButton::GetClassName() const {
 
 void BrowserAppMenuButton::UpdateBorder() {
   SetBorder(views::CreateEmptyBorder(GetLayoutInsets(TOOLBAR_BUTTON) +
-                                     *GetProperty(views::kInternalPaddingKey)));
+                                     gfx::Insets(0, 0, 0, margin_trailing_)));
 }
 
 void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   // TODO(pbos): Consolidate with ToolbarButton::OnBoundsChanged.
-  SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
+  SetToolbarButtonHighlightPath(this, gfx::Insets(0, 0, 0, margin_trailing_));
 
   AppMenuButton::OnBoundsChanged(previous_bounds);
 }
@@ -199,7 +190,7 @@ void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 gfx::Rect BrowserAppMenuButton::GetAnchorBoundsInScreen() const {
   gfx::Rect bounds = GetBoundsInScreen();
   gfx::Insets insets =
-      GetToolbarInkDropInsets(this, *GetProperty(views::kInternalPaddingKey));
+      GetToolbarInkDropInsets(this, gfx::Insets(0, 0, 0, margin_trailing_));
   // If the button is extended, don't inset the trailing edge. The anchored menu
   // should extend to the screen edge as well so the menu is easier to hit
   // (Fitts's law).

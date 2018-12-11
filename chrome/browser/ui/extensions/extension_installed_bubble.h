@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "components/bubble/bubble_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -66,17 +65,17 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   // the extension has loaded. |extension| is the installed extension. |browser|
   // is the browser window which will host the bubble. |icon| is the install
   // icon of the extension.
-  static void ShowBubble(scoped_refptr<const extensions::Extension> extension,
+  static void ShowBubble(const extensions::Extension* extension,
                          Browser* browser,
                          const SkBitmap& icon);
 
-  ExtensionInstalledBubble(scoped_refptr<const extensions::Extension> extension,
+  ExtensionInstalledBubble(const extensions::Extension* extension,
                            Browser* browser,
                            const SkBitmap& icon);
 
   ~ExtensionInstalledBubble() override;
 
-  const extensions::Extension* extension() const { return extension_.get(); }
+  const extensions::Extension* extension() const { return extension_; }
   Browser* browser() { return browser_; }
   const Browser* browser() const { return browser_; }
   const SkBitmap& icon() const { return icon_; }
@@ -107,10 +106,8 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   void Initialize();
 
  private:
-  // It's possible for an extension to be programmatically uninstalled
-  // underneath us, so don't let the extension object go away until the bubble
-  // is hidden.
-  scoped_refptr<const extensions::Extension> extension_;
+  // |extension_| is NULL when we are deleted.
+  const extensions::Extension* extension_;
   Browser* const browser_;
   const SkBitmap icon_;
   BubbleType type_;

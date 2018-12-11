@@ -1154,7 +1154,8 @@ void LocationBarView::OnTouchUiChanged() {
   if (save_credit_card_icon_view_)
     save_credit_card_icon_view_->SetFontList(font_list);
   location_icon_view_->Update(/*suppress_animations=*/false);
-  PreferredSizeChanged();
+  Layout();
+  SchedulePaint();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

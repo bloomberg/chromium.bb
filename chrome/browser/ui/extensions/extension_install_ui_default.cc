@@ -56,10 +56,9 @@ Browser* FindOrCreateVisibleBrowser(Profile* profile) {
   return browser;
 }
 
-void ShowExtensionInstalledBubble(
-    scoped_refptr<const extensions::Extension> extension,
-    Profile* profile,
-    const SkBitmap& icon) {
+void ShowExtensionInstalledBubble(const extensions::Extension* extension,
+                                  Profile* profile,
+                                  const SkBitmap& icon) {
   Browser* browser = FindOrCreateVisibleBrowser(profile);
   if (browser)
     ExtensionInstalledBubble::ShowBubble(extension, browser, icon);
@@ -75,9 +74,8 @@ ExtensionInstallUIDefault::ExtensionInstallUIDefault(
 
 ExtensionInstallUIDefault::~ExtensionInstallUIDefault() {}
 
-void ExtensionInstallUIDefault::OnInstallSuccess(
-    scoped_refptr<const extensions::Extension> extension,
-    const SkBitmap* icon) {
+void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
+                                                 const SkBitmap* icon) {
   if (disable_ui_for_tests() || skip_post_install_ui_ || extension->is_theme())
     return;
 
@@ -104,7 +102,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(
     }
 
 #if defined(OS_CHROMEOS)
-    ExtensionInstalledNotification::Show(extension.get(), current_profile);
+    ExtensionInstalledNotification::Show(extension, current_profile);
 #else  // defined(OS_CHROMEOS)
     OpenAppInstalledUI(extension->id());
 #endif  // defined(OS_CHROMEOS)
