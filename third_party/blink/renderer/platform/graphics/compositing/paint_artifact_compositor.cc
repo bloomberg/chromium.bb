@@ -752,6 +752,27 @@ cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
   return synthesized_clip.GetLayer();
 }
 
+static void UpdateCompositorViewportProperties(
+    const PaintArtifactCompositor::ViewportProperties& properties,
+    PropertyTreeManager& property_tree_manager,
+    cc::LayerTreeHost* layer_tree_host) {
+  cc::LayerTreeHost::ViewportPropertyIds ids;
+  // This is also needed by pre-CompositeAfterPaint, so is not guarded by
+  // CompositeAfterPaintEnabled().
+  if (properties.page_scale) {
+    ids.page_scale_transform =
+        property_tree_manager.EnsureCompositorPageScaleTransformNode(
+            properties.page_scale);
+  }
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    if (properties.inner_scroll_translation) {
+      ids.inner_scroll = property_tree_manager.EnsureCompositorScrollNode(
+          properties.inner_scroll_translation);
+    }
+    layer_tree_host->RegisterViewportPropertyIds(ids);
+  }
+}
+
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
     CompositorElementIdSet& composited_element_ids,
@@ -784,14 +805,8 @@ void PaintArtifactCompositor::Update(
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(*paint_artifact, settings, pending_layers);
 
-  cc::LayerTreeHost::ViewportPropertyIds viewport_property_ids;
-  if (viewport_properties.page_scale) {
-    viewport_property_ids.page_scale_transform =
-        property_tree_manager.EnsureCompositorPageScaleTransformNode(
-            viewport_properties.page_scale);
-  }
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    host->RegisterViewportPropertyIds(viewport_property_ids);
+  UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
+                                     host);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());

@@ -2919,7 +2919,10 @@ void LocalFrameView::PushPaintArtifactToCompositor(
                            LocalFrameUkmAggregator::kCompositingCommit);
 
   PaintArtifactCompositor::ViewportProperties viewport_properties;
-  viewport_properties.page_scale = page->GetVisualViewport().GetPageScaleNode();
+  const auto& viewport = page->GetVisualViewport();
+  viewport_properties.page_scale = viewport.GetPageScaleNode();
+  viewport_properties.inner_scroll_translation =
+      viewport.GetScrollTranslationNode();
 
   PaintArtifactCompositor::Settings settings;
   settings.prefer_compositing_to_lcd_text =
