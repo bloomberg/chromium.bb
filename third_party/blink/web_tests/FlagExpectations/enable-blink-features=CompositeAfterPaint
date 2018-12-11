@@ -369,18 +369,17 @@ crbug.com/589265 virtual/threaded/animations/svg/animated-filter-svg-element.htm
 
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/http/tests/devtools/ [ Skip ]
-Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
+Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
+Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Failure ]
+Bug(none) virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Timeout ]
 Bug(none) virtual/threaded/fast/scroll-behavior/ [ Skip ]
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
-Bug(none) virtual/threaded/compositing/visibility/overlays.html [ Failure Crash ]
-Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Crash Failure ]
+Bug(none) virtual/threaded/compositing/visibility/overlays.html [ Failure ]
+Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 Bug(none) virtual/threaded/compositing/webgl/webgl-reflection.html [ Failure Pass ]
 Bug(none) virtual/threaded/compositing/webgl/webgl-with-accelerated-background-color.html [ Failure Pass ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
-Bug(none) virtual/threaded/synthetic_gestures/ [ Failure Pass Crash ]
+Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure ]
 
 Bug(none) fast/forms/validation-bubble-appearance-edge.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-appearance-iframe.html [ Failure ]
@@ -479,14 +478,8 @@ Bug(none) svg/transforms/text-with-mask-with-svg-transform.svg [ Failure ]
 crbug.com/833083 paint/invalidation/compositing/composited-layers-move-in-subpixels.html [ Failure ]
 
 Bug(none) compositing/squashing/frame-clip-squashed-scrolled.html [ Failure ]
-
 Bug(none) paint/invalidation/selection/japanese-rl-selection-repaint.html [ Failure ]
 Bug(none) virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Failure ]
-
-Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-fake-mouse-wheel.html [ Pass Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Pass Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Pass Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Pass Failure Crash ]
 Bug(none) compositing/overflow/scrollbar-layer-placement-negative-z-index-child-positioned.html [ Failure ]
 
 Bug(none) paint/float/float-under-inline-self-painting-change.html [ Failure ]

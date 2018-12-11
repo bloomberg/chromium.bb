@@ -71,6 +71,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   struct ViewportProperties {
     const TransformPaintPropertyNode* page_scale = nullptr;
+    const TransformPaintPropertyNode* inner_scroll_translation = nullptr;
+    // TODO(crbug.com/909750): Add other viewport properties, e.g.
+    // outer_scroll_translation.
   };
 
   struct Settings {

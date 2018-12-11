@@ -472,6 +472,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // The page scale factor update can affect scrolling which requires that
   // these ids are set, so this must be before PushPageScaleFactorAndLimits.
   target_tree->SetViewportLayersFromIds(viewport_layer_ids_);
+  target_tree->set_viewport_property_ids(viewport_property_ids_);
 
   // Active tree already shares the page_scale_factor object with pending
   // tree so only the limits need to be provided.
@@ -1181,9 +1182,13 @@ void LayerTreeImpl::ClearViewportLayers() {
 
 const ScrollNode* LayerTreeImpl::InnerViewportScrollNode() const {
   auto* inner_scroll = InnerViewportScrollLayer();
-  if (!inner_scroll)
-    return nullptr;
-
+  if (!inner_scroll) {
+    // TODO(crbug.com/909750): Check all other callers of
+    // InnerViewportScrollLayer() and switch to
+    // viewport_property_ids_.inner_scroll if needed.
+    return property_trees()->scroll_tree.Node(
+        viewport_property_ids_.inner_scroll);
+  }
   return property_trees()->scroll_tree.Node(inner_scroll->scroll_tree_index());
 }
 

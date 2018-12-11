@@ -337,6 +337,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // viewport layers.
   struct ViewportPropertyIds {
     int page_scale_transform = TransformTree::kInvalidNodeId;
+    int inner_scroll = ScrollTree::kInvalidNodeId;
     // TODO(crbug.com/909750): Switch other usages of viewport layers to
     // property ids for CompositeAfterPaint.
   };
