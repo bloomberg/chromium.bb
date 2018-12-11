@@ -373,6 +373,10 @@ INSTANTIATE_TEST_CASE_P(
     ScopedTaskEnvironmentTest,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::MOCK_TIME));
 INSTANTIATE_TEST_CASE_P(
+    MainThreadUiMockTime,
+    ScopedTaskEnvironmentTest,
+    ::testing::Values(ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME));
+INSTANTIATE_TEST_CASE_P(
     MainThreadUI,
     ScopedTaskEnvironmentTest,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::UI));
@@ -587,6 +591,10 @@ INSTANTIATE_TEST_CASE_P(
     MainThreadMockTime,
     ScopedTaskEnvironmentMockedTime,
     ::testing::Values(ScopedTaskEnvironment::MainThreadType::MOCK_TIME));
+INSTANTIATE_TEST_CASE_P(
+    MainThreadUiMockTime,
+    ScopedTaskEnvironmentMockedTime,
+    ::testing::Values(ScopedTaskEnvironment::MainThreadType::UI_MOCK_TIME));
 
 }  // namespace test
 }  // namespace base
