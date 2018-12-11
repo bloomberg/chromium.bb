@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Ідентифікатор: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Відкрити на весь екран</translation>
 <translation id="189358972401248634">Інші мови</translation>
-<translation id="1894591787927543791">Збережіть картку, щоб оплачувати через Google Pay</translation>
 <translation id="1895658205118569222">Завершення роботи</translation>
 <translation id="1895934970388272448">Щоб завершити цей процес, потрібно підтвердити реєстрацію свого принтера. Зробіть це зараз.</translation>
 <translation id="1897762215429052132">Налаштування з’єднання з мережею, мови, розкладки клавіатури…</translation>
 <translation id="1901303067676059328">Вибрати &amp;всі</translation>
 <translation id="1902576642799138955">Період чинності</translation>
-<translation id="1904518222538904133">1 з ваших карток можна використовувати лише на цьому пристрої</translation>
 <translation id="1905375423839394163">Назва пристрою Chromebook</translation>
 <translation id="1905710495812624430">Перевищено максимальну кількість дозволених спроб.</translation>
 <translation id="1909880997794698664">Справді назавжди перевести цей пристрій у режим термінала?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587">Вибрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Зареєструвати пристрій для відеоконференцій</translation>
 <translation id="7000347579424117903">Натискайте Ctrl, Alt або клавішу пошуку</translation>
-<translation id="700203306553508933">Зберегти картки, щоб оплачувати через Google Pay</translation>
 <translation id="7002055706763150362">Перш ніж налаштувати Smart Lock для Chromebook, введіть пароль – Google має переконатися, що це ви.</translation>
 <translation id="7002454948392136538">Виберіть менеджера для цього контрольованого користувача</translation>
 <translation id="7003339318920871147">Онлайнові бази даних</translation>
@@ -4660,7 +4657,6 @@
 <translation id="8059417245945632445">&amp;Перевірити пристрої</translation>
 <translation id="8063235345342641131">Стандартний зелений аватар</translation>
 <translation id="8064671687106936412">Ключ:</translation>
-<translation id="8065485338434000013">Деякі картки можна використовувати лише на цьому пристрої</translation>
 <translation id="806812017500012252">Переупорядкувати за назвою</translation>
 <translation id="8068253693380742035">Торкніться, щоб увійти</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

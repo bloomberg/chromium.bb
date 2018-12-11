@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Otvoriť zobrazenie na celú obrazovku</translation>
 <translation id="189358972401248634">Ďalšie jazyky</translation>
-<translation id="1894591787927543791">Uložiť kartu na používanie služby Google Pay</translation>
 <translation id="1895658205118569222">Vypnúť</translation>
 <translation id="1895934970388272448">Ak chcete tento proces dokončiť, musíte potvrdiť registráciu na svojej tlačiarni. Skontrolujte to teraz.</translation>
 <translation id="1897762215429052132">Nastavenie sieťového pripojenia, jazyka, rozloženia klávesnice...</translation>
 <translation id="1901303067676059328">Vybrať &amp;všetko</translation>
 <translation id="1902576642799138955">Doba platnosti</translation>
-<translation id="1904518222538904133">Jednu zo svojich kariet môžete použiť iba v tomto zariadení</translation>
 <translation id="1905375423839394163">Názov zariadenia Chromebook</translation>
 <translation id="1905710495812624430">Maximálny počet povolených pokusov bol prekročený.</translation>
 <translation id="1909880997794698664">Naozaj chcete natrvalo udržiavať toto zariadenie v režime kiosku?</translation>
@@ -3932,7 +3930,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6998711733709403587">Počet vybratých priečinkov: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Zaregistrovať zariadenie na videokonferencie</translation>
 <translation id="7000347579424117903">Použite Ctrl, Alt alebo kláves vyhľadávania</translation>
-<translation id="700203306553508933">Uložiť karty na používanie služby Google Pay</translation>
 <translation id="7002055706763150362">Ak chcete nastaviť funkciu Smart Lock pre Chromebook, Google musí najprv overiť, že ste to vy. Musíte preto zadať heslo.</translation>
 <translation id="7002454948392136538">Vyberte správcu pre tohto kontrolovaného používateľa</translation>
 <translation id="7003339318920871147">Webové databázy</translation>
@@ -4659,7 +4656,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8059417245945632445">&amp;Preskúmať zariadenia</translation>
 <translation id="8063235345342641131">Predvolený zelený avatar</translation>
 <translation id="8064671687106936412">Kľúč:</translation>
-<translation id="8065485338434000013">Niektoré karty sa dajú použiť iba v tomto zariadení</translation>
 <translation id="806812017500012252">Zoradiť podľa názvu</translation>
 <translation id="8068253693380742035">Dotykom sa prihlásite</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

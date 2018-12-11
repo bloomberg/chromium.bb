@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Buksan sa buong screen</translation>
 <translation id="189358972401248634">Iba pang mga wika</translation>
-<translation id="1894591787927543791">I-save ang card para magamit ang Google Pay</translation>
 <translation id="1895658205118569222">Shutdown</translation>
 <translation id="1895934970388272448">Dapat mong kumpirmahin ang pagpaparehistro sa iyong printer upang tapusin ang prosesong ito - tingnan ito ngayon.</translation>
 <translation id="1897762215429052132">I-setup ang koneksyon sa network, wika, layout ng keyboard...</translation>
 <translation id="1901303067676059328">Piliin ang &amp;lahat</translation>
 <translation id="1902576642799138955">Takdang Petsa ng Pagkakabisa</translation>
-<translation id="1904518222538904133">1 sa iyong mga card ang magagamit lang sa device na ito</translation>
 <translation id="1905375423839394163">Pangalan ng Chromebook device</translation>
 <translation id="1905710495812624430">Nalampasan na ang maximum na pinapahintulutang bilang ng pagsubok</translation>
 <translation id="1909880997794698664">Sigurado ka bang gusto mong permanenteng panatilihin sa kiosk mode ang device na ito?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> (na) folder ang napili</translation>
 <translation id="6998793565256476099">Magpatala ng device para sa pakikipagkumperensya gamit ang video</translation>
 <translation id="7000347579424117903">Isama ang Ctrl, Alt, o Search</translation>
-<translation id="700203306553508933">Mag-save ng mga card para magamit ang Google Pay</translation>
 <translation id="7002055706763150362">Upang i-set up ang Smart Lock para sa Chromebook, kailangang matiyak ng Google na ikaw ito—i-type ang iyong password upang makapagsimula.</translation>
 <translation id="7002454948392136538">Piliin ang manager para sa pinangangasiwaang user na ito</translation>
 <translation id="7003339318920871147">Mga database ng web</translation>
@@ -4660,7 +4657,6 @@ Ilagay ang iyong key file sa ligtas na lugar. Kailangan mo ito upang lumikha ng 
 <translation id="8059417245945632445">&amp;Inspeksyunin ang mga device</translation>
 <translation id="8063235345342641131">Default na berdeng avatar</translation>
 <translation id="8064671687106936412">Key:</translation>
-<translation id="8065485338434000013">Ang ilan sa iyong mga card ay magagamit lang sa device na ito</translation>
 <translation id="806812017500012252">Muling ayusin ayon sa pamagat</translation>
 <translation id="8068253693380742035">Pindutin upang mag-sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

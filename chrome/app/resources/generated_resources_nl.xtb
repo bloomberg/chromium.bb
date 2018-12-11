@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Openen in volledig scherm</translation>
 <translation id="189358972401248634">Andere talen</translation>
-<translation id="1894591787927543791">Kaart opslaan om Google Pay te gebruiken</translation>
 <translation id="1895658205118569222">Uitschakeling</translation>
 <translation id="1895934970388272448">Je moet de registratie op je printer bevestigen om dit proces te voltooien. Controleer dit nu.</translation>
 <translation id="1897762215429052132">Netwerkverbinding, taal, toetsenbordindeling instellen…</translation>
 <translation id="1901303067676059328">&amp;Alles selecteren</translation>
 <translation id="1902576642799138955">Geldigheidsduur</translation>
-<translation id="1904518222538904133">Een van je kaarten kan alleen worden gebruikt op dit apparaat</translation>
 <translation id="1905375423839394163">Naam Chromebook-apparaat</translation>
 <translation id="1905710495812624430">Maximumaantal toegestane pogingen overschreden.</translation>
 <translation id="1909880997794698664">Weet je zeker dat je dit apparaat permanent in de kioskmodus wilt houden?</translation>
@@ -3934,7 +3932,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappen geselecteerd</translation>
 <translation id="6998793565256476099">Apparaat aanmelden voor videovergaderingen</translation>
 <translation id="7000347579424117903">Neem Ctrl, Alt of de zoektoets op</translation>
-<translation id="700203306553508933">Kaarten opslaan om Google Pay te gebruiken</translation>
 <translation id="7002055706763150362">Als je Smart Lock voor Chromebook wilt instellen, moet Google eerst controleren of je de juiste gebruiker bent. Typ je wachtwoord om aan de slag te gaan.</translation>
 <translation id="7002454948392136538">De beheerder voor deze gebruiker met beperkte rechten kiezen</translation>
 <translation id="7003339318920871147">Webdatabases</translation>
@@ -4660,7 +4657,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8059417245945632445">Apparaten &amp;inspecteren</translation>
 <translation id="8063235345342641131">Standaard groene avatar</translation>
 <translation id="8064671687106936412">Sleutel:</translation>
-<translation id="8065485338434000013">Sommige van je kaarten kunnen alleen worden gebruikt op dit apparaat</translation>
 <translation id="806812017500012252">Sorteren op titel</translation>
 <translation id="8068253693380742035">Tik om in te loggen</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>

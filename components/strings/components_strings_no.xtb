@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">De åpne fanene dine vises her</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kortinnehaverens navn</translation>
-<translation id="1809549658008855907">Vil du lagre kort i Google-kontoen din?</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette nettstedet inneholder skadelige programmer</translation>
 <translation id="1839551713262164453">Validering av regelverdier mislyktes med feil</translation>
 <translation id="1842969606798536927">Betal</translation>
-<translation id="1866450167992311397">Bruk kortene dine flere steder</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
 <translation id="1871284979644508959">Obligatorisk felt</translation>
 <translation id="1874765382782611674">Godkjente debetkort</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">Tillat (standard)</translation>
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
 <translation id="342781501876943858">Chromium anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
-<translation id="3430691998045392297">Dette er en annen filmfremvisning. Vil du fortsette?</translation>
 <translation id="3431636764301398940">Lagre dette kortet på denne enheten</translation>
 <translation id="3447661539832366887">Eieren av denne enheten har slått av dinosaurspillet.</translation>
 <translation id="3447884698081792621">Vis sertifikat (utstedt av <ph name="ISSUER" />)</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">Gjeldende bruker</translation>
 <translation id="5730040223043577876">Chrome anbefaler at du tilbakestiller passordet ditt hvis du også har brukt det på andre nettsteder.</translation>
 <translation id="5732392974455271431">Foreldrene dine kan oppheve blokkeringen for deg</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Dette kortet og faktureringsadressen lagres i Google-kontoen din, slik at du kan betale raskere når du er pålogget}other{Disse kortene og faktureringsadressene lagres i Google-kontoen din, slik at du kan betale raskere når du er pålogget}}</translation>
 <translation id="5763042198335101085">Angi en gyldig e-postadresse</translation>
 <translation id="5765072501007116331">For å se leveringsmetoder og -krav, velg en adresse</translation>
 <translation id="5770114862687765385">Filen ser ut til å være skadet. Klikk på «Tilbakestill»-knappen for å tilbakestille økten.</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026">Frigjør mindre enn <ph name="SIZE" />. Det kan hende enkelte nettsteder lastes inn tregere neste gang du besøker dem.</translation>
 <translation id="6337534724793800597">Filtrér retningslinjer etter navn</translation>
 <translation id="6358450015545214790">Hva innebærer dette?</translation>
-<translation id="635989537247018238">I neste trinn kan du velge hvilke kort du vil lagre</translation>
 <translation id="6383221683286411806">Potensielle gebyrer i sikte.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 annet forslag}other{# andre forslag}}</translation>
 <translation id="6387754724289022810">For å betale raskere neste gang, lagre kortet ditt og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">Du ser på en utvidelsesside</translation>
 <translation id="6596325263575161958">Krypteringsalternativer</translation>
 <translation id="6604181099783169992">Bevegelses- eller lyssensorer</translation>
-<translation id="6607617806003952240">Jeg kan ikke hjelpe deg lenger. Fortsett manuelt.</translation>
 <translation id="6624427990725312378">Kontaktinformasjon</translation>
 <translation id="6626291197371920147">Legg til et gyldig kortnummer</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
@@ -842,7 +836,6 @@
 <translation id="6744009308914054259">Mens du venter på å koble til, kan du gå til Nedlastinger for å lese artikler uten nett.</translation>
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
 <translation id="6757797048963528358">Enheten din gikk inn i hvilemodus.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Kan ikke legge til dette kortet akkurat nå}other{Kan ikke legge til disse kortene akkurat nå}}</translation>
 <translation id="6778737459546443941">Forelderen din har ikke godkjent det ennå</translation>
 <translation id="679355240208270552">Ignorert fordi standardsøk ikke er aktivert av regel.</translation>
 <translation id="681021252041861472">Obligatorisk felt</translation>
@@ -1143,7 +1136,6 @@ Mer informasjon:
 <translation id="8763927697961133303">USB-enhet</translation>
 <translation id="8768895707659403558">For å bruke kortene dine på alle enhetene dine, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Dette kortet er lagt til i Google-kontoen din. Nå kan du bruke det fra alle påloggede enheter.}other{Disse kortene er lagt til i Google-kontoen din. Nå kan du bruke dem fra alle påloggede enheter.}}</translation>
 <translation id="8792621596287649091">Du kan miste tilgangen til <ph name="ORG_NAME" />-kontoen din eller bli utsatt for identitetstyveri. Chromium anbefaler at du endrer passordet ditt nå.</translation>
 <translation id="8800988563907321413">Forslagene dine om ting like ved vises her</translation>
 <translation id="8820817407110198400">Bokmerker</translation>

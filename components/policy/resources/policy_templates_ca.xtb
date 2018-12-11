@@ -929,7 +929,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
         El model de permisos per a USB utilitza l'URL del lloc web que sol·licita permís ("URL sol·licitant") i l'URL del lloc web de marcs de nivell superior ("URL d'inserció") per concedir permís a l'URL sol·licitant per accedir al dispositiu USB. Si el lloc web que sol·licita permís es carrega en un iframe, l'URL sol·licitant pot ser diferent de l'URL d'inserció. Per tant, el camp urls pot incloure fins a dues cadenes d'URL delimitades per una coma a fi d'especificar l'URL sol·licitant i el d'inserció, respectivament. Si només se n'especifica un, l'accés als dispositius USB corresponents es concedeix quan l'URL del lloc web sol·licitant coincideixi amb aquest URL independentment de l'estat d'inserció. Els URL del camp urls han de ser vàlids. Si no, la política s'ignorarà.
 
-        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting, si està establerta, o de la configuració personal de l'usuari, si no ho està.
+        Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat general per a tots els llocs web, ja sigui de la política DefaultWebUsbGuardSetting si està establerta o de la configuració personal de l'usuari si no ho està.
 
         Els patrons d'URL d'aquesta política no poden entrar en conflicte amb els configurats mitjançant WebUsbBlockedForUrls. Si hi ha un conflicte, aquesta política té prioritat sobre WebUsbBlockedForUrls i WebUsbAskForUrls.</translation>
 <translation id="3414260318408232239">Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà TLS 1.0 com a versió mínima predeterminada.

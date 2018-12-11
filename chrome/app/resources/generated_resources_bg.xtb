@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Идент. №:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Отваряне на цял екран</translation>
 <translation id="189358972401248634">Други езици</translation>
-<translation id="1894591787927543791">Запазване на картата с цел използване на Google Pay</translation>
 <translation id="1895658205118569222">Изключване</translation>
 <translation id="1895934970388272448">За да завършите този процес, трябва да потвърдите регистрацията от принтера си – проверете го сега.</translation>
 <translation id="1897762215429052132">Настройване на връзка с мрежа, език, клавиатурна подредба...</translation>
 <translation id="1901303067676059328">&amp;Избиране на всички</translation>
 <translation id="1902576642799138955">Период на валидност</translation>
-<translation id="1904518222538904133">Една от картите ви може да се използва само на това устройство</translation>
 <translation id="1905375423839394163">Име на устройството Chromebook</translation>
 <translation id="1905710495812624430">Максималният брой опити е надвишен.</translation>
 <translation id="1909880997794698664">Наистина ли искате това устройство да е постоянно в павилионен режим?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> избрани папки</translation>
 <translation id="6998793565256476099">Регистриране на устройството за видеоконференции</translation>
 <translation id="7000347579424117903">Използвайте Ctrl, Alt или клавиша „търсене“</translation>
-<translation id="700203306553508933">Запазване на картите с цел използване на Google Pay</translation>
 <translation id="7002055706763150362">Преди да настроите Smart Lock за Chromebook, Google трябва да се увери, че това сте вие. Въведете паролата си, за да започнете.</translation>
 <translation id="7002454948392136538">Избиране на мениджъра за този контролиран потребител</translation>
 <translation id="7003339318920871147">Уеб бази от данни</translation>
@@ -4660,7 +4657,6 @@
 <translation id="8059417245945632445">&amp;Инспектиране на устройствата</translation>
 <translation id="8063235345342641131">Стандартен зелен аватар</translation>
 <translation id="8064671687106936412">Ключ:</translation>
-<translation id="8065485338434000013">Някои от картите ви могат да се използват само на това устройство</translation>
 <translation id="806812017500012252">Подреждане по азбучен ред</translation>
 <translation id="8068253693380742035">Докоснете за вход в профила си</translation>
 <translation id="8069615408251337349">Google Отпечатване в облак</translation>

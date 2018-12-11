@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ഐഡി: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">പൂര്‍ണ്ണ സ്ക്രീനില്‍ തുറക്കുക</translation>
 <translation id="189358972401248634">മറ്റ് ഭാഷകൾ</translation>
-<translation id="1894591787927543791">Google Pay ഉപയോഗിക്കാൻ കാർഡ് സംരക്ഷിക്കുക</translation>
 <translation id="1895658205118569222">ഷട്ട്‌ഡൗൺ ചെയ്യുക</translation>
 <translation id="1895934970388272448">ഈ പ്രോസസ്സ് പൂർത്തിയാക്കാൻ നിങ്ങളുടെ പ്രിന്ററിൽ രജിസ്ട്രേഷൻ സ്ഥിരീകരിക്കണം - അത് ഇപ്പോൾ പരിശോധിക്കുക.</translation>
 <translation id="1897762215429052132">നെറ്റ്‌വർക്ക് കണക്ഷൻ, ഭാഷ, കീബോർഡ് ലേഔട്ട് എന്നിവ സജ്ജമാക്കുക...</translation>
 <translation id="1901303067676059328">എല്ലാം &amp;തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="1902576642799138955">സാധുതാ കാലാവധി</translation>
-<translation id="1904518222538904133">നിങ്ങളുടെ കാർഡുകളിൽ ഒന്ന് മാത്രമേ ഈ ഉപകരണത്തിൽ ഉപയോഗിക്കാനാവൂ</translation>
 <translation id="1905375423839394163">Chromebook ഉപകരണ നാമം</translation>
 <translation id="1905710495812624430">അനുവദനീയമായ പരമാവധി ശ്രമങ്ങൾ നടത്തിക്കഴിഞ്ഞു.</translation>
 <translation id="1909880997794698664">കിയോസ്‌ക് മോഡിൽ ഈ ഉപകരണം ശാശ്വതമായി നിലനിർത്താൻ നിങ്ങൾക്ക് താൽപ്പര്യമുണ്ടെന്ന് തീർച്ചയാണോ?</translation>
@@ -3932,7 +3930,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ഫോൾഡറുകൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="6998793565256476099">വീഡിയോ കോണ്‍ഫറന്‍സിംഗിനായി ഉപകരണം എൻറോൾ ചെയ്യുക</translation>
 <translation id="7000347579424117903">കൺട്രോളോ ആൾട്ടോ തിരയലോ ഉൾപ്പെടുത്തുക</translation>
-<translation id="700203306553508933">Google Pay ഉപയോഗിക്കാൻ കാർഡുകൾ സംരക്ഷിക്കുക</translation>
 <translation id="7002055706763150362">Chromebook-നുള്ള Smart Lock സജ്ജീകരിക്കുന്നതിന്, ഇത് നിങ്ങളാണെന്ന് Google-ന് തീർച്ചപ്പെടുത്തേണ്ടതുണ്ട്—ആരംഭിക്കാൻ പാസ്‌വേഡ് ടൈപ്പുചെയ്യുക.</translation>
 <translation id="7002454948392136538">സൂപ്പർവൈസ് ചെയ്‌ത ഈ ഉപയോക്താവിനായി മാനേജറെ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7003339318920871147">വെബ് ഡാറ്റാബേസുകള്‍‌</translation>
@@ -4659,7 +4656,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8059417245945632445">&amp;ഉപകരണങ്ങൾ പരിശോധിക്കുക</translation>
 <translation id="8063235345342641131">ഡിഫോൾട്ടായ പച്ച അവതാർ</translation>
 <translation id="8064671687106936412">കീ:</translation>
-<translation id="8065485338434000013">നിങ്ങളുടെ ചില കാർഡുകൾ, ഈ ഉപകരണത്തിൽ മാത്രമേ ഉപയോഗിക്കാനാവൂ</translation>
 <translation id="806812017500012252">ശീര്‍ഷക പ്രകാരം പുനര്‍ക്രമീകരിക്കുക</translation>
 <translation id="8068253693380742035">സൈൻ ഇൻ ചെയ്യാൻ സ്‌പർശിക്കുക</translation>
 <translation id="8069615408251337349">Google Cloud പ്രിന്റ്</translation>

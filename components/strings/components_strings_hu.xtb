@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">A megnyitott lapok helye</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kártyatulajdonos neve</translation>
-<translation id="1809549658008855907">Elmenti a kártyákat a Google-fiókjába?</translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
 <translation id="1826516787628120939">Ellenőrzés</translation>
 <translation id="1834321415901700177">A webhely ártalmas programokat tartalmaz</translation>
 <translation id="1839551713262164453">A házirendértékek ellenőrzése hibák miatt sikertelen</translation>
 <translation id="1842969606798536927">Fizetés</translation>
-<translation id="1866450167992311397">Használja kártyáit több helyen</translation>
 <translation id="1871208020102129563">A proxy fix proxyszerverek használatára van beállítva, nem pedig .pac típusú szkript URL címének használatára.</translation>
 <translation id="1871284979644508959">Kötelező mező</translation>
 <translation id="1874765382782611674">Elfogadott bankkártyák</translation>
@@ -383,7 +381,6 @@
 <translation id="3427092606871434483">Engedélyezés (alapértelmezett)</translation>
 <translation id="3427342743765426898">&amp;Szerkesztés újra</translation>
 <translation id="342781501876943858">A Chromium azt javasolja, hogy adjon meg új jelszót a régi helyett, ha azt más webhelyeken is használta.</translation>
-<translation id="3430691998045392297">Az előzetes vetítés adatai eltérnek. Folytatja?</translation>
 <translation id="3431636764301398940">Kártya mentése az eszközre</translation>
 <translation id="3447661539832366887">Az eszköz tulajdonosa kikapcsolta a dinoszauruszos játékot.</translation>
 <translation id="3447884698081792621">Tanúsítvány megjelenítése (kibocsátó: <ph name="ISSUER" />)</translation>
@@ -711,7 +708,6 @@
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
 <translation id="5730040223043577876">A Chrome azt javasolja, hogy adjon meg új jelszót a régi helyett, ha azt más webhelyeken is használta.</translation>
 <translation id="5732392974455271431">A letiltást a szüleid oldhatják fel</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{A rendszer menti a kártyát és a hozzá tartozó számlázási címet az Ön Google-fiókjába, így bejelentkezve gyorsabban fizethet.}other{A rendszer menti a kártyákat és a hozzájuk tartozó számlázási címeket az Ön Google-fiókjába, így bejelentkezve gyorsabban fizethet.}}</translation>
 <translation id="5763042198335101085">Érvényes e-mail-címet adjon meg</translation>
 <translation id="5765072501007116331">A kézbesítési módok és követelmények megtekintéséhez válassza ki a címet</translation>
 <translation id="5770114862687765385">Úgy tűnik, a fájl sérült. A munkamenet visszaállításához kattintson a „Visszaállítás” gombra.</translation>
@@ -795,7 +791,6 @@
 <translation id="6337133576188860026"><ph name="SIZE" />-nál kevesebb hely szabadul fel. Előfordulhat, hogy egyes webhelyek lassabban töltődnek be, amikor legközelebb felkeresi őket.</translation>
 <translation id="6337534724793800597">Házirendek szűrése név szerint</translation>
 <translation id="6358450015545214790">Mit jelent ez?</translation>
-<translation id="635989537247018238">A következő lépésben kiválaszthatja, hogy mely kártyákat szeretné menteni.</translation>
 <translation id="6383221683286411806">Itt fizetésre próbálhatják rávenni.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 egyéb javaslat}other{# egyéb javaslat}}</translation>
 <translation id="6387754724289022810">A következő alkalommal gyorsabban fizethet, ha kártyáját és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
@@ -821,7 +816,6 @@
 <translation id="6569060085658103619">Jelenleg bővítményoldalt tekint meg</translation>
 <translation id="6596325263575161958">Titkosítási lehetőségek</translation>
 <translation id="6604181099783169992">Mozgás- és fényérzékelők</translation>
-<translation id="6607617806003952240">Nem tudok többet segíteni, folytassa manuálisan.</translation>
 <translation id="6624427990725312378">Kapcsolatfelvételi adatok</translation>
 <translation id="6626291197371920147">Adjon meg érvényes kártyaszámot</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE" /></translation>
@@ -840,7 +834,6 @@
 <translation id="6744009308914054259">Miközben kapcsolatra vár, a Letöltések között elolvashatja az offline cikkeket.</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
 <translation id="6757797048963528358">Eszköze alvó üzemmódba váltott.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Ezt a kártyát jelenleg nem lehet hozzáadni}other{Ezeket a kártyákat jelenleg nem lehet hozzáadni}}</translation>
 <translation id="6778737459546443941">A szülő még nem hagyta jóvá</translation>
 <translation id="679355240208270552">Figyelmen kívül hagyva, mert az alapértelmezett keresőmotort nem engedélyezi a házirend.</translation>
 <translation id="681021252041861472">Kötelező mező</translation>
@@ -1143,7 +1136,6 @@ További részletek:
 <translation id="8763927697961133303">USB-eszköz</translation>
 <translation id="8768895707659403558">Ha az összes eszközön szeretné használni a kártyákat: <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{A kártya hozzá lett adva a Google-fiókjához. Mostantól bármelyik bejelentkezett eszközön használhatja.}other{A kártyák hozzá lettek adva a Google-fiókjához. Mostantól bármelyik bejelentkezett eszközön használhatja őket.}}</translation>
 <translation id="8792621596287649091">Elveszítheti a hozzáférést <ph name="ORG_NAME" />-fiókjához, vagy visszaélhetnek személyes adataival. A Chromium azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
 <translation id="8800988563907321413">A közeli javaslatok helye</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>

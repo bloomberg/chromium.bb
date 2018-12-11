@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Αναγνωριστικό: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Άνοιγμα πλήρους οθόνης</translation>
 <translation id="189358972401248634">Άλλες γλώσσες</translation>
-<translation id="1894591787927543791">Αποθήκευση κάρτας για χρήση του Google Pay</translation>
 <translation id="1895658205118569222">Τερματισμός λειτουργίας</translation>
 <translation id="1895934970388272448">Για την ολοκλήρωση αυτής της διαδικασίας, θα πρέπει να επιβεβαιώσετε την καταχώριση στον εκτυπωτή σας. Ελέγξτε τον τώρα.</translation>
 <translation id="1897762215429052132">Ρύθμιση σύνδεσης δικτύου, γλώσσας, διάταξης πληκτρολογίου...</translation>
 <translation id="1901303067676059328">Επιλογή όλ&amp;ων</translation>
 <translation id="1902576642799138955">Περίοδος εγκυρότητας</translation>
-<translation id="1904518222538904133">Μόνο 1 από τις κάρτες σας μπορεί να χρησιμοποιηθεί σε αυτήν τη συσκευή</translation>
 <translation id="1905375423839394163">Όνομα συσκευής Chromebook</translation>
 <translation id="1905710495812624430">Έγινε υπέρβαση του μέγιστου αριθμού επιτρεπόμενων προσπαθειών.</translation>
 <translation id="1909880997794698664">Είστε σίγουροι ότι θέλετε να διατηρήσετε την παρούσα συσκευή μόνιμα σε λειτουργία Kiosk;</translation>
@@ -3934,7 +3932,6 @@
 <translation id="6998711733709403587">Έχουν επιλεγεί <ph name="SELCTED_FOLDERS_COUNT" /> φάκελοι</translation>
 <translation id="6998793565256476099">Εγγραφή συσκευής για συνεδρίαση με βίντεο</translation>
 <translation id="7000347579424117903">Συμπερίληψη Ctrl, Alt ή πλήκτρου Αναζήτησης</translation>
-<translation id="700203306553508933">Αποθήκευση καρτών για χρήση του Google Pay</translation>
 <translation id="7002055706763150362">Για να ρυθμίσετε τη λειτουργία Smart Lock για Chromebook, το Google θα πρέπει να επαληθεύσει την ταυτότητά σας. Πληκτρολογήστε τον κωδικό πρόσβασής σας για να ξεκινήσετε.</translation>
 <translation id="7002454948392136538">Επιλέξτε το διαχειριστή για αυτόν τον εποπτευόμενο χρήστη</translation>
 <translation id="7003339318920871147">Βάσεις δεδομένων ιστού</translation>
@@ -4661,7 +4658,6 @@
 <translation id="8059417245945632445">&amp;Επιθεώρηση συσκευών</translation>
 <translation id="8063235345342641131">Προεπιλεγμένο πράσινο avatar</translation>
 <translation id="8064671687106936412">Κλειδί:</translation>
-<translation id="8065485338434000013">Ορισμένες από τις κάρτες σας μπορούν να χρησιμοποιηθούν μόνο σε αυτήν τη συσκευή</translation>
 <translation id="806812017500012252">Αναδιάταξη ανά τίτλο</translation>
 <translation id="8068253693380742035">Αγγίξτε για να συνδεθείτε</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

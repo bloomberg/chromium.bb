@@ -626,13 +626,11 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Otevřít v režimu celé obrazovky</translation>
 <translation id="189358972401248634">Ostatní jazyky</translation>
-<translation id="1894591787927543791">Uložit kartu k použití ve službě Google Pay</translation>
 <translation id="1895658205118569222">Vypnout počítač</translation>
 <translation id="1895934970388272448">Proces dokončíte potvrzením registrace v tiskárně – mrkněte na to.</translation>
 <translation id="1897762215429052132">Nastavení připojení k síti, jazyka, rozložení klávesnice apod.</translation>
 <translation id="1901303067676059328">&amp;Vybrat vše</translation>
 <translation id="1902576642799138955">Doba platnosti</translation>
-<translation id="1904518222538904133">V tomto zařízení lze použít jen jednu z vašich karet</translation>
 <translation id="1905375423839394163">Název Chromebooku</translation>
 <translation id="1905710495812624430">Byl překročen maximální povolený počet pokusů.</translation>
 <translation id="1909880997794698664">Opravdu chcete toto zařízení trvale ponechat v režimu veřejného terminálu?</translation>
@@ -2809,7 +2807,7 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="532247166573571973">Server pravděpodobně není dostupný. Zkuste to znovu později.</translation>
 <translation id="532360961509278431">Soubor $1 nelze otevřít: $2</translation>
 <translation id="5324780743567488672">Nastavit časové pásmo automaticky podle polohy</translation>
-<translation id="5327248766486351172">Název</translation>
+<translation id="5327248766486351172">Jméno</translation>
 <translation id="5327570636534774768">Toto zařízení je označeno jako spravované jinou doménou. Před nastavením ukázkového režimu mu k dané doméně zrušte přístup.</translation>
 <translation id="532943162177641444">Klepnutím na oznámení na telefonu nebo tabletu <ph name="PHONE_NAME" /> nastavte mobilní hotspot, který bude moci využít toto zařízení.</translation>
 <translation id="5329858601952122676">&amp;Smazat</translation>
@@ -3928,7 +3926,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6998711733709403587">Vybrané soubory: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Zaregistrovat zařízení pro videokonference</translation>
 <translation id="7000347579424117903">Zahrňte klávesu Ctrl, Alt, nebo Hledat</translation>
-<translation id="700203306553508933">Uložit karty k použití ve službě Google Pay</translation>
 <translation id="7002055706763150362">Aby bylo možné funkci Smart Lock pro Chromebook nastavit, Google musí zkontrolovat, zda jste to opravdu vy. Chcete-li začít, zadejte heslo.</translation>
 <translation id="7002454948392136538">Vyberte správce tohoto dozorovaného uživatele</translation>
 <translation id="7003339318920871147">Webové databáze</translation>
@@ -4653,7 +4650,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8059417245945632445">&amp;Zkontrolovat zařízení</translation>
 <translation id="8063235345342641131">Výchozí zelený avatar</translation>
 <translation id="8064671687106936412">Klíč:</translation>
-<translation id="8065485338434000013">V tomto zařízení lze použít jen některé z vašich karet</translation>
 <translation id="806812017500012252">Seřadit podle abecedy</translation>
 <translation id="8068253693380742035">Klepnutím se přihlásíte</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

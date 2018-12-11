@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Le tue schede aperte vengono visualizzate qui</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Nome del titolare della carta</translation>
-<translation id="1809549658008855907">Vuoi salvare le carte sul tuo Account Google?</translation>
 <translation id="1821930232296380041">Richiesta o parametri della richiesta non validi</translation>
 <translation id="1826516787628120939">Verifica in corso...</translation>
 <translation id="1834321415901700177">Il sito contiene programmi dannosi.</translation>
 <translation id="1839551713262164453">Convalida dei valori della norma non riuscita con errori</translation>
 <translation id="1842969606798536927">Paga</translation>
-<translation id="1866450167992311397">Utilizza le tue carte in più posti</translation>
 <translation id="1871208020102129563">L'impostazione del proxy prevede l'utilizzo di server proxy fissi, non di un URL script .pac.</translation>
 <translation id="1871284979644508959">Campo obbligatorio</translation>
 <translation id="1874765382782611674">Carte di debito accettate</translation>
@@ -382,7 +380,6 @@
 <translation id="3427092606871434483">Consenti (predefinita)</translation>
 <translation id="3427342743765426898">&amp;Ripeti modifica</translation>
 <translation id="342781501876943858">Chromium ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
-<translation id="3430691998045392297">La proiezione dei filmati è diversa. Vuoi continuare?</translation>
 <translation id="3431636764301398940">Salva la carta per questo dispositivo</translation>
 <translation id="3447661539832366887">Il proprietario del dispositivo ha disattivato il gioco dei dinosauri.</translation>
 <translation id="3447884698081792621">Mostra certificato (rilasciato da <ph name="ISSUER" />)</translation>
@@ -710,7 +707,6 @@
 <translation id="5720705177508910913">Utente corrente</translation>
 <translation id="5730040223043577876">Chrome ti consiglia di reimpostare la password, se l'hai utilizzata su altri siti.</translation>
 <translation id="5732392974455271431">I tuoi genitori possono sbloccarlo per te</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Questa carta e il relativo indirizzo di fatturazione vengono salvati nel tuo Account Google, così potrai effettuare più rapidamente i pagamenti, ovunque tu sia collegato all'account}other{Queste carte e i relativi indirizzi di fatturazione vengono salvati nel tuo Account Google, così potrai effettuare più rapidamente i pagamenti, ovunque tu sia collegato all'account}}</translation>
 <translation id="5763042198335101085">Inserisci un indirizzo email valido</translation>
 <translation id="5765072501007116331">Seleziona un indirizzo per conoscere i requisiti e i metodi di consegna</translation>
 <translation id="5770114862687765385">Sembra che il file sia danneggiato. Fai clic sul pulsante "Ripristina" per ripristinare la sessione.</translation>
@@ -793,7 +789,6 @@
 <translation id="6337133576188860026">Consente di liberare meno di <ph name="SIZE" />. Alcuni siti potrebbero caricarsi più lentamente alla prossima visita.</translation>
 <translation id="6337534724793800597">Filtra i criteri per nome</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
-<translation id="635989537247018238">Nel prossimo passaggio potrai scegliere quali carte salvare</translation>
 <translation id="6383221683286411806">Potrebbe essere applicato un addebito.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>
 <translation id="6387754724289022810">Per pagare più velocemente la prossima volta, salva la carta e l'indirizzo di fatturazione sul tuo account Google e su questo dispositivo.</translation>
@@ -819,7 +814,6 @@
 <translation id="6569060085658103619">È visualizzata la pagina di un'estensione</translation>
 <translation id="6596325263575161958">Opzioni di crittografia</translation>
 <translation id="6604181099783169992">Sensori di movimento o della luce</translation>
-<translation id="6607617806003952240">Non posso più aiutarti. Continua manualmente.</translation>
 <translation id="6624427990725312378">Informazioni di contatto</translation>
 <translation id="6626291197371920147">Aggiungi un numero di carta valido</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE" /></translation>
@@ -838,7 +832,6 @@
 <translation id="6744009308914054259">In attesa di una connessione, puoi visitare la pagina Download per leggere gli articoli offline.</translation>
 <translation id="6753269504797312559">Valore norma</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{In questo momento la carta non può essere aggiunta}other{In questo momento le carte non possono essere aggiunte}}</translation>
 <translation id="6778737459546443941">Il tuo genitore non ha ancora approvato la richiesta</translation>
 <translation id="679355240208270552">Ignorato perché la ricerca predefinita non è attiva secondo la norma.</translation>
 <translation id="681021252041861472">Campo obbligatorio</translation>
@@ -1140,7 +1133,6 @@ Ulteriori dettagli:
 <translation id="8763927697961133303">Dispositivo USB</translation>
 <translation id="8768895707659403558">Per utilizzare le tue carte su tutti i tuoi dispositivi, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Ripeti eliminazione</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{ Questa carta è stata aggiunta al tuo Account Google. Ora puoi utilizzarla da qualsiasi dispositivo su cui hai eseguito l'accesso.}other{ Queste carte sono state aggiunte al tuo Account Google. Ora puoi utilizzarle da qualsiasi dispositivo su cui hai eseguito l'accesso.}}</translation>
 <translation id="8792621596287649091">Potresti non riuscire più ad accedere al tuo account <ph name="ORG_NAME" /> o subire un furto d'identità. Chromium ti consiglia di cambiare subito la password.</translation>
 <translation id="8800988563907321413">I suggerimenti Qui vicino vengono visualizzati qui</translation>
 <translation id="8820817407110198400">Preferiti</translation>

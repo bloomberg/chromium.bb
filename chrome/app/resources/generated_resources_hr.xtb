@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Otvori cijeli zaslon</translation>
 <translation id="189358972401248634">Drugi jezici</translation>
-<translation id="1894591787927543791">Spremite karticu da biste upotrebljavali Google Pay</translation>
 <translation id="1895658205118569222">Isključivanje</translation>
 <translation id="1895934970388272448">Morate potvrditi registraciju na pisaču da biste dovršili proces. Provjerite ga odmah.</translation>
 <translation id="1897762215429052132">Postavljanje mrežne veze, jezika, rasporeda tipkovnice...</translation>
 <translation id="1901303067676059328">Odaberi &amp;sve</translation>
 <translation id="1902576642799138955">Rok valjanosti</translation>
-<translation id="1904518222538904133">Jedna vaša kartica može se upotrebljavati samo na ovom uređaju</translation>
 <translation id="1905375423839394163">Naziv Chromebook uređaja</translation>
 <translation id="1905710495812624430">Premašen je maksimalan dopušteni broj pokušaja.</translation>
 <translation id="1909880997794698664">Jeste li sigurni da želite trajno zadržati ovaj uređaj u načinu kioska?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587">Broj odabranih mapa: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Registriranje uređaja za videokonferencije</translation>
 <translation id="7000347579424117903">Mora sadržavati Ctrl, Alt ili Search</translation>
-<translation id="700203306553508933">Spremite kartice da biste upotrebljavali Google Pay</translation>
 <translation id="7002055706763150362">Za postavljanje Smart Locka za Chromebook Google treba provjeriti jeste li to zaista vi. Upišite zaporku da biste započeli.</translation>
 <translation id="7002454948392136538">Odaberite upravitelja za tog nadziranog korisnika</translation>
 <translation id="7003339318920871147">Web-baze podataka</translation>
@@ -4660,7 +4657,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8059417245945632445">&amp;Provjeri uređaje</translation>
 <translation id="8063235345342641131">Zadani zeleni avatar</translation>
 <translation id="8064671687106936412">Ključ:</translation>
-<translation id="8065485338434000013">Neke vaše kartice mogu se upotrebljavati samo na ovom uređaju</translation>
 <translation id="806812017500012252">Poredaj po naslovu</translation>
 <translation id="8068253693380742035">Dodirnite za prijavu</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

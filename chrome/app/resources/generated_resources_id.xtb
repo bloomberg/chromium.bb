@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Buka layar penuh</translation>
 <translation id="189358972401248634">Bahasa lain</translation>
-<translation id="1894591787927543791">Simpan kartu untuk menggunakan Google Pay</translation>
 <translation id="1895658205118569222">Mati</translation>
 <translation id="1895934970388272448">Anda harus mengonfirmasi pendaftaran pada printer untuk menyelesaikan proses ini - periksa sekarang.</translation>
 <translation id="1897762215429052132">Menyiapkan sambungan jaringan, bahasa, tata letak keyboard...</translation>
 <translation id="1901303067676059328">Pilih semu&amp;a</translation>
 <translation id="1902576642799138955">Periode Validitas</translation>
-<translation id="1904518222538904133">1 kartu Anda hanya dapat digunakan di perangkat ini</translation>
 <translation id="1905375423839394163">Nama perangkat Chromebook</translation>
 <translation id="1905710495812624430">Melebihi batas percobaan maksimum yang diizinkan.</translation>
 <translation id="1909880997794698664">Yakin ingin menyimpan perangkat ini dalam mode kios secara permanen?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
 <translation id="6998793565256476099">Daftarkan perangkat untuk konferensi video</translation>
 <translation id="7000347579424117903">Sertakan Ctrl, Alt, atau Search</translation>
-<translation id="700203306553508933">Simpan kartu untuk menggunakan Google Pay</translation>
 <translation id="7002055706763150362">Untuk menyiapkan Smart Lock untuk Chromebook, Google perlu memastikan bahwa memang Andalah yang mengaksesnya. Ketik sandi untuk memulai.</translation>
 <translation id="7002454948392136538">Pilih pengelola untuk pengguna yang dilindungi ini</translation>
 <translation id="7003339318920871147">Basis data web</translation>
@@ -4660,7 +4657,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8059417245945632445">&amp;Periksa perangkat</translation>
 <translation id="8063235345342641131">Avatar hijau default</translation>
 <translation id="8064671687106936412">Kunci:</translation>
-<translation id="8065485338434000013">Sebagian kartu Anda hanya dapat digunakan di perangkat ini</translation>
 <translation id="806812017500012252">Susun ulang menurut judul</translation>
 <translation id="8068253693380742035">Sentuh untuk login</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

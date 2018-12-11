@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Kitambulisho: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Fungua skrini nzima</translation>
 <translation id="189358972401248634">Lugha zingine</translation>
-<translation id="1894591787927543791">Hifadhi kadi ili utumie Google Pay</translation>
 <translation id="1895658205118569222">Funga</translation>
 <translation id="1895934970388272448">Lazima uthibitishe usajili kwenye printa yako ili umalize mchakato huu - angalia sasa.</translation>
 <translation id="1897762215429052132">Weka mipangilio ya muunganisho wa mtandao, lugha, mpangilio wa kibodi...</translation>
 <translation id="1901303067676059328">Chagua &amp;yote</translation>
 <translation id="1902576642799138955">Kipindi cha Uhalali</translation>
-<translation id="1904518222538904133">Mojawapo ya kadi zako inaweza kutumika kwenye kifaa hiki pekee</translation>
 <translation id="1905375423839394163">Jina la kifaa cha Chromebook</translation>
 <translation id="1905710495812624430">Idadi ya juu ya majaribio yanayoruhusiwa.</translation>
 <translation id="1909880997794698664">Una uhakika unataka kuweka kifaa hiki kiwe cha kudumu katika modi ya kioski?</translation>
@@ -3924,7 +3922,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6998711733709403587">Folda <ph name="SELCTED_FOLDERS_COUNT" /> zilizochaguliwa</translation>
 <translation id="6998793565256476099">Sajili vifaa vitumike kwenye mkutano wa video</translation>
 <translation id="7000347579424117903">Jumuisha kitufe cha Ctrl, Alt, au Utafutaji</translation>
-<translation id="700203306553508933">Hifadhi kadi ili utumie Google Pay</translation>
 <translation id="7002055706763150362">Ili kusanidi Smart Lock ya Chromebook, Google inahitaji kuhakikisha kuwa ni wewe—charaza nenosiri lako ili uanze.</translation>
 <translation id="7002454948392136538">Chagua mdhibiti wa mtumiaji huyu anayesimamiwa</translation>
 <translation id="7003339318920871147">Hifadhidata za wavuti</translation>
@@ -4653,7 +4650,6 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8059417245945632445">Kagua vifaa</translation>
 <translation id="8063235345342641131">Ishara chaguomsingi ya kijani</translation>
 <translation id="8064671687106936412">Ufunguo:</translation>
-<translation id="8065485338434000013">Baadhi ya kadi zako zinaweza kutumika tu kwenye kifaa hiki</translation>
 <translation id="806812017500012252">Panga tena kwa vichwa</translation>
 <translation id="8068253693380742035">Gusa ili uingie katika akaunti</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

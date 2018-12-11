@@ -40,6 +40,7 @@
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
 <translation id="1570871743947603115">‏הפעלה או השבתה של Bluetooth. <ph name="STATE_TEXT" /></translation>
+<translation id="1589090746204042747">גישה לכל הפעילות שלך בסשן הזה</translation>
 <translation id="1608626060424371292">הסר את המשתמש הזה</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">הפעלה של שאילתה קולית</translation>
@@ -126,6 +127,7 @@
 <translation id="2946119680249604491">הוסף חיבור</translation>
 <translation id="2961963223658824723">משהו השתבש. אפשר לנסות שוב בעוד כמה שניות.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2970920913501714344">התקנת אפליקציות, תוספים ועיצובים</translation>
 <translation id="2995447421581609334">‏צפייה במכשירי Cast.</translation>
 <translation id="2996462380875591307">‏הזכוכית המגדלת במצב עגינה הופעלה. כדי לכבות אותה, יש להקיש שוב על Ctrl+Search+D.</translation>
 <translation id="3000461861112256445">אודיו במונו</translation>
@@ -328,6 +330,7 @@
 <translation id="6627638273713273709">‏חיפוש+Shift‏+K</translation>
 <translation id="6650933572246256093">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לביצוע התאמה. הזן את מפתח הסיסמה הבא במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">סיסמה</translation>
+<translation id="6665545700722362599">הענקת הרשאה לאתרים, לאפליקציות ולתוספים להשתמש בשירותי המיקום, במיקרופון של המכשיר, במצלמה או בתכונות אחרות.</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">המקלדת הניתנת לניתוק זקוקה לעדכון קריטי</translation>
 <translation id="6700713906295497288">‏לחצן תפריט IME</translation>

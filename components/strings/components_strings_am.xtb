@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">የእርስዎ ክፍት ትሮች እዚህ ይመጣሉ</translation>
 <translation id="1791429645902722292">Google ዘመናዊ ቁልፍ</translation>
 <translation id="1803264062614276815">የካርድ ያዢው ስም</translation>
-<translation id="1809549658008855907">ወደ የእርስዎ የGoogle መለያ ካርዶች ይቀመጡ?</translation>
 <translation id="1821930232296380041">ልክ ያልሆነ ጥያቄ ወይም የጥያቄ ልኬቶች</translation>
 <translation id="1826516787628120939">በመፈተሸ ላይ</translation>
 <translation id="1834321415901700177">ይህ ጣቢያ ጎጂ ፕሮግራሞችን ይዟል</translation>
 <translation id="1839551713262164453">የመመሪያ እሴቶችን ማረጋገጥ ከስህተቶች ጋር አልተሳካም</translation>
 <translation id="1842969606798536927">ይክፈሉ</translation>
-<translation id="1866450167992311397">በተጨማሪ ቦታዎች የእርስዎን ካርዶች ይጠቀሙ</translation>
 <translation id="1871208020102129563">የ.pac ስክሪፕት ዩአርኤል ሳይሆን ተኪ አገልጋዮችን እንዲጠቀም ነው ተኪ የተዋቀረው።</translation>
 <translation id="1871284979644508959">የሚያስፈልግ መስክ</translation>
 <translation id="1874765382782611674">ተቀባይነት ያላቸው ዴቢት ካርዶች</translation>
@@ -384,7 +382,6 @@
 <translation id="3427092606871434483">ፍቀድ (ነባሪ)</translation>
 <translation id="3427342743765426898">&amp;አርትዕን ድገም</translation>
 <translation id="342781501876943858">Chromium የእርስዎን ይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግም ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
-<translation id="3430691998045392297">የፊልም ማሳያ ገጽ የተለየ ነው፣ መቀጠል ይፈልጋሉ?</translation>
 <translation id="3431636764301398940">ይህን ካርድ ወደዚህ መሣሪያ አስቀምጥ</translation>
 <translation id="3447661539832366887">የዚህ መሣሪያ ባለቤት የዳይኖሰር ጨዋታውን አጥፍቶታል።</translation>
 <translation id="3447884698081792621">የእውቅና ማረጋገጫን አሳይ (በ<ph name="ISSUER" /> የሚሰጥ)</translation>
@@ -712,7 +709,6 @@
 <translation id="5720705177508910913">የአሁኑ ተጠቃሚ</translation>
 <translation id="5730040223043577876">Chrome የእርስዎን ይለፍ ቃል በሌሎች ጣቢያዎች ላይ ዳግም ከተጠቀሙበት እንደገና እንዲያዋቅሩት ይመክራል።</translation>
 <translation id="5732392974455271431">የእርስዎ ወላጆች እገዳውን ሊያነሱልዎ ይችላሉ</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{ይህ ካርድ እና ሒሳብ መጠየቂያ አድራሻው በእርስዎ የGoogle መለያ ላይ ስለሚቀመጥ በማናቸውም ጊዜ በመለያ ሲገቡ በበለጠ ፍጥነት ገዝተው መውጣት ይችላሉ}one{እነዚህ ካርዶች እና ሒሳብ መጠየቂያ አድራሻዎቹ በእርስዎ የGoogle መለያ ላይ ስለሚቀመጡ በማናቸውም ጊዜ በመለያ ሲገቡ በበለጠ ፍጥነት ገዝተው መውጣት ይችላሉ}other{እነዚህ ካርዶች እና ሒሳብ መጠየቂያ አድራሻዎቹ በእርስዎ የGoogle መለያ ላይ ስለሚቀመጡ በማናቸውም ጊዜ በመለያ ሲገቡ በበለጠ ፍጥነት ገዝተው መውጣት ይችላሉ}}</translation>
 <translation id="5763042198335101085">ትክክለኛ የኢሜይል አድራሻ ያስገቡ</translation>
 <translation id="5765072501007116331">የማድረሻ ዘዴዎችን እና መስፈርቶችን ለመመልከት አድራሻ ይምረጡ</translation>
 <translation id="5770114862687765385">ፋይሉ የተበላሸ ይመስላል። ክፍለ-ጊዜውን ዳግም ለማስጀመር የ«ዳግም አዝራር» አዝራሩን ጠቅ ያድርጉት።</translation>
@@ -796,7 +792,6 @@
 <translation id="6337133576188860026">ከ<ph name="SIZE" /> ያነሰ ቦታ ያስለቅቃል። አንዳንድ ጣቢያዎች በሚቀጥለው ጉብኝትዎ ላይ ይበልጥ በዝግታ ሊጫኑ ይችላሉ።</translation>
 <translation id="6337534724793800597">መምሪያዎችን በስም አጣራ</translation>
 <translation id="6358450015545214790">እነዚህ ምን ማለት ናቸው?</translation>
-<translation id="635989537247018238">በሚቀጥለው ደረጃ ላይ፣ የትኛዎቹ ካርዶች እንደሚቀመጡ መምረጥ ይችላሉ</translation>
 <translation id="6383221683286411806">ሊሆኑ የሚችሉ ክፍያ መጠየቂያዎች እየመጡ ነው።</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ሌላ የአስተያየት ጥቆማ}one{# ሌሎች የአስተያየት ጥቆማዎች}other{# ሌሎች የአስተያየት ጥቆማዎች}}</translation>
 <translation id="6387754724289022810">በሚቀጥለው ጊዜ በበለጠ ፍጥነት ለመክፈል ካርድዎን እና የማስከፈያ አድራሻዎን በGoogle መለያዎ እና በዚህ መሣሪያ ላይ ያስቀምጡ።</translation>
@@ -822,7 +817,6 @@
 <translation id="6569060085658103619">የቅጥያ ገጽ እየተመለከቱ ነው</translation>
 <translation id="6596325263575161958">የምስጠራ አማራጮች</translation>
 <translation id="6604181099783169992">የእንቅስቃሴ ወይም የብርሃን ዳሳሾች</translation>
-<translation id="6607617806003952240">ከዚህ በላይ ማገዝ አልችልም፣ እባክዎ በእጅ ይቀጥሉ።</translation>
 <translation id="6624427990725312378">የዕውቂያ መረጃ</translation>
 <translation id="6626291197371920147">የሚሰራ የካርድ ቁጥር ያክሉ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ፍለጋ</translation>
@@ -841,7 +835,6 @@
 <translation id="6744009308914054259">ግንኙነትን እየተጠባበቁ ሳሉ የመስመር ውጪ ጽሑፎችን ለማንበብ ውርዶችን መጎብኘት ይችላሉ።</translation>
 <translation id="6753269504797312559">የመምሪያ እሴት</translation>
 <translation id="6757797048963528358">የእርስዎ መሣሪያ ተኝቷል።</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{ይህ ካርድ አሁን ሊታከል አይችልም}one{እነዚህ ካርዶች አሁን ሊታከሉ አይችሉም}other{እነዚህ ካርዶች አሁን ሊታከሉ አይችሉም}}</translation>
 <translation id="6778737459546443941">የእርስዎ ወላጅ ገና አላጸደቁትም</translation>
 <translation id="679355240208270552">ነባሪው ፍለጋ በመምሪያ ስላልነቃ ችላ ተብሏል።</translation>
 <translation id="681021252041861472">የሚያስፈልግ መስክ</translation>
@@ -1144,7 +1137,6 @@
 <translation id="8763927697961133303">የዩኤስቢ መሣሪያ</translation>
 <translation id="8768895707659403558">የእርስዎን ዕልባቶችን በሁሉም መሣሪያዎችዎ ላይ ለመጠቀም <ph name="SIGN_IN_LINK" />።</translation>
 <translation id="8790007591277257123">&amp;ሰርዝን ድገም</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{ይህ ካርድ ወደ የእርስዎ Google መለያ ታክሏል። አሁን በመለያ ከገባ ማንኛውም መሣሪያ ሊጠቀሙበት ይችላሉ።}one{እነዚህ ካርዶች ወደ የእርስዎ Google መለያ ታክለዋል። አሁን በመለያ ከገባ ማንኛውም መሣሪያ ሊጠቀሙባቸው ይችላሉ።}other{እነዚህ ካርዶች ወደ የእርስዎ Google መለያ ታክለዋል። አሁን በመለያ ከገባ ማንኛውም መሣሪያ ሊጠቀሙባቸው ይችላሉ።}}</translation>
 <translation id="8792621596287649091">የ<ph name="ORG_NAME" /> መለያዎን መዳረሻ ሊያጡ ወይም የማንነት ስርቆት ሊያጋጥመዎት ይችላሉ። Chromium የይለፍ ቃልዎን አሁን እንዲቀይሩ ይመክራል።</translation>
 <translation id="8800988563907321413">በአቅራቢያዎ ያሉ የአስተያየት ጥቆማዎች እዚህ ይመጣሉ</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>

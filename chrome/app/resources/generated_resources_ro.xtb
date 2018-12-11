@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Deschide ecranul complet</translation>
 <translation id="189358972401248634">Alte limbi</translation>
-<translation id="1894591787927543791">Salvează cardul pentru a folosi Google Pay</translation>
 <translation id="1895658205118569222">Închideți</translation>
 <translation id="1895934970388272448">Pentru a finaliza acest proces, este necesar să confirmați înregistrarea de pe imprimantă. Verificați acum.</translation>
 <translation id="1897762215429052132">Configurează conexiunea la rețea, limba, aranjamentul tastaturii...</translation>
 <translation id="1901303067676059328">Select&amp;ează tot</translation>
 <translation id="1902576642799138955">Perioadă de validitate</translation>
-<translation id="1904518222538904133">Unul dintre cardurile tale poate fi folosit numai pe acest dispozitiv</translation>
 <translation id="1905375423839394163">Numele dispozitivului Chromebook</translation>
 <translation id="1905710495812624430">Ai depășit numărul maxim de încercări permise.</translation>
 <translation id="1909880997794698664">Sigur doriți să păstrați permanent acest dispozitiv în modul chioșc?</translation>
@@ -3933,7 +3931,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> (de) dosare selectate</translation>
 <translation id="6998793565256476099">Înscrie dispozitivul pentru conferințe video</translation>
 <translation id="7000347579424117903">Include Ctrl, Alt sau Căutare</translation>
-<translation id="700203306553508933">Salvează cardurile pentru a folosi Google Pay</translation>
 <translation id="7002055706763150362">Pentru a configura Smart Lock pentru Chromebook, Google trebuie să se asigure că ești tu: introdu parola pentru a începe.</translation>
 <translation id="7002454948392136538">Alegeți administratorul pentru acest utilizator monitorizat</translation>
 <translation id="7003339318920871147">Baze de date web</translation>
@@ -4660,7 +4657,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8059417245945632445">&amp;Inspectați dispozitivele</translation>
 <translation id="8063235345342641131">Avatar verde prestabilit</translation>
 <translation id="8064671687106936412">Cheie:</translation>
-<translation id="8065485338434000013">Unele dintre cardurile tale pot fi folosite numai pe acest dispozitiv</translation>
 <translation id="806812017500012252">Reordonați după titlu</translation>
 <translation id="8068253693380742035">Atinge pentru a te conecta</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

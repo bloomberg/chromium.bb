@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Id: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Åbn fuld skærm</translation>
 <translation id="189358972401248634">Andre sprog</translation>
-<translation id="1894591787927543791">Gem kort for at bruge Google Pay</translation>
 <translation id="1895658205118569222">Nedlukning</translation>
 <translation id="1895934970388272448">Du skal bekræfte registreringen af din printer, før du kan afslutte denne proces – kontrollér det nu.</translation>
 <translation id="1897762215429052132">Konfigurer netværksforbindelse, sprog, tastaturlayout...</translation>
 <translation id="1901303067676059328">Vælg &amp;alle</translation>
 <translation id="1902576642799138955">Gyldighedsperiode</translation>
-<translation id="1904518222538904133">1 af dine kort kan kun bruges på denne enhed</translation>
 <translation id="1905375423839394163">Navn på Chromebook-enhed</translation>
 <translation id="1905710495812624430">Det maksimale antal forsøg er overskredet.</translation>
 <translation id="1909880997794698664">Er du sikker på, at du vil beholde denne enhed permanent i kiosktilstand?</translation>
@@ -3932,7 +3930,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> filer er valgt</translation>
 <translation id="6998793565256476099">Meld enheden til videokonference</translation>
 <translation id="7000347579424117903">Skal indeholde Ctrl, Alt eller søgetasten</translation>
-<translation id="700203306553508933">Gem kort for at bruge Google Pay</translation>
 <translation id="7002055706763150362">For at konfigurere Smart Lock til Chromebook skal Google først kontrollere, at du er den, du udgiver dig for at være. Angiv din adgangskode for at komme i gang.</translation>
 <translation id="7002454948392136538">Vælg administrator for den administrerede bruger</translation>
 <translation id="7003339318920871147">Webdatabaser</translation>
@@ -4658,7 +4655,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8059417245945632445">&amp;Inspicer enheder</translation>
 <translation id="8063235345342641131">Grøn standardavatar</translation>
 <translation id="8064671687106936412">Nøgle:</translation>
-<translation id="8065485338434000013">Nogle af dine kort kan kun bruges på denne enhed</translation>
 <translation id="806812017500012252">Omorganiser efter titel</translation>
 <translation id="8068253693380742035">Tryk for at logge ind</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>

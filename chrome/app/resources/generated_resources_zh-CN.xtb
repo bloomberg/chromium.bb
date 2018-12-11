@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">以全屏模式打开</translation>
 <translation id="189358972401248634">其他语言</translation>
-<translation id="1894591787927543791">保存一张信用卡以便使用 Google Pay</translation>
 <translation id="1895658205118569222">关机</translation>
 <translation id="1895934970388272448">您必须在自己的打印机上确认注册才能完成此进程 - 立即查看。</translation>
 <translation id="1897762215429052132">设置网络连接、语言、键盘布局…</translation>
 <translation id="1901303067676059328">全选(&amp;A)</translation>
 <translation id="1902576642799138955">有效期</translation>
-<translation id="1904518222538904133">您有 1 张卡只能在这部设备上使用</translation>
 <translation id="1905375423839394163">Chromebook 设备名称</translation>
 <translation id="1905710495812624430">已超过允许的尝试次数上限。</translation>
 <translation id="1909880997794698664">您确定要让此设备永远处于自助服务终端模式吗？</translation>
@@ -3920,7 +3918,6 @@
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
 <translation id="6998793565256476099">注册设备以进行视频会议</translation>
 <translation id="7000347579424117903">必须以 Ctrl 键、Alt 键或搜索键开头</translation>
-<translation id="700203306553508933">保存多张信用卡以便使用 Google Pay</translation>
 <translation id="7002055706763150362">要设置 Smart Lock（Chromebook 版），您需要先输入密码，因为 Google 需要确认是您本人在操作。</translation>
 <translation id="7002454948392136538">选择此受监管用户的管理员</translation>
 <translation id="7003339318920871147">网络数据库</translation>
@@ -4645,7 +4642,6 @@
 <translation id="8059417245945632445">检查设备(&amp;I)</translation>
 <translation id="8063235345342641131">默认的绿色头像</translation>
 <translation id="8064671687106936412">密钥：</translation>
-<translation id="8065485338434000013">您的某些卡只能在这部设备上使用</translation>
 <translation id="806812017500012252">按标题重新排序</translation>
 <translation id="8068253693380742035">触摸以登录</translation>
 <translation id="8069615408251337349">Google 云打印</translation>

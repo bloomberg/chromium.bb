@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Atvērt pilnekrāna režīmu</translation>
 <translation id="189358972401248634">Citas valodas</translation>
-<translation id="1894591787927543791">Saglabāt kartīti, lai izmantotu Google Pay</translation>
 <translation id="1895658205118569222">Izslēgšana</translation>
 <translation id="1895934970388272448">Lai pabeigtu procesu, jums ir jāapstiprina reģistrācija savā printerī. Pārbaudiet to tagad!</translation>
 <translation id="1897762215429052132">Tīkla savienojuma, valodas, tastatūras izkārtojuma iestatīšana...</translation>
 <translation id="1901303067676059328">Izvēlēties visus</translation>
 <translation id="1902576642799138955">Derīguma laiks</translation>
-<translation id="1904518222538904133">1 no jūsu kartītēm var tikt izmantota tikai šajā ierīcē</translation>
 <translation id="1905375423839394163">Chromebook ierīces nosaukums</translation>
 <translation id="1905710495812624430">Ir pārsniegts maksimālais atļautais mēģinājumu skaits.</translation>
 <translation id="1909880997794698664">Vai tiešām vēlaties pastāvīgi turēt šo ierīci kioska režīmā?</translation>
@@ -3933,7 +3931,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mapes atlasītas</translation>
 <translation id="6998793565256476099">Reģistrēt ierīci videokonferencēm</translation>
 <translation id="7000347579424117903">Jāiekļauj “Ctrl”, “Alt” vai “Search”</translation>
-<translation id="700203306553508933">Saglabājiet kartītes, lai izmantotu Google Pay</translation>
 <translation id="7002055706763150362">Lai iestatītu sistēmu Smart Lock Chromebook datoriem, uzņēmumam Google ir jāpārliecinās par jūsu identitāti — lai sāktu darbu, ievadiet savu paroli.</translation>
 <translation id="7002454948392136538">Uzraudzītā lietotāja pārziņa izvēle</translation>
 <translation id="7003339318920871147">Tīmekļa datu bāzes</translation>
@@ -4659,7 +4656,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8059417245945632445">&amp;Pārbaudīt ierīces</translation>
 <translation id="8063235345342641131">Noklusējuma iemiesojums zaļā krāsā</translation>
 <translation id="8064671687106936412">Atslēga:</translation>
-<translation id="8065485338434000013">Dažas no jūsu kartītēm var tikt izmantotas tikai šajā ierīcē</translation>
 <translation id="806812017500012252">Pārkārtot pēc nosaukuma</translation>
 <translation id="8068253693380742035">Pieskarieties, lai pierakstītos</translation>
 <translation id="8069615408251337349">Google mākoņdruka</translation>

@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Código: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir tela cheia</translation>
 <translation id="189358972401248634">Outros idiomas</translation>
-<translation id="1894591787927543791">Salvar cartão para usar o Google Pay</translation>
 <translation id="1895658205118569222">Encerramento</translation>
 <translation id="1895934970388272448">Você deve confirmar o registro na sua impressora para concluir este processo. Verifique isso agora.</translation>
 <translation id="1897762215429052132">Configurar conexão de rede, idioma, layout do teclado...</translation>
 <translation id="1901303067676059328">Selecionar &amp;tudo</translation>
 <translation id="1902576642799138955">Período de validade</translation>
-<translation id="1904518222538904133">Um dos seus cartões só pode ser usado neste dispositivo</translation>
 <translation id="1905375423839394163">Nome do dispositivo Chromebook</translation>
 <translation id="1905710495812624430">O número máximo de tentativas permitidas foi excedido.</translation>
 <translation id="1909880997794698664">Tem certeza que quer manter permanentemente este dispositivo no modo  quiosque?</translation>
@@ -3935,7 +3933,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
 <translation id="6998793565256476099">Cadastre o dispositivo para videoconferência</translation>
 <translation id="7000347579424117903">Inclua a tecla Ctrl, Alt ou Pesquisa</translation>
-<translation id="700203306553508933">Salvar cartões para usar o Google Pay</translation>
 <translation id="7002055706763150362">Para configurar o Smart Lock para Chromebook, o Google precisa confirmar que é você: digite sua senha para começar.</translation>
 <translation id="7002454948392136538">Escolha o gerente para este usuário supervisionado</translation>
 <translation id="7003339318920871147">Bancos de dados da web</translation>
@@ -4662,7 +4659,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8059417245945632445">&amp;Inspecionar dispositivos</translation>
 <translation id="8063235345342641131">Avatar verde padrão</translation>
 <translation id="8064671687106936412">Chave:</translation>
-<translation id="8065485338434000013">Alguns dos seus cartões só podem ser usados neste dispositivo</translation>
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Toque para fazer login</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

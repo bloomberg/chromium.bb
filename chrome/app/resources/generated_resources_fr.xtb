@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Identifiant&lt;/span&gt; : <ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Ouvrir en mode plein écran</translation>
 <translation id="189358972401248634">Autres langues</translation>
-<translation id="1894591787927543791">Enregistrer la carte pour utiliser Google Pay</translation>
 <translation id="1895658205118569222">Arrêt.</translation>
 <translation id="1895934970388272448">Vous devez confirmer l'enregistrement de l'imprimante pour terminer ce processus. Merci de vous en assurer dès maintenant.</translation>
 <translation id="1897762215429052132">Configurer la connexion réseau, la langue, la disposition du clavier…</translation>
 <translation id="1901303067676059328">&amp;Tout sélectionner</translation>
 <translation id="1902576642799138955">Durée de validité</translation>
-<translation id="1904518222538904133">L'une de vos cartes ne peut être utilisée que sur cet appareil</translation>
 <translation id="1905375423839394163">Nom du Chromebook</translation>
 <translation id="1905710495812624430">Vous avez atteint le nombre maximal autorisé de tentatives.</translation>
 <translation id="1909880997794698664">Voulez-vous vraiment conserver cet appareil en mode Kiosque de manière permanente ?</translation>
@@ -3934,7 +3932,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> dossiers sélectionnés</translation>
 <translation id="6998793565256476099">Enregistrer un appareil pour la visioconférence</translation>
 <translation id="7000347579424117903">Vous devez inclure la touche Ctrl, la touche Alt ou la touche de recherche</translation>
-<translation id="700203306553508933">Enregistrer des cartes pour utiliser Google Pay</translation>
 <translation id="7002055706763150362">Pour configurer Smart Lock pour Chromebook, nous devons vérifier qu'il s'agit bien de vous. Pour commencer, saisissez votre mot de passe.</translation>
 <translation id="7002454948392136538">Sélectionner le gestionnaire de cet utilisateur supervisé</translation>
 <translation id="7003339318920871147">Bases de données Web</translation>
@@ -4661,7 +4658,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8059417245945632445">&amp;Inspecter les appareils</translation>
 <translation id="8063235345342641131">Avatar vert par défaut</translation>
 <translation id="8064671687106936412">Clé :</translation>
-<translation id="8065485338434000013">Certaines de vos cartes ne peuvent être utilisées que sur cet appareil</translation>
 <translation id="806812017500012252">Trier par nom</translation>
 <translation id="8068253693380742035">Appuyez pour vous connecter</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

@@ -625,13 +625,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Id: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Öppna helskärmsläge</translation>
 <translation id="189358972401248634">Övriga språk</translation>
-<translation id="1894591787927543791">Spara kortet för Google Pay</translation>
 <translation id="1895658205118569222">Stängning</translation>
 <translation id="1895934970388272448">Du måste bekräfta registreringen på skrivaren för att avsluta processen. Kontrollera uppgifterna nu.</translation>
 <translation id="1897762215429052132">Konfigurera nätverksanslutning, språk, tangentbordslayout …</translation>
 <translation id="1901303067676059328">Välj &amp;alla</translation>
 <translation id="1902576642799138955">Giltighetsperiod</translation>
-<translation id="1904518222538904133">Ett av korten kan bara användas på den här enheten</translation>
 <translation id="1905375423839394163">Chromebook-enhetens namn</translation>
 <translation id="1905710495812624430">Du har försökt för många gånger.</translation>
 <translation id="1909880997794698664">Är du säker på att du vill använda kioskläge på enheten permanent?</translation>
@@ -3932,7 +3930,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappar har valts</translation>
 <translation id="6998793565256476099">Registrera enheten för videokonferenser</translation>
 <translation id="7000347579424117903">Ctrl-, alt- eller söktangenten måste finnas med</translation>
-<translation id="700203306553508933">Spara korten för Google Pay</translation>
 <translation id="7002055706763150362">Om du vill konfigurera Smart Lock för Chrome måste Google vara säker på att det är du som gör ändringen, så du måste först ange ditt lösenord.</translation>
 <translation id="7002454948392136538">Välj ansvarig för den här kontrollerade användaren</translation>
 <translation id="7003339318920871147">Webbdatabaser</translation>
@@ -4659,7 +4656,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8059417245945632445">&amp;Inspektera enheter</translation>
 <translation id="8063235345342641131">Grön standardavatar</translation>
 <translation id="8064671687106936412">Nyckel:</translation>
-<translation id="8065485338434000013">Några av korten kan bara användas på den här enheten</translation>
 <translation id="806812017500012252">Ordna efter titel</translation>
 <translation id="8068253693380742035">Tryck här om du vill logga in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

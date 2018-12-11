@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Kimlik: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Tam ekranı aç</translation>
 <translation id="189358972401248634">Diğer diller</translation>
-<translation id="1894591787927543791">Kullanılacak kartı Google Pay'e kaydet</translation>
 <translation id="1895658205118569222">Kapat</translation>
 <translation id="1895934970388272448">Bu işlemi tamamlamak için yazıcınızda kaydı onaylamalısınız; şimdi kontrol edin.</translation>
 <translation id="1897762215429052132">Ağ bağlantısı, dil, klavye düzenini ayarlayın...</translation>
 <translation id="1901303067676059328">Tümünü &amp;seç</translation>
 <translation id="1902576642799138955">Geçerlilik Süresi</translation>
-<translation id="1904518222538904133">Kartlarınızın 1 tanesi yalnızca bu cihazda kullanılabilir</translation>
 <translation id="1905375423839394163">Chromebook cihaz adı</translation>
 <translation id="1905710495812624430">İzin verilen maksimum deneme sayısı aşıldı.</translation>
 <translation id="1909880997794698664">Bu cihazı kalıcı olarak kiosk modunda tutmak istediğinizden emin misiniz?</translation>
@@ -3934,7 +3932,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
 <translation id="6998793565256476099">Video konferans için cihazı kaydetme</translation>
 <translation id="7000347579424117903">Ctrl, Alt veya Arama tuşunu ekleyin</translation>
-<translation id="700203306553508933">Google Pay'i kullanmak için kart bilgilerini kaydet</translation>
 <translation id="7002055706763150362">Google'ın, Chromebook için Smart Lock özelliğini kurmak amacıyla, bunu talep eden kullanıcının siz olduğunuzdan emin olması gerekir. Başlamak için şifrenizi girin.</translation>
 <translation id="7002454948392136538">Bu denetlenen kullanıcı için yönetici seçin</translation>
 <translation id="7003339318920871147">Web veritabanları</translation>
@@ -4660,7 +4657,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8059417245945632445">&amp;Cihazları denetle</translation>
 <translation id="8063235345342641131">Varsayılan yeşil avatar</translation>
 <translation id="8064671687106936412">Anahtar:</translation>
-<translation id="8065485338434000013">Kartlarınızın bazıları yalnızca bu cihazda kullanılabilir</translation>
 <translation id="806812017500012252">Başlığa göre yeniden sırala</translation>
 <translation id="8068253693380742035">Oturum açmak için dokunun</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

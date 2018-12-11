@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ஐடி: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">முழுத் திரையைத் திற</translation>
 <translation id="189358972401248634">பிற மொழிகள்</translation>
-<translation id="1894591787927543791">Google Payயைப் பயன்படுத்த, கார்டைச் சேமி</translation>
 <translation id="1895658205118569222">நிறுத்தம்</translation>
 <translation id="1895934970388272448">இந்தச் செயல்முறையை முடிக்க உங்கள் அச்சுப்பொறியில் பதிவை உறுதிப்படுத்த வேண்டும் - அதை இப்போது சரிபார்க்கவும்.</translation>
 <translation id="1897762215429052132">நெட்வொர்க் இணைப்பு, மொழி, கீபோர்டு தளவமைப்பு ஆகியவற்றை அமைக்கவும்...</translation>
 <translation id="1901303067676059328">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="1902576642799138955">செல்லுபடிக் காலம்</translation>
-<translation id="1904518222538904133">உங்கள் கார்டுகளில் ஒன்றை இந்தச் சாதனத்தில் மட்டுமே பயன்படுத்த முடியும்</translation>
 <translation id="1905375423839394163">Chromebookகின் சாதனப் பெயர்</translation>
 <translation id="1905710495812624430">அனுமதிக்கப்பட்ட அதிகபட்ச முயற்சிகளைக் கடந்துவிட்டீர்கள்.</translation>
 <translation id="1909880997794698664">இந்தச் சாதனத்தை kiosk பயன்முறையில் நிரந்தரமாக வைக்க விரும்புகிறீர்களா?</translation>
@@ -3934,7 +3932,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> கோப்புறைகள் தேர்ந்தெடுக்கப்பட்டன</translation>
 <translation id="6998793565256476099">வீடியோ கலந்துரையாடலுக்கு, சாதனத்தைப் பதிவுசெய்</translation>
 <translation id="7000347579424117903">Ctrl, Alt அல்லது தேடல் விசையைப் பயன்படுத்தித் தொடங்கவும்</translation>
-<translation id="700203306553508933">Google Payயைப் பயன்படுத்த, கார்டுகளைச் சேமி</translation>
 <translation id="7002055706763150362">Chromebookக்கான Smart Lockஐ அமைக்க, இது நீங்கள் தான் என்பதை Google உறுதிப்படுத்த வேண்டும்—தொடங்க, கடவுச்சொல்லை உள்ளிடவும்.</translation>
 <translation id="7002454948392136538">இந்தக் கண்காணிக்கப்படும் பயனருக்கான நிர்வாகியைத் தேர்வுசெய்க</translation>
 <translation id="7003339318920871147">வலை தரவுத்தளங்கள்</translation>
@@ -4663,7 +4660,6 @@
 <translation id="8059417245945632445">&amp;சாதனங்களை ஆய்வுசெய்</translation>
 <translation id="8063235345342641131">இயல்பு பச்சைநிற அவதார்</translation>
 <translation id="8064671687106936412">திறவுச்சொல்:</translation>
-<translation id="8065485338434000013">உங்கள் கார்டுகளில் சிலவற்றை இந்தச் சாதனத்தில் மட்டுமே பயன்படுத்த முடியும்</translation>
 <translation id="806812017500012252">தலைப்பின்படி மறுவரிசைப்படுத்து</translation>
 <translation id="8068253693380742035">உள்நுழைய, தொடவும்</translation>
 <translation id="8069615408251337349">Google கிளவுடு அச்சு</translation>

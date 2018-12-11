@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Apri a schermo intero</translation>
 <translation id="189358972401248634">Altre lingue</translation>
-<translation id="1894591787927543791">Salva la carta per usare Google Pay</translation>
 <translation id="1895658205118569222">Chiusura</translation>
 <translation id="1895934970388272448">Devi confermare la registrazione della stampante per terminare la procedura. Controlla.</translation>
 <translation id="1897762215429052132">Configura la connessione di rete, la lingua, il layout della tastiera...</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
 <translation id="1902576642799138955">Periodo di validità</translation>
-<translation id="1904518222538904133">Una delle tue carte può essere usata soltanto su questo dispositivo</translation>
 <translation id="1905375423839394163">Nome del dispositivo Chromebook</translation>
 <translation id="1905710495812624430">Numero massimo di tentativi consentiti superato.</translation>
 <translation id="1909880997794698664">Vuoi mantenere definitivamente questo dispositivo in modalità kiosk?</translation>
@@ -3928,7 +3926,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> cartelle selezionate</translation>
 <translation id="6998793565256476099">Registra il dispositivo per le videoconferenze</translation>
 <translation id="7000347579424117903">Includi CTRL, ALT o tasto per la ricerca</translation>
-<translation id="700203306553508933">Salva le carte per usare Google Pay</translation>
 <translation id="7002055706763150362">Per poter configurare Smart Lock per Chromebook, Google deve verificare che l'utente sia tu. Digita la password per iniziare.</translation>
 <translation id="7002454948392136538">Scegli il gestore di questo utente supervisionato</translation>
 <translation id="7003339318920871147">Database web</translation>
@@ -4653,7 +4650,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8059417245945632445">&amp;Ispeziona dispositivi</translation>
 <translation id="8063235345342641131">Avatar verde predefinito</translation>
 <translation id="8064671687106936412">Chiave:</translation>
-<translation id="8065485338434000013">Alcune delle tue carte possono essere usate soltanto su questo dispositivo</translation>
 <translation id="806812017500012252">Riordina per titolo</translation>
 <translation id="8068253693380742035">Tocca per accedere</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

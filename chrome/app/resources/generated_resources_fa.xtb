@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">‏&lt;span&gt;شناسه: &lt;/span&gt;‏<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">باز کردن تمام صفحه</translation>
 <translation id="189358972401248634">زبان‌های دیگر</translation>
-<translation id="1894591787927543791">‏ذخیره کارت برای استفاده از Google Pay</translation>
 <translation id="1895658205118569222">بسته شدن</translation>
 <translation id="1895934970388272448">برای تکمیل این فرآیند باید ثبت را در چاپگرتان تأیید کنید - اکنون آن را بررسی نمایید.</translation>
 <translation id="1897762215429052132">راه‌اندازی اتصال شبکه، زبان، طرح‌بندی صفحه‌کلید…</translation>
 <translation id="1901303067676059328">انتخاب &amp;همه</translation>
 <translation id="1902576642799138955">مدت اعتبار</translation>
-<translation id="1904518222538904133">فقط یکی از کارت‌ها را می‌توان در این دستگاه استفاده کرد</translation>
 <translation id="1905375423839394163">‏نام دستگاه Chromebook</translation>
 <translation id="1905710495812624430">به حداکثر تعداد مجاز تلاش رسیده‌اید.</translation>
 <translation id="1909880997794698664">آیا مطمئن هستید که می‌خواهید این دستگاه را برای همیشه در حالت کیوسک نگه دارید؟</translation>
@@ -3929,7 +3927,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> پوشه‌ انتخاب شد</translation>
 <translation id="6998793565256476099">ثبت‌نام دستگاه برای برگزاری کنفرانس ویدیویی</translation>
 <translation id="7000347579424117903">‏باید شامل Ctrl،‏ Alt یا Search‌ باشد</translation>
-<translation id="700203306553508933">‏ذخیره کارت‌ها برای استفاده از Google Pay</translation>
 <translation id="7002055706763150362">‏برای تنظیم «Smart Lock برای Chromebook»، ‏Google باید مطمئن شود این شما هستید—برای شروع به کار، گذرواژه‌تان را وارد کنید.</translation>
 <translation id="7002454948392136538">انتخاب مدیر برای این کاربر نظارت‌شده</translation>
 <translation id="7003339318920871147">پایگاه‌های داده وب</translation>
@@ -4656,7 +4653,6 @@
 <translation id="8059417245945632445">&amp;بازرسی دستگاه‌ها</translation>
 <translation id="8063235345342641131">چهره‌نمای پیش‌فرض سبز</translation>
 <translation id="8064671687106936412">کلید:</translation>
-<translation id="8065485338434000013">فقط برخی از کارت‌هایتان را می‌توان در این دستگاه استفاده کرد</translation>
 <translation id="806812017500012252">ترتیب مجدد براساس عنوان</translation>
 <translation id="8068253693380742035">برای ورود به سیستم لمس کنید</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

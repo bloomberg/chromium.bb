@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">In Vollbildmodus öffnen</translation>
 <translation id="189358972401248634">Sonstige Sprachen</translation>
-<translation id="1894591787927543791">Karte speichern, um Google Pay zu nutzen</translation>
 <translation id="1895658205118569222">Herunterfahren</translation>
 <translation id="1895934970388272448">Bestätigen Sie nun zum Abschluss des Vorgangs die Registrierung auf Ihrem Drucker.</translation>
 <translation id="1897762215429052132">Netzwerkverbindung, Sprache und Tastaturlayout einrichten</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
 <translation id="1902576642799138955">Gültigkeitsdauer</translation>
-<translation id="1904518222538904133">Eine Ihrer Karten kann nur auf diesem Gerät verwendet werden</translation>
 <translation id="1905375423839394163">Name des Chromebooks</translation>
 <translation id="1905710495812624430">Die maximal zulässige Anzahl an Versuchen wurde überschritten.</translation>
 <translation id="1909880997794698664">Möchten Sie das Gerät wirklich dauerhaft im Kioskmodus betreiben?</translation>
@@ -3928,7 +3926,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> Ordner ausgewählt</translation>
 <translation id="6998793565256476099">Gerät für Videokonferenzen registrieren</translation>
 <translation id="7000347579424117903">Strg, Alt oder Suchtaste integrieren</translation>
-<translation id="700203306553508933">Karten speichern, um Google Pay zu nutzen</translation>
 <translation id="7002055706763150362">Zum Einrichten von Smart Lock für Chromebooks müssen wir Sie authentifizieren. Geben Sie bitte Ihr Passwort ein.</translation>
 <translation id="7002454948392136538">Manager für diesen betreuten Nutzer auswählen</translation>
 <translation id="7003339318920871147">Web-Datenbanken</translation>
@@ -4655,7 +4652,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8059417245945632445">&amp;Geräte untersuchen</translation>
 <translation id="8063235345342641131">Grüner Standardavatar</translation>
 <translation id="8064671687106936412">Schlüssel:</translation>
-<translation id="8065485338434000013">Einige Ihrer Karten können nur auf diesem Gerät verwendet werden</translation>
 <translation id="806812017500012252">Neu sortieren nach Titel</translation>
 <translation id="8068253693380742035">Zum Anmelden tippen</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

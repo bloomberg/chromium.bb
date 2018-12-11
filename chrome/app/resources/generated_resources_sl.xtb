@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Odpri v celozaslonskem načinu</translation>
 <translation id="189358972401248634">Drugi jeziki</translation>
-<translation id="1894591787927543791">Shranjevanje kartice za uporabo Googla Pay</translation>
 <translation id="1895658205118569222">Zaprt</translation>
 <translation id="1895934970388272448">Ta postopek končate tako, da v tiskalniku potrdite registracijo – preverite jo zdaj.</translation>
 <translation id="1897762215429052132">Nastavitev omrežne povezave, jezika, postavitve tipkovnice …</translation>
 <translation id="1901303067676059328">Izberi &amp;vse</translation>
 <translation id="1902576642799138955">Obdobje veljavnosti</translation>
-<translation id="1904518222538904133">V tej napravi je mogoče uporabljati samo eno od vaših kartic</translation>
 <translation id="1905375423839394163">Ime Chromebooka</translation>
 <translation id="1905710495812624430">Preseženo je največje dovoljeno število dovoljenih poskusov.</translation>
 <translation id="1909880997794698664">Ali res želite, da je ta naprava trajno v načinu Kiosk?</translation>
@@ -3935,7 +3933,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6998711733709403587">Izbranih toliko map: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Včlanitev naprave za videokonference</translation>
 <translation id="7000347579424117903">Vključevati morajo Ctrl, Alt ali tipko za iskanje</translation>
-<translation id="700203306553508933">Shranite kartice, če želite uporabljati Google Pay</translation>
 <translation id="7002055706763150362">Če želite nastaviti Smart Lock za Chromebook, se mora Google prepričati, da ste to res vi – vnesite geslo, če želite začeti.</translation>
 <translation id="7002454948392136538">Izbira upravitelja za tega zaščitenega uporabnika</translation>
 <translation id="7003339318920871147">Spletne zbirke podatkov</translation>
@@ -4662,7 +4659,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8059417245945632445">&amp;Pregled naprav</translation>
 <translation id="8063235345342641131">Privzeti zeleni avatar</translation>
 <translation id="8064671687106936412">Ključ:</translation>
-<translation id="8065485338434000013">Nekatere vaše kartice je mogoče uporabljati samo v tej napravi</translation>
 <translation id="806812017500012252">Razvrsti po naslovu</translation>
 <translation id="8068253693380742035">Za prijavo se dotaknite</translation>
 <translation id="8069615408251337349">Google Tiskanje v oblaku</translation>

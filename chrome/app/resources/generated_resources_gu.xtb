@@ -622,13 +622,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">પૂર્ણ સ્ક્રીન ખોલો</translation>
 <translation id="189358972401248634">અન્ય ભાષાઓ</translation>
-<translation id="1894591787927543791">Google Payનો ઉપયોગ કરવા માટે કાર્ડ સાચવો</translation>
 <translation id="1895658205118569222">બંધ કરો</translation>
 <translation id="1895934970388272448">આ પ્રક્રિયા સમાપ્ત કરવા માટે તમારે તમારા પ્રિન્ટર પર પુષ્ટિ કરવી આવશ્યક છે - તેને હમણાં તપાસો.</translation>
 <translation id="1897762215429052132">નેટવર્ક કનેક્શન, ભાષા, કીબોર્ડ લેઆઉટ સેટ કરો...</translation>
 <translation id="1901303067676059328">&amp;બધા પસંદ કરો</translation>
 <translation id="1902576642799138955">માન્ય અવધિ</translation>
-<translation id="1904518222538904133">તમારા કાર્ડમાંથી માત્ર એકનો ઉપયોગ આ ઉપકરણ પર થઈ શકે છે</translation>
 <translation id="1905375423839394163">Chromebook ઉપકરણનું નામ</translation>
 <translation id="1905710495812624430">મહત્તમ મંજૂર પ્રયત્નોની સંખ્યા ઓળંગાઈ.</translation>
 <translation id="1909880997794698664">શું તમે ખરેખર આ ઉપકરણને કાયમી માટે કિઓસ્ક મોડમાં રાખવા માંગો છો?</translation>
@@ -3930,7 +3928,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ફોલ્ડર્સ પસંદ કર્યા</translation>
 <translation id="6998793565256476099">વીડિયો કૉન્ફરન્સ માટે ડિવાઇસની નોંધણી કરો</translation>
 <translation id="7000347579424117903">Ctrl, Alt અથવા શોધ શામેલ કરો</translation>
-<translation id="700203306553508933">Google Payનો ઉપયોગ કરવા માટે કાર્ડ સાચવો</translation>
 <translation id="7002055706763150362">Chromebook માટે Smart Lock સેટ કરવા માટે, Google ને તે તમે છો તેની ખાતરી કરવાની જરૂર છે—પ્રારંભ કરવા માટે તમારો પાસવર્ડ લખો.</translation>
 <translation id="7002454948392136538">આ નિરીક્ષણ કરેલ વપરાશકર્તા માટે સંચાલક પસંદ કરો</translation>
 <translation id="7003339318920871147">વેબ ડેટાબેસેસ</translation>
@@ -4649,7 +4646,6 @@
 <translation id="8059417245945632445">&amp;ઉપકરણોની તપાસ કરો</translation>
 <translation id="8063235345342641131">ડિફોલ્ટ લીલો અવતાર</translation>
 <translation id="8064671687106936412">કી:</translation>
-<translation id="8065485338434000013">તમારા અમુક કાર્ડનો ફક્ત આ ઉપકરણ પર જ ઉપયોગ કરી શકાય</translation>
 <translation id="806812017500012252">શીર્ષકથી પુનઃક્રમાંકિત કરો</translation>
 <translation id="8068253693380742035">સાઇન ઇન કરવા માટે ટચ કરો</translation>
 <translation id="8069615408251337349">Google ક્લાઉડ પ્રિન્ટ</translation>

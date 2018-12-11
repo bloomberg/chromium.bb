@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir en pantalla completa</translation>
 <translation id="189358972401248634">Otros idiomas</translation>
-<translation id="1894591787927543791">Guardar tarjeta para usarla en Google Pay</translation>
 <translation id="1895658205118569222">Cierre del navegador</translation>
 <translation id="1895934970388272448">Debes confirmar el registro de tu impresora para finalizar este proceso. Compruébalo ahora.</translation>
 <translation id="1897762215429052132">Configuración de conexión de red, idioma, diseño de teclado...</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="1902576642799138955">Período de validez</translation>
-<translation id="1904518222538904133">1 de tus tarjetas solo puede usarse en este dispositivo</translation>
 <translation id="1905375423839394163">Nombre del dispositivo Chromebook</translation>
 <translation id="1905710495812624430">Se ha superado el máximo de intentos permitidos.</translation>
 <translation id="1909880997794698664">¿Seguro que quieres que se utilice el modo de kiosco en este dispositivo de forma permanente?</translation>
@@ -3451,7 +3449,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6238923052227198598">Mantener la última nota en la pantalla de bloqueo</translation>
 <translation id="6239558157302047471">Volver a cargar &amp;marco</translation>
 <translation id="6241530762627360640">Acceder a información sobre dispositivos Bluetooth vinculados a tu sistema y descubrir dispositivos Bluetooth cercanos.</translation>
-<translation id="6243280677745499710">En uso</translation>
+<translation id="6243280677745499710">Configurado actualmente</translation>
 <translation id="6243774244933267674">Servidor no disponible</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">Sistema: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -3930,7 +3928,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
 <translation id="6998793565256476099">Registrar dispositivo para hacer videoconferencias</translation>
 <translation id="7000347579424117903">Incluye Ctrl, Alt o la tecla de búsqueda</translation>
-<translation id="700203306553508933">Guarda tarjetas para usarlas en Google Pay</translation>
 <translation id="7002055706763150362">Para configurar Smart Lock para Chromebook, Google necesita asegurarse de que eres el usuario legítimo. Escribe tu contraseña para empezar.</translation>
 <translation id="7002454948392136538">Selecciona el administrador de este usuario supervisado</translation>
 <translation id="7003339318920871147">Bases de datos web</translation>
@@ -4657,7 +4654,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8059417245945632445">&amp;Inspeccionar dispositivos</translation>
 <translation id="8063235345342641131">Avatar verde predeterminado</translation>
 <translation id="8064671687106936412">Clave:</translation>
-<translation id="8065485338434000013">Algunas de tus tarjetas solo pueden usarse en este dispositivo</translation>
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Toca para iniciar sesión</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

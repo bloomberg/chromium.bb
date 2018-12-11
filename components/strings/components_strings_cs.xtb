@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Zde se zobrazí otevřené karty</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Jméno držitele karty</translation>
-<translation id="1809549658008855907">Ukládat karty do účtu Google?</translation>
 <translation id="1821930232296380041">Neplatný požadavek nebo parametry požadavku</translation>
 <translation id="1826516787628120939">Probíhá kontrola</translation>
 <translation id="1834321415901700177">Tento web obsahuje škodlivé programy</translation>
 <translation id="1839551713262164453">Ověření hodnot zásad selhalo s chybami</translation>
 <translation id="1842969606798536927">Zaplatit</translation>
-<translation id="1866450167992311397">Používejte své karty na různých místech</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="1874765382782611674">Přijímané debetní karty</translation>
@@ -382,7 +380,6 @@
 <translation id="3427092606871434483">Povolit (výchozí)</translation>
 <translation id="3427342743765426898">&amp;Opakovat úpravy</translation>
 <translation id="342781501876943858">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
-<translation id="3430691998045392297">Přehrávaný film se liší, chcete pokračovat?</translation>
 <translation id="3431636764301398940">Uložit tuto kartu do zařízení</translation>
 <translation id="3447661539832366887">Vlastník tohoto zařízení hru s dinosaurem vypnul.</translation>
 <translation id="3447884698081792621">Zobrazit certifikát (vydavatel: <ph name="ISSUER" />)</translation>
@@ -647,7 +644,7 @@
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> z <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Vybrat kontaktní údaje</translation>
-<translation id="5327248766486351172">Název</translation>
+<translation id="5327248766486351172">Jméno</translation>
 <translation id="5332219387342487447">Způsob dopravy</translation>
 <translation id="5344579389779391559">Tato stránka se vám může pokusit naúčtovat poplatky</translation>
 <translation id="5355557959165512791">Web <ph name="SITE" /> teď nemůžete navštívit, protože jeho certifikát byl zrušen. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
@@ -709,7 +706,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
 <translation id="5730040223043577876">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
 <translation id="5732392974455271431">Rodiče ti jej mohou odblokovat.</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Tato karta se uloží do vašeho účtu Google, abyste mohli platit rychleji všude, kde jste přihlášeni.}few{Tyto karty se uloží do vašeho účtu Google, abyste mohli platit rychleji všude, kde jste přihlášeni.}many{Tyto karty se uloží do vašeho účtu Google, abyste mohli platit rychleji všude, kde jste přihlášeni.}other{Tyto karty se uloží do vašeho účtu Google, abyste mohli platit rychleji všude, kde jste přihlášeni.}}</translation>
 <translation id="5763042198335101085">Zadejte platnou e-mailovou adresu</translation>
 <translation id="5765072501007116331">Chcete-li zobrazit způsoby doručení a požadavky, vyberte adresu</translation>
 <translation id="5770114862687765385">Soubor se zdá být poškozený. Relaci resetujete kliknutím na tlačítko Resetovat.</translation>
@@ -792,7 +788,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6337133576188860026">Uvolní méně než <ph name="SIZE" />. Je možné, že se některé weby při příští návštěvě budou načítat pomaleji.</translation>
 <translation id="6337534724793800597">Filtrovat zásady podle názvu</translation>
 <translation id="6358450015545214790">Nápověda</translation>
-<translation id="635989537247018238">V dalším kroku si můžete vybrat, které karty chcete uložit</translation>
 <translation id="6383221683286411806">Pozor na možné poplatky na webu, který se chystáte navštívit</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 další návrh}few{# další návrhy}many{# dalšího návrhu}other{# dalších návrhů}}</translation>
 <translation id="6387754724289022810">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google a do tohoto zařízení.</translation>
@@ -818,7 +813,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6569060085658103619">Prohlížíte si stránku rozšíření</translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
 <translation id="6604181099783169992">Senzory pohybu nebo světla</translation>
-<translation id="6607617806003952240">Dále vám pomoci nemůžu, pokračujte ručně.</translation>
 <translation id="6624427990725312378">Kontaktní údaje</translation>
 <translation id="6626291197371920147">Přidání platného čísla karty</translation>
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE" /></translation>
@@ -837,7 +831,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6744009308914054259">Zatímco čekáte na připojení, v sekci Stažené soubory si můžete přečíst offline články.</translation>
 <translation id="6753269504797312559">Hodnota zásady</translation>
 <translation id="6757797048963528358">Zařízení přešlo do režimu spánku.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Tuto kartu v tuto chvíli nelze přidat.}few{Tyto karty v tuto chvíli nelze přidat}many{Tyto karty v tuto chvíli nelze přidat}other{Tyto karty v tuto chvíli nelze přidat}}</translation>
 <translation id="6778737459546443941">Rodič ti přístup na web dosud neschválil.</translation>
 <translation id="679355240208270552">Ignorováno, protože v zásadách výchozí vyhledávání není aktivováno.</translation>
 <translation id="681021252041861472">Povinné pole</translation>
@@ -1139,7 +1132,6 @@ Další podrobnosti:
 <translation id="8763927697961133303">Zařízení USB</translation>
 <translation id="8768895707659403558">Chcete-li své karty používat na všech zařízeních, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Tato karta byla přidána do vašeho účtu Google. Můžete ji teď používat ze všech zařízení, v nichž jste přihlášeni.}few{Tyto karty byly přidány do vašeho účtu Google. Můžete je teď používat ze všech zařízení, v nichž jste přihlášeni.}many{Tyto karty byly přidány do vašeho účtu Google. Můžete je teď používat ze všech zařízení, v nichž jste přihlášeni.}other{Tyto karty byly přidány do vašeho účtu Google. Můžete je teď používat ze všech zařízení, v nichž jste přihlášeni.}}</translation>
 <translation id="8792621596287649091">Mohli byste ztratit přístup k účtu <ph name="ORG_NAME" /> nebo by mohlo dojít k odcizení vaší identity. Doporučujeme vám okamžitě změnit heslo.</translation>
 <translation id="8800988563907321413">Zde se zobrazí návrhy funkce Nablízku</translation>
 <translation id="8820817407110198400">Záložky</translation>

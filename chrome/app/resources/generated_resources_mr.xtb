@@ -625,13 +625,11 @@
 <translation id="1890674179660343635">&lt;span&gt;आयडी: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">फुल स्क्रीन उघडा</translation>
 <translation id="189358972401248634">इतर भाषा</translation>
-<translation id="1894591787927543791">Google Pay वापरण्यासाठी कार्ड सेव्ह करा</translation>
 <translation id="1895658205118569222">बंद करा</translation>
 <translation id="1895934970388272448">ही प्रक्रिया समाप्त करण्यासाठी तुम्हाला आपल्या प्रिंटरवर नोंदणीची पुष्टी करणे आवश्यक आहे - हे आता तपासा.</translation>
 <translation id="1897762215429052132">नेटवर्क कनेक्शन, भाषा, कीबोर्ड लेआउट सेट करा...</translation>
 <translation id="1901303067676059328">&amp;सर्व निवडा</translation>
 <translation id="1902576642799138955">वैधता कालावधी</translation>
-<translation id="1904518222538904133">तुमच्या कार्डांपैकी फक्त एक कार्ड या डिव्हाइसवर वापरले जाऊ शकते</translation>
 <translation id="1905375423839394163">Chromebook डिव्हाइसचे नाव</translation>
 <translation id="1905710495812624430">कमाल अनुमती असलेले प्रयत्न ओलांडले.</translation>
 <translation id="1909880997794698664">तुम्हाला खात्री आहे की तुम्ही कियोस्क मोडमध्ये हे डिव्हाइस कायमचे ठेवू इच्छिता?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> फोल्डर निवडली</translation>
 <translation id="6998793565256476099">डीव्हाइसची व्हिडिओ काँफरंससाठी नोंदणी करा</translation>
 <translation id="7000347579424117903">Ctrl, Alt किंवा शोधचा समावेश करा</translation>
-<translation id="700203306553508933">Google Pay वापरण्यासाठी कार्डे सेव्ह करा</translation>
 <translation id="7002055706763150362">Chromebook साठी Smart Lock सेट करण्यासाठी, Google ला हे आपणच असल्याचे सुनिश्चित करण्याची आवश्यकता असते—प्रारंभ करण्यासाठी तुमचा पासवर्ड टाइप करा.</translation>
 <translation id="7002454948392136538">या पर्यवेक्षी वापरकर्त्यासाठी व्यवस्थापक निवडा</translation>
 <translation id="7003339318920871147">वेब डेटाबेस</translation>
@@ -4658,7 +4655,6 @@
 <translation id="8059417245945632445">&amp;डिव्हाइसेसचा निरीक्षण करा</translation>
 <translation id="8063235345342641131">डीफॉल्ट हिरवा अवतार</translation>
 <translation id="8064671687106936412">की:</translation>
-<translation id="8065485338434000013">तुमची काही कार्डे फक्त या डिव्हाइसवर वापरली जाऊ शकतात</translation>
 <translation id="806812017500012252">शीर्षकानुसार पुन्हा क्रमवारी लावा</translation>
 <translation id="8068253693380742035">साइन इन साठी स्पर्श करा</translation>
 <translation id="8069615408251337349">Google क्लाउड प्रिंट</translation>

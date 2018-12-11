@@ -625,13 +625,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Идентификатор:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Открыть в полноэкранном режиме</translation>
 <translation id="189358972401248634">Другие языки</translation>
-<translation id="1894591787927543791">Сохранить карту в Google Pay</translation>
 <translation id="1895658205118569222">Завершение работы</translation>
 <translation id="1895934970388272448">Чтобы завершить операцию, подтвердите регистрацию на принтере.</translation>
 <translation id="1897762215429052132">Настройка: сетевое подключение, язык, раскладка клавиатуры...</translation>
 <translation id="1901303067676059328">Выделить &amp;все</translation>
 <translation id="1902576642799138955">Срок действия</translation>
-<translation id="1904518222538904133">Одну из ваших карт можно использовать только на этом устройстве</translation>
 <translation id="1905375423839394163">Название устройства Chromebook</translation>
 <translation id="1905710495812624430">Превышено максимально допустимое число попыток.</translation>
 <translation id="1909880997794698664">Всегда запускать устройство в режиме киоска?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587">Выбрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Зарегистрировать как устройство для проведения видеоконференций.</translation>
 <translation id="7000347579424117903">Сочетание должно начинаться с клавиши Ctrl, Alt или Search</translation>
-<translation id="700203306553508933">Сохранить карты в Google Pay</translation>
 <translation id="7002055706763150362">Чтобы начать настройку Smart Lock для Chromebook, введите пароль. Так мы определим, что функцию пытаетесь включить именно вы.</translation>
 <translation id="7002454948392136538">Выбор менеджера для этого контролируемого профиля</translation>
 <translation id="7003339318920871147">Базы данных в Интернете</translation>
@@ -4660,7 +4657,6 @@
 <translation id="8059417245945632445">&amp;Проверка устройств</translation>
 <translation id="8063235345342641131">Аватар по умолчанию (зеленый)</translation>
 <translation id="8064671687106936412">Ключ:</translation>
-<translation id="8065485338434000013">Некоторые из ваших карт можно использовать только на этом устройстве</translation>
 <translation id="806812017500012252">Упорядочить по заголовкам</translation>
 <translation id="8068253693380742035">Нажмите, чтобы войти</translation>
 <translation id="8069615408251337349">Виртуальный принтер Google</translation>

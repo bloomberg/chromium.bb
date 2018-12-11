@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Tunnus:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Avaa koko näytössä</translation>
 <translation id="189358972401248634">Muut kielet</translation>
-<translation id="1894591787927543791">Tallenna kortti käyttääksesi Google Payta</translation>
 <translation id="1895658205118569222">Sulkeminen</translation>
 <translation id="1895934970388272448">Sinun on vahvistettava  tulostimesi rekisteröinti, jotta voit suorittaa tämän prosessin loppuun – tarkista se nyt.</translation>
 <translation id="1897762215429052132">Verkkoyhteyden, kielen ja näppäimistön asettelun määritys</translation>
 <translation id="1901303067676059328">Valitse &amp;kaikki</translation>
 <translation id="1902576642799138955">Voimassaoloaika</translation>
-<translation id="1904518222538904133">Yhtä korteistasi voidaan käyttää vain tällä laitteella</translation>
 <translation id="1905375423839394163">Chromebook-laitteen nimi</translation>
 <translation id="1905710495812624430">Yritysten enimmäismäärä ylitettiin.</translation>
 <translation id="1909880997794698664">Haluatko varmasti pitää laitteen pysyvästi kioskitilassa?</translation>
@@ -3933,7 +3931,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> kansiota valittu</translation>
 <translation id="6998793565256476099">Ota videokonferenssit käyttöön laitteessa</translation>
 <translation id="7000347579424117903">Lisää alkuun Ctrl, Alt tai hakupainike</translation>
-<translation id="700203306553508933">Tallenna kortteja käyttääksesi Google Payta</translation>
 <translation id="7002055706763150362">Jotta Smart Lock Chromebookille voidaan ottaa käyttöön, Googlen täytyy vahvistaa henkilöllisyytesi. Aloita antamalla salasanasi.</translation>
 <translation id="7002454948392136538">Valitse tämän valvotun käyttäjän hallinnoija</translation>
 <translation id="7003339318920871147">Verkkotietokannat</translation>
@@ -4659,7 +4656,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8059417245945632445">Tark&amp;ista laitteet</translation>
 <translation id="8063235345342641131">Vihreä oletusavatar</translation>
 <translation id="8064671687106936412">Avain:</translation>
-<translation id="8065485338434000013">Joitakin korttejasi ei voi käyttää tällä laitteella</translation>
 <translation id="806812017500012252">Järjestä otsikon mukaan</translation>
 <translation id="8068253693380742035">Kirjaudu sisään koskettamalla</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

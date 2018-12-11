@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Åpne fullskjerm</translation>
 <translation id="189358972401248634">Andre språk</translation>
-<translation id="1894591787927543791">Lagre kort for bruk i Google Pay</translation>
 <translation id="1895658205118569222">Avslutning</translation>
 <translation id="1895934970388272448">Du må bekrefte registreringen på skriveren for å fullføre denne prosessen – sjekk det nå.</translation>
 <translation id="1897762215429052132">Konfigurer nettverkstilkobling, språk, tastaturoppsett med mer</translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
 <translation id="1902576642799138955">Gyldighetsperiode</translation>
-<translation id="1904518222538904133">1 av kortene dine kan bare brukes på denne enheten</translation>
 <translation id="1905375423839394163">Navn på Chromebook-enhet</translation>
 <translation id="1905710495812624430">Du har overskredet maksimumsgrensen for antall forsøk.</translation>
 <translation id="1909880997794698664">Er du sikker på at du vil beholde denne enheten permanent i kioskmodus?</translation>
@@ -3926,7 +3924,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mapper er valgt</translation>
 <translation id="6998793565256476099">Registrer enheten for videokonferanser</translation>
 <translation id="7000347579424117903">Inkluder Ctrl, Alt eller søketasten</translation>
-<translation id="700203306553508933">Lagre kort for bruk i Google Pay</translation>
 <translation id="7002055706763150362">For å konfigurere Smart Lock for Chromebook, må Google være sikker på at det er deg. Skriv inn passordet for å begynne.</translation>
 <translation id="7002454948392136538">Velg administratoren for denne administrerte brukeren</translation>
 <translation id="7003339318920871147">Nettdatabaser</translation>
@@ -4651,7 +4648,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8059417245945632445">&amp;Inspiser enheter</translation>
 <translation id="8063235345342641131">Grønt standardbrukerbilde</translation>
 <translation id="8064671687106936412">Nøkkel:</translation>
-<translation id="8065485338434000013">Enkelte av kortene kan bare brukes på denne enheten</translation>
 <translation id="806812017500012252">Sortér etter tittel</translation>
 <translation id="8068253693380742035">Trykk for å logge på</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

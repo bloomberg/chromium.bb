@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">전체화면 열기</translation>
 <translation id="189358972401248634">다른 언어</translation>
-<translation id="1894591787927543791">Google Pay에 사용할 카드 저장</translation>
 <translation id="1895658205118569222">종료</translation>
 <translation id="1895934970388272448">이 프로세스를 종료하려면 프린터 등록을 확인해야 합니다. 지금 확인하세요.</translation>
 <translation id="1897762215429052132">네트워크 연결, 언어, 키보드 레이아웃 설정...</translation>
 <translation id="1901303067676059328">전체 선택(&amp;A)</translation>
 <translation id="1902576642799138955">유효성 기간</translation>
-<translation id="1904518222538904133">이 기기에는 카드 중 1개만 사용할 수 있습니다.</translation>
 <translation id="1905375423839394163">Chromebook 기기 이름</translation>
 <translation id="1905710495812624430">허용되는 최대 시도 횟수를 초과했습니다.</translation>
 <translation id="1909880997794698664">이 기기를 영구적으로 키오스크 모드로 유지하시겠습니까?</translation>
@@ -3931,7 +3929,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />개의 폴더가 선택됨</translation>
 <translation id="6998793565256476099">화상회의용 기기 등록</translation>
 <translation id="7000347579424117903">Ctrl, Alt, 검색 키가 포함되어야 합니다</translation>
-<translation id="700203306553508933">Google Pay에 사용할 카드 저장</translation>
 <translation id="7002055706763150362">Chromebook용 Smart Lock을 설정하려면 본인 확인이 필요합니다. 시작하려면 비밀번호를 입력하세요.</translation>
 <translation id="7002454948392136538">이 관리 대상 사용자에 대한 관리자 선택</translation>
 <translation id="7003339318920871147">웹 데이터베이스</translation>
@@ -4658,7 +4655,6 @@
 <translation id="8059417245945632445">기기 검사(&amp;I)</translation>
 <translation id="8063235345342641131">기본 녹색 아바타</translation>
 <translation id="8064671687106936412">키:</translation>
-<translation id="8065485338434000013">일부 카드는 이 기기에서만 사용할 수 있습니다.</translation>
 <translation id="806812017500012252">제목순으로 다시 정렬</translation>
 <translation id="8068253693380742035">로그인하려면 터치하세요.</translation>
 <translation id="8069615408251337349">Google 클라우드 프린트</translation>

@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Je geopende tabbladen worden hier weergegeven</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Naam kaarthouder</translation>
-<translation id="1809549658008855907">Kaarten opgeslagen in je Google-account?</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
 <translation id="1826516787628120939">Controleren</translation>
 <translation id="1834321415901700177">Deze site bevat schadelijke programma's</translation>
 <translation id="1839551713262164453">De validatie van de beleidswaarden is mislukt doordat er fouten zijn opgetreden</translation>
 <translation id="1842969606798536927">Betalen</translation>
-<translation id="1866450167992311397">Je kaarten op meer plaatsen gebruiken</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
 <translation id="1871284979644508959">Verplicht veld</translation>
 <translation id="1874765382782611674">Geaccepteerde betaalpassen</translation>
@@ -382,7 +380,6 @@
 <translation id="3427092606871434483">Toestaan (standaard)</translation>
 <translation id="3427342743765426898">&amp;Opnieuw bewerken</translation>
 <translation id="342781501876943858">Chromium raadt je aan je wachtwoord te resetten als je het voor andere sites hebt hergebruikt.</translation>
-<translation id="3430691998045392297">De filmscreening is anders. Wil je doorgaan?</translation>
 <translation id="3431636764301398940">Deze creditcard opslaan op dit apparaat</translation>
 <translation id="3447661539832366887">De eigenaar van dit apparaat heeft de dinosaurusgame uitgeschakeld.</translation>
 <translation id="3447884698081792621">Certificaat weergeven (uitgegeven door <ph name="ISSUER" />)</translation>
@@ -709,7 +706,6 @@
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="5730040223043577876">Chrome raadt je aan je wachtwoord opnieuw in te stellen als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="5732392974455271431">Je ouders kunnen de blokkering van deze site opheffen</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Deze kaart en het bijbehorende factuuradres worden opgeslagen in je Google-account, zodat je overal waar je bent ingelogd sneller kunt betalen}other{Deze kaarten en de bijbehorende factuuradressen worden opgeslagen in je Google-account, zodat je overal waar je bent ingelogd sneller kunt betalen}}</translation>
 <translation id="5763042198335101085">Geef een geldig e-mailadres op</translation>
 <translation id="5765072501007116331">Selecteer een adres om bezorgingsmethoden en vereisten te bekijken</translation>
 <translation id="5770114862687765385">Het bestand lijkt beschadigd. Klik op de knop Resetten om de sessie te resetten.</translation>
@@ -792,7 +788,6 @@
 <translation id="6337133576188860026">Hiermee wordt minder dan <ph name="SIZE" /> vrijgemaakt. Sommige sites kunnen langzamer worden geladen wanneer je ze weer bezoekt.</translation>
 <translation id="6337534724793800597">Beleid filteren op naam</translation>
 <translation id="6358450015545214790">Wat betekent dit?</translation>
-<translation id="635989537247018238">In de volgende stap kun je kiezen welke kaarten je wilt opslaan</translation>
 <translation id="6383221683286411806">Er worden later mogelijk kosten in rekening gebracht.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andere suggestie}other{# andere suggesties}}</translation>
 <translation id="6387754724289022810">Sla je kaart en factuuradres op in je Google-account en op dit apparaat zodat je de volgende keer sneller kunt betalen.</translation>
@@ -818,7 +813,6 @@
 <translation id="6569060085658103619">Je bekijkt een extensiepagina</translation>
 <translation id="6596325263575161958">Opties voor encryptie</translation>
 <translation id="6604181099783169992">Bewegings- of lichtsensoren</translation>
-<translation id="6607617806003952240">Ik kan je niet verder helpen. Ga handmatig door.</translation>
 <translation id="6624427990725312378">Contactgegevens</translation>
 <translation id="6626291197371920147">Een geldig kaartnummer toevoegen</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
@@ -837,7 +831,6 @@
 <translation id="6744009308914054259">Terwijl je op een verbinding wacht, kun je naar Downloads gaan om offline artikelen te lezen.</translation>
 <translation id="6753269504797312559">Beleidswaarde</translation>
 <translation id="6757797048963528358">De slaapstand van je apparaat is geactiveerd.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Deze kaart kan nu niet worden toegevoegd}other{Deze kaarten kunnen nu niet worden toegevoegd}}</translation>
 <translation id="6778737459546443941">Je ouder of voogd heeft dit nog niet goedgekeurd</translation>
 <translation id="679355240208270552">Genegeerd omdat de standaard zoekoptie door het beleid is uitgeschakeld.</translation>
 <translation id="681021252041861472">Verplicht veld</translation>
@@ -1139,7 +1132,6 @@ Aanvullende informatie:
 <translation id="8763927697961133303">USB-apparaat</translation>
 <translation id="8768895707659403558">Als je je kaarten op alle apparaten wilt gebruiken, moet je <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Deze kaart is toegevoegd aan je Google-account. Je kunt deze nu gebruiken op elk apparaat waarop je bent ingelogd.}other{Deze kaarten zijn toegevoegd aan je Google-account. Je kunt deze nu gebruiken op elk apparaat waarop je bent ingelogd.}}</translation>
 <translation id="8792621596287649091">Je kunt de toegang tot je account van <ph name="ORG_NAME" /> kwijtraken of slachtoffer worden van identiteitsdiefstal. Chromium raadt je aan je wachtwoord nu te wijzigen.</translation>
 <translation id="8800988563907321413">Je suggesties voor in de buurt worden hier weergegeven</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>

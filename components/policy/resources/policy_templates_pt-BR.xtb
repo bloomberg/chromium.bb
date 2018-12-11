@@ -1067,7 +1067,7 @@
 
       Se esta política não for definida, qualquer certificado que precise obrigatoriamente ser divulgado via Transparência dos certificados será tratado como não confiável se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
-<translation id="377044054160169374">Aplicação de intervenção de experiência abusiva</translation>
+<translation id="377044054160169374">Aplicação de intervenção de experiência ofensiva</translation>
 <translation id="3780152581321609624">Incluir porta não padrão no SPN Kerberos</translation>
 <translation id="3780319008680229708">Se esta política for definida como true, o ícone do Google Cast sempre será exibido na barra de ferramentas ou no menu flutuante, e os usuários não poderão removê-lo.
 
@@ -1422,11 +1422,11 @@
 <translation id="465099050592230505">URL da loja on-line da empresa (uso suspenso)</translation>
 <translation id="4665897631924472251">Configurações de gerenciamento de extensão</translation>
 <translation id="4668325077104657568">Configuração de imagens padrão</translation>
-<translation id="4671708336564240458">Permite que você determine se sites com experiência abusiva devem ser impedidos de abrir novas janelas ou guias.
+<translation id="4671708336564240458">Permite que você determine se sites com experiência ofensiva devem ser impedidos de abrir novas janelas ou guias.
 
-      Se esta política estiver definida como Verdadeiro, os sites com experiências abusivas serão impedidos de abrir novas janelas e guias.
+      Se esta política estiver definida como Verdadeiro, os sites com experiências ofensivas serão impedidos de abrir novas janelas e guias.
       Contudo, esse comportamento não será acionado se a política SafeBrowsingEnabled estiver definida como Falso.
-      Se esta política estiver definida como Falso, os sites com experiências abusivas poderão abrir novas janelas e guias.
+      Se esta política estiver definida como Falso, os sites com experiências ofensivas poderão abrir novas janelas e guias.
       Se a política não for definida, o valor Verdadeiro será usado.</translation>
 <translation id="467236746355332046">Recursos compatíveis:</translation>
 <translation id="4674167212832291997">Personaliza a lista de padrões de URL que devem ser sempre renderizados por <ph name="PRODUCT_FRAME_NAME" />.

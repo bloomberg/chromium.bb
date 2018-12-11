@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Open full screen</translation>
 <translation id="189358972401248634">Other languages</translation>
-<translation id="1894591787927543791">Save card to use Google Pay</translation>
 <translation id="1895658205118569222">Shutdown</translation>
 <translation id="1895934970388272448">You must confirm registration on your printer to finish this process - check it now.</translation>
 <translation id="1897762215429052132">Setup network connection, language, keyboard layout...</translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
 <translation id="1902576642799138955">Validity Period</translation>
-<translation id="1904518222538904133">One of your cards can only be used on this device</translation>
 <translation id="1905375423839394163">Chromebook device name</translation>
 <translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
 <translation id="1909880997794698664">Are you sure you want to permanently keep this device in kiosk mode?</translation>
@@ -3932,7 +3930,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="6998793565256476099">Enrol device for video conferencing</translation>
 <translation id="7000347579424117903">Include Ctrl, Alt or Search</translation>
-<translation id="700203306553508933">Save cards to use Google Pay</translation>
 <translation id="7002055706763150362">To set up Smart Lock for Chromebook, Google needs to make sure that it’s you – type your password to get started.</translation>
 <translation id="7002454948392136538">Choose the manager for this supervised user</translation>
 <translation id="7003339318920871147">Web Databases</translation>
@@ -4659,7 +4656,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8059417245945632445">&amp;Inspect devices</translation>
 <translation id="8063235345342641131">Default green avatar</translation>
 <translation id="8064671687106936412">Key:</translation>
-<translation id="8065485338434000013">Some of your cards can only be used on this device</translation>
 <translation id="806812017500012252">Reorder by title</translation>
 <translation id="8068253693380742035">Touch to sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

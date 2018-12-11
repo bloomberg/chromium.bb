@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">開啟全螢幕</translation>
 <translation id="189358972401248634">其他語言</translation>
-<translation id="1894591787927543791">將卡片資訊儲存至 Google Pay 以供使用</translation>
 <translation id="1895658205118569222">關閉</translation>
 <translation id="1895934970388272448">你必須在印表機上確認註冊，才能完成這個程序。請立即查看。</translation>
 <translation id="1897762215429052132">設定網路連線、語言、鍵盤配置...</translation>
 <translation id="1901303067676059328">選取全部(&amp;A)</translation>
 <translation id="1902576642799138955">有效期間</translation>
-<translation id="1904518222538904133">你有 1 張卡片只能在這部裝置上使用</translation>
 <translation id="1905375423839394163">Chromebook 裝置名稱</translation>
 <translation id="1905710495812624430">超過嘗試次數上限。</translation>
 <translation id="1909880997794698664">你確定要讓這個裝置永久使用 Kiosk 模式嗎？</translation>
@@ -3924,7 +3922,6 @@
 <translation id="6998711733709403587">已選取 <ph name="SELCTED_FOLDERS_COUNT" /> 個資料夾</translation>
 <translation id="6998793565256476099">註冊視訊會議裝置</translation>
 <translation id="7000347579424117903">必須包含 Ctrl、Alt 鍵或搜尋鍵</translation>
-<translation id="700203306553508933">將卡片資訊儲存至 Google Pay 以供使用</translation>
 <translation id="7002055706763150362">如要設定 Chromebook 專用 Smart Lock，請先輸入您的密碼，讓 Google 確認操作者是您本人。</translation>
 <translation id="7002454948392136538">選擇這位受監管使用者的管理員</translation>
 <translation id="7003339318920871147">網路資料庫</translation>
@@ -4649,7 +4646,6 @@
 <translation id="8059417245945632445">檢查裝置 (&amp;I)</translation>
 <translation id="8063235345342641131">預設的綠色顯示圖片</translation>
 <translation id="8064671687106936412">金鑰：</translation>
-<translation id="8065485338434000013">你有部分卡片只能在這部裝置上使用</translation>
 <translation id="806812017500012252">按標題重新排序</translation>
 <translation id="8068253693380742035">輕觸即可登入</translation>
 <translation id="8069615408251337349">Google 雲端列印</translation>

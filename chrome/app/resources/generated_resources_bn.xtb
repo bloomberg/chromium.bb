@@ -625,13 +625,11 @@
 <translation id="1890674179660343635">&lt;span&gt;আইডি: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">পূর্ণ স্ক্রিন খুলুন</translation>
 <translation id="189358972401248634">অন্যান্য ভাষা</translation>
-<translation id="1894591787927543791">Google Pay ব্যবহার করতে কার্ড সেভ করুন</translation>
 <translation id="1895658205118569222">বন্ধ করুন</translation>
 <translation id="1895934970388272448">এই প্রক্রিয়াটি সম্পূর্ণ করতে আপনাকে অবশ্যই আপনার মূদ্রকের নিবন্ধিকরণ নিশ্চিত করতে হবে - এটিকে এখনি পরীক্ষা করুন৷</translation>
 <translation id="1897762215429052132">নেটওয়ার্ক সংযোগ, ভাষা, কীবোর্ড লেআউট সেটআপ করুন...</translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
 <translation id="1902576642799138955">বৈধতা পর্ব</translation>
-<translation id="1904518222538904133">এই ডিভাইসে আপনার কার্ডগুলির মধ্যে শুধুমাত্র ১টি ব্যবহার করা যায়</translation>
 <translation id="1905375423839394163">Chromebook ডিভাইসের নাম</translation>
 <translation id="1905710495812624430">সর্বোচ্চ অনুমোদিত প্রচেষ্টা ছাড়িয়ে গেছে।</translation>
 <translation id="1909880997794698664">আপনি কি এই ডিভাইসটিকে কিয়স্ক মোডে স্থায়ীভাবে রাখার বিষয়ে নিশ্চিত?</translation>
@@ -3930,7 +3928,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
 <translation id="6998793565256476099">ভিডিও কনফারেন্সিংয়ের জন্য ডিভাইস যোগ করুন</translation>
 <translation id="7000347579424117903">Ctrl, Alt অথবা Search বোতাম ব্যবহার করতে হবে</translation>
-<translation id="700203306553508933">Google Pay ব্যবহার করার জন্য কার্ড সেভ করুন</translation>
 <translation id="7002055706763150362">Chromebook এর জন্য Smart Lock সেট আপ করার জন্য Google এর এটি নিশ্চিত হওয়া প্রয়োজন যে—শুরু করতে আপনিই আপনার পাসওয়ার্ড লিখেছেন।</translation>
 <translation id="7002454948392136538">এই তত্ত্বাবধান করা ব্যবহারকারীর জন্য পরিচালক চয়ন করুন</translation>
 <translation id="7003339318920871147">ওয়েব ডেটাবেসসমূহ</translation>
@@ -4656,7 +4653,6 @@
 <translation id="8059417245945632445">এবং ডিভাইসগুলি পরিদর্শন</translation>
 <translation id="8063235345342641131">ডিফল্ট সবুজ অবতার</translation>
 <translation id="8064671687106936412">কী:</translation>
-<translation id="8065485338434000013">আপনার কিছু কার্ড শুধুমাত্র এই ডিভাইসে ব্যবহার করা যেতে পারে</translation>
 <translation id="806812017500012252">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
 <translation id="8068253693380742035">প্রবেশ করতে স্পর্শ করুন</translation>
 <translation id="8069615408251337349">Google ক্লাউড প্রিন্ট</translation>

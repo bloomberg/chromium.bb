@@ -623,13 +623,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Abrir pantalla completa</translation>
 <translation id="189358972401248634">Otros idiomas</translation>
-<translation id="1894591787927543791">Guardar tarjeta para usar en Google Pay</translation>
 <translation id="1895658205118569222">Cierre</translation>
 <translation id="1895934970388272448">Debes confirmar el registro en la impresora para finalizar este proceso. Compruébalo ahora.</translation>
 <translation id="1897762215429052132">Configurar conexión de red, idioma y diseño de teclado...</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="1902576642799138955">Período de validez</translation>
-<translation id="1904518222538904133">1 de tus tarjetas solo se puede usar en este dispositivo</translation>
 <translation id="1905375423839394163">Nombre de la Chromebook</translation>
 <translation id="1905710495812624430">Se superó la cantidad máxima de intentos permitidos.</translation>
 <translation id="1909880997794698664">¿Confirmas que deseas que este dispositivo se mantenga siempre en modo kiosco?</translation>
@@ -3930,7 +3928,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
 <translation id="6998793565256476099">Inscribe el dispositivo para realizar videoconferencias</translation>
 <translation id="7000347579424117903">Incluir Ctrl, Alt o el botón de búsqueda</translation>
-<translation id="700203306553508933">Guardar las tarjetas para usar en Google Pay</translation>
 <translation id="7002055706763150362">Google debe estar seguro de que se trata de ti si deseas configurar Smart Lock para Chromebook: escribe tu contraseña para comenzar.</translation>
 <translation id="7002454948392136538">Elige el administrador para este usuario supervisado.</translation>
 <translation id="7003339318920871147">Bases de datos web</translation>
@@ -4657,7 +4654,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8059417245945632445">&amp;Inspeccionar dispositivos</translation>
 <translation id="8063235345342641131">Avatar verde predeterminado</translation>
 <translation id="8064671687106936412">Clave:</translation>
-<translation id="8065485338434000013">Algunas de tus tarjetas solo se pueden usar en este dispositivo</translation>
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Tocar para acceder</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

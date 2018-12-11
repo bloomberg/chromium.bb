@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">పూర్తి స్క్రీన్‌ని తెరువు</translation>
 <translation id="189358972401248634">ఇతర భాషలు</translation>
-<translation id="1894591787927543791">Google Pay ఉపయోగించడానికి కార్డును సేవ్ చేయండి</translation>
 <translation id="1895658205118569222">షట్‌డౌన్</translation>
 <translation id="1895934970388272448">మీరు ఈ ప్రాసెస్‌ను పూర్తి చేయడానికి మీ ప్రింటర్‌లో తప్పనిసరిగా నమోదుని నిర్ధారించాలి - ఇప్పుడే తనిఖీ చేయండి.</translation>
 <translation id="1897762215429052132">నెట్‌వర్క్ కనెక్షన్, భాష, కీబోర్డ్ లేఅవుట్‌ను సెటప్ చేయండి...</translation>
 <translation id="1901303067676059328">&amp;అన్నీ ఎంచుకోండి</translation>
 <translation id="1902576642799138955">చెల్లుబాటు కాలం</translation>
-<translation id="1904518222538904133">మీ కార్డ్‌లలో 1 మాత్రమే ఈ పరికరంలో ఉపయోగించవచ్చు</translation>
 <translation id="1905375423839394163">Chromebook పరికరం పేరు</translation>
 <translation id="1905710495812624430">అనుమతించిన గరిష్ట ప్రయత్నాలు మించిపోయారు.</translation>
 <translation id="1909880997794698664">మీరు ఖచ్చితంగా ఈ పరికరాన్ని శాశ్వతంగా కియోస్క్ మోడ్‌లో ఉంచాలనుకుంటున్నారా?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ఫోల్డర్‌లు ఎంచుకోబడ్డాయి</translation>
 <translation id="6998793565256476099">వీడియో సమావేశం కోసం పరికరాన్ని నమోదు చేయండి</translation>
 <translation id="7000347579424117903">Ctrl, Alt, లేదా Search చేర్చండి</translation>
-<translation id="700203306553508933">Google Payని ఉపయోగించడానికి కార్డ్‌లను సేవ్ చేయండి</translation>
 <translation id="7002055706763150362">Chromebook కోసం Smart Lockని సెటప్ చేయడానికి, Google ఇది మీరే అని నిర్ధారించుకోవాలి—కనుక ప్రారంభించడానికి మీ పాస్‌వర్డ్‌ను టైప్ చేయండి.</translation>
 <translation id="7002454948392136538">ఈ పర్యవేక్షించబడే వినియోగదారు కోసం నిర్వాహకుని ఎంచుకోండి</translation>
 <translation id="7003339318920871147">వెబ్ డేటాబేస్‌లు</translation>
@@ -4656,7 +4653,6 @@
 <translation id="8059417245945632445">&amp;పరికరాలను పర్యవేక్షించు</translation>
 <translation id="8063235345342641131">డిఫాల్ట్ ఆకుపచ్చ రంగు అవతార్</translation>
 <translation id="8064671687106936412">కీలకమైన:</translation>
-<translation id="8065485338434000013">మీ కార్డ్‌లలో కొన్ని మాత్రమే ఈ పరికరంలో ఉపయోగించవచ్చు</translation>
 <translation id="806812017500012252">శీర్షిక ద్వారా క్రమాన్ని మార్చు</translation>
 <translation id="8068253693380742035">సైన్ ఇన్ చేయడానికి తాకండి</translation>
 <translation id="8069615408251337349">Google మేఘ ముద్రణ</translation>

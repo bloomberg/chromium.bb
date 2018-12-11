@@ -141,13 +141,11 @@
 <translation id="1787142507584202372">Açık sekmeleriniz burada görünür</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Kart Sahibinin Adı</translation>
-<translation id="1809549658008855907">Kartlarınız Google Hesabınıza kaydedilsin mi?</translation>
 <translation id="1821930232296380041">Geçersiz istek veya istek parametreleri</translation>
 <translation id="1826516787628120939">Kontrol ediliyor</translation>
 <translation id="1834321415901700177">Bu site zararlı programlar içeriyor</translation>
 <translation id="1839551713262164453">Politika değerlerini doğrulama işlemi hatalarla başarısız oldu</translation>
 <translation id="1842969606798536927">Ödeme</translation>
-<translation id="1866450167992311397">Kartlarınızı daha fazla yerde kullanın</translation>
 <translation id="1871208020102129563">Proxy, bir .pac komut dosyası URL'sini değil, sabit proxy sunucuları kullanacak şekilde ayarlanır.</translation>
 <translation id="1871284979644508959">Zorunlu alan</translation>
 <translation id="1874765382782611674">Kabul Edilen Banka Kartları</translation>
@@ -385,7 +383,6 @@
 <translation id="3427092606871434483">İzin ver (varsayılan)</translation>
 <translation id="3427342743765426898">&amp;Düzenlemeyi Yeniden Yap</translation>
 <translation id="342781501876943858">Chromium, şifrenizi başka sitelerde kullandıysanız sıfırlamanızı önerir.</translation>
-<translation id="3430691998045392297">Film filtrelemesi farklı, devam etmek istiyor musunuz?</translation>
 <translation id="3431636764301398940">Bu kartı bu cihaza kaydet</translation>
 <translation id="3447661539832366887">Bu cihazın sahibi dinozor oyununu kapattı.</translation>
 <translation id="3447884698081792621">Sertifikayı göster (yayınlayan: <ph name="ISSUER" />)</translation>
@@ -713,7 +710,6 @@
 <translation id="5720705177508910913">Geçerli kullanıcı</translation>
 <translation id="5730040223043577876">Chrome, şifrenizi başka sitelerde kullandıysanız sıfırlamanızı önerir.</translation>
 <translation id="5732392974455271431">Ebeveynleriniz engellemeyi kaldırabilir</translation>
-<translation id="5746168374457656589">{NUM_CARDS,plural, =1{Bu kartlar ve fatura adresleri Google Hesabınıza kaydedilecek. Bu şekilde nerede oturum açarsanız açın daha hızlı ödeme yapabilirsiniz}other{Bu kartlar ve fatura adresleri Google Hesabınıza kaydedilecek. Bu şekilde nerede oturum açarsanız açın daha hızlı ödeme yapabilirsiniz}}</translation>
 <translation id="5763042198335101085">Geçerli bir e-posta adresi girin</translation>
 <translation id="5765072501007116331">Teslimat yöntemlerini ve gereksinimleri görmek için bir adres seçin</translation>
 <translation id="5770114862687765385">Dosya bozuk gibi görünüyor. Oturumu sıfırlamak için "Sıfırla" düğmesini tıklayın.</translation>
@@ -797,7 +793,6 @@
 <translation id="6337133576188860026"><ph name="SIZE" /> boyutundan daha az yer açar. Bir sonraki ziyaretinizde bazı siteler daha yavaş yüklenebilir.</translation>
 <translation id="6337534724793800597">Politikalara ada göre filtre uygula</translation>
 <translation id="6358450015545214790">Bunlar ne anlama geliyor?</translation>
-<translation id="635989537247018238">Sonraki adımda, hangi kartların kaydedileceğini seçebilirsiniz</translation>
 <translation id="6383221683286411806">Devam etmeniz halinde ödeme yapmanız gerekebilir.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 öneri daha}other{# öneri daha}}</translation>
 <translation id="6387754724289022810">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
@@ -823,7 +818,6 @@
 <translation id="6569060085658103619">Bir uzantı sayfası görüntülüyorsunuz</translation>
 <translation id="6596325263575161958">Şifreleme seçenekleri</translation>
 <translation id="6604181099783169992">Hareket veya Işık Sensörleri</translation>
-<translation id="6607617806003952240">Daha fazla yardımcı olamıyorum, lütfen manuel olarak devam edin.</translation>
 <translation id="6624427990725312378">İletişim Bilgileri</translation>
 <translation id="6626291197371920147">Geçerli kart numarası ekle</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Arama</translation>
@@ -842,7 +836,6 @@
 <translation id="6744009308914054259">Bağlantı kurulmasını beklerken çevrimdışı makaleleri okumak için İndirilenler bölümünü ziyaret edebilirsiniz.</translation>
 <translation id="6753269504797312559">Politika değeri</translation>
 <translation id="6757797048963528358">Cihazınız uyku moduna geçti.</translation>
-<translation id="6764567138599678092">{NUM_CARDS,plural, =1{Bu kart şu anda eklenemiyor}other{Bu kartlar şu anda eklenemiyor}}</translation>
 <translation id="6778737459546443941">Ebeveyniniz henüz onaylamadı</translation>
 <translation id="679355240208270552">Varsayılan arama motoru politika tarafından etkinleştirilmediği için yoksayıldı.</translation>
 <translation id="681021252041861472">Gerekli Alan</translation>
@@ -1145,7 +1138,6 @@ Ek ayrıntılar:
 <translation id="8763927697961133303">USB cihaz</translation>
 <translation id="8768895707659403558">Kartlarınızı tüm cihazlarınızda kullanmak için <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{Bu kart, Google Hesabınıza eklendi. Artık oturum açtığınız herhangi bir cihazdan kullanabilirsiniz.}other{Bu kartlar, Google Hesabınıza eklendi. Artık oturum açtığınız herhangi bir cihazdan kullanabilirsiniz.}}</translation>
 <translation id="8792621596287649091"><ph name="ORG_NAME" /> hesabınıza erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chromium, şifrenizi hemen değiştirmenizi önerir.</translation>
 <translation id="8800988563907321413">Yakın çevrenizle ilgili öneriler burada görünür</translation>
 <translation id="8820817407110198400">Favoriler</translation>

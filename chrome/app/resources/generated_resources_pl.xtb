@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Identyfikator: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Otwórz na pełnym ekranie</translation>
 <translation id="189358972401248634">Inne języki</translation>
-<translation id="1894591787927543791">Zapisz kartę, by korzystać z Google Pay</translation>
 <translation id="1895658205118569222">Wyłączenie</translation>
 <translation id="1895934970388272448">Aby ukończyć ten proces, musisz potwierdzić rejestrację na drukarce – zrób to teraz.</translation>
 <translation id="1897762215429052132">Skonfiguruj połączenie sieciowe, język, układ klawiatury...</translation>
 <translation id="1901303067676059328">Zaznacz &amp;wszystko</translation>
 <translation id="1902576642799138955">Okres ważności</translation>
-<translation id="1904518222538904133">Jednej z Twoich kart można używać tylko na tym urządzeniu</translation>
 <translation id="1905375423839394163">Nazwa Chromebooka</translation>
 <translation id="1905710495812624430">Przekroczono maksymalną liczbę prób.</translation>
 <translation id="1909880997794698664">Czy na pewno chcesz trwale utrzymywać to urządzenie w trybie kiosku?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587">Wybrano <ph name="SELCTED_FOLDERS_COUNT" /> foldery(ów)</translation>
 <translation id="6998793565256476099">Zarejestruj urządzenie na potrzeby wideokonferencji</translation>
 <translation id="7000347579424117903">Uwzględnij klawisze Ctrl, Alt lub Wyszukaj</translation>
-<translation id="700203306553508933">Zapisz karty, by korzystać z Google Pay</translation>
 <translation id="7002055706763150362">Aby skonfigurować Smart Lock na Chromebooki, Google musi mieć pewność, że jesteś osobą, za którą się podajesz. Najpierw wpisz hasło.</translation>
 <translation id="7002454948392136538">Wybierz menedżera dla tego użytkownika nadzorowanego</translation>
 <translation id="7003339318920871147">Sieciowe bazy danych</translation>
@@ -4660,7 +4657,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8059417245945632445">&amp;Sprawdź urządzenia</translation>
 <translation id="8063235345342641131">Domyślny zielony awatar</translation>
 <translation id="8064671687106936412">Klucz:</translation>
-<translation id="8065485338434000013">Niektórych Twoich kart można używać tylko na tym urządzeniu</translation>
 <translation id="806812017500012252">Uporządkuj według tytułu</translation>
 <translation id="8068253693380742035">Kliknij, by się zalogować</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

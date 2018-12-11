@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;Identificador: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Obre en pantalla completa</translation>
 <translation id="189358972401248634">Altres idiomes</translation>
-<translation id="1894591787927543791">Desa la targeta per fer servir Google Pay</translation>
 <translation id="1895658205118569222">Aturada</translation>
 <translation id="1895934970388272448">Heu de confirmar el registre a la impressora per completar el procés. Comproveu-ho ara.</translation>
 <translation id="1897762215429052132">Configureu la connexió de xarxa, l'idioma, la disposició del teclat…</translation>
 <translation id="1901303067676059328">Selecciona-ho &amp;tot</translation>
 <translation id="1902576642799138955">Període de validesa</translation>
-<translation id="1904518222538904133">Una de les teves targetes només es pot fer servir en aquest dispositiu</translation>
 <translation id="1905375423839394163">Nom del dispositiu Chromebook</translation>
 <translation id="1905710495812624430">S'ha superat el nombre màxim d'intents permesos.</translation>
 <translation id="1909880997794698664">Confirmeu que voleu establir permanentment el mode de quiosc en aquest dispositiu?</translation>
@@ -3931,7 +3929,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6998711733709403587">S'han seleccionat <ph name="SELCTED_FOLDERS_COUNT" /> carpetes</translation>
 <translation id="6998793565256476099">Inscriu el dispositiu per a la videoconferència</translation>
 <translation id="7000347579424117903">Inclou la tecla Ctrl, Alt o Cerca</translation>
-<translation id="700203306553508933">Desa les targetes per fer servir Google Pay</translation>
 <translation id="7002055706763150362">Per configurar Smart Lock per a Chromebook, Google ha de comprovar la vostra identitat. Escriviu la contrasenya per començar.</translation>
 <translation id="7002454948392136538">Selecció de l'administrador d'aquest usuari supervisat</translation>
 <translation id="7003339318920871147">Bases de dades web</translation>
@@ -4656,7 +4653,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8059417245945632445">&amp;Inspecciona els dispositius</translation>
 <translation id="8063235345342641131">Avatar verd predeterminat</translation>
 <translation id="8064671687106936412">Clau:</translation>
-<translation id="8065485338434000013">Algunes de les teves targetes només es poden fer servir en aquest dispositiu</translation>
 <translation id="806812017500012252">Torna a ordenar per títol</translation>
 <translation id="8068253693380742035">Toca per iniciar la sessió</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>

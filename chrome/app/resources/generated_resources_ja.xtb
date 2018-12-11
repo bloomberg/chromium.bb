@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">全画面表示</translation>
 <translation id="189358972401248634">その他の言語</translation>
-<translation id="1894591787927543791">Google Pay にカードを保存して使用する</translation>
 <translation id="1895658205118569222">シャットダウン</translation>
 <translation id="1895934970388272448">この処理を終了するには、プリンタ上で登録を確認する必要があります。今すぐ確認してください。</translation>
 <translation id="1897762215429052132">ネットワーク接続、言語、キーボード レイアウトの設定...</translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
 <translation id="1902576642799138955">有効期間</translation>
-<translation id="1904518222538904133">この端末でのみ使用できるカードが 1 つあります</translation>
 <translation id="1905375423839394163">Chromebook デバイス名</translation>
 <translation id="1905710495812624430">最大試行回数を超えました。</translation>
 <translation id="1909880997794698664">このデバイスをキオスク モードに固定してもよろしいですか？</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
 <translation id="6998793565256476099">デバイスをビデオ会議用に登録</translation>
 <translation id="7000347579424117903">Ctrl キー、Alt キー、検索キーのいずれかが必要です</translation>
-<translation id="700203306553508933">Google Pay にカードを保存して使用する</translation>
 <translation id="7002055706763150362">Smart Lock for Chromebook を設定するには、Google に対する本人確認が必要です。開始するにはパスワードを入力してください。</translation>
 <translation id="7002454948392136538">この監視対象ユーザーの管理者を選択</translation>
 <translation id="7003339318920871147">ウェブ データベース</translation>
@@ -4661,7 +4658,6 @@
 <translation id="8059417245945632445">デバイスを検証(&amp;I)</translation>
 <translation id="8063235345342641131">デフォルトの緑のアバター</translation>
 <translation id="8064671687106936412">キー:</translation>
-<translation id="8065485338434000013">この端末でのみ使用できるカードがいくつかあります</translation>
 <translation id="806812017500012252">タイトルで並べ替え</translation>
 <translation id="8068253693380742035">タップしてログイン</translation>
 <translation id="8069615408251337349">Google クラウド プリント</translation>

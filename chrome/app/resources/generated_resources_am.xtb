@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;መታወቂያ፦ &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">ሙሉ ማያ ገጽ ክፈት</translation>
 <translation id="189358972401248634">ሌሎች ቋንቋዎች</translation>
-<translation id="1894591787927543791">Google Payን ለመጠቀም ካርድ ያስቀምጡ</translation>
 <translation id="1895658205118569222">አጥፋ</translation>
 <translation id="1895934970388272448">ይህን ሂደት ለማጠናቀቅ በእርስዎ አታሚ ላይ ምዝገባ ማረጋገጥ አለብዎት - አሁን ያረጋግጡት።</translation>
 <translation id="1897762215429052132">የአውታረመረብ ግንኙነት፣ ቋንቋ፣ የቁልፍ ሰሌዳ አቀማመጥ… ያዘጋጁ</translation>
 <translation id="1901303067676059328">&amp;ሁሉንም ምረጥ</translation>
 <translation id="1902576642799138955">የተገቢነት ክፍለ ጊዜ</translation>
-<translation id="1904518222538904133">ከካርዶችዎ ውስጥ አንዱ ብቻ ነው በዚህ መሣሪያ ላይ መጠቀም የሚቻለው</translation>
 <translation id="1905375423839394163">የChromebook መሣሪያ ስም</translation>
 <translation id="1905710495812624430">የሚፈቀደው ከፍተኛ የሙከራዎች ብዛት ታልፏል።</translation>
 <translation id="1909880997794698664">እርግጠኛ ነዎት ይህን መሣሪያ በኪዮስክ ሁነታ እስከመጨረሻው ማቆየት ይፈልጋሉ?</translation>
@@ -3929,7 +3927,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> አቃፊዎች ተመርጠዋል</translation>
 <translation id="6998793565256476099">መሣሪያን ለቪዲዮ ጉባዔ ያስመዝግቡ</translation>
 <translation id="7000347579424117903">Ctrl፣ Alt፣ ወይም ፍለጋን ያካትቱ</translation>
-<translation id="700203306553508933">Google Payን ለመጠቀም ካርዶችን ያስቀምጡ</translation>
 <translation id="7002055706763150362">Smart Lock ለChromebook ለማዘጋጀት Google እርስዎ መሆንዎን እርግጠኛ መሆን ይፈልጋል—ለመጀመር የይለፍ ቃልዎን ይተይቡ።</translation>
 <translation id="7002454948392136538">ክትትል ለሚደረግበት ለዚህ ተጠቃሚ አቀናባሪ ይምረጡ</translation>
 <translation id="7003339318920871147">የድር ውሂብ ጎታዎች</translation>
@@ -4661,7 +4658,6 @@ nil</translation>
 <translation id="8059417245945632445">&amp;መሣሪያዎችን መርምር</translation>
 <translation id="8063235345342641131">ነባሪ አረንጓዴ አምሳያ</translation>
 <translation id="8064671687106936412">ቁልፍ፦</translation>
-<translation id="8065485338434000013">አንዳንድ ካርዶችዎ በዚህ መሣሪያ ላይ ብቻ ነው መጠቀም የሚቻለው</translation>
 <translation id="806812017500012252">በርዕስ ቅደም ተከተል አስይዝ</translation>
 <translation id="8068253693380742035">በመለያ ለመግባት ይንኩ</translation>
 <translation id="8069615408251337349">Google ዳመና ህትመት</translation>

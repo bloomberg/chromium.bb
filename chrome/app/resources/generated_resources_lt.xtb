@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Atidaryti visame ekrane</translation>
 <translation id="189358972401248634">Kitos kalbos</translation>
-<translation id="1894591787927543791">Išsaugoti kortelės duomenis norint naudoti „Google Pay“</translation>
 <translation id="1895658205118569222">Išjungimas</translation>
 <translation id="1895934970388272448">Kad užbaigtumėte procesą, turite spausdintuve patvirtinti registraciją. Patikrinkite tai dabar.</translation>
 <translation id="1897762215429052132">Nustatykite tinklo ryšį, kalbą, klaviatūros išdėstymą...</translation>
 <translation id="1901303067676059328">Pasirinkti &amp;viską</translation>
 <translation id="1902576642799138955">Galiojimo laikas</translation>
-<translation id="1904518222538904133">Šiuo įrenginiu galima naudoti tik vieną iš jūsų kortelių</translation>
 <translation id="1905375423839394163">„Chromebook“ įrenginio pavadinimas</translation>
 <translation id="1905710495812624430">Viršytas didžiausias bandymų skaičius.</translation>
 <translation id="1909880997794698664">Ar tikrai norite šį įrenginį visam laikui nustatyti veikti viešojo terminalo režimu?</translation>
@@ -3934,7 +3932,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6998711733709403587">Pasirinkta aplankų: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Užregistruoti įrenginį dalyvauti vaizdo konferencijoje</translation>
 <translation id="7000347579424117903">Naudokite „Ctrl“, „Alt“ arba „Search“</translation>
-<translation id="700203306553508933">Išsaugoti kortelių duomenis norint naudoti „Google Pay“</translation>
 <translation id="7002055706763150362">Kad būtų galima nustatyti „Smart Lock“, skirtą „Chromebook“, „Google“ turi įsitikinti, jog tai jūs. Įveskite slaptažodį, kad pradėtumėte.</translation>
 <translation id="7002454948392136538">Pasirinkti šio prižiūrimo naudotojo valdytoją</translation>
 <translation id="7003339318920871147">Žiniatinklio duomenys</translation>
@@ -4661,7 +4658,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8059417245945632445">&amp;Tikrinti įrenginius</translation>
 <translation id="8063235345342641131">Numatytasis žalias pseudoportretas</translation>
 <translation id="8064671687106936412">Raktas:</translation>
-<translation id="8065485338434000013">Šiuo įrenginiu galima naudoti tik kelias korteles</translation>
 <translation id="806812017500012252">Rikiuoti pagal pavadinimą</translation>
 <translation id="8068253693380742035">Palieskite, kad prisijungtumėte</translation>
 <translation id="8069615408251337349">„Google“ spausdinimas iš debesies</translation>

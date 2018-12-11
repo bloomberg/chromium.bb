@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">‏&lt;span&gt;رقم التعريف: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">فتح في وضع ملء الشاشة</translation>
 <translation id="189358972401248634">لغات أخرى</translation>
-<translation id="1894591787927543791">‏حفظ البطاقة لاستخدام Google Pay</translation>
 <translation id="1895658205118569222">إيقاف التشغيل</translation>
 <translation id="1895934970388272448">يجب عليك تأكيد التسجيل في الطابعة لإنهاء هذه العملية - يُرجى التحقق منها الآن.</translation>
 <translation id="1897762215429052132">إعداد اتصال الشبكة أو اللغة أو تنسيق لوحة المفاتيح...</translation>
 <translation id="1901303067676059328">تح&amp;ديد الكلّ</translation>
 <translation id="1902576642799138955">فترة الصلاحية</translation>
-<translation id="1904518222538904133">لا يمكن استخدام إلا بطاقة واحدة من بطاقاتك على هذا الجهاز.</translation>
 <translation id="1905375423839394163">‏اسم جهاز Chromebook</translation>
 <translation id="1905710495812624430">تم تجاوز الحد الأقصى لعدد المحاولات المسموح بها.</translation>
 <translation id="1909880997794698664">هل تريد فعلًا تشغيل هذا الجهاز في وضع الكشك بشكل دائم؟</translation>
@@ -3929,7 +3927,6 @@
 <translation id="6998711733709403587">تم تحديد <ph name="SELCTED_FOLDERS_COUNT" /> من المجلدات</translation>
 <translation id="6998793565256476099">تسجيل الجهاز لمؤتمر الفيديو</translation>
 <translation id="7000347579424117903">‏تضمين مفتاحي Ctrl، أو Alt، أو مفتاح البحث</translation>
-<translation id="700203306553508933">‏حفظ البطاقات لاستخدام Google Pay</translation>
 <translation id="7002055706763150362">‏لإعداد Smart Lock في Chromebook، يحتاج Google للتأكد من هويتك، اكتب كلمة المرور للبدء.</translation>
 <translation id="7002454948392136538">اختيار مدير لهذا المستخدم الذي يخضع للإشراف</translation>
 <translation id="7003339318920871147">قواعد بيانات الويب</translation>
@@ -4656,7 +4653,6 @@
 <translation id="8059417245945632445">&amp;فحص الأجهزة</translation>
 <translation id="8063235345342641131">الصورة الرمزية التلقائية الخضراء</translation>
 <translation id="8064671687106936412">المفتاح:</translation>
-<translation id="8065485338434000013">يمكن استخدام بعض بطاقاتك على هذا الجهاز فقط</translation>
 <translation id="806812017500012252">إعادة الترتيب بحسب العنوان</translation>
 <translation id="8068253693380742035">المس لتسجيل الدخول</translation>
 <translation id="8069615408251337349">‏الطباعة السحابية من Google</translation>

@@ -626,13 +626,11 @@
 <translation id="1890674179660343635">&lt;span&gt;ID: &lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="189210018541388520">Mở chế độ toàn màn hình</translation>
 <translation id="189358972401248634">Ngôn ngữ khác</translation>
-<translation id="1894591787927543791">Lưu thẻ để sử dụng Google Pay</translation>
 <translation id="1895658205118569222">Tắt</translation>
 <translation id="1895934970388272448">Bạn phải xác nhận đăng ký trên máy in của mình để hoàn tất quy trình này - hãy kiểm tra đăng ký ngay.</translation>
 <translation id="1897762215429052132">Thiết lập kết nối mạng, ngôn ngữ, bố cục bàn phím...</translation>
 <translation id="1901303067676059328">Chọn &amp;tất cả</translation>
 <translation id="1902576642799138955">Thời gian Có hiệu lực</translation>
-<translation id="1904518222538904133">Chỉ có 1 thẻ của bạn có thể sử dụng được trên thiết bị này</translation>
 <translation id="1905375423839394163">Tên thiết bị Chromebook</translation>
 <translation id="1905710495812624430">Đã vượt quá số lần thử tối đa được phép.</translation>
 <translation id="1909880997794698664">Bạn có chắc chắn bạn muốn giữ vĩnh viễn thiết bị này ở chế độ kiosk không?</translation>
@@ -3933,7 +3931,6 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> thư mục đã được chọn</translation>
 <translation id="6998793565256476099">Đăng ký thiết bị tham gia hội nghị truyền hình</translation>
 <translation id="7000347579424117903">Bao gồm phím Ctrl, Alt hoặc Tìm kiếm</translation>
-<translation id="700203306553508933">Lưu thẻ để sử dụng Google Pay</translation>
 <translation id="7002055706763150362">Để thiết lập Smart Lock cho Chromebook, Google cần đảm bảo đó là bạn—hãy nhập mật khẩu của bạn để bắt đầu.</translation>
 <translation id="7002454948392136538">Chọn người quản lý cho người dùng được giám sát này</translation>
 <translation id="7003339318920871147">Cơ sở dữ liệu web</translation>
@@ -4660,7 +4657,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8059417245945632445">&amp;Kiểm tra thiết bị</translation>
 <translation id="8063235345342641131">Hình đại diện màu xanh lục mặc định</translation>
 <translation id="8064671687106936412">Khoá:</translation>
-<translation id="8065485338434000013">Chỉ một số thẻ của bạn dùng được trên thiết bị này</translation>
 <translation id="806812017500012252">Sắp xếp lại theo tiêu đề</translation>
 <translation id="8068253693380742035">Chạm để đăng nhập</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
