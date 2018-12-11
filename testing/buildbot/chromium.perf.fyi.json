@@ -288,7 +288,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "build186-b7"
+              "id": "build186-b7",
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
