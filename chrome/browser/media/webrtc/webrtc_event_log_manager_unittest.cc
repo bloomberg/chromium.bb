@@ -2020,19 +2020,6 @@ TEST_F(WebRtcEventLogManagerTest,
 }
 
 TEST_F(WebRtcEventLogManagerTest,
-       StartRemoteLoggingReturnsFalseIfOutputPeriodMsIsNegative) {
-  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  const std::string id = "id";  // For explicitness' sake.
-  ASSERT_TRUE(PeerConnectionAdded(key, id));
-  std::string error_message;
-  constexpr int output_period_ms = -1;
-  EXPECT_FALSE(StartRemoteLogging(key, id, kMaxRemoteLogFileSizeBytes,
-                                  output_period_ms, kWebAppId, nullptr,
-                                  &error_message));
-  EXPECT_EQ(error_message, kStartRemoteLoggingFailureOutputPeriodMsIsNegative);
-}
-
-TEST_F(WebRtcEventLogManagerTest,
        StartRemoteLoggingReturnsFalseIfExcessivelyLargeOutputPeriodMs) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   const std::string id = "id";  // For explicitness' sake.
