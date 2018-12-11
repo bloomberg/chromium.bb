@@ -238,6 +238,8 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
           [](const base::Closure& quit_closure, const gfx::Rect& expected_rect,
              std::unique_ptr<CopyOutputResult> result) {
             EXPECT_EQ(expected_rect, result->rect());
+            // Note: CopyOutputResult plumbing for bitmap requests is tested in
+            // StructTraitsTest.CopyOutputResult_Bitmap.
             quit_closure.Run();
           },
           run_loop.QuitClosure(), result_rect)));
@@ -264,7 +266,8 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   EXPECT_EQ(result_rect, output->result_selection());
 
   SkBitmap bitmap;
-  bitmap.allocN32Pixels(result_rect.width(), result_rect.height());
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+      result_rect.width(), result_rect.height(), SkColorSpace::MakeSRGB()));
   output->SendResult(
       std::make_unique<CopyOutputSkBitmapResult>(result_rect, bitmap));
   // If the CopyOutputRequest callback is called, this ends. Otherwise, the test
@@ -312,6 +315,8 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
           [](const base::Closure& quit_closure, const gfx::Rect& expected_rect,
              std::unique_ptr<CopyOutputResult> result) {
             EXPECT_EQ(expected_rect, result->rect());
+            // Note: CopyOutputResult plumbing for texture requests is tested in
+            // StructTraitsTest.CopyOutputResult_Texture.
             quit_closure.Run();
           },
           run_loop_for_result.QuitClosure(), result_rect)));
@@ -327,7 +332,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_TextureRequest) {
 
   base::RunLoop run_loop_for_release;
   output->SendResult(std::make_unique<CopyOutputTextureResult>(
-      result_rect, mailbox, sync_token, gfx::ColorSpace(),
+      result_rect, mailbox, sync_token, gfx::ColorSpace::CreateSRGB(),
       SingleReleaseCallback::Create(base::Bind(
           [](const base::Closure& quit_closure,
              const gpu::SyncToken& expected_sync_token,
@@ -1193,7 +1198,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   SkBitmap bitmap;
   const sk_sp<SkColorSpace> adobe_rgb = SkColorSpace::MakeRGB(
       SkColorSpace::kSRGB_RenderTargetGamma, SkColorSpace::kAdobeRGB_Gamut);
-  bitmap.allocN32Pixels(7, 8, adobe_rgb != nullptr);
+  bitmap.allocPixels(SkImageInfo::MakeN32Premul(7, 8, adobe_rgb));
   bitmap.eraseARGB(123, 213, 77, 33);
   std::unique_ptr<CopyOutputResult> input =
       std::make_unique<CopyOutputSkBitmapResult>(result_rect, bitmap);
@@ -1214,7 +1219,7 @@ TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
   // Check that the pixels are the same as the input and the color spaces are
   // equivalent.
   SkBitmap expected_bitmap;
-  expected_bitmap.allocN32Pixels(7, 8, adobe_rgb != nullptr);
+  expected_bitmap.allocPixels(SkImageInfo::MakeN32Premul(7, 8, adobe_rgb));
   expected_bitmap.eraseARGB(123, 213, 77, 33);
   EXPECT_EQ(expected_bitmap.computeByteSize(), out_bitmap.computeByteSize());
   EXPECT_EQ(0, std::memcmp(expected_bitmap.getPixels(), out_bitmap.getPixels(),
