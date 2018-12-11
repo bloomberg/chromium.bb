@@ -21,8 +21,15 @@ enum CdmSessionType;
 enum CdmMessageType;
 
 // See media::CdmKeyInformation::KeyStatus
-[Native]
-enum CdmKeyStatus;
+enum CdmKeyStatus {
+    USABLE,
+    INTERNAL_ERROR,
+    EXPIRED,
+    OUTPUT_RESTRICTED,
+    OUTPUT_DOWNSCALED,
+    KEY_STATUS_PENDING,
+    RELEASED,
+};
 
 // See media::HdcpVersion
 [Native]

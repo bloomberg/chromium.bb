@@ -57,9 +57,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioParameters::Format,
 IPC_ENUM_TRAITS_MAX_VALUE(media::BufferingState,
                           media::BufferingState::BUFFERING_STATE_MAX)
 
-IPC_ENUM_TRAITS_MAX_VALUE(media::CdmKeyInformation::KeyStatus,
-                          media::CdmKeyInformation::KEY_STATUS_MAX)
-
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmMessageType,
                           media::CdmMessageType::MESSAGE_TYPE_MAX)
 
@@ -166,12 +163,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::CdmConfig)
   IPC_STRUCT_TRAITS_MEMBER(allow_distinctive_identifier)
   IPC_STRUCT_TRAITS_MEMBER(allow_persistent_state)
   IPC_STRUCT_TRAITS_MEMBER(use_hw_secure_codecs)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::CdmKeyInformation)
-  IPC_STRUCT_TRAITS_MEMBER(key_id)
-  IPC_STRUCT_TRAITS_MEMBER(status)
-  IPC_STRUCT_TRAITS_MEMBER(system_code)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::MediaLogEvent)

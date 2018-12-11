@@ -114,7 +114,7 @@ class MojoCdm : public ContentDecryptionModule,
   void OnSessionKeysChange(
       const std::string& session_id,
       bool has_additional_usable_key,
-      std::vector<mojom::CdmKeyInformationPtr> keys_info) final;
+      std::vector<std::unique_ptr<CdmKeyInformation>> keys_info) final;
   void OnSessionExpirationUpdate(const std::string& session_id,
                                  double new_expiry_time_sec) final;
 
