@@ -239,7 +239,7 @@ class PersonalDataManager : public KeyedService,
   virtual CreditCard* GetCreditCardByNumber(const std::string& number);
 
   // Gets the field types availabe in the stored address and credit card data.
-  void GetNonEmptyTypes(ServerFieldTypeSet* non_empty_types);
+  void GetNonEmptyTypes(ServerFieldTypeSet* non_empty_types) const;
 
   // Returns whether the personal data has been loaded from the web database.
   virtual bool IsDataLoaded() const;
@@ -336,7 +336,7 @@ class PersonalDataManager : public KeyedService,
   // otherwise appends |new_profile| to the end of that list. Fills
   // |merged_profiles| with the result. Returns the |guid| of the new or updated
   // profile.
-  std::string MergeProfile(
+  static std::string MergeProfile(
       const AutofillProfile& new_profile,
       std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
       const std::string& app_locale,
@@ -369,7 +369,7 @@ class PersonalDataManager : public KeyedService,
   // if the card number of |credit_card| is equal to any local card or any
   // unmasked server card known by the browser, or |TypeAndLastFourDigits| of
   // |credit_card| is equal to any masked server card known by the browser.
-  bool IsKnownCard(const CreditCard& credit_card);
+  bool IsKnownCard(const CreditCard& credit_card) const;
 
   // Check whether a card is a server card or has a duplicated server card.
   bool IsServerCard(const CreditCard* credit_card) const;
@@ -641,7 +641,7 @@ class PersonalDataManager : public KeyedService,
 
   // Returns true if the given credit card can be deleted in a major version
   // upgrade. The card will need to be local and disused, to be deletable.
-  bool IsCreditCardDeletable(CreditCard* card);
+  static bool IsCreditCardDeletable(const CreditCard* card);
 
   // Runs the routine that removes the orphan rows in the autofill tables if
   // it's never been done.
@@ -705,9 +705,11 @@ class PersonalDataManager : public KeyedService,
   // should be sorted by decreasing frecency outside of this method, since this
   // will be called multiple times in a row. Returns the guid of the new or
   // updated profile.
-  std::string MergeServerAddressesIntoProfiles(
+  static std::string MergeServerAddressesIntoProfiles(
       const AutofillProfile& server_address,
-      std::vector<AutofillProfile>* existing_profiles) const;
+      std::vector<AutofillProfile>* existing_profiles,
+      const std::string& app_locale,
+      const std::string& primary_account_email);
 
   // Removes profile from web database according to |guid| and resets credit
   // card's billing address if that address is used by any credit cards.
