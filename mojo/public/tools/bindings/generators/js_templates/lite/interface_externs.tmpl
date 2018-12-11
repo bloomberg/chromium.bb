@@ -91,3 +91,12 @@ goog.provide('{{module.namespace}}.{{interface.name}}CallbackRouter');
    */
   removeListener(id) {}
 };
+
+{#--- Enum definitions #}
+{% for enum in interface.enums %}
+/** @enum {number} */
+{{module.namespace}}.{{interface.name}}.{{enum.name}} = {};
+{%-   for field in enum.fields %}
+{{module.namespace}}.{{interface.name}}.{{enum.name}}.{{field.name}};
+{%-   endfor %}
+{%- endfor %}
