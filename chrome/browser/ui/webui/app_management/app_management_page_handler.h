@@ -7,13 +7,17 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
+#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
 class WebUI;
 }
 
-class AppManagementPageHandler : public app_management::mojom::PageHandler {
+class Profile;
+
+class AppManagementPageHandler : public app_management::mojom::PageHandler,
+                                 public apps::AppRegistryCache::Observer {
  public:
   AppManagementPageHandler(app_management::mojom::PageHandlerRequest request,
                            app_management::mojom::PagePtr page,
@@ -24,9 +28,14 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler {
   void GetApps() override;
 
  private:
+  // apps::AppRegistryCache::Observer overrides:
+  void OnAppUpdate(const apps::AppUpdate& update) override;
+
   mojo::Binding<app_management::mojom::PageHandler> binding_;
 
   app_management::mojom::PagePtr page_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AppManagementPageHandler);
 };

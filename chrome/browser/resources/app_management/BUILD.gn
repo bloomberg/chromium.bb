@@ -5,46 +5,56 @@
 import("//third_party/closure_compiler/compile_js.gni")
 import("../optimize_webui.gni")
 
-js_type_check("closure_compile") {
-  deps = [
-    ":app",
-    ":browser_proxy",
-    ":fake_page_handler",
-    ":main_view",
-  ]
-}
+if (!is_android) {
+  js_type_check("closure_compile") {
+    deps = [
+      ":app",
+      ":browser_proxy",
+      ":fake_page_handler",
+      ":main_view",
+    ]
+  }
 
-js_library("app") {
-  deps = [
-    ":browser_proxy",
-    ":main_view",
-  ]
-}
+  js_library("app") {
+    deps = [
+      ":browser_proxy",
+      ":main_view",
+    ]
+  }
 
-js_library("browser_proxy") {
-  deps = [
-    ":externs",
-    ":fake_page_handler",
-    "//ui/webui/resources/js:cr",
-  ]
-}
+  js_library("browser_proxy") {
+    deps = [
+      ":externs",
+      ":fake_page_handler",
+      "//ui/webui/resources/js:cr",
+    ]
+  }
 
-js_library("externs") {
-  sources = []
-  extra_deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
-  externs_list = [
-    "$root_gen_dir/chrome/browser/ui/webui/app_management/app_management.mojom-lite.externs.js",
-    "$externs_path/mojo.js",
-  ]
-}
+  js_library("externs") {
+    sources = []
+    extra_deps = [ "//chrome/browser/ui/webui/app_management:mojo_bindings_js" ]
 
-js_library("fake_page_handler") {
-  deps = [
-    ":externs",
-    "//ui/webui/resources/js:cr",
-  ]
-}
+    # TODO(calamity): This list should be built by the mojo_bindings_js target
+    # above.
+    externs_list = [
+      "$externs_path/mojo.js",
+      "$root_gen_dir/chrome/browser/ui/webui/app_management/app_management.mojom-lite.externs.js",
+      "$root_gen_dir/chrome/services/app_service/public/mojom/types.mojom-lite.externs.js",
+      "$root_gen_dir/mojo/public/mojom/base/big_buffer.mojom-lite.externs.js",
+      "$root_gen_dir/skia/public/interfaces/bitmap.mojom-lite.externs.js",
+      "$root_gen_dir/skia/public/interfaces/image_info.mojom-lite.externs.js",
+      "$root_gen_dir/ui/gfx/image/mojo/image.mojom-lite.externs.js",
+    ]
+  }
 
-js_library("main_view") {
-  deps = []
+  js_library("fake_page_handler") {
+    deps = [
+      ":externs",
+      "//ui/webui/resources/js:cr",
+    ]
+  }
+
+  js_library("main_view") {
+    deps = []
+  }
 }
