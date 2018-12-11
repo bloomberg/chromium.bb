@@ -530,9 +530,10 @@ FileFilter.prototype.filter = function(entry) {
  *
  * @param {FileFilter} fileFilter The file-filter context.
  * @param {!MetadataModel} metadataModel
+ * @param {!VolumeManager} volumeManager The volume manager.
  * @constructor
  */
-function FileListContext(fileFilter, metadataModel) {
+function FileListContext(fileFilter, metadataModel, volumeManager) {
   /**
    * @type {FileListModel}
    */
@@ -554,6 +555,9 @@ function FileListContext(fileFilter, metadataModel) {
    * @const
    */
   this.prefetchPropertyNames = FileListContext.createPrefetchPropertyNames_();
+
+  /** @public {!VolumeManager} */
+  this.volumeManager = volumeManager;
 }
 
 /**
@@ -601,8 +605,12 @@ function DirectoryContents(context,
                            isSearch,
                            directoryEntry,
                            scannerFactory) {
+  /** @private {FileListContext} */
   this.context_ = context;
+
+  /** @private {FileListModel} */
   this.fileList_ = context.fileList;
+  this.fileList_.InitNewDirContents(context.volumeManager);
 
   this.isSearch_ = isSearch;
   this.directoryEntry_ = directoryEntry;
@@ -637,14 +645,19 @@ DirectoryContents.prototype.clone = function() {
 };
 
 /**
+ * Returns the file list length.
+ * @return {number}
+ */
+DirectoryContents.prototype.getFileListLength = function() {
+  return this.fileList_.length;
+};
+
+/**
  * Use a given fileList instead of the fileList from the context.
- * @param {(!Array|!cr.ui.ArrayDataModel)} fileList The new file list.
+ * @param {!FileListModel} fileList The new file list.
  */
 DirectoryContents.prototype.setFileList = function(fileList) {
-  if (fileList instanceof cr.ui.ArrayDataModel)
-    this.fileList_ = fileList;
-  else
-    this.fileList_ = new cr.ui.ArrayDataModel(fileList);
+  this.fileList_ = fileList;
 };
 
 /**

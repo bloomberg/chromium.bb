@@ -580,7 +580,8 @@ FileGrid.prototype.decorateThumbnail_ = function(li, entry) {
     detailIcon.appendChild(checkmark);
   }
   bottom.appendChild(detailIcon);
-  bottom.appendChild(filelist.renderFileNameLabel(li.ownerDocument, entry));
+  bottom.appendChild(
+      filelist.renderFileNameLabel(li.ownerDocument, entry, locationInfo));
   frame.appendChild(bottom);
 
   this.updateSharedStatus_(li, entry);

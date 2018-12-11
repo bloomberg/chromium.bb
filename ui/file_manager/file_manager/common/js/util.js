@@ -883,6 +883,19 @@ util.compareName = function(entry1, entry2) {
 };
 
 /**
+ * Compare by label (i18n name). The 2 entries must be in same directory.
+ * @param {EntryLocation} locationInfo
+ * @param {!Entry|!FilesAppEntry} entry1 First entry.
+ * @param {!Entry|!FilesAppEntry} entry2 Second entry.
+ * @return {number} Compare result.
+ */
+util.compareLabel = function(locationInfo, entry1, entry2) {
+  return util.collator.compare(
+      util.getEntryLabel(locationInfo, entry1),
+      util.getEntryLabel(locationInfo, entry2));
+};
+
+/**
  * Compare by path.
  * @param {Entry|FilesAppEntry} entry1 First entry.
  * @param {Entry|FilesAppEntry} entry2 Second entry.
@@ -893,13 +906,14 @@ util.comparePath = function(entry1, entry2) {
 };
 
 /**
+ * @param {EntryLocation} locationInfo
  * @param {!Array<Entry|FilesAppEntry>} bottomEntries entries that should be
  * grouped in the bottom, used for sorting Linux and Play files entries after
  * other folders in MyFiles.
  * return {function(Entry|FilesAppEntry, Entry|FilesAppEntry) to compare entries
  * by name.
  */
-util.compareNameAndGroupBottomEntries = function(bottomEntries) {
+util.compareLabelAndGroupBottomEntries = function(locationInfo, bottomEntries) {
   const childrenMap = new Map();
   bottomEntries.forEach((entry) => {
     childrenMap.set(entry.toURL(), entry);
@@ -918,9 +932,9 @@ util.compareNameAndGroupBottomEntries = function(bottomEntries) {
     const isBottomlEntry1 = childrenMap.has(entry1.toURL()) ? 1 : 0;
     const isBottomlEntry2 = childrenMap.has(entry2.toURL()) ? 1 : 0;
 
-    // When there are the same type, just compare by name.
+    // When there are the same type, just compare by label.
     if (isBottomlEntry1 === isBottomlEntry2)
-      return util.compareName(entry1, entry2);
+      return util.compareLabel(locationInfo, entry1, entry2);
 
     return isBottomlEntry1 - isBottomlEntry2;
   }
@@ -1241,17 +1255,24 @@ util.getRootTypeLabel = function(locationInfo) {
 };
 
 /**
- * Returns the localized name of the entry.
+ * Returns the localized/i18n name of the entry.
  *
  * @param {EntryLocation} locationInfo
- * @param {!Entry|!FakeEntry} entry The entry to be retrieve the name of.
- * @return {?string} The localized name.
+ * @param {!Entry|!FilesAppEntry} entry The entry to be retrieve the name of.
+ * @return {string} The localized name.
  */
 util.getEntryLabel = function(locationInfo, entry) {
   if (locationInfo && locationInfo.hasFixedLabel)
     return util.getRootTypeLabel(locationInfo);
-  else
-    return entry.name;
+
+  // Special case for MyFiles/Downloads.
+  if (locationInfo && util.isMyFilesVolumeEnabled() &&
+      locationInfo.rootType == VolumeManagerCommon.RootType.DOWNLOADS &&
+      entry.fullPath == '/Downloads') {
+    return str('DOWNLOADS_DIRECTORY_LABEL');
+  }
+
+  return entry.name;
 };
 
 /**

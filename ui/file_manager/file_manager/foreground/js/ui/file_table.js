@@ -742,7 +742,8 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
 
   label.entry = entry;
   label.className = 'detail-name';
-  label.appendChild(filelist.renderFileNameLabel(this.ownerDocument, entry));
+  label.appendChild(
+      filelist.renderFileNameLabel(this.ownerDocument, entry, locationInfo));
   return label;
 };
 

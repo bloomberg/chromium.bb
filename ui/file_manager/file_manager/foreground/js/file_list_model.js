@@ -57,6 +57,15 @@ function FileListModel(metadataModel) {
    * @private {boolean}
    */
   this.useModificationByMeTime_ = false;
+
+  /** @private {VolumeManager} The volume manager. */
+  this.volumeManager_ = null;
+
+  /**
+   * @private {EntryLocation} Used to get the label for entries when sorting by
+   * label.
+   */
+  this.locationInfo_ = null;
 }
 
 /**
@@ -328,6 +337,25 @@ FileListModel.prototype.compareName_ = function(a, b) {
 };
 
 /**
+ * Compares entries by label (i18n name).
+ * @param {!Entry} a First entry.
+ * @param {!Entry} b Second entry.
+ * @return {number} Compare result.
+ * @private
+ */
+FileListModel.prototype.compareLabel_ = function(a, b) {
+  // Set locationInfo once because we only compare within the same volume.
+  if (!this.locationInfo_ && this.volumeManager_)
+    this.locationInfo_ = this.volumeManager_.getLocationInfo(a);
+
+  // Directories always precede files.
+  if (a.isDirectory !== b.isDirectory)
+    return a.isDirectory === this.isDescendingOrder_ ? 1 : -1;
+
+  return util.compareLabel(this.locationInfo_, a, b);
+};
+
+/**
  * Compares entries by mtime first, then by name.
  * @param {Entry} a First entry.
  * @param {Entry} b Second entry.
@@ -406,4 +434,17 @@ FileListModel.prototype.compareType_ = function(a, b) {
 
   var result = util.collator.compare(aType, bType);
   return result !== 0 ? result : util.compareName(a, b);
+};
+
+/**
+ * @param {!VolumeManager} volumeManager The volume manager.
+ */
+FileListModel.prototype.InitNewDirContents = function(volumeManager) {
+  this.volumeManager_ = volumeManager;
+  // Clear the location info, it's reset by compareLabel_ when needed.
+  this.locationInfo_ = null;
+  // Initialize compare function based on Labels.
+  this.setCompareFunction(
+      'name',
+      /** @type {function(*, *): number} */ (this.compareLabel_.bind(this)));
 };
