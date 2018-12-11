@@ -184,7 +184,7 @@ cca.views.camera.Preview.prototype.toImage = function() {
       if (blob) {
         resolve(blob);
       } else {
-        reject('Photo blob error.');
+        reject(new Error('Photo blob error.'));
       }
     }, 'image/jpeg');
   });
@@ -206,7 +206,7 @@ cca.views.camera.Preview.prototype.applyFocus_ = function(offsetX, offsetY) {
   var track = this.video_.srcObject.getVideoTracks()[0];
   var focus = track.applyConstraints(constraints).then(() => {
     if (focus != this.focus_) {
-      throw 'Focus was cancelled.';
+      return; // Focus was cancelled.
     }
     var aim = document.querySelector('#preview-focus-aim');
     var clone = aim.cloneNode(true);

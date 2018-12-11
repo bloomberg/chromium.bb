@@ -280,11 +280,13 @@ cca.views.Camera.prototype.beginTake_ = function() {
       if (this.recordMode) {
         // Take of recording will be ended by another shutter click.
         this.take_ = this.createRecordingBlob_().catch((error) => {
-          throw [error, 'errorMsgEmptyRecording'];
+          cca.toast.show('errorMsgEmptyRecording');
+          throw error;
         });
       } else {
         this.take_ = this.createPhotoBlob_().catch((error) => {
-          throw [error, 'errorMsgTakePhotoFailed'];
+          cca.toast.show('errorMsgTakePhotoFailed');
+          throw error;
         });
         this.endTake_();
       }
@@ -319,12 +321,12 @@ cca.views.Camera.prototype.endTake_ = function() {
           cca.views.camera.Options.Sound.RECORDEND :
           cca.views.camera.Options.Sound.SHUTTER);
       return this.model_.savePicture(blob, recordMode).catch((error) => {
-        throw [error, 'errorMsgSaveFileFailed'];
+        cca.toast.show('errorMsgSaveFileFailed');
+        throw error;
       });
     }
-  }).catch(([error, message]) => {
+  }).catch((error) => {
     console.error(error);
-    cca.toast.show(message);
   }).finally(() => {
     // Re-enable UI controls after finishing the take.
     this.take_ = null;
@@ -358,7 +360,7 @@ cca.views.Camera.prototype.createRecordingBlob_ = function() {
       if (recordedBlob.size) {
         resolve(recordedBlob);
       } else {
-        reject('Recording blob error.');
+        reject(new Error('Recording blob error.'));
       }
     };
     this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
@@ -409,7 +411,7 @@ cca.views.Camera.prototype.createPhotoBlob_ = function() {
 cca.views.Camera.prototype.prepareMediaRecorder_ = function() {
   if (this.mediaRecorder_ == null) {
     if (!MediaRecorder.isTypeSupported(cca.views.Camera.RECORD_MIMETYPE)) {
-      throw 'The preferred mimeType is not supported.';
+      throw new Error('The preferred mimeType is not supported.');
     }
     this.mediaRecorder_ = new MediaRecorder(
         this.preview_.stream, {mimeType: cca.views.Camera.RECORD_MIMETYPE});
@@ -495,11 +497,11 @@ cca.views.Camera.prototype.stop_ = function() {
  */
 cca.views.Camera.prototype.start_ = function() {
   var suspend = this.locked_ || chrome.app.window.current().isMinimized();
-  this.started_ = (suspend ? Promise.reject('suspend') :
+  this.started_ = (suspend ? Promise.reject(new Error('suspend')) :
       this.constraintsCandidates_()).then((candidates) => {
     var tryStartWithCandidate = (index) => {
       if (index >= candidates.length) {
-        return Promise.reject('out-of-candidates');
+        return Promise.reject(new Error('out-of-candidates'));
       }
       var constraints = candidates[index];
       return navigator.mediaDevices.getUserMedia(constraints).then(
@@ -518,7 +520,7 @@ cca.views.Camera.prototype.start_ = function() {
     };
     return tryStartWithCandidate(0);
   }).catch((error) => {
-    if (error != 'suspend') {
+    if (error && error.message != 'suspend') {
       console.error(error);
       cca.nav.open('warning', 'no-camera');
     }

@@ -389,7 +389,7 @@ cca.views.camera.Options.prototype.maybeRefreshVideoDeviceIds_ = function() {
 cca.views.camera.Options.prototype.videoDeviceIds = function() {
   return this.videoDevices_.then((devices) => {
     if (devices.length == 0) {
-      throw 'Device list empty.';
+      throw new Error('Device list empty.');
     }
     // Put the selected video device id first.
     var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
