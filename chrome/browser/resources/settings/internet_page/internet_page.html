@@ -7,7 +7,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
@@ -32,7 +31,7 @@
     </style>
     <settings-animated-pages id="pages" section="internet"
         focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
+      <div route-path="default">
         <network-summary default-network="{{defaultNetwork}}"
             device-states="{{deviceStates}}"
             networking-private="[[networkingPrivate]]">
@@ -96,7 +95,7 @@
             <div>$i18n{internetAddConnectionNotAllowed}</div>
           </div>
         </template>
-      </neon-animatable>
+      </div>
 
       <template is="dom-if" route-path="/networkDetail" no-search restamp>
         <settings-subpage page-title="$i18n{internetDetailPageTitle}">

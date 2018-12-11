@@ -21,7 +21,7 @@
     </style>
   <settings-animated-pages id="pages" section="downloads"
       focus-config="[[focusConfig_]]">
-    <neon-animatable route-path="default">
+    <div route-path="default">
       <div class="settings-box first two-line">
         <div class="start">
           <div>$i18n{downloadLocation}</div>
@@ -72,7 +72,7 @@
           </paper-button>
         </div>
       </template>
-    </neon-animatable>
+    </div>
 
 <if expr="chromeos">
     <template is="dom-if" route-path="/smbShares">

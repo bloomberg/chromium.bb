@@ -9,7 +9,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
@@ -118,7 +117,7 @@
     </settings-languages>
     <settings-animated-pages id="pages" section="languages"
         focus-config="[[focusConfig_]]">
-      <neon-animatable route-path="default">
+      <div route-path="default">
         <div class$="settings-box first [[getLanguageListTwoLine_()]]"
             actionable on-click="toggleExpandButton_">
           <div class="start">
@@ -374,7 +373,7 @@
             </cr-action-menu>
           </template>
         </cr-lazy-render>
-      </neon-animatable>
+      </div>
 <if expr="chromeos">
       <template is="dom-if" route-path="/inputMethods">
         <settings-subpage

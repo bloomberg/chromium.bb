@@ -19,7 +19,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <if expr="chromeos">
@@ -114,7 +113,7 @@
       <settings-section page-title="$i18n{aboutPageTitle}" section="about">
         <settings-animated-pages id="pages" section="about"
             focus-config="[[focusConfig_]]">
-          <neon-animatable route-path="default">
+          <div route-path="default">
             <div class="settings-box two-line">
               <img id="product-logo" on-click="onProductLogoTap_"
                   srcset="chrome://theme/current-channel-logo@1x 1x,
@@ -254,7 +253,7 @@
                 on-click="onDetailedBuildInfoTap_"
                 label="$i18n{aboutDetailedBuildInfo}"></cr-link-row>
 </if>
-          </neon-animatable>
+          </div>
 <if expr="chromeos">
           <template is="dom-if" route-path="/help/details">
             <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">

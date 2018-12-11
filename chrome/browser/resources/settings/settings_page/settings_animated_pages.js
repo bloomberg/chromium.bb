@@ -94,10 +94,9 @@ Polymer({
       subpagePaths.push(settings.routes.INTERNET_NETWORKS.path);
     // </if>
 
-    // Only handle iron-select events from neon-animatable elements and the
+    // Only handle iron-select events from div elements and the
     // given whitelist of settings-subpage instances.
-    // TODO(dpapad): Remove neon-animatable here.
-    const whitelist = ['settings-subpage#site-settings', 'neon-animatable'];
+    const whitelist = ['settings-subpage#site-settings', 'div[route-path]'];
     whitelist.push.apply(
         whitelist,
         subpagePaths.map(path => `settings-subpage[route-path="${path}"]`));
