@@ -54,7 +54,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* const data, size_t size) {
     config.options.scaled_height = (int)(config.input.height * factor * 2);
   }
 
+#if defined(WEBP_REDUCE_CSP)
+  config.output.colorspace = (value & 1)
+                                 ? ((value & 2) ? MODE_RGBA : MODE_BGRA)
+                                 : ((value & 2) ? MODE_rgbA : MODE_bgrA);
+#else
   config.output.colorspace = (WEBP_CSP_MODE)(value % MODE_LAST);
+#endif  // WEBP_REDUCE_CSP
 
   if (size % 3) {
     // Decodes incrementally in chunks of increasing size.
