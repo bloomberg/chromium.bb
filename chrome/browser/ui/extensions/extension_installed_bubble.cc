@@ -173,7 +173,7 @@ std::unique_ptr<extensions::Command> GetCommand(
 
 // static
 void ExtensionInstalledBubble::ShowBubble(
-    scoped_refptr<const extensions::Extension> extension,
+    const extensions::Extension* extension,
     Browser* browser,
     const SkBitmap& icon) {
   // The ExtensionInstalledBubbleObserver will delete itself when the
@@ -187,16 +187,16 @@ void ExtensionInstalledBubble::ShowBubble(
   }
 }
 
-ExtensionInstalledBubble::ExtensionInstalledBubble(
-    scoped_refptr<const Extension> extension,
-    Browser* browser,
-    const SkBitmap& icon)
+ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
+                                                   Browser* browser,
+                                                   const SkBitmap& icon)
     : extension_(extension),
       browser_(browser),
       icon_(icon),
       type_(GENERIC),
       options_(NONE),
-      anchor_position_(ANCHOR_APP_MENU) {}
+      anchor_position_(ANCHOR_APP_MENU) {
+}
 
 ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
 
@@ -230,7 +230,7 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
       break;
     case OMNIBOX_KEYWORD:
       extra =
-          base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension()));
+          base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension_));
       message_id = IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO;
       break;
     case GENERIC:
@@ -246,19 +246,19 @@ base::string16 ExtensionInstalledBubble::GetHowToUseDescription() const {
 void ExtensionInstalledBubble::Initialize() {
   const extensions::ActionInfo* action_info = nullptr;
   if ((action_info = extensions::ActionInfo::GetBrowserActionInfo(
-           extension())) != nullptr) {
+           extension_)) != nullptr) {
     type_ = BROWSER_ACTION;
   } else if ((action_info = extensions::ActionInfo::GetPageActionInfo(
-                  extension())) != nullptr) {
+                  extension_)) != nullptr) {
     type_ = PAGE_ACTION;
-  } else if (!extensions::OmniboxInfo::GetKeyword(extension()).empty()) {
+  } else if (!extensions::OmniboxInfo::GetKeyword(extension_).empty()) {
     type_ = OMNIBOX_KEYWORD;
   } else {
     type_ = GENERIC;
   }
 
   action_command_ = GetCommand(extension_->id(), browser_->profile(), type_);
-  if (extensions::sync_helper::IsSyncable(extension()) &&
+  if (extensions::sync_helper::IsSyncable(extension_) &&
       SyncPromoUI::ShouldShowSyncPromo(browser_->profile()))
     options_ |= SIGN_IN_PROMO;
 

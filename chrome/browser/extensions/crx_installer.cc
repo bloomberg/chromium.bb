@@ -934,7 +934,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   if (!update_from_settings_page_) {
     // If there is a client, tell the client about installation.
     if (client_)
-      client_->OnInstallSuccess(extension_, install_icon_.get());
+      client_->OnInstallSuccess(extension(), install_icon_.get());
 
     // We update the extension's granted permissions if the user already
     // approved the install (client_ is non NULL), or we are allowed to install

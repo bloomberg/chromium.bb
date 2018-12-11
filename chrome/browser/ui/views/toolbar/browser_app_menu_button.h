@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BROWSER_APP_MENU_BUTTON_H_
 
 #include <memory>
-#include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -85,6 +84,10 @@ class BrowserAppMenuButton : public AppMenuButton,
 
   // Our owning toolbar view.
   ToolbarView* const toolbar_view_;
+
+  // Any trailing margin to be applied. Used when the browser is in
+  // a maximized state to extend to the full window width.
+  int margin_trailing_ = 0;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

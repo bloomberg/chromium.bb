@@ -580,9 +580,8 @@ void ExtensionInstallPrompt::ShowDialog(
   LoadImageIfNeeded();
 }
 
-void ExtensionInstallPrompt::OnInstallSuccess(
-    scoped_refptr<const Extension> extension,
-    SkBitmap* icon) {
+void ExtensionInstallPrompt::OnInstallSuccess(const Extension* extension,
+                                              SkBitmap* icon) {
   extension_ = extension;
   SetIcon(icon);
 
@@ -622,7 +621,8 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   }
 
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
-      extension_.get(), extension_misc::EXTENSION_ICON_LARGE,
+      extension_,
+      extension_misc::EXTENSION_ICON_LARGE,
       ExtensionIconSet::MATCH_BIGGER);
 
   // Load the image asynchronously. The response will be sent to OnImageLoaded.
@@ -634,7 +634,7 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
       extensions::ImageLoader::ImageRepresentation::NEVER_RESIZE,
       gfx::Size(),
       ui::SCALE_FACTOR_100P));
-  loader->LoadImagesAsync(extension_.get(), images_list,
+  loader->LoadImagesAsync(extension_, images_list,
                           base::BindOnce(&ExtensionInstallPrompt::OnImageLoaded,
                                          weak_factory_.GetWeakPtr()));
 }
@@ -649,15 +649,14 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     // any transformations are correctly reflected in the install prompt.
     extensions::PermissionsUpdater(
         profile_, extensions::PermissionsUpdater::INIT_FLAG_TRANSIENT)
-        .InitializePermissions(extension_.get());
+        .InitializePermissions(extension_);
     permissions_to_display =
         &extension_->permissions_data()->active_permissions();
     // For delegated installs, all optional permissions are pre-approved by the
     // person who triggers the install, so add them to the list.
     if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT) {
       const PermissionSet& optional_permissions =
-          extensions::PermissionsParser::GetOptionalPermissions(
-              extension_.get());
+          extensions::PermissionsParser::GetOptionalPermissions(extension_);
       permissions_wrapper = PermissionSet::CreateUnion(*permissions_to_display,
                                                        optional_permissions);
       permissions_to_display = permissions_wrapper.get();
@@ -674,7 +673,7 @@ void ExtensionInstallPrompt::ShowConfirmation() {
         message_provider->GetAllPermissionIDs(*permissions_to_display, type)));
   }
 
-  prompt_->set_extension(extension_.get());
+  prompt_->set_extension(extension_);
   prompt_->set_icon(gfx::Image::CreateFrom1xBitmap(icon_));
 
   if (show_params_->WasParentDestroyed()) {
