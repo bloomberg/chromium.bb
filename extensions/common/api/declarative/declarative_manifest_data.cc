@@ -143,23 +143,35 @@ std::unique_ptr<DeclarativeManifestData> DeclarativeManifestData::FromValue(
       return std::unique_ptr<DeclarativeManifestData>();
     }
 
-    linked_ptr<Rule> rule(new Rule());
-    if (!Rule::Populate(*dict, rule.get())) {
+    Rule rule;
+    if (!Rule::Populate(*dict, &rule)) {
       error_builder.Append("rule failed to populate");
       return std::unique_ptr<DeclarativeManifestData>();
     }
 
-    if (!ConvertManifestRule(*rule, &error_builder))
+    if (!ConvertManifestRule(rule, &error_builder))
       return std::unique_ptr<DeclarativeManifestData>();
 
-    result->event_rules_map_[event].push_back(rule);
+    result->event_rules_map_[event].push_back(std::move(rule));
   }
   return result;
 }
 
-std::vector<linked_ptr<DeclarativeManifestData::Rule>>&
+std::vector<DeclarativeManifestData::Rule>
 DeclarativeManifestData::RulesForEvent(const std::string& event) {
-  return event_rules_map_[event];
+  const auto& rules = event_rules_map_[event];
+  std::vector<DeclarativeManifestData::Rule> result;
+  result.reserve(rules.size());
+  for (const auto& rule : rules) {
+    // TODO(rdevlin.cronin): It would be nice if we could have the RulesRegistry
+    // reference the rules owned here, but the ownership issues are a bit
+    // tricky. Revisit this.
+    std::unique_ptr<base::DictionaryValue> rule_value = rule.ToValue();
+    std::unique_ptr<DeclarativeManifestData::Rule> rule_copy =
+        DeclarativeManifestData::Rule::FromValue(*rule_value);
+    result.push_back(std::move(*rule_copy));
+  }
+  return result;
 }
 
 }  // namespace extensions
