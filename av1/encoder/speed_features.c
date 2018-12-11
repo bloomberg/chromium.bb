@@ -295,7 +295,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 4) {
     sf->use_intra_txb_hash = 0;
-    sf->use_inter_txb_hash = 0;
     sf->use_mb_rd_hash = 0;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
@@ -473,7 +472,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->two_pass_partition_search = 0;
   sf->mode_pruning_based_on_two_pass_partition_search = 0;
   sf->use_intra_txb_hash = 0;
-  sf->use_inter_txb_hash = 1;
+  // TODO(any) : clean use_inter_txb_hash code
+  sf->use_inter_txb_hash = 0;
   sf->use_mb_rd_hash = 1;
   sf->optimize_b_precheck = 0;
   sf->jnt_comp_fast_tx_search = 0;
