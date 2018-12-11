@@ -37,7 +37,7 @@ namespace blink {
 
 class HTMLSelectElement;
 
-class LayoutListBox final : public LayoutBlockFlow {
+class CORE_EXPORT LayoutListBox final : public LayoutBlockFlow {
  public:
   explicit LayoutListBox(Element*);
   ~LayoutListBox() override;

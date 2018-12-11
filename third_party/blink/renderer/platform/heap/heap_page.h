@@ -584,7 +584,7 @@ class PLATFORM_EXPORT NormalPage final : public BasePage {
 // In order to use the same memory allocation routines for everything allocated
 // in the heap, large objects are considered heap pages containing only one
 // object.
-class LargeObjectPage final : public BasePage {
+class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
  public:
   static size_t PageHeaderSize() {
     // Compute the amount of padding we have to add to a header to make the size

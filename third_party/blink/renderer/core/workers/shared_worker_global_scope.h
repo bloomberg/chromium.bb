@@ -42,7 +42,7 @@ namespace blink {
 
 class SharedWorkerThread;
 
-class SharedWorkerGlobalScope final : public WorkerGlobalScope {
+class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

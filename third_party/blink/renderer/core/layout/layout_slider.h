@@ -29,14 +29,14 @@ namespace blink {
 class HTMLInputElement;
 class SliderThumbElement;
 
-class LayoutSlider final : public LayoutFlexibleBox {
+class CORE_EXPORT LayoutSlider final : public LayoutFlexibleBox {
  public:
   static const int kDefaultTrackLength;
 
   explicit LayoutSlider(HTMLInputElement*);
   ~LayoutSlider() override;
 
-  CORE_EXPORT bool InDragMode() const;
+  bool InDragMode() const;
 
   const char* GetName() const override { return "LayoutSlider"; }
 
