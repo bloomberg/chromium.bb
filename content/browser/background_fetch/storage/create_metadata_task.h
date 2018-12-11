@@ -18,8 +18,6 @@
 
 namespace content {
 
-struct BackgroundFetchRegistration;
-
 namespace background_fetch {
 
 // Checks if the registration can be created, then writes the Background
@@ -28,7 +26,7 @@ class CreateMetadataTask : public DatabaseTask {
  public:
   using CreateMetadataCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              const BackgroundFetchRegistration&)>;
+                              blink::mojom::BackgroundFetchRegistrationPtr)>;
 
   CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,

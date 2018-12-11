@@ -212,7 +212,8 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
   BackgroundFetchScheduler* scheduler() { return context_->scheduler_.get(); }
 
  private:
-  void DidUpdateProgress(const BackgroundFetchRegistration& registration) {
+  void DidUpdateProgress(
+      const blink::mojom::BackgroundFetchRegistration& registration) {
     last_downloaded_ = registration.downloaded;
 
     if (job_progress_closure_)

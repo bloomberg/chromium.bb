@@ -11,7 +11,4 @@ deps = [
   "//mojo/public/cpp/bindings",
   "//third_party/blink/public:blink_headers",
 ]
-type_mappings = [
-  "blink.mojom.BackgroundFetchRegistration=content::BackgroundFetchRegistration",
-  "blink.mojom.BackgroundFetchSettledFetch=::content::BackgroundFetchSettledFetch",
-]
+type_mappings = [ "blink.mojom.BackgroundFetchSettledFetch=::content::BackgroundFetchSettledFetch" ]

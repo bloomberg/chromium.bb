@@ -143,13 +143,13 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetRegistration(
       blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
       blink::mojom::BackgroundFetchError error,
-      const BackgroundFetchRegistration& registration);
+      blink::mojom::BackgroundFetchRegistrationPtr registration);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       blink::mojom::BackgroundFetchError error,
-      const BackgroundFetchRegistration& registration);
+      blink::mojom::BackgroundFetchRegistrationPtr registration);
 
   // Called when the sequence of matching settled fetches have been received
   // from storage, and |callback| can be invoked to pass these on to the

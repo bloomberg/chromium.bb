@@ -67,7 +67,7 @@ class CONTENT_EXPORT BackgroundFetchDataManager
                               std::vector<BackgroundFetchSettledFetch>)>;
   using GetRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              const BackgroundFetchRegistration&)>;
+                              blink::mojom::BackgroundFetchRegistrationPtr)>;
   using MarkRegistrationForDeletionCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               blink::mojom::BackgroundFetchFailureReason)>;

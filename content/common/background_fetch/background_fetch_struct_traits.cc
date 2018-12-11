@@ -12,25 +12,6 @@
 namespace mojo {
 
 // static
-bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
-                  content::BackgroundFetchRegistration>::
-    Read(blink::mojom::BackgroundFetchRegistrationDataView data,
-         content::BackgroundFetchRegistration* registration) {
-  if (!data.ReadDeveloperId(&registration->developer_id) ||
-      !data.ReadUniqueId(&registration->unique_id)) {
-    return false;
-  }
-
-  registration->upload_total = data.upload_total();
-  registration->uploaded = data.uploaded();
-  registration->download_total = data.download_total();
-  registration->downloaded = data.downloaded();
-  registration->result = data.result();
-  registration->failure_reason = data.failure_reason();
-  return true;
-}
-
-// static
 bool StructTraits<blink::mojom::BackgroundFetchSettledFetchDataView,
                   content::BackgroundFetchSettledFetch>::
     Read(blink::mojom::BackgroundFetchSettledFetchDataView data,

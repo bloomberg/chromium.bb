@@ -26,7 +26,7 @@ class GetRegistrationTask : public DatabaseTask {
  public:
   using GetRegistrationCallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
-                              const BackgroundFetchRegistration&)>;
+                              blink::mojom::BackgroundFetchRegistrationPtr)>;
 
   GetRegistrationTask(DatabaseTaskHost* host,
                       int64_t service_worker_registration_id,

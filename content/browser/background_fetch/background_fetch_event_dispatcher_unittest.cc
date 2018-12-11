@@ -87,7 +87,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(kExampleUniqueId,
@@ -118,7 +118,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(kExampleUniqueId2,
@@ -156,7 +156,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchResult::UNSET,
@@ -185,7 +185,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchResult::FAILURE,
@@ -223,7 +223,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_registration()->developer_id);
 
@@ -249,7 +249,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_registration()->developer_id);
 
@@ -285,7 +285,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId,
             embedded_worker_test_helper()->last_registration()->developer_id);
 
@@ -315,7 +315,7 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration());
   EXPECT_EQ(kExampleDeveloperId2,
             embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(kExampleUniqueId2,

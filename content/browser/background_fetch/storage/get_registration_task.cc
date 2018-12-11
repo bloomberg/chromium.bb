@@ -44,13 +44,13 @@ void GetRegistrationTask::DidGetMetadata(
 
 void GetRegistrationTask::FinishWithError(
     blink::mojom::BackgroundFetchError error) {
-  BackgroundFetchRegistration registration;
+  auto registration = blink::mojom::BackgroundFetchRegistration::New();
 
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
     bool converted =
-        ToBackgroundFetchRegistration(*metadata_proto_, &registration);
+        ToBackgroundFetchRegistration(*metadata_proto_, registration.get());
     if (!converted) {
       // Database corrupted.
       SetStorageErrorAndFinish(
@@ -61,7 +61,7 @@ void GetRegistrationTask::FinishWithError(
 
   ReportStorageError();
 
-  std::move(callback_).Run(error, registration);
+  std::move(callback_).Run(error, std::move(registration));
   Finished();  // Destroys |this|.
 }
 

@@ -18,47 +18,6 @@ namespace mojo {
 
 template <>
 struct CONTENT_EXPORT
-    StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
-                 content::BackgroundFetchRegistration> {
-  static const std::string& developer_id(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.developer_id;
-  }
-  static const std::string& unique_id(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.unique_id;
-  }
-  static uint64_t upload_total(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.upload_total;
-  }
-  static uint64_t uploaded(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.uploaded;
-  }
-  static uint64_t download_total(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.download_total;
-  }
-  static uint64_t downloaded(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.downloaded;
-  }
-  static blink::mojom::BackgroundFetchResult result(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.result;
-  }
-  static blink::mojom::BackgroundFetchFailureReason failure_reason(
-      const content::BackgroundFetchRegistration& registration) {
-    return registration.failure_reason;
-  }
-
-  static bool Read(blink::mojom::BackgroundFetchRegistrationDataView data,
-                   content::BackgroundFetchRegistration* registration);
-};
-
-template <>
-struct CONTENT_EXPORT
     StructTraits<blink::mojom::BackgroundFetchSettledFetchDataView,
                  content::BackgroundFetchSettledFetch> {
   static blink::mojom::FetchAPIRequestPtr request(

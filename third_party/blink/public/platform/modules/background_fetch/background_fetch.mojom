@@ -84,8 +84,9 @@ struct BackgroundFetchRegistration {
   uint64 uploaded;
   uint64 download_total;
   uint64 downloaded;
-  BackgroundFetchResult result;
-  BackgroundFetchFailureReason failure_reason;
+  BackgroundFetchResult result = BackgroundFetchResult.UNSET;
+  BackgroundFetchFailureReason failure_reason =
+      BackgroundFetchFailureReason.NONE;
 };
 
 // This contains the data we need to record UKM metrics, that isn't needed for

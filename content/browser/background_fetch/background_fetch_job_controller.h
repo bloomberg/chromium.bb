@@ -46,8 +46,8 @@ class CONTENT_EXPORT BackgroundFetchJobController
       base::OnceCallback<void(const BackgroundFetchRegistrationId&,
                               blink::mojom::BackgroundFetchFailureReason,
                               ErrorCallback)>;
-  using ProgressCallback =
-      base::RepeatingCallback<void(const BackgroundFetchRegistration&)>;
+  using ProgressCallback = base::RepeatingCallback<void(
+      const blink::mojom::BackgroundFetchRegistration&)>;
   using RequestFinishedCallback =
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
 
@@ -75,9 +75,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
   // Gets the number of bytes downloaded for jobs that are currently running.
   uint64_t GetInProgressDownloadedBytes();
 
-  // Returns a unique_ptr to a BackgroundFetchRegistration object
+  // Returns a blink::mojom::BackgroundFetchRegistrationPtr object
   // created with member fields.
-  std::unique_ptr<BackgroundFetchRegistration> NewRegistration() const;
+  blink::mojom::BackgroundFetchRegistrationPtr NewRegistration() const;
 
   const BackgroundFetchRegistrationId& registration_id() const {
     return registration_id_;

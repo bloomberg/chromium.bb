@@ -16,7 +16,6 @@ class SkBitmap;
 
 namespace content {
 
-struct BackgroundFetchRegistration;
 class BackgroundFetchRegistrationId;
 class BackgroundFetchRequestInfo;
 
@@ -28,7 +27,7 @@ class BackgroundFetchDataManagerObserver {
   // Called when the Background Fetch |registration| has been created.
   virtual void OnRegistrationCreated(
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchRegistration& registration,
+      const blink::mojom::BackgroundFetchRegistration& registration,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_requests,
@@ -37,7 +36,7 @@ class BackgroundFetchDataManagerObserver {
   // Called on start-up when an incomplete registration has been found.
   virtual void OnRegistrationLoadedAtStartup(
       const BackgroundFetchRegistrationId& registration_id,
-      const BackgroundFetchRegistration& registration,
+      const blink::mojom::BackgroundFetchRegistration& registration,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
@@ -48,7 +47,7 @@ class BackgroundFetchDataManagerObserver {
   // Called when a registration is being queried. Implementations should update
   // |registration| with in-progress information.
   virtual void OnRegistrationQueried(
-      BackgroundFetchRegistration* registration) = 0;
+      blink::mojom::BackgroundFetchRegistration* registration) = 0;
 
   // Called if corrupted data is found in the Service Worker database.
   virtual void OnServiceWorkerDatabaseCorrupted(

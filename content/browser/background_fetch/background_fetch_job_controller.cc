@@ -192,9 +192,9 @@ void BackgroundFetchJobController::DidCompleteRequest(
   std::move(active_request_finished_callback_).Run(request);
 }
 
-std::unique_ptr<BackgroundFetchRegistration>
+blink::mojom::BackgroundFetchRegistrationPtr
 BackgroundFetchJobController::NewRegistration() const {
-  return std::make_unique<BackgroundFetchRegistration>(
+  return blink::mojom::BackgroundFetchRegistration::New(
       registration_id().developer_id(), registration_id().unique_id(),
       0 /* upload_total */, 0 /* uploaded */, options_->download_total,
       complete_requests_downloaded_bytes_cache_,

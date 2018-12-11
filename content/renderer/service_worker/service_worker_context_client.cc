@@ -200,16 +200,16 @@ blink::WebServiceWorkerClientInfo ToWebServiceWorkerClientInfo(
   return web_client_info;
 }
 
-// Converts a content::BackgroundFetchRegistration object to
+// Converts a blink::mojom::BackgroundFetchRegistrationPtr object to
 // a blink::WebBackgroundFetchRegistration object.
 blink::WebBackgroundFetchRegistration ToWebBackgroundFetchRegistration(
-    const BackgroundFetchRegistration& registration) {
+    blink::mojom::BackgroundFetchRegistrationPtr registration) {
   return blink::WebBackgroundFetchRegistration(
-      blink::WebString::FromUTF8(registration.developer_id),
-      blink::WebString::FromUTF8(registration.unique_id),
-      registration.upload_total, registration.uploaded,
-      registration.download_total, registration.downloaded, registration.result,
-      registration.failure_reason);
+      blink::WebString::FromUTF8(registration->developer_id),
+      blink::WebString::FromUTF8(registration->unique_id),
+      registration->upload_total, registration->uploaded,
+      registration->download_total, registration->downloaded,
+      registration->result, registration->failure_reason);
 }
 
 // This is complementary to ConvertWebKitPriorityToNetPriority, defined in
@@ -1426,7 +1426,7 @@ void ServiceWorkerContextClient::DispatchActivateEvent(
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchAbortEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->background_fetch_abort_event_callbacks));
@@ -1440,11 +1440,11 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchAbortEvent(
       TRACE_EVENT_FLAG_FLOW_OUT);
 
   proxy_->DispatchBackgroundFetchAbortEvent(
-      request_id, ToWebBackgroundFetchRegistration(registration));
+      request_id, ToWebBackgroundFetchRegistration(std::move(registration)));
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchClickEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->background_fetch_click_event_callbacks));
@@ -1458,11 +1458,11 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchClickEvent(
       TRACE_EVENT_FLAG_FLOW_OUT);
 
   proxy_->DispatchBackgroundFetchClickEvent(
-      request_id, ToWebBackgroundFetchRegistration(registration));
+      request_id, ToWebBackgroundFetchRegistration(std::move(registration)));
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchFailEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->background_fetch_fail_event_callbacks));
@@ -1476,11 +1476,11 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchFailEvent(
       TRACE_EVENT_FLAG_FLOW_OUT);
 
   proxy_->DispatchBackgroundFetchFailEvent(
-      request_id, ToWebBackgroundFetchRegistration(registration));
+      request_id, ToWebBackgroundFetchRegistration(std::move(registration)));
 }
 
 void ServiceWorkerContextClient::DispatchBackgroundFetchSuccessEvent(
-    const BackgroundFetchRegistration& registration,
+    blink::mojom::BackgroundFetchRegistrationPtr registration,
     DispatchBackgroundFetchSuccessEventCallback callback) {
   int request_id = context_->timeout_timer->StartEvent(
       CreateAbortCallback(&context_->background_fetched_event_callbacks));
@@ -1494,7 +1494,7 @@ void ServiceWorkerContextClient::DispatchBackgroundFetchSuccessEvent(
       TRACE_EVENT_FLAG_FLOW_OUT);
 
   proxy_->DispatchBackgroundFetchSuccessEvent(
-      request_id, ToWebBackgroundFetchRegistration(registration));
+      request_id, ToWebBackgroundFetchRegistration(std::move(registration)));
 }
 
 void ServiceWorkerContextClient::InitializeGlobalScope(

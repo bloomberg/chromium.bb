@@ -115,7 +115,7 @@ void BackgroundFetchServiceImpl::Fetch(
   if (!ValidateDeveloperId(developer_id) || !ValidateRequests(requests)) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
-        base::nullopt /* registration */);
+        nullptr /* registration */);
     return;
   }
 
@@ -207,7 +207,7 @@ void BackgroundFetchServiceImpl::GetRegistration(
   if (!ValidateDeveloperId(developer_id)) {
     std::move(callback).Run(
         blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
-        base::nullopt /* registration */);
+        nullptr /* registration */);
     return;
   }
 

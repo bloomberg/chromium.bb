@@ -84,7 +84,7 @@ void BackgroundFetchContext::DidGetInitializationData(
   for (auto& data : initialization_data) {
     for (auto& observer : data_manager_->observers()) {
       observer.OnRegistrationLoadedAtStartup(
-          data.registration_id, data.registration, data.options.Clone(),
+          data.registration_id, *data.registration, data.options.Clone(),
           data.icon, data.num_completed_requests, data.num_requests,
           data.active_fetch_requests);
     }
@@ -117,20 +117,19 @@ void BackgroundFetchContext::GetDeveloperIdsForServiceWorker(
 void BackgroundFetchContext::DidGetRegistration(
     blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
     blink::mojom::BackgroundFetchError error,
-    const BackgroundFetchRegistration& registration) {
+    blink::mojom::BackgroundFetchRegistrationPtr registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    std::move(callback).Run(error,
-                            base::nullopt /* BackgroundFetchRegistration */);
+    std::move(callback).Run(
+        error, nullptr /* blink::mojom::BackgroundFetchRegistration */);
     return;
   }
 
-  BackgroundFetchRegistration updated_registration(registration);
   for (auto& observer : data_manager_->observers())
-    observer.OnRegistrationQueried(&updated_registration);
+    observer.OnRegistrationQueried(registration.get());
 
-  std::move(callback).Run(error, updated_registration);
+  std::move(callback).Run(error, std::move(registration));
 }
 
 void BackgroundFetchContext::StartFetch(
@@ -206,8 +205,7 @@ void BackgroundFetchContext::DidGetPermission(
 
   // No permission, the fetch should be rejected.
   std::move(fetch_callbacks_[registration_id])
-      .Run(blink::mojom::BackgroundFetchError::PERMISSION_DENIED,
-           base::nullopt);
+      .Run(blink::mojom::BackgroundFetchError::PERMISSION_DENIED, nullptr);
   fetch_callbacks_.erase(registration_id);
 }
 
@@ -220,7 +218,7 @@ void BackgroundFetchContext::GetIconDisplaySize(
 void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     blink::mojom::BackgroundFetchError error,
-    const BackgroundFetchRegistration& registration) {
+    blink::mojom::BackgroundFetchRegistrationPtr registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto iter = fetch_callbacks_.find(registration_id);
@@ -231,9 +229,9 @@ void BackgroundFetchContext::DidCreateRegistration(
     return;
 
   if (error == blink::mojom::BackgroundFetchError::NONE)
-    std::move(iter->second).Run(error, registration);
+    std::move(iter->second).Run(error, std::move(registration));
   else
-    std::move(iter->second).Run(error, base::nullopt /* registration */);
+    std::move(iter->second).Run(error, nullptr /* registration */);
 
   fetch_callbacks_.erase(registration_id);
 }

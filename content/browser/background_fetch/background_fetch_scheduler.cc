@@ -124,7 +124,8 @@ void BackgroundFetchScheduler::DidMarkForDeletion(
   auto it = completed_fetches_.find(registration_id.unique_id());
   DCHECK(it != completed_fetches_.end());
 
-  BackgroundFetchRegistration* registration = it->second.second.get();
+  blink::mojom::BackgroundFetchRegistrationPtr& registration =
+      it->second.second;
   // Include any other failure reasons the marking for deletion may have found.
   if (registration->failure_reason == BackgroundFetchFailureReason::NONE)
     registration->failure_reason = failure_reason;
@@ -137,8 +138,7 @@ void BackgroundFetchScheduler::DidMarkForDeletion(
   registration_notifier_->Notify(*registration);
 
   event_dispatcher_.DispatchBackgroundFetchCompletionEvent(
-      registration_id,
-      std::make_unique<BackgroundFetchRegistration>(*registration),
+      registration_id, registration.Clone(),
       base::BindOnce(&BackgroundFetchScheduler::CleanupRegistration,
                      weak_ptr_factory_.GetWeakPtr(), registration_id));
 
@@ -193,7 +193,7 @@ void BackgroundFetchScheduler::DispatchClickEvent(
 std::unique_ptr<BackgroundFetchJobController>
 BackgroundFetchScheduler::CreateInitializedController(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchRegistration& registration,
+    const blink::mojom::BackgroundFetchRegistration& registration,
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_completed_requests,
@@ -220,7 +220,7 @@ BackgroundFetchScheduler::CreateInitializedController(
 
 void BackgroundFetchScheduler::OnRegistrationCreated(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchRegistration& registration,
+    const blink::mojom::BackgroundFetchRegistration& registration,
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_requests,
@@ -240,7 +240,7 @@ void BackgroundFetchScheduler::OnRegistrationCreated(
 
 void BackgroundFetchScheduler::OnRegistrationLoadedAtStartup(
     const BackgroundFetchRegistrationId& registration_id,
-    const BackgroundFetchRegistration& registration,
+    const blink::mojom::BackgroundFetchRegistration& registration,
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     int num_completed_requests,
@@ -306,7 +306,7 @@ void BackgroundFetchScheduler::AbortFetches(
 }
 
 void BackgroundFetchScheduler::OnRegistrationQueried(
-    BackgroundFetchRegistration* registration) {
+    blink::mojom::BackgroundFetchRegistration* registration) {
   DCHECK(registration);
   if (!active_controller_)
     return;
