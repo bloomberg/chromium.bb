@@ -133,7 +133,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -2693,49 +2692,25 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
   }
 }
 
+static void RecordGraphicsLayerAsForeignLayer(
+    GraphicsContext& context,
+    const GraphicsLayer* graphics_layer) {
+  // TODO(trchen): Currently the GraphicsLayer hierarchy is still built during
+  // CompositingUpdate, and we have to clear them here to ensure no extraneous
+  // layers are still attached. In future we will disable all those layer
+  // hierarchy code so we won't need this line.
+  graphics_layer->CcLayer()->RemoveAllChildren();
+  RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
+                     graphics_layer->CcLayer(),
+                     graphics_layer->GetPropertyTreeState());
+}
+
 static void CollectViewportLayersForLayerList(GraphicsContext& context,
                                               VisualViewport& visual_viewport) {
   DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-
-  // Collect the visual viewport container layer.
-  {
-    GraphicsLayer* container_layer = visual_viewport.ContainerLayer();
-    ScopedPaintChunkProperties container_scope(
-        context.GetPaintController(), container_layer->GetPropertyTreeState(),
-        *container_layer, DisplayItem::kForeignLayerWrapper);
-
-    // TODO(trchen): Currently the GraphicsLayer hierarchy is still built during
-    // CompositingUpdate, and we have to clear them here to ensure no extraneous
-    // layers are still attached. In future we will disable all those layer
-    // hierarchy code so we won't need this line.
-    container_layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
-                       container_layer->CcLayer());
-  }
-
-  // Collect the page scale layer.
-  {
-    GraphicsLayer* scale_layer = visual_viewport.PageScaleLayer();
-    ScopedPaintChunkProperties scale_scope(
-        context.GetPaintController(), scale_layer->GetPropertyTreeState(),
-        *scale_layer, DisplayItem::kForeignLayerWrapper);
-
-    scale_layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
-                       scale_layer->CcLayer());
-  }
-
-  // Collect the visual viewport scroll layer.
-  {
-    GraphicsLayer* scroll_layer = visual_viewport.ScrollLayer();
-    ScopedPaintChunkProperties scroll_scope(
-        context.GetPaintController(), scroll_layer->GetPropertyTreeState(),
-        *scroll_layer, DisplayItem::kForeignLayerWrapper);
-
-    scroll_layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
-                       scroll_layer->CcLayer());
-  }
+  RecordGraphicsLayerAsForeignLayer(context, visual_viewport.ContainerLayer());
+  RecordGraphicsLayerAsForeignLayer(context, visual_viewport.PageScaleLayer());
+  RecordGraphicsLayerAsForeignLayer(context, visual_viewport.ScrollLayer());
 }
 
 static void CollectDrawableLayersForLayerListRecursively(
@@ -2750,25 +2725,12 @@ static void CollectDrawableLayersForLayerListRecursively(
   // that don't for the purposes of hit testing. For example, an empty div
   // will not draw content but needs to create a layer to ensure scroll events
   // do not pass through it.
-  if (layer->DrawsContent() || layer->GetHitTestableWithoutDrawsContent()) {
-    ScopedPaintChunkProperties scope(context.GetPaintController(),
-                                     layer->GetPropertyTreeState(), *layer,
-                                     DisplayItem::kForeignLayerWrapper);
-    // TODO(trchen): Currently the GraphicsLayer hierarchy is still built
-    // during CompositingUpdate, and we have to clear them here to ensure no
-    // extraneous layers are still attached. In future we will disable all
-    // those layer hierarchy code so we won't need this line.
-    layer->CcLayer()->RemoveAllChildren();
-    RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
-                       layer->CcLayer());
-  }
+  if (layer->DrawsContent() || layer->GetHitTestableWithoutDrawsContent())
+    RecordGraphicsLayerAsForeignLayer(context, layer);
 
   if (auto* contents_layer = layer->ContentsLayer()) {
-    ScopedPaintChunkProperties scope(
-        context.GetPaintController(), layer->GetContentsPropertyTreeState(),
-        *layer, DisplayItem::kForeignLayerContentsWrapper);
     RecordForeignLayer(context, DisplayItem::kForeignLayerContentsWrapper,
-                       contents_layer);
+                       contents_layer, layer->GetContentsPropertyTreeState());
   }
 
   DCHECK(!layer->ContentsClippingMaskLayer());
@@ -2791,11 +2753,8 @@ static void CollectLinkHighlightLayersForLayerListRecursively(
     auto* highlight_layer = highlight->Layer();
     auto property_tree_state = layer->GetPropertyTreeState();
     property_tree_state.SetEffect(highlight->effect());
-    ScopedPaintChunkProperties scope(context.GetPaintController(),
-                                     property_tree_state, *highlight,
-                                     DisplayItem::kForeignLayerLinkHighlight);
     RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight,
-                       highlight_layer);
+                       highlight_layer, property_tree_state);
   }
 
   for (const auto* child : layer->Children())

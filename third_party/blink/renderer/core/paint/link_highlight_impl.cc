@@ -55,11 +55,9 @@
 #include "third_party/blink/renderer/platform/animation/compositor_target_property.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
-#include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -494,11 +492,8 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     DCHECK(fragment->PaintProperties()->LinkHighlightEffect());
     property_tree_state.SetEffect(
         fragment->PaintProperties()->LinkHighlightEffect());
-    ScopedPaintChunkProperties paint_chunk_properties(
-        context.GetPaintController(), property_tree_state, *this,
-        DisplayItem::kForeignLayerLinkHighlight);
-
-    RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight, layer);
+    RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight, layer,
+                       property_tree_state);
   }
 
   if (index < fragments_.size())
