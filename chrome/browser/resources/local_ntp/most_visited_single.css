@@ -21,6 +21,7 @@ html {
   --md-tile-width: 112px;
   --md-title-font-size: 12px;
   --md-title-height: 24px;
+  --md-title-max-height: 28px;
 
 
   /* May be overridden by themes (on the body element). */
@@ -204,6 +205,7 @@ body.dark-theme:not(.reordering) .md-tile-container:active + .md-menu::after {
   font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
   font-weight: 500;
+  max-height: var(--md-title-max-height);
   overflow: hidden;
   text-align: center;
   text-overflow: ellipsis;
