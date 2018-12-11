@@ -2295,6 +2295,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Autofill_ParsedCreditCardForm">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when a credit card form is parsed.
+  </description>
+</action>
+
+<action name="Autofill_ParsedProfileForm">
+  <owner>sebsg@chromium.org</owner>
+  <description>
+    This user action is logged when a profile form is parsed.
+  </description>
+</action>
+
 <action name="Autofill_PolledCreditCardSuggestions">
   <owner>sebsg@chromium.org</owner>
   <description>

@@ -661,6 +661,9 @@ class AutofillMetrics {
     // Same as above, but recoreded only once per page load.
     FORM_EVENT_POPUP_SUPPRESSED_ONCE,
 
+    // The form was parsed.
+    FORM_EVENT_DID_PARSE_FORM,
+
     NUM_FORM_EVENTS,
   };
 
@@ -1297,6 +1300,10 @@ class AutofillMetrics {
 
     void OnDidPollSuggestions(const FormFieldData& field,
                               AutofillSyncSigninState sync_state);
+
+    void OnDidParseForm();
+
+    void OnDidInteractWithAutofillableForm(FormSignature form_signature);
 
     void OnPopupSuppressed(const FormStructure& form,
                            const AutofillField& field);
