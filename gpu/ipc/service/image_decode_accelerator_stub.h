@@ -5,14 +5,16 @@
 #ifndef GPU_IPC_SERVICE_IMAGE_DECODE_ACCELERATOR_STUB_H_
 #define GPU_IPC_SERVICE_IMAGE_DECODE_ACCELERATOR_STUB_H_
 
+#include <vector>
+
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "gpu/command_buffer/service/sequence_id.h"
-
-struct GpuChannelMsg_ScheduleImageDecode_Params;
+#include "gpu/ipc/common/gpu_messages.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -24,6 +26,7 @@ class Message;
 
 namespace gpu {
 class GpuChannel;
+class ImageDecodeAcceleratorWorker;
 class SyncPointClientState;
 
 // Processes incoming image decode requests from renderers: it schedules the
@@ -43,7 +46,12 @@ class SyncPointClientState;
 class ImageDecodeAcceleratorStub
     : public base::RefCountedThreadSafe<ImageDecodeAcceleratorStub> {
  public:
-  ImageDecodeAcceleratorStub(GpuChannel* channel, int32_t route_id);
+  // TODO(andrescj): right now, we only accept one worker to be used for JPEG
+  // decoding. If we want to use multiple workers, we need to ensure that sync
+  // tokens are released in order.
+  ImageDecodeAcceleratorStub(ImageDecodeAcceleratorWorker* worker,
+                             GpuChannel* channel,
+                             int32_t route_id);
 
   // Processes a message from the renderer. Should be called on the IO thread.
   bool OnMessageReceived(const IPC::Message& msg);
@@ -60,11 +68,33 @@ class ImageDecodeAcceleratorStub
       const GpuChannelMsg_ScheduleImageDecode_Params& params,
       uint64_t release_count);
 
+  // Creates the service-side cache entry for a completed decode and releases
+  // the decode sync token.
+  void ProcessCompletedDecode(GpuChannelMsg_ScheduleImageDecode_Params params,
+                              uint64_t decode_release_count);
+
+  // The |worker_| calls this when a decode is completed. If the decode is
+  // successful (i.e., |rgba_output| is not empty), |sequence_| will be enabled
+  // so that ProcessCompletedDecode() is called. If the decode is not
+  // successful, we destroy the channel (see OnError()).
+  void OnDecodeCompleted(std::vector<uint8_t> rgba_output);
+
+  // Triggers the destruction of the channel asynchronously and makes it so that
+  // we stop accepting completed decodes. On entry, |channel_| must not be
+  // nullptr.
+  void OnError() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+  // The object to which the actual decoding can be delegated.
+  ImageDecodeAcceleratorWorker* worker_ = nullptr;
+
   base::Lock lock_;
-  GpuChannel* channel_ GUARDED_BY(lock_);
+  GpuChannel* channel_ GUARDED_BY(lock_) = nullptr;
   SequenceId sequence_ GUARDED_BY(lock_);
   scoped_refptr<SyncPointClientState> sync_point_client_state_
       GUARDED_BY(lock_);
+  base::queue<std::vector<uint8_t>> pending_completed_decodes_
+      GUARDED_BY(lock_);
+  bool accepting_completed_decodes_ GUARDED_BY(lock_) = true;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

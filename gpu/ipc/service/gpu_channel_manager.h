@@ -50,6 +50,7 @@ class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
+class ImageDecodeAcceleratorWorker;
 class MailboxManager;
 class Scheduler;
 class SyncPointManager;
@@ -78,6 +79,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
       const GpuFeatureInfo& gpu_feature_info,
       GpuProcessActivityFlags activity_flags,
       scoped_refptr<gl::GLSurface> default_offscreen_surface,
+      ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
       viz::VulkanContextProvider* vulkan_context_provider = nullptr);
   ~GpuChannelManager() override;
 
@@ -166,6 +168,9 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   // raster::GrShaderCache::Client implementation.
   void StoreShader(const std::string& key, const std::string& shader) override;
 
+  void SetImageDecodeAcceleratorWorkerForTesting(
+      ImageDecodeAcceleratorWorker* worker);
+
  private:
   void InternalDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void InternalDestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id,
@@ -218,6 +223,8 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
   base::TimeTicks last_gpu_access_time_;
   base::TimeTicks begin_wake_up_time_;
 #endif
+
+  ImageDecodeAcceleratorWorker* image_decode_accelerator_worker_ = nullptr;
 
   // Set during intentional GPU process shutdown.
   bool exiting_for_lost_context_;

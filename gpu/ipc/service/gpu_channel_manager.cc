@@ -64,6 +64,7 @@ GpuChannelManager::GpuChannelManager(
     const GpuFeatureInfo& gpu_feature_info,
     GpuProcessActivityFlags activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
+    ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     viz::VulkanContextProvider* vulkan_context_provider)
     : task_runner_(task_runner),
       io_task_runner_(io_task_runner),
@@ -80,6 +81,7 @@ GpuChannelManager::GpuChannelManager(
       default_offscreen_surface_(std::move(default_offscreen_surface)),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
+      image_decode_accelerator_worker_(image_decode_accelerator_worker),
       exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
       memory_pressure_listener_(
@@ -157,7 +159,8 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
 
   std::unique_ptr<GpuChannel> gpu_channel = std::make_unique<GpuChannel>(
       this, scheduler_, sync_point_manager_, share_group_, task_runner_,
-      io_task_runner_, client_id, client_tracing_id, is_gpu_host);
+      io_task_runner_, client_id, client_tracing_id, is_gpu_host,
+      image_decode_accelerator_worker_);
 
   GpuChannel* gpu_channel_ptr = gpu_channel.get();
   gpu_channels_[client_id] = std::move(gpu_channel);
@@ -486,6 +489,12 @@ void GpuChannelManager::ScheduleGrContextCleanup() {
 void GpuChannelManager::StoreShader(const std::string& key,
                                     const std::string& shader) {
   delegate_->StoreShaderToDisk(kGrShaderCacheClientId, key, shader);
+}
+
+void GpuChannelManager::SetImageDecodeAcceleratorWorkerForTesting(
+    ImageDecodeAcceleratorWorker* worker) {
+  DCHECK(gpu_channels_.empty());
+  image_decode_accelerator_worker_ = worker;
 }
 
 }  // namespace gpu
