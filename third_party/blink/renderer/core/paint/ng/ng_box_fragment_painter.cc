@@ -487,6 +487,13 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
 bool NGBoxFragmentPainter::BackgroundIsKnownToBeOpaque(
     const PaintInfo& paint_info) {
   const LayoutBox& layout_box = ToLayoutBox(*box_fragment_.GetLayoutObject());
+
+  // If the box has multiple fragments, its VisualRect is the bounding box of
+  // all fragments' visual rects, which is likely to cover areas that are not
+  // covered by painted background.
+  if (layout_box.FirstFragment().NextFragment())
+    return false;
+
   LayoutRect bounds = IsPaintingScrollingBackground(box_fragment_, paint_info)
                           ? layout_box.LayoutOverflowRect()
                           : layout_box.SelfVisualOverflowRect();
