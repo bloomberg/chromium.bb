@@ -23,11 +23,11 @@
         --cr-input-error-display: none;
       }
 
-      :host([error-state_='1']) #customRadioButton,
-      :host([error-state_='2']) #customRadioButton {
-        /* Margin = -1 * error height = -1 * (16px + 2 lines * line-height) */
+      :host #customRadioButton {
         --cr-radio-button-disc: {
-          margin-top: calc(-16px - 2 * .75rem);
+          align-self: baseline;
+          /* Margin = (38px row height - 16px disc size) / 2 */
+          margin-top: 11px;
         };
       }
 
