@@ -22,12 +22,12 @@ class CONTENT_EXPORT TtsPlatform {
   // Returns true if this platform implementation is supported and available.
   virtual bool PlatformImplAvailable() = 0;
 
-  // Some platforms may provide a built-in TTS extension. Returns true
-  // if the extension was not previously loaded and is now loading, and
-  // false if it's already loaded or if there's no extension to load.
+  // Some platforms may provide a built-in TTS engine. Returns true
+  // if the engine was not previously loaded and is now loading, and
+  // false if it's already loaded or if there's no engine to load.
   // Will call TtsController::RetrySpeakingQueuedUtterances when
-  // the extension finishes loading.
-  virtual bool LoadBuiltInTtsExtension(BrowserContext* browser_context) = 0;
+  // the engine finishes loading.
+  virtual bool LoadBuiltInTtsEngine(BrowserContext* browser_context) = 0;
 
   // Speak the given utterance with the given parameters if possible,
   // and return true on success. Utterance will always be nonempty.

@@ -205,7 +205,7 @@ void TtsExtensionEngine::GetVoices(
       result_voice.name = voice.voice_name;
       result_voice.lang = voice.lang;
       result_voice.remote = voice.remote;
-      result_voice.extension_id = extension->id();
+      result_voice.engine_id = extension->id();
 
       for (auto iter = voice.event_types.begin();
            iter != voice.event_types.end(); ++iter) {
@@ -285,7 +285,7 @@ void TtsExtensionEngine::Speak(content::Utterance* utterance,
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_SPEAK, tts_engine_events::kOnSpeak,
       std::move(args), profile);
-  EventRouter::Get(profile)->DispatchEventToExtension(utterance->extension_id(),
+  EventRouter::Get(profile)->DispatchEventToExtension(utterance->engine_id(),
                                                       std::move(event));
 }
 
@@ -295,7 +295,7 @@ void TtsExtensionEngine::Stop(content::Utterance* utterance) {
   auto event = std::make_unique<extensions::Event>(
       extensions::events::TTS_ENGINE_ON_STOP, tts_engine_events::kOnStop,
       std::move(args), profile);
-  EventRouter::Get(profile)->DispatchEventToExtension(utterance->extension_id(),
+  EventRouter::Get(profile)->DispatchEventToExtension(utterance->engine_id(),
                                                       std::move(event));
 }
 
@@ -306,7 +306,7 @@ void TtsExtensionEngine::Pause(content::Utterance* utterance) {
       extensions::events::TTS_ENGINE_ON_PAUSE, tts_engine_events::kOnPause,
       std::move(args), profile);
   EventRouter* event_router = EventRouter::Get(profile);
-  std::string id = utterance->extension_id();
+  std::string id = utterance->engine_id();
   event_router->DispatchEventToExtension(id, std::move(event));
   WarnIfMissingPauseOrResumeListener(profile, event_router, id);
 }
@@ -318,12 +318,12 @@ void TtsExtensionEngine::Resume(content::Utterance* utterance) {
       extensions::events::TTS_ENGINE_ON_RESUME, tts_engine_events::kOnResume,
       std::move(args), profile);
   EventRouter* event_router = EventRouter::Get(profile);
-  std::string id = utterance->extension_id();
+  std::string id = utterance->engine_id();
   event_router->DispatchEventToExtension(id, std::move(event));
   WarnIfMissingPauseOrResumeListener(profile, event_router, id);
 }
 
-bool TtsExtensionEngine::LoadBuiltInTtsExtension(
+bool TtsExtensionEngine::LoadBuiltInTtsEngine(
     content::BrowserContext* browser_context) {
 #if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromBrowserContext(browser_context);

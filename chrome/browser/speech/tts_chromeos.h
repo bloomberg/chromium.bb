@@ -14,8 +14,7 @@ class TtsPlatformImplChromeOs : public content::TtsPlatform {
  public:
   // TtsPlatform overrides:
   bool PlatformImplAvailable() override;
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override;
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override;
   bool Speak(int utterance_id,
              const std::string& utterance,
              const std::string& lang,

@@ -24,7 +24,7 @@ TtsPlatform* TtsPlatform::GetInstance() {
 #endif
 }
 
-bool TtsPlatformImpl::LoadBuiltInTtsExtension(BrowserContext* browser_context) {
+bool TtsPlatformImpl::LoadBuiltInTtsEngine(BrowserContext* browser_context) {
   return false;
 }
 

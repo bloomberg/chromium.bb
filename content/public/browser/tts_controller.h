@@ -24,6 +24,7 @@ class Value;
 namespace content {
 class Utterance;
 class BrowserContext;
+class TtsPlatform;
 
 // Events sent back from the TTS engine indicating the progress.
 enum TtsEventType {
@@ -56,7 +57,7 @@ struct CONTENT_EXPORT VoiceData {
 
   std::string name;
   std::string lang;
-  std::string extension_id;
+  std::string engine_id;
   std::set<TtsEventType> events;
 
   // If true, the synthesis engine is a remote network resource.
@@ -64,18 +65,18 @@ struct CONTENT_EXPORT VoiceData {
   bool remote;
 
   // If true, this is implemented by this platform's subclass of
-  // TtsPlatformImpl. If false, this is implemented by an extension.
+  // TtsPlatformImpl. If false, this is implemented in a content embedder.
   bool native;
   std::string native_voice_identifier;
 };
 
-// Interface that delegates TTS requests to user-installed extensions.
+// Interface that delegates TTS requests to engines in content embedders.
 class CONTENT_EXPORT TtsEngineDelegate {
  public:
   virtual ~TtsEngineDelegate() {}
 
   // Return a list of all available voices registered.
-  virtual void GetVoices(content::BrowserContext* browser_context,
+  virtual void GetVoices(BrowserContext* browser_context,
                          std::vector<VoiceData>* out_voices) = 0;
 
   // Speak the given utterance by sending an event to the given TTS engine.
@@ -91,9 +92,8 @@ class CONTENT_EXPORT TtsEngineDelegate {
   // Resume speaking this utterance.
   virtual void Resume(Utterance* utterance) = 0;
 
-  // Load the built-in component extension for ChromeOS.
-  virtual bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) = 0;
+  // Load the built-in TTS engine.
+  virtual bool LoadBuiltInTtsEngine(BrowserContext* browser_context) = 0;
 };
 
 // Class that wants to receive events on utterances.
@@ -122,7 +122,7 @@ class CONTENT_EXPORT Utterance {
   // Construct an utterance given a profile and a completion task to call
   // when the utterance is done speaking. Before speaking this utterance,
   // its other parameters like text, rate, pitch, etc. should all be set.
-  explicit Utterance(content::BrowserContext* browser_context);
+  explicit Utterance(BrowserContext* browser_context);
   ~Utterance();
 
   // Sends an event to the delegate. If the event type is TTS_EVENT_END
@@ -184,10 +184,8 @@ class CONTENT_EXPORT Utterance {
     return desired_event_types_;
   }
 
-  const std::string& extension_id() const { return extension_id_; }
-  void set_extension_id(const std::string& extension_id) {
-    extension_id_ = extension_id;
-  }
+  const std::string& engine_id() const { return engine_id_; }
+  void set_engine_id(const std::string& engine_id) { engine_id_ = engine_id; }
 
   UtteranceEventDelegate* event_delegate() const { return event_delegate_; }
   void set_event_delegate(UtteranceEventDelegate* event_delegate) {
@@ -195,17 +193,17 @@ class CONTENT_EXPORT Utterance {
   }
 
   // Getters and setters for internal state.
-  content::BrowserContext* browser_context() const { return browser_context_; }
+  BrowserContext* browser_context() const { return browser_context_; }
   int id() const { return id_; }
   bool finished() const { return finished_; }
 
  private:
   // The BrowserContext that initiated this utterance.
-  content::BrowserContext* browser_context_;
+  BrowserContext* browser_context_;
 
-  // The extension ID of the extension providing TTS for this utterance, or
-  // empty if native TTS is being used.
-  std::string extension_id_;
+  // The content embedder engine ID of the engine providing TTS for this
+  // utterance, or empty if native TTS is being used.
+  std::string engine_id_;
 
   // The unique ID of this utterance, used to associate callback functions
   // with utterances.
@@ -222,11 +220,11 @@ class CONTENT_EXPORT Utterance {
   // other than the ones we explicitly parse, below.
   std::unique_ptr<base::Value> options_;
 
-  // The source extension's ID of this utterance, so that it can associate
+  // The source engine's ID of this utterance, so that it can associate
   // events with the appropriate callback.
   int src_id_;
 
-  // The URL of the page where the source extension called speak.
+  // The URL of the page where called speak was called.
   GURL src_url_;
 
   // The delegate to be called when an utterance event is fired.
@@ -247,8 +245,8 @@ class CONTENT_EXPORT Utterance {
   bool finished_;
 };
 
-// Singleton class that manages text-to-speech for the TTS and TTS engine
-// extension APIs, maintaining a queue of pending utterances and keeping
+// Singleton class that manages text-to-speech for all TTS engines and
+// APIs, maintaining a queue of pending utterances and keeping
 // track of all state.
 class CONTENT_EXPORT TtsController {
  public:
@@ -285,11 +283,11 @@ class CONTENT_EXPORT TtsController {
                           const std::string& error_message) = 0;
 
   // Return a list of all available voices, including the native voice,
-  // if supported, and all voices registered by extensions.
-  virtual void GetVoices(content::BrowserContext* browser_context,
+  // if supported, and all voices registered by engines.
+  virtual void GetVoices(BrowserContext* browser_context,
                          std::vector<VoiceData>* out_voices) = 0;
 
-  // Called by the extension system or platform implementation when the
+  // Called by the content embedder or platform implementation when the
   // list of voices may have changed and should be re-queried.
   virtual void VoicesChanged() = 0;
 
@@ -305,13 +303,17 @@ class CONTENT_EXPORT TtsController {
   virtual void RemoveUtteranceEventDelegate(
       UtteranceEventDelegate* delegate) = 0;
 
-  // Set the delegate that processes TTS requests with user-installed
-  // extensions.
+  // Set the delegate that processes TTS requests with engines in a content
+  // embedder.
   virtual void SetTtsEngineDelegate(TtsEngineDelegate* delegate) = 0;
 
-  // Get the delegate that processes TTS requests with user-installed
-  // extensions.
+  // Get the delegate that processes TTS requests with engines in a content
+  // embedder.
   virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
+
+  // Visible for testing.
+  virtual void SetTtsPlatform(TtsPlatform* tts_platform) = 0;
+  virtual int QueueSize() = 0;
 
  protected:
   virtual ~TtsController() {}

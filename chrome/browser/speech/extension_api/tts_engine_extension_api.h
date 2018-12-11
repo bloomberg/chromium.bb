@@ -37,8 +37,7 @@ class TtsExtensionEngine : public content::TtsEngineDelegate {
   void Stop(content::Utterance* utterance) override;
   void Pause(content::Utterance* utterance) override;
   void Resume(content::Utterance* utterance) override;
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override;
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override;
 };
 
 // Function that allows tts engines to update its list of supported voices at

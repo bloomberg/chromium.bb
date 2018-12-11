@@ -13,7 +13,7 @@
 
 namespace content {
 class BrowserContext;
-class TtsControllerDelegate;
+class TtsController;
 }  // namespace content
 
 namespace arc {
@@ -41,15 +41,14 @@ class ArcTtsService : public KeyedService,
                   uint32_t char_index,
                   const std::string& error_msg) override;
 
-  void set_tts_controller_delegate_for_testing(
-      content::TtsControllerDelegate* tts_controller_delegate) {
-    tts_controller_delegate_ = tts_controller_delegate;
+  void set_tts_controller_for_testing(content::TtsController* tts_controller) {
+    tts_controller_ = tts_controller;
   }
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  content::TtsControllerDelegate* tts_controller_delegate_;
+  content::TtsController* tts_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTtsService);
 };

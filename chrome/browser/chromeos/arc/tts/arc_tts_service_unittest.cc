@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/speech/tts_controller_delegate_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -21,7 +20,7 @@ namespace arc {
 
 namespace {
 
-class TestableTtsController : public TtsControllerDelegateImpl {
+class TestableTtsController : public content::TtsController {
  public:
   TestableTtsController() = default;
   ~TestableTtsController() override = default;
@@ -35,6 +34,28 @@ class TestableTtsController : public TtsControllerDelegateImpl {
     last_char_index_ = char_index;
     last_error_message_ = error_message;
   }
+
+  // Unimplemented.
+  bool IsSpeaking() override { return false; }
+  void SpeakOrEnqueue(content::Utterance* utterance) override {}
+  void Stop() override {}
+  void Pause() override {}
+  void Resume() override {}
+  void GetVoices(content::BrowserContext* browser_context,
+                 std::vector<content::VoiceData>* out_voices) override {}
+  void VoicesChanged() override {}
+  void AddVoicesChangedDelegate(
+      content::VoicesChangedDelegate* delegate) override {}
+  void RemoveVoicesChangedDelegate(
+      content::VoicesChangedDelegate* delegate) override {}
+  void RemoveUtteranceEventDelegate(
+      content::UtteranceEventDelegate* delegate) override {}
+  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override {}
+  content::TtsEngineDelegate* GetTtsEngineDelegate() override {
+    return nullptr;
+  }
+  void SetTtsPlatform(content::TtsPlatform* tts_platform) override {}
+  int QueueSize() override { return 0; }
 
   int last_utterance_id_;
   content::TtsEventType last_event_type_;
@@ -53,8 +74,7 @@ class ArcTtsServiceTest : public testing::Test {
         tts_controller_(std::make_unique<TestableTtsController>()),
         tts_service_(ArcTtsService::GetForBrowserContextForTesting(
             testing_profile_.get())) {
-    tts_service_->set_tts_controller_delegate_for_testing(
-        tts_controller_.get());
+    tts_service_->set_tts_controller_for_testing(tts_controller_.get());
   }
 
   ~ArcTtsServiceTest() override { tts_service_->Shutdown(); }

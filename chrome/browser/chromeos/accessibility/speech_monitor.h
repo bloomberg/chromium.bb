@@ -53,8 +53,7 @@ class SpeechMonitor : public content::TtsPlatform {
   void WillSpeakUtteranceWithVoice(
       const content::Utterance* utterance,
       const content::VoiceData& voice_data) override;
-  bool LoadBuiltInTtsExtension(
-      content::BrowserContext* browser_context) override;
+  bool LoadBuiltInTtsEngine(content::BrowserContext* browser_context) override;
   std::string GetError() override;
   void ClearError() override;
   void SetError(const std::string& error) override;
