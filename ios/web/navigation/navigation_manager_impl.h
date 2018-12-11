@@ -191,7 +191,7 @@ class NavigationManagerImpl : public NavigationManager {
   int GetLastCommittedItemIndex() const final;
   NavigationItem* GetPendingItem() const final;
   NavigationItem* GetTransientItem() const final;
-  void LoadURLWithParams(const NavigationManager::WebLoadParams&) final;
+  void LoadURLWithParams(const NavigationManager::WebLoadParams&) override;
   void AddTransientURLRewriter(BrowserURLRewriter::URLRewriter rewriter) final;
   void GoToIndex(int index) final;
   void Reload(ReloadType reload_type, bool check_for_reposts) final;

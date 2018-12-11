@@ -474,6 +474,56 @@ TEST_P(WebStateTest, CallStopDuringSessionRestore) {
   }));
 }
 
+// Verifies that calling NavigationManager::LoadURLWithParams() does not stop
+// the session restoration and eventually loads the requested URL.
+TEST_P(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
+  // Create session storage with large number of items.
+  const int kItemCount = 10;
+  NSMutableArray<CRWNavigationItemStorage*>* item_storages =
+      [NSMutableArray arrayWithCapacity:kItemCount];
+  for (unsigned int i = 0; i < kItemCount; i++) {
+    CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
+    item.virtualURL = GURL(base::StringPrintf("http://www.%u.test", i));
+    item.userAgentType = UserAgentType::MOBILE;
+    [item_storages addObject:item];
+  }
+
+  // Restore the session.
+  WebState::CreateParams params(GetBrowserState());
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.itemStorages = item_storages;
+  auto web_state = WebState::CreateWithStorageSession(params, session_storage);
+  WebState* web_state_ptr = web_state.get();
+  NavigationManager* navigation_manager = web_state->GetNavigationManager();
+  // TODO(crbug.com/873729): The session will not be restored until
+  // LoadIfNecessary call. Fix the bug and remove extra call.
+  navigation_manager->LoadIfNecessary();
+
+  // Attempt to interrupt the session restoration.
+  GURL url("http://foo.test/");
+  NavigationManager::WebLoadParams load_params(url);
+  navigation_manager->LoadURLWithParams(load_params);
+
+  // Verify that session was fully restored.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    bool restored = navigation_manager->GetItemCount() == kItemCount &&
+                    navigation_manager->CanGoForward();
+    if (!restored) {
+      // Attempt to interrupt the session restoration multiple times, which is
+      // something that the user can do on the slow network.
+      navigation_manager->LoadURLWithParams(load_params);
+    }
+    return restored;
+  }));
+  EXPECT_EQ(kItemCount, navigation_manager->GetItemCount());
+  EXPECT_TRUE(navigation_manager->CanGoForward());
+
+  // Now wait until the last committed item is fully loaded.
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return web_state_ptr->GetLastCommittedURL() == url;
+  }));
+}
+
 // Verifies that calling NavigationManager::Reload() does not stop the session
 // restoration. Session restoration should be opaque to the user and embedder,
 // so calling Reload() is no-op.
