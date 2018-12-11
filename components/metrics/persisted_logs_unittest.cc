@@ -65,12 +65,24 @@ class TestPersistedLogs : public PersistedLogs {
  public:
   TestPersistedLogs(PrefService* service, size_t min_log_bytes)
       : PersistedLogs(std::unique_ptr<PersistedLogsMetricsImpl>(
-                             new PersistedLogsMetricsImpl()),
+                          new PersistedLogsMetricsImpl()),
                       service,
                       kTestPrefName,
                       kLogCountLimit,
                       min_log_bytes,
-                      0) {}
+                      0,
+                      std::string()) {}
+  TestPersistedLogs(PrefService* service,
+                    size_t min_log_bytes,
+                    const std::string& signing_key)
+      : PersistedLogs(std::unique_ptr<PersistedLogsMetricsImpl>(
+                          new PersistedLogsMetricsImpl()),
+                      service,
+                      kTestPrefName,
+                      kLogCountLimit,
+                      min_log_bytes,
+                      0,
+                      signing_key) {}
 
   // Stages and removes the next log, while testing it's value.
   void ExpectNextLog(const std::string& expected_log) {
@@ -298,13 +310,39 @@ TEST_F(PersistedLogsTest, Signatures) {
 
   EXPECT_EQ(Compress(kFooText), persisted_logs.staged_log());
 
-  // Decode the expected signature from a base 64 encoded string.
-  std::string expected_signature;
-  base::Base64Decode("DA2Y9+PZ1F5y6Id7wbEEMn77nAexjy/+ztdtgTB/H/8=",
-                     &expected_signature);
+  // The expected signature as a base 64 encoded string. The value was obtained
+  // by running the test with an empty expected_signature_base64 and taking the
+  // actual value from the test failure message. Can be verifying by the
+  // following python code:
+  // import hmac, hashlib, base64
+  // key = ''
+  // print(base64.b64encode(
+  //   hmac.new(key, msg='foo', digestmod=hashlib.sha256).digest()).decode())
+  std::string expected_signature_base64 =
+      "DA2Y9+PZ1F5y6Id7wbEEMn77nAexjy/+ztdtgTB/H/8=";
 
-  std::string actual_signature = persisted_logs.staged_log_signature();
-  EXPECT_EQ(expected_signature, actual_signature);
+  std::string actual_signature_base64;
+  base::Base64Encode(persisted_logs.staged_log_signature(),
+                     &actual_signature_base64);
+  EXPECT_EQ(expected_signature_base64, actual_signature_base64);
+
+  // Test a different key results in a different signature.
+  std::string key = "secret key, don't tell anyone";
+  TestPersistedLogs persisted_logs_different_key(&prefs_, kLogByteLimit, key);
+
+  persisted_logs_different_key.StoreLog(kFooText);
+  persisted_logs_different_key.StageNextLog();
+
+  EXPECT_EQ(Compress(kFooText), persisted_logs_different_key.staged_log());
+
+  // Base 64 encoded signature obtained in similar fashion to previous
+  // signature. To use previous python code change:
+  // key = "secret key, don't tell anyone"
+  expected_signature_base64 = "DV7z8wdDrjLkQrCzrXR3UjWsR3/YVM97tIhMnhUvfXM=";
+  base::Base64Encode(persisted_logs_different_key.staged_log_signature(),
+                     &actual_signature_base64);
+
+  EXPECT_EQ(expected_signature_base64, actual_signature_base64);
 }
 
 }  // namespace metrics

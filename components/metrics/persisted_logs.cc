@@ -52,7 +52,8 @@ PersistedLogs::LogInfo::~LogInfo() {}
 
 void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
                                   const std::string& log_data,
-                                  const std::string& log_timestamp) {
+                                  const std::string& log_timestamp,
+                                  const std::string& signing_key) {
   DCHECK(!log_data.empty());
 
   if (!compression::GzipCompress(log_data, &compressed_log_data)) {
@@ -69,7 +70,7 @@ void PersistedLogs::LogInfo::Init(PersistedLogsMetrics* metrics,
   const size_t digest_length = hmac.DigestLength();
   unsigned char* hmac_data = reinterpret_cast<unsigned char*>(
       base::WriteInto(&signature, digest_length + 1));
-  if (!hmac.Init(std::string()) ||
+  if (!hmac.Init(signing_key) ||
       !hmac.Sign(log_data, hmac_data, digest_length)) {
     NOTREACHED() << "HMAC signing failed";
   }
@@ -82,13 +83,15 @@ PersistedLogs::PersistedLogs(std::unique_ptr<PersistedLogsMetrics> metrics,
                              const char* pref_name,
                              size_t min_log_count,
                              size_t min_log_bytes,
-                             size_t max_log_size)
+                             size_t max_log_size,
+                             const std::string& signing_key)
     : metrics_(std::move(metrics)),
       local_state_(local_state),
       pref_name_(pref_name),
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size != 0 ? max_log_size : static_cast<size_t>(-1)),
+      signing_key_(signing_key),
       staged_log_index_(-1) {
   DCHECK(local_state_);
   // One of the limit arguments must be non-zero.
@@ -160,7 +163,8 @@ void PersistedLogs::LoadPersistedUnsentLogs() {
 void PersistedLogs::StoreLog(const std::string& log_data) {
   list_.push_back(LogInfo());
   list_.back().Init(metrics_.get(), log_data,
-                    base::Int64ToString(base::Time::Now().ToTimeT()));
+                    base::Int64ToString(base::Time::Now().ToTimeT()),
+                    signing_key_);
 }
 
 void PersistedLogs::Purge() {

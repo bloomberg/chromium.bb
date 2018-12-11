@@ -4,6 +4,7 @@
 
 #include "components/metrics/metrics_service_client.h"
 
+#include "base/strings/string_util.h"
 #include "components/metrics/url_constants.h"
 
 namespace metrics {
@@ -59,6 +60,10 @@ void MetricsServiceClient::UpdateRunningServices() {
 }
 
 std::string MetricsServiceClient::GetAppPackageName() {
+  return std::string();
+}
+
+std::string MetricsServiceClient::GetUploadSigningKey() {
   return std::string();
 }
 

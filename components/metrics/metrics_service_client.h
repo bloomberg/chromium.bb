@@ -134,6 +134,10 @@ class MetricsServiceClient {
   // name in Android WebView, or an empty string on other platforms.
   virtual std::string GetAppPackageName();
 
+  // Gets the key used to sign metrics uploads. This will be used to compute an
+  // HMAC-SHA256 signature of an uploaded log.
+  virtual std::string GetUploadSigningKey();
+
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
   void SetUpdateRunningServicesCallback(const base::Closure& callback);
 
