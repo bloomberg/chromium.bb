@@ -115,11 +115,6 @@
         display: block;
       }
 
-      :host([showing-promo]) #promo-header {
-        padding-bottom: 10px;
-        padding-top: 10px;
-      }
-
       :host([showing-promo]) #promo-title {
         @apply --promo-title;
       }
@@ -135,7 +130,7 @@
     <div id="banner" hidden="[[syncStatus.signedIn]]"></div>
     <div class="settings-box first two-line" id="promo-header"
         hidden="[[syncStatus.signedIn]]">
-      <div class="start">
+      <div class="start settings-box-text">
         <div id="promo-title">
           [[getLabel_(promoLabelWithAccount,
               promoLabelWithNoAccount, shownAccount_)]]
@@ -168,7 +163,7 @@
           </div>
         </div>
         <div class="middle two-line no-min-width">
-          <div class="flex text-elide" id="user-info">
+          <div class="flex text-elide settings-box-text" id="user-info">
             <span>
               [[getAvatarRowTitle_(shownAccount_.fullName,
                   '$i18nPolymer{syncNotWorking}', '$i18nPolymer{syncPaused}',
