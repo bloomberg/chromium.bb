@@ -53,11 +53,6 @@ class PLATFORM_EXPORT MarkingVisitor : public Visitor {
 
   // Conservatively marks an object if pointed to by Address.
   void ConservativelyMarkAddress(BasePage*, Address);
-#if DCHECK_IS_ON()
-  void ConservativelyMarkAddress(BasePage*,
-                                 Address,
-                                 MarkedPointerCallbackForTesting);
-#endif  // DCHECK_IS_ON()
 
   // Marks an object dynamically using any address within its body and adds a
   // tracing callback for processing of the object.

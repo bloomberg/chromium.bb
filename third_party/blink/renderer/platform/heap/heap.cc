@@ -142,29 +142,6 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   return nullptr;
 }
 
-#if DCHECK_IS_ON()
-// To support unit testing of the marking of off-heap root references
-// into the heap, provide a checkAndMarkPointer() version with an
-// extra notification argument.
-Address ThreadHeap::CheckAndMarkPointer(
-    MarkingVisitor* visitor,
-    Address address,
-    MarkedPointerCallbackForTesting callback) {
-  DCHECK(thread_state_->InAtomicMarkingPause());
-
-  if (BasePage* page = LookupPageForAddress(address)) {
-    DCHECK(page->Contains(address));
-    DCHECK(!address_cache_->Lookup(address));
-    DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
-    visitor->ConservativelyMarkAddress(page, address, callback);
-    return address;
-  }
-  if (!address_cache_->Lookup(address))
-    address_cache_->AddEntry(address);
-  return nullptr;
-}
-#endif  // DCHECK_IS_ON()
-
 void ThreadHeap::RegisterWeakTable(void* table,
                                    EphemeronCallback iteration_callback) {
   DCHECK(thread_state_->InAtomicMarkingPause());

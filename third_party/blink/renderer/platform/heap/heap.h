@@ -297,11 +297,6 @@ class PLATFORM_EXPORT ThreadHeap {
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.
   Address CheckAndMarkPointer(MarkingVisitor*, Address);
-#if DCHECK_IS_ON()
-  Address CheckAndMarkPointer(MarkingVisitor*,
-                              Address,
-                              MarkedPointerCallbackForTesting);
-#endif
 
   size_t ObjectPayloadSizeForTesting();
 
