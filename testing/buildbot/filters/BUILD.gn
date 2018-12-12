@@ -16,14 +16,6 @@
 # $ for i in $(ls -1 testing/buildbot/filters/*.browser_tests.*filter ); \
 #   do echo "    \"//$i\","; done | sort
 
-source_set("ash_unittests_filters") {
-  testonly = true
-
-  data = [
-    "//testing/buildbot/filters/chromeos.single_process_mash.ash_unittests.filter",
-  ]
-}
-
 source_set("browser_tests_filters") {
   testonly = true
 
