@@ -1494,7 +1494,7 @@
     ],
 
     'libfuzzer_ubsan_release_bot': [
-      'libfuzzer', 'ubsan_security', 'shared_release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
+      'libfuzzer', 'ubsan_security', 'release_bot', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
     ],
 
     'libfuzzer_mac_asan_release_bot': [
