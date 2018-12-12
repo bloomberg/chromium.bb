@@ -527,7 +527,7 @@ class VideoTrack : public Track {
 
   Projection* GetProjection() const;
 
-  const char* GetColourSpace() const { return m_colour_space; };
+  const char* GetColourSpace() const { return m_colour_space; }
 
  private:
   long long m_width;
