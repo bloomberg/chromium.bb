@@ -4670,14 +4670,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- chrome://flash strings -->
-      <message name="IDS_FLASH_LOADING_MESSAGE" desc="Shown while loading until full list of modules is retrieved">
-      Loading...
-      </message>
-      <message name="IDS_FLASH_TITLE_MESSAGE" desc="Shown while loading until full list of modules is retrieved. 'Flash' is the name of a plugin and should not be translated.">
-      About Flash
-      </message>
-
       <!-- NaCl plugin strings -->
       <message name="IDS_NACL_APP_MISSING_ARCH_MESSAGE" desc="Shown if a Native Client app does not support the current architecture">
         This page uses a Native Client app that doesn't work on your computer.
