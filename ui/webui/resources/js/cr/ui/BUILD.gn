@@ -32,6 +32,8 @@ js_type_check("closure_compile") {
     ":overlay",
     ":position_util",
     ":splitter",
+    ":store",
+    ":store_client",
     ":table",
     ":tree",
   ]
@@ -226,6 +228,19 @@ js_library("position_util") {
 js_library("splitter") {
   deps = [
     "..:ui",
+    "../..:cr",
+  ]
+}
+
+js_library("store") {
+  deps = [
+    "../..:cr",
+  ]
+}
+
+js_library("store_client") {
+  deps = [
+    ":store",
     "../..:cr",
   ]
 }

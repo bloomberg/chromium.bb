@@ -25,7 +25,7 @@ cr.define('bookmarks.actions', function() {
   /**
    * @param {string} id
    * @param {{title: string, url: (string|undefined)}} changeInfo
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function editBookmark(id, changeInfo) {
     return {
@@ -41,7 +41,7 @@ cr.define('bookmarks.actions', function() {
    * @param {number} index
    * @param {string} oldParentId
    * @param {number} oldIndex
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function moveBookmark(id, parentId, index, oldParentId, oldIndex) {
     return {
@@ -71,7 +71,7 @@ cr.define('bookmarks.actions', function() {
    * @param {string} parentId
    * @param {number} index
    * @param {NodeMap} nodes
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function removeBookmark(id, parentId, index, nodes) {
     const descendants = bookmarks.util.getDescendants(nodes, id);
@@ -86,7 +86,7 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {NodeMap} nodeMap
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function refreshNodes(nodeMap) {
     return {
@@ -98,7 +98,7 @@ cr.define('bookmarks.actions', function() {
   /**
    * @param {string} id
    * @param {NodeMap} nodes Current node state. Can be ommitted in tests.
-   * @return {?Action}
+   * @return {?cr.ui.Action}
    */
   function selectFolder(id, nodes) {
     if (nodes && (id == ROOT_NODE_ID || !nodes[id] || nodes[id].url)) {
@@ -115,7 +115,7 @@ cr.define('bookmarks.actions', function() {
   /**
    * @param {string} id
    * @param {boolean} open
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function changeFolderOpen(id, open) {
     return {
@@ -125,14 +125,14 @@ cr.define('bookmarks.actions', function() {
     };
   }
 
-  /** @return {!Action} */
+  /** @return {!cr.ui.Action} */
   function clearSearch() {
     return {
       name: 'clear-search',
     };
   }
 
-  /** @return {!Action} */
+  /** @return {!cr.ui.Action} */
   function deselectItems() {
     return {
       name: 'deselect-items',
@@ -150,7 +150,7 @@ cr.define('bookmarks.actions', function() {
    *   - range: If true, selects all items from the anchor to this item
    *   - toggle: If true, toggles the selection state of the item. Cannot be
    *     used with clear or range.
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function selectItem(id, state, config) {
     assert(!config.toggle || !config.range);
@@ -194,7 +194,7 @@ cr.define('bookmarks.actions', function() {
    * @param {Array<string>} ids
    * @param {BookmarksPageState} state
    * @param {string=} anchor
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function selectAll(ids, state, anchor) {
     return {
@@ -208,7 +208,7 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {string} id
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function updateAnchor(id) {
     return {
@@ -219,7 +219,7 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {string} term
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function setSearchTerm(term) {
     if (!term)
@@ -233,7 +233,7 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {!Array<string>} ids
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function setSearchResults(ids) {
     return {
@@ -244,7 +244,7 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {IncognitoAvailability} availability
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function setIncognitoAvailability(availability) {
     assert(availability != IncognitoAvailability.FORCED);
@@ -256,7 +256,7 @@ cr.define('bookmarks.actions', function() {
 
   /**
    * @param {boolean} canEdit
-   * @return {!Action}
+   * @return {!cr.ui.Action}
    */
   function setCanEditBookmarks(canEdit) {
     return {

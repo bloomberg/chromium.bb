@@ -65,7 +65,7 @@ cr.define('bookmarks.ApiListener', function() {
     debouncer.promise.then(highlightUpdatedItemsImpl);
   }
 
-  /** @param {Action} action */
+  /** @param {cr.ui.Action} action */
   function dispatch(action) {
     bookmarks.Store.getInstance().dispatch(action);
   }
