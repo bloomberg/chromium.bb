@@ -715,19 +715,18 @@ void OmniboxViewViews::SelectAllForUserGesture() {
 }
 
 bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
-  // Early exit if no steady state elision features are enabled.
-  if (!OmniboxFieldTrial::IsHideSteadyStateUrlSchemeEnabled() &&
-      !OmniboxFieldTrial::IsHideSteadyStateUrlTrivialSubdomainsEnabled()) {
-    return false;
-  }
-
   // No need to update the text if the user is already inputting text.
   if (model()->user_input_in_progress())
     return false;
 
+  // No need to unelide if we are already displaying the full URL.
+  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
+  base::string16 full_url = location_bar_model->GetFormattedFullURL();
+  if (text() == full_url)
+    return false;
+
   // Don't unelide if we are currently displaying Query in Omnibox search terms,
   // as otherwise, it would be impossible to refine query terms.
-  LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   if (location_bar_model->GetDisplaySearchTerms(nullptr /* search_terms */))
     return false;
 
@@ -737,7 +736,6 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   if (IsSelectAll() && gesture != UnelisionGesture::HOME_KEY_PRESSED)
     return false;
 
-  base::string16 full_url = location_bar_model->GetFormattedFullURL();
   size_t start, end;
   GetSelectionBounds(&start, &end);
 
